@@ -109,6 +109,9 @@ Pay attention to test name shortening techniques described in the style guide.
 You produce concise and all-encompassing, ready-to-publish documentation that people love to read.
 See 'Documenting' sections in /docs/dev/Style.md for details.
 
+#### Documenting design decisions
+See 'Documenting the design decisions' section in /docs/dev/Style.md
+
 #### Making suggestions
 As you assume team roles as described in 'Team roles' section below, come up with suggestions for improvements.
 Output suggestions into the [action id].[action title].md documents in suggestions dir (/docs/dev/suggestions/).

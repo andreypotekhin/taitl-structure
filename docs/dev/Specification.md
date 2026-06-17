@@ -5,7 +5,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 ## 1. Setup
 
 - As a developer, I can install Structure as a Python package so that I can define schema-driven Spark transformations in Python.
-- As a developer, I can use the default `structure/src` and `structure/generated` layout so that Structure files avoid collisions with other libraries.
+- As a developer, I can use ordinary Python source roots such as `src` or the project root so that Structure fits common package layouts.
+- As a developer, I can generate code under `generated/structure_generated` so that generated imports avoid source package collisions.
 - As a developer, I can configure alternate source and generated directories so that Structure fits existing project layouts.
 - As a developer, I can run `structure init --seed-config` so that all default settings are visible.
 - As a developer, I can omit configuration entirely so that seed defaults are used.
@@ -15,7 +16,7 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can configure Structure through `[tool.structure]` in `pyproject.toml` so that settings live with my Python project.
 - As a developer, I can configure Structure through `structure.toml` so that non-`pyproject` layouts are supported.
 - As a developer, I can override configuration with CLI flags so that CI and local commands can vary behavior.
-- As a developer, I can set `source_dir` so that transform source files are discovered predictably.
+- As a developer, I can set `source_roots` so that transform source files are discovered predictably.
 - As a developer, I can set `generated_dir` so that generated files are written predictably.
 - As a developer, I can set `target_pyspark` so that generated code targets an intended PySpark version range.
 - As a developer, I can set validation defaults so that schema enforcement is project-wide and repeatable.
@@ -33,8 +34,10 @@ This document is a user-story specification for SDLC planning. Early sections co
 
 ## 4. Source Layout
 
-- As a developer, I can place schemas under `structure/src/schemas/` so that schema definitions are easy to locate.
-- As a developer, I can place transforms under `structure/src/transforms/` so that transformation logic is easy to locate.
+- As a developer, I can place schemas under my normal source package so that schema definitions are easy to locate.
+- As a developer, I can place transforms under my normal source package so that transformation logic is easy to locate.
+- As a developer, I can omit source-root configuration when `./src` contains importable packages so that conventional projects work with no setup.
+- As a developer, I can omit source-root configuration in simple root-package projects so that small projects work with no setup.
 - As a developer, I can rely on source file order inside transform classes so that subtransform execution order matches code reading order.
 - As a developer, I can avoid external configuration files for ordinary transform discovery so that project setup remains simple.
 - As a developer, I can use Python imports for schema and helper references so that IDE jump-to-declaration works.

@@ -14,10 +14,9 @@ Preferred:
 
 ```toml
 [tool.structure]
-source_dir = "structure/src"
-generated_dir = "structure/generated"
-source_package = "pipeline_src"
-generated_package = "pipeline_generated"
+source_roots = ["src"]
+generated_dir = "generated"
+generated_package = "structure_generated"
 ```
 
 ## structure.toml
@@ -25,38 +24,46 @@ generated_package = "pipeline_generated"
 Alternative:
 
 ```toml
-source_dir = "structure/src"
-generated_dir = "structure/generated"
-source_package = "pipeline_src"
-generated_package = "pipeline_generated"
+source_roots = ["src"]
+generated_dir = "generated"
+generated_package = "structure_generated"
 ```
 
 ## Path Settings
 
 ```toml
-source_dir = "structure/src"
-generated_dir = "structure/generated"
-source_package = "pipeline_src"
-generated_package = "pipeline_generated"
+source_roots = ["src"]
+generated_dir = "generated"
+generated_package = "structure_generated"
 ```
 
-`source_dir` and `generated_dir` are filesystem roots.
+`source_roots` is an ordered list of filesystem import roots. Each root contains importable Python packages or modules.
+`generated_dir` is the generated-code filesystem root.
 
-`source_package` and `generated_package` are Python packages below those roots.
+`generated_package` is the Python package below `generated_dir` that owns generated Structure artifacts.
 
 Recommended layout:
 
 ```text
-structure/src/pipeline_src/...
-structure/generated/pipeline_generated/...
+src/pipeline_src/...
+generated/structure_generated/pipeline_src/...
 ```
+
+Generated modules mirror source import paths below `generated_package`. For example, source module
+`src/pipeline_src/transforms/order.py` generates below `generated/structure_generated/pipeline_src/...`.
+
+If no configuration is present, Structure resolves source roots by convention:
+
+1. If `./src` exists and contains importable packages or modules, use `["src"]`.
+2. Otherwise, use `["."]`.
+
+Explicit configuration always wins.
 
 IDE guidance:
 
-- Mark `structure/src` as a source root.
-- Mark `structure/generated` as a source root if you want generated-code navigation.
-- Do not add `structure/__init__.py`.
-- If the local `structure/` directory interferes with imports in a particular tool, change `source_dir` and `generated_dir` to `_structure/src` and `_structure/generated` or another project-specific container.
+- Mark every configured `source_roots` entry as a source root.
+- Mark `generated` as a source root if you want generated-code navigation.
+- Do not create a project package named `structure` unless you intend to shadow the installed Structure library.
 
 ## Validation Settings
 

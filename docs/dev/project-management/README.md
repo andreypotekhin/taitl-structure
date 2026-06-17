@@ -42,7 +42,7 @@ Sprint 00 includes a short spike gate before implementation of the first vertica
 - `@after(method)` binding inside class bodies.
 - Class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
 - Source-order discovery with stable line numbers.
-- Generated import paths using `structure_src` and `structure_generated` defaults.
+- Source-root discovery and generated `structure_generated.<source package>` import paths.
 - Compiler checks that do not import PySpark or start Spark.
 - A minimal generated PySpark execution test using local Spark.
 

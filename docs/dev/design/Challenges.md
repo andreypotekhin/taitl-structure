@@ -6,7 +6,7 @@ This document captures the pre-implementation challenges identified for the **St
 
 The default project paths need to avoid confusion with the open-source package name `structure`.
 
-Current candidate layout:
+Earlier candidate layout:
 
 ```text
 structure/src
@@ -15,14 +15,36 @@ structure/generated
 
 Risk: if the package itself is named `structure`, and user projects also have a top-level `structure/` directory, imports may become confusing or fragile.
 
-Recommended default:
+Recommended direction:
 
 ```text
-structure_src/
-structure_generated/
+src/my_package/...
+generated/structure_generated/my_package/...
 ```
 
-Config should still allow alternative layouts, including `structure/src` and `structure/generated`, but the default should minimize Python import ambiguity.
+Structure should use the project's real Python source roots as input roots instead of inventing a special
+source package directory. Transform discovery can identify Structure classes by `@transform`, so the default
+source layout should not force users to move code under a Structure-specific source package.
+
+Source-root resolution should be:
+
+1. If `pyproject.toml`, `structure.toml`, or CLI flags explicitly configure Structure, use that configuration.
+2. Else if `./src` exists and contains importable packages or modules, use `source_roots = ["src"]`.
+3. Else use `source_roots = ["."]`.
+
+Generated code should live under a distinct generated namespace and mirror the source import path below that
+namespace. For example:
+
+```text
+src/my_package/transforms/order.py
+  -> generated/structure_generated/my_package/pyspark/transforms/order.py
+
+my_package/transforms/order.py
+  -> generated/structure_generated/my_package/pyspark/transforms/order.py
+```
+
+This avoids shadowing the installed `structure` library while respecting both common Python layouts: `src/`
+projects and smaller root-package projects.
 
 ## C2. Schema Syntax Needs to Be Finalized
 
@@ -477,7 +499,7 @@ Add these to Sprint 0 before the first vertical slice:
 SPIKE: Prove @after(method) inside class bodies.
 SPIKE: Prove @expr_fn class-local helper without self parameter.
 SPIKE: Prove source-order method discovery with line numbers.
-SPIKE: Prove generated class import path with structure_src / structure_generated layout.
+SPIKE: Prove source-root discovery and generated `structure_generated.<source package>` import paths.
 SPIKE: Prove compiler can run without PySpark/SparkSession.
 SPIKE: Prove minimal generated PySpark execution test with local Spark.
 ```
@@ -493,17 +515,17 @@ Open-source package:
   structure/
 
 User project source:
-  structure_src/
+  src/my_package/
 
 User generated output:
-  structure_generated/
+  generated/structure_generated/my_package/
 ```
 
 This avoids namespace collision and gives clear import paths:
 
 ```python
-from structure_src.schemas.order import OrderRaw
-from structure_generated.pyspark.transforms.order import EnrichOrdersGenerated
+from my_package.schemas.order import OrderRaw
+from structure_generated.my_package.pyspark.transforms.order import EnrichOrdersGenerated
 ```
 
 The paths should remain configurable, but the defaults should be safe.

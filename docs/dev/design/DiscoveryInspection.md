@@ -6,8 +6,7 @@ Discovery locates transform classes and schema definitions, preserving enough so
 
 ## Inputs
 
-- `source_dir`
-- `source_package`
+- `source_roots`
 - Python module files
 - optional config and CLI overrides
 
@@ -23,16 +22,27 @@ Discovery locates transform classes and schema definitions, preserving enough so
 
 ```text
 1. Load configuration.
-2. Find Python files under source_dir/source_package.
-3. Import modules or inspect source safely.
-4. Find classes marked with @transform.
-5. Read class __dict__ order.
-6. Identify input declarations.
-7. Identify @expr_fn helpers.
-8. Identify public schema-returning subtransform methods.
-9. Identify @before(method) and @after(method) hooks.
-10. Attach line numbers and source snippets when available.
+2. Resolve source roots from config or convention.
+3. Find Python files under each source root.
+4. Import modules or inspect source safely.
+5. Find classes marked with @transform.
+6. Read class __dict__ order.
+7. Identify input declarations.
+8. Identify @expr_fn helpers.
+9. Identify public schema-returning subtransform methods.
+10. Identify @before(method) and @after(method) hooks.
+11. Attach line numbers and source snippets when available.
 ```
+
+## Source Root Resolution
+
+Explicit configuration wins. Without config, discovery uses this convention:
+
+1. If `./src` exists and contains importable packages or modules, use `["src"]`.
+2. Otherwise, use `["."]`.
+
+Generated artifact paths mirror module paths relative to the selected source root. The physical root name
+itself is not part of the module path.
 
 ## Source Order
 

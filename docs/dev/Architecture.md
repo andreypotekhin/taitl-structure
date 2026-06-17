@@ -18,7 +18,7 @@ It is not intended to be a heavy runtime framework. Source DSL files compile to 
 ## High-Level Data Flow
 
 ```text
-structure/src/pipeline_src/
+src/pipeline_src/
   schemas/
   transforms/
 
@@ -35,9 +35,10 @@ compiler
 
         ↓
 
-structure/generated/pipeline_generated/pyspark/
-  schemas/
-  transforms/
+generated/structure_generated/
+  pipeline_src/pyspark/
+    schemas/
+    transforms/
   runtime/
   lineage/
 

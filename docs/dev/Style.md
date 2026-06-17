@@ -144,9 +144,13 @@ Document issues and remedies (fixes) in Troubleshooting.md documents.
 Separate end-user troubleshooting items (/Troubleshooting.md) from development troubleshooting items
 (/docs/dev/Troubleshooting.md)
 
+#### Documenting the design decisions
+Add decision items as [action id].[action-title].md file to docs/dev/design/decisions/.
+See below sections (Action id, Action format) for namign adn formatting.
+
 #### Documenting the suggestions
 As you assume team roles as described in 'Team roles' section below, come up with suggestions for improvements.
-Add suggestion items as [action id].[action title].md file to docs/dev/suggestions/.
+Add suggestion items as [action id].[action-title].md file to docs/dev/suggestions/.
 Suggestions are reviewed by the manager and mastermind role.
 The approved suggestions get moved to docs/dev/suggestions/approved.
 Implemented suggestions get moved to docs/dev/suggestions/done.
@@ -157,9 +161,9 @@ In particular, we maintain line limit of 120 characters per line.
 
 #### Action id
 Include an action id for each action (suggestion, TODO item, etc.), the form of XMMDDYYNN, where X is action code
-(S for suggestions, T for TODO items, M for migrations, P for planning documents), YY is year, MM is month (01-12), DD is day (01-31), NN is a sequence number. For instance, S07142501 is the first suggestion on July 14, 2025.
-The action file (md file that conains the action) is named [action id].[action title].md
-and placed into appropriate directory (docs/dev/suggestions/, docs/dev/todo/ and the like).
+(D for decisions, S for suggestions, T for TODO items, M for migrations, P for planning documents), YY is year, MM is month (01-12), DD is day (01-31), NN is a sequence number. For instance, S07142501 is the first suggestion on July 14, 2025.
+The action file (md file that conains the action) is named [action id].[action-title].md
+and placed into appropriate directory (docs/dev/design/decisions/, docs/dev/suggestions/, docs/dev/todo/ and the like).
 
 #### Action format
 Inside md file, place each action item (suggestion, TODO item, etc.) under a separate section (H3 heading)

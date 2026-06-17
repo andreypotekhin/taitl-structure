@@ -7,9 +7,10 @@ The PySpark generator lowers Structure IR to deterministic, readable PySpark mod
 ## Generated Artifacts
 
 ```text
-structure/generated/pipeline_generated/pyspark/
-  schemas/
-  transforms/
+generated/structure_generated/
+  pipeline_src/pyspark/
+    schemas/
+    transforms/
   runtime/
   lineage/
 ```

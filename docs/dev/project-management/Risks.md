@@ -75,10 +75,11 @@ Using `structure/` both as the open-source package name and as a user project so
 
 ### Mitigation
 
-- Use `structure_src/` and `structure_generated/` as the planned defaults.
+- Use real project source roots: configured roots first, then conventional `src`, then project root.
+- Keep generated output under the distinct `structure_generated` namespace.
 - Keep paths configurable.
 - Keep the open-source package import path separate from user source and generated output paths.
-- Prove generated import paths in Sprint 00 before the vertical slice begins.
+- Prove source-root discovery and generated import paths in Sprint 00 before the vertical slice begins.
 
 ## Risk: Decorator mechanics fail after design is committed
 

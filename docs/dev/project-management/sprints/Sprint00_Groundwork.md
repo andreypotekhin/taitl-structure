@@ -15,7 +15,8 @@ The team can also review short spike notes for the high-risk Python mechanics be
 ### In Scope
 
 - Python package skeleton.
-- Default project layout: `structure_src` and `structure_generated`.
+- Source-root discovery for `src` and root-package projects.
+- Generated output under `generated/structure_generated`.
 - Config resolution from defaults, `pyproject.toml`, `structure.toml`, and CLI overrides.
 - Seed config file generation.
 - CLI skeleton: `check`, `compile`, `explain`.
@@ -26,7 +27,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - Spike: `@after(method)` binding inside class bodies.
 - Spike: class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
 - Spike: source-order discovery with stable line numbers.
-- Spike: generated import paths using `structure_src` and `structure_generated`.
+- Spike: source-root discovery and generated `structure_generated.<source package>` import paths.
 - Spike: compiler check path with no PySpark, SparkSession, Java, or Spark startup.
 - Spike: minimal generated PySpark execution test with local Spark.
 
@@ -41,7 +42,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 ## Relevant Specification Items
 
 - As a developer, I can install Structure as a Python package.
-- As a developer, I can use `structure_src` and `structure_generated` by default.
+- As a developer, I can rely on conventional source-root discovery by default.
 - As a developer, I can override defaults with a small TOML configuration.
 - As a developer, I can generate or inspect seed configuration defaults.
 - As a developer, I can run `structure check`.
@@ -76,7 +77,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 11. Spike `@after(method)` inside class bodies.
 12. Spike class-local `@expr_fn` helper descriptor behavior.
 13. Spike source-order discovery with line numbers.
-14. Spike generated import paths for `structure_src` and `structure_generated`.
+14. Spike source-root discovery and generated `structure_generated.<source package>` import paths.
 15. Spike no-Spark compiler checks.
 16. Spike minimal local Spark generated-code execution.
 
@@ -86,7 +87,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - `structure check` works on an empty project.
 - `structure compile` creates or verifies the generated directory.
 - Config defaults can be printed or generated.
-- Default config uses `structure_src` and `structure_generated`.
+- Default config uses conventional source-root discovery and `generated/structure_generated`.
 - Tests pass locally.
 - CI can run lint/test commands.
 - Spike notes are committed and linked from Sprint 01 planning.

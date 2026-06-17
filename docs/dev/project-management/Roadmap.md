@@ -23,11 +23,13 @@ Required spikes:
 - Prove `@after(method)` binding inside class bodies.
 - Prove class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
 - Prove source-order discovery with stable line numbers.
-- Prove import paths using `structure_src` and `structure_generated`.
+- Prove source-root discovery and generated `structure_generated.<source package>` import paths.
 - Prove compiler checks can run without PySpark, SparkSession, Java, or Spark startup.
 - Prove a minimal generated PySpark execution test with local Spark.
 
-The default project layout is `structure_src/` for user source and `structure_generated/` for generated output. Other layouts remain configurable, but v1 planning should optimize for the safe defaults.
+By default, Structure should use `src` when it contains importable packages and otherwise use the project root.
+Generated code should live under `generated/structure_generated` and mirror source package paths below that
+namespace. Other layouts remain configurable.
 
 ## v1 Scope
 

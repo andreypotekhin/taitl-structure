@@ -19,27 +19,26 @@ pip install structure[pyspark,dev]
 Recommended default layout:
 
 ```text
-structure/
-  src/
+src/
+  pipeline_src/
+    schemas/
+      order.py
+      customer.py
+    transforms/
+      order.py
+generated/
+  structure_generated/
     pipeline_src/
-      schemas/
-        order.py
-        customer.py
-      transforms/
-        order.py
-  generated/
-    pipeline_generated/
       pyspark/
 ```
 
-`structure/src` and `structure/generated` are filesystem roots. Mark them as source roots in your IDE.
-
-Do not add `structure/__init__.py`; the top-level `structure/` directory is a workspace container, not the installed Structure library package.
+`src` and `generated` are filesystem roots. Mark them as source roots in your IDE.
+Generated modules mirror source import paths under `structure_generated`.
 
 ## 3. Define Schemas
 
 ```python
-# structure/src/pipeline_src/schemas/order.py
+# src/pipeline_src/schemas/order.py
 
 from structure import Schema, field, string, decimal
 
@@ -68,7 +67,7 @@ class OrderWithCustomer(Schema):
 ```
 
 ```python
-# structure/src/pipeline_src/schemas/customer.py
+# src/pipeline_src/schemas/customer.py
 
 from structure import Schema, field, string
 
@@ -82,7 +81,7 @@ class Customer(Schema):
 ## 4. Define a Transform
 
 ```python
-# structure/src/pipeline_src/transforms/order.py
+# src/pipeline_src/transforms/order.py
 
 from pyspark.sql import functions as F
 
@@ -156,9 +155,10 @@ structure compile
 Generated files appear under:
 
 ```text
-structure/generated/pipeline_generated/pyspark/
-  schemas/
-  transforms/
+generated/structure_generated/
+  pipeline_src/pyspark/
+    schemas/
+    transforms/
   runtime/
   lineage/
 ```
@@ -219,7 +219,7 @@ The Structure source is shorter and schema-oriented. The generated PySpark is lo
 ## 7. Use Generated Code
 
 ```python
-from pipeline_generated.pyspark.transforms.order import EnrichOrdersGenerated
+from structure_generated.pipeline_src.pyspark.transforms.order import EnrichOrdersGenerated
 
 enriched = EnrichOrdersGenerated(spark=spark).run(
     orders=orders_df,
@@ -230,7 +230,7 @@ enriched = EnrichOrdersGenerated(spark=spark).run(
 ## 8. Use from Airflow
 
 ```python
-from pipeline_generated.pyspark.transforms.order import EnrichOrdersGenerated
+from structure_generated.pipeline_src.pyspark.transforms.order import EnrichOrdersGenerated
 
 
 def enrich_orders_task():
@@ -253,10 +253,9 @@ Minimal `pyproject.toml`:
 
 ```toml
 [tool.structure]
-source_dir = "structure/src"
-generated_dir = "structure/generated"
-source_package = "pipeline_src"
-generated_package = "pipeline_generated"
+source_roots = ["src"]
+generated_dir = "generated"
+generated_package = "structure_generated"
 ```
 
 A complete default seed is provided in `pyproject.seed.toml`. Most projects should only specify settings that differ from defaults.

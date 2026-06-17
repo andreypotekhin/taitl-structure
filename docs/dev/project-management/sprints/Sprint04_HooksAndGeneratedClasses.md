@@ -49,7 +49,7 @@ def add_quality_columns(self, *, df, spark, ctx):
 ## Example Generated PySpark
 
 ```python
-from structure_src.transforms.order import NormalizeOrders
+from pipeline_src.transforms.order import NormalizeOrders
 
 class NormalizeOrdersGenerated:
 

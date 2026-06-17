@@ -113,7 +113,7 @@ class NormalizeOrdersGenerated:
 ## Demo Script
 
 ```bash
-structure compile --src tests/fixtures/vertical_slice_1/structure_src --out /tmp/structure_generated
+structure compile --source-root tests/fixtures/vertical_slice_1/src --out /tmp/generated
 pytest tests/test_vertical_slice_1.py
 ```
 

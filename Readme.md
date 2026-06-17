@@ -135,15 +135,15 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 
 from pipeline_src.transforms.order import EnrichOrders
-from pipeline_generated.pyspark.schemas.order import (
+from structure_generated.pipeline_src.pyspark.schemas.order import (
     ORDER_RAW_SCHEMA,
     ORDER_NORMALIZED_SCHEMA,
     ORDER_WITH_CUSTOMER_SCHEMA,
     ORDER_ENRICHED_SCHEMA,
 )
-from pipeline_generated.pyspark.schemas.customer import CUSTOMER_SCHEMA
-from pipeline_generated.pyspark.schemas.product import PRODUCT_SCHEMA
-from pipeline_generated.pyspark.runtime.schema_assert import assert_schema, project_schema
+from structure_generated.pipeline_src.pyspark.schemas.customer import CUSTOMER_SCHEMA
+from structure_generated.pipeline_src.pyspark.schemas.product import PRODUCT_SCHEMA
+from structure_generated.runtime.schema_assert import assert_schema, project_schema
 
 
 class EnrichOrdersGenerated:
@@ -236,21 +236,23 @@ Arbitrary PySpark is still supported, but only through explicit hooks.
 ## Default Project Layout
 
 ```text
-structure/
-  src/
+src/
+  pipeline_src/
+    schemas/
+    transforms/
+generated/
+  structure_generated/
     pipeline_src/
-      schemas/
-      transforms/
-  generated/
-    pipeline_generated/
       pyspark/
         schemas/
         transforms/
-        runtime/
-        lineage/
+    runtime/
+    lineage/
 ```
 
-`structure/src` and `structure/generated` are filesystem roots, not package names. Mark them as source roots in the IDE. Do not add `structure/__init__.py`; the top-level directory is a workspace container and should not shadow the installed Structure library package.
+`src` and `generated` are filesystem roots, not package names. Mark both as source roots in the IDE.
+Generated modules mirror source import paths under the `structure_generated` namespace. For example,
+`src/pipeline_src/transforms/order.py` generates under `generated/structure_generated/pipeline_src/...`.
 
 All paths and package names are configurable.
 
@@ -260,10 +262,9 @@ Structure works by convention. For repeatable builds, use `pyproject.toml`:
 
 ```toml
 [tool.structure]
-source_dir = "structure/src"
-generated_dir = "structure/generated"
-source_package = "pipeline_src"
-generated_package = "pipeline_generated"
+source_roots = ["src"]
+generated_dir = "generated"
+generated_package = "structure_generated"
 lineage = "basic"
 strict_performance = true
 ```

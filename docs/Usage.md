@@ -31,11 +31,11 @@ class NormalizeOrdersGenerated:
 Default filesystem layout:
 
 ```text
-structure/src/pipeline_src/...
-structure/generated/pipeline_generated/...
+src/pipeline_src/...
+generated/structure_generated/pipeline_src/...
 ```
 
-These paths are configurable. Mark `structure/src` and `structure/generated` as source roots in the IDE.
+These paths are configurable. Mark `src` and `generated` as source roots in the IDE.
 
 ## Inputs
 

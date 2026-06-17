@@ -9,7 +9,7 @@
 - CLI skeleton runs.
 - Seed TOML config can be loaded.
 - Test harness runs in CI.
-- Generated output directory conventions are settled around `structure_src` and `structure_generated` defaults.
+- Source-root discovery and generated output conventions are settled.
 - Sprint 00 spike notes are captured for decorators, expression helpers, source order, import paths, no-Spark compile, and local Spark execution.
 - Any spike result that changes v1 scope is reflected in Sprint 01 before coding begins.
 - Architecture docs are linked from project README.
@@ -18,7 +18,7 @@
 
 ```bash
 structure --help
-structure check --src structure_src
+structure check
 pytest
 ```
 

@@ -3,18 +3,15 @@
 # Every setting shown here is a default; ordinary projects only need to specify differences.
 
 [tool.structure]
-# Filesystem roots. These are directories, not Python package names.
-# The default layout intentionally keeps Structure source/generated files away from
-# common project packages such as src/, app/, dags/, or generated/.
-source_dir = "structure/src"
-generated_dir = "structure/generated"
+# Source import roots. Empty means convention-based discovery:
+# 1. use ["src"] when ./src contains importable packages or modules;
+# 2. otherwise use ["."].
+source_roots = []
 
-# Python packages below the filesystem roots.
-# For IDE friendliness, mark structure/src and structure/generated as source roots.
-# Do not add structure/__init__.py; the top-level structure/ directory is a workspace
-# container, not the Structure library package.
-source_package = "pipeline_src"
-generated_package = "pipeline_generated"
+# Generated filesystem root and package namespace.
+# Source package paths are mirrored below generated_package.
+generated_dir = "generated"
+generated_package = "structure_generated"
 
 # Backend target.
 target_backend = "pyspark"

@@ -5,7 +5,7 @@
 - SPIKE: Prove `@after(method)` works inside class bodies.
 - SPIKE: Prove class-local `@expr_fn` helpers work without a `self` parameter.
 - SPIKE: Prove source-order method discovery with stable line numbers.
-- SPIKE: Prove generated import paths with `structure_src` and `structure_generated` defaults.
+- SPIKE: Prove source-root discovery and generated `structure_generated.<source package>` import paths.
 - SPIKE: Prove `structure check` can run without PySpark, SparkSession, Java, or Spark startup.
 - SPIKE: Prove a minimal generated PySpark execution test with local Spark.
 - Decide and document schema declaration syntax before compiler implementation.
