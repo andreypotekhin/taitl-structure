@@ -4,7 +4,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 
 | Sprint | Spec Areas | Main Deliverables |
 |---|---|---|
-| Sprint 00 Groundwork | Setup, Configuration, Source Layout, Build Integration, Testing | repo skeleton, CLI skeleton, config loader, CI, package layout |
+| Sprint 00 Groundwork | Setup, Configuration, Source Layout, Build Integration, Testing, Pre-Coding Spikes | repo skeleton, CLI skeleton, config loader, CI, safe default package layout, spike notes |
 | Sprint 01 Vertical Slice 1 | Schemas, Transform Classes, Inputs, Generated Code, Testing | simple schema, one transform, generated class, Spark execution test |
 | Sprint 02 Schemas and Validation | Schema Validation, Generated Code, Configuration | `StructType` generation, `assert_schema`, intermediate validation defaults |
 | Sprint 03 Expressions/Filtering/Helpers | Symbolic Execution, Expression Helpers, Filtering, Error Reporting | expression IR, `where`, `@expr_fn`, structured unsupported-code errors |
@@ -16,9 +16,10 @@ This matrix maps early sprints to specification sections and major deliverables.
 ### Sprint 00
 
 - As a developer, I can install Structure as a Python package.
-- As a developer, I can use `structure/src` and `structure/generated` by default.
+- As a developer, I can use `structure_src` and `structure_generated` by default.
 - As a developer, I can override defaults with small TOML configuration.
 - As a developer, I can run `structure check`.
+- As a maintainer, I can review Sprint 00 spike notes before vertical slice coding begins.
 
 ### Sprint 01
 

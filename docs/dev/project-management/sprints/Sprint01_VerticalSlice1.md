@@ -46,6 +46,7 @@ class NormalizeOrdersGenerated:
 
 ### In Scope
 
+- Sprint 00 spike outcomes incorporated into the implementation approach.
 - `Schema` declaration sufficient for primitive fields.
 - `input(Schema)` declaration.
 - `@transform` discovery.
@@ -112,7 +113,7 @@ class NormalizeOrdersGenerated:
 ## Demo Script
 
 ```bash
-structure compile --src tests/fixtures/vertical_slice_1/structure/src --out /tmp/structure/generated
+structure compile --src tests/fixtures/vertical_slice_1/structure_src --out /tmp/structure_generated
 pytest tests/test_vertical_slice_1.py
 ```
 
@@ -127,4 +128,4 @@ Target:
 ## Risks
 
 - Symbolic execution may be over-engineered too early.
-- Generated import paths may need adjustment once package layout is finalized.
+- Generated import paths may still need adjustment if Sprint 00 import-path proof exposes edge cases.

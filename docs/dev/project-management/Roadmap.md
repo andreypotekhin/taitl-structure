@@ -14,6 +14,21 @@ The project should prioritize:
 - Actionable compiler diagnostics.
 - Incremental delivery through working vertical slices.
 
+## Pre-Coding Gate
+
+Before the first vertical slice, Sprint 00 must retire the highest-risk unknowns called out in `docs/dev/design/Challenges.md`.
+
+Required spikes:
+
+- Prove `@after(method)` binding inside class bodies.
+- Prove class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
+- Prove source-order discovery with stable line numbers.
+- Prove import paths using `structure_src` and `structure_generated`.
+- Prove compiler checks can run without PySpark, SparkSession, Java, or Spark startup.
+- Prove a minimal generated PySpark execution test with local Spark.
+
+The default project layout is `structure_src/` for user source and `structure_generated/` for generated output. Other layouts remain configurable, but v1 planning should optimize for the safe defaults.
+
 ## v1 Scope
 
 v1 focuses on schema-driven projection, filtering, joins, hooks, generated PySpark classes, validation, basic lineage, and build integration.
@@ -74,7 +89,7 @@ v3 may introduce streaming orchestration. v1/v2 only maintain streaming compatib
 
 | Milestone | Goal | Sprints |
 |---|---|---|
-| M0 | Repository and compiler skeleton | Sprint 00 |
+| M0 | Repository, compiler skeleton, and pre-coding spike gate | Sprint 00 |
 | M1 | First end-to-end generated PySpark transform | Sprint 01 |
 | M2 | Schema validation and generated class polish | Sprint 02 |
 | M3 | Practical expression DSL and diagnostics | Sprint 03 |

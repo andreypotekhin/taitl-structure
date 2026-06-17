@@ -29,6 +29,17 @@ Prefer small tasks that produce visible compiler progress:
 
 Avoid broad tasks such as “implement compiler.” Split them by source construct and generated PySpark output.
 
+## Spike Guidance
+
+Sprint 00 must include short, written spike outcomes before implementation work proceeds to Sprint 01. Each spike should produce:
+
+- the smallest executable proof;
+- the design decision or remaining risk;
+- links to follow-up backlog items when the proof changes scope;
+- any fixture or test worth keeping.
+
+Do not let a spike become implementation by stealth. It is complete when it proves or disproves the design assumption clearly enough to plan the vertical slice.
+
 ## Compiler Performance Tracking
 
 Each sprint that changes discovery, symbolic execution, checks, or codegen should track compile time.

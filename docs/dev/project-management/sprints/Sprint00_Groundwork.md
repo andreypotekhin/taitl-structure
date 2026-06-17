@@ -2,18 +2,20 @@
 
 ## Sprint Goal
 
-Create the repository, package layout, configuration model, CLI skeleton, testing infrastructure, and documentation scaffolding needed to implement Structure as a compiler-driven open-source library.
+Create the repository, package layout, configuration model, CLI skeleton, testing infrastructure, documentation scaffolding, and pre-coding proofs needed to implement Structure as a compiler-driven open-source library.
 
 ## Product Outcome
 
 A contributor can clone the project, install it in editable mode, run tests, inspect seed configuration defaults, and execute placeholder CLI commands.
+
+The team can also review short spike notes for the high-risk Python mechanics before Sprint 01 commits to compiler design.
 
 ## Scope
 
 ### In Scope
 
 - Python package skeleton.
-- Default project layout: `structure/src` and `structure/generated`.
+- Default project layout: `structure_src` and `structure_generated`.
 - Config resolution from defaults, `pyproject.toml`, `structure.toml`, and CLI overrides.
 - Seed config file generation.
 - CLI skeleton: `check`, `compile`, `explain`.
@@ -21,23 +23,31 @@ A contributor can clone the project, install it in editable mode, run tests, ins
 - Initial test harness.
 - Initial CI script.
 - Architecture and implementation docs linked from README.
+- Spike: `@after(method)` binding inside class bodies.
+- Spike: class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
+- Spike: source-order discovery with stable line numbers.
+- Spike: generated import paths using `structure_src` and `structure_generated`.
+- Spike: compiler check path with no PySpark, SparkSession, Java, or Spark startup.
+- Spike: minimal generated PySpark execution test with local Spark.
 
 ### Out of Scope
 
-- Actual transform compilation.
-- PySpark execution.
+- Production transform compilation beyond the minimal spike fixture.
+- Production PySpark execution support beyond the minimal spike fixture.
 - Schema validation runtime.
 - Joins, hooks, lineage.
+- Full implementation of any spike subject beyond the proof needed for Sprint 01 planning.
 
 ## Relevant Specification Items
 
 - As a developer, I can install Structure as a Python package.
-- As a developer, I can use `structure/src` and `structure/generated` by default.
+- As a developer, I can use `structure_src` and `structure_generated` by default.
 - As a developer, I can override defaults with a small TOML configuration.
 - As a developer, I can generate or inspect seed configuration defaults.
 - As a developer, I can run `structure check`.
 - As a developer, I can run `structure compile` without crashing even before transforms exist.
 - As a developer, I can run tests in CI.
+- As a maintainer, I can review spike outcomes before vertical slice coding begins.
 
 ## Deliverables
 
@@ -49,6 +59,7 @@ A contributor can clone the project, install it in editable mode, run tests, ins
 - Basic logging and diagnostics framework.
 - Test directory and first tests.
 - CI workflow or documented CI commands.
+- Spike notes for decorator mechanics, expression helpers, source ordering, import paths, no-Spark compile, and local Spark execution.
 
 ## Engineering Tasks
 
@@ -62,6 +73,12 @@ A contributor can clone the project, install it in editable mode, run tests, ins
 8. Add test harness.
 9. Add first CI command list.
 10. Add compile-time timing utility placeholder.
+11. Spike `@after(method)` inside class bodies.
+12. Spike class-local `@expr_fn` helper descriptor behavior.
+13. Spike source-order discovery with line numbers.
+14. Spike generated import paths for `structure_src` and `structure_generated`.
+15. Spike no-Spark compiler checks.
+16. Spike minimal local Spark generated-code execution.
 
 ## Acceptance Criteria
 
@@ -69,8 +86,11 @@ A contributor can clone the project, install it in editable mode, run tests, ins
 - `structure check` works on an empty project.
 - `structure compile` creates or verifies the generated directory.
 - Config defaults can be printed or generated.
+- Default config uses `structure_src` and `structure_generated`.
 - Tests pass locally.
 - CI can run lint/test commands.
+- Spike notes are committed and linked from Sprint 01 planning.
+- Sprint 01 scope reflects any spike-driven design changes.
 
 ## Demo Script
 
@@ -95,6 +115,7 @@ Target for this sprint:
 - Config scope may grow too quickly.
 - Default paths may confuse IDEs if not documented.
 - CLI commands may imply behavior not yet implemented.
+- Spikes may reveal syntax or layout changes that should block Sprint 01 until resolved.
 
 ## Notes
 

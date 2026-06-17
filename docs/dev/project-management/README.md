@@ -35,11 +35,24 @@ project-management/
     BugReport.md
 ```
 
+## Pre-Coding Spike Gate
+
+Sprint 00 includes a short spike gate before implementation of the first vertical slice. These spikes close the highest-risk design questions from `docs/dev/design/Challenges.md`:
+
+- `@after(method)` binding inside class bodies.
+- Class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
+- Source-order discovery with stable line numbers.
+- Generated import paths using `structure_src` and `structure_generated` defaults.
+- Compiler checks that do not import PySpark or start Spark.
+- A minimal generated PySpark execution test using local Spark.
+
+Sprint 01 should not start until the spike notes are captured and any resulting design changes are reflected in the sprint scope.
+
 ## Iteration Strategy
 
 The first iterations are intentionally arranged to build confidence in small compiler slices:
 
-1. **Groundwork**: repository, package layout, config, CLI skeleton, testing harness.
+1. **Groundwork and spikes**: repository, package layout, config, CLI skeleton, testing harness, and pre-coding proofs.
 2. **Vertical Slice 1**: one input schema, one transform method, one generated PySpark class, one Spark execution test.
 3. **Schemas and validation**: richer schema model, `StructType` generation, input/intermediate/output validation.
 4. **Symbolic expressions, filtering, helpers**: compiler-worthy expression model with strict unsupported-code diagnostics.

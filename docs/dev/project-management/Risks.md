@@ -67,18 +67,42 @@ Users may put inefficient PySpark or local Python operations into hooks.
 - Document hooks as explicit escape hatches.
 - Show hooks as opaque in lineage.
 
-## Risk: Default `structure/src` layout affects IDE tooling
+## Risk: Python package and source layout collide
 
 ### Impact
 
-IDEs may not automatically treat `structure/src` as a source root.
+Using `structure/` both as the open-source package name and as a user project source root can confuse imports, generated paths, and IDE indexing.
 
 ### Mitigation
 
-- Document marking `structure/src` as source root.
+- Use `structure_src/` and `structure_generated/` as the planned defaults.
 - Keep paths configurable.
-- Avoid making `structure/` itself an import package unless intentionally configured.
-- Generate importable package paths predictably under `structure/generated`.
+- Keep the open-source package import path separate from user source and generated output paths.
+- Prove generated import paths in Sprint 00 before the vertical slice begins.
+
+## Risk: Decorator mechanics fail after design is committed
+
+### Impact
+
+Class-body hook declarations or class-local expression helpers may require awkward syntax changes if Python descriptor and namespace behavior is not proven early.
+
+### Mitigation
+
+- Spike `@after(method)` binding inside class bodies in Sprint 00.
+- Spike class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
+- Capture source locations and source order in the same spike notes.
+
+## Risk: Compiler accidentally depends on Spark during checks
+
+### Impact
+
+`structure check` becomes slow and hard to run in CI if it imports PySpark, starts Spark, requires Java, or needs a SparkSession.
+
+### Mitigation
+
+- Treat no-Spark compile as a Sprint 00 proof.
+- Keep Spark execution tests separate from compiler checks.
+- Add a guard test that fails if compiler checks import PySpark on the no-Spark path.
 
 ## Risk: Intermediate validation overhead is too high
 

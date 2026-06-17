@@ -72,7 +72,7 @@ Developers can rely on declared schemas to catch invalid DataFrame structure at 
 ## Demo Script
 
 ```bash
-structure compile --src tests/fixtures/schema_validation/structure/src --out /tmp/structure/generated
+structure compile --src tests/fixtures/schema_validation/structure_src --out /tmp/structure_generated
 pytest tests/test_schema_validation.py
 ```
 

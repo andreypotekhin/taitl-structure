@@ -97,8 +97,8 @@ df = orders.where(
 ## Demo Script
 
 ```bash
-structure check --src tests/fixtures/expressions/structure/src
-structure compile --src tests/fixtures/expressions/structure/src --out /tmp/structure/generated
+structure check --src tests/fixtures/expressions/structure_src
+structure compile --src tests/fixtures/expressions/structure_src --out /tmp/structure_generated
 pytest tests/test_expressions_filtering.py
 ```
 

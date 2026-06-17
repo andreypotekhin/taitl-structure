@@ -1,5 +1,18 @@
 # Product Backlog
 
+## Epic: Pre-Coding Spikes and Decisions
+
+- SPIKE: Prove `@after(method)` works inside class bodies.
+- SPIKE: Prove class-local `@expr_fn` helpers work without a `self` parameter.
+- SPIKE: Prove source-order method discovery with stable line numbers.
+- SPIKE: Prove generated import paths with `structure_src` and `structure_generated` defaults.
+- SPIKE: Prove `structure check` can run without PySpark, SparkSession, Java, or Spark startup.
+- SPIKE: Prove a minimal generated PySpark execution test with local Spark.
+- Decide and document schema declaration syntax before compiler implementation.
+- Decide and document nullability and coercion rules before validation implementation.
+- Decide and document generated-code ownership rules before CI integration.
+- Decide and document compatibility, versioning, and license policy before open-source packaging.
+
 ## Epic: Project Foundation
 
 - Create Python package skeleton.
