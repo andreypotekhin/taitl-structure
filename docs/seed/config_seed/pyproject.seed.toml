@@ -1,0 +1,16 @@
+[tool.structure]
+source_dir = "structure/src"
+generated_dir = "structure/generated"
+target_backend = "pyspark"
+target_pyspark = ">=3.5,<4.2"
+
+validate_inputs = true
+validate_intermediate = true
+validate_outputs = true
+
+lineage = "basic"
+streaming_compatibility_checks = true
+strict_performance = true
+
+format_generated = true
+fail_on_diff = false

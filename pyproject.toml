@@ -1,0 +1,92 @@
+[build-system]
+requires = ["poetry-core>=1.9.1"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "taitl-structure"
+version = "1.0.0"
+description = "Taitl Structure Library"
+authors = [ "Andrey <andrey1@taitl.com>" ]
+license = "Proprietary"
+readme = "Readme.md"
+include = [ "Readme.md" ]
+packages = [
+    { include = "com", from = "com" },
+    { include = "cli", from = "cli" },
+    { include = "llm", from = "llm" },
+    { include = "login", from = "login" },
+]
+
+[tool.poetry.scripts]
+taitl = 'cli.app:cli'
+t = 'cli.app:cli'
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0.0"
+click= "^8.1"
+#requests = ">=2.32.3"
+#python-dotenv = ">=1.0.1"
+rich = "^13.9.4"
+#trogon = "^0.6.0"
+toml = "^0.10.2"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10"
+flake8 = "^7.1"
+flake8-pyproject = "^1.2"
+isort = "^5.13"
+mypy = "^1.13"
+pytest = "^8.3"
+pytest-mock = "^3.14"
+
+[tool.black]
+line-length = 120
+skip-string-normalization = true
+
+[tool.isort]
+profile = "black"
+line_length = 120
+# known_third_party = ["requests", "python-dotenv"] # Group third-party imports separately
+skip = ["__init__.py"]
+known_first_party = ["taitl", "o"]
+
+[tool.flake8]
+ignore = [
+    'E231', # multiple spaces after ','
+    'E241', # missing whitespace after ','
+    'E302', # expected 2 blank lines, found 1
+    'E305', # expected 2 blank lines after class or function definition, found 1
+    "E402", # pydeeq -> module level import not at top of file
+    "E501", # line too long
+    'F541', # f-string is missing placeholders
+    'E712', # spark -> comparison to False should be 'if cond is False:' or 'if not cond:'
+    'F401', # module imported but unused
+    'S101', # test -> Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
+    'S307', # json.parse -> Use of possibly insecure function - consider using safer ast.literal_eval
+    'W291', # trailing whitespace
+    'W503', # line break before binary operator
+]
+per-file-ignores = [
+    '__init__.py:F401', # module imported but unused
+]
+max-line-length = 120
+count = true
+
+[tool.mypy]
+python_version = "3.12"
+pretty = true
+disallow_untyped_defs = false
+check_untyped_defs = true
+warn_return_any = false
+explicit_package_bases = true
+
+[tool.pytest.ini_options]
+addopts = [
+        "--durations=5", # Show the slowest 5 tests
+        #"--color=yes",
+        #"--cov=o",
+]
+plugins = [
+   "pytest-mock"
+]
+#testpaths = [ "test" ]

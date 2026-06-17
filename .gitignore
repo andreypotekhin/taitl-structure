@@ -1,0 +1,41 @@
+# PyCharm
+out/
+.idea/workspace.xml
+.idea/sonarlint
+
+### OS-specific ###
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+*.swp
+
+# OS X
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+*.lnk
+
+# Misc
+*.bak
+*.cache
+*.tmp
+*.log
+*.zip
+logs/
+chat/
+node_modules/
+/.pmd
+/.ruleset
