@@ -10,28 +10,49 @@ For project background, read /docs/dev/design/Background.md
 
 ### End-user documentation
 
-End-user documentation:
+End-user documentation: /docs/
 
 - Readme: /Readme.md
 - Troubleshooting: /Troubleshooting.md
 
 ### Development documentation
 
-Development documentation: /docs/dev/
-
+Development documentation: /docs/dev/  
 - Setup.md: project setup
 - Specification.md: terminology, library claims, user stories
 - Development.md: details on development
 - Style.md: coding guidelines
 - Development troubleshooting: /docs/dev/Troubleshooting.md
 
-### Agentic and automation documentation
+#### Agentic and automation documentation
 
-Agentic and automation documentation: /docs/dev/auto/
-
+Agentic and automation documentation: /docs/dev/auto/  
 - Automation.md: for automation contract and details on agents' parallel work.
 - AutomationFocus.md: document for automation focus and priorities.
 - Plans.md: guidance for multi-step tasks planning such as planning an implementation of a feature
+
+#### Design documentation
+
+General: /docs/dev/  
+- Architecture.md: project architecture
+- Specification.md: user stories
+ 
+Design docs: /docs/dev/design/  
+- Background.md: project background
+- Challenges.md: current design challenges/not yet addressed
+- /docs/dev/design/specifications: Specification documents
+
+#### Project management documentation
+
+General: /docs/dev/  
+- Implementation.md: implementation phases
+- Roadmap.md: development roadmap
+
+Project management docs: /docs/dev/project-management/  
+- Backlog.md: project backlog
+- Milestones.md: development milestones
+- Roadmap.md: development roadmap
+- /docs/dev/project-management/sprints: Sprint documents
 
 ## Engineering
 
@@ -79,8 +100,10 @@ Code formatting is taken care of automatic build step (with build plugin).
 
 ## Testing
 Test cases backing specifications (from /docs/dev/Specification.md) are in tests/specs/[section]/[item-descr].
-Testing standards, guidelines, structure are coverage limits: see style guide (/docs/dev/Style.md).
-Pay attention to test name shortening techniques described in style guide.
+Testing standards, guidelines, structure are coverage limits: 
+- Style guide (/docs/dev/Style.md)
+- Testing guide (/docs/dev/Testing.md)
+Pay attention to test name shortening techniques described in the style guide.
 
 ### Documenting
 You produce concise and all-encompassing, ready-to-publish documentation that people love to read.

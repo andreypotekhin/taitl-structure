@@ -1,6 +1,6 @@
 # Getting Started
 
-This guide builds a small but realistic Structure pipeline: normalize raw orders, filter invalid rows, enrich orders with customers and products, and generate PySpark code suitable for Airflow.
+This guide builds a small but realistic Structure transform: normalize order rows, validate required keys, enrich with customer data, and generate PySpark code for use from Airflow or a Spark job.
 
 ## 1. Install
 
@@ -8,40 +8,38 @@ This guide builds a small but realistic Structure pipeline: normalize raw orders
 pip install structure
 ```
 
-For local development with Spark tests:
+For local development with test dependencies:
 
 ```bash
 pip install structure[pyspark,dev]
 ```
 
-## 2. Create a Project Layout
+## 2. Create Project Layout
 
-Structure defaults to this layout:
+Recommended default layout:
 
 ```text
 structure/
   src/
-    schemas/
-      order.py
-      customer.py
-      product.py
-    transforms/
-      order.py
+    pipeline_src/
+      schemas/
+        order.py
+        customer.py
+      transforms/
+        order.py
   generated/
-    schemas/
-    transforms/
-    runtime/
-    lineage/
+    pipeline_generated/
+      pyspark/
 ```
 
-This keeps Structure source and generated code under one namespace and avoids generic top-level directories such as `generated/` that may collide with other tools.
+`structure/src` and `structure/generated` are filesystem roots. Mark them as source roots in your IDE.
 
-IDE note: `structure/src` and `structure/generated` should be ordinary Python packages with `__init__.py` files. This keeps import resolution and jump-to-declaration behavior predictable. If a project already uses `structure` as another package name, configure different directories.
+Do not add `structure/__init__.py`; the top-level `structure/` directory is a workspace container, not the installed Structure library package.
 
 ## 3. Define Schemas
 
 ```python
-# structure/src/schemas/order.py
+# structure/src/pipeline_src/schemas/order.py
 
 from structure import Schema, field, string, decimal
 
@@ -67,21 +65,10 @@ class OrderWithCustomer(Schema):
     customer_tier = field(string, nullable=True)
     product_id = field(string, nullable=False)
     total = field(decimal(12, 2), nullable=True)
-
-
-class OrderEnriched(Schema):
-    id = field(string, nullable=False)
-    customer_id = field(string, nullable=False)
-    customer_name = field(string, nullable=True)
-    customer_tier = field(string, nullable=True)
-    product_id = field(string, nullable=False)
-    product_name = field(string, nullable=True)
-    product_category = field(string, nullable=True)
-    total = field(decimal(12, 2), nullable=True)
 ```
 
 ```python
-# structure/src/schemas/customer.py
+# structure/src/pipeline_src/schemas/customer.py
 
 from structure import Schema, field, string
 
@@ -92,22 +79,10 @@ class Customer(Schema):
     tier = field(string, nullable=True)
 ```
 
-```python
-# structure/src/schemas/product.py
-
-from structure import Schema, field, string
-
-
-class Product(Schema):
-    id = field(string, nullable=False, primary_key=True)
-    name = field(string, nullable=True)
-    category = field(string, nullable=True)
-```
-
 ## 4. Define a Transform
 
 ```python
-# structure/src/transforms/order.py
+# structure/src/pipeline_src/transforms/order.py
 
 from pyspark.sql import functions as F
 
@@ -123,16 +98,9 @@ from structure import (
     to_decimal,
     Join,
     JoinHint,
-    SchemaMode,
 )
-from structure.src.schemas.order import (
-    OrderRaw,
-    OrderNormalized,
-    OrderWithCustomer,
-    OrderEnriched,
-)
-from structure.src.schemas.customer import Customer
-from structure.src.schemas.product import Product
+from pipeline_src.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
+from pipeline_src.schemas.customer import Customer
 
 
 @transform
@@ -140,15 +108,10 @@ class EnrichOrders(Transform):
 
     orders = input(OrderRaw)
     customers = input(Customer)
-    products = input(Product)
 
     @expr_fn
     def clean_id(value):
         return lower(trim(value))
-
-    @expr_fn
-    def normalized_total(value):
-        return to_decimal(value, precision=12, scale=2)
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         where(order.id.is_not_null())
@@ -159,7 +122,7 @@ class EnrichOrders(Transform):
             id=order.id,
             customer_id=self.clean_id(order.customer_id),
             product_id=self.clean_id(order.product_id),
-            total=self.normalized_total(order.total),
+            total=to_decimal(order.total, precision=12, scale=2),
         )
 
     @after(normalize)
@@ -181,123 +144,119 @@ class EnrichOrders(Transform):
             product_id=order.product_id,
             total=order.total,
         )
-
-    def add_product(self, order: OrderWithCustomer) -> OrderEnriched:
-        product = self.products.join_one(
-            on=self.products.id == order.product_id,
-            how=Join.LEFT,
-        )
-
-        where(product.id.is_not_null())
-
-        return OrderEnriched(
-            id=order.id,
-            customer_id=order.customer_id,
-            customer_name=order.customer_name,
-            customer_tier=order.customer_tier,
-            product_id=order.product_id,
-            product_name=product.name,
-            product_category=product.category,
-            total=order.total,
-        )
-
-    @after(add_product, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
-    def add_quality_columns(self, *, df, spark, ctx):
-        return (
-            df
-            .withColumn("_has_customer", F.col("customer_name").isNotNull())
-            .withColumn("_has_product", F.col("product_name").isNotNull())
-        )
 ```
 
-## 5. Check and Compile
+## 5. Compile
 
 ```bash
 structure check
 structure compile
 ```
 
-Generated code appears under:
+Generated files appear under:
 
 ```text
-structure/generated/
+structure/generated/pipeline_generated/pyspark/
   schemas/
   transforms/
   runtime/
   lineage/
 ```
 
-## 6. Use Generated Code
+## 6. Inspect Generated PySpark
+
+Generated code is intentionally explicit.
 
 ```python
-from structure.generated.transforms.order import EnrichOrdersGenerated
+class EnrichOrdersGenerated:
 
-result = EnrichOrdersGenerated(spark=spark).run(
+    def __init__(self, *, spark, ctx=None):
+        self.spark = spark
+        self.ctx = ctx
+        self._impl = EnrichOrders()
+
+    def run(self, *, orders, customers):
+        assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")
+        assert_schema(customers, CUSTOMER_SCHEMA, name="Customer", mode="strict")
+
+        # Subtransform: normalize
+        df = orders.where(
+            F.col("id").isNotNull()
+            & F.col("customer_id").isNotNull()
+            & F.col("product_id").isNotNull()
+        ).select(
+            F.col("id").alias("id"),
+            F.lower(F.trim(F.col("customer_id"))).alias("customer_id"),
+            F.lower(F.trim(F.col("product_id"))).alias("product_id"),
+            F.col("total").cast("decimal(12,2)").alias("total"),
+        )
+
+        df = self._impl.remove_negative_totals(df=df, spark=self.spark, ctx=self.ctx)
+        assert_schema(df, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
+
+        # Subtransform: add_customer
+        df = df.alias("order_normalized")
+        customers_df = F.broadcast(customers.alias("customers"))
+        df = df.join(
+            customers_df,
+            F.col("customers.id") == F.col("order_normalized.customer_id"),
+            "left",
+        ).select(
+            F.col("order_normalized.id").alias("id"),
+            F.col("order_normalized.customer_id").alias("customer_id"),
+            F.col("customers.name").alias("customer_name"),
+            F.col("customers.tier").alias("customer_tier"),
+            F.col("order_normalized.product_id").alias("product_id"),
+            F.col("order_normalized.total").alias("total"),
+        )
+
+        assert_schema(df, ORDER_WITH_CUSTOMER_SCHEMA, name="OrderWithCustomer", mode="strict")
+        return df
+```
+
+The Structure source is shorter and schema-oriented. The generated PySpark is longer, explicit, and reviewable.
+
+## 7. Use Generated Code
+
+```python
+from pipeline_generated.pyspark.transforms.order import EnrichOrdersGenerated
+
+enriched = EnrichOrdersGenerated(spark=spark).run(
     orders=orders_df,
     customers=customers_df,
-    products=products_df,
 )
 ```
 
-## 7. Use in Airflow
+## 8. Use from Airflow
 
 ```python
-from structure.generated.transforms.order import EnrichOrdersGenerated
+from pipeline_generated.pyspark.transforms.order import EnrichOrdersGenerated
 
 
 def enrich_orders_task():
     orders = spark.read.parquet("/data/orders_raw")
     customers = spark.read.parquet("/data/customers")
-    products = spark.read.parquet("/data/products")
 
     enriched = EnrichOrdersGenerated(spark=spark).run(
         orders=orders,
         customers=customers,
-        products=products,
     )
 
     enriched.write.mode("overwrite").parquet("/data/orders_enriched")
 ```
 
-## 8. Optional Configuration
+## 9. Optional Configuration
 
-Structure works with defaults. A user config only needs to specify settings that differ from defaults.
+Structure works by convention. Add TOML only when you need repeatable settings or non-default paths.
 
-Preferred location:
-
-```toml
-# pyproject.toml
-
-[tool.structure]
-# Defaults are shown here for reference only.
-# source_dir = "structure/src"
-# generated_dir = "structure/generated"
-# validate_intermediate = true
-```
-
-To generate a seed config that declares all defaults:
-
-```bash
-structure init --seed-config
-```
-
-Seed config:
+Minimal `pyproject.toml`:
 
 ```toml
 [tool.structure]
 source_dir = "structure/src"
 generated_dir = "structure/generated"
-target_backend = "pyspark"
-target_pyspark = ">=3.5,<4.2"
-
-validate_inputs = true
-validate_intermediate = true
-validate_outputs = true
-
-lineage = "basic"
-streaming_compatibility_checks = true
-strict_performance = true
-
-format_generated = true
-fail_on_diff = false
+source_package = "pipeline_src"
+generated_package = "pipeline_generated"
 ```
+
+A complete default seed is provided in `pyproject.seed.toml`. Most projects should only specify settings that differ from defaults.

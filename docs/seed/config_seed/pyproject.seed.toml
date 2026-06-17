@@ -1,16 +1,57 @@
+# Structure seed configuration.
+# Copy this into pyproject.toml under [tool.structure], or into structure.toml.
+# Every setting shown here is a default; ordinary projects only need to specify differences.
+
 [tool.structure]
+# Filesystem roots. These are directories, not Python package names.
+# The default layout intentionally keeps Structure source/generated files away from
+# common project packages such as src/, app/, dags/, or generated/.
 source_dir = "structure/src"
 generated_dir = "structure/generated"
+
+# Python packages below the filesystem roots.
+# For IDE friendliness, mark structure/src and structure/generated as source roots.
+# Do not add structure/__init__.py; the top-level structure/ directory is a workspace
+# container, not the Structure library package.
+source_package = "pipeline_src"
+generated_package = "pipeline_generated"
+
+# Backend target.
 target_backend = "pyspark"
 target_pyspark = ">=3.5,<4.2"
 
+# Validation defaults.
 validate_inputs = true
 validate_intermediate = true
 validate_outputs = true
 
+# Lineage output: none, basic, fields, debug.
 lineage = "basic"
-streaming_compatibility_checks = true
-strict_performance = true
+lineage_format = "ldjson"
 
+# Streaming compatibility checks for generated DataFrame transforms.
+# v1/v2 do not generate readStream/writeStream orchestration.
+streaming_compatibility_checks = true
+
+# Performance policy. Compiled subtransforms never silently become UDFs.
+strict_performance = true
+allow_python_udf = false
+allow_pandas_udf = false
+allow_rdd = false
+allow_collect = false
+allow_to_pandas = false
+
+# Generated code formatting and build verification.
 format_generated = true
 fail_on_diff = false
+
+# Compile-time performance options.
+incremental_compile = true
+compiler_cache_dir = ".structure/cache"
+parallel_codegen = true
+
+# Future v2 optimization features.
+# These declare defaults for manual optimization annotations when implemented.
+default_join_strategy = "auto"
+default_cache_policy = "none"
+default_aggregation_strategy = "auto"

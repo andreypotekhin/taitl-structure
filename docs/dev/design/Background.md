@@ -1,3 +1,3 @@
 ## Project Background
 
-See \docs\dev\design\chat\Structure - Structure Project.pdf for project background
+See \docs\dev\design\discussions\Structure - Structure Project.pdf for project background

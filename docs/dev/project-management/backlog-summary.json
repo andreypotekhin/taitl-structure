@@ -1,0 +1,70 @@
+{
+  "project": "Structure",
+  "iterations": [
+    {
+      "id": "S00",
+      "name": "Groundwork",
+      "milestone": "M0",
+      "spec_sections": [
+        "Setup",
+        "Configuration",
+        "Source Layout",
+        "Build Integration",
+        "Testing"
+      ]
+    },
+    {
+      "id": "S01",
+      "name": "Vertical Slice 1",
+      "milestone": "M1",
+      "spec_sections": [
+        "Schemas",
+        "Transform Classes",
+        "Inputs",
+        "Generated Code"
+      ]
+    },
+    {
+      "id": "S02",
+      "name": "Schemas and Validation",
+      "milestone": "M2",
+      "spec_sections": [
+        "Schema Validation",
+        "Generated Code",
+        "Configuration"
+      ]
+    },
+    {
+      "id": "S03",
+      "name": "Symbolic Expressions, Filtering, Helpers",
+      "milestone": "M3",
+      "spec_sections": [
+        "Symbolic Execution",
+        "Expression Helpers",
+        "Filtering",
+        "Error Reporting"
+      ]
+    },
+    {
+      "id": "S04",
+      "name": "Hooks and Generated Classes",
+      "milestone": "M4",
+      "spec_sections": [
+        "Hooks",
+        "Generated Code",
+        "Error Reporting"
+      ]
+    },
+    {
+      "id": "S05",
+      "name": "Joins, Lineage, Build Integration",
+      "milestone": "M5",
+      "spec_sections": [
+        "Joins",
+        "Lineage",
+        "Build Integration",
+        "Streaming Compatibility"
+      ]
+    }
+  ]
+}

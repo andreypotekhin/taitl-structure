@@ -26,6 +26,17 @@ class NormalizeOrdersGenerated:
         ...
 ```
 
+## Source and Generated Paths
+
+Default filesystem layout:
+
+```text
+structure/src/pipeline_src/...
+structure/generated/pipeline_generated/...
+```
+
+These paths are configurable. Mark `structure/src` and `structure/generated` as source roots in the IDE.
+
 ## Inputs
 
 Inputs are named class attributes.
@@ -36,7 +47,7 @@ customers = input(Customer)
 products = input(Product)
 ```
 
-Generated `run(...)` methods use the same names:
+Generated `run(...)` methods use the same names.
 
 ```python
 def run(self, *, orders, customers, products):
@@ -52,10 +63,37 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     ...
 ```
 
-Subtransforms run in source order.
+Subtransforms execute in source order.
 
 ```text
 OrderRaw -> OrderNormalized -> OrderWithCustomer -> OrderEnriched
+```
+
+## Generated PySpark
+
+A source subtransform like this:
+
+```python
+def normalize(self, order: OrderRaw) -> OrderNormalized:
+    where(order.id.is_not_null())
+
+    return OrderNormalized(
+        id=order.id,
+        customer_id=lower(trim(order.customer_id)),
+        total=to_decimal(order.total, precision=12, scale=2),
+    )
+```
+
+generates PySpark like this:
+
+```python
+df = orders.where(
+    F.col("id").isNotNull()
+).select(
+    F.col("id").alias("id"),
+    F.lower(F.trim(F.col("customer_id"))).alias("customer_id"),
+    F.col("total").cast("decimal(12,2)").alias("total"),
+)
 ```
 
 ## Intermediate Validation
@@ -86,14 +124,14 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 
 ## Filtering
 
-Use `where(...)`.
+Use `where(...)` inside subtransforms.
 
 ```python
-def normalize(self, order: OrderRaw) -> OrderNormalized:
+def valid_orders(self, order: OrderRaw) -> OrderValid:
     where(order.id.is_not_null())
     where(order.total.is_not_null())
 
-    return OrderNormalized(
+    return OrderValid(
         id=order.id,
         total=to_decimal(order.total, precision=12, scale=2),
     )
@@ -101,7 +139,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 
 Multiple `where(...)` calls are combined with logical AND.
 
-## Add Columns
+## Add and Drop Columns
 
 Add columns by returning a schema with more fields.
 
@@ -114,7 +152,6 @@ class OrderWithFlags(Schema):
 
 def add_flags(self, order: OrderRaw) -> OrderWithFlags:
     total = to_decimal(order.total, precision=12, scale=2)
-
     return OrderWithFlags(
         id=order.id,
         total=total,
@@ -122,20 +159,9 @@ def add_flags(self, order: OrderRaw) -> OrderWithFlags:
     )
 ```
 
-## Drop Columns
-
 Drop columns by returning a schema with fewer fields.
 
-```python
-def public_order(self, order: OrderRaw) -> OrderPublic:
-    return OrderPublic(
-        id=order.id,
-        customer_id=order.customer_id,
-        total=to_decimal(order.total, precision=12, scale=2),
-    )
-```
-
-Generated code uses projection rather than `drop(...)`, producing deterministic output schemas.
+Generated code prefers explicit projection over `drop(...)` so the output schema is deterministic.
 
 ## Expression Helpers
 
@@ -147,25 +173,15 @@ def clean_id(value):
     return lower(trim(value))
 ```
 
-Class-local helpers do not take `self`, but may be called through `self`.
+Class-local helpers do not take `self`, but can be called through `self`.
 
 ```python
-def normalize(self, order: OrderRaw) -> OrderNormalized:
-    return OrderNormalized(
-        customer_id=self.clean_id(order.customer_id),
-    )
+customer_id=self.clean_id(order.customer_id)
 ```
 
 ## Joins
 
-Declare named inputs:
-
-```python
-orders = input(OrderRaw)
-customers = input(Customer)
-```
-
-Use symbolic joins:
+Use symbolic joins.
 
 ```python
 def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
@@ -177,13 +193,27 @@ def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
 
     return OrderWithCustomer(
         id=order.id,
-        customer_id=order.customer_id,
         customer_name=customer.name,
-        total=order.total,
     )
 ```
 
-Serial joins are not limited to any fixed number of inputs. Add as many input declarations and source-ordered subtransforms as needed.
+Generated PySpark:
+
+```python
+df = df.alias("order_normalized")
+customers_df = F.broadcast(customers.alias("customers"))
+
+df = df.join(
+    customers_df,
+    F.col("customers.id") == F.col("order_normalized.customer_id"),
+    "left",
+).select(
+    F.col("order_normalized.id").alias("id"),
+    F.col("customers.name").alias("customer_name"),
+)
+```
+
+Serial joins are N-step enrichment chains and are not limited to any fixed number of inputs.
 
 ## Hooks
 
@@ -202,65 +232,22 @@ def hook_name(self, *, df, spark, ctx):
     ...
 ```
 
-Hooks receive:
+Hooks receive `self`, `df`, `spark`, and `ctx`. Named input DataFrames are not passed to hooks by default.
 
-- `self`: the source transform instance.
-- `df`: the current DataFrame.
-- `spark`: the SparkSession.
-- `ctx`: optional pipeline context.
+## Streaming Compatibility
 
-Named input DataFrames are not passed to hooks by default. Hooks that need external data can use `spark`, `ctx`, or explicit reads.
+Generated transforms operate on DataFrames. If the input DataFrame is streaming and all generated operations are supported by Spark Structured Streaming, the generated transform can be used in a streaming pipeline.
 
-## Manual Optimization Hooks and Hints
+Structure v1/v2 do not generate `readStream` or `writeStream`; the caller owns streaming orchestration.
 
-Structure's compiled path prioritizes generated Spark expressions. For manual optimization, prefer explicit APIs that remain plan-visible:
+## v2 Manual Optimization Features
 
-- `JoinHint.BROADCAST` and future join strategy hints.
-- v2 cache/persist hints at step boundaries.
-- v2 higher-order function helpers for arrays and maps.
-- v2 advanced aggregation and grouping APIs.
-- Explicit hooks for hand-written PySpark when needed.
+Planned v2 features include:
 
-Structure should not silently introduce performance-compromising fallbacks.
+- Spark higher-order functions for arrays and maps.
+- Caching and persistence annotations.
+- Join strategy annotations.
+- Advanced aggregation and grouping.
+- Window functions and deduplication helpers.
 
-## Unsupported Code
-
-Compiled subtransforms are strict.
-
-Unsupported:
-
-```python
-customer_id=order.customer_id.strip().lower()
-```
-
-Supported:
-
-```python
-customer_id=lower(trim(order.customer_id))
-```
-
-Reusable supported helper:
-
-```python
-@expr_fn
-def clean_id(value):
-    return lower(trim(value))
-```
-
-Explicit PySpark hook:
-
-```python
-@after(normalize)
-def clean_id_column(self, *, df, spark, ctx):
-    return df.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
-```
-
-If a safe configuration escape hatch exists, error details should show it. Example:
-
-```text
-Config workaround:
-  Set [tool.structure] validate_intermediate = false
-  only if this subtransform intentionally produces a temporary schema mismatch.
-```
-
-Structure rejects unsupported compiled-transform code to preserve Spark optimizer visibility.
+These features remain explicit because Structure should not hide performance-sensitive choices.

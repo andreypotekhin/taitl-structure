@@ -1,6 +1,4 @@
-# Whitepaper: Structure
-
-## Typed Struct-to-Struct Transform Compilation for PySpark
+# Structure: Typed Schema Transform Compilation for PySpark
 
 ## Abstract
 
@@ -8,40 +6,75 @@ Structure is an open-source Python DSL and code generator for building schema-en
 
 Structure is designed for teams that want the maintainability of object-style schema transformations without giving up Spark's optimizer-friendly DataFrame execution model.
 
+The central idea is simple: author compact, typed transformation code; generate explicit, reviewable PySpark Column and DataFrame expressions.
+
 ## Problem
 
-Large-scale data pipelines are often written directly in PySpark DataFrame code, SQL, or table-oriented transformation frameworks. These approaches are powerful but can become difficult to maintain when business logic is naturally expressed as transformations between nested records, domain objects, or schemas.
+Large-scale data pipelines are often written directly in PySpark DataFrame code, SQL, or table-oriented transformation frameworks. These approaches are powerful, but they can become difficult to maintain when business logic is naturally expressed as transformations between nested records, domain objects, or stable schemas.
 
 Common pain points include:
 
 - Weak schema enforcement across multi-step pipelines.
-- Many transformations represented as column strings.
-- Limited IDE navigation and refactoring support.
-- Hard-to-review dynamically assembled DataFrame logic.
+- Transformations represented through column-name strings.
+- Limited IDE navigation for fields and transformation logic.
+- Hard-to-review dynamically assembled DataFrame code.
 - Business logic hidden in arbitrary Python functions or UDFs.
-- Airflow DAGs tied directly to verbose transformation code.
-- Difficulty separating generated, compiler-checked logic from custom PySpark escape hatches.
+- Airflow DAGs overloaded with transformation internals.
+- Difficulty separating generated compiler-checked logic from custom PySpark escape hatches.
+- Unclear intermediate pipeline states.
+- Hidden performance regressions caused by row-wise Python execution.
 
-## Design Rationale: Performance First
+Structure addresses these problems by providing a typed source DSL that compiles to explicit PySpark code.
 
-Structure focuses on generating Spark DataFrame and Column expressions rather than row-wise Python functions because Spark can optimize transformations only when the logical plan remains visible.
+## Performance and Optimization Rationale
 
-Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, join planning, and code generation all depend on expressing work in Spark's relational expression model. Structure therefore treats unsupported Python operations as compile errors rather than silently degrading to UDFs, row-wise maps, or local Python execution.
+Structure's focus on generated PySpark is not merely a code-generation preference. It is a performance strategy.
 
-Arbitrary PySpark is still supported through explicit hooks, but the compiled path remains strict.
+Spark optimizes work that remains visible in its logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, broadcast joins, whole-stage code generation, and many runtime optimizations depend on transformations being expressed through Spark's DataFrame and Column APIs.
+
+If Structure accepted arbitrary Python logic inside compiled transforms, it would have to generate one of the following:
+
+- Python UDFs.
+- pandas UDFs.
+- row-wise maps.
+- RDD operations.
+- opaque callback hooks.
+
+Those forms are sometimes useful, but they reduce optimizer visibility and can introduce serialization overhead or runtime surprises. Structure therefore rejects unsupported compiled-transform code and asks developers to either rewrite it using Structure's expression DSL, define an `@expr_fn` helper, or move arbitrary logic into an explicit hook.
+
+This principle can be summarized as:
+
+```text
+Make the fast path pleasant.
+Make the slow path explicit.
+Never silently choose the slow path.
+```
 
 ## Design Goals
 
-1. Schema-first transformation design.
-2. IDE-friendly authoring.
-3. Spark-optimized execution.
-4. Generated code visibility.
-5. Explicit escape hatches.
-6. Convention by default with small TOML configuration when needed.
-7. Minimal string references.
-8. Build and CI integration.
-9. Streaming-compatible DataFrame transforms in v1/v2.
-10. Compact lineage artifacts.
+1. **Schema-first transformation design**  
+   Pipelines should be described as transformations between typed schemas.
+
+2. **IDE-friendly authoring**  
+   Developers should be able to jump to schema declarations, transform classes, helper functions, and hook methods.
+
+3. **Spark-optimized execution**  
+   Compiled transformations should lower to PySpark DataFrame and Column expressions, not row-wise Python functions.
+
+4. **Generated code visibility**  
+   Generated PySpark code should be deterministic, readable, and suitable for code review.
+
+5. **Explicit escape hatches**  
+   Arbitrary PySpark code should be allowed only through explicit hooks, never through silent fallback.
+
+6. **Convention with optional configuration**  
+   The common case should work by convention, while a small TOML config should support repeatable builds and project-wide defaults.
+
+7. **Minimal string references**  
+   Schema fields, joins, transforms, hooks, and helpers should be referenced as Python symbols wherever possible.
+
+8. **Fast compiler feedback**  
+   Compilation should be fast enough to run during local development and CI.
 
 ## Core Model
 
@@ -61,6 +94,8 @@ class EnrichOrders(Transform):
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         where(order.id.is_not_null())
+        where(order.customer_id.is_not_null())
+        where(order.product_id.is_not_null())
 
         return OrderNormalized(
             id=order.id,
@@ -68,67 +103,215 @@ class EnrichOrders(Transform):
             product_id=self.clean_id(order.product_id),
             total=to_decimal(order.total, precision=12, scale=2),
         )
+
+    def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
+        customer = self.customers.join_one(
+            on=self.customers.id == order.customer_id,
+            how=Join.LEFT,
+            hint=JoinHint.BROADCAST,
+        )
+
+        return OrderWithCustomer(
+            id=order.id,
+            customer_name=customer.name,
+            total=order.total,
+        )
 ```
 
-The compiler symbolically executes each schema-returning method and generates PySpark DataFrame code.
+Public instance methods with schema return annotations are compiled as subtransforms. Subtransforms execute in source order. Their return types form the intermediate schema chain.
 
-## Generated Code Model
+```text
+OrderRaw -> OrderNormalized -> OrderWithCustomer -> OrderEnriched
+```
 
-Structure generates one class per source transform class.
+## Generated PySpark Model
+
+Structure generates one class per transform class.
 
 ```python
 class EnrichOrdersGenerated:
 
-    def __init__(self, *, spark, ctx=None):
+    def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
-        self._impl = EnrichOrders()  # only if hooks exist
+        self._impl = EnrichOrders()  # only when hooks exist
 
-    def run(self, *, orders, customers, products):
+    def run(self, *, orders: DataFrame, customers: DataFrame, products: DataFrame) -> DataFrame:
         ...
 ```
 
-A convenience function may also be generated.
+Generated code uses Spark DataFrame operations such as:
 
-## Unsupported Code Detection
+- `where(...)`
+- `select(...)`
+- `join(...)`
+- `alias(...)`
+- `cast(...)`
+- `functions.lower(...)`
+- `functions.trim(...)`
+- `functions.broadcast(...)`
 
-Unsupported code detection is a performance feature, not merely a correctness feature. If arbitrary Python logic were silently accepted, the compiler would either have to generate Python UDFs, row-wise map operations, or opaque runtime callbacks. Those forms reduce Spark's ability to optimize execution, can prevent predicate and projection pushdown, and often introduce serialization overhead.
+If a transform has no hooks, generated code does not import the source transform class at runtime. This keeps hook-free generated code clean and standalone.
 
-Structure rejects unsupported compiled-transform code so that generated output remains Spark-plan-visible by default.
+## Less Code Without Hiding Runtime Behavior
 
-Example unsupported source:
+Structure source code is shorter because it focuses on semantic schema transitions.
+
+The generated code is intentionally more verbose because it makes runtime behavior explicit:
+
+- input validation
+- intermediate validation
+- filtering
+- projection
+- joins
+- hook calls
+- final projection
+- final validation
+
+This split gives developers compact authoring and operations teams reviewable PySpark.
+
+## Schema Enforcement
+
+Structure validates schemas at multiple layers:
+
+1. Compile-time schema field existence.
+2. Compile-time type compatibility.
+3. Runtime input schema validation.
+4. Runtime intermediate schema validation by default.
+5. Runtime final output schema validation.
+
+Intermediate validation is enabled by default because each subtransform has a typed return schema. It can be disabled class-wide or per subtransform when needed.
+
+## Filtering
+
+Filtering uses `where(...)` inside compiled subtransforms.
 
 ```python
 def normalize(self, order: OrderRaw) -> OrderNormalized:
-    return OrderNormalized(
-        customer_id=order.customer_id.strip().lower(),
-    )
+    where(order.id.is_not_null())
+    where(order.total.is_not_null())
+    return OrderNormalized(...)
 ```
 
-Example error:
+Multiple `where(...)` calls are combined with logical AND.
+
+## Expression Helpers
+
+Expression helpers are compileable reusable functions.
+
+```python
+@expr_fn
+def clean_id(value):
+    return lower(trim(value))
+```
+
+Class-local expression helpers do not take `self`, but may be called through `self` for IDE discoverability.
+
+```python
+customer_id=self.clean_id(order.customer_id)
+```
+
+Expression helpers are symbolically executed and inlined into generated Spark expressions.
+
+## Hooks
+
+Hooks are explicit escape hatches for arbitrary PySpark code.
+
+```python
+@after(normalize)
+def remove_negative_totals(self, *, df, spark, ctx):
+    return df.where(F.col("total") >= 0)
+```
+
+Hook signature:
+
+```python
+def hook_name(self, *, df, spark, ctx) -> DataFrame:
+    ...
+```
+
+Hooks receive the current DataFrame, SparkSession, and optional context. They do not receive every named input by default. This keeps the hook ABI small and stable.
+
+## Joins
+
+Joins are symbolic and typed.
+
+```python
+customer = self.customers.join_one(
+    on=self.customers.id == order.customer_id,
+    how=Join.LEFT,
+    hint=JoinHint.BROADCAST,
+)
+```
+
+The joined row scope is then used in the returned schema object.
+
+```python
+customer_name=customer.name
+```
+
+Serial joins are N-step enrichment chains. They are not limited to three inputs.
+
+## Streaming Compatibility
+
+Structure v1 and v2 do not generate streaming orchestration. They generate DataFrame transforms that can operate on streaming DataFrames when the operations used are compatible with Spark Structured Streaming.
+
+The caller owns:
+
+- `readStream`
+- `writeStream`
+- output mode
+- trigger
+- checkpoint
+- lifecycle
+
+Full streaming orchestration belongs to v3.
+
+## Lineage
+
+Structure emits compact lineage by default as LDJSON.
+
+Basic lineage events include:
+
+- transform
+- input
+- step
+- join
+- hook
+- output
+
+Field-level lineage is optional. Debug lineage may include full expression trees and source locations.
+
+LDJSON keeps lineage streamable, grep-friendly, and less bloated than one large nested document.
+
+## Unsupported Code Detection
+
+Unsupported code detection is a performance feature as much as a correctness feature.
+
+Unsupported source:
+
+```python
+customer_id=order.customer_id.strip().lower()
+```
+
+Structure rejects this because Python string methods on symbolic expressions cannot be compiled directly to Spark Column expressions.
+
+A structured error should include:
+
+- transform class
+- subtransform method
+- output field
+- source expression
+- problem
+- performance rationale
+- direct DSL alternative
+- `@expr_fn` helper alternative
+- hook alternative
+- configuration workaround when one exists
+
+Example guidance:
 
 ```text
-CompileError: Unsupported expression in compiled subtransform
-
-Transform:
-  EnrichOrders
-
-Subtransform:
-  normalize
-
-Output field:
-  OrderNormalized.customer_id
-
-Source expression:
-  order.customer_id.strip().lower()
-
-Problem:
-  Python string methods .strip() and .lower() cannot be compiled to Spark Column expressions.
-
-Why this matters:
-  Compiled subtransforms must lower to Spark-plan-visible Column expressions.
-  Silent fallback to UDFs would reduce optimizer visibility and add Python serialization overhead.
-
 Use direct DSL functions:
   customer_id=lower(trim(order.customer_id))
 
@@ -142,23 +325,61 @@ For arbitrary PySpark:
   def clean_id_column(self, *, df, spark, ctx):
       return df.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 
-Config workaround:
-  No configuration setting allows unsupported Python in compiled subtransforms.
-  This is intentional to protect optimizer-visible execution.
+Configuration workaround:
+  No configuration setting allows unsupported Python string methods inside compiled transforms.
+  This is intentional because compiled transforms must remain Spark-plan-visible.
 ```
 
-If a configuration workaround exists for a particular error, Structure should include it. For example, intermediate schema mismatch errors can suggest `validate_intermediate = false` or a per-method validation override.
+For validation-related errors, a configuration workaround may exist:
+
+```text
+Configuration workaround:
+  Set validate_intermediate = false to skip intermediate runtime schema validation.
+  This does not change compile-time field/type checking.
+```
+
+## Compiler Performance
+
+Structure should be fast enough to run during normal development and CI.
+
+Compile-time performance is a product feature. Implementation should track metrics such as:
+
+- number of discovered modules
+- number of transform classes
+- symbolic execution time
+- IR check time
+- code generation time
+- formatting time
+- lineage generation time
+- total wall-clock time
+
+The compiler should avoid starting Spark during normal compile/check operations.
+
+Recommended implementation techniques:
+
+- incremental compilation based on source fingerprints
+- compiler cache directory
+- parallel code generation
+- lazy module inspection where possible
+- fast IR tests that do not require Spark
+- optional formatting only when generated content changes
 
 ## Roadmap
 
 ### v1
 
-Projection, filtering, joins, typed intermediate schemas, generated PySpark classes, hooks, schema validation, basic LDJSON lineage, streaming-compatible generated transforms, and build/CI integration.
+Projection, filtering, joins, typed intermediate schemas, generated PySpark classes, hooks, validation, basic LDJSON lineage, and streaming-compatible transforms.
 
 ### v2
 
-Aggregations, windowing, deduplication helpers, higher-order functions for nested arrays/maps, manual caching and persistence hints, join strategy controls, advanced grouping, richer compact lineage, and optional field-level lineage.
+Aggregations, windowing, advanced grouping, Spark higher-order functions, caching/persistence hints, join strategy annotations, richer lineage, and optional field-level lineage.
 
 ### v3
 
-Full streaming orchestration: generated stream reads/writes, triggers, checkpoints, watermarks, and stateful streaming policies.
+Full streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, and advanced stateful streaming policies.
+
+## Summary
+
+Structure provides a middle path between hand-written PySpark and purely table-oriented transformation frameworks.
+
+It gives developers a schema-oriented authoring model while producing optimized, explicit, reviewable PySpark code.

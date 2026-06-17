@@ -47,11 +47,11 @@ In compound identifiers, do not convert all-capital abbreviations (HTML) to came
 
 ##### Comments
 Docstrings
-- Avoid HTML formatting tags in docstringss, such as <p>, <br>, inline {@code}, but do use <pre> for multiline code examples. 
-- In user-facing code packages, use docstrings comments with parameter, return and throws tags 
-- Add docstrings comments on non-trivival private methods
-- In implementation (non end-user-facing) code packages, avoid parameter, return and throws tags
-- In implementation code packages, docstrings comments are more free-form, used to explain the rationale,
+- Avoid HTML formatting in docstrings, but do use triple backticks for multiline code examples. 
+- In user-facing code packages, use docstrings comments with Args/Returns/Raises 
+- Have docstrings on non-trivial methods
+- In implementation (non end-user-facing) packages, avoid Args/Returns/Raises
+- In implementation code packages, docstrings are more free-form, used to explain the rationale,
 not required on class level, used mostly on essential or non-trivial methods.
 
 We discourage non-docstrings comments: the meaning should stem from code itself.

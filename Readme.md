@@ -2,32 +2,26 @@
 
 **Structure** is a Python DSL and code generator for schema-enforced, IDE-friendly data pipelines that compile to clean PySpark DataFrame code.
 
-Structure lets developers describe large dataset processing as typed schema-to-schema transitions while generating Spark optimizer-visible Column and DataFrame expressions.
+Structure lets developers describe large dataset processing as typed schema-to-schema transformations while generating Spark optimizer-visible Column and DataFrame expressions.
 
 ## Why Structure?
 
 Hand-written PySpark is powerful, but large pipelines often become difficult to maintain:
 
 - Column names are frequently embedded as strings.
-- Schema drift is hard to catch early.
-- Intermediate pipeline states are often implicit.
-- Reusable logic can become hidden in Python functions, UDFs, or one-off DataFrame snippets.
+- Intermediate schemas are often implicit.
+- Schema drift is hard to catch before runtime.
+- Business logic can become hidden inside Python UDFs or row-wise callbacks.
 - Airflow DAGs can become tightly coupled to transformation internals.
-- Generated or repeated transformation logic is difficult to review consistently.
+- Generated or repeated transformation code is hard to review consistently.
 
-Structure addresses these problems by making schemas and transformations explicit while keeping generated execution code close to idiomatic PySpark.
+Structure addresses these problems by making schemas and transformations explicit while generating readable PySpark code that remains visible to Spark's optimizer.
 
-## Performance Philosophy
+## Less Source Code, More Generated Spark Code
 
-Structure is strict by design.
+A Structure transform can express projection, filtering, normalization, and serial enrichment joins in compact schema-oriented Python.
 
-Compiled subtransforms must lower to Spark-plan-visible DataFrame and Column expressions. Unsupported Python operations are rejected at compile time rather than silently becoming Python UDFs, row-wise maps, or opaque callbacks.
-
-This is a performance and optimization feature. Spark can optimize transformations only when the logical plan remains visible. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, join planning, and code generation all depend on work being expressed through Spark's relational expression model.
-
-Arbitrary PySpark is still supported, but only through explicit hooks.
-
-## Quick Example
+### Source Structure code
 
 ```python
 from pyspark.sql import functions as F
@@ -47,14 +41,14 @@ from structure import (
     SchemaMode,
 )
 
-from structure.src.schemas.order import (
+from pipeline_src.schemas.order import (
     OrderRaw,
     OrderNormalized,
     OrderWithCustomer,
     OrderEnriched,
 )
-from structure.src.schemas.customer import Customer
-from structure.src.schemas.product import Product
+from pipeline_src.schemas.customer import Customer
+from pipeline_src.schemas.product import Product
 
 
 @transform
@@ -132,63 +126,149 @@ class EnrichOrders(Transform):
         )
 ```
 
-Structure generates a corresponding PySpark class:
+### Generated PySpark code
+
+Structure generates one PySpark class per transform class.
 
 ```python
+from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import functions as F
+
+from pipeline_src.transforms.order import EnrichOrders
+from pipeline_generated.pyspark.schemas.order import (
+    ORDER_RAW_SCHEMA,
+    ORDER_NORMALIZED_SCHEMA,
+    ORDER_WITH_CUSTOMER_SCHEMA,
+    ORDER_ENRICHED_SCHEMA,
+)
+from pipeline_generated.pyspark.schemas.customer import CUSTOMER_SCHEMA
+from pipeline_generated.pyspark.schemas.product import PRODUCT_SCHEMA
+from pipeline_generated.pyspark.runtime.schema_assert import assert_schema, project_schema
+
+
 class EnrichOrdersGenerated:
 
-    def __init__(self, *, spark, ctx=None):
+    def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
-        self._impl = EnrichOrders()  # only when hooks exist
+        self._impl = EnrichOrders()
 
-    def run(self, *, orders, customers, products):
-        ...
+    def run(
+        self,
+        *,
+        orders: DataFrame,
+        customers: DataFrame,
+        products: DataFrame,
+    ) -> DataFrame:
+        assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")
+        assert_schema(customers, CUSTOMER_SCHEMA, name="Customer", mode="strict")
+        assert_schema(products, PRODUCT_SCHEMA, name="Product", mode="strict")
+
+        # Subtransform: normalize
+        df = orders.where(
+            F.col("id").isNotNull()
+            & F.col("customer_id").isNotNull()
+            & F.col("product_id").isNotNull()
+        ).select(
+            F.col("id").alias("id"),
+            F.lower(F.trim(F.col("customer_id"))).alias("customer_id"),
+            F.lower(F.trim(F.col("product_id"))).alias("product_id"),
+            F.col("total").cast("decimal(12,2)").alias("total"),
+        )
+
+        df = self._impl.remove_negative_totals(df=df, spark=self.spark, ctx=self.ctx)
+        assert_schema(df, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
+
+        # Subtransform: add_customer
+        df = df.alias("order_normalized")
+        customers_df = F.broadcast(customers.alias("customers"))
+        df = df.join(
+            customers_df,
+            F.col("customers.id") == F.col("order_normalized.customer_id"),
+            "left",
+        ).select(
+            F.col("order_normalized.id").alias("id"),
+            F.col("order_normalized.customer_id").alias("customer_id"),
+            F.col("customers.name").alias("customer_name"),
+            F.col("customers.tier").alias("customer_tier"),
+            F.col("order_normalized.product_id").alias("product_id"),
+            F.col("order_normalized.total").alias("total"),
+        )
+        assert_schema(df, ORDER_WITH_CUSTOMER_SCHEMA, name="OrderWithCustomer", mode="strict")
+
+        # Subtransform: add_product
+        df = df.alias("order_with_customer")
+        products_df = products.alias("products")
+        df = df.join(
+            products_df,
+            F.col("products.id") == F.col("order_with_customer.product_id"),
+            "left",
+        ).where(
+            F.col("products.id").isNotNull()
+        ).select(
+            F.col("order_with_customer.id").alias("id"),
+            F.col("order_with_customer.customer_id").alias("customer_id"),
+            F.col("order_with_customer.customer_name").alias("customer_name"),
+            F.col("order_with_customer.customer_tier").alias("customer_tier"),
+            F.col("order_with_customer.product_id").alias("product_id"),
+            F.col("products.name").alias("product_name"),
+            F.col("products.category").alias("product_category"),
+            F.col("order_with_customer.total").alias("total"),
+        )
+
+        df = self._impl.add_quality_columns(df=df, spark=self.spark, ctx=self.ctx)
+        assert_schema(df, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="allow_extra_columns")
+        df = project_schema(df, ORDER_ENRICHED_SCHEMA)
+        assert_schema(df, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="strict")
+        return df
 ```
 
-If a transform has no hooks, generated code does not import or instantiate the source transform class.
+The generated code is longer than the source, but that is the point: Structure lets developers author compact schema logic while still producing explicit, reviewable PySpark.
 
-## Suggested Project Layout
+## Performance Philosophy
 
-The default layout keeps Structure source and generated code under one namespace to avoid collisions with other libraries:
+Structure is intentionally strict. Compiled subtransforms must lower to Spark-plan-visible expressions. Unsupported Python operations are rejected at compile time instead of silently becoming Python UDFs, row-wise maps, or opaque callbacks.
+
+This is a performance feature. Spark can optimize transformations only when work remains visible in the DataFrame logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, and whole-stage code generation all depend on expressing work through Spark's relational expression model.
+
+Arbitrary PySpark is still supported, but only through explicit hooks.
+
+## Default Project Layout
 
 ```text
 structure/
   src/
-    schemas/
-      order.py
-      customer.py
-      product.py
-    transforms/
-      order.py
+    pipeline_src/
+      schemas/
+      transforms/
   generated/
-    schemas/
-    transforms/
-    runtime/
-    lineage/
-
-airflow_dags/
-  order_daily.py
+    pipeline_generated/
+      pyspark/
+        schemas/
+        transforms/
+        runtime/
+        lineage/
 ```
 
-These paths are configurable. If the project already has a top-level `structure` package or uses another layout, set different directories in `pyproject.toml`.
+`structure/src` and `structure/generated` are filesystem roots, not package names. Mark them as source roots in the IDE. Do not add `structure/__init__.py`; the top-level directory is a workspace container and should not shadow the installed Structure library package.
 
-## Configuration
+All paths and package names are configurable.
 
-Configuration is optional. Defaults are supplied by Structure's seed config. User configuration only needs to specify settings that differ from defaults.
+## Optional Configuration
+
+Structure works by convention. For repeatable builds, use `pyproject.toml`:
 
 ```toml
 [tool.structure]
-# Only override what differs from defaults.
-# source_dir = "structure/src"
-# generated_dir = "structure/generated"
+source_dir = "structure/src"
+generated_dir = "structure/generated"
+source_package = "pipeline_src"
+generated_package = "pipeline_generated"
+lineage = "basic"
+strict_performance = true
 ```
 
-To write all defaults for visibility:
-
-```bash
-structure init --seed-config
-```
+See `pyproject.seed.toml` for all defaults.
 
 ## CLI
 
@@ -196,40 +276,11 @@ structure init --seed-config
 structure check
 structure compile
 structure compile --fail-on-diff
-structure explain structure.src.transforms.order.EnrichOrders
-structure init --seed-config
-```
-
-## Airflow Usage
-
-```python
-from structure.generated.transforms.order import EnrichOrdersGenerated
-
-
-def run_order_pipeline():
-    result = EnrichOrdersGenerated(spark=spark, ctx=ctx).run(
-        orders=orders_df,
-        customers=customers_df,
-        products=products_df,
-    )
-
-    result.write.mode("overwrite").parquet("/data/order_enriched")
+structure explain pipeline_src.transforms.order.EnrichOrders
 ```
 
 ## Roadmap
 
-### v1
-
-Projection, filtering, joins, typed intermediate schemas, generated PySpark classes, hooks, schema validation, basic LDJSON lineage, streaming-compatible generated transforms, and build/CI integration.
-
-### v2
-
-Aggregations, windowing, deduplication helpers, higher-order function helpers for nested arrays/maps, caching and persistence hints, join strategy controls, advanced grouping, richer but compact lineage, and optional field-level lineage.
-
-### v3
-
-Full streaming orchestration, including generated `readStream`, `writeStream`, triggers, checkpoints, watermarks, and stateful streaming policies.
-
-## License
-
-TBD.
+- **v1:** projection, filtering, joins, typed intermediate schemas, generated PySpark classes, hooks, validation, basic LDJSON lineage, streaming-compatible transforms.
+- **v2:** aggregations, windowing, advanced grouping, Spark higher-order functions, caching/persistence hints, join strategy annotations, richer lineage.
+- **v3:** full streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, and stateful policies.

@@ -7,27 +7,20 @@ name = "taitl-structure"
 version = "1.0.0"
 description = "Taitl Structure Library"
 authors = [ "Andrey <andrey1@taitl.com>" ]
-license = "Proprietary"
+license = "LGPL-2.1 + Ethical Use Policy"
 readme = "Readme.md"
 include = [ "Readme.md" ]
 packages = [
-    { include = "com", from = "com" },
-    { include = "cli", from = "cli" },
-    { include = "llm", from = "llm" },
-    { include = "login", from = "login" },
+    { include = "structure", from = "src" },
 ]
 
 [tool.poetry.scripts]
-taitl = 'cli.app:cli'
-t = 'cli.app:cli'
+structure = 'structure.cli:cli'
 
 [tool.poetry.dependencies]
 python = ">=3.12,<4.0.0"
 click= "^8.1"
-#requests = ">=2.32.3"
-#python-dotenv = ">=1.0.1"
 rich = "^13.9.4"
-#trogon = "^0.6.0"
 toml = "^0.10.2"
 
 [tool.poetry.group.dev.dependencies]
@@ -46,7 +39,6 @@ skip-string-normalization = true
 [tool.isort]
 profile = "black"
 line_length = 120
-# known_third_party = ["requests", "python-dotenv"] # Group third-party imports separately
 skip = ["__init__.py"]
 known_first_party = ["taitl", "o"]
 

@@ -36,6 +36,7 @@ ehthumbs_vista.db
 *.zip
 logs/
 chat/
+discussions/
 node_modules/
 /.pmd
 /.ruleset

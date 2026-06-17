@@ -2,46 +2,40 @@
 
 ## v1
 
-- Schema declarations.
-- Transform class discovery.
+- Typed schema definitions.
+- Transform classes.
 - Generated PySpark classes.
 - Source-order subtransforms.
-- Typed intermediate schemas.
-- Intermediate schema validation by default.
-- `where(...)` filtering.
-- Add/drop columns through schema projection.
-- `join_one(...)` joins.
-- Serial joins across arbitrary numbers of inputs.
-- `@expr_fn` expression helpers.
+- Intermediate schema validation.
+- Filtering with `where(...)`.
+- Add/drop columns via schema projection.
+- Symbolic `join_one(...)`.
+- N-step serial joins.
+- `@expr_fn` helpers.
 - `@before(method)` and `@after(method)` hooks.
-- Clean no-hook generated code.
-- Structured compiler errors.
-- Config workaround hints in errors where applicable.
-- Seed config and optional TOML configuration.
 - Basic LDJSON lineage.
-- Streaming-compatible generated transforms when caller provides streaming DataFrames.
-- CLI check/compile/explain/init.
-- Build and CI integration.
+- Streaming-compatible generated transforms.
+- TOML configuration.
+- Incremental compiler support.
 
 ## v2
 
-- Typed aggregation subtransforms.
-- Advanced aggregation and grouping.
-- Window functions.
+- Aggregations.
+- Advanced grouping.
+- Windowing.
 - Deduplication helpers.
-- Higher-order functions for array and map fields.
-- Cache and persist hints.
-- Join strategy controls and additional Spark hints.
+- Spark higher-order functions for arrays/maps.
+- Explicit caching/persistence annotations.
+- Join strategy annotations.
 - Optional field-level lineage.
-- More optimization diagnostics.
+- More detailed performance diagnostics.
 
 ## v3
 
-- Generated streaming source declarations.
-- Generated streaming sink declarations.
+- Streaming source definitions.
+- Streaming sink definitions.
 - Generated `readStream` and `writeStream` code.
 - Triggers.
 - Checkpoints.
 - Watermarks.
 - Stateful streaming policies.
-- Streaming job packaging patterns.
