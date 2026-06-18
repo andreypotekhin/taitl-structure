@@ -65,7 +65,7 @@ Automation instructions
 
 - Take a suggestion from /docs/dev/suggestions/planned
 - Create ExecPlan to implement the suggestion, as described in /docs/dev/auto/Plans.md
-- Output the resulting ExecPlan to /docs/dev/planning/ with short descriptive name
+- Output the resulting ExecPlan to /docs/dev/planning/ with short descriptive name and .plan.md extension
 - Switch to Plan Mode (as in /plan-mode)
 - Discuss and refine the plan with human user
 - Upon approval from human user, implement the plan

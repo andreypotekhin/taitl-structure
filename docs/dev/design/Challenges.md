@@ -89,7 +89,7 @@ This scales better for nested schemas, Spark `StructType` generation, IDE behavi
 ## C3. Nullability and Type Coercion Rules Are Missing
 
 Resolved by `docs/dev/design/specifications/NullabilityAndTypeCoercion.spec.md` and planned by
-`docs/dev/planning/P06172601.Nullability-and-type-coercion-rules.md`.
+`docs/dev/planning/P06172601.Nullability-and-type-coercion-rules.plan.md`.
 
 Structure uses Spark SQL assumptions configured under `[tool.structure]` with Spark-native dotted key names:
 
@@ -308,7 +308,7 @@ Deferred or rejected in v1:
 
 ## C12. Compiler Lineage Schema Needs Versioning
 
-Resolved by `docs/dev/planning/P06182601.Compiler-provenance-static-dataflow-lineage.md`.
+Resolved by `docs/dev/planning/P06182601.Compiler-provenance-static-dataflow-lineage.plan.md`.
 
 Lineage is split into three topics:
 

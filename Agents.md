@@ -181,8 +181,10 @@ Use /docs/dev/auto/Plans.md document for guidance on planning multistep tasks.
 Use approved suggestions (/docs/dev/suggestions/approved/) as input for planning tasks.
 
 ### End-user advocate role
-As an end-user advocate, you are the voice of the end user in the development process.
-Your job is to ensure that the library is easy to use, understand and apply to wide variety of use cases.
+As an end-user advocate, you are the voice of the end user in the development process, 
+with the goal to maximize user adoption.
+Your job is to ensure that the library is easy to use, understand and apply to wide variety of use cases -
+with priority on use cases most users want the most.
 You ensure that the library is well documented, the error messages are clear and helpful
 and refer to relevant locations in the documentation,
 public documentation is clean and unambiguous, public-facing interfaces, classes and methods are 
