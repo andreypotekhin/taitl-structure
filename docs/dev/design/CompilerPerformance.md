@@ -9,7 +9,8 @@ Compile-time performance is a product metric. Users value fast compilers because
 - `structure check` should be fast enough for local use.
 - `structure compile` should avoid rewriting unchanged files.
 - Warm incremental compile should be much faster than cold compile.
-- The compiler should never start Spark during normal check/compile.
+- The compiler should never require PySpark, Java, SparkSession, a Spark cluster, or Spark startup during normal
+  check/compile.
 
 ## Metrics
 
@@ -39,7 +40,8 @@ Track:
 - Parallel code generation.
 - Write-if-changed output.
 - Format-if-changed output.
-- Avoid Spark startup.
+- Avoid PySpark imports and Spark startup.
+- Model target PySpark behavior through static emitter capability metadata.
 - Avoid heavyweight AST parsing unless diagnostics require it.
 
 ## CLI

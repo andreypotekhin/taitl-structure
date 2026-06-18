@@ -231,7 +231,8 @@ Structure is intentionally strict. Compiled subtransforms must lower to Spark-pl
 
 This is a performance feature. Spark can optimize transformations only when work remains visible in the DataFrame logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, and whole-stage code generation all depend on expressing work through Spark's relational expression model.
 
-Arbitrary PySpark is still supported, but only through explicit hooks.
+Arbitrary PySpark is still supported, but only through explicit hooks. Hooks receive the current DataFrame by default;
+advanced hooks can opt into original named input DataFrames with `pass_inputs=True`.
 
 ## Default Project Layout
 
@@ -265,11 +266,25 @@ Structure works by convention. For repeatable builds, use `pyproject.toml`:
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
+target_backend = "pyspark"
+target_pyspark = ">=3.5,<4.1"
 lineage = "basic"
+validate_intermediate = true
+intermediate_validation_mode = "schema_only"
 strict_performance = true
 ```
 
 See `pyproject.seed.toml` for all defaults.
+
+## Compatibility
+
+Structure v1 targets Python 3.11+, PySpark 3.5.x and 4.0.x, Linux runtimes, and Linux/macOS development
+environments. Airflow is supported as a caller of generated code, not as a hard dependency.
+
+Spark Connect support is scheduled for v3 unless it can be added earlier without changing the public DSL, generated
+class API, or generated-code review model.
+
+See `docs/Compatibility.md` for the full versioning and compatibility policy.
 
 ## CLI
 
@@ -282,6 +297,9 @@ structure explain pipeline_src.transforms.order.EnrichOrders
 
 ## Roadmap
 
-- **v1:** projection, filtering, joins, typed intermediate schemas, generated PySpark classes, hooks, validation, basic LDJSON lineage, streaming-compatible transforms.
-- **v2:** aggregations, windowing, advanced grouping, Spark higher-order functions, caching/persistence hints, join strategy annotations, richer lineage.
-- **v3:** full streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, and stateful policies.
+- **v1:** projection, filtering, joins, typed intermediate schemas, generated PySpark classes, hooks, validation,
+  basic LDJSON lineage, streaming-compatible transforms.
+- **v2:** aggregations, windowing, advanced grouping, Spark higher-order functions, caching/persistence hints,
+  join strategy annotations, richer lineage.
+- **v3:** full streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks,
+  stateful policies, and Spark Connect support.

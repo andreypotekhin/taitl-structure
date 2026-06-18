@@ -173,17 +173,20 @@ The compiler may later use AST/LibCST for lower-risk discovery, but v1 can use i
 
 ## C7. Generated Code Ownership Rules Need to Be Explicit
 
-Before coding, decide and document generated-code ownership.
+Resolved by decision `docs/dev/design/decisions/D06182601.Generated-code-ownership.md`.
 
-Recommended rules:
+Structure treats generated PySpark as committed, reviewable build output owned by the compiler. Developers review it,
+import it, test it, and regenerate it, but do not hand-edit it.
+
+Ownership rules:
 
 - Generated code is committed to git.
-- Generated code is never edited manually.
+- Generated code is never edited manually; change Structure source, configuration, or the generator instead.
 - Generated code is formatted deterministically.
 - CI runs `structure compile --fail-on-diff`.
 - Generated-code diffs are reviewed like other build artifacts.
 
-This should be part of the Definition of Done.
+These rules are part of the Definition of Done.
 
 ## C8. Hook Access to Original Inputs May Need an Escape Hatch
 
@@ -254,40 +257,54 @@ Default validation should be schema-only:
 
 It should not validate every row unless explicitly requested.
 
-Suggested config:
+Project configuration should expose both an off switch and a validation-depth mode:
 
 ```toml
-validation_mode = "schema_only"
+validate_intermediate = true
+intermediate_validation_mode = "schema_only"
 ```
 
-Potential future mode:
+Fuller validation mode:
 
 ```toml
-validation_mode = "schema_and_constraints"
+intermediate_validation_mode = "schema_and_constraints"
 ```
+
+Intermediate schema validation can be disabled project-wide:
+
+```toml
+validate_intermediate = false
+```
+
+This resolves the performance concern without weakening compile-time field and type checks.
 
 ## C11. Streaming Compatibility Needs a Precise v1 Definition
 
-Structure v1/v2 should support generated transforms that can operate on streaming DataFrames when the operations are compatible, but should not generate full streaming orchestration.
+Resolved by `docs/dev/design/specifications/StreamingCompatibility.spec.md` and decision
+`docs/dev/design/decisions/D06182604.Streaming-compatibility-v1.md`.
 
-Define v1 streaming-compatible operations:
+Structure v1 streaming compatibility means generated DataFrame transforms can run inside a caller-owned Spark
+Structured Streaming query when the current pipeline DataFrame is streaming, side lookup inputs are static, and every
+generated operation is compatible with that runtime shape.
 
-- `select` / projection: yes;
-- `where` / filter: yes;
-- expression-based derived columns: yes;
-- stream-static joins: maybe, with checks;
-- stream-stream joins: not v1 unless explicitly checked;
-- global `orderBy`: no;
-- aggregations: v2, with restrictions;
-- hooks: opaque unless explicitly marked safe.
+Included in v1:
 
-Potential hook annotation:
+- row-local projection;
+- row-local filtering;
+- expression-based derived columns;
+- schema-only validation;
+- stream-static `Join.LEFT` and `Join.INNER` lookup joins;
+- hooks explicitly marked `streaming_safe=True`.
 
-```python
-@after(step, streaming_safe=True)
-def hook(self, *, df, spark, ctx):
-    ...
-```
+Deferred or rejected in v1:
+
+- streaming source and sink orchestration;
+- stream-stream joins;
+- watermarks and output modes;
+- global `orderBy`;
+- aggregations and windowed aggregations;
+- deduplication, limits, Spark actions, RDD conversion, Python UDFs, and Pandas UDFs;
+- hooks without an explicit streaming-safety promise.
 
 ## C12. Lineage Event Schema Needs Versioning
 
@@ -353,7 +370,11 @@ At minimum, design the compiler so incremental compilation can be added without 
 
 ## C15. Need a “No Spark Dependency During Compile” Rule
 
-`structure check` should not require a SparkSession, Spark cluster, Java runtime, or PySpark import if avoidable.
+Resolved by decision `docs/dev/design/decisions/D06182606.No-spark-compile-dependency.md`.
+
+`structure check` and `structure compile` must not require a SparkSession, Spark cluster, Java runtime, or PySpark
+import. The compiler operates on Structure DSL objects, source metadata, backend-neutral IR, and emitter capability
+metadata. Generated-code execution tests can require Spark, but compiler checks must not.
 
 Reasons:
 
@@ -363,7 +384,8 @@ Reasons:
 - no Spark startup just to check DSL code;
 - easier adoption in Python project builds.
 
-Generated-code execution tests can require Spark, but compiler checks should not.
+This rule affects discovery, schema extraction, symbolic execution, compileability checks, IR construction, code
+generation, lineage generation, and `structure compile --fail-on-diff`.
 
 ## C16. Generated PySpark Examples Should Include Code-Size Comparison
 
@@ -438,24 +460,18 @@ Config resolution order should also be explicit:
 
 ## C19. Versioning and Compatibility Policy Are Missing
 
-Before open-source coding starts, define:
+Resolved by public policy `docs/Compatibility.md`, specification
+`docs/dev/design/specifications/CompatibilityPolicy.spec.md`, and decision
+`docs/dev/design/decisions/D06182605.Versioning-and-compatibility-policy.md`.
 
-- supported Python versions;
-- supported PySpark versions;
-- whether Spark Connect is supported;
-- semantic versioning policy;
-- generated-code compatibility policy;
-- lineage schema versioning;
-- config schema versioning.
+v1 baseline:
 
-Suggested v1 baseline:
-
-```text
-Python: 3.11+
-PySpark: 3.5.x and 4.0.x target
-Airflow: no hard dependency
-OS: Linux/macOS development, Linux runtime
-```
+- Python 3.11+.
+- PySpark 3.5.x and 4.0.x target, with `target_pyspark = ">=3.5,<4.1"` by default.
+- Airflow has no hard dependency.
+- Linux is the runtime target; Linux and macOS are development targets.
+- Spark Connect is scheduled for v3 unless it can be added earlier without changing the public DSL, generated class API,
+  or generated-code review model.
 
 ## C20. Licensing and Governance Are Not Decided
 
@@ -484,7 +500,7 @@ devdocs/
   JoinSemantics.md
   HookSemantics.md
   ConfigSchema.md
-  CompatibilityPolicy.md
+  design/specifications/CompatibilityPolicy.spec.md
   CompilerPerformanceTargets.md
 ```
 
@@ -507,7 +523,7 @@ SPIKE: Prove @after(method) inside class bodies.
 SPIKE: Prove @expr_fn class-local helper without self parameter.
 SPIKE: Prove source-order method discovery with line numbers.
 SPIKE: Prove source-root discovery and generated `structure_generated.<source package>` import paths.
-SPIKE: Prove compiler can run without PySpark/SparkSession.
+SPIKE: Prove compiler can run without PySpark, Java, SparkSession, Spark startup, or a Spark cluster.
 SPIKE: Prove minimal generated PySpark execution test with local Spark.
 ```
 

@@ -6,18 +6,22 @@
 - SPIKE: Prove class-local `@expr_fn` helpers work without a `self` parameter.
 - SPIKE: Prove source-order method discovery with stable line numbers.
 - SPIKE: Prove source-root discovery and generated `structure_generated.<source package>` import paths.
-- SPIKE: Prove `structure check` can run without PySpark, SparkSession, Java, or Spark startup.
+- SPIKE: Prove `structure check` and `structure compile` can run without PySpark, Java, SparkSession, Spark startup,
+  or a Spark cluster.
 - SPIKE: Prove a minimal generated PySpark execution test with local Spark.
 - Implement the documented schema declaration syntax from `SchemaDeclarationSyntax.spec.md`.
 - Implement nullability and coercion rules from `NullabilityAndTypeCoercion.spec.md`.
 - Decide and document generated-code ownership rules before CI integration.
-- Decide and document compatibility, versioning, and license policy before open-source packaging.
+- Implement compatibility, versioning, and license policy before open-source packaging.
 
 ## Epic: Project Foundation
 
 - Create Python package skeleton.
 - Add CLI entrypoint.
 - Add TOML configuration loader.
+- Add explicit config resolution order: CLI flags, `[tool.structure]` in `pyproject.toml`, `structure.toml`, defaults.
+- Add config schema validation for unknown keys and invalid values.
+- Add structured config diagnostics with allowed values for enum-like settings.
 - Add seed config generator.
 - Add CI test workflow.
 - Add formatting/linting setup.
@@ -122,6 +126,7 @@
 - Implement `structure compile`.
 - Implement `structure explain`.
 - Implement `structure compile --fail-on-diff`.
+- Add no-Spark guard tests for compiler commands.
 - Add pytest helper or plugin later.
 
 ## v2 Backlog
@@ -138,6 +143,7 @@
 
 ## v3 Backlog
 
+- Spark Connect support.
 - Streaming source declarations.
 - Streaming sink declarations.
 - Generated `readStream`.

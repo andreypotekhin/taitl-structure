@@ -180,7 +180,9 @@ Structure validates schemas at multiple layers:
 4. Runtime intermediate schema validation by default.
 5. Runtime final output schema validation.
 
-Intermediate validation is enabled by default because each subtransform has a typed return schema. It can be disabled class-wide or per subtransform when needed.
+Intermediate validation is enabled by default because each subtransform has a typed return schema. It uses schema-only
+checks by default, can opt into fuller constraint validation, and can be disabled project-wide, class-wide, or per
+subtransform when needed.
 
 ## Filtering
 
@@ -230,7 +232,20 @@ def hook_name(self, *, df, spark, ctx) -> DataFrame:
     ...
 ```
 
-Hooks receive the current DataFrame, SparkSession, and optional context. They do not receive every named input by default. This keeps the hook ABI small and stable.
+Hooks receive the current DataFrame, SparkSession, and optional context. They do not receive every named input by
+default. This keeps the hook ABI small and stable.
+
+Hooks that need original named inputs opt in explicitly:
+
+```python
+@after(normalize, pass_inputs=True)
+def custom_check(self, *, df, inputs, spark, ctx) -> DataFrame:
+    orders = inputs.orders
+    return df
+```
+
+The `inputs` namespace contains the original `run(...)` input DataFrames after input validation. It is intentionally
+not passed unless requested.
 
 ## Joins
 
@@ -266,6 +281,18 @@ The caller owns:
 - lifecycle
 
 Full streaming orchestration belongs to v3.
+
+## Compatibility Policy
+
+Structure v1 targets Python 3.11+ and generated PySpark for PySpark 3.5.x and 4.0.x. The default project setting is
+`target_pyspark = ">=3.5,<4.1"`.
+
+Generated code targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Spark Connect support is
+scheduled for v3 with backend and orchestration work, unless it can be added earlier without changing Structure source
+syntax, generated class construction, `run(...)` signatures, or generated-code reviewability.
+
+Generated PySpark, lineage LDJSON, and configuration each have explicit versioning rules. The public policy lives in
+`docs/Compatibility.md`.
 
 ## Lineage
 
@@ -335,6 +362,7 @@ For validation-related errors, a configuration workaround may exist:
 ```text
 Configuration workaround:
   Set validate_intermediate = false to skip intermediate runtime schema validation.
+  Set intermediate_validation_mode = "schema_only" to avoid row-level intermediate checks.
   This does not change compile-time field/type checking.
 ```
 
@@ -376,7 +404,8 @@ Aggregations, windowing, advanced grouping, Spark higher-order functions, cachin
 
 ### v3
 
-Full streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, and advanced stateful streaming policies.
+Full streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, advanced stateful
+streaming policies, and Spark Connect support.
 
 ## Summary
 

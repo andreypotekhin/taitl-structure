@@ -18,7 +18,7 @@ packages = [
 structure = 'structure.cli:cli'
 
 [tool.poetry.dependencies]
-python = ">=3.12,<4.0.0"
+python = ">=3.11,<4.0.0"
 click= "^8.1"
 rich = "^13.9.4"
 toml = "^0.10.2"
@@ -65,7 +65,7 @@ max-line-length = 120
 count = true
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.11"
 pretty = true
 disallow_untyped_defs = false
 check_untyped_defs = true

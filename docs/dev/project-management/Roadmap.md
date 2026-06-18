@@ -24,8 +24,9 @@ Required spikes:
 - Prove class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
 - Prove source-order discovery with stable line numbers.
 - Prove source-root discovery and generated `structure_generated.<source package>` import paths.
-- Prove compiler checks can run without PySpark, SparkSession, Java, or Spark startup.
+- Prove compiler checks and compile can run without PySpark, Java, SparkSession, Spark startup, or a Spark cluster.
 - Prove a minimal generated PySpark execution test with local Spark.
+- Document and wire the v1 compatibility policy before packaging decisions harden.
 
 By default, Structure should use `src` when it contains importable packages and otherwise use the project root.
 Generated code should live under `generated/structure_generated` and mirror source package paths below that
@@ -56,8 +57,10 @@ v1 focuses on schema-driven projection, filtering, joins, hooks, generated PySpa
 - N-step serial joins across arbitrary named inputs.
 - Basic LDJSON lineage.
 - CLI `check`, `compile`, `explain`.
-- Small TOML configuration with seed defaults.
+- Small TOML configuration with seed defaults, explicit resolution order, and schema validation diagnostics.
+- Python 3.11+ and PySpark 3.5.x/4.0.x compatibility policy.
 - Build/CI support including `--fail-on-diff`.
+- Spark-free compiler commands for `check`, `compile`, and `compile --fail-on-diff`.
 - Streaming-compatible generated transforms when Spark operations support streaming inputs.
 
 ## v2 Scope
@@ -77,11 +80,13 @@ v2 extends the compiler IR and emitter with advanced Spark operations while pres
 
 ## v3 Scope
 
-v3 may introduce streaming orchestration. v1/v2 only maintain streaming compatibility when callers pass streaming DataFrames.
+v3 may introduce streaming orchestration and Spark Connect support. v1/v2 only maintain streaming compatibility when
+callers pass streaming DataFrames.
 
 ### v3 candidate features
 
 - Generated `readStream` and `writeStream` code.
+- Spark Connect support.
 - Streaming sinks/sources configuration.
 - Trigger configuration.
 - Checkpoint configuration.

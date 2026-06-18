@@ -100,6 +100,25 @@ df = orders.where(
 
 Structure validates intermediate schemas by default.
 
+Project-wide defaults:
+
+```toml
+validate_intermediate = true
+intermediate_validation_mode = "schema_only"
+```
+
+Disable intermediate schema validation project-wide:
+
+```toml
+validate_intermediate = false
+```
+
+Choose fuller validation only when the added Spark work is intentional:
+
+```toml
+intermediate_validation_mode = "schema_and_constraints"
+```
+
 ```python
 @transform(validate_intermediate=True)
 class EnrichOrders(Transform):
@@ -234,11 +253,35 @@ def hook_name(self, *, df, spark, ctx):
 
 Hooks receive `self`, `df`, `spark`, and `ctx`. Named input DataFrames are not passed to hooks by default.
 
+When a hook needs the original named inputs, opt in explicitly:
+
+```python
+@after(normalize, pass_inputs=True)
+def check_against_raw_orders(self, *, df, inputs, spark, ctx):
+    raw = inputs.orders
+    return df
+```
+
+`inputs` is a read-only namespace matching the transform's declared input names. It contains the original `run(...)`
+input DataFrames, not the current intermediate `df`.
+
 ## Streaming Compatibility
 
 Generated transforms operate on DataFrames. If the input DataFrame is streaming and all generated operations are supported by Spark Structured Streaming, the generated transform can be used in a streaming pipeline.
 
 Structure v1/v2 do not generate `readStream` or `writeStream`; the caller owns streaming orchestration.
+
+## Compatibility
+
+v1 generated code targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs for PySpark 3.5.x and 4.0.x
+by default:
+
+```toml
+target_pyspark = ">=3.5,<4.1"
+```
+
+Spark Connect support is planned for v3 unless it can be added earlier without changing the public DSL or generated
+class API. See `docs/Compatibility.md`.
 
 ## v2 Manual Optimization Features
 

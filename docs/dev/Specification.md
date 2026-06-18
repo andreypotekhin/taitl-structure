@@ -16,9 +16,14 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can configure Structure through `[tool.structure]` in `pyproject.toml` so that settings live with my Python project.
 - As a developer, I can configure Structure through `structure.toml` so that non-`pyproject` layouts are supported.
 - As a developer, I can override configuration with CLI flags so that CI and local commands can vary behavior.
+- As a developer, I can rely on explicit config resolution order of CLI flags, `[tool.structure]` in `pyproject.toml`,
+  `structure.toml`, then defaults.
+- As a developer, I can receive structured diagnostics for unknown config keys and invalid values so that configuration mistakes are easy to fix.
+- As a developer, I can see allowed values for enum-like config settings so that values such as lineage levels are corrected quickly.
 - As a developer, I can set `source_roots` so that transform source files are discovered predictably.
 - As a developer, I can set `generated_dir` so that generated files are written predictably.
 - As a developer, I can set `target_pyspark` so that generated code targets an intended PySpark version range.
+- As a developer, I can receive an error when a requested feature cannot be generated for the configured PySpark target.
 - As a developer, I can set validation defaults so that schema enforcement is project-wide and repeatable.
 - As a developer, I can set lineage level so that output detail is controlled.
 - As a developer, I can set `fail_on_diff` so that CI catches stale generated code.
@@ -81,9 +86,15 @@ This document is a user-story specification for SDLC planning. Early sections co
 ## 9. Schema Validation
 
 - As a developer, I can have input schemas validated at runtime so that invalid source data is detected early.
-- As a developer, I can have intermediate schemas validated after each subtransform by default so that multi-step pipelines remain schema-safe.
-- As a developer, I can disable intermediate validation class-wide so that performance-sensitive pipelines can reduce validation overhead.
+- As a developer, I can have intermediate schemas validated after each subtransform by default so that multi-step
+  pipelines remain schema-safe.
+- As a developer, I can use schema-only intermediate validation by default so that validation avoids unnecessary row scans.
+- As a developer, I can opt into fuller intermediate validation so that row-level constraints can be checked when needed.
+- As a developer, I can disable intermediate validation class-wide so that performance-sensitive pipelines can reduce
+  validation overhead.
 - As a developer, I can override validation for an individual subtransform so that known temporary exceptions are possible.
+- As a developer, I can disable intermediate schema validation project-wide so that large pipelines can remove the
+  generated boundary checks.
 - As a developer, I can have final output schema validation enabled by default so that generated outputs conform to their declared contract.
 
 ## 10. Generated Code
@@ -135,6 +146,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 
 - As a developer, I can attach a hook to a subtransform using `@before(method)` or `@after(method)` so that custom PySpark code is tied to a concrete method.
 - As a developer, I can write hook methods with signature `def hook(self, *, df, spark, ctx)` so that hook parameters are minimal and stable.
+- As a developer, I can opt a hook into original input access with `pass_inputs=True` so that unusual validation or
+  lookup logic can use named source DataFrames.
 - As a developer, I can use arbitrary PySpark DataFrame code inside hooks so that escape hatches are available.
 - As a developer, I can expect generated code to call hooks directly on the source transform instance so that hook behavior is transparent.
 
@@ -143,6 +156,16 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can pass a streaming DataFrame to generated transforms when operations are Spark streaming-compatible.
 - As a developer, I can enable streaming compatibility checks so that unsupported streaming operations are caught early.
 - As a developer, I can keep streaming orchestration outside Structure in v1 and v2 so that callers own `readStream`, `writeStream`, triggers, and checkpoints.
+
+## 17A. Versioning and Compatibility
+
+- As a developer, I can rely on a documented Python support range so that runtime expectations are clear.
+- As a developer, I can rely on a documented PySpark support range so that generated code uses compatible APIs.
+- As a developer, I can configure `target_pyspark` so that the emitter avoids APIs outside my deployment range.
+- As a developer, I can see that Spark Connect is planned for v3 so that v1/v2 generated-code expectations are clear.
+- As a developer, I can rely on semantic versioning after 1.0 so that upgrades carry predictable risk.
+- As a developer, I can rely on versioned lineage LDJSON so that downstream lineage consumers can evolve safely.
+- As a developer, I can rely on config schema compatibility rules so that project configuration changes are intentional.
 
 ## 18. Lineage
 
@@ -155,6 +178,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 
 - As a developer, I can run `structure check` in CI so that compile errors are caught before tests.
 - As a developer, I can run `structure compile --fail-on-diff` in CI so that generated code is kept in sync.
+- As a developer, I can run compiler commands without PySpark, Java, SparkSession, Spark startup, or a Spark cluster so
+  that ordinary Python CI can validate source quickly.
 - As a developer, I can run Structure as part of Python project build scripts so that generation fits normal development workflows.
 - As a developer, I can use seed config defaults so that project configuration remains small.
 
@@ -173,6 +198,9 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can test generated PySpark code against small Spark DataFrames so that transformation behavior is verified.
 - As a developer, I can snapshot generated code so that generator changes are reviewable.
 - As a developer, I can assert schema validation behavior so that invalid inputs fail as expected.
+- As a developer, I can assert configuration validation behavior so that invalid settings fail with structured diagnostics.
+- As a developer, I can run intentionally broken transform tests so that compiler diagnostics stay actionable.
+- As a developer, I can assert warning diagnostics so that risky but compileable code remains visible in tests.
 
 ## 22. v2 Roadmap
 
@@ -186,6 +214,7 @@ This document is a user-story specification for SDLC planning. Early sections co
 
 ## 23. v3 Roadmap
 
+- As a developer, I can target Spark Connect when Structure defines and tests a compatible generated-code contract.
 - As a developer, I can define streaming sources so that Structure can generate `readStream` code.
 - As a developer, I can define streaming sinks so that Structure can generate `writeStream` code.
 - As a developer, I can define triggers and checkpoint locations so that streaming jobs are deployable from generated code.

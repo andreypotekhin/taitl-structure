@@ -12,6 +12,8 @@
 - Generated transform class.
 - Input and output validation.
 - CLI `check` and `compile`.
+- TOML config loading with explicit precedence and schema validation diagnostics.
+- Compatibility policy enforcement for Python and target PySpark configuration.
 
 ## Phase 2: v1 Complete
 
@@ -27,7 +29,7 @@
 - Structured compiler errors.
 - Streaming compatibility checks.
 - Basic LDJSON lineage.
-- TOML configuration.
+- TOML configuration hardening.
 - Incremental compile.
 
 ## Phase 3: v2
@@ -42,6 +44,7 @@
 
 ## Phase 4: v3
 
+- Spark Connect support.
 - Generated stream reads/writes.
 - Watermarks.
 - Triggers.
@@ -59,6 +62,10 @@ structure compile --fail-on-diff
 ```
 
 Later, add optional pytest and build-tool integrations.
+
+Compiler build integration must stay Spark-free. `structure check`, `structure compile`, and
+`structure compile --fail-on-diff` must not require PySpark, Java, a SparkSession, or a Spark cluster. Generated-code
+import and PySpark execution tests may require those dependencies and should remain separate from compiler checks.
 
 ## Compile-Time Performance Metrics
 

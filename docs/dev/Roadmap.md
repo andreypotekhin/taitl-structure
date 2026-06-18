@@ -5,6 +5,7 @@
 - Typed schema definitions.
 - Transform classes.
 - Generated PySpark classes.
+- Python 3.11+ and PySpark 3.5.x/4.0.x compatibility policy.
 - Source-order subtransforms.
 - Intermediate schema validation.
 - Filtering with `where(...)`.
@@ -15,7 +16,7 @@
 - `@before(method)` and `@after(method)` hooks.
 - Basic LDJSON lineage.
 - Streaming-compatible generated transforms.
-- TOML configuration.
+- TOML configuration with explicit precedence and schema validation diagnostics.
 - Incremental compiler support.
 
 ## v2
@@ -32,6 +33,7 @@
 
 ## v3
 
+- Spark Connect support.
 - Streaming source definitions.
 - Streaming sink definitions.
 - Generated `readStream` and `writeStream` code.

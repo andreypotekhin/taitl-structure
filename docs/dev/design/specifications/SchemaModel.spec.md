@@ -257,7 +257,7 @@ Schema extraction should be cacheable by source fingerprint.
 
 Targets:
 
-- extraction should not import PySpark;
+- extraction should not import PySpark, start Java, create a SparkSession, or contact a Spark cluster;
 - type objects should be lightweight immutable values;
 - inheritance resolution should be linear in the number of schema classes plus field declarations;
 - generated Spark `StructType` text should be deterministic and cheap to emit.
@@ -281,5 +281,5 @@ Targets:
 - An inherited schema produces a `SchemaDef` with effective inherited fields.
 - Field origin metadata is retained for inherited and overridden fields.
 - Generated Spark `StructType` field order matches `SchemaDef.fields`.
-- Schema extraction works without PySpark.
+- Schema extraction works without PySpark, Java, a SparkSession, or Spark startup.
 - Invalid field declarations fail during `structure check` with actionable diagnostics.

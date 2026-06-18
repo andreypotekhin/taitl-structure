@@ -4,7 +4,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 
 | Sprint | Spec Areas | Main Deliverables |
 |---|---|---|
-| Sprint 00 Groundwork | Setup, Configuration, Source Layout, Build Integration, Testing, Pre-Coding Spikes | repo skeleton, CLI skeleton, config loader, CI, source-root discovery, spike notes |
+| Sprint 00 Groundwork | Setup, Configuration, Compatibility, Source Layout, Build Integration, Testing, Spikes | repo skeleton, CLI skeleton, config loader, compatibility policy, CI, source-root discovery, spike notes |
 | Sprint 01 Vertical Slice 1 | Schemas, Transform Classes, Inputs, Generated Code, Testing | simple schema, one transform, generated class, Spark execution test |
 | Sprint 02 Schemas and Validation | Schema Validation, Generated Code, Configuration | `StructType` generation, `assert_schema`, intermediate validation defaults |
 | Sprint 03 Expressions/Filtering/Helpers | Symbolic Execution, Expression Helpers, Filtering, Error Reporting | expression IR, `where`, `@expr_fn`, structured unsupported-code errors |
@@ -18,7 +18,12 @@ This matrix maps early sprints to specification sections and major deliverables.
 - As a developer, I can install Structure as a Python package.
 - As a developer, I can rely on conventional source-root discovery by default.
 - As a developer, I can override defaults with small TOML configuration.
+- As a developer, I can rely on explicit configuration precedence.
+- As a developer, I can receive structured diagnostics for invalid configuration.
+- As a developer, I can rely on documented Python and PySpark support ranges.
+- As a developer, I can configure `target_pyspark`.
 - As a developer, I can run `structure check`.
+- As a developer, I can run compiler commands without PySpark, Java, SparkSession, Spark startup, or a Spark cluster.
 - As a maintainer, I can review Sprint 00 spike notes before vertical slice coding begins.
 
 ### Sprint 01
@@ -58,4 +63,5 @@ This matrix maps early sprints to specification sections and major deliverables.
 - As a developer, I can build serial joins across arbitrary numbers of named inputs.
 - As a developer, I can generate basic LDJSON lineage.
 - As a developer, I can run `structure compile --fail-on-diff` in CI.
+- As a developer, I can run compiler commands in ordinary Python CI without provisioning Spark.
 - As a developer, generated transforms remain streaming-compatible when Spark supports the operations used.

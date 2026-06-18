@@ -8,8 +8,11 @@
 - Python package imports successfully.
 - CLI skeleton runs.
 - Seed TOML config can be loaded.
+- Config resolution order is explicit and covered by tests.
+- Invalid config keys and values fail with structured diagnostics.
 - Test harness runs in CI.
 - Source-root discovery and generated output conventions are settled.
+- Python and PySpark compatibility policy is documented and reflected in seed configuration.
 - Sprint 00 spike notes are captured for decorators, expression helpers, source order, import paths, no-Spark compile, and local Spark execution.
 - Any spike result that changes v1 scope is reflected in Sprint 01 before coding begins.
 - Architecture docs are linked from project README.
@@ -78,3 +81,11 @@ NormalizeOrdersGenerated(spark=spark).run(orders=orders_df)
 - Basic LDJSON lineage is emitted.
 - `structure compile --fail-on-diff` works.
 - `structure explain` summarizes inputs, steps, filters, joins, hooks, and validation.
+
+## M6: v1 Stabilization
+
+### Exit Criteria
+
+- Compatibility docs, generated-code version headers, lineage schema versioning, and config schema compatibility are
+  checked against release artifacts.
+- Multi-version PySpark test strategy covers the documented v1 target range.

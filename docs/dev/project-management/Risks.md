@@ -54,6 +54,19 @@ Generated code may become incompatible with newer Spark versions.
 - Run multi-version CI.
 - Snapshot generated code per target version where necessary.
 
+## Risk: Spark Connect support distorts v1/v2 scope
+
+### Impact
+
+Early Spark Connect work could force generated class API changes before the ordinary PySpark contract is stable.
+
+### Mitigation
+
+- Schedule Spark Connect for v3.
+- Allow earlier work only if it stays inside the existing PySpark emitter boundary.
+- Require compatibility tests before public support is documented.
+- Keep public v1/v2 docs explicit that generated code targets ordinary PySpark APIs.
+
 ## Risk: Hooks compromise performance
 
 ### Impact
@@ -93,17 +106,18 @@ Class-body hook declarations or class-local expression helpers may require awkwa
 - Spike class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
 - Capture source locations and source order in the same spike notes.
 
-## Risk: Compiler accidentally depends on Spark during checks
+## Risk: Compiler accidentally depends on Spark during checks or compile
 
 ### Impact
 
-`structure check` becomes slow and hard to run in CI if it imports PySpark, starts Spark, requires Java, or needs a SparkSession.
+`structure check` or `structure compile` becomes slow and hard to run in CI if it imports PySpark, starts Spark,
+requires Java, needs a SparkSession, or contacts a Spark cluster.
 
 ### Mitigation
 
-- Treat no-Spark compile as a Sprint 00 proof.
+- Treat no-Spark check and compile as a Sprint 00 proof.
 - Keep Spark execution tests separate from compiler checks.
-- Add a guard test that fails if compiler checks import PySpark on the no-Spark path.
+- Add guard tests that fail if compiler commands import PySpark on the no-Spark path.
 
 ## Risk: Intermediate validation overhead is too high
 
@@ -114,6 +128,10 @@ Runtime performance may suffer on very large pipelines.
 ### Mitigation
 
 - Enable validation by default for safety.
+- Default intermediate validation to schema-only checks.
+- Allow explicit opt-in to schema-and-constraint validation.
 - Allow class-wide and method-level overrides.
+- Allow project-wide `validate_intermediate = false` for externally validated or performance-sensitive
+  pipelines.
 - Suggest config workaround in validation-related diagnostics.
 - Make validation implementation efficient and schema-only, not row-scanning.

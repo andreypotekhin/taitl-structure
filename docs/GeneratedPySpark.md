@@ -63,9 +63,24 @@ Generated code should:
 - validate intermediate schemas by default
 - validate outputs
 - call hooks only where hooks exist
+- pass original named inputs to hooks only when `pass_inputs=True`
 - avoid UDFs in compiled paths
 - avoid `collect`, `toPandas`, and `rdd` in compiled paths
 - include section comments for source subtransforms
+
+## Ownership Rules
+
+Generated PySpark is committed build output owned by the Structure compiler.
+
+Developers should:
+
+- commit generated files with the source or configuration changes that produced them
+- review generated-code diffs like other build artifacts
+- regenerate files with `structure compile`
+- run `structure compile --fail-on-diff` in CI
+
+Developers should not edit generated files by hand. If generated code is wrong, change the Structure source,
+configuration, or generator, then regenerate.
 
 ## Why Generated Code Is Longer
 

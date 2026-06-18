@@ -17,7 +17,11 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - Python package skeleton.
 - Source-root discovery for `src` and root-package projects.
 - Generated output under `generated/structure_generated`.
-- Config resolution from defaults, `pyproject.toml`, `structure.toml`, and CLI overrides.
+- Config resolution across CLI overrides, `pyproject.toml`, `structure.toml`, and built-in defaults.
+- Explicit config precedence: CLI flags, `[tool.structure]` in `pyproject.toml`, `structure.toml`, built-in defaults.
+- Config schema validation for unknown keys and invalid values.
+- Structured config diagnostics, including allowed values for enum-like settings such as lineage.
+- Compatibility policy for Python, PySpark, generated code, lineage schema, and config schema.
 - Seed config file generation.
 - CLI skeleton: `check`, `compile`, `explain`.
 - Empty generated directory conventions.
@@ -28,7 +32,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - Spike: class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
 - Spike: source-order discovery with stable line numbers.
 - Spike: source-root discovery and generated `structure_generated.<source package>` import paths.
-- Spike: compiler check path with no PySpark, SparkSession, Java, or Spark startup.
+- Spike: compiler check and compile paths with no PySpark, Java, SparkSession, Spark startup, or Spark cluster.
 - Spike: minimal generated PySpark execution test with local Spark.
 
 ### Out of Scope
@@ -44,6 +48,10 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - As a developer, I can install Structure as a Python package.
 - As a developer, I can rely on conventional source-root discovery by default.
 - As a developer, I can override defaults with a small TOML configuration.
+- As a developer, I can rely on explicit configuration precedence.
+- As a developer, I can receive structured diagnostics for invalid configuration.
+- As a developer, I can rely on documented Python and PySpark support ranges.
+- As a developer, I can configure the generated PySpark target range.
 - As a developer, I can generate or inspect seed configuration defaults.
 - As a developer, I can run `structure check`.
 - As a developer, I can run `structure compile` without crashing even before transforms exist.
@@ -58,9 +66,11 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - Config loader.
 - `pyproject.seed.toml`.
 - Basic logging and diagnostics framework.
+- Public compatibility policy.
 - Test directory and first tests.
 - CI workflow or documented CI commands.
-- Spike notes for decorator mechanics, expression helpers, source ordering, import paths, no-Spark compile, and local Spark execution.
+- Spike notes for decorator mechanics, expression helpers, source ordering, import paths, no-Spark compile, and local
+  Spark execution.
 
 ## Engineering Tasks
 
@@ -68,26 +78,35 @@ The team can also review short spike notes for the high-risk Python mechanics be
 2. Add CLI entrypoint.
 3. Implement config defaults.
 4. Implement config file discovery.
-5. Implement CLI overrides for source and generated directories.
-6. Add seed config output command or file.
-7. Add project layout docs.
-8. Add test harness.
-9. Add first CI command list.
-10. Add compile-time timing utility placeholder.
-11. Spike `@after(method)` inside class bodies.
-12. Spike class-local `@expr_fn` helper descriptor behavior.
-13. Spike source-order discovery with line numbers.
-14. Spike source-root discovery and generated `structure_generated.<source package>` import paths.
-15. Spike no-Spark compiler checks.
-16. Spike minimal local Spark generated-code execution.
+5. Implement explicit config precedence.
+6. Implement config schema validation.
+7. Add structured config diagnostics for unknown keys and invalid values.
+8. Implement compatibility config defaults and validation.
+9. Implement CLI overrides for source and generated directories.
+10. Add seed config output command or file.
+11. Add project layout docs.
+12. Add test harness.
+13. Add first CI command list.
+14. Add compile-time timing utility placeholder.
+15. Spike `@after(method)` inside class bodies.
+16. Spike class-local `@expr_fn` helper descriptor behavior.
+17. Spike source-order discovery with line numbers.
+18. Spike source-root discovery and generated `structure_generated.<source package>` import paths.
+19. Spike no-Spark compiler checks and compile.
+20. Spike minimal local Spark generated-code execution.
 
 ## Acceptance Criteria
 
 - `structure --help` works.
 - `structure check` works on an empty project.
 - `structure compile` creates or verifies the generated directory.
+- `structure check` and `structure compile` work without PySpark, Java, SparkSession, Spark startup, or a Spark cluster.
 - Config defaults can be printed or generated.
 - Default config uses conventional source-root discovery and `generated/structure_generated`.
+- Config precedence is documented and covered by tests.
+- Unknown config keys fail with structured diagnostics.
+- Invalid config values fail with allowed values when applicable.
+- Compatibility policy is documented and reflected in seed config defaults.
 - Tests pass locally.
 - CI can run lint/test commands.
 - Spike notes are committed and linked from Sprint 01 planning.

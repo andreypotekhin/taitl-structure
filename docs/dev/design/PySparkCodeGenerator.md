@@ -41,7 +41,16 @@ class EnrichOrdersGenerated:
 - Generate joins explicitly.
 - Generate schema validation after subtransforms by default.
 - Omit hook imports when no hooks exist.
+- Generate a read-only `HookInputs` namespace only when a hook declares `pass_inputs=True`.
 - Format generated code if configured.
+
+## Ownership Rules
+
+Generated PySpark is committed, reviewable build output owned by the compiler. The generator must make files stable
+enough for code review and snapshot tests, and it must never depend on manual edits inside `generated/`.
+
+If generated output needs to change, developers change Structure source, configuration, or generator code, then
+regenerate. CI should run `structure compile --fail-on-diff` to catch stale or manually edited generated files.
 
 ## PySpark Evolution Strategy
 

@@ -67,8 +67,20 @@ The compiler produces backend-neutral IR. The PySpark code generator lowers IR t
 
 This boundary is important for keeping up with PySpark evolution. PySpark API compatibility should be isolated in the PySpark emitter rather than scattered across discovery, symbolic execution, or checks.
 
+Compiler phases must not depend on a live Spark installation. Discovery, schema extraction, symbolic execution,
+compileability checks, IR construction, code generation, lineage generation, and generated-file diff checks run without
+PySpark imports, Java, a SparkSession, or a Spark cluster. Generated PySpark may depend on PySpark at runtime; the
+compiler itself must not.
+
+The v1 default target is `target_pyspark = ">=3.5,<4.1"`, covering PySpark 3.5.x and 4.0.x. The emitter should prefer
+the oldest clear optimizer-visible API inside the configured range.
+
+Spark Connect belongs to v3 unless it can be supported through this emitter boundary without changing public DSL syntax,
+generated class construction, or `run(...)` signatures.
+
 ## Compile-Time Performance
 
 Compile-time performance is a product metric.
 
-The compiler should avoid starting Spark during normal `check` and `compile`. It should use incremental fingerprints, cache discovered models, and only regenerate files whose content changes.
+The compiler should avoid Spark dependencies during normal `check` and `compile`. It should use incremental
+fingerprints, cache discovered models, and only regenerate files whose content changes.

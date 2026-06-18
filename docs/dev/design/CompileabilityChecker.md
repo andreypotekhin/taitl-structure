@@ -83,4 +83,6 @@ Only suggest config when it really applies. Examples:
 
 ## Compile-Time Performance
 
-Checks should run against IR and avoid Spark startup. Provide a profiling hook to identify slow checks.
+Checks should run against IR and avoid PySpark imports, Java, SparkSession creation, Spark cluster access, and Spark
+startup. Use static target capability metadata for PySpark version-specific rules, and provide a profiling hook to
+identify slow checks.

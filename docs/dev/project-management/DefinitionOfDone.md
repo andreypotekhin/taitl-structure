@@ -12,6 +12,9 @@ A story or task is done when all relevant criteria are satisfied.
 
 ## Generated Code Criteria
 
+- Generated code is committed with the source or configuration changes that produced it.
+- Generated code records Structure generator version and configured target where required.
+- Generated code is not edited manually; changes come from Structure source, configuration, or generator updates.
 - Generated code is deterministic.
 - Generated code is formatted.
 - Generated code is readable enough for review.
@@ -21,6 +24,8 @@ A story or task is done when all relevant criteria are satisfied.
 
 ## Compiler Criteria
 
+- `structure check`, `structure compile`, and generated-file diff checks run without PySpark, Java, SparkSession, or
+  Spark startup.
 - Compilation time is measured for relevant fixtures.
 - Compile-time regressions are avoided.
 - Unsupported Python operations fail with structured errors.
@@ -37,6 +42,8 @@ A story or task is done when all relevant criteria are satisfied.
 ## Documentation Criteria
 
 - Public behavior is documented in user docs.
+- Compatibility behavior is documented in public docs when a change affects Python, PySpark, generated code, lineage, or
+  config schema.
 - Internal behavior is documented in dev docs when design-relevant.
 - Specification/user-story references are updated.
 - Examples show both source Structure code and generated PySpark when clarity benefits.
@@ -45,9 +52,11 @@ A story or task is done when all relevant criteria are satisfied.
 
 - Unit tests pass.
 - Compiler tests pass.
+- `structure compile --fail-on-diff` passes when generated artifacts are in scope.
 - Generated code snapshot tests pass.
 - Generated code import tests pass.
 - PySpark execution tests pass where applicable.
+- Negative compiler and diagnostic tests cover relevant broken transforms and warnings.
 - CI scripts are updated if needed.
 
 ## Review Criteria

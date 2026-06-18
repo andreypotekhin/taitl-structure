@@ -3,7 +3,7 @@
 Structure works by convention and supports a small TOML configuration for project-wide settings.
 
 Use configuration for paths, package names, validation defaults, Spark SQL assumptions, target PySpark version,
-lineage settings, performance policy, and build behavior.
+lineage settings, performance policy, compatibility behavior, and build behavior.
 
 ## Defaults
 
@@ -71,10 +71,27 @@ IDE guidance:
 ```toml
 validate_inputs = true
 validate_intermediate = true
+intermediate_validation_mode = "schema_only"
 validate_outputs = true
 ```
 
 Intermediate validation is enabled by default because subtransform return types define intermediate schemas.
+Set `validate_intermediate = false` to disable intermediate schema validation for generated subtransform boundaries.
+
+`intermediate_validation_mode` controls the cost and depth of enabled intermediate validation:
+
+```text
+schema_only
+schema_and_constraints
+```
+
+Default: `schema_only`.
+
+`schema_only` validates schema shape only: column names, data types, nullable flags where Spark exposes them reliably,
+nested struct shape, and missing or extra columns. It must not trigger row scans.
+
+`schema_and_constraints` may add row-level constraint checks when Structure supports them. Use it deliberately on
+pipelines where the additional Spark work is worth the stronger runtime contract.
 
 ## Spark SQL Settings
 
@@ -87,6 +104,22 @@ Structure records Spark SQL assumptions using Spark's own dotted key names. Thes
 nullability and type-coercion checks and document what generated runtime code expects from the caller's Spark session.
 
 Structure does not create or reconfigure Spark sessions in v1.
+
+## Compatibility Settings
+
+```toml
+target_backend = "pyspark"
+target_pyspark = ">=3.5,<4.1"
+```
+
+`target_backend` selects the generated runtime backend. v1 supports `pyspark`.
+
+`target_pyspark` constrains which PySpark APIs generated code may use. The v1 default targets PySpark 3.5.x and 4.0.x.
+If a DSL feature cannot be generated for the configured range, `structure check` and `structure compile` should fail
+with a diagnostic that names the required PySpark version.
+
+Spark Connect is scheduled for v3 unless it can be added earlier without changing the public DSL, generated class API,
+or generated-code review model. See `docs/Compatibility.md`.
 
 ## Lineage Settings
 

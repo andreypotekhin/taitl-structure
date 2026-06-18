@@ -6,15 +6,17 @@ Structure requires layered testing because correctness spans source DSL semantic
 
 1. DSL unit tests.
 2. Schema model tests.
-3. Discovery tests.
-4. Symbolic execution tests.
-5. IR tests.
-6. Compileability checker tests.
-7. Generated-code snapshot tests.
-8. Syntax/import tests.
-9. PySpark execution tests.
-10. Performance guardrail tests.
-11. Compile-time performance benchmarks.
+3. Configuration validation tests.
+4. Discovery tests.
+5. Symbolic execution tests.
+6. IR tests.
+7. Compileability checker tests.
+8. Negative compiler and diagnostic tests.
+9. Generated-code snapshot tests.
+10. Syntax/import tests.
+11. PySpark execution tests.
+12. Performance guardrail tests.
+13. Compile-time performance benchmarks.
 
 ## Generated-Code Correctness
 
@@ -26,6 +28,26 @@ Generated code should be tested by:
 - small Spark DataFrame input/output tests
 - schema validation failure tests
 - lineage output tests
+
+## Negative Compiler and Diagnostic Tests
+
+Each supported DSL feature needs at least one intentionally broken transform test when it has a meaningful failure mode.
+These tests should assert the diagnostic code, location, problem summary, and suggested fix, not merely that compilation
+failed.
+
+Required v1 negative cases:
+
+- missing fields
+- wrong types
+- nullable-to-non-nullable assignment
+- invalid hook signatures
+- ambiguous public methods
+- bad source order
+- unsupported Python methods
+- `join_one(...)` without uniqueness warning
+- duplicate output fields
+- non-boolean filters
+- `@expr_fn` returning non-expression values
 
 ## Performance Guardrails
 
@@ -55,6 +77,11 @@ Test cold compile and warm incremental compile separately.
 
 Warm incremental compile should avoid symbolic execution and regeneration for unchanged transforms.
 
+Compiler tests must prove the no-Spark compile contract: `structure check`, `structure compile`, and
+`structure compile --fail-on-diff` run without PySpark, Java, a SparkSession, Spark startup, or a Spark cluster. Keep
+generated-code import tests and PySpark execution tests in separate suites because those may legitimately require
+PySpark and a local Spark runtime.
+
 ## CI
 
 Recommended CI pipeline:
@@ -64,8 +91,9 @@ Recommended CI pipeline:
 2. structure check
 3. structure compile --fail-on-diff
 4. pytest compiler tests
-5. pytest generated-code tests
-6. pytest PySpark execution tests
-7. compile-time benchmark smoke test
-8. package build
+5. pytest negative compiler and diagnostic tests
+6. pytest generated-code tests
+7. pytest PySpark execution tests
+8. compile-time benchmark smoke test
+9. package build
 ```

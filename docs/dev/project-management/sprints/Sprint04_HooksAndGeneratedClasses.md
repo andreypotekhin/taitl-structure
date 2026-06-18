@@ -19,6 +19,7 @@ Developers can attach arbitrary PySpark code to a concrete subtransform using `@
 - Direct source transform import when hooks exist.
 - `_impl = SourceTransform()` only when hooks exist.
 - Generated hook calls.
+- Opt-in original input access with `pass_inputs=True`.
 - Hook schema mode options.
 - Project output after hook when configured.
 - Clean no-hook generated code tests.
@@ -34,6 +35,7 @@ Developers can attach arbitrary PySpark code to a concrete subtransform using `@
 - As a developer, I can attach a hook with `@after(method)`.
 - As a developer, I can attach a hook with `@before(method)`.
 - As a developer, I can write hook signature `def hook(self, *, df, spark, ctx)`.
+- As a developer, I can opt a hook into original input access with `pass_inputs=True`.
 - As a developer, generated code directly calls source hooks when hooks exist.
 - As a developer, hook-free generated code remains clean.
 - As a developer, hooks are explicit arbitrary PySpark escape hatches.
@@ -46,10 +48,17 @@ def add_quality_columns(self, *, df, spark, ctx):
     return df.withColumn("_has_total", F.col("total").isNotNull())
 ```
 
+```python
+@after(normalize, pass_inputs=True)
+def compare_to_raw(self, *, df, inputs, spark, ctx):
+    return df
+```
+
 ## Example Generated PySpark
 
 ```python
 from pipeline_src.transforms.order import NormalizeOrders
+from structure_generated.runtime.hook_inputs import HookInputs
 
 class NormalizeOrdersGenerated:
 
@@ -62,6 +71,14 @@ class NormalizeOrdersGenerated:
         ...
         df = self._impl.add_quality_columns(
             df=df,
+            spark=self.spark,
+            ctx=self.ctx,
+        )
+
+        inputs = HookInputs(orders=orders)
+        df = self._impl.compare_to_raw(
+            df=df,
+            inputs=inputs,
             spark=self.spark,
             ctx=self.ctx,
         )
@@ -78,8 +95,9 @@ class NormalizeOrdersGenerated:
 6. Generate source import only when needed.
 7. Generate `_impl` only when needed.
 8. Generate direct hook call.
-9. Implement hook schema mode behavior.
-10. Add no-hook cleanliness snapshot tests.
+9. Generate original input namespace for `pass_inputs=True` hooks.
+10. Implement hook schema mode behavior.
+11. Add no-hook cleanliness snapshot tests.
 
 ## Acceptance Criteria
 
@@ -87,6 +105,7 @@ class NormalizeOrdersGenerated:
 - Hook-free transform generated code has no source import and no `_impl`.
 - Invalid hook signature fails with structured error.
 - Hook after a subtransform runs at the correct point.
+- Hooks with `pass_inputs=True` receive an `inputs` namespace with original named inputs.
 - Hook-added columns can be projected away before strict validation.
 
 ## Compile-Time Performance Metric

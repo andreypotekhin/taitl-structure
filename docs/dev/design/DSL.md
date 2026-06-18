@@ -66,6 +66,10 @@ class EnrichOrders(Transform):
     @after(normalize)
     def remove_negative_totals(self, *, df, spark, ctx):
         return df.where(F.col("total") >= 0)
+
+    @after(normalize, pass_inputs=True)
+    def compare_to_raw(self, *, df, inputs, spark, ctx):
+        return df
 ```
 
 ## Rules
@@ -77,6 +81,8 @@ class EnrichOrders(Transform):
 - `@expr_fn` functions execute symbolically and must return expressions.
 - `@after(method)` and `@before(method)` attach arbitrary PySpark hooks.
 - Hooks use signature `def hook(self, *, df, spark, ctx)`.
+- Hooks may opt into original named inputs with `pass_inputs=True` and signature
+  `def hook(self, *, df, inputs, spark, ctx)`.
 
 ## Data Flow
 

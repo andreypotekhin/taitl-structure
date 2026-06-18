@@ -8,6 +8,7 @@
       "spec_sections": [
         "Setup",
         "Configuration",
+        "Versioning and Compatibility",
         "Source Layout",
         "Build Integration",
         "Testing",

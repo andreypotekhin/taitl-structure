@@ -24,7 +24,7 @@ Discovery locates transform classes and schema definitions, preserving enough so
 1. Load configuration.
 2. Resolve source roots from config or convention.
 3. Find Python files under each source root.
-4. Import modules or inspect source safely.
+4. Import Structure source modules or inspect source safely.
 5. Find classes marked with @transform.
 6. Read class __dict__ order.
 7. Identify input declarations.
@@ -47,6 +47,13 @@ itself is not part of the module path.
 ## Source Order
 
 Python class dictionaries preserve definition order. Structure should use this order as the default subtransform execution order.
+
+## Spark-Free Discovery
+
+Discovery must not import PySpark, start Java, create a SparkSession, or contact a Spark cluster. If v1 discovers by
+importing user source modules, those modules must be Structure-source import-safe and must not create Spark resources at
+module import time. Later AST/LibCST discovery can reduce import risk, but it must preserve the same Spark-free compiler
+contract.
 
 ## Error Cases
 

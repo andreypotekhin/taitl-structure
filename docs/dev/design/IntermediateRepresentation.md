@@ -36,6 +36,19 @@ Operation
   ValidateSchema
 ```
 
+```text
+HookCall
+  name
+  timing
+  target_step
+  pass_inputs
+  schema_mode
+  project_output
+```
+
+`pass_inputs` records whether generated code must pass the original named `run(...)` inputs to the hook through the
+`inputs` namespace.
+
 ## Expression IR
 
 ```text

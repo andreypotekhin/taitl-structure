@@ -1,5 +1,13 @@
 # Troubleshooting
 
+### Problem (compatibility): configured PySpark target does not support a generated feature
+
+When: Running `structure check` or `structure compile`.
+Error: "Feature requires PySpark [version], but target_pyspark is [range]."
+Cause: The transform uses a DSL feature whose generated PySpark requires an API outside the configured target range.
+Fix: Either raise `target_pyspark` in project configuration or rewrite the transform using APIs supported by the
+configured runtime. See `docs/Compatibility.md`.
+
 ### Problem (context): `message` during [when]
 
 When: [describe when problem manifests]
