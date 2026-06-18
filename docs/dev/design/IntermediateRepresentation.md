@@ -73,6 +73,9 @@ Expr
 - HigherOrderFunctionExpr
 - CacheHint
 - JoinStrategyHint
+- CardinalityExpandingJoin
+- DocumentationModel
+- IncrementalCompileFingerprint
 
 ## v3 IR Extensions
 
@@ -82,6 +85,11 @@ Expr
 - Trigger
 - Checkpoint
 - StreamingStatePolicy
+
+## v4 IR Extensions
+
+- SparkConnectCapability
+- BackendCompatibilityReport
 
 ## Data Flow
 
@@ -97,4 +105,5 @@ Generated PySpark + compiler provenance + static dataflow lineage
 
 ## Compile-Time Performance
 
-IR objects should be immutable or treated as immutable after construction. This enables caching, hashing, and incremental compile comparisons.
+IR objects should be immutable or treated as immutable after construction. This enables hashing and future v2
+incremental compile comparisons.

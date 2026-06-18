@@ -120,6 +120,9 @@
 - Track transform, named input, step, schema, field, join, filter, expression helper, and hook-boundary dependencies.
 - Surface provenance and static dataflow in compiler diagnostics.
 - Add `structure explain` lineage output for transform, step, and field dependencies.
+- Add streaming compatibility reporting with compatible, batch-only, and unknown states.
+- Add diagnostic codes with documentation links.
+- Add `structure doctor` or equivalent setup/configuration checks.
 
 ## Epic: Build Integration
 
@@ -128,32 +131,41 @@
 - Implement `structure explain`.
 - Implement `structure compile --fail-on-diff`.
 - Add no-Spark guard tests for compiler commands.
-- Add pytest helper or plugin later.
 
 ## v2 Backlog
 
-- Aggregations.
-- Advanced aggregation/grouping.
 - Windowing.
 - Deduplication helpers.
+- Aggregations.
+- Advanced aggregation/grouping.
 - Spark higher-order functions.
 - Caching/persistence directives.
 - Repartition/coalesce hints.
 - Advanced join strategy directives.
+- `join_many(...)` and other row-multiplying or existence-oriented join forms.
 - Richer static dataflow explain output.
+- Production incremental compile and cache diagnostics.
+- Generated documentation artifacts for schemas and transforms.
+- Pytest helper or plugin for compiler checks, generated-code freshness, and generated-code snapshots.
 
 ## v3 Backlog
 
-- Spark Connect support.
 - Streaming source declarations.
 - Streaming sink declarations.
 - Generated `readStream`.
 - Generated `writeStream`.
 - Triggers.
 - Checkpoints.
+- Output modes.
 - Watermarks.
 - Stateful streaming policies.
 
-## Nice To Have Beyond v3
+## v4 Backlog
+
+- Spark Connect support.
+- Spark Connect compatibility tests.
+- Backend capability reporting for ordinary PySpark and Spark Connect targets.
+
+## Nice To Have Beyond v4
 
 - Runtime LDJSON lineage emitter. See `docs/dev/project-management/NiceToHave.md`.

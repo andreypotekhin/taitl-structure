@@ -225,7 +225,7 @@ Define support for:
 - field name collisions;
 - join order;
 - broadcast hints;
-- `join_many(...)` row multiplication.
+- v2 `join_many(...)` row multiplication.
 
 Composite joins should be supported early:
 
@@ -314,7 +314,7 @@ Lineage is split into three topics:
 
 1. compiler provenance, which maps source nodes to IR nodes to generated PySpark nodes;
 2. static dataflow lineage, which records transform, table, and column dependencies inferred from IR;
-3. runtime LDJSON lineage, which is optional transform-run telemetry deferred beyond v3.
+3. runtime LDJSON lineage, which is optional transform-run telemetry deferred beyond v4.
 
 The v1 lineage schema should version compiler provenance and static dataflow metadata. Runtime LDJSON can define its
 own record format later if the nice-to-have becomes scheduled work.
@@ -335,10 +335,11 @@ Medium project:
   structure check under 10 seconds warm / 30 seconds cold
 
 Single-file edit:
-  incremental compile under 2 seconds for affected transform
+  v2 incremental compile under 2 seconds for affected transform
 ```
 
-These targets should influence architecture decisions such as caching, incremental compilation, and avoiding Spark startup during compile.
+These targets should influence architecture decisions such as caching, v2 incremental compilation, and avoiding Spark
+startup during compile.
 
 ## C14. Incremental Compile and Cache Are Missing
 
@@ -361,7 +362,7 @@ structure compile --changed-only
 structure clean
 ```
 
-At minimum, design the compiler so incremental compilation can be added without major rework.
+At minimum, design the compiler so v2 production incremental compilation can be added without major rework.
 
 ## C15. Need a “No Spark Dependency During Compile” Rule
 
@@ -465,7 +466,7 @@ v1 baseline:
 - PySpark 3.5.x and 4.0.x target, with `target_pyspark = ">=3.5,<4.1"` by default.
 - Airflow has no hard dependency.
 - Linux is the runtime target; Linux and macOS are development targets.
-- Spark Connect is scheduled for v3 unless it can be added earlier without changing the public DSL, generated class API,
+- Spark Connect is scheduled for v4 unless it can be added earlier without changing the public DSL, generated class API,
   or generated-code review model.
 
 ## C20. Licensing and Governance Are Not Decided

@@ -281,8 +281,8 @@ See `pyproject.seed.toml` for all defaults.
 Structure v1 targets Python 3.11+, PySpark 3.5.x and 4.0.x, Linux runtimes, and Linux/macOS development
 environments. Airflow is supported as a caller of generated code, not as a hard dependency.
 
-Spark Connect support is scheduled for v3 unless it can be added earlier without changing the public DSL, generated
-class API, or generated-code review model.
+Spark Connect support is scheduled for v4 unless it can be added earlier without changing the public DSL, generated
+class API, generated-code review model, or streaming orchestration contract.
 
 See `docs/Compatibility.md` for the full versioning and compatibility policy.
 
@@ -297,9 +297,15 @@ structure explain orders.transforms.order.EnrichOrders
 
 ## Roadmap
 
+The roadmap follows a compiler-first north star: v1 proves that Structure can replace hand-maintained PySpark
+boilerplate with a strict, readable compiler workflow; v2 makes that workflow useful for mainstream analytical
+pipelines; v3 takes ownership of streaming lifecycle concerns; v4 adds Spark Connect after the ordinary PySpark
+contract is stable.
+
 - **v1:** projection, filtering, joins, typed intermediate schemas, generated PySpark classes, hooks, validation,
-  compiler provenance, static dataflow lineage, streaming-compatible transforms.
-- **v2:** aggregations, windowing, advanced grouping, Spark higher-order functions, caching/persistence hints,
-  join strategy annotations, richer static dataflow explain output.
+  compiler provenance, static dataflow lineage, streaming-compatible transforms, diagnostic links, and setup checks.
+- **v2:** windowing, deduplication, aggregations, advanced grouping, Spark higher-order functions,
+  caching/persistence/repartition hints, `join_many(...)`, richer explain output, generated docs, and pytest helpers.
 - **v3:** full streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks,
-  stateful policies, and Spark Connect support.
+  output modes, and stateful policies.
+- **v4:** Spark Connect support and backend capability reporting.

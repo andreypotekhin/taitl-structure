@@ -48,7 +48,8 @@ format_generated = true
 fail_on_diff = false
 
 # Compile-time performance options.
-incremental_compile = true
+# Production incremental compilation is planned for v2.
+incremental_compile = false
 compiler_cache_dir = ".structure/cache"
 parallel_codegen = true
 

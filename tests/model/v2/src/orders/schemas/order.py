@@ -1,4 +1,4 @@
-from structure import Array, Boolean, Decimal, Integer, Long, Map, Schema, String, Struct, field
+from structure import Array, Boolean, Decimal, Integer, Long, Map, Schema, String, Struct, Timestamp, field
 
 from orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
 
@@ -55,6 +55,13 @@ class OrderWithPromotion(OrderWithProduct):
     promotion_discount = field(Decimal(12, 2), nullable=True)
 
 
+class OrderFulfillment(OrderWithPromotion):
+    shipment_line = field(Integer(), nullable=False)
+    carrier = field(String(), nullable=True)
+    tracking_number = field(String(), nullable=True)
+    shipped_at = field(Timestamp(), nullable=True)
+
+
 class OrderPublished(Schema):
     tenant = field(Struct(TenantKey), nullable=False)
     business = field(Struct(BusinessDate), nullable=False)
@@ -69,5 +76,8 @@ class OrderPublished(Schema):
     discount = field(Decimal(12, 2), nullable=False)
     net_total = field(Decimal(12, 2), nullable=False)
     quantity = field(Long(), nullable=False)
+    carrier = field(String(), nullable=True)
+    tracking_number = field(String(), nullable=True)
+    shipped_at = field(Timestamp(), nullable=True)
     is_large = field(Boolean(), nullable=False)
     has_promotion = field(Boolean(), nullable=False)

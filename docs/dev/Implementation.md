@@ -28,29 +28,44 @@
 - Clean no-hook generated code.
 - Structured compiler errors.
 - Streaming compatibility checks.
+- Streaming compatibility report.
 - Compiler provenance from source node to IR node to generated PySpark node.
 - Static dataflow lineage inferred from IR.
 - TOML configuration hardening.
-- Incremental compile.
+- Diagnostic codes with documentation links.
+- Setup/configuration doctor.
+- Incremental-compile architecture hooks.
 
 ## Phase 3: v2
 
+- Windowing.
+- Deduplication helpers.
 - Aggregations.
 - Advanced grouping.
-- Windowing.
 - Spark higher-order functions.
 - Caching and persistence annotations.
+- Repartition/coalesce annotations.
 - Join strategy annotations.
+- `join_many(...)` and other row-multiplying or existence-oriented join forms.
 - Richer static dataflow explain output.
+- Production incremental compile.
+- Generated documentation artifacts for schemas and transforms.
+- Pytest helper or plugin.
 
 ## Phase 4: v3
 
-- Spark Connect support.
 - Generated stream reads/writes.
 - Watermarks.
 - Triggers.
 - Checkpoints.
+- Output modes.
 - Streaming lifecycle configuration.
+
+## Phase 5: v4
+
+- Spark Connect support.
+- Spark Connect compatibility tests.
+- Backend capability reporting for ordinary PySpark and Spark Connect targets.
 
 ## Build Integration
 
@@ -62,7 +77,7 @@ structure compile
 structure compile --fail-on-diff
 ```
 
-Later, add optional pytest and build-tool integrations.
+Later, add optional pytest and build-tool integrations as v2 adoption tooling.
 
 Compiler build integration must stay Spark-free. `structure check`, `structure compile`, and
 `structure compile --fail-on-diff` must not require PySpark, Java, a SparkSession, or a Spark cluster. Generated-code
@@ -85,4 +100,5 @@ Track:
 - cache hit ratio
 - total wall-clock time
 
-Add `structure compile --profile` to emit these measurements.
+Add `structure compile --profile` to emit these measurements. Production incremental compilation belongs to v2; v1
+should preserve deterministic outputs and source fingerprints so the cache can be added without reshaping the compiler.

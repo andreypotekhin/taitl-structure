@@ -138,7 +138,6 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can declare multiple named inputs so that join sources are explicit.
 - As a developer, I can express joins symbolically using input scopes so that join logic avoids string column paths.
 - As a developer, I can use `join_one(...)` for many-to-one or one-to-one lookup joins so that cardinality intent is explicit.
-- As a developer, I can use `join_many(...)` for cardinality-expanding joins so that row multiplication is explicit.
 - As a developer, I can perform serial joins across an arbitrary number of inputs so that enrichment pipelines are not limited to three inputs.
 - As a developer, I can specify join type and hints using enum values so that free-form join strings are avoided in source code.
 
@@ -162,7 +161,7 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can rely on a documented Python support range so that runtime expectations are clear.
 - As a developer, I can rely on a documented PySpark support range so that generated code uses compatible APIs.
 - As a developer, I can configure `target_pyspark` so that the emitter avoids APIs outside my deployment range.
-- As a developer, I can see that Spark Connect is planned for v3 so that v1/v2 generated-code expectations are clear.
+- As a developer, I can see that Spark Connect is planned for v4 so that v1/v2/v3 generated-code expectations are clear.
 - As a developer, I can rely on semantic versioning after 1.0 so that upgrades carry predictable risk.
 - As a developer, I can rely on stable compiler provenance and static dataflow schemas so that diagnostics and explain
   output can evolve safely.
@@ -211,15 +210,25 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can define advanced grouping patterns so that rollups, cubes, grouping sets, and multi-level summaries are supported.
 - As a developer, I can define window expressions so that ranking, deduplication, latest-record selection, and rolling metrics compile to Spark window operations.
 - As a developer, I can use higher-order function helpers so that array and map transformations remain Spark-plan-visible.
+- As a developer, I can use `join_many(...)` for cardinality-expanding joins so that row multiplication is explicit.
 - As a developer, I can add caching and persistence hints at step boundaries so that expensive reused DataFrames can be optimized explicitly.
 - As a developer, I can specify join strategies and hints so that manual optimization remains explicit and reviewable.
 - As a developer, I can generate richer static dataflow explain output so that complex field dependencies can be
   inspected when needed.
+- As a developer, I can generate documentation artifacts for schemas and transforms so that the public contract is
+  readable without inspecting generated PySpark.
+- As a developer, I can use pytest helpers for compiler checks, generated-code freshness, and generated-code snapshots.
+- As a developer, I can use production incremental compilation so that large projects get fast local feedback.
 
 ## 23. v3 Roadmap
 
-- As a developer, I can target Spark Connect when Structure defines and tests a compatible generated-code contract.
 - As a developer, I can define streaming sources so that Structure can generate `readStream` code.
 - As a developer, I can define streaming sinks so that Structure can generate `writeStream` code.
 - As a developer, I can define triggers and checkpoint locations so that streaming jobs are deployable from generated code.
 - As a developer, I can define watermarks and state policies so that full streaming orchestration is explicit.
+
+## 24. v4 Roadmap
+
+- As a developer, I can target Spark Connect when Structure defines and tests a compatible generated-code contract.
+- As a developer, I can see backend capability diagnostics so that ordinary PySpark and Spark Connect differences are
+  explicit.

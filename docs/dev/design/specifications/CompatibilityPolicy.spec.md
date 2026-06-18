@@ -53,21 +53,23 @@ keeps the output clear and optimizer-visible.
 
 ## Spark Connect Scope
 
-Spark Connect is deferred to v3.
+Spark Connect is deferred to v4.
 
-v1 and v2 generated code targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. The compiler must not
-claim Spark Connect support in public docs or diagnostics before a tested contract exists.
+v1 and v2 generated code targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. v3 adds streaming
+orchestration on top of that ordinary PySpark contract. The compiler must not claim Spark Connect support in public
+docs or diagnostics before a tested contract exists.
 
-Spark Connect may be implemented before v3 only if all of these are true:
+Spark Connect may be implemented before v4 only if all of these are true:
 
 - it uses the existing PySpark emitter boundary cleanly;
 - it does not change public DSL syntax;
 - it does not change generated class construction or `run(...)` signatures;
+- it does not change streaming orchestration semantics;
 - it does not weaken generated-code readability or reviewability;
 - it has compatibility tests for the supported PySpark Connect versions;
 - public docs make the support level explicit.
 
-Otherwise, Spark Connect belongs in v3 with backend and orchestration work.
+Otherwise, Spark Connect belongs in v4 as backend expansion work.
 
 ## Semantic Versioning
 
@@ -138,7 +140,7 @@ The lineage schema version follows `major.minor`.
 Breaking changes require a major lineage schema version bump. Additive fields require a minor version bump. Consumers
 should ignore unknown fields so minor additions remain compatible.
 
-Runtime LDJSON lineage is not part of the v1 compatibility contract. It is tracked as a nice-to-have beyond v3 in
+Runtime LDJSON lineage is not part of the v1 compatibility contract. It is tracked as a nice-to-have beyond v4 in
 `docs/dev/project-management/NiceToHave.md`.
 
 ## Config Schema Versioning
@@ -164,6 +166,6 @@ New optional keys may appear in minor releases. Removing or changing a documente
 - `docs/Compatibility.md` documents the public policy.
 - `Readme.md` links to the compatibility policy.
 - `docs/Configuration.md` documents `target_backend`, `target_pyspark`, and compatibility diagnostics.
-- `docs/dev/Roadmap.md` and public roadmap text schedule Spark Connect for v3.
+- `docs/dev/Roadmap.md` and public roadmap text schedule Spark Connect for v4.
 - `docs/dev/design/Challenges.md` marks C19 as resolved by this specification and the public policy.
 - The seed config default is `target_pyspark = ">=3.5,<4.1"`.

@@ -65,4 +65,5 @@ contract.
 
 ## Compile-Time Performance
 
-Discovery is often the largest compile-time cost for large projects. Use source fingerprints, avoid repeated imports, cache module inspection results, and support incremental compile.
+Discovery is often the largest compile-time cost for large projects. Use source fingerprints, avoid repeated imports,
+and keep inspection results cache-friendly so v2 production incremental compile can reuse them safely.

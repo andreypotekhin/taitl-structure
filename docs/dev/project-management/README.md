@@ -60,4 +60,7 @@ The first iterations are intentionally arranged to build confidence in small com
 6. **Joins, compiler lineage, build integration**: `join_one`, N-step serial joins, compiler provenance, static
    dataflow lineage, `--fail-on-diff`.
 
-V2 features such as aggregations, windowing, HOFs, advanced grouping, caching, and join strategy optimization are captured in the backlog but not scheduled in the first v1 implementation sprints.
+V2 features such as windowing, deduplication, aggregations, HOFs, advanced grouping, caching, repartition/coalesce
+hints, `join_many(...)`, generated docs, pytest helpers, production incremental compile, and join strategy optimization
+are captured in the backlog but not scheduled in the first v1 implementation sprints. V3 is reserved for streaming
+orchestration, and V4 is reserved for Spark Connect backend expansion.

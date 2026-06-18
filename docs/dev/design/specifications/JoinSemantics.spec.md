@@ -13,8 +13,9 @@ logic symbolic, compileable, and visible to Spark's optimizer. The compiler must
 which keys define the match, how nulls behave, which aliases own each field, and when cardinality assumptions are only
 warnings rather than proven facts.
 
-The v1 goal is deliberately narrow: support explicit lookup joins and explicit row-multiplying joins without implicit
-deduplication, implicit string column references, or hidden data scans.
+The v1 goal is deliberately narrow: support explicit lookup joins without implicit deduplication, implicit string
+column references, or hidden data scans. Row-multiplying joins such as `join_many(...)` (v2) are part of the same
+cardinality model, but they change validation, lineage, and output-row expectations enough to deserve a later stage.
 
 ## Public API Shape
 
@@ -28,19 +29,16 @@ customer = self.customers.join_one(
 )
 ```
 
-Canonical v1 methods:
+Canonical v1 method:
 
 - `join_one(*, on, how, hint=None)`: a lookup join that promises at most one right-side row per current row.
-- `join_many(*, on, how, hint=None)`: a cardinality-expanding join that may produce multiple output rows per current
-  row.
 
 Rules:
 
 - `on` is required.
 - `how` is required in v1. Source should show whether unmatched rows are kept or removed.
 - `hint` is optional and advisory.
-- `join_one(...)` and `join_many(...)` return a joined symbolic scope. Fields are read from that scope, such as
-  `customer.name`.
+- `join_one(...)` returns a joined symbolic scope. Fields are read from that scope, such as `customer.name`.
 
 ## Join Types
 
@@ -177,7 +175,8 @@ Why this matters:
   If customers has duplicate id values, this join can multiply rows.
 
 Use:
-  mark Customer.id as primary_key=True, declare a unique key, or use join_many(...) if multiplication is intended.
+  mark Customer.id as primary_key=True, declare a unique key, or defer this transform until v2 join_many(...)
+  if multiplication is intended.
 ```
 
 Projects may later add a strict setting that turns this warning into an error. That setting is not required for the v1
@@ -185,8 +184,8 @@ semantics, but diagnostics should be designed so the promotion is straightforwar
 
 ## `join_many(...)` Cardinality
 
-`join_many(...)` means row multiplication is intentional. If one current row matches three right rows, the downstream
-step sees three rows.
+`join_many(...)` (v2) means row multiplication is intentional. If one current row matches three right rows, the
+downstream step sees three rows.
 
 Rules:
 
@@ -196,8 +195,9 @@ Rules:
 - `Join.INNER` removes current rows with no right match.
 - Output schema construction still decides which fields survive; right-side columns are not implicitly appended.
 
-Developers should choose `join_many(...)` when the output is naturally one row per match, such as order-to-line-item
-expansion.
+Developers should choose `join_many(...)` (v2) when the output is naturally one row per match, such as
+order-to-line-item expansion. In v1, that shape belongs in an explicit hook or outside Structure until
+row-multiplying semantics are implemented.
 
 ## Right-Side Projection
 
@@ -213,8 +213,8 @@ code should avoid duplicate unqualified column names by aliasing and explicit `s
 
 ## Aliases and Joined Scopes
 
-A joined scope is the symbolic object returned by `join_one(...)` or `join_many(...)`. It owns field references from the
-right side of that join.
+A joined scope is the symbolic object returned by `join_one(...)`. It owns field references from the right side of that
+join. v2 extends the same idea to `join_many(...)`.
 
 Alias rules:
 
@@ -289,7 +289,7 @@ The join IR should preserve:
 
 - joined input scope;
 - joined scope occurrence;
-- method kind, either `join_one` or `join_many`;
+- method kind, `join_one` in v1 and `join_many` once v2 adds row-multiplying joins;
 - join type;
 - optional hint;
 - ordered key pairs;
@@ -346,7 +346,7 @@ Key:
   customers.id == order.customer_id
 
 Use:
-  field(String(), primary_key=True) on Customer.id, declare a unique key, or use join_many(...).
+  field(String(), primary_key=True) on Customer.id, declare a unique key, or wait for v2 join_many(...).
 
 See docs/dev/design/specifications/JoinSemantics.spec.md
 ```
@@ -361,7 +361,6 @@ The implementation is complete when tests prove these scenarios:
 - A nullable null-safe key lowers to Spark null-safe equality.
 - A case-normalized join key lowers expression helpers on both sides.
 - An unproven `join_one(...)` emits a uniqueness warning and does not deduplicate.
-- `join_many(...)` allows row multiplication without a uniqueness warning.
 - A left join makes joined fields nullable in output type checks.
 - A post-join `where(joined.id.is_not_null())` can require a match after a left join.
 - Repeated joins of the same input produce deterministic generated aliases.

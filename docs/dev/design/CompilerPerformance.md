@@ -8,7 +8,7 @@ Compile-time performance is a product metric. Users value fast compilers because
 
 - `structure check` should be fast enough for local use.
 - `structure compile` should avoid rewriting unchanged files.
-- Warm incremental compile should be much faster than cold compile.
+- v2 warm incremental compile should be much faster than cold compile.
 - The compiler should never require PySpark, Java, SparkSession, a Spark cluster, or Spark startup during normal
   check/compile.
 
@@ -35,7 +35,7 @@ Track:
 ## Techniques
 
 - Source fingerprints.
-- Transform-level incremental cache.
+- Transform-level incremental cache for v2 production incremental compile.
 - Immutable/hashable IR.
 - Lazy source snippet extraction.
 - Parallel code generation.
@@ -55,4 +55,5 @@ should emit a compact timing report.
 
 ## Testing
 
-Add benchmark fixtures for 10, 100, and 1,000 transforms. Track cold and warm timings.
+Add benchmark fixtures for 10, 100, and 1,000 transforms. Track cold timings in v1 and warm incremental timings once
+the v2 cache exists.

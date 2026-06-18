@@ -288,8 +288,8 @@ Structure v1 targets Python 3.11+ and generated PySpark for PySpark 3.5.x and 4.
 `target_pyspark = ">=3.5,<4.1"`.
 
 Generated code targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Spark Connect support is
-scheduled for v3 with backend and orchestration work, unless it can be added earlier without changing Structure source
-syntax, generated class construction, `run(...)` signatures, or generated-code reviewability.
+scheduled for v4 with backend expansion work, unless it can be added earlier without changing Structure source syntax,
+generated class construction, `run(...)` signatures, streaming orchestration semantics, or generated-code reviewability.
 
 Generated PySpark, compiler lineage metadata, and configuration each have explicit versioning rules. The public policy
 lives in `docs/Compatibility.md`.
@@ -305,7 +305,7 @@ from and which upstream inputs affect a failing field or step.
 Hook boundaries are explicit. Because hooks contain arbitrary PySpark, static dataflow should mark them opaque unless a
 future compiler-visible hook contract says otherwise.
 
-Runtime LDJSON lineage is useful transform-run telemetry, but it is beyond the v1, v2, and v3 roadmap.
+Runtime LDJSON lineage is useful transform-run telemetry, but it is beyond the v1, v2, v3, and v4 roadmap.
 
 ## Unsupported Code Detection
 
@@ -382,7 +382,7 @@ The compiler should avoid starting Spark during normal compile/check operations.
 
 Recommended implementation techniques:
 
-- incremental compilation based on source fingerprints
+- source fingerprints that enable v2 production incremental compilation
 - compiler cache directory
 - parallel code generation
 - lazy module inspection where possible
@@ -391,20 +391,30 @@ Recommended implementation techniques:
 
 ## Roadmap
 
+The roadmap follows a compiler-first north star: v1 proves that Structure can replace hand-maintained PySpark
+boilerplate with a strict, readable compiler workflow. v2 makes that workflow useful for mainstream analytical
+pipelines. v3 takes ownership of streaming lifecycle concerns. v4 adds Spark Connect after the ordinary PySpark
+contract is stable.
+
 ### v1
 
 Projection, filtering, joins, typed intermediate schemas, generated PySpark classes, hooks, validation, compiler
-provenance, static dataflow lineage, and streaming-compatible transforms.
+provenance, compact static dataflow lineage, streaming-compatible transforms, diagnostic links, and setup checks.
 
 ### v2
 
-Aggregations, windowing, advanced grouping, Spark higher-order functions, caching/persistence hints, join strategy
-annotations, and richer static dataflow explain output.
+Windowing, deduplication, aggregations, advanced grouping, Spark higher-order functions, caching/persistence and
+repartition hints, `join_many(...)`, richer explain output, generated docs, pytest helpers, and production incremental
+compile.
 
 ### v3
 
 Full streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, advanced stateful
-streaming policies, and Spark Connect support.
+streaming policies, and output modes.
+
+### v4
+
+Spark Connect support and backend capability reporting.
 
 ## Summary
 

@@ -76,12 +76,12 @@ depend on PySpark at runtime; the compiler itself must not.
 The v1 default target is `target_pyspark = ">=3.5,<4.1"`, covering PySpark 3.5.x and 4.0.x. The emitter should prefer
 the oldest clear optimizer-visible API inside the configured range.
 
-Spark Connect belongs to v3 unless it can be supported through this emitter boundary without changing public DSL syntax,
-generated class construction, or `run(...)` signatures.
+Spark Connect belongs to v4 unless it can be supported through this emitter boundary without changing public DSL syntax,
+generated class construction, `run(...)` signatures, or streaming orchestration semantics.
 
 ## Compile-Time Performance
 
 Compile-time performance is a product metric.
 
-The compiler should avoid Spark dependencies during normal `check` and `compile`. It should use incremental
-fingerprints, cache discovered models, and only regenerate files whose content changes.
+The compiler should avoid Spark dependencies during normal `check` and `compile`. v1 should preserve deterministic
+outputs and source fingerprints so production incremental compilation can arrive in v2 without reshaping the compiler.

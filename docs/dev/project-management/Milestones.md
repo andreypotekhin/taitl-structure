@@ -13,7 +13,8 @@
 - Test harness runs in CI.
 - Source-root discovery and generated output conventions are settled.
 - Python and PySpark compatibility policy is documented and reflected in seed configuration.
-- Sprint 00 spike notes are captured for decorators, expression helpers, source order, import paths, no-Spark compile, and local Spark execution.
+- Sprint 00 spike notes are captured for decorators, expression helpers, source order, import paths, no-Spark compile,
+  and local Spark execution.
 - Any spike result that changes v1 scope is reflected in Sprint 01 before coding begins.
 - Architecture docs are linked from project README.
 
@@ -82,11 +83,44 @@ NormalizeOrdersGenerated(spark=spark).run(orders=orders_df)
 - Static dataflow lineage shows transform, table, and column dependencies inferred from IR.
 - `structure compile --fail-on-diff` works.
 - `structure explain` summarizes inputs, steps, filters, joins, hooks, and validation.
+- Streaming compatibility reports whether transforms are compatible, batch-only, or unknown.
 
 ## M6: v1 Stabilization
 
 ### Exit Criteria
 
-- Compatibility docs, generated-code version headers, compiler lineage schema versioning, and config schema compatibility are
-  checked against release artifacts.
+- Compatibility docs, generated-code version headers, compiler lineage schema versioning, and config schema
+  compatibility are checked against release artifacts.
 - Multi-version PySpark test strategy covers the documented v1 target range.
+- Diagnostic codes link to relevant documentation.
+- Setup/configuration doctor checks the common adoption failures.
+
+## M7: v2 Analytical Pipeline Features
+
+### Exit Criteria
+
+- Windowing and deduplication helpers cover latest-row, ranking, lag/lead, and duplicate-removal use cases.
+- Typed aggregation support covers common group-by rollups before advanced grouping sets.
+- Higher-order array/map helpers remain Spark-plan-visible.
+- Manual optimization directives are explicit in source and obvious in generated code.
+- `join_many(...)` and deferred join forms have clear row-multiplication or existence semantics.
+- Richer explain output, generated documentation artifacts, and pytest helpers improve adoption without adding runtime
+  responsibility.
+- Production incremental compile has cache invalidation tests and diagnostics.
+
+## M8: v3 Streaming Orchestration
+
+### Exit Criteria
+
+- Streaming sources and sinks are declared explicitly.
+- Generated `readStream` and `writeStream` code is reviewable.
+- Triggers, checkpoints, output modes, watermarks, and state policies are modeled and tested.
+- Existing v1/v2 streaming compatibility behavior remains valid for caller-owned streaming orchestration.
+
+## M9: v4 Spark Connect
+
+### Exit Criteria
+
+- Spark Connect support has a tested generated-code contract.
+- Public docs explain the difference between ordinary PySpark and Spark Connect targets.
+- Backend capability reporting prevents accidental use of unsupported APIs.

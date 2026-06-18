@@ -118,8 +118,8 @@ target_pyspark = ">=3.5,<4.1"
 If a DSL feature cannot be generated for the configured range, `structure check` and `structure compile` should fail
 with a diagnostic that names the required PySpark version.
 
-Spark Connect is scheduled for v3 unless it can be added earlier without changing the public DSL, generated class API,
-or generated-code review model. See `docs/Compatibility.md`.
+Spark Connect is scheduled for v4 unless it can be added earlier without changing the public DSL, generated class API,
+generated-code review model, or streaming orchestration contract. See `docs/Compatibility.md`.
 
 ## Lineage Settings
 
@@ -159,12 +159,15 @@ advanced features.
 ## Compile-Time Performance
 
 ```toml
-incremental_compile = true
+incremental_compile = false
 compiler_cache_dir = ".structure/cache"
 parallel_codegen = true
 ```
 
 Structure should be fast enough to run in local development and CI.
+
+Production incremental compilation is planned for v2. v1 may record source fingerprints and avoid rewriting unchanged
+files, but it should not expose cache semantics that users must reason about.
 
 ## Build Settings
 

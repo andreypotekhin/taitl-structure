@@ -29,7 +29,7 @@ dependencies.
 
 ### Out of Scope
 
-- `join_many(...)` unless time permits.
+- `join_many(...)`; row-multiplying joins are v2 work.
 - Aggregations and windowing.
 - Runtime LDJSON lineage.
 - Full streaming orchestration.
@@ -125,4 +125,4 @@ Targets:
 ## Notes
 
 Keep the default lineage explanation compact. Column-level details can be an opt-in `structure explain` view. Runtime
-LDJSON lineage is deferred beyond v3 in `docs/dev/project-management/NiceToHave.md`.
+LDJSON lineage is deferred beyond v4 in `docs/dev/project-management/NiceToHave.md`.

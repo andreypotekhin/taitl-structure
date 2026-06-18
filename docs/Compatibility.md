@@ -40,12 +40,12 @@ this page.
 
 ## Spark Connect
 
-Spark Connect is not a v1 or v2 commitment. v1 and v2 generated code targets ordinary PySpark `SparkSession`,
-`DataFrame`, and `Column` APIs.
+Spark Connect is not a v1, v2, or v3 commitment. v1 and v2 generated code targets ordinary PySpark `SparkSession`,
+`DataFrame`, and `Column` APIs. v3 adds streaming orchestration on top of the ordinary PySpark contract.
 
-Spark Connect support is scheduled for v3 with streaming orchestration and backend expansion work. It may land earlier
-only if it can be implemented through the existing PySpark emitter without changing public APIs, generated-code shape,
-or compatibility guarantees.
+Spark Connect support is scheduled for v4 as backend expansion work. It may land earlier only if it can be implemented
+through the existing PySpark emitter without changing public APIs, generated-code shape, streaming orchestration
+semantics, or compatibility guarantees.
 
 ## Semantic Versioning
 
@@ -90,7 +90,7 @@ Lineage schema rules:
 - Consumers should ignore unknown fields.
 - Structure should keep default compiler lineage compact and stable across patch releases.
 
-Runtime LDJSON lineage is not part of the v1 compatibility contract. It is tracked as a nice-to-have beyond v3 in
+Runtime LDJSON lineage is not part of the v1 compatibility contract. It is tracked as a nice-to-have beyond v4 in
 `docs/dev/project-management/NiceToHave.md`.
 
 ## Config Schema Versioning
@@ -110,7 +110,9 @@ Config schema rules:
 
 ## Roadmap
 
-v2 expands generated PySpark features while preserving the same basic compatibility contract.
+v2 expands generated PySpark features and adoption tooling while preserving the same basic compatibility contract.
 
-v3 adds backend and orchestration work, including Spark Connect support when it can be specified, tested, and documented
-without weakening the generated-code review model.
+v3 adds streaming orchestration once transform compilation is stable.
+
+v4 adds Spark Connect support when it can be specified, tested, and documented without weakening the generated-code
+review model.

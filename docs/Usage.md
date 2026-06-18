@@ -267,7 +267,8 @@ input DataFrames, not the current intermediate `df`.
 
 ## Streaming Compatibility
 
-Generated transforms operate on DataFrames. If the input DataFrame is streaming and all generated operations are supported by Spark Structured Streaming, the generated transform can be used in a streaming pipeline.
+Generated transforms operate on DataFrames. If the input DataFrame is streaming and all generated operations are
+supported by Spark Structured Streaming, the generated transform can be used in a streaming pipeline.
 
 Structure v1/v2 do not generate `readStream` or `writeStream`; the caller owns streaming orchestration.
 
@@ -280,17 +281,22 @@ by default:
 target_pyspark = ">=3.5,<4.1"
 ```
 
-Spark Connect support is planned for v3 unless it can be added earlier without changing the public DSL or generated
-class API. See `docs/Compatibility.md`.
+Spark Connect support is planned for v4 unless it can be added earlier without changing the public DSL, generated class
+API, or streaming orchestration contract. See `docs/Compatibility.md`.
 
 ## v2 Manual Optimization Features
 
 Planned v2 features include:
 
+- Window functions and deduplication helpers.
+- Aggregation and advanced grouping.
 - Spark higher-order functions for arrays and maps.
 - Caching and persistence annotations.
+- Repartition and coalesce annotations.
 - Join strategy annotations.
-- Advanced aggregation and grouping.
-- Window functions and deduplication helpers.
+- `join_many(...)` and other row-multiplying or existence-oriented join forms.
 
 These features remain explicit because Structure should not hide performance-sensitive choices.
+
+Planned v2 adoption tooling also includes richer explain output, generated documentation artifacts for schemas and
+transforms, production incremental compilation, and a pytest helper for compiler checks and generated-code freshness.

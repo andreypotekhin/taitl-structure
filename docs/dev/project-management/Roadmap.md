@@ -2,7 +2,14 @@
 
 ## Product Direction
 
-Structure is a compiler-first data pipeline library. Developers write typed, schema-returning Python transform classes. Structure compiles them to generated PySpark classes using DataFrame and Column operations so Spark can optimize execution.
+Structure is a compiler-first data pipeline library. Developers write typed, schema-returning Python transform classes.
+Structure compiles them to generated PySpark classes using DataFrame and Column operations so Spark can optimize
+execution.
+
+The north star is deliberately strict: v1 proves that Structure can replace hand-maintained PySpark boilerplate with a
+strict, readable compiler workflow. v2 makes that workflow useful for mainstream analytical pipelines. v3 takes
+ownership of streaming lifecycle concerns only after the transform compiler has earned trust. v4 adds backend expansion
+through Spark Connect after the ordinary PySpark contract is stable.
 
 The project should prioritize:
 
@@ -16,7 +23,8 @@ The project should prioritize:
 
 ## Pre-Coding Gate
 
-Before the first vertical slice, Sprint 00 must retire the highest-risk unknowns called out in `docs/dev/design/Challenges.md`.
+Before the first vertical slice, Sprint 00 must retire the highest-risk unknowns called out in
+`docs/dev/design/Challenges.md`.
 
 Required spikes:
 
@@ -64,6 +72,10 @@ provenance, static dataflow lineage, and build integration.
 - Build/CI support including `--fail-on-diff`.
 - Spark-free compiler commands for `check`, `compile`, and `compile --fail-on-diff`.
 - Streaming-compatible generated transforms when Spark operations support streaming inputs.
+- Streaming compatibility reporting that explains whether a transform is compatible, batch-only, or unknown.
+- Diagnostic codes and documentation links for setup, import safety, PySpark targeting, generated-code drift,
+  validation, and compileability issues.
+- A `structure doctor` command or equivalent setup/configuration check.
 
 ## v2 Scope
 
@@ -71,29 +83,46 @@ v2 extends the compiler IR and emitter with advanced Spark operations while pres
 
 ### v2 candidate features
 
+- Windowing for dedupe, latest-row, ranking, lag/lead, and rolling metrics.
+- Deduplication helpers.
 - Aggregations and typed `group_by(...)`.
 - Advanced aggregation and grouping sets where practical.
-- Windowing for dedupe, latest-row, ranking, lag/lead, and rolling metrics.
 - Spark higher-order functions for arrays/maps where compiler-visible.
 - Manual optimization directives: caching, persistence, repartition/coalesce, checkpoint hints.
 - Advanced join strategies: broadcast, shuffle hash, sort merge hints, lookup projection, prejoin dedupe warnings.
+- `join_many(...)`, semi/anti joins, and other row-multiplying or existence-oriented join forms.
+- Production incremental compilation: `compile --changed-only`, cache invalidation policies, and cache diagnostics.
 - Richer static dataflow explain output.
 - More complete generated-code explain reports.
+- Generated documentation artifacts for schemas and transforms, in Markdown or JSON.
+- Pytest helper or plugin for `structure check`, generated-code freshness, and generated-code snapshots.
 
 ## v3 Scope
 
-v3 may introduce streaming orchestration and Spark Connect support. v1/v2 only maintain streaming compatibility when
-callers pass streaming DataFrames.
+v3 introduces streaming orchestration. v1/v2 only maintain streaming compatibility when callers pass streaming
+DataFrames.
 
 ### v3 candidate features
 
 - Generated `readStream` and `writeStream` code.
-- Spark Connect support.
 - Streaming sinks/sources configuration.
 - Trigger configuration.
 - Checkpoint configuration.
+- Output mode configuration.
 - Watermarks and state policies.
 - Full streaming job generation.
+
+## v4 Scope
+
+v4 adds Spark Connect support after the ordinary PySpark generated-code contract and streaming orchestration semantics
+are stable.
+
+### v4 candidate features
+
+- Spark Connect generated-code contract.
+- Spark Connect compatibility tests.
+- Backend capability reporting for ordinary PySpark and Spark Connect targets.
+- Public migration notes for projects that want Connect-compatible generated code.
 
 ## Release Milestones
 
@@ -106,3 +135,6 @@ callers pass streaming DataFrames.
 | M4 | Hook model and no-hook generated-code cleanliness | Sprint 04 |
 | M5 | Joins, compiler lineage, build integration | Sprint 05 |
 | M6 | v1 stabilization and docs/examples | follow-up hardening sprint |
+| M7 | v2 analytical pipeline features and adoption tooling | future v2 sprints |
+| M8 | v3 streaming orchestration | future v3 sprints |
+| M9 | v4 Spark Connect backend expansion | future v4 sprints |

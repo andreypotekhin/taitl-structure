@@ -165,17 +165,21 @@ Rules:
 - The joined input side must be static.
 - Join conditions must satisfy `JoinSemantics.spec.md`.
 - `join_one(...)` uniqueness warnings still apply; streaming compatibility does not prove uniqueness.
-- `join_many(...)` is compatible when row multiplication is intentional and the joined side is static.
 - `JoinHint.BROADCAST` is compatible only for the static joined side.
 - A side input that may be streaming must be rejected for v1 streaming compatibility.
 
 Rejected in v1:
 
 - stream-stream joins;
+- row-multiplying joins such as `join_many(...)` until v2 implements them;
 - joins that require watermarks;
 - outer stream-stream joins;
 - stateful deduplication before or after a join;
 - join hints that apply to the streaming side.
+
+`join_many(...)` (v2) is compatible with static side inputs in principle because row multiplication is intentional and
+does not require streaming state by itself. It remains outside v1 only because the row-multiplying DSL is staged for
+v2.
 
 The checker should make the runtime-shape assumption explicit in diagnostics. If Structure later adds input metadata,
 the same rules can be applied using declared input modes instead of assumptions.
@@ -366,7 +370,6 @@ The implementation is complete when tests prove these scenarios:
 - A stream-static `Join.LEFT` lookup join is compatible when the joined side is static.
 - A stream-static `Join.INNER` lookup join is compatible when the joined side is static.
 - `join_one(...)` uniqueness warnings still appear independently from streaming compatibility.
-- `join_many(...)` against a static side input is compatible and may multiply rows.
 - A possible stream-stream join is rejected for explicit streaming-compatible transforms.
 - A hook without `streaming_safe=True` makes compatibility unknown or emits a warning.
 - A hook with `streaming_safe=True` is accepted as a trusted boundary after signature validation.
