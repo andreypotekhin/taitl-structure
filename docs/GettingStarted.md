@@ -57,13 +57,9 @@ class OrderNormalized(Schema):
     total = field(Decimal(12, 2), nullable=True)
 
 
-class OrderWithCustomer(Schema):
-    id = field(String(), nullable=False)
-    customer_id = field(String(), nullable=False)
+class OrderWithCustomer(OrderNormalized):
     customer_name = field(String(), nullable=True)
     customer_tier = field(String(), nullable=True)
-    product_id = field(String(), nullable=False)
-    total = field(Decimal(12, 2), nullable=True)
 ```
 
 ```python
@@ -135,13 +131,9 @@ class EnrichOrders(Transform):
             hint=JoinHint.BROADCAST,
         )
 
-        return OrderWithCustomer(
-            id=order.id,
-            customer_id=order.customer_id,
+        return OrderWithCustomer.base(order)(
             customer_name=customer.name,
             customer_tier=customer.tier,
-            product_id=order.product_id,
-            total=order.total,
         )
 ```
 

@@ -66,7 +66,7 @@ ORDER_FULFILLMENT_SCHEMA = T.StructType(ORDER_WITH_PROMOTION_SCHEMA.fields + [
     T.StructField("shipped_at", T.TimestampType(), True),
 ])
 
-ORDER_PUBLISHED_SCHEMA = T.StructType([
+ORDER_PUBLICATION_SCHEMA = T.StructType([
     T.StructField("tenant", TENANT_KEY_SCHEMA, False),
     T.StructField("business", BUSINESS_DATE_SCHEMA, False),
     T.StructField("id", T.StringType(), False),
@@ -84,5 +84,10 @@ ORDER_PUBLISHED_SCHEMA = T.StructType([
     T.StructField("tracking_number", T.StringType(), True),
     T.StructField("shipped_at", T.TimestampType(), True),
     T.StructField("is_large", T.BooleanType(), False),
+])
+
+PUBLICATION_FLAGS_SCHEMA = T.StructType([
     T.StructField("has_promotion", T.BooleanType(), False),
 ])
+
+ORDER_PUBLISHED_SCHEMA = T.StructType(ORDER_PUBLICATION_SCHEMA.fields + PUBLICATION_FLAGS_SCHEMA.fields)

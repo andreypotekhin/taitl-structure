@@ -226,8 +226,7 @@ but may not be available after symbolic execution without source analysis.
 Field names are never resolved by unqualified strings after a join. Developers refer to fields through symbolic scopes:
 
 ```python
-return OrderWithCustomer(
-    id=order.id,
+return OrderWithCustomer.base(order)(
     customer_id=customer.id,
 )
 ```
@@ -235,7 +234,7 @@ return OrderWithCustomer(
 Rules:
 
 - A collision between `order.id` and `customer.id` is harmless while expressions remain scoped.
-- The output schema constructor determines final output field names.
+- The output schema constructor or schema base overlay determines final output field names.
 - A duplicate output field name is a schema construction issue, not a join issue.
 - Generated PySpark must use qualified column references and explicit aliases.
 - Structure must not implicitly append right-side columns to the output.

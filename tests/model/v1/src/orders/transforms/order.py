@@ -24,6 +24,7 @@ from orders.schemas.order import (
     OrderWithCustomer,
     OrderWithProduct,
     OrderWithPromotion,
+    PublicationFlags,
 )
 from orders.schemas.product import Product
 from orders.schemas.promotion import Promotion
@@ -88,22 +89,7 @@ class EnrichOrders(Transform):
             hint=JoinHint.BROADCAST,
         )
 
-        return OrderWithCustomer(
-            tenant=order.tenant,
-            audit=order.audit,
-            business=order.business,
-            id=order.id,
-            customer_id=order.customer_id,
-            product_id=order.product_id,
-            promotion_code=order.promotion_code,
-            total=order.total,
-            discount=order.discount,
-            net_total=order.net_total,
-            quantity=order.quantity,
-            tags=order.tags,
-            attributes=order.attributes,
-            shipping=order.shipping,
-            is_large=order.is_large,
+        return OrderWithCustomer.base(order)(
             customer_name=customer.name,
             customer_tier=customer.tier,
             customer_region=customer.region,
@@ -117,25 +103,7 @@ class EnrichOrders(Transform):
 
         where(product.id.is_not_null())
 
-        return OrderWithProduct(
-            tenant=order.tenant,
-            audit=order.audit,
-            business=order.business,
-            id=order.id,
-            customer_id=order.customer_id,
-            product_id=order.product_id,
-            promotion_code=order.promotion_code,
-            total=order.total,
-            discount=order.discount,
-            net_total=order.net_total,
-            quantity=order.quantity,
-            tags=order.tags,
-            attributes=order.attributes,
-            shipping=order.shipping,
-            is_large=order.is_large,
-            customer_name=order.customer_name,
-            customer_tier=order.customer_tier,
-            customer_region=order.customer_region,
+        return OrderWithProduct.base(order)(
             product_name=product.name,
             product_category=product.category,
             product_active=product.active,
@@ -149,29 +117,7 @@ class EnrichOrders(Transform):
             how=Join.LEFT,
         )
 
-        return OrderWithPromotion(
-            tenant=order.tenant,
-            audit=order.audit,
-            business=order.business,
-            id=order.id,
-            customer_id=order.customer_id,
-            product_id=order.product_id,
-            promotion_code=order.promotion_code,
-            total=order.total,
-            discount=order.discount,
-            net_total=order.net_total,
-            quantity=order.quantity,
-            tags=order.tags,
-            attributes=order.attributes,
-            shipping=order.shipping,
-            is_large=order.is_large,
-            customer_name=order.customer_name,
-            customer_tier=order.customer_tier,
-            customer_region=order.customer_region,
-            product_name=order.product_name,
-            product_category=order.product_category,
-            product_active=order.product_active,
-            product_list_price=order.product_list_price,
+        return OrderWithPromotion.base(order)(
             promotion_name=promotion.name,
             promotion_discount=promotion.discount,
         )
@@ -181,23 +127,11 @@ class EnrichOrders(Transform):
         return df.withColumn("_lookup_inputs_seen", F.lit(inputs.customers is not None and inputs.products is not None))
 
     def publish(self, order: OrderWithPromotion) -> OrderPublished:
-        return OrderPublished(
-            tenant=order.tenant,
-            business=order.business,
-            id=order.id,
-            customer_id=order.customer_id,
-            customer_name=order.customer_name,
-            customer_tier=order.customer_tier,
-            product_name=order.product_name,
-            product_category=order.product_category,
-            promotion_name=order.promotion_name,
-            total=order.total,
-            discount=order.discount,
-            net_total=order.net_total,
-            quantity=order.quantity,
-            is_large=order.is_large,
+        flags = PublicationFlags(
             has_promotion=order.promotion_name.is_not_null(),
         )
+
+        return OrderPublished.base(order, flags)
 
     @after(publish, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True, streaming_safe=True)
     def add_quality_columns(self, *, df, spark, ctx):

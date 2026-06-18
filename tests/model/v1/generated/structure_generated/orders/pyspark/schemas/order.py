@@ -59,7 +59,7 @@ ORDER_WITH_PROMOTION_SCHEMA = T.StructType(ORDER_WITH_PRODUCT_SCHEMA.fields + [
     T.StructField("promotion_discount", T.DecimalType(12, 2), True),
 ])
 
-ORDER_PUBLISHED_SCHEMA = T.StructType([
+ORDER_PUBLICATION_SCHEMA = T.StructType([
     T.StructField("tenant", TENANT_KEY_SCHEMA, False),
     T.StructField("business", BUSINESS_DATE_SCHEMA, False),
     T.StructField("id", T.StringType(), False),
@@ -74,5 +74,10 @@ ORDER_PUBLISHED_SCHEMA = T.StructType([
     T.StructField("net_total", T.DecimalType(12, 2), False),
     T.StructField("quantity", T.LongType(), False),
     T.StructField("is_large", T.BooleanType(), False),
+])
+
+PUBLICATION_FLAGS_SCHEMA = T.StructType([
     T.StructField("has_promotion", T.BooleanType(), False),
 ])
+
+ORDER_PUBLISHED_SCHEMA = T.StructType(ORDER_PUBLICATION_SCHEMA.fields + PUBLICATION_FLAGS_SCHEMA.fields)

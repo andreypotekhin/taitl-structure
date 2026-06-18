@@ -40,6 +40,8 @@ dependencies.
 - As a developer, I can build serial joins across arbitrary numbers of named inputs.
 - As a developer, I can specify join type with enums.
 - As a developer, I can specify join hints with enums.
+- As a developer, I can use schema base overlays in enrichment joins so joined fields can be added without repeating
+  every inherited field.
 - As a developer, I can inspect compiler provenance from source node to IR node to generated PySpark node.
 - As a developer, I can inspect static dataflow lineage for transform, table, and column dependencies inferred from IR.
 - As a developer, I can run `structure compile --fail-on-diff` in CI.
@@ -56,10 +58,8 @@ def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
         hint=JoinHint.BROADCAST,
     )
 
-    return OrderWithCustomer(
-        id=order.id,
+    return OrderWithCustomer.base(order)(
         customer_name=customer.name,
-        total=order.total,
     )
 ```
 
@@ -77,8 +77,8 @@ customers_df = F.broadcast(customers.alias("customers"))
 
     df = df.select(
         F.col("order_normalized.id").alias("id"),
+        # Additional inherited order fields are emitted explicitly here.
         F.col("customers.name").alias("customer_name"),
-        F.col("order_normalized.total").alias("total"),
     )
 ```
 
@@ -90,7 +90,7 @@ customers_df = F.broadcast(customers.alias("customers"))
 4. Implement join IR.
 5. Generate PySpark joins.
 6. Generate predictable aliases.
-7. Add N-step serial join fixture with more than three inputs.
+7. Add N-step serial join fixture with more than three inputs and schema base overlay returns.
 8. Add compiler provenance records.
 9. Infer static dataflow lineage from IR.
 10. Implement `structure explain`.
@@ -101,6 +101,8 @@ customers_df = F.broadcast(customers.alias("customers"))
 
 - Single lookup join compiles and runs.
 - Serial join with at least five named inputs compiles and runs.
+- Join enrichment examples can use `SchemaClass.base(row)(joined_field=...)` without changing generated projection
+  semantics.
 - Diagnostics can show source node, IR node, and generated PySpark node for supported compiler errors.
 - `structure explain` shows transform, table, and column dependencies inferred from IR.
 - `--fail-on-diff` fails when generated code differs.

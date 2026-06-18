@@ -62,7 +62,7 @@ class OrderFulfillment(OrderWithPromotion):
     shipped_at = field(Timestamp(), nullable=True)
 
 
-class OrderPublished(Schema):
+class OrderPublication(Schema):
     tenant = field(Struct(TenantKey), nullable=False)
     business = field(Struct(BusinessDate), nullable=False)
     id = field(String(), nullable=False, primary_key=True)
@@ -80,4 +80,11 @@ class OrderPublished(Schema):
     tracking_number = field(String(), nullable=True)
     shipped_at = field(Timestamp(), nullable=True)
     is_large = field(Boolean(), nullable=False)
+
+
+class PublicationFlags(Schema):
     has_promotion = field(Boolean(), nullable=False)
+
+
+class OrderPublished(OrderPublication, PublicationFlags):
+    pass

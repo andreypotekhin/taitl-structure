@@ -242,6 +242,67 @@ Rules:
 - Positional arguments are rejected.
 - Field keyword order may differ from declaration order; generated projection order follows schema declaration order.
 
+For schemas that extend earlier schema rows, a schema class may also start from one or more base rows and then overlay
+explicit fields:
+
+```python
+return OrderWithCustomer.base(order)(
+    customer_name=customer.name,
+    customer_tier=customer.tier,
+    customer_region=customer.region,
+)
+```
+
+`SchemaClass.base(...)` is symbolic construction syntax, not a nested field and not a runtime row object. The compiler
+expands it to the same explicit projection IR as the full constructor form. Generated PySpark remains an explicit
+`select(...)` in target schema field order.
+
+Base overlay rules:
+
+- `SchemaClass.base(source)(...)` copies inherited target fields from `source` and applies explicit keyword overrides.
+- Explicit keyword overrides always win over copied fields.
+- Extra fields on a source row are ignored.
+- Unknown override keywords are errors.
+- Missing target fields are errors.
+- Copied fields must be type- and nullability-compatible with the target field unless explicitly overridden.
+- `SchemaClass.base(source)` without the second call is valid only when every target field can be copied safely.
+- For a target schema with one direct schema base, `base(...)` takes one source row compatible with that base.
+- For a target schema with multiple direct schema bases, `base(...)` takes one source row per direct schema base, in the
+  same left-to-right order as the class declaration.
+- Fields introduced locally by the target schema must be supplied as explicit overrides unless they can be copied by a
+  later spec-defined default.
+- Fields locally overriding inherited fields must be supplied explicitly; this keeps changed type, nullability,
+  metadata, or meaning visible at the construction site.
+
+Example with multiple schema bases:
+
+```python
+class OrderPublication(Schema):
+    id = field(String(), nullable=False, primary_key=True)
+    customer_name = field(String(), nullable=True)
+    total = field(Decimal(12, 2), nullable=False)
+
+
+class PublicationFlags(Schema):
+    has_promotion = field(Boolean(), nullable=False)
+
+
+class OrderPublished(OrderPublication, PublicationFlags):
+    pass
+
+
+flags = PublicationFlags(
+    has_promotion=order.promotion_name.is_not_null(),
+)
+
+
+return OrderPublished.base(order, flags)
+```
+
+In this example, fields inherited through `OrderPublication` are copied from `order`, and fields inherited through
+`PublicationFlags` are copied from `flags`. The source `order` may have extra fields from earlier enrichment stages;
+only fields needed by `OrderPublication` are copied.
+
 ## Diagnostics
 
 Schema declaration diagnostics must include:
@@ -316,7 +377,8 @@ fixtures, and generated examples must use only the canonical explicit type-objec
 9. Validate array and struct nested type expressions.
 10. Generate deterministic Spark `StructType` code.
 11. Add diagnostics that link to this specification.
-12. Update docs and fixtures to canonical syntax.
+12. Implement schema base overlay construction for inherited transform outputs.
+13. Update docs and fixtures to canonical syntax.
 
 ## Acceptance Criteria
 
@@ -331,5 +393,8 @@ fixtures, and generated examples must use only the canonical explicit type-objec
 - `total = field(Decimal(2, 12))` is rejected with a precision/scale diagnostic.
 - Generated Spark schema code matches the declared field order.
 - Schema-to-schema inheritance follows `SchemaInheritance.spec.md`.
+- `SchemaClass.base(source)(overrides...)` constructs the same projection as an equivalent explicit constructor.
+- `SchemaClass.base(source_a, source_b)(overrides...)` maps source rows to multiple direct schema bases in declaration
+  order.
 - `structure check` does not import PySpark only to inspect schema declarations.
 - Public examples in `Readme.md` and `docs/` use explicit type objects.

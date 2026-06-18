@@ -111,10 +111,8 @@ class EnrichOrders(Transform):
             hint=JoinHint.BROADCAST,
         )
 
-        return OrderWithCustomer(
-            id=order.id,
+        return OrderWithCustomer.base(order)(
             customer_name=customer.name,
-            total=order.total,
         )
 ```
 

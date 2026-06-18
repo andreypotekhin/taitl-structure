@@ -67,6 +67,7 @@ class NormalizeOrdersGenerated:
 - Hooks.
 - Joins.
 - Lineage.
+- Schema base overlay construction.
 
 ## Relevant Specification Items
 

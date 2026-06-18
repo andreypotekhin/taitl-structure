@@ -18,6 +18,7 @@ Developers can write useful compiled transforms without falling back to PySpark 
 - `where(...)` filtering.
 - Class-local `@expr_fn` helpers without `self` parameter.
 - Module-level `@expr_fn` helpers.
+- Schema base overlay construction with `SchemaClass.base(row)(...)`.
 - Structured unsupported-code errors.
 - Error suggestions: direct DSL, `@expr_fn`, hook, config workaround when applicable.
 - Performance guardrail tests.
@@ -35,6 +36,7 @@ Developers can write useful compiled transforms without falling back to PySpark 
 - As a developer, I can use `where(...)` for filtering.
 - As a developer, I can define module-level `@expr_fn` helpers.
 - As a developer, I can define class-local `@expr_fn` helpers without a `self` parameter.
+- As a developer, I can construct an output schema from inherited base schema rows plus explicit overrides.
 - As a developer, I receive structured compiler errors for unsupported Python.
 - As a developer, I receive alternatives including DSL functions, `@expr_fn`, hooks, and config workarounds.
 - As a developer, compiled paths do not silently fall back to UDFs.
@@ -79,10 +81,11 @@ df = orders.where(
 4. Implement `where(...)` context capture.
 5. Implement `@expr_fn` decorator.
 6. Support class-local helper invocation through `self`.
-7. Implement unsupported operation traps.
-8. Implement structured compiler error model.
-9. Add detailed error message rendering.
-10. Add static generated-code performance scans.
+7. Implement schema base overlay construction and lower it to projection IR.
+8. Implement unsupported operation traps.
+9. Implement structured compiler error model.
+10. Add detailed error message rendering.
+11. Add static generated-code performance scans.
 
 ## Acceptance Criteria
 
@@ -92,6 +95,8 @@ df = orders.where(
 - Error suggests `lower(trim(...))`.
 - Error suggests creating `@expr_fn`.
 - Error suggests a hook escape hatch.
+- `SchemaClass.base(row)(overrides...)` compiles to the same explicit projection as the equivalent full constructor.
+- Multiple-base overlays map source rows to direct schema bases in declaration order.
 - Generated code contains no UDFs.
 
 ## Demo Script

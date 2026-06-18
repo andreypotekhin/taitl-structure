@@ -201,6 +201,8 @@ customer_id=self.clean_id(order.customer_id)
 ## Joins
 
 Use symbolic joins.
+When the output schema inherits the current row schema, use `SchemaClass.base(row)(...)` to copy inherited fields and
+name only the joined fields.
 
 ```python
 def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
@@ -210,8 +212,7 @@ def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
         hint=JoinHint.BROADCAST,
     )
 
-    return OrderWithCustomer(
-        id=order.id,
+    return OrderWithCustomer.base(order)(
         customer_name=customer.name,
     )
 ```
@@ -228,6 +229,7 @@ df = df.join(
     "left",
 ).select(
     F.col("order_normalized.id").alias("id"),
+    # Additional inherited order fields are emitted explicitly here.
     F.col("customers.name").alias("customer_name"),
 )
 ```

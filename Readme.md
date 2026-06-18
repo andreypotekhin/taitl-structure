@@ -89,13 +89,9 @@ class EnrichOrders(Transform):
             hint=JoinHint.BROADCAST,
         )
 
-        return OrderWithCustomer(
-            id=order.id,
-            customer_id=order.customer_id,
+        return OrderWithCustomer.base(order)(
             customer_name=customer.name,
             customer_tier=customer.tier,
-            product_id=order.product_id,
-            total=order.total,
         )
 
     def add_product(self, order: OrderWithCustomer) -> OrderEnriched:
@@ -106,15 +102,9 @@ class EnrichOrders(Transform):
 
         where(product.id.is_not_null())
 
-        return OrderEnriched(
-            id=order.id,
-            customer_id=order.customer_id,
-            customer_name=order.customer_name,
-            customer_tier=order.customer_tier,
-            product_id=order.product_id,
+        return OrderEnriched.base(order)(
             product_name=product.name,
             product_category=product.category,
-            total=order.total,
         )
 
     @after(add_product, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)

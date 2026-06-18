@@ -63,6 +63,18 @@ class EnrichOrders(Transform):
             total=to_decimal(order.total, precision=12, scale=2),
         )
 
+    def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
+        customer = self.customers.join_one(
+            on=self.customers.id == order.customer_id,
+            how=Join.LEFT,
+            hint=JoinHint.BROADCAST,
+        )
+
+        return OrderWithCustomer.base(order)(
+            customer_name=customer.name,
+            customer_tier=customer.tier,
+        )
+
     @after(normalize)
     def remove_negative_totals(self, *, df, spark, ctx):
         return df.where(F.col("total") >= 0)
@@ -77,6 +89,9 @@ class EnrichOrders(Transform):
 - `@transform` marks classes for generation.
 - `input(Schema)` declares named DataFrame inputs.
 - Public instance methods returning `Schema` types are compiled subtransforms.
+- `SchemaClass.base(row)(...)` constructs an output schema by copying inherited fields from symbolic base rows and
+  overlaying explicit field expressions.
+- For multiple direct schema bases, `SchemaClass.base(...)` receives one row per direct base in declaration order.
 - `where(...)` records filter expressions in the current symbolic context.
 - `@expr_fn` functions execute symbolically and must return expressions.
 - `@after(method)` and `@before(method)` attach arbitrary PySpark hooks.

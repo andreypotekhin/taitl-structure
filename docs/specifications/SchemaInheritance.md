@@ -198,6 +198,34 @@ class CustomerRaw(EntityKeys):
 `OrderRaw` and `CustomerRaw` have compatible field structure but different schema identities. Transform flow validation
 uses schema identity unless a compatibility rule explicitly asks for structural compatibility.
 
+## Base Overlay Construction
+
+Transform methods may construct inherited output schemas with `SchemaClass.base(...)(...)`, as specified in
+`docs/specifications/SchemaDeclarationSyntax.md`.
+
+For a schema with one direct schema base, `base(...)` takes one symbolic source row compatible with that base. For a
+schema with multiple direct schema bases, `base(...)` takes one symbolic source row for each direct base in the same
+left-to-right order as the class declaration. The compiler maps fields by inherited field origin, not by searching all
+sources for a matching field name.
+
+```python
+class OrderPublished(OrderPublication, PublicationFlags):
+    pass
+
+
+flags = PublicationFlags(
+    has_promotion=order.promotion_name.is_not_null(),
+)
+
+return OrderPublished.base(order, flags)
+```
+
+In this example, fields inherited through `OrderPublication` are copied from `order`, and fields inherited through
+`PublicationFlags` are copied from `flags`. The `order` row may have extra fields from earlier enrichment stages; only
+fields required by `OrderPublication` are copied. Fields introduced locally by a target schema, and inherited fields
+locally overridden by a target schema, must be supplied explicitly in the overlay call. This keeps changed meaning
+visible at the construction site.
+
 ## Nested Structs
 
 `Struct(SchemaClass)` uses the effective inherited field set of `SchemaClass`.

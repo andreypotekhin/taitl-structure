@@ -80,6 +80,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can use method return annotations to define intermediate schema transitions.
 - As a developer, I can rely on source order for subtransform execution so that pipeline flow is readable.
 - As a developer, I can chain subtransforms by return type and next input type so that schema flow is validated.
+- As a developer, I can construct an output schema from inherited base schema rows plus explicit overrides so that
+  enrichment transforms do not repeat every inherited field.
 - As a developer, I can receive a structured compiler error when source order does not match type flow.
 - As a developer, I can make ordinary helper methods private with a leading underscore so that they are not treated as subtransforms.
 

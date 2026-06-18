@@ -50,6 +50,7 @@ provenance, static dataflow lineage, and build integration.
 - `@transform` class discovery.
 - `input(Schema)` declarations.
 - Public schema-returning methods as source-ordered subtransforms.
+- Schema base overlay construction for inherited output rows.
 - One generated PySpark class per transform class.
 - Generated `run(...)` methods.
 - Optional generated convenience functions.

@@ -55,7 +55,7 @@ class OrderWithPromotion(OrderWithProduct):
     promotion_discount = field(Decimal(12, 2), nullable=True)
 
 
-class OrderPublished(Schema):
+class OrderPublication(Schema):
     tenant = field(Struct(TenantKey), nullable=False)
     business = field(Struct(BusinessDate), nullable=False)
     id = field(String(), nullable=False, primary_key=True)
@@ -70,4 +70,11 @@ class OrderPublished(Schema):
     net_total = field(Decimal(12, 2), nullable=False)
     quantity = field(Long(), nullable=False)
     is_large = field(Boolean(), nullable=False)
+
+
+class PublicationFlags(Schema):
     has_promotion = field(Boolean(), nullable=False)
+
+
+class OrderPublished(OrderPublication, PublicationFlags):
+    pass
