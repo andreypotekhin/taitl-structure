@@ -78,7 +78,7 @@ Configuration workaround:
 Only suggest config when it really applies. Examples:
 
 - `validate_intermediate = false` for intermediate validation failures.
-- `lineage = "none"` for lineage generation performance.
+- `lineage = "none"` for compiler provenance and static dataflow lineage performance.
 - `strict_performance = false` for hook lint warnings, not compiled subtransform fallback.
 
 ## Compile-Time Performance

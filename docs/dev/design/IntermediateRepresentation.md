@@ -17,7 +17,8 @@ TransformPlan
   steps
   output_schema
   validation_policy
-  lineage_record
+  provenance
+  dataflow
 
 StepPlan
   name
@@ -91,7 +92,7 @@ StepPlan IR
   ↓ checks
 TransformPlan IR
   ↓ emitters
-Generated PySpark + lineage
+Generated PySpark + compiler provenance + static dataflow lineage
 ```
 
 ## Compile-Time Performance

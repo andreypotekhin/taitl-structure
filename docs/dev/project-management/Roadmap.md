@@ -34,7 +34,8 @@ namespace. Other layouts remain configurable.
 
 ## v1 Scope
 
-v1 focuses on schema-driven projection, filtering, joins, hooks, generated PySpark classes, validation, basic lineage, and build integration.
+v1 focuses on schema-driven projection, filtering, joins, hooks, generated PySpark classes, validation, compiler
+provenance, static dataflow lineage, and build integration.
 
 ### v1 must include
 
@@ -55,7 +56,8 @@ v1 focuses on schema-driven projection, filtering, joins, hooks, generated PySpa
 - Clean generated code with no hook machinery for hook-free transforms.
 - `join_one(...)` symbolic joins.
 - N-step serial joins across arbitrary named inputs.
-- Basic LDJSON lineage.
+- Compiler provenance from source node to IR node to generated PySpark node.
+- Static dataflow lineage inferred from IR for transform, table, and column dependencies.
 - CLI `check`, `compile`, `explain`.
 - Small TOML configuration with seed defaults, explicit resolution order, and schema validation diagnostics.
 - Python 3.11+ and PySpark 3.5.x/4.0.x compatibility policy.
@@ -75,7 +77,7 @@ v2 extends the compiler IR and emitter with advanced Spark operations while pres
 - Spark higher-order functions for arrays/maps where compiler-visible.
 - Manual optimization directives: caching, persistence, repartition/coalesce, checkpoint hints.
 - Advanced join strategies: broadcast, shuffle hash, sort merge hints, lookup projection, prejoin dedupe warnings.
-- Optional field-level LDJSON lineage.
+- Richer static dataflow explain output.
 - More complete generated-code explain reports.
 
 ## v3 Scope
@@ -102,5 +104,5 @@ callers pass streaming DataFrames.
 | M2 | Schema validation and generated class polish | Sprint 02 |
 | M3 | Practical expression DSL and diagnostics | Sprint 03 |
 | M4 | Hook model and no-hook generated-code cleanliness | Sprint 04 |
-| M5 | Joins, lineage, build integration | Sprint 05 |
+| M5 | Joins, compiler lineage, build integration | Sprint 05 |
 | M6 | v1 stabilization and docs/examples | follow-up hardening sprint |

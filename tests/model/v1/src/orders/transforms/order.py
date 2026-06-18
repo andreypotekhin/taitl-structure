@@ -56,10 +56,9 @@ class EnrichOrders(Transform):
         discount = self.money(order.discount)
 
         return OrderNormalized(
-            tenant_id=self.clean_id(order.tenant_id),
-            source_system=order.source_system,
-            ingested_at=order.ingested_at,
-            order_date=order.order_date,
+            tenant=order.tenant,
+            audit=order.audit,
+            business=order.business,
             id=self.clean_id(order.id),
             customer_id=self.clean_id(order.customer_id),
             product_id=self.clean_id(order.product_id),
@@ -86,17 +85,16 @@ class EnrichOrders(Transform):
 
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
         customer = self.customers.join_one(
-            on=(self.customers.tenant_id == order.tenant_id)
+            on=(self.customers.tenant.tenant_id == order.tenant.tenant_id)
             & (self.clean_id(self.customers.id) == order.customer_id),
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
         )
 
         return OrderWithCustomer(
-            tenant_id=order.tenant_id,
-            source_system=order.source_system,
-            ingested_at=order.ingested_at,
-            order_date=order.order_date,
+            tenant=order.tenant,
+            audit=order.audit,
+            business=order.business,
             id=order.id,
             customer_id=order.customer_id,
             product_id=order.product_id,
@@ -116,17 +114,16 @@ class EnrichOrders(Transform):
 
     def add_product(self, order: OrderWithCustomer) -> OrderWithProduct:
         product = self.products.join_one(
-            on=(self.products.tenant_id == order.tenant_id) & (self.products.id == order.product_id),
+            on=(self.products.tenant.tenant_id == order.tenant.tenant_id) & (self.products.id == order.product_id),
             how=Join.LEFT,
         )
 
         where(product.id.is_not_null())
 
         return OrderWithProduct(
-            tenant_id=order.tenant_id,
-            source_system=order.source_system,
-            ingested_at=order.ingested_at,
-            order_date=order.order_date,
+            tenant=order.tenant,
+            audit=order.audit,
+            business=order.business,
             id=order.id,
             customer_id=order.customer_id,
             product_id=order.product_id,
@@ -150,16 +147,15 @@ class EnrichOrders(Transform):
 
     def add_promotion(self, order: OrderWithProduct) -> OrderWithPromotion:
         promotion = self.promotions.join_one(
-            on=(self.promotions.tenant_id == order.tenant_id)
+            on=(self.promotions.tenant.tenant_id == order.tenant.tenant_id)
             & self.clean_id(self.promotions.code).null_safe_eq(order.promotion_code),
             how=Join.LEFT,
         )
 
         return OrderWithPromotion(
-            tenant_id=order.tenant_id,
-            source_system=order.source_system,
-            ingested_at=order.ingested_at,
-            order_date=order.order_date,
+            tenant=order.tenant,
+            audit=order.audit,
+            business=order.business,
             id=order.id,
             customer_id=order.customer_id,
             product_id=order.product_id,
@@ -185,15 +181,14 @@ class EnrichOrders(Transform):
 
     def add_shipments(self, order: OrderWithPromotion) -> OrderFulfillment:
         shipment = self.shipments.join_many(
-            on=(self.shipments.tenant_id == order.tenant_id) & (self.shipments.order_id == order.id),
+            on=(self.shipments.tenant.tenant_id == order.tenant.tenant_id) & (self.shipments.order_id == order.id),
             how=Join.INNER,
         )
 
         return OrderFulfillment(
-            tenant_id=order.tenant_id,
-            source_system=order.source_system,
-            ingested_at=order.ingested_at,
-            order_date=order.order_date,
+            tenant=order.tenant,
+            audit=order.audit,
+            business=order.business,
             id=order.id,
             customer_id=order.customer_id,
             product_id=order.product_id,
@@ -227,7 +222,8 @@ class EnrichOrders(Transform):
 
     def publish(self, order: OrderFulfillment) -> OrderPublished:
         return OrderPublished(
-            tenant_id=order.tenant_id,
+            tenant=order.tenant,
+            business=order.business,
             id=order.id,
             customer_id=order.customer_id,
             customer_name=order.customer_name,
@@ -239,7 +235,6 @@ class EnrichOrders(Transform):
             discount=order.discount,
             net_total=order.net_total,
             quantity=order.quantity,
-            order_date=order.order_date,
             carrier=order.carrier,
             tracking_number=order.tracking_number,
             shipped_at=order.shipped_at,

@@ -28,9 +28,8 @@ validate_outputs = true
 spark.sql.ansi.enabled = true
 spark.sql.storeAssignmentPolicy = "ANSI"
 
-# Lineage output: none, basic, fields, debug.
-lineage = "basic"
-lineage_format = "ldjson"
+# Compiler lineage output: none, compiler, columns, debug.
+lineage = "compiler"
 
 # Streaming compatibility checks for generated DataFrame transforms.
 # v1/v2 do not generate readStream/writeStream orchestration.

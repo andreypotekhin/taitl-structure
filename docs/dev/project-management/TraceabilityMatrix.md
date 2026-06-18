@@ -9,7 +9,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 02 Schemas and Validation | Schema Validation, Generated Code, Configuration | `StructType` generation, `assert_schema`, intermediate validation defaults |
 | Sprint 03 Expressions/Filtering/Helpers | Symbolic Execution, Expression Helpers, Filtering, Error Reporting | expression IR, `where`, `@expr_fn`, structured unsupported-code errors |
 | Sprint 04 Hooks/Generated Classes | Hooks, Generated Code, Error Reporting | `@after(method)`, direct hook calls, no-hook cleanliness |
-| Sprint 05 Joins/Lineage/Build | Joins, Lineage, Build Integration, Streaming Compatibility | `join_one`, N-step joins, LDJSON lineage, `--fail-on-diff`, `explain` |
+| Sprint 05 Joins/Compiler Lineage/Build | Joins, Compiler Lineage, Build Integration, Streaming Compatibility | `join_one`, N-step joins, compiler provenance, static dataflow lineage, `--fail-on-diff`, `explain` |
 
 ## Relevant Specification Items by Sprint
 
@@ -61,7 +61,8 @@ This matrix maps early sprints to specification sections and major deliverables.
 
 - As a developer, I can perform symbolic `join_one(...)` joins.
 - As a developer, I can build serial joins across arbitrary numbers of named inputs.
-- As a developer, I can generate basic LDJSON lineage.
+- As a developer, I can inspect compiler provenance from source node to IR node to generated PySpark node.
+- As a developer, I can inspect static dataflow lineage for transform, table, and column dependencies inferred from IR.
 - As a developer, I can run `structure compile --fail-on-diff` in CI.
 - As a developer, I can run compiler commands in ordinary Python CI without provisioning Spark.
 - As a developer, generated transforms remain streaming-compatible when Spark supports the operations used.

@@ -60,10 +60,9 @@ class EnrichOrdersGenerated:
             & F.col("customer_id").isNotNull()
             & F.col("product_id").isNotNull()
         ).select(
-            F.lower(F.trim(F.col("tenant_id"))).alias("tenant_id"),
-            F.col("source_system").alias("source_system"),
-            F.col("ingested_at").alias("ingested_at"),
-            F.col("order_date").alias("order_date"),
+            F.col("tenant").alias("tenant"),
+            F.col("audit").alias("audit"),
+            F.col("business").alias("business"),
             F.lower(F.trim(F.col("id"))).alias("id"),
             F.lower(F.trim(F.col("customer_id"))).alias("customer_id"),
             F.lower(F.trim(F.col("product_id"))).alias("product_id"),
@@ -86,14 +85,13 @@ class EnrichOrdersGenerated:
         customers_df = F.broadcast(customers.alias("customers"))
         df = df.join(
             customers_df,
-            (F.col("customers.tenant_id") == F.col("order_normalized.tenant_id"))
+            (F.col("customers.tenant.tenant_id") == F.col("order_normalized.tenant.tenant_id"))
             & (F.lower(F.trim(F.col("customers.id"))) == F.col("order_normalized.customer_id")),
             "left",
         ).select(
-            F.col("order_normalized.tenant_id").alias("tenant_id"),
-            F.col("order_normalized.source_system").alias("source_system"),
-            F.col("order_normalized.ingested_at").alias("ingested_at"),
-            F.col("order_normalized.order_date").alias("order_date"),
+            F.col("order_normalized.tenant").alias("tenant"),
+            F.col("order_normalized.audit").alias("audit"),
+            F.col("order_normalized.business").alias("business"),
             F.col("order_normalized.id").alias("id"),
             F.col("order_normalized.customer_id").alias("customer_id"),
             F.col("order_normalized.product_id").alias("product_id"),
@@ -117,16 +115,15 @@ class EnrichOrdersGenerated:
         products_df = products.alias("products")
         df = df.join(
             products_df,
-            (F.col("products.tenant_id") == F.col("order_with_customer.tenant_id"))
+            (F.col("products.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id"))
             & (F.col("products.id") == F.col("order_with_customer.product_id")),
             "left",
         ).where(
             F.col("products.id").isNotNull()
         ).select(
-            F.col("order_with_customer.tenant_id").alias("tenant_id"),
-            F.col("order_with_customer.source_system").alias("source_system"),
-            F.col("order_with_customer.ingested_at").alias("ingested_at"),
-            F.col("order_with_customer.order_date").alias("order_date"),
+            F.col("order_with_customer.tenant").alias("tenant"),
+            F.col("order_with_customer.audit").alias("audit"),
+            F.col("order_with_customer.business").alias("business"),
             F.col("order_with_customer.id").alias("id"),
             F.col("order_with_customer.customer_id").alias("customer_id"),
             F.col("order_with_customer.product_id").alias("product_id"),
@@ -154,14 +151,13 @@ class EnrichOrdersGenerated:
         promotions_df = promotions.alias("promotions")
         df = df.join(
             promotions_df,
-            (F.col("promotions.tenant_id") == F.col("order_with_product.tenant_id"))
+            (F.col("promotions.tenant.tenant_id") == F.col("order_with_product.tenant.tenant_id"))
             & F.lower(F.trim(F.col("promotions.code"))).eqNullSafe(F.col("order_with_product.promotion_code")),
             "left",
         ).select(
-            F.col("order_with_product.tenant_id").alias("tenant_id"),
-            F.col("order_with_product.source_system").alias("source_system"),
-            F.col("order_with_product.ingested_at").alias("ingested_at"),
-            F.col("order_with_product.order_date").alias("order_date"),
+            F.col("order_with_product.tenant").alias("tenant"),
+            F.col("order_with_product.audit").alias("audit"),
+            F.col("order_with_product.business").alias("business"),
             F.col("order_with_product.id").alias("id"),
             F.col("order_with_product.customer_id").alias("customer_id"),
             F.col("order_with_product.product_id").alias("product_id"),
@@ -191,14 +187,13 @@ class EnrichOrdersGenerated:
         shipments_df = shipments.alias("shipments")
         df = df.join(
             shipments_df,
-            (F.col("shipments.tenant_id") == F.col("order_with_promotion.tenant_id"))
+            (F.col("shipments.tenant.tenant_id") == F.col("order_with_promotion.tenant.tenant_id"))
             & (F.col("shipments.order_id") == F.col("order_with_promotion.id")),
             "inner",
         ).select(
-            F.col("order_with_promotion.tenant_id").alias("tenant_id"),
-            F.col("order_with_promotion.source_system").alias("source_system"),
-            F.col("order_with_promotion.ingested_at").alias("ingested_at"),
-            F.col("order_with_promotion.order_date").alias("order_date"),
+            F.col("order_with_promotion.tenant").alias("tenant"),
+            F.col("order_with_promotion.audit").alias("audit"),
+            F.col("order_with_promotion.business").alias("business"),
             F.col("order_with_promotion.id").alias("id"),
             F.col("order_with_promotion.customer_id").alias("customer_id"),
             F.col("order_with_promotion.product_id").alias("product_id"),
@@ -232,7 +227,8 @@ class EnrichOrdersGenerated:
         # Subtransform: publish
         df = df.alias("order_fulfillment")
         df = df.select(
-            F.col("order_fulfillment.tenant_id").alias("tenant_id"),
+            F.col("order_fulfillment.tenant").alias("tenant"),
+            F.col("order_fulfillment.business").alias("business"),
             F.col("order_fulfillment.id").alias("id"),
             F.col("order_fulfillment.customer_id").alias("customer_id"),
             F.col("order_fulfillment.customer_name").alias("customer_name"),
@@ -244,7 +240,6 @@ class EnrichOrdersGenerated:
             F.col("order_fulfillment.discount").alias("discount"),
             F.col("order_fulfillment.net_total").alias("net_total"),
             F.col("order_fulfillment.quantity").alias("quantity"),
-            F.col("order_fulfillment.order_date").alias("order_date"),
             F.col("order_fulfillment.carrier").alias("carrier"),
             F.col("order_fulfillment.tracking_number").alias("tracking_number"),
             F.col("order_fulfillment.shipped_at").alias("shipped_at"),

@@ -27,7 +27,7 @@ Generated code should be tested by:
 - import execution
 - small Spark DataFrame input/output tests
 - schema validation failure tests
-- lineage output tests
+- compiler provenance and static dataflow lineage tests
 
 ## Negative Compiler and Diagnostic Tests
 

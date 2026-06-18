@@ -26,7 +26,7 @@ Developers can rely on declared schemas to catch invalid DataFrame structure at 
 ### Out of Scope
 
 - Deep recursive schema graphs.
-- Field-level lineage.
+- Compiler lineage details.
 - Joins.
 - Hooks.
 

@@ -1,20 +1,16 @@
 from pyspark.sql import types as T
 
-
-SHIPPING_SCHEMA = T.StructType([
-    T.StructField("line1", T.StringType(), False),
-    T.StructField("line2", T.StringType(), True),
-    T.StructField("city", T.StringType(), False),
-    T.StructField("state", T.StringType(), True),
-    T.StructField("postal_code", T.StringType(), False),
-    T.StructField("country", T.StringType(), False),
-])
+from structure_generated.orders.pyspark.schemas.common import (
+    ADDRESS_SCHEMA,
+    AUDIT_STAMP_SCHEMA,
+    BUSINESS_DATE_SCHEMA,
+    TENANT_KEY_SCHEMA,
+)
 
 ORDER_RAW_SCHEMA = T.StructType([
-    T.StructField("tenant_id", T.StringType(), False),
-    T.StructField("source_system", T.StringType(), False),
-    T.StructField("ingested_at", T.TimestampType(), False),
-    T.StructField("order_date", T.DateType(), True),
+    T.StructField("tenant", TENANT_KEY_SCHEMA, False),
+    T.StructField("audit", AUDIT_STAMP_SCHEMA, False),
+    T.StructField("business", BUSINESS_DATE_SCHEMA, False),
     T.StructField("id", T.StringType(), False),
     T.StructField("customer_id", T.StringType(), False),
     T.StructField("product_id", T.StringType(), False),
@@ -24,14 +20,13 @@ ORDER_RAW_SCHEMA = T.StructType([
     T.StructField("quantity", T.IntegerType(), True),
     T.StructField("tags", T.ArrayType(T.StringType(), containsNull=False), True),
     T.StructField("attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),
-    T.StructField("shipping", SHIPPING_SCHEMA, True),
+    T.StructField("shipping", ADDRESS_SCHEMA, True),
 ])
 
 ORDER_NORMALIZED_SCHEMA = T.StructType([
-    T.StructField("tenant_id", T.StringType(), False),
-    T.StructField("source_system", T.StringType(), False),
-    T.StructField("ingested_at", T.TimestampType(), False),
-    T.StructField("order_date", T.DateType(), True),
+    T.StructField("tenant", TENANT_KEY_SCHEMA, False),
+    T.StructField("audit", AUDIT_STAMP_SCHEMA, False),
+    T.StructField("business", BUSINESS_DATE_SCHEMA, False),
     T.StructField("id", T.StringType(), False),
     T.StructField("customer_id", T.StringType(), False),
     T.StructField("product_id", T.StringType(), False),
@@ -42,7 +37,7 @@ ORDER_NORMALIZED_SCHEMA = T.StructType([
     T.StructField("quantity", T.LongType(), False),
     T.StructField("tags", T.ArrayType(T.StringType(), containsNull=False), True),
     T.StructField("attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),
-    T.StructField("shipping", SHIPPING_SCHEMA, True),
+    T.StructField("shipping", ADDRESS_SCHEMA, True),
     T.StructField("is_large", T.BooleanType(), False),
 ])
 
@@ -72,7 +67,8 @@ ORDER_FULFILLMENT_SCHEMA = T.StructType(ORDER_WITH_PROMOTION_SCHEMA.fields + [
 ])
 
 ORDER_PUBLISHED_SCHEMA = T.StructType([
-    T.StructField("tenant_id", T.StringType(), False),
+    T.StructField("tenant", TENANT_KEY_SCHEMA, False),
+    T.StructField("business", BUSINESS_DATE_SCHEMA, False),
     T.StructField("id", T.StringType(), False),
     T.StructField("customer_id", T.StringType(), False),
     T.StructField("customer_name", T.StringType(), True),
@@ -84,7 +80,6 @@ ORDER_PUBLISHED_SCHEMA = T.StructType([
     T.StructField("discount", T.DecimalType(12, 2), False),
     T.StructField("net_total", T.DecimalType(12, 2), False),
     T.StructField("quantity", T.LongType(), False),
-    T.StructField("order_date", T.DateType(), True),
     T.StructField("carrier", T.StringType(), True),
     T.StructField("tracking_number", T.StringType(), True),
     T.StructField("shipped_at", T.TimestampType(), True),

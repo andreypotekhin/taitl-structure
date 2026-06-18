@@ -31,7 +31,8 @@ compiler
   compileability checks
   IR generation
   code generation
-  lineage generation
+  compiler provenance
+  static dataflow lineage
 
         ↓
 
@@ -40,7 +41,7 @@ generated/structure_generated/
     schemas/
     transforms/
   runtime/
-  lineage/
+  lineage/  # compiler metadata, not runtime telemetry
 
         ↓
 
@@ -68,9 +69,9 @@ The compiler produces backend-neutral IR. The PySpark code generator lowers IR t
 This boundary is important for keeping up with PySpark evolution. PySpark API compatibility should be isolated in the PySpark emitter rather than scattered across discovery, symbolic execution, or checks.
 
 Compiler phases must not depend on a live Spark installation. Discovery, schema extraction, symbolic execution,
-compileability checks, IR construction, code generation, lineage generation, and generated-file diff checks run without
-PySpark imports, Java, a SparkSession, or a Spark cluster. Generated PySpark may depend on PySpark at runtime; the
-compiler itself must not.
+compileability checks, IR construction, code generation, compiler provenance, static dataflow lineage, and
+generated-file diff checks run without PySpark imports, Java, a SparkSession, or a Spark cluster. Generated PySpark may
+depend on PySpark at runtime; the compiler itself must not.
 
 The v1 default target is `target_pyspark = ">=3.5,<4.1"`, covering PySpark 3.5.x and 4.0.x. The emitter should prefer
 the oldest clear optimizer-visible API inside the configured range.

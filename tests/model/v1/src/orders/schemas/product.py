@@ -1,9 +1,11 @@
-from structure import Boolean, Decimal, Double, Float, Schema, String, field
+from structure import Boolean, Decimal, Double, Float, Schema, String, Struct, field
 
 from orders.schemas.common import AuditStamp, TenantKey
 
 
-class Product(TenantKey, AuditStamp):
+class Product(Schema):
+    tenant = field(Struct(TenantKey), nullable=False)
+    audit = field(Struct(AuditStamp), nullable=False)
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=True)
     category = field(String(), nullable=True)

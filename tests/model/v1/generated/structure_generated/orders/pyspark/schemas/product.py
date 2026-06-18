@@ -1,10 +1,11 @@
 from pyspark.sql import types as T
 
+from structure_generated.orders.pyspark.schemas.common import AUDIT_STAMP_SCHEMA, TENANT_KEY_SCHEMA
+
 
 PRODUCT_SCHEMA = T.StructType([
-    T.StructField("tenant_id", T.StringType(), False),
-    T.StructField("source_system", T.StringType(), False),
-    T.StructField("ingested_at", T.TimestampType(), False),
+    T.StructField("tenant", TENANT_KEY_SCHEMA, False),
+    T.StructField("audit", AUDIT_STAMP_SCHEMA, False),
     T.StructField("id", T.StringType(), False),
     T.StructField("name", T.StringType(), True),
     T.StructField("category", T.StringType(), True),

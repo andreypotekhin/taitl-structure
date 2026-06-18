@@ -291,22 +291,21 @@ Generated code targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column
 scheduled for v3 with backend and orchestration work, unless it can be added earlier without changing Structure source
 syntax, generated class construction, `run(...)` signatures, or generated-code reviewability.
 
-Generated PySpark, lineage LDJSON, and configuration each have explicit versioning rules. The public policy lives in
-`docs/Compatibility.md`.
+Generated PySpark, compiler lineage metadata, and configuration each have explicit versioning rules. The public policy
+lives in `docs/Compatibility.md`.
 
 ## Lineage
 
-Structure emits compact lineage by default as LDJSON.
+Structure records compact compiler lineage by default.
 
-Each LDJSON file starts with a version header. Each following line represents one completed transform, including:
+Compiler provenance maps source nodes to IR nodes to generated PySpark nodes. Static dataflow lineage records inferred
+transform, table, and column dependencies from the IR. Together, they let diagnostics explain where generated code came
+from and which upstream inputs affect a failing field or step.
 
-- consumed inputs
-- produced output
-- ordered nested step, join, and hook events
+Hook boundaries are explicit. Because hooks contain arbitrary PySpark, static dataflow should mark them opaque unless a
+future compiler-visible hook contract says otherwise.
 
-Field-level lineage is optional. Debug lineage may include full expression trees and source locations.
-
-LDJSON keeps lineage streamable, grep-friendly, and less bloated than one large nested document.
+Runtime LDJSON lineage is useful transform-run telemetry, but it is beyond the v1, v2, and v3 roadmap.
 
 ## Unsupported Code Detection
 
@@ -375,7 +374,8 @@ Compile-time performance is a product feature. Implementation should track metri
 - IR check time
 - code generation time
 - formatting time
-- lineage generation time
+- compiler provenance time
+- static dataflow lineage time
 - total wall-clock time
 
 The compiler should avoid starting Spark during normal compile/check operations.
@@ -393,11 +393,13 @@ Recommended implementation techniques:
 
 ### v1
 
-Projection, filtering, joins, typed intermediate schemas, generated PySpark classes, hooks, validation, basic LDJSON lineage, and streaming-compatible transforms.
+Projection, filtering, joins, typed intermediate schemas, generated PySpark classes, hooks, validation, compiler
+provenance, static dataflow lineage, and streaming-compatible transforms.
 
 ### v2
 
-Aggregations, windowing, advanced grouping, Spark higher-order functions, caching/persistence hints, join strategy annotations, richer lineage, and optional field-level lineage.
+Aggregations, windowing, advanced grouping, Spark higher-order functions, caching/persistence hints, join strategy
+annotations, and richer static dataflow explain output.
 
 ### v3
 

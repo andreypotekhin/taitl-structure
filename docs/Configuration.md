@@ -3,7 +3,7 @@
 Structure works by convention and supports a small TOML configuration for project-wide settings.
 
 Use configuration for paths, package names, validation defaults, Spark SQL assumptions, target PySpark version,
-lineage settings, performance policy, compatibility behavior, and build behavior.
+compiler lineage settings, performance policy, compatibility behavior, and build behavior.
 
 ## Defaults
 
@@ -124,20 +124,23 @@ or generated-code review model. See `docs/Compatibility.md`.
 ## Lineage Settings
 
 ```toml
-lineage = "basic"
-lineage_format = "ldjson"
+lineage = "compiler"
 ```
 
 Supported lineage levels:
 
 ```text
 none
-basic
-fields
+compiler
+columns
 debug
 ```
 
-Default: `basic`.
+Default: `compiler`.
+
+`compiler` records source-to-IR-to-generated provenance and compact static dataflow dependencies. `columns` adds
+field-level static dependencies where the compiler can infer them. `debug` may include fuller expression trees and
+source locations for troubleshooting.
 
 ## Performance Policy
 

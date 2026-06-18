@@ -14,7 +14,7 @@ The compatibility policy must:
 - define Spark Connect scope;
 - define semantic versioning expectations;
 - define generated-code compatibility;
-- define lineage schema versioning;
+- define compiler lineage schema versioning;
 - define config schema versioning.
 
 ## v1 Runtime Baseline
@@ -80,7 +80,7 @@ Major releases may:
 - change generated-runtime helper contracts;
 - change generated-code compatibility rules;
 - drop supported Python or PySpark lines;
-- make breaking lineage or config schema changes.
+- make breaking compiler lineage or config schema changes.
 
 Minor releases may:
 
@@ -89,7 +89,7 @@ Minor releases may:
 - add PySpark support;
 - add diagnostics;
 - improve generated code without changing semantics;
-- add lineage fields in a backward-compatible way.
+- add compiler lineage fields in a backward-compatible way.
 
 Patch releases may:
 
@@ -126,23 +126,20 @@ Upgrade guidance must tell users to run:
 structure compile --fail-on-diff
 ```
 
-## Lineage Schema Versioning
+## Compiler Lineage Schema Versioning
 
-LDJSON lineage starts with a header record:
+Compiler lineage has two v1 metadata models:
 
-```json
-{"type":"lineage_file","schema_version":"2.0","structure_version":"1.0.0"}
-```
+- compiler provenance, which maps source nodes to IR nodes to generated PySpark nodes;
+- static dataflow lineage, which records transform, table, and column dependencies inferred from IR.
 
 The lineage schema version follows `major.minor`.
 
 Breaking changes require a major lineage schema version bump. Additive fields require a minor version bump. Consumers
 should ignore unknown fields so minor additions remain compatible.
 
-After the header, each LDJSON line represents one completed transform. The transform record contains transform-level
-metadata, consumed inputs, produced output, and ordered nested events for steps, joins, hooks, and future field-level
-details. This keeps lineage grep-friendly while answering the common question, "what did this transform consume,
-produce, and change?", without requiring consumers to reconstruct a transform from adjacent low-level lines.
+Runtime LDJSON lineage is not part of the v1 compatibility contract. It is tracked as a nice-to-have beyond v3 in
+`docs/dev/project-management/NiceToHave.md`.
 
 ## Config Schema Versioning
 

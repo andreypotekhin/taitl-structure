@@ -1,9 +1,12 @@
-from structure import Array, Boolean, Date, Decimal, Integer, Long, Map, Schema, String, Struct, Timestamp, field
+from structure import Array, Boolean, Decimal, Integer, Long, Map, Schema, String, Struct, Timestamp, field
 
 from orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
 
 
-class OrderRaw(TenantKey, AuditStamp, BusinessDate):
+class OrderRaw(Schema):
+    tenant = field(Struct(TenantKey), nullable=False)
+    audit = field(Struct(AuditStamp), nullable=False)
+    business = field(Struct(BusinessDate), nullable=False)
     id = field(String(), nullable=False, primary_key=True)
     customer_id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
@@ -16,7 +19,10 @@ class OrderRaw(TenantKey, AuditStamp, BusinessDate):
     shipping = field(Struct(Address), nullable=True)
 
 
-class OrderNormalized(TenantKey, AuditStamp, BusinessDate):
+class OrderNormalized(Schema):
+    tenant = field(Struct(TenantKey), nullable=False)
+    audit = field(Struct(AuditStamp), nullable=False)
+    business = field(Struct(BusinessDate), nullable=False)
     id = field(String(), nullable=False, primary_key=True)
     customer_id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
@@ -56,7 +62,9 @@ class OrderFulfillment(OrderWithPromotion):
     shipped_at = field(Timestamp(), nullable=True)
 
 
-class OrderPublished(TenantKey):
+class OrderPublished(Schema):
+    tenant = field(Struct(TenantKey), nullable=False)
+    business = field(Struct(BusinessDate), nullable=False)
     id = field(String(), nullable=False, primary_key=True)
     customer_id = field(String(), nullable=False)
     customer_name = field(String(), nullable=True)
@@ -68,7 +76,6 @@ class OrderPublished(TenantKey):
     discount = field(Decimal(12, 2), nullable=False)
     net_total = field(Decimal(12, 2), nullable=False)
     quantity = field(Long(), nullable=False)
-    order_date = field(Date(), nullable=True)
     carrier = field(String(), nullable=True)
     tracking_number = field(String(), nullable=True)
     shipped_at = field(Timestamp(), nullable=True)

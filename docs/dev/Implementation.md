@@ -28,7 +28,8 @@
 - Clean no-hook generated code.
 - Structured compiler errors.
 - Streaming compatibility checks.
-- Basic LDJSON lineage.
+- Compiler provenance from source node to IR node to generated PySpark node.
+- Static dataflow lineage inferred from IR.
 - TOML configuration hardening.
 - Incremental compile.
 
@@ -40,7 +41,7 @@
 - Spark higher-order functions.
 - Caching and persistence annotations.
 - Join strategy annotations.
-- Optional field-level lineage.
+- Richer static dataflow explain output.
 
 ## Phase 4: v3
 
@@ -78,7 +79,8 @@ Track:
 - check time
 - codegen time
 - formatting time
-- lineage time
+- compiler provenance time
+- static dataflow lineage time
 - files regenerated
 - cache hit ratio
 - total wall-clock time

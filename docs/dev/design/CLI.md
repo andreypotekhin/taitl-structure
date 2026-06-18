@@ -12,7 +12,6 @@ structure check
 structure compile
 structure compile --fail-on-diff
 structure explain orders.transforms.order.EnrichOrders
-structure lineage
 structure clean
 ```
 
@@ -22,7 +21,7 @@ Runs discovery, symbolic execution, and compileability checks without writing ge
 
 ## `compile`
 
-Writes generated schemas, transforms, runtime support, and lineage.
+Writes generated schemas, transforms, runtime support, compiler provenance, and static dataflow lineage.
 
 ## `--fail-on-diff`
 
@@ -54,7 +53,8 @@ Reports compile-time performance metrics:
 - checking time
 - codegen time
 - formatting time
-- lineage time
+- compiler provenance time
+- static dataflow lineage time
 - total time
 - files written
 - cache hits

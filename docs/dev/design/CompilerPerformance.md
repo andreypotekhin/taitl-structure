@@ -24,7 +24,8 @@ Track:
 - check time
 - codegen time
 - formatting time
-- lineage time
+- compiler provenance time
+- static dataflow lineage time
 - total time
 - files considered
 - files written

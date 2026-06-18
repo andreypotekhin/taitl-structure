@@ -113,12 +113,13 @@
 - Support arbitrary N-step serial joins.
 - Warn when `join_one(...)` lacks uniqueness metadata.
 
-## Epic: Lineage
+## Epic: Compiler Lineage
 
-- Emit basic LDJSON lineage.
-- Include one transform record per line with nested input, output, step, join, and hook details.
-- Add lineage level config: `none`, `basic`, `fields`, `debug`.
-- Keep `basic` compact by default.
+- Add compiler provenance from source node to IR node to generated PySpark node.
+- Add static dataflow lineage inferred from IR.
+- Track transform, named input, step, schema, field, join, filter, expression helper, and hook-boundary dependencies.
+- Surface provenance and static dataflow in compiler diagnostics.
+- Add `structure explain` lineage output for transform, step, and field dependencies.
 
 ## Epic: Build Integration
 
@@ -139,7 +140,7 @@
 - Caching/persistence directives.
 - Repartition/coalesce hints.
 - Advanced join strategy directives.
-- Field-level lineage.
+- Richer static dataflow explain output.
 
 ## v3 Backlog
 
@@ -152,3 +153,7 @@
 - Checkpoints.
 - Watermarks.
 - Stateful streaming policies.
+
+## Nice To Have Beyond v3
+
+- Runtime LDJSON lineage emitter. See `docs/dev/project-management/NiceToHave.md`.

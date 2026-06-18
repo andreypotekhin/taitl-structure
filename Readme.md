@@ -248,7 +248,7 @@ generated/
         schemas/
         transforms/
     runtime/
-    lineage/
+    lineage/  # compiler metadata, not runtime telemetry
 ```
 
 `src` and `generated` are filesystem roots, not package names. Mark both as source roots in the IDE.
@@ -268,7 +268,7 @@ generated_dir = "generated"
 generated_package = "structure_generated"
 target_backend = "pyspark"
 target_pyspark = ">=3.5,<4.1"
-lineage = "basic"
+lineage = "compiler"
 validate_intermediate = true
 intermediate_validation_mode = "schema_only"
 strict_performance = true
@@ -298,8 +298,8 @@ structure explain orders.transforms.order.EnrichOrders
 ## Roadmap
 
 - **v1:** projection, filtering, joins, typed intermediate schemas, generated PySpark classes, hooks, validation,
-  basic LDJSON lineage, streaming-compatible transforms.
+  compiler provenance, static dataflow lineage, streaming-compatible transforms.
 - **v2:** aggregations, windowing, advanced grouping, Spark higher-order functions, caching/persistence hints,
-  join strategy annotations, richer lineage.
+  join strategy annotations, richer static dataflow explain output.
 - **v3:** full streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks,
   stateful policies, and Spark Connect support.

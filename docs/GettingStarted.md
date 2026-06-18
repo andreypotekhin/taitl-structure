@@ -160,7 +160,7 @@ generated/structure_generated/
     schemas/
     transforms/
   runtime/
-  lineage/
+  lineage/  # compiler metadata, not runtime telemetry
 ```
 
 ## 6. Inspect Generated PySpark

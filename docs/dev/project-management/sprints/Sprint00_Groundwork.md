@@ -21,7 +21,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - Explicit config precedence: CLI flags, `[tool.structure]` in `pyproject.toml`, `structure.toml`, built-in defaults.
 - Config schema validation for unknown keys and invalid values.
 - Structured config diagnostics, including allowed values for enum-like settings such as lineage.
-- Compatibility policy for Python, PySpark, generated code, lineage schema, and config schema.
+- Compatibility policy for Python, PySpark, generated code, compiler lineage schema, and config schema.
 - Seed config file generation.
 - CLI skeleton: `check`, `compile`, `explain`.
 - Empty generated directory conventions.

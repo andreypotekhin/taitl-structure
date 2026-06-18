@@ -72,13 +72,14 @@ NormalizeOrdersGenerated(spark=spark).run(orders=orders_df)
 - Hook signature is validated.
 - `@after(method)` and `@before(method)` work.
 
-## M5: Joins, Lineage, Build Integration
+## M5: Joins, Compiler Lineage, Build Integration
 
 ### Exit Criteria
 
 - `join_one(...)` compiles to PySpark joins.
 - N-step serial joins work across arbitrary named inputs.
-- Basic LDJSON lineage is emitted.
+- Compiler provenance maps source nodes to IR nodes to generated PySpark nodes.
+- Static dataflow lineage shows transform, table, and column dependencies inferred from IR.
 - `structure compile --fail-on-diff` works.
 - `structure explain` summarizes inputs, steps, filters, joins, hooks, and validation.
 
@@ -86,6 +87,6 @@ NormalizeOrdersGenerated(spark=spark).run(orders=orders_df)
 
 ### Exit Criteria
 
-- Compatibility docs, generated-code version headers, lineage schema versioning, and config schema compatibility are
+- Compatibility docs, generated-code version headers, compiler lineage schema versioning, and config schema compatibility are
   checked against release artifacts.
 - Multi-version PySpark test strategy covers the documented v1 target range.

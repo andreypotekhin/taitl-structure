@@ -1,9 +1,11 @@
-from structure import Schema, String, field
+from structure import Schema, String, Struct, field
 
 from orders.schemas.common import AuditStamp, TenantKey
 
 
-class Customer(TenantKey, AuditStamp):
+class Customer(Schema):
+    tenant = field(Struct(TenantKey), nullable=False)
+    audit = field(Struct(AuditStamp), nullable=False)
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=True)
     tier = field(String(), nullable=True)

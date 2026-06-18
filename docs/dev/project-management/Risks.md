@@ -24,7 +24,7 @@ Generated PySpark becomes hard to review and less attractive to users.
 - Generate classes with concise sections.
 - Omit hook machinery when hooks are absent.
 - Use deterministic aliases.
-- Keep lineage basic by default.
+- Keep default compiler lineage compact.
 - Add snapshot tests for generated code readability.
 
 ## Risk: Compile time becomes slow

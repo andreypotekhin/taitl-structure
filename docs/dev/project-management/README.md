@@ -57,6 +57,7 @@ The first iterations are intentionally arranged to build confidence in small com
 3. **Schemas and validation**: richer schema model, `StructType` generation, input/intermediate/output validation.
 4. **Symbolic expressions, filtering, helpers**: compiler-worthy expression model with strict unsupported-code diagnostics.
 5. **Hooks and generated classes**: source hooks, clean no-hook generated code, direct hook calls.
-6. **Joins, lineage, build integration**: `join_one`, N-step serial joins, LDJSON lineage, `--fail-on-diff`.
+6. **Joins, compiler lineage, build integration**: `join_one`, N-step serial joins, compiler provenance, static
+   dataflow lineage, `--fail-on-diff`.
 
 V2 features such as aggregations, windowing, HOFs, advanced grouping, caching, and join strategy optimization are captured in the backlog but not scheduled in the first v1 implementation sprints.

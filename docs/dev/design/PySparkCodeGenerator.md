@@ -12,7 +12,7 @@ generated/structure_generated/
     schemas/
     transforms/
   runtime/
-  lineage/
+  lineage/  # compiler metadata, not runtime telemetry
 ```
 
 ## Transform Class Generation

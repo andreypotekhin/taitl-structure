@@ -306,25 +306,18 @@ Deferred or rejected in v1:
 - deduplication, limits, Spark actions, RDD conversion, Python UDFs, and Pandas UDFs;
 - hooks without an explicit streaming-safety promise.
 
-## C12. Lineage Event Schema Needs Versioning
+## C12. Compiler Lineage Schema Needs Versioning
 
-LDJSON lineage should be versioned.
+Resolved by `docs/dev/planning/P06182601.Compiler-provenance-static-dataflow-lineage.md`.
 
-Add a header record:
+Lineage is split into three topics:
 
-```json
-{"type":"lineage_file","schema_version":"2.0","structure_version":"0.1.0"}
-```
+1. compiler provenance, which maps source nodes to IR nodes to generated PySpark nodes;
+2. static dataflow lineage, which records transform, table, and column dependencies inferred from IR;
+3. runtime LDJSON lineage, which is optional transform-run telemetry deferred beyond v3.
 
-or include `schema_version` on each transform record.
-
-Recommended default: one header record plus stable per-transform record schemas. Each transform record should nest
-low-level step, join, hook, and field events so users can answer what a transform consumed, produced, and changed
-without stitching together adjacent LDJSON lines.
-
-Also decide whether the extension is `.ldjson` or `.ndjson`. Recommended docs term:
-
-> LDJSON / newline-delimited JSON, using `.ldjson` files.
+The v1 lineage schema should version compiler provenance and static dataflow metadata. Runtime LDJSON can define its
+own record format later if the nice-to-have becomes scheduled work.
 
 ## C13. Compile-Time Performance Needs Concrete Targets
 
@@ -387,7 +380,7 @@ Reasons:
 - easier adoption in Python project builds.
 
 This rule affects discovery, schema extraction, symbolic execution, compileability checks, IR construction, code
-generation, lineage generation, and `structure compile --fail-on-diff`.
+generation, compiler provenance, static dataflow lineage, and `structure compile --fail-on-diff`.
 
 ## C16. Generated PySpark Examples Should Include Code-Size Comparison
 
@@ -448,8 +441,8 @@ Invalid config value:
 
 Allowed:
   none
-  basic
-  fields
+  compiler
+  columns
   debug
 ```
 

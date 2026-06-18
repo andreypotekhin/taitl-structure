@@ -14,7 +14,8 @@
 - N-step serial joins.
 - `@expr_fn` helpers.
 - `@before(method)` and `@after(method)` hooks.
-- Basic LDJSON lineage.
+- Compiler provenance from source node to IR node to generated PySpark node.
+- Static dataflow lineage inferred from IR.
 - Streaming-compatible generated transforms.
 - TOML configuration with explicit precedence and schema validation diagnostics.
 - Incremental compiler support.
@@ -28,7 +29,7 @@
 - Spark higher-order functions for arrays/maps.
 - Explicit caching/persistence annotations.
 - Join strategy annotations.
-- Optional field-level lineage.
+- Richer static dataflow explain output.
 - More detailed performance diagnostics.
 
 ## v3

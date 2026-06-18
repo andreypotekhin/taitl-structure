@@ -25,7 +25,7 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can set `target_pyspark` so that generated code targets an intended PySpark version range.
 - As a developer, I can receive an error when a requested feature cannot be generated for the configured PySpark target.
 - As a developer, I can set validation defaults so that schema enforcement is project-wide and repeatable.
-- As a developer, I can set lineage level so that output detail is controlled.
+- As a developer, I can configure compiler lineage output so that provenance and static dataflow detail are controlled.
 - As a developer, I can set `fail_on_diff` so that CI catches stale generated code.
 
 ## 3. Getting Started
@@ -164,16 +164,18 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can configure `target_pyspark` so that the emitter avoids APIs outside my deployment range.
 - As a developer, I can see that Spark Connect is planned for v3 so that v1/v2 generated-code expectations are clear.
 - As a developer, I can rely on semantic versioning after 1.0 so that upgrades carry predictable risk.
-- As a developer, I can rely on versioned lineage LDJSON so that downstream lineage consumers can evolve safely.
+- As a developer, I can rely on stable compiler provenance and static dataflow schemas so that diagnostics and explain
+  output can evolve safely.
 - As a developer, I can rely on config schema compatibility rules so that project configuration changes are intentional.
 
-## 18. Lineage
+## 18. Compiler Lineage
 
-- As a developer, I can generate per-transform LDJSON lineage so that each transform line shows inputs, output, steps,
-  joins, and hooks.
-- As a developer, I can optionally generate field-level LDJSON lineage so that output fields can be traced to source fields when needed.
-- As a developer, I can identify opaque hook boundaries so that arbitrary PySpark logic is visible in lineage reports.
-- As a developer, I can keep lineage output compact by default so that generated artifacts remain manageable.
+- As a developer, I can inspect compiler provenance so that a source node can be traced to its IR node and generated
+  PySpark node.
+- As a developer, I can inspect static dataflow lineage so that transform, table, and column dependencies inferred from
+  IR are visible.
+- As a developer, I can identify opaque hook boundaries so that arbitrary PySpark logic is explicit in lineage reports.
+- As a developer, I can keep lineage output compact by default so that diagnostics and explain output remain readable.
 
 ## 19. Build Integration
 
@@ -211,7 +213,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can use higher-order function helpers so that array and map transformations remain Spark-plan-visible.
 - As a developer, I can add caching and persistence hints at step boundaries so that expensive reused DataFrames can be optimized explicitly.
 - As a developer, I can specify join strategies and hints so that manual optimization remains explicit and reviewable.
-- As a developer, I can generate optional field-level lineage so that output fields can be traced to source fields when needed.
+- As a developer, I can generate richer static dataflow explain output so that complex field dependencies can be
+  inspected when needed.
 
 ## 23. v3 Roadmap
 

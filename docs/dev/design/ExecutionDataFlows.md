@@ -12,9 +12,10 @@
 7. Emit PySpark schema modules.
 8. Emit PySpark transform classes.
 9. Emit runtime support.
-10. Emit LDJSON lineage.
-11. Format changed files.
-12. Report compile metrics.
+10. Build compiler provenance.
+11. Infer static dataflow lineage.
+12. Format changed files.
+13. Report compile metrics.
 ```
 
 ## Runtime Batch Flow

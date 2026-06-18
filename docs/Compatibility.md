@@ -4,7 +4,7 @@ Structure has three compatibility surfaces:
 
 - the Structure source DSL and configuration users write;
 - the generated PySpark code committed to user projects;
-- optional metadata artifacts such as lineage LDJSON.
+- optional metadata artifacts such as compiler provenance and static dataflow lineage.
 
 This page defines the public compatibility policy for v1 and the planned versioning rules after the first stable
 release.
@@ -76,21 +76,22 @@ Compatibility rules:
 Generated code is readable and reviewable, but not hand-edited. Change source Structure code, configuration, or the
 compiler instead.
 
-## Lineage Schema Versioning
+## Compiler Lineage Schema Versioning
 
-Lineage output uses LDJSON with a versioned header record followed by one record per completed transform:
+Compiler lineage covers two metadata models:
 
-```json
-{"type":"lineage_file","schema_version":"2.0","structure_version":"1.0.0"}
-{"type":"transform_lineage","name":"T","inputs":["orders"],"output":"Orders","events":[{"type":"step","name":"run"}]}
-```
+- compiler provenance, which maps source nodes to IR nodes to generated PySpark nodes;
+- static dataflow lineage, which records transform, table, and column dependencies inferred from IR.
 
 Lineage schema rules:
 
-- Breaking record-shape changes bump the lineage schema major version.
+- Breaking metadata-shape changes bump the lineage schema major version.
 - Additive fields bump the lineage schema minor version.
 - Consumers should ignore unknown fields.
-- Structure should keep `basic` lineage compact and stable across patch releases.
+- Structure should keep default compiler lineage compact and stable across patch releases.
+
+Runtime LDJSON lineage is not part of the v1 compatibility contract. It is tracked as a nice-to-have beyond v3 in
+`docs/dev/project-management/NiceToHave.md`.
 
 ## Config Schema Versioning
 
