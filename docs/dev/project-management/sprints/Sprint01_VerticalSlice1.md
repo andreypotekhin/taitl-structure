@@ -47,8 +47,8 @@ class NormalizeOrdersGenerated:
 ### In Scope
 
 - Sprint 00 spike outcomes incorporated into the implementation approach.
-- `Schema` declaration sufficient for primitive fields using explicit type objects such as `String()`.
-- `input(Schema)` declaration.
+- `Structure` declaration sufficient for primitive fields using explicit type objects such as `String()`.
+- `input(Structure)` declaration.
 - `@transform` discovery.
 - One public schema-returning method.
 - Symbolic field references.
@@ -73,7 +73,7 @@ class NormalizeOrdersGenerated:
 
 - As a developer, I can define schema classes.
 - As a developer, I can declare a transform class with `@transform`.
-- As a developer, I can declare named inputs using `input(Schema)`.
+- As a developer, I can declare named inputs using `input(Structure)`.
 - As a developer, I can define a public schema-returning method as a subtransform.
 - As a developer, I can generate one PySpark class per source transform class.
 - As a developer, generated code uses Spark Column expressions rather than UDFs.

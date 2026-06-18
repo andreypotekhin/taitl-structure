@@ -29,7 +29,7 @@
 
 ## Epic: Schema Model
 
-- Implement `Schema` base class.
+- Implement `Structure` base class.
 - Implement field definitions.
 - Implement primitive scalar types.
 - Implement explicit type objects: `String()`, `Float()`, `Double()`, `Decimal(...)`, `Array(...)`, `Map(...)`, and

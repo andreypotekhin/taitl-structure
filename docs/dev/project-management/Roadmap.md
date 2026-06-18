@@ -48,7 +48,7 @@ provenance, static dataflow lineage, and build integration.
 ### v1 must include
 
 - `@transform` class discovery.
-- `input(Schema)` declarations.
+- `input(Structure)` declarations.
 - Public schema-returning methods as source-ordered subtransforms.
 - Schema base overlay construction for inherited output rows.
 - One generated PySpark class per transform class.

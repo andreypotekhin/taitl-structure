@@ -11,16 +11,16 @@ PySpark or creating a Spark session.
 The v1 canonical schema declaration form is:
 
 ```python
-from structure import Schema, field, String, Decimal
+from structure import Structure, field, String, Decimal
 
 
-class OrderRaw(Schema):
+class OrderRaw(Structure):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     total = field(String(), nullable=True)
 
 
-class OrderNormalized(Schema):
+class OrderNormalized(Structure):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     total = field(Decimal(12, 2), nullable=True)
@@ -40,7 +40,7 @@ The public schema DSL must be importable from `structure`:
 
 ```python
 from structure import (
-    Schema,
+    Structure,
     field,
     String,
     Integer,
@@ -64,7 +64,7 @@ from structure import (
 This is the accepted v1 schema declaration grammar in descriptive form:
 
 ```text
-schema_class      := class NAME(Schema): field_decl+
+schema_class      := class NAME(Structure): field_decl+
 field_decl        := NAME = field(type_expr, field_kwarg*)
 type_expr         := scalar_type | decimal_type | array_type | struct_type | map_type
 scalar_type       := String() | Integer() | Long() | Float() | Double() | Boolean() | Date() | Timestamp()
@@ -73,7 +73,7 @@ array_type        := Array(type_expr, contains_null=BOOL?)
 struct_type       := Struct(schema_ref)
 map_type          := Map(key_type, value_type, value_contains_null=BOOL?)
 field_kwarg       := nullable=BOOL | primary_key=BOOL | metadata=DICT | description=STRING
-schema_ref        := Schema subclass object
+schema_ref        := Structure subclass object
 ```
 
 The compiler should implement this grammar by inspecting actual runtime Structure objects, not by parsing source text
@@ -181,7 +181,7 @@ Array(String(), contains_null=False)  -> T.ArrayType(T.StringType(), containsNul
 
 Rules:
 
-- `schema` must be a `Schema` subclass, not an instance.
+- `schema` must be a `Structure` subclass, not an instance.
 - Self-recursive schemas are rejected in v1.
 - Recursive cycles across multiple schemas are rejected in v1.
 - Nested struct field order follows the referenced schema class.
@@ -213,7 +213,7 @@ Map(String(), String())  -> T.MapType(T.StringType(), T.StringType(), valueConta
 
 ## Schema Class Rules
 
-A schema class is a class inheriting from `Schema` with `field(...)` attributes.
+A schema class is a class inheriting from `Structure` with `field(...)` attributes.
 
 Rules:
 
@@ -277,13 +277,13 @@ Base overlay rules:
 Example with multiple schema bases:
 
 ```python
-class OrderPublication(Schema):
+class OrderPublication(Structure):
     id = field(String(), nullable=False, primary_key=True)
     customer_name = field(String(), nullable=True)
     total = field(Decimal(12, 2), nullable=False)
 
 
-class PublicationFlags(Schema):
+class PublicationFlags(Structure):
     has_promotion = field(Boolean(), nullable=False)
 
 

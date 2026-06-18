@@ -51,7 +51,7 @@ only fields declared directly on the schema class.
 
 ## SchemaDef Rules
 
-`SchemaDef` represents one discovered `Schema` subclass.
+`SchemaDef` represents one discovered `Structure` subclass.
 
 Rules:
 
@@ -163,7 +163,7 @@ Rules:
 Example:
 
 ```python
-class EntityKeys(Schema):
+class EntityKeys(Structure):
     id = field(String(), nullable=False, primary_key=True)
 
 
@@ -181,7 +181,7 @@ total  declaring_schema=Order       inherited=False
 ## Schema Declaration Example
 
 ```python
-class Customer(Schema):
+class Customer(Structure):
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=True)
     tier = field(String(), nullable=True)

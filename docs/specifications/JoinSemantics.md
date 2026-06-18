@@ -13,7 +13,7 @@ cardinality model, but they change validation, lineage, and output-row expectati
 
 ## Public API Shape
 
-Join methods are called from an input scope declared with `input(Schema)`:
+Join methods are called from an input scope declared with `input(Structure)`:
 
 ```python
 customer = self.customers.join_one(

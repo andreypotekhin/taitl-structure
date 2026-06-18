@@ -14,15 +14,15 @@ the final schema as an ordered structural contract and keeps inheritance details
 ## Canonical Form
 
 ```python
-from structure import Schema, field, String, Timestamp, Decimal
+from structure import Structure, field, String, Timestamp, Decimal
 
 
-class EntityKeys(Schema):
+class EntityKeys(Structure):
     id = field(String(), nullable=False, primary_key=True)
     tenant_id = field(String(), nullable=False)
 
 
-class AuditFields(Schema):
+class AuditFields(Structure):
     created_at = field(Timestamp(), nullable=False)
     updated_at = field(Timestamp(), nullable=True)
 
@@ -47,9 +47,9 @@ total
 
 Rules:
 
-- A schema class may inherit from `Schema` directly.
-- A schema class may inherit from one or more user-defined `Schema` subclasses.
-- All non-`object` bases of a schema class must be `Schema` subclasses.
+- A schema class may inherit from `Structure` directly.
+- A schema class may inherit from one or more user-defined `Structure` subclasses.
+- All non-`object` bases of a schema class must be `Structure` subclasses.
 - Python must be able to construct a valid C3 MRO for the class.
 - The compiler must reject base classes that are not import-safe.
 
@@ -94,7 +94,7 @@ local fields appear last.
 A schema class may override an inherited field by redeclaring the same field name.
 
 ```python
-class SoftDeleteFields(Schema):
+class SoftDeleteFields(Structure):
     deleted_at = field(Timestamp(), nullable=True)
 
 
@@ -123,11 +123,11 @@ ambiguity.
 Rejected:
 
 ```python
-class SourceKeys(Schema):
+class SourceKeys(Structure):
     id = field(String(), nullable=False)
 
 
-class BusinessKeys(Schema):
+class BusinessKeys(Structure):
     id = field(String(), nullable=False, primary_key=True)
 
 
@@ -148,7 +148,7 @@ The resolved field keeps the first inherited position. In the accepted example, 
 Diamond inheritance through a shared base is not a duplicate:
 
 ```python
-class Keys(Schema):
+class Keys(Structure):
     id = field(String(), nullable=False)
 
 
@@ -231,7 +231,7 @@ visible at the construction site.
 `Struct(SchemaClass)` uses the effective inherited field set of `SchemaClass`.
 
 ```python
-class AddressBase(Schema):
+class AddressBase(Structure):
     city = field(String(), nullable=True)
 
 
@@ -239,7 +239,7 @@ class ShippingAddress(AddressBase):
     postal_code = field(String(), nullable=True)
 
 
-class Order(Schema):
+class Order(Structure):
     shipping = field(Struct(ShippingAddress), nullable=True)
 ```
 
@@ -272,9 +272,9 @@ Example:
 
 ```text
 Invalid schema base:
-  Order inherits from SomePlainMixin, which is not a Schema subclass.
+  Order inherits from SomePlainMixin, which is not a Structure subclass.
 
-Use only Schema subclasses in schema inheritance.
+Use only Structure subclasses in schema inheritance.
 
 See docs/specifications/SchemaInheritance.md
 ```

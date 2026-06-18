@@ -84,26 +84,8 @@ configuration, or generator, then regenerate.
 
 ## Why Generated Code Is Longer
 
-Structure source code is concise because it expresses intent:
+Structure allows developers to maintain compact source, while reviewers and operators can inspect explicit PySpark.
 
-```python
-def normalize(self, order: OrderRaw) -> OrderNormalized:
-    where(order.id.is_not_null())
-    return OrderNormalized(
-        id=order.id,
-        total=to_decimal(order.total, precision=12, scale=2),
-    )
-```
+Example: add_promotion() method (left) translated into PySpark (right)
 
-Generated PySpark is longer because it contains executable details:
-
-```python
-df = orders.where(
-    F.col("id").isNotNull()
-).select(
-    F.col("id").alias("id"),
-    F.col("total").cast("decimal(12,2)").alias("total"),
-)
-```
-
-This is a strength: developers maintain compact Structure source, while reviewers and operators can inspect explicit PySpark.
+![](../docs/img/screenshots/add_promotion.screen.jpg)

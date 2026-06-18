@@ -1,9 +1,9 @@
-from structure import Decimal, Schema, String, Struct, field
+from structure import Decimal, String, Struct, Structure, field
 
 from orders.schemas.common import AuditStamp, TenantKey
 
 
-class Promotion(Schema):
+class Promotion(Structure):
     tenant = field(Struct(TenantKey), nullable=False)
     audit = field(Struct(AuditStamp), nullable=False)
     code = field(String(), nullable=False, primary_key=True)

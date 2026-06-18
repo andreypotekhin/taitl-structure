@@ -10,7 +10,7 @@ The DSL must be pleasant to write, IDE-friendly, and strict enough to compile in
 
 ```python
 from structure import (
-    Schema,
+    Structure,
     field,
     String,
     Integer,
@@ -87,8 +87,8 @@ class EnrichOrders(Transform):
 ## Rules
 
 - `@transform` marks classes for generation.
-- `input(Schema)` declares named DataFrame inputs.
-- Public instance methods returning `Schema` types are compiled subtransforms.
+- `input(Structure)` declares named DataFrame inputs.
+- Public instance methods returning `Structure` types are compiled subtransforms.
 - `SchemaClass.base(row)(...)` constructs an output schema by copying inherited fields from symbolic base rows and
   overlaying explicit field expressions.
 - For multiple direct schema bases, `SchemaClass.base(...)` receives one row per direct base in declaration order.

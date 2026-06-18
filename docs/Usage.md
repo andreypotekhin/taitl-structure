@@ -163,7 +163,7 @@ Multiple `where(...)` calls are combined with logical AND.
 Add columns by returning a schema with more fields.
 
 ```python
-class OrderWithFlags(Schema):
+class OrderWithFlags(Structure):
     id = field(String())
     total = field(Decimal(12, 2))
     is_large = field(Boolean())

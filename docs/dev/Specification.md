@@ -32,7 +32,7 @@ This document is a user-story specification for SDLC planning. Early sections co
 
 - As a developer, I can define schema classes so that input, intermediate, and output data structures are explicit.
 - As a developer, I can declare a transform class with `@transform` so that the compiler knows which classes to generate.
-- As a developer, I can declare named inputs using `input(Schema)` so that generated `run(...)` methods receive predictable named DataFrame parameters.
+- As a developer, I can declare named inputs using `input(Structure)` so that generated `run(...)` methods receive predictable named DataFrame parameters.
 - As a developer, I can write public schema-returning methods so that each method becomes a compiled subtransform.
 - As a developer, I can run `structure check` so that compileability issues are caught without writing generated files.
 - As a developer, I can run `structure compile` so that source transforms produce generated PySpark classes.

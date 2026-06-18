@@ -1,9 +1,9 @@
-from structure import Array, Boolean, Decimal, Integer, Long, Map, Schema, String, Struct, field
+from structure import Array, Boolean, Decimal, Integer, Long, Map, String, Struct, Structure, field
 
 from orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
 
 
-class OrderRaw(Schema):
+class OrderRaw(Structure):
     tenant = field(Struct(TenantKey), nullable=False)
     audit = field(Struct(AuditStamp), nullable=False)
     business = field(Struct(BusinessDate), nullable=False)
@@ -19,7 +19,7 @@ class OrderRaw(Schema):
     shipping = field(Struct(Address), nullable=True)
 
 
-class OrderNormalized(Schema):
+class OrderNormalized(Structure):
     tenant = field(Struct(TenantKey), nullable=False)
     audit = field(Struct(AuditStamp), nullable=False)
     business = field(Struct(BusinessDate), nullable=False)
@@ -55,7 +55,7 @@ class OrderWithPromotion(OrderWithProduct):
     promotion_discount = field(Decimal(12, 2), nullable=True)
 
 
-class OrderPublication(Schema):
+class OrderPublication(Structure):
     tenant = field(Struct(TenantKey), nullable=False)
     business = field(Struct(BusinessDate), nullable=False)
     id = field(String(), nullable=False, primary_key=True)
@@ -72,7 +72,7 @@ class OrderPublication(Schema):
     is_large = field(Boolean(), nullable=False)
 
 
-class PublicationFlags(Schema):
+class PublicationFlags(Structure):
     has_promotion = field(Boolean(), nullable=False)
 
 

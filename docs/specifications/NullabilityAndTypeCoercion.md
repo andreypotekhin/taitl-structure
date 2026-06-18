@@ -70,7 +70,7 @@ simple filter narrowing. It does not scan data and does not try to prove arbitra
 Field references inherit nullability from their declared schema field:
 
 ```python
-class OrderRaw(Schema):
+class OrderRaw(Structure):
     id = field(String(), nullable=False)
     total = field(String(), nullable=True)
 ```

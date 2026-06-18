@@ -54,7 +54,7 @@ Resolved by `docs/specifications/SchemaDeclarationSyntax.md` and decision
 Deprecated examples used:
 
 ```python
-class OrderRaw(Schema):
+class OrderRaw(Structure):
     id = field(string, nullable=False)
 ```
 
@@ -63,7 +63,7 @@ Alternative styles considered included annotation-based or dataclass/Pydantic-in
 Recommended v1 canonical form:
 
 ```python
-class OrderRaw(Schema):
+class OrderRaw(Structure):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     total = field(String(), nullable=True)

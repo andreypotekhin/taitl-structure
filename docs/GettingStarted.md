@@ -40,17 +40,17 @@ Generated modules mirror source import paths under `structure_generated`.
 ```python
 # src/orders/schemas/order.py
 
-from structure import Schema, field, String, Decimal
+from structure import Structure, field, String, Decimal
 
 
-class OrderRaw(Schema):
+class OrderRaw(Structure):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
     total = field(String(), nullable=True)
 
 
-class OrderNormalized(Schema):
+class OrderNormalized(Structure):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
@@ -65,10 +65,10 @@ class OrderWithCustomer(OrderNormalized):
 ```python
 # src/orders/schemas/customer.py
 
-from structure import Schema, field, String
+from structure import Structure, field, String
 
 
-class Customer(Schema):
+class Customer(Structure):
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=True)
     tier = field(String(), nullable=True)

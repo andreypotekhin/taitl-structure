@@ -30,7 +30,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 
 - As a developer, I can define schema classes.
 - As a developer, I can declare a transform class with `@transform`.
-- As a developer, I can declare named inputs using `input(Schema)`.
+- As a developer, I can declare named inputs using `input(Structure)`.
 - As a developer, I can generate one PySpark class per transform class.
 - As a developer, I can execute generated code against a Spark DataFrame.
 
