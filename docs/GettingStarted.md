@@ -20,7 +20,7 @@ Recommended default layout:
 
 ```text
 src/
-  pipeline_src/
+  orders/
     schemas/
       order.py
       customer.py
@@ -28,7 +28,7 @@ src/
       order.py
 generated/
   structure_generated/
-    pipeline_src/
+    orders/
       pyspark/
 ```
 
@@ -38,7 +38,7 @@ Generated modules mirror source import paths under `structure_generated`.
 ## 3. Define Schemas
 
 ```python
-# src/pipeline_src/schemas/order.py
+# src/orders/schemas/order.py
 
 from structure import Schema, field, String, Decimal
 
@@ -67,7 +67,7 @@ class OrderWithCustomer(Schema):
 ```
 
 ```python
-# src/pipeline_src/schemas/customer.py
+# src/orders/schemas/customer.py
 
 from structure import Schema, field, String
 
@@ -81,7 +81,7 @@ class Customer(Schema):
 ## 4. Define a Transform
 
 ```python
-# src/pipeline_src/transforms/order.py
+# src/orders/transforms/order.py
 
 from pyspark.sql import functions as F
 
@@ -98,8 +98,8 @@ from structure import (
     Join,
     JoinHint,
 )
-from pipeline_src.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
-from pipeline_src.schemas.customer import Customer
+from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
+from orders.schemas.customer import Customer
 
 
 @transform
@@ -156,7 +156,7 @@ Generated files appear under:
 
 ```text
 generated/structure_generated/
-  pipeline_src/pyspark/
+  orders/pyspark/
     schemas/
     transforms/
   runtime/
@@ -219,7 +219,7 @@ The Structure source is shorter and schema-oriented. The generated PySpark is lo
 ## 7. Use Generated Code
 
 ```python
-from structure_generated.pipeline_src.pyspark.transforms.order import EnrichOrdersGenerated
+from structure_generated.orders.pyspark.transforms.order import EnrichOrdersGenerated
 
 enriched = EnrichOrdersGenerated(spark=spark).run(
     orders=orders_df,
@@ -230,7 +230,7 @@ enriched = EnrichOrdersGenerated(spark=spark).run(
 ## 8. Use from Airflow
 
 ```python
-from structure_generated.pipeline_src.pyspark.transforms.order import EnrichOrdersGenerated
+from structure_generated.orders.pyspark.transforms.order import EnrichOrdersGenerated
 
 
 def enrich_orders_task():

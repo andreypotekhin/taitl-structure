@@ -41,14 +41,14 @@ from structure import (
     SchemaMode,
 )
 
-from pipeline_src.schemas.order import (
+from orders.schemas.order import (
     OrderRaw,
     OrderNormalized,
     OrderWithCustomer,
     OrderEnriched,
 )
-from pipeline_src.schemas.customer import Customer
-from pipeline_src.schemas.product import Product
+from orders.schemas.customer import Customer
+from orders.schemas.product import Product
 
 
 @transform
@@ -134,15 +134,15 @@ Structure generates one PySpark class per transform class.
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 
-from pipeline_src.transforms.order import EnrichOrders
-from structure_generated.pipeline_src.pyspark.schemas.order import (
+from orders.transforms.order import EnrichOrders
+from structure_generated.orders.pyspark.schemas.order import (
     ORDER_RAW_SCHEMA,
     ORDER_NORMALIZED_SCHEMA,
     ORDER_WITH_CUSTOMER_SCHEMA,
     ORDER_ENRICHED_SCHEMA,
 )
-from structure_generated.pipeline_src.pyspark.schemas.customer import CUSTOMER_SCHEMA
-from structure_generated.pipeline_src.pyspark.schemas.product import PRODUCT_SCHEMA
+from structure_generated.orders.pyspark.schemas.customer import CUSTOMER_SCHEMA
+from structure_generated.orders.pyspark.schemas.product import PRODUCT_SCHEMA
 from structure_generated.runtime.schema_assert import assert_schema, project_schema
 
 
@@ -238,12 +238,12 @@ advanced hooks can opt into original named input DataFrames with `pass_inputs=Tr
 
 ```text
 src/
-  pipeline_src/
+  orders/
     schemas/
     transforms/
 generated/
   structure_generated/
-    pipeline_src/
+    orders/
       pyspark/
         schemas/
         transforms/
@@ -253,7 +253,7 @@ generated/
 
 `src` and `generated` are filesystem roots, not package names. Mark both as source roots in the IDE.
 Generated modules mirror source import paths under the `structure_generated` namespace. For example,
-`src/pipeline_src/transforms/order.py` generates under `generated/structure_generated/pipeline_src/...`.
+`src/orders/transforms/order.py` generates under `generated/structure_generated/orders/...`.
 
 All paths and package names are configurable.
 
@@ -292,7 +292,7 @@ See `docs/Compatibility.md` for the full versioning and compatibility policy.
 structure check
 structure compile
 structure compile --fail-on-diff
-structure explain pipeline_src.transforms.order.EnrichOrders
+structure explain orders.transforms.order.EnrichOrders
 ```
 
 ## Roadmap

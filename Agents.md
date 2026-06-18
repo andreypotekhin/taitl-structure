@@ -28,7 +28,7 @@ Development documentation: /docs/dev/
 
 Agentic and automation documentation: /docs/dev/auto/  
 - Automation.md: for automation contract and details on agents' parallel work.
-- AutomationFocus.md: document for automation focus and priorities.
+- AutomationFocus.md: automation focus and priorities.
 - Plans.md: guidance for multi-step tasks planning such as planning an implementation of a feature
 
 #### Design documentation
@@ -40,8 +40,12 @@ General: /docs/dev/
 Design docs: /docs/dev/design/  
 - Background.md: project background
 - Challenges.md: current design challenges/not yet addressed
+- Components: /docs/dev/design/
 - Decisions: /docs/dev/design/decisions
 - Specifications: /docs/dev/design/specifications 
+
+Specifications (/docs/dev/design/specifications), are more formal descriptions of the intended behavior, 
+ready to implement, serve as input to coding process.
 
 #### Project management documentation
 
@@ -98,6 +102,14 @@ See 'Coding' sections in /docs/dev/Style.md for details.
 ### Code Formatting
 
 Code formatting is taken care of automatic build step (with build plugin).
+
+### Coding Inputs
+
+Coding Inputs
+- Specifications.md (user stories)
+- Specification docs (/docs/dev/design/specifications) - more formal, ready to implement
+descriptions of the intended behavior of various aspects of the system.
+- PM documents (docs/dev/project-management): milestones, risks, iterations, sprints 
 
 ## Testing
 Test cases backing specifications (from /docs/dev/Specification.md) are in tests/specs/[section]/[item-descr].

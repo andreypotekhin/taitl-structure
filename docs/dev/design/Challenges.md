@@ -310,15 +310,17 @@ Deferred or rejected in v1:
 
 LDJSON lineage should be versioned.
 
-Add a header event:
+Add a header record:
 
 ```json
-{"type":"lineage_file","schema_version":"1.0","structure_version":"0.1.0"}
+{"type":"lineage_file","schema_version":"2.0","structure_version":"0.1.0"}
 ```
 
-or include `schema_version` on each event.
+or include `schema_version` on each transform record.
 
-Recommended default: one header event plus stable event schemas.
+Recommended default: one header record plus stable per-transform record schemas. Each transform record should nest
+low-level step, join, hook, and field events so users can answer what a transform consumed, produced, and changed
+without stitching together adjacent LDJSON lines.
 
 Also decide whether the extension is `.ldjson` or `.ndjson`. Recommended docs term:
 

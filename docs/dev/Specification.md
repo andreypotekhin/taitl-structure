@@ -169,7 +169,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 
 ## 18. Lineage
 
-- As a developer, I can generate basic LDJSON lineage so that transform inputs, outputs, steps, joins, and hooks are visible.
+- As a developer, I can generate per-transform LDJSON lineage so that each transform line shows inputs, output, steps,
+  joins, and hooks.
 - As a developer, I can optionally generate field-level LDJSON lineage so that output fields can be traced to source fields when needed.
 - As a developer, I can identify opaque hook boundaries so that arbitrary PySpark logic is visible in lineage reports.
 - As a developer, I can keep lineage output compact by default so that generated artifacts remain manageable.

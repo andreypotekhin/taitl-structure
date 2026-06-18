@@ -128,16 +128,21 @@ structure compile --fail-on-diff
 
 ## Lineage Schema Versioning
 
-LDJSON lineage starts with a header event:
+LDJSON lineage starts with a header record:
 
 ```json
-{"type":"lineage_file","schema_version":"1.0","structure_version":"1.0.0"}
+{"type":"lineage_file","schema_version":"2.0","structure_version":"1.0.0"}
 ```
 
 The lineage schema version follows `major.minor`.
 
 Breaking changes require a major lineage schema version bump. Additive fields require a minor version bump. Consumers
 should ignore unknown fields so minor additions remain compatible.
+
+After the header, each LDJSON line represents one completed transform. The transform record contains transform-level
+metadata, consumed inputs, produced output, and ordered nested events for steps, joins, hooks, and future field-level
+details. This keeps lineage grep-friendly while answering the common question, "what did this transform consume,
+produce, and change?", without requiring consumers to reconstruct a transform from adjacent low-level lines.
 
 ## Config Schema Versioning
 

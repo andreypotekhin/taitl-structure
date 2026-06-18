@@ -57,7 +57,7 @@ def compare_to_raw(self, *, df, inputs, spark, ctx):
 ## Example Generated PySpark
 
 ```python
-from pipeline_src.transforms.order import NormalizeOrders
+from orders.transforms.order import NormalizeOrders
 from structure_generated.runtime.hook_inputs import HookInputs
 
 class NormalizeOrdersGenerated:

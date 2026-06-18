@@ -298,14 +298,11 @@ Generated PySpark, lineage LDJSON, and configuration each have explicit versioni
 
 Structure emits compact lineage by default as LDJSON.
 
-Basic lineage events include:
+Each LDJSON file starts with a version header. Each following line represents one completed transform, including:
 
-- transform
-- input
-- step
-- join
-- hook
-- output
+- consumed inputs
+- produced output
+- ordered nested step, join, and hook events
 
 Field-level lineage is optional. Debug lineage may include full expression trees and source locations.
 

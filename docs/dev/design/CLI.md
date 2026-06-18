@@ -11,7 +11,7 @@ structure init
 structure check
 structure compile
 structure compile --fail-on-diff
-structure explain pipeline_src.transforms.order.EnrichOrders
+structure explain orders.transforms.order.EnrichOrders
 structure lineage
 structure clean
 ```

@@ -17,7 +17,7 @@ TransformPlan
   steps
   output_schema
   validation_policy
-  lineage_events
+  lineage_record
 
 StepPlan
   name

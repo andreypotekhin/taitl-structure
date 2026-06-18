@@ -116,7 +116,7 @@
 ## Epic: Lineage
 
 - Emit basic LDJSON lineage.
-- Include transform, input, step, join, hook, and output events.
+- Include one transform record per line with nested input, output, step, join, and hook details.
 - Add lineage level config: `none`, `basic`, `fields`, `debug`.
 - Keep `basic` compact by default.
 

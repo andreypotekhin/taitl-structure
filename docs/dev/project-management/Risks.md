@@ -80,20 +80,6 @@ Users may put inefficient PySpark or local Python operations into hooks.
 - Document hooks as explicit escape hatches.
 - Show hooks as opaque in lineage.
 
-## Risk: Python package and source layout collide
-
-### Impact
-
-Using `structure/` both as the open-source package name and as a user project source root can confuse imports, generated paths, and IDE indexing.
-
-### Mitigation
-
-- Use real project source roots: configured roots first, then conventional `src`, then project root.
-- Keep generated output under the distinct `structure_generated` namespace.
-- Keep paths configurable.
-- Keep the open-source package import path separate from user source and generated output paths.
-- Prove source-root discovery and generated import paths in Sprint 00 before the vertical slice begins.
-
 ## Risk: Decorator mechanics fail after design is committed
 
 ### Impact

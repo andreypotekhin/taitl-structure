@@ -8,7 +8,7 @@ The PySpark generator lowers Structure IR to deterministic, readable PySpark mod
 
 ```text
 generated/structure_generated/
-  pipeline_src/pyspark/
+  orders/pyspark/
     schemas/
     transforms/
   runtime/

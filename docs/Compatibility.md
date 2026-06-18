@@ -78,15 +78,16 @@ compiler instead.
 
 ## Lineage Schema Versioning
 
-Lineage output uses LDJSON with a versioned header event:
+Lineage output uses LDJSON with a versioned header record followed by one record per completed transform:
 
 ```json
-{"type":"lineage_file","schema_version":"1.0","structure_version":"1.0.0"}
+{"type":"lineage_file","schema_version":"2.0","structure_version":"1.0.0"}
+{"type":"transform_lineage","name":"T","inputs":["orders"],"output":"Orders","events":[{"type":"step","name":"run"}]}
 ```
 
 Lineage schema rules:
 
-- Breaking event-shape changes bump the lineage schema major version.
+- Breaking record-shape changes bump the lineage schema major version.
 - Additive fields bump the lineage schema minor version.
 - Consumers should ignore unknown fields.
 - Structure should keep `basic` lineage compact and stable across patch releases.

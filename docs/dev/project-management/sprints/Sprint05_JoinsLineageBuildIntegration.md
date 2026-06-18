@@ -95,7 +95,7 @@ customers_df = F.broadcast(customers.alias("customers"))
 
 - Single lookup join compiles and runs.
 - Serial join with at least five named inputs compiles and runs.
-- Basic LDJSON contains transform/input/step/join/hook/output events.
+- Basic LDJSON contains one transform record per line with nested step, join, hook, input, and output details.
 - `--fail-on-diff` fails when generated code differs.
 - `structure explain` prints a useful step summary.
 - Generated compiled path remains UDF-free.

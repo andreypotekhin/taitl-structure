@@ -46,12 +46,12 @@ generated_package = "structure_generated"
 Recommended layout:
 
 ```text
-src/pipeline_src/...
-generated/structure_generated/pipeline_src/...
+src/orders/...
+generated/structure_generated/orders/...
 ```
 
 Generated modules mirror source import paths below `generated_package`. For example, source module
-`src/pipeline_src/transforms/order.py` generates below `generated/structure_generated/pipeline_src/...`.
+`src/orders/transforms/order.py` generates below `generated/structure_generated/orders/...`.
 
 If no configuration is present, Structure resolves source roots by convention:
 
