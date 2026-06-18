@@ -1,10 +1,4 @@
-# Streaming Compatibility Specification
-
-## Status
-
-Ready for implementation.
-
-This specification resolves `Challenges.md` C11, "Streaming Compatibility Needs a Precise v1 Definition".
+# Streaming Compatibility
 
 ## Purpose
 
@@ -319,7 +313,7 @@ Problem:
 Use:
   pass a static lookup DataFrame for customers, or keep this transform batch-only.
 
-See docs/dev/design/specifications/StreamingCompatibility.spec.md
+See docs/specifications/StreamingCompatibility.md
 ```
 
 Hook example:
@@ -340,7 +334,7 @@ Use:
   mark the hook as @after(normalize, streaming_safe=True) only if it avoids actions, RDD/Pandas conversion,
   readStream/writeStream, and stateful streaming operations.
 
-See docs/dev/design/specifications/StreamingCompatibility.spec.md
+See docs/specifications/StreamingCompatibility.md
 ```
 
 ## Generated Code Requirements
@@ -376,4 +370,4 @@ The implementation is complete when tests prove these scenarios:
 - Global sort, aggregation, deduplication, limit, Python UDF, Pandas UDF, RDD conversion, and local actions are
   rejected.
 - Generated code for a compatible transform contains no `readStream`, `writeStream`, `collect`, `count`, or `toPandas`.
-- Diagnostics link to `docs/dev/design/specifications/StreamingCompatibility.spec.md`.
+- Diagnostics link to `docs/specifications/StreamingCompatibility.md`.

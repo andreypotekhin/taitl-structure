@@ -1,8 +1,4 @@
-# Schema Model Specification
-
-## Status
-
-Ready for implementation.
+# Schema Model
 
 This specification replaces `docs/dev/design/SchemaModel.md` as the implementation-level schema model reference.
 
@@ -13,8 +9,8 @@ compiler checks, generated Spark `StructType` code, runtime validation, lineage,
 diagnostics.
 
 Schema declarations are authored with the syntax specified in
-`docs/dev/design/specifications/SchemaDeclarationSyntax.spec.md`. Inheritance behavior is specified in
-`docs/dev/design/specifications/SchemaInheritance.spec.md`.
+`docs/specifications/SchemaDeclarationSyntax.md`. Inheritance behavior is specified in
+`docs/specifications/SchemaInheritance.md`.
 
 ## Core Model
 

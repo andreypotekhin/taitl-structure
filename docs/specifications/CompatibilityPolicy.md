@@ -1,6 +1,4 @@
-# Compatibility Policy Specification
-
-This specification resolves `Challenges.md` C19, "Versioning and Compatibility Policy Are Missing".
+# Compatibility Policy
 
 The policy is public-facing in `docs/Compatibility.md`. This specification defines the development contract behind that
 page.
@@ -167,5 +165,4 @@ New optional keys may appear in minor releases. Removing or changing a documente
 - `Readme.md` links to the compatibility policy.
 - `docs/Configuration.md` documents `target_backend`, `target_pyspark`, and compatibility diagnostics.
 - `docs/dev/Roadmap.md` and public roadmap text schedule Spark Connect for v4.
-- `docs/dev/design/Challenges.md` marks C19 as resolved by this specification and the public policy.
 - The seed config default is `target_pyspark = ">=3.5,<4.1"`.

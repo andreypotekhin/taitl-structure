@@ -1,10 +1,4 @@
-# Nullability and Type Coercion Specification
-
-## Status
-
-Ready for implementation.
-
-This specification resolves `Challenges.md` C3, "Nullability and Type Coercion Rules Are Missing".
+# Nullability and Type Coercion
 
 ## Purpose
 
@@ -321,7 +315,7 @@ Problem:
 Use:
   total=coalesce(to_decimal(order.total, precision=12, scale=2), 0)
 
-See docs/dev/design/specifications/NullabilityAndTypeCoercion.spec.md
+See docs/specifications/NullabilityAndTypeCoercion.md
 ```
 
 Parsing conversion example:
@@ -341,7 +335,7 @@ Problem:
 Use:
   total=to_decimal(order.total, precision=12, scale=2)
 
-See docs/dev/design/specifications/NullabilityAndTypeCoercion.spec.md
+See docs/specifications/NullabilityAndTypeCoercion.md
 ```
 
 Type mismatch example:
@@ -361,7 +355,7 @@ Problem:
 Use:
   is_paid=order.payment_count > 0
 
-See docs/dev/design/specifications/NullabilityAndTypeCoercion.spec.md
+See docs/specifications/NullabilityAndTypeCoercion.md
 ```
 
 ## Implementation Checklist
@@ -394,4 +388,3 @@ See docs/dev/design/specifications/NullabilityAndTypeCoercion.spec.md
 - Decimal narrowing is rejected.
 - `String()` assigned directly to `Decimal(...)` is rejected with a `to_decimal(...)` suggestion.
 - Unsupported assignment policies produce clear diagnostics rather than silent miscompilation.
-- `docs/dev/design/Challenges.md` points C3 readers to this specification.

@@ -48,7 +48,7 @@ projects and smaller root-package projects.
 
 ## C2. Schema Syntax Needs to Be Finalized
 
-Resolved by `docs/dev/design/specifications/SchemaDeclarationSyntax.spec.md` and decision
+Resolved by `docs/specifications/SchemaDeclarationSyntax.md` and decision
 `docs/dev/design/decisions/D06172602.Schema-declaration-syntax.md`.
 
 Deprecated examples used:
@@ -88,7 +88,7 @@ This scales better for nested schemas, Spark `StructType` generation, IDE behavi
 
 ## C3. Nullability and Type Coercion Rules Are Missing
 
-Resolved by `docs/dev/design/specifications/NullabilityAndTypeCoercion.spec.md` and planned by
+Resolved by `docs/specifications/NullabilityAndTypeCoercion.md` and planned by
 `docs/dev/planning/P06172601.Nullability-and-type-coercion-rules.plan.md`.
 
 Structure uses Spark SQL assumptions configured under `[tool.structure]` with Spark-native dotted key names:
@@ -280,7 +280,7 @@ This resolves the performance concern without weakening compile-time field and t
 
 ## C11. Streaming Compatibility Needs a Precise v1 Definition
 
-Resolved by `docs/dev/design/specifications/StreamingCompatibility.spec.md` and decision
+Resolved by `docs/specifications/StreamingCompatibility.md` and decision
 `docs/dev/design/decisions/D06182604.Streaming-compatibility-v1.md`.
 
 Structure v1 streaming compatibility means generated DataFrame transforms can run inside a caller-owned Spark
@@ -457,7 +457,7 @@ Config resolution order should also be explicit:
 ## C19. Versioning and Compatibility Policy Are Missing
 
 Resolved by public policy `docs/Compatibility.md`, specification
-`docs/dev/design/specifications/CompatibilityPolicy.spec.md`, and decision
+`docs/specifications/CompatibilityPolicy.md`, and decision
 `docs/dev/design/decisions/D06182605.Versioning-and-compatibility-policy.md`.
 
 v1 baseline:
@@ -496,7 +496,7 @@ devdocs/
   JoinSemantics.md
   HookSemantics.md
   ConfigSchema.md
-  design/specifications/CompatibilityPolicy.spec.md
+  specifications/CompatibilityPolicy.md
   CompilerPerformanceTargets.md
 ```
 
@@ -505,7 +505,7 @@ Highest-priority additions:
 ```text
 SchemaSemantics.md
 ValidationSemantics.md
-JoinSemantics.md
+docs/specifications/JoinSemantics.md
 HookSemantics.md
 CompilerPerformanceTargets.md
 ```

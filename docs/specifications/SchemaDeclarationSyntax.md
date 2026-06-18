@@ -1,10 +1,4 @@
-# Schema Declaration Syntax Specification
-
-## Status
-
-Ready for implementation.
-
-This specification resolves `Challenges.md` C2, "Schema Syntax Needs to Be Finalized".
+# Schema Declaration Syntax
 
 ## Purpose
 
@@ -267,7 +261,7 @@ Invalid schema field type:
 Use an explicit Structure type object:
   id = field(String(), nullable=False)
 
-See docs/dev/design/specifications/SchemaDeclarationSyntax.spec.md
+See docs/specifications/SchemaDeclarationSyntax.md
 ```
 
 ```text
@@ -277,7 +271,7 @@ Invalid decimal type:
 Decimal scale must be less than or equal to precision:
   total = field(Decimal(12, 2), nullable=True)
 
-See docs/dev/design/specifications/SchemaDeclarationSyntax.spec.md
+See docs/specifications/SchemaDeclarationSyntax.md
 ```
 
 ## Non-Goals

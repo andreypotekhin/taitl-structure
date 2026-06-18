@@ -1,11 +1,7 @@
-# Schema Inheritance Specification
-
-## Status
-
-Ready for implementation.
+# Schema Inheritance
 
 This specification completes the inheritance semantics referenced by
-`docs/dev/design/specifications/SchemaDeclarationSyntax.spec.md`.
+`docs/specifications/SchemaDeclarationSyntax.md`.
 
 ## Purpose
 
@@ -241,7 +237,7 @@ Resolve the field in Order:
   class Order(SourceKeys, BusinessKeys):
       id = field(String(), nullable=False, primary_key=True)
 
-See docs/dev/design/specifications/SchemaInheritance.spec.md
+See docs/specifications/SchemaInheritance.md
 ```
 
 Example:
@@ -252,7 +248,7 @@ Invalid schema base:
 
 Use only Schema subclasses in schema inheritance.
 
-See docs/dev/design/specifications/SchemaInheritance.spec.md
+See docs/specifications/SchemaInheritance.md
 ```
 
 ## Non-Goals

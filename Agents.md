@@ -42,10 +42,11 @@ Design docs: /docs/dev/design/
 - Challenges.md: current design challenges/not yet addressed
 - Components: /docs/dev/design/
 - Decisions: /docs/dev/design/decisions
-- Specifications: /docs/dev/design/specifications 
 
-Specifications (/docs/dev/design/specifications), are more formal descriptions of the intended behavior, 
-ready to implement, serve as input to coding process.
+Specifications: /docs/specifications/
+- Specification documents are ready to implement descriptions of the intended behavior
+- Specification documents are outputs of the design process
+- Specification documents are inputs to coding process
 
 #### Project management documentation
 
@@ -106,7 +107,7 @@ Code formatting is taken care of automatic build step (with build plugin).
 ### Coding Inputs
 Coding Inputs:
 - Specifications.md (user stories)
-- Specification docs (/docs/dev/design/specifications) - more formal, ready to implement
+- Specification docs (/docs/specifications/) - more formal, ready to implement
 descriptions of the intended behavior of various aspects of the system.
 - PM documents (docs/dev/project-management): milestones, risks, iterations, sprints 
 

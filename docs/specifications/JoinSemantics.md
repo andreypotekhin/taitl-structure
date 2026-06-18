@@ -1,10 +1,4 @@
-# Join Semantics Specification
-
-## Status
-
-Ready for implementation.
-
-This specification resolves `Challenges.md` C9, "Join Semantics Need Sharper Definitions".
+# Join Semantics
 
 ## Purpose
 
@@ -333,7 +327,7 @@ Problem:
 Use:
   split the logic into separate subtransforms or move custom join logic into an @after hook.
 
-See docs/dev/design/specifications/JoinSemantics.spec.md
+See docs/specifications/JoinSemantics.md
 ```
 
 ```text
@@ -348,7 +342,7 @@ Key:
 Use:
   field(String(), primary_key=True) on Customer.id, declare a unique key, or wait for v2 join_many(...).
 
-See docs/dev/design/specifications/JoinSemantics.spec.md
+See docs/specifications/JoinSemantics.md
 ```
 
 ## Acceptance Scenarios
