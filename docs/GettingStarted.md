@@ -40,42 +40,42 @@ Generated modules mirror source import paths under `structure_generated`.
 ```python
 # src/pipeline_src/schemas/order.py
 
-from structure import Schema, field, string, decimal
+from structure import Schema, field, String, Decimal
 
 
 class OrderRaw(Schema):
-    id = field(string, nullable=False)
-    customer_id = field(string, nullable=False)
-    product_id = field(string, nullable=False)
-    total = field(string, nullable=True)
+    id = field(String(), nullable=False)
+    customer_id = field(String(), nullable=False)
+    product_id = field(String(), nullable=False)
+    total = field(String(), nullable=True)
 
 
 class OrderNormalized(Schema):
-    id = field(string, nullable=False)
-    customer_id = field(string, nullable=False)
-    product_id = field(string, nullable=False)
-    total = field(decimal(12, 2), nullable=True)
+    id = field(String(), nullable=False)
+    customer_id = field(String(), nullable=False)
+    product_id = field(String(), nullable=False)
+    total = field(Decimal(12, 2), nullable=True)
 
 
 class OrderWithCustomer(Schema):
-    id = field(string, nullable=False)
-    customer_id = field(string, nullable=False)
-    customer_name = field(string, nullable=True)
-    customer_tier = field(string, nullable=True)
-    product_id = field(string, nullable=False)
-    total = field(decimal(12, 2), nullable=True)
+    id = field(String(), nullable=False)
+    customer_id = field(String(), nullable=False)
+    customer_name = field(String(), nullable=True)
+    customer_tier = field(String(), nullable=True)
+    product_id = field(String(), nullable=False)
+    total = field(Decimal(12, 2), nullable=True)
 ```
 
 ```python
 # src/pipeline_src/schemas/customer.py
 
-from structure import Schema, field, string
+from structure import Schema, field, String
 
 
 class Customer(Schema):
-    id = field(string, nullable=False, primary_key=True)
-    name = field(string, nullable=True)
-    tier = field(string, nullable=True)
+    id = field(String(), nullable=False, primary_key=True)
+    name = field(String(), nullable=True)
+    tier = field(String(), nullable=True)
 ```
 
 ## 4. Define a Transform

@@ -40,7 +40,8 @@ General: /docs/dev/
 Design docs: /docs/dev/design/  
 - Background.md: project background
 - Challenges.md: current design challenges/not yet addressed
-- /docs/dev/design/specifications: Specification documents
+- Decisions: /docs/dev/design/decisions
+- Specifications: /docs/dev/design/specifications 
 
 #### Project management documentation
 

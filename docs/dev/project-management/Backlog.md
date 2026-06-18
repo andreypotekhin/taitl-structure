@@ -8,8 +8,8 @@
 - SPIKE: Prove source-root discovery and generated `structure_generated.<source package>` import paths.
 - SPIKE: Prove `structure check` can run without PySpark, SparkSession, Java, or Spark startup.
 - SPIKE: Prove a minimal generated PySpark execution test with local Spark.
-- Decide and document schema declaration syntax before compiler implementation.
-- Decide and document nullability and coercion rules before validation implementation.
+- Implement the documented schema declaration syntax from `SchemaDeclarationSyntax.spec.md`.
+- Implement nullability and coercion rules from `NullabilityAndTypeCoercion.spec.md`.
 - Decide and document generated-code ownership rules before CI integration.
 - Decide and document compatibility, versioning, and license policy before open-source packaging.
 
@@ -28,6 +28,9 @@
 - Implement `Schema` base class.
 - Implement field definitions.
 - Implement primitive scalar types.
+- Implement explicit type objects: `String()`, `Float()`, `Double()`, `Decimal(...)`, `Array(...)`, `Map(...)`, and
+  `Struct(...)`.
+- Implement schema inheritance semantics from `SchemaInheritance.spec.md`.
 - Implement nullable metadata.
 - Implement Spark `StructType` emitter.
 - Implement schema equality and compatibility checks.

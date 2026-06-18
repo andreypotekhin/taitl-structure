@@ -48,16 +48,17 @@ projects and smaller root-package projects.
 
 ## C2. Schema Syntax Needs to Be Finalized
 
-The canonical v1 schema declaration syntax is not fully settled.
+Resolved by `docs/dev/design/specifications/SchemaDeclarationSyntax.spec.md` and decision
+`docs/dev/design/decisions/D06172602.Schema-declaration-syntax.md`.
 
-Current examples use:
+Deprecated examples used:
 
 ```python
 class OrderRaw(Schema):
     id = field(string, nullable=False)
 ```
 
-Alternative styles include annotation-based or dataclass/Pydantic-inspired forms.
+Alternative styles considered included annotation-based or dataclass/Pydantic-inspired forms.
 
 Recommended v1 canonical form:
 
@@ -73,7 +74,10 @@ Use explicit type objects such as:
 ```python
 String()
 Decimal(12, 2)
+Float()
+Double()
 Array(String())
+Map(String(), String())
 Struct(Address)
 Timestamp()
 Date()
@@ -84,24 +88,27 @@ This scales better for nested schemas, Spark `StructType` generation, IDE behavi
 
 ## C3. Nullability and Type Coercion Rules Are Missing
 
-Structure needs explicit rules for nullability and type coercion.
+Resolved by `docs/dev/design/specifications/NullabilityAndTypeCoercion.spec.md` and planned by
+`docs/dev/planning/P06172601.Nullability-and-type-coercion-rules.md`.
 
-Open questions include:
+Structure uses Spark SQL assumptions configured under `[tool.structure]` with Spark-native dotted key names:
 
-- Can nullable input feed non-nullable output?
-- How are string-to-decimal and string-to-timestamp casts handled?
-- How are integer widening and decimal precision/scale handled?
-- What happens on invalid casts?
-- How are defaults and `coalesce(...)` represented?
+```toml
+spark.sql.ansi.enabled = true
+spark.sql.storeAssignmentPolicy = "ANSI"
+```
 
-Recommended v1 rule:
+Recommended v1 rules:
 
-> A nullable expression cannot feed a non-nullable field unless the developer explicitly makes it non-null.
+- A nullable expression cannot feed a non-nullable field unless the developer narrows or repairs nullability explicitly.
+- Spark-ANSI-compatible widening and typed literals are accepted when they do not hide business intent.
+- Semantic parsing conversions such as string-to-decimal and string-to-timestamp require explicit helpers.
+- Structure source may use Python literals in expression contexts; generated PySpark may lower them to `F.lit(...)`.
 
 Example:
 
 ```python
-total=coalesce(to_decimal(order.total, precision=12, scale=2), lit(0))
+total=coalesce(to_decimal(order.total, precision=12, scale=2), 0)
 ```
 
 ## C4. Python Decorator Mechanics Need a Spike

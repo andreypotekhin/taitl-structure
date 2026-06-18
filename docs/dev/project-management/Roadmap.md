@@ -44,6 +44,7 @@ v1 focuses on schema-driven projection, filtering, joins, hooks, generated PySpa
 - Generated `run(...)` methods.
 - Optional generated convenience functions.
 - Spark `StructType` generation.
+- Primitive, array, map, and nested struct schema types.
 - Runtime `assert_schema(...)` and `project_schema(...)`.
 - Intermediate schema validation by default.
 - Symbolic expression execution.

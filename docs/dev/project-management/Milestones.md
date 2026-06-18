@@ -43,6 +43,7 @@ NormalizeOrdersGenerated(spark=spark).run(orders=orders_df)
 ### Exit Criteria
 
 - Spark `StructType` is generated from schemas.
+- Primitive, array, map, and nested struct schema fields are supported.
 - `assert_schema(...)` validates inputs and outputs.
 - Intermediate validation is enabled by default.
 - Class-wide and method-level validation overrides work.

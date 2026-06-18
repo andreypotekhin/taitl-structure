@@ -2,7 +2,8 @@
 
 Structure works by convention and supports a small TOML configuration for project-wide settings.
 
-Use configuration for paths, package names, validation defaults, target PySpark version, lineage settings, performance policy, and build behavior.
+Use configuration for paths, package names, validation defaults, Spark SQL assumptions, target PySpark version,
+lineage settings, performance policy, and build behavior.
 
 ## Defaults
 
@@ -75,6 +76,18 @@ validate_outputs = true
 
 Intermediate validation is enabled by default because subtransform return types define intermediate schemas.
 
+## Spark SQL Settings
+
+```toml
+spark.sql.ansi.enabled = true
+spark.sql.storeAssignmentPolicy = "ANSI"
+```
+
+Structure records Spark SQL assumptions using Spark's own dotted key names. These settings guide compile-time
+nullability and type-coercion checks and document what generated runtime code expects from the caller's Spark session.
+
+Structure does not create or reconfigure Spark sessions in v1.
+
 ## Lineage Settings
 
 ```toml
@@ -104,7 +117,8 @@ allow_collect = false
 allow_to_pandas = false
 ```
 
-Compiled subtransforms never silently fall back to UDFs. These settings are primarily for hook linting and future advanced features.
+Compiled subtransforms never silently fall back to UDFs. These settings are primarily for hook linting and future
+advanced features.
 
 ## Compile-Time Performance
 

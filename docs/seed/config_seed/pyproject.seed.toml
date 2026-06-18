@@ -22,6 +22,11 @@ validate_inputs = true
 validate_intermediate = true
 validate_outputs = true
 
+# Spark SQL assumptions for compile-time type and nullability checks.
+# Structure does not create or reconfigure Spark sessions in v1.
+spark.sql.ansi.enabled = true
+spark.sql.storeAssignmentPolicy = "ANSI"
+
 # Lineage output: none, basic, fields, debug.
 lineage = "basic"
 lineage_format = "ldjson"

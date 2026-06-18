@@ -145,9 +145,9 @@ Add columns by returning a schema with more fields.
 
 ```python
 class OrderWithFlags(Schema):
-    id = field(string)
-    total = field(decimal(12, 2))
-    is_large = field(boolean)
+    id = field(String())
+    total = field(Decimal(12, 2))
+    is_large = field(Boolean())
 
 
 def add_flags(self, order: OrderRaw) -> OrderWithFlags:

@@ -45,6 +45,11 @@ This document is a user-story specification for SDLC planning. Early sections co
 ## 5. Schemas
 
 - As a developer, I can define fields with types and nullability so that generated Spark schemas are explicit.
+- As a developer, I can declare fields with explicit type objects such as `String()` and `Decimal(12, 2)` so that
+  schema syntax is unambiguous and extensible.
+- As a developer, I can declare array, map, and nested struct fields so that semi-structured Spark data remains typed.
+- As a developer, I can inherit fields from other schema classes so that shared field groups do not need to be
+  duplicated.
 - As a developer, I can define primary keys or uniqueness hints so that join cardinality warnings are possible.
 - As a developer, I can define intermediate schemas so that multi-step transformations are validated between steps.
 - As a developer, I can generate Spark `StructType` declarations so that reads and validations use consistent schemas.

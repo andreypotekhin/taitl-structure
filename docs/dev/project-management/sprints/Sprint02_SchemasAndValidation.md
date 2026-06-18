@@ -15,6 +15,7 @@ Developers can rely on declared schemas to catch invalid DataFrame structure at 
 - Spark `StructType` generation.
 - Runtime `assert_schema(...)`.
 - Runtime `project_schema(...)` if needed for output projection.
+- Primitive, array, map, and nested struct schema generation.
 - Input validation.
 - Output validation.
 - Intermediate validation for multi-step transforms.
@@ -24,7 +25,7 @@ Developers can rely on declared schemas to catch invalid DataFrame structure at 
 
 ### Out of Scope
 
-- Complex nested schemas beyond a basic nested test.
+- Deep recursive schema graphs.
 - Field-level lineage.
 - Joins.
 - Hooks.
@@ -50,7 +51,7 @@ Developers can rely on declared schemas to catch invalid DataFrame structure at 
 ## Engineering Tasks
 
 1. Implement `SchemaDef` and `FieldDef` IR refinements.
-2. Generate Spark `StructType` for primitive types.
+2. Generate Spark `StructType` for primitive, array, map, and nested struct types.
 3. Implement schema comparison logic.
 4. Implement `assert_schema(...)`.
 5. Implement validation policy resolution.
@@ -64,6 +65,7 @@ Developers can rely on declared schemas to catch invalid DataFrame structure at 
 ## Acceptance Criteria
 
 - Generated schema modules import successfully.
+- Generated schemas cover primitive, array, map, and nested struct fields.
 - Invalid input schema fails with useful error.
 - Invalid intermediate schema fails when validation enabled.
 - Disabling intermediate validation removes intermediate validation calls.

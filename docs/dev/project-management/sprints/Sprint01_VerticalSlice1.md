@@ -47,7 +47,7 @@ class NormalizeOrdersGenerated:
 ### In Scope
 
 - Sprint 00 spike outcomes incorporated into the implementation approach.
-- `Schema` declaration sufficient for primitive fields.
+- `Schema` declaration sufficient for primitive fields using explicit type objects such as `String()`.
 - `input(Schema)` declaration.
 - `@transform` discovery.
 - One public schema-returning method.
