@@ -30,7 +30,7 @@ app/
     symbolic/
   
 lib/
-	app/ - Common App Framework (defines classes App, Feature, Command, Endpoint)
+	app/ - Common App Framework (defines App, Feature, Command, Endpoint classes)
 	common/ - common classes, shared constants 
 	helper/ - shared helpers (no business logic)
 
@@ -48,19 +48,26 @@ Library package structure: no specific structure, various subpackages as need ar
 Application package structure:
 
 apps/[app]/
-  api/ - Programmatic API endpoints - application entry points
-  app/ - Application-specific subclasses to common app framework: [App]App, [App]Feature, [App]Endpoint. Ex: CliFeature
-  features/ - Feature classes. Ex: CompileFeature(CliFeature) 
+  api/ - Endpoints for programmatic API - application entry points
+  app/ - Application-specific subclasses to Common App Framework: [App]App, [App]Feature, [App]Endpoint. Ex: CliFeature
+  features/ - Feature classes. Ex: CompileFeature(CliFeature). 
+    Usage: CliApp.instance.compileFeature.compile() returning CompileCommand  
   commands/ - Command classes. Ex: CompileCommand(CliCommand)
   logic/ - 'logic' classes implementing business logic
   
-Endpoint classes are main entry points into an app package. 
+Endpoint classes are main entry points into an app package, constituting programmatic API 
+into the app for external and inter-app use. 
 
-Common execution flow within the app:
-- API endpoints delegate to Commands which delegate to Logic classes.
-- To instantiate a Command, endpoint uses a Feature class. 
-- To access Feature class instances, endpoint uses an App class static instance.
-Unlike Feature and Command classes, Logic classes do not have a common parent superclass.
+Common execution flow within an app:
+- API endpoints instantiate and run Commands which delegate to Logic classes
+- To instantiate a Command, endpoint uses a Feature class to create a Command instance. 
+- To access Feature class instances, the endpoint uses static instance of an App class.
+- Command classes provide an entry point - __call__ method - with specific (preferably, named) arguments.
+
+Lifecycle: App and Feature classes tend to be static/existing for long time; 
+Command and Logic class instances are ephemeral and disposed immediately upon use. 
+
+Unlike Feature and Command classes, the Logic classes do not have a common parent superclass.
 
 ### Logic package structure
 Application packages, except, logic/ are flat. 
@@ -102,8 +109,7 @@ Logic classes are typically instantiated as a static field in the class that int
 Several classes can be using same logic class, in this case they instantiate them separately (we may
 use to optimize e.g. to singleton in some scenarios).
 Logic fields inside the owner class are usually marked with @logic decorator.
-We do not use builder pattern to construct logic classes. Instead, the logic classes provide an 
-entry point - __call__ method - with specific (preferably, named) arguments. 
+The logic classes provide an entry point - __call__ method - with specific (preferably, named) arguments. 
 
 #### Helper Library
 Any and all code that is general/not pertaining to immediate business use case must be placed/relocated 
