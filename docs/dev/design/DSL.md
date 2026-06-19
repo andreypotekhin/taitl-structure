@@ -37,6 +37,7 @@ from structure import (
     to_decimal,
     when,
     coalesce,
+    StructureSession,
     Join,
     JoinHint,
     SchemaMode,
@@ -86,7 +87,9 @@ class EnrichOrders(Transform):
 
 ## Rules
 
-- `@transform` marks classes for generation.
+- `@transform` marks classes for Structure compilation and execution.
+- `Transform.__init__(**inputs)` creates a deferred online invocation by binding declared input DataFrames.
+- `Transform.run(session)` delegates execution to `StructureSession`.
 - `input(Structure)` declares named DataFrame inputs.
 - Public instance methods returning `Structure` types are compiled subtransforms.
 - `SchemaClass.base(row)(...)` constructs an output schema by copying inherited fields from symbolic base rows and

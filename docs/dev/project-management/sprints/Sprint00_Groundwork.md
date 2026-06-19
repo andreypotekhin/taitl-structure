@@ -2,7 +2,9 @@
 
 ## Sprint Goal
 
-Create the repository, package layout, configuration model, CLI skeleton, testing infrastructure, documentation scaffolding, and pre-coding proofs needed to implement Structure as a compiler-driven open-source library.
+Create the repository, package layout, configuration model, CLI skeleton, testing infrastructure, documentation
+scaffolding, and pre-coding proofs needed to implement Structure as an IR-first open-source library with online
+execution as the v1 default.
 
 ## Product Outcome
 
@@ -17,6 +19,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - Python package skeleton.
 - Source-root discovery for `src` and root-package projects.
 - Generated output under `generated/structure_generated`.
+- Online execution mode default.
 - Config resolution across CLI overrides, `pyproject.toml`, `structure.toml`, and built-in defaults.
 - Explicit config precedence: CLI flags, `[tool.structure]` in `pyproject.toml`, `structure.toml`, built-in defaults.
 - Config schema validation for unknown keys and invalid values.
@@ -32,6 +35,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - Spike: class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
 - Spike: source-order discovery with stable line numbers.
 - Spike: source-root discovery and generated `structure_generated.<source package>` import paths.
+- Spike: `StructureSession` and deferred transform invocation API.
 - Spike: compiler check and compile paths with no PySpark, Java, SparkSession, Spark startup, or Spark cluster.
 - Spike: minimal generated PySpark execution test with local Spark.
 
@@ -52,6 +56,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - As a developer, I can receive structured diagnostics for invalid configuration.
 - As a developer, I can rely on documented Python and PySpark support ranges.
 - As a developer, I can configure the generated PySpark target range.
+- As a developer, I can inspect the default online execution mode.
 - As a developer, I can generate or inspect seed configuration defaults.
 - As a developer, I can run `structure check`.
 - As a developer, I can run `structure compile` without crashing even before transforms exist.
@@ -63,6 +68,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - `structure/` Python package.
 - CLI entrypoint.
 - `StructureConfig` dataclass or equivalent.
+- `execution_mode = "online"` default.
 - Config loader.
 - `pyproject.seed.toml`.
 - Basic logging and diagnostics framework.
@@ -93,7 +99,8 @@ The team can also review short spike notes for the high-risk Python mechanics be
 17. Spike source-order discovery with line numbers.
 18. Spike source-root discovery and generated `structure_generated.<source package>` import paths.
 19. Spike no-Spark compiler checks and compile.
-20. Spike minimal local Spark generated-code execution.
+20. Spike `StructureSession` and deferred transform invocation API.
+21. Spike minimal local Spark generated-code execution.
 
 ## Acceptance Criteria
 
@@ -103,6 +110,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - `structure check` and `structure compile` work without PySpark, Java, SparkSession, Spark startup, or a Spark cluster.
 - Config defaults can be printed or generated.
 - Default config uses conventional source-root discovery and `generated/structure_generated`.
+- Default config uses `execution_mode = "online"`.
 - Config precedence is documented and covered by tests.
 - Unknown config keys fail with structured diagnostics.
 - Invalid config values fail with allowed values when applicable.

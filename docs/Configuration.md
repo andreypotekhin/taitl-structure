@@ -2,8 +2,8 @@
 
 Structure works by convention and supports a small TOML configuration for project-wide settings.
 
-Use configuration for paths, package names, validation defaults, Spark SQL assumptions, target PySpark version,
-compiler lineage settings, performance policy, compatibility behavior, and build behavior.
+Use configuration for paths, package names, execution mode, validation defaults, Spark SQL assumptions, target PySpark
+version, compiler lineage settings, performance policy, compatibility behavior, and build behavior.
 
 ## Defaults
 
@@ -18,6 +18,7 @@ Preferred:
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
+execution_mode = "online"
 ```
 
 ## structure.toml
@@ -28,6 +29,7 @@ Alternative:
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
+execution_mode = "online"
 ```
 
 ## Path Settings
@@ -108,13 +110,25 @@ Structure does not create or reconfigure Spark sessions in v1.
 ## Compatibility Settings
 
 ```toml
+execution_mode = "online"
 target_backend = "pyspark"
 target_pyspark = ">=3.5,<4.1"
 ```
 
-`target_backend` selects the generated runtime backend. v1 supports `pyspark`.
+`execution_mode` selects how transforms run. v1 defaults to `online`, where `StructureSession` executes transforms at
+runtime from compiler IR. `generated` delegates runtime execution to checked-in generated PySpark classes.
 
-`target_pyspark` constrains which PySpark APIs generated code may use. The v1 default targets PySpark 3.5.x and 4.0.x.
+Allowed values:
+
+```text
+online
+generated
+```
+
+`target_backend` selects the runtime backend. v1 supports `pyspark`.
+
+`target_pyspark` constrains which PySpark APIs online and generated PySpark execution may use. The v1 default targets
+PySpark 3.5.x and 4.0.x.
 If a DSL feature cannot be generated for the configured range, `structure check` and `structure compile` should fail
 with a diagnostic that names the required PySpark version.
 

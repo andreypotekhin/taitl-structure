@@ -6,7 +6,8 @@ Make the source DSL practically useful by adding common expressions, `where(...)
 
 ## Product Outcome
 
-Developers can write useful compiled transforms without falling back to PySpark hooks, and unsupported Python produces actionable diagnostics.
+Developers can write useful compiled transforms without falling back to PySpark hooks, and unsupported Python produces
+actionable diagnostics in online and generated execution.
 
 ## Scope
 
@@ -22,6 +23,7 @@ Developers can write useful compiled transforms without falling back to PySpark 
 - Structured unsupported-code errors.
 - Error suggestions: direct DSL, `@expr_fn`, hook, config workaround when applicable.
 - Performance guardrail tests.
+- Online/generated parity checks for expressions and filtering.
 
 ### Out of Scope
 
@@ -40,6 +42,7 @@ Developers can write useful compiled transforms without falling back to PySpark 
 - As a developer, I receive structured compiler errors for unsupported Python.
 - As a developer, I receive alternatives including DSL functions, `@expr_fn`, hooks, and config workarounds.
 - As a developer, compiled paths do not silently fall back to UDFs.
+- As a developer, online and generated execution lower expressions consistently.
 
 ## Example Source
 
@@ -86,18 +89,20 @@ df = orders.where(
 9. Implement structured compiler error model.
 10. Add detailed error message rendering.
 11. Add static generated-code performance scans.
+12. Add online/generated parity checks for expressions and filtering.
 
 ## Acceptance Criteria
 
 - Filtering compiles to DataFrame `.where(...)`.
 - Expression helpers inline into generated PySpark.
+- Expression helpers run online with the same Spark Column semantics.
 - Unsupported `.strip().lower()` fails with a detailed error.
 - Error suggests `lower(trim(...))`.
 - Error suggests creating `@expr_fn`.
 - Error suggests a hook escape hatch.
 - `SchemaClass.base(row)(overrides...)` compiles to the same explicit projection as the equivalent full constructor.
 - Multiple-base overlays map source rows to direct schema bases in declaration order.
-- Generated code contains no UDFs.
+- Online and generated code paths contain no UDFs.
 
 ## Demo Script
 

@@ -11,6 +11,7 @@ The compatibility policy must:
 - define supported PySpark versions and the default `target_pyspark` range;
 - define Spark Connect scope;
 - define semantic versioning expectations;
+- define online runtime compatibility;
 - define generated-code compatibility;
 - define compiler lineage schema versioning;
 - define config schema versioning.
@@ -22,45 +23,48 @@ Structure v1 supports Python 3.11 and newer.
 The default PySpark target is:
 
 ```toml
+execution_mode = "online"
 target_backend = "pyspark"
 target_pyspark = ">=3.5,<4.1"
 ```
 
-This means generated code should target PySpark 3.5.x and 4.0.x APIs unless the user configures a different target.
+This means online and generated execution should target PySpark 3.5.x and 4.0.x APIs unless the user configures a
+different target.
 
-Airflow is not a hard dependency. Generated code should be importable from Airflow, Spark jobs, notebooks, or other
-orchestrators without pulling in scheduler-specific runtime dependencies.
+Airflow is not a hard dependency. Online and generated transforms should be usable from Airflow, Spark jobs, notebooks,
+or other orchestrators without pulling in scheduler-specific runtime dependencies.
 
 Linux is the v1 runtime target. Linux and macOS are the v1 development targets. Windows development may work where the
-toolchain allows it, but generated Spark jobs should be designed and tested primarily for Linux deployment.
+toolchain allows it, but Spark jobs should be designed and tested primarily for Linux deployment.
 
 ## PySpark Version Targeting
 
-The PySpark emitter owns PySpark API compatibility. Discovery, symbolic execution, IR checks, lineage, and generic
+The PySpark target layer owns PySpark API compatibility. Discovery, symbolic execution, IR checks, lineage, and generic
 diagnostics must not scatter PySpark-version conditionals unless a narrow check directly belongs there.
 
-The emitter must be version-aware enough to:
+The target layer must be version-aware enough to:
 
 - avoid APIs outside the configured `target_pyspark` range;
-- reject requested DSL features that cannot be generated for that range;
+- reject requested DSL features that cannot run for that range;
 - produce diagnostics that state the required PySpark version when a feature is unavailable;
-- keep generated output deterministic for the same source, config, and Structure version.
+- keep online semantics and generated output deterministic for the same source, config, and Structure version.
 
-When a target range spans multiple supported PySpark lines, generated code should prefer the oldest compatible API that
-keeps the output clear and optimizer-visible.
+When a target range spans multiple supported PySpark lines, Structure should prefer the oldest compatible API that keeps
+the output clear and optimizer-visible.
 
 ## Spark Connect Scope
 
 Spark Connect is deferred to v4.
 
-v1 and v2 generated code targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. v3 adds streaming
-orchestration on top of that ordinary PySpark contract. The compiler must not claim Spark Connect support in public
-docs or diagnostics before a tested contract exists.
+v1 and v2 online/generated execution targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. v3 adds
+streaming orchestration on top of that ordinary PySpark contract. The compiler must not claim Spark Connect support in
+public docs or diagnostics before a tested contract exists.
 
 Spark Connect may be implemented before v4 only if all of these are true:
 
-- it uses the existing PySpark emitter boundary cleanly;
+- it uses the existing PySpark target boundary cleanly;
 - it does not change public DSL syntax;
+- it does not change online invocation construction or `StructureSession` semantics;
 - it does not change generated class construction or `run(...)` signatures;
 - it does not change streaming orchestration semantics;
 - it does not weaken generated-code readability or reviewability;
@@ -76,6 +80,7 @@ After 1.0, Structure follows semantic versioning.
 Major releases may:
 
 - change public DSL behavior;
+- change online runtime API behavior;
 - remove or change documented config keys;
 - change generated-runtime helper contracts;
 - change generated-code compatibility rules;
@@ -89,6 +94,7 @@ Minor releases may:
 - add PySpark support;
 - add diagnostics;
 - improve generated code without changing semantics;
+- improve online execution without changing semantics;
 - add compiler lineage fields in a backward-compatible way.
 
 Patch releases may:
@@ -100,9 +106,21 @@ Patch releases may:
 
 Before 1.0, minor releases may change public contracts, but every breaking change should include migration notes.
 
+## Online Runtime Compatibility
+
+Online execution is the default v1 runtime surface. Compatible online execution means:
+
+- transform invocations bind declared input DataFrames by name;
+- `StructureSession` accepts caller-owned Spark sessions and optional hook context;
+- online execution preserves the same transform semantics as generated PySpark for supported v1 features;
+- compiler commands remain Spark-free even though online runtime execution may import PySpark.
+
+Breaking changes to `StructureSession`, transform invocation binding, or online/generated semantic parity require a
+major version after 1.0 or a compatibility shim.
+
 ## Generated-Code Compatibility
 
-Generated PySpark is committed build output owned by the Structure compiler.
+Generated PySpark is optional committed build output owned by the Structure compiler.
 
 The generator should include a compact header in generated files with:
 
@@ -120,7 +138,7 @@ Breaking generated-runtime helper changes require one of:
 - a compatibility shim;
 - a regeneration strategy that makes old generated code fail with a clear upgrade diagnostic.
 
-Upgrade guidance must tell users to run:
+Upgrade guidance for projects that commit generated files must tell users to run:
 
 ```bash
 structure compile --fail-on-diff
@@ -164,5 +182,6 @@ New optional keys may appear in minor releases. Removing or changing a documente
 - `docs/Compatibility.md` documents the public policy.
 - `Readme.md` links to the compatibility policy.
 - `docs/Configuration.md` documents `target_backend`, `target_pyspark`, and compatibility diagnostics.
+- `docs/Configuration.md` documents `execution_mode`.
 - `docs/dev/Roadmap.md` and public roadmap text schedule Spark Connect for v4.
-- The seed config default is `target_pyspark = ">=3.5,<4.1"`.
+- The seed config defaults are `execution_mode = "online"` and `target_pyspark = ">=3.5,<4.1"`.

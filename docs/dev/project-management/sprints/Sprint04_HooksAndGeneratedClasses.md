@@ -2,11 +2,13 @@
 
 ## Sprint Goal
 
-Implement explicit PySpark hook escape hatches while preserving clean generated code for hook-free transforms.
+Implement explicit PySpark hook escape hatches while preserving clean generated code for hook-free transforms and
+matching online hook behavior.
 
 ## Product Outcome
 
-Developers can attach arbitrary PySpark code to a concrete subtransform using `@after(method)` or `@before(method)`. Generated code directly calls source hooks only when hooks exist.
+Developers can attach arbitrary PySpark code to a concrete subtransform using `@after(method)` or `@before(method)`.
+Online execution and generated code call source hooks at the same lifecycle points.
 
 ## Scope
 
@@ -23,6 +25,7 @@ Developers can attach arbitrary PySpark code to a concrete subtransform using `@
 - Hook schema mode options.
 - Project output after hook when configured.
 - Clean no-hook generated code tests.
+- Online/generated parity tests for hook ordering and hook inputs.
 
 ### Out of Scope
 
@@ -37,6 +40,7 @@ Developers can attach arbitrary PySpark code to a concrete subtransform using `@
 - As a developer, I can write hook signature `def hook(self, *, df, spark, ctx)`.
 - As a developer, I can opt a hook into original input access with `pass_inputs=True`.
 - As a developer, generated code directly calls source hooks when hooks exist.
+- As a developer, online execution directly calls source hooks when hooks exist.
 - As a developer, hook-free generated code remains clean.
 - As a developer, hooks are explicit arbitrary PySpark escape hatches.
 
@@ -98,10 +102,12 @@ class NormalizeOrdersGenerated:
 9. Generate original input namespace for `pass_inputs=True` hooks.
 10. Implement hook schema mode behavior.
 11. Add no-hook cleanliness snapshot tests.
+12. Add online/generated parity tests for hook ordering and hook inputs.
 
 ## Acceptance Criteria
 
 - Hooked transform compiles and runs.
+- Hooked transform runs online with the same hook order as generated code.
 - Hook-free transform generated code has no source import and no `_impl`.
 - Invalid hook signature fails with structured error.
 - Hook after a subtransform runs at the correct point.

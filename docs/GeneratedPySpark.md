@@ -1,8 +1,10 @@
 # Generated PySpark
 
-Structure's central deliverable is generated PySpark code.
+Structure can emit generated PySpark code.
 
-The generated code should be readable enough to review, stable enough to snapshot-test, and explicit enough to use from Airflow or other Spark job entrypoints.
+Online execution is the v1 default, so ordinary users can run transforms through `StructureSession` without committing
+generated files. Generated code remains useful when a team wants reviewable build output, provenance, snapshot tests, or
+generated-mode runtime entrypoints.
 
 ## Generated Class Shape
 
@@ -70,14 +72,14 @@ Generated code should:
 
 ## Ownership Rules
 
-Generated PySpark is committed build output owned by the Structure compiler.
+Generated PySpark is optional committed build output owned by the Structure compiler.
 
 Developers should:
 
-- commit generated files with the source or configuration changes that produced them
-- review generated-code diffs like other build artifacts
+- commit generated files with the source or configuration changes that produced them when using generated mode
+- review generated-code diffs like other build artifacts when generated files are committed
 - regenerate files with `structure compile`
-- run `structure compile --fail-on-diff` in CI
+- run `structure compile --fail-on-diff` in CI for projects that commit generated files
 
 Developers should not edit generated files by hand. If generated code is wrong, change the Structure source,
 configuration, or generator, then regenerate.

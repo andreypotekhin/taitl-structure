@@ -2,7 +2,8 @@
 
 ## Purpose
 
-The PySpark generator lowers Structure IR to deterministic, readable PySpark modules.
+The PySpark generator lowers Structure IR to deterministic, readable PySpark modules. It is the source-text consumer of
+the same IR semantics used by the online PySpark runner.
 
 ## Generated Artifacts
 
@@ -14,6 +15,9 @@ generated/structure_generated/
   runtime/
   lineage/  # compiler metadata, not runtime telemetry
 ```
+
+Generated artifacts are optional for ordinary online execution. They remain first-class for provenance, review,
+snapshot tests, and projects configured with `execution_mode = "generated"`.
 
 ## Transform Class Generation
 
@@ -46,15 +50,23 @@ class EnrichOrdersGenerated:
 
 ## Ownership Rules
 
-Generated PySpark is committed, reviewable build output owned by the compiler. The generator must make files stable
-enough for code review and snapshot tests, and it must never depend on manual edits inside `generated/`.
+Generated PySpark is optional committed build output owned by the compiler. The generator must make files stable enough
+for code review and snapshot tests, and it must never depend on manual edits inside `generated/`.
 
 If generated output needs to change, developers change Structure source, configuration, or generator code, then
-regenerate. CI should run `structure compile --fail-on-diff` to catch stale or manually edited generated files.
+regenerate. CI should run `structure compile --fail-on-diff` to catch stale or manually edited generated files for
+projects that commit generated artifacts.
+
+## Online Parity
+
+Generated code and online execution must preserve the same transform semantics. Text concerns such as imports and
+formatting belong here. Semantic concerns such as expression lowering, join aliasing, validation placement, hook order,
+and projection shape should be shared with the online runner where practical, or covered by parity tests until shared
+lowering is extracted.
 
 ## PySpark Evolution Strategy
 
-PySpark API usage belongs in this component, not in symbolic execution or checks.
+PySpark API usage belongs in this component and the online PySpark runner, not in symbolic execution or checks.
 
 Use a backend capability registry:
 
@@ -66,11 +78,11 @@ PySparkCapabilities
   supports_specific_hint
 ```
 
-The emitter chooses generated syntax based on target capabilities.
+The PySpark target layer chooses online and generated syntax based on target capabilities.
 
 ## Performance Commitment
 
-Generated compiled paths must not introduce:
+Compiled paths must not introduce:
 
 - Python UDFs
 - pandas UDFs
@@ -81,4 +93,5 @@ Generated compiled paths must not introduce:
 
 ## Compile-Time Performance
 
-Generate files in memory first. Write only changed files. Format only changed files. Support parallel generation by transform module.
+Generate files in memory first. Write only changed files. Format only changed files. Support parallel generation by
+transform module.

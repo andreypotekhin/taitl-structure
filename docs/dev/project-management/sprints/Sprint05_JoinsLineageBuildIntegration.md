@@ -3,12 +3,12 @@
 ## Sprint Goal
 
 Add symbolic `join_one(...)`, support arbitrary N-step serial joins, add compiler provenance and static dataflow
-lineage, and make generated code reliable in CI with `--fail-on-diff`.
+lineage, and make online/generated execution reliable in CI.
 
 ## Product Outcome
 
 Developers can build practical enrichment pipelines with multiple inputs and source-ordered typed subtransforms, then
-verify generated code is committed and explain how source code maps to IR, generated PySpark, and static data
+verify online/generated parity and explain how source code maps to IR, optional generated PySpark, and static data
 dependencies.
 
 ## Scope
@@ -26,6 +26,7 @@ dependencies.
 - `structure explain`.
 - `structure compile --fail-on-diff`.
 - Streaming compatibility static checks for supported v1 operations.
+- Online/generated parity checks for join fixtures.
 
 ### Out of Scope
 
@@ -46,7 +47,7 @@ dependencies.
 - As a developer, I can inspect static dataflow lineage for transform, table, and column dependencies inferred from IR.
 - As a developer, I can run `structure compile --fail-on-diff` in CI.
 - As a developer, I can run `structure explain` to see transform structure.
-- As a developer, generated transforms remain streaming-compatible when Spark supports the operations used.
+- As a developer, online and generated transforms remain streaming-compatible when Spark supports the operations used.
 
 ## Example Source
 
@@ -96,6 +97,7 @@ customers_df = F.broadcast(customers.alias("customers"))
 10. Implement `structure explain`.
 11. Implement `--fail-on-diff`.
 12. Add streaming compatibility check stubs.
+13. Add online/generated parity checks for join fixtures.
 
 ## Acceptance Criteria
 
@@ -107,7 +109,7 @@ customers_df = F.broadcast(customers.alias("customers"))
 - `structure explain` shows transform, table, and column dependencies inferred from IR.
 - `--fail-on-diff` fails when generated code differs.
 - `structure explain` prints a useful step summary.
-- Generated compiled path remains UDF-free.
+- Online and generated compiled paths remain UDF-free.
 
 ## Compile-Time Performance Metric
 

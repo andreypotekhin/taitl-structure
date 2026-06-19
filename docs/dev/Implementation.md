@@ -8,6 +8,9 @@
 - Single schema-returning subtransform.
 - Symbolic field refs.
 - Projection generation.
+- `StructureSession`.
+- Builder-style transform invocation.
+- Online PySpark execution of the minimal projection transform.
 - Spark `StructType` generation.
 - Generated transform class.
 - Input and output validation.
@@ -17,6 +20,8 @@
 
 ## Phase 2: v1 Complete
 
+- Online PySpark runner for all v1 transform operations.
+- Runtime target registry for online and generated PySpark execution.
 - Source-order multi-subtransform chains.
 - Intermediate validation.
 - `where(...)` filtering.
@@ -80,8 +85,9 @@ structure compile --fail-on-diff
 Later, add optional pytest and build-tool integrations as v2 adoption tooling.
 
 Compiler build integration must stay Spark-free. `structure check`, `structure compile`, and
-`structure compile --fail-on-diff` must not require PySpark, Java, a SparkSession, or a Spark cluster. Generated-code
-import and PySpark execution tests may require those dependencies and should remain separate from compiler checks.
+`structure compile --fail-on-diff` must not require PySpark, Java, a SparkSession, or a Spark cluster. Online runtime,
+generated-code import, and PySpark execution tests may require those dependencies and should remain separate from
+compiler checks.
 
 ## Compile-Time Performance Metrics
 

@@ -1,6 +1,8 @@
 # Structure Project Management Docs
 
-This archive contains sprint-oriented project management documentation for the first implementation iterations of **Structure**, a schema-first Python DSL and compiler that generates clean PySpark DataFrame code.
+This archive contains sprint-oriented project management documentation for the first implementation iterations of
+**Structure**, a schema-first Python DSL and runtime/compiler toolkit that runs or generates clean PySpark DataFrame
+code.
 
 The sprint plan assumes the documentation set from the Structure design package already exists, especially:
 
@@ -43,6 +45,7 @@ Sprint 00 includes a short spike gate before implementation of the first vertica
 - Class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
 - Source-order discovery with stable line numbers.
 - Source-root discovery and generated `structure_generated.<source package>` import paths.
+- `StructureSession` and deferred transform invocation API.
 - Compiler checks that do not import PySpark or start Spark.
 - A minimal generated PySpark execution test using local Spark.
 
@@ -53,7 +56,8 @@ Sprint 01 should not start until the spike notes are captured and any resulting 
 The first iterations are intentionally arranged to build confidence in small compiler slices:
 
 1. **Groundwork and spikes**: repository, package layout, config, CLI skeleton, testing harness, and pre-coding proofs.
-2. **Vertical Slice 1**: one input schema, one transform method, one generated PySpark class, one Spark execution test.
+2. **Vertical Slice 1**: one input schema, one transform method, online execution, optional generated PySpark class,
+   one Spark execution test.
 3. **Schemas and validation**: richer schema model, `StructType` generation, input/intermediate/output validation.
 4. **Symbolic expressions, filtering, helpers**: compiler-worthy expression model with strict unsupported-code diagnostics.
 5. **Hooks and generated classes**: source hooks, clean no-hook generated code, direct hook calls.

@@ -14,6 +14,7 @@ generated_dir = "generated"
 generated_package = "structure_generated"
 
 # Backend target.
+execution_mode = "online"
 target_backend = "pyspark"
 target_pyspark = ">=3.5,<4.1"
 

@@ -24,6 +24,7 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can set `generated_dir` so that generated files are written predictably.
 - As a developer, I can set `target_pyspark` so that generated code targets an intended PySpark version range.
 - As a developer, I can receive an error when a requested feature cannot be generated for the configured PySpark target.
+- As a developer, I can configure `execution_mode` so that my project chooses online or generated execution.
 - As a developer, I can set validation defaults so that schema enforcement is project-wide and repeatable.
 - As a developer, I can configure compiler lineage output so that provenance and static dataflow detail are controlled.
 - As a developer, I can set `fail_on_diff` so that CI catches stale generated code.
@@ -34,6 +35,10 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can declare a transform class with `@transform` so that the compiler knows which classes to generate.
 - As a developer, I can declare named inputs using `input(Structure)` so that generated `run(...)` methods receive predictable named DataFrame parameters.
 - As a developer, I can write public schema-returning methods so that each method becomes a compiled subtransform.
+- As a developer, I can run a Structure transform online through `StructureSession` so that I do not need to commit
+  generated PySpark code.
+- As a developer, I can construct a transform invocation with named DataFrame inputs and run it later so that
+  construction and execution can be separated.
 - As a developer, I can run `structure check` so that compileability issues are caught without writing generated files.
 - As a developer, I can run `structure compile` so that source transforms produce generated PySpark classes.
 
@@ -63,6 +68,10 @@ This document is a user-story specification for SDLC planning. Early sections co
 
 - As a developer, I can decorate a class with `@transform` so that it becomes a Structure transform.
 - As a developer, I can define one source transform class per logical transformation pipeline so that generated code maps cleanly to source code.
+- As a developer, I can construct a transform with declared input DataFrames so that it represents a deferred runtime
+  invocation.
+- As a developer, I can call `run(session)` on a transform invocation so that `StructureSession` chooses the configured
+  runtime runner.
 - As a developer, I can generate one PySpark class per source transform class so that generated code remains organized.
 - As a developer, I can instantiate a generated transform class with `spark` and optional `ctx` so that runtime dependencies are explicit.
 - As a developer, I can call `run(...)` on a generated transform class so that execution has a stable entrypoint.
@@ -101,11 +110,14 @@ This document is a user-story specification for SDLC planning. Early sections co
 
 ## 10. Generated Code
 
+- As a developer, I can use generated PySpark as an optional provenance and generated-mode artifact rather than as the
+  only v1 runtime path.
 - As a developer, I can inspect generated PySpark code so that transformation behavior is reviewable.
 - As a developer, I can generate a class named after the source transform class so that source-to-generated mapping is obvious.
 - As a developer, I can expect generated code to use PySpark DataFrame and Column operations so that Spark can optimize execution.
 - As a developer, I can expect generated code to omit hook imports when no hooks are defined so that generated code stays clean.
 - As a developer, I can expect generated code to contain stable variable names such as `df`, `spark`, and `ctx` so that generated code is predictable.
+- As a developer, I can rely on online execution and generated execution to preserve the same transform semantics.
 
 ## 11. Symbolic Execution
 

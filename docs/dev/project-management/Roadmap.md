@@ -2,19 +2,21 @@
 
 ## Product Direction
 
-Structure is a compiler-first data pipeline library. Developers write typed, schema-returning Python transform classes.
-Structure compiles them to generated PySpark classes using DataFrame and Column operations so Spark can optimize
-execution.
+Structure is an IR-first data pipeline library. Developers write typed, schema-returning Python transform classes.
+Structure runs them online by default through `StructureSession`, and can also emit generated PySpark classes using
+DataFrame and Column operations so Spark can optimize execution.
 
 The north star is deliberately strict: v1 proves that Structure can replace hand-maintained PySpark boilerplate with a
-strict, readable compiler workflow. v2 makes that workflow useful for mainstream analytical pipelines. v3 takes
+strict online runtime and optional generated-code workflow. v2 makes that workflow useful for mainstream analytical
+pipelines. v3 takes
 ownership of streaming lifecycle concerns only after the transform compiler has earned trust. v4 adds backend expansion
 through Spark Connect after the ordinary PySpark contract is stable.
 
 The project should prioritize:
 
 - Fast, predictable compilation.
-- Clean generated PySpark code.
+- Online PySpark execution by default.
+- Clean optional generated PySpark code.
 - Strong schema enforcement.
 - IDE-friendly source authoring.
 - Strict performance guardrails.
@@ -32,6 +34,7 @@ Required spikes:
 - Prove class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
 - Prove source-order discovery with stable line numbers.
 - Prove source-root discovery and generated `structure_generated.<source package>` import paths.
+- Prove `StructureSession` and deferred transform invocation API.
 - Prove compiler checks and compile can run without PySpark, Java, SparkSession, Spark startup, or a Spark cluster.
 - Prove a minimal generated PySpark execution test with local Spark.
 - Document and wire the v1 compatibility policy before packaging decisions harden.
@@ -42,13 +45,17 @@ namespace. Other layouts remain configurable.
 
 ## v1 Scope
 
-v1 focuses on schema-driven projection, filtering, joins, hooks, generated PySpark classes, validation, compiler
-provenance, static dataflow lineage, and build integration.
+v1 focuses on schema-driven online execution, projection, filtering, joins, hooks, optional generated PySpark classes,
+validation, compiler provenance, static dataflow lineage, and build integration.
 
 ### v1 must include
 
 - `@transform` class discovery.
 - `input(Structure)` declarations.
+- `StructureSession`.
+- Builder-style transform invocation.
+- Online PySpark runner.
+- Runtime target registry for online and generated PySpark execution.
 - Public schema-returning methods as source-ordered subtransforms.
 - Schema base overlay construction for inherited output rows.
 - One generated PySpark class per transform class.
@@ -72,7 +79,7 @@ provenance, static dataflow lineage, and build integration.
 - Python 3.11+ and PySpark 3.5.x/4.0.x compatibility policy.
 - Build/CI support including `--fail-on-diff`.
 - Spark-free compiler commands for `check`, `compile`, and `compile --fail-on-diff`.
-- Streaming-compatible generated transforms when Spark operations support streaming inputs.
+- Streaming-compatible online and generated transforms when Spark operations support streaming inputs.
 - Streaming compatibility reporting that explains whether a transform is compatible, batch-only, or unknown.
 - Diagnostic codes and documentation links for setup, import safety, PySpark targeting, generated-code drift,
   validation, and compileability issues.
@@ -115,12 +122,12 @@ DataFrames.
 
 ## v4 Scope
 
-v4 adds Spark Connect support after the ordinary PySpark generated-code contract and streaming orchestration semantics
+v4 adds Spark Connect support after the ordinary PySpark online/generated contract and streaming orchestration semantics
 are stable.
 
 ### v4 candidate features
 
-- Spark Connect generated-code contract.
+- Spark Connect online/generated contract.
 - Spark Connect compatibility tests.
 - Backend capability reporting for ordinary PySpark and Spark Connect targets.
 - Public migration notes for projects that want Connect-compatible generated code.
@@ -130,7 +137,7 @@ are stable.
 | Milestone | Goal | Sprints |
 |---|---|---|
 | M0 | Repository, compiler skeleton, and pre-coding spike gate | Sprint 00 |
-| M1 | First end-to-end generated PySpark transform | Sprint 01 |
+| M1 | First end-to-end online PySpark transform with optional generated artifact | Sprint 01 |
 | M2 | Schema validation and generated class polish | Sprint 02 |
 | M3 | Practical expression DSL and diagnostics | Sprint 03 |
 | M4 | Hook model and no-hook generated-code cleanliness | Sprint 04 |

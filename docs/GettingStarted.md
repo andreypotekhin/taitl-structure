@@ -1,6 +1,7 @@
 # Getting Started
 
-This guide builds a small but realistic Structure transform: normalize order rows, validate required keys, enrich with customer data, and generate PySpark code for use from Airflow or a Spark job.
+This guide builds a small but realistic Structure transform: normalize order rows, validate required keys, enrich with
+customer data, and run it through `StructureSession`. Generated PySpark remains available as an optional artifact.
 
 ## 1. Install
 
@@ -32,7 +33,7 @@ generated/
       pyspark/
 ```
 
-`src` and `generated` are filesystem roots. Mark them as source roots in your IDE.
+`src` is the source filesystem root. `generated` is optional unless your project commits generated PySpark artifacts.
 Generated modules mirror source import paths under `structure_generated`.
 
 ## 3. Define Schemas
@@ -137,14 +138,31 @@ class EnrichOrders(Transform):
         )
 ```
 
-## 5. Compile
+## 5. Run Online
+
+```python
+from structure import StructureSession
+from orders.transforms.order import EnrichOrders
+
+session = StructureSession(spark=spark)
+
+enriched = EnrichOrders(
+    orders=orders_df,
+    customers=customers_df,
+).run(session)
+```
+
+Construction binds DataFrame inputs. Calling `.run(session)` executes the transform through the session's configured
+runtime runner.
+
+## 6. Check and Optionally Compile
 
 ```bash
 structure check
 structure compile
 ```
 
-Generated files appear under:
+Generated files, when requested, appear under:
 
 ```text
 generated/structure_generated/
@@ -155,7 +173,7 @@ generated/structure_generated/
   lineage/  # compiler metadata, not runtime telemetry
 ```
 
-## 6. Inspect Generated PySpark
+## 7. Inspect Optional Generated PySpark
 
 Generated code is intentionally explicit.
 
@@ -208,7 +226,7 @@ class EnrichOrdersGenerated:
 
 The Structure source is shorter and schema-oriented. The generated PySpark is longer, explicit, and reviewable.
 
-## 7. Use Generated Code
+## 8. Use Generated Code
 
 ```python
 from structure_generated.orders.pyspark.transforms.order import EnrichOrdersGenerated
@@ -219,25 +237,27 @@ enriched = EnrichOrdersGenerated(spark=spark).run(
 )
 ```
 
-## 8. Use from Airflow
+## 9. Use from Airflow
 
 ```python
-from structure_generated.orders.pyspark.transforms.order import EnrichOrdersGenerated
+from structure import StructureSession
+from orders.transforms.order import EnrichOrders
 
 
 def enrich_orders_task():
     orders = spark.read.parquet("/data/orders_raw")
     customers = spark.read.parquet("/data/customers")
+    session = StructureSession(spark=spark)
 
-    enriched = EnrichOrdersGenerated(spark=spark).run(
+    enriched = EnrichOrders(
         orders=orders,
         customers=customers,
-    )
+    ).run(session)
 
     enriched.write.mode("overwrite").parquet("/data/orders_enriched")
 ```
 
-## 9. Optional Configuration
+## 10. Optional Configuration
 
 Structure works by convention. Add TOML only when you need repeatable settings or non-default paths.
 
@@ -248,6 +268,7 @@ Minimal `pyproject.toml`:
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
+execution_mode = "online"
 ```
 
 A complete default seed is provided in `pyproject.seed.toml`. Most projects should only specify settings that differ from defaults.

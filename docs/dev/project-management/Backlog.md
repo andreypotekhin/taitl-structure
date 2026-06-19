@@ -6,6 +6,7 @@
 - SPIKE: Prove class-local `@expr_fn` helpers work without a `self` parameter.
 - SPIKE: Prove source-order method discovery with stable line numbers.
 - SPIKE: Prove source-root discovery and generated `structure_generated.<source package>` import paths.
+- SPIKE: Prove `StructureSession` and deferred transform invocation API.
 - SPIKE: Prove `structure check` and `structure compile` can run without PySpark, Java, SparkSession, Spark startup,
   or a Spark cluster.
 - SPIKE: Prove a minimal generated PySpark execution test with local Spark.
@@ -26,6 +27,7 @@
 - Add CI test workflow.
 - Add formatting/linting setup.
 - Add generated directory conventions.
+- Add `execution_mode = "online"` default.
 
 ## Epic: Schema Model
 
@@ -85,6 +87,15 @@
 - Generate intermediate validation.
 - Generate hook calls only when needed.
 - Generate formatted deterministic code.
+
+## Epic: Online Execution Runtime
+
+- Implement `StructureSession`.
+- Implement builder-style transform invocation input binding.
+- Implement runtime target registry.
+- Implement online PySpark runner.
+- Implement generated PySpark runner.
+- Add online/generated parity tests.
 
 ## Epic: Runtime Support
 

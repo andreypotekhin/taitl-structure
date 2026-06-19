@@ -13,18 +13,17 @@ class NormalizeOrders(Transform):
         ...
 ```
 
-Structure generates one PySpark class per transform class.
+Structure runs transform classes online by default through `StructureSession`.
 
 ```python
-class NormalizeOrdersGenerated:
+session = StructureSession(spark=spark)
 
-    def __init__(self, *, spark, ctx=None):
-        self.spark = spark
-        self.ctx = ctx
-
-    def run(self, *, orders):
-        ...
+result = NormalizeOrders(
+    orders=orders_df,
+).run(session)
 ```
+
+Structure can also generate one PySpark class per transform class for projects that choose generated execution.
 
 ## Source and Generated Paths
 
@@ -69,7 +68,27 @@ Subtransforms execute in source order.
 OrderRaw -> OrderNormalized -> OrderWithCustomer -> OrderEnriched
 ```
 
-## Generated PySpark
+## Online Execution
+
+Constructing a transform binds inputs without starting Spark work. Running it through a session executes the configured
+runtime target.
+
+```python
+from structure import StructureSession
+
+session = StructureSession(spark=spark, ctx=ctx)
+
+enriched = EnrichOrders(
+    orders=orders_df,
+    customers=customers_df,
+    products=products_df,
+).run(session)
+```
+
+The session owns Spark, optional hook context, resolved Structure configuration, execution mode, and target backend
+selection.
+
+## Optional Generated PySpark
 
 A source subtransform like this:
 
@@ -269,17 +288,18 @@ input DataFrames, not the current intermediate `df`.
 
 ## Streaming Compatibility
 
-Generated transforms operate on DataFrames. If the input DataFrame is streaming and all generated operations are
-supported by Spark Structured Streaming, the generated transform can be used in a streaming pipeline.
+Structure transforms operate on DataFrames. If the input DataFrame is streaming and all compiled operations are
+supported by Spark Structured Streaming, the transform can be used in a streaming pipeline.
 
 Structure v1/v2 do not generate `readStream` or `writeStream`; the caller owns streaming orchestration.
 
 ## Compatibility
 
-v1 generated code targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs for PySpark 3.5.x and 4.0.x
-by default:
+v1 online and generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs for PySpark
+3.5.x and 4.0.x by default:
 
 ```toml
+execution_mode = "online"
 target_pyspark = ">=3.5,<4.1"
 ```
 

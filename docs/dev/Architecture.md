@@ -1,19 +1,20 @@
 # Architecture
 
-Structure is a compiler and code generator for schema-driven PySpark data pipelines.
+Structure is an IR-first runtime/compiler toolkit for schema-driven PySpark data pipelines.
 
-It is not intended to be a heavy runtime framework. Source DSL files compile to generated PySpark classes. Generated code performs DataFrame transformations at runtime.
+It is not intended to be a heavy runtime framework. Source DSL files compile to backend-neutral IR. In v1, that IR can
+be consumed by the online PySpark runner at runtime or by the PySpark code generator to emit optional generated classes.
 
 ## Goals
 
 - Schema-first authoring.
 - IDE-friendly source code.
-- Spark optimizer-visible generated code.
+- Spark optimizer-visible online and generated execution.
 - Explicit arbitrary PySpark hooks.
 - Clean hook-free generated code.
-- Small runtime support library.
+- Lightweight runtime session.
 - Fast compiler feedback.
-- Version-aware PySpark emitter.
+- Version-aware PySpark target boundary.
 
 ## High-Level Data Flow
 
@@ -22,7 +23,7 @@ src/orders/
   schemas/
   transforms/
 
-        ↓ structure compile
+        -> compiler frontend
 
 compiler
   config
@@ -30,11 +31,16 @@ compiler
   symbolic execution
   compileability checks
   IR generation
-  code generation
   compiler provenance
   static dataflow lineage
 
-        ↓
+        -> online execution
+
+StructureSession
+  OnlinePySparkRunner
+  PySpark DataFrame operations
+
+        -> optional structure compile
 
 generated/structure_generated/
   orders/pyspark/
@@ -43,9 +49,9 @@ generated/structure_generated/
   runtime/
   lineage/  # compiler metadata, not runtime telemetry
 
-        ↓
+        -> generated execution
 
-Airflow / Spark job imports generated code
+Airflow / Spark job imports generated code when configured
 ```
 
 ## Major Components
@@ -56,28 +62,32 @@ Airflow / Spark job imports generated code
 - Symbolic execution engine
 - Intermediate representation
 - Compileability checker
+- Online execution runtime
 - PySpark code generator
 - Runtime support library
 - CLI
 
-Each component has a detailed design document under `devdocs/design/`.
+Each component has a detailed design document under `docs/dev/design/`.
 
 ## Backend Boundary
 
-The compiler produces backend-neutral IR. The PySpark code generator lowers IR to concrete PySpark code.
+The compiler produces backend-neutral IR. The online PySpark runner lowers IR to live PySpark DataFrame and Column
+objects. The PySpark code generator lowers IR to concrete PySpark source code.
 
-This boundary is important for keeping up with PySpark evolution. PySpark API compatibility should be isolated in the PySpark emitter rather than scattered across discovery, symbolic execution, or checks.
+This boundary is important for keeping up with PySpark evolution. PySpark API compatibility should be isolated in the
+PySpark target layer rather than scattered across discovery, symbolic execution, or checks.
 
 Compiler phases must not depend on a live Spark installation. Discovery, schema extraction, symbolic execution,
 compileability checks, IR construction, code generation, compiler provenance, static dataflow lineage, and
-generated-file diff checks run without PySpark imports, Java, a SparkSession, or a Spark cluster. Generated PySpark may
-depend on PySpark at runtime; the compiler itself must not.
+generated-file diff checks run without PySpark imports, Java, a SparkSession, or a Spark cluster. Online and generated
+PySpark execution may depend on PySpark at runtime; the compiler itself must not.
 
-The v1 default target is `target_pyspark = ">=3.5,<4.1"`, covering PySpark 3.5.x and 4.0.x. The emitter should prefer
-the oldest clear optimizer-visible API inside the configured range.
+The v1 default target is `target_pyspark = ">=3.5,<4.1"`, covering PySpark 3.5.x and 4.0.x. The PySpark target layer
+should prefer the oldest clear optimizer-visible API inside the configured range.
 
-Spark Connect belongs to v4 unless it can be supported through this emitter boundary without changing public DSL syntax,
-generated class construction, `run(...)` signatures, or streaming orchestration semantics.
+Spark Connect belongs to v4 unless it can be supported through this target boundary without changing public DSL syntax,
+online invocation construction, generated class construction, `run(...)` signatures, or streaming orchestration
+semantics.
 
 ## Compile-Time Performance
 

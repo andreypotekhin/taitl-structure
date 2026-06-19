@@ -2,11 +2,14 @@
 
 ## Abstract
 
-Structure is an open-source Python DSL and code generator for building schema-enforced, IDE-friendly, Spark-optimized data pipelines. It lets developers describe data processing as typed schema-to-schema transformations while generating clean PySpark DataFrame code suitable for Airflow, Spark jobs, and batch data platforms.
+Structure is an open-source Python DSL and runtime/compiler toolkit for building schema-enforced, IDE-friendly,
+Spark-optimized data pipelines. It lets developers describe data processing as typed schema-to-schema transformations
+while running or generating clean PySpark DataFrame code suitable for Airflow, Spark jobs, and batch data platforms.
 
 Structure is designed for teams that want the maintainability of object-style schema transformations without giving up Spark's optimizer-friendly DataFrame execution model.
 
-The central idea is simple: author compact, typed transformation code; generate explicit, reviewable PySpark Column and DataFrame expressions.
+The central idea is simple: author compact, typed transformation code; execute optimizer-visible PySpark by default;
+generate explicit, reviewable PySpark artifacts when useful.
 
 ## Problem
 
@@ -24,11 +27,13 @@ Common pain points include:
 - Unclear intermediate pipeline states.
 - Hidden performance regressions caused by row-wise Python execution.
 
-Structure addresses these problems by providing a typed source DSL that compiles to explicit PySpark code.
+Structure addresses these problems by providing a typed source DSL that compiles to IR and runs as explicit PySpark
+operations, with optional generated PySpark output.
 
 ## Performance and Optimization Rationale
 
-Structure's focus on generated PySpark is not merely a code-generation preference. It is a performance strategy.
+Structure's focus on PySpark DataFrame and Column operations is not merely an implementation preference. It is a
+performance strategy.
 
 Spark optimizes work that remains visible in its logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, broadcast joins, whole-stage code generation, and many runtime optimizations depend on transformations being expressed through Spark's DataFrame and Column APIs.
 
@@ -52,28 +57,29 @@ Never silently choose the slow path.
 
 ## Design Goals
 
-1. **Schema-first transformation design**  
+1. **Schema-first transformation design**
    Pipelines should be described as transformations between typed schemas.
 
-2. **IDE-friendly authoring**  
+2. **IDE-friendly authoring**
    Developers should be able to jump to schema declarations, transform classes, helper functions, and hook methods.
 
-3. **Spark-optimized execution**  
+3. **Spark-optimized execution**
    Compiled transformations should lower to PySpark DataFrame and Column expressions, not row-wise Python functions.
 
-4. **Generated code visibility**  
-   Generated PySpark code should be deterministic, readable, and suitable for code review.
+4. **Runtime and generated-code visibility**
+   Online execution should preserve generated-code semantics, and optional generated PySpark should be deterministic,
+   readable, and suitable for code review.
 
-5. **Explicit escape hatches**  
+5. **Explicit escape hatches**
    Arbitrary PySpark code should be allowed only through explicit hooks, never through silent fallback.
 
-6. **Convention with optional configuration**  
+6. **Convention with optional configuration**
    The common case should work by convention, while a small TOML config should support repeatable builds and project-wide defaults.
 
-7. **Minimal string references**  
+7. **Minimal string references**
    Schema fields, joins, transforms, hooks, and helpers should be referenced as Python symbols wherever possible.
 
-8. **Fast compiler feedback**  
+8. **Fast compiler feedback**
    Compilation should be fast enough to run during local development and CI.
 
 ## Core Model
@@ -122,9 +128,24 @@ Public instance methods with schema return annotations are compiled as subtransf
 OrderRaw -> OrderNormalized -> OrderWithCustomer -> OrderEnriched
 ```
 
-## Generated PySpark Model
+## Online and Generated PySpark Model
 
-Structure generates one class per transform class.
+Online execution is the v1 default:
+
+```python
+session = StructureSession(spark=spark, ctx=ctx)
+
+result = EnrichOrders(
+    orders=orders_df,
+    customers=customers_df,
+    products=products_df,
+).run(session)
+```
+
+The transform instance is a deferred invocation. `StructureSession` owns Spark, optional context, resolved
+configuration, execution mode, target backend, and runner selection.
+
+Structure can also generate one class per transform class.
 
 ```python
 class EnrichOrdersGenerated:
@@ -149,13 +170,14 @@ Generated code uses Spark DataFrame operations such as:
 - `functions.trim(...)`
 - `functions.broadcast(...)`
 
-If a transform has no hooks, generated code does not import the source transform class at runtime. This keeps hook-free generated code clean and standalone.
+If a transform has no hooks, generated code does not import the source transform class at runtime. This keeps hook-free
+generated code clean and standalone in generated mode.
 
 ## Less Code Without Hiding Runtime Behavior
 
 Structure source code is shorter because it focuses on semantic schema transitions.
 
-The generated code is intentionally more verbose because it makes runtime behavior explicit:
+Optional generated code is intentionally more verbose because it makes runtime behavior explicit:
 
 - input validation
 - intermediate validation
@@ -166,7 +188,7 @@ The generated code is intentionally more verbose because it makes runtime behavi
 - final projection
 - final validation
 
-This split gives developers compact authoring and operations teams reviewable PySpark.
+This split gives developers compact authoring, online execution by default, and reviewable PySpark when teams want it.
 
 ## Schema Enforcement
 
@@ -211,7 +233,7 @@ Class-local expression helpers do not take `self`, but may be called through `se
 customer_id=self.clean_id(order.customer_id)
 ```
 
-Expression helpers are symbolically executed and inlined into generated Spark expressions.
+Expression helpers are symbolically executed and lowered into online or generated Spark expressions.
 
 ## Hooks
 
@@ -282,12 +304,13 @@ Full streaming orchestration belongs to v3.
 
 ## Compatibility Policy
 
-Structure v1 targets Python 3.11+ and generated PySpark for PySpark 3.5.x and 4.0.x. The default project setting is
-`target_pyspark = ">=3.5,<4.1"`.
+Structure v1 targets Python 3.11+ and online/generated PySpark for PySpark 3.5.x and 4.0.x. The default project
+settings are `execution_mode = "online"` and `target_pyspark = ">=3.5,<4.1"`.
 
-Generated code targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Spark Connect support is
-scheduled for v4 with backend expansion work, unless it can be added earlier without changing Structure source syntax,
-generated class construction, `run(...)` signatures, streaming orchestration semantics, or generated-code reviewability.
+Online and generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Spark Connect
+support is scheduled for v4 with backend expansion work, unless it can be added earlier without changing Structure
+source syntax, online invocation construction, generated class construction, `run(...)` signatures, streaming
+orchestration semantics, or generated-code reviewability.
 
 Generated PySpark, compiler lineage metadata, and configuration each have explicit versioning rules. The public policy
 lives in `docs/Compatibility.md`.
@@ -389,15 +412,16 @@ Recommended implementation techniques:
 
 ## Roadmap
 
-The roadmap follows a compiler-first north star: v1 proves that Structure can replace hand-maintained PySpark
-boilerplate with a strict, readable compiler workflow. v2 makes that workflow useful for mainstream analytical
-pipelines. v3 takes ownership of streaming lifecycle concerns. v4 adds Spark Connect after the ordinary PySpark
-contract is stable.
+The roadmap follows an IR-first north star: v1 proves that Structure can replace hand-maintained PySpark boilerplate
+with strict online execution and optional generated-code workflow. v2 makes that workflow useful for mainstream
+analytical pipelines. v3 takes ownership of streaming lifecycle concerns. v4 adds Spark Connect after the ordinary
+PySpark contract is stable.
 
 ### v1
 
-Projection, filtering, joins, typed intermediate schemas, generated PySpark classes, hooks, validation, compiler
-provenance, compact static dataflow lineage, streaming-compatible transforms, diagnostic links, and setup checks.
+Online PySpark execution by default, optional generated PySpark classes, projection, filtering, joins, typed
+intermediate schemas, hooks, validation, compiler provenance, compact static dataflow lineage, streaming-compatible
+transforms, diagnostic links, and setup checks.
 
 ### v2
 

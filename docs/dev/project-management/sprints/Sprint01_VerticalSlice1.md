@@ -2,11 +2,18 @@
 
 ## Sprint Goal
 
-Compile one simple schema-to-schema transform into a generated PySpark class and execute it against a small Spark DataFrame.
+Run one simple schema-to-schema transform online through `StructureSession`, and optionally emit the equivalent
+generated PySpark class.
 
 ## Product Outcome
 
-A developer can write one input schema, one output schema, and one transform method, then generate and run PySpark code.
+A developer can write one input schema, one output schema, and one transform method, then run it with:
+
+```python
+NormalizeOrders(orders=orders_df).run(session)
+```
+
+Generated PySpark can still be emitted and compared as an optional artifact.
 
 ## Example Source
 
@@ -22,6 +29,16 @@ class NormalizeOrders(Transform):
             customer_id=order.customer_id,
             total=to_decimal(order.total, precision=12, scale=2),
         )
+```
+
+## Example Online Execution
+
+```python
+session = StructureSession(spark=spark)
+
+result = NormalizeOrders(
+    orders=orders_df,
+).run(session)
 ```
 
 ## Example Generated PySpark
@@ -54,9 +71,13 @@ class NormalizeOrdersGenerated:
 - Symbolic field references.
 - Simple expression function: `to_decimal`.
 - Projection IR.
+- `StructureSession`.
+- Deferred transform invocation with named inputs.
+- Online PySpark runner for projection IR.
 - Generated class.
 - Generated convenience function optional.
 - Generated code syntax/import tests.
+- Online execution test.
 - One PySpark execution test.
 
 ### Out of Scope
@@ -75,6 +96,8 @@ class NormalizeOrdersGenerated:
 - As a developer, I can declare a transform class with `@transform`.
 - As a developer, I can declare named inputs using `input(Structure)`.
 - As a developer, I can define a public schema-returning method as a subtransform.
+- As a developer, I can construct a transform invocation with named input DataFrames.
+- As a developer, I can run the transform online through `StructureSession`.
 - As a developer, I can generate one PySpark class per source transform class.
 - As a developer, generated code uses Spark Column expressions rather than UDFs.
 
@@ -84,6 +107,8 @@ class NormalizeOrdersGenerated:
 - Minimal transform discovery.
 - Minimal symbolic execution.
 - Minimal IR.
+- Minimal `StructureSession`.
+- Minimal online PySpark runner.
 - Minimal PySpark code emitter.
 - Generated class template.
 - Spark execution test fixture.
@@ -98,13 +123,18 @@ class NormalizeOrdersGenerated:
 6. Implement schema construction capture.
 7. Implement `to_decimal` expression.
 8. Implement projection IR.
-9. Implement generated class emitter.
-10. Add generated-code snapshot test.
-11. Add PySpark execution test.
+9. Implement `StructureSession`.
+10. Implement deferred transform invocation input binding.
+11. Implement online PySpark runner for projection IR.
+12. Implement generated class emitter.
+13. Add online execution test.
+14. Add generated-code snapshot test.
+15. Add PySpark execution test.
 
 ## Acceptance Criteria
 
 - Example transform compiles.
+- Example transform runs online through `StructureSession`.
 - Generated code imports successfully.
 - Generated class runs against small Spark DataFrame.
 - Output values match expected results.
@@ -114,6 +144,7 @@ class NormalizeOrdersGenerated:
 ## Demo Script
 
 ```bash
+structure check --source-root tests/fixtures/vertical_slice_1/src
 structure compile --source-root tests/fixtures/vertical_slice_1/src --out /tmp/generated
 pytest tests/test_vertical_slice_1.py
 ```

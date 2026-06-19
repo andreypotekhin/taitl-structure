@@ -17,7 +17,7 @@ Developers may be confused when normal Python code is rejected.
 
 ### Impact
 
-Generated PySpark becomes hard to review and less attractive to users.
+Generated PySpark becomes hard to review and less attractive to users who choose generated artifacts.
 
 ### Mitigation
 
@@ -31,7 +31,7 @@ Generated PySpark becomes hard to review and less attractive to users.
 
 ### Impact
 
-Users avoid running compiler frequently, causing stale generated code.
+Users avoid compiler checks, causing slow online startup or stale generated code.
 
 ### Mitigation
 
@@ -41,32 +41,32 @@ Users avoid running compiler frequently, causing stale generated code.
 - Avoid expensive AST/CST parsing unless diagnostics need it.
 - Add performance fixtures for 10-transform and 100-transform projects.
 
-## Risk: PySpark API changes break generated code
+## Risk: PySpark API changes break online or generated execution
 
 ### Impact
 
-Generated code may become incompatible with newer Spark versions.
+Online or generated execution may become incompatible with newer Spark versions.
 
 ### Mitigation
 
-- Isolate PySpark calls in emitter layer.
+- Isolate PySpark calls in the PySpark target layer.
 - Maintain PySpark capability registry.
 - Run multi-version CI.
-- Snapshot generated code per target version where necessary.
+- Snapshot generated code and run online parity tests per target version where necessary.
 
 ## Risk: Spark Connect support distorts v1/v2/v3/v4 scope
 
 ### Impact
 
-Early Spark Connect work could force generated class API changes before the ordinary PySpark contract and streaming
+Early Spark Connect work could force online or generated API changes before the ordinary PySpark contract and streaming
 orchestration semantics are stable.
 
 ### Mitigation
 
 - Schedule Spark Connect for v4.
-- Allow earlier work only if it stays inside the existing PySpark emitter boundary.
+- Allow earlier work only if it stays inside the existing PySpark target boundary.
 - Require compatibility tests before public support is documented.
-- Keep public v1/v2/v3 docs explicit that generated code targets ordinary PySpark APIs.
+- Keep public v1/v2/v3 docs explicit that online and generated execution target ordinary PySpark APIs.
 
 ## Risk: Hooks compromise performance
 

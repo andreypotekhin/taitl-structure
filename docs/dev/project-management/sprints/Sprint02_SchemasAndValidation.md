@@ -2,7 +2,8 @@
 
 ## Sprint Goal
 
-Turn the vertical slice into a schema-enforced pipeline with generated Spark `StructType` modules and runtime input/intermediate/output validation.
+Turn the vertical slice into a schema-enforced pipeline with Spark `StructType` modules and online/generated runtime
+input/intermediate/output validation.
 
 ## Product Outcome
 
@@ -39,11 +40,12 @@ Developers can rely on declared schemas to catch invalid DataFrame structure at 
 - As a developer, I can disable intermediate validation class-wide.
 - As a developer, I can override validation for an individual subtransform.
 - As a developer, validation errors can suggest relevant config settings when applicable.
+- As a developer, online and generated execution use the same schema validation policy.
 
 ## Deliverables
 
-- `generated/schemas/*.py` modules.
-- `generated/runtime/schema_assert.py`.
+- schema modules usable by online and generated execution.
+- shared runtime `schema_assert.py`.
 - Validation policy model.
 - Config-driven validation defaults.
 - Tests for passing and failing schema validation.
@@ -66,6 +68,7 @@ Developers can rely on declared schemas to catch invalid DataFrame structure at 
 
 - Generated schema modules import successfully.
 - Generated schemas cover primitive, array, map, and nested struct fields.
+- Online execution validates schemas through the same runtime helpers.
 - Invalid input schema fails with useful error.
 - Invalid intermediate schema fails when validation enabled.
 - Disabling intermediate validation removes intermediate validation calls.

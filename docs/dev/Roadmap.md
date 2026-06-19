@@ -1,14 +1,17 @@
 # Roadmap
 
-The roadmap is staged around a compiler-first north star. v1 proves that Structure can replace hand-maintained PySpark
-boilerplate with a strict, readable compiler workflow. v2 makes that workflow useful for mainstream analytical
-pipelines. v3 takes ownership of streaming lifecycle concerns. v4 adds Spark Connect after the ordinary PySpark
-contract is stable.
+The roadmap is staged around an IR-first north star. v1 proves that Structure can replace hand-maintained PySpark
+boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful for
+mainstream analytical pipelines. v3 takes ownership of streaming lifecycle concerns. v4 adds Spark Connect after the
+ordinary PySpark contract is stable.
 
 ## v1
 
 - Typed schema definitions.
 - Transform classes.
+- Online PySpark execution by default through `StructureSession`.
+- Builder-style transform invocation.
+- Runtime target registry for online and generated PySpark execution.
 - Generated PySpark classes.
 - Python 3.11+ and PySpark 3.5.x/4.0.x compatibility policy.
 - Source-order subtransforms.
@@ -21,7 +24,7 @@ contract is stable.
 - `@before(method)` and `@after(method)` hooks.
 - Compiler provenance from source node to IR node to generated PySpark node.
 - Static dataflow lineage inferred from IR.
-- Streaming-compatible generated transforms.
+- Streaming-compatible online and generated transforms.
 - Streaming compatibility report.
 - Diagnostic codes with documentation links.
 - Setup/configuration doctor.

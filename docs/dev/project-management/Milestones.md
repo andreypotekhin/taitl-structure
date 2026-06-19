@@ -12,6 +12,7 @@
 - Invalid config keys and values fail with structured diagnostics.
 - Test harness runs in CI.
 - Source-root discovery and generated output conventions are settled.
+- Online execution default is reflected in seed configuration.
 - Python and PySpark compatibility policy is documented and reflected in seed configuration.
 - Sprint 00 spike notes are captured for decorators, expression helpers, source order, import paths, no-Spark compile,
   and local Spark execution.
@@ -30,16 +31,17 @@ pytest
 
 ### Exit Criteria
 
-- A simple schema and transform compile to generated PySpark.
+- A simple schema and transform run online through `StructureSession`.
+- The same transform can optionally compile to generated PySpark.
 - Generated PySpark class imports successfully.
-- Generated transform runs in a local Spark test.
+- Online transform runs in a local Spark test.
 - The compiled path uses `select(...)` and `F.col(...)`, not UDFs.
 - Generated code is deterministic and formatted.
 
 ### Demonstration
 
 ```python
-NormalizeOrdersGenerated(spark=spark).run(orders=orders_df)
+NormalizeOrders(orders=orders_df).run(session)
 ```
 
 ## M2: Schema Enforcement
@@ -67,7 +69,8 @@ NormalizeOrdersGenerated(spark=spark).run(orders=orders_df)
 
 ### Exit Criteria
 
-- Generated classes are the primary artifacts.
+- Online execution is the primary runtime path.
+- Generated classes remain optional artifacts.
 - Hook-free transforms do not import source transform classes.
 - Hooked transforms direct-import source class and call hooks.
 - Hook signature is validated.
@@ -121,6 +124,6 @@ NormalizeOrdersGenerated(spark=spark).run(orders=orders_df)
 
 ### Exit Criteria
 
-- Spark Connect support has a tested generated-code contract.
+- Spark Connect support has a tested online/generated contract.
 - Public docs explain the difference between ordinary PySpark and Spark Connect targets.
 - Backend capability reporting prevents accidental use of unsupported APIs.
