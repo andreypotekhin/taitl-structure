@@ -1,22 +1,18 @@
 # Agents
 
 ## Project overview
-
-See /Readme.md and /docs/dev/Development.md.
-
-For project background, read /docs/dev/design/Background.md
+See /Readme.md 
+Background: /docs/dev/design/Background.md
+Development process: /docs/dev/Development.md.
 
 ## Documentation
 
 ### End-user documentation
-
 End-user documentation: /docs/
-
 - Readme: /Readme.md
 - Troubleshooting: /Troubleshooting.md
 
 ### Development documentation
-
 Development documentation: /docs/dev/  
 - Setup.md: project setup
 - Specification.md: terminology, library claims, user stories
@@ -25,14 +21,12 @@ Development documentation: /docs/dev/
 - Development troubleshooting: /docs/dev/Troubleshooting.md
 
 #### Agentic and automation documentation
-
 Agentic and automation documentation: /docs/dev/auto/  
 - Automation.md: for automation contract and details on agents' parallel work.
 - AutomationFocus.md: automation focus and priorities.
 - Plans.md: guidance for multi-step tasks planning such as planning an implementation of a feature
 
 #### Design documentation
-
 General: /docs/dev/  
 - Architecture.md: project architecture
 - Specification.md: user stories
@@ -49,7 +43,6 @@ Specifications: /docs/specifications/
 - Specification documents are inputs to coding process
 
 #### Project management documentation
-
 General: /docs/dev/  
 - Implementation.md: implementation phases
 - Roadmap.md: development roadmap
@@ -101,7 +94,6 @@ Class sources are trimmed to one or two pages, or at least leaned out to the max
 See 'Coding' sections in /docs/dev/Style.md for details.
 
 ### Code Formatting
-
 Code formatting is taken care of automatic build step (with build plugin).
 
 ### Coding Inputs
@@ -110,6 +102,10 @@ Coding Inputs:
 - Specification docs (/docs/specifications/) - more formal, ready to implement
 descriptions of the intended behavior of various aspects of the system.
 - PM documents (docs/dev/project-management): milestones, risks, iterations, sprints 
+
+### Coding Standards
+Coding guidelines: See Coding section in /dev/Style.md
+Code structure: /dev/Code.md
 
 ## Testing
 Test cases backing specifications (from /docs/dev/Specification.md) are in tests/specs/[section]/[item-descr].

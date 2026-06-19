@@ -5,22 +5,19 @@
 Prioritise 'top-to-bottom', 'working backwards from customer' order of implementation,
 putting effort into end-user facing artifacts first (source code, documentation),
 then proceeding with implementing library interfaces and user stories (specifications)
-(/docs/dev/Specification.md) and their backing test cases (com.taitl.existential.specs subpackages)
+(/docs/dev/Specification.md) and their backing test cases (testing/specs/[])
 and unit tests.
 
-See these documents on various levels of the code tree for what to focus on:
-
-- AutomationFocus.md
-- /docs/dev/todo/approved/
-- /docs/dev/suggestions/approved/
+See these documents for what to focus on:
+- /docs/auto/AutomationFocus.md
 
 PR titles and Git branch naming for PRs: use 'auto' followed by role name and brief description
-Example: auto/compress/file-extentions, auto/document/configurables
+Example: auto/mastermind/file-extentions, auto/document/configurables
 
-Ensure any code changes adhere to the style guide (Style.md)
-Fully build and test the project at the end of each task that touches code.
+Ensure any code changes adhere to the style guide (/docs/dev/Style.md)
+Fully build and test the project at the end of each task that touches the code.
 
-Output suggestions to /docs/dev/suggestions/.
+Output new suggestions to /docs/dev/suggestions/.
 Focus each suggestion on a specific topic, so it may be implemented in parallel with other tasks.
 Follow 'Documenting' subsections in Agents.md for guidance on item id and formatting.
 
@@ -295,20 +292,6 @@ Automation instructions
 - Add/repair .md
 - No logic changes
 
-### Karma police role
-
-See 'Karma police role' section in 'Team roles' of Agents.md
-
-Automation instructions
-
-- Find 1-2 karma issues in the code, provide fixes.
-- Find and update 1-2 karma issues in the documentation.
-- Suggest broader improvements.
-
-Limits
-
-- Only consider stable parts of the codebase that are not under active development.
-
 ### Edge scrutinizer role
 
 See 'Edge scrutinizer role' section in 'Team roles' of Agents.md
@@ -322,14 +305,6 @@ Automation instructions
 Limits
 
 - Only consider stable parts of the codebase that are not under active development.
-
-### Round-robin role
-
-See 'Round-robin role' section in 'Team roles' of Agents.md
-
-Automation instructions
-
-- For each role as described in 'Round-robin role', assume the role and perform tasks following instructions for that role.
 
 
 
