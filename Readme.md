@@ -24,33 +24,6 @@ A Structure transform can express projection, filtering, normalization, and seri
 ### Source Structure code
 
 ```python
-from pyspark.sql import functions as F
-
-from structure import (
-    Transform,
-    transform,
-    input,
-    expr_fn,
-    where,
-    after,
-    lower,
-    trim,
-    to_decimal,
-    Join,
-    JoinHint,
-    SchemaMode,
-)
-
-from orders.schemas.order import (
-    OrderRaw,
-    OrderNormalized,
-    OrderWithCustomer,
-    OrderEnriched,
-)
-from orders.schemas.customer import Customer
-from orders.schemas.product import Product
-
-
 @transform
 class EnrichOrders(Transform):
 
@@ -215,7 +188,7 @@ class EnrichOrdersGenerated:
 
 The generated code is longer than the source, but that is the point: Structure lets developers author compact schema logic while still producing explicit, reviewable PySpark.
 
-## Performance Philosophy
+## Performance Focus
 
 Structure is intentionally strict. Compiled subtransforms must lower to Spark-plan-visible expressions. Unsupported Python operations are rejected at compile time instead of silently becoming Python UDFs, row-wise maps, or opaque callbacks.
 
@@ -228,12 +201,12 @@ advanced hooks can opt into original named input DataFrames with `pass_inputs=Tr
 
 ```text
 src/
-  orders/
+  my_package/
     schemas/
     transforms/
 generated/
   structure_generated/
-    orders/
+    my_package/
       pyspark/
         schemas/
         transforms/
@@ -243,7 +216,7 @@ generated/
 
 `src` and `generated` are filesystem roots, not package names. Mark both as source roots in the IDE.
 Generated modules mirror source import paths under the `structure_generated` namespace. For example,
-`src/orders/transforms/order.py` generates under `generated/structure_generated/orders/...`.
+`src/my_package/` generates under `generated/structure_generated/my_package/pyspark/`.
 
 All paths and package names are configurable.
 
