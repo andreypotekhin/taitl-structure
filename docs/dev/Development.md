@@ -30,7 +30,9 @@ See /docs/dev/Setup.md for project setup and prerequisites.
 ### Build project
 
     cd [project]
-    make
+    make help
+    make install
+    make build
 
 ## Testing
 Main: Testing.md
