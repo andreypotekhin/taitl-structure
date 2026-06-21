@@ -533,7 +533,7 @@ Recommended direction:
 ## C22. The v1 Scope Is Large Enough to Hide the First Useful Release
 
 Resolved by `docs/dev/planning/P06202601.First-executable-contract-v0.plan.md`, the v0 model fixture under
-`tests/model/v0`, and the revised Sprint 01 plan.
+`res/testing/model/v0`, and the revised Sprint 01 plan.
 
 The roadmap's v1 remains the broad north star: online execution, optional generated PySpark, schemas, validation, joins,
 hooks, compiler lineage, static dataflow, streaming compatibility reporting, diagnostics, doctor checks, and build
@@ -679,7 +679,7 @@ codes, missing documentation links, and invalid lifecycle transitions.
 
 ## C30. Fixtures Exist, but Executable Specification Tests Are Missing
 
-The repository has rich model source and generated fixtures under `tests/model`, and it now has executable coverage
+The repository has rich model source and generated fixtures under `res/testing/model`, and it now has executable coverage
 for backend capabilities under `tests/specs/backend_capabilities`. Most specification sections still do not have
 normal executable pytest tests backing them yet.
 

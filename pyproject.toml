@@ -98,7 +98,4 @@ pythonpath = [
     "src",
     "res",
 ]
-plugins = [
-   "pytest-mock"
-]
 #testpaths = [ "test" ]
