@@ -2,6 +2,10 @@
 
 ## M0: Groundwork Ready
 
+Status: in progress. Configuration resolution, CLI entrypoint, seed config generation, Spark-free `check`, Spark-free
+`compile`, and generated-output diff checks are implemented and tested. Remaining closeout items include spike-note
+evidence and CI workflow documentation before this milestone should be marked with `+`.
+
 ### Exit Criteria
 
 - Repository layout exists.
@@ -29,6 +33,11 @@ pytest
 
 ## M1: Vertical Slice 1
 
+Status: in progress. The shared PySpark recipe layer, generated transform rendering, public `StructureSession`, deferred
+input binding, generated runner delegation, and runtime input diagnostics are implemented and tested without requiring
+PySpark. Remaining exit criteria are live online PySpark recipe interpretation, generated-class execution against a
+local Spark DataFrame, and online/generated row parity for the v0 fixture.
+
 ### Exit Criteria
 
 - A simple schema and transform run online through `StructureSession`.
@@ -45,6 +54,11 @@ NormalizeOrders(orders=orders_df).run(session)
 ```
 
 ## M2: Schema Enforcement
+
+Status: in progress. Spark schema source rendering, generated schema modules, generated runtime schema helpers,
+runtime schema materialization, validation recipe placement, and online-materialized `transform.schemas.output`
+exposure are implemented and tested. Remaining exit criteria are live runtime schema assertion behavior and negative
+schema-validation tests against Spark DataFrames.
 
 ### Exit Criteria
 

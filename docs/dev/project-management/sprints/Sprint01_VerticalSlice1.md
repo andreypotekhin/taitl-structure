@@ -176,6 +176,17 @@ class NormalizeOrdersGenerated:
 - Generated code contains no UDF, RDD, collect, or row-wise map.
 - `structure check` reports success for the fixture.
 
+## Progress
+
+- [x] (2026-06-21) Minimal schema DSL, transform discovery, symbolic execution, projection/filter recipes, generated
+  transform rendering, and generated-file checks are implemented.
+- [x] (2026-06-21) Public `StructureSession` is implemented with deferred named-input invocation, missing-input
+  diagnostics, online runner delegation, and generated runner delegation.
+- [x] (2026-06-21) Generated mode imports and calls generated `*Generated` classes through the same transform invocation
+  API in Spark-free tests.
+- [ ] Live online PySpark recipe interpretation for the projection/filter fixture remains to be implemented.
+- [ ] Local Spark execution and online/generated row parity tests remain to be added.
+
 ## Demo Script
 
 ```bash

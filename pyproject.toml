@@ -15,7 +15,7 @@ packages = [
 ]
 
 [tool.poetry.scripts]
-structure = 'structure.cli:cli'
+structure = 'structure.app.cli.api:cli'
 
 [tool.poetry.dependencies]
 python = ">=3.11,<4.0.0"

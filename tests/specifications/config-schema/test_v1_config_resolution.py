@@ -1,0 +1,118 @@
+import os
+import shutil
+import sys
+from contextlib import contextmanager
+from pathlib import Path
+from uuid import uuid4
+
+from structure.app.configuration.api import ConfigError, resolve_structure_config
+
+
+@contextmanager
+def workspace_tmp():
+    root = Path(".pytest-workspace-tmp") / uuid4().hex
+    root.mkdir(parents=True)
+    try:
+        yield root.resolve()
+    finally:
+        shutil.rmtree(root, ignore_errors=True)
+
+
+def test_v1_config_uses_defaults_and_tracks_sources() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+
+        config = resolve_structure_config(project_root=root)
+
+        assert [path.name for path in config.source_roots] == ["src"]
+        assert config.generated_package == "structure_generated"
+        assert config.execution_mode == "online"
+        assert config.source_map["generated_package"] == "default"
+
+
+def test_v1_config_precedence_is_cli_pyproject_structure_defaults() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            '[tool.structure]\ngenerated_package = "from_structure"\nlineage = "none"\n',
+            encoding="utf-8",
+        )
+        (root / "pyproject.toml").write_text(
+            '[tool.structure]\ngenerated_package = "from_pyproject"\n',
+            encoding="utf-8",
+        )
+
+        config = resolve_structure_config(
+            project_root=root,
+            overrides={"generated_package": "from_cli"},
+        )
+
+        assert config.generated_package == "from_cli"
+        assert config.lineage == "none"
+        assert config.source_map["generated_package"] == "CLI"
+        assert config.source_map["lineage"] == "structure.toml"
+
+
+def test_v1_config_unknown_key_suggests_known_key() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            '[tool.structure]\ngeneratedDirectory = "generated"\n',
+            encoding="utf-8",
+        )
+
+        try:
+            resolve_structure_config(project_root=root)
+        except ConfigError as error:
+            diagnostic = error.diagnostic
+        else:
+            raise AssertionError("unknown config key should fail")
+
+        assert diagnostic.code == "CONF-E0101"
+        assert diagnostic.setting == "generatedDirectory"
+        assert "generated_dir" in diagnostic.use
+
+
+def test_v1_config_invalid_values_fail_before_discovery() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            '[tool.structure]\nlineage = "fieldz"\n',
+            encoding="utf-8",
+        )
+
+        try:
+            resolve_structure_config(project_root=root)
+        except ConfigError as error:
+            diagnostic = error.diagnostic
+        else:
+            raise AssertionError("invalid lineage should fail")
+
+        assert diagnostic.setting == "lineage"
+        assert "none, compiler, columns, debug" in diagnostic.use
+
+
+def test_v1_config_rejects_generated_package_structure() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+
+        try:
+            resolve_structure_config(project_root=root, overrides={"generated_package": "structure"})
+        except ConfigError as error:
+            diagnostic = error.diagnostic
+        else:
+            raise AssertionError("generated package should not collide with structure")
+
+        assert diagnostic.setting == "generated_package"
+        assert "structure_generated" in diagnostic.use
+
+
+def test_v1_config_does_not_import_pyspark() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        before = {name for name in sys.modules if name.startswith("pyspark")}
+
+        resolve_structure_config(project_root=root)
+
+        after = {name for name in sys.modules if name.startswith("pyspark")}
+        assert after == before

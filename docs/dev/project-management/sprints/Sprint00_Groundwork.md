@@ -122,6 +122,17 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - Spike notes are committed and linked from Sprint 01 planning.
 - Sprint 01 scope reflects any spike-driven design changes.
 
+## Progress
+
+- [x] (2026-06-21) Package entrypoint `structure.cli:cli` is implemented and covered by CLI tests.
+- [x] (2026-06-21) Config defaults, TOML loading, explicit precedence, source tracking, unknown-key diagnostics, and
+  invalid enum diagnostics are covered by `tests/specifications/config-schema`.
+- [x] (2026-06-21) `structure init --seed-config`, `check`, `compile`, `compile --fail-on-diff`, `explain`, and
+  `clean` are covered by `tests/specifications/cli`.
+- [x] (2026-06-21) `check`, `compile`, and `compile --fail-on-diff` are tested to stay Spark-free on the compiler path.
+- [ ] Spike notes and CI workflow evidence still need a final Sprint 00 closeout before the sprint is moved to
+  `docs/dev/project-management/sprints/done/`.
+
 ## Demo Script
 
 ```bash

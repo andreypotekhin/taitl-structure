@@ -28,6 +28,7 @@ from structure.app.dsl.api import (
     trim,
     where,
 )
+from structure.app.runtime.api import StructureRuntimeError, StructureSession, TransformSchemas
 
 __all__ = [
     "Array",
@@ -44,9 +45,12 @@ __all__ = [
     "SchemaMode",
     "String",
     "Structure",
+    "StructureRuntimeError",
+    "StructureSession",
     "Struct",
     "Timestamp",
     "Transform",
+    "TransformSchemas",
     "after",
     "before",
     "coalesce",

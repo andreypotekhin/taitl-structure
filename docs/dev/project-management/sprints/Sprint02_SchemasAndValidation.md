@@ -89,6 +89,16 @@ validation/projection.
 - Disabling intermediate validation removes intermediate validation calls.
 - Final output validation remains enabled by default.
 
+## Progress
+
+- [x] (2026-06-21) Spark schema source rendering, generated schema modules, runtime schema helper rendering, and runtime
+  schema materialization cover primitive, decimal, array, map, nested struct, and inherited schemas.
+- [x] (2026-06-21) Validation recipe placement is represented in shared PySpark execution plans for input,
+  intermediate, hook, projection, and final output validation boundaries.
+- [x] (2026-06-21) Online execution exposes materialized input, step, and output schemas through
+  `transform.schemas` after `run(session)`.
+- [ ] Live `assert_schema(...)` execution against Spark DataFrames and negative validation cases remain to be added.
+
 ## Demo Script
 
 ```bash
