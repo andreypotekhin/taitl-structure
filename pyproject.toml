@@ -3,7 +3,7 @@ requires = ["poetry-core>=1.9.1"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "taitl-structure"
+name = "structure"
 version = "1.0.0"
 description = "Taitl Structure Library"
 authors = [ "Andrey <andrey1@taitl.com>" ]

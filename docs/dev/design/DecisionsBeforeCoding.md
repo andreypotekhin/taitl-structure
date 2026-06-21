@@ -20,7 +20,7 @@ The v1 implementation must follow these decisions:
 - online execution is the default runtime mode;
 - generated PySpark remains an optional, committed, reviewable artifact;
 - online and generated execution consume the same checked semantic contract;
-- default validation is schema-only and must not scan rows;
+- default validation is schema-only, with value-level data-quality constraints requiring explicit opt-in;
 - hooks are explicit runtime escape hatches and are opaque to compile-time expression analysis;
 - `@expr_fn` is the public compiler-visible extension point for reusable expression logic;
 - v1 lookup joins use `join_one(...)`; row-multiplying and existence joins are v2+ features;
@@ -33,24 +33,70 @@ The implementation must treat these documents as the source of truth:
 
 ```text
 docs/specifications/SourceModuleRules.md
+docs/specifications/DSL.md
+docs/specifications/SymbolicExecution.md
 docs/specifications/SchemaDeclarationSyntax.md
 docs/specifications/SchemaModel.md
 docs/specifications/SchemaSemantics.md
+docs/specifications/SchemaInheritance.md
 docs/specifications/NullabilityAndTypeCoercion.md
 docs/specifications/ValidationSemantics.md
 docs/specifications/JoinSemantics.md
 docs/specifications/HookSemantics.md
 docs/specifications/ConfigSchema.md
+docs/specifications/CLI.md
 docs/specifications/CompatibilityPolicy.md
 docs/specifications/CompilerPerformanceTargets.md
 docs/specifications/Diagnostics.md
+docs/specifications/IntermediateRepresentation.md
 docs/specifications/ExecutionSemanticContract.md
 docs/specifications/OnlineExecution.md
 docs/specifications/PySparkCodeGeneration.md
+docs/specifications/BackendCapabilities.md
+docs/specifications/DataQualityConstraints.md
+docs/specifications/StreamingCompatibility.md
+docs/specifications/AnalyticalJoinCoverage.md
 ```
 
 When these documents overlap, the narrower feature specification owns the detailed behavior. This document owns only
 the pre-coding decision inventory.
+
+## Challenge Resolution Index
+
+The pre-coding documentation gaps from `docs/dev/design/Challenges.md` are resolved as follows:
+
+| Challenge | Resolution |
+| --- | --- |
+| C1 | `SourceModuleRules.md`; `D06172601.Source-root-resolution.md` |
+| C2 | `SchemaDeclarationSyntax.md`; `D06172602.Schema-declaration-syntax.md` |
+| C3 | `NullabilityAndTypeCoercion.md`; `P06172601.Nullability-and-type-coercion-rules.plan.md` |
+| C4 | `DSL.md`; `HookSemantics.md`; implementation proof remains a Sprint 0 spike |
+| C5 | `DSL.md`; `SymbolicExecution.md`; implementation proof remains a Sprint 0 spike |
+| C6 | `SourceModuleRules.md` |
+| C7 | `D06182601.Generated-code-ownership.md` |
+| C8 | `HookSemantics.md`; `D06182602.Hook-input-escape-hatch.md` |
+| C9 | `JoinSemantics.md`; `D06172607.Join-semantics.md` |
+| C10 | `ValidationSemantics.md`; `DataQualityConstraints.md`; `D06182603.Intermediate-validation-policy.md` |
+| C11 | `StreamingCompatibility.md`; `D06182604.Streaming-compatibility-v1.md` |
+| C12 | `IntermediateRepresentation.md`; `PySparkCodeGeneration.md`; `CompatibilityPolicy.md` |
+| C13 | `CompilerPerformanceTargets.md` |
+| C14 | `CompilerPerformanceTargets.md`; production incremental compile remains v2 implementation work |
+| C15 | `D06182606.No-spark-compile-dependency.md` |
+| C16 | `Readme.md` generated-code comparison |
+| C17 | `docs/dev/Testing.md`; `docs/dev/Style.md`; feature-spec acceptance criteria |
+| C18 | `ConfigSchema.md` |
+| C19 | `docs/Compatibility.md`; `CompatibilityPolicy.md`; `D06182605.Versioning-and-compatibility-policy.md` |
+| C22 | `P06202601.First-executable-contract-v0.plan.md`; v0 model fixture; Sprint 01 plan |
+| C23 | `BackendCapabilities.md`; `BackendCapabilities` design; `D06202604.Backend-capability-interface.md` |
+| C24 | `ExecutionSemanticContract.md`; `ExecutionSemanticContract` design; `D06202601` |
+| C25 | `Readme.md`; `docs/Compatibility.md`; compileability checker design |
+| C26 | `DataQualityConstraints.md`; `DataQualityConstraints` design; `D06202602` |
+| C27 | `AnalyticalJoinCoverage.md`; `AnalyticalJoinCoverage` design; `D06212601` |
+| C29 | `docs/Diagnostics.md`; `Diagnostics.md`; `DiagnosticsContract` design; `D06202603` |
+
+C20 is superseded by C31. C21, C28, C30, and C31 remain real gaps, but they are not missing semantic design or
+specification documents. They track executable package wiring, operational integration recipes, executable test
+breadth, and licensing/governance signals.
 
 ## Release-Blocking Decisions
 

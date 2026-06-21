@@ -2,7 +2,13 @@
 
 This document captures the pre-implementation challenges identified for the **Structure** project. They are labeled **C1–C20** for reference in planning, backlog, risk tracking, and sprint discussions.
 
+Current inventory runs through C31. A challenge marked resolved here means the design/specification decision is
+settled; implementation work may still remain in the owning plan or sprint.
+
 ## C1. Package and Import Layout Is Not Fully Resolved
+
+Resolved by `docs/specifications/SourceModuleRules.md` and decision
+`docs/dev/design/decisions/D06172601.Source-root-resolution.md`.
 
 The default project paths need to avoid confusion with the open-source package name `structure`.
 
@@ -113,6 +119,9 @@ total=coalesce(to_decimal(order.total, precision=12, scale=2), 0)
 
 ## C4. Python Decorator Mechanics Need a Spike
 
+Resolved for design/specification coverage by `docs/specifications/DSL.md` and
+`docs/specifications/HookSemantics.md`. The implementation proof remains a Sprint 0 coding spike.
+
 The preferred hook syntax is:
 
 ```python
@@ -132,6 +141,9 @@ However, this needs an early implementation spike to prove:
 - generated code can map hooks back to methods.
 
 ## C5. Class-Local `@expr_fn` Without `self` Needs a Spike
+
+Resolved for design/specification coverage by `docs/specifications/DSL.md` and
+`docs/specifications/SymbolicExecution.md`. The implementation proof remains a Sprint 0 coding spike.
 
 Desired syntax:
 
@@ -154,6 +166,8 @@ This likely requires descriptor behavior similar to `staticmethod`.
 This should be proven before building the full symbolic execution engine.
 
 ## C6. Source Import Safety Is Underspecified
+
+Resolved by `docs/specifications/SourceModuleRules.md`.
 
 Discovery currently implies importing user source modules. This is simple, but imports execute top-level Python code.
 
@@ -190,6 +204,9 @@ These rules are part of the Definition of Done.
 
 ## C8. Hook Access to Original Inputs May Need an Escape Hatch
 
+Resolved by `docs/specifications/HookSemantics.md` and decision
+`docs/dev/design/decisions/D06182602.Hook-input-escape-hatch.md`.
+
 The simplified hook signature is:
 
 ```python
@@ -211,6 +228,9 @@ def custom_check(self, *, df, inputs, spark, ctx):
 Default hooks should remain minimal, but advanced hooks should have an opt-in path.
 
 ## C9. Join Semantics Need Sharper Definitions
+
+Resolved by `docs/specifications/JoinSemantics.md` and decision
+`docs/dev/design/decisions/D06172607.Join-semantics.md`.
 
 `join_one(...)` needs precise semantics before implementation.
 
@@ -244,6 +264,10 @@ self.customers.id.null_safe_eq(order.customer_id)
 ```
 
 ## C10. Intermediate Validation May Be Expensive
+
+Resolved by `docs/specifications/ValidationSemantics.md`,
+`docs/specifications/DataQualityConstraints.md`, and decision
+`docs/dev/design/decisions/D06182603.Intermediate-validation-policy.md`.
 
 Intermediate schema validation is enabled by default, but the implementation must avoid unnecessary data scans.
 
@@ -308,7 +332,9 @@ Deferred or rejected in v1:
 
 ## C12. Compiler Lineage Schema Needs Versioning
 
-Resolved by `docs/dev/planning/P06182601.Compiler-provenance-static-dataflow-lineage.plan.md`.
+Resolved by `docs/specifications/IntermediateRepresentation.md`,
+`docs/specifications/PySparkCodeGeneration.md`, `docs/specifications/CompatibilityPolicy.md`, and
+`docs/dev/planning/P06182601.Compiler-provenance-static-dataflow-lineage.plan.md`.
 
 Lineage is split into three topics:
 
@@ -320,6 +346,8 @@ The v1 lineage schema should version compiler provenance and static dataflow met
 own record format later if the nice-to-have becomes scheduled work.
 
 ## C13. Compile-Time Performance Needs Concrete Targets
+
+Resolved by `docs/specifications/CompilerPerformanceTargets.md`.
 
 Compiler speed should be a first-class metric.
 
@@ -342,6 +370,9 @@ These targets should influence architecture decisions such as caching, v2 increm
 startup during compile.
 
 ## C14. Incremental Compile and Cache Are Missing
+
+Resolved for v1 architecture by `docs/specifications/CompilerPerformanceTargets.md`. Production incremental
+compilation remains v2 implementation work.
 
 Fast compilers need caching and change detection.
 
@@ -385,6 +416,8 @@ generation, compiler provenance, static dataflow lineage, and `structure compile
 
 ## C16. Generated PySpark Examples Should Include Code-Size Comparison
 
+Resolved by the generated-code comparison in `Readme.md`.
+
 Docs should highlight Structure’s strength in requiring less developer-maintained code.
 
 Show comparisons such as:
@@ -406,6 +439,9 @@ This clarifies that Structure does not hide Spark; it reduces manually maintaine
 
 ## C17. Testing Should Include Mutation and Error Tests
 
+Resolved as a testing contract by `docs/dev/Testing.md`, `docs/dev/Style.md`, and the acceptance criteria in the
+feature specifications. Broad executable coverage remains tracked by C30.
+
 Testing should cover both happy paths and intentionally broken transforms.
 
 Add tests for:
@@ -425,6 +461,8 @@ Add tests for:
 These tests protect developer experience and diagnostics.
 
 ## C18. Configuration Schema Validation Is Missing
+
+Resolved by `docs/specifications/ConfigSchema.md`.
 
 Since Structure supports TOML config, config errors need structured diagnostics.
 
@@ -471,7 +509,7 @@ v1 baseline:
 
 ## C20. Licensing and Governance Are Not Decided
 
-This item is superceded by C31
+This item is superseded by C31.
 
 ## C21. Executable Package Skeleton Does Not Match the Public Contract
 
@@ -585,6 +623,11 @@ boundaries and only when that phase allows `schema_and_constraints`.
 
 ## C27. Analytical Join Coverage Is Still Narrow
 
+Resolved by `docs/specifications/AnalyticalJoinCoverage.md`, design
+`docs/dev/design/AnalyticalJoinCoverage.md`, decision
+`docs/dev/design/decisions/D06212601.Analytical-join-coverage.md`, and plan
+`docs/dev/planning/P06212601.Analytical-join-coverage.plan.md`.
+
 The v1 `join_one(...)` design is disciplined, but real analytical pipelines often need semi joins, anti joins,
 existence checks, temporal/as-of joins, slowly changing dimension lookups, deduped lookup policies, and row-multiplying
 joins.
@@ -636,8 +679,9 @@ codes, missing documentation links, and invalid lifecycle transitions.
 
 ## C30. Fixtures Exist, but Executable Specification Tests Are Missing
 
-The repository has rich model source and generated fixtures under `tests/model`, but there are no normal executable
-pytest tests backing the specification sections yet.
+The repository has rich model source and generated fixtures under `tests/model`, and it now has executable coverage
+for backend capabilities under `tests/specs/backend_capabilities`. Most specification sections still do not have
+normal executable pytest tests backing them yet.
 
 Risk: generated examples can drift from the intended compiler behavior, and completed user stories may be marked in
 docs without tests proving them. The project also loses a fast feedback loop for packaging, CLI, diagnostics, and
@@ -677,15 +721,30 @@ docs/dev/design/
   DecisionsBeforeCoding.md
 
 docs/specifications/
-  DecisionsBeforeCoding.md
   SourceModuleRules.md
+  DSL.md
+  SymbolicExecution.md
+  SchemaDeclarationSyntax.md
+  SchemaModel.md
   SchemaSemantics.md
+  SchemaInheritance.md
+  NullabilityAndTypeCoercion.md
   ValidationSemantics.md
   JoinSemantics.md
   HookSemantics.md
   ConfigSchema.md
+  CLI.md
   CompatibilityPolicy.md
   CompilerPerformanceTargets.md
+  Diagnostics.md
+  IntermediateRepresentation.md
+  ExecutionSemanticContract.md
+  OnlineExecution.md
+  PySparkCodeGeneration.md
+  BackendCapabilities.md
+  DataQualityConstraints.md
+  StreamingCompatibility.md
+  AnalyticalJoinCoverage.md
 ```
 
 The highest-priority additions are now covered by:
@@ -698,9 +757,8 @@ HookSemantics.md
 CompilerPerformanceTargets.md
 ```
 
-Related supporting specifications already cover schema declaration syntax, schema model extraction, nullability and
-type coercion, diagnostics, online/generated execution semantics, backend capabilities, data-quality constraints,
-streaming compatibility, and generated PySpark output.
+No missing pre-coding design or specification document is known for the v0/v1 coding path. Remaining gaps are
+implementation, adoption, testing breadth, and governance gaps, not missing semantic specifications.
 
 ## Recommended Sprint 0 Spike Tasks
 
@@ -717,4 +775,6 @@ SPIKE: Prove minimal generated PySpark execution test with local Spark.
 
 ## Highest-Risk Challenge
 
-TBD
+C21 is the highest coding-start risk because the public contract names an executable package, CLI entrypoint, and root
+imports that are not yet fully wired. C31 is the highest public-release risk because licensing, distribution naming,
+and governance signals can block adoption before technical evaluation begins.
