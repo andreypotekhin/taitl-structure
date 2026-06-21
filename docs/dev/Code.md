@@ -23,7 +23,7 @@ The installable package lives under `src/structure`. Inside that package, projec
 - `src/structure/lib` - libs
 
 Apps: configuration, cli, discovery, schema, symbolic, ir, compileability, runtime
-and other high-level system components defined by project architecture.
+and other system components (and subcomponents) defined by project architecture.
 
 ```text
 src/structure/
@@ -35,7 +35,7 @@ src/structure/
     symbolic/
   
   lib/
-    app/ - Common App Framework (defines App, Feature, Command, Endpoint classes)
+    app/ - Common App Framework (defines classes like Command, Endpoint)
     common/ - common classes, shared constants
     helper/ - shared helpers (no business logic)
 ```
@@ -44,9 +44,6 @@ We refer to apps and libs with slash notation (`app/cli/`, `app/cli`), full slas
 (`structure/app/cli/`), dot notation (`structure.app.cli`), space notation (app cli, cli app), canonic notation
 (CLI app, Helper Library), and sometimes reverse notation (lib common).
 
-### Importing
-Ex: 'from structure import Structure' should work even if the Structure class is defined in a subpackage (e.g. dsl)
-
 ### Library package structure
 Library package structure: no specific structure, various subpackages as need arises
 
@@ -54,30 +51,26 @@ Library package structure: no specific structure, various subpackages as need ar
 Application package structure:
 
 structure/app/[app]/
-  - api/ - Programmatic API - application entry points
-  - app/ - Application-specific subclasses to Common App Framework: [App]App, [App]Feature, [App]Command
-  - features/ - Feature classes, representing groupings of commands. 
-      Ex: HelpFeature(CliFeature) provides help() method returning new instance of HelpCommand.  
-      Usage: CliApp.helpFeature.help() returning HelpCommand  
-  - commands/ - Command classes. Ex: CompileCommand(CliCommand)
-      Usage: CliApp.commandFeature.compile() creates CompileCommand 
-      compileCommand(args, ...) calls the command
-  - logic/ - 'logic' classes implementing business logic
+  - api/ - Endpoints of programmatic API - application entry points
+    Endpoints can be simple (single command) or compound - representing groupings of commands (actions). 
+      Ex: HelpEndpoint provides helpCompile() method returning new instances of HelpCompile command.  
+      Usage: helpEndpoint.helpCompile()  
+  - logic/ - 'logic' classes implementing business logic 
+  - logic/actions/ - command/action classes serving as business logic entry points
+    Ex: Compile command action implementing 'compile' CLI command 
+      Usage: cli.commands.compile() creates Compile command 
+      compile(args, ...) calls the command
   
-API modules are main entry points into an app package, constituting programmatic API 
-into the app for external and inter-app use. 
+API modules are main entry points into an app packages, constituting programmatic API for external and inter-app use. 
 
 Common execution flow within an app:
 
-- API endpoints instantiate and run Commands which delegate to Logic classes
-- To instantiate a Command, endpoint uses a Feature class to create a Command instance. 
-- To access Feature class instances, the endpoint uses static instance of an App class.
+- API endpoints instantiate and run Commands which delegate to other Logic classes
+- On each API request, endpoint creates new Command instance (Command instances are ephemeral). 
 - Command classes provide an entry point - __call__ method - with specific (preferably, named) arguments.
 
-Lifecycle: App and Feature classes tend to be static/existing for long time; 
-Command and Logic class instances are ephemeral and disposed immediately upon use. 
-
-Unlike Feature and Command classes, the Logic classes do not have a common parent superclass.
+Lifecycle: App and Endpoint classes tend to be static/existing for long time. 
+Command and other logic class instances are ephemeral and disposed immediately upon use. 
 
 ### Logic package structure
 Application packages, except, logic/ are flat. 
@@ -88,7 +81,7 @@ logic/
     Action classes are main entry point to logic/
   - data/ - data-oriented classes, mostly method-less
     Data classes can be used in and outside logic/ for data arguments
-  - model/ - domain model. Can be further divided into subpackages for cohesive classes
+  - model/ - domain model. Don't be shy of defining further subpackages for cohesive model classes
   - maps/ - mappings between data structures (read-only/no side effect)
   - rules/ - business rules
 
@@ -102,23 +95,19 @@ to project vocabulary (e.g. generator).
 
 ### Recursivity of app/logic package structure 
 App and logic packages can consist of other (sub-) application and logic packages.
-For instance, we can have runtime/execution/online/ dir structure for Online 
-Execution component.
-In such cases, packages do not follow the above described structure: instead, they are 
-simply a set of subpackages. In other words, the whole app/logic hierarchy 
-definetely adheres to the above structure in leaf packages, and definetely does not 
-in non-leaf packages.
+For instance, we can have runtime/execution/online/ dir structure for Online Execution component app.
+In such case, the packages do not follow the above described structure: instead, they are 
+simply a set subpackages. In other words, app/logic hierarchy as a whole 
+definitely adheres to the above structure on leaf packages, and definitely does not 
+in the non-leaf packages.
 
 #### Logic classes instantiation
 Logic classes are typically stateless, receiving all data through their method parameters.
 More rarely, a logic class may have a state (context) initialized by its owning class, 
-with the goal of passing this state to other logic classes, e.g. the ones owned by this 
+with the goal of passing this state down to delegate logic classes, e.g. the ones owned by this 
 logic class.
 
-Logic classes are typically instantiated as a static field in the class that intends to use the logic (owner class).
-Several classes can be using same logic class, in this case they instantiate them separately (we may
-use to optimize e.g. to singleton in some scenarios).
-Logic fields inside the owner class are usually marked with @logic decorator.
+Logic classes are typically instantiated as a static instance, user classes thus can sharing that instance.
 The logic classes provide an entry point - __call__ method - with specific (preferably, named) arguments. 
 
 #### Helper Library
