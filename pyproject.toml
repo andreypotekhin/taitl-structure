@@ -60,7 +60,9 @@ ignore = [
     'S101', # test -> Use of assert detected. The enclosed code will be removed when compiling to optimised byte code.
     'S307', # json.parse -> Use of possibly insecure function - consider using safer ast.literal_eval
     'W291', # trailing whitespace
+    'W391', # blank line at end of file
     'W503', # line break before binary operator
+    'E704', # multiple statements on one line (def)
 ]
 per-file-ignores = [
     '__init__.py:F401', # module imported but unused
@@ -75,6 +77,9 @@ disallow_untyped_defs = false
 check_untyped_defs = true
 warn_return_any = false
 explicit_package_bases = true
+mypy_path = ["src"]
+files = ["src", "tests"]
+exclude = ["^tests/model/"]
 
 [tool.pytest.ini_options]
 addopts = [

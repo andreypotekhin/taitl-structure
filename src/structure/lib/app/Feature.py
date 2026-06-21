@@ -2,7 +2,7 @@
 Base Feature class
 """
 
-from lib.app.App import App
+from structure.lib.app.App import App
 
 
 class Feature:

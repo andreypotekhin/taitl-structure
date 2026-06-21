@@ -3,6 +3,10 @@ out/
 .idea/workspace.xml
 .idea/sonarlint
 
+# Python build
+dist/
+__pycache__/
+
 ### OS-specific ###
 
 # Linux
