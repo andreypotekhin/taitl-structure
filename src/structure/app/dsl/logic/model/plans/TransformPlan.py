@@ -12,6 +12,7 @@ class TransformPlan:
     name: str
     inputs: tuple[InputPlan, ...]
     steps: tuple[StepPlan, ...]
+    options: dict[str, object] | None = None
 
     @property
     def output_schema(self) -> type[Structure]:

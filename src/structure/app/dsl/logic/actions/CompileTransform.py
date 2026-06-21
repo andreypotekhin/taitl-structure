@@ -5,6 +5,7 @@ from typing import get_type_hints
 
 from structure.app.dsl.logic.model.expr.expressions import literal
 from structure.app.dsl.logic.model.expr.RowScope import RowScope
+from structure.app.dsl.logic.model.plans.HookPlan import HookPlan
 from structure.app.dsl.logic.model.plans.InputPlan import InputPlan
 from structure.app.dsl.logic.model.plans.ProjectAssignment import ProjectAssignment
 from structure.app.dsl.logic.model.plans.StepPlan import StepPlan
@@ -22,7 +23,12 @@ class CompileTransform:
 
         inputs = self._inputs(transform_class)
         steps = self._steps(transform_class, inputs)
-        return TransformPlan(name=transform_class.__name__, inputs=tuple(inputs), steps=tuple(steps))
+        return TransformPlan(
+            name=transform_class.__name__,
+            inputs=tuple(inputs),
+            steps=tuple(steps),
+            options=dict(getattr(transform_class, "_structure_transform_options", {})),
+        )
 
     def _inputs(self, transform_class: type[Transform]) -> list[InputPlan]:
         inputs: list[InputPlan] = []
@@ -32,6 +38,7 @@ class CompileTransform:
 
     def _steps(self, transform_class: type[Transform], inputs: list[InputPlan]) -> list[StepPlan]:
         instance = transform_class()
+        hooks = self._hooks(transform_class)
         steps: list[StepPlan] = []
         current_schema: type[Structure] | None = None
 
@@ -70,6 +77,9 @@ class CompileTransform:
                     filters=tuple(context.filters),
                     projection=tuple(assignments),
                     ordinal=len(steps),
+                    joins=tuple(context.joins),
+                    before_hooks=hooks.get(("before", name), ()),
+                    after_hooks=hooks.get(("after", name), ()),
                 )
             )
             current_schema = output_schema
@@ -77,6 +87,27 @@ class CompileTransform:
         if not steps:
             raise TypeError(f"{transform_class.__name__} has no public schema-returning subtransform")
         return steps
+
+    def _hooks(self, transform_class: type[Transform]) -> dict[tuple[str, str], tuple[HookPlan, ...]]:
+        grouped: dict[tuple[str, str], list[HookPlan]] = {}
+        for name, member in transform_class.__dict__.items():
+            metadata = getattr(member, "_structure_hook", None)
+            if metadata is None:
+                continue
+
+            key = (metadata["phase"], metadata["target"])
+            grouped.setdefault(key, []).append(
+                HookPlan(
+                    name=name,
+                    phase=metadata["phase"],
+                    target=metadata["target"],
+                    pass_inputs=metadata["pass_inputs"],
+                    schema_mode=metadata["schema_mode"],
+                    project_output=metadata["project_output"],
+                    streaming_safe=metadata["streaming_safe"],
+                )
+            )
+        return {key: tuple(value) for key, value in grouped.items()}
 
     def _row_parameter(self, method, hints: dict[str, object]) -> inspect.Parameter:
         parameters = list(inspect.signature(method).parameters.values())

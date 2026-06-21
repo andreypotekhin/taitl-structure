@@ -1,5 +1,5 @@
-from structure.app.backend.logic.actions.ResolveBackendCapabilities import ResolveBackendCapabilities
-from structure.app.backend.logic.model.capabilities import (
+from structure.app.backend.capabilities.logic.actions.ResolveBackendCapabilities import ResolveBackendCapabilities
+from structure.app.backend.capabilities.logic.model.capabilities import (
     BackendCapabilities,
     BackendCapabilityError,
     BackendId,

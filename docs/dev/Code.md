@@ -13,7 +13,7 @@ reuse, sharing and preventing app code bloat.
   (see OOP section in Style.md)
 - Apps are structured according to Common App Framework (see below)
 - Logic packages are structured according to Logic Oriented Programming
-- One-class-per-source-file for the classes
+- Rule: one-class-per-source-file for the classes
 - Always define the value returned by a method in method signature
 
 ### App structure
@@ -81,7 +81,9 @@ logic/
     Action classes are main entry point to logic/
   - data/ - data-oriented classes, mostly method-less
     Data classes can be used in and outside logic/ for data arguments
-  - model/ - domain model. Don't be shy of defining further subpackages for cohesive model classes
+  - model/ - domain model. 
+    - Don't be shy of defining further subpackages for cohesive model classes
+    - As usual, one-class-per-source-file for the classes
   - maps/ - mappings between data structures (read-only/no side effect)
   - rules/ - business rules
 

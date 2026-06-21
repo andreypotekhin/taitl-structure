@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.app.backend.logic.model.BackendDiagnostic import BackendDiagnostic
-from structure.app.backend.logic.model.BackendDiagnosticCodes import BACKEND_E2401, BACKEND_E2402
-from structure.app.backend.logic.model.BackendId import BackendId
-from structure.app.backend.logic.model.CapabilityRequirement import CapabilityRequirement
+from structure.app.backend.capabilities.logic.model.BackendDiagnostic import BackendDiagnostic
+from structure.app.backend.capabilities.logic.model.BackendDiagnosticCodes import BACKEND_E2401, BACKEND_E2402
+from structure.app.backend.capabilities.logic.model.BackendId import BackendId
+from structure.app.backend.capabilities.logic.model.CapabilityRequirement import CapabilityRequirement
 
 
 @dataclass(frozen=True)

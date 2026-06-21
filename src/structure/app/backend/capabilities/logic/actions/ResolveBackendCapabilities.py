@@ -1,9 +1,9 @@
-from structure.app.backend.logic.model.BackendCapabilities import BackendCapabilities
-from structure.app.backend.logic.model.BackendCapabilityError import BackendCapabilityError
-from structure.app.backend.logic.model.BackendId import BackendId
-from structure.app.backend.logic.model.CapabilityDecision import CapabilityDecision
-from structure.app.backend.logic.model.CapabilityRequirement import CapabilityRequirement
-from structure.app.backend.logic.rules.PySparkCapabilityRules import DEFAULT_TARGET_PYSPARK, PySparkCapabilities
+from structure.app.backend.capabilities.logic.model.BackendCapabilities import BackendCapabilities
+from structure.app.backend.capabilities.logic.model.BackendCapabilityError import BackendCapabilityError
+from structure.app.backend.capabilities.logic.model.BackendId import BackendId
+from structure.app.backend.capabilities.logic.model.CapabilityDecision import CapabilityDecision
+from structure.app.backend.capabilities.logic.model.CapabilityRequirement import CapabilityRequirement
+from structure.app.backend.capabilities.logic.rules.PySparkCapabilityRules import DEFAULT_TARGET_PYSPARK, PySparkCapabilities
 
 
 class ResolveBackendCapabilities:

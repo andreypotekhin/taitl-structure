@@ -1,4 +1,4 @@
-from structure.app.backend.logic.model.CapabilityDecision import CapabilityDecision
+from structure.app.backend.capabilities.logic.model.CapabilityDecision import CapabilityDecision
 
 
 class BackendCapabilityError(Exception):

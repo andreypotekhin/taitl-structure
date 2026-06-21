@@ -3,17 +3,19 @@ from __future__ import annotations
 from typing import Mapping
 
 from structure.app.dsl.logic.model.schemas.FieldDeclaration import FieldDeclaration
-from structure.app.dsl.logic.model.types.DecimalType import DecimalType
-from structure.app.dsl.logic.model.types.StringType import StringType
+from structure.app.dsl.logic.model.types.Array import Array
+from structure.app.dsl.logic.model.types.Boolean import Boolean
+from structure.app.dsl.logic.model.types.Date import Date
+from structure.app.dsl.logic.model.types.Decimal import Decimal
+from structure.app.dsl.logic.model.types.Double import Double
+from structure.app.dsl.logic.model.types.Float import Float
+from structure.app.dsl.logic.model.types.Integer import Integer
+from structure.app.dsl.logic.model.types.Long import Long
+from structure.app.dsl.logic.model.types.Map import Map
+from structure.app.dsl.logic.model.types.String import String
+from structure.app.dsl.logic.model.types.Struct import Struct
 from structure.app.dsl.logic.model.types.StructureType import StructureType
-
-
-def String() -> StringType:
-    return StringType()
-
-
-def Decimal(precision: int, scale: int) -> DecimalType:
-    return DecimalType(precision=precision, scale=scale)
+from structure.app.dsl.logic.model.types.Timestamp import Timestamp
 
 
 def field(
@@ -24,8 +26,7 @@ def field(
     metadata: Mapping[str, object] | None = None,
     description: str | None = None,
 ) -> FieldDeclaration:
-    if not isinstance(type, StructureType):
-        raise TypeError("field(...) requires an explicit Structure type object such as String()")
+    _require_type(type)
     return FieldDeclaration(
         type,
         nullable=nullable,
@@ -33,3 +34,8 @@ def field(
         metadata=metadata,
         description=description,
     )
+
+
+def _require_type(type: StructureType) -> None:
+    if not isinstance(type, StructureType):
+        raise TypeError("field(...) requires an explicit Structure type object such as String()")

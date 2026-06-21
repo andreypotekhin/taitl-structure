@@ -6,10 +6,10 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from structure.app.backend.api.capabilities import CapabilityRequirement, resolve_backend_capabilities
-from structure.app.backend.logic.model.capabilities import BackendCapabilityError
-from structure.app.backend.logic.model.diagnostics import BACKEND_E2401, BACKEND_E2402
-from structure.app.backend.logic.rules.PySparkCapabilityRules import PySparkCapabilities
+from structure.app.backend.capabilities.api.capabilities import CapabilityRequirement, resolve_backend_capabilities
+from structure.app.backend.capabilities.logic.model.capabilities import BackendCapabilityError
+from structure.app.backend.capabilities.logic.model.diagnostics import BACKEND_E2401, BACKEND_E2402
+from structure.app.backend.capabilities.logic.rules.PySparkCapabilityRules import PySparkCapabilities
 
 
 def test_default_pyspark_capabilities_do_not_import_pyspark() -> None:

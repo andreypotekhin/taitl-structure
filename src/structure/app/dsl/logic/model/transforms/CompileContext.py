@@ -4,6 +4,7 @@ from contextvars import ContextVar, Token
 from types import TracebackType
 
 from structure.app.dsl.logic.model.expr.Expression import Expression
+from structure.app.dsl.logic.model.plans.JoinPlan import JoinPlan
 
 _current: ContextVar["CompileContext | None"] = ContextVar("structure_compile_context", default=None)
 
@@ -13,6 +14,7 @@ class CompileContext:
     def __init__(self, *, step: str) -> None:
         self.step = step
         self.filters: list[Expression] = []
+        self.joins: list[JoinPlan] = []
         self._token: Token[CompileContext | None] | None = None
 
     def __enter__(self) -> "CompileContext":

@@ -1,5 +1,3 @@
-from pyspark.sql import functions as F
-
 from structure import (
     Join,
     JoinHint,
@@ -79,6 +77,8 @@ class EnrichOrders(Transform):
 
     @after(normalize, streaming_safe=True)
     def remove_negative_totals(self, *, df, spark, ctx):
+        from pyspark.sql import functions as F
+
         return df.where(F.col("net_total") >= 0)
 
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
@@ -124,6 +124,8 @@ class EnrichOrders(Transform):
 
     @after(add_promotion, pass_inputs=True, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, streaming_safe=True)
     def note_lookup_inputs(self, *, df, inputs, spark, ctx):
+        from pyspark.sql import functions as F
+
         return df.withColumn("_lookup_inputs_seen", F.lit(inputs.customers is not None and inputs.products is not None))
 
     def publish(self, order: OrderWithPromotion) -> OrderPublished:
@@ -135,4 +137,6 @@ class EnrichOrders(Transform):
 
     @after(publish, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True, streaming_safe=True)
     def add_quality_columns(self, *, df, spark, ctx):
+        from pyspark.sql import functions as F
+
         return df.withColumn("_has_customer", F.col("customer_name").isNotNull())
