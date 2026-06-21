@@ -1,34 +1,25 @@
 import sys
-from pathlib import Path
 from typing import cast
 
-ROOT = Path(__file__).resolve().parents[3]
-SRC = ROOT / "src"
-MODEL = ROOT / "tests" / "model" / "v0" / "src"
-if str(SRC) not in sys.path:
-    sys.path.insert(0, str(SRC))
-if str(MODEL) not in sys.path:
-    sys.path.insert(0, str(MODEL))
-
 from structure.app.dsl.api import compile_transform
-from structure.app.dsl.logic.model.Schema import DecimalType
+from structure.app.dsl.logic.model.types.DecimalType import DecimalType
 
 
 def test_v0_fixture_imports_without_pyspark() -> None:
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
-    import orders.schemas.order  # type: ignore[import-not-found]
-    import orders.transforms.order  # type: ignore[import-not-found]
+    import testing.model.v0.orders.schemas.order
+    import testing.model.v0.orders.transforms.order
 
     after = {name for name in sys.modules if name.startswith("pyspark")}
     assert after == before
-    assert orders.schemas.order.OrderRaw.__name__ == "OrderRaw"
-    assert orders.transforms.order.NormalizeOrders.__name__ == "NormalizeOrders"
+    assert testing.model.v0.orders.schemas.order.OrderRaw.__name__ == "OrderRaw"
+    assert testing.model.v0.orders.transforms.order.NormalizeOrders.__name__ == "NormalizeOrders"
 
 
 def test_v0_transform_compiles_to_first_contract_plan() -> None:
-    from orders.schemas.order import OrderNormalized, OrderRaw  # type: ignore[import-not-found]
-    from orders.transforms.order import NormalizeOrders  # type: ignore[import-not-found]
+    from testing.model.v0.orders.schemas.order import OrderNormalized, OrderRaw
+    from testing.model.v0.orders.transforms.order import NormalizeOrders
 
     plan = compile_transform(NormalizeOrders)
 
@@ -51,7 +42,7 @@ def test_v0_transform_compiles_to_first_contract_plan() -> None:
 
 
 def test_v0_total_projection_captures_decimal_coalesce() -> None:
-    from orders.transforms.order import NormalizeOrders  # type: ignore[import-not-found]
+    from testing.model.v0.orders.transforms.order import NormalizeOrders
 
     plan = compile_transform(NormalizeOrders)
     total = plan.steps[0].projection[2].expression
@@ -72,7 +63,7 @@ def test_v0_total_projection_captures_decimal_coalesce() -> None:
 
 
 def test_transform_invocation_is_deferred_and_rejects_unknown_inputs() -> None:
-    from orders.transforms.order import NormalizeOrders  # type: ignore[import-not-found]
+    from testing.model.v0.orders.transforms.order import NormalizeOrders
 
     value = object()
     invocation = NormalizeOrders(orders=value)

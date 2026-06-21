@@ -1,0 +1,14 @@
+from pyspark.sql import types as T
+
+from testing.model.v2.structure_generated.orders.pyspark.schemas.common import AUDIT_STAMP_SCHEMA, TENANT_KEY_SCHEMA
+
+
+SHIPMENT_SCHEMA = T.StructType([
+    T.StructField("tenant", TENANT_KEY_SCHEMA, False),
+    T.StructField("audit", AUDIT_STAMP_SCHEMA, False),
+    T.StructField("order_id", T.StringType(), False),
+    T.StructField("line_number", T.IntegerType(), False),
+    T.StructField("carrier", T.StringType(), True),
+    T.StructField("tracking_number", T.StringType(), True),
+    T.StructField("shipped_at", T.TimestampType(), True),
+])

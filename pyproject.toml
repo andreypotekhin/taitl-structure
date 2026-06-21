@@ -36,14 +36,14 @@ pytest-mock = "^3.14"
 line-length = 120
 skip-string-normalization = true
 extend-exclude = '''
-/tests/model/
+/res/testing/model/
 '''
 
 [tool.isort]
 profile = "black"
 line_length = 120
 skip = ["__init__.py"]
-skip_glob = ["tests/model/**"]
+skip_glob = ["res/testing/model/**"]
 known_first_party = ["taitl", "o"]
 
 [tool.flake8]
@@ -77,15 +77,26 @@ disallow_untyped_defs = false
 check_untyped_defs = true
 warn_return_any = false
 explicit_package_bases = true
-mypy_path = ["src"]
+mypy_path = ["src", "res"]
 files = ["src", "tests"]
-exclude = ["^tests/model/"]
+exclude = ["^res/testing/model/"]
+
+[[tool.mypy.overrides]]
+module = [
+    "testing.model.v0.orders.*",
+    "testing.model.v0.structure_generated.*",
+]
+follow_imports = "skip"
 
 [tool.pytest.ini_options]
 addopts = [
         "--durations=5", # Show the slowest 5 tests
         #"--color=yes",
         #"--cov=o",
+]
+pythonpath = [
+    "src",
+    "res",
 ]
 plugins = [
    "pytest-mock"

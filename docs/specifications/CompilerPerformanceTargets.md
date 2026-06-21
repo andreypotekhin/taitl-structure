@@ -40,7 +40,7 @@ Large project:
   1500 schemas
 ```
 
-The model fixtures under `tests/model` may grow into synthetic projects for benchmarks. Benchmarks should avoid live
+The model fixtures under `res/testing/model` may grow into synthetic projects for benchmarks. Benchmarks should avoid live
 Spark and use deterministic local files.
 
 ## Targets

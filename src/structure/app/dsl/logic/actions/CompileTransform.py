@@ -3,11 +3,15 @@ from __future__ import annotations
 import inspect
 from typing import get_type_hints
 
-from structure.app.dsl.logic.model.expressions import Expression, literal
-from structure.app.dsl.logic.model.Plan import InputPlan, ProjectAssignment, StepPlan, TransformPlan
-from structure.app.dsl.logic.model.Schema import FieldDefinition, Structure
-from structure.app.dsl.logic.model.Symbolic import RowScope
-from structure.app.dsl.logic.model.Transform import CompileContext, InputDeclaration, Transform
+from structure.app.dsl.logic.model.expr.expressions import literal
+from structure.app.dsl.logic.model.expr.RowScope import RowScope
+from structure.app.dsl.logic.model.plans.InputPlan import InputPlan
+from structure.app.dsl.logic.model.plans.ProjectAssignment import ProjectAssignment
+from structure.app.dsl.logic.model.plans.StepPlan import StepPlan
+from structure.app.dsl.logic.model.plans.TransformPlan import TransformPlan
+from structure.app.dsl.logic.model.schemas.Structure import Structure
+from structure.app.dsl.logic.model.transforms.CompileContext import CompileContext
+from structure.app.dsl.logic.model.transforms.Transform import Transform
 
 
 class CompileTransform:
