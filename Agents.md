@@ -131,6 +131,12 @@ See 'Documenting' sections in /docs/dev/Style.md for details.
 #### Documenting design decisions
 See 'Documenting the design decisions' section in /docs/dev/Style.md
 
+#### Documenting progress
+Keep project-management documents - e.g. milestones, sprints, etc. - up to date as we progress with design/development.
+Move completed plans to docs/dev/planning/done/.
+Move completed sprints to docs/dev/project-management/sprints/done/.
+Mark completed milestones (docs/dev/project-management/Milestones.md) with + (e.g. M0: Groundwork Ready).
+
 #### Making suggestions
 As you assume team roles as described in 'Team roles' section below, come up with suggestions for improvements.
 Output suggestions into the [action id].[action title].md documents in suggestions dir (/docs/dev/suggestions/).

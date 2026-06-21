@@ -108,6 +108,25 @@ Compiler tests must prove the no-Spark compile contract: `structure check`, `str
 online execution, generated-code import, and PySpark execution tests in separate suites because those may legitimately
 require PySpark and a local Spark runtime.
 
+## Test Placement
+
+Use these directories consistently:
+
+- `tests/app/[app]/[subapp]/...`: tests for app implementation code. Keep nesting aligned with the app and subapp
+  package path.
+- `tests/specs/[section-or-story]/...`: tests backing user stories from `docs/dev/Specification.md`.
+- `tests/specifications/[specification-doc-slug]/...`: tests backing individual documents under `docs/specifications/`
+  when we need to prove the behavior described by a specification document directly.
+
+Examples:
+
+- CLI command behavior: `tests/app/cli/...`
+- Backend capability app behavior: `tests/app/backend/capabilities/...`
+- PySpark backend target behavior: `tests/app/backend/pyspark/...`
+- User stories completed from `docs/dev/Specification.md`: `tests/specs/...`
+- Execution semantic contract checks: `tests/specifications/execution-semantic-contract/...`
+- PySpark code generation contract checks: `tests/specifications/pyspark-code-generation/...`
+
 ## CI
 
 Recommended CI pipeline:

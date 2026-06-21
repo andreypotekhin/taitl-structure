@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Mapping
+from typing import Mapping, cast
 
 from structure.app.dsl.logic.model.types.StructType import StructType
 from structure.app.dsl.logic.model.types.StructureType import StructureType
@@ -33,11 +33,12 @@ class Expression:
 
         field = fields[name]
         data = dict(self.data or {})
-        path = tuple(data.get("path", (data.get("field"),)))
-        path = tuple(item for item in path if item)
-        path = (*path, name)
-        data["field"] = ".".join(path)
-        data["path"] = path
+        path_data = data.get("path")
+        path = cast(tuple[object, ...], path_data) if isinstance(path_data, tuple) else (data.get("field"),)
+        path_strings = tuple(str(item) for item in path if item)
+        path_strings = (*path_strings, name)
+        data["field"] = ".".join(path_strings)
+        data["path"] = path_strings
         return Expression(kind="field", type=field.type, nullable=field.nullable, data=data)
 
     def __and__(self, other: object) -> "Expression":

@@ -1,10 +1,10 @@
 import sys
 
+from structure.app.backend.pyspark.api import lower_pyspark_plan
 from structure.app.dsl.api import compile_transform
 from structure.app.dsl.logic.model.transforms.Join import Join
 from structure.app.dsl.logic.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.logic.model.transforms.SchemaMode import SchemaMode
-from structure.app.backend.pyspark.api import lower_pyspark_plan
 
 
 def test_v1_pyspark_recipe_lowering_is_spark_free() -> None:
@@ -104,7 +104,9 @@ def test_v1_pyspark_recipe_places_validation_boundaries() -> None:
 
     recipe = lower_pyspark_plan(compile_transform(EnrichOrders))
 
-    assert [(validation.reason, validation.schema.__name__, validation.mode) for validation in recipe.steps[0].validations] == [
+    assert [
+        (validation.reason, validation.schema.__name__, validation.mode) for validation in recipe.steps[0].validations
+    ] == [
         ("hook", "OrderNormalized", SchemaMode.STRICT),
         ("intermediate", "OrderNormalized", SchemaMode.STRICT),
     ]

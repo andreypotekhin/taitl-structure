@@ -123,7 +123,7 @@ Use modern test frameworks capabilities to the maximum for structuring the tests
 See /docs/Testing.md
 
 Directory structure:
-- /tests/app/[app-name] - tests specific app
+- /tests/app/[app]/[subapp]/package/subpackage - tests for app implementation code, mirroring the app package path
 - /tests/lib/[lib-name] - tests specific lib
 
 Examples:
@@ -132,13 +132,16 @@ Examples:
 - /tests/lib/helper/ - Helper lib tests
 
 #### Specification Testing
-Test cases backing specifications (from /docs/dev/Specification.md) are in tests/specs.
-For each implemented specification from /docs/dev/Specification.md, create a test case 
+Test cases backing specifications (from /docs/dev/Specification.md) are in tests/specs/.
+For each implemented user story from Specification.md, create a test case 
 in the corresponding subpackage of tests/specs.
+
+Tests for specifications/ documents, if needed, go to tests/specifications/[specification-doc-slug]
 
 Directory structure:
 - /tests/specs/ - tests for Specification.md items user stories
 - /tests/specs/[section]/ - tests for specific Specification.md section
+- /tests/specifications/[specification-doc-slug]/ - tests for specifications/ documents
 
 #### Concepts Testing
 We maintain a list of concepts in /docs/Concepts.md that we want to be covered with tests.

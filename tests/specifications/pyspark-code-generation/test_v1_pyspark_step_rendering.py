@@ -2,6 +2,20 @@ from structure.app.backend.pyspark.api import lower_pyspark_plan, render_pyspark
 from structure.app.dsl.api import compile_transform
 
 
+def test_v1_step_renderer_renders_before_hook_against_current_input() -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    recipe = lower_pyspark_plan(compile_transform(EnrichOrders))
+    text = render_pyspark_step(recipe.steps[0], current="orders")
+
+    assert (
+        "        df = self._impl.use_current_orders(df=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)" in text
+    )
+    assert '        df = df.alias("order_raw")' in text
+    assert "df=orders" in text
+    assert "df=df, inputs=inputs" not in text
+
+
 def test_v1_step_renderer_renders_join_projection_and_validation() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
@@ -25,6 +39,8 @@ def test_v1_step_renderer_renders_hooks_and_project_output_validation() -> None:
 
     assert '        # Subtransform: publish' in text
     assert '        df = self._impl.add_quality_columns(df=df, spark=self.spark, ctx=self.ctx)' in text
-    assert '        assert_schema(df, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="allow_extra_columns")' in text
+    assert (
+        '        assert_schema(df, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="allow_extra_columns")' in text
+    )
     assert "        df = project_schema(df, ORDER_PUBLISHED_SCHEMA)" in text
     assert text.count('assert_schema(df, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")') == 1

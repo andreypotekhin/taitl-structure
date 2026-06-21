@@ -13,9 +13,7 @@ def test_v1_schema_rendering_is_spark_free() -> None:
     after = {name for name in sys.modules if name.startswith("pyspark")}
     assert after == before
     assert text == (
-        "TENANT_KEY_SCHEMA = T.StructType([\n"
-        '    T.StructField("tenant_id", T.StringType(), False),\n'
-        "])"
+        "TENANT_KEY_SCHEMA = T.StructType([\n" '    T.StructField("tenant_id", T.StringType(), False),\n' "])"
     )
 
 

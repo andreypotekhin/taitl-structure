@@ -51,26 +51,26 @@ Library package structure: no specific structure, various subpackages as need ar
 Application package structure:
 
 structure/app/[app]/
-  - api/ - Endpoints of programmatic API - application entry points
-    Endpoints can be simple (single command) or compound - representing groupings of commands (actions). 
-      Ex: HelpEndpoint provides helpCompile() method returning new instances of HelpCompile command.  
-      Usage: helpEndpoint.helpCompile()  
+  - api/ - Programmatic API endpoints - application entry points
+    Endpoints can be simple (single command) or compound: representing groupings of commands (actions). 
+      Ex: HelpEndpoint provides helpCompile() method returning new instances of HelpCompile command,
+      as well as other help*() methods to render help messages of other CLI commands. 
+      Usage: cli.help.compile() returns an instance of HelpCompile command. 
   - logic/ - 'logic' classes implementing business logic 
   - logic/actions/ - command/action classes serving as business logic entry points
-    Ex: Compile command action implementing 'compile' CLI command 
-      Usage: cli.commands.compile() creates Compile command 
-      compile(args, ...) calls the command
+    Ex: Compile command action implements 'compile' CLI command 
+      Usage: cli.commands.compile() creates an instance of Compile command, 
+      callable with (args, ...) to execute the command.
   
 API modules are main entry points into an app packages, constituting programmatic API for external and inter-app use. 
 
-Common execution flow within an app:
+Common execution flow within an app:  
+- API endpoints instantiate actions/commands which delegate to other Logic classes
+- Command/action classes provide an entry point - __call__ method - with specific (preferably, named) arguments.
 
-- API endpoints instantiate and run Commands which delegate to other Logic classes
-- On each API request, endpoint creates new Command instance (Command instances are ephemeral). 
-- Command classes provide an entry point - __call__ method - with specific (preferably, named) arguments.
-
-Lifecycle: App and Endpoint classes tend to be static/existing for long time. 
-Command and other logic class instances are ephemeral and disposed immediately upon use. 
+Lifecycle: App and Endpoint classes tend to be static/existing for long time; 
+Action/command and other logic classes are ephemeral and disposed immediately upon use, spanning maximum a single 
+api request.
 
 ### Logic package structure
 Application packages, except, logic/ are flat. 
@@ -78,14 +78,14 @@ The logic/ package further splits into deeper package hierarchy:
 
 logic/  
   - actions/ - action-oriented classes causing effect on business
-    Action classes are main entry point to logic/
-  - data/ - data-oriented classes, mostly method-less
-    Data classes can be used in and outside logic/ for data arguments
+    Action classes are main entry point to logic/. They are usually stateless.
+  - data/ - data-oriented classes, mostly method-less, for simple transfer of information
+    Data classes are normally uses as method arguments to 'package' multiple parameters
   - model/ - domain model. 
     - Don't be shy of defining further subpackages for cohesive model classes
-    - As usual, one-class-per-source-file for the classes
-  - maps/ - mappings between data structures (read-only/no side effect)
-  - rules/ - business rules
+    - As usual, one-class-per-source-file for each model class.
+  - maps/ - mappings between data structures - stateless read-only/no side effect.
+  - rules/ - business rules. Normally, stateless boolean callables.
 
 Action classes are main entry points into logic package. 
 

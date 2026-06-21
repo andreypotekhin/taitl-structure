@@ -5,13 +5,6 @@ import re
 from structure.app.backend.capabilities.api.capabilities import resolve_backend_capabilities
 from structure.app.backend.capabilities.logic.model.BackendCapabilities import BackendCapabilities
 from structure.app.backend.capabilities.logic.model.CapabilityRequirement import CapabilityRequirement
-from structure.app.dsl.logic.model.expr.Expression import Expression
-from structure.app.dsl.logic.model.plans.HookPlan import HookPlan
-from structure.app.dsl.logic.model.plans.JoinPlan import JoinPlan
-from structure.app.dsl.logic.model.plans.ProjectAssignment import ProjectAssignment
-from structure.app.dsl.logic.model.plans.StepPlan import StepPlan
-from structure.app.dsl.logic.model.plans.TransformPlan import TransformPlan
-from structure.app.dsl.logic.model.schemas.Structure import Structure
 from structure.app.backend.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.app.backend.pyspark.logic.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.backend.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
@@ -20,6 +13,13 @@ from structure.app.backend.pyspark.logic.model.PySparkJoinRecipe import PySparkJ
 from structure.app.backend.pyspark.logic.model.PySparkProjectionRecipe import PySparkProjectionRecipe
 from structure.app.backend.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.backend.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
+from structure.app.dsl.logic.model.expr.Expression import Expression
+from structure.app.dsl.logic.model.plans.HookPlan import HookPlan
+from structure.app.dsl.logic.model.plans.JoinPlan import JoinPlan
+from structure.app.dsl.logic.model.plans.ProjectAssignment import ProjectAssignment
+from structure.app.dsl.logic.model.plans.StepPlan import StepPlan
+from structure.app.dsl.logic.model.plans.TransformPlan import TransformPlan
+from structure.app.dsl.logic.model.schemas.Structure import Structure
 from structure.app.dsl.logic.model.transforms.SchemaMode import SchemaMode
 
 
@@ -32,8 +32,13 @@ class LowerPySparkPlan:
         capabilities: BackendCapabilities | None = None,
     ) -> PySparkExecutionPlan:
         target = capabilities or resolve_backend_capabilities()
-        inputs = tuple(self._input(input_plan.name, input_plan.schema, input_plan.ordinal) for input_plan in plan.inputs)
-        steps = tuple(self._step(step, index=index, last=index == len(plan.steps) - 1, capabilities=target) for index, step in enumerate(plan.steps))
+        inputs = tuple(
+            self._input(input_plan.name, input_plan.schema, input_plan.ordinal) for input_plan in plan.inputs
+        )
+        steps = tuple(
+            self._step(step, index=index, last=index == len(plan.steps) - 1, capabilities=target)
+            for index, step in enumerate(plan.steps)
+        )
         final_validation = PySparkValidationRecipe(
             target="output",
             schema=plan.output_schema,
@@ -47,7 +52,9 @@ class LowerPySparkPlan:
             inputs=inputs,
             steps=steps,
             final_validation=final_validation,
-            requires_hook_inputs=any(hook.pass_inputs for step in steps for hook in (*step.before_hooks, *step.after_hooks)),
+            requires_hook_inputs=any(
+                hook.pass_inputs for step in steps for hook in (*step.before_hooks, *step.after_hooks)
+            ),
         )
 
     def _input(self, name: str, schema: type[Structure], ordinal: int) -> PySparkInputRecipe:

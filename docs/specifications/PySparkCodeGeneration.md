@@ -887,9 +887,10 @@ The implementation is complete when tests prove:
 
 ## Test Placement
 
-Generator tests belong under `tests/app/compiler/` or the current compiler app test package equivalent. Runtime parity
-tests that require Spark belong under `tests/app/runtime/` or the current runtime test package equivalent. Specification
-backing tests for completed user stories from `docs/dev/Specification.md` belong under `tests/specs/`.
+Generator implementation tests belong under `tests/app/compiler/...` or the current compiler app test package
+equivalent. Runtime parity tests that require Spark belong under `tests/app/runtime/...` or the current runtime test
+package equivalent. Specification-backed user stories from `docs/dev/Specification.md` belong under `tests/specs/...`.
+Tests that directly back this specification document belong under `tests/specifications/pyspark-code-generation/...`.
 
 Recommended test groups:
 

@@ -1175,9 +1175,10 @@ The implementation is complete when tests prove:
 
 ## Test Placement
 
-IR tests belong under the compiler test package, such as `tests/app/compiler/`, or the current project-equivalent
-compiler app test location. Specification backing tests for completed user stories from `docs/dev/Specification.md`
-belong under `tests/specs/`.
+IR implementation tests belong under the compiler app test package, such as `tests/app/compiler/...`, or the current
+project-equivalent compiler app location. Specification-backed user stories from `docs/dev/Specification.md` belong
+under `tests/specs/...`. Tests that directly back this specification document belong under
+`tests/specifications/intermediate-representation/...`.
 
 Recommended test groups:
 

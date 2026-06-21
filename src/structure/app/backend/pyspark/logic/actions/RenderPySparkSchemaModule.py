@@ -3,12 +3,12 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Mapping, Sequence
 
+from structure.app.backend.pyspark.logic.actions.RenderPySparkSchema import render_pyspark_schema
 from structure.app.dsl.logic.model.schemas.Structure import Structure
 from structure.app.dsl.logic.model.types.ArrayType import ArrayType
 from structure.app.dsl.logic.model.types.MapType import MapType
 from structure.app.dsl.logic.model.types.StructType import StructType
 from structure.app.dsl.logic.model.types.StructureType import StructureType
-from structure.app.backend.pyspark.logic.actions.RenderPySparkSchema import render_pyspark_schema
 
 
 class RenderPySparkSchemaModule:

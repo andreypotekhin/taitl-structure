@@ -1,5 +1,13 @@
 # Troubleshooting
 
+### Problem (pytest): `PermissionError: [WinError 5] Access is denied: 'C:\Temp\pytest-of-Admin'`
+
+When: Running tests that use pytest's `tmp_path` fixture on a Windows checkout.
+Error: `PermissionError: [WinError 5] Access is denied: 'C:\Temp\pytest-of-Admin'`.
+Cause: The global pytest temp root exists but is not readable by the current process.
+Fix: Set `TMP` and `TEMP` to a writable directory, or use a workspace-local temp directory for tests that only need
+short-lived generated files.
+
 ### Problem (context): `message` during [when]
 
 When: [describe when problem manifests]

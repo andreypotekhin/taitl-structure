@@ -5,9 +5,9 @@ import re
 from structure.app.dsl.logic.model.schemas.FieldDefinition import FieldDefinition
 from structure.app.dsl.logic.model.schemas.Structure import Structure
 from structure.app.dsl.logic.model.types.ArrayType import ArrayType
-from structure.app.dsl.logic.model.types.DecimalType import DecimalType
 from structure.app.dsl.logic.model.types.BooleanType import BooleanType
 from structure.app.dsl.logic.model.types.DateType import DateType
+from structure.app.dsl.logic.model.types.DecimalType import DecimalType
 from structure.app.dsl.logic.model.types.DoubleType import DoubleType
 from structure.app.dsl.logic.model.types.FloatType import FloatType
 from structure.app.dsl.logic.model.types.IntegerType import IntegerType

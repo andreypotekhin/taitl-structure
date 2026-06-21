@@ -12,21 +12,25 @@ class RenderPySparkStep:
 
     def __call__(self, step: PySparkStepRecipe, *, current: str) -> str:
         lines = [f"        # Subtransform: {step.name}"]
-        lines.extend(self._hooks(step.before_hooks))
-        lines.append(f'        df = {current}.alias("{step.input_alias}")')
+        active = current
+        if step.before_hooks:
+            lines.extend(self._hooks(step.before_hooks, current=current))
+            active = "df"
+        lines.append(f'        df = {active}.alias("{step.input_alias}")')
         lines.extend(self._joins(step))
         if step.filters:
             lines.extend(self._filters(step))
         lines.extend(self._projection(step))
-        lines.extend(self._hooks(step.after_hooks))
+        lines.extend(self._hooks(step.after_hooks, current="df"))
         lines.extend(self._validations(step.validations))
         return "\n".join(lines)
 
-    def _hooks(self, hooks: tuple[PySparkHookRecipe, ...]) -> list[str]:
+    def _hooks(self, hooks: tuple[PySparkHookRecipe, ...], *, current: str) -> list[str]:
         lines: list[str] = []
         for hook in hooks:
             inputs = ", inputs=inputs" if hook.pass_inputs else ""
-            lines.append(f"        df = self._impl.{hook.name}(df=df{inputs}, spark=self.spark, ctx=self.ctx)")
+            lines.append(f"        df = self._impl.{hook.name}(df={current}{inputs}, spark=self.spark, ctx=self.ctx)")
+            current = "df"
         return lines
 
     def _joins(self, step: PySparkStepRecipe) -> list[str]:

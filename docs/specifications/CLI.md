@@ -441,8 +441,9 @@ The CLI implementation is complete when tests prove:
 
 ## Test Placement
 
-CLI tests belong under `tests/app/cli/`. Specification-backed user stories from `docs/dev/Specification.md` should also
-have tests under `tests/specs/` in the relevant section directory when the implementation completes those stories.
+CLI implementation tests belong under `tests/app/cli/...`. Specification-backed user stories from
+`docs/dev/Specification.md` should have tests under `tests/specs/...`. Tests that directly back this specification
+document belong under `tests/specifications/cli/...`.
 
 Recommended test groups:
 

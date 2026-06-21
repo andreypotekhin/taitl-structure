@@ -680,7 +680,7 @@ codes, missing documentation links, and invalid lifecycle transitions.
 ## C30. Fixtures Exist, but Executable Specification Tests Are Missing
 
 The repository has rich model source and generated fixtures under `res/testing/model`, and it now has executable coverage
-for backend capabilities under `tests/specs/backend_capabilities`. Most specification sections still do not have
+for backend capabilities under `tests/specifications/backend-capabilities`. Most specification sections still do not have
 normal executable pytest tests backing them yet.
 
 Risk: generated examples can drift from the intended compiler behavior, and completed user stories may be marked in

@@ -23,8 +23,8 @@ def test_v1_order_schema_module_renders_nested_schema_imports() -> None:
     from testing.model.v1.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
     from testing.model.v1.orders.schemas.order import (
         OrderNormalized,
-        OrderPublished,
         OrderPublication,
+        OrderPublished,
         OrderRaw,
         OrderWithCustomer,
         OrderWithProduct,
@@ -61,4 +61,7 @@ def test_v1_order_schema_module_renders_nested_schema_imports() -> None:
         '    T.StructField("attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),'
     ) in text
     assert "ORDER_WITH_CUSTOMER_SCHEMA = T.StructType(ORDER_NORMALIZED_SCHEMA.fields + [" in text
-    assert "ORDER_PUBLISHED_SCHEMA = T.StructType(ORDER_PUBLICATION_SCHEMA.fields + PUBLICATION_FLAGS_SCHEMA.fields)" in text
+    assert (
+        "ORDER_PUBLISHED_SCHEMA = T.StructType(ORDER_PUBLICATION_SCHEMA.fields + PUBLICATION_FLAGS_SCHEMA.fields)"
+        in text
+    )

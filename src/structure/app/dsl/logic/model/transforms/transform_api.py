@@ -5,9 +5,9 @@ from typing import Callable
 from structure.app.dsl.logic.model.expr.expressions import literal
 from structure.app.dsl.logic.model.schemas.Structure import Structure
 from structure.app.dsl.logic.model.transforms.CompileContext import current_context
-from structure.app.dsl.logic.model.transforms.SchemaMode import SchemaMode
 from structure.app.dsl.logic.model.transforms.ExprFunction import ExprFunction
 from structure.app.dsl.logic.model.transforms.InputDeclaration import InputDeclaration
+from structure.app.dsl.logic.model.transforms.SchemaMode import SchemaMode
 from structure.app.dsl.logic.model.transforms.Transform import Transform
 
 
@@ -97,14 +97,18 @@ def _hook(
         raise TypeError(f"@{phase}(...) requires a subtransform method")
 
     def decorate(function: Callable) -> Callable:
-        function._structure_hook = {
-            "phase": phase,
-            "target": target.__name__,
-            "pass_inputs": pass_inputs,
-            "schema_mode": schema_mode,
-            "project_output": project_output,
-            "streaming_safe": streaming_safe,
-        }
+        setattr(
+            function,
+            "_structure_hook",
+            {
+                "phase": phase,
+                "target": target.__name__,
+                "pass_inputs": pass_inputs,
+                "schema_mode": schema_mode,
+                "project_output": project_output,
+                "streaming_safe": streaming_safe,
+            },
+        )
         return function
 
     return decorate
