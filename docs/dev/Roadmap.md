@@ -1,9 +1,26 @@
 # Roadmap
 
-The roadmap is staged around an IR-first north star. v1 proves that Structure can replace hand-maintained PySpark
-boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful for
-mainstream analytical pipelines. v3 takes ownership of streaming lifecycle concerns. v4 adds Spark Connect after the
-ordinary PySpark contract is stable.
+The roadmap is staged around an IR-first north star. v0 proves the first executable contract with one useful transform
+running both online and as generated PySpark. v1 proves that Structure can replace hand-maintained PySpark boilerplate
+with strict online execution and optional generated-code workflow. v2 makes that workflow useful for mainstream
+analytical pipelines. v3 takes ownership of streaming lifecycle concerns. v4 adds Spark Connect after the ordinary
+PySpark contract is stable.
+
+## v0
+
+- Typed schema definitions for one input and one output schema.
+- Transform class with one named input.
+- Online PySpark execution through `StructureSession`.
+- Builder-style transform invocation.
+- Shared PySpark execution semantic contract for online/generated parity.
+- Generated PySpark class and convenience function.
+- One public schema-returning subtransform.
+- Input schema validation.
+- Filtering with `where(...)`.
+- Projection.
+- One `@expr_fn` helper.
+- Online/generated parity test for the same fixture.
+- Spark-free `structure check` for the fixture.
 
 ## v1
 
@@ -12,10 +29,15 @@ ordinary PySpark contract is stable.
 - Online PySpark execution by default through `StructureSession`.
 - Builder-style transform invocation.
 - Runtime target registry for online and generated PySpark execution.
+- Shared PySpark execution semantic contract for online/generated parity.
 - Generated PySpark classes.
 - Python 3.11+ and PySpark 3.5.x/4.0.x compatibility policy.
 - Source-order subtransforms.
 - Intermediate schema validation.
+- Generated schema constants usable by caller code for reads and pre-write validation/projection.
+- Online-materialized Spark schemas available after `.run(session)`.
+- Input, intermediate, and output validation modes.
+- Explicit data-quality constraint boundary: v1 validation is schema-first and schema-only by default.
 - Filtering with `where(...)`.
 - Add/drop columns via schema projection.
 - Symbolic `join_one(...)`.
@@ -42,6 +64,9 @@ ordinary PySpark contract is stable.
 - Repartition/coalesce annotations.
 - Join strategy annotations.
 - `join_many(...)` and other row-multiplying or existence-oriented join forms.
+- Opt-in data-quality constraint model for accepted values, ranges, uniqueness, referential checks, freshness, and
+  row-count policies.
+- Phase-bound data-quality constraints for input, intermediate, and output validation.
 - Richer static dataflow explain output.
 - More detailed performance diagnostics.
 - Production incremental compile and cache diagnostics.

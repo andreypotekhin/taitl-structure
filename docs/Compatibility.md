@@ -7,12 +7,12 @@ Structure has three compatibility surfaces:
 - the generated PySpark code optionally committed to user projects;
 - optional metadata artifacts such as compiler provenance and static dataflow lineage.
 
-This page defines the public compatibility policy for v1 and the planned versioning rules after the first stable
-release.
+This page defines the public compatibility policy for the initial release and the planned versioning rules after the
+first stable release.
 
-## v1 Baseline
+## Initial Baseline
 
-Structure v1 targets:
+Structure targets:
 
 - Python 3.11 and newer;
 - PySpark 3.5.x and 4.0.x, expressed as `target_pyspark = ">=3.5,<4.1"` by default;
@@ -20,7 +20,7 @@ Structure v1 targets:
 - Linux and macOS development environments;
 - Airflow and other schedulers without a hard runtime dependency on them.
 
-Windows development should remain usable where practical, but Linux is the v1 runtime target for Spark jobs.
+Windows development should remain usable where practical, but Linux is the runtime target for Spark jobs.
 
 ## PySpark Targeting
 
@@ -40,13 +40,14 @@ The `target_pyspark` value constrains which PySpark APIs online and generated ex
 APIs outside that range unless the user explicitly changes the target.
 
 When a transform uses a feature that cannot run for the configured target, Structure should fail during `structure
-check`, `structure compile`, or online runtime compilation with a diagnostic that names the required PySpark version and
-points back to this page.
+check`, `structure compile`, or online runtime compilation with a backend capability diagnostic. Unknown backend targets
+use `BACKEND-E2401`; unsupported backend features use `BACKEND-E2402`.
 
 ## Spark Connect
 
-Spark Connect is not a v1, v2, or v3 commitment. v1 and v2 online/generated execution target ordinary PySpark
-`SparkSession`, `DataFrame`, and `Column` APIs. v3 adds streaming orchestration on top of the ordinary PySpark contract.
+Spark Connect is not part of the initial release, v2, or v3 commitment. The initial release and v2 online/generated
+execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. v3 adds streaming orchestration on
+top of the ordinary PySpark contract.
 
 Spark Connect support is scheduled for v4 as backend expansion work. It may land earlier only if it can be implemented
 through the existing PySpark target boundary without changing public APIs, generated-code shape, streaming orchestration
@@ -69,11 +70,11 @@ its upstream project may be dropped in a minor release if the release notes incl
 
 ## Online Runtime Compatibility
 
-Online execution is the default v1 runtime surface. Compatible online execution means:
+Online execution is the default runtime surface. Compatible online execution means:
 
 - transform invocations use declared input names;
 - `StructureSession` accepts caller-owned Spark sessions and optional hook context;
-- online execution preserves the same transform semantics as generated PySpark for supported v1 features;
+- online execution preserves the same transform semantics as generated PySpark for supported initial-release features;
 - compiler commands remain Spark-free even though online runtime execution may import PySpark.
 
 Breaking changes to `StructureSession`, transform invocation binding, or online/generated semantic parity require a
@@ -94,6 +95,22 @@ Compatibility rules:
 Generated code is readable and reviewable, but not hand-edited. Change source Structure code, configuration, or the
 compiler instead.
 
+## Extension Compatibility
+
+Structure keeps the initial extension surface narrow. Supported public extension points are:
+
+- `@expr_fn` helpers for reusable compiler-visible expression logic;
+- explicit `@before(...)` and `@after(...)` hooks for arbitrary PySpark DataFrame code at named step boundaries.
+
+These two paths have different guarantees. `@expr_fn` logic participates in compileability checks, generated code,
+lineage, and backend capability diagnostics. Hook bodies are opaque: Structure validates the hook declaration, calls the
+hook at the documented lifecycle point, and records the hook boundary, but it does not inspect arbitrary PySpark code
+inside the hook.
+
+Backend capability providers, diagnostic renderers, schema type adapters, validation policy plugins, and hook lint rule
+registries are internal or deferred extension surfaces. Projects should not depend on monkey-patching those internals.
+Future releases may promote some of them to public APIs once their behavior, compatibility, and tests are specified.
+
 ## Compiler Lineage Schema Versioning
 
 Compiler lineage covers two metadata models:
@@ -108,12 +125,12 @@ Lineage schema rules:
 - Consumers should ignore unknown fields.
 - Structure should keep default compiler lineage compact and stable across patch releases.
 
-Runtime LDJSON lineage is not part of the v1 compatibility contract. It is tracked as a nice-to-have beyond v4 in
+Runtime LDJSON lineage is not part of the initial compatibility contract. It is tracked as a nice-to-have beyond v4 in
 `docs/dev/project-management/NiceToHave.md`.
 
 ## Config Schema Versioning
 
-Configuration has an implicit schema version for v1. A future explicit key may make this visible:
+Configuration has an implicit schema version for the initial release. A future explicit key may make this visible:
 
 ```toml
 config_schema_version = 1

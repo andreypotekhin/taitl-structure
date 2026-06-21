@@ -225,8 +225,8 @@ Not compatible in v1:
 - uniqueness checks that require grouping or aggregation;
 - sampling-based validation.
 
-If `intermediate_validation_mode = "schema_and_constraints"`, the streaming compatibility checker must classify the
-plan as batch-only unless every enabled constraint is proven schema-only.
+If any enabled validation phase uses `schema_and_constraints`, the streaming compatibility checker must classify the
+plan as batch-only unless every enabled constraint in that phase is proven schema-only.
 
 ## IR Contract
 
@@ -295,7 +295,7 @@ Diagnostics should include:
 Example:
 
 ```text
-CompileError STRUCT-E4xxx: Transform is not streaming-compatible
+CompileError STREAM-E0801: Transform is not streaming-compatible
 
 Transform:
   EnrichOrders
@@ -319,7 +319,7 @@ See docs/specifications/StreamingCompatibility.md
 Hook example:
 
 ```text
-CompileWarning STRUCT-W4xxx: Hook streaming compatibility is unknown
+CompileWarning STREAM-W0801: Hook streaming compatibility is unknown
 
 Transform:
   NormalizeOrders
@@ -360,7 +360,7 @@ The implementation is complete when tests prove these scenarios:
 - A transform with row-local `where(...)` filters is classified streaming-compatible.
 - A transform using `lower`, `trim`, `coalesce`, and explicit parsing helpers in projections is compatible.
 - Schema-only input, intermediate, and output validation are compatible and do not call Spark actions.
-- `intermediate_validation_mode = "schema_and_constraints"` is batch-only when constraints are not schema-only.
+- Any validation phase using `schema_and_constraints` is batch-only when enabled constraints are not schema-only.
 - A stream-static `Join.LEFT` lookup join is compatible when the joined side is static.
 - A stream-static `Join.INNER` lookup join is compatible when the joined side is static.
 - `join_one(...)` uniqueness warnings still appear independently from streaming compatibility.

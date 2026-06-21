@@ -25,7 +25,7 @@ Online execution and generated code call source hooks at the same lifecycle poin
 - Hook schema mode options.
 - Project output after hook when configured.
 - Clean no-hook generated code tests.
-- Online/generated parity tests for hook ordering and hook inputs.
+- Shared PySpark hook recipes and online/generated parity tests for hook ordering and hook inputs.
 
 ### Out of Scope
 
@@ -102,7 +102,8 @@ class NormalizeOrdersGenerated:
 9. Generate original input namespace for `pass_inputs=True` hooks.
 10. Implement hook schema mode behavior.
 11. Add no-hook cleanliness snapshot tests.
-12. Add online/generated parity tests for hook ordering and hook inputs.
+12. Add shared PySpark hook recipes.
+13. Add online/generated parity tests for hook ordering and hook inputs.
 
 ## Acceptance Criteria
 
@@ -111,6 +112,7 @@ class NormalizeOrdersGenerated:
 - Hook-free transform generated code has no source import and no `_impl`.
 - Invalid hook signature fails with structured error.
 - Hook after a subtransform runs at the correct point.
+- Hook lifecycle points come from shared PySpark hook recipes in both runtime modes.
 - Hooks with `pass_inputs=True` receive an `inputs` namespace with original named inputs.
 - Hook-added columns can be projected away before strict validation.
 

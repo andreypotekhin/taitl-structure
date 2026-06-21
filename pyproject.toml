@@ -35,11 +35,15 @@ pytest-mock = "^3.14"
 [tool.black]
 line-length = 120
 skip-string-normalization = true
+extend-exclude = '''
+/tests/model/
+'''
 
 [tool.isort]
 profile = "black"
 line_length = 120
 skip = ["__init__.py"]
+skip_glob = ["tests/model/**"]
 known_first_party = ["taitl", "o"]
 
 [tool.flake8]

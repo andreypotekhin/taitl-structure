@@ -31,12 +31,13 @@ Errors should include:
 - suggested DSL fix
 - `@expr_fn` helper fix
 - hook workaround
+- hook opacity note when a workaround moves logic out of the compiler-visible path
 - config workaround when one exists
 
 ## Example Error
 
 ```text
-CompileError STRUCT-E1004: Unsupported expression
+CompileError DSL-E0401: Unsupported expression
 
 Transform:
   EnrichOrders
@@ -69,6 +70,10 @@ Hook workaround:
   def clean_customer_id(self, *, df, spark, ctx):
       return df.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 
+Hook note:
+  Hooks are supported for arbitrary PySpark, but they are opaque to compileability checks and lineage. Prefer the DSL or
+  @expr_fn form when the expression can stay compiler-visible.
+
 Configuration workaround:
   None. Unsupported Python methods are not allowed in compiled transforms.
 ```
@@ -80,6 +85,20 @@ Only suggest config when it really applies. Examples:
 - `validate_intermediate = false` for intermediate validation failures.
 - `lineage = "none"` for compiler provenance and static dataflow lineage performance.
 - `strict_performance = false` for hook lint warnings, not compiled subtransform fallback.
+
+## Extension Boundaries
+
+The checker should treat `@expr_fn` helpers as the preferred project extension point for reusable expression logic.
+They stay inside symbolic execution and therefore remain visible to generated code, lineage, backend capability checks,
+and diagnostics.
+
+Hooks are supported extension points for arbitrary PySpark DataFrame code, but the checker must treat hook bodies as
+opaque. It validates hook attachment, signature, lifecycle options, and configured safety declarations; it does not
+infer field lineage or compileability from code inside the hook.
+
+Compiler registries for backend capabilities, diagnostics, schema type adapters, validation policies, and hook lint
+rules are internal until a public contract is deliberately introduced. Diagnostics should not tell users to monkey-patch
+or register custom implementations in those internals.
 
 ## Compile-Time Performance
 

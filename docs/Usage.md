@@ -88,6 +88,20 @@ enriched = EnrichOrders(
 The session owns Spark, optional hook context, resolved Structure configuration, execution mode, and target backend
 selection.
 
+Keep the transform invocation when caller code needs the output Spark schema in online mode:
+
+```python
+transform = EnrichOrders(
+    orders=orders_df,
+    customers=customers_df,
+    products=products_df,
+)
+
+enriched = transform.run(session)
+enriched = project_schema(enriched, transform.schemas.output)
+enriched.write.mode("overwrite").parquet(target_path)
+```
+
 ## Optional Generated PySpark
 
 A source subtransform like this:
@@ -115,6 +129,25 @@ df = orders.where(
 )
 ```
 
+## Generated Schemas in Caller Code
+
+Generated schema constants are ordinary PySpark `StructType` values. Caller code may import them for reads and for
+pre-write validation/projection.
+
+```python
+from structure_generated.orders.pyspark.schemas.order import ORDER_ENRICHED_SCHEMA, ORDER_RAW_SCHEMA
+from structure_generated.runtime.schema_assert import assert_schema, project_schema
+
+orders = spark.read.schema(ORDER_RAW_SCHEMA).parquet(source_path)
+
+assert_schema(result, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="strict")
+result = project_schema(result, ORDER_ENRICHED_SCHEMA)
+result.write.mode("overwrite").parquet(target_path)
+```
+
+Structure does not own storage orchestration. Callers own `write`, `writeStream`, table creation, partitioning,
+checkpoints, output modes, and storage options.
+
 ## Intermediate Validation
 
 Structure validates intermediate schemas by default.
@@ -124,6 +157,17 @@ Project-wide defaults:
 ```toml
 validate_intermediate = true
 intermediate_validation_mode = "schema_only"
+```
+
+Full phase defaults:
+
+```toml
+validate_inputs = true
+input_validation_mode = "schema_only"
+validate_intermediate = true
+intermediate_validation_mode = "schema_only"
+validate_outputs = true
+output_validation_mode = "schema_only"
 ```
 
 Disable intermediate schema validation project-wide:
@@ -137,6 +181,11 @@ Choose fuller validation only when the added Spark work is intentional:
 ```toml
 intermediate_validation_mode = "schema_and_constraints"
 ```
+
+`schema_and_constraints` is reserved for opt-in data-quality checks such as accepted values, ranges, uniqueness,
+referential checks, freshness, and row-count policies. These checks are separate from schema shape and may trigger Spark
+work when Structure supports them. Future constraints should bind to input, intermediate, or output phases; the matching
+phase mode controls whether those constraints run.
 
 ```python
 @transform(validate_intermediate=True)
@@ -291,11 +340,11 @@ input DataFrames, not the current intermediate `df`.
 Structure transforms operate on DataFrames. If the input DataFrame is streaming and all compiled operations are
 supported by Spark Structured Streaming, the transform can be used in a streaming pipeline.
 
-Structure v1/v2 do not generate `readStream` or `writeStream`; the caller owns streaming orchestration.
+Structure does not generate `readStream` or `writeStream` before v3; the caller owns streaming orchestration.
 
 ## Compatibility
 
-v1 online and generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs for PySpark
+Online and generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs for PySpark
 3.5.x and 4.0.x by default:
 
 ```toml

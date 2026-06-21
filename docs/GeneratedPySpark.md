@@ -2,9 +2,9 @@
 
 Structure can emit generated PySpark code.
 
-Online execution is the v1 default, so ordinary users can run transforms through `StructureSession` without committing
-generated files. Generated code remains useful when a team wants reviewable build output, provenance, snapshot tests, or
-generated-mode runtime entrypoints.
+Online execution is the default, so ordinary users can run transforms through `StructureSession` without committing
+generated files. Generated code remains useful when a team wants reviewable build output, provenance, snapshot tests,
+or generated-mode runtime entrypoints.
 
 ## Generated Class Shape
 
@@ -69,6 +69,26 @@ Generated code should:
 - avoid UDFs in compiled paths
 - avoid `collect`, `toPandas`, and `rdd` in compiled paths
 - include section comments for source subtransforms
+
+## Generated Schema Constants
+
+Generated schema constants such as `ORDER_ENRICHED_SCHEMA` are ordinary PySpark `StructType` values. They are supported
+caller-facing artifacts, not only generated transform internals.
+
+```python
+from structure_generated.orders.pyspark.schemas.order import ORDER_ENRICHED_SCHEMA
+from structure_generated.runtime.schema_assert import assert_schema, project_schema
+
+assert_schema(df, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="strict")
+df = project_schema(df, ORDER_ENRICHED_SCHEMA)
+df.write.mode("overwrite").parquet(target_path)
+```
+
+Generated `*_SCHEMA` constants are shape-only. Future data-quality constraint metadata must be generated separately
+unless a later design intentionally adds Spark-compatible metadata without changing schema shape semantics.
+
+Online execution exposes equivalent materialized schemas through the transform invocation after `run(session)`. Use
+that online surface when generated files are not committed or imported.
 
 ## Ownership Rules
 

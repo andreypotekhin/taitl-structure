@@ -471,24 +471,212 @@ v1 baseline:
 
 ## C20. Licensing and Governance Are Not Decided
 
-README currently leaves license as TBD.
+This item is superceded by C31
 
-Choose before coding begins because package metadata, headers, contribution rules, and downstream adoption depend on it.
+## C21. Executable Package Skeleton Does Not Match the Public Contract
 
-Candidate licenses:
+The docs and `pyproject.toml` describe an installable `structure` package with a `structure.cli:cli` entrypoint and
+public imports such as `Structure`, `field`, `transform`, and `StructureSession`. The implementation tree now belongs
+under `src/structure/app` and `src/structure/lib`, but the root package marker, CLI module, module execution hook, and
+public API re-exports still need to be completed before the package is truly executable.
 
-- Apache-2.0;
-- MIT;
-- BSD-3-Clause.
+Risk: early contributors can read a polished product contract but cannot import or run the product. This makes every
+later feature harder to validate because packaging, imports, and CLI wiring may fail late.
 
-For data tooling, Apache-2.0 is often a strong choice because it includes an explicit patent grant. MIT is simpler.
+Recommended direction:
+
+- Keep the real `src/structure/` package as the only shipped top-level import package.
+- Add `src/structure/cli.py` with honest placeholder commands that fail clearly when implementation is incomplete.
+- Add public re-exports in `structure.__init__` only for symbols that exist, then grow the surface deliberately.
+- Add smoke tests for `import structure`, `structure --help`, and `python -m structure` if module execution is
+  supported.
+- Treat package-name, distribution-name, and generated-package naming as a release-blocking consistency check.
+
+## C22. The v1 Scope Is Large Enough to Hide the First Useful Release
+
+Resolved by `docs/dev/planning/P06202601.First-executable-contract-v0.plan.md`, the v0 model fixture under
+`tests/model/v0`, and the revised Sprint 01 plan.
+
+The roadmap's v1 remains the broad north star: online execution, optional generated PySpark, schemas, validation, joins,
+hooks, compiler lineage, static dataflow, streaming compatibility reporting, diagnostics, doctor checks, and build
+integration. That scope is coherent, but it is too broad to serve as the first adoption checkpoint.
+
+The first adoption checkpoint is now v0, an internal dev/test planning label. v0 proves one executable contract before
+the larger v1 scope hardens: one transform with schema declaration, projection, filtering, one `@expr_fn` helper, input
+validation, online execution, generated execution, and parity tests.
+
+Deferred from v0 into v1:
+
+- joins;
+- hooks;
+- compiler provenance and static dataflow lineage;
+- streaming compatibility reporting;
+- setup/configuration doctor checks;
+- build integration such as `compile --fail-on-diff`.
+
+## C23. Backend Adaptability Needs a Capability Interface Before More Features
+
+Resolved by `docs/specifications/BackendCapabilities.md`, design `docs/dev/design/BackendCapabilities.md`, decision
+`docs/dev/design/decisions/D06202604.Backend-capability-interface.md`, and plan
+`docs/dev/planning/P06202604.Backend-capability-interface.plan.md`.
+
+Backend adaptability is now an explicit internal capability contract. Compiler checks, online execution, generated
+PySpark emission, streaming compatibility checks, and future explain output should ask a `BackendCapabilities` object
+whether a `CapabilityRequirement` is supported. The v1 profile supports ordinary PySpark for
+`target_pyspark = ">=3.5,<4.1"` without importing PySpark during compiler commands.
+
+Unsupported backend targets fail with `BACKEND-E2401`. Unsupported backend capabilities fail with `BACKEND-E2402`.
+New DSL operations must declare capability behavior before they are considered supported.
+
+## C24. Online and Generated Execution Need a Shared Semantic Contract
+
+Resolved by `docs/specifications/ExecutionSemanticContract.md`, design
+`docs/dev/design/ExecutionSemanticContract.md`, decision
+`docs/dev/design/decisions/D06202601.Online-generated-semantic-contract.md`, and plan
+`docs/dev/planning/P06202601.Online-generated-semantic-contract.plan.md`.
+
+Online execution and generated code intentionally share semantics while differing in output form. The shared contract
+requires checked `TransformPlan` IR plus `PySparkCapabilities` to lower into deterministic PySpark execution recipes.
+`OnlinePySparkRunner` interprets those recipes with live PySpark objects, while `PySparkCodeGenerator` renders the same
+recipes as source text.
+
+Projection order, filter order, join aliasing, hook order, schema validation placement, schema projection, literal
+typing, capability-selected backend spellings, and compiled-path performance guardrails belong to the shared target
+plan. Imports, formatting, file headers, comments, and generated output paths remain generator concerns. Live DataFrame
+binding and hook invocation remain online-runner concerns.
+
+Each new compiled operation must add a recipe shape and an online/generated parity test before it is considered
+supported.
+
+## C25. Extension Points Are Not Yet Sorted Into Supported and Unsupported
+
+Resolved by clarifying extension compatibility in `Readme.md`, `docs/Compatibility.md`, and the compileability checker
+design. Structure now keeps the initial extension surface deliberately small:
+
+- `@expr_fn` is the supported public extension point for reusable compiler-visible expression logic.
+- `@before(...)` and `@after(...)` hooks are supported public escape hatches for arbitrary PySpark DataFrame code.
+- Backend capability providers, diagnostic renderers, schema type adapters, validation policy plugins, and hook lint
+  rule registries remain internal or deferred until their contracts are specified and tested.
+- Monkey-patching compiler registries or relying on hidden UDF-like fallback is unsupported.
+
+Hooks remain useful but intentionally opaque. Lineage and explain output should show hook boundaries, while diagnostics
+should prefer direct DSL or `@expr_fn` fixes when logic can stay compiler-visible.
+
+## C26. Data Quality Constraints Stop at Schema Shape
+
+Resolved by `docs/specifications/DataQualityConstraints.md`, design
+`docs/dev/design/DataQualityConstraints.md`, decision
+`docs/dev/design/decisions/D06202602.Data-quality-constraints-boundary.md`, and plan
+`docs/dev/planning/P06202602.Data-quality-constraints.plan.md`.
+
+Structure v1 validation is schema-first. Default intermediate validation remains `schema_only`, which checks shape
+metadata and must not scan rows. Accepted values, ranges, regex-like constraints, decimal domain rules, freshness,
+uniqueness, referential checks, and row-count expectations belong to a future opt-in constraint model.
+
+Generated PySpark schema constants are supported caller-facing `StructType` artifacts. Callers may import them for
+`spark.read.schema(...)`, runtime validation, and projection before their own writes. Online execution exposes
+equivalent materialized schemas after `.run(session)`, for example through `transform.schemas.output`. Generated
+`*_SCHEMA` constants remain shape-only; future constraint metadata must live beside them rather than silently changing
+their meaning.
+
+Validation depth is controlled per phase with `input_validation_mode`, `intermediate_validation_mode`, and
+`output_validation_mode`. Future constraints also bind to validation phases, so a constraint runs only at intended
+boundaries and only when that phase allows `schema_and_constraints`.
+
+## C27. Analytical Join Coverage Is Still Narrow
+
+The v1 `join_one(...)` design is disciplined, but real analytical pipelines often need semi joins, anti joins,
+existence checks, temporal/as-of joins, slowly changing dimension lookups, deduped lookup policies, and row-multiplying
+joins.
+
+Risk: users may reach for hooks for common join patterns before Structure has compiler-visible syntax for them. That
+would reduce optimizer visibility and make lineage less useful in exactly the pipelines Structure targets.
+
+Recommended direction:
+
+- Keep v1 `join_one(...)` narrow, but explicitly document the common join patterns it does not cover.
+- Prioritize v2 join forms by production frequency: semi/anti existence joins, `join_many(...)`, prejoin dedupe
+  policies, and temporal lookup joins.
+- Design temporal and SCD-style joins around explicit cardinality and validity-window semantics.
+- Add examples showing when to model a lookup as `join_one(...)`, when to wait for v2 syntax, and when a hook is the
+  honest escape hatch.
+
+## C28. Operational Integration Recipes Are Missing
+
+The docs mention Airflow as a caller and Linux as the runtime target, but there are no concrete recipes for CI,
+Databricks, EMR, Glue, local development, dependency packaging, generated artifact review, or multi-environment
+promotion.
+
+Risk: the library may be technically sound but hard to adopt because teams cannot see how it fits their existing Spark
+delivery path.
+
+Recommended direction:
+
+- Add small deployment recipes after the first executable contract works.
+- Cover local development, CI with `structure check`, CI with `compile --fail-on-diff`, Airflow-generated execution,
+  Databricks notebook or job usage, and packaged wheel usage.
+- Document how generated files are committed, reviewed, and promoted across environments.
+- Add troubleshooting entries for import roots, missing generated modules, PySpark target mismatch, and stale generated
+  output.
+
+## C29. Diagnostics Need a Registry and Documentation Contract
+
+Resolved by public documentation `docs/Diagnostics.md`, specification `docs/specifications/Diagnostics.md`, design
+`docs/dev/design/DiagnosticsContract.md`, decision `docs/dev/design/decisions/D06202603.Diagnostics-registry-contract.md`,
+and plan `docs/dev/planning/P06202603.Diagnostics-registry-contract.plan.md`.
+
+Structure diagnostics are now specified as a registry-backed contract. Codes use `{component}-{severity}{number}`,
+where the prefix identifies the issuing component, such as `CONF`, `DSL`, `GEN`, `STREAM`, `ONLINE`, or `CLI`.
+
+Every published diagnostic must include severity, title, problem, suggested fix, documentation link, and contextual
+fields such as source location, transform, field, hook, join, generated path, setting, or runtime input when available.
+`docs/Diagnostics.md` owns stable public anchors, while specialized specifications provide deeper context. Tests must
+assert the code and high-signal structured fields, and registry validation must reject duplicate codes, malformed
+codes, missing documentation links, and invalid lifecycle transitions.
+
+## C30. Fixtures Exist, but Executable Specification Tests Are Missing
+
+The repository has rich model source and generated fixtures under `tests/model`, but there are no normal executable
+pytest tests backing the specification sections yet.
+
+Risk: generated examples can drift from the intended compiler behavior, and completed user stories may be marked in
+docs without tests proving them. The project also loses a fast feedback loop for packaging, CLI, diagnostics, and
+no-Spark compile guarantees.
+
+Recommended direction:
+
+- Add `tests/specs/...` before marking Specification.md stories complete.
+- Start with smoke tests for package import, CLI help, config defaults, and a no-op `structure check`.
+- Add golden fixture tests that compare generated output only after the compiler can produce it.
+- Add intentionally broken transform tests for diagnostic quality as soon as schema and symbolic execution exist.
+- Keep model fixtures as inputs and expected outputs, not as a substitute for executable tests.
+
+## C31. Licensing, Governance, and Packaging Signals Conflict
+
+Risk: adoption can be blocked before technical evaluation. Some package indexes, companies, and open-source users may
+not treat ethical-use restrictions as open-source-compatible. Naming differences can also make installation,
+importing, and generated-code examples confusing.
+
+Recommended direction:
+
+- Decide whether the project is OSI-open-source, source-available with ethical-use restrictions, or dual-licensed.
+- Make `Readme.md`, `License.md`, `pyproject.toml`, package metadata, contribution docs, and compatibility docs use the
+  same licensing language.
+- Decide whether the distribution name is `structure`, `taitl-structure`, or another collision-safe name.
+- Add governance basics before public release: contribution guide, security policy, code of conduct if desired,
+  release process, support window, and vulnerability reporting path.
+
+# Appendix
 
 ## Recommended Pre-Coding Docs to Add
 
-Add a short design set before implementation:
+Resolved by implementation-ready specifications:
 
 ```text
-devdocs/
+docs/dev/design/
+  DecisionsBeforeCoding.md
+
+docs/specifications/
   DecisionsBeforeCoding.md
   SourceModuleRules.md
   SchemaSemantics.md
@@ -496,19 +684,23 @@ devdocs/
   JoinSemantics.md
   HookSemantics.md
   ConfigSchema.md
-  specifications/CompatibilityPolicy.md
+  CompatibilityPolicy.md
   CompilerPerformanceTargets.md
 ```
 
-Highest-priority additions:
+The highest-priority additions are now covered by:
 
 ```text
 SchemaSemantics.md
 ValidationSemantics.md
-docs/specifications/JoinSemantics.md
+JoinSemantics.md
 HookSemantics.md
 CompilerPerformanceTargets.md
 ```
+
+Related supporting specifications already cover schema declaration syntax, schema model extraction, nullability and
+type coercion, diagnostics, online/generated execution semantics, backend capabilities, data-quality constraints,
+streaming compatibility, and generated PySpark output.
 
 ## Recommended Sprint 0 Spike Tasks
 
@@ -525,26 +717,4 @@ SPIKE: Prove minimal generated PySpark execution test with local Spark.
 
 ## Highest-Risk Challenge
 
-The most dangerous unresolved item is **Python import/package/source layout**.
-
-Recommended default:
-
-```text
-Open-source package:
-  structure/
-
-User project source:
-  src/my_package/
-
-User generated output:
-  generated/structure_generated/my_package/
-```
-
-This avoids namespace collision and gives clear import paths:
-
-```python
-from my_package.schemas.order import OrderRaw
-from structure_generated.my_package.pyspark.transforms.order import EnrichOrdersGenerated
-```
-
-The paths should remain configurable, but the defaults should be safe.
+TBD

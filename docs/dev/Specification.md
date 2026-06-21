@@ -26,6 +26,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can receive an error when a requested feature cannot be generated for the configured PySpark target.
 - As a developer, I can configure `execution_mode` so that my project chooses online or generated execution.
 - As a developer, I can set validation defaults so that schema enforcement is project-wide and repeatable.
+- As a developer, I can configure input, intermediate, and output validation modes independently so that constraint cost
+  is controlled by phase.
 - As a developer, I can configure compiler lineage output so that provenance and static dataflow detail are controlled.
 - As a developer, I can set `fail_on_diff` so that CI catches stale generated code.
 
@@ -62,7 +64,12 @@ This document is a user-story specification for SDLC planning. Early sections co
   duplicated.
 - As a developer, I can define primary keys or uniqueness hints so that join cardinality warnings are possible.
 - As a developer, I can define intermediate schemas so that multi-step transformations are validated between steps.
-- As a developer, I can generate Spark `StructType` declarations so that reads and validations use consistent schemas.
+- As a developer, I can generate Spark `StructType` declarations so that reads, validations, and pre-write projection
+  use consistent schemas.
+- As a developer, I can import generated schema constants in caller code so that source reads and storage writes use the
+  same shape contract as Structure transforms.
+- As a developer, I can access the final output Spark schema after online `.run(session)` so that online execution does
+  not require generated files for persistence setup.
 
 ## 6. Transform Classes
 
@@ -101,6 +108,12 @@ This document is a user-story specification for SDLC planning. Early sections co
   pipelines remain schema-safe.
 - As a developer, I can use schema-only intermediate validation by default so that validation avoids unnecessary row scans.
 - As a developer, I can opt into fuller intermediate validation so that row-level constraints can be checked when needed.
+- As a developer, I can distinguish schema-only validation from data-quality constraint validation so that validation
+  cost is predictable.
+- As a developer, I can bind future data-quality constraints to input, intermediate, or output validation phases so that
+  checks run only at intended boundaries.
+- As a developer, I can rely on action-triggering data-quality checks being explicit so that Structure does not add
+  hidden Spark jobs.
 - As a developer, I can disable intermediate validation class-wide so that performance-sensitive pipelines can reduce
   validation overhead.
 - As a developer, I can override validation for an individual subtransform so that known temporary exceptions are possible.
@@ -117,7 +130,15 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can expect generated code to use PySpark DataFrame and Column operations so that Spark can optimize execution.
 - As a developer, I can expect generated code to omit hook imports when no hooks are defined so that generated code stays clean.
 - As a developer, I can expect generated code to contain stable variable names such as `df`, `spark`, and `ctx` so that generated code is predictable.
+- As a developer, I can import generated schema constants as ordinary PySpark `StructType` values so that caller-owned
+  reads and writes can use the same schemas.
+- As a developer, online execution exposes equivalent Spark schemas so that generated files are not required for
+  pre-write validation/projection.
+- As a developer, I can rely on generated schema constants staying shape-only so that future data-quality metadata does
+  not change existing schema imports.
 - As a developer, I can rely on online execution and generated execution to preserve the same transform semantics.
+- As a developer, I can rely on online execution and generated execution to consume the same PySpark semantic contract
+  so that supported operations cannot drift between runtime modes.
 
 ## 11. Symbolic Execution
 
@@ -154,6 +175,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can use `join_one(...)` for many-to-one or one-to-one lookup joins so that cardinality intent is explicit.
 - As a developer, I can perform serial joins across an arbitrary number of inputs so that enrichment pipelines are not limited to three inputs.
 - As a developer, I can specify join type and hints using enum values so that free-form join strings are avoided in source code.
+- As a developer, I can see that semi, anti, row-multiplying, deduped lookup, temporal, and as-of joins are staged as
+  v2 analytical join forms so that v1 lookup semantics stay predictable.
 
 ## 16. Hooks
 
@@ -202,6 +225,12 @@ This document is a user-story specification for SDLC planning. Early sections co
 ## 20. Error Reporting
 
 - As a developer, I can receive structured compiler errors so that failures are actionable.
+- As a developer, I can rely on stable diagnostic codes so that tests, CI annotations, IDE integrations, and docs links
+  can target durable failures.
+- As a developer, I can look up a diagnostic code in public documentation so that I can understand common causes and
+  fixes.
+- As a developer, I can rely on diagnostic severities so that warnings, errors, info messages, and unexpected internal
+  failures are handled consistently.
 - As a developer, I can see the transform class name, subtransform method, output field, source expression, problem, and suggested fix in errors.
 - As a developer, I can see an inline DSL alternative so that simple fixes are obvious.
 - As a developer, I can see an `@expr_fn` helper alternative so that reusable fixes are encouraged.
@@ -213,8 +242,12 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can compile transforms during tests so that unsupported code is caught before deployment.
 - As a developer, I can test generated PySpark code against small Spark DataFrames so that transformation behavior is verified.
 - As a developer, I can snapshot generated code so that generator changes are reviewable.
+- As a developer, I can run online/generated parity tests for every supported compiled operation so that runtime
+  semantics stay synchronized.
 - As a developer, I can assert schema validation behavior so that invalid inputs fail as expected.
 - As a developer, I can assert configuration validation behavior so that invalid settings fail with structured diagnostics.
+- As a developer, I can validate the diagnostic registry so that duplicate codes, malformed codes, missing docs links,
+  and invalid lifecycle states fail fast.
 - As a developer, I can run intentionally broken transform tests so that compiler diagnostics stay actionable.
 - As a developer, I can assert warning diagnostics so that risky but compileable code remains visible in tests.
 
@@ -224,7 +257,11 @@ This document is a user-story specification for SDLC planning. Early sections co
 - As a developer, I can define advanced grouping patterns so that rollups, cubes, grouping sets, and multi-level summaries are supported.
 - As a developer, I can define window expressions so that ranking, deduplication, latest-record selection, and rolling metrics compile to Spark window operations.
 - As a developer, I can use higher-order function helpers so that array and map transformations remain Spark-plan-visible.
+- As a developer, I can use existence joins so that semi and anti filters stay compiler-visible.
 - As a developer, I can use `join_many(...)` for cardinality-expanding joins so that row multiplication is explicit.
+- As a developer, I can use deterministic lookup dedupe policies so that selected right-side rows are reviewable.
+- As a developer, I can use temporal validity-window lookups so that SCD-style joins have explicit interval semantics.
+- As a developer, I can use backward as-of lookups so that time-relative enrichment stays compiler-visible.
 - As a developer, I can add caching and persistence hints at step boundaries so that expensive reused DataFrames can be optimized explicitly.
 - As a developer, I can specify join strategies and hints so that manual optimization remains explicit and reviewable.
 - As a developer, I can generate richer static dataflow explain output so that complex field dependencies can be

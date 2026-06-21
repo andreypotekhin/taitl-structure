@@ -1,14 +1,534 @@
 # Concepts
 
-Concepts in this project, with corresponding subconcepts. 
+Concepts in this project, with corresponding sub-concepts,
+to serve as base list for concepts testing (tests/concepts/).
 
 ## Concept list
 
-- aggregation
-  - sum
-  - count
+- configuration
+  - configuration source
+    - CLI override
+    - `pyproject.toml`
+    - `structure.toml`
+    - seed defaults
+  - source root
+  - generated directory
+  - generated package
+  - execution mode
+    - online
+    - generated
+  - target backend
+  - target PySpark range
+  - validation defaults
+  - lineage level
+  - performance policy
+  - stale generated output policy
+
+- schema
+  - schema declaration
+    - `Structure` subclass
+    - field declaration
+      - field name
+      - declaration order
+      - nullability
+      - primary key
+      - metadata
+      - description
+    - scalar type
+      - string
+      - integer
+      - long
+      - float
+      - double
+      - boolean
+      - date
+      - timestamp
+    - decimal type
+      - precision
+      - scale
+    - array type
+      - item type
+      - item nullability
+    - struct type
+      - nested schema
+      - recursive struct rejection
+    - map type
+      - key type
+      - value type
+      - value nullability
+      - non-null map key
+  - schema identity
+  - schema compatibility
+  - schema inheritance
+    - single inheritance
+    - multiple inheritance
+    - field override
+    - duplicate inherited field
+    - diamond inheritance
+    - field origin
+    - effective field order
+  - schema construction
+    - explicit constructor projection
+    - base overlay construction
+    - multiple-base overlay construction
+    - explicit override
+    - missing field
+    - unknown field
+    - output field order
+  - Spark schema generation
+    - `StructType` rendering
+    - generated schema constant
+    - nested Spark type mapping
+  - schema validation
+    - input validation
+    - intermediate validation
+    - final output validation
+    - strict validation
+    - allow-extra-columns validation
+    - schema-only validation
+    - schema-and-constraints validation
+    - schema projection
+
+- transform
+  - transform class
+    - `@transform`
+    - transform base class
+    - class-level validation override
+    - streaming-compatible marker
+  - transform invocation
+    - named input binding
+    - deferred construction
+    - unknown input
+    - missing input
+    - positional argument rejection
+  - input
+    - named input declaration
+    - input declaration order
+    - input schema
+    - input scope
+    - hook input namespace
+  - subtransform
+    - public schema-returning method
+    - source-order execution
+    - schema flow
+    - row parameter
+    - return annotation
+    - reserved `run` method
+    - private helper exclusion
+    - invalid subtransform return
+  - runtime session
+    - `StructureSession`
+    - session-owned Spark
+    - hook context
+    - session runner selection
+    - transform `.run(session)`
+    - `session.run(transform)`
+
+- expression
+  - field reference
+    - current-row field
+    - input-scope field
+    - joined-scope field
+    - nested field path
+    - unknown field
+  - literal
+    - null literal
+    - string literal
+    - boolean literal
+    - integer literal
+    - long literal
+    - float literal
+    - date literal
+    - timestamp literal
+  - comparison
+    - equality
+    - inequality
+    - ordering comparison
+    - null-safe equality
+  - boolean expression
+    - logical AND with `&`
+    - logical OR with `|`
+    - logical NOT with `~`
+    - Python `and` rejection
+    - Python `or` rejection
+    - Python `not` rejection
+    - truthiness rejection
+  - helper expression
+    - lower
+    - upper
+    - trim
+    - to decimal
+    - coalesce
+    - when otherwise
+  - expression helper
+    - module-level `@expr_fn`
+    - class-local `@expr_fn`
+    - helper call through `self`
+    - helper purity
+    - recursive helper rejection
+    - non-expression helper result
+  - type inference
+  - nullability inference
+  - least common type
+  - explicit conversion
+    - string to decimal
+    - string to date
+    - string to timestamp
+  - unsupported expression
+    - Python string method
+    - arbitrary Python function
+    - source-level PySpark column
+    - raw string column path
+
+- filtering
+  - `where(...)`
+  - multiple filters
+  - logical AND combination
+  - filter source order
+  - filter before join
+  - post-join filter
+  - non-boolean predicate
+  - nullability narrowing
+  - `where(...)` outside subtransform
+
+- projection
+  - explicit `select`
+  - add column
+  - drop column
+  - deterministic output schema
+  - inherited field carry-through
+  - duplicate output field
+  - extra column removal
+
 - join
-  - left join
-  - right join
-  - join one
-  - join many
+  - join source
+    - named input join source
+    - joined scope
+    - repeated joined scope
+  - join method
+    - `join_one`
+    - `join_many`
+  - join type
+    - left join
+    - inner join
+    - right join
+    - full join
+    - cross join
+    - semi join
+    - anti join
+  - join condition
+    - equi-join
+    - composite key
+    - key-pair order
+    - case-normalized key
+    - null-safe key
+    - unsupported OR condition
+    - unsupported inequality condition
+    - same-side comparison rejection
+    - non-boolean condition rejection
+  - join cardinality
+    - one-to-one lookup
+    - many-to-one lookup
+    - row-multiplying join
+    - uniqueness proof
+    - unproven uniqueness warning
+    - duplicate right-side rows
+  - join nullability
+    - left-joined nullable fields
+    - inner-joined field nullability
+  - join alias
+    - deterministic alias
+    - repeated input alias
+    - qualified field reference
+    - field name collision
+  - join projection
+    - right-side projection
+    - unused right-side column removal
+  - join hint
+    - broadcast hint
+    - unsupported hint
+  - join strategy
+    - auto
+    - broadcast
+    - shuffle hash
+    - sort merge
+    - shuffle replicate nested loop
+
+- hook
+  - before hook
+  - after hook
+  - hook target
+  - hook source order
+  - hook signature
+  - hook input namespace
+  - `pass_inputs`
+  - hook context
+  - hook return DataFrame
+  - hook schema mode
+    - strict
+    - allow extra columns
+  - hook output projection
+  - streaming-safe hook
+  - opaque hook boundary
+  - invalid hook signature
+
+- symbolic execution
+  - symbolic row proxy
+  - symbolic input scope
+  - symbolic joined scope
+  - symbolic constructed row
+  - active symbolic context
+  - context cleanup
+  - source-order operation capture
+  - schema constructor capture
+  - base overlay expansion
+  - unsupported operation diagnostic
+  - source metadata capture
+  - no-Spark symbolic execution
+  - deterministic symbolic execution
+
+- intermediate representation
+  - transform plan
+  - input plan
+  - step plan
+  - operation
+    - filter operation
+    - project operation
+    - join operation
+    - hook call operation
+    - validate schema operation
+  - expression node
+    - field reference
+    - literal
+    - call expression
+    - binary expression
+    - boolean expression
+    - cast expression
+    - when expression
+  - scope reference
+    - input scope
+    - current scope
+    - joined scope
+    - projected scope
+  - stable node id
+  - source anchor
+  - operation order
+  - validation policy model
+  - streaming support metadata
+  - capability metadata
+  - IR validation
+  - deterministic serialization
+  - IR immutability
+  - thread-safe IR consumption
+
+- compiler
+  - source discovery
+  - schema inspection
+  - transform inspection
+  - compileability check
+  - backend capability check
+  - no-Spark compiler contract
+  - compiler diagnostic
+    - diagnostic code
+    - severity
+    - source location
+    - problem
+    - suggested fix
+    - documentation link
+  - compiler provenance
+    - source-to-IR mapping
+    - IR-to-generated mapping
+    - opaque hook provenance
+  - static dataflow lineage
+    - projection dependency
+    - filter dependency
+    - join dependency
+    - hook dependency
+    - validation dependency
+    - column-level dependency
+    - table-level dependency
+  - compiler performance
+    - discovery time
+    - source inspection time
+    - symbolic execution time
+    - IR construction time
+    - checking time
+    - code generation time
+    - formatting time
+    - provenance time
+    - lineage time
+    - incremental compile fingerprint
+
+- generated PySpark
+  - generated layout
+    - generated schema module
+    - generated transform module
+    - generated runtime module
+    - generated lineage module
+    - package marker
+  - generated file ownership
+    - ownership header
+    - no manual edit rule
+    - clean safety marker
+  - generated class
+    - generated class name
+    - generated constructor
+    - generated `run(...)`
+    - keyword-only inputs
+    - hook-free generated class
+    - hooked generated class
+  - generated runtime support
+    - `assert_schema`
+    - `project_schema`
+    - `HookInputs`
+  - generated expression lowering
+    - PySpark column expression
+    - literal lowering
+    - helper lowering
+    - boolean lowering
+    - cast lowering
+    - null-safe equality lowering
+  - generated operation lowering
+    - filter lowering
+    - projection lowering
+    - join lowering
+    - hook lowering
+    - validation placement
+  - import minimization
+  - deterministic generated output
+  - write-if-changed
+  - generated formatting
+  - parallel generation
+  - generated-code snapshot
+  - generated-code import
+  - generated-code runtime parity
+
+- online execution
+  - online runner
+  - generated runner
+  - runtime plan compilation
+  - compiled plan cache
+  - online PySpark lowering
+  - generated mode import
+  - generated mode import failure
+  - online/generated parity
+  - input validation order
+  - hook execution order
+  - validation placement parity
+
+- CLI
+  - `structure init`
+  - `structure init --seed-config`
+  - `structure check`
+  - `structure check --profile`
+  - `structure compile`
+  - `structure compile --profile`
+  - `structure compile --fail-on-diff`
+  - `structure explain`
+  - `structure clean`
+  - configuration resolution
+  - CLI flag override
+  - human-readable diagnostics
+  - exit code
+    - success
+    - expected Structure error
+    - CLI usage error
+    - unexpected internal error
+  - profile report
+  - stale generated output detection
+  - generated cleanup safety
+
+- streaming compatibility
+  - streaming current DataFrame
+  - static side input
+  - stream-static join
+    - left stream-static join
+    - inner stream-static join
+  - possible stream-stream join
+  - streaming-compatible projection
+  - streaming-compatible filter
+  - streaming-compatible expression
+  - schema-only streaming validation
+  - hook streaming compatibility
+    - unknown hook compatibility
+    - trusted streaming-safe hook
+  - batch-only streaming operation
+    - global sort
+    - limit
+    - distinct
+    - deduplication
+    - aggregation
+    - windowed aggregation
+    - analytic window
+    - Python UDF
+    - Pandas UDF
+    - RDD conversion
+    - local Spark action
+  - streaming lifecycle
+    - streaming source
+    - streaming sink
+    - read stream
+    - write stream
+    - trigger
+    - checkpoint
+    - output mode
+    - query start
+    - watermark
+    - state policy
+
+- aggregation
+  - group by
+  - multi-key group by
+  - grouping set
+  - rollup
+  - cube
+  - aggregate function
+    - count
+    - sum
+    - approximate aggregate
+    - filtered aggregate
+
+- windowing
+  - analytic window
+  - ranking
+  - deduplication
+  - latest-record selection
+  - rolling metric
+  - windowed aggregation
+
+- collection expression
+  - array transform
+  - array filter
+  - map transform
+  - Spark higher-order function
+
+- optimization hint
+  - cache
+  - persist
+  - storage level
+  - repartition
+  - coalesce partitions
+  - join strategy
+
+- performance guardrail
+  - optimizer-visible DataFrame operation
+  - Python UDF rejection
+  - Pandas UDF rejection
+  - RDD operation rejection
+  - `collect` rejection
+  - `toPandas` rejection
+  - row-wise map rejection
+  - local materialization rejection
+
+- compatibility
+  - Python version support
+  - PySpark version support
+  - target capability
+  - Spark SQL ANSI assumption
+  - Spark SQL assignment policy
+  - semantic versioning
+  - generated-code compatibility
+  - runtime helper compatibility
+  - lineage schema compatibility
+  - config schema compatibility
+  - Spark Connect support

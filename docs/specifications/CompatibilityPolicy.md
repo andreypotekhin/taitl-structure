@@ -49,6 +49,9 @@ The target layer must be version-aware enough to:
 - produce diagnostics that state the required PySpark version when a feature is unavailable;
 - keep online semantics and generated output deterministic for the same source, config, and Structure version.
 
+Backend support checks are owned by `docs/specifications/BackendCapabilities.md`. Compatibility checks must use that
+interface instead of scattering PySpark-version or backend-feature conditionals across compiler phases.
+
 When a target range spans multiple supported PySpark lines, Structure should prefer the oldest compatible API that keeps
 the output clear and optimizer-visible.
 
@@ -183,5 +186,6 @@ New optional keys may appear in minor releases. Removing or changing a documente
 - `Readme.md` links to the compatibility policy.
 - `docs/Configuration.md` documents `target_backend`, `target_pyspark`, and compatibility diagnostics.
 - `docs/Configuration.md` documents `execution_mode`.
+- `docs/specifications/BackendCapabilities.md` documents the backend capability interface and PySpark v1 profile.
 - `docs/dev/Roadmap.md` and public roadmap text schedule Spark Connect for v4.
 - The seed config defaults are `execution_mode = "online"` and `target_pyspark = ">=3.5,<4.1"`.

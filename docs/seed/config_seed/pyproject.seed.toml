@@ -20,9 +20,11 @@ target_pyspark = ">=3.5,<4.1"
 
 # Validation defaults.
 validate_inputs = true
+input_validation_mode = "schema_only"
 validate_intermediate = true
 intermediate_validation_mode = "schema_only"
 validate_outputs = true
+output_validation_mode = "schema_only"
 
 # Spark SQL assumptions for compile-time type and nullability checks.
 # Structure does not create or reconfigure Spark sessions in v1.

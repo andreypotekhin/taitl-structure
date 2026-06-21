@@ -43,6 +43,16 @@ Online execution should be tested by:
 - online PySpark execution against small Spark DataFrames
 - parity with generated PySpark output for every supported v1 operation
 
+## Online/Generated Parity
+
+Every supported compiled operation must have at least one parity test before the operation is considered complete.
+Parity tests run the same transform online through `StructureSession` and through the generated PySpark class, then
+compare output column order, row contents, schema shape where Spark exposes it reliably, and expected validation
+placement.
+
+Generated-code snapshots are still required for reviewability, but snapshots are secondary. The semantic authority is
+runtime parity through the shared contract in `docs/specifications/ExecutionSemanticContract.md`.
+
 ## Negative Compiler and Diagnostic Tests
 
 Each supported DSL feature needs at least one intentionally broken transform test when it has a meaningful failure mode.

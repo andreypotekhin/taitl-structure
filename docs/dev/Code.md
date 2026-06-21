@@ -13,30 +13,36 @@ reuse, sharing and preventing app code bloat.
   (see OOP section in Style.md)
 - Apps are structured according to Common App Framework (see below)
 - Logic packages are structured according to Logic Oriented Programming
+- One-class-per-source-file for the classes
+- Always define the value returned by a method in method signature
 
 ### App structure
-Project code consists of apps and libraries:
-- /src/app - apps
-- /src/lib - libs
+The installable package lives under `src/structure`. Inside that package, project code consists of apps and libraries:
+
+- `src/structure/app` - apps
+- `src/structure/lib` - libs
 
 Apps: configuration, cli, discovery, schema, symbolic, ir, compileability, runtime
 and other high-level system components defined by project architecture.
 
-app/
-	cli/
+```text
+src/structure/
+  app/
+    cli/
     configuration/
-	discovery/
-	runtime/
+    discovery/
+    runtime/
     symbolic/
   
-lib/
-	app/ - Common App Framework (defines App, Feature, Command, Endpoint classes)
-	common/ - common classes, shared constants 
-	helper/ - shared helpers (no business logic)
+  lib/
+    app/ - Common App Framework (defines App, Feature, Command, Endpoint classes)
+    common/ - common classes, shared constants
+    helper/ - shared helpers (no business logic)
+```
 
-We refer to apps and libs with slash notation (app/cli/, app/cli), dot notation (app.cli), 
-space notation (app cli, cli app), canonic notation (CLI app, Helper Library) 
-and sometimes reverse notation (lib common).
+We refer to apps and libs with slash notation (`app/cli/`, `app/cli`), full slash notation
+(`structure/app/cli/`), dot notation (`structure.app.cli`), space notation (app cli, cli app), canonic notation
+(CLI app, Helper Library), and sometimes reverse notation (lib common).
 
 ### Importing
 Ex: 'from structure import Structure' should work even if the Structure class is defined in a subpackage (e.g. dsl)
@@ -47,18 +53,22 @@ Library package structure: no specific structure, various subpackages as need ar
 ### Application package structure
 Application package structure:
 
-apps/[app]/
-  api/ - Endpoints for programmatic API - application entry points
-  app/ - Application-specific subclasses to Common App Framework: [App]App, [App]Feature, [App]Endpoint. Ex: CliFeature
-  features/ - Feature classes. Ex: CompileFeature(CliFeature). 
-    Usage: CliApp.instance.compileFeature.compile() returning CompileCommand  
-  commands/ - Command classes. Ex: CompileCommand(CliCommand)
-  logic/ - 'logic' classes implementing business logic
+structure/app/[app]/
+  - api/ - Programmatic API - application entry points
+  - app/ - Application-specific subclasses to Common App Framework: [App]App, [App]Feature, [App]Command
+  - features/ - Feature classes, representing groupings of commands. 
+      Ex: HelpFeature(CliFeature) provides help() method returning new instance of HelpCommand.  
+      Usage: CliApp.helpFeature.help() returning HelpCommand  
+  - commands/ - Command classes. Ex: CompileCommand(CliCommand)
+      Usage: CliApp.commandFeature.compile() creates CompileCommand 
+      compileCommand(args, ...) calls the command
+  - logic/ - 'logic' classes implementing business logic
   
-Endpoint classes are main entry points into an app package, constituting programmatic API 
+API modules are main entry points into an app package, constituting programmatic API 
 into the app for external and inter-app use. 
 
 Common execution flow within an app:
+
 - API endpoints instantiate and run Commands which delegate to Logic classes
 - To instantiate a Command, endpoint uses a Feature class to create a Command instance. 
 - To access Feature class instances, the endpoint uses static instance of an App class.
@@ -73,14 +83,14 @@ Unlike Feature and Command classes, the Logic classes do not have a common paren
 Application packages, except, logic/ are flat. 
 The logic/ package further splits into deeper package hierarchy:
 
-logic/ 
-  actions/ - action-oriented classes causing effect on business
+logic/  
+  - actions/ - action-oriented classes causing effect on business
     Action classes are main entry point to logic/
-  data/ - data-oriented classes, mostly method-less
+  - data/ - data-oriented classes, mostly method-less
     Data classes can be used in and outside logic/ for data arguments
-  model/ - domain model
-  maps/ - mappings between data structures (read-only/no side effect)
-  rules/ - business rules
+  - model/ - domain model. Can be further divided into subpackages for cohesive classes
+  - maps/ - mappings between data structures (read-only/no side effect)
+  - rules/ - business rules
 
 Action classes are main entry points into logic package. 
 
@@ -113,8 +123,8 @@ The logic classes provide an entry point - __call__ method - with specific (pref
 
 #### Helper Library
 Any and all code that is general/not pertaining to immediate business use case must be placed/relocated 
-to Helper Library (lib.helper)
+to Helper Library (`structure.lib.helper`)
 Rationale: we want to keep business classes code slim and focused, and in the same time facilitate reuse
 by creating helpers.
-Example: lib/helper/strings.py for string helper functions. 
+Example: `structure/lib/helper/strings.py` for string helper functions.
 Organize the helpers by general concept (e.g. files.py, os_paths.py, strings.py) or even subconcept (file_extentions.py)

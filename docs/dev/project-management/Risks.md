@@ -50,7 +50,7 @@ Online or generated execution may become incompatible with newer Spark versions.
 ### Mitigation
 
 - Isolate PySpark calls in the PySpark target layer.
-- Maintain PySpark capability registry.
+- Maintain the backend capability interface specified in `docs/specifications/BackendCapabilities.md`.
 - Run multi-version CI.
 - Snapshot generated code and run online parity tests per target version where necessary.
 
@@ -72,7 +72,8 @@ orchestration semantics are stable.
 
 ### Impact
 
-Users may put inefficient PySpark or local Python operations into hooks.
+Users may put inefficient PySpark or local Python operations into hooks, or use hooks for logic that should remain
+compiler-visible through the DSL or `@expr_fn`.
 
 ### Mitigation
 
@@ -80,6 +81,7 @@ Users may put inefficient PySpark or local Python operations into hooks.
 - Add hook linting in strict-performance mode.
 - Document hooks as explicit escape hatches.
 - Show hooks as opaque in lineage.
+- Prefer direct DSL and `@expr_fn` fixes in diagnostics before showing a hook workaround.
 
 ## Risk: Decorator mechanics fail after design is committed
 
@@ -122,3 +124,18 @@ Runtime performance may suffer on very large pipelines.
   pipelines.
 - Suggest config workaround in validation-related diagnostics.
 - Make validation implementation efficient and schema-only, not row-scanning.
+
+## Risk: Analytical joins hide cardinality surprises
+
+### Impact
+
+Users may unintentionally multiply rows, select arbitrary lookup records, or treat temporal overlaps as harmless. That
+would make generated code technically valid while producing misleading analytical facts.
+
+### Mitigation
+
+- Keep v1 `join_one(...)` narrow and never silently dedupe right rows.
+- Make every analytical join declare row-preserving, row-filtering, row-multiplying, or select-one cardinality.
+- Require deterministic tie and overlap policies for deduped, temporal, and as-of joins.
+- Surface join cardinality in diagnostics, static lineage, and `structure explain`.
+- Add online/generated parity tests with duplicate, unmatched, overlapping, and tie cases.

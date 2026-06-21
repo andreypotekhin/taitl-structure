@@ -62,7 +62,7 @@ Rules:
 - `bases` lists direct schema bases in class definition order.
 - `fields` contains effective fields in generated output order.
 - `local_fields` contains fields declared directly on the class.
-- `constraints` contains schema-level constraints when introduced by later specs.
+- `constraints` contains schema-level constraints owned by `docs/specifications/DataQualityConstraints.md`.
 - `metadata` is immutable.
 
 Each schema class has a distinct schema identity. Two schemas with identical fields are structurally compatible, but not
@@ -216,6 +216,13 @@ Map(String(), Long()) -> T.MapType(T.StringType(), T.LongType(), valueContainsNu
 
 Spark schema generation must be deterministic and formatted consistently.
 
+Generated Spark schemas are caller-facing shape artifacts. A constant such as `ORDER_ENRICHED_SCHEMA` is an ordinary
+PySpark `StructType` and may be imported by caller code for `spark.read.schema(...)`, runtime validation, and projection
+before caller-owned writes.
+
+Online execution must materialize equivalent Spark schemas from `SchemaDef.fields` and expose them from the transform
+invocation after `run(session)`. This gives online callers the same shape contract without requiring generated files.
+
 ## Validation Rules
 
 Schema extraction must reject:
@@ -245,7 +252,10 @@ Runtime validation checks:
 - array element type where available.
 - map key and value types where available.
 
-Row-level constraint validation is outside the base schema model and belongs to validation semantics.
+Row-level constraint validation is outside the base schema model and belongs to
+`docs/specifications/DataQualityConstraints.md`. Generated `*_SCHEMA` constants remain shape-only; future constraint
+metadata must be generated separately unless a later design deliberately adds Spark-compatible metadata without changing
+shape semantics.
 
 ## Compile-Time Performance
 
@@ -268,8 +278,11 @@ Targets:
 6. Retain source location and origin metadata where available.
 7. Generate Spark `StructType` definitions from `SchemaDef.fields`.
 8. Support runtime validation using generated Spark schemas.
-9. Add diagnostics with links to relevant specifications.
-10. Add tests for primitive, decimal, array, map, struct, and inherited schemas.
+9. Keep generated Spark schemas shape-only when future constraint metadata is added.
+10. Materialize equivalent Spark schemas for online execution.
+11. Add diagnostics with links to relevant specifications.
+12. Add tests for primitive, decimal, array, map, struct, and inherited schemas.
+13. Add tests proving generated schema constants can be imported by caller code.
 
 ## Acceptance Criteria
 
@@ -277,5 +290,7 @@ Targets:
 - An inherited schema produces a `SchemaDef` with effective inherited fields.
 - Field origin metadata is retained for inherited and overridden fields.
 - Generated Spark `StructType` field order matches `SchemaDef.fields`.
+- Generated Spark `StructType` constants can be imported and used by caller code.
+- Online execution exposes an equivalent final output Spark schema after `run(session)`.
 - Schema extraction works without PySpark, Java, a SparkSession, or Spark startup.
 - Invalid field declarations fail during `structure check` with actionable diagnostics.

@@ -106,7 +106,11 @@ NormalizeOrders(orders=orders_df).run(session)
 - Typed aggregation support covers common group-by rollups before advanced grouping sets.
 - Higher-order array/map helpers remain Spark-plan-visible.
 - Manual optimization directives are explicit in source and obvious in generated code.
-- `join_many(...)` and deferred join forms have clear row-multiplication or existence semantics.
+- Existence joins cover semi and anti filter semantics without exposing right-side fields.
+- `join_many(...)` has clear row-multiplication semantics and online/generated parity tests.
+- Deterministic lookup dedupe policies never rely on arbitrary right-row selection.
+- Temporal validity-window joins support SCD-style lookups with explicit overlap policy.
+- Backward as-of joins support time-relative enrichment with optional tolerance.
 - Richer explain output, generated documentation artifacts, and pytest helpers improve adoption without adding runtime
   responsibility.
 - Production incremental compile has cache invalidation tests and diagnostics.

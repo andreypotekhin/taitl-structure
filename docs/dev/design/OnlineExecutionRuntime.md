@@ -48,7 +48,7 @@ orchestrator.
 ("generated", "pyspark") -> GeneratedPySparkRunner
 ```
 
-`OnlinePySparkRunner` consumes `TransformPlan` IR and live PySpark objects.
+`OnlinePySparkRunner` consumes shared PySpark execution recipes and live PySpark objects.
 
 `GeneratedPySparkRunner` imports generated PySpark modules and calls their generated classes.
 
@@ -70,7 +70,8 @@ application creates SparkSession
 ## Online PySpark Runner
 
 The online runner compiles the transform class to IR on demand through the same frontend used by `structure check` and
-`structure compile`. It then lowers IR directly to live PySpark DataFrame and Column calls.
+`structure compile`. It then asks the PySpark target layer to lower checked IR into shared execution recipes and
+interprets those recipes as live PySpark DataFrame and Column calls.
 
 The runner must not:
 
@@ -105,11 +106,11 @@ It computes the generated module and class for the transform invocation, imports
 Missing generated code is a runtime configuration problem, not a reason to fall back silently to online execution. The
 diagnostic must tell the user to run `structure compile`, fix import roots, or change `execution_mode`.
 
-## Shared Lowering
+## Shared Semantic Contract
 
 Online execution and generated code must not become independent semantic implementations. The generated emitter owns
-text concerns such as imports, formatting, and stable source output. Shared lowering or parity tests must own semantic
-concerns:
+text concerns such as imports, formatting, and stable source output. The shared contract in
+`docs/specifications/ExecutionSemanticContract.md` owns semantic concerns:
 
 - expression function mapping;
 - literal typing;
@@ -121,8 +122,8 @@ concerns:
 - `HookInputs` shape;
 - forbidden operation guardrails.
 
-If a shared lowering API is too large for the first vertical slice, add parity tests immediately and extract shared
-logic as repeated differences appear.
+If a shared lowering API is too large for the first vertical slice, add parity tests immediately. Shared PySpark
+execution recipes must be extracted before adding joins or hooks.
 
 ## Plan Cache
 

@@ -3,7 +3,7 @@
 ## Purpose
 
 The PySpark generator lowers Structure IR to deterministic, readable PySpark modules. It is the source-text consumer of
-the same IR semantics used by the online PySpark runner.
+the same shared PySpark execution recipes used by the online PySpark runner.
 
 ## Generated Artifacts
 
@@ -61,24 +61,16 @@ projects that commit generated artifacts.
 
 Generated code and online execution must preserve the same transform semantics. Text concerns such as imports and
 formatting belong here. Semantic concerns such as expression lowering, join aliasing, validation placement, hook order,
-and projection shape should be shared with the online runner where practical, or covered by parity tests until shared
-lowering is extracted.
+and projection shape belong to the shared contract in `docs/specifications/ExecutionSemanticContract.md`.
+
+The generator renders `PySparkExecutionPlan` recipes, or the local implementation equivalent. It must not independently
+choose aliases, validation placement, literal typing, hook order, or projection shape while rendering source text.
 
 ## PySpark Evolution Strategy
 
-PySpark API usage belongs in this component and the online PySpark runner, not in symbolic execution or checks.
-
-Use a backend capability registry:
-
-```text
-PySparkCapabilities
-  version_range
-  supports_timestamp_ntz
-  supports_testing_utils
-  supports_specific_hint
-```
-
-The PySpark target layer chooses online and generated syntax based on target capabilities.
+PySpark API usage belongs in the PySpark target layer, not in symbolic execution or generic checks. The generator and
+online runner must use the backend capability interface in `docs/specifications/BackendCapabilities.md` when selecting
+target-specific syntax or rejecting unsupported features.
 
 ## Performance Commitment
 

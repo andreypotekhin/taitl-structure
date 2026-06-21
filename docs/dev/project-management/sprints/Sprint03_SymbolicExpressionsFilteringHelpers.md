@@ -23,7 +23,7 @@ actionable diagnostics in online and generated execution.
 - Structured unsupported-code errors.
 - Error suggestions: direct DSL, `@expr_fn`, hook, config workaround when applicable.
 - Performance guardrail tests.
-- Online/generated parity checks for expressions and filtering.
+- Shared PySpark recipes and online/generated parity checks for expressions and filtering.
 
 ### Out of Scope
 
@@ -89,13 +89,15 @@ df = orders.where(
 9. Implement structured compiler error model.
 10. Add detailed error message rendering.
 11. Add static generated-code performance scans.
-12. Add online/generated parity checks for expressions and filtering.
+12. Add shared PySpark recipes for expressions and filtering.
+13. Add online/generated parity checks for expressions and filtering.
 
 ## Acceptance Criteria
 
 - Filtering compiles to DataFrame `.where(...)`.
 - Expression helpers inline into generated PySpark.
 - Expression helpers run online with the same Spark Column semantics.
+- Expression helpers and filters consume the shared PySpark recipe layer in both runtime modes.
 - Unsupported `.strip().lower()` fails with a detailed error.
 - Error suggests `lower(trim(...))`.
 - Error suggests creating `@expr_fn`.

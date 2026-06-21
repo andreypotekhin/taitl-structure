@@ -301,7 +301,7 @@ Diagnostics must include:
 Nullable-to-non-nullable example:
 
 ```text
-CompileError STRUCT-E2001: Nullable expression assigned to non-nullable field
+CompileError SCHEMA-E0301: Nullable expression assigned to non-nullable field
 
 Output field:
   OrderNormalized.total: Decimal(12, 2), nullable=False
@@ -321,7 +321,7 @@ See docs/specifications/NullabilityAndTypeCoercion.md
 Parsing conversion example:
 
 ```text
-CompileError STRUCT-E2002: Explicit conversion required
+CompileError SCHEMA-E0302: Explicit conversion required
 
 Output field:
   OrderNormalized.total: Decimal(12, 2), nullable=True
@@ -341,7 +341,7 @@ See docs/specifications/NullabilityAndTypeCoercion.md
 Type mismatch example:
 
 ```text
-CompileError STRUCT-E2003: Incompatible output field type
+CompileError SCHEMA-E0303: Incompatible output field type
 
 Output field:
   OrderNormalized.is_paid: Boolean(), nullable=False

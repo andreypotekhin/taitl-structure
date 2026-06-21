@@ -72,15 +72,18 @@ IDE guidance:
 
 ```toml
 validate_inputs = true
+input_validation_mode = "schema_only"
 validate_intermediate = true
 intermediate_validation_mode = "schema_only"
 validate_outputs = true
+output_validation_mode = "schema_only"
 ```
 
 Intermediate validation is enabled by default because subtransform return types define intermediate schemas.
 Set `validate_intermediate = false` to disable intermediate schema validation for generated subtransform boundaries.
 
-`intermediate_validation_mode` controls the cost and depth of enabled intermediate validation:
+`input_validation_mode`, `intermediate_validation_mode`, and `output_validation_mode` control the cost and depth of
+enabled validation at each phase:
 
 ```text
 schema_only
@@ -95,6 +98,15 @@ nested struct shape, and missing or extra columns. It must not trigger row scans
 `schema_and_constraints` may add row-level constraint checks when Structure supports them. Use it deliberately on
 pipelines where the additional Spark work is worth the stronger runtime contract.
 
+Data-quality constraints are separate from schema shape. Accepted values, ranges, regex-like string checks, decimal
+domain rules, uniqueness, referential checks, freshness, and row-count policies belong to an opt-in constraint model.
+Any check that can trigger Spark actions must be explicit in source or configuration and should link diagnostics to
+`docs/specifications/DataQualityConstraints.md`.
+
+Future constraints should also bind to validation phases: input, intermediate, output, or a narrower named boundary.
+The phase mode is a project-level cost guard. A constraint runs only when it is bound to the current phase and that
+phase's validation mode allows constraints.
+
 ## Spark SQL Settings
 
 ```toml
@@ -105,7 +117,7 @@ spark.sql.storeAssignmentPolicy = "ANSI"
 Structure records Spark SQL assumptions using Spark's own dotted key names. These settings guide compile-time
 nullability and type-coercion checks and document what generated runtime code expects from the caller's Spark session.
 
-Structure does not create or reconfigure Spark sessions in v1.
+Structure does not create or reconfigure Spark sessions.
 
 ## Compatibility Settings
 
@@ -115,7 +127,7 @@ target_backend = "pyspark"
 target_pyspark = ">=3.5,<4.1"
 ```
 
-`execution_mode` selects how transforms run. v1 defaults to `online`, where `StructureSession` executes transforms at
+`execution_mode` selects how transforms run. The default is `online`, where `StructureSession` executes transforms at
 runtime from compiler IR. `generated` delegates runtime execution to checked-in generated PySpark classes.
 
 Allowed values:
@@ -125,12 +137,13 @@ online
 generated
 ```
 
-`target_backend` selects the runtime backend. v1 supports `pyspark`.
+`target_backend` selects the runtime backend. The initial release supports `pyspark`.
 
-`target_pyspark` constrains which PySpark APIs online and generated PySpark execution may use. The v1 default targets
+`target_pyspark` constrains which PySpark APIs online and generated PySpark execution may use. The default targets
 PySpark 3.5.x and 4.0.x.
 If a DSL feature cannot be generated for the configured range, `structure check` and `structure compile` should fail
-with a diagnostic that names the required PySpark version.
+with `BACKEND-E2402` and name the unsupported capability. Unknown backend targets fail with `BACKEND-E2401`.
+Backend capability behavior is specified in `docs/specifications/BackendCapabilities.md`.
 
 Spark Connect is scheduled for v4 unless it can be added earlier without changing the public DSL, generated class API,
 generated-code review model, or streaming orchestration contract. See `docs/Compatibility.md`.
@@ -180,8 +193,8 @@ parallel_codegen = true
 
 Structure should be fast enough to run in local development and CI.
 
-Production incremental compilation is planned for v2. v1 may record source fingerprints and avoid rewriting unchanged
-files, but it should not expose cache semantics that users must reason about.
+Production incremental compilation is planned for v2. The initial release may record source fingerprints and avoid
+rewriting unchanged files, but it should not expose cache semantics that users must reason about.
 
 ## Build Settings
 

@@ -6,11 +6,11 @@ Structure is an IR-first data pipeline library. Developers write typed, schema-r
 Structure runs them online by default through `StructureSession`, and can also emit generated PySpark classes using
 DataFrame and Column operations so Spark can optimize execution.
 
-The north star is deliberately strict: v1 proves that Structure can replace hand-maintained PySpark boilerplate with a
-strict online runtime and optional generated-code workflow. v2 makes that workflow useful for mainstream analytical
-pipelines. v3 takes
-ownership of streaming lifecycle concerns only after the transform compiler has earned trust. v4 adds backend expansion
-through Spark Connect after the ordinary PySpark contract is stable.
+The north star is deliberately strict: v0 proves the first executable contract with one useful transform running both
+online and as generated PySpark. v1 proves that Structure can replace hand-maintained PySpark boilerplate with a strict
+online runtime and optional generated-code workflow. v2 makes that workflow useful for mainstream analytical pipelines.
+v3 takes ownership of streaming lifecycle concerns only after the transform compiler has earned trust. v4 adds backend
+expansion through Spark Connect after the ordinary PySpark contract is stable.
 
 The project should prioritize:
 
@@ -35,6 +35,7 @@ Required spikes:
 - Prove source-order discovery with stable line numbers.
 - Prove source-root discovery and generated `structure_generated.<source package>` import paths.
 - Prove `StructureSession` and deferred transform invocation API.
+- Prove shared PySpark execution recipes for projection-only online/generated parity.
 - Prove compiler checks and compile can run without PySpark, Java, SparkSession, Spark startup, or a Spark cluster.
 - Prove a minimal generated PySpark execution test with local Spark.
 - Document and wire the v1 compatibility policy before packaging decisions harden.
@@ -42,6 +43,40 @@ Required spikes:
 By default, Structure should use `src` when it contains importable packages and otherwise use the project root.
 Generated code should live under `generated/structure_generated` and mirror source package paths below that
 namespace. Other layouts remain configurable.
+
+## v0 Scope
+
+v0 is an internal dev/test planning label for the first executable contract. It is not public documentation language.
+It exists so the team can prove a narrow runnable path before the larger v1 scope hardens.
+
+### v0 must include
+
+- `@transform` class discovery.
+- `input(Structure)` declaration for one named input.
+- `StructureSession`.
+- Builder-style transform invocation.
+- Online PySpark runner for the v0 fixture.
+- Shared PySpark execution semantic contract for online/generated parity.
+- One public schema-returning method.
+- One generated PySpark class and convenience function.
+- Spark `StructType` generation for the v0 schemas.
+- Runtime input `assert_schema(...)`.
+- Symbolic field references.
+- Projection.
+- `where(...)` filtering.
+- One `@expr_fn` helper.
+- Online/generated parity test.
+- Spark-free `structure check` for the fixture.
+
+### v0 excludes
+
+- joins;
+- hooks;
+- compiler provenance and static dataflow lineage;
+- streaming compatibility reporting;
+- setup/configuration doctor checks;
+- build integration such as `compile --fail-on-diff`;
+- production incremental compile hooks.
 
 ## v1 Scope
 
@@ -56,6 +91,7 @@ validation, compiler provenance, static dataflow lineage, and build integration.
 - Builder-style transform invocation.
 - Online PySpark runner.
 - Runtime target registry for online and generated PySpark execution.
+- Shared PySpark execution semantic contract for online/generated parity.
 - Public schema-returning methods as source-ordered subtransforms.
 - Schema base overlay construction for inherited output rows.
 - One generated PySpark class per transform class.
@@ -97,8 +133,9 @@ v2 extends the compiler IR and emitter with advanced Spark operations while pres
 - Advanced aggregation and grouping sets where practical.
 - Spark higher-order functions for arrays/maps where compiler-visible.
 - Manual optimization directives: caching, persistence, repartition/coalesce, checkpoint hints.
-- Advanced join strategies: broadcast, shuffle hash, sort merge hints, lookup projection, prejoin dedupe warnings.
-- `join_many(...)`, semi/anti joins, and other row-multiplying or existence-oriented join forms.
+- Advanced join strategies: broadcast, shuffle hash, sort merge hints, and lookup projection.
+- Analytical join coverage from `docs/specifications/AnalyticalJoinCoverage.md`: semi/anti existence predicates,
+  `join_many(...)`, deterministic lookup dedupe, temporal validity-window joins, and backward as-of joins.
 - Production incremental compilation: `compile --changed-only`, cache invalidation policies, and cache diagnostics.
 - Richer static dataflow explain output.
 - More complete generated-code explain reports.
@@ -137,12 +174,12 @@ are stable.
 | Milestone | Goal | Sprints |
 |---|---|---|
 | M0 | Repository, compiler skeleton, and pre-coding spike gate | Sprint 00 |
-| M1 | First end-to-end online PySpark transform with optional generated artifact | Sprint 01 |
+| M1 | v0 first executable contract | Sprint 01 |
 | M2 | Schema validation and generated class polish | Sprint 02 |
 | M3 | Practical expression DSL and diagnostics | Sprint 03 |
 | M4 | Hook model and no-hook generated-code cleanliness | Sprint 04 |
 | M5 | Joins, compiler lineage, build integration | Sprint 05 |
 | M6 | v1 stabilization and docs/examples | follow-up hardening sprint |
-| M7 | v2 analytical pipeline features and adoption tooling | future v2 sprints |
+| M7 | v2 analytical pipeline features, analytical join coverage, and adoption tooling | future v2 sprints |
 | M8 | v3 streaming orchestration | future v3 sprints |
 | M9 | v4 Spark Connect backend expansion | future v4 sprints |

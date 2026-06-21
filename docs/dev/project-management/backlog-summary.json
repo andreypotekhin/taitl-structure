@@ -67,6 +67,17 @@
         "Build Integration",
         "Streaming Compatibility"
       ]
+    },
+    {
+      "id": "S07",
+      "name": "Analytical Join Coverage",
+      "milestone": "M7",
+      "spec_sections": [
+        "Analytical Joins",
+        "Backend Capabilities",
+        "Lineage",
+        "Streaming Compatibility"
+      ]
     }
   ]
 }

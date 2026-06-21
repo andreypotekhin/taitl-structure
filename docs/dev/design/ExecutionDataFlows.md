@@ -9,13 +9,14 @@
 4. Symbolically execute subtransforms in source order.
 5. Build TransformPlan IR.
 6. Run compileability checks.
-7. Emit PySpark schema modules.
-8. Emit PySpark transform classes.
-9. Emit runtime support.
-10. Build compiler provenance.
-11. Infer static dataflow lineage.
-12. Format changed files.
-13. Report compile metrics.
+7. Lower checked IR to shared PySpark execution recipes.
+8. Emit PySpark schema modules.
+9. Emit PySpark transform classes from the shared recipes.
+10. Emit runtime support.
+11. Build compiler provenance.
+12. Infer static dataflow lineage.
+13. Format changed files.
+14. Report compile metrics.
 ```
 
 ## Online Runtime Flow
@@ -28,10 +29,11 @@
 5. Session resolves execution_mode, target_backend, and target_pyspark.
 6. Session selects OnlinePySparkRunner.
 7. Runner compiles or retrieves TransformPlan IR.
-8. Runner validates inputs.
-9. Runner executes DataFrame operations and hooks in source order.
-10. Runner validates intermediates and final output according to config.
-11. Caller writes or further composes the returned DataFrame.
+8. Runner lowers checked IR to shared PySpark execution recipes.
+9. Runner validates inputs according to recipes.
+10. Runner executes DataFrame operations and hooks in recipe order.
+11. Runner validates intermediates and final output according to recipes.
+12. Caller writes or further composes the returned DataFrame.
 ```
 
 ## Runtime Batch Flow

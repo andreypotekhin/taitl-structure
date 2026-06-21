@@ -130,7 +130,7 @@ OrderRaw -> OrderNormalized -> OrderWithCustomer -> OrderEnriched
 
 ## Online and Generated PySpark Model
 
-Online execution is the v1 default:
+Online execution is the default:
 
 ```python
 session = StructureSession(spark=spark, ctx=ctx)
@@ -289,7 +289,8 @@ Serial joins are N-step enrichment chains. They are not limited to three inputs.
 
 ## Streaming Compatibility
 
-Structure v1 and v2 do not generate streaming orchestration. They generate DataFrame transforms that can operate on streaming DataFrames when the operations used are compatible with Spark Structured Streaming.
+Structure does not generate streaming orchestration before v3. It generates DataFrame transforms that can operate on
+streaming DataFrames when the operations used are compatible with Spark Structured Streaming.
 
 The caller owns:
 
@@ -304,7 +305,7 @@ Full streaming orchestration belongs to v3.
 
 ## Compatibility Policy
 
-Structure v1 targets Python 3.11+ and online/generated PySpark for PySpark 3.5.x and 4.0.x. The default project
+Structure targets Python 3.11+ and online/generated PySpark for PySpark 3.5.x and 4.0.x. The default project
 settings are `execution_mode = "online"` and `target_pyspark = ">=3.5,<4.1"`.
 
 Online and generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Spark Connect
@@ -326,7 +327,7 @@ from and which upstream inputs affect a failing field or step.
 Hook boundaries are explicit. Because hooks contain arbitrary PySpark, static dataflow should mark them opaque unless a
 future compiler-visible hook contract says otherwise.
 
-Runtime LDJSON lineage is useful transform-run telemetry, but it is beyond the v1, v2, v3, and v4 roadmap.
+Runtime LDJSON lineage is useful transform-run telemetry, but it is beyond the published roadmap.
 
 ## Unsupported Code Detection
 
@@ -379,7 +380,8 @@ For validation-related errors, a configuration workaround may exist:
 ```text
 Configuration workaround:
   Set validate_intermediate = false to skip intermediate runtime schema validation.
-  Set intermediate_validation_mode = "schema_only" to avoid row-level intermediate checks.
+  Set input_validation_mode, intermediate_validation_mode, or output_validation_mode to "schema_only"
+  to avoid row-level checks at that phase.
   This does not change compile-time field/type checking.
 ```
 
@@ -412,12 +414,12 @@ Recommended implementation techniques:
 
 ## Roadmap
 
-The roadmap follows an IR-first north star: v1 proves that Structure can replace hand-maintained PySpark boilerplate
-with strict online execution and optional generated-code workflow. v2 makes that workflow useful for mainstream
-analytical pipelines. v3 takes ownership of streaming lifecycle concerns. v4 adds Spark Connect after the ordinary
-PySpark contract is stable.
+The roadmap follows an IR-first north star: the initial release proves that Structure can replace hand-maintained
+PySpark boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful
+for mainstream analytical pipelines. v3 takes ownership of streaming lifecycle concerns. v4 adds Spark Connect after
+the ordinary PySpark contract is stable.
 
-### v1
+### Initial Release
 
 Online PySpark execution by default, optional generated PySpark classes, projection, filtering, joins, typed
 intermediate schemas, hooks, validation, compiler provenance, compact static dataflow lineage, streaming-compatible

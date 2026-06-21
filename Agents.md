@@ -116,13 +116,13 @@ Pay attention to test name shortening techniques described in the style guide.
 
 ### Testing inputs
 Model source code: 
- - Source: tests/model/v1/src 
- - Generated: tests/model/v1/generated
+- Source: tests/model/v0/src, tests/model/v1/src 
+- Generated: tests/model/v0/generated, tests/model/v1/generated
 
 Model source code serves as testing fixture to apply the tests to (source), and compare test results with (generated).
 Model source code covers the happy path; unhappy paths are expected to be created in-memory by specific tests.
 The generated source is not fixed, may adjust to the project as we evolve/refactor. 
-The generated source is also 'more' than the developed project, until version scope completed (e.g. v1). 
+The generated source is also 'more' than the developed project, until version scope completed (e.g. v0/v1). 
 
 ### Documenting
 You produce concise and all-encompassing, ready-to-publish documentation that people love to read.

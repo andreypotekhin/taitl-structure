@@ -36,6 +36,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - Spike: source-order discovery with stable line numbers.
 - Spike: source-root discovery and generated `structure_generated.<source package>` import paths.
 - Spike: `StructureSession` and deferred transform invocation API.
+- Spike: shared PySpark execution recipes for projection-only online/generated parity.
 - Spike: compiler check and compile paths with no PySpark, Java, SparkSession, Spark startup, or Spark cluster.
 - Spike: minimal generated PySpark execution test with local Spark.
 
@@ -100,7 +101,8 @@ The team can also review short spike notes for the high-risk Python mechanics be
 18. Spike source-root discovery and generated `structure_generated.<source package>` import paths.
 19. Spike no-Spark compiler checks and compile.
 20. Spike `StructureSession` and deferred transform invocation API.
-21. Spike minimal local Spark generated-code execution.
+21. Spike shared PySpark execution recipes for projection-only online/generated parity.
+22. Spike minimal local Spark generated-code execution.
 
 ## Acceptance Criteria
 

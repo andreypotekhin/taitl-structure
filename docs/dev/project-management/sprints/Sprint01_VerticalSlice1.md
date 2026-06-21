@@ -1,19 +1,20 @@
-# Sprint 01: Vertical Slice 1
+# Sprint 01: v0 First Executable Contract
 
 ## Sprint Goal
 
-Run one simple schema-to-schema transform online through `StructureSession`, and optionally emit the equivalent
-generated PySpark class.
+Run one schema-to-schema transform online through `StructureSession`, emit the equivalent generated PySpark class, and
+prove both paths produce the same rows for the same small input.
 
 ## Product Outcome
 
-A developer can write one input schema, one output schema, and one transform method, then run it with:
+A developer can write one input schema, one output schema, and one transform method with filtering and one expression
+helper, then run it with:
 
 ```python
 NormalizeOrders(orders=orders_df).run(session)
 ```
 
-Generated PySpark can still be emitted and compared as an optional artifact.
+Generated PySpark can be emitted and compared against online execution as the same executable contract.
 
 ## Example Source
 
@@ -23,11 +24,18 @@ class NormalizeOrders(Transform):
 
     orders = input(OrderRaw)
 
+    @expr_fn
+    def clean_id(value):
+        return lower(trim(value))
+
     def normalize(self, order: OrderRaw) -> OrderNormalized:
+        where(order.id.is_not_null())
+        where(order.customer_id.is_not_null())
+
         return OrderNormalized(
-            id=order.id,
-            customer_id=order.customer_id,
-            total=to_decimal(order.total, precision=12, scale=2),
+            id=self.clean_id(order.id),
+            customer_id=self.clean_id(order.customer_id),
+            total=coalesce(to_decimal(order.total, precision=12, scale=2), 0),
         )
 ```
 
@@ -51,10 +59,16 @@ class NormalizeOrdersGenerated:
         self.ctx = ctx
 
     def run(self, *, orders):
-        df = orders.select(
-            F.col("id").alias("id"),
-            F.col("customer_id").alias("customer_id"),
-            F.col("total").cast("decimal(12,2)").alias("total"),
+        assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")
+
+        total = F.coalesce(F.col("total").cast("decimal(12,2)"), F.lit(0).cast("decimal(12,2)"))
+        df = orders.where(
+            F.col("id").isNotNull()
+            & F.col("customer_id").isNotNull()
+        ).select(
+            F.lower(F.trim(F.col("id"))).alias("id"),
+            F.lower(F.trim(F.col("customer_id"))).alias("customer_id"),
+            total.alias("total"),
         )
         return df
 ```
@@ -69,22 +83,26 @@ class NormalizeOrdersGenerated:
 - `@transform` discovery.
 - One public schema-returning method.
 - Symbolic field references.
-- Simple expression function: `to_decimal`.
+- Simple expression functions: `lower`, `trim`, `coalesce`, and `to_decimal`.
+- One class-local `@expr_fn` helper.
+- `where(...)` filtering.
 - Projection IR.
+- Shared PySpark execution recipes for online/generated parity.
 - `StructureSession`.
 - Deferred transform invocation with named inputs.
 - Online PySpark runner for projection IR.
 - Generated class.
 - Generated convenience function optional.
+- Input validation.
+- Online/generated parity test.
 - Generated code syntax/import tests.
 - Online execution test.
 - One PySpark execution test.
 
 ### Out of Scope
 
-- Runtime schema validation.
 - Intermediate validation.
-- Filtering.
+- Output validation.
 - Hooks.
 - Joins.
 - Lineage.
@@ -98,8 +116,12 @@ class NormalizeOrdersGenerated:
 - As a developer, I can define a public schema-returning method as a subtransform.
 - As a developer, I can construct a transform invocation with named input DataFrames.
 - As a developer, I can run the transform online through `StructureSession`.
+- As a developer, I can filter rows with `where(...)`.
+- As a developer, I can define one class-local `@expr_fn` helper.
+- As a developer, input schemas are validated before execution.
 - As a developer, I can generate one PySpark class per source transform class.
 - As a developer, generated code uses Spark Column expressions rather than UDFs.
+- As a developer, online and generated execution produce the same result for the v0 fixture.
 
 ## Deliverables
 
@@ -107,10 +129,14 @@ class NormalizeOrdersGenerated:
 - Minimal transform discovery.
 - Minimal symbolic execution.
 - Minimal IR.
+- Minimal expression helper support.
+- Minimal filtering support.
+- Minimal shared PySpark execution recipe layer.
 - Minimal `StructureSession`.
 - Minimal online PySpark runner.
 - Minimal PySpark code emitter.
 - Generated class template.
+- Input validation helper.
 - Spark execution test fixture.
 
 ## Engineering Tasks
@@ -122,22 +148,31 @@ class NormalizeOrdersGenerated:
 5. Implement field reference expression.
 6. Implement schema construction capture.
 7. Implement `to_decimal` expression.
-8. Implement projection IR.
-9. Implement `StructureSession`.
-10. Implement deferred transform invocation input binding.
-11. Implement online PySpark runner for projection IR.
-12. Implement generated class emitter.
-13. Add online execution test.
-14. Add generated-code snapshot test.
-15. Add PySpark execution test.
+8. Implement `lower`, `trim`, and `coalesce` expressions.
+9. Implement class-local `@expr_fn` helper support for one helper.
+10. Implement `where(...)` filtering.
+11. Implement projection IR.
+12. Implement shared PySpark execution recipes for projection and filtering IR.
+13. Implement input validation.
+14. Implement `StructureSession`.
+15. Implement deferred transform invocation input binding.
+16. Implement online PySpark runner for the shared recipes.
+17. Implement generated class emitter from the shared recipes.
+18. Add online execution test.
+19. Add generated-code snapshot test.
+20. Add online/generated parity test.
+21. Add PySpark execution test.
 
 ## Acceptance Criteria
 
 - Example transform compiles.
 - Example transform runs online through `StructureSession`.
+- Input schema mismatch fails before transform execution.
 - Generated code imports successfully.
 - Generated class runs against small Spark DataFrame.
+- Online and generated execution return the same rows.
 - Output values match expected results.
+- Online and generated execution consume the same PySpark recipe layer.
 - Generated code contains no UDF, RDD, collect, or row-wise map.
 - `structure check` reports success for the fixture.
 

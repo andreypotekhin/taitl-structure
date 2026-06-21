@@ -40,6 +40,18 @@ The session can also be used directly:
 result = session.run(EnrichOrders(orders=orders_df, customers=customers_df))
 ```
 
+When caller code needs the Spark schema after online execution, keep the transform invocation:
+
+```python
+transform = EnrichOrders(orders=orders_df, customers=customers_df)
+result = transform.run(session)
+
+output_schema = transform.schemas.output
+```
+
+`transform.schemas.output` is a materialized PySpark `StructType` equivalent to the generated `*_SCHEMA` constant for
+the final output schema. The schema is available in online mode without requiring generated files to exist.
+
 ## Configuration
 
 Online execution is the default:
@@ -62,7 +74,9 @@ generated
 delegates to checked-in generated PySpark classes.
 
 `target_backend` and `target_pyspark` remain backend selection inputs. In v1 the only supported backend is `pyspark`.
-Future backends should be selected by the session, not by changing transform constructors.
+Future backends should be selected by the session, not by changing transform constructors. Backend support is checked
+through `docs/specifications/BackendCapabilities.md`, so online execution and generated PySpark share the same target
+capability decisions.
 
 ## Session Responsibilities
 
@@ -74,6 +88,7 @@ Future backends should be selected by the session, not by changing transform con
 - selected execution mode;
 - selected target backend and PySpark target range;
 - runtime runner delegation;
+- materializing Spark `StructType` schemas for online execution;
 - optional in-memory compiled-plan cache.
 
 `StructureSession` must not start Spark, stop Spark, mutate Spark configuration silently, read or write streaming
@@ -82,8 +97,13 @@ queries, or own orchestration concerns such as Airflow DAGs, triggers, checkpoin
 ## Execution Modes
 
 In online mode, the session delegates to `OnlinePySparkRunner`. The runner compiles the transform class to
-`TransformPlan` IR on demand, then executes the plan directly with PySpark DataFrame and Column APIs. It must not write
-generated files and must not execute generated Python source text.
+`TransformPlan` IR on demand, lowers that IR through the shared PySpark execution semantic contract, then interprets
+the resulting recipes with PySpark DataFrame and Column APIs. It must not write generated files and must not execute
+generated Python source text.
+
+The online runner must also materialize the transform's Spark schemas from the checked schema model and expose them on
+the transform invocation. This gives caller code the same shape contract that generated schema modules provide in
+generated-code workflows.
 
 In generated mode, the session delegates to `GeneratedPySparkRunner`. The runner imports the generated PySpark class,
 instantiates it with `spark=session.spark` and `ctx=session.ctx`, and calls `run(...)` with the transform invocation's
@@ -108,6 +128,10 @@ Online execution must preserve generated-code semantics:
 
 Online and generated execution must agree on hook order, validation placement, expression lowering, join aliasing,
 projection shape, schema projection, and performance guardrails.
+
+Those shared semantics are owned by `docs/specifications/ExecutionSemanticContract.md`. Online execution owns live
+DataFrame binding and runtime hook invocation; it must not independently choose aliases, validation placement,
+expression mapping, or literal typing when a shared PySpark recipe already defines them.
 
 ## Transform Input Binding
 
@@ -151,7 +175,7 @@ Diagnostics must include:
 Example:
 
 ```text
-RuntimeError STRUCT-E6xxx: Generated transform is not importable
+RuntimeError GEN-E0902: Generated transform is not importable
 
 Transform:
   orders.transforms.order.EnrichOrders
@@ -181,6 +205,9 @@ The implementation is complete when tests prove:
 - a public subtransform named `run` fails with a reserved-name diagnostic;
 - online and generated execution produce equivalent results for projection, filtering, expression helpers, joins,
   hooks, `pass_inputs=True`, validation, `schema_mode`, and `project_output`;
+- online execution consumes the shared PySpark execution recipes defined by
+  `docs/specifications/ExecutionSemanticContract.md`;
+- online execution exposes the final output Spark schema after `run(session)` without requiring generated files;
 - generated mode delegates through generated classes using the same builder-style transform invocation;
 - missing generated code in generated mode suggests `structure compile` or online mode;
 - compiler commands remain Spark-free.

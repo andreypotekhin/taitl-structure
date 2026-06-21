@@ -22,8 +22,9 @@ Structure addresses these problems by making schemas and transformations explici
 ## Less Source Code, More Spark Code
 
 A Structure transform can express projection, filtering, normalization, and serial enrichment joins in compact
-schema-oriented Python. By default, v1 runs that transform online through a `StructureSession`. Generated PySpark is
-still available for provenance, review, debugging, and projects that deliberately choose generated execution.
+schema-oriented Python. By default, Structure runs that transform online through a `StructureSession`. Generated
+PySpark is still available for provenance, review, debugging, and projects that deliberately choose generated
+execution.
 
 ### Source Structure code
 
@@ -213,12 +214,21 @@ developers author compact schema logic while still producing explicit, reviewabl
 
 ## Performance Focus
 
-Structure is intentionally strict. Compiled subtransforms must lower to Spark-plan-visible expressions. Unsupported Python operations are rejected at compile time instead of silently becoming Python UDFs, row-wise maps, or opaque callbacks.
+Structure is intentionally strict. Compiled subtransforms must lower to Spark-plan-visible expressions. Unsupported
+Python operations are rejected at compile time instead of silently becoming Python UDFs, row-wise maps, or opaque
+callbacks.
 
-This is a performance feature. Spark can optimize transformations only when work remains visible in the DataFrame logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, and whole-stage code generation all depend on expressing work through Spark's relational expression model.
+This is a performance feature. Spark can optimize transformations only when work remains visible in the DataFrame
+logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, and whole-stage
+code generation all depend on expressing work through Spark's relational expression model.
+
+For reusable custom logic, prefer `@expr_fn`. Expression helpers are the supported way to keep project-specific
+expression logic compiler-visible and reusable across transforms.
 
 Arbitrary PySpark is still supported, but only through explicit hooks. Hooks receive the current DataFrame by default;
-advanced hooks can opt into original named input DataFrames with `pass_inputs=True`.
+advanced hooks can opt into original named input DataFrames with `pass_inputs=True`. Hooks are honest escape hatches:
+Structure calls them, records them as opaque boundaries in lineage and explain output, and does not treat their body as
+compiler-visible logic.
 
 ## Default Project Layout
 
@@ -265,7 +275,7 @@ See `pyproject.seed.toml` for all defaults.
 
 ## Compatibility
 
-Structure v1 targets Python 3.11+, PySpark 3.5.x and 4.0.x, Linux runtimes, and Linux/macOS development
+Structure targets Python 3.11+, PySpark 3.5.x and 4.0.x, Linux runtimes, and Linux/macOS development
 environments. Airflow is supported as a caller of online or generated transforms, not as a hard dependency.
 
 Spark Connect support is scheduled for v4 unless it can be added earlier without changing the public DSL, generated
@@ -282,16 +292,22 @@ structure compile --fail-on-diff
 structure explain orders.transforms.order.EnrichOrders
 ```
 
+## License
+
+LGPL-2.1 + Ethical Use Policy
+
+See Licence.md
+
 ## Roadmap
 
-The roadmap follows an IR-first north star: v1 proves that Structure can replace hand-maintained PySpark boilerplate
-with strict online execution and optional generated-code workflow; v2 makes that workflow useful for mainstream
-analytical pipelines; v3 takes ownership of streaming lifecycle concerns; v4 adds Spark Connect after the ordinary
-PySpark contract is stable.
+The roadmap follows an IR-first north star: the initial release proves that Structure can replace hand-maintained
+PySpark boilerplate with strict online execution and optional generated-code workflow; v2 makes that workflow useful for
+mainstream analytical pipelines; v3 takes ownership of streaming lifecycle concerns; v4 adds Spark Connect after the
+ordinary PySpark contract is stable.
 
-- **v1:** online PySpark execution by default, optional generated PySpark classes, projection, filtering, joins, typed
-  intermediate schemas, hooks, validation, compiler provenance, static dataflow lineage, streaming-compatible
-  transforms, diagnostic links, and setup checks.
+- **Initial release:** online PySpark execution by default, optional generated PySpark classes, projection, filtering,
+  joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow lineage,
+  streaming-compatible transforms, diagnostic links, and setup checks.
 - **v2:** windowing, deduplication, aggregations, advanced grouping, Spark higher-order functions,
   caching/persistence/repartition hints, `join_many(...)`, richer explain output, generated docs, and pytest helpers.
 - **v3:** full streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks,

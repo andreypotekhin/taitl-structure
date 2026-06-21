@@ -132,7 +132,7 @@
 - Surface provenance and static dataflow in compiler diagnostics.
 - Add `structure explain` lineage output for transform, step, and field dependencies.
 - Add streaming compatibility reporting with compatible, batch-only, and unknown states.
-- Add diagnostic codes with documentation links.
+- Add a registry-backed diagnostic code and documentation contract.
 - Add `structure doctor` or equivalent setup/configuration checks.
 
 ## Epic: Build Integration
@@ -153,7 +153,11 @@
 - Caching/persistence directives.
 - Repartition/coalesce hints.
 - Advanced join strategy directives.
-- `join_many(...)` and other row-multiplying or existence-oriented join forms.
+- Semi and anti existence joins.
+- `join_many(...)` for row-multiplying joins.
+- Deterministic lookup dedupe policies.
+- Temporal validity-window joins for SCD-style lookups.
+- Backward as-of joins with optional tolerance.
 - Richer static dataflow explain output.
 - Production incremental compile and cache diagnostics.
 - Generated documentation artifacts for schemas and transforms.

@@ -20,6 +20,7 @@ dependencies.
 - Join type enum.
 - Join hint enum.
 - Predictable DataFrame aliasing.
+- Shared PySpark join recipes for aliasing and join lowering.
 - Serial N-step joins.
 - Compiler provenance from source node to IR node to generated PySpark node.
 - Static dataflow lineage inferred from IR.
@@ -97,12 +98,14 @@ customers_df = F.broadcast(customers.alias("customers"))
 10. Implement `structure explain`.
 11. Implement `--fail-on-diff`.
 12. Add streaming compatibility check stubs.
-13. Add online/generated parity checks for join fixtures.
+13. Add shared PySpark join recipes.
+14. Add online/generated parity checks for join fixtures.
 
 ## Acceptance Criteria
 
 - Single lookup join compiles and runs.
 - Serial join with at least five named inputs compiles and runs.
+- Join aliases and join lowering come from shared PySpark join recipes in both runtime modes.
 - Join enrichment examples can use `SchemaClass.base(row)(joined_field=...)` without changing generated projection
   semantics.
 - Diagnostics can show source node, IR node, and generated PySpark node for supported compiler errors.

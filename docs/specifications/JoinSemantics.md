@@ -8,8 +8,9 @@ which keys define the match, how nulls behave, which aliases own each field, and
 warnings rather than proven facts.
 
 The v1 goal is deliberately narrow: support explicit lookup joins without implicit deduplication, implicit string
-column references, or hidden data scans. Row-multiplying joins such as `join_many(...)` (v2) are part of the same
-cardinality model, but they change validation, lineage, and output-row expectations enough to deserve a later stage.
+column references, or hidden data scans. Row-multiplying and existence-oriented joins are specified separately for v2+
+in `docs/specifications/AnalyticalJoinCoverage.md` because they change validation, lineage, and output-row
+expectations.
 
 ## Public API Shape
 
@@ -43,7 +44,8 @@ The v1 compiled DSL supports:
 
 `Join.RIGHT`, `Join.FULL`, `Join.CROSS`, and semi/anti joins are deferred. They do not fit the v1 row-centric schema
 constructor cleanly because they can introduce rows that do not have a current-row source, or they return existence
-semantics rather than a joined right scope.
+semantics rather than a joined right scope. The v2+ plan for semi/anti predicates lives in
+`docs/specifications/AnalyticalJoinCoverage.md`.
 
 If the public enum exposes deferred values for forward compatibility, the compileability checker must reject them in
 compiled subtransforms with a diagnostic that names the supported v1 values.
@@ -157,7 +159,7 @@ Uniqueness proof sources:
 When no uniqueness proof exists, v1 should compile with a warning by default:
 
 ```text
-CompileWarning STRUCT-W3xxx: join_one(...) uniqueness is not proven
+CompileWarning JOIN-W0601: join_one(...) uniqueness is not proven
 
 Joined input:
   customers
@@ -179,7 +181,8 @@ semantics, but diagnostics should be designed so the promotion is straightforwar
 ## `join_many(...)` Cardinality
 
 `join_many(...)` (v2) means row multiplication is intentional. If one current row matches three right rows, the
-downstream step sees three rows.
+downstream step sees three rows. Detailed v2+ behavior is owned by
+`docs/specifications/AnalyticalJoinCoverage.md`.
 
 Rules:
 
@@ -312,7 +315,7 @@ Join diagnostics should include:
 Examples:
 
 ```text
-CompileError STRUCT-E3xxx: Unsupported join condition
+CompileError JOIN-E0601: Unsupported join condition
 
 Join:
   EnrichOrders.add_customer -> customers#1
@@ -330,7 +333,7 @@ See docs/specifications/JoinSemantics.md
 ```
 
 ```text
-CompileWarning STRUCT-W3xxx: join_one(...) uniqueness is not proven
+CompileWarning JOIN-W0601: join_one(...) uniqueness is not proven
 
 Join:
   EnrichOrders.add_customer -> customers#1

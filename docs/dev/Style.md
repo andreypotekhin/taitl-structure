@@ -133,8 +133,8 @@ Examples:
 
 #### Specification Testing
 Test cases backing specifications (from /docs/dev/Specification.md) are in tests/specs.
-For each implemented specification from /docs/dev/Specification.md, create a test case in the corresponding
-subpackage of tests/specs.
+For each implemented specification from /docs/dev/Specification.md, create a test case 
+in the corresponding subpackage of tests/specs.
 
 Directory structure:
 - /tests/specs/ - tests for Specification.md items user stories
@@ -158,8 +158,8 @@ as input to test cases, as well as pre-composed 'generated/' outputs featuring
 expected results of code generation/compiler output.
 
 Directory structure: 
-- Model source: /tests/model/v1/src/, /tests/model/v2/src/ 
-- Model generated source: /tests/model/v1/generated/, /tests/model/v2/generated/
+- Model source: /tests/model/v0/src/, /tests/model/v1/src/, /tests/model/v2/src/ 
+- Model generated source: /tests/model/v0/generated/, /tests/model/v1/generated/, /tests/model/v2/generated/
 
 ## Documenting
 ### End-User documentation

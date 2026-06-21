@@ -2,12 +2,15 @@
 
 ## Sprint Goal
 
-Turn the vertical slice into a schema-enforced pipeline with Spark `StructType` modules and online/generated runtime
+Turn the vertical slice into a schema-enforced pipeline with Spark `StructType` modules, generated schemas usable by
+caller code, online-materialized schemas after `.run(session)`, and online/generated runtime
 input/intermediate/output validation.
 
 ## Product Outcome
 
-Developers can rely on declared schemas to catch invalid DataFrame structure at runtime, and intermediate schemas are validated by default.
+Developers can rely on declared schemas to catch invalid DataFrame structure at runtime. Intermediate schemas are
+validated by default, and callers can reuse generated or online-materialized schema constants for reads and pre-write
+validation/projection.
 
 ## Scope
 
@@ -16,6 +19,8 @@ Developers can rely on declared schemas to catch invalid DataFrame structure at 
 - Spark `StructType` generation.
 - Runtime `assert_schema(...)`.
 - Runtime `project_schema(...)` if needed for output projection.
+- Generated schema constants usable by caller code for `spark.read.schema(...)` and pre-write validation/projection.
+- Online-materialized output schema available after `.run(session)`.
 - Primitive, array, map, and nested struct schema generation.
 - Input validation.
 - Output validation.
@@ -27,6 +32,7 @@ Developers can rely on declared schemas to catch invalid DataFrame structure at 
 ### Out of Scope
 
 - Deep recursive schema graphs.
+- Data-quality constraint execution beyond schema shape.
 - Compiler lineage details.
 - Joins.
 - Hooks.
@@ -34,6 +40,8 @@ Developers can rely on declared schemas to catch invalid DataFrame structure at 
 ## Relevant Specification Items
 
 - As a developer, I can generate Spark `StructType` schemas.
+- As a developer, I can import generated schema constants in caller code.
+- As a developer, I can access the output Spark schema after online execution.
 - As a developer, I can validate input schemas at runtime.
 - As a developer, I can validate intermediate schemas after each subtransform by default.
 - As a developer, I can validate final output schemas.
@@ -45,8 +53,10 @@ Developers can rely on declared schemas to catch invalid DataFrame structure at 
 ## Deliverables
 
 - schema modules usable by online and generated execution.
+- schema modules usable by caller-owned reads and writes.
 - shared runtime `schema_assert.py`.
 - Validation policy model.
+- Input, intermediate, and output validation modes.
 - Config-driven validation defaults.
 - Tests for passing and failing schema validation.
 
@@ -57,17 +67,22 @@ Developers can rely on declared schemas to catch invalid DataFrame structure at 
 3. Implement schema comparison logic.
 4. Implement `assert_schema(...)`.
 5. Implement validation policy resolution.
-6. Generate input validation calls.
-7. Generate intermediate validation calls.
-8. Generate final validation calls.
-9. Add class-wide `validate_intermediate` override.
-10. Add method-level `@validate_output(False)`.
-11. Add validation error messages with config workaround hints.
+6. Document and test generated schema reuse from caller code.
+7. Materialize online output schemas from the same schema model.
+8. Add `input_validation_mode`, `intermediate_validation_mode`, and `output_validation_mode`.
+9. Generate input validation calls.
+10. Generate intermediate validation calls.
+11. Generate final validation calls.
+12. Add class-wide `validate_intermediate` override.
+13. Add method-level `@validate_output(False)`.
+14. Add validation error messages with config workaround hints.
 
 ## Acceptance Criteria
 
 - Generated schema modules import successfully.
 - Generated schemas cover primitive, array, map, and nested struct fields.
+- Generated schema constants work with caller-owned reads and pre-write validation/projection.
+- Online execution exposes an equivalent output Spark schema after `.run(session)`.
 - Online execution validates schemas through the same runtime helpers.
 - Invalid input schema fails with useful error.
 - Invalid intermediate schema fails when validation enabled.

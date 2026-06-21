@@ -74,8 +74,16 @@ Each component has a detailed design document under `docs/dev/design/`.
 The compiler produces backend-neutral IR. The online PySpark runner lowers IR to live PySpark DataFrame and Column
 objects. The PySpark code generator lowers IR to concrete PySpark source code.
 
+Online and generated PySpark execution share a target semantic contract. Checked `TransformPlan` IR plus
+`PySparkCapabilities` lowers to deterministic PySpark execution recipes before either runtime path consumes it. The
+online runner interprets those recipes with live PySpark objects. The generated emitter renders those same recipes as
+source text. The contract is specified in `docs/specifications/ExecutionSemanticContract.md` and designed in
+`docs/dev/design/ExecutionSemanticContract.md`.
+
 This boundary is important for keeping up with PySpark evolution. PySpark API compatibility should be isolated in the
-PySpark target layer rather than scattered across discovery, symbolic execution, or checks.
+PySpark target layer rather than scattered across discovery, symbolic execution, or checks. The exact boundary is the
+backend capability interface specified in `docs/specifications/BackendCapabilities.md` and designed in
+`docs/dev/design/BackendCapabilities.md`.
 
 Compiler phases must not depend on a live Spark installation. Discovery, schema extraction, symbolic execution,
 compileability checks, IR construction, code generation, compiler provenance, static dataflow lineage, and
@@ -83,7 +91,8 @@ generated-file diff checks run without PySpark imports, Java, a SparkSession, or
 PySpark execution may depend on PySpark at runtime; the compiler itself must not.
 
 The v1 default target is `target_pyspark = ">=3.5,<4.1"`, covering PySpark 3.5.x and 4.0.x. The PySpark target layer
-should prefer the oldest clear optimizer-visible API inside the configured range.
+should prefer the oldest clear optimizer-visible API inside the configured range. Unsupported backend targets and
+unsupported feature requirements fail through `BACKEND-E2401` and `BACKEND-E2402`.
 
 Spark Connect belongs to v4 unless it can be supported through this target boundary without changing public DSL syntax,
 online invocation construction, generated class construction, `run(...)` signatures, or streaming orchestration
