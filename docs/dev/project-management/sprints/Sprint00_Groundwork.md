@@ -1,4 +1,4 @@
-﻿# Sprint 00: Groundwork
+# Sprint 00: Groundwork
 
 ## Sprint Goal
 
@@ -160,4 +160,4 @@ Target for this sprint:
 
 ## Notes
 
-Keep commands honest. If compilation is not implemented yet, return a clear вЂњno transforms foundвЂќ result, not a fake success with invented generated code.
+Keep commands honest. If compilation is not implemented yet, return a clear “no transforms found” result, not a fake success with invented generated code.

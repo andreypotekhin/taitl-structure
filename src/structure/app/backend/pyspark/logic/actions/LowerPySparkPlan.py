@@ -80,6 +80,8 @@ class LowerPySparkPlan:
         return PySparkStepRecipe(
             name=step.name,
             ordinal=step.ordinal,
+            source=step.source,
+            source_scope=step.source_scope,
             input_schema=step.input_schema,
             output_schema=step.output_schema,
             input_alias=input_alias,

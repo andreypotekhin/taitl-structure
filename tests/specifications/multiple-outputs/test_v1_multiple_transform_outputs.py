@@ -1,6 +1,9 @@
+from typing import Any, cast
+
 import pytest
 
 from structure import String, Structure, Transform, field, input, output, transform
+from structure.app.backend.pyspark.api import lower_pyspark_plan, render_pyspark_transform_module
 from structure.app.dsl.api import compile_transform
 from structure.app.runtime.api import StructureSession, TransformResult
 
@@ -29,7 +32,7 @@ class Published(Structure):
     id = field(String(), nullable=False)
 
 
-def test_v1_multi_output_methods_are_terminal_siblings() -> None:
+def test_v1_multi_output_methods_write_source_order_lanes() -> None:
     @transform
     class RouteOrders(Transform):
         rows = input(Raw)
@@ -43,25 +46,38 @@ def test_v1_multi_output_methods_are_terminal_siblings() -> None:
         def accept(self, row: Normalized) -> Accepted:
             from structure import where
 
-            where(row.customer_id.is_not_null())
+            where(cast(Any, row.customer_id).is_not_null())
             return Accepted(id=row.id, status="accepted")
+
+        @transform(input=accepted, output=accepted)
+        def keep_accepted(self, row: Accepted) -> Accepted:
+            from structure import where
+
+            where(cast(Any, row.status) == "accepted")
+            return Accepted(id=row.id, status=row.status)
 
         @transform(output=rejected)
         def reject(self, row: Normalized) -> Rejected:
             from structure import where
 
-            where(row.customer_id.is_null())
+            where(cast(Any, row.customer_id).is_null())
             return Rejected(id=row.id, reason="missing customer")
 
     plan = compile_transform(RouteOrders)
 
-    assert [step.name for step in plan.steps] == ["normalize"]
-    assert [(item.name, item.source, item.schema) for item in plan.outputs] == [
-        ("accepted", "normalize", Accepted),
-        ("rejected", "normalize", Rejected),
+    assert [(step.name, step.source, step.input_lane, step.output_lane) for step in plan.steps] == [
+        ("normalize", "rows", "df", "df"),
+        ("accept", "normalize", "df", "accepted"),
+        ("keep_accepted", "accept", "accepted", "accepted"),
+        ("reject", "normalize", "df", "rejected"),
     ]
-    assert plan.outputs[0].filters[0].kind == "is_not_null"
-    assert plan.outputs[1].filters[0].kind == "is_null"
+    assert [(item.name, item.source, item.schema) for item in plan.outputs] == [
+        ("accepted", "keep_accepted", Accepted),
+        ("rejected", "reject", Rejected),
+    ]
+    assert plan.steps[1].filters[0].kind == "is_not_null"
+    assert plan.steps[2].filters[0].kind == "eq"
+    assert plan.steps[3].filters[0].kind == "is_null"
 
 
 def test_v1_single_field_output_does_not_need_terminal_binding() -> None:
@@ -106,7 +122,121 @@ def test_v1_multi_output_requires_explicit_terminal_bindings() -> None:
     with pytest.raises(Exception) as raised:
         compile_transform(RouteOrders)
 
-    assert "has no terminal transform method" in str(raised.value)
+    assert "has no explicit transform method" in str(raised.value)
+
+
+def test_v1_branch_input_must_be_available_earlier_in_source_order() -> None:
+    @transform
+    class RouteOrders(Transform):
+        rows = input(Raw)
+        accepted = output(Accepted)
+        rejected = output(Rejected)
+
+        @transform(input=accepted, output=rejected)
+        def reject_from_missing_lane(self, row: Accepted) -> Rejected:
+            return Rejected(id=row.id, reason="missing customer")
+
+        @transform(output=accepted)
+        def accept(self, row: Raw) -> Accepted:
+            return Accepted(id=row.id, status="accepted")
+
+    with pytest.raises(Exception) as raised:
+        compile_transform(RouteOrders)
+
+    assert "Input lane accepted is not available yet" in str(raised.value)
+
+
+def test_v1_branch_input_schema_must_match_current_lane_schema() -> None:
+    @transform
+    class RouteOrders(Transform):
+        rows = input(Raw)
+        accepted = output(Accepted)
+
+        @transform(output=accepted)
+        def accept(self, row: Raw) -> Accepted:
+            return Accepted(id=row.id, status="accepted")
+
+        @transform(input=accepted, output=accepted)
+        def wrong_schema(self, row: Rejected) -> Accepted:
+            return Accepted(id=row.id, status="accepted")
+
+    with pytest.raises(Exception) as raised:
+        compile_transform(RouteOrders)
+
+    assert "lane accepted currently carries Accepted" in str(raised.value)
+
+
+def test_v1_output_method_return_schema_must_match_output_lane_schema() -> None:
+    @transform
+    class RouteOrders(Transform):
+        rows = input(Raw)
+        accepted = output(Accepted)
+
+        @transform(output=accepted)
+        def accept(self, row: Raw) -> Published:
+            return Published(id=row.id)
+
+    with pytest.raises(Exception) as raised:
+        compile_transform(RouteOrders)
+
+    assert "returns Published, not Accepted" in str(raised.value)
+
+
+def test_v1_method_input_requires_method_output() -> None:
+    with pytest.raises(TypeError) as raised:
+
+        @transform
+        class RouteOrders(Transform):
+            rows = input(Raw)
+            accepted = output(Accepted)
+
+            @transform(input=accepted)
+            def accept(self, row: Raw) -> Accepted:
+                return Accepted(id=row.id, status="accepted")
+
+    assert "@transform on a method requires output=output_declaration" in str(raised.value)
+
+
+def test_v1_generated_pyspark_uses_per_lane_step_sources() -> None:
+    @transform
+    class RouteOrders(Transform):
+        rows = input(Raw)
+        accepted = output(Accepted)
+        rejected = output(Rejected)
+
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, customer_id=row.customer_id)
+
+        @transform(output=accepted)
+        def accept(self, row: Normalized) -> Accepted:
+            return Accepted(id=row.id, status="accepted")
+
+        @transform(input=accepted, output=accepted)
+        def keep_accepted(self, row: Accepted) -> Accepted:
+            return Accepted(id=row.id, status=row.status)
+
+        @transform(output=rejected)
+        def reject(self, row: Normalized) -> Rejected:
+            return Rejected(id=row.id, reason="missing customer")
+
+    recipe = lower_pyspark_plan(compile_transform(RouteOrders))
+    text = render_pyspark_transform_module(
+        recipe,
+        source_transform="tests.specifications.multiple_outputs.RouteOrders",
+        runtime_module="testing.runtime",
+        schema_modules={
+            Raw: "testing.schemas",
+            Normalized: "testing.schemas",
+            Accepted: "testing.schemas",
+            Rejected: "testing.schemas",
+        },
+    )
+
+    assert [step.source for step in recipe.steps] == ["rows", "normalize", "accept", "normalize"]
+    assert "        # Subtransform: accept\n        df = normalize_df.alias(\"normalized\")" in text
+    assert "        # Subtransform: keep_accepted\n        df = accept_df.alias(\"accepted\")" in text
+    assert "        # Subtransform: reject\n        df = normalize_df.alias(\"normalized\")" in text
+    assert 'return TransformResult({"accepted": accepted_df, "rejected": rejected_df}, single=False)' in text
 
 
 def test_v1_online_executor_result_wraps_single_output_df() -> None:

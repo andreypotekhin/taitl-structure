@@ -25,7 +25,7 @@ The v1 implementation must follow these decisions:
 - `@expr_fn` is the public compiler-visible extension point for reusable expression logic;
 - v1 lookup joins use `join_one(...)`; row-multiplying and existence joins are v2+ features;
 - diagnostics are registry-backed, stable, structured, and linked to documentation;
-- the first implementation checkpoint is v0, a narrow executable vertical slice, before full v1 breadth.
+- the first implementation checkpoint is first executable slice, a narrow executable vertical slice, before full v1 breadth.
 
 ## Owning Specifications
 
@@ -86,7 +86,7 @@ The pre-coding documentation gaps from `docs/dev/design/Challenges.md` are resol
 | C17 | `docs/dev/Testing.md`; `docs/dev/Style.md`; feature-spec acceptance criteria |
 | C18 | `ConfigSchema.md` |
 | C19 | `docs/Compatibility.md`; `CompatibilityPolicy.md`; `D06182605.Versioning-and-compatibility-policy.md` |
-| C22 | `P06202601.First-executable-contract-v0.plan.md`; v0 model fixture; Sprint 01 plan |
+| C22 | `P06202601.v1-first-executable-slice.plan.md`; first executable slice model fixture; Sprint 01 plan |
 | C23 | `BackendCapabilities.md`; `BackendCapabilities` design; `D06202604.Backend-capability-interface.md` |
 | C24 | `ExecutionSemanticContract.md`; `ExecutionSemanticContract` design; `D06202601` |
 | C25 | `Readme.md`; `docs/Compatibility.md`; compileability checker design |
@@ -240,7 +240,7 @@ use provisional examples until the registry exists, but implementation tests mus
 
 - Every item from `docs/dev/design/Challenges.md` under "Recommended Pre-Coding Docs to Add" has an owning
   implementation-ready specification.
-- A contributor can identify whether a feature belongs in v0, v1, v2, v3, or v4 without reading design discussion
+- A contributor can identify whether a feature belongs in Sprint 01, v1, v2, v3, or v4 without reading design discussion
   transcripts.
 - Source layout, schema syntax, validation, hooks, joins, configuration, compatibility, diagnostics, and compiler
   performance all have concrete acceptance criteria in specifications.

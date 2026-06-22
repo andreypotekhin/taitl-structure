@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import Callable
 import inspect
+from typing import Callable
 
 from structure.app.dsl.logic.model.expr.expressions import literal
 from structure.app.dsl.logic.model.schemas.Structure import Structure
@@ -31,7 +31,7 @@ def transform(target=None, **kwargs):
             return _decorate_transform_class(item, kwargs)
         if inspect.isfunction(item):
             return _decorate_transform_method(item, kwargs)
-        raise TypeError("@transform can decorate a Transform class or terminal output method")
+        raise TypeError("@transform can decorate a Transform class or transform method")
 
     if target is None:
         return decorate
@@ -59,20 +59,22 @@ def _decorate_transform_class(cls, kwargs):
 
 
 def _decorate_transform_method(function, kwargs):
-    allowed = {"output", "source"}
+    allowed = {"input", "output"}
     unknown = set(kwargs) - allowed
     if unknown:
         raise TypeError(f"@transform got unknown method option(s): {', '.join(sorted(unknown))}")
     if "output" not in kwargs:
         raise TypeError("@transform on a method requires output=output_declaration")
+    if "input" in kwargs and not isinstance(kwargs["input"], OutputDeclaration):
+        raise TypeError("@transform(input=...) on a method requires an output(...) declaration")
     if not isinstance(kwargs["output"], OutputDeclaration):
         raise TypeError("@transform(output=...) on a method requires an output(...) declaration")
     setattr(
         function,
         "_structure_output_method",
         {
+            "input": kwargs.get("input"),
             "output": kwargs["output"],
-            "source": kwargs.get("source"),
         },
     )
     return function

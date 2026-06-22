@@ -68,15 +68,13 @@ class RenderPySparkTransformModule:
         if plan.requires_hook_inputs:
             lines.extend(self._hook_inputs(plan))
 
-        current = plan.inputs[0].name
         sources = {input.name: input.name for input in plan.inputs}
         for step in plan.steps:
             lines.append("")
-            lines.append(render_pyspark_step(step, current=current))
+            lines.append(render_pyspark_step(step, current=sources[step.source]))
             source_name = f"{step.name}_df"
             lines.append(f"        {source_name} = df")
             sources[step.name] = source_name
-            current = "df"
 
         result_entries: list[str] = []
         for output in plan.outputs:
@@ -127,7 +125,7 @@ class RenderPySparkTransformModule:
         return {module: tuple(sorted(constants)) for module, constants in sorted(modules.items())}
 
     def _schemas(self, plan: PySparkExecutionPlan) -> set[type[Structure]]:
-        schemas: set[type[Structure]] = {plan.final_validation.schema}
+        schemas: set[type[Structure]] = {output.output_schema for output in plan.outputs}
         for input in plan.inputs:
             schemas.add(input.schema)
         for step in plan.steps:

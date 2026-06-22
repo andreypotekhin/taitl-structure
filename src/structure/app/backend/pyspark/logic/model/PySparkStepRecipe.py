@@ -14,6 +14,8 @@ from structure.app.dsl.logic.model.schemas.Structure import Structure
 class PySparkStepRecipe:
     name: str
     ordinal: int
+    source: str
+    source_scope: str
     input_schema: type[Structure]
     output_schema: type[Structure]
     input_alias: str

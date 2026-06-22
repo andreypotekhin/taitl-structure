@@ -10,6 +10,7 @@ from structure.app.runtime.logic.actions.RunGeneratedPySparkTransform import run
 from structure.app.runtime.logic.actions.RunOnlinePySparkTransform import run_online_pyspark_transform
 from structure.app.runtime.logic.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.app.runtime.logic.model.StructureRuntimeError import StructureRuntimeError
+from structure.app.runtime.logic.model.TransformResult import TransformResult
 
 
 class StructureSession:
@@ -33,7 +34,7 @@ class StructureSession:
         self.schema_types = schema_types
         self.online_executor = online_executor
 
-    def run(self, invocation: Transform) -> object:
+    def run(self, invocation: Transform) -> TransformResult:
         plan = lower_pyspark_plan(compile_transform(type(invocation)))
         self._validate_inputs(invocation)
         invocation.schemas = build_transform_schemas(plan, types=self.schema_types)

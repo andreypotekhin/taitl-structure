@@ -34,8 +34,7 @@ def test_v1_transform_module_renderer_renders_class_runtime_shape() -> None:
     assert "from testing.model.v1.orders.transforms.order import EnrichOrders" in text
     assert (
         "from testing.model.v1.structure_generated.runtime.schema_assert import "
-        "TransformResult, assert_schema, project_schema, HookInputs"
-        in text
+        "TransformResult, assert_schema, project_schema, HookInputs" in text
     )
     assert "class EnrichOrdersGenerated:" in text
     assert "        self._impl = EnrichOrders()" in text

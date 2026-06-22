@@ -1,4 +1,4 @@
-﻿# Roadmap
+# Roadmap
 
 ## Product Direction
 
@@ -6,9 +6,9 @@ Structure is an IR-first data pipeline library. Developers write typed, schema-r
 Structure runs them online by default through `StructureSession`, and can also emit generated PySpark classes using
 DataFrame and Column operations so Spark can optimize execution.
 
-The north star is deliberately strict: v0 proves the first executable contract with one useful transform running both
-online and as generated PySpark. v1 proves that Structure can replace hand-maintained PySpark boilerplate with a strict
-online runtime and optional generated-code workflow. v2 makes that workflow useful for mainstream analytical pipelines.
+The north star is deliberately strict: v1 first proves one useful executable transform running both online and as
+generated PySpark, then broadens into the contract that lets Structure replace hand-maintained PySpark boilerplate
+with a strict online runtime and optional generated-code workflow. v2 makes that workflow useful for mainstream analytical pipelines.
 v3 takes ownership of streaming lifecycle concerns only after the transform compiler has earned trust. v4 adds backend
 expansion through Spark Connect after the ordinary PySpark contract is stable.
 
@@ -44,22 +44,22 @@ By default, Structure should use `src` when it contains importable packages and 
 Generated code should live under `generated/structure_generated` and mirror source package paths below that
 namespace. Other layouts remain configurable.
 
-## v0 Scope
+## Sprint 01 Scope
 
-v0 is an internal dev/test planning label for the first executable contract. It is not public documentation language.
-It exists so the team can prove a narrow runnable path before the larger v1 scope hardens.
+Sprint 01 proves the first executable v1 contract. It gives the team a narrow runnable path before the larger v1 scope
+hardens.
 
-### v0 must include
+### Sprint 01 must include
 
 - `@transform` class discovery.
 - `input(Structure)` declaration for one named input.
 - `StructureSession`.
 - Builder-style transform invocation.
-- Online PySpark runner for the v0 fixture.
+- Online PySpark runner for the first v1 fixture.
 - Shared PySpark execution semantic contract for online/generated parity.
 - One public schema-returning method.
 - One generated PySpark class and convenience function.
-- Spark `StructType` generation for the v0 schemas.
+- Spark `StructType` generation for the first v1 schemas.
 - Runtime input `assert_schema(...)`.
 - Symbolic field references.
 - Projection.
@@ -68,7 +68,7 @@ It exists so the team can prove a narrow runnable path before the larger v1 scop
 - Online/generated parity test.
 - Spark-free `structure check` for the fixture.
 
-### v0 excludes
+### Sprint 01 excludes
 
 - joins;
 - hooks;
@@ -174,7 +174,7 @@ are stable.
 | Milestone | Goal | Sprints |
 |---|---|---|
 | M0 | Repository, compiler skeleton, and pre-coding spike gate | Sprint 00 |
-| M1 | v0 first executable contract | Sprint 01 |
+| M1 | first executable slice | Sprint 01 |
 | M2 | Schema validation and generated class polish | Sprint 02 |
 | M3 | Practical expression DSL and diagnostics | Sprint 03 |
 | M4 | Hook model and no-hook generated-code cleanliness | Sprint 04 |

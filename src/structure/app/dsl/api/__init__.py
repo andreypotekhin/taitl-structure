@@ -21,7 +21,15 @@ from structure.app.dsl.logic.model.transforms.Transform import Transform
 from structure.app.dsl.logic.model.transforms.Join import Join
 from structure.app.dsl.logic.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.logic.model.transforms.SchemaMode import SchemaMode
-from structure.app.dsl.logic.model.transforms.transform_api import after, before, expr_fn, input, output, transform, where
+from structure.app.dsl.logic.model.transforms.transform_api import (
+    after,
+    before,
+    expr_fn,
+    input,
+    output,
+    transform,
+    where,
+)
 
 __all__ = [
     "Array",

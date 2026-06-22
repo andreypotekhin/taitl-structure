@@ -1,6 +1,6 @@
-﻿# Implementation
+# Implementation
 
-## Phase 1: v0 First Executable Contract
+## Phase 1: v1 First Executable Slice
 
 - Schema declarations.
 - `input(...)`.
@@ -10,18 +10,18 @@
 - One `@expr_fn` helper.
 - `where(...)` filtering.
 - Projection generation.
-- Backend capability interface for v0 PySpark requirements.
+- Backend capability interface for first-slice PySpark requirements.
 - Shared PySpark execution recipes for online/generated parity.
 - `StructureSession`.
 - Builder-style transform invocation.
-- Online PySpark execution of the v0 transform.
+- Online PySpark execution of the first-slice transform.
 - Spark `StructType` generation.
 - Generated schema constants usable by caller code.
 - Online-materialized output schema available from the transform invocation after `.run(session)`.
 - Generated transform class.
 - Input validation.
 - Online/generated parity test.
-- CLI `check` for the v0 fixture.
+- CLI `check` for the first v1 fixture.
 
 ## Phase 2: v1 Complete
 

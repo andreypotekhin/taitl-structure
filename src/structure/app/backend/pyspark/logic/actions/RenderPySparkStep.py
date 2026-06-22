@@ -4,13 +4,14 @@ from structure.app.backend.pyspark.logic.actions.RenderPySparkExpression import 
 from structure.app.backend.pyspark.logic.actions.RenderPySparkSchema import render_pyspark_schema
 from structure.app.backend.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.backend.pyspark.logic.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.app.backend.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.app.backend.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.backend.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 
 class RenderPySparkStep:
 
-    def __call__(self, step: PySparkStepRecipe, *, current: str) -> str:
+    def __call__(self, step: PySparkStepRecipe | PySparkOutputRecipe, *, current: str) -> str:
         lines = [f"        # Subtransform: {step.name}"]
         active = current
         if step.before_hooks:
@@ -33,7 +34,7 @@ class RenderPySparkStep:
             current = "df"
         return lines
 
-    def _joins(self, step: PySparkStepRecipe) -> list[str]:
+    def _joins(self, step: PySparkStepRecipe | PySparkOutputRecipe) -> list[str]:
         lines: list[str] = []
         for join in step.joins:
             right = f'{join.input_name}.alias("{join.right_alias}")'
@@ -48,13 +49,13 @@ class RenderPySparkStep:
             lines.append("        )")
         return lines
 
-    def _filters(self, step: PySparkStepRecipe) -> list[str]:
+    def _filters(self, step: PySparkStepRecipe | PySparkOutputRecipe) -> list[str]:
         predicate = " & ".join(
             f"({render_pyspark_expression(filter, scope_aliases=self._scope_aliases(step))})" for filter in step.filters
         )
         return [f"        df = df.where({predicate})"]
 
-    def _projection(self, step: PySparkStepRecipe) -> list[str]:
+    def _projection(self, step: PySparkStepRecipe | PySparkOutputRecipe) -> list[str]:
         if not step.projection:
             return []
         lines = ["        df = df.select("]
@@ -75,7 +76,9 @@ class RenderPySparkStep:
                 lines.append(f"        df = project_schema(df, {schema})")
         return lines
 
-    def _scope_aliases(self, step: PySparkStepRecipe, join: PySparkJoinRecipe | None = None) -> dict[str, str]:
+    def _scope_aliases(
+        self, step: PySparkStepRecipe | PySparkOutputRecipe, join: PySparkJoinRecipe | None = None
+    ) -> dict[str, str]:
         aliases = {
             step.input_schema.__name__: step.input_alias,
         }

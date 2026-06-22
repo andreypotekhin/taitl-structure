@@ -1,4 +1,4 @@
-﻿# Sprint 01: v0 First Executable Contract
+# Sprint 01: v1 First Executable Slice
 
 ## Sprint Goal
 
@@ -121,7 +121,7 @@ class NormalizeOrdersGenerated:
 - As a developer, input schemas are validated before execution.
 - As a developer, I can generate one PySpark class per source transform class.
 - As a developer, generated code uses Spark Column expressions rather than UDFs.
-- As a developer, online and generated execution produce the same result for the v0 fixture.
+- As a developer, online and generated execution produce the same result for the first v1 fixture.
 
 ## Deliverables
 

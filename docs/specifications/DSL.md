@@ -181,7 +181,7 @@ Rules:
 - `@transform` without parentheses and `@transform(...)` with keyword arguments are both valid.
 - Positional arguments to `@transform(...)` are rejected.
 - Unknown keyword arguments are rejected with allowed values.
-- `output=` is not a class-level option; it is reserved for terminal output method binding.
+- `output=` is not a class-level option; it is reserved for method-level lane output binding.
 - The decorator must preserve the original class identity enough for IDE navigation, `isinstance`, subclass checks,
   and direct instantiation to behave normally.
 - The decorator must record source metadata for discovery, diagnostics, generated class naming, provenance, and
@@ -249,10 +249,15 @@ Rules:
 - A transform may declare a single unnamed output schema with `@transform(to=Schema)` instead of field-declared
   outputs.
 - A transform must not mix class-level `to=Schema` with field-declared outputs.
-- A single-output transform does not need an explicit terminal output method binding; the final shared subtransform
-  produces the result.
-- If a transform declares more than one output field, each terminal output method must bind one output with
-  method-level `@transform(output=that_output)`.
+- A single-output transform does not need an explicit output method binding; the final `df` lane produces the result.
+- If a transform declares more than one output field, each output lane must be written explicitly with method-level
+  `@transform(output=that_output)`.
+- Method-level `@transform(output=lane)` reads from the canonical `df` lane and writes the named lane.
+- Method-level `@transform(input=source_lane, output=target_lane)` reads from a previously available lane and writes
+  another lane.
+- Any method that specifies `input=` must also specify `output=`.
+- Lane references use output declarations, not strings. To explicitly reference the canonical `df` lane from a
+  decorator, declare it as a field, such as `df = output(OrderNormalized)`.
 
 Canonical multi-output form:
 
@@ -271,14 +276,21 @@ class RouteOrders(Transform):
         where(order.customer_id.is_not_null())
         return OrderAccepted.base(order)(status="accepted")
 
+    @transform(input=accepted, output=accepted)
+    def keep_accepted(self, order: OrderAccepted) -> OrderAccepted:
+        where(order.status == "accepted")
+        return OrderAccepted.base(order)()
+
     @transform(output=rejected)
     def reject(self, order: OrderNormalized) -> OrderRejected:
         where(order.customer_id.is_null())
         return OrderRejected.base(order)(reason="missing customer")
 ```
 
-Terminal output methods are sibling projections from their resolved source frame. They do not feed each other in source
-order, so output-local `where(...)` filters affect only that output.
+Transform methods execute in source order, but each method reads from its declared input lane and writes to its declared
+output lane. Ordinary undecorated methods are equivalent to `df -> df`. Output-local `where(...)` filters affect only
+the lane written by that method, so `reject(...)` above still reads the normalized `df` lane rather than the filtered
+`accepted` lane.
 
 ## Subtransforms
 
@@ -299,8 +311,9 @@ Rules:
 - The row parameter annotation must be a `Structure` subclass.
 - The return annotation must be a `Structure` subclass.
 - Subtransforms execute in source order.
-- Source-order schema flow must be valid: the first subtransform consumes one declared input schema, and later
-  subtransforms consume the previous step output schema unless a future spec introduces explicit branching.
+- Source-order lane flow must be valid: undecorated methods consume and update `df`; `@transform(output=lane)`
+  consumes `df` and updates `lane`; `@transform(input=source, output=target)` consumes a previously available lane and
+  updates the target lane.
 - If more than one declared input has the first subtransform's input schema, the compiler must require an unambiguous
   mapping or emit a diagnostic.
 - Private helper methods are allowed and are not compiled as subtransforms.

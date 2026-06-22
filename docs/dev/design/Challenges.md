@@ -1,6 +1,6 @@
-﻿# Challenges Before Coding Starts
+# Challenges Before Coding Starts
 
-This document captures the pre-implementation challenges identified for the **Structure** project. They are labeled **C1вЂ“C20** for reference in planning, backlog, risk tracking, and sprint discussions.
+This document captures the pre-implementation challenges identified for the **Structure** project. They are labeled **C1–C20** for reference in planning, backlog, risk tracking, and sprint discussions.
 
 Current inventory runs through C31. A challenge marked resolved here means the design/specification decision is
 settled; implementation work may still remain in the owning plan or sprint.
@@ -395,7 +395,7 @@ structure clean
 
 At minimum, design the compiler so v2 production incremental compilation can be added without major rework.
 
-## C15. Need a вЂњNo Spark Dependency During CompileвЂќ Rule
+## C15. Need a “No Spark Dependency During Compile” Rule
 
 Resolved by decision `docs/dev/design/decisions/D06182606.No-spark-compile-dependency.md`.
 
@@ -418,7 +418,7 @@ generation, compiler provenance, static dataflow traceability, and `structure co
 
 Resolved by the generated-code comparison in `Readme.md`.
 
-Docs should highlight StructureвЂ™s strength in requiring less developer-maintained code.
+Docs should highlight Structure’s strength in requiring less developer-maintained code.
 
 Show comparisons such as:
 
@@ -429,7 +429,7 @@ Hand-written PySpark:
 
 Structure source:
   typed schema construction and symbolic joins
-  20вЂ“30 lines maintained by developer
+  20–30 lines maintained by developer
 
 Generated PySpark:
   visible, reviewable, deterministic, but not hand-maintained
@@ -532,18 +532,18 @@ Recommended direction:
 
 ## C22. The v1 Scope Is Large Enough to Hide the First Useful Release
 
-Resolved by `docs/dev/planning/P06202601.First-executable-contract-v0.plan.md`, the v0 model fixture under
-`res/testing/model/v0`, and the revised Sprint 01 plan.
+Resolved by `docs/dev/planning/P06202601.v1-first-executable-slice.plan.md`, the first executable slice model fixture under
+`res/testing/model/v1`, and the revised Sprint 01 plan.
 
 The roadmap's v1 remains the broad north star: online execution, optional generated PySpark, schemas, validation, joins,
 hooks, compiler traceability, static dataflow, streaming compatibility reporting, diagnostics, doctor checks, and build
 integration. That scope is coherent, but it is too broad to serve as the first adoption checkpoint.
 
-The first adoption checkpoint is now v0, an internal dev/test planning label. v0 proves one executable contract before
+The first adoption checkpoint is now first executable slice, an internal dev/test planning label. first executable slice proves one executable contract before
 the larger v1 scope hardens: one transform with schema declaration, projection, filtering, one `@expr_fn` helper, input
 validation, online execution, generated execution, and parity tests.
 
-Deferred from v0 into v1:
+Deferred from Sprint 01 into later v1 work:
 
 - joins;
 - hooks;
@@ -757,7 +757,7 @@ HookSemantics.md
 CompilerPerformanceTargets.md
 ```
 
-No missing pre-coding design or specification document is known for the v0/v1 coding path. Remaining gaps are
+No missing pre-coding design or specification document is known for the v1 coding path. Remaining gaps are
 implementation, adoption, testing breadth, and governance gaps, not missing semantic specifications.
 
 ## Recommended Sprint 0 Spike Tasks

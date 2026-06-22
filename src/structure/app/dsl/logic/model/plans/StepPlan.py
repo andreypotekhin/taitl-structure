@@ -14,6 +14,10 @@ class StepPlan:
     name: str
     input_schema: type[Structure]
     output_schema: type[Structure]
+    source: str
+    source_scope: str
+    input_lane: str
+    output_lane: str
     filters: tuple[Expression, ...]
     projection: tuple[ProjectAssignment, ...]
     ordinal: int

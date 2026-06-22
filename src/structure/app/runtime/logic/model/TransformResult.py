@@ -5,6 +5,8 @@ from types import MappingProxyType
 
 
 class TransformResult(Mapping[str, object]):
+    _structure_outputs: Mapping[str, object]
+    _structure_single: bool
 
     def __init__(self, outputs: Mapping[str, object], *, single: bool = False) -> None:
         values = dict(outputs)

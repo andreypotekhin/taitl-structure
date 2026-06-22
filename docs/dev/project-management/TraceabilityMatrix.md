@@ -1,4 +1,4 @@
-﻿# Traceability Matrix
+# Traceability Matrix
 
 This matrix maps early sprints to specification sections and major deliverables.
 

@@ -1,4 +1,4 @@
-﻿# Structure Project Management Docs
+# Structure Project Management Docs
 
 This archive contains sprint-oriented project management documentation for the first implementation iterations of
 **Structure**, a schema-first Python DSL and runtime/compiler toolkit that runs or generates clean PySpark DataFrame

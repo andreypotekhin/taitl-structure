@@ -100,7 +100,7 @@ TransformPlan
   generated_class
   inputs
   steps
-  output_schema
+  outputs
   validation_policy
   streaming_policy
   provenance
@@ -119,6 +119,9 @@ StepPlan
   id
   name
   ordinal
+  source
+  input_lane
+  output_lane
   input_schema
   output_schema
   input_scope
@@ -135,6 +138,14 @@ Operation
   Join
   HookCall
   ValidateSchema
+
+OutputPlan
+  id
+  name
+  ordinal
+  schema
+  source
+  source_scope
 ```
 
 Minimum expression model:
@@ -220,7 +231,7 @@ Fields:
 - `generated_class`: backend-neutral generated class identity, such as `EnrichOrdersGenerated`.
 - `inputs`: ordered `InputPlan` list.
 - `steps`: ordered `StepPlan` list.
-- `output_schema`: final `SchemaDef`.
+- `outputs`: ordered `OutputPlan` list.
 - `validation_policy`: effective transform-level validation policy.
 - `streaming_policy`: transform streaming marker and effective check severity.
 - `provenance`: source-to-IR provenance records.
@@ -232,9 +243,13 @@ Rules:
 
 - `inputs` preserve class-body input declaration order.
 - `steps` preserve source-order compiled subtransform order.
-- `output_schema` equals the final step output schema.
-- The first step must consume one declared input schema in v1.
-- Later steps consume the previous step output schema in v1.
+- Undecorated steps consume and update the canonical `df` lane.
+- Method-level `@transform(output=lane)` consumes `df` and updates `lane`.
+- Method-level `@transform(input=source_lane, output=target_lane)` consumes a lane already available earlier in source
+  order and updates the target lane.
+- `outputs` preserve class-body output declaration order.
+- `TransformPlan.output_schema` is a compatibility accessor that returns the sole output schema and fails clearly when
+  a transform has multiple outputs.
 - A transform with no compiled steps is invalid unless a future specification defines passthrough transforms.
 - `TransformPlan` must not contain live input DataFrames.
 - `TransformPlan` must not contain source transform instances created for hook execution.
@@ -273,6 +288,9 @@ Fields:
 - `id`: stable step IR id.
 - `name`: source method name.
 - `ordinal`: source-order step number, starting from zero.
+- `source`: input DataFrame frame key for this step.
+- `input_lane`: logical lane consumed by this step.
+- `output_lane`: logical lane updated by this step.
 - `input_schema`: `SchemaDef` expected for the row parameter.
 - `output_schema`: `SchemaDef` produced by the return expression.
 - `input_scope`: current row scope at step entry.
@@ -286,6 +304,9 @@ Fields:
 Rules:
 
 - Operations preserve source semantics.
+- A step may consume only a lane or declared input frame already available earlier in source order.
+- The row parameter annotation must match the current schema of `input_lane`.
+- A decorated step return annotation must match the schema declared by its `output_lane`.
 - Before hooks run before compiled operations for the step.
 - After hooks run after compiled operations for the step.
 - `operations` should contain compiled `HookCall` and `ValidateSchema` operations only when an implementation chooses
@@ -309,6 +330,27 @@ operations containing HookCall and ValidateSchema in exact execution order
 
 If the second shape is used, convenience accessors should still expose before hooks, after hooks, and validation points
 for code generation and diagnostics.
+
+## OutputPlan
+
+`OutputPlan` represents one public transform result lane.
+
+Fields:
+
+- `id`: stable output IR id.
+- `name`: output name, such as `df`, `accepted`, or `rejected`.
+- `ordinal`: result declaration order, starting from zero.
+- `schema`: declared output `SchemaDef`.
+- `source`: source frame key that currently holds the lane at result construction time.
+- `source_scope`: symbolic row scope associated with the source frame.
+
+Rules:
+
+- A class-level `@transform(to=Schema)` creates one output named `df`.
+- One field-declared output with no explicit output method is satisfied by the final `df` lane and is exposed as both
+  `result.df` and the field name.
+- More than one field-declared output requires every declared output lane to be written explicitly.
+- Result construction returns all field-declared output lanes in declaration order.
 
 ## Scopes
 
@@ -1132,7 +1174,7 @@ The implementation is complete when tests prove:
 - a projection-only transform produces one `TransformPlan` with ordered inputs and one ordered `StepPlan`;
 - input declaration order is preserved in `InputPlan.ordinal`;
 - source-order subtransform order is preserved in `StepPlan.ordinal`;
-- `TransformPlan.output_schema` is the final step output schema;
+- `TransformPlan.output_schema` returns the sole output schema and fails clearly for multi-output transforms;
 - stable ids are deterministic across repeated compilation of unchanged source;
 - source anchors are captured when Python source inspection can provide them;
 - missing source anchors do not prevent successful compilation of otherwise valid source;

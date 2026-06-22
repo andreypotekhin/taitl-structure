@@ -161,8 +161,8 @@ as input to test cases, as well as pre-composed 'generated/' outputs featuring
 expected results of code generation/compiler output.
 
 Directory structure: 
-- Model source: /res/testing/model/v0/orders/, /res/testing/model/v1/orders/, /res/testing/model/v2/orders/
-- Model generated source: /res/testing/model/v0/structure_generated/, /res/testing/model/v1/structure_generated/, /res/testing/model/v2/structure_generated/
+- Model source: /res/testing/model/v1/orders/, /res/testing/model/v2/orders/
+- Model generated source: /res/testing/model/v1/structure_generated/, /res/testing/model/v2/structure_generated/
 
 ## Documenting
 ### End-User documentation

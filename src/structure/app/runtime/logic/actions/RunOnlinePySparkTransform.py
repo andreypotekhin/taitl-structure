@@ -37,7 +37,7 @@ class RunOnlinePySparkTransform:
         plan: PySparkExecutionPlan,
         *,
         session,
-    ) -> object:
+    ) -> TransformResult:
         if session.online_executor is not None:
             result = session.online_executor(
                 plan=plan,
@@ -65,11 +65,10 @@ class RunOnlinePySparkTransform:
 
         hook_inputs = HookInputs(**inputs) if plan.requires_hook_inputs else None
         frames = dict(inputs)
-        current = inputs[plan.inputs[0].name]
         for step in plan.steps:
-            current = self._step(
+            frame = self._step(
                 step,
-                current=current,
+                current=frames[step.source],
                 inputs=inputs,
                 hook_inputs=hook_inputs,
                 invocation=invocation,
@@ -77,11 +76,13 @@ class RunOnlinePySparkTransform:
                 functions=F,
                 types=T,
             )
-            frames[step.name] = current
+            frames[step.name] = frame
 
         outputs = {}
         for output in plan.outputs:
-            outputs[output.name] = self._output(output, source=frames[output.source], inputs=inputs, functions=F, types=T)
+            outputs[output.name] = self._output(
+                output, source=frames[output.source], inputs=inputs, functions=F, types=T
+            )
         return TransformResult(outputs, single=len(plan.outputs) == 1)
 
     def _step(
@@ -162,9 +163,9 @@ class RunOnlinePySparkTransform:
         if output.projection:
             df = df.select(
                 *(
-                    self._expression(assignment.expression, functions=functions, aliases=self._scope_aliases(output)).alias(
-                        assignment.field.name
-                    )
+                    self._expression(
+                        assignment.expression, functions=functions, aliases=self._scope_aliases(output)
+                    ).alias(assignment.field.name)
                     for assignment in output.projection
                 )
             )
@@ -280,7 +281,9 @@ class RunOnlinePySparkTransform:
         schema = materialize_pyspark_schema(validation.schema, types=types)
         return df.select(*(functions.col(field.name) for field in schema))
 
-    def _scope_aliases(self, step: PySparkStepRecipe | PySparkOutputRecipe, join: PySparkJoinRecipe | None = None) -> dict[str, str]:
+    def _scope_aliases(
+        self, step: PySparkStepRecipe | PySparkOutputRecipe, join: PySparkJoinRecipe | None = None
+    ) -> dict[str, str]:
         aliases = {
             step.input_schema.__name__: step.input_alias,
         }

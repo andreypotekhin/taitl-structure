@@ -3,6 +3,20 @@
 Concepts in this project, with corresponding sub-concepts,
 to serve as base list for concepts testing (tests/concepts/).
 
+## Concepts testing
+
+Concept tests are end-to-end, black-box tests for this vocabulary. They prove that a concept works through public
+Structure surfaces such as the DSL, CLI, `StructureSession`, generated packages, runtime diagnostics, and
+online/generated parity.
+
+Treat `tests/concepts` as the concept coverage map. A single test may cover several concept leaves, but the covered
+concepts should be visible from the test module, test name, docstring, or a nearby coverage table. Concept tests should
+use small representative scenarios and avoid duplicating every unit, specification, or integration test.
+
+Reusable, fixture-agnostic concept-test machinery belongs in `src/structure/lib/testing`. Repository-local scenario
+helpers that know about checked-in model code, fixture data, pytest fixtures, or specific test scenarios belong in
+`tests/helpers`.
+
 ## Concept list
 
 - configuration

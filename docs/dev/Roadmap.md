@@ -1,31 +1,16 @@
-﻿# Roadmap
+# Roadmap
 
-The roadmap is staged around an IR-first north star. v0 proves the first executable contract with one useful transform
-running both online and as generated PySpark. v1 proves that Structure can replace hand-maintained PySpark boilerplate
-with strict online execution and optional generated-code workflow. v2 makes that workflow useful for mainstream
+The roadmap is staged around an IR-first north star. v1 first proves one useful executable transform running both
+online and as generated PySpark, then broadens into the contract that lets Structure replace hand-maintained PySpark
+boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful for mainstream
 analytical pipelines. v3 takes ownership of streaming lifecycle concerns. v4 adds Spark Connect after the ordinary
 PySpark contract is stable.
-
-## v0
-
-- Typed schema definitions for one input and one output schema.
-- Transform class with one named input.
-- Online PySpark execution through `StructureSession`.
-- Builder-style transform invocation.
-- Shared PySpark execution semantic contract for online/generated parity.
-- Generated PySpark class and convenience function.
-- One public schema-returning subtransform.
-- Input schema validation.
-- Filtering with `where(...)`.
-- Projection.
-- One `@expr_fn` helper.
-- Online/generated parity test for the same fixture.
-- Spark-free `structure check` for the fixture.
 
 ## v1
 
 - Typed schema definitions.
 - Transform classes.
+- First executable slice for one schema-to-schema transform.
 - Online PySpark execution by default through `StructureSession`.
 - Builder-style transform invocation.
 - Runtime target registry for online and generated PySpark execution.

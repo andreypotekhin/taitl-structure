@@ -1,4 +1,4 @@
-﻿# Milestones
+# Milestones
 
 ## M0: Groundwork Ready
 

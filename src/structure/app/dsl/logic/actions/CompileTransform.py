@@ -31,8 +31,8 @@ class CompileTransform:
             )
 
         inputs = self._inputs(transform_class)
-        steps, output_methods = self._steps(transform_class, inputs)
-        outputs = self._outputs(transform_class, inputs, steps, output_methods)
+        steps, lanes, explicit_outputs = self._steps(transform_class, inputs)
+        outputs = self._outputs(transform_class, steps, lanes, explicit_outputs)
         return TransformPlan(
             name=transform_class.__name__,
             inputs=tuple(inputs),
@@ -51,12 +51,12 @@ class CompileTransform:
         self,
         transform_class: type[Transform],
         inputs: list[InputPlan],
-    ) -> tuple[list[StepPlan], dict[str, object]]:
+    ) -> tuple[list[StepPlan], dict[str, dict[str, object]], set[str]]:
         instance = transform_class()
         hooks = self._hooks(transform_class)
         steps: list[StepPlan] = []
-        output_methods: dict[str, object] = {}
-        current_schema: type[Structure] | None = None
+        lanes: dict[str, dict[str, object]] = {}
+        explicit_outputs: set[str] = set()
 
         for name, member in transform_class.__dict__.items():
             if name.startswith("_") or name == "run" or not inspect.isfunction(member):
@@ -69,38 +69,47 @@ class CompileTransform:
             assert isinstance(output_schema, type)
             assert issubclass(output_schema, Structure)
 
-            metadata = getattr(member, "_structure_output_method", None)
-            if metadata is not None:
-                declaration = metadata["output"]
-                if declaration.name in output_methods:
-                    raise self._error(
-                        "DSL-E0402",
-                        transform_class=transform_class,
-                        member=name,
-                        problem=f"Output {declaration.name} is bound more than once.",
-                        use="Bind each output(...) declaration to at most one terminal transform method.",
-                    )
-                output_methods[declaration.name] = member
-                continue
-
             parameter = self._row_parameter(member, hints)
             input_schema = parameter.annotation
-            if current_schema is not None and input_schema is not current_schema:
+            metadata = getattr(member, "_structure_output_method", None)
+            input_lane, input_source = self._input_lane(
+                transform_class,
+                metadata,
+                lanes,
+                inputs,
+                input_schema,
+                member=name,
+            )
+            output_lane = self._output_lane(
+                transform_class,
+                metadata,
+                output_schema,
+                member=name,
+                explicit_outputs=explicit_outputs,
+            )
+
+            actual_schema = input_source["schema"]
+            if input_schema is not actual_schema:
+                if input_lane == "df":
+                    problem = (
+                        f"{transform_class.__name__}.{name} expects {input_schema.__name__}, "
+                        f"but the previous subtransform returns {actual_schema.__name__}."
+                    )
+                else:
+                    problem = (
+                        f"{transform_class.__name__}.{name} expects {input_schema.__name__}, "
+                        f"but lane {input_lane} currently carries {actual_schema.__name__}."
+                    )
                 raise self._error(
                     "DSL-E0402",
                     transform_class=transform_class,
                     member=name,
-                    problem=(
-                        f"{transform_class.__name__}.{name} expects {input_schema.__name__}, "
-                        f"but the previous subtransform returns {current_schema.__name__}."
-                    ),
-                    use="Reorder subtransforms or update the row parameter annotation to match the previous output.",
-                    context={"expected": input_schema.__name__, "actual": current_schema.__name__},
+                    problem=problem,
+                    use="Reorder subtransforms or update the row parameter annotation to match the selected input lane.",
+                    context={"expected": input_schema.__name__, "actual": actual_schema.__name__},
                 )
 
-            input_plan = self._input_for_schema(inputs, input_schema) if current_schema is None else None
-            scope_name = input_plan.name if input_plan else input_schema.__name__
-            row = RowScope(name=scope_name, schema=input_schema)
+            row = RowScope(name=str(input_source["scope"]), schema=input_schema)
             context = CompileContext(step=name)
 
             try:
@@ -124,6 +133,10 @@ class CompileTransform:
                     name=name,
                     input_schema=input_schema,
                     output_schema=output_schema,
+                    source=str(input_source["source"]),
+                    source_scope=str(input_source["scope"]),
+                    input_lane=input_lane,
+                    output_lane=output_lane,
                     filters=tuple(context.filters),
                     projection=tuple(assignments),
                     ordinal=len(steps),
@@ -132,7 +145,11 @@ class CompileTransform:
                     after_hooks=hooks.get(("after", name), ()),
                 )
             )
-            current_schema = output_schema
+            lanes[output_lane] = {
+                "schema": output_schema,
+                "source": name,
+                "scope": output_schema.__name__,
+            }
 
         if not steps:
             raise self._error(
@@ -141,14 +158,80 @@ class CompileTransform:
                 problem=f"{transform_class.__name__} has no public schema-returning subtransform.",
                 use="Add a public instance method with a Structure row parameter and Structure return annotation.",
             )
-        return steps, output_methods
+        return steps, lanes, explicit_outputs
+
+    def _input_lane(
+        self,
+        transform_class: type[Transform],
+        metadata: dict[str, object] | None,
+        lanes: dict[str, dict[str, object]],
+        inputs: list[InputPlan],
+        input_schema: type[Structure],
+        *,
+        member: str,
+    ) -> tuple[str, dict[str, object]]:
+        declaration = metadata.get("input") if metadata else None
+        if declaration is None:
+            lane = "df"
+            if lane in lanes:
+                return lane, lanes[lane]
+            input_plan = self._input_for_schema(inputs, input_schema)
+            return lane, {"schema": input_plan.schema, "source": input_plan.name, "scope": input_plan.name}
+
+        if not isinstance(declaration, OutputDeclaration):
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem="@transform(input=...) must reference an output(...) field.",
+                use="Pass a class field declared as name = output(Schema).",
+            )
+        self._declared_output(transform_class, declaration, member=member, role="input")
+        lane = declaration.name
+        if lane not in lanes:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"Input lane {lane} is not available yet.",
+                use="Consume only lanes produced earlier in source order, or omit input= to read the canonical df lane.",
+                context={"lane": lane},
+            )
+        return lane, lanes[lane]
+
+    def _output_lane(
+        self,
+        transform_class: type[Transform],
+        metadata: dict[str, object] | None,
+        output_schema: type[Structure],
+        *,
+        member: str,
+        explicit_outputs: set[str],
+    ) -> str:
+        if metadata is None:
+            return "df"
+
+        declaration = metadata["output"]
+        assert isinstance(declaration, OutputDeclaration)
+        self._declared_output(transform_class, declaration, member=member, role="output")
+        if output_schema is not declaration.schema:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"{transform_class.__name__}.{member} returns {output_schema.__name__}, not {declaration.schema.__name__}.",
+                use="Return the schema declared by the bound output(...) field.",
+                context={"expected": declaration.schema.__name__, "actual": output_schema.__name__},
+            )
+        explicit_outputs.add(declaration.name)
+        return declaration.name
 
     def _outputs(
         self,
         transform_class: type[Transform],
-        inputs: list[InputPlan],
         steps: list[StepPlan],
-        output_methods: dict[str, object],
+        lanes: dict[str, dict[str, object]],
+        explicit_outputs: set[str],
     ) -> list[OutputPlan]:
         declarations = list(transform_class._structure_outputs.values())
         options = dict(getattr(transform_class, "_structure_transform_options", {}))
@@ -165,160 +248,102 @@ class CompileTransform:
         if class_output is not None:
             assert isinstance(class_output, type)
             assert issubclass(class_output, Structure)
-            return [self._synthetic_output("df", class_output, steps[-1], ordinal=0, transform_class=transform_class)]
+            return [self._lane_output("df", class_output, lanes, ordinal=0, transform_class=transform_class)]
 
         if not declarations:
-            return [self._synthetic_output("df", steps[-1].output_schema, steps[-1], ordinal=0, transform_class=transform_class)]
+            return [
+                self._lane_output("df", steps[-1].output_schema, lanes, ordinal=0, transform_class=transform_class)
+            ]
 
-        if len(declarations) == 1 and not output_methods:
+        if len(declarations) == 1 and not explicit_outputs:
             declaration = declarations[0]
-            return [self._synthetic_output(declaration.name, declaration.schema, steps[-1], ordinal=0, transform_class=transform_class)]
+            return [
+                self._lane_output(
+                    declaration.name,
+                    declaration.schema,
+                    {declaration.name: lanes["df"]},
+                    ordinal=0,
+                    transform_class=transform_class,
+                )
+            ]
 
         outputs: list[OutputPlan] = []
         for ordinal, declaration in enumerate(declarations):
-            member = output_methods.get(declaration.name)
-            if member is None:
+            if declaration.name not in explicit_outputs:
                 raise self._error(
                     "DSL-E0402",
                     transform_class=transform_class,
-                    problem=f"Output {declaration.name} has no terminal transform method.",
-                    use=f"Add @transform(output={declaration.name}) to the method that produces this output.",
+                    problem=f"Output {declaration.name} has no explicit transform method.",
+                    use=f"Add @transform(output={declaration.name}) to the method that produces this output lane.",
                     context={"output": declaration.name},
                 )
             outputs.append(
-                self._output_method(
-                    transform_class,
-                    member,
-                    declaration,
-                    inputs,
-                    steps,
+                self._lane_output(
+                    declaration.name,
+                    declaration.schema,
+                    lanes,
                     ordinal=ordinal,
+                    transform_class=transform_class,
                 )
-            )
-
-        unknown = sorted(set(output_methods) - {declaration.name for declaration in declarations})
-        if unknown:
-            raise self._error(
-                "DSL-E0402",
-                transform_class=transform_class,
-                problem=f"Unknown output binding(s): {', '.join(unknown)}.",
-                use="Bind only output(...) declarations from the same transform class.",
             )
         return outputs
 
-    def _synthetic_output(
+    def _lane_output(
         self,
         name: str,
         schema: type[Structure],
-        source: StepPlan,
+        lanes: dict[str, dict[str, object]],
         *,
         ordinal: int,
         transform_class: type[Transform],
     ) -> OutputPlan:
-        if source.output_schema is not schema:
+        source = lanes.get(name)
+        if source is None:
             raise self._error(
                 "DSL-E0402",
                 transform_class=transform_class,
-                problem=f"Output {name} declares {schema.__name__}, but final subtransform returns {source.output_schema.__name__}.",
+                problem=f"Output lane {name} is not available.",
+                use="Produce the lane earlier in source order before exposing it as a result.",
+                context={"output": name},
+            )
+        actual_schema = source["schema"]
+        if actual_schema is not schema:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                problem=f"Output {name} declares {schema.__name__}, but lane {name} carries {actual_schema.__name__}.",
                 use="Update the final subtransform return annotation or the output contract schema.",
-                context={"expected": schema.__name__, "actual": source.output_schema.__name__},
+                context={"expected": schema.__name__, "actual": actual_schema.__name__},
             )
         return OutputPlan(
             name=name,
             schema=schema,
-            source=source.name,
-            source_scope=source.output_schema.__name__,
-            source_schema=source.output_schema,
+            source=str(source["source"]),
+            source_scope=str(source["scope"]),
+            source_schema=actual_schema,
             filters=(),
             projection=(),
             ordinal=ordinal,
         )
 
-    def _output_method(
+    def _declared_output(
         self,
         transform_class: type[Transform],
-        member,
         declaration: OutputDeclaration,
-        inputs: list[InputPlan],
-        steps: list[StepPlan],
         *,
-        ordinal: int,
-    ) -> OutputPlan:
-        hints = get_type_hints(member)
-        output_schema = hints.get("return")
-        if output_schema is not declaration.schema:
-            actual = getattr(output_schema, "__name__", repr(output_schema))
+        member: str,
+        role: str,
+    ) -> None:
+        declared = transform_class._structure_outputs.get(declaration.name)
+        if declared is not declaration:
             raise self._error(
                 "DSL-E0402",
                 transform_class=transform_class,
-                member=member.__name__,
-                problem=f"Output method returns {actual}, not {declaration.schema.__name__}.",
-                use="Return the schema declared by the bound output(...) field.",
-                context={"expected": declaration.schema.__name__, "actual": actual},
+                member=member,
+                problem=f"@transform({role}=...) references an output that is not declared on {transform_class.__name__}.",
+                use="Use an output(...) field from the same transform class.",
+                context={"output": declaration.name or "<unnamed>"},
             )
-
-        parameter = self._row_parameter(member, hints)
-        source = self._source_for_schema(transform_class, inputs, steps, parameter.annotation, member)
-        row = RowScope(name=source["scope"], schema=parameter.annotation)
-        context = CompileContext(step=member.__name__)
-        instance = transform_class()
-
-        try:
-            with context:
-                result = member(instance, row)
-        except StructureCompileError:
-            raise
-        except Exception as error:
-            raise self._error(
-                "DSL-E0401",
-                transform_class=transform_class,
-                member=member.__name__,
-                problem=f"{transform_class.__name__}.{member.__name__} uses unsupported symbolic code: {error}",
-                use="Use Structure expression helpers, combine predicates with &, |, or ~, or move arbitrary PySpark to a hook.",
-                context={"error": type(error).__name__},
-            ) from error
-
-        assignments = self._assignments(transform_class, member.__name__, declaration.schema, result)
-        return OutputPlan(
-            name=declaration.name,
-            schema=declaration.schema,
-            source=str(source["name"]),
-            source_scope=str(source["scope"]),
-            source_schema=parameter.annotation,
-            filters=tuple(context.filters),
-            projection=tuple(assignments),
-            ordinal=ordinal,
-            joins=tuple(context.joins),
-        )
-
-    def _source_for_schema(
-        self,
-        transform_class: type[Transform],
-        inputs: list[InputPlan],
-        steps: list[StepPlan],
-        schema: type[Structure],
-        member,
-    ) -> dict[str, object]:
-        candidates: list[dict[str, object]] = [
-            {"name": input.name, "scope": input.name, "schema": input.schema}
-            for input in inputs
-            if input.schema is schema
-        ]
-        candidates.extend(
-            {"name": step.name, "scope": step.output_schema.__name__, "schema": step.output_schema}
-            for step in steps
-            if step.output_schema is schema
-        )
-        if len(candidates) != 1:
-            raise self._error(
-                "DSL-E0402",
-                transform_class=transform_class,
-                member=member.__name__,
-                problem=f"Output method source schema {schema.__name__} is ambiguous.",
-                use="Use a row parameter schema that matches exactly one input or shared step output.",
-                context={"schema": schema.__name__, "matches": str(len(candidates))},
-            )
-        return candidates[0]
 
     def _hooks(self, transform_class: type[Transform]) -> dict[tuple[str, str], tuple[HookPlan, ...]]:
         grouped: dict[tuple[str, str], list[HookPlan]] = {}

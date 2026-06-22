@@ -53,6 +53,25 @@ placement.
 Generated-code snapshots are still required for reviewability, but snapshots are secondary. The semantic authority is
 runtime parity through the shared contract in `docs/specifications/ExecutionSemanticContract.md`.
 
+## Concept Tests
+
+Concept tests live under `tests/concepts`. They are end-to-end, black-box tests for the project vocabulary in
+`docs/dev/Concepts.md`. Their job is to prove that a named concept works through public user-facing surfaces such as
+the DSL, CLI, `StructureSession`, generated packages, runtime diagnostics, and online/generated parity.
+
+Concept tests are also the concept coverage map. One test may cover several concept leaves, but the covered concept
+should be visible from the test module, test name, docstring, or a nearby coverage table. Concept tests should exercise
+small representative scenarios instead of duplicating every unit, specification, or integration test.
+
+Keep concept tests focused on observable behavior:
+
+- prefer public API, CLI, runtime output, generated package behavior, and diagnostics
+- prefer online/generated parity when a concept has runtime semantics
+- avoid asserting compiler internals, renderer implementation details, or exact IR shape unless the concept itself is
+  that public artifact
+- avoid re-testing every edge already owned by `tests/specifications/...`; include one black-box representative and
+  leave narrow semantic edges to the specification suite
+
 ## Negative Compiler and Diagnostic Tests
 
 Each supported DSL feature needs at least one intentionally broken transform test when it has a meaningful failure mode.
@@ -108,12 +127,37 @@ Compiler tests must prove the no-Spark compile contract: `structure check`, `str
 online execution, generated-code import, and PySpark execution tests in separate suites because those may legitimately
 require PySpark and a local Spark runtime.
 
+## Testing Helpers
+
+Reusable testing code has two homes.
+
+Use `src/structure/lib/testing` for general reusable testing helpers that are fixture-agnostic and suitable for testing
+Structure projects through stable public behavior. This package is a free-form testing library with topic-based
+subpackages, not a logic module or app. Good candidates include row and schema comparison helpers, generated package
+import cleanup, deterministic generated-project writing, parity runner utilities, diagnostic assertions, and filesystem
+result comparisons.
+
+Use `tests/helpers` for repository-local test helpers that know about checked-in fixtures, specific model projects, CSV
+data, pytest fixtures, or scenario construction. Good candidates include `res/testing/model/...` loaders, orders or join
+scenario builders, Spark-session fixture helpers, and data conversion code for one fixture family.
+
+The dependency direction is:
+
+```text
+tests/concepts -> tests/helpers -> structure.lib.testing -> structure production code
+```
+
+`structure.lib.testing` must not import from `tests`, `res/testing/model`, or fixture-specific modules. Keep pytest-only
+helpers in `tests/helpers` unless the project explicitly chooses to expose them as part of the reusable testing library.
+
 ## Test Placement
 
 Use these directories consistently:
 
 - `tests/app/[app]/[subapp]/...`: tests for app implementation code. Keep nesting aligned with the app and subapp
   package path.
+- `tests/concepts/[concept]/...`: end-to-end black-box tests for concepts from `docs/dev/Concepts.md`.
+- `tests/helpers/...`: repo-local helpers for fixture-backed or pytest-specific test scenarios.
 - `tests/specs/[section-or-story]/...`: tests backing user stories from `docs/dev/Specification.md`.
 - `tests/specifications/[specification-doc-slug]/...`: tests backing individual documents under `docs/specifications/`
   when we need to prove the behavior described by a specification document directly.
@@ -123,6 +167,8 @@ Examples:
 - CLI command behavior: `tests/app/cli/...`
 - Backend capability app behavior: `tests/app/backend/capabilities/...`
 - PySpark backend target behavior: `tests/app/backend/pyspark/...`
+- Join concept coverage: `tests/concepts/join/...`
+- Fixture-specific scenario helpers: `tests/helpers/scenarios/...`
 - User stories completed from `docs/dev/Specification.md`: `tests/specs/...`
 - Execution semantic contract checks: `tests/specifications/execution-semantic-contract/...`
 - PySpark code generation contract checks: `tests/specifications/pyspark-code-generation/...`

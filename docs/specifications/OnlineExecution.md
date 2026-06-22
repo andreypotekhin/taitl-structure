@@ -57,8 +57,12 @@ the final output schema. The schema is available in online mode without requirin
 `run(session)` returns a read-only `TransformResult` for both single-output and multi-output transforms. Single-output
 results expose the DataFrame as `result.df`. If the single output was declared as a field, such as
 `out = output(OrderPublished)`, the same DataFrame is also available as `result.out`. Multi-output results expose named
-outputs such as `result.accepted` and `result["rejected"]`; `df` is absent unless a future primary-output rule defines
-one.
+outputs such as `result.accepted` and `result["rejected"]`; `df` is present only when it is the sole output or when a
+field-declared output is explicitly named `df`.
+
+Online execution evaluates transform methods in source order while preserving independent lane frames. Undecorated
+methods update the canonical `df` lane. `@transform(output=accepted)` reads `df` and writes `accepted`.
+`@transform(input=accepted, output=accepted)` continues the accepted lane without changing `df` or any sibling lane.
 
 ## Configuration
 

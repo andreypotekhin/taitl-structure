@@ -5,9 +5,9 @@ from types import ModuleType
 
 from structure.app.backend.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.app.dsl.logic.model.transforms.Transform import Transform
-from structure.app.runtime.logic.model.TransformResult import TransformResult
 from structure.app.runtime.logic.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.app.runtime.logic.model.StructureRuntimeError import StructureRuntimeError
+from structure.app.runtime.logic.model.TransformResult import TransformResult
 
 
 class RunGeneratedPySparkTransform:
@@ -18,7 +18,7 @@ class RunGeneratedPySparkTransform:
         plan: PySparkExecutionPlan,
         *,
         session,
-    ) -> object:
+    ) -> TransformResult:
         module = self._import_module(invocation, session=session)
         class_name = f"{plan.transform}Generated"
         try:
