@@ -1,4 +1,4 @@
-# Traceability Matrix
+﻿# Traceability Matrix
 
 This matrix maps early sprints to specification sections and major deliverables.
 
@@ -9,8 +9,8 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 02 Schemas and Validation | Schema Validation, Generated Code, Configuration | `StructType` generation, `assert_schema`, intermediate validation defaults |
 | Sprint 03 Expressions/Filtering/Helpers | Symbolic Execution, Expression Helpers, Filtering, Error Reporting | expression IR, `where`, `@expr_fn`, diagnostic registry, structured unsupported-code errors |
 | Sprint 04 Hooks/Generated Classes | Hooks, Generated Code, Error Reporting | `@after(method)`, direct hook calls, no-hook cleanliness |
-| Sprint 05 Joins/Compiler Lineage/Build | Joins, Compiler Lineage, Build Integration, Streaming Compatibility | `join_one`, N-step joins, compiler provenance, static dataflow lineage, `--fail-on-diff`, `explain` |
-| Sprint 07 Analytical Join Coverage | Analytical Joins, Backend Capabilities, Lineage, Streaming Compatibility | existence joins, `join_many`, deterministic lookup dedupe, temporal joins, as-of joins |
+| Sprint 05 Joins/Compiler Traceability/Build | Joins, Compiler Traceability, Build Integration, Streaming Compatibility | `join_one`, N-step joins, compiler provenance, static dataflow traceability, `--fail-on-diff`, `explain` |
+| Sprint 07 Analytical Join Coverage | Analytical Joins, Backend Capabilities, Traceability, Streaming Compatibility | existence joins, `join_many`, deterministic lookup dedupe, temporal joins, as-of joins |
 
 ## Relevant Specification Items by Sprint
 
@@ -67,7 +67,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 - As a developer, I can perform symbolic `join_one(...)` joins.
 - As a developer, I can build serial joins across arbitrary numbers of named inputs.
 - As a developer, I can inspect compiler provenance from source node to IR node to generated PySpark node.
-- As a developer, I can inspect static dataflow lineage for transform, table, and column dependencies inferred from IR.
+- As a developer, I can inspect static dataflow traceability for transform, table, and column dependencies inferred from IR.
 - As a developer, I can run `structure compile --fail-on-diff` in CI.
 - As a developer, I can run compiler commands in ordinary Python CI without provisioning Spark.
 - As a developer, online and generated transforms remain streaming-compatible when Spark supports the operations used.
@@ -79,4 +79,4 @@ This matrix maps early sprints to specification sections and major deliverables.
 - As a developer, I can use deterministic lookup dedupe policies so that selected right rows are reviewable.
 - As a developer, I can use temporal validity-window lookups so that SCD-style joins have explicit interval semantics.
 - As a developer, I can use backward as-of lookups so that time-relative enrichment stays compiler-visible.
-- As a developer, I can inspect analytical join cardinality in static lineage and `structure explain`.
+- As a developer, I can inspect analytical join cardinality in static traceability and `structure explain`.

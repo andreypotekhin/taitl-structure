@@ -1,4 +1,4 @@
-# Execution Semantic Contract
+﻿# Execution Semantic Contract
 
 ## Purpose
 
@@ -222,7 +222,7 @@ Compiled recipes must not introduce:
 - hidden Python loops over DataFrame rows.
 
 Hooks remain explicit escape hatches. Hook internals are opaque to the compiler, but hook boundaries must remain visible
-in recipes, generated code, lineage, and diagnostics.
+in recipes, generated code, traceability, and diagnostics.
 
 ## Determinism
 

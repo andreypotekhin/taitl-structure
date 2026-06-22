@@ -1,4 +1,4 @@
-# Getting Started
+﻿# Getting Started
 
 This guide builds a small but realistic Structure transform: normalize order rows, validate required keys, enrich with
 customer data, and run it through `StructureSession`. Generated PySpark remains available as an optional artifact.
@@ -170,7 +170,7 @@ generated/structure_generated/
     schemas/
     transforms/
   runtime/
-  lineage/  # compiler metadata, not runtime telemetry
+  traceability/  # compiler metadata, not runtime telemetry
 ```
 
 ## 7. Inspect Optional Generated PySpark

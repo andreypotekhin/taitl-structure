@@ -1,4 +1,4 @@
-# Roadmap
+﻿# Roadmap
 
 ## Product Direction
 
@@ -72,7 +72,7 @@ It exists so the team can prove a narrow runnable path before the larger v1 scop
 
 - joins;
 - hooks;
-- compiler provenance and static dataflow lineage;
+- compiler provenance and static dataflow traceability;
 - streaming compatibility reporting;
 - setup/configuration doctor checks;
 - build integration such as `compile --fail-on-diff`;
@@ -81,7 +81,7 @@ It exists so the team can prove a narrow runnable path before the larger v1 scop
 ## v1 Scope
 
 v1 focuses on schema-driven online execution, projection, filtering, joins, hooks, optional generated PySpark classes,
-validation, compiler provenance, static dataflow lineage, and build integration.
+validation, compiler provenance, static dataflow traceability, and build integration.
 
 ### v1 must include
 
@@ -109,7 +109,7 @@ validation, compiler provenance, static dataflow lineage, and build integration.
 - `join_one(...)` symbolic joins.
 - N-step serial joins across arbitrary named inputs.
 - Compiler provenance from source node to IR node to generated PySpark node.
-- Static dataflow lineage inferred from IR for transform, table, and column dependencies.
+- Static dataflow traceability inferred from IR for transform, table, and column dependencies.
 - CLI `check`, `compile`, `explain`.
 - Small TOML configuration with seed defaults, explicit resolution order, and schema validation diagnostics.
 - Python 3.11+ and PySpark 3.5.x/4.0.x compatibility policy.
@@ -178,7 +178,7 @@ are stable.
 | M2 | Schema validation and generated class polish | Sprint 02 |
 | M3 | Practical expression DSL and diagnostics | Sprint 03 |
 | M4 | Hook model and no-hook generated-code cleanliness | Sprint 04 |
-| M5 | Joins, compiler lineage, build integration | Sprint 05 |
+| M5 | Joins, compiler traceability, build integration | Sprint 05 |
 | M6 | v1 stabilization and docs/examples | follow-up hardening sprint |
 | M7 | v2 analytical pipeline features, analytical join coverage, and adoption tooling | future v2 sprints |
 | M8 | v3 streaming orchestration | future v3 sprints |

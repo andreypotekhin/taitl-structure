@@ -1,4 +1,4 @@
-# Sprint 02: Schemas and Validation
+﻿# Sprint 02: Schemas and Validation
 
 ## Sprint Goal
 
@@ -33,7 +33,7 @@ validation/projection.
 
 - Deep recursive schema graphs.
 - Data-quality constraint execution beyond schema shape.
-- Compiler lineage details.
+- Compiler traceability details.
 - Joins.
 - Hooks.
 

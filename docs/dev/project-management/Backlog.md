@@ -1,4 +1,4 @@
-# Product Backlog
+﻿# Product Backlog
 
 ## Epic: Pre-Coding Spikes and Decisions
 
@@ -124,13 +124,13 @@
 - Support arbitrary N-step serial joins.
 - Warn when `join_one(...)` lacks uniqueness metadata.
 
-## Epic: Compiler Lineage
+## Epic: Compiler Traceability
 
 - Add compiler provenance from source node to IR node to generated PySpark node.
-- Add static dataflow lineage inferred from IR.
+- Add static dataflow traceability inferred from IR.
 - Track transform, named input, step, schema, field, join, filter, expression helper, and hook-boundary dependencies.
 - Surface provenance and static dataflow in compiler diagnostics.
-- Add `structure explain` lineage output for transform, step, and field dependencies.
+- Add `structure explain` traceability output for transform, step, and field dependencies.
 - Add streaming compatibility reporting with compatible, batch-only, and unknown states.
 - Add a registry-backed diagnostic code and documentation contract.
 - Add `structure doctor` or equivalent setup/configuration checks.
@@ -183,4 +183,4 @@
 
 ## Nice To Have Beyond v4
 
-- Runtime LDJSON lineage emitter. See `docs/dev/project-management/NiceToHave.md`.
+- Runtime LDJSON traceability emitter. See `docs/dev/project-management/NiceToHave.md`.

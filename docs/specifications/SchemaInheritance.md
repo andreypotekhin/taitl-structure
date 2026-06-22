@@ -1,4 +1,4 @@
-# Schema Inheritance
+﻿# Schema Inheritance
 
 This specification completes the inheritance semantics referenced by
 `docs/specifications/SchemaDeclarationSyntax.md`.
@@ -9,7 +9,7 @@ Schema inheritance lets developers reuse common field definitions without repeat
 for shared identifiers, audit columns, partition columns, tenancy fields, and common source metadata.
 
 Structure supports schema-to-schema inheritance in v1 as a declarative field composition mechanism. The compiler treats
-the final schema as an ordered structural contract and keeps inheritance details available for diagnostics and lineage.
+the final schema as an ordered structural contract and keeps inheritance details available for diagnostics and traceability.
 
 ## Canonical Form
 
@@ -180,7 +180,7 @@ For every effective field, `FieldDef` records:
 - whether it overrides another field;
 - the overridden field origin when applicable.
 
-This information is used for diagnostics, documentation, lineage, and source navigation.
+This information is used for diagnostics, documentation, traceability, and source navigation.
 
 ## Schema Type Identity
 

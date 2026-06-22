@@ -1,4 +1,4 @@
-# Design: PySpark Code Generator
+﻿# Design: PySpark Code Generator
 
 ## Purpose
 
@@ -13,7 +13,7 @@ generated/structure_generated/
     schemas/
     transforms/
   runtime/
-  lineage/  # compiler metadata, not runtime telemetry
+  traceability/  # compiler metadata, not runtime telemetry
 ```
 
 Generated artifacts are optional for ordinary online execution. They remain first-class for provenance, review,

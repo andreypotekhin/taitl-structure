@@ -86,7 +86,7 @@ def test_v1_backend_runtime_versions(spark) -> None:
     assert spark.version.startswith(expected_spark)
 
 
-def test_v1_generated_execution_runs_orders_contract_on_live_backend(spark, tmp_path) -> None:
+def test_v1_online_and_generated_execution_match_orders_contract_on_live_backend(spark, tmp_path) -> None:
     generated_package = "integration_generated"
     files = _render_generated_project(generated_package)
     _write_files(tmp_path, files)
@@ -94,12 +94,16 @@ def test_v1_generated_execution_runs_orders_contract_on_live_backend(spark, tmp_
     sys.path.insert(0, str(tmp_path))
     try:
         importlib.invalidate_caches()
-        schemas = importlib.import_module(f"{generated_package}.pyspark.schemas")
-        result = _run_generated_orders_transform(spark, generated_package, schemas)
+        schemas = importlib.import_module(f"{generated_package}.pyspark.schemas.order")
+        generated = _run_generated_orders_transform(spark, generated_package, schemas)
+        online = _run_online_orders_transform(spark, schemas)
 
-        assert result.columns == schemas.ORDER_PUBLISHED_SCHEMA.fieldNames()
-        rows = [row.asDict(recursive=True) for row in result.orderBy("id").collect()]
-        assert rows == [
+        assert generated.columns == schemas.ORDER_PUBLISHED_SCHEMA.fieldNames()
+        assert online.columns == schemas.ORDER_PUBLISHED_SCHEMA.fieldNames()
+        generated_rows = [row.asDict(recursive=True) for row in generated.orderBy("id").collect()]
+        online_rows = [row.asDict(recursive=True) for row in online.orderBy("id").collect()]
+        assert online_rows == generated_rows
+        assert generated_rows == [
             {
                 "tenant": {"tenant_id": "t1"},
                 "business": {"order_date": date(2026, 1, 2)},
@@ -167,22 +171,31 @@ def _write_files(root: Path, files: dict[str, str]) -> None:
 
 
 def _run_generated_orders_transform(spark, generated_package: str, schemas):
-    orders = spark.createDataFrame(_rows("orders.csv", _order_converters()), schema=schemas.ORDER_RAW_SCHEMA)
-    customers = spark.createDataFrame(_rows("customers.csv", _customer_converters()), schema=schemas.CUSTOMER_SCHEMA)
-    products = spark.createDataFrame(_rows("products.csv", _product_converters()), schema=schemas.PRODUCT_SCHEMA)
-    promotions = spark.createDataFrame(
-        _rows("promotions.csv", _promotion_converters()),
-        schema=schemas.PROMOTION_SCHEMA,
-    )
-
-    invocation = EnrichOrders(
-        orders=orders,
-        customers=customers,
-        products=products,
-        promotions=promotions,
-    )
+    invocation = EnrichOrders(**_input_frames(spark, schemas))
     session = StructureSession(spark=spark, execution_mode="generated", generated_package=generated_package)
     return invocation.run(session)
+
+
+def _run_online_orders_transform(spark, schemas):
+    inputs = _input_frames(spark, schemas)
+    invocation = EnrichOrders(**inputs)
+    session = StructureSession(spark=spark, execution_mode="online")
+    return invocation.run(session)
+
+
+def _input_frames(spark, schemas) -> dict[str, object]:
+    return {
+        "orders": spark.createDataFrame(_rows("orders.csv", _order_converters()), schema=schemas.ORDER_RAW_SCHEMA),
+        "customers": spark.createDataFrame(
+            _rows("customers.csv", _customer_converters()),
+            schema=schemas.CUSTOMER_SCHEMA,
+        ),
+        "products": spark.createDataFrame(_rows("products.csv", _product_converters()), schema=schemas.PRODUCT_SCHEMA),
+        "promotions": spark.createDataFrame(
+            _rows("promotions.csv", _promotion_converters()),
+            schema=schemas.PROMOTION_SCHEMA,
+        ),
+    }
 
 
 def _rows(name: str, converters: dict[str, Callable[[str], object]]) -> list[dict[str, object]]:

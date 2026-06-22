@@ -1,4 +1,4 @@
-# Analytical Join Coverage
+﻿# Analytical Join Coverage
 
 ## Purpose
 
@@ -21,7 +21,7 @@ In scope for the analytical join family:
 - deterministic right-side dedupe before `join_one(...)`;
 - temporal validity-window lookup joins;
 - as-of lookup joins;
-- diagnostics, IR, backend capability requirements, lineage, and tests for those forms.
+- diagnostics, IR, backend capability requirements, traceability, and tests for those forms.
 
 Out of scope until a later design:
 
@@ -118,7 +118,7 @@ Rules:
 - A dedupe policy must name the ordering or selection rule.
 - The default tie policy is `TiePolicy.ERROR`.
 - Structure must not lower dedupe to arbitrary `first(...)` or nondeterministic `dropDuplicates(...)`.
-- A deduped `join_one(...)` records both the original right input and the deduped lookup dependency in lineage.
+- A deduped `join_one(...)` records both the original right input and the deduped lookup dependency in traceability.
 - Runtime tie checks are explicit because they can add Spark work.
 
 Initial policy family:
@@ -158,7 +158,7 @@ Rules:
 - Overlapping windows for the same right key are invalid for `temporal_one(...)`.
 - Overlap checks are explicit runtime checks unless uniqueness and non-overlap can be proven from metadata.
 - `Join.LEFT` and `Join.INNER` are the initial supported join types.
-- Temporal fields participate in lineage and diagnostics.
+- Temporal fields participate in traceability and diagnostics.
 
 This form is the Structure model for SCD type 2 lookup joins. It should not assume any table format or storage
 convention.
@@ -293,7 +293,7 @@ The analytical join family is implemented incrementally. Each admitted join form
 - IR shape and cardinality classification;
 - generated PySpark rendering;
 - online/generated parity on small DataFrames;
-- static lineage output;
+- static traceability output;
 - diagnostics for unsupported shapes;
 - streaming compatibility classification where applicable.
 

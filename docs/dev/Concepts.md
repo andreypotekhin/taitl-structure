@@ -1,4 +1,4 @@
-# Concepts
+﻿# Concepts
 
 Concepts in this project, with corresponding sub-concepts,
 to serve as base list for concepts testing (tests/concepts/).
@@ -20,7 +20,7 @@ to serve as base list for concepts testing (tests/concepts/).
   - target backend
   - target PySpark range
   - validation defaults
-  - lineage level
+  - traceability level
   - performance policy
   - stale generated output policy
 
@@ -339,7 +339,7 @@ to serve as base list for concepts testing (tests/concepts/).
     - source-to-IR mapping
     - IR-to-generated mapping
     - opaque hook provenance
-  - static dataflow lineage
+  - static dataflow traceability
     - projection dependency
     - filter dependency
     - join dependency
@@ -356,7 +356,7 @@ to serve as base list for concepts testing (tests/concepts/).
     - code generation time
     - formatting time
     - provenance time
-    - lineage time
+    - traceability time
     - incremental compile fingerprint
 
 - generated PySpark
@@ -364,7 +364,7 @@ to serve as base list for concepts testing (tests/concepts/).
     - generated schema module
     - generated transform module
     - generated runtime module
-    - generated lineage module
+    - generated traceability module
     - package marker
   - generated file ownership
     - ownership header
@@ -529,6 +529,6 @@ to serve as base list for concepts testing (tests/concepts/).
   - semantic versioning
   - generated-code compatibility
   - runtime helper compatibility
-  - lineage schema compatibility
+  - traceability schema compatibility
   - config schema compatibility
   - Spark Connect support

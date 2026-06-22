@@ -1,4 +1,4 @@
-# Data Quality Constraints
+﻿# Data Quality Constraints
 
 ## Purpose
 
@@ -50,7 +50,7 @@ output_validation_mode = "schema_and_constraints"
 
 Until Structure implements specific constraint families, this mode may be accepted as a configuration value while
 diagnostics explain that row-level constraint checks are not yet available. Once implemented, checks that require Spark
-actions must be visible in diagnostics, generated code, lineage, and documentation links.
+actions must be visible in diagnostics, generated code, traceability, and documentation links.
 
 Constraint declarations should bind to one or more validation phases: input, intermediate, output, or a narrower named
 boundary. Phase validation modes are a project-level cost guard. A constraint is eligible to run only when it is bound

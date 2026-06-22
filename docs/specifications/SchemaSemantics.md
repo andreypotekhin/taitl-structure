@@ -1,9 +1,9 @@
-# Schema Semantics
+﻿# Schema Semantics
 
 ## Purpose
 
 Structure schemas define row shape and type meaning for compiler checks, generated Spark schemas, runtime validation,
-online execution, generated code, diagnostics, and lineage. This specification ties together schema declaration syntax,
+online execution, generated code, diagnostics, and traceability. This specification ties together schema declaration syntax,
 schema model extraction, inheritance, output construction, nullability, and assignment compatibility into one
 implementation-ready semantic contract.
 

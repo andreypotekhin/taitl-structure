@@ -1,4 +1,4 @@
-# Structure: Typed Schema Transform Compilation for PySpark
+﻿# Structure: Typed Schema Transform Compilation for PySpark
 
 ## Abstract
 
@@ -313,21 +313,21 @@ support is scheduled for v4 with backend expansion work, unless it can be added 
 source syntax, online invocation construction, generated class construction, `run(...)` signatures, streaming
 orchestration semantics, or generated-code reviewability.
 
-Generated PySpark, compiler lineage metadata, and configuration each have explicit versioning rules. The public policy
+Generated PySpark, compiler traceability metadata, and configuration each have explicit versioning rules. The public policy
 lives in `docs/Compatibility.md`.
 
-## Lineage
+## Traceability
 
-Structure records compact compiler lineage by default.
+Structure records compact compiler traceability by default.
 
-Compiler provenance maps source nodes to IR nodes to generated PySpark nodes. Static dataflow lineage records inferred
+Compiler provenance maps source nodes to IR nodes to generated PySpark nodes. Static dataflow traceability records inferred
 transform, table, and column dependencies from the IR. Together, they let diagnostics explain where generated code came
 from and which upstream inputs affect a failing field or step.
 
 Hook boundaries are explicit. Because hooks contain arbitrary PySpark, static dataflow should mark them opaque unless a
 future compiler-visible hook contract says otherwise.
 
-Runtime LDJSON lineage is useful transform-run telemetry, but it is beyond the published roadmap.
+Runtime LDJSON traceability is useful transform-run telemetry, but it is beyond the published roadmap.
 
 ## Unsupported Code Detection
 
@@ -398,7 +398,7 @@ Compile-time performance is a product feature. Implementation should track metri
 - code generation time
 - formatting time
 - compiler provenance time
-- static dataflow lineage time
+- static dataflow traceability time
 - total wall-clock time
 
 The compiler should avoid starting Spark during normal compile/check operations.
@@ -422,7 +422,7 @@ the ordinary PySpark contract is stable.
 ### Initial Release
 
 Online PySpark execution by default, optional generated PySpark classes, projection, filtering, joins, typed
-intermediate schemas, hooks, validation, compiler provenance, compact static dataflow lineage, streaming-compatible
+intermediate schemas, hooks, validation, compiler provenance, compact static dataflow traceability, streaming-compatible
 transforms, diagnostic links, and setup checks.
 
 ### v2

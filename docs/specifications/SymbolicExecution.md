@@ -1,11 +1,11 @@
-# Symbolic Execution
+﻿# Symbolic Execution
 
 ## Purpose
 
 Symbolic execution is the compiler phase that turns user-written compiled subtransform methods into backend-neutral
 IR. It executes the method body with symbolic schema row proxies instead of real data, records filters, joins,
 expressions, and output projection, and then hands a deterministic `StepPlan` to compileability checks, online
-execution, generated PySpark emission, compiler provenance, and static dataflow lineage.
+execution, generated PySpark emission, compiler provenance, and static dataflow traceability.
 
 The purpose is not to run the user's pipeline in Python. The purpose is to let developers write readable schema-oriented
 Python while preserving Spark optimizer visibility. Any source behavior that cannot be represented as Structure IR
@@ -310,7 +310,7 @@ Rules:
 - The helper result must be a symbolic expression or a Python literal accepted in expression position.
 - The engine must record the outer helper call identity for diagnostics and provenance.
 - The engine may either inline the expanded expression into IR or preserve a `CallExpr` with expansion metadata, as long
-  as online execution, generated code, lineage, and diagnostics agree.
+  as online execution, generated code, traceability, and diagnostics agree.
 - Class-local helpers declared without `self` must be callable through `self`.
 - Recursive helpers are invalid in v1 unless a future spec defines recursion limits.
 - Helper expansion should be cacheable when the helper identity, argument symbolic shapes, and keyword values are the

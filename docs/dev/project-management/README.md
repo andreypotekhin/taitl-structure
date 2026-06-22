@@ -1,4 +1,4 @@
-# Structure Project Management Docs
+﻿# Structure Project Management Docs
 
 This archive contains sprint-oriented project management documentation for the first implementation iterations of
 **Structure**, a schema-first Python DSL and runtime/compiler toolkit that runs or generates clean PySpark DataFrame
@@ -30,7 +30,7 @@ project-management/
     Sprint02_SchemasAndValidation.md
     Sprint03_SymbolicExpressionsFilteringHelpers.md
     Sprint04_HooksAndGeneratedClasses.md
-    Sprint05_JoinsLineageBuildIntegration.md
+    Sprint05_JoinsTraceabilityBuildIntegration.md
   templates/
     SprintReview.md
     ADR.md
@@ -61,8 +61,8 @@ The first iterations are intentionally arranged to build confidence in small com
 3. **Schemas and validation**: richer schema model, `StructType` generation, input/intermediate/output validation.
 4. **Symbolic expressions, filtering, helpers**: compiler-worthy expression model with strict unsupported-code diagnostics.
 5. **Hooks and generated classes**: source hooks, clean no-hook generated code, direct hook calls.
-6. **Joins, compiler lineage, build integration**: `join_one`, N-step serial joins, compiler provenance, static
-   dataflow lineage, `--fail-on-diff`.
+6. **Joins, compiler traceability, build integration**: `join_one`, N-step serial joins, compiler provenance, static
+   dataflow traceability, `--fail-on-diff`.
 
 V2 features such as windowing, deduplication, aggregations, HOFs, advanced grouping, caching, repartition/coalesce
 hints, `join_many(...)`, generated docs, pytest helpers, production incremental compile, and join strategy optimization

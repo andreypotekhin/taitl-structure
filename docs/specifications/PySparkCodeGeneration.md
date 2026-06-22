@@ -1,4 +1,4 @@
-# PySpark Code Generation
+﻿# PySpark Code Generation
 
 ## Purpose
 
@@ -23,7 +23,7 @@ This specification owns generated PySpark source shape and generator behavior fo
 - generated schema modules;
 - generated transform classes;
 - generated runtime support modules needed by generated code;
-- compiler provenance and static dataflow lineage files;
+- compiler provenance and static dataflow traceability files;
 - deterministic imports, names, aliases, formatting, and write-if-changed behavior;
 - backend capability selection for PySpark syntax;
 - generated-code diagnostics and acceptance tests.
@@ -59,7 +59,7 @@ generated/
         schemas/
         transforms/
     runtime/
-    lineage/
+    traceability/
 ```
 
 Rules:
@@ -72,7 +72,7 @@ Rules:
 - Generated schema constants are caller-facing shape artifacts that may be imported outside generated transform classes.
 - `transforms/` contains generated transform classes.
 - `runtime/` contains small generated-runtime helpers, such as schema validation and schema projection.
-- `lineage/` contains compiler metadata and static dataflow lineage, not runtime telemetry.
+- `traceability/` contains compiler metadata and static dataflow traceability, not runtime telemetry.
 - Every generated Python package directory must contain an `__init__.py` file when the target layout requires it for
   importability.
 - Generated paths must be stable for the same source root, module name, class name, configuration, and target backend.
@@ -99,7 +99,7 @@ generated_package = "structure_generated"
 execution_mode = "online"
 target_backend = "pyspark"
 target_pyspark = ">=3.5,<4.1"
-lineage = "compiler"
+traceability = "compiler"
 validate_inputs = true
 input_validation_mode = "schema_only"
 validate_intermediate = true
@@ -115,8 +115,8 @@ Required behavior:
 - `target_backend` must be `pyspark` for this generator.
 - `target_pyspark` selects PySpark syntax through the backend capability registry.
 - `generated_dir` and `generated_package` determine output paths and import paths.
-- `lineage = "compiler"` writes compiler provenance and static dataflow lineage files.
-- `lineage = "none"` skips lineage files.
+- `traceability = "compiler"` writes compiler provenance and static dataflow traceability files.
+- `traceability = "none"` skips traceability files.
 - `validate_inputs`, `validate_intermediate`, `validate_outputs`, and method/class overrides determine validation calls.
 - `input_validation_mode`, `intermediate_validation_mode`, and `output_validation_mode` determine how strong validation
   is when enabled.
@@ -140,7 +140,7 @@ SchemaDef[]
 TransformPlan[]
 PySparkCapabilities
 CompilerProvenance
-StaticDataflowLineage
+StaticDataflowTraceability
 ```
 
 The generator must not:
@@ -215,7 +215,7 @@ Rules:
 - The header must not include timestamps, machine-specific paths, random IDs, or absolute workspace paths.
 - Schema modules may list the source schema module instead of a single transform.
 - Runtime support files may use `Source: Structure generated runtime`.
-- Lineage metadata files may include compiler version when available, but not wall-clock time unless a future
+- Traceability metadata files may include compiler version when available, but not wall-clock time unless a future
   reproducibility policy explicitly allows it.
 - The `structure clean` command may use this header as one safety marker for generated ownership.
 
@@ -341,7 +341,7 @@ GeneratePySparkProject
 GeneratePySparkSchemas
 GeneratePySparkTransforms
 GeneratePySparkRuntime
-GeneratePySparkLineage
+GeneratePySparkTraceability
 RenderPySparkModule
 RenderPySparkExpression
 RenderPySparkJoin
@@ -485,14 +485,14 @@ Rules:
 - The current DataFrame receives a stable alias derived from the current schema or step name.
 - The right DataFrame receives a stable alias derived from the input name.
 - Repeated joins of the same input receive deterministic suffixes such as `customers_2`.
-- Diagnostics and lineage refer to repeated joins as `customers#1`, `customers#2`, and so on.
+- Diagnostics and traceability refer to repeated joins as `customers#1`, `customers#2`, and so on.
 - `Join.LEFT` lowers to Spark join type `"left"`.
 - `Join.INNER` lowers to Spark join type `"inner"`.
 - `JoinHint.BROADCAST` applies to the right side and may lower to `F.broadcast(right_df)`.
 - Composite keys render key comparisons in IR order, combined with `&`.
 - Null-safe key pairs render with the selected PySpark null-safe equality syntax.
 - Right-side projection should carry only right-side key expressions and fields needed by downstream filters,
-  projections, diagnostics, or lineage.
+  projections, diagnostics, or traceability.
 - The final projection after the join must remove duplicate and temporary right-side columns.
 
 The generator must not silently deduplicate right-side rows for `join_one(...)`. Unproven uniqueness is a warning or
@@ -528,7 +528,7 @@ Rules:
 - Hook return values become the new current `df`.
 - Hook output validation and optional projection follow the hook metadata.
 
-Generated code does not inspect hook internals. Hook behavior is opaque to compiler lineage except for the declared
+Generated code does not inspect hook internals. Hook behavior is opaque to compiler traceability except for the declared
 hook boundary.
 
 ## HookInputs Namespace
@@ -661,7 +661,7 @@ The generator should support parallel generation by transform module.
 Rules:
 
 - Build immutable IR before parallel rendering starts.
-- Render each schema module, transform module, runtime module, and lineage file independently.
+- Render each schema module, transform module, runtime module, and traceability file independently.
 - Do not mutate shared import collectors or name registries from multiple workers.
 - Merge rendered files by sorted generated path.
 - Write files in sorted path order after rendering completes.
@@ -669,9 +669,9 @@ Rules:
 
 Parallelism is an implementation optimization. It must not change generated output.
 
-## Compiler Provenance and Lineage
+## Compiler Provenance and Traceability
 
-When lineage is enabled, generation writes compiler metadata under `lineage/`.
+When traceability is enabled, generation writes compiler metadata under `traceability/`.
 
 Required metadata:
 
@@ -694,13 +694,13 @@ target capabilities
 
 Rules:
 
-- Lineage files are deterministic compiler artifacts, not runtime telemetry.
-- Lineage must not include row counts, execution time, Spark application IDs, or cluster details.
+- Traceability files are deterministic compiler artifacts, not runtime telemetry.
+- Traceability must not include row counts, execution time, Spark application IDs, or cluster details.
 - File format may be JSON in the first implementation because it is easy to diff and consume.
 - JSON keys must be sorted or rendered in a stable order.
-- Paths inside lineage should be project-relative where paths are needed.
+- Paths inside traceability should be project-relative where paths are needed.
 - Hook boundaries must be marked opaque.
-- Generated transform files and lineage files must agree on step, alias, join, hook, and validation names.
+- Generated transform files and traceability files must agree on step, alias, join, hook, and validation names.
 
 ## Diagnostics
 
@@ -803,7 +803,7 @@ The following are outside v1 PySpark generation scope:
 - optimizing source-order operations across hook boundaries;
 - generating row-multiplying `join_many(...)` before the join semantics spec admits it;
 - generating aggregations, windows, deduplication, and higher-order collection transforms before their specs exist;
-- producing runtime telemetry under `lineage/`.
+- producing runtime telemetry under `traceability/`.
 
 ## Implementation Checklist
 
@@ -823,12 +823,12 @@ The following are outside v1 PySpark generation scope:
 14. Generate hook source imports and `_impl` only when hooks exist.
 15. Generate read-only hook input namespace only when `pass_inputs=True` exists.
 16. Enforce performance guardrails before writing generated code.
-17. Generate compiler provenance and static lineage when configured.
+17. Generate compiler provenance and static traceability when configured.
 18. Generate all file contents in memory.
 19. Write only changed files and format only changed files.
 20. Support `--fail-on-diff` through temporary output comparison.
 21. Add diagnostics with links to this specification and narrower semantic specs.
-22. Add snapshot tests for generated schemas, transforms, runtime helpers, and lineage.
+22. Add snapshot tests for generated schemas, transforms, runtime helpers, and traceability.
 23. Add tests proving caller code can import generated schemas for reads and pre-write validation/projection.
 24. Add tests proving online-materialized schemas match generated schema constants.
 25. Add parity tests proving generated and online execution agree.
@@ -875,7 +875,7 @@ The implementation is complete when tests prove:
 - Formatting runs only for changed files when formatting is enabled.
 - `structure compile --fail-on-diff` detects added, removed, and modified generated files without changing
   `generated_dir`.
-- Lineage files are deterministic and include inputs, steps, filters, joins, projections, hooks, validation points,
+- Traceability files are deterministic and include inputs, steps, filters, joins, projections, hooks, validation points,
   target backend, and target capabilities.
 - `execution_mode = "generated"` can import a generated class and run it through `GeneratedPySparkRunner`.
 - Missing generated classes in generated mode produce the import-failure guidance from
@@ -906,6 +906,6 @@ Recommended test groups:
 - performance guardrail checks;
 - write-if-changed behavior;
 - `--fail-on-diff` stale output detection;
-- deterministic lineage output;
+- deterministic traceability output;
 - Spark-free compiler command checks;
 - online/generated parity scenarios.

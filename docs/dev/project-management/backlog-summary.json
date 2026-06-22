@@ -1,4 +1,4 @@
-{
+﻿{
   "project": "Structure",
   "iterations": [
     {
@@ -59,11 +59,11 @@
     },
     {
       "id": "S05",
-      "name": "Joins, Lineage, Build Integration",
+      "name": "Joins, Traceability, Build Integration",
       "milestone": "M5",
       "spec_sections": [
         "Joins",
-        "Lineage",
+        "Traceability",
         "Build Integration",
         "Streaming Compatibility"
       ]
@@ -75,7 +75,7 @@
       "spec_sections": [
         "Analytical Joins",
         "Backend Capabilities",
-        "Lineage",
+        "Traceability",
         "Streaming Compatibility"
       ]
     }

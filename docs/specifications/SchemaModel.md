@@ -1,11 +1,11 @@
-# Schema Model
+﻿# Schema Model
 
 This specification replaces `docs/dev/design/SchemaModel.md` as the implementation-level schema model reference.
 
 ## Purpose
 
 The schema model represents user-declared data structures independently from PySpark. It is the source of truth for
-compiler checks, generated Spark `StructType` code, runtime validation, lineage, documentation, and IDE-oriented
+compiler checks, generated Spark `StructType` code, runtime validation, traceability, documentation, and IDE-oriented
 diagnostics.
 
 Schema declarations are authored with the syntax specified in
@@ -158,7 +158,7 @@ Rules:
 - Use `SchemaInheritance.spec.md` to build `SchemaDef.fields`.
 - Use `SchemaDef.local_fields` for source documentation and override diagnostics.
 - Use `SchemaDef.fields` for generated schemas, runtime validation, and output projection order.
-- Retain field origin information for diagnostics and lineage.
+- Retain field origin information for diagnostics and traceability.
 
 Example:
 

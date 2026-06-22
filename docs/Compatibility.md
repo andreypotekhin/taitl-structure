@@ -1,11 +1,11 @@
-# Compatibility
+﻿# Compatibility
 
 Structure has three compatibility surfaces:
 
 - the Structure source DSL and configuration users write;
 - the online runtime behavior users execute through `StructureSession`;
 - the generated PySpark code optionally committed to user projects;
-- optional metadata artifacts such as compiler provenance and static dataflow lineage.
+- optional metadata artifacts such as compiler provenance and static dataflow traceability.
 
 This page defines the public compatibility policy for the initial release and the planned versioning rules after the
 first stable release.
@@ -103,7 +103,7 @@ Structure keeps the initial extension surface narrow. Supported public extension
 - explicit `@before(...)` and `@after(...)` hooks for arbitrary PySpark DataFrame code at named step boundaries.
 
 These two paths have different guarantees. `@expr_fn` logic participates in compileability checks, generated code,
-lineage, and backend capability diagnostics. Hook bodies are opaque: Structure validates the hook declaration, calls the
+traceability, and backend capability diagnostics. Hook bodies are opaque: Structure validates the hook declaration, calls the
 hook at the documented lifecycle point, and records the hook boundary, but it does not inspect arbitrary PySpark code
 inside the hook.
 
@@ -111,21 +111,21 @@ Backend capability providers, diagnostic renderers, schema type adapters, valida
 registries are internal or deferred extension surfaces. Projects should not depend on monkey-patching those internals.
 Future releases may promote some of them to public APIs once their behavior, compatibility, and tests are specified.
 
-## Compiler Lineage Schema Versioning
+## Compiler Traceability Schema Versioning
 
-Compiler lineage covers two metadata models:
+Compiler traceability covers two metadata models:
 
 - compiler provenance, which maps source nodes to IR nodes to generated PySpark nodes;
-- static dataflow lineage, which records transform, table, and column dependencies inferred from IR.
+- static dataflow traceability, which records transform, table, and column dependencies inferred from IR.
 
-Lineage schema rules:
+Traceability schema rules:
 
-- Breaking metadata-shape changes bump the lineage schema major version.
-- Additive fields bump the lineage schema minor version.
+- Breaking metadata-shape changes bump the traceability schema major version.
+- Additive fields bump the traceability schema minor version.
 - Consumers should ignore unknown fields.
-- Structure should keep default compiler lineage compact and stable across patch releases.
+- Structure should keep default compiler traceability compact and stable across patch releases.
 
-Runtime LDJSON lineage is not part of the initial compatibility contract. It is tracked as a nice-to-have beyond v4 in
+Runtime LDJSON traceability is not part of the initial compatibility contract. It is tracked as a nice-to-have beyond v4 in
 `docs/dev/project-management/NiceToHave.md`.
 
 ## Config Schema Versioning

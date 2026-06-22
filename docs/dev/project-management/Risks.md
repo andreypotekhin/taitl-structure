@@ -1,4 +1,4 @@
-# Risks and Mitigations
+﻿# Risks and Mitigations
 
 ## Risk: Symbolic execution becomes too magical
 
@@ -24,7 +24,7 @@ Generated PySpark becomes hard to review and less attractive to users who choose
 - Generate classes with concise sections.
 - Omit hook machinery when hooks are absent.
 - Use deterministic aliases.
-- Keep default compiler lineage compact.
+- Keep default compiler traceability compact.
 - Add snapshot tests for generated code readability.
 
 ## Risk: Compile time becomes slow
@@ -80,7 +80,7 @@ compiler-visible through the DSL or `@expr_fn`.
 - Keep compiled path strict.
 - Add hook linting in strict-performance mode.
 - Document hooks as explicit escape hatches.
-- Show hooks as opaque in lineage.
+- Show hooks as opaque in traceability.
 - Prefer direct DSL and `@expr_fn` fixes in diagnostics before showing a hook workaround.
 
 ## Risk: Decorator mechanics fail after design is committed
@@ -137,5 +137,5 @@ would make generated code technically valid while producing misleading analytica
 - Keep v1 `join_one(...)` narrow and never silently dedupe right rows.
 - Make every analytical join declare row-preserving, row-filtering, row-multiplying, or select-one cardinality.
 - Require deterministic tie and overlap policies for deduped, temporal, and as-of joins.
-- Surface join cardinality in diagnostics, static lineage, and `structure explain`.
+- Surface join cardinality in diagnostics, static traceability, and `structure explain`.
 - Add online/generated parity tests with duplicate, unmatched, overlapping, and tie cases.

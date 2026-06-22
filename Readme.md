@@ -1,4 +1,4 @@
-# Structure
+﻿# Structure
 
 **Structure** is a Python DSL and runtime/compiler toolkit for schema-enforced, IDE-friendly data pipelines that run as
 optimizer-visible PySpark DataFrame code.
@@ -227,7 +227,7 @@ expression logic compiler-visible and reusable across transforms.
 
 Arbitrary PySpark is still supported, but only through explicit hooks. Hooks receive the current DataFrame by default;
 advanced hooks can opt into original named input DataFrames with `pass_inputs=True`. Hooks are honest escape hatches:
-Structure calls them, records them as opaque boundaries in lineage and explain output, and does not treat their body as
+Structure calls them, records them as opaque boundaries in traceability and explain output, and does not treat their body as
 compiler-visible logic.
 
 ## Default Project Layout
@@ -244,7 +244,7 @@ generated/
         schemas/
         transforms/
     runtime/
-    lineage/  # compiler metadata, not runtime telemetry
+    traceability/  # compiler metadata, not runtime telemetry
 ```
 
 `src` and `generated` are filesystem roots, not package names. Mark both as source roots in the IDE.
@@ -265,7 +265,7 @@ generated_package = "structure_generated"
 execution_mode = "online"
 target_backend = "pyspark"
 target_pyspark = ">=3.5,<4.1"
-lineage = "compiler"
+traceability = "compiler"
 validate_intermediate = true
 intermediate_validation_mode = "schema_only"
 strict_performance = true
@@ -306,7 +306,7 @@ mainstream analytical pipelines; v3 takes ownership of streaming lifecycle conce
 ordinary PySpark contract is stable.
 
 - **Initial release:** online PySpark execution by default, optional generated PySpark classes, projection, filtering,
-  joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow lineage,
+  joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow traceability,
   streaming-compatible transforms, diagnostic links, and setup checks.
 - **v2:** windowing, deduplication, aggregations, advanced grouping, Spark higher-order functions,
   caching/persistence/repartition hints, `join_many(...)`, richer explain output, generated docs, and pytest helpers.

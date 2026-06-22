@@ -1,4 +1,4 @@
-# Structure seed configuration.
+﻿# Structure seed configuration.
 # Copy this into pyproject.toml under [tool.structure], or into structure.toml.
 # Every setting shown here is a default; ordinary projects only need to specify differences.
 
@@ -31,8 +31,8 @@ output_validation_mode = "schema_only"
 spark.sql.ansi.enabled = true
 spark.sql.storeAssignmentPolicy = "ANSI"
 
-# Compiler lineage output: none, compiler, columns, debug.
-lineage = "compiler"
+# Compiler traceability output: none, compiler, columns, debug.
+traceability = "compiler"
 
 # Streaming compatibility checks for generated DataFrame transforms.
 # v1/v2 do not generate readStream/writeStream orchestration.

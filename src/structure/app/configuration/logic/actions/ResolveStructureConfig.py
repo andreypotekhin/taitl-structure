@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import difflib
 from collections.abc import Mapping
@@ -22,7 +22,7 @@ class ResolveStructureConfig:
         "execution_mode",
         "target_backend",
         "target_pyspark",
-        "lineage",
+        "traceability",
         "validate_inputs",
         "input_validation_mode",
         "validate_intermediate",
@@ -37,7 +37,7 @@ class ResolveStructureConfig:
     _enums = {
         "execution_mode": ("online", "generated"),
         "target_backend": ("pyspark",),
-        "lineage": ("none", "compiler", "columns", "debug"),
+        "traceability": ("none", "compiler", "columns", "debug"),
         "input_validation_mode": ("off", "schema_only", "schema_and_constraints"),
         "intermediate_validation_mode": ("off", "schema_only", "schema_and_constraints"),
         "output_validation_mode": ("off", "schema_only", "schema_and_constraints"),
@@ -81,7 +81,7 @@ class ResolveStructureConfig:
             "execution_mode": "online",
             "target_backend": "pyspark",
             "target_pyspark": ">=3.5,<4.1",
-            "lineage": "compiler",
+            "traceability": "compiler",
             "validate_inputs": True,
             "input_validation_mode": "schema_only",
             "validate_intermediate": True,
@@ -194,7 +194,7 @@ class ResolveStructureConfig:
             execution_mode=str(values["execution_mode"]),
             target_backend=str(values["target_backend"]),
             target_pyspark=str(values["target_pyspark"]),
-            lineage=str(values["lineage"]),
+            traceability=str(values["traceability"]),
             validate_inputs=bool(values["validate_inputs"]),
             input_validation_mode=str(values["input_validation_mode"]),
             validate_intermediate=bool(values["validate_intermediate"]),

@@ -1,4 +1,4 @@
-# Diagnostics
+﻿# Diagnostics
 
 Structure diagnostics are stable messages for user-correctable errors, warnings, and selected internal failures. They
 are designed for humans first, but each diagnostic also has a machine-readable code that tests, CI annotations, IDEs,
@@ -54,7 +54,7 @@ HOOK    hooks
 VAL     schema validation, validation placement, and data quality constraints
 BACKEND backend capabilities and compatibility
 STREAM  streaming compatibility
-GEN     generated output, formatting, stale diffs, provenance, and lineage artifacts
+GEN     generated output, formatting, stale diffs, provenance, and traceability artifacts
 ONLINE  online execution, sessions, transform invocation, and input binding
 CLI     CLI command behavior, clean safety, profile output, and command usage
 ```
@@ -142,6 +142,20 @@ Column expressions.
 
 Use: replace the expression with Structure DSL helpers, an `@expr_fn` helper, or an explicit hook when arbitrary
 PySpark is the honest escape hatch.
+
+### DSL-E0402
+
+Severity: error
+
+Status: active
+
+Title: Invalid transform structure
+
+Common cause: a transform class, subtransform signature, schema flow, or returned schema object does not match the
+Structure compiler contract.
+
+Use: check `@transform`, declared `input(...)` schemas, row parameter annotations, subtransform return annotations,
+schema transition order, and assigned output fields.
 
 ### GEN-E0901
 
@@ -256,3 +270,31 @@ Common cause: Structure hit a bug or an unclassified failure path.
 
 Use: rerun with debug output when available and report the command, diagnostic code, Structure version, and concise
 reproduction steps.
+
+### STREAM-E0801
+
+Severity: error
+
+Status: active
+
+Title: Transform is not streaming-compatible
+
+Common cause: a transform marked or checked for streaming compatibility contains an operation that v1 classifies as
+batch-only, such as an unsupported join shape or a future stateful operation.
+
+Use: keep the transform batch-only, or rewrite the operation using v1 streaming-compatible projection, filtering,
+schema-only validation, and stream-static left or inner joins.
+
+### STREAM-W0801
+
+Severity: warning
+
+Status: active
+
+Title: Hook streaming compatibility is unknown
+
+Common cause: a transform has a hook without `streaming_safe=True`. Hooks are arbitrary PySpark code, so Structure
+cannot prove they avoid actions, RDD/Pandas conversion, streaming lifecycle APIs, or stateful streaming operations.
+
+Use: mark the hook `streaming_safe=True` only after verifying it satisfies the streaming contract, or keep the transform
+batch-only.

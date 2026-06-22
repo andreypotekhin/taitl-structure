@@ -1,4 +1,4 @@
-# Design: Execution and Data Flows
+﻿# Design: Execution and Data Flows
 
 ## Compile Flow
 
@@ -14,7 +14,7 @@
 9. Emit PySpark transform classes from the shared recipes.
 10. Emit runtime support.
 11. Build compiler provenance.
-12. Infer static dataflow lineage.
+12. Infer static dataflow traceability.
 13. Format changed files.
 14. Report compile metrics.
 ```

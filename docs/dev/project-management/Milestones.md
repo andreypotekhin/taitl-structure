@@ -1,4 +1,4 @@
-# Milestones
+﻿# Milestones
 
 ## M0: Groundwork Ready
 
@@ -34,9 +34,9 @@ pytest
 ## M1: Vertical Slice 1
 
 Status: in progress. The shared PySpark recipe layer, generated transform rendering, public `StructureSession`, deferred
-input binding, generated runner delegation, and runtime input diagnostics are implemented and tested without requiring
-PySpark. Remaining exit criteria are live online PySpark recipe interpretation, generated-class execution against a
-local Spark DataFrame, and online/generated row parity for the v0 fixture.
+input binding, generated runner delegation, runtime input diagnostics, live online PySpark recipe interpretation, and
+online/generated row parity integration coverage are implemented. Remaining closeout is validating the PySpark
+integration matrix in an environment with PySpark installed, because the local workspace skips those tests.
 
 ### Exit Criteria
 
@@ -57,8 +57,9 @@ NormalizeOrders(orders=orders_df).run(session)
 
 Status: in progress. Spark schema source rendering, generated schema modules, generated runtime schema helpers,
 runtime schema materialization, validation recipe placement, and online-materialized `transform.schemas.output`
-exposure are implemented and tested. Remaining exit criteria are live runtime schema assertion behavior and negative
-schema-validation tests against Spark DataFrames.
+exposure are implemented and tested. Live runtime schema assertion behavior is covered through the online/generated
+parity integration contract. Remaining closeout is broader negative schema-validation coverage against Spark
+DataFrames.
 
 ### Exit Criteria
 
@@ -72,8 +73,9 @@ schema-validation tests against Spark DataFrames.
 ## M3: Expression DSL Usability
 
 Status: in progress. v1 fixture expressions, filters, expression helpers, generated expression rendering, and the
-shared diagnostic registry are implemented and tested. Remaining exit criteria are unsupported Python operation
-diagnostics and live online/generated expression parity.
+shared diagnostic registry are implemented and tested. Unsupported Python operation diagnostics and live
+online/generated expression parity integration coverage are now in place. Remaining closeout is expanding negative
+diagnostics beyond the representative v1 cases.
 
 ### Exit Criteria
 
@@ -94,14 +96,20 @@ diagnostics and live online/generated expression parity.
 - Hook signature is validated.
 - `@after(method)` and `@before(method)` work.
 
-## M5: Joins, Compiler Lineage, Build Integration
+## M5: Joins, Compiler Traceability, Build Integration
+
+Status: in progress. `join_one(...)`, source-order join lowering, generated join rendering, `compile --fail-on-diff`,
+compact `structure explain`, streaming compatibility reporting, compiler provenance, static dataflow traceability artifacts,
+compact explain traceability summaries, and online/generated join parity integration coverage are implemented and tested.
+Remaining exit criteria are broader CI build-integration coverage and validating the live PySpark matrix outside this
+PySpark-free workspace.
 
 ### Exit Criteria
 
 - `join_one(...)` compiles to PySpark joins.
 - N-step serial joins work across arbitrary named inputs.
 - Compiler provenance maps source nodes to IR nodes to generated PySpark nodes.
-- Static dataflow lineage shows transform, table, and column dependencies inferred from IR.
+- Static dataflow traceability shows transform, table, and column dependencies inferred from IR.
 - `structure compile --fail-on-diff` works.
 - `structure explain` summarizes inputs, steps, filters, joins, hooks, and validation.
 - Streaming compatibility reports whether transforms are compatible, batch-only, or unknown.
@@ -115,7 +123,7 @@ multi-version PySpark strategy, generated-code version headers, and setup/doctor
 
 ### Exit Criteria
 
-- Compatibility docs, generated-code version headers, compiler lineage schema versioning, and config schema
+- Compatibility docs, generated-code version headers, compiler traceability schema versioning, and config schema
   compatibility are checked against release artifacts.
 - Multi-version PySpark test strategy covers the documented v1 target range.
 - Diagnostic codes link to relevant documentation.

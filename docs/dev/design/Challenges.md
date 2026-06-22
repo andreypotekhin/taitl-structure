@@ -1,6 +1,6 @@
-# Challenges Before Coding Starts
+﻿# Challenges Before Coding Starts
 
-This document captures the pre-implementation challenges identified for the **Structure** project. They are labeled **C1–C20** for reference in planning, backlog, risk tracking, and sprint discussions.
+This document captures the pre-implementation challenges identified for the **Structure** project. They are labeled **C1вЂ“C20** for reference in planning, backlog, risk tracking, and sprint discussions.
 
 Current inventory runs through C31. A challenge marked resolved here means the design/specification decision is
 settled; implementation work may still remain in the owning plan or sprint.
@@ -330,19 +330,19 @@ Deferred or rejected in v1:
 - deduplication, limits, Spark actions, RDD conversion, Python UDFs, and Pandas UDFs;
 - hooks without an explicit streaming-safety promise.
 
-## C12. Compiler Lineage Schema Needs Versioning
+## C12. Compiler Traceability Schema Needs Versioning
 
 Resolved by `docs/specifications/IntermediateRepresentation.md`,
 `docs/specifications/PySparkCodeGeneration.md`, `docs/specifications/CompatibilityPolicy.md`, and
-`docs/dev/planning/P06182601.Compiler-provenance-static-dataflow-lineage.plan.md`.
+`docs/dev/planning/P06182601.Compiler-provenance-static-dataflow-traceability.plan.md`.
 
-Lineage is split into three topics:
+Traceability is split into three topics:
 
 1. compiler provenance, which maps source nodes to IR nodes to generated PySpark nodes;
-2. static dataflow lineage, which records transform, table, and column dependencies inferred from IR;
-3. runtime LDJSON lineage, which is optional transform-run telemetry deferred beyond v4.
+2. static dataflow traceability, which records transform, table, and column dependencies inferred from IR;
+3. runtime LDJSON traceability, which is optional transform-run telemetry deferred beyond v4.
 
-The v1 lineage schema should version compiler provenance and static dataflow metadata. Runtime LDJSON can define its
+The v1 traceability schema should version compiler provenance and static dataflow metadata. Runtime LDJSON can define its
 own record format later if the nice-to-have becomes scheduled work.
 
 ## C13. Compile-Time Performance Needs Concrete Targets
@@ -395,7 +395,7 @@ structure clean
 
 At minimum, design the compiler so v2 production incremental compilation can be added without major rework.
 
-## C15. Need a “No Spark Dependency During Compile” Rule
+## C15. Need a вЂњNo Spark Dependency During CompileвЂќ Rule
 
 Resolved by decision `docs/dev/design/decisions/D06182606.No-spark-compile-dependency.md`.
 
@@ -412,13 +412,13 @@ Reasons:
 - easier adoption in Python project builds.
 
 This rule affects discovery, schema extraction, symbolic execution, compileability checks, IR construction, code
-generation, compiler provenance, static dataflow lineage, and `structure compile --fail-on-diff`.
+generation, compiler provenance, static dataflow traceability, and `structure compile --fail-on-diff`.
 
 ## C16. Generated PySpark Examples Should Include Code-Size Comparison
 
 Resolved by the generated-code comparison in `Readme.md`.
 
-Docs should highlight Structure’s strength in requiring less developer-maintained code.
+Docs should highlight StructureвЂ™s strength in requiring less developer-maintained code.
 
 Show comparisons such as:
 
@@ -429,7 +429,7 @@ Hand-written PySpark:
 
 Structure source:
   typed schema construction and symbolic joins
-  20–30 lines maintained by developer
+  20вЂ“30 lines maintained by developer
 
 Generated PySpark:
   visible, reviewable, deterministic, but not hand-maintained
@@ -469,14 +469,14 @@ Since Structure supports TOML config, config errors need structured diagnostics.
 Example invalid config:
 
 ```toml
-lineage = "fieldz"
+traceability = "fieldz"
 ```
 
 Expected error:
 
 ```text
 Invalid config value:
-  [tool.structure].lineage = "fieldz"
+  [tool.structure].traceability = "fieldz"
 
 Allowed:
   none
@@ -536,7 +536,7 @@ Resolved by `docs/dev/planning/P06202601.First-executable-contract-v0.plan.md`, 
 `res/testing/model/v0`, and the revised Sprint 01 plan.
 
 The roadmap's v1 remains the broad north star: online execution, optional generated PySpark, schemas, validation, joins,
-hooks, compiler lineage, static dataflow, streaming compatibility reporting, diagnostics, doctor checks, and build
+hooks, compiler traceability, static dataflow, streaming compatibility reporting, diagnostics, doctor checks, and build
 integration. That scope is coherent, but it is too broad to serve as the first adoption checkpoint.
 
 The first adoption checkpoint is now v0, an internal dev/test planning label. v0 proves one executable contract before
@@ -547,7 +547,7 @@ Deferred from v0 into v1:
 
 - joins;
 - hooks;
-- compiler provenance and static dataflow lineage;
+- compiler provenance and static dataflow traceability;
 - streaming compatibility reporting;
 - setup/configuration doctor checks;
 - build integration such as `compile --fail-on-diff`.
@@ -597,7 +597,7 @@ design. Structure now keeps the initial extension surface deliberately small:
   rule registries remain internal or deferred until their contracts are specified and tested.
 - Monkey-patching compiler registries or relying on hidden UDF-like fallback is unsupported.
 
-Hooks remain useful but intentionally opaque. Lineage and explain output should show hook boundaries, while diagnostics
+Hooks remain useful but intentionally opaque. Traceability and explain output should show hook boundaries, while diagnostics
 should prefer direct DSL or `@expr_fn` fixes when logic can stay compiler-visible.
 
 ## C26. Data Quality Constraints Stop at Schema Shape
@@ -633,7 +633,7 @@ existence checks, temporal/as-of joins, slowly changing dimension lookups, dedup
 joins.
 
 Risk: users may reach for hooks for common join patterns before Structure has compiler-visible syntax for them. That
-would reduce optimizer visibility and make lineage less useful in exactly the pipelines Structure targets.
+would reduce optimizer visibility and make traceability less useful in exactly the pipelines Structure targets.
 
 Recommended direction:
 

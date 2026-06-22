@@ -1,4 +1,4 @@
-import os
+﻿import os
 import shutil
 import sys
 from contextlib import contextmanager
@@ -139,8 +139,13 @@ def test_v1_cli_explain_renders_transform_plan() -> None:
 
         assert result.exit_code == 0, result.output
         assert "NormalizeOrders" in result.output
+        assert "streaming:" in result.output
+        assert "status: compatible" in result.output
         assert "orders: OrderRaw" in result.output
         assert "normalize: OrderRaw -> OrderNormalized" in result.output
+        assert "traceability:" in result.output
+        assert "static dataflow:" in result.output
+        assert "NormalizeOrders <- orders" in result.output
 
 
 def test_v1_cli_clean_removes_owned_generated_files_only() -> None:

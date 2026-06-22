@@ -1,9 +1,9 @@
-# Configuration Schema
+﻿# Configuration Schema
 
 ## Purpose
 
 Structure configuration controls source discovery, generated output, execution mode, target backend, validation,
-lineage, Spark SQL assumptions, and CI behavior. Configuration errors must fail early with structured diagnostics and
+traceability, Spark SQL assumptions, and CI behavior. Configuration errors must fail early with structured diagnostics and
 allowed values.
 
 This specification owns configuration files, resolution order, keys, defaults, validation rules, diagnostics, and tests.
@@ -34,7 +34,7 @@ generated_package = "structure_generated"
 execution_mode = "online"
 target_backend = "pyspark"
 target_pyspark = ">=3.5,<4.1"
-lineage = "compiler"
+traceability = "compiler"
 validate_intermediate = true
 input_validation_mode = "schema_only"
 intermediate_validation_mode = "schema_only"
@@ -125,7 +125,7 @@ Rules:
 - Must resolve to a supported PySpark capability profile.
 - Must not inspect the locally installed PySpark version during compiler commands.
 
-### lineage
+### traceability
 
 Type: string enum.
 
@@ -272,7 +272,7 @@ Example:
 CompileError CONF-E0102: Invalid configuration value
 
 Setting:
-  [tool.structure].lineage = "fieldz"
+  [tool.structure].traceability = "fieldz"
 
 Allowed:
   none
@@ -281,7 +281,7 @@ Allowed:
   debug
 
 Use:
-  lineage = "columns"
+  traceability = "columns"
 
 See docs/specifications/ConfigSchema.md
 ```
@@ -299,7 +299,7 @@ StructureConfig
   execution_mode
   target_backend
   target_pyspark
-  lineage
+  traceability
   validation
   strict_performance
   fail_on_diff

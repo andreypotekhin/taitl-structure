@@ -1,9 +1,9 @@
-# Schema Declaration Syntax
+﻿# Schema Declaration Syntax
 
 ## Purpose
 
 Structure schemas declare the row contracts used by compiler checks, generated Spark `StructType` code, runtime schema
-validation, lineage, and IDE navigation. The syntax must be explicit, readable, and cheap to inspect without importing
+validation, traceability, and IDE navigation. The syntax must be explicit, readable, and cheap to inspect without importing
 PySpark or creating a Spark session.
 
 ## Canonical v1 Form
@@ -100,7 +100,7 @@ Rules:
 - `nullable` defaults to `True`.
 - `primary_key` defaults to `False` and implies `nullable=False`.
 - `metadata` defaults to an empty immutable mapping.
-- `description` is optional end-user documentation for generated docs, diagnostics, and lineage.
+- `description` is optional end-user documentation for generated docs, diagnostics, and traceability.
 - Field declaration order is class body order.
 - The attribute name is the field name unless a future spec introduces aliases.
 - v1 must reject duplicate field names after inherited fields are resolved.

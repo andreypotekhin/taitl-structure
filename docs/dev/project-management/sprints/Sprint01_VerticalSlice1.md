@@ -1,4 +1,4 @@
-# Sprint 01: v0 First Executable Contract
+﻿# Sprint 01: v0 First Executable Contract
 
 ## Sprint Goal
 
@@ -105,7 +105,7 @@ class NormalizeOrdersGenerated:
 - Output validation.
 - Hooks.
 - Joins.
-- Lineage.
+- Traceability.
 - Schema base overlay construction.
 
 ## Relevant Specification Items

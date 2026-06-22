@@ -1,4 +1,4 @@
-# Definition of Done
+﻿# Definition of Done
 
 A story or task is done when all relevant criteria are satisfied.
 
@@ -42,7 +42,7 @@ A story or task is done when all relevant criteria are satisfied.
 ## Documentation Criteria
 
 - Public behavior is documented in user docs.
-- Compatibility behavior is documented in public docs when a change affects Python, PySpark, generated code, lineage, or
+- Compatibility behavior is documented in public docs when a change affects Python, PySpark, generated code, traceability, or
   config schema.
 - Internal behavior is documented in dev docs when design-relevant.
 - Specification/user-story references are updated.

@@ -1,4 +1,4 @@
-# Sprint 07: Analytical Join Coverage
+﻿# Sprint 07: Analytical Join Coverage
 
 ## Sprint Goal
 
@@ -22,7 +22,7 @@ joins in Structure source instead of hiding common join logic in hooks.
 - Backward `as_of_one(...)` with optional tolerance.
 - Backend capability checks for every analytical join form.
 - Shared PySpark recipes consumed by online and generated execution.
-- Static lineage and `structure explain` output for analytical joins.
+- Static traceability and `structure explain` output for analytical joins.
 - Online/generated parity tests for every supported form.
 - Streaming compatibility classification for v2 stream-static forms.
 
@@ -77,13 +77,13 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
 9. Add deduped `join_one(...)` recipe lowering and parity tests.
 10. Implement `temporal_one(...)` closed-open validity-window lookups.
 11. Implement backward `as_of_one(...)`.
-12. Update lineage, explain output, diagnostics, and streaming classification.
+12. Update traceability, explain output, diagnostics, and streaming classification.
 
 ## Acceptance Criteria
 
 - Existence joins preserve current-row schema and filter rows correctly.
 - Right-side duplicates do not change existence output.
-- `join_many(...)` multiplies rows and records row-multiplying cardinality in lineage.
+- `join_many(...)` multiplies rows and records row-multiplying cardinality in traceability.
 - Deduped lookup joins never use nondeterministic Spark row choice.
 - Temporal joins use closed-open interval semantics and handle null `valid_to` as open-ended.
 - Backward as-of joins select the latest right row at or before the left time.

@@ -1,4 +1,4 @@
-# Design: Analytical Join Coverage
+﻿# Design: Analytical Join Coverage
 
 ## Purpose
 
@@ -21,7 +21,7 @@ online/generated parity tests.
 The v2 order should follow production frequency and semantic risk:
 
 1. Existence joins: semi and anti filters that keep or remove current rows based on right-side matches.
-2. `join_many(...)`: row multiplication is intentional and visible in lineage.
+2. `join_many(...)`: row multiplication is intentional and visible in traceability.
 3. Deterministic lookup dedupe: a `join_one(...)` policy that selects one right row before joining.
 4. Temporal and as-of lookups: time-aware joins that select records relative to an event time.
 5. SCD-style lookups: validity-window joins with explicit overlap handling.
@@ -39,7 +39,7 @@ choice, Structure should warn or require an explicit tie policy. It must never l
 `dropDuplicates(...)` behavior.
 
 Every join form must be optimizer-visible. The preferred path is symbolic DSL, checked IR, shared PySpark recipes, and
-lineage. Hooks are acceptable for rare or urgent cases, but diagnostics and docs should steer common patterns back to
+traceability. Hooks are acceptable for rare or urgent cases, but diagnostics and docs should steer common patterns back to
 compiler-visible syntax.
 
 No compiler command may import PySpark or inspect data to prove join facts. Runtime checks for duplicate matches,
@@ -141,12 +141,12 @@ The PySpark target plan should add corresponding recipes:
 
 Online execution and generated code must consume those recipes through the shared execution semantic contract.
 
-## Diagnostics and Lineage
+## Diagnostics and Traceability
 
 Diagnostics should say which cardinality shape the join has and why a source form is unsupported. Join warnings must
 distinguish between unproven uniqueness, unproven dedupe ties, and unproven temporal-window overlap.
 
-Lineage should show existence joins as filters, `join_many(...)` as row-multiplying dependencies, dedupe policies as
+Traceability should show existence joins as filters, `join_many(...)` as row-multiplying dependencies, dedupe policies as
 right-side prejoin reductions, and temporal joins as dependencies on both key fields and time-validity fields.
 
 ## Implementation Notes

@@ -1,4 +1,4 @@
-import os
+﻿import os
 import shutil
 import sys
 from contextlib import contextmanager
@@ -34,7 +34,7 @@ def test_v1_config_precedence_is_cli_pyproject_structure_defaults() -> None:
     with workspace_tmp() as root:
         (root / "src").mkdir()
         (root / "structure.toml").write_text(
-            '[tool.structure]\ngenerated_package = "from_structure"\nlineage = "none"\n',
+            '[tool.structure]\ngenerated_package = "from_structure"\ntraceability = "none"\n',
             encoding="utf-8",
         )
         (root / "pyproject.toml").write_text(
@@ -48,9 +48,9 @@ def test_v1_config_precedence_is_cli_pyproject_structure_defaults() -> None:
         )
 
         assert config.generated_package == "from_cli"
-        assert config.lineage == "none"
+        assert config.traceability == "none"
         assert config.source_map["generated_package"] == "CLI"
-        assert config.source_map["lineage"] == "structure.toml"
+        assert config.source_map["traceability"] == "structure.toml"
 
 
 def test_v1_config_unknown_key_suggests_known_key() -> None:
@@ -77,7 +77,7 @@ def test_v1_config_invalid_values_fail_before_discovery() -> None:
     with workspace_tmp() as root:
         (root / "src").mkdir()
         (root / "structure.toml").write_text(
-            '[tool.structure]\nlineage = "fieldz"\n',
+            '[tool.structure]\ntraceability = "fieldz"\n',
             encoding="utf-8",
         )
 
@@ -86,10 +86,10 @@ def test_v1_config_invalid_values_fail_before_discovery() -> None:
         except ConfigError as error:
             diagnostic = error.diagnostic
         else:
-            raise AssertionError("invalid lineage should fail")
+            raise AssertionError("invalid traceability should fail")
 
         assert diagnostic.code == "CONF-E0102"
-        assert diagnostic.setting == "lineage"
+        assert diagnostic.setting == "traceability"
         assert diagnostic.docs == "docs/Diagnostics.md#conf-e0102"
         assert "none, compiler, columns, debug" in diagnostic.use
 

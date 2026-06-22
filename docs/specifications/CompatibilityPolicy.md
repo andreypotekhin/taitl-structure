@@ -1,4 +1,4 @@
-# Compatibility Policy
+﻿# Compatibility Policy
 
 The policy is public-facing in `docs/Compatibility.md`. This specification defines the development contract behind that
 page.
@@ -13,7 +13,7 @@ The compatibility policy must:
 - define semantic versioning expectations;
 - define online runtime compatibility;
 - define generated-code compatibility;
-- define compiler lineage schema versioning;
+- define compiler traceability schema versioning;
 - define config schema versioning.
 
 ## v1 Runtime Baseline
@@ -39,7 +39,7 @@ toolchain allows it, but Spark jobs should be designed and tested primarily for 
 
 ## PySpark Version Targeting
 
-The PySpark target layer owns PySpark API compatibility. Discovery, symbolic execution, IR checks, lineage, and generic
+The PySpark target layer owns PySpark API compatibility. Discovery, symbolic execution, IR checks, traceability, and generic
 diagnostics must not scatter PySpark-version conditionals unless a narrow check directly belongs there.
 
 The target layer must be version-aware enough to:
@@ -88,7 +88,7 @@ Major releases may:
 - change generated-runtime helper contracts;
 - change generated-code compatibility rules;
 - drop supported Python or PySpark lines;
-- make breaking compiler lineage or config schema changes.
+- make breaking compiler traceability or config schema changes.
 
 Minor releases may:
 
@@ -98,7 +98,7 @@ Minor releases may:
 - add diagnostics;
 - improve generated code without changing semantics;
 - improve online execution without changing semantics;
-- add compiler lineage fields in a backward-compatible way.
+- add compiler traceability fields in a backward-compatible way.
 
 Patch releases may:
 
@@ -147,19 +147,19 @@ Upgrade guidance for projects that commit generated files must tell users to run
 structure compile --fail-on-diff
 ```
 
-## Compiler Lineage Schema Versioning
+## Compiler Traceability Schema Versioning
 
-Compiler lineage has two v1 metadata models:
+Compiler traceability has two v1 metadata models:
 
 - compiler provenance, which maps source nodes to IR nodes to generated PySpark nodes;
-- static dataflow lineage, which records transform, table, and column dependencies inferred from IR.
+- static dataflow traceability, which records transform, table, and column dependencies inferred from IR.
 
-The lineage schema version follows `major.minor`.
+The traceability schema version follows `major.minor`.
 
-Breaking changes require a major lineage schema version bump. Additive fields require a minor version bump. Consumers
+Breaking changes require a major traceability schema version bump. Additive fields require a minor version bump. Consumers
 should ignore unknown fields so minor additions remain compatible.
 
-Runtime LDJSON lineage is not part of the v1 compatibility contract. It is tracked as a nice-to-have beyond v4 in
+Runtime LDJSON traceability is not part of the v1 compatibility contract. It is tracked as a nice-to-have beyond v4 in
 `docs/dev/project-management/NiceToHave.md`.
 
 ## Config Schema Versioning

@@ -1,4 +1,4 @@
-# Sprint 00: Groundwork
+﻿# Sprint 00: Groundwork
 
 ## Sprint Goal
 
@@ -23,8 +23,8 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - Config resolution across CLI overrides, `pyproject.toml`, `structure.toml`, and built-in defaults.
 - Explicit config precedence: CLI flags, `[tool.structure]` in `pyproject.toml`, `structure.toml`, built-in defaults.
 - Config schema validation for unknown keys and invalid values.
-- Structured config diagnostics, including allowed values for enum-like settings such as lineage.
-- Compatibility policy for Python, PySpark, generated code, compiler lineage schema, and config schema.
+- Structured config diagnostics, including allowed values for enum-like settings such as traceability.
+- Compatibility policy for Python, PySpark, generated code, compiler traceability schema, and config schema.
 - Seed config file generation.
 - CLI skeleton: `check`, `compile`, `explain`.
 - Empty generated directory conventions.
@@ -45,7 +45,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - Production transform compilation beyond the minimal spike fixture.
 - Production PySpark execution support beyond the minimal spike fixture.
 - Schema validation runtime.
-- Joins, hooks, lineage.
+- Joins, hooks, traceability.
 - Full implementation of any spike subject beyond the proof needed for Sprint 01 planning.
 
 ## Relevant Specification Items
@@ -160,4 +160,4 @@ Target for this sprint:
 
 ## Notes
 
-Keep commands honest. If compilation is not implemented yet, return a clear “no transforms found” result, not a fake success with invented generated code.
+Keep commands honest. If compilation is not implemented yet, return a clear вЂњno transforms foundвЂќ result, not a fake success with invented generated code.

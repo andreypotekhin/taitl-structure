@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,7 +14,7 @@ class StructureConfig:
     execution_mode: str
     target_backend: str
     target_pyspark: str
-    lineage: str
+    traceability: str
     validate_inputs: bool
     input_validation_mode: str
     validate_intermediate: bool

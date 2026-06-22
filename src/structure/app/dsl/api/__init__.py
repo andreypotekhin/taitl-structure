@@ -16,6 +16,7 @@ from structure.app.dsl.logic.model.schemas.schema import (
     field,
 )
 from structure.app.dsl.logic.model.schemas.Structure import Structure
+from structure.app.compiler.diagnostics.api import StructureCompileError
 from structure.app.dsl.logic.model.transforms.Transform import Transform
 from structure.app.dsl.logic.model.transforms.Join import Join
 from structure.app.dsl.logic.model.transforms.JoinHint import JoinHint
@@ -37,6 +38,7 @@ __all__ = [
     "SchemaMode",
     "String",
     "Structure",
+    "StructureCompileError",
     "Struct",
     "Timestamp",
     "Transform",

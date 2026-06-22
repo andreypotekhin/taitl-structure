@@ -1,4 +1,4 @@
-# Streaming Compatibility
+﻿# Streaming Compatibility
 
 ## Purpose
 
@@ -115,7 +115,7 @@ require cross-row state, local collection, Python UDF execution, or RDD conversi
 Schema-only validation is compatible. It may inspect `df.schema`, column names, data types, and nullability metadata.
 It must not trigger Spark jobs.
 
-Compiler lineage generation is compatible when it records compile-time or generated-code metadata. Runtime lineage
+Compiler traceability generation is compatible when it records compile-time or generated-code metadata. Runtime traceability
 hooks are out of scope for v1 and must not be introduced by streaming-compatible generated code.
 
 ## Deferred or Rejected Operations
@@ -204,7 +204,7 @@ def remove_negative_totals(self, *, df, spark, ctx):
 - If `pass_inputs=True`, any joined or consulted input DataFrames are static unless a later spec declares otherwise.
 
 The checker does not need to parse hook bodies in v1. It should validate the hook signature and record that
-streaming-safe hooks are trusted boundaries in lineage and diagnostics.
+streaming-safe hooks are trusted boundaries in traceability and diagnostics.
 
 ## Validation
 
@@ -272,7 +272,7 @@ Required checks:
 4. Reject or warn on hooks without `streaming_safe=True`.
 5. Reject `streaming_safe=True` hooks with invalid hook signatures.
 6. Reject schema-and-constraints validation when constraints are not schema-only.
-7. Preserve streaming compatibility status in compile reports and compiler lineage metadata.
+7. Preserve streaming compatibility status in compile reports and compiler traceability metadata.
 8. Link diagnostics to this specification.
 
 The checker should be conservative. If it cannot prove an operation is compatible, it should classify it as unknown

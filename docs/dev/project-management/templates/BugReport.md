@@ -1,4 +1,4 @@
-# Bug Report Template
+﻿# Bug Report Template
 
 ## Summary
 
@@ -13,7 +13,7 @@
 - [ ] PySpark generation
 - [ ] Runtime validation
 - [ ] CLI/build
-- [ ] Lineage
+- [ ] Traceability
 - [ ] Documentation
 
 ## Reproduction

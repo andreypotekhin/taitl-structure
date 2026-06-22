@@ -1,4 +1,4 @@
-# CLI
+﻿# CLI
 
 ## Purpose
 
@@ -84,7 +84,7 @@ Recommended initial CLI override flags:
 --execution-mode online|generated
 --target-backend pyspark
 --target-pyspark RANGE
---lineage none|compiler
+--traceability none|compiler
 --validate-intermediate / --no-validate-intermediate
 --intermediate-validation-mode schema_only|full
 --strict-performance / --no-strict-performance
@@ -118,7 +118,7 @@ generated_package = "structure_generated"
 execution_mode = "online"
 target_backend = "pyspark"
 target_pyspark = ">=3.5,<4.1"
-lineage = "compiler"
+traceability = "compiler"
 validate_inputs = true
 input_validation_mode = "schema_only"
 validate_intermediate = true
@@ -145,9 +145,9 @@ It must run:
 5. IR construction;
 6. compileability checks;
 7. compatibility checks for the configured target backend and PySpark range;
-8. compiler provenance and static dataflow lineage construction in memory when enabled.
+8. compiler provenance and static dataflow traceability construction in memory when enabled.
 
-It must not write generated schemas, transforms, runtime support, provenance files, lineage files, cache files, or temp
+It must not write generated schemas, transforms, runtime support, provenance files, traceability files, cache files, or temp
 artifacts that survive command completion. Temporary files are allowed only if they are cleaned before exit.
 
 Successful output should be compact:
@@ -171,8 +171,8 @@ It performs the same compiler pipeline as `check`, then writes:
 - generated Spark schema declarations;
 - generated PySpark transform classes;
 - generated runtime support needed by generated code;
-- compiler provenance files when lineage is enabled;
-- static dataflow lineage files when lineage is enabled.
+- compiler provenance files when traceability is enabled;
+- static dataflow traceability files when traceability is enabled.
 
 Generation must be deterministic. For unchanged content, the command should use write-if-changed behavior so file
 timestamps do not churn and editor/build tools do not see false changes.
@@ -306,7 +306,7 @@ Metrics:
 - code generation time;
 - formatting time;
 - compiler provenance time;
-- static dataflow lineage time;
+- static dataflow traceability time;
 - total time;
 - files considered;
 - files written;
@@ -327,7 +327,7 @@ Profile
   codegen: 22 ms
   formatting: 11 ms
   provenance: 3 ms
-  lineage: 5 ms
+  traceability: 5 ms
   total: 101 ms
   files written: 12
   cache hits: 0
@@ -423,7 +423,7 @@ The CLI implementation is complete when tests prove:
 - unknown config keys fail with a setting path, value, suggested fix, and docs link;
 - `structure check` succeeds on a valid minimal transform project without writing generated files;
 - `structure check` fails on invalid source with exit code `1` and structured diagnostics;
-- `structure compile` writes schemas, transforms, runtime support, provenance, and static dataflow lineage;
+- `structure compile` writes schemas, transforms, runtime support, provenance, and static dataflow traceability;
 - `structure compile` uses write-if-changed behavior for unchanged generated files;
 - `structure compile --fail-on-diff` passes when checked-in generated output matches compiler output;
 - `structure compile --fail-on-diff` fails without modifying generated output when files differ;

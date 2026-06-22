@@ -1,4 +1,4 @@
-# Architecture
+﻿# Architecture
 
 Structure is an IR-first runtime/compiler toolkit for schema-driven PySpark data pipelines.
 
@@ -32,7 +32,7 @@ compiler
   compileability checks
   IR generation
   compiler provenance
-  static dataflow lineage
+  static dataflow traceability
 
         -> online execution
 
@@ -47,7 +47,7 @@ generated/structure_generated/
     schemas/
     transforms/
   runtime/
-  lineage/  # compiler metadata, not runtime telemetry
+  traceability/  # compiler metadata, not runtime telemetry
 
         -> generated execution
 
@@ -86,7 +86,7 @@ backend capability interface specified in `docs/specifications/BackendCapabiliti
 `docs/dev/design/BackendCapabilities.md`.
 
 Compiler phases must not depend on a live Spark installation. Discovery, schema extraction, symbolic execution,
-compileability checks, IR construction, code generation, compiler provenance, static dataflow lineage, and
+compileability checks, IR construction, code generation, compiler provenance, static dataflow traceability, and
 generated-file diff checks run without PySpark imports, Java, a SparkSession, or a Spark cluster. Online and generated
 PySpark execution may depend on PySpark at runtime; the compiler itself must not.
 

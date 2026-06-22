@@ -1,4 +1,4 @@
-# Testing
+﻿# Testing
 
 Structure requires layered testing because correctness spans source DSL semantics, online execution, generated code,
 runtime behavior, and performance guardrails.
@@ -30,7 +30,7 @@ Generated code should be tested by:
 - import execution
 - small Spark DataFrame input/output tests
 - schema validation failure tests
-- compiler provenance and static dataflow lineage tests
+- compiler provenance and static dataflow traceability tests
 
 ## Online Execution Correctness
 

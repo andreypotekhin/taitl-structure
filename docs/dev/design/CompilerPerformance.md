@@ -1,4 +1,4 @@
-# Design: Compiler Performance
+﻿# Design: Compiler Performance
 
 ## Principle
 
@@ -25,7 +25,7 @@ Track:
 - codegen time
 - formatting time
 - compiler provenance time
-- static dataflow lineage time
+- static dataflow traceability time
 - total time
 - files considered
 - files written

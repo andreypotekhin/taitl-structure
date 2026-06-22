@@ -1,4 +1,4 @@
-# Implementation
+﻿# Implementation
 
 ## Phase 1: v0 First Executable Contract
 
@@ -48,7 +48,7 @@
 - Streaming compatibility checks.
 - Streaming compatibility report.
 - Compiler provenance from source node to IR node to generated PySpark node.
-- Static dataflow lineage inferred from IR.
+- Static dataflow traceability inferred from IR.
 - TOML configuration hardening.
 - Diagnostic codes with documentation links.
 - Setup/configuration doctor.
@@ -116,7 +116,7 @@ Track:
 - codegen time
 - formatting time
 - compiler provenance time
-- static dataflow lineage time
+- static dataflow traceability time
 - files regenerated
 - cache hit ratio
 - total wall-clock time

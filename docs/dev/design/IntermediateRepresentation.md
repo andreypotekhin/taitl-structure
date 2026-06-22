@@ -1,4 +1,4 @@
-# Design: Intermediate Representation
+﻿# Design: Intermediate Representation
 
 ## Purpose
 
@@ -95,12 +95,12 @@ Expr
 
 ```text
 Symbolic execution
-  ↓
+  в†“
 StepPlan IR
-  ↓ checks
+  в†“ checks
 TransformPlan IR
-  ↓ emitters
-Generated PySpark + compiler provenance + static dataflow lineage
+  в†“ emitters
+Generated PySpark + compiler provenance + static dataflow traceability
 ```
 
 ## Compile-Time Performance

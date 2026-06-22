@@ -1,4 +1,4 @@
-# Intermediate Representation
+﻿# Intermediate Representation
 
 This specification replaces `docs/dev/design/IntermediateRepresentation.md` as the implementation-level IR reference.
 
@@ -6,7 +6,7 @@ This specification replaces `docs/dev/design/IntermediateRepresentation.md` as t
 
 The Structure intermediate representation is the compiler contract between source DSL semantics and execution targets.
 The DSL frontend produces IR. Compileability checkers, online PySpark execution, PySpark code generation, streaming
-compatibility checks, compiler provenance, and static dataflow lineage consume IR.
+compatibility checks, compiler provenance, and static dataflow traceability consume IR.
 
 The IR must be backend-neutral. It must describe what the transform means, not how PySpark source text happens to spell
 that meaning.
@@ -55,7 +55,7 @@ The IR must be:
 - immutable or treated as immutable after construction;
 - explicit about operation order;
 - explicit about scopes, aliases, and schema boundaries;
-- rich enough for diagnostics, provenance, lineage, online execution, generated output, and streaming checks;
+- rich enough for diagnostics, provenance, traceability, online execution, generated output, and streaming checks;
 - compact enough to build and inspect quickly during `structure check`;
 - serializable for debugging, snapshot tests, and future incremental compile fingerprints.
 
@@ -71,7 +71,7 @@ source import
   -> TransformPlan IR
   -> IR validation and compileability checks
   -> compiler provenance
-  -> static dataflow lineage
+  -> static dataflow traceability
   -> online runner or generated PySpark emitter
 ```
 
@@ -173,7 +173,7 @@ Rules:
 - Ids must not include timestamps, memory addresses, object ids, or absolute workspace paths.
 - Operation ids include source-order ordinals within the owning step.
 - Expression ids may be structural or path-based. They must be stable enough for diagnostics and snapshot tests.
-- Generated PySpark and lineage metadata may refer to IR ids.
+- Generated PySpark and traceability metadata may refer to IR ids.
 - Ids are internal compatibility surface, not public DSL API.
 
 If a source edit reorders operations, operation ids may change. If only unrelated source text changes, ids for unchanged
@@ -340,7 +340,7 @@ Rules:
 - Scope names used for generated aliases must be derived from scope metadata, not Python object identity.
 - Field names are resolved through scopes, never through unqualified strings after a join.
 
-Scope metadata is the bridge between join semantics, generated aliasing, diagnostics, and lineage.
+Scope metadata is the bridge between join semantics, generated aliasing, diagnostics, and traceability.
 
 ## Operation Model
 
@@ -448,7 +448,7 @@ Rules:
 - Composite keys must reference the same joined input for one join operation.
 - `joined_scope` records occurrence and alias metadata.
 - `cardinality` records whether `join_one(...)` uniqueness is proven, unproven, or explicitly unchecked.
-- `right_fields` records right-side fields needed by downstream filters, projections, diagnostics, or lineage.
+- `right_fields` records right-side fields needed by downstream filters, projections, diagnostics, or traceability.
 - IR must not silently deduplicate right-side rows.
 
 Detailed join behavior is owned by `docs/specifications/JoinSemantics.md`.
@@ -748,7 +748,7 @@ Rules:
 - Hooks default to `unknown` unless `streaming_safe=True`.
 - Operations not admitted by `StreamingCompatibility.md` are `batch_only` or `unknown`.
 - Transform-level streaming compatibility is derived from operation classifications and policy.
-- Streaming metadata should be included in compile reports and lineage when configured.
+- Streaming metadata should be included in compile reports and traceability when configured.
 
 The checker must be conservative. Unknown must not be reported as compatible.
 
@@ -776,12 +776,12 @@ Rules:
 - Provenance must not include runtime row counts, Spark application ids, cluster details, or wall-clock execution
   telemetry.
 
-Compiler provenance is compile-time metadata. Runtime LDJSON lineage is outside v1 through v4 scope unless a future
+Compiler provenance is compile-time metadata. Runtime LDJSON traceability is outside v1 through v4 scope unless a future
 specification changes that roadmap.
 
-## Static Dataflow Lineage
+## Static Dataflow Traceability
 
-Static dataflow lineage is inferred from IR without executing Spark jobs.
+Static dataflow traceability is inferred from IR without executing Spark jobs.
 
 ```text
 DataflowRecord
@@ -810,10 +810,10 @@ Rules:
 - Joins create table and key dependency records.
 - Hooks create opaque dependency boundaries.
 - Validation creates schema dependency records, not data dependency records.
-- Lineage records must use source input names, schema names, field names, step names, and IR ids.
-- Lineage must be deterministic and compact by default.
+- Traceability records must use source input names, schema names, field names, step names, and IR ids.
+- Traceability must be deterministic and compact by default.
 
-Lineage precision may improve over time, but v1 must at least expose transform, input, step, join, projection, hook,
+Traceability precision may improve over time, but v1 must at least expose transform, input, step, join, projection, hook,
 and validation dependencies.
 
 ## Capability Metadata
@@ -896,7 +896,7 @@ Rules:
 - Use stable scope and operation occurrence numbers.
 - Emit diagnostics in deterministic order.
 
-Deterministic IR is required for generated-code stability, `--fail-on-diff`, snapshot tests, provenance, lineage, and
+Deterministic IR is required for generated-code stability, `--fail-on-diff`, snapshot tests, provenance, traceability, and
 future incremental compilation.
 
 ## Immutability and Thread Safety
@@ -1058,7 +1058,7 @@ Rules for adding v2 variants:
 - Add backend capability checks.
 - Add online and generated lowering or explicitly mark the feature unsupported for one path.
 - Add streaming classification.
-- Add provenance and lineage records.
+- Add provenance and traceability records.
 - Add snapshot tests and parity tests where runtime behavior exists.
 
 `IncrementalCompileFingerprint` should hash stable IR, resolved configuration, relevant source fingerprints, and target
@@ -1080,7 +1080,7 @@ Rules:
 - v3 streaming lifecycle IR must distinguish transform semantics from query orchestration.
 - Checkpoints, triggers, watermarks, output modes, and state policies require explicit user-facing semantics before
   they enter IR.
-- Runtime telemetry remains separate from compiler lineage unless a future specification merges them deliberately.
+- Runtime telemetry remains separate from compiler traceability unless a future specification merges them deliberately.
 
 ## v4 Extensions
 
@@ -1117,11 +1117,11 @@ Rules:
 14. Run join checks using `JoinSemantics.md`.
 15. Run streaming compatibility classification using `StreamingCompatibility.md`.
 16. Produce deterministic compiler provenance records from source anchors and IR ids.
-17. Infer static dataflow lineage from projection, filter, join, hook, and validation IR.
+17. Infer static dataflow traceability from projection, filter, join, hook, and validation IR.
 18. Provide deterministic debug serialization for tests and troubleshooting.
 19. Ensure compiler commands remain Spark-free.
 20. Add diagnostics with specific source context, suggested fixes, and documentation links.
-21. Add tests for deterministic IR, immutability expectations, validation failures, provenance, lineage, and backend
+21. Add tests for deterministic IR, immutability expectations, validation failures, provenance, traceability, and backend
    consumer parity.
 
 ## Acceptance Criteria
@@ -1163,8 +1163,8 @@ The implementation is complete when tests prove:
 - `join_one(...)` uniqueness status is recorded and warnings are deterministic;
 - streaming classification can mark operations compatible, batch-only, or unknown;
 - provenance maps source anchors to IR ids;
-- static dataflow lineage records projection, filter, join, hook, and validation dependencies;
-- hook boundaries are marked opaque in provenance and lineage;
+- static dataflow traceability records projection, filter, join, hook, and validation dependencies;
+- hook boundaries are marked opaque in provenance and traceability;
 - deterministic IR debug serialization contains no timestamps, memory addresses, or absolute workspace paths;
 - backend capability checks consume IR plus target metadata without live Spark objects;
 - online execution and generated PySpark emission consume the same checked `TransformPlan`;
@@ -1197,7 +1197,7 @@ Recommended test groups:
 - join validation integration;
 - streaming classification integration;
 - provenance records;
-- static dataflow lineage records;
+- static dataflow traceability records;
 - deterministic serialization and snapshot tests;
 - Spark-free compiler command checks;
 - online/generated consumer parity for the same `TransformPlan`.

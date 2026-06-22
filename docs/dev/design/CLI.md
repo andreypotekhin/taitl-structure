@@ -1,4 +1,4 @@
-# Design: CLI
+﻿# Design: CLI
 
 ## Purpose
 
@@ -21,7 +21,7 @@ Runs discovery, symbolic execution, and compileability checks without writing ge
 
 ## `compile`
 
-Writes generated schemas, transforms, runtime support, compiler provenance, and static dataflow lineage.
+Writes generated schemas, transforms, runtime support, compiler provenance, and static dataflow traceability.
 
 ## `--fail-on-diff`
 
@@ -54,7 +54,7 @@ Reports compile-time performance metrics:
 - codegen time
 - formatting time
 - compiler provenance time
-- static dataflow lineage time
+- static dataflow traceability time
 - total time
 - files written
 - cache hits

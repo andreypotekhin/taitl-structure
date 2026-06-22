@@ -1,4 +1,4 @@
-# Join Semantics
+﻿# Join Semantics
 
 ## Purpose
 
@@ -9,7 +9,7 @@ warnings rather than proven facts.
 
 The v1 goal is deliberately narrow: support explicit lookup joins without implicit deduplication, implicit string
 column references, or hidden data scans. Row-multiplying and existence-oriented joins are specified separately for v2+
-in `docs/specifications/AnalyticalJoinCoverage.md` because they change validation, lineage, and output-row
+in `docs/specifications/AnalyticalJoinCoverage.md` because they change validation, traceability, and output-row
 expectations.
 
 ## Public API Shape
@@ -93,7 +93,7 @@ customer = self.customers.join_one(
 ```
 
 The key order in IR must follow source order after flattening the `&` tree from left to right. This makes diagnostics,
-lineage, generated code, and snapshot tests deterministic.
+traceability, generated code, and snapshot tests deterministic.
 
 Composite key rules:
 
@@ -136,7 +136,7 @@ customer = self.customers.join_one(
 ```
 
 There is no v1 `case_insensitive=True` join option. Normalization belongs in the expression because it is part of the
-business key. Keeping it visible makes generated PySpark and lineage reviewable.
+business key. Keeping it visible makes generated PySpark and traceability reviewable.
 
 The v1 `lower(...)` helper follows Spark's backend behavior. It is not a promise of full Unicode case folding or
 locale-specific collation. If the project later adds richer collation semantics, that should be a separate expression
@@ -203,7 +203,7 @@ Generated PySpark must not carry all right-side columns through the join by defa
 - right-side key expressions needed by the join condition;
 - right-side fields referenced by output projection;
 - right-side fields referenced by post-join filters;
-- right-side fields needed by lineage or diagnostics when that mode is enabled.
+- right-side fields needed by traceability or diagnostics when that mode is enabled.
 
 Projection may happen before or after the physical join as long as observable semantics remain the same. The generated
 code should avoid duplicate unqualified column names by aliasing and explicit `select(...)`.

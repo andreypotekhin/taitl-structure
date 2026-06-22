@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import importlib
 import sys
@@ -24,7 +24,7 @@ def _config_options(function):
         click.option("--execution-mode", type=click.Choice(["online", "generated"])),
         click.option("--target-backend"),
         click.option("--target-pyspark"),
-        click.option("--lineage", type=click.Choice(["none", "compiler", "columns", "debug"])),
+        click.option("--traceability", type=click.Choice(["none", "compiler", "columns", "debug"])),
         click.option("--fail-on-diff", is_flag=True, default=None),
     ]
     for option in reversed(options):
@@ -194,7 +194,7 @@ def _seed_config(seed: bool) -> str:
         'execution_mode = "online"',
         'target_backend = "pyspark"',
         'target_pyspark = ">=3.5,<4.1"',
-        'lineage = "compiler"',
+        'traceability = "compiler"',
     ]
     if seed:
         lines.extend(

@@ -1,4 +1,4 @@
-# Design: Compileability Checker
+﻿# Design: Compileability Checker
 
 ## Purpose
 
@@ -71,7 +71,7 @@ Hook workaround:
       return df.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 
 Hook note:
-  Hooks are supported for arbitrary PySpark, but they are opaque to compileability checks and lineage. Prefer the DSL or
+  Hooks are supported for arbitrary PySpark, but they are opaque to compileability checks and traceability. Prefer the DSL or
   @expr_fn form when the expression can stay compiler-visible.
 
 Configuration workaround:
@@ -83,18 +83,18 @@ Configuration workaround:
 Only suggest config when it really applies. Examples:
 
 - `validate_intermediate = false` for intermediate validation failures.
-- `lineage = "none"` for compiler provenance and static dataflow lineage performance.
+- `traceability = "none"` for compiler provenance and static dataflow traceability performance.
 - `strict_performance = false` for hook lint warnings, not compiled subtransform fallback.
 
 ## Extension Boundaries
 
 The checker should treat `@expr_fn` helpers as the preferred project extension point for reusable expression logic.
-They stay inside symbolic execution and therefore remain visible to generated code, lineage, backend capability checks,
+They stay inside symbolic execution and therefore remain visible to generated code, traceability, backend capability checks,
 and diagnostics.
 
 Hooks are supported extension points for arbitrary PySpark DataFrame code, but the checker must treat hook bodies as
 opaque. It validates hook attachment, signature, lifecycle options, and configured safety declarations; it does not
-infer field lineage or compileability from code inside the hook.
+infer field traceability or compileability from code inside the hook.
 
 Compiler registries for backend capabilities, diagnostics, schema type adapters, validation policies, and hook lint
 rules are internal until a public contract is deliberately introduced. Diagnostics should not tell users to monkey-patch

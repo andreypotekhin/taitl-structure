@@ -1,4 +1,4 @@
-# Roadmap
+﻿# Roadmap
 
 The roadmap is staged around an IR-first north star. v0 proves the first executable contract with one useful transform
 running both online and as generated PySpark. v1 proves that Structure can replace hand-maintained PySpark boilerplate
@@ -45,7 +45,7 @@ PySpark contract is stable.
 - `@expr_fn` helpers.
 - `@before(method)` and `@after(method)` hooks.
 - Compiler provenance from source node to IR node to generated PySpark node.
-- Static dataflow lineage inferred from IR.
+- Static dataflow traceability inferred from IR.
 - Streaming-compatible online and generated transforms.
 - Streaming compatibility report.
 - Diagnostic codes with documentation links.

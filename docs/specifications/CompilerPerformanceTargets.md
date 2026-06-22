@@ -1,4 +1,4 @@
-# Compiler Performance Targets
+﻿# Compiler Performance Targets
 
 ## Purpose
 
@@ -181,7 +181,7 @@ Compiled target plans must not contain:
 - `toPandas`;
 - hidden Spark actions for schema-only validation.
 
-Hooks are excluded from these guardrails because they are explicit opaque runtime boundaries. Explain output and lineage
+Hooks are excluded from these guardrails because they are explicit opaque runtime boundaries. Explain output and traceability
 should make hook boundaries visible.
 
 ## Implementation Checklist

@@ -1,4 +1,4 @@
-# DSL
+﻿# DSL
 
 ## Purpose
 
@@ -8,7 +8,7 @@ compiled subtransforms lower to Spark-plan-visible DataFrame and Column operatio
 
 The DSL is not a second PySpark wrapper layer. It is a small authoring surface that captures enough metadata and
 symbolic behavior for `structure check`, online execution, optional generated PySpark, compiler provenance, static
-dataflow lineage, and streaming compatibility checks to agree.
+dataflow traceability, and streaming compatibility checks to agree.
 
 ## Scope
 
@@ -182,7 +182,7 @@ Rules:
 - The decorator must preserve the original class identity enough for IDE navigation, `isinstance`, subclass checks,
   and direct instantiation to behave normally.
 - The decorator must record source metadata for discovery, diagnostics, generated class naming, provenance, and
-  static dataflow lineage.
+  static dataflow traceability.
 - Transform classes should be import-safe. They must not do Spark work in class bodies.
 - A class decorated with `@transform` but not inheriting `Transform` is invalid.
 - A class inheriting `Transform` but missing `@transform` is not discovered as a compiled transform unless a future
@@ -475,7 +475,7 @@ Rules:
 - Hooks must return a DataFrame at runtime.
 - Generated code and online execution call hooks on the source transform instance so hook behavior remains transparent.
 - Hooks may import and use PySpark because they execute at runtime, not during compiler phases.
-- Hook metadata must be present in IR so generated code can call hooks and lineage can mark opaque boundaries.
+- Hook metadata must be present in IR so generated code can call hooks and traceability can mark opaque boundaries.
 
 `SchemaMode` must include at least the strict default mode and `SchemaMode.ALLOW_EXTRA_COLUMNS`. The exact enum names
 for the default strict mode may be implementation-defined in v1, but public documentation should use the default by

@@ -1,9 +1,9 @@
-# Configuration
+﻿# Configuration
 
 Structure works by convention and supports a small TOML configuration for project-wide settings.
 
 Use configuration for paths, package names, execution mode, validation defaults, Spark SQL assumptions, target PySpark
-version, compiler lineage settings, performance policy, compatibility behavior, and build behavior.
+version, compiler traceability settings, performance policy, compatibility behavior, and build behavior.
 
 ## Defaults
 
@@ -148,13 +148,13 @@ Backend capability behavior is specified in `docs/specifications/BackendCapabili
 Spark Connect is scheduled for v4 unless it can be added earlier without changing the public DSL, generated class API,
 generated-code review model, or streaming orchestration contract. See `docs/Compatibility.md`.
 
-## Lineage Settings
+## Traceability Settings
 
 ```toml
-lineage = "compiler"
+traceability = "compiler"
 ```
 
-Supported lineage levels:
+Supported traceability levels:
 
 ```text
 none

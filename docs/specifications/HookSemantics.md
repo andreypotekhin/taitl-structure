@@ -1,4 +1,4 @@
-# Hook Semantics
+﻿# Hook Semantics
 
 ## Purpose
 
@@ -126,8 +126,8 @@ Hooks are not symbolically executed.
 
 Rules:
 
-- The compiler does not inspect hook internals for expressions, joins, filters, lineage, or performance guardrails.
-- Lineage and explain output must show an opaque hook boundary.
+- The compiler does not inspect hook internals for expressions, joins, filters, traceability, or performance guardrails.
+- Traceability and explain output must show an opaque hook boundary.
 - Diagnostics should prefer direct DSL or `@expr_fn` fixes when logic can stay compiler-visible.
 - Generated code calls hooks on the source transform implementation instance.
 - Online execution calls the same hook methods on the transform invocation.
@@ -234,7 +234,7 @@ See docs/specifications/HookSemantics.md
 8. Build hook input namespaces only when needed.
 9. Invoke hooks identically in online and generated execution.
 10. Implement hook schema mode and projection recipes.
-11. Integrate hook boundaries with lineage and explain output.
+11. Integrate hook boundaries with traceability and explain output.
 12. Add streaming-safety checks.
 13. Add diagnostics with links to this specification.
 
