@@ -1,0 +1,100 @@
+services:
+  spark35-master:
+    build:
+      context: ../..
+      dockerfile: infra/compose/images/pyspark/Dockerfile
+      args:
+        PYSPARK_VERSION: ${PYSPARK35_VERSION}
+    command: >
+      sh -lc "/usr/local/lib/python3.11/site-packages/pyspark/sbin/start-master.sh -h 0.0.0.0 -p 7077
+      --webui-port 8080 && tail -F /usr/local/lib/python3.11/site-packages/pyspark/logs/*"
+    ports:
+      - "${SPARK35_MASTER_PORT}:7077"
+      - "${SPARK35_MASTER_UI_PORT}:8080"
+
+  spark35-worker:
+    build:
+      context: ../..
+      dockerfile: infra/compose/images/pyspark/Dockerfile
+      args:
+        PYSPARK_VERSION: ${PYSPARK35_VERSION}
+    command: >
+      sh -lc "/usr/local/lib/python3.11/site-packages/pyspark/sbin/start-worker.sh spark://spark35-master:7077
+      --webui-port 8081 && tail -F /usr/local/lib/python3.11/site-packages/pyspark/logs/*"
+    depends_on:
+      - spark35-master
+    ports:
+      - "${SPARK35_WORKER_UI_PORT}:8081"
+
+  spark40-master:
+    build:
+      context: ../..
+      dockerfile: infra/compose/images/pyspark/Dockerfile
+      args:
+        PYSPARK_VERSION: ${PYSPARK40_VERSION}
+    command: >
+      sh -lc "/usr/local/lib/python3.11/site-packages/pyspark/sbin/start-master.sh -h 0.0.0.0 -p 7077
+      --webui-port 8080 && tail -F /usr/local/lib/python3.11/site-packages/pyspark/logs/*"
+    ports:
+      - "${SPARK40_MASTER_PORT}:7077"
+      - "${SPARK40_MASTER_UI_PORT}:8080"
+
+  spark40-worker:
+    build:
+      context: ../..
+      dockerfile: infra/compose/images/pyspark/Dockerfile
+      args:
+        PYSPARK_VERSION: ${PYSPARK40_VERSION}
+    command: >
+      sh -lc "/usr/local/lib/python3.11/site-packages/pyspark/sbin/start-worker.sh spark://spark40-master:7077
+      --webui-port 8081 && tail -F /usr/local/lib/python3.11/site-packages/pyspark/logs/*"
+    depends_on:
+      - spark40-master
+    ports:
+      - "${SPARK40_WORKER_UI_PORT}:8081"
+
+  structure-integration-pyspark35:
+    build:
+      context: ../..
+      dockerfile: infra/compose/images/pyspark/Dockerfile
+      args:
+        PYSPARK_VERSION: ${PYSPARK35_VERSION}
+    command: >
+      python -m pytest tests/integration --run-integration --integration-backend=pyspark35
+      ${INTEGRATION_PYTEST_ARGS}
+    depends_on:
+      - spark35-master
+      - spark35-worker
+    environment:
+      STRUCTURE_EXPECTED_PYSPARK: ${PYSPARK35_VERSION}
+      STRUCTURE_EXPECTED_SPARK: ${PYSPARK35_VERSION}
+      STRUCTURE_INTEGRATION_BACKEND: pyspark35
+      STRUCTURE_SPARK_MASTER: spark://spark35-master:7077
+      STRUCTURE_SPARK35_MASTER: spark://spark35-master:7077
+      STRUCTURE_SPARK40_MASTER: spark://spark40-master:7077
+    volumes:
+      - ../..:/workspace:ro
+      - ../../.pytest-workspace-tmp/integration:/workspace/.pytest-workspace-tmp/integration
+
+  structure-integration-pyspark40:
+    build:
+      context: ../..
+      dockerfile: infra/compose/images/pyspark/Dockerfile
+      args:
+        PYSPARK_VERSION: ${PYSPARK40_VERSION}
+    command: >
+      python -m pytest tests/integration --run-integration --integration-backend=pyspark40
+      ${INTEGRATION_PYTEST_ARGS}
+    depends_on:
+      - spark40-master
+      - spark40-worker
+    environment:
+      STRUCTURE_EXPECTED_PYSPARK: ${PYSPARK40_VERSION}
+      STRUCTURE_EXPECTED_SPARK: ${PYSPARK40_VERSION}
+      STRUCTURE_INTEGRATION_BACKEND: pyspark40
+      STRUCTURE_SPARK_MASTER: spark://spark40-master:7077
+      STRUCTURE_SPARK35_MASTER: spark://spark35-master:7077
+      STRUCTURE_SPARK40_MASTER: spark://spark40-master:7077
+    volumes:
+      - ../..:/workspace:ro
+      - ../../.pytest-workspace-tmp/integration:/workspace/.pytest-workspace-tmp/integration

@@ -106,6 +106,16 @@ df = orders.where(
 - Multiple-base overlays map source rows to direct schema bases in declaration order.
 - Online and generated code paths contain no UDFs.
 
+## Progress
+
+- [x] (2026-06-21) Common v1 expression recipes, filtering, `@expr_fn` helpers, schema base overlay projection, and
+  generated PySpark expression rendering are implemented for the v1 fixture.
+- [x] (2026-06-21) Shared diagnostic registry, renderer, docs anchors, and representative config/backend/runtime/CLI
+  diagnostic routing are implemented under `structure.lib.cross.errors`.
+- [ ] Unsupported Python operation traps and detailed compiler diagnostics such as `DSL-E0401` remain to be added in the
+  negative compiler test milestone.
+- [ ] Live online/generated expression parity remains open until the live PySpark recipe interpreter lands.
+
 ## Demo Script
 
 ```bash

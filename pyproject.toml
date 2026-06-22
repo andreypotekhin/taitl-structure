@@ -92,12 +92,18 @@ follow_imports = "skip"
 
 [tool.pytest.ini_options]
 addopts = [
+        "-p",
+        "integration.pytest_plugin",
         "--durations=5", # Show the slowest 5 tests
         #"--color=yes",
         #"--cov=o",
 ]
+markers = [
+    "integration: live backend tests that require explicit --run-integration opt-in",
+]
 pythonpath = [
     "src",
     "res",
+    "tests",
 ]
 #testpaths = [ "test" ]

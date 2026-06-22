@@ -114,7 +114,7 @@ def test_v1_online_session_reports_missing_declared_inputs() -> None:
     assert diagnostic.execution_mode == "online"
     assert diagnostic.context["inputs"] == "customers, products, promotions"
     assert "Pass every declared input DataFrame" in diagnostic.use
-    assert "docs/specifications/OnlineExecution.md" in str(raised.value)
+    assert "docs/Diagnostics.md#online-e1201" in str(raised.value)
 
 
 def test_v1_generated_session_delegates_to_generated_class() -> None:

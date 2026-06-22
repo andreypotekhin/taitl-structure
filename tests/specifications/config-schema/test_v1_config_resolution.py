@@ -88,7 +88,9 @@ def test_v1_config_invalid_values_fail_before_discovery() -> None:
         else:
             raise AssertionError("invalid lineage should fail")
 
+        assert diagnostic.code == "CONF-E0102"
         assert diagnostic.setting == "lineage"
+        assert diagnostic.docs == "docs/Diagnostics.md#conf-e0102"
         assert "none, compiler, columns, debug" in diagnostic.use
 
 
@@ -103,6 +105,7 @@ def test_v1_config_rejects_generated_package_structure() -> None:
         else:
             raise AssertionError("generated package should not collide with structure")
 
+        assert diagnostic.code == "CONF-E0102"
         assert diagnostic.setting == "generated_package"
         assert "structure_generated" in diagnostic.use
 

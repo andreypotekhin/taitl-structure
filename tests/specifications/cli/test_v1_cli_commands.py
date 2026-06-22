@@ -2,6 +2,7 @@ import os
 import shutil
 import sys
 from contextlib import contextmanager
+from importlib import import_module
 from pathlib import Path
 from uuid import uuid4
 
@@ -124,7 +125,9 @@ def test_v1_cli_fail_on_diff_reports_stale_generated_output_without_writing() ->
         result = CliRunner().invoke(cli, ["compile", "--fail-on-diff"])
 
         assert result.exit_code == 1
+        assert "GEN-E0901" in result.output
         assert "Generated output is stale" in result.output
+        assert "docs/Diagnostics.md#gen-e0901" in result.output
         assert target.read_text(encoding="utf-8").endswith("# stale edit\n")
 
 
@@ -152,3 +155,15 @@ def test_v1_cli_clean_removes_owned_generated_files_only() -> None:
         assert result.exit_code == 0
         assert manual.exists()
         assert not Path("generated/structure_generated/pyspark/transforms/transforms.py").exists()
+
+
+def test_v1_cli_unexpected_failure_renders_internal_diagnostic(mocker) -> None:
+    module = import_module("structure.app.cli.api.cli")
+    mocker.patch.object(module, "resolve_structure_config", side_effect=RuntimeError("boom"))
+
+    result = CliRunner().invoke(cli, ["check"])
+
+    assert result.exit_code == 1
+    assert "CLI-X1101" in result.output
+    assert "Unexpected internal failure" in result.output
+    assert "docs/Diagnostics.md#cli-x1101" in result.output

@@ -1,0 +1,2 @@
+tenant.tenant_id,audit.source_system,audit.ingested_at,code,name,discount
+t1,promo,2026-01-01T09:00:00,summer,Summer,25.00

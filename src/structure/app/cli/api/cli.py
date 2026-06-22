@@ -13,6 +13,7 @@ from structure.app.cli.logic.actions.DiscoverStructureProject import discover_st
 from structure.app.cli.logic.actions.RenderConfiguredPySparkProject import render_configured_pyspark_project
 from structure.app.cli.logic.actions.RenderExplainReport import render_explain_report
 from structure.app.configuration.api import ConfigError, StructureConfig, resolve_structure_config
+from structure.lib.cross.errors import Diagnostic, diagnostic_registry, render_diagnostic
 
 
 def _config_options(function):
@@ -31,7 +32,35 @@ def _config_options(function):
     return function
 
 
-@click.group()
+class StructureCliGroup(click.Group):
+
+    def invoke(self, ctx):
+        try:
+            return super().invoke(ctx)
+        except click.ClickException:
+            raise
+        except Exception as error:
+            raise self._internal_error(error)
+
+    def main(self, *args, **kwargs):
+        try:
+            return super().main(*args, **kwargs)
+        except click.ClickException:
+            raise
+        except Exception as error:
+            raise self._internal_error(error)
+
+    def _internal_error(self, error: Exception) -> click.ClickException:
+        diagnostic = Diagnostic(
+            entry=diagnostic_registry["CLI-X1101"],
+            problem="An unclassified exception reached the CLI boundary.",
+            use=diagnostic_registry["CLI-X1101"].use_template,
+            context={"exception": type(error).__name__},
+        )
+        return click.ClickException(render_diagnostic(diagnostic, kind="CLIError"))
+
+
+@click.group(cls=StructureCliGroup)
 def cli() -> None:
     """Structure compiler commands."""
 
@@ -87,8 +116,16 @@ def compile(profile: bool, **kwargs) -> None:
     if config.fail_on_diff:
         result = compare_generated_files(files, root=config.generated_dir)
         if result.changed():
-            lines = [f"{change.status:8} {change.path}" for change in result.changes if change.status != "unchanged"]
-            raise click.ClickException("Generated output is stale\n" + "\n".join(lines))
+            lines = "\n".join(
+                f"{change.status:8} {change.path}" for change in result.changes if change.status != "unchanged"
+            )
+            diagnostic = Diagnostic(
+                entry=diagnostic_registry["GEN-E0901"],
+                problem="Generated output differs from current Structure source or configuration.",
+                use=diagnostic_registry["GEN-E0901"].use_template,
+                context={"generated_dir": _relative(config, config.generated_dir), "changes": lines},
+            )
+            raise click.ClickException(render_diagnostic(diagnostic, kind="GeneratedOutputError"))
     else:
         result = write_generated_files(files, root=config.generated_dir)
     click.echo("Structure compile passed")

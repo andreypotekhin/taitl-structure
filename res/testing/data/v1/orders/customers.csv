@@ -1,0 +1,2 @@
+tenant.tenant_id,audit.source_system,audit.ingested_at,id,name,tier,region,email
+t1,crm,2026-01-01T11:00:00, C-1 ,Ada Lovelace,gold,east,ada@example.test

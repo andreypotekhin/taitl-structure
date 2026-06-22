@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from structure.lib.cross.errors import Diagnostic, diagnostic_registry, render_diagnostic
+
 
 @dataclass(frozen=True)
 class ConfigDiagnostic:
@@ -9,17 +11,22 @@ class ConfigDiagnostic:
     setting: str
     problem: str
     use: str
-    docs: str = "docs/specifications/ConfigSchema.md"
+
+    @property
+    def title(self) -> str:
+        return diagnostic_registry[self.code].title
+
+    @property
+    def docs(self) -> str:
+        return diagnostic_registry[self.code].docs
+
+    def to_diagnostic(self) -> Diagnostic:
+        return Diagnostic(
+            entry=diagnostic_registry[self.code],
+            problem=self.problem,
+            use=self.use,
+            context={"setting": self.setting},
+        )
 
     def render(self) -> str:
-        return "\n".join(
-            [
-                f"ConfigError {self.code}: {self.problem}",
-                "",
-                f"Setting: {self.setting}",
-                "",
-                f"Use: {self.use}",
-                "",
-                f"See {self.docs}",
-            ]
-        )
+        return render_diagnostic(self.to_diagnostic(), kind="ConfigError")

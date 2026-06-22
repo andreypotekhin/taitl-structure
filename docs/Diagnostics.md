@@ -99,18 +99,16 @@ deprecated  still emitted, but a replacement exists
 retired     no longer emitted, anchor kept for compatibility
 ```
 
-Until the implementation registry exists, this document and `docs/specifications/Diagnostics.md` define the contract.
+The implementation registry in `structure.lib.cross.errors` is the source of truth for emitted diagnostic codes.
+This document provides the stable public anchors those registry entries link to.
 
-## Initial Planned Codes
-
-These codes are draft reservations for the first registry implementation slice. They should become `active` only when
-implementation and tests emit them.
+## Active Codes
 
 ### CONF-E0101
 
 Severity: error
 
-Status: draft
+Status: active
 
 Title: Unknown configuration key
 
@@ -123,7 +121,7 @@ Use: remove the key, correct its spelling, or move it to the documented configur
 
 Severity: error
 
-Status: draft
+Status: active
 
 Title: Invalid configuration value
 
@@ -135,7 +133,7 @@ Use: set the value to one of the allowed values shown in the diagnostic.
 
 Severity: error
 
-Status: draft
+Status: active
 
 Title: Unsupported symbolic expression
 
@@ -149,7 +147,7 @@ PySpark is the honest escape hatch.
 
 Severity: error
 
-Status: draft
+Status: active
 
 Title: Generated output is stale
 
@@ -157,6 +155,56 @@ Common cause: `structure compile --fail-on-diff` found generated files that diff
 configuration.
 
 Use: run `structure compile`, review the generated diff, and commit the generated changes.
+
+### GEN-E0902
+
+Severity: error
+
+Status: active
+
+Title: Generated transform is not importable
+
+Common cause: generated mode is selected, but the generated PySpark module or generated transform class cannot be
+imported from Python's import path.
+
+Use: run `structure compile`, ensure the generated source root is importable, or switch to
+`execution_mode = "online"`.
+
+### ONLINE-E1201
+
+Severity: error
+
+Status: active
+
+Title: Transform input is missing
+
+Common cause: runtime transform execution started before every declared `input(...)` had a bound DataFrame.
+
+Use: pass every declared input DataFrame to the transform invocation before calling `run(session)`.
+
+### ONLINE-E1202
+
+Severity: error
+
+Status: active
+
+Title: Online PySpark runner is not configured
+
+Common cause: online execution is selected in a session that does not yet have a live PySpark executor installed.
+
+Use: pass an online executor to `StructureSession` or use `execution_mode = "generated"`.
+
+### ONLINE-E1203
+
+Severity: error
+
+Status: active
+
+Title: Execution mode is unsupported
+
+Common cause: caller code supplied an execution mode other than `online` or `generated`.
+
+Use: set `execution_mode = "online"` or `execution_mode = "generated"`.
 
 ### ONLINE-E1001
 
@@ -175,7 +223,7 @@ Use: pass only the declared input names shown in the diagnostic.
 
 Severity: error
 
-Status: draft
+Status: active
 
 Title: Unsupported backend target
 
@@ -187,7 +235,7 @@ Use: set `target_backend = "pyspark"` for v1.
 
 Severity: error
 
-Status: draft
+Status: active
 
 Title: Unsupported backend capability
 
@@ -200,7 +248,7 @@ wait until the feature's specification and backend profile promote it.
 
 Severity: internal
 
-Status: draft
+Status: active
 
 Title: Unexpected internal failure
 

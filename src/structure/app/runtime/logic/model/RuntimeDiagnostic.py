@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Mapping
 
+from structure.lib.cross.errors import Diagnostic, diagnostic_registry, render_diagnostic
+
 
 @dataclass(frozen=True)
 class RuntimeDiagnostic:
@@ -16,32 +18,19 @@ class RuntimeDiagnostic:
     docs: str
     context: Mapping[str, str] = field(default_factory=dict)
 
-    def render(self) -> str:
-        lines = [
-            f"RuntimeError {self.code}: {self.title}",
-            "",
-            "Transform:",
-            f"  {self.transform}",
-            "",
-            "Execution mode:",
-            f"  {self.execution_mode}",
-            "",
-            "Target backend:",
-            f"  {self.target_backend}",
-        ]
-        if self.context:
-            lines.extend(["", "Context:"])
-            lines.extend(f"  {key}: {value}" for key, value in self.context.items())
-        lines.extend(
-            [
-                "",
-                "Problem:",
-                f"  {self.problem}",
-                "",
-                "Use:",
-                f"  {self.use}",
-                "",
-                f"See {self.docs}",
-            ]
+    def to_diagnostic(self) -> Diagnostic:
+        context = {
+            "transform": self.transform,
+            "execution_mode": self.execution_mode,
+            "target_backend": self.target_backend,
+        }
+        context.update(self.context)
+        return Diagnostic(
+            entry=diagnostic_registry[self.code],
+            problem=self.problem,
+            use=self.use,
+            context=context,
         )
-        return "\n".join(lines)
+
+    def render(self) -> str:
+        return render_diagnostic(self.to_diagnostic(), kind="RuntimeError")

@@ -8,6 +8,46 @@ Cause: The global pytest temp root exists but is not readable by the current pro
 Fix: Set `TMP` and `TEMP` to a writable directory, or use a workspace-local temp directory for tests that only need
 short-lived generated files.
 
+### Problem (integration): `docker compose` is not found
+
+When: Running `make integration` or `make build INTEGRATION=1`.
+Error: `docker` is not recognized, `docker: command not found`, or `docker compose` exits before reading the Compose
+file.
+Cause: Docker Desktop or Docker Compose v2 is not installed or is not on `PATH`.
+Fix: Install Docker Desktop with Compose v2, start Docker, open a new terminal, and run `docker compose version`.
+
+### Problem (integration): Docker is not running
+
+When: Running `make integration`.
+Error: Docker reports that it cannot connect to the Docker daemon.
+Cause: Docker Desktop is installed but the engine is stopped.
+Fix: Start Docker Desktop and rerun `make integration`. The integration runner will recreate the Compose stack.
+
+### Problem (integration): Spark UI or master port is already allocated
+
+When: Starting the local all-version integration stack.
+Error: Docker reports that a configured port is already allocated.
+Cause: Another process or an older Compose stack is using one of the ports from `infra/compose/.env`.
+Fix: Run `docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml down --remove-orphans`.
+If the port is still occupied, edit the corresponding port in `infra/compose/.env` and rerun `make integration`.
+
+### Problem (integration): backend container cannot pull or build dependencies
+
+When: Running `make integration` for the first time or after changing PySpark versions.
+Error: Docker build fails while installing Java, pytest, or PySpark.
+Cause: The Docker build needs network access to operating-system and Python package repositories.
+Fix: Confirm network access for Docker, then rerun `make integration`. If a PySpark patch version is unavailable,
+update `infra/compose/.env` and `infra/compose/.env_example` together and record the change in the active ExecPlan.
+
+### Problem (integration): Spark did not become ready
+
+When: Integration pytest starts but fails before executing the generated transform test.
+Error: `Spark did not become ready at spark://...`.
+Cause: The Spark master or worker did not start in time, or the runner selected the wrong backend service.
+Fix: Rerun `make integration`. For repeated failures, inspect the matching service logs with
+`docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml logs spark35-master spark35-worker`
+or the `spark40-*` services for the PySpark 4.0 lane.
+
 ### Problem (context): `message` during [when]
 
 When: [describe when problem manifests]

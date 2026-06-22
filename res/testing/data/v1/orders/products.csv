@@ -1,0 +1,2 @@
+tenant.tenant_id,audit.source_system,audit.ingested_at,id,name,category,active,list_price,weight,rating
+t1,catalog,2026-01-01T10:00:00,p-1,Analytical Engine,compute,true,1300.00,1.5,4.75

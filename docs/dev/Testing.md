@@ -144,3 +144,41 @@ Recommended CI pipeline:
 10. compile-time benchmark smoke test
 11. package build
 ```
+
+## Integration Tests
+
+Live backend integration tests live under `tests/integration`. They are opt-in because they start or contact Docker
+Compose infrastructure, import PySpark, and create live Spark sessions. Ordinary `poetry run pytest`, `make test`, and
+`make build` remain Spark-free.
+
+Run the full local backend matrix:
+
+```text
+make integration
+```
+
+Run one backend's test selection against the all-version stack:
+
+```text
+make integration BACKEND=pyspark35
+make integration BACKEND=pyspark40
+```
+
+Run integration tests after the ordinary build:
+
+```text
+make build INTEGRATION=1
+```
+
+The Compose stack is defined in `infra/compose/docker-compose.yaml`. Local values are stored in
+`infra/compose/.env`, created automatically from the tracked `infra/compose/.env_example` when missing. The full stack
+starts the currently claimed PySpark backend versions at the same time on distinct services and ports.
+
+Pytest integration tests must use `pytest.mark.integration` and must not import PySpark at module import time. Import
+PySpark inside fixtures or test functions so the default suite can collect tests without Spark installed.
+
+Integration pytest options live in `tests/integration/pytest_plugin.py`, loaded from `pyproject.toml`. Keep
+integration-specific pytest machinery under `tests/integration` so the directory conveys the test context.
+
+Versioned integration fixture data belongs under `res/testing/data`. For example, the v1 orders integration scenario
+uses CSV files from `res/testing/data/v1/orders`.

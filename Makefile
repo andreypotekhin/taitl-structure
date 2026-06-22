@@ -6,12 +6,13 @@
 PROJECT_DIR := $(CURDIR)
 POETRY ?= poetry
 PYTHON ?= python
+BACKEND ?= all
 
 SOURCE_ROOTS := src
 TEST_ROOTS := tests
 PYTHON_ROOTS := $(SOURCE_ROOTS) $(TEST_ROOTS)
 
-.PHONY: all help install update format lint type test check build clean
+.PHONY: all help install update format lint type test check build compose-env integration clean
 
 all: check build
 
@@ -24,6 +25,8 @@ help:
 	@echo "  make test       Run pytest"
 	@echo "  make check      Run lint, type, tests"
 	@echo "  make build      Run checks and build the package"
+	@echo "  make integration Run live Docker Compose integration tests"
+	@echo "  make build INTEGRATION=1 Run checks, package build, then integration tests"
 	@echo "  make clean      Remove local build and tool caches"
 
 install:
@@ -51,6 +54,15 @@ check: lint type test
 
 build: check
 	$(POETRY) build
+ifeq ($(INTEGRATION),1)
+	$(PYTHON) scripts/run_integration.py --backend $(BACKEND)
+endif
+
+compose-env:
+	$(PYTHON) scripts/ensure_compose_env.py
+
+integration: compose-env
+	$(PYTHON) scripts/run_integration.py --backend $(BACKEND)
 
 clean:
 	$(PYTHON) -c "import pathlib, shutil; [shutil.rmtree(pathlib.Path(p), ignore_errors=True) for p in '.venv .mypy_cache .pytest_cache dist build'.split()]; [shutil.rmtree(p, ignore_errors=True) for p in pathlib.Path('.').glob('*.egg-info')]"

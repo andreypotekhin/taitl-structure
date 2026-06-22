@@ -71,6 +71,10 @@ schema-validation tests against Spark DataFrames.
 
 ## M3: Expression DSL Usability
 
+Status: in progress. v1 fixture expressions, filters, expression helpers, generated expression rendering, and the
+shared diagnostic registry are implemented and tested. Remaining exit criteria are unsupported Python operation
+diagnostics and live online/generated expression parity.
+
 ### Exit Criteria
 
 - Common expression functions compile.
@@ -103,6 +107,11 @@ schema-validation tests against Spark DataFrames.
 - Streaming compatibility reports whether transforms are compatible, batch-only, or unknown.
 
 ## M6: v1 Stabilization
+
+Status: in progress. The first registry-backed diagnostic contract is implemented with public anchors, renderer,
+registry validation tests, and representative routing for configuration, backend capability, generated-output drift,
+runtime, and CLI internal errors. Remaining stabilization work includes broader compiler negative diagnostics,
+multi-version PySpark strategy, generated-code version headers, and setup/doctor checks.
 
 ### Exit Criteria
 

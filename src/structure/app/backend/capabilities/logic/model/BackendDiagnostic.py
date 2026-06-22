@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 
+from structure.lib.cross.errors import Diagnostic, diagnostic_registry
+
 
 @dataclass(frozen=True)
 class BackendDiagnostic:
@@ -24,3 +26,11 @@ class BackendDiagnostic:
         }
         context.update(self.source)
         return context
+
+    def to_diagnostic(self) -> Diagnostic:
+        return Diagnostic(
+            entry=diagnostic_registry[self.code],
+            problem=self.problem,
+            use=self.use,
+            context=self.context(),
+        )
