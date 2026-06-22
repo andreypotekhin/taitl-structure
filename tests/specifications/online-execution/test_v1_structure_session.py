@@ -91,7 +91,8 @@ def test_v1_online_session_defers_to_runner_and_exposes_schemas_without_pyspark(
 
     after = {name for name in sys.modules if name.startswith("pyspark")}
     assert after == before
-    assert result == "online-result"
+    assert result.df == "online-result"
+    assert result["df"] == "online-result"
     assert captured["spark"] == "spark"
     assert captured["ctx"] == "ctx"
     assert captured["inputs"]["orders"] == "orders-df"
@@ -139,7 +140,7 @@ def test_v1_generated_session_delegates_to_generated_class() -> None:
 
         result = session.run(invocation)
 
-        assert result == {
+        assert result.df == {
             "spark": "spark",
             "ctx": "ctx",
             "orders": "orders-df",

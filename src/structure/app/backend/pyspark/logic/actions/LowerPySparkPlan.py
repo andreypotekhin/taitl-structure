@@ -10,12 +10,14 @@ from structure.app.backend.pyspark.logic.model.PySparkExpressionRecipe import Py
 from structure.app.backend.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.backend.pyspark.logic.model.PySparkInputRecipe import PySparkInputRecipe
 from structure.app.backend.pyspark.logic.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.app.backend.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.app.backend.pyspark.logic.model.PySparkProjectionRecipe import PySparkProjectionRecipe
 from structure.app.backend.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.backend.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.app.dsl.logic.model.expr.Expression import Expression
 from structure.app.dsl.logic.model.plans.HookPlan import HookPlan
 from structure.app.dsl.logic.model.plans.JoinPlan import JoinPlan
+from structure.app.dsl.logic.model.plans.OutputPlan import OutputPlan
 from structure.app.dsl.logic.model.plans.ProjectAssignment import ProjectAssignment
 from structure.app.dsl.logic.model.plans.StepPlan import StepPlan
 from structure.app.dsl.logic.model.plans.TransformPlan import TransformPlan
@@ -39,19 +41,13 @@ class LowerPySparkPlan:
             self._step(step, index=index, last=index == len(plan.steps) - 1, capabilities=target)
             for index, step in enumerate(plan.steps)
         )
-        final_validation = PySparkValidationRecipe(
-            target="output",
-            schema=plan.output_schema,
-            mode=SchemaMode.STRICT,
-            project=False,
-            reason="final",
-        )
+        outputs = tuple(self._output(output, capabilities=target) for output in plan.outputs)
         return PySparkExecutionPlan(
             transform=plan.name,
             backend=target.id,
             inputs=inputs,
             steps=steps,
-            final_validation=final_validation,
+            outputs=outputs,
             requires_hook_inputs=any(
                 hook.pass_inputs for step in steps for hook in (*step.before_hooks, *step.after_hooks)
             ),
@@ -97,6 +93,40 @@ class LowerPySparkPlan:
             projection=tuple(self._projection(assignment, capabilities=capabilities) for assignment in step.projection),
             after_hooks=tuple(self._hook(hook) for hook in step.after_hooks),
             validations=self._validations(step, last=last),
+        )
+
+    def _output(
+        self,
+        output: OutputPlan,
+        *,
+        capabilities: BackendCapabilities,
+    ) -> PySparkOutputRecipe:
+        input_alias = self._alias(output.source_schema.__name__)
+        output_alias = self._alias(output.schema.__name__)
+        return PySparkOutputRecipe(
+            name=output.name,
+            ordinal=output.ordinal,
+            source=output.source,
+            source_scope=output.source_scope,
+            input_schema=output.source_schema,
+            output_schema=output.schema,
+            input_alias=input_alias,
+            output_alias=output_alias,
+            filters=tuple(self._expression(filter, capabilities=capabilities) for filter in output.filters),
+            joins=tuple(
+                self._join(join, occurrence=occurrence, left_alias=input_alias, capabilities=capabilities)
+                for occurrence, join in enumerate(output.joins, start=1)
+            ),
+            projection=tuple(
+                self._projection(assignment, capabilities=capabilities) for assignment in output.projection
+            ),
+            validation=PySparkValidationRecipe(
+                target=output.name,
+                schema=output.schema,
+                mode=SchemaMode.STRICT,
+                project=False,
+                reason="final",
+            ),
         )
 
     def _join(

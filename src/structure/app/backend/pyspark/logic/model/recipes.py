@@ -3,6 +3,7 @@ from structure.app.backend.pyspark.logic.model.PySparkExpressionRecipe import Py
 from structure.app.backend.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.backend.pyspark.logic.model.PySparkInputRecipe import PySparkInputRecipe
 from structure.app.backend.pyspark.logic.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.app.backend.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.app.backend.pyspark.logic.model.PySparkProjectionRecipe import PySparkProjectionRecipe
 from structure.app.backend.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.backend.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
@@ -13,6 +14,7 @@ __all__ = [
     "PySparkHookRecipe",
     "PySparkInputRecipe",
     "PySparkJoinRecipe",
+    "PySparkOutputRecipe",
     "PySparkProjectionRecipe",
     "PySparkStepRecipe",
     "PySparkValidationRecipe",

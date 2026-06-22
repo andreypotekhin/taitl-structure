@@ -8,4 +8,11 @@ from typing import Mapping
 class TransformSchemas:
     inputs: Mapping[str, object]
     steps: Mapping[str, object]
-    output: object
+    outputs: Mapping[str, object]
+
+    @property
+    def output(self) -> object:
+        if len(self.outputs) != 1:
+            names = ", ".join(self.outputs)
+            raise AttributeError(f"Transform has multiple outputs: {names}. Use schemas.outputs[...] instead.")
+        return next(iter(self.outputs.values()))

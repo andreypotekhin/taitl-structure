@@ -12,11 +12,11 @@ class BuildTransformSchemas:
     def __call__(self, plan: PySparkExecutionPlan, *, types=None) -> TransformSchemas:
         inputs = {input.name: materialize_pyspark_schema(input.schema, types=types) for input in plan.inputs}
         steps = {step.name: materialize_pyspark_schema(step.output_schema, types=types) for step in plan.steps}
-        output = materialize_pyspark_schema(plan.final_validation.schema, types=types)
+        outputs = {output.name: materialize_pyspark_schema(output.output_schema, types=types) for output in plan.outputs}
         return TransformSchemas(
             inputs=MappingProxyType(inputs),
             steps=MappingProxyType(steps),
-            output=output,
+            outputs=MappingProxyType(outputs),
         )
 
 

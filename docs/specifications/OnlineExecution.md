@@ -24,6 +24,8 @@ result = EnrichOrders(
     customers=customers_df,
     products=products_df,
 ).run(session)
+
+enriched_df = result.df
 ```
 
 The transform instance is a deferred invocation. Its constructor stores named input DataFrames and performs no Spark
@@ -51,6 +53,12 @@ output_schema = transform.schemas.output
 
 `transform.schemas.output` is a materialized PySpark `StructType` equivalent to the generated `*_SCHEMA` constant for
 the final output schema. The schema is available in online mode without requiring generated files to exist.
+
+`run(session)` returns a read-only `TransformResult` for both single-output and multi-output transforms. Single-output
+results expose the DataFrame as `result.df`. If the single output was declared as a field, such as
+`out = output(OrderPublished)`, the same DataFrame is also available as `result.out`. Multi-output results expose named
+outputs such as `result.accepted` and `result["rejected"]`; `df` is absent unless a future primary-output rule defines
+one.
 
 ## Configuration
 
@@ -124,10 +132,11 @@ Online execution must preserve generated-code semantics:
 6. Run `@after` hooks after the compiled operations for their target step.
 7. Validate intermediate schemas according to project, class, and method policy.
 8. Apply hook `schema_mode` and `project_output` rules.
-9. Validate and return the final DataFrame.
+9. Validate every output DataFrame.
+10. Return a read-only `TransformResult`.
 
 Online and generated execution must agree on hook order, validation placement, expression lowering, join aliasing,
-projection shape, schema projection, and performance guardrails.
+projection shape, schema projection, result shape, and performance guardrails.
 
 Those shared semantics are owned by `docs/specifications/ExecutionSemanticContract.md`. Online execution owns live
 DataFrame binding and runtime hook invocation; it must not independently choose aliases, validation placement,

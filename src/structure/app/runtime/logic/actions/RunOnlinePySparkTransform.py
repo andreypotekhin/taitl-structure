@@ -5,11 +5,13 @@ from structure.app.backend.pyspark.logic.model.PySparkExecutionPlan import PySpa
 from structure.app.backend.pyspark.logic.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.backend.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.backend.pyspark.logic.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.app.backend.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.app.backend.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.backend.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.app.dsl.logic.model.transforms.Transform import Transform
 from structure.app.runtime.logic.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.app.runtime.logic.model.StructureRuntimeError import StructureRuntimeError
+from structure.app.runtime.logic.model.TransformResult import TransformResult
 
 
 class HookInputs:
@@ -37,12 +39,17 @@ class RunOnlinePySparkTransform:
         session,
     ) -> object:
         if session.online_executor is not None:
-            return session.online_executor(
+            result = session.online_executor(
                 plan=plan,
                 inputs=invocation._structure_bound_inputs,
                 spark=session.spark,
                 ctx=session.ctx,
             )
+            if isinstance(result, TransformResult):
+                return result
+            if len(plan.outputs) == 1:
+                return TransformResult({plan.outputs[0].name: result}, single=True)
+            raise TypeError("Injected online executor must return TransformResult for multi-output transforms")
         if session.spark is None:
             raise self._missing_executor(invocation, session=session)
 
@@ -57,6 +64,7 @@ class RunOnlinePySparkTransform:
             self._validate(inputs[input.name], input.validation, types=T)
 
         hook_inputs = HookInputs(**inputs) if plan.requires_hook_inputs else None
+        frames = dict(inputs)
         current = inputs[plan.inputs[0].name]
         for step in plan.steps:
             current = self._step(
@@ -69,9 +77,12 @@ class RunOnlinePySparkTransform:
                 functions=F,
                 types=T,
             )
-        if not self._last_step_validates_final(plan):
-            self._validate(current, plan.final_validation, types=T)
-        return current
+            frames[step.name] = current
+
+        outputs = {}
+        for output in plan.outputs:
+            outputs[output.name] = self._output(output, source=frames[output.source], inputs=inputs, functions=F, types=T)
+        return TransformResult(outputs, single=len(plan.outputs) == 1)
 
     def _step(
         self,
@@ -126,6 +137,38 @@ class RunOnlinePySparkTransform:
             self._validate(df, validation, types=types)
             if validation.project:
                 df = self._project(df, validation, types=types, functions=functions)
+        return df
+
+    def _output(
+        self,
+        output: PySparkOutputRecipe,
+        *,
+        source,
+        inputs,
+        functions,
+        types,
+    ):
+        df = source.alias(output.input_alias)
+        for join in output.joins:
+            right = inputs[join.input_name].alias(join.right_alias)
+            if join.hint is not None and join.hint.value == "broadcast":
+                right = functions.broadcast(right)
+            predicate = self._expression(join.predicate, functions=functions, aliases=self._scope_aliases(output, join))
+            df = df.join(right, predicate, join.how.value)
+
+        for filter in output.filters:
+            df = df.where(self._expression(filter, functions=functions, aliases=self._scope_aliases(output)))
+
+        if output.projection:
+            df = df.select(
+                *(
+                    self._expression(assignment.expression, functions=functions, aliases=self._scope_aliases(output)).alias(
+                        assignment.field.name
+                    )
+                    for assignment in output.projection
+                )
+            )
+        self._validate(df, output.validation, types=types)
         return df
 
     def _hooks(
@@ -237,19 +280,13 @@ class RunOnlinePySparkTransform:
         schema = materialize_pyspark_schema(validation.schema, types=types)
         return df.select(*(functions.col(field.name) for field in schema))
 
-    def _last_step_validates_final(self, plan: PySparkExecutionPlan) -> bool:
-        if not plan.steps:
-            return False
-        final = plan.final_validation
-        return any(
-            validation.schema is final.schema and validation.mode is final.mode and validation.project == final.project
-            for validation in plan.steps[-1].validations
-        )
-
-    def _scope_aliases(self, step: PySparkStepRecipe, join: PySparkJoinRecipe | None = None) -> dict[str, str]:
+    def _scope_aliases(self, step: PySparkStepRecipe | PySparkOutputRecipe, join: PySparkJoinRecipe | None = None) -> dict[str, str]:
         aliases = {
             step.input_schema.__name__: step.input_alias,
         }
+        source_scope = getattr(step, "source_scope", None)
+        if source_scope is not None:
+            aliases[source_scope] = step.input_alias
         if step.ordinal == 0:
             aliases["orders"] = step.input_alias
         for item in step.joins:

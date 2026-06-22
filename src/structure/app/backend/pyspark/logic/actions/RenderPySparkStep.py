@@ -55,6 +55,8 @@ class RenderPySparkStep:
         return [f"        df = df.where({predicate})"]
 
     def _projection(self, step: PySparkStepRecipe) -> list[str]:
+        if not step.projection:
+            return []
         lines = ["        df = df.select("]
         for assignment in step.projection:
             expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
@@ -77,6 +79,9 @@ class RenderPySparkStep:
         aliases = {
             step.input_schema.__name__: step.input_alias,
         }
+        source_scope = getattr(step, "source_scope", None)
+        if source_scope is not None:
+            aliases[source_scope] = step.input_alias
         if step.ordinal == 0:
             aliases["orders"] = step.input_alias
         for item in step.joins:

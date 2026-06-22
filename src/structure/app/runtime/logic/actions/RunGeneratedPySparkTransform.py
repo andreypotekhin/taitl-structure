@@ -5,6 +5,7 @@ from types import ModuleType
 
 from structure.app.backend.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.app.dsl.logic.model.transforms.Transform import Transform
+from structure.app.runtime.logic.model.TransformResult import TransformResult
 from structure.app.runtime.logic.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.app.runtime.logic.model.StructureRuntimeError import StructureRuntimeError
 
@@ -30,7 +31,15 @@ class RunGeneratedPySparkTransform:
             ) from error
 
         runner = generated_class(spark=session.spark, ctx=session.ctx)
-        return runner.run(**invocation._structure_bound_inputs)
+        result = runner.run(**invocation._structure_bound_inputs)
+        if isinstance(result, TransformResult):
+            return result
+        return self._result(plan, result)
+
+    def _result(self, plan: PySparkExecutionPlan, df) -> TransformResult:
+        if len(plan.outputs) == 1:
+            return TransformResult({plan.outputs[0].name: df}, single=True)
+        raise TypeError("Generated multi-output transforms must return TransformResult")
 
     def _import_module(self, invocation: Transform, *, session) -> ModuleType:
         module_name = self._module_name(invocation, generated_package=session.generated_package)

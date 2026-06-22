@@ -24,12 +24,13 @@ from structure.app.dsl.api import (
     field,
     input,
     lower,
+    output,
     to_decimal,
     transform,
     trim,
     where,
 )
-from structure.app.runtime.api import StructureRuntimeError, StructureSession, TransformSchemas
+from structure.app.runtime.api import StructureRuntimeError, StructureSession, TransformResult, TransformSchemas
 
 __all__ = [
     "Array",
@@ -52,6 +53,7 @@ __all__ = [
     "Struct",
     "Timestamp",
     "Transform",
+    "TransformResult",
     "TransformSchemas",
     "after",
     "before",
@@ -60,6 +62,7 @@ __all__ = [
     "field",
     "input",
     "lower",
+    "output",
     "to_decimal",
     "transform",
     "trim",

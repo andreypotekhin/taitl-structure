@@ -179,7 +179,7 @@ class EnrichOrdersGenerated:
         self.ctx = ctx
         self._impl = EnrichOrders()
 
-    def run(self, *, orders: DataFrame, customers: DataFrame) -> DataFrame:
+    def run(self, *, orders: DataFrame, customers: DataFrame) -> TransformResult:
         ...
 ```
 
@@ -190,7 +190,9 @@ Rules:
 - `spark` is the caller-supplied `SparkSession`.
 - `ctx` is passed to hooks.
 - `run(...)` uses keyword-only parameters matching declared transform input names.
-- `run(...)` returns a PySpark `DataFrame`.
+- `run(...)` returns a generated-runtime `TransformResult`.
+- Single-output generated transforms expose the DataFrame as `result.df`.
+- Multi-output generated transforms expose declared output names such as `result.accepted` and `result["rejected"]`.
 - Input parameter order follows source input declaration order.
 - A source transform instance is created only when at least one hook exists.
 - Hook-free generated classes must omit the source transform import and `_impl` field.

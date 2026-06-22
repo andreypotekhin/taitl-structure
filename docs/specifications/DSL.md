@@ -66,6 +66,7 @@ from structure import (
     Transform,
     transform,
     input,
+    output,
     expr_fn,
     where,
     before,
@@ -173,12 +174,14 @@ class NormalizeOrders(Transform):
 - `validate_intermediate`: optional class-level override for intermediate output validation.
 - `streaming_compatible`: optional author promise that the transform must satisfy the streaming compatibility
   specification.
+- `to`: optional class-level single-output schema contract, as in `@transform(to=OrderPublished)`.
 
 Rules:
 
 - `@transform` without parentheses and `@transform(...)` with keyword arguments are both valid.
 - Positional arguments to `@transform(...)` are rejected.
 - Unknown keyword arguments are rejected with allowed values.
+- `output=` is not a class-level option; it is reserved for terminal output method binding.
 - The decorator must preserve the original class identity enough for IDE navigation, `isinstance`, subclass checks,
   and direct instantiation to behave normally.
 - The decorator must record source metadata for discovery, diagnostics, generated class naming, provenance, and
@@ -228,6 +231,54 @@ Rules:
 
 Input DataFrame schema validation is governed by the validation configuration and runtime specifications. The DSL only
 declares the expected schema.
+
+## Outputs
+
+`output(schema)` declares a named transform result on a transform class:
+
+```python
+accepted = output(OrderAccepted)
+rejected = output(OrderRejected)
+```
+
+Rules:
+
+- `schema` must be a `Structure` subclass.
+- Output declaration names are the class attribute names.
+- Output declaration order is class body order.
+- A transform may declare a single unnamed output schema with `@transform(to=Schema)` instead of field-declared
+  outputs.
+- A transform must not mix class-level `to=Schema` with field-declared outputs.
+- A single-output transform does not need an explicit terminal output method binding; the final shared subtransform
+  produces the result.
+- If a transform declares more than one output field, each terminal output method must bind one output with
+  method-level `@transform(output=that_output)`.
+
+Canonical multi-output form:
+
+```python
+@transform
+class RouteOrders(Transform):
+    orders = input(OrderRaw)
+    accepted = output(OrderAccepted)
+    rejected = output(OrderRejected)
+
+    def normalize(self, order: OrderRaw) -> OrderNormalized:
+        return OrderNormalized.base(order)()
+
+    @transform(output=accepted)
+    def accept(self, order: OrderNormalized) -> OrderAccepted:
+        where(order.customer_id.is_not_null())
+        return OrderAccepted.base(order)(status="accepted")
+
+    @transform(output=rejected)
+    def reject(self, order: OrderNormalized) -> OrderRejected:
+        where(order.customer_id.is_null())
+        return OrderRejected.base(order)(reason="missing customer")
+```
+
+Terminal output methods are sibling projections from their resolved source frame. They do not feed each other in source
+order, so output-local `where(...)` filters affect only that output.
 
 ## Subtransforms
 

@@ -144,7 +144,7 @@ Directory structure:
 - /tests/specifications/[specification-doc-slug]/ - tests for specifications/ documents
 
 #### Concepts Testing
-We maintain a list of concepts in /docs/Concepts.md that we want to be covered with tests.
+We maintain a list of concepts in /docs/dev/Concepts.md that we want to be covered with tests.
 Concept tests are end-to-end tests proving correctness around a specific concept, like 'join'  
 
 Directory structure:

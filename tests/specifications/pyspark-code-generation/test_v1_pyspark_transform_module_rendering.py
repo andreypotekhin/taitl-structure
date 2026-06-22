@@ -33,7 +33,8 @@ def test_v1_transform_module_renderer_renders_class_runtime_shape() -> None:
 
     assert "from testing.model.v1.orders.transforms.order import EnrichOrders" in text
     assert (
-        "from testing.model.v1.structure_generated.runtime.schema_assert import assert_schema, project_schema, HookInputs"
+        "from testing.model.v1.structure_generated.runtime.schema_assert import "
+        "TransformResult, assert_schema, project_schema, HookInputs"
         in text
     )
     assert "class EnrichOrdersGenerated:" in text
@@ -63,8 +64,8 @@ def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
         "        df = self._impl.use_current_orders(df=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)" in text
     )
     assert "        df = project_schema(df, ORDER_PUBLISHED_SCHEMA)" in text
-    assert text.count('assert_schema(df, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")') == 1
-    assert text.rstrip().endswith("        return df")
+    assert text.count('assert_schema(df, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")') == 2
+    assert text.rstrip().endswith('        return TransformResult({"df": df_df}, single=True)')
 
 
 def _schema_modules() -> dict[type, str]:

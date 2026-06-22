@@ -42,7 +42,7 @@ class RenderPySparkTransformModule:
             module, name = source_transform.rsplit(".", 1)
             lines.append(f"from {module} import {name}")
 
-        helpers = ["assert_schema", "project_schema"]
+        helpers = ["TransformResult", "assert_schema", "project_schema"]
         if plan.requires_hook_inputs:
             helpers.append("HookInputs")
         lines.append(f"from {runtime_module} import {', '.join(helpers)}")
@@ -62,21 +62,31 @@ class RenderPySparkTransformModule:
         lines.extend(["", "    def run(", "        self,", "        *,"])
         for input in plan.inputs:
             lines.append(f"        {input.name}: DataFrame,")
-        lines.extend(["    ) -> DataFrame:"])
+        lines.extend(["    ) -> TransformResult:"])
         for input in plan.inputs:
             lines.extend(self._validation(input.validation))
         if plan.requires_hook_inputs:
             lines.extend(self._hook_inputs(plan))
 
         current = plan.inputs[0].name
+        sources = {input.name: input.name for input in plan.inputs}
         for step in plan.steps:
             lines.append("")
             lines.append(render_pyspark_step(step, current=current))
+            source_name = f"{step.name}_df"
+            lines.append(f"        {source_name} = df")
+            sources[step.name] = source_name
             current = "df"
 
-        if not self._last_step_validates_final(plan):
-            lines.extend(self._validation(plan.final_validation))
-        lines.append("        return df")
+        result_entries: list[str] = []
+        for output in plan.outputs:
+            lines.append("")
+            lines.append(render_pyspark_step(output, current=sources[output.source]))
+            output_name = f"{output.name}_df"
+            lines.append(f"        {output_name} = df")
+            result_entries.append(f'"{output.name}": {output_name}')
+        single = "True" if len(plan.outputs) == 1 else "False"
+        lines.append(f"        return TransformResult({{{', '.join(result_entries)}}}, single={single})")
         return "\n".join(lines)
 
     def _last_step_validates_final(self, plan: PySparkExecutionPlan) -> bool:
