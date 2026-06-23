@@ -63,18 +63,20 @@ def _decorate_transform_method(function, kwargs):
     unknown = set(kwargs) - allowed
     if unknown:
         raise TypeError(f"@transform got unknown method option(s): {', '.join(sorted(unknown))}")
-    if "output" not in kwargs:
-        raise TypeError("@transform on a method requires output=output_declaration")
-    if "input" in kwargs and not isinstance(kwargs["input"], OutputDeclaration):
-        raise TypeError("@transform(input=...) on a method requires an output(...) declaration")
-    if not isinstance(kwargs["output"], OutputDeclaration):
+    if "input" not in kwargs and "output" not in kwargs:
+        raise TypeError("@transform on a method requires input=input_declaration or output=output_declaration")
+    if "input" in kwargs and not isinstance(kwargs["input"], (InputDeclaration, OutputDeclaration)):
+        raise TypeError("@transform(input=...) on a method requires an input(...) or output(...) declaration")
+    if isinstance(kwargs.get("input"), OutputDeclaration) and "output" not in kwargs:
+        raise TypeError("@transform(input=...) with an output lane requires output=output_declaration")
+    if "output" in kwargs and not isinstance(kwargs["output"], OutputDeclaration):
         raise TypeError("@transform(output=...) on a method requires an output(...) declaration")
     setattr(
         function,
         "_structure_output_method",
         {
             "input": kwargs.get("input"),
-            "output": kwargs["output"],
+            "output": kwargs.get("output"),
         },
     )
     return function

@@ -15,6 +15,7 @@ from structure.app.dsl.logic.model.expr.Expression import Expression
 from structure.app.dsl.logic.model.expr.expressions import literal
 from structure.app.dsl.logic.model.expr.RowScope import RowScope
 from structure.app.dsl.logic.model.schemas.Structure import Structure
+from structure.app.dsl.logic.model.transforms.InputDeclaration import InputDeclaration
 from structure.app.dsl.logic.model.transforms.Join import Join
 from structure.app.dsl.logic.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.logic.model.transforms.OutputDeclaration import OutputDeclaration
@@ -102,6 +103,11 @@ class CompileTransform:
                         f"{transform_class.__name__}.{name} expects {input_schema.__name__}, "
                         f"but the previous subtransform returns {actual_schema.__name__}."
                     )
+                elif input_source.get("kind") == "input":
+                    problem = (
+                        f"{transform_class.__name__}.{name} expects {input_schema.__name__}, "
+                        f"but input {input_lane} declares {actual_schema.__name__}."
+                    )
                 else:
                     problem = (
                         f"{transform_class.__name__}.{name} expects {input_schema.__name__}, "
@@ -184,15 +190,29 @@ class CompileTransform:
             if lane in lanes:
                 return lane, lanes[lane]
             input_plan = self._input_for_schema(inputs, input_schema)
-            return lane, {"schema": input_plan.schema, "source": input_plan.name, "scope": input_plan.name}
+            return lane, {
+                "kind": "input",
+                "schema": input_plan.schema,
+                "source": input_plan.name,
+                "scope": input_plan.name,
+            }
+
+        if isinstance(declaration, InputDeclaration):
+            self._declared_input(transform_class, declaration, member=member)
+            return declaration.name, {
+                "kind": "input",
+                "schema": declaration.schema,
+                "source": declaration.name,
+                "scope": declaration.name,
+            }
 
         if not isinstance(declaration, OutputDeclaration):
             raise self._error(
                 "DSL-E0402",
                 transform_class=transform_class,
                 member=member,
-                problem="@transform(input=...) must reference an output(...) field.",
-                use="Pass a class field declared as name = output(Schema).",
+                problem="@transform(input=...) must reference an input(...) or output(...) field.",
+                use="Pass a class field declared as name = input(Schema) or name = output(Schema).",
             )
         self._declared_output(transform_class, declaration, member=member, role="input")
         lane = declaration.name
@@ -219,7 +239,9 @@ class CompileTransform:
         if metadata is None:
             return "df"
 
-        declaration = metadata["output"]
+        declaration = metadata.get("output")
+        if declaration is None:
+            return "df"
         assert isinstance(declaration, OutputDeclaration)
         self._declared_output(transform_class, declaration, member=member, role="output")
         if output_schema is not declaration.schema:
@@ -351,6 +373,24 @@ class CompileTransform:
                 context={"output": declaration.name or "<unnamed>"},
             )
 
+    def _declared_input(
+        self,
+        transform_class: type[Transform],
+        declaration: InputDeclaration,
+        *,
+        member: str,
+    ) -> None:
+        declared = transform_class._structure_inputs.get(declaration.name)
+        if declared is not declaration:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"@transform(input=...) references an input that is not declared on {transform_class.__name__}.",
+                use="Use an input(...) field from the same transform class.",
+                context={"input": declaration.name or "<unnamed>"},
+            )
+
     def _hooks(self, transform_class: type[Transform]) -> dict[tuple[str, str], tuple[HookPlan, ...]]:
         grouped: dict[tuple[str, str], list[HookPlan]] = {}
         for name, member in transform_class.__dict__.items():
@@ -401,11 +441,12 @@ class CompileTransform:
     def _input_for_schema(self, inputs: list[InputPlan], schema: type[Structure]) -> InputPlan:
         matches = [input_plan for input_plan in inputs if input_plan.schema is schema]
         if len(matches) != 1:
+            names = ", ".join(input_plan.name for input_plan in matches) or "none"
             raise self._error(
                 "DSL-E0402",
                 transform_class=None,
-                problem=f"Expected exactly one declared input for schema {schema.__name__}.",
-                use="Declare exactly one input(...) for the first subtransform's input schema.",
+                problem=f"Cannot deduce input for schema {schema.__name__}; matched inputs: {names}.",
+                use="Add @transform(input=that_input) to the subtransform or declare exactly one matching input(...).",
                 context={"schema": schema.__name__, "matches": str(len(matches))},
             )
         return matches[0]

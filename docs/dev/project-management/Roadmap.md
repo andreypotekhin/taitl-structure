@@ -8,7 +8,8 @@ DataFrame and Column operations so Spark can optimize execution.
 
 The north star is deliberately strict: v1 first proves one useful executable transform running both online and as
 generated PySpark, then broadens into the contract that lets Structure replace hand-maintained PySpark boilerplate
-with a strict online runtime and optional generated-code workflow. v2 makes that workflow useful for mainstream analytical pipelines.
+with a strict online runtime and optional generated-code workflow. v2 makes that workflow useful for mainstream
+analytical pipelines.
 v3 takes ownership of streaming lifecycle concerns only after the transform compiler has earned trust. v4 adds backend
 expansion through Spark Connect after the ordinary PySpark contract is stable.
 
@@ -123,24 +124,30 @@ validation, compiler provenance, static dataflow traceability, and build integra
 
 ## v2 Scope
 
-v2 extends the compiler IR and emitter with advanced Spark operations while preserving performance discipline.
+v2 makes Structure useful for mainstream analytical batch pipelines after the v1 compiler contract is stable. The
+release broadens the IR, shared PySpark recipe layer, online runner, generated emitter, diagnostics, and tests without
+changing the core authoring model: developers still write schema-returning transform methods, Structure still keeps
+supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
 
-### v2 candidate features
+### v2 release pillars
 
-- Windowing for dedupe, latest-row, ranking, lag/lead, and rolling metrics.
-- Deduplication helpers.
-- Aggregations and typed `group_by(...)`.
-- Advanced aggregation and grouping sets where practical.
-- Spark higher-order functions for arrays/maps where compiler-visible.
-- Manual optimization directives: caching, persistence, repartition/coalesce, checkpoint hints.
-- Advanced join strategies: broadcast, shuffle hash, sort merge hints, and lookup projection.
-- Analytical join coverage from `docs/specifications/AnalyticalJoinCoverage.md`: semi/anti existence predicates,
-  `join_many(...)`, deterministic lookup dedupe, temporal validity-window joins, and backward as-of joins.
-- Production incremental compilation: `compile --changed-only`, cache invalidation policies, and cache diagnostics.
-- Richer static dataflow explain output.
-- More complete generated-code explain reports.
-- Generated documentation artifacts for schemas and transforms, in Markdown or JSON.
-- Pytest helper or plugin for `structure check`, generated-code freshness, and generated-code snapshots.
+- **Analytical transforms:** typed `group_by(...)`, aggregations, window expressions, deduplication helpers, ranking,
+  lag/lead, rolling metrics, and compiler-visible Spark higher-order functions for arrays and maps.
+- **Analytical joins:** existence predicates, `join_many(...)`, deterministic lookup dedupe, temporal validity-window
+  joins, and backward as-of joins from `docs/specifications/AnalyticalJoinCoverage.md`.
+- **Explicit optimization controls:** cache, persist, repartition, coalesce, checkpoint, and join strategy directives
+  that are visible in source, generated code, traceability, and explain output.
+- **Adoption and scale tooling:** richer static dataflow and generated-code explain reports, generated documentation
+  artifacts for schemas and transforms, pytest helpers, generated-code freshness checks, snapshots, and production
+  incremental compilation with cache diagnostics.
+
+### v2 non-goals
+
+- Full streaming orchestration. v2 only maintains compatibility classification for caller-owned streaming DataFrames.
+- Spark Connect support.
+- Automatic cost-based optimization, join reordering, or storage write planning.
+- Hidden UDF lowering or arbitrary Python execution in compiled paths.
+- Right, full, and cross joins unless a later design explicitly admits them.
 
 ## v3 Scope
 
@@ -181,6 +188,6 @@ are stable.
 | M4 | Hook model and no-hook generated-code cleanliness | Sprint 04 |
 | M5 | Joins, compiler traceability, build integration | Sprint 05 |
 | M6 | v1 stabilization and docs/examples | follow-up hardening sprint |
-| M7 | v2 analytical pipeline features, analytical join coverage, and adoption tooling | future v2 sprints |
+| M7 | v2 analytical pipeline features, analytical join coverage, and adoption tooling | Sprints 06-09 |
 | M8 | v3 streaming orchestration | future v3 sprints |
 | M9 | v4 Spark Connect backend expansion | future v4 sprints |

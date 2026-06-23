@@ -136,19 +136,59 @@ checks.
 
 ## M7: v2 Analytical Pipeline Features
 
-### Exit Criteria
+Status: planned. v2 starts after v1 stabilization evidence is release-ready. The milestone is split into M7A-M7D so
+independent contributors can work on analytical transforms, analytical joins, and adoption tooling without stepping on
+one another.
 
-- Windowing and deduplication helpers cover latest-row, ranking, lag/lead, and duplicate-removal use cases.
-- Typed aggregation support covers common group-by rollups before advanced grouping sets.
-- Higher-order array/map helpers remain Spark-plan-visible.
-- Manual optimization directives are explicit in source and obvious in generated code.
+### M7A: v2 Scope and Analytical IR Foundations
+
+Exit Criteria:
+
+- v2 user stories, backlog epics, milestone split, and sprint charters are published.
+- Analytical operation IR records operation kind, input scope, output schema, source location, backend capability,
+  cardinality, and streaming compatibility classification.
+- Shared PySpark recipe boundaries are ready for aggregation, window, higher-order function, optimization hint, and
+  analytical join lowering.
+- v2 fixture packages cover small, readable orders-style examples for aggregation, windowing, arrays/maps, and
+  analytical joins.
+- Diagnostics use stable codes and link to the relevant v2 specification or roadmap section.
+
+### M7B: Analytical Join Coverage
+
+Exit Criteria:
+
 - Existence joins cover semi and anti filter semantics without exposing right-side fields.
 - `join_many(...)` has clear row-multiplication semantics and online/generated parity tests.
 - Deterministic lookup dedupe policies never rely on arbitrary right-row selection.
 - Temporal validity-window joins support SCD-style lookups with explicit overlap policy.
 - Backward as-of joins support time-relative enrichment with optional tolerance.
-- Richer explain output, generated documentation artifacts, and pytest helpers improve adoption without adding runtime
-  responsibility.
+- Traceability and `structure explain` show row-filtering, row-multiplying, select-one, temporal, and as-of cardinality.
+
+### M7C: Aggregations, Windows, and Higher-Order Functions
+
+Exit Criteria:
+
+- Typed `group_by(...)` and aggregation support covers count, sum, min, max, average, distinct count where practical,
+  and schema-checked aggregate output construction.
+- Windowing covers latest-row, ranking, lag/lead, rolling metrics, and duplicate-removal helpers.
+- Deduplication helpers expose deterministic tie policies and never lower to arbitrary `dropDuplicates(...)` when a
+  selected row matters.
+- Spark higher-order helpers for arrays and maps remain Spark-plan-visible and reject unsupported Python callbacks.
+- Online/generated parity tests cover every admitted aggregation, window, dedupe, and higher-order helper form.
+
+### M7D: Optimization, Explain, Docs, and Test Tooling
+
+Exit Criteria:
+
+- Manual optimization directives are explicit in source and obvious in generated code.
+- Cache, persist, repartition, coalesce, checkpoint, and join strategy directives are represented in IR and backend
+  capability checks.
+- Richer static dataflow explain output can show field lineage through projections, filters, joins, aggregations,
+  windows, hooks, and optimization boundaries.
+- Generated documentation artifacts describe schemas, transforms, inputs, outputs, traceability, and generated targets
+  in Markdown or JSON.
+- Pytest helpers cover `structure check`, generated-code freshness, generated-code snapshots, diagnostics, and
+  online/generated parity fixtures.
 - Production incremental compile has cache invalidation tests and diagnostics.
 
 ## M8: v3 Streaming Orchestration

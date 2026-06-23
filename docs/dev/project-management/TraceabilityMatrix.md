@@ -10,7 +10,10 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 03 Expressions/Filtering/Helpers | Symbolic Execution, Expression Helpers, Filtering, Error Reporting | expression IR, `where`, `@expr_fn`, diagnostic registry, structured unsupported-code errors |
 | Sprint 04 Hooks/Generated Classes | Hooks, Generated Code, Error Reporting | `@after(method)`, direct hook calls, no-hook cleanliness |
 | Sprint 05 Joins/Compiler Traceability/Build | Joins, Compiler Traceability, Build Integration, Streaming Compatibility | `join_one`, N-step joins, compiler provenance, static dataflow traceability, `--fail-on-diff`, `explain` |
+| Sprint 06 v2 Scope/Analytical IR | v2 Foundations, Backend Capabilities, Traceability, Streaming Compatibility | v2 scope, non-goals, operation taxonomy, capability placeholders, fixture skeletons, diagnostic anchors |
 | Sprint 07 Analytical Join Coverage | Analytical Joins, Backend Capabilities, Traceability, Streaming Compatibility | existence joins, `join_many`, deterministic lookup dedupe, temporal joins, as-of joins |
+| Sprint 08 Aggregations/Windows/HOFs | Aggregations, Windowing, Deduplication, Higher-Order Functions, Testing | typed `group_by`, aggregate helpers, window helpers, deterministic dedupe, array/map helpers, parity tests |
+| Sprint 09 Optimization/Explain/Docs/Tooling | Optimization Directives, Explain, Generated Docs, Testing, Build Integration | cache/persist/repartition/coalesce/checkpoint hints, rich explain, generated docs, pytest helpers, incremental compile |
 
 ## Relevant Specification Items by Sprint
 
@@ -72,6 +75,14 @@ This matrix maps early sprints to specification sections and major deliverables.
 - As a developer, I can run compiler commands in ordinary Python CI without provisioning Spark.
 - As a developer, online and generated transforms remain streaming-compatible when Spark supports the operations used.
 
+### Sprint 06
+
+- As a developer, I can see a published v2 scope and non-goals.
+- As a developer, I can receive backend capability diagnostics for every v2 operation.
+- As a developer, I can inspect v2 operation cardinality in explain output.
+- As a developer, I can rely on online and generated execution using the same v2 PySpark recipe layer.
+- As a developer, I can keep caller-owned streaming orchestration in v2.
+
 ### Sprint 07
 
 - As a developer, I can use existence joins so that semi and anti filters stay compiler-visible.
@@ -80,3 +91,25 @@ This matrix maps early sprints to specification sections and major deliverables.
 - As a developer, I can use temporal validity-window lookups so that SCD-style joins have explicit interval semantics.
 - As a developer, I can use backward as-of lookups so that time-relative enrichment stays compiler-visible.
 - As a developer, I can inspect analytical join cardinality in static traceability and `structure explain`.
+
+### Sprint 08
+
+- As a developer, I can define typed aggregation subtransforms.
+- As a developer, I can group by one or more typed fields.
+- As a developer, I can calculate common aggregate metrics.
+- As a developer, I can define window expressions for ranking, dedupe, latest-row selection, and rolling metrics.
+- As a developer, I can define lag and lead expressions.
+- As a developer, I can select latest or earliest rows with deterministic tie policy.
+- As a developer, I can use higher-order function helpers for arrays and maps.
+
+### Sprint 09
+
+- As a developer, I can add caching and persistence hints at step boundaries.
+- As a developer, I can add repartition and coalesce hints.
+- As a developer, I can add checkpoint hints where supported.
+- As a developer, I can specify join strategies and hints.
+- As a developer, I can generate richer static dataflow explain output.
+- As a developer, I can generate documentation artifacts for schemas and transforms.
+- As a developer, I can use pytest helpers for compiler checks, generated-code freshness, generated-code snapshots,
+  expected diagnostics, and parity tests.
+- As a developer, I can use production incremental compilation.

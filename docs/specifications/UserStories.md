@@ -253,23 +253,75 @@ This document is a user-story specification for SDLC planning. Early sections co
 
 ## 22. v2 Roadmap
 
+v2 makes Structure useful for mainstream analytical batch pipelines. It extends the v1 transform model without taking
+over streaming orchestration, storage writes, Spark Connect, automatic cost-based optimization, or hidden UDF execution.
+
+## 22A. v2 Foundations
+
+- As a developer, I can see a published v2 scope and non-goals so that I know which analytical features are safe to
+  plan around.
+- As a developer, I can receive backend capability diagnostics for every v2 operation so that unsupported PySpark target
+  combinations fail before runtime.
+- As a developer, I can inspect v2 operation cardinality in explain output so that row-preserving, row-filtering,
+  row-multiplying, and select-one behavior is visible.
+- As a developer, I can rely on online and generated execution using the same v2 PySpark recipe layer so that supported
+  analytical behavior cannot drift between runtime modes.
+- As a developer, I can keep caller-owned streaming orchestration in v2 so that existing v1 streaming compatibility
+  boundaries remain stable.
+
+## 22B. Aggregations, Windows, and Higher-Order Functions
+
 - As a developer, I can define typed aggregation subtransforms so that rollups compile to Spark `groupBy` and `agg`.
-- As a developer, I can define advanced grouping patterns so that rollups, cubes, grouping sets, and multi-level summaries are supported.
-- As a developer, I can define window expressions so that ranking, deduplication, latest-record selection, and rolling metrics compile to Spark window operations.
-- As a developer, I can use higher-order function helpers so that array and map transformations remain Spark-plan-visible.
+- As a developer, I can group by one or more typed fields so that aggregate output schemas include explicit grouping
+  keys.
+- As a developer, I can calculate count, sum, min, max, average, and supported distinct counts so that common analytical
+  summaries do not require hooks.
+- As a developer, I can receive type and nullability diagnostics for aggregate expressions so that invalid summaries
+  are caught at compile time.
+- As a developer, I can define advanced grouping patterns so that rollups, cubes, grouping sets, and multi-level
+  summaries are supported when practical.
+- As a developer, I can define window expressions so that ranking, deduplication, latest-record selection, and rolling
+  metrics compile to Spark window operations.
+- As a developer, I can define lag and lead expressions so that time-relative comparisons remain compiler-visible.
+- As a developer, I can remove exact duplicates explicitly so that duplicate cleanup is visible in source and explain
+  output.
+- As a developer, I can select latest or earliest rows with deterministic tie policy so that dedupe never chooses an
+  arbitrary row.
+- As a developer, I can use higher-order function helpers so that array and map transformations remain
+  Spark-plan-visible.
+- As a developer, I can receive diagnostics when a higher-order helper callback would become arbitrary Python so that I
+  can move the logic to the DSL, `@expr_fn`, or a hook.
+
+## 22C. Analytical Joins
+
 - As a developer, I can use existence joins so that semi and anti filters stay compiler-visible.
 - As a developer, I can use `join_many(...)` for cardinality-expanding joins so that row multiplication is explicit.
 - As a developer, I can use deterministic lookup dedupe policies so that selected right-side rows are reviewable.
 - As a developer, I can use temporal validity-window lookups so that SCD-style joins have explicit interval semantics.
 - As a developer, I can use backward as-of lookups so that time-relative enrichment stays compiler-visible.
-- As a developer, I can add caching and persistence hints at step boundaries so that expensive reused DataFrames can be optimized explicitly.
+- As a developer, I can receive tie and overlap diagnostics for deduped, temporal, and as-of joins so that ambiguous
+  right-side records do not silently change facts.
+- As a developer, I can see analytical join cardinality in generated traceability so that downstream consumers can spot
+  row multiplication and row filtering.
+
+## 22D. Optimization, Explain, Docs, and Test Tooling
+
+- As a developer, I can add caching and persistence hints at step boundaries so that expensive reused DataFrames can be
+  optimized explicitly.
+- As a developer, I can add repartition and coalesce hints so that generated code can express deliberate partitioning
+  choices.
+- As a developer, I can add checkpoint hints where supported so that long analytical plans can be cut at explicit
+  boundaries.
 - As a developer, I can specify join strategies and hints so that manual optimization remains explicit and reviewable.
 - As a developer, I can generate richer static dataflow explain output so that complex field dependencies can be
   inspected when needed.
+- As a developer, I can explain generated-code sections so that long analytical generated classes remain reviewable.
 - As a developer, I can generate documentation artifacts for schemas and transforms so that the public contract is
   readable without inspecting generated PySpark.
-- As a developer, I can use pytest helpers for compiler checks, generated-code freshness, and generated-code snapshots.
+- As a developer, I can use pytest helpers for compiler checks, generated-code freshness, generated-code snapshots,
+  expected diagnostics, and online/generated parity.
 - As a developer, I can use production incremental compilation so that large projects get fast local feedback.
+- As a developer, I can see cache invalidation diagnostics so that incremental compile never hides stale generated code.
 
 ## 23. v3 Roadmap
 

@@ -228,6 +228,8 @@ Rules:
   DataFrame API.
 - Generated `run(...)` methods use the same input names as keyword-only parameters.
 - Hook input namespaces use the same input names as read-only attributes when `pass_inputs=True`.
+- Method-level `@transform(input=declared_input)` selects a class input explicitly when the row schema is ambiguous
+  or cannot be inferred safely.
 
 Input DataFrame schema validation is governed by the validation configuration and runtime specifications. The DSL only
 declares the expected schema.
@@ -253,9 +255,11 @@ Rules:
 - If a transform declares more than one output field, each output lane must be written explicitly with method-level
   `@transform(output=that_output)`.
 - Method-level `@transform(output=lane)` reads from the canonical `df` lane and writes the named lane.
-- Method-level `@transform(input=source_lane, output=target_lane)` reads from a previously available lane and writes
-  another lane.
-- Any method that specifies `input=` must also specify `output=`.
+- Method-level `@transform(input=declared_input)` reads from an original class input and writes the canonical `df`
+  lane unless `output=` is also specified.
+- Method-level `@transform(input=source_lane, output=target_lane)` reads from a previously available output lane and
+  writes another lane.
+- Any method that specifies an output lane as `input=` must also specify `output=`.
 - Lane references use output declarations, not strings. To explicitly reference the canonical `df` lane from a
   decorator, declare it as a field, such as `df = output(OrderNormalized)`.
 
@@ -312,10 +316,10 @@ Rules:
 - The return annotation must be a `Structure` subclass.
 - Subtransforms execute in source order.
 - Source-order lane flow must be valid: undecorated methods consume and update `df`; `@transform(output=lane)`
-  consumes `df` and updates `lane`; `@transform(input=source, output=target)` consumes a previously available lane and
-  updates the target lane.
+  consumes `df` and updates `lane`; `@transform(input=declared_input)` consumes an original input and updates `df`;
+  `@transform(input=source, output=target)` consumes a previously available lane and updates the target lane.
 - If more than one declared input has the first subtransform's input schema, the compiler must require an unambiguous
-  mapping or emit a diagnostic.
+  mapping such as `@transform(input=orders_external)` or emit a diagnostic.
 - Private helper methods are allowed and are not compiled as subtransforms.
 - Public helper methods without a `Structure` return annotation are ignored by the subtransform collector, but should
   not be used for compileable expression reuse. Use `@expr_fn` instead.

@@ -53,6 +53,17 @@ def run(self, *, orders, customers, products):
     ...
 ```
 
+When more than one input has the same schema, select the intended source on the subtransform:
+
+```python
+orders_external = input(OrderRaw)
+orders_internal = input(OrderRaw)
+
+@transform(input=orders_external)
+def normalize(self, order: OrderRaw) -> OrderNormalized:
+    ...
+```
+
 ## Subtransforms
 
 Public instance methods with schema return annotations are compiled as subtransforms.

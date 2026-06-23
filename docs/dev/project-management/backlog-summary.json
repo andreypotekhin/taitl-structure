@@ -69,14 +69,49 @@
       ]
     },
     {
+      "id": "S06",
+      "name": "v2 Scope and Analytical IR Foundations",
+      "milestone": "M7A",
+      "spec_sections": [
+        "v2 Foundations",
+        "Backend Capabilities",
+        "Traceability",
+        "Streaming Compatibility"
+      ]
+    },
+    {
       "id": "S07",
       "name": "Analytical Join Coverage",
-      "milestone": "M7",
+      "milestone": "M7B",
       "spec_sections": [
         "Analytical Joins",
         "Backend Capabilities",
         "Traceability",
         "Streaming Compatibility"
+      ]
+    },
+    {
+      "id": "S08",
+      "name": "Aggregations, Windows, Higher-Order Functions",
+      "milestone": "M7C",
+      "spec_sections": [
+        "Aggregations",
+        "Windowing",
+        "Deduplication",
+        "Higher-Order Functions",
+        "Testing"
+      ]
+    },
+    {
+      "id": "S09",
+      "name": "Optimization, Explain, Docs, Tooling",
+      "milestone": "M7D",
+      "spec_sections": [
+        "Optimization Directives",
+        "Explain",
+        "Generated Docs",
+        "Testing",
+        "Build Integration"
       ]
     }
   ]

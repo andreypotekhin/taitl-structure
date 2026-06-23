@@ -31,6 +31,10 @@ project-management/
     Sprint03_SymbolicExpressionsFilteringHelpers.md
     Sprint04_HooksAndGeneratedClasses.md
     Sprint05_JoinsTraceabilityBuildIntegration.md
+    Sprint06_V2ScopeAndAnalyticalIR.md
+    Sprint07_AnalyticalJoinCoverage.md
+    Sprint08_AggregationsWindowsHigherOrderFunctions.md
+    Sprint09_OptimizationExplainDocsTooling.md
   templates/
     SprintReview.md
     ADR.md
@@ -64,7 +68,15 @@ The first iterations are intentionally arranged to build confidence in small com
 6. **Joins, compiler traceability, build integration**: `join_one`, N-step serial joins, compiler provenance, static
    dataflow traceability, `--fail-on-diff`.
 
-V2 features such as windowing, deduplication, aggregations, HOFs, advanced grouping, caching, repartition/coalesce
-hints, `join_many(...)`, generated docs, pytest helpers, production incremental compile, and join strategy optimization
-are captured in the backlog but not scheduled in the first v1 implementation sprints. V3 is reserved for streaming
-orchestration, and V4 is reserved for Spark Connect backend expansion.
+V2 starts after v1 stabilization evidence is release-ready. The v2 sprint sequence is:
+
+1. **Sprint 06: v2 scope and analytical IR foundations**: release boundary, user stories, epics, IR operation taxonomy,
+   capability checks, fixture skeletons, and diagnostic anchors.
+2. **Sprint 07: analytical join coverage**: semi/anti existence joins, `join_many(...)`, deterministic lookup dedupe,
+   temporal validity-window joins, and backward as-of joins.
+3. **Sprint 08: aggregations, windows, and higher-order functions**: typed `group_by(...)`, aggregate helpers,
+   windowing, dedupe helpers, and compiler-visible array/map helpers.
+4. **Sprint 09: optimization, explain, docs, and test tooling**: explicit optimization directives, richer explain
+   output, generated documentation artifacts, pytest helpers, and production incremental compile.
+
+V3 is reserved for streaming orchestration, and V4 is reserved for Spark Connect backend expansion.

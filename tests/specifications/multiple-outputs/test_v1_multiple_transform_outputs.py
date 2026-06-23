@@ -109,6 +109,61 @@ def test_v1_class_to_declares_single_output_schema() -> None:
     assert plan.output_schema is Published
 
 
+def test_v1_method_input_selects_declared_input_when_schema_is_ambiguous() -> None:
+    @transform
+    class NormalizeOrders(Transform):
+        external = input(Raw)
+        internal = input(Raw)
+
+        @transform(input=external)
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, customer_id=row.customer_id)
+
+    plan = compile_transform(NormalizeOrders)
+
+    steps = [(step.name, step.source, step.source_scope, step.input_lane, step.output_lane) for step in plan.steps]
+    assert steps == [
+        ("normalize", "external", "external", "external", "df"),
+    ]
+
+
+def test_v1_method_input_selects_declared_input_before_writing_output_lane() -> None:
+    @transform
+    class AcceptOrders(Transform):
+        external = input(Raw)
+        internal = input(Raw)
+        accepted = output(Accepted)
+
+        @transform(input=external, output=accepted)
+        def accept(self, row: Raw) -> Accepted:
+            return Accepted(id=row.id, status="accepted")
+
+    plan = compile_transform(AcceptOrders)
+
+    assert [(step.name, step.source, step.input_lane, step.output_lane) for step in plan.steps] == [
+        ("accept", "external", "external", "accepted"),
+    ]
+    assert [(item.name, item.source, item.schema) for item in plan.outputs] == [
+        ("accepted", "accept", Accepted),
+    ]
+
+
+def test_v1_ambiguous_input_schema_requires_method_input() -> None:
+    @transform
+    class NormalizeOrders(Transform):
+        external = input(Raw)
+        internal = input(Raw)
+
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, customer_id=row.customer_id)
+
+    with pytest.raises(Exception) as raised:
+        compile_transform(NormalizeOrders)
+
+    assert "Cannot deduce input for schema Raw" in str(raised.value)
+    assert "@transform(input=that_input)" in str(raised.value)
+
+
 def test_v1_multi_output_requires_explicit_terminal_bindings() -> None:
     @transform
     class RouteOrders(Transform):
@@ -182,7 +237,7 @@ def test_v1_output_method_return_schema_must_match_output_lane_schema() -> None:
     assert "returns Published, not Accepted" in str(raised.value)
 
 
-def test_v1_method_input_requires_method_output() -> None:
+def test_v1_output_lane_method_input_requires_method_output() -> None:
     with pytest.raises(TypeError) as raised:
 
         @transform
@@ -194,7 +249,7 @@ def test_v1_method_input_requires_method_output() -> None:
             def accept(self, row: Raw) -> Accepted:
                 return Accepted(id=row.id, status="accepted")
 
-    assert "@transform on a method requires output=output_declaration" in str(raised.value)
+    assert "@transform(input=...) with an output lane requires output=output_declaration" in str(raised.value)
 
 
 def test_v1_generated_pyspark_uses_per_lane_step_sources() -> None:

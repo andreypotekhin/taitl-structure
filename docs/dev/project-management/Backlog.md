@@ -145,23 +145,85 @@
 
 ## v2 Backlog
 
-- Windowing.
-- Deduplication helpers.
-- Aggregations.
-- Advanced aggregation/grouping.
-- Spark higher-order functions.
-- Caching/persistence directives.
-- Repartition/coalesce hints.
-- Advanced join strategy directives.
-- Semi and anti existence joins.
-- `join_many(...)` for row-multiplying joins.
-- Deterministic lookup dedupe policies.
-- Temporal validity-window joins for SCD-style lookups.
-- Backward as-of joins with optional tolerance.
-- Richer static dataflow explain output.
-- Production incremental compile and cache diagnostics.
-- Generated documentation artifacts for schemas and transforms.
-- Pytest helper or plugin for compiler checks, generated-code freshness, and generated-code snapshots.
+### Epic: v2 Scope and Analytical IR Foundations
+
+- Publish v2 release scope, non-goals, user stories, milestones, and sprint charters.
+- Add v2 fixture package for aggregation, window, dedupe, higher-order function, optimization hint, and analytical join
+  examples.
+- Extend IR operation taxonomy for aggregation, window, higher-order function, optimization directive, and analytical
+  join operations.
+- Record source location, backend capability, cardinality, streaming compatibility, and traceability metadata on every
+  v2 operation.
+- Add backend capability names for aggregation, window, higher-order function, optimization directive, and analytical
+  join forms.
+- Add diagnostic codes and public documentation anchors for unsupported v2 operation shapes.
+- Add online/generated parity harness fixtures for v2 operations before implementing the full lowering set.
+
+### Epic: Aggregations and Grouping
+
+- Implement typed `group_by(...)` source DSL.
+- Implement aggregation expression builders for count, sum, min, max, average, and distinct count where practical.
+- Support aggregate output schema construction with grouped keys and aggregate fields.
+- Validate aggregate expressions against input field types and nullable output expectations.
+- Lower group-by and aggregate plans through shared PySpark recipes.
+- Add generated PySpark snapshots for aggregate transforms.
+- Add online/generated parity tests for grouped rollups.
+- Stage advanced grouping sets, rollups, and cubes behind explicit backend capability checks.
+
+### Epic: Windowing and Deduplication
+
+- Implement window specification objects with partitioning, ordering, and frame boundaries.
+- Implement ranking helpers.
+- Implement lag and lead helpers.
+- Implement rolling metric helpers.
+- Implement latest-row and earliest-row helpers with deterministic tie policies.
+- Implement duplicate-removal helpers for exact duplicate removal and selected-row dedupe.
+- Reject nondeterministic selected-row dedupe unless the source declares an explicit tie policy.
+- Lower window and dedupe plans through shared PySpark recipes.
+- Add online/generated parity tests for ranking, lag/lead, rolling metrics, latest-row, and duplicate-removal scenarios.
+
+### Epic: Higher-Order Array and Map Functions
+
+- Implement compiler-visible array helper forms for transform, filter, exists, forall, aggregate, and zip-with where
+  supported by the configured PySpark target.
+- Implement compiler-visible map helper forms for key/value transform and map filter where supported.
+- Validate higher-order helper callbacks as symbolic expressions, not arbitrary Python callbacks.
+- Emit actionable diagnostics that suggest `@expr_fn` or hooks when a helper cannot remain compiler-visible.
+- Lower higher-order helper plans through shared PySpark recipes.
+- Add online/generated parity tests for arrays, maps, nullable elements, and unsupported callback diagnostics.
+
+### Epic: Analytical Joins
+
+- Implement semi `exists(...)` and anti `not_exists(...)` predicates.
+- Implement `join_many(...)` for row-multiplying joins.
+- Implement deterministic `JoinDedupe.latest_by(...)` and `JoinDedupe.earliest_by(...)` policies.
+- Implement temporal validity-window `temporal_one(...)` joins for SCD-style lookups.
+- Implement backward `as_of_one(...)` joins with optional tolerance.
+- Add tie and overlap policy diagnostics.
+- Show analytical join cardinality in traceability and `structure explain`.
+- Add online/generated parity tests for duplicate right rows, unmatched rows, temporal overlaps, and as-of ties.
+
+### Epic: Explicit Optimization Directives
+
+- Implement cache and persist directives at subtransform boundaries.
+- Implement repartition and coalesce directives.
+- Implement checkpoint hints where supported by the configured backend.
+- Implement join strategy directives for broadcast, shuffle hash, sort merge, and lookup projection where supported.
+- Keep directives explicit in source, IR, generated code, and explain output.
+- Add diagnostics when a directive is unsafe, unsupported, or likely ignored by the configured PySpark target.
+- Add tests proving directives do not change row or schema semantics.
+
+### Epic: Explain, Documentation, and Test Tooling
+
+- Add rich `structure explain` mode for field-level lineage through projections, filters, joins, aggregations, windows,
+  hooks, and optimization boundaries.
+- Add generated documentation artifacts for schemas and transforms in Markdown or JSON.
+- Add pytest helpers for `structure check`, generated-code freshness, generated-code snapshots, expected diagnostics,
+  and online/generated parity.
+- Add production incremental compilation with `compile --changed-only`.
+- Add cache invalidation policies and cache diagnostics for source, config, schema, dependency, and generated-target
+  changes.
+- Add performance tests for incremental compile on synthetic 10-transform and 100-transform projects.
 
 ## v3 Backlog
 
