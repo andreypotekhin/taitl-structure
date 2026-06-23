@@ -6,7 +6,7 @@ code.
 
 The sprint plan assumes the documentation set from the Structure design package already exists, especially:
 
-- `docs/Specification.md`
+- `docs/specifications/UserStories.md`
 - `docs/GeneratedPySpark.md`
 - `devdocs/Architecture.md`
 - `devdocs/Implementation.md`

@@ -1,4 +1,4 @@
-﻿# Testing
+# Testing
 
 Structure requires layered testing because correctness spans source DSL semantics, online execution, generated code,
 runtime behavior, and performance guardrails.
@@ -158,7 +158,7 @@ Use these directories consistently:
   package path.
 - `tests/concepts/[concept]/...`: end-to-end black-box tests for concepts from `docs/dev/Concepts.md`.
 - `tests/helpers/...`: repo-local helpers for fixture-backed or pytest-specific test scenarios.
-- `tests/specs/[section-or-story]/...`: tests backing user stories from `docs/dev/Specification.md`.
+- `tests/user_stories/[section-or-story]/...`: tests backing user stories from `docs/specifications/UserStories.md`.
 - `tests/specifications/[specification-doc-slug]/...`: tests backing individual documents under `docs/specifications/`
   when we need to prove the behavior described by a specification document directly.
 
@@ -169,7 +169,7 @@ Examples:
 - PySpark backend target behavior: `tests/app/backend/pyspark/...`
 - Join concept coverage: `tests/concepts/join/...`
 - Fixture-specific scenario helpers: `tests/helpers/scenarios/...`
-- User stories completed from `docs/dev/Specification.md`: `tests/specs/...`
+- User stories completed from `docs/specifications/UserStories.md`: `tests/user_stories/...`
 - Execution semantic contract checks: `tests/specifications/execution-semantic-contract/...`
 - PySpark code generation contract checks: `tests/specifications/pyspark-code-generation/...`
 

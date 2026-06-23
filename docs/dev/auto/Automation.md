@@ -5,7 +5,7 @@
 Prioritise 'top-to-bottom', 'working backwards from customer' order of implementation,
 putting effort into end-user facing artifacts first (source code, documentation),
 then proceeding with implementing library interfaces and user stories (specifications)
-(/docs/dev/Specification.md) and their backing test cases (testing/specs/[])
+(/docs/specifications/UserStories.md) and their backing test cases (tests/user_stories/[])
 and unit tests.
 
 See these documents for what to focus on:

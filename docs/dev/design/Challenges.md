@@ -689,7 +689,7 @@ no-Spark compile guarantees.
 
 Recommended direction:
 
-- Add `tests/specs/...` before marking Specification.md stories complete.
+- Add `tests/user_stories/...` before marking UserStories.md stories complete.
 - Start with smoke tests for package import, CLI help, config defaults, and a no-op `structure check`.
 - Add golden fixture tests that compare generated output only after the compiler can produce it.
 - Add intentionally broken transform tests for diagnostic quality as soon as schema and symbolic execution exist.

@@ -4,7 +4,7 @@
 TBD
 
 ## User stories and use cases
-See Specification.md for detailed description of library external behavior.
+See /docs/specifications/UserStories.md for detailed description of library external behavior.
 
 ## Terminology
 See Concepts.md for terminology.

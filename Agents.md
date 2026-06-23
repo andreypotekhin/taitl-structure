@@ -15,7 +15,7 @@ End-user documentation: /docs/
 ### Development documentation
 Development documentation: /docs/dev/  
 - Setup.md: project setup
-- Specification.md: terminology, library claims, user stories
+- UserStories.md: terminology, library claims, user stories
 - Development.md: details on development
 - Style.md: coding guidelines
 - Development troubleshooting: /docs/dev/Troubleshooting.md
@@ -29,7 +29,7 @@ Agentic and automation documentation: /docs/dev/auto/
 #### Design documentation
 General: /docs/dev/  
 - Architecture.md: project architecture
-- Specification.md: user stories
+- UserStories.md: user stories
  
 Design docs: /docs/dev/design/  
 - Background.md: project background
@@ -108,7 +108,7 @@ Coding guidelines: See Coding section in /dev/Style.md
 Code structure: /dev/Code.md
 
 ## Testing
-Test cases backing specifications (from /docs/dev/Specification.md) are in tests/specs/[section]/[item-descr].
+Test cases backing user stories (from /docs/specifications/UserStories.md) are in tests/user_stories/[section]/[item-descr].
 Testing standards, guidelines, structure are coverage limits: 
 - Style guide (/docs/dev/Style.md)
 - Testing guide (/docs/dev/Testing.md)
@@ -334,9 +334,9 @@ Resolve any build or test issues revealed before completing the task.
 Suggestion items
 - Upon completion, move suggestion items to docs/dev/suggestions/done.
 
-Specifications (Specification.md)
-- Back completed user stories with test cases in tests/specs/[]/[]
-- In Specification.md, prefix the completed user stories with + sign
+User stories (UserStories.md)
+- Back completed user stories with test cases in tests/user_stories/[]/[]
+- In UserStories.md, prefix the completed user stories with + sign
 
 Troubleshooting documentation
 - Output encountered issues and remedies into corresponding Troubleshooting.md documents, and deep-link to them from error messages.

@@ -132,15 +132,15 @@ Examples:
 - /tests/lib/helper/ - Helper lib tests
 
 #### Specification Testing
-Test cases backing specifications (from /docs/dev/Specification.md) are in tests/specs/.
-For each implemented user story from Specification.md, create a test case 
-in the corresponding subpackage of tests/specs.
+Test cases backing user stories (from /docs/specifications/UserStories.md) are in tests/user_stories/.
+For each implemented user story from UserStories.md, create a test case 
+in the corresponding subpackage of tests/user_stories.
 
 Tests for specifications/ documents, if needed, go to tests/specifications/[specification-doc-slug]
 
 Directory structure:
-- /tests/specs/ - tests for Specification.md items user stories
-- /tests/specs/[section]/ - tests for specific Specification.md section
+- /tests/user_stories/ - tests backing UserStories.md user stories
+- /tests/user_stories/[section]/ - tests for a specific UserStories.md section
 - /tests/specifications/[specification-doc-slug]/ - tests for specifications/ documents
 
 #### Concepts Testing

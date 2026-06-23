@@ -1,4 +1,4 @@
-﻿# PySpark Code Generation
+# PySpark Code Generation
 
 ## Purpose
 
@@ -893,7 +893,7 @@ The implementation is complete when tests prove:
 
 Generator implementation tests belong under `tests/app/compiler/...` or the current compiler app test package
 equivalent. Runtime parity tests that require Spark belong under `tests/app/runtime/...` or the current runtime test
-package equivalent. Specification-backed user stories from `docs/dev/Specification.md` belong under `tests/specs/...`.
+package equivalent. Specification-backed user stories from `docs/specifications/UserStories.md` belong under `tests/user_stories/...`.
 Tests that directly back this specification document belong under `tests/specifications/pyspark-code-generation/...`.
 
 Recommended test groups:

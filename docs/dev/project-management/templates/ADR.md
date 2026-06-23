@@ -29,6 +29,6 @@ What did we decide?
 ## Impacted Docs
 
 - README.md
-- docs/Specification.md
+- docs/specifications/UserStories.md
 - devdocs/Architecture.md
 - devdocs/Implementation.md

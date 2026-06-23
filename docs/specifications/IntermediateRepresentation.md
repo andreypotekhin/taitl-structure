@@ -1,4 +1,4 @@
-﻿# Intermediate Representation
+# Intermediate Representation
 
 This specification replaces `docs/dev/design/IntermediateRepresentation.md` as the implementation-level IR reference.
 
@@ -1218,8 +1218,8 @@ The implementation is complete when tests prove:
 ## Test Placement
 
 IR implementation tests belong under the compiler app test package, such as `tests/app/compiler/...`, or the current
-project-equivalent compiler app location. Specification-backed user stories from `docs/dev/Specification.md` belong
-under `tests/specs/...`. Tests that directly back this specification document belong under
+project-equivalent compiler app location. Specification-backed user stories from `docs/specifications/UserStories.md` belong
+under `tests/user_stories/...`. Tests that directly back this specification document belong under
 `tests/specifications/intermediate-representation/...`.
 
 Recommended test groups:

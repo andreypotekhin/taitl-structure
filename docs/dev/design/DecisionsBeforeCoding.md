@@ -206,7 +206,7 @@ Every supported operation must have:
 - backend capability requirement when backend support matters;
 - online and generated execution behavior when both modes support it;
 - diagnostics for invalid source and unsupported targets;
-- acceptance tests or planned tests in `tests/specs`.
+- acceptance tests or planned tests in `tests/user_stories`.
 
 ## Diagnostics
 
@@ -234,7 +234,7 @@ use provisional examples until the registry exists, but implementation tests mus
 4. Implement import-safe schema and transform metadata before symbolic execution.
 5. Implement schema model, nullability, validation, hooks, joins, and generation against the shared IR contracts.
 6. Add diagnostics with links to the most specific public documentation.
-7. Add spec tests before marking user stories complete in `docs/dev/Specification.md`.
+7. Add spec tests before marking user stories complete in `docs/specifications/UserStories.md`.
 
 ## Acceptance Criteria
 
