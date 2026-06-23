@@ -105,4 +105,6 @@ When: Running the formatter on Windows with `black src tests`.
 Error: Black produces no result and may remain running indefinitely.
 Cause: Black's multi-root discovery can stall on this workspace under Windows.
 Fix: Run the roots separately: `poetry run black --check src` and `poetry run black --check tests`. The project
-`Makefile` uses separate invocations for both formatting and lint checks.
+`Makefile` uses separate invocations for both formatting and lint checks. If a previously timed-out Black process left
+the cache unusable, retry with a fresh temporary cache:
+`$env:BLACK_CACHE_DIR=Join-Path $env:TEMP 'structure-black-cache'; make build`.

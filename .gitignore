@@ -55,3 +55,4 @@ node_modules/
 /.ruleset
 .black_cache/
 src/structure/app/target/pyspark/logic/model/PySparkStepResultRecipe.py.isorted
+*.pickle
