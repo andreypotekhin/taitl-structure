@@ -37,11 +37,13 @@ update:
 
 format: install
 	$(POETRY) run isort $(PYTHON_ROOTS)
-	$(POETRY) run black $(PYTHON_ROOTS)
+	$(POETRY) run black $(SOURCE_ROOTS)
+	$(POETRY) run black $(TEST_ROOTS)
 
 lint: install
-	$(POETRY) run isort --check-only $(PYTHON_ROOTS)
-	$(POETRY) run black --check $(PYTHON_ROOTS)
+	$(POETRY) run isort $(PYTHON_ROOTS)
+	$(POETRY) run black $(SOURCE_ROOTS)
+	$(POETRY) run black $(TEST_ROOTS)
 	$(POETRY) run flake8 $(PYTHON_ROOTS)
 
 type: install

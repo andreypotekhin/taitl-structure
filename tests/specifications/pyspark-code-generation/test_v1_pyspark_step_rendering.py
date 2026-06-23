@@ -1,12 +1,12 @@
 from structure.app.dsl.api import compile_transform
-from structure.app.target.pyspark.api import lower_pyspark_plan, render_pyspark_step
+from structure.app.target.pyspark.api import pyspark
 
 
 def test_v1_step_renderer_renders_before_hook_against_current_input() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = lower_pyspark_plan(compile_transform(EnrichOrders))
-    text = render_pyspark_step(recipe.steps[0], current="orders")
+    recipe = pyspark.plan.lower()(compile_transform(EnrichOrders))
+    text = pyspark.render.step()(recipe.steps[0], current="orders")
 
     assert (
         "        df = self._impl.use_current_orders(df=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)" in text
@@ -19,8 +19,8 @@ def test_v1_step_renderer_renders_before_hook_against_current_input() -> None:
 def test_v1_step_renderer_renders_join_projection_and_validation() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = lower_pyspark_plan(compile_transform(EnrichOrders))
-    text = render_pyspark_step(recipe.steps[1], current="df")
+    recipe = pyspark.plan.lower()(compile_transform(EnrichOrders))
+    text = pyspark.render.step()(recipe.steps[1], current="df")
 
     assert '        # Subtransform: add_customer' in text
     assert '        df = df.alias("order_normalized")' in text
@@ -34,8 +34,8 @@ def test_v1_step_renderer_renders_join_projection_and_validation() -> None:
 def test_v1_step_renderer_renders_hooks_and_project_output_validation() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = lower_pyspark_plan(compile_transform(EnrichOrders))
-    text = render_pyspark_step(recipe.steps[4], current="df")
+    recipe = pyspark.plan.lower()(compile_transform(EnrichOrders))
+    text = pyspark.render.step()(recipe.steps[4], current="df")
 
     assert '        # Subtransform: publish' in text
     assert '        df = self._impl.add_quality_columns(df=df, spark=self.spark, ctx=self.ctx)' in text

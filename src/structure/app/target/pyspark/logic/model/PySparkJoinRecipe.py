@@ -11,6 +11,7 @@ from structure.app.target.pyspark.logic.model.PySparkExpressionRecipe import PyS
 @dataclass(frozen=True)
 class PySparkJoinRecipe:
     input_name: str
+    source: str
     input_schema: type[Structure]
     left_alias: str
     right_alias: str

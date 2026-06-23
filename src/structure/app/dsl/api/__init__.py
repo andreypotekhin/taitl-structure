@@ -1,5 +1,6 @@
 from structure.app.compiler.frontend.logic.actions.CompileTransform import compile_transform
 from structure.app.dsl.logic.model.expr.expressions import coalesce, lower, to_decimal, trim
+from structure.app.dsl.logic.model.expr.InputScope import join_one
 from structure.app.dsl.logic.model.schemas.schema import (
     Array,
     Boolean,
@@ -57,6 +58,7 @@ __all__ = [
     "expr_fn",
     "field",
     "input",
+    "join_one",
     "lower",
     "output",
     "to_decimal",

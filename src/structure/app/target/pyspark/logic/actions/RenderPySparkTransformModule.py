@@ -71,15 +71,19 @@ class RenderPySparkTransformModule:
         sources = {input.name: input.name for input in plan.inputs}
         for step in plan.steps:
             lines.append("")
-            lines.append(render_pyspark_step(step, current=sources[step.source]))
-            source_name = f"{step.name}_df"
-            lines.append(f"        {source_name} = df")
-            sources[step.name] = source_name
+            lines.append(render_pyspark_step(step, current=sources[step.source], sources=sources))
+            if len(step.results) > 1:
+                for result in step.results:
+                    sources[result.frame] = result.frame
+            else:
+                source_name = f"{step.name}_df"
+                lines.append(f"        {source_name} = df")
+                sources[step.name] = source_name
 
         result_entries: list[str] = []
         for output in plan.outputs:
             lines.append("")
-            lines.append(render_pyspark_step(output, current=sources[output.source]))
+            lines.append(render_pyspark_step(output, current=sources[output.source], sources=sources))
             output_name = f"{output.name}_df"
             lines.append(f"        {output_name} = df")
             result_entries.append(f'"{output.name}": {output_name}')
@@ -130,10 +134,14 @@ class RenderPySparkTransformModule:
             schemas.add(input.schema)
         for step in plan.steps:
             schemas.add(step.output_schema)
+            schemas.update(result.schema for result in step.results)
         return schemas
 
     def _has_hooks(self, plan: PySparkExecutionPlan) -> bool:
-        return any(step.before_hooks or step.after_hooks for step in plan.steps)
+        return any(
+            step.before_hooks or step.after_hooks or any(result.after_hooks for result in step.results)
+            for step in plan.steps
+        )
 
 
 render_pyspark_transform_module = RenderPySparkTransformModule()

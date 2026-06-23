@@ -43,8 +43,48 @@ class BuildCompilerTraceability:
             dependencies.extend(self._filter_dependencies(step))
             provenance.extend(self._join_provenance(plan, step, source_transform, transform_module))
             dependencies.extend(self._join_dependencies(step))
-            provenance.extend(self._projection_provenance(plan, step, source_transform, transform_module))
-            dependencies.extend(self._projection_dependencies(step))
+            if len(step.results) <= 1:
+                provenance.extend(self._projection_provenance(plan, step, source_transform, transform_module))
+                dependencies.extend(self._projection_dependencies(step))
+            else:
+                for result in step.results:
+                    provenance.extend(
+                        CompilerProvenance(
+                            source=f"source:{source_transform}.{step.name}.result.{result.lane}.{assignment.field.name}",
+                            ir=(
+                                f"ir:{plan.transform}.step.{step.ordinal}.{step.name}."
+                                f"result.{result.ordinal}.{result.lane}.project.{assignment.field.name}"
+                            ),
+                            generated=(
+                                f"generated:{transform_module}.{plan.transform}Generated.run."
+                                f"step.{step.ordinal}.{step.name}.{result.lane}.select.{assignment.field.name}"
+                            ),
+                        )
+                        for assignment in result.projection
+                    )
+                    dependencies.extend(
+                        DataflowDependency(
+                            target=f"{result.lane}.{assignment.field.name}",
+                            sources=self._reads(assignment.expression) or ("literal",),
+                            operation="project",
+                            step=step.name,
+                            detail={"field": assignment.field.name, "result": result.lane},
+                        )
+                        for assignment in result.projection
+                    )
+                    for hook in result.after_hooks:
+                        provenance.append(self._hook_provenance(plan, step, hook, source_transform, transform_module))
+                        dependencies.append(self._hook_dependency(step, hook))
+                        boundaries.append(
+                            OpaqueBoundary(
+                                step=step.name,
+                                hook=hook.name,
+                                phase=hook.phase,
+                                target=hook.target,
+                                schema=result.schema.__name__,
+                                reason="arbitrary PySpark hook body",
+                            )
+                        )
 
             for hook in (*step.before_hooks, *step.after_hooks):
                 provenance.append(self._hook_provenance(plan, step, hook, source_transform, transform_module))
@@ -63,8 +103,18 @@ class BuildCompilerTraceability:
             provenance.extend(self._validation_provenance(plan, step, source_transform, transform_module))
             previous = step.output_schema.__name__
 
-        provenance.append(self._final_validation_provenance(plan, source_transform, transform_module))
-        dependencies.append(self._final_validation_dependency(plan.final_validation))
+        for output in plan.outputs:
+            provenance.append(
+                CompilerProvenance(
+                    source=f"source:{source_transform}.output.{output.name}",
+                    ir=f"ir:{plan.transform}.output.{output.ordinal}.{output.name}.validation.final",
+                    generated=(
+                        f"generated:{transform_module}.{plan.transform}Generated.run."
+                        f"output.{output.ordinal}.{output.name}.validation.final"
+                    ),
+                )
+            )
+            dependencies.append(self._final_validation_dependency(output.validation))
         return CompilerTraceability(
             provenance=tuple(provenance),
             static_dataflow=tuple(dependencies),

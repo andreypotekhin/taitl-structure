@@ -86,6 +86,7 @@ from structure import (
     Transform,
     transform,
     input,
+    output,
     expr_fn,
     where,
     after,
@@ -104,6 +105,7 @@ class EnrichOrders(Transform):
 
     orders = input(OrderRaw)
     customers = input(Customer)
+    enriched = output(OrderWithCustomer)
 
     @expr_fn
     def clean_id(value):

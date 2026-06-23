@@ -53,3 +53,5 @@ discussions/
 node_modules/
 /.pmd
 /.ruleset
+.black_cache/
+src/structure/app/target/pyspark/logic/model/PySparkStepResultRecipe.py.isorted

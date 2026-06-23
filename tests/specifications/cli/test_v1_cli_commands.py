@@ -48,12 +48,13 @@ def write_project(root: Path) -> None:
     (package / "transforms.py").write_text(
         "\n".join(
             [
-                "from structure import Transform, coalesce, input, to_decimal, transform, where",
+                "from structure import Transform, coalesce, input, output, to_decimal, transform, where",
                 "from orders.schemas import OrderNormalized, OrderRaw",
                 "",
                 "@transform",
                 "class NormalizeOrders(Transform):",
                 "    orders = input(OrderRaw)",
+                "    normalized = output(OrderNormalized)",
                 "",
                 "    def normalize(self, order: OrderRaw) -> OrderNormalized:",
                 "        where(order.id.is_not_null())",

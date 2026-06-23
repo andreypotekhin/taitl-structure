@@ -8,6 +8,7 @@ A transform class is declared with `@transform`.
 @transform
 class NormalizeOrders(Transform):
     orders = input(OrderRaw)
+    normalized = output(OrderNormalized)
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         ...
@@ -78,6 +79,33 @@ Subtransforms execute in source order.
 ```text
 OrderRaw -> OrderNormalized -> OrderWithCustomer -> OrderEnriched
 ```
+
+Subtransforms may declare additional schema parameters for relations used by the step. Bind repeated schemas
+explicitly and return a fixed schema tuple when the shared join/filter work produces multiple results:
+
+```python
+@transform(
+    inputs=[orders_external, products],
+    outputs=[accepted, audited],
+)
+def add_product(
+    self,
+    order: OrderRaw,
+    product: Product,
+) -> tuple[OrderWithProduct, OrderWithProduct]:
+    product = join_one(
+        product,
+        on=product.id == order.product_id,
+        how=Join.LEFT,
+    )
+
+    accepted_order = OrderWithProduct.base(order)(product_name=product.name)
+    audited_order = OrderWithProduct.base(order)(product_name=product.name)
+    return accepted_order, audited_order
+```
+
+The first parameter is the driving DataFrame. Later parameters are relations and must be joined before their fields
+are used. Joins and `where(...)` filters run once; each returned value is then projected into its named output frame.
 
 ## Online Execution
 
@@ -201,6 +229,7 @@ phase mode controls whether those constraints run.
 ```python
 @transform(validate_intermediate=True)
 class EnrichOrders(Transform):
+    enriched = output(OrderEnriched)
     ...
 ```
 
@@ -209,6 +238,7 @@ Disable class-wide:
 ```python
 @transform(validate_intermediate=False)
 class EnrichOrders(Transform):
+    enriched = output(OrderEnriched)
     ...
 ```
 
@@ -345,6 +375,16 @@ def check_against_raw_orders(self, *, df, inputs, spark, ctx):
 
 `inputs` is a read-only namespace matching the transform's declared input names. It contains the original `run(...)`
 input DataFrames, not the current intermediate `df`.
+
+For a multi-result subtransform, select the after hook's DataFrame with the output declaration:
+
+```python
+@after(add_product, df=audited)
+def add_audit_columns(self, *, df, spark, ctx):
+    return df.withColumn("_audited", F.lit(True))
+```
+
+Single-result hooks keep the shorter `@after(method)` form.
 
 ## Streaming Compatibility
 

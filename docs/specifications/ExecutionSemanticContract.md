@@ -67,8 +67,14 @@ PySparkExecutionPlan
 
 PySparkStepRecipe
   step
+  inputs
   before_hooks
-  operations
+  shared_operations
+  results
+
+PySparkStepResultRecipe
+  output_lane
+  projection
   after_hooks
   validations
 
@@ -125,12 +131,14 @@ The shared PySpark execution plan must decide these items once:
 
 - input validation order and mode;
 - step order;
+- ordered schema-parameter binding and the driving relation;
 - before-hook and after-hook order;
 - filter order and legal filter combination;
 - expression function mapping;
 - literal typing, casts, and null literal handling;
 - projection field order;
 - projection aliases;
+- one shared join/filter prefix followed by ordered result projections for multi-result steps;
 - schema base overlay expansion;
 - join type spelling;
 - join alias names;

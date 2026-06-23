@@ -16,7 +16,11 @@ class ClassifyStreamingCompatibility:
         for step in plan.steps:
             for join in step.joins:
                 findings.extend(self._join(step.name, join))
-            for hook in (*step.before_hooks, *step.after_hooks):
+            for hook in (
+                *step.before_hooks,
+                *step.after_hooks,
+                *(hook for result in step.results for hook in result.after_hooks if len(step.results) > 1),
+            ):
                 findings.extend(self._hook(step.name, hook))
 
         return StreamingReport(

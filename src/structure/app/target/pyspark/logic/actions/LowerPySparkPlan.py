@@ -22,6 +22,7 @@ from structure.app.target.pyspark.logic.model.PySparkJoinRecipe import PySparkJo
 from structure.app.target.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.app.target.pyspark.logic.model.PySparkProjectionRecipe import PySparkProjectionRecipe
 from structure.app.target.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
+from structure.app.target.pyspark.logic.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 from structure.app.target.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 
@@ -49,7 +50,13 @@ class LowerPySparkPlan:
             steps=steps,
             outputs=outputs,
             requires_hook_inputs=any(
-                hook.pass_inputs for step in steps for hook in (*step.before_hooks, *step.after_hooks)
+                hook.pass_inputs
+                for step in steps
+                for hook in (
+                    *step.before_hooks,
+                    *step.after_hooks,
+                    *(hook for result in step.results for hook in result.after_hooks),
+                )
             ),
         )
 
@@ -77,6 +84,21 @@ class LowerPySparkPlan:
     ) -> PySparkStepRecipe:
         input_alias = self._alias(step.input_schema.__name__)
         output_alias = self._alias(step.output_schema.__name__)
+        results = tuple(
+            PySparkStepResultRecipe(
+                schema=result.schema,
+                lane=result.lane,
+                frame=result.frame,
+                output_alias=self._alias(result.schema.__name__),
+                projection=tuple(
+                    self._projection(assignment, capabilities=capabilities) for assignment in result.projection
+                ),
+                ordinal=result.ordinal,
+                after_hooks=tuple(self._hook(hook) for hook in result.after_hooks),
+                validations=self._result_validations(result, last=last),
+            )
+            for result in step.results
+        )
         return PySparkStepRecipe(
             name=step.name,
             ordinal=step.ordinal,
@@ -95,6 +117,7 @@ class LowerPySparkPlan:
             projection=tuple(self._projection(assignment, capabilities=capabilities) for assignment in step.projection),
             after_hooks=tuple(self._hook(hook) for hook in step.after_hooks),
             validations=self._validations(step, last=last),
+            results=results,
         )
 
     def _output(
@@ -146,6 +169,7 @@ class LowerPySparkPlan:
 
         return PySparkJoinRecipe(
             input_name=join.input_name,
+            source=join.source,
             input_schema=join.input_schema,
             left_alias=left_alias,
             right_alias=self._join_alias(join.input_name, occurrence),
@@ -241,6 +265,40 @@ class LowerPySparkPlan:
                 PySparkValidationRecipe(
                     target=step.name,
                     schema=step.output_schema,
+                    mode=SchemaMode.STRICT,
+                    project=False,
+                    reason="intermediate",
+                )
+            )
+        return tuple(recipes)
+
+    def _result_validations(self, result, *, last: bool) -> tuple[PySparkValidationRecipe, ...]:
+        recipes: list[PySparkValidationRecipe] = []
+        for hook in result.after_hooks:
+            recipes.append(
+                PySparkValidationRecipe(
+                    target=f"hook:{hook.name}",
+                    schema=result.schema,
+                    mode=hook.schema_mode,
+                    project=hook.project_output,
+                    reason="hook",
+                )
+            )
+            if hook.project_output:
+                recipes.append(
+                    PySparkValidationRecipe(
+                        target=f"hook:{hook.name}",
+                        schema=result.schema,
+                        mode=SchemaMode.STRICT,
+                        project=False,
+                        reason="hook_projected",
+                    )
+                )
+        if not last:
+            recipes.append(
+                PySparkValidationRecipe(
+                    target=result.frame,
+                    schema=result.schema,
                     mode=SchemaMode.STRICT,
                     project=False,
                     reason="intermediate",

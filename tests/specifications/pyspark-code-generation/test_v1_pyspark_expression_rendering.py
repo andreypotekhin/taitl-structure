@@ -1,22 +1,22 @@
 from structure.app.dsl.api import compile_transform
-from structure.app.target.pyspark.api import lower_pyspark_plan, render_pyspark_expression
+from structure.app.target.pyspark.api import pyspark
 
 
 def test_v1_expression_renderer_renders_filter_helpers_and_literals() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = lower_pyspark_plan(compile_transform(EnrichOrders))
+    recipe = pyspark.plan.lower()(compile_transform(EnrichOrders))
     normalize = recipe.steps[0]
 
-    assert render_pyspark_expression(normalize.filters[0], scope_aliases={"orders": "orders"}) == (
+    assert pyspark.render.expression()(normalize.filters[0], scope_aliases={"orders": "orders"}) == (
         'F.col("orders.id").isNotNull()'
     )
 
     projection = {assignment.field.name: assignment.expression for assignment in normalize.projection}
-    assert render_pyspark_expression(projection["id"], scope_aliases={"orders": "orders"}) == (
+    assert pyspark.render.expression()(projection["id"], scope_aliases={"orders": "orders"}) == (
         'F.lower(F.trim(F.col("orders.id")))'
     )
-    assert render_pyspark_expression(projection["total"], scope_aliases={"orders": "orders"}) == (
+    assert pyspark.render.expression()(projection["total"], scope_aliases={"orders": "orders"}) == (
         'F.coalesce(F.col("orders.total").cast("decimal(12,2)"), F.lit(0))'
     )
 
@@ -24,14 +24,14 @@ def test_v1_expression_renderer_renders_filter_helpers_and_literals() -> None:
 def test_v1_expression_renderer_renders_arithmetic_and_comparison() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = lower_pyspark_plan(compile_transform(EnrichOrders))
+    recipe = pyspark.plan.lower()(compile_transform(EnrichOrders))
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
 
-    assert render_pyspark_expression(projection["net_total"], scope_aliases={"orders": "orders"}) == (
+    assert pyspark.render.expression()(projection["net_total"], scope_aliases={"orders": "orders"}) == (
         '(F.coalesce(F.col("orders.total").cast("decimal(12,2)"), F.lit(0)) - '
         'F.coalesce(F.col("orders.discount").cast("decimal(12,2)"), F.lit(0)))'
     )
-    assert render_pyspark_expression(projection["is_large"], scope_aliases={"orders": "orders"}) == (
+    assert pyspark.render.expression()(projection["is_large"], scope_aliases={"orders": "orders"}) == (
         '(F.coalesce(F.col("orders.total").cast("decimal(12,2)"), F.lit(0)) > F.lit(1000))'
     )
 
@@ -39,18 +39,18 @@ def test_v1_expression_renderer_renders_arithmetic_and_comparison() -> None:
 def test_v1_expression_renderer_renders_join_predicates() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = lower_pyspark_plan(compile_transform(EnrichOrders))
+    recipe = pyspark.plan.lower()(compile_transform(EnrichOrders))
     customer_join = recipe.steps[1].joins[0]
     promotion_join = recipe.steps[3].joins[0]
 
-    assert render_pyspark_expression(
+    assert pyspark.render.expression()(
         customer_join.predicate,
         scope_aliases={"customers": "customers", "OrderNormalized": "order_normalized"},
     ) == (
         '((F.col("customers.tenant.tenant_id") == F.col("order_normalized.tenant.tenant_id")) & '
         '(F.lower(F.trim(F.col("customers.id"))) == F.col("order_normalized.customer_id")))'
     )
-    assert render_pyspark_expression(
+    assert pyspark.render.expression()(
         promotion_join.predicate,
         scope_aliases={"promotions": "promotions", "OrderWithProduct": "order_with_product"},
     ) == (

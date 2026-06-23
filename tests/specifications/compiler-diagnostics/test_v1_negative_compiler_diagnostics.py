@@ -15,6 +15,7 @@ from structure import (
     coalesce,
     field,
     input,
+    output,
     to_decimal,
     transform,
     where,
@@ -69,6 +70,7 @@ def test_v1_unsupported_python_boolean_expression_reports_dsl_diagnostic() -> No
     @transform
     class BadBoolean(Transform):
         rows = input(Raw)
+        clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
             if row.id:
@@ -90,6 +92,7 @@ def test_v1_schema_flow_mismatch_reports_transform_structure_diagnostic() -> Non
     @transform
     class BadFlow(Transform):
         rows = input(Raw)
+        published = output(Published)
 
         def normalize(self, row: Raw) -> Clean:
             return Clean(id=row.id)
@@ -111,6 +114,7 @@ def test_v1_missing_output_field_reports_transform_structure_diagnostic() -> Non
     @transform
     class MissingOutput(Transform):
         rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             return Published(id=row.id)
@@ -129,6 +133,7 @@ def test_v1_nullable_assignment_to_non_nullable_field_reports_schema_diagnostic(
     @transform
     class BadNullability(Transform):
         rows = input(NullableRaw)
+        clean = output(OptionalClean)
 
         def normalize(self, row: NullableRaw) -> OptionalClean:
             return OptionalClean(optional_id=row.optional_id)
@@ -148,6 +153,7 @@ def test_v1_where_is_not_null_guard_allows_non_nullable_assignment() -> None:
     @transform
     class GuardedNullability(Transform):
         rows = input(NullableRaw)
+        clean = output(OptionalClean)
 
         def normalize(self, row: NullableRaw) -> OptionalClean:
             where(cast(Any, row.optional_id).is_not_null())
@@ -162,6 +168,7 @@ def test_v1_string_to_decimal_assignment_requires_explicit_conversion() -> None:
     @transform
     class BadConversion(Transform):
         rows = input(NullableRaw)
+        clean = output(MoneyClean)
 
         def normalize(self, row: NullableRaw) -> MoneyClean:
             return MoneyClean(amount=row.amount, count=row.count)
@@ -182,6 +189,7 @@ def test_v1_non_nullable_string_to_decimal_assignment_reports_conversion_diagnos
     @transform
     class BadConversion(Transform):
         rows = input(NonNullAmount)
+        clean = output(MoneyClean)
 
         def normalize(self, row: NonNullAmount) -> MoneyClean:
             return MoneyClean(amount=row.amount, count=row.count)
@@ -200,6 +208,7 @@ def test_v1_accepted_coercions_compile_without_schema_diagnostics() -> None:
     @transform
     class GoodCoercions(Transform):
         rows = input(NullableRaw)
+        clean = output(MoneyClean)
 
         def normalize(self, row: NullableRaw) -> MoneyClean:
             amount = coalesce(to_decimal(row.amount, precision=12, scale=2), 0)
@@ -220,6 +229,7 @@ def test_v1_incompatible_assignment_reports_schema_diagnostic() -> None:
     @transform
     class BadBooleanAssignment(Transform):
         rows = input(NullableRaw)
+        clean = output(FlagClean)
 
         def normalize(self, row: NullableRaw) -> FlagClean:
             return FlagClean(is_paid=row.count)
@@ -239,6 +249,7 @@ def test_v1_left_joined_non_nullable_field_is_nullable_until_guarded() -> None:
     class BadLeftJoinNullability(Transform):
         rows = input(Raw)
         lookup = input(Lookup)
+        clean = output(LabelClean)
 
         def normalize(self, row: Raw) -> LabelClean:
             item = self.lookup.join_one(on=self.lookup.id == row.id, how=Join.LEFT)
@@ -257,6 +268,7 @@ def test_v1_join_on_primary_key_compiles_without_uniqueness_warning() -> None:
     class UniqueJoin(Transform):
         rows = input(Raw)
         lookup = input(Lookup)
+        clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
             self.lookup.join_one(on=self.lookup.id == row.id, how=Join.LEFT)
@@ -272,6 +284,7 @@ def test_v1_unproven_join_one_key_emits_uniqueness_warning() -> None:
     class UnprovenJoin(Transform):
         rows = input(Raw)
         lookup = input(Lookup)
+        clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
             self.lookup.join_one(on=self.lookup.group == row.id, how=Join.LEFT)
@@ -289,6 +302,7 @@ def test_v1_or_join_condition_reports_join_diagnostic() -> None:
     class BadJoinCondition(Transform):
         rows = input(Raw)
         lookup = input(Lookup)
+        clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
             self.lookup.join_one(on=(self.lookup.id == row.id) | (self.lookup.group == row.id), how=Join.LEFT)
@@ -309,6 +323,7 @@ def test_v1_same_side_join_condition_reports_join_diagnostic() -> None:
     class SameSideJoin(Transform):
         rows = input(Raw)
         lookup = input(Lookup)
+        clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
             self.lookup.join_one(on=self.lookup.id == self.lookup.group, how=Join.LEFT)
@@ -326,6 +341,7 @@ def test_v1_incompatible_join_key_types_report_join_diagnostic() -> None:
     class IncompatibleJoin(Transform):
         rows = input(NullableRaw)
         lookup = input(Lookup)
+        clean = output(MoneyClean)
 
         def normalize(self, row: NullableRaw) -> MoneyClean:
             self.lookup.join_one(on=self.lookup.id == row.count, how=Join.LEFT)

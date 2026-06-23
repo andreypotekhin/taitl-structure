@@ -105,6 +105,7 @@ The canonical v1 source shape is:
 class EnrichOrders(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)
+    published = output(OrderPublished)
 
     @expr_fn
     def clean_id(value):
@@ -160,12 +161,14 @@ Canonical forms:
 ```python
 @transform
 class NormalizeOrders(Transform):
+    normalized = output(OrderNormalized)
     ...
 ```
 
 ```python
 @transform(validate_intermediate=False, streaming_compatible=True)
 class NormalizeOrders(Transform):
+    normalized = output(OrderNormalized)
     ...
 ```
 
@@ -174,7 +177,6 @@ class NormalizeOrders(Transform):
 - `validate_intermediate`: optional class-level override for intermediate output validation.
 - `streaming_compatible`: optional author promise that the transform must satisfy the streaming compatibility
   specification.
-- `to`: optional class-level single-output schema contract, as in `@transform(to=OrderPublished)`.
 
 Rules:
 
@@ -236,7 +238,7 @@ declares the expected schema.
 
 ## Outputs
 
-`output(schema)` declares a named transform result on a transform class:
+`output(schema)` declares a named transform result on a transform class. Every transform must declare at least one:
 
 ```python
 accepted = output(OrderAccepted)
@@ -248,9 +250,7 @@ Rules:
 - `schema` must be a `Structure` subclass.
 - Output declaration names are the class attribute names.
 - Output declaration order is class body order.
-- A transform may declare a single unnamed output schema with `@transform(to=Schema)` instead of field-declared
-  outputs.
-- A transform must not mix class-level `to=Schema` with field-declared outputs.
+- A transform with no field-declared outputs is invalid.
 - A single-output transform does not need an explicit output method binding; the final `df` lane produces the result.
 - If a transform declares more than one output field, each output lane must be written explicitly with method-level
   `@transform(output=that_output)`.
@@ -311,15 +311,22 @@ Rules:
 
 - Public instance methods are methods whose names do not start with `_`.
 - A public method with a `Structure` return annotation is a compiled subtransform.
-- A compiled subtransform must have exactly one row parameter after `self` in v1.
-- The row parameter annotation must be a `Structure` subclass.
-- The return annotation must be a `Structure` subclass.
+- A compiled subtransform has one or more parameters after `self`; every parameter annotation must be a `Structure`
+  subclass.
+- The first parameter is the driving row. Later parameters are symbolic relations that must be joined before their
+  fields are used in filters or projections.
+- The return annotation is either one `Structure` subclass or a fixed tuple such as `tuple[Accepted, Audited]`.
+- `inputs=[...]` binds declarations to parameters in order. `outputs=[...]` binds output declarations to returned
+  values in order. Singular `input=` and `output=` remain one-item shorthands.
+- The compiler infers bindings only when every schema has one unambiguous available declaration.
 - Subtransforms execute in source order.
 - Source-order lane flow must be valid: undecorated methods consume and update `df`; `@transform(output=lane)`
   consumes `df` and updates `lane`; `@transform(input=declared_input)` consumes an original input and updates `df`;
   `@transform(input=source, output=target)` consumes a previously available lane and updates the target lane.
 - If more than one declared input has the first subtransform's input schema, the compiler must require an unambiguous
   mapping such as `@transform(input=orders_external)` or emit a diagnostic.
+- A multi-result subtransform executes its joins and `where(...)` filters once, then projects every returned schema
+  from that shared row set.
 - Private helper methods are allowed and are not compiled as subtransforms.
 - Public helper methods without a `Structure` return annotation are ignored by the subtransform collector, but should
   not be used for compileable expression reuse. Use `@expr_fn` instead.
@@ -861,6 +868,9 @@ The implementation is complete when tests prove:
 - `@transform` and `@transform(...)` both mark transform classes.
 - `@transform` rejects unknown keyword arguments and classes not inheriting `Transform`.
 - `orders = input(OrderRaw)` records the input name, schema, order, and source metadata.
+- `published = output(OrderPublished)` records a named public result contract.
+- A transform with no `output(...)` declaration fails before symbolic execution.
+- Class-level `to=` is rejected; output fields are the only transform result declaration.
 - Transform construction accepts declared keyword inputs and performs no Spark action.
 - Transform construction rejects positional arguments and unknown input names.
 - Missing declared inputs fail no later than `run(session)`.

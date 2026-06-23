@@ -35,6 +35,8 @@ class EnrichOrders(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)
     products = input(Product)
+    enriched = output(OrderEnriched)
+    enriched = output(OrderEnriched)
 
     @expr_fn
     def clean_id(value):
@@ -72,9 +74,10 @@ class EnrichOrders(Transform):
             customer_tier=customer.tier,
         )
 
-    def add_product(self, order: OrderWithCustomer) -> OrderEnriched:
-        product = self.products.join_one(
-            on=self.products.id == order.product_id,
+    def add_product(self, order: OrderWithCustomer, product: Product) -> OrderEnriched:
+        product = join_one(
+            product,
+            on=product.id == order.product_id,
             how=Join.LEFT,
         )
 

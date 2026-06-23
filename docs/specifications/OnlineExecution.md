@@ -132,8 +132,8 @@ Online execution must preserve generated-code semantics:
 2. Create a read-only hook input namespace only when at least one hook declares `pass_inputs=True`.
 3. Execute subtransforms in source order.
 4. Run `@before` hooks before the compiled operations for their target step.
-5. Lower filters, joins, projections, and expressions to live PySpark operations.
-6. Run `@after` hooks after the compiled operations for their target step.
+5. Lower shared filters and joins, then materialize every ordered result projection.
+6. Run each `@after` hook against its selected result DataFrame.
 7. Validate intermediate schemas according to project, class, and method policy.
 8. Apply hook `schema_mode` and `project_output` rules.
 9. Validate every output DataFrame.
@@ -141,6 +141,9 @@ Online execution must preserve generated-code semantics:
 
 Online and generated execution must agree on hook order, validation placement, expression lowering, join aliasing,
 projection shape, schema projection, result shape, and performance guardrails.
+
+For a multi-result step, joins and filters execute once. Each result projection starts from that shared DataFrame and is
+stored under its output lane name.
 
 Those shared semantics are owned by `docs/specifications/ExecutionSemanticContract.md`. Online execution owns live
 DataFrame binding and runtime hook invocation; it must not independently choose aliases, validation placement,

@@ -1,14 +1,4 @@
-from structure.app.target.pyspark.logic.actions.CompareGeneratedFiles import compare_generated_files
-from structure.app.target.pyspark.logic.actions.LowerPySparkPlan import lower_pyspark_plan
-from structure.app.target.pyspark.logic.actions.MaterializePySparkSchema import materialize_pyspark_schema
-from structure.app.target.pyspark.logic.actions.RenderPySparkExpression import render_pyspark_expression
-from structure.app.target.pyspark.logic.actions.RenderPySparkProject import render_pyspark_project
-from structure.app.target.pyspark.logic.actions.RenderPySparkRuntimeModule import render_pyspark_runtime_module
-from structure.app.target.pyspark.logic.actions.RenderPySparkSchema import render_pyspark_schema
-from structure.app.target.pyspark.logic.actions.RenderPySparkSchemaModule import render_pyspark_schema_module
-from structure.app.target.pyspark.logic.actions.RenderPySparkStep import render_pyspark_step
-from structure.app.target.pyspark.logic.actions.RenderPySparkTransformModule import render_pyspark_transform_module
-from structure.app.target.pyspark.logic.actions.WriteGeneratedFiles import write_generated_files
+from structure.app.target.pyspark.api.PySparkEndpoint import PySparkEndpoint
 from structure.app.target.pyspark.logic.model.GeneratedFileChange import GeneratedFileChange
 from structure.app.target.pyspark.logic.model.GeneratedFileSetResult import GeneratedFileSetResult
 from structure.app.target.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
@@ -19,7 +9,10 @@ from structure.app.target.pyspark.logic.model.PySparkJoinRecipe import PySparkJo
 from structure.app.target.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.app.target.pyspark.logic.model.PySparkProjectionRecipe import PySparkProjectionRecipe
 from structure.app.target.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
+from structure.app.target.pyspark.logic.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 from structure.app.target.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
+
+pyspark = PySparkEndpoint()
 
 __all__ = [
     "PySparkExecutionPlan",
@@ -30,18 +23,10 @@ __all__ = [
     "PySparkOutputRecipe",
     "PySparkProjectionRecipe",
     "PySparkStepRecipe",
+    "PySparkStepResultRecipe",
     "PySparkValidationRecipe",
     "GeneratedFileChange",
     "GeneratedFileSetResult",
-    "compare_generated_files",
-    "lower_pyspark_plan",
-    "materialize_pyspark_schema",
-    "render_pyspark_expression",
-    "render_pyspark_project",
-    "render_pyspark_schema",
-    "render_pyspark_schema_module",
-    "render_pyspark_runtime_module",
-    "render_pyspark_step",
-    "render_pyspark_transform_module",
-    "write_generated_files",
+    "PySparkEndpoint",
+    "pyspark",
 ]

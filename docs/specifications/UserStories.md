@@ -92,7 +92,15 @@ This document is a user-story specification for SDLC planning. Early sections co
 
 ## 8. Subtransforms
 
+- + As a developer, I must declare at least one named `output(...)` field so that every transform has an explicit public
+  result contract.
 - + As a developer, I can define a public instance method returning a schema type so that it becomes a compiled subtransform.
+- + As a developer, I can declare multiple schema parameters on a subtransform so that its driving row and joined
+  relations are explicit in the method signature.
+- + As a developer, I can bind repeated input schemas with ordered `inputs=[...]` so that parameter mapping is
+  unambiguous.
+- + As a developer, I can return a fixed tuple of schema values and bind it with ordered `outputs=[...]` so that one
+  shared relational step can materialize several typed result lanes.
 - + As a developer, I can use method return annotations to define intermediate schema transitions.
 - + As a developer, I can rely on source order for subtransform execution so that pipeline flow is readable.
 - + As a developer, I can chain subtransforms by return type and next input type so that schema flow is validated.
@@ -173,6 +181,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 - + As a developer, I can declare multiple named inputs so that join sources are explicit.
 - + As a developer, I can express joins symbolically using input scopes so that join logic avoids string column paths.
 - + As a developer, I can use `join_one(...)` for many-to-one or one-to-one lookup joins so that cardinality intent is explicit.
+- + As a developer, I can call `join_one(relation, ...)` with a schema parameter so that joins read like ordinary
+  function composition.
 - + As a developer, I can perform serial joins across an arbitrary number of inputs so that enrichment pipelines are not limited to three inputs.
 - + As a developer, I can specify join type and hints using enum values so that free-form join strings are avoided in source code.
 - + As a developer, I can see that semi, anti, row-multiplying, deduped lookup, temporal, and as-of joins are staged as
@@ -186,6 +196,8 @@ This document is a user-story specification for SDLC planning. Early sections co
   lookup logic can use named source DataFrames.
 - + As a developer, I can use arbitrary PySpark DataFrame code inside hooks so that escape hatches are available.
 - + As a developer, I can expect generated code to call hooks directly on the source transform instance so that hook behavior is transparent.
+- + As a developer, I can bind an after hook to one result of a multi-result subtransform with `df=output_declaration`
+  so that its input DataFrame is unambiguous.
 
 ## 17. Streaming Compatibility
 

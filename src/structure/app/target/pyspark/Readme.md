@@ -10,6 +10,17 @@ The app consumes compiler `TransformPlan` IR, DSL schemas and expressions, targe
 paths. It returns `PySparkExecutionPlan` recipe graphs, schema objects, source strings, generated project file maps,
 `GeneratedFileSetResult` diffs or writes, and traceability files used by CLI and runtime apps.
 
+The compound `pyspark` API endpoint groups commands by purpose:
+
+```python
+pyspark.plan.lower()
+pyspark.schema.materialize()
+pyspark.render.project()
+pyspark.files.write()
+```
+
+Each subcommand returns a fresh action instance.
+
 ## Inner Workings
 `LowerPySparkPlan` converts IR to recipe records such as `PySparkStepRecipe`, `PySparkJoinRecipe`, and
 `PySparkExpressionRecipe`; renderer actions turn those recipes into schema modules, transform classes, runtime support,

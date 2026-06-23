@@ -36,7 +36,9 @@ pytest-mock = "^3.14"
 line-length = 120
 skip-string-normalization = true
 extend-exclude = '''
-/res/testing/model/
+(^/)?.venv/
+| (^/)?node_modules/
+| /res/testing/model/
 '''
 
 [tool.isort]

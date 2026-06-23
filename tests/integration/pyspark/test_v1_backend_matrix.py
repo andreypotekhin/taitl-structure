@@ -27,14 +27,67 @@ from testing.model.v1.orders.schemas.product import Product
 from testing.model.v1.orders.schemas.promotion import Promotion
 from testing.model.v1.orders.transforms.order import EnrichOrders
 
-from structure import StructureSession
+from structure import (
+    Join,
+    String,
+    Structure,
+    StructureSession,
+    Transform,
+    after,
+    field,
+    input,
+    join_one,
+    output,
+    transform,
+)
 from structure.app.dsl.api import compile_transform
-from structure.app.target.pyspark.api import lower_pyspark_plan, render_pyspark_project
+from structure.app.target.pyspark.api import pyspark
 
 pytestmark = pytest.mark.integration
 
 ROOT = Path(__file__).resolve().parents[3]
 DATA = ROOT / "res" / "testing" / "data" / "v1" / "orders"
+
+
+class LookupOrder(Structure):
+    id = field(String(), nullable=False)
+    product_id = field(String(), nullable=False)
+
+
+class LookupProduct(Structure):
+    id = field(String(), nullable=False, primary_key=True)
+    name = field(String(), nullable=False)
+
+
+class LookupEnriched(Structure):
+    id = field(String(), nullable=False)
+    product_name = field(String(), nullable=True)
+
+
+@transform
+class AddLookupProduct(Transform):
+    orders = input(LookupOrder)
+    products = input(LookupProduct)
+    accepted = output(LookupEnriched)
+    audited = output(LookupEnriched)
+
+    @transform(inputs=[orders, products], outputs=[accepted, audited])
+    def add_product(
+        self,
+        order: LookupOrder,
+        product: LookupProduct,
+    ) -> tuple[LookupEnriched, LookupEnriched]:
+        product = join_one(
+            product,
+            on=product.id == order.product_id,
+            how=Join.LEFT,
+        )
+        row = LookupEnriched(id=order.id, product_name=product.name)
+        return row, row
+
+    @after(add_product, df=audited)
+    def audit(self, *, df, spark, ctx):
+        return df
 
 
 @pytest.fixture(scope="session")
@@ -135,9 +188,61 @@ def test_v1_online_and_generated_execution_match_orders_contract_on_live_backend
     assert "collect(" not in runtime_source
 
 
+def test_multiple_schema_parameters_and_results_match_online_and_generated(spark, tmp_path) -> None:
+    generated_package = "integration_multi_generated"
+    files = pyspark.render.project()(
+        pyspark.plan.lower()(compile_transform(AddLookupProduct)),
+        source_transform=f"{__name__}.AddLookupProduct",
+        generated_package=generated_package,
+        source_schema_modules={
+            __name__: [LookupOrder, LookupProduct, LookupEnriched],
+        },
+    )
+    _write_files(tmp_path, files)
+
+    sys.path.insert(0, str(tmp_path))
+    try:
+        importlib.invalidate_caches()
+        schemas = importlib.import_module(f"{generated_package}.pyspark.schemas.test_v1_backend_matrix")
+        frames = {
+            "orders": spark.createDataFrame(
+                [("o-1", "p-1"), ("o-2", "missing")],
+                schema=schemas.LOOKUP_ORDER_SCHEMA,
+            ),
+            "products": spark.createDataFrame(
+                [("p-1", "Engine")],
+                schema=schemas.LOOKUP_PRODUCT_SCHEMA,
+            ),
+        }
+
+        online = AddLookupProduct(**frames).run(StructureSession(spark=spark, execution_mode="online"))
+        generated = AddLookupProduct(**frames).run(
+            StructureSession(
+                spark=spark,
+                execution_mode="generated",
+                generated_package=generated_package,
+            )
+        )
+
+        for name in ("accepted", "audited"):
+            online_rows = [row.asDict() for row in online[name].orderBy("id").collect()]
+            generated_rows = [row.asDict() for row in generated[name].orderBy("id").collect()]
+            assert (
+                online_rows
+                == generated_rows
+                == [
+                    {"id": "o-1", "product_name": "Engine"},
+                    {"id": "o-2", "product_name": None},
+                ]
+            )
+    finally:
+        sys.path.remove(str(tmp_path))
+        _drop_generated_modules(generated_package)
+
+
 def _render_generated_project(generated_package: str) -> dict[str, str]:
-    return render_pyspark_project(
-        lower_pyspark_plan(compile_transform(EnrichOrders)),
+    return pyspark.render.project()(
+        pyspark.plan.lower()(compile_transform(EnrichOrders)),
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         generated_package=generated_package,
         source_schema_modules=_source_schema_modules(),

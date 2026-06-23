@@ -27,6 +27,7 @@ from structure import (
     Transform,
     transform,
     input,
+    output,
     expr_fn,
     where,
     before,
@@ -51,6 +52,7 @@ from structure import (
 class EnrichOrders(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)
+    enriched = output(OrderWithCustomer)
 
     @expr_fn
     def clean_id(value):
@@ -91,6 +93,7 @@ class EnrichOrders(Transform):
 - `Transform.__init__(**inputs)` creates a deferred online invocation by binding declared input DataFrames.
 - `Transform.run(session)` delegates execution to `StructureSession`.
 - `input(Structure)` declares named DataFrame inputs.
+- `output(Structure)` declares one or more named transform results.
 - Public instance methods returning `Structure` types are compiled subtransforms.
 - `SchemaClass.base(row)(...)` constructs an output schema by copying inherited fields from symbolic base rows and
   overlaying explicit field expressions.

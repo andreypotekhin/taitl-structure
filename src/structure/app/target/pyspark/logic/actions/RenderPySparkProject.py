@@ -135,10 +135,14 @@ class RenderPySparkProject:
             "steps": [self._step(step) for step in plan.steps],
             "target_module": transform_module,
             "validation": {
-                "final": {
-                    "mode": plan.final_validation.mode.value,
-                    "schema": plan.final_validation.schema.__name__,
-                }
+                "outputs": [
+                    {
+                        "name": output.name,
+                        "mode": output.validation.mode.value,
+                        "schema": output.validation.schema.__name__,
+                    }
+                    for output in plan.outputs
+                ]
             },
         }
         return json.dumps(data, indent=2, sort_keys=True) + "\n"
@@ -159,6 +163,15 @@ class RenderPySparkProject:
             "name": step.name,
             "output_alias": step.output_alias,
             "output_schema": step.output_schema.__name__,
+            "results": [
+                {
+                    "after_hooks": [hook.name for hook in result.after_hooks],
+                    "frame": result.frame,
+                    "lane": result.lane,
+                    "schema": result.schema.__name__,
+                }
+                for result in step.results
+            ],
             "validation": [
                 {
                     "mode": validation.mode.value,

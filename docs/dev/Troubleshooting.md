@@ -8,6 +8,14 @@ Cause: The global pytest temp root exists but is not readable by the current pro
 Fix: Set `TMP` and `TEMP` to a writable directory, or use a workspace-local temp directory for tests that only need
 short-lived generated files.
 
+### Problem (Black): formatting hangs on Windows
+
+When: Running `black`, `make format`, or the Black step in `make build`.
+Error: Black identifies the input files but makes no progress, while idle Black and Python worker processes remain.
+Cause: Black's shared cache is locked or stale.
+Fix: Stop the stalled formatter processes and rerun with a fresh cache directory:
+`$env:BLACK_CACHE_DIR='.black-cache'; poetry run black src tests`.
+
 ### Problem (integration): `docker compose` is not found
 
 When: Running `make integration` or `make build INTEGRATION=1`.
@@ -91,3 +99,10 @@ Workaround 2: Use configure-with-builders style.
 Details: Double-brace initialization creates an anonymous subclass, which is in
 line with the code above. It is often overkill for collections, so PMD flags it
 by default.
+### Problem (build): Black stalls when source and test roots are checked together
+
+When: Running the formatter on Windows with `black src tests`.
+Error: Black produces no result and may remain running indefinitely.
+Cause: Black's multi-root discovery can stall on this workspace under Windows.
+Fix: Run the roots separately: `poetry run black --check src` and `poetry run black --check tests`. The project
+`Makefile` uses separate invocations for both formatting and lint checks.

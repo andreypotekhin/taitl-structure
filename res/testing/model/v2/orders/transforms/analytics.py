@@ -1,4 +1,4 @@
-from structure import Transform, count, group_by, input, sum, transform
+from structure import Transform, count, group_by, input, output, sum, transform
 
 from testing.model.v2.orders.schemas.analytics import CustomerDailyTotal, ProductDailySummary
 from testing.model.v2.orders.schemas.order import OrderFulfillment
@@ -7,7 +7,10 @@ from testing.model.v2.orders.schemas.order import OrderFulfillment
 @transform
 class OrderAnalytics(Transform):
     fulfilled = input(OrderFulfillment)
+    customer_totals = output(CustomerDailyTotal)
+    product_summary = output(ProductDailySummary)
 
+    @transform(input=fulfilled, output=customer_totals)
     def customer_daily_totals(self, order: OrderFulfillment) -> CustomerDailyTotal:
         group_by(
             tenant_id=order.tenant.tenant_id,
@@ -24,6 +27,7 @@ class OrderAnalytics(Transform):
             net_total=sum(order.net_total),
         )
 
+    @transform(input=fulfilled, output=product_summary)
     def product_daily_summary(self, order: OrderFulfillment) -> ProductDailySummary:
         group_by(
             tenant_id=order.tenant.tenant_id,

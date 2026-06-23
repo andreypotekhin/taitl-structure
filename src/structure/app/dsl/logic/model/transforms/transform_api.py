@@ -5,6 +5,7 @@ from typing import Callable
 
 from structure.app.compiler.symbolic_execution.logic.model.CompileContext import current_context
 from structure.app.dsl.logic.model.expr.expressions import literal
+from structure.app.dsl.logic.model.expr.InputScope import InputScope, join_one
 from structure.app.dsl.logic.model.schemas.Structure import Structure
 from structure.app.dsl.logic.model.transforms.ExprFunction import ExprFunction
 from structure.app.dsl.logic.model.transforms.InputDeclaration import InputDeclaration
@@ -45,12 +46,10 @@ def expr_fn(function: Callable) -> ExprFunction:
 
 
 def _decorate_transform_class(cls, kwargs):
-    allowed = {"validate_intermediate", "streaming_compatible", "to"}
+    allowed = {"validate_intermediate", "streaming_compatible"}
     unknown = set(kwargs) - allowed
     if unknown:
         raise TypeError(f"@transform got unknown class option(s): {', '.join(sorted(unknown))}")
-    if "to" in kwargs and not (isinstance(kwargs["to"], type) and issubclass(kwargs["to"], Structure)):
-        raise TypeError("@transform(to=...) on a class requires a Structure schema class")
     if not issubclass(cls, Transform):
         raise TypeError("@transform classes must inherit from Transform")
     cls._structure_transform = True
@@ -59,27 +58,57 @@ def _decorate_transform_class(cls, kwargs):
 
 
 def _decorate_transform_method(function, kwargs):
-    allowed = {"input", "output"}
+    allowed = {"input", "inputs", "output", "outputs"}
     unknown = set(kwargs) - allowed
     if unknown:
         raise TypeError(f"@transform got unknown method option(s): {', '.join(sorted(unknown))}")
-    if "input" not in kwargs and "output" not in kwargs:
-        raise TypeError("@transform on a method requires input=input_declaration or output=output_declaration")
-    if "input" in kwargs and not isinstance(kwargs["input"], (InputDeclaration, OutputDeclaration)):
-        raise TypeError("@transform(input=...) on a method requires an input(...) or output(...) declaration")
-    if isinstance(kwargs.get("input"), OutputDeclaration) and "output" not in kwargs:
+    if not kwargs:
+        raise TypeError("@transform on a method requires input(s)=... or output(s)=...")
+    if "input" in kwargs and "inputs" in kwargs:
+        raise TypeError("@transform on a method cannot use both input= and inputs=")
+    if "output" in kwargs and "outputs" in kwargs:
+        raise TypeError("@transform on a method cannot use both output= and outputs=")
+
+    inputs = _declarations(kwargs, singular="input", plural="inputs", allowed=(InputDeclaration, OutputDeclaration))
+    outputs = _declarations(kwargs, singular="output", plural="outputs", allowed=(OutputDeclaration,))
+    if len(set(map(id, inputs))) != len(inputs):
+        raise TypeError("@transform(inputs=...) cannot repeat a declaration")
+    if len(set(map(id, outputs))) != len(outputs):
+        raise TypeError("@transform(outputs=...) cannot repeat a declaration")
+    if len(inputs) == 1 and isinstance(inputs[0], OutputDeclaration) and not outputs:
         raise TypeError("@transform(input=...) with an output lane requires output=output_declaration")
-    if "output" in kwargs and not isinstance(kwargs["output"], OutputDeclaration):
-        raise TypeError("@transform(output=...) on a method requires an output(...) declaration")
     setattr(
         function,
         "_structure_output_method",
         {
-            "input": kwargs.get("input"),
-            "output": kwargs.get("output"),
+            "input": inputs[0] if len(inputs) == 1 else None,
+            "output": outputs[0] if len(outputs) == 1 else None,
+            "inputs": inputs,
+            "outputs": outputs,
         },
     )
     return function
+
+
+def _declarations(kwargs, *, singular: str, plural: str, allowed: tuple[type, ...]) -> tuple:
+    if singular in kwargs:
+        values = (kwargs[singular],)
+    elif plural in kwargs:
+        value = kwargs[plural]
+        if isinstance(value, (str, bytes)):
+            raise TypeError(f"@transform({plural}=...) requires a non-empty declaration sequence")
+        try:
+            values = tuple(value)
+        except TypeError as error:
+            raise TypeError(f"@transform({plural}=...) requires a non-empty declaration sequence") from error
+        if not values:
+            raise TypeError(f"@transform({plural}=...) requires at least one declaration")
+    else:
+        return ()
+    if not all(isinstance(value, allowed) for value in values):
+        kinds = "input(...) or output(...)" if InputDeclaration in allowed else "output(...)"
+        raise TypeError(f"@transform({plural}=...) requires {kinds} declarations")
+    return values
 
 
 def before(
@@ -103,6 +132,7 @@ def before(
 def after(
     target: Callable,
     *,
+    df: OutputDeclaration | None = None,
     pass_inputs: bool = False,
     schema_mode: SchemaMode = SchemaMode.STRICT,
     project_output: bool = False,
@@ -111,6 +141,7 @@ def after(
     return _hook(
         "after",
         target,
+        df=df,
         pass_inputs=pass_inputs,
         schema_mode=schema_mode,
         project_output=project_output,
@@ -129,6 +160,7 @@ def _hook(
     phase: str,
     target: Callable,
     *,
+    df: OutputDeclaration | None = None,
     pass_inputs: bool,
     schema_mode: SchemaMode,
     project_output: bool,
@@ -136,6 +168,8 @@ def _hook(
 ):
     if not callable(target):
         raise TypeError(f"@{phase}(...) requires a subtransform method")
+    if df is not None and (phase != "after" or not isinstance(df, OutputDeclaration)):
+        raise TypeError("@after(..., df=...) requires an output(...) declaration")
 
     def decorate(function: Callable) -> Callable:
         setattr(
@@ -144,6 +178,7 @@ def _hook(
             {
                 "phase": phase,
                 "target": target.__name__,
+                "df": df,
                 "pass_inputs": pass_inputs,
                 "schema_mode": schema_mode,
                 "project_output": project_output,

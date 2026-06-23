@@ -66,9 +66,10 @@ class RunOnlinePySparkTransform:
         hook_inputs = HookInputs(**inputs) if plan.requires_hook_inputs else None
         frames = dict(inputs)
         for step in plan.steps:
-            frame = self._step(
+            produced = self._step(
                 step,
                 current=frames[step.source],
+                frames=frames,
                 inputs=inputs,
                 hook_inputs=hook_inputs,
                 invocation=invocation,
@@ -76,7 +77,10 @@ class RunOnlinePySparkTransform:
                 functions=F,
                 types=T,
             )
-            frames[step.name] = frame
+            if isinstance(produced, dict):
+                frames.update(produced)
+            else:
+                frames[step.name] = produced
 
         outputs = {}
         for output in plan.outputs:
@@ -90,6 +94,7 @@ class RunOnlinePySparkTransform:
         step: PySparkStepRecipe,
         *,
         current,
+        frames,
         inputs,
         hook_inputs,
         invocation: Transform,
@@ -109,7 +114,7 @@ class RunOnlinePySparkTransform:
 
         df = active.alias(step.input_alias)
         for join in step.joins:
-            right = inputs[join.input_name].alias(join.right_alias)
+            right = frames[join.source].alias(join.right_alias)
             if join.hint is not None and join.hint.value == "broadcast":
                 right = functions.broadcast(right)
             predicate = self._expression(join.predicate, functions=functions, aliases=self._scope_aliases(step, join))
@@ -117,6 +122,34 @@ class RunOnlinePySparkTransform:
 
         for filter in step.filters:
             df = df.where(self._expression(filter, functions=functions, aliases=self._scope_aliases(step)))
+
+        if len(step.results) > 1:
+            produced = {}
+            for result in step.results:
+                projected = df.select(
+                    *(
+                        self._expression(
+                            assignment.expression,
+                            functions=functions,
+                            aliases=self._scope_aliases(step),
+                        ).alias(assignment.field.name)
+                        for assignment in result.projection
+                    )
+                )
+                if result.after_hooks:
+                    projected = self._hooks(
+                        result.after_hooks,
+                        current=projected,
+                        inputs=hook_inputs,
+                        invocation=invocation,
+                        session=session,
+                    )
+                for validation in result.validations:
+                    self._validate(projected, validation, types=types)
+                    if validation.project:
+                        projected = self._project(projected, validation, types=types, functions=functions)
+                produced[result.frame] = projected
+            return produced
 
         df = df.select(
             *(
@@ -151,7 +184,7 @@ class RunOnlinePySparkTransform:
     ):
         df = source.alias(output.input_alias)
         for join in output.joins:
-            right = inputs[join.input_name].alias(join.right_alias)
+            right = inputs[join.source].alias(join.right_alias)
             if join.hint is not None and join.hint.value == "broadcast":
                 right = functions.broadcast(right)
             predicate = self._expression(join.predicate, functions=functions, aliases=self._scope_aliases(output, join))

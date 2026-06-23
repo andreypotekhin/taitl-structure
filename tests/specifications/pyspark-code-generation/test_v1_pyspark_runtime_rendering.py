@@ -1,12 +1,12 @@
 import sys
 
-from structure.app.target.pyspark.api import render_pyspark_runtime_module
+from structure.app.target.pyspark.api import pyspark
 
 
 def test_v1_runtime_module_renderer_is_spark_free() -> None:
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
-    text = render_pyspark_runtime_module()
+    text = pyspark.render.runtime()()
 
     after = {name for name in sys.modules if name.startswith("pyspark")}
     assert after == before
@@ -14,7 +14,7 @@ def test_v1_runtime_module_renderer_is_spark_free() -> None:
 
 
 def test_v1_runtime_module_renderer_contains_schema_helpers_and_hook_inputs() -> None:
-    text = render_pyspark_runtime_module()
+    text = pyspark.render.runtime()()
 
     assert "def assert_schema(df, schema, *, name: str, mode: str) -> None:" in text
     assert 'raise ValueError(f"{name} is missing required column(s): {names}")' in text

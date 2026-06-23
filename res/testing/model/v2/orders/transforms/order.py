@@ -16,6 +16,7 @@ from structure import (
     expr_fn,
     input,
     lower,
+    output,
     to_decimal,
     transform,
     trim,
@@ -44,6 +45,7 @@ class EnrichOrders(Transform):
     products = input(Product)
     promotions = input(Promotion)
     shipments = input(Shipment)
+    published = output(OrderPublished)
 
     @expr_fn
     def clean_id(value):

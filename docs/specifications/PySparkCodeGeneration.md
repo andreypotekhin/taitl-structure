@@ -164,6 +164,7 @@ Source:
 class EnrichOrders(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)
+    enriched = output(OrderEnriched)
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         ...
@@ -367,6 +368,8 @@ Rules:
 - Hooks receive the current `df` and must return the new current DataFrame.
 - Joins may introduce temporary DataFrame variables named from stable aliases, such as `customers_df`.
 - Avoid reusing input parameter names for aliased or projected temporary DataFrames.
+- For a multi-result subtransform, emit one shared join/filter frame and use each output declaration name as the
+  projected DataFrame variable, such as `accepted` and `audited`.
 - Avoid hidden mutation. Each DataFrame operation should assign a resulting DataFrame to `df` or a clearly named
   temporary.
 

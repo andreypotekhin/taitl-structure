@@ -6,6 +6,7 @@ from structure.app.target.pyspark.logic.model.PySparkJoinRecipe import PySparkJo
 from structure.app.target.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.app.target.pyspark.logic.model.PySparkProjectionRecipe import PySparkProjectionRecipe
 from structure.app.target.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
+from structure.app.target.pyspark.logic.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 from structure.app.target.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 __all__ = [
@@ -17,5 +18,6 @@ __all__ = [
     "PySparkOutputRecipe",
     "PySparkProjectionRecipe",
     "PySparkStepRecipe",
+    "PySparkStepResultRecipe",
     "PySparkValidationRecipe",
 ]

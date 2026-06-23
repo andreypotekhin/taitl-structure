@@ -93,6 +93,7 @@ class EnrichOrders(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)
     products = input(Product)
+    published = output(OrderPublished)
 
     @expr_fn
     def clean_id(value):

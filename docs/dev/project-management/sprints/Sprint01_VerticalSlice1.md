@@ -23,6 +23,7 @@ Generated PySpark can be emitted and compared against online execution as the sa
 class NormalizeOrders(Transform):
 
     orders = input(OrderRaw)
+    normalized = output(OrderNormalized)
 
     @expr_fn
     def clean_id(value):

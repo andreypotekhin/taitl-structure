@@ -74,6 +74,7 @@ Transform-level opt-in uses:
 ```python
 @transform(streaming_compatible=True)
 class EnrichOrders(Transform):
+    enriched = output(OrderEnriched)
     ...
 ```
 

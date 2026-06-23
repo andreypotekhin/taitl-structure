@@ -128,11 +128,11 @@ For each compiled subtransform, the engine:
 
 1. Creates a `SymbolicContext` for the transform class, subtransform method, input schema, output schema, configuration,
    metadata, and diagnostics.
-2. Creates one symbolic row proxy for the subtransform's row parameter.
+2. Creates one symbolic driving-row proxy and one symbolic relation proxy for each additional schema parameter.
 3. Creates symbolic input scopes for every declared transform input accessible through `self`.
-4. Calls the user method with the symbolic row proxy.
+4. Calls the user method with all symbolic parameters in declaration order.
 5. Records `where(...)` and `join_one(...)` calls in source order as they occur.
-6. Captures the returned schema constructor or base overlay as a projection.
+6. Captures one returned schema construction as one projection, or a fixed tuple as ordered result projections.
 7. Builds one deterministic `StepPlan`.
 8. Discards the active context before moving to the next subtransform.
 
@@ -216,7 +216,8 @@ Rules:
 - Attribute access for an unknown field fails with a structured diagnostic.
 - Field access order is not itself an operation. Only expressions using the field in filters, joins, or projections are
   recorded in the final step.
-- The current row proxy is the only row parameter passed to a v1 subtransform.
+- The first proxy is the current row. Additional relation proxies become readable projection scopes only after
+  `join_one(relation, ...)` records their relational relationship.
 - A joined row proxy is returned by `join_one(...)` and owns the right-side joined fields.
 - A constructed row proxy may be used for intermediate symbolic schema objects created inside a method, such as
   `flags = PublicationFlags(...)`.

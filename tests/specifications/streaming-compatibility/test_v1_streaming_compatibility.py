@@ -1,12 +1,12 @@
 import sys
 
-from structure import String, Structure, Transform, after, field, input, transform, where
+from structure import String, Structure, Transform, after, field, input, output, transform, where
 from structure.app.compiler.compileability.streaming_compatibility.api import (
     StreamingSupport,
     classify_streaming_compatibility,
 )
 from structure.app.dsl.api import compile_transform
-from structure.app.target.pyspark.api import lower_pyspark_plan, render_pyspark_project
+from structure.app.target.pyspark.api import pyspark
 
 
 class StreamRaw(Structure):
@@ -20,6 +20,7 @@ class StreamClean(Structure):
 @transform(streaming_compatible=True)
 class StreamingProjection(Transform):
     rows = input(StreamRaw)
+    clean = output(StreamClean)
 
     def normalize(self, row: StreamRaw) -> StreamClean:
         where(row.id.is_not_null())  # type: ignore[attr-defined]
@@ -29,6 +30,7 @@ class StreamingProjection(Transform):
 @transform(streaming_compatible=True)
 class StreamingUnknownHook(Transform):
     rows = input(StreamRaw)
+    clean = output(StreamClean)
 
     def normalize(self, row: StreamRaw) -> StreamClean:
         return StreamClean(id=row.id)
@@ -43,7 +45,7 @@ def test_v1_streaming_projection_filter_and_schema_validation_are_compatible_wit
 
     plan = compile_transform(StreamingProjection)
     report = classify_streaming_compatibility(
-        lower_pyspark_plan(plan),
+        pyspark.plan.lower()(plan),
         required=bool((plan.options or {})["streaming_compatible"]),
     )
 
@@ -58,7 +60,7 @@ def test_v1_streaming_unsafe_hook_is_unknown_with_registered_finding() -> None:
     plan = compile_transform(StreamingUnknownHook)
 
     report = classify_streaming_compatibility(
-        lower_pyspark_plan(plan),
+        pyspark.plan.lower()(plan),
         required=bool((plan.options or {})["streaming_compatible"]),
     )
 
@@ -83,8 +85,8 @@ def test_v1_streaming_report_is_included_in_explain_output() -> None:
 
 
 def test_v1_generated_streaming_compatible_code_avoids_streaming_lifecycle_and_actions() -> None:
-    plan = lower_pyspark_plan(compile_transform(StreamingProjection))
-    files = render_pyspark_project(
+    plan = pyspark.plan.lower()(compile_transform(StreamingProjection))
+    files = pyspark.render.project()(
         plan,
         source_transform="tests.fixtures.streaming.transforms.StreamingProjection",
         generated_package="streaming_generated",

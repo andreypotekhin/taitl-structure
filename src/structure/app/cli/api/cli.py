@@ -12,7 +12,7 @@ from structure.app.cli.logic.actions.DiscoverStructureProject import discover_st
 from structure.app.cli.logic.actions.RenderConfiguredPySparkProject import render_configured_pyspark_project
 from structure.app.cli.logic.actions.RenderExplainReport import render_explain_report
 from structure.app.configuration.api import ConfigError, StructureConfig, resolve_structure_config
-from structure.app.target.pyspark.api import compare_generated_files, write_generated_files
+from structure.app.target.pyspark.api import pyspark
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry, render_diagnostic
 
 
@@ -114,7 +114,7 @@ def compile(profile: bool, **kwargs) -> None:
     project = discover_structure_project(config)
     files = render_configured_pyspark_project(config, project)
     if config.fail_on_diff:
-        result = compare_generated_files(files, root=config.generated_dir)
+        result = pyspark.files.compare()(files, root=config.generated_dir)
         if result.changed():
             lines = "\n".join(
                 f"{change.status:8} {change.path}" for change in result.changes if change.status != "unchanged"
@@ -127,7 +127,7 @@ def compile(profile: bool, **kwargs) -> None:
             )
             raise click.ClickException(render_diagnostic(diagnostic, kind="GeneratedOutputError"))
     else:
-        result = write_generated_files(files, root=config.generated_dir)
+        result = pyspark.files.write()(files, root=config.generated_dir)
     click.echo("Structure compile passed")
     click.echo(f"  generated dir: {_relative(config, config.generated_dir)}")
     click.echo(f"  transforms: {len(project.transforms)}")

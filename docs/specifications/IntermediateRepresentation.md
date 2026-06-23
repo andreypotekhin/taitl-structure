@@ -300,13 +300,16 @@ Fields:
 - `hooks_after`: ordered `HookCall` list for hooks after compiled operations.
 - `validate_output`: effective validation decision for this step.
 - `source`: source anchor for the subtransform method.
+- `inputs`: ordered parameter bindings; the first is marked as the driving relation.
+- `results`: ordered result projections with schema, destination lane, frame name, and result-specific after hooks.
 
 Rules:
 
 - Operations preserve source semantics.
 - A step may consume only a lane or declared input frame already available earlier in source order.
-- The row parameter annotation must match the current schema of `input_lane`.
-- A decorated step return annotation must match the schema declared by its `output_lane`.
+- Every parameter annotation must match its ordered input binding.
+- Every returned schema must match its ordered result binding.
+- Joins and filters are shared by all results; projections and after hooks belong to individual results.
 - Before hooks run before compiled operations for the step.
 - After hooks run after compiled operations for the step.
 - `operations` should contain compiled `HookCall` and `ValidateSchema` operations only when an implementation chooses
@@ -346,9 +349,9 @@ Fields:
 
 Rules:
 
-- A class-level `@transform(to=Schema)` creates one output named `df`.
 - One field-declared output with no explicit output method is satisfied by the final `df` lane and is exposed as both
   `result.df` and the field name.
+- A transform with no field-declared outputs is invalid.
 - More than one field-declared output requires every declared output lane to be written explicitly.
 - Result construction returns all field-declared output lanes in declaration order.
 
@@ -902,18 +905,19 @@ emitters guess how to interpret.
 Required IR validation checks:
 
 1. Transform has at least one input.
-2. Transform has at least one compiled step.
-3. Input names are unique.
-4. Step names are unique.
-5. Step source-order schema flow is valid.
-6. Every scope reference resolves.
-7. Every field reference resolves to a field in the referenced scope schema.
-8. Every operation kind is supported for the selected roadmap stage.
-9. Every filter predicate is boolean.
-10. Every project covers the output schema exactly once and in schema order.
-11. Every project assignment is type-compatible and nullability-compatible.
-12. Every join condition satisfies `JoinSemantics.md`.
-13. Every `join_one(...)` records uniqueness proof, warning, or unchecked status.
+2. Transform has at least one declared output.
+3. Transform has at least one compiled step.
+4. Input names are unique.
+5. Step names are unique.
+6. Step source-order schema flow is valid.
+7. Every scope reference resolves.
+8. Every field reference resolves to a field in the referenced scope schema.
+9. Every operation kind is supported for the selected roadmap stage.
+10. Every filter predicate is boolean.
+11. Every project covers the output schema exactly once and in schema order.
+12. Every project assignment is type-compatible and nullability-compatible.
+13. Every join condition satisfies `JoinSemantics.md`.
+14. Every `join_one(...)` records uniqueness proof, warning, or unchecked status.
 14. Every hook target resolves to a step.
 15. Every hook call has valid timing, schema mode, and `pass_inputs` metadata.
 16. Every validation point has a schema, target, mode, and reason.

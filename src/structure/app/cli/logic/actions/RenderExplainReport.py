@@ -4,14 +4,14 @@ from structure.app.compiler.compileability.streaming_compatibility.api import cl
 from structure.app.compiler.traceability.api import build_compiler_traceability
 from structure.app.dsl.api import compile_transform
 from structure.app.dsl.logic.model.transforms.Transform import Transform
-from structure.app.target.pyspark.api import lower_pyspark_plan
+from structure.app.target.pyspark.api import pyspark
 
 
 class RenderExplainReport:
 
     def __call__(self, transform: type[Transform]) -> str:
         plan = compile_transform(transform)
-        recipe = lower_pyspark_plan(plan)
+        recipe = pyspark.plan.lower()(plan)
         streaming = classify_streaming_compatibility(
             recipe,
             required=bool((plan.options or {}).get("streaming_compatible", False)),
@@ -46,12 +46,24 @@ class RenderExplainReport:
             lines.append(f"    {item.name}: {item.schema.__name__}")
         lines.extend(["", "  steps:"])
         for step in recipe.steps:
-            lines.append(f"    {step.name}: {step.input_schema.__name__} -> {step.output_schema.__name__}")
+            outputs = (
+                step.output_schema.__name__
+                if len(step.results) == 1
+                else ", ".join(f"{result.lane}: {result.schema.__name__}" for result in step.results)
+            )
+            lines.append(f"    {step.name}: {step.input_schema.__name__} -> {outputs}")
             if step.filters:
                 lines.append(f"      filters: {len(step.filters)}")
             if step.joins:
                 lines.append(f"      joins: {', '.join(join.input_name for join in step.joins)}")
-            hooks = [hook.name for hook in (*step.before_hooks, *step.after_hooks)]
+            hooks = [
+                hook.name
+                for hook in (
+                    *step.before_hooks,
+                    *step.after_hooks,
+                    *(hook for result in step.results for hook in result.after_hooks if len(step.results) > 1),
+                )
+            ]
             if hooks:
                 lines.append(f"      hooks: {', '.join(hooks)}")
             if step.validations:
@@ -65,7 +77,12 @@ class RenderExplainReport:
             lines.append(f"    {dependency.target} <- {sources}")
         for boundary in traceability.opaque_boundaries:
             lines.append(f"    hook {boundary.hook}: opaque boundary {boundary.phase} {boundary.step}")
-        lines.extend(["", f"  output: {recipe.final_validation.schema.__name__}"])
+        if len(recipe.outputs) == 1:
+            lines.extend(["", f"  output: {recipe.outputs[0].output_schema.__name__}"])
+        else:
+            lines.extend(["", "  outputs:"])
+            for output in recipe.outputs:
+                lines.append(f"    {output.name}: {output.output_schema.__name__}")
         return "\n".join(lines)
 
 

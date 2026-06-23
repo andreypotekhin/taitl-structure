@@ -24,6 +24,21 @@ customer = self.customers.join_one(
 )
 ```
 
+When a subtransform declares the relation as a schema parameter, use the equivalent free-standing form:
+
+```python
+def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
+    customer = join_one(
+        customer,
+        on=customer.id == order.customer_id,
+        how=Join.LEFT,
+    )
+    return OrderWithCustomer.base(order)(customer_name=customer.name)
+```
+
+The right-hand side is evaluated before Python rebinds `customer`, so reusing the parameter name is valid. A relation
+parameter cannot be used in a filter or projection until it has been joined.
+
 Canonical v1 method:
 
 - `join_one(*, on, how, hint=None)`: a lookup join that promises at most one right-side row per current row.

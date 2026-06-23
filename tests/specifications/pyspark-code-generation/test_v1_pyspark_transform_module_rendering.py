@@ -1,7 +1,7 @@
 import sys
 
 from structure.app.dsl.api import compile_transform
-from structure.app.target.pyspark.api import lower_pyspark_plan, render_pyspark_transform_module
+from structure.app.target.pyspark.api import pyspark
 
 
 def test_v1_transform_module_renderer_is_spark_free() -> None:
@@ -9,8 +9,8 @@ def test_v1_transform_module_renderer_is_spark_free() -> None:
 
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
-    text = render_pyspark_transform_module(
-        lower_pyspark_plan(compile_transform(EnrichOrders)),
+    text = pyspark.render.transform()(
+        pyspark.plan.lower()(compile_transform(EnrichOrders)),
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
@@ -24,8 +24,8 @@ def test_v1_transform_module_renderer_is_spark_free() -> None:
 def test_v1_transform_module_renderer_renders_class_runtime_shape() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    text = render_pyspark_transform_module(
-        lower_pyspark_plan(compile_transform(EnrichOrders)),
+    text = pyspark.render.transform()(
+        pyspark.plan.lower()(compile_transform(EnrichOrders)),
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
@@ -47,8 +47,8 @@ def test_v1_transform_module_renderer_renders_class_runtime_shape() -> None:
 def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    text = render_pyspark_transform_module(
-        lower_pyspark_plan(compile_transform(EnrichOrders)),
+    text = pyspark.render.transform()(
+        pyspark.plan.lower()(compile_transform(EnrichOrders)),
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
@@ -64,7 +64,7 @@ def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
     )
     assert "        df = project_schema(df, ORDER_PUBLISHED_SCHEMA)" in text
     assert text.count('assert_schema(df, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")') == 2
-    assert text.rstrip().endswith('        return TransformResult({"df": df_df}, single=True)')
+    assert text.rstrip().endswith('        return TransformResult({"published": published_df}, single=True)')
 
 
 def _schema_modules() -> dict[type, str]:

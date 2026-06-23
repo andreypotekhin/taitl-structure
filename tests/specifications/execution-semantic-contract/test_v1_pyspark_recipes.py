@@ -4,7 +4,7 @@ from structure.app.dsl.api import compile_transform
 from structure.app.dsl.logic.model.transforms.Join import Join
 from structure.app.dsl.logic.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.logic.model.transforms.SchemaMode import SchemaMode
-from structure.app.target.pyspark.api import lower_pyspark_plan
+from structure.app.target.pyspark.api import pyspark
 
 
 def test_v1_pyspark_recipe_lowering_is_spark_free() -> None:
@@ -12,7 +12,7 @@ def test_v1_pyspark_recipe_lowering_is_spark_free() -> None:
 
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
-    recipe = lower_pyspark_plan(compile_transform(EnrichOrders))
+    recipe = pyspark.plan.lower()(compile_transform(EnrichOrders))
 
     after = {name for name in sys.modules if name.startswith("pyspark")}
     assert after == before
@@ -25,7 +25,7 @@ def test_v1_pyspark_recipe_preserves_inputs_and_steps() -> None:
     from testing.model.v1.orders.schemas.order import OrderPublished
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = lower_pyspark_plan(compile_transform(EnrichOrders))
+    recipe = pyspark.plan.lower()(compile_transform(EnrichOrders))
 
     assert [(item.name, item.schema.__name__, item.ordinal, item.validation.reason) for item in recipe.inputs] == [
         ("orders", "OrderRaw", 0, "input"),
@@ -47,7 +47,7 @@ def test_v1_pyspark_recipe_preserves_inputs_and_steps() -> None:
 def test_v1_pyspark_recipe_records_joins_hooks_and_hook_inputs() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = lower_pyspark_plan(compile_transform(EnrichOrders))
+    recipe = pyspark.plan.lower()(compile_transform(EnrichOrders))
 
     assert recipe.requires_hook_inputs
     assert [len(step.joins) for step in recipe.steps] == [0, 1, 1, 1, 0]
@@ -69,7 +69,7 @@ def test_v1_pyspark_recipe_records_joins_hooks_and_hook_inputs() -> None:
 def test_v1_pyspark_recipe_records_expressions_and_projection_order() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = lower_pyspark_plan(compile_transform(EnrichOrders))
+    recipe = pyspark.plan.lower()(compile_transform(EnrichOrders))
     normalize = recipe.steps[0]
     projection = {assignment.field.name: assignment.expression for assignment in normalize.projection}
 
@@ -102,7 +102,7 @@ def test_v1_pyspark_recipe_records_expressions_and_projection_order() -> None:
 def test_v1_pyspark_recipe_places_validation_boundaries() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = lower_pyspark_plan(compile_transform(EnrichOrders))
+    recipe = pyspark.plan.lower()(compile_transform(EnrichOrders))
 
     assert [
         (validation.reason, validation.schema.__name__, validation.mode) for validation in recipe.steps[0].validations

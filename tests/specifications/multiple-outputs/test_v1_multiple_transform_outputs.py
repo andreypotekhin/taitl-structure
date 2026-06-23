@@ -5,7 +5,7 @@ import pytest
 from structure import String, Structure, Transform, field, input, output, transform
 from structure.app.dsl.api import compile_transform
 from structure.app.runtime.api import StructureSession, TransformResult
-from structure.app.target.pyspark.api import lower_pyspark_plan, render_pyspark_transform_module
+from structure.app.target.pyspark.api import pyspark
 
 
 class Raw(Structure):
@@ -95,18 +95,45 @@ def test_v1_single_field_output_does_not_need_terminal_binding() -> None:
     assert plan.output_schema is Published
 
 
-def test_v1_class_to_declares_single_output_schema() -> None:
-    @transform(to=Published)
+def test_v1_single_field_declares_single_output_schema() -> None:
+    @transform
     class PublishOrders(Transform):
         rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             return Published(id=row.id)
 
     plan = compile_transform(PublishOrders)
 
-    assert [output.name for output in plan.outputs] == ["df"]
+    assert [item.name for item in plan.outputs] == ["published"]
     assert plan.output_schema is Published
+
+
+def test_v1_transform_requires_output_field() -> None:
+    @transform
+    class PublishOrders(Transform):
+        rows = input(Raw)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(id=row.id)
+
+    with pytest.raises(Exception) as raised:
+        compile_transform(PublishOrders)
+
+    assert "PublishOrders declares no outputs" in str(raised.value)
+    assert "name = output(Schema)" in str(raised.value)
+
+
+def test_v1_class_to_option_is_rejected() -> None:
+    with pytest.raises(TypeError) as raised:
+
+        @transform(to=Published)
+        class PublishOrders(Transform):
+            rows = input(Raw)
+            published = output(Published)
+
+    assert "unknown class option(s): to" in str(raised.value)
 
 
 def test_v1_method_input_selects_declared_input_when_schema_is_ambiguous() -> None:
@@ -114,6 +141,7 @@ def test_v1_method_input_selects_declared_input_when_schema_is_ambiguous() -> No
     class NormalizeOrders(Transform):
         external = input(Raw)
         internal = input(Raw)
+        normalized = output(Normalized)
 
         @transform(input=external)
         def normalize(self, row: Raw) -> Normalized:
@@ -153,6 +181,7 @@ def test_v1_ambiguous_input_schema_requires_method_input() -> None:
     class NormalizeOrders(Transform):
         external = input(Raw)
         internal = input(Raw)
+        normalized = output(Normalized)
 
         def normalize(self, row: Raw) -> Normalized:
             return Normalized(id=row.id, customer_id=row.customer_id)
@@ -274,8 +303,8 @@ def test_v1_generated_pyspark_uses_per_lane_step_sources() -> None:
         def reject(self, row: Normalized) -> Rejected:
             return Rejected(id=row.id, reason="missing customer")
 
-    recipe = lower_pyspark_plan(compile_transform(RouteOrders))
-    text = render_pyspark_transform_module(
+    recipe = pyspark.plan.lower()(compile_transform(RouteOrders))
+    text = pyspark.render.transform()(
         recipe,
         source_transform="tests.specifications.multiple_outputs.RouteOrders",
         runtime_module="testing.runtime",
@@ -295,9 +324,10 @@ def test_v1_generated_pyspark_uses_per_lane_step_sources() -> None:
 
 
 def test_v1_online_executor_result_wraps_single_output_df() -> None:
-    @transform(to=Published)
+    @transform
     class PublishOrders(Transform):
         rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             return Published(id=row.id)
@@ -308,7 +338,8 @@ def test_v1_online_executor_result_wraps_single_output_df() -> None:
 
     assert isinstance(result, TransformResult)
     assert result.df == "df"
-    assert result["df"] == "df"
+    assert result.published == "df"
+    assert result["published"] == "df"
 
 
 def test_v1_online_executor_preserves_single_field_output_alias() -> None:

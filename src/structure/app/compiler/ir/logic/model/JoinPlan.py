@@ -11,6 +11,7 @@ from structure.app.dsl.logic.model.transforms.JoinHint import JoinHint
 @dataclass(frozen=True)
 class JoinPlan:
     input_name: str
+    source: str
     input_schema: type[Structure]
     predicate: Expression
     how: Join

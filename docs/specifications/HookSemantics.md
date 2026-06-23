@@ -67,6 +67,17 @@ def hook(self, *, df, spark, ctx):
     ...
 ```
 
+When the target subtransform returns several DataFrames, an after hook selects one declared result:
+
+```python
+@after(add_product, df=audited)
+def audit(self, *, df, spark, ctx):
+    ...
+```
+
+The selected result is passed through the existing `df` parameter. The hook return value replaces only that result
+lane. Single-result hooks do not need `df=`.
+
 Input-access signature:
 
 ```python
