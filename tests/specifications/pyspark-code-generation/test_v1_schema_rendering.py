@@ -1,6 +1,6 @@
 import sys
 
-from structure.app.backend.pyspark.api import render_pyspark_schema
+from structure.app.target.pyspark.api import render_pyspark_schema
 
 
 def test_v1_schema_rendering_is_spark_free() -> None:

@@ -1,12 +1,12 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 from collections.abc import Iterable
 
-from structure.app.backend.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
-from structure.app.backend.pyspark.logic.model.PySparkExpressionRecipe import PySparkExpressionRecipe
-from structure.app.backend.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
-from structure.app.backend.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
-from structure.app.backend.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
+from structure.app.target.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.app.target.pyspark.logic.model.PySparkExpressionRecipe import PySparkExpressionRecipe
+from structure.app.target.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
+from structure.app.target.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
+from structure.app.target.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.app.compiler.traceability.logic.model.CompilerProvenance import CompilerProvenance
 from structure.app.compiler.traceability.logic.model.CompilerTraceability import CompilerTraceability
 from structure.app.compiler.traceability.logic.model.DataflowDependency import DataflowDependency

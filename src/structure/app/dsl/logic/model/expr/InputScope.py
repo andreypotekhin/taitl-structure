@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from structure.app.dsl.logic.model.expr.Expression import Expression
 from structure.app.dsl.logic.model.expr.RowScope import RowScope
-from structure.app.dsl.logic.model.plans.JoinPlan import JoinPlan
+from structure.app.compiler.ir.logic.model.JoinPlan import JoinPlan
 from structure.app.dsl.logic.model.schemas.Structure import Structure
-from structure.app.dsl.logic.model.transforms.CompileContext import current_context
+from structure.app.compiler.symbolic_execution.logic.model.CompileContext import current_context
 from structure.app.dsl.logic.model.transforms.Join import Join
 from structure.app.dsl.logic.model.transforms.JoinHint import JoinHint
 

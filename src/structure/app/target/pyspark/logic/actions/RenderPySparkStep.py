@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from structure.app.backend.pyspark.logic.actions.RenderPySparkExpression import render_pyspark_expression
-from structure.app.backend.pyspark.logic.actions.RenderPySparkSchema import render_pyspark_schema
-from structure.app.backend.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
-from structure.app.backend.pyspark.logic.model.PySparkJoinRecipe import PySparkJoinRecipe
-from structure.app.backend.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
-from structure.app.backend.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
-from structure.app.backend.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
+from structure.app.target.pyspark.logic.actions.RenderPySparkExpression import render_pyspark_expression
+from structure.app.target.pyspark.logic.actions.RenderPySparkSchema import render_pyspark_schema
+from structure.app.target.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
+from structure.app.target.pyspark.logic.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.app.target.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
+from structure.app.target.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
+from structure.app.target.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 
 class RenderPySparkStep:

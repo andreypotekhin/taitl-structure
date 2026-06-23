@@ -3,10 +3,10 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Mapping
 
-from structure.app.backend.pyspark.logic.actions.RenderPySparkSchema import render_pyspark_schema
-from structure.app.backend.pyspark.logic.actions.RenderPySparkStep import render_pyspark_step
-from structure.app.backend.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
-from structure.app.backend.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
+from structure.app.target.pyspark.logic.actions.RenderPySparkSchema import render_pyspark_schema
+from structure.app.target.pyspark.logic.actions.RenderPySparkStep import render_pyspark_step
+from structure.app.target.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.app.target.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.app.dsl.logic.model.schemas.Structure import Structure
 
 

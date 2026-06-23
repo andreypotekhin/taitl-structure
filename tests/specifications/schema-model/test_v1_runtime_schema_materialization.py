@@ -1,7 +1,7 @@
 import sys
 from dataclasses import dataclass
 
-from structure.app.backend.pyspark.api import materialize_pyspark_schema
+from structure.app.target.pyspark.api import materialize_pyspark_schema
 
 
 @dataclass(frozen=True)

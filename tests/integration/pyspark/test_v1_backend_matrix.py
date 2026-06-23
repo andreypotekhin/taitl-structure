@@ -28,7 +28,7 @@ from testing.model.v1.orders.schemas.promotion import Promotion
 from testing.model.v1.orders.transforms.order import EnrichOrders
 
 from structure import StructureSession
-from structure.app.backend.pyspark.api import lower_pyspark_plan, render_pyspark_project
+from structure.app.target.pyspark.api import lower_pyspark_plan, render_pyspark_project
 from structure.app.dsl.api import compile_transform
 
 pytestmark = pytest.mark.integration

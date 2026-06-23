@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from structure.app.backend.pyspark.api import lower_pyspark_plan, render_pyspark_project
+from structure.app.target.pyspark.api import lower_pyspark_plan, render_pyspark_project
 from structure.app.cli.logic.model.DiscoveredStructureProject import DiscoveredStructureProject
 from structure.app.configuration.logic.model.StructureConfig import StructureConfig
 from structure.app.dsl.api import compile_transform

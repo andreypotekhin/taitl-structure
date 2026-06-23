@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
 
-from structure.app.backend.pyspark.api import compare_generated_files, write_generated_files
+from structure.app.target.pyspark.api import compare_generated_files, write_generated_files
 
 
 @contextmanager

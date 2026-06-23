@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.app.backend.pyspark.logic.model.PySparkExpressionRecipe import PySparkExpressionRecipe
-from structure.app.backend.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
-from structure.app.backend.pyspark.logic.model.PySparkJoinRecipe import PySparkJoinRecipe
-from structure.app.backend.pyspark.logic.model.PySparkProjectionRecipe import PySparkProjectionRecipe
-from structure.app.backend.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
+from structure.app.target.pyspark.logic.model.PySparkExpressionRecipe import PySparkExpressionRecipe
+from structure.app.target.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
+from structure.app.target.pyspark.logic.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.app.target.pyspark.logic.model.PySparkProjectionRecipe import PySparkProjectionRecipe
+from structure.app.target.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.app.dsl.logic.model.schemas.Structure import Structure
 
 

@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from structure.app.backend.pyspark.logic.actions.MaterializePySparkSchema import materialize_pyspark_schema
-from structure.app.backend.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
-from structure.app.backend.pyspark.logic.model.PySparkExpressionRecipe import PySparkExpressionRecipe
-from structure.app.backend.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
-from structure.app.backend.pyspark.logic.model.PySparkJoinRecipe import PySparkJoinRecipe
-from structure.app.backend.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
-from structure.app.backend.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
-from structure.app.backend.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
+from structure.app.target.pyspark.logic.actions.MaterializePySparkSchema import materialize_pyspark_schema
+from structure.app.target.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.app.target.pyspark.logic.model.PySparkExpressionRecipe import PySparkExpressionRecipe
+from structure.app.target.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
+from structure.app.target.pyspark.logic.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.app.target.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
+from structure.app.target.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
+from structure.app.target.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.app.dsl.logic.model.transforms.Transform import Transform
-from structure.app.runtime.logic.model.RuntimeDiagnostic import RuntimeDiagnostic
-from structure.app.runtime.logic.model.StructureRuntimeError import StructureRuntimeError
-from structure.app.runtime.logic.model.TransformResult import TransformResult
+from structure.app.runtime.session.logic.model.RuntimeDiagnostic import RuntimeDiagnostic
+from structure.app.runtime.session.logic.model.StructureRuntimeError import StructureRuntimeError
+from structure.app.runtime.session.logic.model.TransformResult import TransformResult
 
 
 class HookInputs:

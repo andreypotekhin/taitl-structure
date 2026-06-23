@@ -6,14 +6,14 @@ from typing import get_type_hints
 from structure.app.compiler.diagnostics.api import StructureCompileError
 from structure.app.dsl.logic.model.expr.expressions import literal
 from structure.app.dsl.logic.model.expr.RowScope import RowScope
-from structure.app.dsl.logic.model.plans.HookPlan import HookPlan
-from structure.app.dsl.logic.model.plans.InputPlan import InputPlan
-from structure.app.dsl.logic.model.plans.OutputPlan import OutputPlan
-from structure.app.dsl.logic.model.plans.ProjectAssignment import ProjectAssignment
-from structure.app.dsl.logic.model.plans.StepPlan import StepPlan
-from structure.app.dsl.logic.model.plans.TransformPlan import TransformPlan
+from structure.app.compiler.ir.logic.model.HookPlan import HookPlan
+from structure.app.compiler.ir.logic.model.InputPlan import InputPlan
+from structure.app.compiler.ir.logic.model.OutputPlan import OutputPlan
+from structure.app.compiler.ir.logic.model.ProjectAssignment import ProjectAssignment
+from structure.app.compiler.ir.logic.model.StepPlan import StepPlan
+from structure.app.compiler.ir.logic.model.TransformPlan import TransformPlan
 from structure.app.dsl.logic.model.schemas.Structure import Structure
-from structure.app.dsl.logic.model.transforms.CompileContext import CompileContext
+from structure.app.compiler.symbolic_execution.logic.model.CompileContext import CompileContext
 from structure.app.dsl.logic.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.app.dsl.logic.model.transforms.Transform import Transform
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry

@@ -1,6 +1,6 @@
 import sys
 
-from structure.app.backend.pyspark.api import render_pyspark_runtime_module
+from structure.app.target.pyspark.api import render_pyspark_runtime_module
 
 
 def test_v1_runtime_module_renderer_is_spark_free() -> None:

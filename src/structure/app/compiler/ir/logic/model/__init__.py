@@ -1,10 +1,16 @@
-from structure.app.dsl.logic.model.plans.InputPlan import InputPlan
-from structure.app.dsl.logic.model.plans.ProjectAssignment import ProjectAssignment
-from structure.app.dsl.logic.model.plans.StepPlan import StepPlan
-from structure.app.dsl.logic.model.plans.TransformPlan import TransformPlan
+from structure.app.compiler.ir.logic.model.HookPlan import HookPlan
+from structure.app.compiler.ir.logic.model.InputPlan import InputPlan
+from structure.app.compiler.ir.logic.model.JoinPlan import JoinPlan
+from structure.app.compiler.ir.logic.model.OutputPlan import OutputPlan
+from structure.app.compiler.ir.logic.model.ProjectAssignment import ProjectAssignment
+from structure.app.compiler.ir.logic.model.StepPlan import StepPlan
+from structure.app.compiler.ir.logic.model.TransformPlan import TransformPlan
 
 __all__ = [
+    "HookPlan",
     "InputPlan",
+    "JoinPlan",
+    "OutputPlan",
     "ProjectAssignment",
     "StepPlan",
     "TransformPlan",

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Mapping, Sequence
 
-from structure.app.backend.pyspark.logic.actions.RenderPySparkSchema import render_pyspark_schema
+from structure.app.target.pyspark.logic.actions.RenderPySparkSchema import render_pyspark_schema
 from structure.app.dsl.logic.model.schemas.Structure import Structure
 from structure.app.dsl.logic.model.types.ArrayType import ArrayType
 from structure.app.dsl.logic.model.types.MapType import MapType

@@ -1,6 +1,6 @@
 import sys
 
-from structure.app.backend.pyspark.api import render_pyspark_schema_module
+from structure.app.target.pyspark.api import render_pyspark_schema_module
 
 
 def test_v1_common_schema_module_renders_without_pyspark() -> None:

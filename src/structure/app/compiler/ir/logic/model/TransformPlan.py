@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.app.dsl.logic.model.plans.InputPlan import InputPlan
-from structure.app.dsl.logic.model.plans.OutputPlan import OutputPlan
-from structure.app.dsl.logic.model.plans.StepPlan import StepPlan
+from structure.app.compiler.ir.logic.model.InputPlan import InputPlan
+from structure.app.compiler.ir.logic.model.OutputPlan import OutputPlan
+from structure.app.compiler.ir.logic.model.StepPlan import StepPlan
 from structure.app.dsl.logic.model.schemas.Structure import Structure
 
 

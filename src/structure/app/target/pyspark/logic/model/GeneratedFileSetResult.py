@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.app.backend.pyspark.logic.model.GeneratedFileChange import GeneratedFileChange
+from structure.app.target.pyspark.logic.model.GeneratedFileChange import GeneratedFileChange
 
 
 @dataclass(frozen=True)

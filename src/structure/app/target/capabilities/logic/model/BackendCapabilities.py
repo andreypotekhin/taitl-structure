@@ -1,9 +1,9 @@
 from typing import Protocol
 
-from structure.app.backend.capabilities.logic.model.BackendId import BackendId
-from structure.app.backend.capabilities.logic.model.CapabilityDecision import CapabilityDecision
-from structure.app.backend.capabilities.logic.model.CapabilityRequirement import CapabilityRequirement
-from structure.app.backend.capabilities.logic.model.GeneratedImports import GeneratedImports
+from structure.app.target.capabilities.logic.model.BackendId import BackendId
+from structure.app.target.capabilities.logic.model.CapabilityDecision import CapabilityDecision
+from structure.app.target.capabilities.logic.model.CapabilityRequirement import CapabilityRequirement
+from structure.app.target.capabilities.logic.model.GeneratedImports import GeneratedImports
 
 
 class BackendCapabilities(Protocol):

@@ -1,4 +1,4 @@
-from structure.app.backend.pyspark.api import lower_pyspark_plan, render_pyspark_expression
+from structure.app.target.pyspark.api import lower_pyspark_plan, render_pyspark_expression
 from structure.app.dsl.api import compile_transform
 
 

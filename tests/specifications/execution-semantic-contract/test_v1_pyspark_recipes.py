@@ -1,6 +1,6 @@
 import sys
 
-from structure.app.backend.pyspark.api import lower_pyspark_plan
+from structure.app.target.pyspark.api import lower_pyspark_plan
 from structure.app.dsl.api import compile_transform
 from structure.app.dsl.logic.model.transforms.Join import Join
 from structure.app.dsl.logic.model.transforms.JoinHint import JoinHint

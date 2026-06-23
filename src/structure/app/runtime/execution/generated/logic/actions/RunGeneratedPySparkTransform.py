@@ -3,11 +3,11 @@ from __future__ import annotations
 import importlib
 from types import ModuleType
 
-from structure.app.backend.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.app.target.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.app.dsl.logic.model.transforms.Transform import Transform
-from structure.app.runtime.logic.model.RuntimeDiagnostic import RuntimeDiagnostic
-from structure.app.runtime.logic.model.StructureRuntimeError import StructureRuntimeError
-from structure.app.runtime.logic.model.TransformResult import TransformResult
+from structure.app.runtime.session.logic.model.RuntimeDiagnostic import RuntimeDiagnostic
+from structure.app.runtime.session.logic.model.StructureRuntimeError import StructureRuntimeError
+from structure.app.runtime.session.logic.model.TransformResult import TransformResult
 
 
 class RunGeneratedPySparkTransform:

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.app.streaming.logic.model.StreamingFinding import StreamingFinding
-from structure.app.streaming.logic.model.StreamingSupport import StreamingSupport
+from structure.app.compiler.compileability.streaming_compatibility.logic.model.StreamingFinding import StreamingFinding
+from structure.app.compiler.compileability.streaming_compatibility.logic.model.StreamingSupport import StreamingSupport
 
 
 @dataclass(frozen=True)

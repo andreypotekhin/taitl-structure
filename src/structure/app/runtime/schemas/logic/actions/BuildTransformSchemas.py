@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from types import MappingProxyType
 
-from structure.app.backend.pyspark.logic.actions.MaterializePySparkSchema import materialize_pyspark_schema
-from structure.app.backend.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
-from structure.app.runtime.logic.model.TransformSchemas import TransformSchemas
+from structure.app.target.pyspark.logic.actions.MaterializePySparkSchema import materialize_pyspark_schema
+from structure.app.target.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.app.runtime.schemas.logic.model.TransformSchemas import TransformSchemas
 
 
 class BuildTransformSchemas:

@@ -2,25 +2,25 @@ from __future__ import annotations
 
 import re
 
-from structure.app.backend.capabilities.api.capabilities import resolve_backend_capabilities
-from structure.app.backend.capabilities.logic.model.BackendCapabilities import BackendCapabilities
-from structure.app.backend.capabilities.logic.model.CapabilityRequirement import CapabilityRequirement
-from structure.app.backend.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
-from structure.app.backend.pyspark.logic.model.PySparkExpressionRecipe import PySparkExpressionRecipe
-from structure.app.backend.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
-from structure.app.backend.pyspark.logic.model.PySparkInputRecipe import PySparkInputRecipe
-from structure.app.backend.pyspark.logic.model.PySparkJoinRecipe import PySparkJoinRecipe
-from structure.app.backend.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
-from structure.app.backend.pyspark.logic.model.PySparkProjectionRecipe import PySparkProjectionRecipe
-from structure.app.backend.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
-from structure.app.backend.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
+from structure.app.target.capabilities.api.capabilities import resolve_backend_capabilities
+from structure.app.target.capabilities.logic.model.BackendCapabilities import BackendCapabilities
+from structure.app.target.capabilities.logic.model.CapabilityRequirement import CapabilityRequirement
+from structure.app.target.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.app.target.pyspark.logic.model.PySparkExpressionRecipe import PySparkExpressionRecipe
+from structure.app.target.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
+from structure.app.target.pyspark.logic.model.PySparkInputRecipe import PySparkInputRecipe
+from structure.app.target.pyspark.logic.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.app.target.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
+from structure.app.target.pyspark.logic.model.PySparkProjectionRecipe import PySparkProjectionRecipe
+from structure.app.target.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
+from structure.app.target.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.app.dsl.logic.model.expr.Expression import Expression
-from structure.app.dsl.logic.model.plans.HookPlan import HookPlan
-from structure.app.dsl.logic.model.plans.JoinPlan import JoinPlan
-from structure.app.dsl.logic.model.plans.OutputPlan import OutputPlan
-from structure.app.dsl.logic.model.plans.ProjectAssignment import ProjectAssignment
-from structure.app.dsl.logic.model.plans.StepPlan import StepPlan
-from structure.app.dsl.logic.model.plans.TransformPlan import TransformPlan
+from structure.app.compiler.ir.logic.model.HookPlan import HookPlan
+from structure.app.compiler.ir.logic.model.JoinPlan import JoinPlan
+from structure.app.compiler.ir.logic.model.OutputPlan import OutputPlan
+from structure.app.compiler.ir.logic.model.ProjectAssignment import ProjectAssignment
+from structure.app.compiler.ir.logic.model.StepPlan import StepPlan
+from structure.app.compiler.ir.logic.model.TransformPlan import TransformPlan
 from structure.app.dsl.logic.model.schemas.Structure import Structure
 from structure.app.dsl.logic.model.transforms.SchemaMode import SchemaMode
 

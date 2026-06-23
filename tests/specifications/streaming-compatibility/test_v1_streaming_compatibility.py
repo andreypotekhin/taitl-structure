@@ -1,9 +1,9 @@
 import sys
 
 from structure import String, Structure, Transform, after, field, input, transform, where
-from structure.app.backend.pyspark.api import lower_pyspark_plan, render_pyspark_project
+from structure.app.target.pyspark.api import lower_pyspark_plan, render_pyspark_project
 from structure.app.dsl.api import compile_transform
-from structure.app.streaming.api import StreamingSupport, classify_streaming_compatibility
+from structure.app.compiler.compileability.streaming_compatibility.api import StreamingSupport, classify_streaming_compatibility
 
 
 class StreamRaw(Structure):

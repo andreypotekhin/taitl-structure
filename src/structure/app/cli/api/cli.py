@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import importlib
 import sys
@@ -8,7 +8,7 @@ from typing import cast
 
 import click
 
-from structure.app.backend.pyspark.api import compare_generated_files, write_generated_files
+from structure.app.target.pyspark.api import compare_generated_files, write_generated_files
 from structure.app.cli.logic.actions.DiscoverStructureProject import discover_structure_project
 from structure.app.cli.logic.actions.RenderConfiguredPySparkProject import render_configured_pyspark_project
 from structure.app.cli.logic.actions.RenderExplainReport import render_explain_report

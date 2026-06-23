@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from pathlib import Path
 
-from structure.app.backend.pyspark.logic.model.GeneratedFileChange import GeneratedFileChange
-from structure.app.backend.pyspark.logic.model.GeneratedFileSetResult import GeneratedFileSetResult
+from structure.app.target.pyspark.logic.model.GeneratedFileChange import GeneratedFileChange
+from structure.app.target.pyspark.logic.model.GeneratedFileSetResult import GeneratedFileSetResult
 
 
 class CompareGeneratedFiles:

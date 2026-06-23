@@ -22,17 +22,31 @@ The installable package lives under `src/structure`. Inside that package, projec
 - `src/structure/app` - apps
 - `src/structure/lib` - libs
 
-Apps: configuration, cli, discovery, schema, symbolic, ir, compileability, runtime
-and other system components (and subcomponents) defined by project architecture.
+Apps: configuration, cli, dsl, compiler, target, runtime
+and other system components (and subcomponents) defined by project architecture. Compiler subapps include
+frontend, discovery, symbolic_execution, ir, compileability, diagnostics, and traceability. Target subapps include
+capabilities and concrete targets such as pyspark.
 
 ```text
 src/structure/
   app/
     cli/
+    compiler/
+      frontend/
+      ir/
+      symbolic_execution/
+      compileability/
     configuration/
-    discovery/
+    dsl/
     runtime/
-    symbolic/
+      execution/
+        online/
+        generated/
+      session/
+      schemas/
+    target/
+      capabilities/
+      pyspark/
   
   lib/
     app/ - Common App Framework (defines classes like Command, Endpoint)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from structure.app.runtime.logic.model.RuntimeDiagnostic import RuntimeDiagnostic
+from structure.app.runtime.session.logic.model.RuntimeDiagnostic import RuntimeDiagnostic
 
 
 class StructureRuntimeError(RuntimeError):

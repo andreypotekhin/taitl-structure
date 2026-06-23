@@ -165,8 +165,8 @@ Use these directories consistently:
 Examples:
 
 - CLI command behavior: `tests/app/cli/...`
-- Backend capability app behavior: `tests/app/backend/capabilities/...`
-- PySpark backend target behavior: `tests/app/backend/pyspark/...`
+- Target capability app behavior: `tests/app/target/capabilities/...`
+- PySpark target behavior: `tests/app/target/pyspark/...`
 - Join concept coverage: `tests/concepts/join/...`
 - Fixture-specific scenario helpers: `tests/helpers/scenarios/...`
 - User stories completed from `docs/specifications/UserStories.md`: `tests/user_stories/...`

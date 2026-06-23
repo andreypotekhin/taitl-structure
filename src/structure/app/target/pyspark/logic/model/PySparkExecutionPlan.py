@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.app.backend.capabilities.logic.model.BackendId import BackendId
-from structure.app.backend.pyspark.logic.model.PySparkInputRecipe import PySparkInputRecipe
-from structure.app.backend.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
-from structure.app.backend.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
-from structure.app.backend.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
+from structure.app.target.capabilities.logic.model.BackendId import BackendId
+from structure.app.target.pyspark.logic.model.PySparkInputRecipe import PySparkInputRecipe
+from structure.app.target.pyspark.logic.model.PySparkOutputRecipe import PySparkOutputRecipe
+from structure.app.target.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
+from structure.app.target.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 
 @dataclass(frozen=True)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Mapping
 
-from structure.app.backend.pyspark.logic.model.PySparkExpressionRecipe import PySparkExpressionRecipe
+from structure.app.target.pyspark.logic.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 
 
 class RenderPySparkExpression:

@@ -1,15 +1,15 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from collections import OrderedDict
 from collections.abc import Mapping, Sequence
 
-from structure.app.backend.pyspark.logic.actions.RenderPySparkRuntimeModule import render_pyspark_runtime_module
-from structure.app.backend.pyspark.logic.actions.RenderPySparkSchema import render_pyspark_schema
-from structure.app.backend.pyspark.logic.actions.RenderPySparkSchemaModule import render_pyspark_schema_module
-from structure.app.backend.pyspark.logic.actions.RenderPySparkTransformModule import render_pyspark_transform_module
-from structure.app.backend.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
-from structure.app.backend.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
+from structure.app.target.pyspark.logic.actions.RenderPySparkRuntimeModule import render_pyspark_runtime_module
+from structure.app.target.pyspark.logic.actions.RenderPySparkSchema import render_pyspark_schema
+from structure.app.target.pyspark.logic.actions.RenderPySparkSchemaModule import render_pyspark_schema_module
+from structure.app.target.pyspark.logic.actions.RenderPySparkTransformModule import render_pyspark_transform_module
+from structure.app.target.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.app.target.pyspark.logic.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.compiler.traceability.api import build_compiler_traceability
 from structure.app.dsl.logic.model.schemas.Structure import Structure
 
