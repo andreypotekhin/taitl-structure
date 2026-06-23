@@ -97,7 +97,9 @@ validation/projection.
   intermediate, hook, projection, and final output validation boundaries.
 - [x] (2026-06-21) Online execution exposes materialized input, step, and output schemas through
   `transform.schemas` after `run(session)`.
-- [ ] Live `assert_schema(...)` execution against Spark DataFrames and negative validation cases remain to be added.
+- [x] (2026-06-23) Live `assert_schema(...)` execution is exercised by generated and online runtime paths in the
+  PySpark integration matrix.
+- [ ] v1 closeout: add broader negative schema-validation coverage against Spark DataFrames.
 
 ## Demo Script
 

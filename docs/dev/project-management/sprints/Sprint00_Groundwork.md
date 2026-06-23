@@ -130,8 +130,9 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - [x] (2026-06-21) `structure init --seed-config`, `check`, `compile`, `compile --fail-on-diff`, `explain`, and
   `clean` are covered by `tests/specifications/cli`.
 - [x] (2026-06-21) `check`, `compile`, and `compile --fail-on-diff` are tested to stay Spark-free on the compiler path.
-- [ ] Spike notes and CI workflow evidence still need a final Sprint 00 closeout before the sprint is moved to
-  `docs/dev/project-management/sprints/done/`.
+- [x] (2026-06-23) Spike outcomes for `StructureSession`, expression helpers, source order, import paths, no-Spark
+  compile, and local Spark execution are incorporated into v1 plans and tests.
+- [ ] v1 closeout: record CI workflow evidence before moving the sprint to `docs/dev/project-management/sprints/done/`.
 
 ## Demo Script
 

@@ -116,6 +116,14 @@ class NormalizeOrdersGenerated:
 - Hooks with `pass_inputs=True` receive an `inputs` namespace with original named inputs.
 - Hook-added columns can be projected away before strict validation.
 
+## Progress
+
+- [x] (2026-06-23) `@before(...)` and `@after(...)` hook metadata, hook recipe lowering, generated hook calls,
+  `HookInputs`, hook schema modes, project-output validation, streaming compatibility reporting, and opaque
+  traceability boundaries are implemented and tested for v1.
+- [x] (2026-06-23) Hook-free generated transforms omit source transform imports and `_impl`; hooked transforms call
+  source hooks through shared target recipes.
+
 ## Compile-Time Performance Metric
 
 Track discovery overhead for transforms with hooks.

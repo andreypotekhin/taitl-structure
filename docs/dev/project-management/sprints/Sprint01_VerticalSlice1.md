@@ -184,8 +184,8 @@ class NormalizeOrdersGenerated:
   diagnostics, online runner delegation, and generated runner delegation.
 - [x] (2026-06-21) Generated mode imports and calls generated `*Generated` classes through the same transform invocation
   API in Spark-free tests.
-- [ ] Live online PySpark recipe interpretation for the projection/filter fixture remains to be implemented.
-- [ ] Local Spark execution and online/generated row parity tests remain to be added.
+- [x] (2026-06-23) Live online PySpark recipe interpretation is implemented through the shared target recipe layer.
+- [x] (2026-06-23) Local Spark online/generated row parity is covered by the opt-in PySpark integration matrix.
 
 ## Demo Script
 

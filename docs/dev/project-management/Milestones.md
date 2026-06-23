@@ -2,9 +2,9 @@
 
 ## M0: Groundwork Ready
 
-Status: in progress. Configuration resolution, CLI entrypoint, seed config generation, Spark-free `check`, Spark-free
-`compile`, and generated-output diff checks are implemented and tested. Remaining closeout items include spike-note
-evidence and CI workflow documentation before this milestone should be marked with `+`.
+Status: v1 closeout. Configuration resolution, CLI entrypoint, seed config generation, Spark-free `check`, Spark-free
+`compile`, generated-output diff checks, and spike outcomes are implemented and tested. Remaining closeout is CI
+workflow evidence before this milestone should be marked with `+`.
 
 ### Exit Criteria
 
@@ -33,10 +33,10 @@ pytest
 
 ## M1: Vertical Slice 1
 
-Status: in progress. The shared PySpark recipe layer, generated transform rendering, public `StructureSession`, deferred
+Status: v1 external validation. The shared PySpark recipe layer, generated transform rendering, public `StructureSession`, deferred
 input binding, generated runner delegation, runtime input diagnostics, live online PySpark recipe interpretation, and
-online/generated row parity integration coverage are implemented. Remaining closeout is validating the PySpark
-integration matrix in an environment with PySpark installed, because the local workspace skips those tests.
+online/generated row parity integration coverage are implemented. Remaining closeout is running the PySpark integration
+matrix in an environment with PySpark installed, because the local workspace skips those tests.
 
 ### Exit Criteria
 
@@ -55,7 +55,7 @@ NormalizeOrders(orders=orders_df).run(session)
 
 ## M2: Schema Enforcement
 
-Status: in progress. Spark schema source rendering, generated schema modules, generated runtime schema helpers,
+Status: v1 closeout. Spark schema source rendering, generated schema modules, generated runtime schema helpers,
 runtime schema materialization, validation recipe placement, and online-materialized `transform.schemas.output`
 exposure are implemented and tested. Live runtime schema assertion behavior is covered through the online/generated
 parity integration contract. Remaining closeout is broader negative schema-validation coverage against Spark
@@ -72,7 +72,7 @@ DataFrames.
 
 ## M3: Expression DSL Usability
 
-Status: in progress. v1 fixture expressions, filters, expression helpers, generated expression rendering, and the
+Status: v1 closeout. v1 fixture expressions, filters, expression helpers, generated expression rendering, and the
 shared diagnostic registry are implemented and tested. Unsupported Python operation diagnostics and live
 online/generated expression parity integration coverage are now in place. Remaining closeout is expanding negative
 diagnostics beyond the representative v1 cases.
@@ -85,7 +85,11 @@ diagnostics beyond the representative v1 cases.
 - Unsupported Python operations fail with structured diagnostics.
 - Error messages suggest DSL alternatives, `@expr_fn`, hooks, and config workarounds when applicable.
 
-## M4: Hooks and Generated Classes
+## +M4: Hooks and Generated Classes
+
+Status: complete. Hook metadata, source hook calls, `HookInputs`, hook schema modes, project-output validation,
+hook-free generated cleanliness, streaming compatibility findings, traceability opaque boundaries, and online/generated
+hook recipe parity are implemented and tested for v1.
 
 ### Exit Criteria
 
@@ -98,11 +102,11 @@ diagnostics beyond the representative v1 cases.
 
 ## M5: Joins, Compiler Traceability, Build Integration
 
-Status: in progress. `join_one(...)`, source-order join lowering, generated join rendering, `compile --fail-on-diff`,
+Status: v1 closeout. `join_one(...)`, source-order join lowering, generated join rendering, `compile --fail-on-diff`,
 compact `structure explain`, streaming compatibility reporting, compiler provenance, static dataflow traceability artifacts,
 compact explain traceability summaries, and online/generated join parity integration coverage are implemented and tested.
-Remaining exit criteria are broader CI build-integration coverage and validating the live PySpark matrix outside this
-PySpark-free workspace.
+Remaining exit criteria are `join_one(...)` uniqueness diagnostics, broader CI build-integration coverage, and
+validating the live PySpark matrix outside this PySpark-free workspace.
 
 ### Exit Criteria
 
@@ -116,10 +120,11 @@ PySpark-free workspace.
 
 ## M6: v1 Stabilization
 
-Status: in progress. The first registry-backed diagnostic contract is implemented with public anchors, renderer,
-registry validation tests, and representative routing for configuration, backend capability, generated-output drift,
-runtime, and CLI internal errors. Remaining stabilization work includes broader compiler negative diagnostics,
-multi-version PySpark strategy, generated-code version headers, and setup/doctor checks.
+Status: v1 closeout. The first registry-backed diagnostic contract is implemented with public anchors, renderer,
+registry validation tests, and representative routing for configuration, target capability, generated-output drift,
+runtime, CLI internal errors, compiler errors, and streaming compatibility findings. Remaining stabilization work
+includes broader compiler negative diagnostics, multi-version PySpark execution evidence, generated-code version
+headers, and setup/doctor checks.
 
 ### Exit Criteria
 

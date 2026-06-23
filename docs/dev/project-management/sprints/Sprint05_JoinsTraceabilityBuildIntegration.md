@@ -126,7 +126,7 @@ customers_df = F.broadcast(customers.alias("customers"))
   summaries.
 - [x] (2026-06-21) Online/generated parity checks for the live v1 join fixture are implemented in the PySpark
   integration matrix.
-- [ ] Validate the PySpark integration matrix in a workspace with PySpark installed.
+- [ ] v1 external validation: run the PySpark integration matrix in a workspace with PySpark installed.
 
 ## Compile-Time Performance Metric
 

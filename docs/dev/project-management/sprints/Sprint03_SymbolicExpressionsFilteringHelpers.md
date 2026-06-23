@@ -112,9 +112,10 @@ df = orders.where(
   generated PySpark expression rendering are implemented for the v1 fixture.
 - [x] (2026-06-21) Shared diagnostic registry, renderer, docs anchors, and representative config/backend/runtime/CLI
   diagnostic routing are implemented under `structure.lib.cross.errors`.
-- [ ] Unsupported Python operation traps and detailed compiler diagnostics such as `DSL-E0401` remain to be added in the
-  negative compiler test milestone.
-- [ ] Live online/generated expression parity remains open until the live PySpark recipe interpreter lands.
+- [x] (2026-06-23) Unsupported Python operation traps and representative `DSL-E0401` compiler diagnostics are covered
+  by negative compiler tests.
+- [x] (2026-06-23) Live online/generated expression parity is covered by the shared target recipe layer and PySpark
+  integration matrix.
 
 ## Demo Script
 
