@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from structure.app.target.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
-from structure.app.target.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
-from structure.app.target.pyspark.logic.model.PySparkJoinRecipe import PySparkJoinRecipe
-from structure.app.dsl.logic.model.transforms.Join import Join
 from structure.app.compiler.compileability.streaming_compatibility.logic.model.StreamingFinding import StreamingFinding
 from structure.app.compiler.compileability.streaming_compatibility.logic.model.StreamingReport import StreamingReport
 from structure.app.compiler.compileability.streaming_compatibility.logic.model.StreamingSupport import StreamingSupport
+from structure.app.dsl.logic.model.transforms.Join import Join
+from structure.app.target.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.app.target.pyspark.logic.model.PySparkHookRecipe import PySparkHookRecipe
+from structure.app.target.pyspark.logic.model.PySparkJoinRecipe import PySparkJoinRecipe
 
 
 class ClassifyStreamingCompatibility:

@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.app.dsl.logic.model.expr.Expression import Expression
 from structure.app.compiler.ir.logic.model.HookPlan import HookPlan
 from structure.app.compiler.ir.logic.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.logic.model.ProjectAssignment import ProjectAssignment
+from structure.app.dsl.logic.model.expr.Expression import Expression
 from structure.app.dsl.logic.model.schemas.Structure import Structure
 
 

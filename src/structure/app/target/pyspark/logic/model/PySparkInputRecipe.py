@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.app.target.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.app.dsl.logic.model.schemas.Structure import Structure
+from structure.app.target.pyspark.logic.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 
 @dataclass(frozen=True)

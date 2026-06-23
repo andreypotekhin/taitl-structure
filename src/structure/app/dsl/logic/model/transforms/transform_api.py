@@ -3,9 +3,9 @@ from __future__ import annotations
 import inspect
 from typing import Callable
 
+from structure.app.compiler.symbolic_execution.logic.model.CompileContext import current_context
 from structure.app.dsl.logic.model.expr.expressions import literal
 from structure.app.dsl.logic.model.schemas.Structure import Structure
-from structure.app.compiler.symbolic_execution.logic.model.CompileContext import current_context
 from structure.app.dsl.logic.model.transforms.ExprFunction import ExprFunction
 from structure.app.dsl.logic.model.transforms.InputDeclaration import InputDeclaration
 from structure.app.dsl.logic.model.transforms.OutputDeclaration import OutputDeclaration

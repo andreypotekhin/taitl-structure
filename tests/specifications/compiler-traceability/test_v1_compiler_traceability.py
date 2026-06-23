@@ -1,8 +1,8 @@
 import sys
 
-from structure.app.target.pyspark.api import lower_pyspark_plan
 from structure.app.compiler.traceability.api import build_compiler_traceability
 from structure.app.dsl.api import compile_transform
+from structure.app.target.pyspark.api import lower_pyspark_plan
 
 
 def _traceability():

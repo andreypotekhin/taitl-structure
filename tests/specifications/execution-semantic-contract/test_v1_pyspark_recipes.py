@@ -1,10 +1,10 @@
 import sys
 
-from structure.app.target.pyspark.api import lower_pyspark_plan
 from structure.app.dsl.api import compile_transform
 from structure.app.dsl.logic.model.transforms.Join import Join
 from structure.app.dsl.logic.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.logic.model.transforms.SchemaMode import SchemaMode
+from structure.app.target.pyspark.api import lower_pyspark_plan
 
 
 def test_v1_pyspark_recipe_lowering_is_spark_free() -> None:

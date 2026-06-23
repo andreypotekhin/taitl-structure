@@ -4,16 +4,16 @@ import inspect
 from typing import get_type_hints
 
 from structure.app.compiler.diagnostics.api import StructureCompileError
-from structure.app.dsl.logic.model.expr.expressions import literal
-from structure.app.dsl.logic.model.expr.RowScope import RowScope
 from structure.app.compiler.ir.logic.model.HookPlan import HookPlan
 from structure.app.compiler.ir.logic.model.InputPlan import InputPlan
 from structure.app.compiler.ir.logic.model.OutputPlan import OutputPlan
 from structure.app.compiler.ir.logic.model.ProjectAssignment import ProjectAssignment
 from structure.app.compiler.ir.logic.model.StepPlan import StepPlan
 from structure.app.compiler.ir.logic.model.TransformPlan import TransformPlan
-from structure.app.dsl.logic.model.schemas.Structure import Structure
 from structure.app.compiler.symbolic_execution.logic.model.CompileContext import CompileContext
+from structure.app.dsl.logic.model.expr.expressions import literal
+from structure.app.dsl.logic.model.expr.RowScope import RowScope
+from structure.app.dsl.logic.model.schemas.Structure import Structure
 from structure.app.dsl.logic.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.app.dsl.logic.model.transforms.Transform import Transform
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
@@ -251,9 +251,7 @@ class CompileTransform:
             return [self._lane_output("df", class_output, lanes, ordinal=0, transform_class=transform_class)]
 
         if not declarations:
-            return [
-                self._lane_output("df", steps[-1].output_schema, lanes, ordinal=0, transform_class=transform_class)
-            ]
+            return [self._lane_output("df", steps[-1].output_schema, lanes, ordinal=0, transform_class=transform_class)]
 
         if len(declarations) == 1 and not explicit_outputs:
             declaration = declarations[0]

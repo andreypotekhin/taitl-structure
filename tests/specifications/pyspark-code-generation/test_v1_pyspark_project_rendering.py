@@ -1,7 +1,7 @@
 import json
 
-from structure.app.target.pyspark.api import lower_pyspark_plan, render_pyspark_project
 from structure.app.dsl.api import compile_transform
+from structure.app.target.pyspark.api import lower_pyspark_plan, render_pyspark_project
 
 
 def _source_schema_modules():

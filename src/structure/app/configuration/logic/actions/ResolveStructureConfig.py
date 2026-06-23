@@ -7,10 +7,10 @@ from typing import cast
 
 import toml  # type: ignore[import-untyped]
 
-from structure.app.target.capabilities.api.capabilities import resolve_backend_capabilities
 from structure.app.configuration.logic.model.ConfigDiagnostic import ConfigDiagnostic
 from structure.app.configuration.logic.model.ConfigError import ConfigError
 from structure.app.configuration.logic.model.StructureConfig import StructureConfig
+from structure.app.target.capabilities.api.capabilities import resolve_backend_capabilities
 
 
 class ResolveStructureConfig:

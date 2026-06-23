@@ -3,9 +3,9 @@ from typing import Any, cast
 import pytest
 
 from structure import String, Structure, Transform, field, input, output, transform
-from structure.app.target.pyspark.api import lower_pyspark_plan, render_pyspark_transform_module
 from structure.app.dsl.api import compile_transform
 from structure.app.runtime.api import StructureSession, TransformResult
+from structure.app.target.pyspark.api import lower_pyspark_plan, render_pyspark_transform_module
 
 
 class Raw(Structure):

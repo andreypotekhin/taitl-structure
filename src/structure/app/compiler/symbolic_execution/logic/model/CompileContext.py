@@ -3,8 +3,8 @@ from __future__ import annotations
 from contextvars import ContextVar, Token
 from types import TracebackType
 
-from structure.app.dsl.logic.model.expr.Expression import Expression
 from structure.app.compiler.ir.logic.model.JoinPlan import JoinPlan
+from structure.app.dsl.logic.model.expr.Expression import Expression
 
 _current: ContextVar["CompileContext | None"] = ContextVar("structure_compile_context", default=None)
 

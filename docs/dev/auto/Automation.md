@@ -16,6 +16,7 @@ Example: auto/mastermind/file-extentions, auto/document/configurables
 
 Ensure any code changes adhere to the style guide (/docs/dev/Style.md)
 Fully build and test the project at the end of each task that touches the code.
+Ensure build completion ('make build') completes without errors
 
 Output new suggestions to /docs/dev/suggestions/.
 Focus each suggestion on a specific topic, so it may be implemented in parallel with other tasks.
