@@ -144,11 +144,12 @@ v2 extends the compiler IR and emitter with advanced Spark operations while pres
 
 ## v3 Scope
 
-v3 introduces streaming orchestration. v1/v2 only maintain streaming compatibility when callers pass streaming
-DataFrames.
+v3 completes joins work and introduces streaming orchestration. 
+v1/v2 only maintain streaming compatibility when callers pass streaming DataFrames.
 
 ### v3 candidate features
 
+- Full featured joins ('Out of scope until a later design' from `docs/specifications/AnalyticalJoinCoverage.md`) 
 - Generated `readStream` and `writeStream` code.
 - Streaming sinks/sources configuration.
 - Trigger configuration.
