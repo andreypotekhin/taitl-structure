@@ -6,6 +6,7 @@ from structure.app.compiler.ir.logic.model.InputPlan import InputPlan
 from structure.app.compiler.ir.logic.model.OutputPlan import OutputPlan
 from structure.app.compiler.ir.logic.model.StepPlan import StepPlan
 from structure.app.dsl.logic.model.schemas.Structure import Structure
+from structure.lib.cross.errors import Diagnostic
 
 
 @dataclass(frozen=True)
@@ -15,6 +16,7 @@ class TransformPlan:
     steps: tuple[StepPlan, ...]
     outputs: tuple[OutputPlan, ...]
     options: dict[str, object] | None = None
+    diagnostics: tuple[Diagnostic, ...] = ()
 
     @property
     def output_schema(self) -> type[Structure]:

@@ -6,9 +6,10 @@ from structure.app.dsl.logic.model.schemas.Structure import Structure
 
 class RowScope:
 
-    def __init__(self, *, name: str, schema: type[Structure]) -> None:
+    def __init__(self, *, name: str, schema: type[Structure], nullable: bool = False) -> None:
         self._structure_scope_name = name
         self._structure_scope_schema = schema
+        self._structure_scope_nullable = nullable
 
     def __getattr__(self, name: str) -> Expression:
         fields = self._structure_scope_schema._structure_fields
@@ -18,6 +19,6 @@ class RowScope:
         return Expression(
             kind="field",
             type=field.type,
-            nullable=field.nullable,
+            nullable=self._structure_scope_nullable or field.nullable,
             data={"scope": self._structure_scope_name, "field": field.name},
         )

@@ -32,4 +32,4 @@ class InputScope(RowScope):
                 hint=hint,
             )
         )
-        return RowScope(name=self._structure_input_name, schema=self._structure_input_schema)
+        return RowScope(name=self._structure_input_name, schema=self._structure_input_schema, nullable=how is Join.LEFT)

@@ -26,11 +26,19 @@ class RenderExplainReport:
         lines = [
             recipe.transform,
             f"  backend: {recipe.backend.name} {recipe.backend.target}",
-            "",
-            "  streaming:",
-            f"    status: {streaming.support.value}",
-            f"    required: {str(streaming.required).lower()}",
         ]
+        if plan.diagnostics:
+            lines.extend(["", "  diagnostics:"])
+            for diagnostic in plan.diagnostics:
+                lines.append(f"    {diagnostic.code}: {diagnostic.problem_text()}")
+        lines.extend(
+            [
+                "",
+                "  streaming:",
+                f"    status: {streaming.support.value}",
+                f"    required: {str(streaming.required).lower()}",
+            ]
+        )
         for finding in streaming.findings:
             lines.append(f"    {finding.code}: {finding.support.value} in {finding.step} ({finding.operation})")
         lines.extend(["", "  inputs:"])

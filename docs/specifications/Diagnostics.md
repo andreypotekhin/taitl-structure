@@ -194,8 +194,8 @@ has not been published.
 
 ## Documentation Contract
 
-`docs/Diagnostics.md` is the public index. Every active, deprecated, and retired published code must have a stable
-lowercase Markdown heading anchor there:
+`docs/Diagnostics.md` is the compact public index. Every active, deprecated, and retired published code must have a
+stable lowercase Markdown heading anchor there:
 
 ```text
 docs/Diagnostics.md#conf-e0101

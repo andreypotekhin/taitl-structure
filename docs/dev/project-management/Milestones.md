@@ -70,12 +70,12 @@ DataFrames.
 - Class-wide and method-level validation overrides work.
 - Invalid schema tests fail predictably.
 
-## M3: Expression DSL Usability
+## +M3: Expression DSL Usability
 
-Status: v1 closeout. v1 fixture expressions, filters, expression helpers, generated expression rendering, and the
+Status: v1 local closeout complete. v1 fixture expressions, filters, expression helpers, generated expression
+rendering, literal typing, output assignment checks, nullability narrowing, explicit conversion diagnostics, and the
 shared diagnostic registry are implemented and tested. Unsupported Python operation diagnostics and live
-online/generated expression parity integration coverage are now in place. Remaining closeout is expanding negative
-diagnostics beyond the representative v1 cases.
+online/generated expression parity integration coverage are in place.
 
 ### Exit Criteria
 
@@ -102,11 +102,11 @@ hook recipe parity are implemented and tested for v1.
 
 ## M5: Joins, Compiler Traceability, Build Integration
 
-Status: v1 closeout. `join_one(...)`, source-order join lowering, generated join rendering, `compile --fail-on-diff`,
-compact `structure explain`, streaming compatibility reporting, compiler provenance, static dataflow traceability artifacts,
-compact explain traceability summaries, and online/generated join parity integration coverage are implemented and tested.
-Remaining exit criteria are `join_one(...)` uniqueness diagnostics, broader CI build-integration coverage, and
-validating the live PySpark matrix outside this PySpark-free workspace.
+Status: v1 external validation. `join_one(...)`, source-order join lowering, generated join rendering, uniqueness
+warnings, stricter join-condition/key diagnostics, `compile --fail-on-diff`, compact `structure explain`, streaming
+compatibility reporting, compiler provenance, static dataflow traceability artifacts, compact explain traceability
+summaries, and online/generated join parity integration coverage are implemented and tested. Remaining exit criteria
+are broader CI build-integration coverage and validating the live PySpark matrix outside this PySpark-free workspace.
 
 ### Exit Criteria
 
@@ -121,10 +121,10 @@ validating the live PySpark matrix outside this PySpark-free workspace.
 ## M6: v1 Stabilization
 
 Status: v1 closeout. The first registry-backed diagnostic contract is implemented with public anchors, renderer,
-registry validation tests, and representative routing for configuration, target capability, generated-output drift,
-runtime, CLI internal errors, compiler errors, and streaming compatibility findings. Remaining stabilization work
-includes broader compiler negative diagnostics, multi-version PySpark execution evidence, generated-code version
-headers, and setup/doctor checks.
+registry validation tests, and representative routing for configuration, schema assignment, joins, target capability,
+generated-output drift, runtime, CLI internal errors, compiler errors, and streaming compatibility findings. Remaining
+stabilization work includes multi-version PySpark execution evidence, generated-code version headers, and setup/doctor
+checks.
 
 ### Exit Criteria
 

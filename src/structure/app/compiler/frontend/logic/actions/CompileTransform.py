@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import get_type_hints
+from typing import cast, get_type_hints
 
 from structure.app.compiler.diagnostics.api import StructureCompileError
 from structure.app.compiler.ir.logic.model.HookPlan import HookPlan
@@ -11,11 +11,16 @@ from structure.app.compiler.ir.logic.model.ProjectAssignment import ProjectAssig
 from structure.app.compiler.ir.logic.model.StepPlan import StepPlan
 from structure.app.compiler.ir.logic.model.TransformPlan import TransformPlan
 from structure.app.compiler.symbolic_execution.logic.model.CompileContext import CompileContext
+from structure.app.dsl.logic.model.expr.Expression import Expression
 from structure.app.dsl.logic.model.expr.expressions import literal
 from structure.app.dsl.logic.model.expr.RowScope import RowScope
 from structure.app.dsl.logic.model.schemas.Structure import Structure
+from structure.app.dsl.logic.model.transforms.Join import Join
+from structure.app.dsl.logic.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.logic.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.app.dsl.logic.model.transforms.Transform import Transform
+from structure.app.dsl.logic.model.types.DecimalType import DecimalType
+from structure.app.dsl.logic.model.types.StructureType import StructureType
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 
 
@@ -31,7 +36,7 @@ class CompileTransform:
             )
 
         inputs = self._inputs(transform_class)
-        steps, lanes, explicit_outputs = self._steps(transform_class, inputs)
+        steps, lanes, explicit_outputs, diagnostics = self._steps(transform_class, inputs)
         outputs = self._outputs(transform_class, steps, lanes, explicit_outputs)
         return TransformPlan(
             name=transform_class.__name__,
@@ -39,6 +44,7 @@ class CompileTransform:
             steps=tuple(steps),
             outputs=tuple(outputs),
             options=dict(getattr(transform_class, "_structure_transform_options", {})),
+            diagnostics=tuple(diagnostics),
         )
 
     def _inputs(self, transform_class: type[Transform]) -> list[InputPlan]:
@@ -51,12 +57,13 @@ class CompileTransform:
         self,
         transform_class: type[Transform],
         inputs: list[InputPlan],
-    ) -> tuple[list[StepPlan], dict[str, dict[str, object]], set[str]]:
+    ) -> tuple[list[StepPlan], dict[str, dict[str, object]], set[str], list[Diagnostic]]:
         instance = transform_class()
         hooks = self._hooks(transform_class)
         steps: list[StepPlan] = []
         lanes: dict[str, dict[str, object]] = {}
         explicit_outputs: set[str] = set()
+        diagnostics: list[Diagnostic] = []
 
         for name, member in transform_class.__dict__.items():
             if name.startswith("_") or name == "run" or not inspect.isfunction(member):
@@ -70,7 +77,7 @@ class CompileTransform:
             assert issubclass(output_schema, Structure)
 
             parameter = self._row_parameter(member, hints)
-            input_schema = parameter.annotation
+            input_schema = cast(type[Structure], parameter.annotation)
             metadata = getattr(member, "_structure_output_method", None)
             input_lane, input_source = self._input_lane(
                 transform_class,
@@ -88,7 +95,7 @@ class CompileTransform:
                 explicit_outputs=explicit_outputs,
             )
 
-            actual_schema = input_source["schema"]
+            actual_schema = cast(type[Structure], input_source["schema"])
             if input_schema is not actual_schema:
                 if input_lane == "df":
                     problem = (
@@ -127,7 +134,8 @@ class CompileTransform:
                     context={"error": type(error).__name__},
                 ) from error
 
-            assignments = self._assignments(transform_class, name, output_schema, result)
+            diagnostics.extend(self._validate_joins(transform_class, name, context.joins))
+            assignments = self._assignments(transform_class, name, output_schema, result, filters=context.filters)
             steps.append(
                 StepPlan(
                     name=name,
@@ -158,7 +166,7 @@ class CompileTransform:
                 problem=f"{transform_class.__name__} has no public schema-returning subtransform.",
                 use="Add a public instance method with a Structure row parameter and Structure return annotation.",
             )
-        return steps, lanes, explicit_outputs
+        return steps, lanes, explicit_outputs, diagnostics
 
     def _input_lane(
         self,
@@ -304,7 +312,7 @@ class CompileTransform:
                 use="Produce the lane earlier in source order before exposing it as a result.",
                 context={"output": name},
             )
-        actual_schema = source["schema"]
+        actual_schema = cast(type[Structure], source["schema"])
         if actual_schema is not schema:
             raise self._error(
                 "DSL-E0402",
@@ -408,6 +416,8 @@ class CompileTransform:
         member: str,
         output_schema: type[Structure],
         result: Structure,
+        *,
+        filters: tuple[Expression, ...] | list[Expression],
     ) -> list[ProjectAssignment]:
         if not isinstance(result, output_schema):
             raise self._error(
@@ -430,8 +440,315 @@ class CompileTransform:
                     use="Assign every declared output field, or return an inherited base schema with explicit overrides.",
                     context={"field": field.name, "schema": output_schema.__name__},
                 )
-            assignments.append(ProjectAssignment(field=field, expression=literal(result._structure_values[field.name])))
+            expression = literal(result._structure_values[field.name])
+            nullable = self._nullable(expression, filters)
+            if not field.nullable and nullable:
+                raise self._error(
+                    "SCHEMA-E0301",
+                    transform_class=transform_class,
+                    member=member,
+                    problem=(
+                        f"{output_schema.__name__}.{field.name} is non-nullable, "
+                        "but the assigned expression may produce null."
+                    ),
+                    use="Guard the source value with where(value.is_not_null()) or provide a non-null default with coalesce(...).",
+                    context={"field": field.name, "schema": output_schema.__name__},
+                )
+            if not self._assignable(expression.type, field.type, expression=expression):
+                code = (
+                    "SCHEMA-E0302"
+                    if self._requires_explicit_conversion(expression.type, field.type)
+                    else "SCHEMA-E0303"
+                )
+                raise self._error(
+                    code,
+                    transform_class=transform_class,
+                    member=member,
+                    problem=(
+                        f"{output_schema.__name__}.{field.name} expects {self._type_text(field.type)}, "
+                        f"but the assigned expression is {self._type_text(expression.type)}."
+                    ),
+                    use=self._assignment_use(expression.type, field.type, field.name),
+                    context={
+                        "field": field.name,
+                        "expected": self._type_text(field.type),
+                        "actual": self._type_text(expression.type),
+                    },
+                )
+            assignments.append(ProjectAssignment(field=field, expression=expression))
         return assignments
+
+    def _validate_joins(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        joins: list,
+    ) -> list[Diagnostic]:
+        diagnostics: list[Diagnostic] = []
+        for occurrence, join in enumerate(joins, start=1):
+            if join.how not in {Join.LEFT, Join.INNER}:
+                raise self._join_error(
+                    transform_class,
+                    member,
+                    join.input_name,
+                    occurrence,
+                    f"v1 join_one(...) supports Join.LEFT and Join.INNER, not {join.how!r}.",
+                    "Use Join.LEFT or Join.INNER, or move non-v1 join semantics into an explicit hook.",
+                )
+            if join.hint is not None and not isinstance(join.hint, JoinHint):
+                raise self._join_error(
+                    transform_class,
+                    member,
+                    join.input_name,
+                    occurrence,
+                    f"join_one(...) hint must be a JoinHint value, not {type(join.hint).__name__}.",
+                    "Use JoinHint.BROADCAST or omit hint=.",
+                )
+
+            conditions = self._join_conditions(transform_class, member, join.input_name, occurrence, join.predicate)
+            for condition in conditions:
+                left, right = condition.args
+                self._validate_join_pair(transform_class, member, join.input_name, occurrence, left, right)
+
+            if not self._unique_join(join.input_name, join.input_schema, conditions):
+                diagnostics.append(
+                    Diagnostic(
+                        entry=diagnostic_registry.get("JOIN-W0601"),
+                        problem=f"join_one(...) uniqueness is not proven for input {join.input_name}.",
+                        use="Mark the joined key field primary_key=True, declare a unique key, or use v2 join_many(...) when multiplication is intended.",
+                        context={"input": join.input_name, "occurrence": str(occurrence)},
+                        source=f"{transform_class.__module__}.{transform_class.__name__}.{member}",
+                    )
+                )
+        return diagnostics
+
+    def _join_conditions(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        input_name: str,
+        occurrence: int,
+        predicate: Expression,
+    ) -> list[Expression]:
+        if predicate.kind == "and":
+            return [
+                condition
+                for argument in predicate.args
+                for condition in self._join_conditions(transform_class, member, input_name, occurrence, argument)
+            ]
+        if predicate.kind in {"eq", "null_safe_eq"}:
+            return [predicate]
+        raise self._join_error(
+            transform_class,
+            member,
+            input_name,
+            occurrence,
+            "v1 joins support equality key pairs combined with AND.",
+            "Replace OR, inequality, or arbitrary predicates with equality pairs, or move custom join logic into a hook.",
+        )
+
+    def _validate_join_pair(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        input_name: str,
+        occurrence: int,
+        left: Expression,
+        right: Expression,
+    ) -> None:
+        left_scopes = self._scopes(left)
+        right_scopes = self._scopes(right)
+        left_has_input = input_name in left_scopes
+        right_has_input = input_name in right_scopes
+
+        if left_has_input == right_has_input:
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                "Each join key pair must compare the joined input with the current row or an earlier joined scope.",
+                "Put one joined-input expression on one side of == and one non-joined expression on the other side.",
+            )
+        if not (left_scopes | right_scopes) - {input_name}:
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                "Join key pairs cannot compare only fields from the joined input.",
+                "Compare the joined input key to the current row or a previously joined scope.",
+            )
+        if not self._key_compatible(left.type, right.type):
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                f"Join key types are incompatible: {self._type_text(left.type)} and {self._type_text(right.type)}.",
+                "Join fields with compatible types or use explicit expression helpers before comparing keys.",
+            )
+
+    def _unique_join(
+        self,
+        input_name: str,
+        input_schema: type[Structure],
+        conditions: list[Expression],
+    ) -> bool:
+        if len(conditions) != 1:
+            return False
+        left, right = conditions[0].args
+        return self._primary_key_for_scope(left, input_name, input_schema) or self._primary_key_for_scope(
+            right,
+            input_name,
+            input_schema,
+        )
+
+    def _primary_key_for_scope(
+        self,
+        expression: Expression,
+        scope: str,
+        schema: type[Structure],
+    ) -> bool:
+        if expression.kind != "field" or not expression.data or expression.data.get("scope") != scope:
+            return False
+        path = str(expression.data.get("field", ""))
+        if "." in path:
+            return False
+        field = schema._structure_fields.get(path)
+        return bool(field and field.primary_key)
+
+    def _scopes(self, expression: Expression) -> set[str]:
+        scopes = set().union(*(self._scopes(argument) for argument in expression.args))
+        if expression.kind == "field" and expression.data and "scope" in expression.data:
+            scopes.add(str(expression.data["scope"]))
+        return scopes
+
+    def _nullable(self, expression: Expression, filters: tuple[Expression, ...] | list[Expression]) -> bool:
+        if self._narrowed(expression, filters):
+            return False
+        if expression.kind == "field":
+            return expression.nullable
+        if expression.kind == "literal":
+            return expression.nullable
+        if expression.kind in {"is_null", "is_not_null", "null_safe_eq", "not"}:
+            return False
+        if expression.kind == "call":
+            function = (expression.data or {}).get("function")
+            if function == "coalesce":
+                return all(self._nullable(argument, filters) for argument in expression.args)
+            return any(self._nullable(argument, filters) for argument in expression.args)
+        if expression.args:
+            return any(self._nullable(argument, filters) for argument in expression.args)
+        return expression.nullable
+
+    def _narrowed(self, expression: Expression, filters: tuple[Expression, ...] | list[Expression]) -> bool:
+        return any(
+            filter.kind == "is_not_null" and len(filter.args) == 1 and self._same_field(expression, filter.args[0])
+            for filter in filters
+        )
+
+    def _same_field(self, left: Expression, right: Expression) -> bool:
+        if left.kind != "field" or right.kind != "field":
+            return False
+        return dict(left.data or {}) == dict(right.data or {})
+
+    def _assignable(
+        self,
+        actual: StructureType | None,
+        target: StructureType,
+        *,
+        expression: Expression,
+    ) -> bool:
+        if actual is None:
+            return expression.kind == "literal" and (expression.data or {}).get("value") is None
+        if self._same_type(actual, target):
+            return True
+        if target.name == "long" and actual.name == "integer":
+            return True
+        if target.name == "double" and actual.name in {"integer", "long", "float"}:
+            return True
+        if (
+            target.name == "float"
+            and actual.name == "double"
+            and isinstance((expression.data or {}).get("value"), float)
+        ):
+            return True
+        if isinstance(target, DecimalType):
+            return self._assignable_decimal(actual, target)
+        return False
+
+    def _same_type(self, actual: StructureType, target: StructureType) -> bool:
+        if actual.name != target.name:
+            return False
+        if isinstance(actual, DecimalType) and isinstance(target, DecimalType):
+            return actual.precision == target.precision and actual.scale == target.scale
+        return actual == target or actual.__class__.__name__.removesuffix("Type") == target.__class__.__name__
+
+    def _assignable_decimal(self, actual: StructureType, target: DecimalType) -> bool:
+        integer_digits = target.precision - target.scale
+        if actual.name == "integer":
+            return integer_digits >= 10
+        if actual.name == "long":
+            return integer_digits >= 19
+        if isinstance(actual, DecimalType):
+            return target.scale >= actual.scale and integer_digits >= actual.precision - actual.scale
+        return False
+
+    def _key_compatible(self, left: StructureType | None, right: StructureType | None) -> bool:
+        if left is None or right is None:
+            return False
+        return self._assignable(left, right, expression=Expression(kind="field", type=left)) or self._assignable(
+            right, left, expression=Expression(kind="field", type=right)
+        )
+
+    def _requires_explicit_conversion(self, actual: StructureType | None, target: StructureType) -> bool:
+        return (
+            actual is not None
+            and actual.name == "string"
+            and target.name
+            in {
+                "decimal",
+                "double",
+                "float",
+                "integer",
+                "long",
+                "date",
+                "timestamp",
+            }
+        )
+
+    def _assignment_use(self, actual: StructureType | None, target: StructureType, field: str) -> str:
+        if self._requires_explicit_conversion(actual, target) and isinstance(target, DecimalType):
+            return f"Use {field}=to_decimal(value, precision={target.precision}, scale={target.scale}) so parsing is explicit."
+        if actual is not None and actual.name == "integer" and target.name == "boolean":
+            return f"Use {field}=value > 0 or another explicit boolean predicate."
+        return "Use a compatible Structure expression type or an explicit conversion helper."
+
+    def _type_text(self, type: StructureType | None) -> str:
+        if type is None:
+            return "untyped null"
+        if isinstance(type, DecimalType):
+            return f"Decimal({type.precision}, {type.scale})"
+        return f"{type.name}()"
+
+    def _join_error(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        input_name: str,
+        occurrence: int,
+        problem: str,
+        use: str,
+    ) -> StructureCompileError:
+        return self._error(
+            "JOIN-E0601",
+            transform_class=transform_class,
+            member=member,
+            problem=problem,
+            use=use,
+            context={"input": input_name, "occurrence": str(occurrence)},
+        )
 
     def _is_schema(self, value: object) -> bool:
         return isinstance(value, type) and issubclass(value, Structure)

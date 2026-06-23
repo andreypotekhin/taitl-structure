@@ -126,6 +126,8 @@ customers_df = F.broadcast(customers.alias("customers"))
   summaries.
 - [x] (2026-06-21) Online/generated parity checks for the live v1 join fixture are implemented in the PySpark
   integration matrix.
+- [x] (2026-06-23) `JOIN-W0601` uniqueness warnings, primary-key uniqueness proof, stricter unsupported-condition
+  diagnostics, incompatible key diagnostics, and left-join output-nullability checks are implemented and tested.
 - [ ] v1 external validation: run the PySpark integration matrix in a workspace with PySpark installed.
 
 ## Compile-Time Performance Metric
