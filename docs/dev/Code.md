@@ -49,7 +49,7 @@ src/structure/
       pyspark/
   
   lib/
-    app/ - Common App Framework (defines classes like Command, Endpoint)
+    app/ - Common App Framework vocabulary
     common/ - common classes, shared constants
     helper/ - shared helpers (no business logic)
 ```
@@ -65,43 +65,40 @@ Library package structure: no specific structure, various subpackages as need ar
 Application package structure:
 
 structure/app/[app]/
-  - api/ - Programmatic API endpoints - application entry points
-    Endpoints can be simple (single command) or compound: representing groupings of commands (actions). 
-      Ex: HelpEndpoint provides helpCompile() method returning new instances of HelpCompile command,
-      as well as other help*() methods to render help messages of other CLI commands. 
-      Usage: cli.help.compile() returns an instance of HelpCompile command. 
-  - logic/ - 'logic' classes implementing business logic 
-  - logic/actions/ - command/action classes serving as business logic entry points
-    Ex: Compile command action implements 'compile' CLI command 
-      Usage: cli.commands.compile() creates an instance of Compile command, 
-      callable with (args, ...) to execute the command.
+  - api/ - Programmatic API endpoints - application entry points.
+    The main endpoint is an uppercase stateless class, such as `Compiler`, `Runtime`,
+    `PySpark`, `Configuration`, `Capabilities`, or `CliActions`.
+    Sub-endpoints are class attributes, such as `Compiler.frontend`, `Runtime.schemas`,
+    and `PySpark.render`.
+    Endpoint methods are static factories returning fresh command instances.
+      Usage: `Compiler.frontend.compile()` returns a new `CompileTransform` command.
+  - commands/ - action-oriented command classes called from endpoint methods.
+    Ex: `CompileTransform` implements frontend compilation.
+      Usage: `Compiler.frontend.compile()(TransformClass)`.
+  - model/ - public app model exposed by endpoint parameters, return types, or API exports.
+  - logic/ - app-private implementation classes used by commands and models.
   
 API modules are main entry points into an app packages, constituting programmatic API for external and inter-app use. 
 
 Common execution flow within an app:  
-- API endpoints instantiate actions/commands which delegate to other Logic classes
-- Command/action classes provide an entry point - __call__ method - with specific (preferably, named) arguments.
+- API endpoint classes instantiate commands which delegate to private logic classes.
+- Command classes provide an entry point - __call__ method - with specific (preferably, named) arguments.
 
-Lifecycle: App and Endpoint classes tend to be static/existing for long time; 
-Action/command and other logic classes are ephemeral and disposed immediately upon use, spanning maximum a single 
-api request.
+Lifecycle: Endpoint classes are stateless and long-lived. Commands and other logic classes are ephemeral and disposed
+immediately upon use, spanning maximum a single API request.
 
 ### Logic package structure
 Application packages, except, logic/ are flat. 
 The logic/ package further splits into deeper package hierarchy:
 
 logic/  
-  - actions/ - action-oriented classes causing effect on business
-    Action classes are main entry point to logic/. They are usually stateless.
   - data/ - data-oriented classes, mostly method-less, for simple transfer of information
     Data classes are normally uses as method arguments to 'package' multiple parameters
-  - model/ - domain model. 
-    - Don't be shy of defining further subpackages for cohesive model classes
-    - As usual, one-class-per-source-file for each model class.
+  - model/ - app-private domain model. Public model types belong in app-level `model/`.
   - maps/ - mappings between data structures - stateless read-only/no side effect.
   - rules/ - business rules. Normally, stateless boolean callables.
 
-Action classes are main entry points into logic package. 
+Command classes are the public action entry points. `logic/` is implementation-only.
 
 ### Action-oriented naming
 You'll notice that we don't have many actor/-or/-er ending classes (AbcLoader, XyzManager). 

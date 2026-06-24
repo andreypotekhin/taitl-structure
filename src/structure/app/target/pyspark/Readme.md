@@ -13,10 +13,10 @@ paths. It returns `PySparkExecutionPlan` recipe graphs, schema objects, source s
 The compound `pyspark` API endpoint groups commands by purpose:
 
 ```python
-pyspark.plan.lower()
-pyspark.schema.materialize()
-pyspark.render.project()
-pyspark.files.write()
+PySpark.plan.lower()
+PySpark.schema.materialize()
+PySpark.render.project()
+PySpark.files.write()
 ```
 
 Each subcommand returns a fresh action instance.

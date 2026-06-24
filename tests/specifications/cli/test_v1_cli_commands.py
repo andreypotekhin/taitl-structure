@@ -165,7 +165,7 @@ def test_v1_cli_clean_removes_owned_generated_files_only() -> None:
 
 def test_v1_cli_unexpected_failure_renders_internal_diagnostic(mocker) -> None:
     module = import_module("structure.app.cli.api.cli")
-    mocker.patch.object(module.configuration, "resolve", side_effect=RuntimeError("boom"))
+    mocker.patch.object(module.Configuration, "resolve", side_effect=RuntimeError("boom"))
 
     result = CliRunner().invoke(cli, ["check"])
 

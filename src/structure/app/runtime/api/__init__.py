@@ -1,6 +1,6 @@
-from structure.app.runtime.api.RuntimeEndpoint import RuntimeEndpoint
-from structure.app.runtime.execution.api import ExecutionEndpoint
-from structure.app.runtime.schemas.api import SchemasEndpoint, TransformSchemas
+from structure.app.runtime.api.Runtime import Runtime
+from structure.app.runtime.execution.api import Execution
+from structure.app.runtime.schemas.api import Schemas, TransformSchemas
 from structure.app.runtime.session.api import (
     RuntimeDiagnostic,
     StructureRuntimeError,
@@ -8,16 +8,13 @@ from structure.app.runtime.session.api import (
     TransformResult,
 )
 
-runtime = RuntimeEndpoint()
-
 __all__ = [
-    "ExecutionEndpoint",
+    "Execution",
     "RuntimeDiagnostic",
-    "RuntimeEndpoint",
-    "SchemasEndpoint",
+    "Runtime",
+    "Schemas",
     "StructureRuntimeError",
     "StructureSession",
     "TransformResult",
     "TransformSchemas",
-    "runtime",
 ]

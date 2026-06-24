@@ -1,7 +1,7 @@
-from structure.app.runtime.session.logic.model.RuntimeDiagnostic import RuntimeDiagnostic
-from structure.app.runtime.session.logic.model.StructureRuntimeError import StructureRuntimeError
-from structure.app.runtime.session.logic.model.StructureSession import StructureSession
-from structure.app.runtime.session.logic.model.TransformResult import TransformResult
+from structure.app.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
+from structure.app.runtime.session.model.StructureRuntimeError import StructureRuntimeError
+from structure.app.runtime.session.model.StructureSession import StructureSession
+from structure.app.runtime.session.model.TransformResult import TransformResult
 
 __all__ = [
     "RuntimeDiagnostic",

@@ -12,5 +12,5 @@ only where a check genuinely needs those shapes.
 
 ## Inner Workings
 Today this app is a container for the nested `streaming_compatibility` app. Future checks should follow the same
-pattern: a small `api/` export, action classes under `logic/actions/`, and report or finding records under
-`logic/model/`.
+pattern: a small `api/` export, endpoint-called commands under `commands/`, and public report or finding records under
+`model/`.

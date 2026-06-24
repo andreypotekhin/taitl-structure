@@ -13,7 +13,7 @@ and capability decisions, or raises `ConfigError` carrying a `ConfigDiagnostic`.
 The `configuration` API endpoint exposes configuration resolution as a fresh command factory:
 
 ```python
-configuration.resolve()
+Configuration.resolve()
 ```
 
 ## Inner Workings

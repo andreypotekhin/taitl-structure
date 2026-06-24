@@ -13,9 +13,9 @@ or `TransformResult` mappings, and raises `StructureRuntimeError` for invalid ru
 The compound `runtime` API endpoint exposes runtime commands without leaking `logic` imports:
 
 ```python
-runtime.schemas.build()
-runtime.execution.online.pyspark()
-runtime.execution.generated.pyspark()
+Runtime.schemas.build()
+Runtime.execution.online.pyspark()
+Runtime.execution.generated.pyspark()
 ```
 
 Each subcommand returns a fresh action instance. `StructureSession`, `TransformResult`, `TransformSchemas`, and runtime

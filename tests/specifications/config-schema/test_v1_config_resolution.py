@@ -1,11 +1,11 @@
-﻿import os
+import os
 import shutil
 import sys
 from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
 
-from structure.app.configuration.api import ConfigError, configuration
+from structure.app.configuration.api import ConfigError, Configuration
 
 
 @contextmanager
@@ -22,7 +22,7 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
     with workspace_tmp() as root:
         (root / "src").mkdir()
 
-        config = configuration.resolve()(project_root=root)
+        config = Configuration.resolve()(project_root=root)
 
         assert [path.name for path in config.source_roots] == ["src"]
         assert config.generated_package == "structure_generated"
@@ -42,7 +42,7 @@ def test_v1_config_precedence_is_cli_pyproject_structure_defaults() -> None:
             encoding="utf-8",
         )
 
-        config = configuration.resolve()(
+        config = Configuration.resolve()(
             project_root=root,
             overrides={"generated_package": "from_cli"},
         )
@@ -62,7 +62,7 @@ def test_v1_config_unknown_key_suggests_known_key() -> None:
         )
 
         try:
-            configuration.resolve()(project_root=root)
+            Configuration.resolve()(project_root=root)
         except ConfigError as error:
             diagnostic = error.diagnostic
         else:
@@ -82,7 +82,7 @@ def test_v1_config_invalid_values_fail_before_discovery() -> None:
         )
 
         try:
-            configuration.resolve()(project_root=root)
+            Configuration.resolve()(project_root=root)
         except ConfigError as error:
             diagnostic = error.diagnostic
         else:
@@ -99,7 +99,7 @@ def test_v1_config_rejects_generated_package_structure() -> None:
         (root / "src").mkdir()
 
         try:
-            configuration.resolve()(project_root=root, overrides={"generated_package": "structure"})
+            Configuration.resolve()(project_root=root, overrides={"generated_package": "structure"})
         except ConfigError as error:
             diagnostic = error.diagnostic
         else:
@@ -115,7 +115,7 @@ def test_v1_config_does_not_import_pyspark() -> None:
         (root / "src").mkdir()
         before = {name for name in sys.modules if name.startswith("pyspark")}
 
-        configuration.resolve()(project_root=root)
+        Configuration.resolve()(project_root=root)
 
         after = {name for name in sys.modules if name.startswith("pyspark")}
         assert after == before

@@ -1,7 +1,7 @@
 import sys
 from dataclasses import dataclass
 
-from structure.app.target.pyspark.api import pyspark
+from structure.app.target.pyspark.api import PySpark
 
 
 @dataclass(frozen=True)
@@ -71,7 +71,7 @@ def test_v1_runtime_schema_materialization_is_import_safe_with_injected_types() 
 
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
-    schema = pyspark.schema.materialize()(TenantKey, types=FakeTypes)
+    schema = PySpark.schema.materialize()(TenantKey, types=FakeTypes)
 
     after = {name for name in sys.modules if name.startswith("pyspark")}
     assert after == before
@@ -90,7 +90,7 @@ def test_v1_runtime_schema_materializes_collections_decimal_and_nested_structs()
     from testing.model.v1.orders.schemas.customer import Customer
     from testing.model.v1.orders.schemas.order import OrderRaw
 
-    order = pyspark.schema.materialize()(OrderRaw, types=FakeTypes)
+    order = PySpark.schema.materialize()(OrderRaw, types=FakeTypes)
     fields = {field.args[0]: field for field in order.args}
 
     assert fields["tags"].args[1] == FakeType(
@@ -105,7 +105,7 @@ def test_v1_runtime_schema_materializes_collections_decimal_and_nested_structs()
     )
     assert fields["total"].args[1] == FakeType("StringType")
 
-    customer = pyspark.schema.materialize()(Customer, types=FakeTypes)
+    customer = PySpark.schema.materialize()(Customer, types=FakeTypes)
     customer_fields = {field.args[0]: field for field in customer.args}
 
     assert customer_fields["tenant"].args[1] == FakeType(
@@ -122,7 +122,7 @@ def test_v1_runtime_schema_materializes_collections_decimal_and_nested_structs()
 def test_v1_runtime_schema_materializes_effective_inherited_fields() -> None:
     from testing.model.v1.orders.schemas.order import OrderPublication, OrderPublished, PublicationFlags
 
-    schema = pyspark.schema.materialize()(OrderPublished, types=FakeTypes)
+    schema = PySpark.schema.materialize()(OrderPublished, types=FakeTypes)
     names = [field.args[0] for field in schema.args]
     flag_names = list(PublicationFlags._structure_fields)
     flag_start = len(names) - len(flag_names)

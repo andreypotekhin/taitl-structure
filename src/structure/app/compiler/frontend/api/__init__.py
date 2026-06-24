@@ -1,9 +1,7 @@
-from structure.app.compiler.frontend.api.FrontendEndpoint import FrontendEndpoint
-from structure.app.compiler.frontend.logic.actions.CompileTransform import CompileTransform
-
-frontend = FrontendEndpoint()
+from structure.app.compiler.frontend.api.Frontend import Frontend
+from structure.app.compiler.frontend.commands.CompileTransform import CompileTransform
 
 __all__ = [
     "CompileTransform",
-    "frontend",
+    "Frontend",
 ]

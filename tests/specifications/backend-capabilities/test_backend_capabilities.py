@@ -10,16 +10,16 @@ from structure.app.target.capabilities.api import (
     BACKEND_E2401,
     BACKEND_E2402,
     BackendCapabilityError,
+    Capabilities,
     CapabilityRequirement,
     PySparkCapabilities,
-    capabilities,
 )
 
 
 def test_default_pyspark_capabilities_do_not_import_pyspark() -> None:
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
-    resolved = capabilities.resolve()()
+    resolved = Capabilities.resolve()()
 
     assert resolved.id.name == "pyspark"
     assert resolved.id.target == ">=3.5,<4.1"
@@ -28,7 +28,7 @@ def test_default_pyspark_capabilities_do_not_import_pyspark() -> None:
 
 
 def test_supported_v1_requirement_passes() -> None:
-    resolved = capabilities.resolve()()
+    resolved = Capabilities.resolve()()
 
     decision = resolved.require(CapabilityRequirement(group="join", name="join_one"))
 
@@ -37,7 +37,7 @@ def test_supported_v1_requirement_passes() -> None:
 
 
 def test_unsupported_feature_uses_backend_capability_diagnostic() -> None:
-    resolved = capabilities.resolve()()
+    resolved = Capabilities.resolve()()
 
     try:
         resolved.require(CapabilityRequirement(group="join", name="join_many"))
@@ -57,7 +57,7 @@ def test_unsupported_feature_uses_backend_capability_diagnostic() -> None:
 
 def test_unknown_backend_uses_backend_target_diagnostic() -> None:
     try:
-        capabilities.resolve()(target_backend="spark_connect")
+        Capabilities.resolve()(target_backend="spark_connect")
     except BackendCapabilityError as error:
         diagnostic = error.diagnostic
     else:
@@ -82,8 +82,8 @@ def test_static_fixtures_evaluate_same_requirement_without_runtime_spark() -> No
 
 
 def test_generated_import_names_are_deterministic_for_same_target() -> None:
-    first = capabilities.resolve()().imports().as_dict()
-    second = capabilities.resolve()().imports().as_dict()
+    first = Capabilities.resolve()().imports().as_dict()
+    second = Capabilities.resolve()().imports().as_dict()
 
     assert first == second
     assert list(first) == sorted(first)

@@ -1,16 +1,13 @@
-from structure.app.configuration.api.ConfigurationEndpoint import ConfigurationEndpoint
-from structure.app.configuration.logic.actions.ResolveStructureConfig import ResolveStructureConfig
-from structure.app.configuration.logic.model.ConfigDiagnostic import ConfigDiagnostic
-from structure.app.configuration.logic.model.ConfigError import ConfigError
-from structure.app.configuration.logic.model.StructureConfig import StructureConfig
-
-configuration = ConfigurationEndpoint()
+from structure.app.configuration.api.Configuration import Configuration
+from structure.app.configuration.commands.ResolveStructureConfig import ResolveStructureConfig
+from structure.app.configuration.model.ConfigDiagnostic import ConfigDiagnostic
+from structure.app.configuration.model.ConfigError import ConfigError
+from structure.app.configuration.model.StructureConfig import StructureConfig
 
 __all__ = [
     "ConfigDiagnostic",
     "ConfigError",
-    "ConfigurationEndpoint",
+    "Configuration",
     "ResolveStructureConfig",
     "StructureConfig",
-    "configuration",
 ]

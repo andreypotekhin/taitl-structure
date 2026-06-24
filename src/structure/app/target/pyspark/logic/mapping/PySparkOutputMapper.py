@@ -1,0 +1,75 @@
+from structure.app.compiler.ir.model.OutputPlan import OutputPlan
+from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.app.target.capabilities.model.BackendCapabilities import BackendCapabilities
+from structure.app.target.capabilities.model.CapabilityRequirement import CapabilityRequirement
+from structure.app.target.pyspark.logic.mapping.PySparkExpressionMapper import PySparkExpressionMapper
+from structure.app.target.pyspark.logic.mapping.PySparkNameMapper import PySparkNameMapper
+from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.app.target.pyspark.model.PySparkOutputRecipe import PySparkOutputRecipe
+from structure.app.target.pyspark.model.PySparkProjectionRecipe import PySparkProjectionRecipe
+from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkValidationRecipe
+
+
+class PySparkOutputMapper:
+
+    def __init__(self) -> None:
+        self._names = PySparkNameMapper()
+        self._expressions = PySparkExpressionMapper()
+
+    def map(
+        self,
+        output: OutputPlan,
+        *,
+        capabilities: BackendCapabilities,
+    ) -> PySparkOutputRecipe:
+        input_alias = self._names.alias(output.source_schema.__name__)
+        output_alias = self._names.alias(output.schema.__name__)
+        return PySparkOutputRecipe(
+            name=output.name,
+            ordinal=output.ordinal,
+            source=output.source,
+            source_scope=output.source_scope,
+            input_schema=output.source_schema,
+            output_schema=output.schema,
+            input_alias=input_alias,
+            output_alias=output_alias,
+            filters=tuple(self._expressions.map(filter, capabilities=capabilities) for filter in output.filters),
+            joins=tuple(
+                self._join(join, occurrence=occurrence, left_alias=input_alias, capabilities=capabilities)
+                for occurrence, join in enumerate(output.joins, start=1)
+            ),
+            projection=tuple(
+                self._projection(assignment, capabilities=capabilities) for assignment in output.projection
+            ),
+            validation=PySparkValidationRecipe(
+                target=output.name,
+                schema=output.schema,
+                mode=SchemaMode.STRICT,
+                project=False,
+                reason="final",
+            ),
+        )
+
+    def _join(self, join, *, occurrence: int, left_alias: str, capabilities: BackendCapabilities) -> PySparkJoinRecipe:
+        capabilities.require(CapabilityRequirement(group="join", name="join_one"))
+        capabilities.require(CapabilityRequirement(group="join", name=f"{join.how.value}_join"))
+        if join.hint is not None:
+            capabilities.require(CapabilityRequirement(group="join", name=f"{join.hint.value}_hint"))
+        return PySparkJoinRecipe(
+            input_name=join.input_name,
+            source=join.source,
+            input_schema=join.input_schema,
+            left_alias=left_alias,
+            right_alias=self._names.join_alias(join.input_name, occurrence),
+            how=join.how,
+            hint=join.hint,
+            predicate=self._expressions.map(join.predicate, capabilities=capabilities),
+            occurrence=occurrence,
+        )
+
+    def _projection(self, assignment, *, capabilities: BackendCapabilities) -> PySparkProjectionRecipe:
+        capabilities.require(CapabilityRequirement(group="expression", name="projection"))
+        return PySparkProjectionRecipe(
+            field=assignment.field,
+            expression=self._expressions.map(assignment.expression, capabilities=capabilities),
+        )

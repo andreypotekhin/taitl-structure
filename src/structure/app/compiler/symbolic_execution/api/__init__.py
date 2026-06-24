@@ -1,4 +1,4 @@
-from structure.app.compiler.symbolic_execution.logic.model.CompileContext import CompileContext, current_context
+from structure.app.compiler.symbolic_execution.model.CompileContext import CompileContext, current_context
 
 __all__ = [
     "CompileContext",

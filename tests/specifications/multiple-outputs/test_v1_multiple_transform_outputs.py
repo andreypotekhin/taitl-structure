@@ -5,7 +5,7 @@ import pytest
 from structure import String, Structure, Transform, field, input, output, transform
 from structure.app.dsl.api import compile_transform
 from structure.app.runtime.api import StructureSession, TransformResult
-from structure.app.target.pyspark.api import pyspark
+from structure.app.target.pyspark.api import PySpark
 
 
 class Raw(Structure):
@@ -303,8 +303,8 @@ def test_v1_generated_pyspark_uses_per_lane_step_sources() -> None:
         def reject(self, row: Normalized) -> Rejected:
             return Rejected(id=row.id, reason="missing customer")
 
-    recipe = pyspark.plan.lower()(compile_transform(RouteOrders))
-    text = pyspark.render.transform()(
+    recipe = PySpark.plan.lower()(compile_transform(RouteOrders))
+    text = PySpark.render.transform()(
         recipe,
         source_transform="tests.specifications.multiple_outputs.RouteOrders",
         runtime_module="testing.runtime",

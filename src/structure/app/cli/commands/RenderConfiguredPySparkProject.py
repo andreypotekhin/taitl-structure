@@ -1,0 +1,32 @@
+from __future__ import annotations
+
+from structure.app.cli.model.DiscoveredStructureProject import DiscoveredStructureProject
+from structure.app.compiler.api import Compiler
+from structure.app.configuration.model.StructureConfig import StructureConfig
+from structure.app.dsl.model.transforms.Transform import Transform
+from structure.app.target.pyspark.api import PySpark
+
+
+class RenderConfiguredPySparkProject:
+
+    def __call__(
+        self,
+        config: StructureConfig,
+        project: DiscoveredStructureProject,
+        *,
+        transforms: tuple[type[Transform], ...] | None = None,
+    ) -> dict[str, str]:
+        files: dict[str, str] = {}
+        for transform in transforms or project.transforms:
+            files.update(
+                PySpark.render.project()(
+                    PySpark.plan.lower()(Compiler.frontend.compile()(transform)),
+                    source_transform=f"{transform.__module__}.{transform.__name__}",
+                    source_schema_modules=project.schema_modules,
+                    generated_package=config.generated_package,
+                )
+            )
+        return files
+
+
+render_configured_pyspark_project = RenderConfiguredPySparkProject()

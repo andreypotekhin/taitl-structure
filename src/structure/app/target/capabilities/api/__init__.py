@@ -1,18 +1,15 @@
-from structure.app.target.capabilities.api.CapabilitiesEndpoint import CapabilitiesEndpoint
-from structure.app.target.capabilities.api.capabilities import (
-    BACKEND_E2401,
-    BACKEND_E2402,
+from structure.app.target.capabilities.api.Capabilities import Capabilities
+from structure.app.target.capabilities.commands.ResolveBackendCapabilities import ResolveBackendCapabilities
+from structure.app.target.capabilities.logic.rules.PySparkCapabilityRules import PySparkCapabilities
+from structure.app.target.capabilities.model.BackendDiagnosticCodes import BACKEND_E2401, BACKEND_E2402
+from structure.app.target.capabilities.model.capabilities import (
     BackendCapabilities,
     BackendCapabilityError,
     BackendId,
     CapabilityDecision,
     CapabilityRequirement,
     GeneratedImports,
-    PySparkCapabilities,
-    ResolveBackendCapabilities,
 )
-
-capabilities = CapabilitiesEndpoint()
 
 __all__ = [
     "BACKEND_E2401",
@@ -20,11 +17,10 @@ __all__ = [
     "BackendCapabilities",
     "BackendCapabilityError",
     "BackendId",
-    "CapabilitiesEndpoint",
+    "Capabilities",
     "CapabilityDecision",
     "CapabilityRequirement",
     "GeneratedImports",
     "PySparkCapabilities",
     "ResolveBackendCapabilities",
-    "capabilities",
 ]

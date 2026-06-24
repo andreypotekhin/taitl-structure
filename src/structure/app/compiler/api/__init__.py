@@ -1,4 +1,4 @@
-from structure.app.compiler.api.CompilerEndpoint import CompilerEndpoint
+from structure.app.compiler.api.Compiler import Compiler
 from structure.app.compiler.compileability.streaming_compatibility.api import (
     ClassifyStreamingCompatibility,
     StreamingFinding,
@@ -27,8 +27,6 @@ from structure.app.compiler.traceability.api import (
     OpaqueBoundary,
 )
 
-compiler = CompilerEndpoint()
-
 __all__ = [
     "BuildCompilerTraceability",
     "ClassifyStreamingCompatibility",
@@ -51,6 +49,6 @@ __all__ = [
     "StreamingSupport",
     "StructureCompileError",
     "TransformPlan",
-    "compiler",
+    "Compiler",
     "current_context",
 ]

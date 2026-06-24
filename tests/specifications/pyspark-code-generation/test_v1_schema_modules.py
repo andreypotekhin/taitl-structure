@@ -1,6 +1,6 @@
 import sys
 
-from structure.app.target.pyspark.api import pyspark
+from structure.app.target.pyspark.api import PySpark
 
 
 def test_v1_common_schema_module_renders_without_pyspark() -> None:
@@ -8,7 +8,7 @@ def test_v1_common_schema_module_renders_without_pyspark() -> None:
 
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
-    text = pyspark.schema.module()([TenantKey, AuditStamp, Address, BusinessDate])
+    text = PySpark.schema.module()([TenantKey, AuditStamp, Address, BusinessDate])
 
     after = {name for name in sys.modules if name.startswith("pyspark")}
     assert after == before
@@ -33,7 +33,7 @@ def test_v1_order_schema_module_renders_nested_schema_imports() -> None:
     )
 
     common_module = "testing.model.v1.structure_generated.orders.pyspark.schemas.common"
-    text = pyspark.schema.module()(
+    text = PySpark.schema.module()(
         [
             OrderRaw,
             OrderNormalized,

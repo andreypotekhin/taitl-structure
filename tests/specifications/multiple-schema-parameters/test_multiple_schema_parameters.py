@@ -1,9 +1,9 @@
 import pytest
 
 from structure import Join, String, Structure, Transform, after, field, input, join_one, output, transform
-from structure.app.compiler.api import compiler
+from structure.app.compiler.api import Compiler
 from structure.app.dsl.api import compile_transform
-from structure.app.target.pyspark.api import pyspark
+from structure.app.target.pyspark.api import PySpark
 
 
 class OrderRaw(Structure):
@@ -152,8 +152,8 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
         def audit(self, *, df, spark, ctx):
             return df
 
-    text = pyspark.render.transform()(
-        pyspark.plan.lower()(compile_transform(AddProduct)),
+    text = PySpark.render.transform()(
+        PySpark.plan.lower()(compile_transform(AddProduct)),
         source_transform="tests.specifications.multiple_schema_parameters.AddProduct",
         runtime_module="testing.runtime",
         schema_modules={
@@ -169,8 +169,8 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
     assert "        audited = self._impl.audit(df=audited, spark=self.spark, ctx=self.ctx)" in text
     assert 'return TransformResult({"accepted": accepted_df, "audited": audited_df}, single=False)' in text
 
-    traceability = compiler.traceability.build()(
-        pyspark.plan.lower()(compile_transform(AddProduct)),
+    traceability = Compiler.traceability.build()(
+        PySpark.plan.lower()(compile_transform(AddProduct)),
         source_transform="tests.specifications.multiple_schema_parameters.AddProduct",
         transform_module="testing.generated.AddProductGenerated",
     )

@@ -1,16 +1,16 @@
 from structure.app.compiler.api import (
     BuildCompilerTraceability,
     ClassifyStreamingCompatibility,
+    Compiler,
     CompileTransform,
-    compiler,
 )
 
 
 def test_compiler_endpoint_groups_fresh_command_instances() -> None:
-    assert isinstance(compiler.frontend.compile(), CompileTransform)
-    assert isinstance(compiler.compileability.streaming(), ClassifyStreamingCompatibility)
-    assert isinstance(compiler.traceability.build(), BuildCompilerTraceability)
+    assert isinstance(Compiler.frontend.compile(), CompileTransform)
+    assert isinstance(Compiler.compileability.streaming(), ClassifyStreamingCompatibility)
+    assert isinstance(Compiler.traceability.build(), BuildCompilerTraceability)
 
-    assert compiler.frontend.compile() is not compiler.frontend.compile()
-    assert compiler.compileability.streaming() is not compiler.compileability.streaming()
-    assert compiler.traceability.build() is not compiler.traceability.build()
+    assert Compiler.frontend.compile() is not Compiler.frontend.compile()
+    assert Compiler.compileability.streaming() is not Compiler.compileability.streaming()
+    assert Compiler.traceability.build() is not Compiler.traceability.build()

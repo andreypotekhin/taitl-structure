@@ -13,9 +13,9 @@ those outputs; upstream CLI, runtime session, and tests call compiler APIs to va
 The compound `compiler` API endpoint groups command factories by compiler concern:
 
 ```python
-compiler.frontend.compile()
-compiler.compileability.streaming()
-compiler.traceability.build()
+Compiler.frontend.compile()
+Compiler.compileability.streaming()
+Compiler.traceability.build()
 ```
 
 Each subcommand returns a fresh action instance. IR, diagnostic, streaming, and traceability model types remain

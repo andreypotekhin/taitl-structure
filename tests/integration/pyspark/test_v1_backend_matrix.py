@@ -41,7 +41,7 @@ from structure import (
     transform,
 )
 from structure.app.dsl.api import compile_transform
-from structure.app.target.pyspark.api import pyspark
+from structure.app.target.pyspark.api import PySpark
 
 pytestmark = pytest.mark.integration
 
@@ -190,8 +190,8 @@ def test_v1_online_and_generated_execution_match_orders_contract_on_live_backend
 
 def test_multiple_schema_parameters_and_results_match_online_and_generated(spark, tmp_path) -> None:
     generated_package = "integration_multi_generated"
-    files = pyspark.render.project()(
-        pyspark.plan.lower()(compile_transform(AddLookupProduct)),
+    files = PySpark.render.project()(
+        PySpark.plan.lower()(compile_transform(AddLookupProduct)),
         source_transform=f"{__name__}.AddLookupProduct",
         generated_package=generated_package,
         source_schema_modules={
@@ -241,8 +241,8 @@ def test_multiple_schema_parameters_and_results_match_online_and_generated(spark
 
 
 def _render_generated_project(generated_package: str) -> dict[str, str]:
-    return pyspark.render.project()(
-        pyspark.plan.lower()(compile_transform(EnrichOrders)),
+    return PySpark.render.project()(
+        PySpark.plan.lower()(compile_transform(EnrichOrders)),
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         generated_package=generated_package,
         source_schema_modules=_source_schema_modules(),

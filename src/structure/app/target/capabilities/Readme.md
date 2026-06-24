@@ -13,7 +13,7 @@ lowering. It returns `BackendCapabilities` implementations, `CapabilityDecision`
 The `capabilities` API endpoint exposes backend capability resolution as a fresh command factory:
 
 ```python
-capabilities.resolve()
+Capabilities.resolve()
 ```
 
 ## Inner Workings

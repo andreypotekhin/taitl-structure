@@ -14,9 +14,9 @@ generated-file writes, diff failures, and explain reports.
 The `api/` package exposes the Click group as `cli` and command factories for internal CLI actions as `cli_actions`:
 
 ```python
-cli_actions.discover_project()
-cli_actions.render_configured_pyspark_project()
-cli_actions.render_explain_report()
+CliActions.discover_project()
+CliActions.render_configured_pyspark_project()
+CliActions.render_explain_report()
 ```
 
 ## Inner Workings

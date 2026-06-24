@@ -8,11 +8,11 @@ from typing import cast
 
 import click
 
-from structure.app.cli.logic.actions.DiscoverStructureProject import discover_structure_project
-from structure.app.cli.logic.actions.RenderConfiguredPySparkProject import render_configured_pyspark_project
-from structure.app.cli.logic.actions.RenderExplainReport import render_explain_report
-from structure.app.configuration.api import ConfigError, StructureConfig, configuration
-from structure.app.target.pyspark.api import pyspark
+from structure.app.cli.commands.DiscoverStructureProject import discover_structure_project
+from structure.app.cli.commands.RenderConfiguredPySparkProject import render_configured_pyspark_project
+from structure.app.cli.commands.RenderExplainReport import render_explain_report
+from structure.app.configuration.api import ConfigError, Configuration, StructureConfig
+from structure.app.target.pyspark.api import PySpark
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry, render_diagnostic
 
 
@@ -114,7 +114,7 @@ def compile(profile: bool, **kwargs) -> None:
     project = discover_structure_project(config)
     files = render_configured_pyspark_project(config, project)
     if config.fail_on_diff:
-        result = pyspark.files.compare()(files, root=config.generated_dir)
+        result = PySpark.files.compare()(files, root=config.generated_dir)
         if result.changed():
             lines = "\n".join(
                 f"{change.status:8} {change.path}" for change in result.changes if change.status != "unchanged"
@@ -127,7 +127,7 @@ def compile(profile: bool, **kwargs) -> None:
             )
             raise click.ClickException(render_diagnostic(diagnostic, kind="GeneratedOutputError"))
     else:
-        result = pyspark.files.write()(files, root=config.generated_dir)
+        result = PySpark.files.write()(files, root=config.generated_dir)
     click.echo("Structure compile passed")
     click.echo(f"  generated dir: {_relative(config, config.generated_dir)}")
     click.echo(f"  transforms: {len(project.transforms)}")
@@ -180,7 +180,7 @@ def _config(kwargs: dict[str, object]) -> StructureConfig:
     if "source_roots" in overrides:
         overrides["source_roots"] = list(cast(tuple[str, ...], overrides["source_roots"]))
     try:
-        return configuration.resolve()(overrides=overrides)
+        return Configuration.resolve()(overrides=overrides)
     except ConfigError as error:
         raise click.ClickException(error.diagnostic.render()) from error
 
