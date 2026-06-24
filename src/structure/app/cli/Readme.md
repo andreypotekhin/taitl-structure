@@ -11,16 +11,18 @@ schemas and transforms through its own project scanner, compiles transforms thro
 hands generated artifact work to the PySpark target app. It returns console text, `click.ClickException` diagnostics,
 generated-file writes, diff failures, and explain reports.
 
-The `api/` package exposes the Click group as `cli` and command factories for internal CLI actions as `cli_actions`:
+The `api/` package exposes the Click group as `cli` and command factories for internal CLI work through `CliApp`:
 
 ```python
-CliActions.discover_project()
-CliActions.render_configured_pyspark_project()
-CliActions.render_explain_report()
+CliApp.resolve_config()
+CliApp.check_project()
+CliApp.compile_project()
+CliApp.explain_transform()
+CliApp.clean_generated_files()
 ```
 
 ## Inner Workings
-`api/cli.py` exposes the Click entry point and `StructureCliGroup`, while `DiscoverStructureProject` imports source
-roots into a `DiscoveredStructureProject`. `RenderConfiguredPySparkProject` compiles and lowers every discovered
-`Transform`, and `RenderExplainReport` assembles a concise compiler, target, streaming, and traceability view for one
-transform.
+`api/cli.py` exposes the Click entry point and `StructureCliGroup`, then delegates through `CliApp` to focused commands.
+`DiscoverStructureProject` imports source roots into a `DiscoveredStructureProject`. `RenderConfiguredPySparkProject`
+compiles and lowers every discovered `Transform`, and `RenderExplainReport` assembles a concise compiler, target,
+streaming, and traceability view for one transform.

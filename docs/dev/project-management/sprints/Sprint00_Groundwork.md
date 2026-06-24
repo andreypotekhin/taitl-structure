@@ -124,7 +124,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 
 ## Progress
 
-- [x] (2026-06-21) Package entrypoint `structure.cli:cli` is implemented and covered by CLI tests.
+- [x] (2026-06-21) Package entrypoint `structure.app.cli.api:cli` is implemented and covered by CLI tests.
 - [x] (2026-06-21) Config defaults, TOML loading, explicit precedence, source tracking, unknown-key diagnostics, and
   invalid enum diagnostics are covered by `tests/specifications/config-schema`.
 - [x] (2026-06-21) `structure init --seed-config`, `check`, `compile`, `compile --fail-on-diff`, `explain`, and

@@ -67,7 +67,7 @@ Application package structure:
 structure/app/[app]/
   - api/ - Programmatic API endpoints - application entry points.
     The main endpoint is an uppercase stateless class, such as `Compiler`, `Runtime`,
-    `PySpark`, `Configuration`, `Capabilities`, or `CliActions`.
+    `PySpark`, `Configuration`, `Capabilities`, or `CliApp`.
     Sub-endpoints are class attributes, such as `Compiler.frontend`, `Runtime.schemas`,
     and `PySpark.render`.
     Endpoint methods are static factories returning fresh command instances.

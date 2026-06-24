@@ -511,12 +511,15 @@ v1 baseline:
 
 This item is superseded by C31.
 
-## C21. Executable Package Skeleton Does Not Match the Public Contract
+## +C21. Executable Package Skeleton Does Not Match the Public Contract
 
-The docs and `pyproject.toml` describe an installable `structure` package with a `structure.cli:cli` entrypoint and
+Resolved by the package-root public API, the app-owned CLI entrypoint `structure.app.cli.api:cli`, and the `CliApp`
+facade under `src/structure/app/cli/api`.
+
+Earlier docs and `pyproject.toml` described an installable `structure` package with a package-root CLI entrypoint and
 public imports such as `Structure`, `field`, `transform`, and `StructureSession`. The implementation tree now belongs
-under `src/structure/app` and `src/structure/lib`, but the root package marker, CLI module, module execution hook, and
-public API re-exports still need to be completed before the package is truly executable.
+under `src/structure/app` and `src/structure/lib`; CLI ownership lives in the CLI app instead of a package-root
+`cli.py` shim.
 
 Risk: early contributors can read a polished product contract but cannot import or run the product. This makes every
 later feature harder to validate because packaging, imports, and CLI wiring may fail late.
@@ -524,7 +527,7 @@ later feature harder to validate because packaging, imports, and CLI wiring may 
 Recommended direction:
 
 - Keep the real `src/structure/` package as the only shipped top-level import package.
-- Add `src/structure/cli.py` with honest placeholder commands that fail clearly when implementation is incomplete.
+- Keep the installable script pointed at `structure.app.cli.api:cli`.
 - Add public re-exports in `structure.__init__` only for symbols that exist, then grow the surface deliberately.
 - Add smoke tests for `import structure`, `structure --help`, and `python -m structure` if module execution is
   supported.

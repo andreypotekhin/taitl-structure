@@ -30,12 +30,12 @@ The Poetry entrypoint is already declared as:
 
 ```toml
 [tool.poetry.scripts]
-structure = 'structure.cli:cli'
+structure = 'structure.app.cli.api:cli'
 ```
 
 The implementation should use Click, because the project already depends on `click`. The public entrypoint should be
-`structure.cli:cli`, and the CLI app should delegate real work to focused command and logic classes under
-`structure/app/cli/`.
+`structure.app.cli.api:cli`, and the CLI app should delegate real work through `CliApp` to focused command and logic
+classes under `structure/app/cli/`.
 
 ## Common Behavior
 

@@ -72,9 +72,9 @@ def test_v1_streaming_unsafe_hook_is_unknown_with_registered_finding() -> None:
 
 
 def test_v1_streaming_report_is_included_in_explain_output() -> None:
-    from structure.app.cli.api import CliActions
+    from structure.app.cli.api import CliApp
 
-    report = CliActions.render_explain_report()(StreamingUnknownHook)
+    report = CliApp.render_explain_report()(StreamingUnknownHook)
 
     assert "streaming:" in report
     assert "status: unknown" in report
