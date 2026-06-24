@@ -1,10 +1,8 @@
 import sys
 
 from structure import String, Structure, Transform, after, field, input, output, transform, where
-from structure.app.compiler.compileability.streaming_compatibility.api import (
-    StreamingSupport,
-    classify_streaming_compatibility,
-)
+from structure.app.compiler.api import compiler
+from structure.app.compiler.compileability.streaming_compatibility.api import StreamingSupport
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import pyspark
 
@@ -44,7 +42,7 @@ def test_v1_streaming_projection_filter_and_schema_validation_are_compatible_wit
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
     plan = compile_transform(StreamingProjection)
-    report = classify_streaming_compatibility(
+    report = compiler.compileability.streaming()(
         pyspark.plan.lower()(plan),
         required=bool((plan.options or {})["streaming_compatible"]),
     )
@@ -59,7 +57,7 @@ def test_v1_streaming_projection_filter_and_schema_validation_are_compatible_wit
 def test_v1_streaming_unsafe_hook_is_unknown_with_registered_finding() -> None:
     plan = compile_transform(StreamingUnknownHook)
 
-    report = classify_streaming_compatibility(
+    report = compiler.compileability.streaming()(
         pyspark.plan.lower()(plan),
         required=bool((plan.options or {})["streaming_compatible"]),
     )
@@ -74,9 +72,9 @@ def test_v1_streaming_unsafe_hook_is_unknown_with_registered_finding() -> None:
 
 
 def test_v1_streaming_report_is_included_in_explain_output() -> None:
-    from structure.app.cli.logic.actions.RenderExplainReport import render_explain_report
+    from structure.app.cli.api import cli_actions
 
-    report = render_explain_report(StreamingUnknownHook)
+    report = cli_actions.render_explain_report()(StreamingUnknownHook)
 
     assert "streaming:" in report
     assert "status: unknown" in report

@@ -9,7 +9,8 @@ later compile into Spark-visible work.
 The app exposes `Structure`, `field`, scalar and collection types, `Transform`, `transform`, `input`, `output`,
 `where`, `before`, `after`, `expr_fn`, `Join`, `JoinHint`, `SchemaMode`, and expression helpers through
 `structure.app.dsl.api` and the top-level package. It depends on compiler symbolic execution only while recording DSL
-effects, and it re-exports `compile_transform` for compatibility with existing public usage.
+effects. Compiler command access lives under `structure.app.compiler.api.compiler`; the DSL keeps `compile_transform`
+as an ergonomic authoring shortcut.
 
 ## Inner Workings
 The logic model is split by domain: `schemas` builds declared row types and field metadata, `types` defines Structure

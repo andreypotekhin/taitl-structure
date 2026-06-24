@@ -10,6 +10,12 @@ The app consumes backend identifiers, configured version ranges, and `Capability
 lowering. It returns `BackendCapabilities` implementations, `CapabilityDecision` records, generated import names, or
 `BackendCapabilityError` failures backed by `BackendDiagnostic`.
 
+The `capabilities` API endpoint exposes backend capability resolution as a fresh command factory:
+
+```python
+capabilities.resolve()
+```
+
 ## Inner Workings
 `ResolveBackendCapabilities` selects the capability implementation for the configured target, currently the
 `PySparkCapabilities` rules object. Model classes such as `BackendId`, `CapabilityRequirement`, `CapabilityDecision`,

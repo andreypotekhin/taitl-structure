@@ -2,13 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from structure.app.compiler.frontend.logic.actions.CompileTransform import compile_transform
+from structure.app.compiler.api import compiler
 from structure.app.dsl.logic.model.transforms.Transform import Transform
-from structure.app.runtime.execution.generated.logic.actions.RunGeneratedPySparkTransform import (
-    run_generated_pyspark_transform,
-)
-from structure.app.runtime.execution.online.logic.actions.RunOnlinePySparkTransform import run_online_pyspark_transform
-from structure.app.runtime.schemas.logic.actions.BuildTransformSchemas import build_transform_schemas
+from structure.app.runtime.execution.api import execution
+from structure.app.runtime.schemas.api import schemas
 from structure.app.runtime.session.logic.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.app.runtime.session.logic.model.StructureRuntimeError import StructureRuntimeError
 from structure.app.runtime.session.logic.model.TransformResult import TransformResult
@@ -37,14 +34,14 @@ class StructureSession:
         self.online_executor = online_executor
 
     def run(self, invocation: Transform) -> TransformResult:
-        plan = pyspark.plan.lower()(compile_transform(type(invocation)))
+        plan = pyspark.plan.lower()(compiler.frontend.compile()(type(invocation)))
         self._validate_inputs(invocation)
-        invocation.schemas = build_transform_schemas(plan, types=self.schema_types)
+        invocation.schemas = schemas.build()(plan, types=self.schema_types)
 
         if self.execution_mode == "online":
-            return run_online_pyspark_transform(invocation, plan, session=self)
+            return execution.online.pyspark()(invocation, plan, session=self)
         if self.execution_mode == "generated":
-            return run_generated_pyspark_transform(invocation, plan, session=self)
+            return execution.generated.pyspark()(invocation, plan, session=self)
         raise self._invalid_mode(invocation)
 
     def _validate_inputs(self, invocation: Transform) -> None:

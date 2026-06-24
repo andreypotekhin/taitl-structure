@@ -1,8 +1,7 @@
 import sys
 from typing import cast
 
-from structure.app.dsl.api import compile_transform
-from structure.app.dsl.logic.model.types.DecimalType import DecimalType
+from structure.app.dsl.api import DecimalType, compile_transform
 
 
 def test_v1_fixture_imports_without_pyspark() -> None:

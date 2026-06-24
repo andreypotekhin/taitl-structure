@@ -4,7 +4,7 @@ import json
 from collections import OrderedDict
 from collections.abc import Mapping, Sequence
 
-from structure.app.compiler.traceability.api import build_compiler_traceability
+from structure.app.compiler.api import compiler
 from structure.app.dsl.logic.model.schemas.Structure import Structure
 from structure.app.target.pyspark.logic.actions.RenderPySparkRuntimeModule import render_pyspark_runtime_module
 from structure.app.target.pyspark.logic.actions.RenderPySparkSchema import render_pyspark_schema
@@ -108,7 +108,7 @@ class RenderPySparkProject:
         transform_module: str,
         schema_modules: Mapping[type[Structure], str],
     ) -> str:
-        traceability = build_compiler_traceability(
+        traceability = compiler.traceability.build()(
             plan,
             source_transform=source_transform,
             transform_module=transform_module,

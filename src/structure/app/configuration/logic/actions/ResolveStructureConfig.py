@@ -10,7 +10,7 @@ import toml  # type: ignore[import-untyped]
 from structure.app.configuration.logic.model.ConfigDiagnostic import ConfigDiagnostic
 from structure.app.configuration.logic.model.ConfigError import ConfigError
 from structure.app.configuration.logic.model.StructureConfig import StructureConfig
-from structure.app.target.capabilities.api.capabilities import resolve_backend_capabilities
+from structure.app.target.capabilities.api import capabilities
 
 
 class ResolveStructureConfig:
@@ -66,7 +66,7 @@ class ResolveStructureConfig:
             values, sources, {key: value for key, value in (overrides or {}).items() if value is not None}, "CLI"
         )
         self._validate(values, root)
-        resolve_backend_capabilities(
+        capabilities.resolve()(
             target_backend=str(values["target_backend"]),
             target_pyspark=str(values["target_pyspark"]),
         )

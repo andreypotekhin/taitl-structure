@@ -11,7 +11,7 @@ import click
 from structure.app.cli.logic.actions.DiscoverStructureProject import discover_structure_project
 from structure.app.cli.logic.actions.RenderConfiguredPySparkProject import render_configured_pyspark_project
 from structure.app.cli.logic.actions.RenderExplainReport import render_explain_report
-from structure.app.configuration.api import ConfigError, StructureConfig, resolve_structure_config
+from structure.app.configuration.api import ConfigError, StructureConfig, configuration
 from structure.app.target.pyspark.api import pyspark
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry, render_diagnostic
 
@@ -180,7 +180,7 @@ def _config(kwargs: dict[str, object]) -> StructureConfig:
     if "source_roots" in overrides:
         overrides["source_roots"] = list(cast(tuple[str, ...], overrides["source_roots"]))
     try:
-        return resolve_structure_config(overrides=overrides)
+        return configuration.resolve()(overrides=overrides)
     except ConfigError as error:
         raise click.ClickException(error.diagnostic.render()) from error
 

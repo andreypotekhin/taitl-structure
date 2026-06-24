@@ -31,12 +31,14 @@ from structure.app.dsl.logic.model.transforms.transform_api import (
     transform,
     where,
 )
+from structure.app.dsl.logic.model.types.DecimalType import DecimalType
 
 __all__ = [
     "Array",
     "Boolean",
     "Date",
     "Decimal",
+    "DecimalType",
     "Double",
     "Float",
     "Integer",

@@ -6,37 +6,41 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from structure.app.target.capabilities.api.capabilities import CapabilityRequirement, resolve_backend_capabilities
-from structure.app.target.capabilities.logic.model.capabilities import BackendCapabilityError
-from structure.app.target.capabilities.logic.model.diagnostics import BACKEND_E2401, BACKEND_E2402
-from structure.app.target.capabilities.logic.rules.PySparkCapabilityRules import PySparkCapabilities
+from structure.app.target.capabilities.api import (
+    BACKEND_E2401,
+    BACKEND_E2402,
+    BackendCapabilityError,
+    CapabilityRequirement,
+    PySparkCapabilities,
+    capabilities,
+)
 
 
 def test_default_pyspark_capabilities_do_not_import_pyspark() -> None:
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
-    capabilities = resolve_backend_capabilities()
+    resolved = capabilities.resolve()()
 
-    assert capabilities.id.name == "pyspark"
-    assert capabilities.id.target == ">=3.5,<4.1"
+    assert resolved.id.name == "pyspark"
+    assert resolved.id.target == ">=3.5,<4.1"
     after = {name for name in sys.modules if name.startswith("pyspark")}
     assert after == before
 
 
 def test_supported_v1_requirement_passes() -> None:
-    capabilities = resolve_backend_capabilities()
+    resolved = capabilities.resolve()()
 
-    decision = capabilities.require(CapabilityRequirement(group="join", name="join_one"))
+    decision = resolved.require(CapabilityRequirement(group="join", name="join_one"))
 
     assert decision.supported
     assert decision.code == ""
 
 
 def test_unsupported_feature_uses_backend_capability_diagnostic() -> None:
-    capabilities = resolve_backend_capabilities()
+    resolved = capabilities.resolve()()
 
     try:
-        capabilities.require(CapabilityRequirement(group="join", name="join_many"))
+        resolved.require(CapabilityRequirement(group="join", name="join_many"))
     except BackendCapabilityError as error:
         diagnostic = error.diagnostic
     else:
@@ -53,7 +57,7 @@ def test_unsupported_feature_uses_backend_capability_diagnostic() -> None:
 
 def test_unknown_backend_uses_backend_target_diagnostic() -> None:
     try:
-        resolve_backend_capabilities(target_backend="spark_connect")
+        capabilities.resolve()(target_backend="spark_connect")
     except BackendCapabilityError as error:
         diagnostic = error.diagnostic
     else:
@@ -78,8 +82,8 @@ def test_static_fixtures_evaluate_same_requirement_without_runtime_spark() -> No
 
 
 def test_generated_import_names_are_deterministic_for_same_target() -> None:
-    first = resolve_backend_capabilities().imports().as_dict()
-    second = resolve_backend_capabilities().imports().as_dict()
+    first = capabilities.resolve()().imports().as_dict()
+    second = capabilities.resolve()().imports().as_dict()
 
     assert first == second
     assert list(first) == sorted(first)

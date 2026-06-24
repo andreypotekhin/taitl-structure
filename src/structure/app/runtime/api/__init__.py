@@ -1,13 +1,23 @@
-from structure.app.runtime.session.logic.model.RuntimeDiagnostic import RuntimeDiagnostic
-from structure.app.runtime.session.logic.model.StructureRuntimeError import StructureRuntimeError
-from structure.app.runtime.session.logic.model.StructureSession import StructureSession
-from structure.app.runtime.session.logic.model.TransformResult import TransformResult
-from structure.app.runtime.schemas.logic.model.TransformSchemas import TransformSchemas
+from structure.app.runtime.api.RuntimeEndpoint import RuntimeEndpoint
+from structure.app.runtime.execution.api import ExecutionEndpoint
+from structure.app.runtime.schemas.api import SchemasEndpoint, TransformSchemas
+from structure.app.runtime.session.api import (
+    RuntimeDiagnostic,
+    StructureRuntimeError,
+    StructureSession,
+    TransformResult,
+)
+
+runtime = RuntimeEndpoint()
 
 __all__ = [
+    "ExecutionEndpoint",
     "RuntimeDiagnostic",
+    "RuntimeEndpoint",
+    "SchemasEndpoint",
     "StructureRuntimeError",
     "StructureSession",
     "TransformResult",
     "TransformSchemas",
+    "runtime",
 ]

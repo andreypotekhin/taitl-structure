@@ -10,6 +10,12 @@ The app consumes `pyproject.toml`, `structure.toml`, CLI overrides, filesystem p
 returns a `StructureConfig` with source roots, generated paths, execution mode, validation defaults, traceability mode,
 and capability decisions, or raises `ConfigError` carrying a `ConfigDiagnostic`.
 
+The `configuration` API endpoint exposes configuration resolution as a fresh command factory:
+
+```python
+configuration.resolve()
+```
+
 ## Inner Workings
 `ResolveStructureConfig` merges settings by precedence, checks spelling and value domains, normalizes project-relative
 paths, rejects dangerous generated package names, and asks target capabilities to validate configured backends.

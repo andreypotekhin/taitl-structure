@@ -11,7 +11,7 @@ from structure.app.compiler.ir.logic.model.TransformPlan import TransformPlan
 from structure.app.dsl.logic.model.expr.Expression import Expression
 from structure.app.dsl.logic.model.schemas.Structure import Structure
 from structure.app.dsl.logic.model.transforms.SchemaMode import SchemaMode
-from structure.app.target.capabilities.api.capabilities import resolve_backend_capabilities
+from structure.app.target.capabilities.api import capabilities as backend_capabilities
 from structure.app.target.capabilities.logic.model.BackendCapabilities import BackendCapabilities
 from structure.app.target.capabilities.logic.model.CapabilityRequirement import CapabilityRequirement
 from structure.app.target.pyspark.logic.model.PySparkExecutionPlan import PySparkExecutionPlan
@@ -34,7 +34,7 @@ class LowerPySparkPlan:
         *,
         capabilities: BackendCapabilities | None = None,
     ) -> PySparkExecutionPlan:
-        target = capabilities or resolve_backend_capabilities()
+        target = capabilities or backend_capabilities.resolve()()
         inputs = tuple(
             self._input(input_plan.name, input_plan.schema, input_plan.ordinal) for input_plan in plan.inputs
         )

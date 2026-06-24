@@ -1,7 +1,7 @@
 import pytest
 
 from structure import Join, String, Structure, Transform, after, field, input, join_one, output, transform
-from structure.app.compiler.traceability.api import build_compiler_traceability
+from structure.app.compiler.api import compiler
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import pyspark
 
@@ -169,7 +169,7 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
     assert "        audited = self._impl.audit(df=audited, spark=self.spark, ctx=self.ctx)" in text
     assert 'return TransformResult({"accepted": accepted_df, "audited": audited_df}, single=False)' in text
 
-    traceability = build_compiler_traceability(
+    traceability = compiler.traceability.build()(
         pyspark.plan.lower()(compile_transform(AddProduct)),
         source_transform="tests.specifications.multiple_schema_parameters.AddProduct",
         transform_module="testing.generated.AddProductGenerated",

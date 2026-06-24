@@ -1,9 +1,6 @@
 import sys
 
-from structure.app.dsl.api import compile_transform
-from structure.app.dsl.logic.model.transforms.Join import Join
-from structure.app.dsl.logic.model.transforms.JoinHint import JoinHint
-from structure.app.dsl.logic.model.transforms.SchemaMode import SchemaMode
+from structure.app.dsl.api import Join, JoinHint, SchemaMode, compile_transform
 
 
 def test_v1_fixture_imports_without_pyspark() -> None:

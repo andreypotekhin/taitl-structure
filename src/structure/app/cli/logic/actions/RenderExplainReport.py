@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from structure.app.compiler.compileability.streaming_compatibility.api import classify_streaming_compatibility
-from structure.app.compiler.traceability.api import build_compiler_traceability
-from structure.app.dsl.api import compile_transform
+from structure.app.compiler.api import compiler
 from structure.app.dsl.logic.model.transforms.Transform import Transform
 from structure.app.target.pyspark.api import pyspark
 
@@ -10,15 +8,15 @@ from structure.app.target.pyspark.api import pyspark
 class RenderExplainReport:
 
     def __call__(self, transform: type[Transform]) -> str:
-        plan = compile_transform(transform)
+        plan = compiler.frontend.compile()(transform)
         recipe = pyspark.plan.lower()(plan)
-        streaming = classify_streaming_compatibility(
+        streaming = compiler.compileability.streaming()(
             recipe,
             required=bool((plan.options or {}).get("streaming_compatible", False)),
         )
         source_transform = f"{transform.__module__}.{transform.__name__}"
         transform_module = f"{transform.__module__}.{recipe.transform}Generated"
-        traceability = build_compiler_traceability(
+        traceability = compiler.traceability.build()(
             recipe,
             source_transform=source_transform,
             transform_module=transform_module,
