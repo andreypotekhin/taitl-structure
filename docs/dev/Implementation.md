@@ -39,7 +39,7 @@
 - Documented data-quality constraint boundary with schema-only validation as the default.
 - `where(...)` filtering.
 - `@expr_fn` helpers.
-- `@after(method)` and `@before(method)` hooks.
+- `@after(method, lane=lane)` and `@before(method, lane=lane)` hooks.
 - Hook signature validation.
 - `join_one(...)`.
 - N-step serial joins.

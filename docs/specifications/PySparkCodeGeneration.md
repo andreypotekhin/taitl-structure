@@ -359,18 +359,18 @@ Names are illustrative, but the decomposition should keep orchestration separate
 
 ## Current DataFrame Variable
 
-Generated transform methods use `df` as the current DataFrame variable.
+Generated transform methods use the current lane name as the DataFrame variable.
 
 Rules:
 
 - The first compiled step starts from the declared input DataFrame selected by source-order schema flow.
-- After each step, `df` contains that step's output DataFrame.
-- Hooks receive the current `df` and must return the new current DataFrame.
+- After each step, the current lane variable contains that step's output DataFrame.
+- Hooks receive the selected lane keyword and must return the new selected lane DataFrame.
 - Joins may introduce temporary DataFrame variables named from stable aliases, such as `customers_df`.
 - Avoid reusing input parameter names for aliased or projected temporary DataFrames.
 - For a multi-result subtransform, emit one shared join/filter frame and use each output declaration name as the
   projected DataFrame variable, such as `accepted` and `audited`.
-- Avoid hidden mutation. Each DataFrame operation should assign a resulting DataFrame to `df` or a clearly named
+- Avoid hidden mutation. Each DataFrame operation should assign a resulting DataFrame to the current lane or a clearly named
   temporary.
 
 Readable generated code is part of the contract. The generator may introduce short local variables when that makes a
@@ -392,15 +392,15 @@ Example:
 
 ```python
 # Subtransform: normalize
-df = orders.where(
+orders = orders.where(
     F.col("id").isNotNull()
 ).select(
     F.col("id").alias("id"),
     F.lower(F.trim(F.col("customer_id"))).alias("customer_id"),
 )
 
-df = self._impl.remove_negative_totals(df=df, spark=self.spark, ctx=self.ctx)
-assert_schema(df, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
+orders = self._impl.remove_negative_totals(orders=orders, spark=self.spark, ctx=self.ctx)
+assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
 ```
 
 Rules:
@@ -475,9 +475,9 @@ Joins lower according to `docs/specifications/JoinSemantics.md`.
 Canonical generated shape:
 
 ```python
-df = df.alias("order_normalized")
+orders = orders.alias("order_normalized")
 customers_df = F.broadcast(customers.alias("customers"))
-df = df.join(
+orders = orders.join(
     customers_df,
     F.col("customers.id") == F.col("order_normalized.customer_id"),
     "left",
@@ -512,14 +512,14 @@ Hooks are explicit runtime escape hatches and are called on the source transform
 Generated call without input namespace:
 
 ```python
-df = self._impl.remove_negative_totals(df=df, spark=self.spark, ctx=self.ctx)
+orders = self._impl.remove_negative_totals(orders=orders, spark=self.spark, ctx=self.ctx)
 ```
 
 Generated call with input namespace:
 
 ```python
 inputs = HookInputs(orders=orders, customers=customers)
-df = self._impl.compare_to_raw(df=df, inputs=inputs, spark=self.spark, ctx=self.ctx)
+orders = self._impl.compare_to_raw(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
 ```
 
 Rules:
@@ -532,7 +532,7 @@ Rules:
 - Generate a read-only `HookInputs` namespace only when at least one hook declares `pass_inputs=True`.
 - Build the hook input namespace once near the start of `run(...)` when needed.
 - The namespace contains original declared input DataFrames, not intermediate DataFrames.
-- Hook return values become the new current `df`.
+- Hook return values become the new selected lane DataFrame.
 - Hook output validation and optional projection follow the hook metadata.
 
 Generated code does not inspect hook internals. Hook behavior is opaque to compiler traceability except for the declared
@@ -577,9 +577,9 @@ Rules:
 Example:
 
 ```python
-assert_schema(df, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="allow_extra_columns")
-df = project_schema(df, ORDER_ENRICHED_SCHEMA)
-assert_schema(df, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="strict")
+assert_schema(orders, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="allow_extra_columns")
+orders = project_schema(orders, ORDER_ENRICHED_SCHEMA)
+assert_schema(orders, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="strict")
 ```
 
 Disabling validation should remove the corresponding `assert_schema(...)` call, not call it with a no-op mode, unless a
@@ -825,7 +825,7 @@ The following are outside v1 PySpark generation scope:
 9. Generate one transform class per `TransformPlan`.
 10. Generate deterministic imports and ownership headers.
 11. Render input validation at the start of `run(...)` from shared validation recipes.
-12. Render `df`-based step blocks in source order from shared step recipes.
+12. Render lane-name-based step blocks in source order from shared step recipes.
 13. Render expression, filter, projection, join, hook, and validation recipes.
 14. Generate hook source imports and `_impl` only when hooks exist.
 15. Generate read-only hook input namespace only when `pass_inputs=True` exists.

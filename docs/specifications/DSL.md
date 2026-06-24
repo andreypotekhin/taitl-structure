@@ -1,4 +1,4 @@
-﻿# DSL
+# DSL
 
 ## Purpose
 
@@ -132,13 +132,13 @@ class EnrichOrders(Transform):
             customer_tier=customer.tier,
         )
 
-    @after(normalize)
-    def remove_negative_totals(self, *, df, spark, ctx):
-        return df.where(F.col("total") >= 0)
+    @after(normalize, lane=orders)
+    def remove_negative_totals(self, *, orders, spark, ctx):
+        return orders.where(F.col("total") >= 0)
 
-    @after(normalize, pass_inputs=True)
-    def compare_to_raw(self, *, df, inputs, spark, ctx):
-        return df
+    @after(normalize, lane=orders, pass_inputs=True)
+    def compare_to_raw(self, *, orders, inputs, spark, ctx):
+        return orders
 ```
 
 Runtime invocation is:
@@ -251,17 +251,18 @@ Rules:
 - Output declaration names are the class attribute names.
 - Output declaration order is class body order.
 - A transform with no field-declared outputs is invalid.
-- A single-output transform does not need an explicit output method binding; the final `df` lane produces the result.
+- A single-output transform does not need an explicit output method binding; the final current lane produces the
+  result.
 - If a transform declares more than one output field, each output lane must be written explicitly with method-level
   `@transform(output=that_output)`.
-- Method-level `@transform(output=lane)` reads from the canonical `df` lane and writes the named lane.
-- Method-level `@transform(input=declared_input)` reads from an original class input and writes the canonical `df`
-  lane unless `output=` is also specified.
+- Method-level `@transform(output=lane)` reads from the current lane and writes the named lane.
+- Method-level `@transform(input=declared_input)` reads from an original class input and keeps that input lane name
+  unless `output=` is also specified.
 - Method-level `@transform(input=source_lane, output=target_lane)` reads from a previously available output lane and
   writes another lane.
 - Any method that specifies an output lane as `input=` must also specify `output=`.
-- Lane references use output declarations, not strings. To explicitly reference the canonical `df` lane from a
-  decorator, declare it as a field, such as `df = output(OrderNormalized)`.
+- Lane references use input or output declarations, not strings. The default current lane starts with the selected
+  `input(...)` declaration name and changes only through explicit `@transform(output=...)`.
 
 Canonical multi-output form:
 
@@ -292,8 +293,8 @@ class RouteOrders(Transform):
 ```
 
 Transform methods execute in source order, but each method reads from its declared input lane and writes to its declared
-output lane. Ordinary undecorated methods are equivalent to `df -> df`. Output-local `where(...)` filters affect only
-the lane written by that method, so `reject(...)` above still reads the normalized `df` lane rather than the filtered
+output lane. Ordinary undecorated methods keep the current lane. Output-local `where(...)` filters affect only
+the lane written by that method, so `reject(...)` above still reads the normalized input lane rather than the filtered
 `accepted` lane.
 
 ## Subtransforms
@@ -320,8 +321,9 @@ Rules:
   values in order. Singular `input=` and `output=` remain one-item shorthands.
 - The compiler infers bindings only when every schema has one unambiguous available declaration.
 - Subtransforms execute in source order.
-- Source-order lane flow must be valid: undecorated methods consume and update `df`; `@transform(output=lane)`
-  consumes `df` and updates `lane`; `@transform(input=declared_input)` consumes an original input and updates `df`;
+- Source-order lane flow must be valid: undecorated methods consume and update the current lane;
+  `@transform(output=lane)` consumes the current lane and updates `lane`; `@transform(input=declared_input)` consumes
+  an original input and keeps that input lane name;
   `@transform(input=source, output=target)` consumes a previously available lane and updates the target lane.
 - If more than one declared input has the first subtransform's input schema, the compiler must require an unambiguous
   mapping such as `@transform(input=orders_external)` or emit a diagnostic.
@@ -511,21 +513,21 @@ Hooks are explicit PySpark escape hatches attached to a concrete subtransform.
 Canonical forms:
 
 ```python
-@before(normalize)
-def prepare(self, *, df, spark, ctx):
-    return df
+@before(normalize, lane=orders)
+def prepare(self, *, orders, spark, ctx):
+    return orders
 ```
 
 ```python
-@after(normalize, pass_inputs=True)
-def compare_to_raw(self, *, df, inputs, spark, ctx):
-    return df
+@after(normalize, lane=orders, pass_inputs=True)
+def compare_to_raw(self, *, orders, inputs, spark, ctx):
+    return orders
 ```
 
 ```python
-@after(normalize, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
-def add_quality_columns(self, *, df, spark, ctx):
-    return df
+@after(publish, lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+def add_quality_columns(self, *, published, spark, ctx):
+    return published
 ```
 
 Hook decorator keyword arguments:
@@ -537,14 +539,16 @@ Hook decorator keyword arguments:
 
 Rules:
 
-- `@before(method)` runs before the compiled operations for `method`.
-- `@after(method)` runs after the compiled operations for `method`.
+- `@before(method, lane=lane)` runs before the compiled operations for `method`.
+- `@after(method, lane=lane)` runs after the compiled operations for `method`.
+- `@before(method, lane=lane)` selects the lane consumed by the target method.
+- `@after(method, lane=lane)` selects the lane produced by the target method.
 - The target must be a compiled subtransform method on the same transform class.
 - Hook order for the same target and timing is source order.
 - Hooks are not symbolically executed and are opaque to the compiler except for metadata, signature, declared options,
   provenance, and streaming compatibility classification.
-- A hook without `pass_inputs=True` must have signature `def hook(self, *, df, spark, ctx)`.
-- A hook with `pass_inputs=True` must have signature `def hook(self, *, df, inputs, spark, ctx)`.
+- A hook without `pass_inputs=True` must have signature `def hook(self, *, selected_lane_name, spark, ctx)`.
+- A hook with `pass_inputs=True` must have signature `def hook(self, *, selected_lane_name, inputs, spark, ctx)`.
 - `inputs` is a read-only namespace containing the original DataFrames bound to the transform invocation. It does not
   contain intermediate DataFrames unless they were also declared original inputs.
 - Hooks must return a DataFrame at runtime.
@@ -767,9 +771,9 @@ For reuse:
       return lower(trim(value))
 
 Hook workaround:
-  @after(normalize)
-  def clean_customer_id(self, *, df, spark, ctx):
-      return df.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
+  @after(normalize, lane=orders)
+  def clean_customer_id(self, *, orders, spark, ctx):
+      return orders.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 
 See docs/specifications/DSL.md
 ```
@@ -789,8 +793,8 @@ Problem:
   Hooks with pass_inputs=True must declare keyword-only inputs.
 
 Use:
-  def compare_to_raw(self, *, df, inputs, spark, ctx):
-      return df
+  def compare_to_raw(self, *, orders, inputs, spark, ctx):
+      return orders
 
 See docs/specifications/DSL.md
 ```

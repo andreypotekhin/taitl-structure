@@ -98,7 +98,7 @@ hook recipe parity are implemented and tested for v1.
 - Hook-free transforms do not import source transform classes.
 - Hooked transforms direct-import source class and call hooks.
 - Hook signature is validated.
-- `@after(method)` and `@before(method)` work.
+- `@after(method, lane=lane)` and `@before(method, lane=lane)` work.
 
 ## M5: Joins, Compiler Traceability, Build Integration
 

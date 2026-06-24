@@ -28,7 +28,7 @@ PySpark contract is stable.
 - Symbolic `join_one(...)`.
 - N-step serial joins.
 - `@expr_fn` helpers.
-- `@before(method)` and `@after(method)` hooks.
+- `@before(method, lane=lane)` and `@after(method, lane=lane)` hooks.
 - Compiler provenance from source node to IR node to generated PySpark node.
 - Static dataflow traceability inferred from IR.
 - Streaming-compatible online and generated transforms.

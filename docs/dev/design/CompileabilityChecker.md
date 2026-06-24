@@ -1,4 +1,4 @@
-﻿# Design: Compileability Checker
+# Design: Compileability Checker
 
 ## Purpose
 
@@ -66,9 +66,9 @@ For reuse:
       return lower(trim(value))
 
 Hook workaround:
-  @after(normalize)
-  def clean_customer_id(self, *, df, spark, ctx):
-      return df.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
+  @after(normalize, lane=orders)
+  def clean_customer_id(self, *, orders, spark, ctx):
+      return orders.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 
 Hook note:
   Hooks are supported for arbitrary PySpark, but they are opaque to compileability checks and traceability. Prefer the DSL or

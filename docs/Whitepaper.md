@@ -1,4 +1,4 @@
-﻿# Structure: Typed Schema Transform Compilation for PySpark
+# Structure: Typed Schema Transform Compilation for PySpark
 
 ## Abstract
 
@@ -241,28 +241,28 @@ Expression helpers are symbolically executed and lowered into online or generate
 Hooks are explicit escape hatches for arbitrary PySpark code.
 
 ```python
-@after(normalize)
-def remove_negative_totals(self, *, df, spark, ctx):
-    return df.where(F.col("total") >= 0)
+@after(normalize, lane=orders)
+def remove_negative_totals(self, *, orders, spark, ctx):
+    return orders.where(F.col("total") >= 0)
 ```
 
 Hook signature:
 
 ```python
-def hook_name(self, *, df, spark, ctx) -> DataFrame:
+def hook_name(self, *, selected_lane_name, spark, ctx) -> DataFrame:
     ...
 ```
 
-Hooks receive the current DataFrame, SparkSession, and optional context. They do not receive every named input by
-default. This keeps the hook ABI small and stable.
+Hooks receive the selected lane DataFrame, SparkSession, and optional context. They do not receive every named input by
+default. This keeps the hook ABI small and explicit.
 
 Hooks that need original named inputs opt in explicitly:
 
 ```python
-@after(normalize, pass_inputs=True)
-def custom_check(self, *, df, inputs, spark, ctx) -> DataFrame:
-    orders = inputs.orders
-    return df
+@after(normalize, lane=orders, pass_inputs=True)
+def custom_check(self, *, orders, inputs, spark, ctx) -> DataFrame:
+    raw_orders = inputs.orders
+    return orders
 ```
 
 The `inputs` namespace contains the original `run(...)` input DataFrames after input validation. It is intentionally
@@ -367,9 +367,9 @@ For reuse:
       return lower(trim(value))
 
 For arbitrary PySpark:
-  @after(normalize)
-  def clean_id_column(self, *, df, spark, ctx):
-      return df.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
+  @after(normalize, lane=orders)
+  def clean_id_column(self, *, orders, spark, ctx):
+      return orders.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 
 Configuration workaround:
   No configuration setting allows unsupported Python string methods inside compiled transforms.

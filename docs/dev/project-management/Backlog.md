@@ -1,8 +1,8 @@
-﻿# Product Backlog
+# Product Backlog
 
 ## Epic: Pre-Coding Spikes and Decisions
 
-- SPIKE: Prove `@after(method)` works inside class bodies.
+- SPIKE: Prove `@after(method, lane=lane)` works inside class bodies.
 - SPIKE: Prove class-local `@expr_fn` helpers work without a `self` parameter.
 - SPIKE: Prove source-order method discovery with stable line numbers.
 - SPIKE: Prove source-root discovery and generated `structure_generated.<source package>` import paths.
@@ -50,7 +50,7 @@
 - Detect `input(...)` declarations.
 - Identify public schema-returning methods.
 - Identify `@expr_fn` helpers.
-- Identify `@before(method)` and `@after(method)` hooks.
+- Identify `@before(method, lane=lane)` and `@after(method, lane=lane)` hooks.
 - Report ambiguous public methods.
 
 ## Epic: Symbolic Execution
@@ -107,9 +107,9 @@
 
 ## Epic: Hooks
 
-- Implement `@before(method)` metadata.
-- Implement `@after(method)` metadata.
-- Validate signature `def hook(self, *, df, spark, ctx)`.
+- Implement `@before(method, lane=lane)` metadata.
+- Implement `@after(method, lane=lane)` metadata.
+- Validate selected lane signatures such as `def hook(self, *, orders, spark, ctx)`.
 - Generate direct source hook calls.
 - Support schema mode and project-output options.
 - Ensure no hook machinery in hook-free generated code.

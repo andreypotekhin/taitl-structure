@@ -33,9 +33,9 @@ class StreamingUnknownHook(Transform):
     def normalize(self, row: StreamRaw) -> StreamClean:
         return StreamClean(id=row.id)
 
-    @after(normalize)
-    def arbitrary_hook(self, *, df, spark, ctx):
-        return df
+    @after(normalize, lane=rows)
+    def arbitrary_hook(self, *, rows, spark, ctx):
+        return rows
 
 
 def test_v1_streaming_projection_filter_and_schema_validation_are_compatible_without_spark() -> None:

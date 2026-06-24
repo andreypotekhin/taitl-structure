@@ -72,21 +72,14 @@ class RenderPySparkTransformModule:
         for step in plan.steps:
             lines.append("")
             lines.append(render_pyspark_step(step, current=sources[step.source], sources=sources))
-            if len(step.results) > 1:
-                for result in step.results:
-                    sources[result.frame] = result.frame
-            else:
-                source_name = f"{step.name}_df"
-                lines.append(f"        {source_name} = df")
-                sources[step.name] = source_name
+            for result in step.results:
+                sources[result.frame] = result.frame
 
         result_entries: list[str] = []
         for output in plan.outputs:
             lines.append("")
             lines.append(render_pyspark_step(output, current=sources[output.source], sources=sources))
-            output_name = f"{output.name}_df"
-            lines.append(f"        {output_name} = df")
-            result_entries.append(f'"{output.name}": {output_name}')
+            result_entries.append(f'"{output.name}": {output.name}')
         single = "True" if len(plan.outputs) == 1 else "False"
         lines.append(f"        return TransformResult({{{', '.join(result_entries)}}}, single={single})")
         return "\n".join(lines)

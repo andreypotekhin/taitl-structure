@@ -9,6 +9,7 @@ class PySparkHookMapper:
             name=hook.name,
             phase=hook.phase,
             target=hook.target,
+            lane=hook.lane.name,
             pass_inputs=hook.pass_inputs,
             schema_mode=hook.schema_mode,
             project_output=hook.project_output,

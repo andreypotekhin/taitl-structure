@@ -350,41 +350,42 @@ Serial joins are N-step enrichment chains and are not limited to any fixed numbe
 Hooks are explicit PySpark escape hatches.
 
 ```python
-@after(normalize)
-def remove_negative_totals(self, *, df, spark, ctx):
-    return df.where(F.col("total") >= 0)
+@after(normalize, lane=orders)
+def remove_negative_totals(self, *, orders, spark, ctx):
+    return orders.where(F.col("total") >= 0)
 ```
 
 Hook signature:
 
 ```python
-def hook_name(self, *, df, spark, ctx):
+def hook_name(self, *, selected_lane_name, spark, ctx):
     ...
 ```
 
-Hooks receive `self`, `df`, `spark`, and `ctx`. Named input DataFrames are not passed to hooks by default.
+Hooks receive `self`, the selected lane parameter, `spark`, and `ctx`. Named input DataFrames are not passed to hooks
+by default.
 
 When a hook needs the original named inputs, opt in explicitly:
 
 ```python
-@after(normalize, pass_inputs=True)
-def check_against_raw_orders(self, *, df, inputs, spark, ctx):
+@after(normalize, lane=orders, pass_inputs=True)
+def check_against_raw_orders(self, *, orders, inputs, spark, ctx):
     raw = inputs.orders
-    return df
+    return orders
 ```
 
 `inputs` is a read-only namespace matching the transform's declared input names. It contains the original `run(...)`
-input DataFrames, not the current intermediate `df`.
+input DataFrames, not the current intermediate lane.
 
-For a multi-result subtransform, select the after hook's DataFrame with the output declaration:
+Select hook DataFrames explicitly with input/output declarations:
 
 ```python
-@after(add_product, df=audited)
-def add_audit_columns(self, *, df, spark, ctx):
-    return df.withColumn("_audited", F.lit(True))
+@after(add_product, lane=audited)
+def add_audit_columns(self, *, audited, spark, ctx):
+    return audited.withColumn("_audited", F.lit(True))
 ```
 
-Single-result hooks keep the shorter `@after(method)` form.
+Single-result hooks still name the selected lane explicitly.
 
 ## Streaming Compatibility
 

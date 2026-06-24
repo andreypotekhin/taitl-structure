@@ -51,7 +51,7 @@ class EnrichOrdersGenerated:
         )
 
         # Hook before normalize: use_current_orders
-        df = self._impl.use_current_orders(df=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
+        orders = self._impl.use_current_orders(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
 
         # Subtransform: normalize
         total = F.coalesce(F.col("total").cast("decimal(12,2)"), F.lit(0).cast("decimal(12,2)"))
@@ -60,7 +60,7 @@ class EnrichOrdersGenerated:
             F.transform(F.col("tags"), lambda tag: F.lower(F.trim(tag))),
             lambda tag: tag.isNotNull(),
         )
-        df = df.where(
+        orders = orders.where(
             F.col("id").isNotNull()
             & F.col("customer_id").isNotNull()
             & F.col("product_id").isNotNull()
@@ -82,14 +82,14 @@ class EnrichOrdersGenerated:
             (total > F.lit(1000).cast("decimal(12,2)")).alias("is_large"),
         )
 
-        df = self._impl.remove_negative_totals(df=df, spark=self.spark, ctx=self.ctx)
-        assert_schema(df, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
+        orders = self._impl.remove_negative_totals(orders=orders, spark=self.spark, ctx=self.ctx)
+        assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
 
         # Subtransform: add_customer
-        df = df.alias("order_normalized")
-        customers_df = F.broadcast(customers.alias("customers"))
-        df = df.join(
-            customers_df,
+        orders = orders.alias("order_normalized")
+        customers_joined = F.broadcast(customers.alias("customers"))
+        orders = orders.join(
+            customers_joined,
             (F.col("customers.tenant.tenant_id") == F.col("order_normalized.tenant.tenant_id"))
             & (F.lower(F.trim(F.col("customers.id"))) == F.col("order_normalized.customer_id")),
             "left",
@@ -113,14 +113,14 @@ class EnrichOrdersGenerated:
             F.col("customers.tier").alias("customer_tier"),
             F.col("customers.region").alias("customer_region"),
         )
-        assert_schema(df, ORDER_WITH_CUSTOMER_SCHEMA, name="OrderWithCustomer", mode="strict")
-        df = df.persist(StorageLevel.MEMORY_AND_DISK)
+        assert_schema(orders, ORDER_WITH_CUSTOMER_SCHEMA, name="OrderWithCustomer", mode="strict")
+        orders = orders.persist(StorageLevel.MEMORY_AND_DISK)
 
         # Subtransform: add_product
-        df = df.alias("order_with_customer")
-        products_df = products.alias("products")
-        df = df.join(
-            products_df,
+        orders = orders.alias("order_with_customer")
+        products_joined = products.alias("products")
+        orders = orders.join(
+            products_joined,
             (F.col("products.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id"))
             & (F.col("products.id") == F.col("order_with_customer.product_id")),
             "left",
@@ -150,13 +150,13 @@ class EnrichOrdersGenerated:
             F.col("products.active").alias("product_active"),
             F.col("products.list_price").alias("product_list_price"),
         )
-        assert_schema(df, ORDER_WITH_PRODUCT_SCHEMA, name="OrderWithProduct", mode="strict")
+        assert_schema(orders, ORDER_WITH_PRODUCT_SCHEMA, name="OrderWithProduct", mode="strict")
 
         # Subtransform: add_promotion
-        df = df.alias("order_with_product")
-        promotions_df = promotions.alias("promotions")
-        df = df.join(
-            promotions_df,
+        orders = orders.alias("order_with_product")
+        promotions_joined = promotions.alias("promotions")
+        orders = orders.join(
+            promotions_joined,
             (F.col("promotions.tenant.tenant_id") == F.col("order_with_product.tenant.tenant_id"))
             & F.lower(F.trim(F.col("promotions.code"))).eqNullSafe(F.col("order_with_product.promotion_code")),
             "left",
@@ -186,13 +186,13 @@ class EnrichOrdersGenerated:
             F.col("promotions.name").alias("promotion_name"),
             F.col("promotions.discount").alias("promotion_discount"),
         )
-        assert_schema(df, ORDER_WITH_PROMOTION_SCHEMA, name="OrderWithPromotion", mode="strict")
+        assert_schema(orders, ORDER_WITH_PROMOTION_SCHEMA, name="OrderWithPromotion", mode="strict")
 
         # Subtransform: add_shipments
-        df = df.alias("order_with_promotion")
-        shipments_df = shipments.hint("shuffle_hash").alias("shipments")
-        df = df.join(
-            shipments_df,
+        orders = orders.alias("order_with_promotion")
+        shipments_joined = shipments.hint("shuffle_hash").alias("shipments")
+        orders = orders.join(
+            shipments_joined,
             (F.col("shipments.tenant.tenant_id") == F.col("order_with_promotion.tenant.tenant_id"))
             & (F.col("shipments.order_id") == F.col("order_with_promotion.id")),
             "inner",
@@ -226,14 +226,14 @@ class EnrichOrdersGenerated:
             F.col("shipments.tracking_number").alias("tracking_number"),
             F.col("shipments.shipped_at").alias("shipped_at"),
         )
-        assert_schema(df, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")
+        assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")
 
-        df = self._impl.note_lookup_inputs(df=df, inputs=inputs, spark=self.spark, ctx=self.ctx)
-        assert_schema(df, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="allow_extra_columns")
+        orders = self._impl.note_lookup_inputs(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
+        assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="allow_extra_columns")
 
         # Subtransform: publish
-        df = df.alias("order_fulfillment")
-        df = df.select(
+        published = orders.alias("order_fulfillment")
+        published = published.select(
             F.col("order_fulfillment.tenant").alias("tenant"),
             F.col("order_fulfillment.business").alias("business"),
             F.col("order_fulfillment.id").alias("id"),
@@ -254,11 +254,11 @@ class EnrichOrdersGenerated:
             F.col("order_fulfillment.promotion_name").isNotNull().alias("has_promotion"),
         )
 
-        df = self._impl.add_quality_columns(df=df, spark=self.spark, ctx=self.ctx)
-        assert_schema(df, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="allow_extra_columns")
-        df = project_schema(df, ORDER_PUBLISHED_SCHEMA)
-        assert_schema(df, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")
-        return df
+        published = self._impl.add_quality_columns(published=published, spark=self.spark, ctx=self.ctx)
+        assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="allow_extra_columns")
+        published = project_schema(published, ORDER_PUBLISHED_SCHEMA)
+        assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")
+        return published
 
 
 def enrich_orders(

@@ -61,8 +61,8 @@ outputs such as `result.accepted` and `result["rejected"]`; `df` is present only
 field-declared output is explicitly named `df`.
 
 Online execution evaluates transform methods in source order while preserving independent lane frames. Undecorated
-methods update the canonical `df` lane. `@transform(output=accepted)` reads `df` and writes `accepted`.
-`@transform(input=accepted, output=accepted)` continues the accepted lane without changing `df` or any sibling lane.
+methods update the current input lane, such as `orders`. `@transform(output=accepted)` reads the current lane and writes
+`accepted`. `@transform(input=accepted, output=accepted)` continues the accepted lane without changing any sibling lane.
 
 ## Configuration
 

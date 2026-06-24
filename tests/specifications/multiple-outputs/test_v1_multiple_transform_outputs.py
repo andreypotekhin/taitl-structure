@@ -66,14 +66,14 @@ def test_v1_multi_output_methods_write_source_order_lanes() -> None:
     plan = compile_transform(RouteOrders)
 
     assert [(step.name, step.source, step.input_lane, step.output_lane) for step in plan.steps] == [
-        ("normalize", "rows", "df", "df"),
-        ("accept", "normalize", "df", "accepted"),
-        ("keep_accepted", "accept", "accepted", "accepted"),
-        ("reject", "normalize", "df", "rejected"),
+        ("normalize", "rows", "rows", "rows"),
+        ("accept", "rows", "rows", "accepted"),
+        ("keep_accepted", "accepted", "accepted", "accepted"),
+        ("reject", "rows", "rows", "rejected"),
     ]
     assert [(item.name, item.source, item.schema) for item in plan.outputs] == [
-        ("accepted", "keep_accepted", Accepted),
-        ("rejected", "reject", Rejected),
+        ("accepted", "accepted", Accepted),
+        ("rejected", "rejected", Rejected),
     ]
     assert plan.steps[1].filters[0].kind == "is_not_null"
     assert plan.steps[2].filters[0].kind == "eq"
@@ -125,6 +125,21 @@ def test_v1_transform_requires_output_field() -> None:
     assert "name = output(Schema)" in str(raised.value)
 
 
+def test_v1_transform_requires_input_field() -> None:
+    @transform
+    class PublishOrders(Transform):
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(id=row.id)
+
+    with pytest.raises(Exception) as raised:
+        compile_transform(PublishOrders)
+
+    assert "PublishOrders declares no inputs" in str(raised.value)
+    assert "name = input(Schema)" in str(raised.value)
+
+
 def test_v1_class_to_option_is_rejected() -> None:
     with pytest.raises(TypeError) as raised:
 
@@ -151,7 +166,7 @@ def test_v1_method_input_selects_declared_input_when_schema_is_ambiguous() -> No
 
     steps = [(step.name, step.source, step.source_scope, step.input_lane, step.output_lane) for step in plan.steps]
     assert steps == [
-        ("normalize", "external", "external", "external", "df"),
+        ("normalize", "external", "external", "external", "external"),
     ]
 
 
@@ -172,7 +187,7 @@ def test_v1_method_input_selects_declared_input_before_writing_output_lane() -> 
         ("accept", "external", "external", "accepted"),
     ]
     assert [(item.name, item.source, item.schema) for item in plan.outputs] == [
-        ("accepted", "accept", Accepted),
+        ("accepted", "accepted", Accepted),
     ]
 
 
@@ -316,11 +331,11 @@ def test_v1_generated_pyspark_uses_per_lane_step_sources() -> None:
         },
     )
 
-    assert [step.source for step in recipe.steps] == ["rows", "normalize", "accept", "normalize"]
-    assert "        # Subtransform: accept\n        df = normalize_df.alias(\"normalized\")" in text
-    assert "        # Subtransform: keep_accepted\n        df = accept_df.alias(\"accepted\")" in text
-    assert "        # Subtransform: reject\n        df = normalize_df.alias(\"normalized\")" in text
-    assert 'return TransformResult({"accepted": accepted_df, "rejected": rejected_df}, single=False)' in text
+    assert [step.source for step in recipe.steps] == ["rows", "rows", "accepted", "rows"]
+    assert "        # Subtransform: accept\n        accepted = rows.alias(\"normalized\")" in text
+    assert "        # Subtransform: keep_accepted\n        accepted = accepted.alias(\"accepted\")" in text
+    assert "        # Subtransform: reject\n        rejected = rows.alias(\"normalized\")" in text
+    assert 'return TransformResult({"accepted": accepted, "rejected": rejected}, single=False)' in text
 
 
 def test_v1_online_executor_result_wraps_single_output_df() -> None:

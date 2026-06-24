@@ -17,7 +17,7 @@ class CompilerHookCollector:
                     name=name,
                     phase=metadata["phase"],
                     target=metadata["target"],
-                    df=metadata["df"],
+                    lane=metadata["lane"],
                     pass_inputs=metadata["pass_inputs"],
                     schema_mode=metadata["schema_mode"],
                     project_output=metadata["project_output"],

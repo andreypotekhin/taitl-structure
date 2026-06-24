@@ -114,6 +114,7 @@ def _declarations(kwargs, *, singular: str, plural: str, allowed: tuple[type, ..
 def before(
     target: Callable,
     *,
+    lane: InputDeclaration | OutputDeclaration,
     pass_inputs: bool = False,
     schema_mode: SchemaMode = SchemaMode.STRICT,
     project_output: bool = False,
@@ -122,6 +123,7 @@ def before(
     return _hook(
         "before",
         target,
+        lane=lane,
         pass_inputs=pass_inputs,
         schema_mode=schema_mode,
         project_output=project_output,
@@ -132,7 +134,7 @@ def before(
 def after(
     target: Callable,
     *,
-    df: OutputDeclaration | None = None,
+    lane: InputDeclaration | OutputDeclaration,
     pass_inputs: bool = False,
     schema_mode: SchemaMode = SchemaMode.STRICT,
     project_output: bool = False,
@@ -141,7 +143,7 @@ def after(
     return _hook(
         "after",
         target,
-        df=df,
+        lane=lane,
         pass_inputs=pass_inputs,
         schema_mode=schema_mode,
         project_output=project_output,
@@ -160,7 +162,7 @@ def _hook(
     phase: str,
     target: Callable,
     *,
-    df: OutputDeclaration | None = None,
+    lane: InputDeclaration | OutputDeclaration,
     pass_inputs: bool,
     schema_mode: SchemaMode,
     project_output: bool,
@@ -168,8 +170,8 @@ def _hook(
 ):
     if not callable(target):
         raise TypeError(f"@{phase}(...) requires a subtransform method")
-    if df is not None and (phase != "after" or not isinstance(df, OutputDeclaration)):
-        raise TypeError("@after(..., df=...) requires an output(...) declaration")
+    if not isinstance(lane, (InputDeclaration, OutputDeclaration)):
+        raise TypeError(f"@{phase}(..., lane=...) requires an input(...) or output(...) declaration")
 
     def decorate(function: Callable) -> Callable:
         setattr(
@@ -178,7 +180,7 @@ def _hook(
             {
                 "phase": phase,
                 "target": target.__name__,
-                "df": df,
+                "lane": lane,
                 "pass_inputs": pass_inputs,
                 "schema_mode": schema_mode,
                 "project_output": project_output,

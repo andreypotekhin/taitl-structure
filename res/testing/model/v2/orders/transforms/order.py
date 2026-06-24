@@ -81,15 +81,15 @@ class EnrichOrders(Transform):
             is_large=total > 1000,
         )
 
-    @before(normalize, pass_inputs=True, streaming_safe=True)
-    def use_current_orders(self, *, df, inputs, spark, ctx):
+    @before(normalize, lane=orders, pass_inputs=True, streaming_safe=True)
+    def use_current_orders(self, *, orders, inputs, spark, ctx):
         if ctx is not None and getattr(ctx, "use_original_orders", False):
             return inputs.orders
-        return df
+        return orders
 
-    @after(normalize, streaming_safe=True)
-    def remove_negative_totals(self, *, df, spark, ctx):
-        return df.where(F.col("net_total") >= 0)
+    @after(normalize, lane=orders, streaming_safe=True)
+    def remove_negative_totals(self, *, orders, spark, ctx):
+        return orders.where(F.col("net_total") >= 0)
 
     @cache(StorageLevel.MEMORY_AND_DISK)
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
@@ -147,10 +147,11 @@ class EnrichOrders(Transform):
             shipped_at=shipment.shipped_at,
         )
 
-    @after(add_shipments, pass_inputs=True, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, streaming_safe=True)
-    def note_lookup_inputs(self, *, df, inputs, spark, ctx):
-        return df.withColumn("_lookup_inputs_seen", F.lit(inputs.customers is not None and inputs.products is not None))
+    @after(add_shipments, lane=orders, pass_inputs=True, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, streaming_safe=True)
+    def note_lookup_inputs(self, *, orders, inputs, spark, ctx):
+        return orders.withColumn("_lookup_inputs_seen", F.lit(inputs.customers is not None and inputs.products is not None))
 
+    @transform(output=published)
     def publish(self, order: OrderFulfillment) -> OrderPublished:
         flags = PublicationFlags(
             has_promotion=order.promotion_name.is_not_null(),
@@ -158,9 +159,9 @@ class EnrichOrders(Transform):
 
         return OrderPublished.base(order, flags)
 
-    @after(publish, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True, streaming_safe=True)
-    def add_quality_columns(self, *, df, spark, ctx):
+    @after(publish, lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True, streaming_safe=True)
+    def add_quality_columns(self, *, published, spark, ctx):
         return (
-            df.withColumn("_has_customer", F.col("customer_name").isNotNull())
+            published.withColumn("_has_customer", F.col("customer_name").isNotNull())
             .withColumn("_has_tracking", F.col("tracking_number").isNotNull())
         )

@@ -8,7 +8,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 01 Vertical Slice 1 | Schemas, Transform Classes, Inputs, Online Execution, Generated Code, Testing | simple schema, one transform, online runner, generated class, Spark execution test |
 | Sprint 02 Schemas and Validation | Schema Validation, Generated Code, Configuration | `StructType` generation, `assert_schema`, intermediate validation defaults |
 | Sprint 03 Expressions/Filtering/Helpers | Symbolic Execution, Expression Helpers, Filtering, Error Reporting | expression IR, `where`, `@expr_fn`, diagnostic registry, structured unsupported-code errors |
-| Sprint 04 Hooks/Generated Classes | Hooks, Generated Code, Error Reporting | `@after(method)`, direct hook calls, no-hook cleanliness |
+| Sprint 04 Hooks/Generated Classes | Hooks, Generated Code, Error Reporting | `@after(method, lane=lane)`, direct hook calls, no-hook cleanliness |
 | Sprint 05 Joins/Compiler Traceability/Build | Joins, Compiler Traceability, Build Integration, Streaming Compatibility | `join_one`, N-step joins, compiler provenance, static dataflow traceability, `--fail-on-diff`, `explain` |
 | Sprint 06 v2 Scope/Analytical IR | v2 Foundations, Backend Capabilities, Traceability, Streaming Compatibility | v2 scope, non-goals, operation taxonomy, capability placeholders, fixture skeletons, diagnostic anchors |
 | Sprint 07 Analytical Join Coverage | Analytical Joins, Backend Capabilities, Traceability, Streaming Compatibility | existence joins, `join_many`, deterministic lookup dedupe, temporal joins, as-of joins |
@@ -59,8 +59,8 @@ This matrix maps early sprints to specification sections and major deliverables.
 
 ### Sprint 04
 
-- As a developer, I can attach a hook with `@after(method)`.
-- As a developer, I can write hook signature `def hook(self, *, df, spark, ctx)`.
+- As a developer, I can attach a hook with `@after(method, lane=lane)`.
+- As a developer, I can write a selected lane hook signature such as `def hook(self, *, orders, spark, ctx)`.
 - As a developer, online execution directly calls hooks when hooks exist.
 - As a developer, generated code directly calls hooks when hooks exist.
 - As a developer, hook-free generated code remains clean.

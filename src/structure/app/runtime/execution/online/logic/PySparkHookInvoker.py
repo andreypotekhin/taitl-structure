@@ -28,10 +28,10 @@ class PySparkHookInvoker:
         invocation: Transform,
         session,
     ):
-        df = current
+        frame = current
         for hook in hooks:
-            kwargs = {"df": df, "spark": session.spark, "ctx": session.ctx}
+            kwargs = {hook.lane: frame, "spark": session.spark, "ctx": session.ctx}
             if hook.pass_inputs:
                 kwargs["inputs"] = inputs
-            df = getattr(invocation, hook.name)(**kwargs)
-        return df
+            frame = getattr(invocation, hook.name)(**kwargs)
+        return frame

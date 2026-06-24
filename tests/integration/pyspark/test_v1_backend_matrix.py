@@ -85,9 +85,9 @@ class AddLookupProduct(Transform):
         row = LookupEnriched(id=order.id, product_name=product.name)
         return row, row
 
-    @after(add_product, df=audited)
-    def audit(self, *, df, spark, ctx):
-        return df
+    @after(add_product, lane=audited)
+    def audit(self, *, audited, spark, ctx):
+        return audited
 
 
 @pytest.fixture(scope="session")

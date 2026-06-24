@@ -1,4 +1,4 @@
-﻿# Getting Started
+# Getting Started
 
 This guide builds a small but realistic Structure transform: normalize order rows, validate required keys, enrich with
 customer data, and run it through `StructureSession`. Generated PySpark remains available as an optional artifact.
@@ -123,9 +123,9 @@ class EnrichOrders(Transform):
             total=to_decimal(order.total, precision=12, scale=2),
         )
 
-    @after(normalize)
-    def remove_negative_totals(self, *, df, spark, ctx):
-        return df.where(F.col("total") >= 0)
+    @after(normalize, lane=orders)
+    def remove_negative_totals(self, *, orders, spark, ctx):
+        return orders.where(F.col("total") >= 0)
 
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
         customer = self.customers.join_one(
@@ -192,7 +192,7 @@ class EnrichOrdersGenerated:
         assert_schema(customers, CUSTOMER_SCHEMA, name="Customer", mode="strict")
 
         # Subtransform: normalize
-        df = orders.where(
+        orders = orders.where(
             F.col("id").isNotNull()
             & F.col("customer_id").isNotNull()
             & F.col("product_id").isNotNull()
@@ -203,13 +203,13 @@ class EnrichOrdersGenerated:
             F.col("total").cast("decimal(12,2)").alias("total"),
         )
 
-        df = self._impl.remove_negative_totals(df=df, spark=self.spark, ctx=self.ctx)
-        assert_schema(df, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
+        orders = self._impl.remove_negative_totals(orders=orders, spark=self.spark, ctx=self.ctx)
+        assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
 
         # Subtransform: add_customer
-        df = df.alias("order_normalized")
+        orders = orders.alias("order_normalized")
         customers_df = F.broadcast(customers.alias("customers"))
-        df = df.join(
+        orders = orders.join(
             customers_df,
             F.col("customers.id") == F.col("order_normalized.customer_id"),
             "left",
@@ -222,8 +222,8 @@ class EnrichOrdersGenerated:
             F.col("order_normalized.total").alias("total"),
         )
 
-        assert_schema(df, ORDER_WITH_CUSTOMER_SCHEMA, name="OrderWithCustomer", mode="strict")
-        return df
+        assert_schema(orders, ORDER_WITH_CUSTOMER_SCHEMA, name="OrderWithCustomer", mode="strict")
+        return orders
 ```
 
 The Structure source is shorter and schema-oriented. The generated PySpark is longer, explicit, and reviewable.

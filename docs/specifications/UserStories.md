@@ -1,4 +1,4 @@
-﻿# Structure Specification
+# Structure Specification
 
 This document is a user-story specification for SDLC planning. Early sections cover general setup and getting started. Later sections cover narrower use cases and roadmap features.
 
@@ -137,7 +137,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 - + As a developer, I can generate a class named after the source transform class so that source-to-generated mapping is obvious.
 - + As a developer, I can expect generated code to use PySpark DataFrame and Column operations so that Spark can optimize execution.
 - + As a developer, I can expect generated code to omit hook imports when no hooks are defined so that generated code stays clean.
-- + As a developer, I can expect generated code to contain stable variable names such as `df`, `spark`, and `ctx` so that generated code is predictable.
+- + As a developer, I can expect generated code to contain stable lane variable names such as `orders`, `published`,
+  `spark`, and `ctx` so that generated code is predictable.
 - + As a developer, I can import generated schema constants as ordinary PySpark `StructType` values so that caller-owned
   reads and writes can use the same schemas.
 - + As a developer, online execution exposes equivalent Spark schemas so that generated files are not required for
@@ -190,14 +191,16 @@ This document is a user-story specification for SDLC planning. Early sections co
 
 ## 16. Hooks
 
-- + As a developer, I can attach a hook to a subtransform using `@before(method)` or `@after(method)` so that custom PySpark code is tied to a concrete method.
-- + As a developer, I can write hook methods with signature `def hook(self, *, df, spark, ctx)` so that hook parameters are minimal and stable.
+- + As a developer, I can attach a hook to a subtransform using `@before(method, lane=lane)` or
+  `@after(method, lane=lane)` so that custom PySpark code is tied to a concrete method.
+- + As a developer, I can write hook methods with a selected lane parameter such as
+  `def hook(self, *, orders, spark, ctx)` so that hook parameters are minimal and stable.
 - + As a developer, I can opt a hook into original input access with `pass_inputs=True` so that unusual validation or
   lookup logic can use named source DataFrames.
 - + As a developer, I can use arbitrary PySpark DataFrame code inside hooks so that escape hatches are available.
 - + As a developer, I can expect generated code to call hooks directly on the source transform instance so that hook behavior is transparent.
-- + As a developer, I can bind an after hook to one result of a multi-result subtransform with `df=output_declaration`
-  so that its input DataFrame is unambiguous.
+- + As a developer, I can bind hooks with `@before(method, lane=lane)` and `@after(method, lane=lane)` so that their
+  input DataFrame is unambiguous.
 
 ## 17. Streaming Compatibility
 

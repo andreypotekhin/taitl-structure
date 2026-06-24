@@ -1,4 +1,4 @@
-﻿# Hook Semantics
+# Hook Semantics
 
 ## Purpose
 
@@ -13,21 +13,21 @@ streaming-safety metadata, generated and online invocation, diagnostics, and tes
 Canonical hook forms:
 
 ```python
-@before(normalize)
-def prepare(self, *, df, spark, ctx):
-    return df
+@before(normalize, lane=orders)
+def prepare(self, *, orders, spark, ctx):
+    return orders
 ```
 
 ```python
-@after(normalize, pass_inputs=True)
-def compare_to_raw(self, *, df, inputs, spark, ctx):
-    return df
+@after(normalize, lane=orders, pass_inputs=True)
+def compare_to_raw(self, *, orders, inputs, spark, ctx):
+    return orders
 ```
 
 ```python
-@after(normalize, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
-def add_quality_columns(self, *, df, spark, ctx):
-    return df.withColumn("_checked", F.lit(True))
+@after(publish, lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+def add_quality_columns(self, *, published, spark, ctx):
+    return published.withColumn("_checked", F.lit(True))
 ```
 
 `@before(...)` runs before the compiled operations of the target subtransform. `@after(...)` runs after the compiled
@@ -42,6 +42,7 @@ Required positional argument:
 Keyword arguments:
 
 ```text
+lane=declaration
 pass_inputs=False
 schema_mode=None
 project_output=False
@@ -53,6 +54,8 @@ Rules:
 - Unknown keyword arguments are errors.
 - More than one positional argument is an error.
 - The target must be a compiled subtransform on the same transform class.
+- `@before(...)` must select the target input lane with `lane=...`.
+- `@after(...)` must select the target output lane with `lane=...`.
 - The target may be referenced inside the class body because earlier methods are present in the class namespace.
 - `schema_mode=None` means strict default validation.
 - `project_output=True` requires a schema mode and target schema that make projection meaningful.
@@ -63,25 +66,33 @@ Rules:
 Default signature:
 
 ```python
-def hook(self, *, df, spark, ctx):
+def hook(self, *, selected_lane_name, spark, ctx):
     ...
 ```
 
-When the target subtransform returns several DataFrames, an after hook selects one declared result:
+Every hook explicitly selects the lane it receives. A before hook selects the target subtransform input lane:
 
 ```python
-@after(add_product, df=audited)
-def audit(self, *, df, spark, ctx):
+@before(normalize, lane=orders)
+def prepare(self, *, orders, spark, ctx):
     ...
 ```
 
-The selected result is passed through the existing `df` parameter. The hook return value replaces only that result
-lane. Single-result hooks do not need `df=`.
+An after hook selects the target subtransform output lane:
+
+```python
+@after(add_product, lane=audited)
+def audit(self, *, audited, spark, ctx):
+    ...
+```
+
+The selected lane is passed through a keyword parameter with the same name. The hook return value replaces only that
+lane.
 
 Input-access signature:
 
 ```python
-def hook(self, *, df, inputs, spark, ctx):
+def hook(self, *, selected_lane_name, inputs, spark, ctx):
     ...
 ```
 
@@ -89,7 +100,7 @@ Rules:
 
 - `self` is required.
 - Hook runtime parameters must be keyword-only.
-- `df`, `spark`, and `ctx` are required.
+- the selected lane parameter, `spark`, and `ctx` are required.
 - `inputs` is required only when `pass_inputs=True`.
 - `inputs` is invalid when `pass_inputs=False`.
 - Extra parameters are invalid in v1.
@@ -105,9 +116,9 @@ transform inputs.
 Example:
 
 ```python
-@after(normalize, pass_inputs=True)
-def compare_to_raw(self, *, df, inputs, spark, ctx):
-    return df.join(inputs.orders.select("id"), "id", "left")
+@after(normalize, lane=orders, pass_inputs=True)
+def compare_to_raw(self, *, orders, inputs, spark, ctx):
+    return orders.join(inputs.orders.select("id"), "id", "left")
 ```
 
 Rules:
@@ -150,7 +161,7 @@ Hooks receive and return DataFrames.
 
 Rules:
 
-- The input `df` has the shape produced by the previous stage at that boundary.
+- The selected lane parameter has the shape produced by the previous stage at that boundary.
 - A hook must return a DataFrame.
 - By default, returned shape must match the target schema in strict mode.
 - `schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS` permits additional columns at that hook boundary.
@@ -227,8 +238,8 @@ Problem:
   Hooks with pass_inputs=True must declare keyword-only inputs.
 
 Use:
-  def compare_to_raw(self, *, df, inputs, spark, ctx):
-      return df
+  def compare_to_raw(self, *, orders, inputs, spark, ctx):
+      return orders
 
 See docs/specifications/HookSemantics.md
 ```
@@ -251,12 +262,12 @@ See docs/specifications/HookSemantics.md
 
 ## Acceptance Criteria
 
-- `@after(normalize)` binds to a method declared earlier in the same class body.
+- `@after(normalize, lane=orders)` binds to a method declared earlier in the same class body.
 - `@before(...)` and `@after(...)` preserve source order for the same target.
 - A hook targeting a non-subtransform fails.
 - A hook targeting a method on another class fails.
-- Default hooks require `def hook(self, *, df, spark, ctx)`.
-- `pass_inputs=True` hooks require `def hook(self, *, df, inputs, spark, ctx)`.
+- Default hooks require `def hook(self, *, selected_lane_name, spark, ctx)`.
+- `pass_inputs=True` hooks require `def hook(self, *, selected_lane_name, inputs, spark, ctx)`.
 - Hook input namespaces expose original declared inputs and no intermediate DataFrames.
 - Hooks are not symbolically executed during `structure check`.
 - Online and generated execution call hooks in the same order.

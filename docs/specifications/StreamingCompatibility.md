@@ -1,4 +1,4 @@
-﻿# Streaming Compatibility
+# Streaming Compatibility
 
 ## Purpose
 
@@ -190,9 +190,9 @@ Default rule:
 Opt-in rule:
 
 ```python
-@after(normalize, streaming_safe=True)
-def remove_negative_totals(self, *, df, spark, ctx):
-    return df.where(F.col("total") >= 0)
+@after(normalize, lane=orders, streaming_safe=True)
+def remove_negative_totals(self, *, orders, spark, ctx):
+    return orders.where(F.col("total") >= 0)
 ```
 
 `streaming_safe=True` is an author promise with this meaning:

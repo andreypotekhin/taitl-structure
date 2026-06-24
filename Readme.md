@@ -1,4 +1,4 @@
-﻿# Structure
+# Structure
 
 **Structure** is a Python DSL and runtime/compiler toolkit for schema-enforced, IDE-friendly data pipelines that run as
 optimizer-visible PySpark DataFrame code.
@@ -58,9 +58,9 @@ class EnrichOrders(Transform):
             total=self.normalized_total(order.total),
         )
 
-    @after(normalize)
-    def remove_negative_totals(self, *, df, spark, ctx):
-        return df.where(F.col("total") >= 0)
+    @after(normalize, lane=orders)
+    def remove_negative_totals(self, *, orders, spark, ctx):
+        return orders.where(F.col("total") >= 0)
 
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
         customer = self.customers.join_one(
@@ -88,10 +88,10 @@ class EnrichOrders(Transform):
             product_category=product.category,
         )
 
-    @after(add_product, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
-    def add_quality_columns(self, *, df, spark, ctx):
+    @after(add_product, lane=orders, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+    def add_quality_columns(self, *, orders, spark, ctx):
         return (
-            df
+            orders
             .withColumn("_has_customer", F.col("customer_name").isNotNull())
             .withColumn("_has_product", F.col("product_name").isNotNull())
         )
@@ -154,7 +154,7 @@ class EnrichOrdersGenerated:
         assert_schema(products, PRODUCT_SCHEMA, name="Product", mode="strict")
 
         # Subtransform: normalize
-        df = orders.where(
+        orders = orders.where(
             F.col("id").isNotNull()
             & F.col("customer_id").isNotNull()
             & F.col("product_id").isNotNull()
@@ -165,13 +165,13 @@ class EnrichOrdersGenerated:
             F.col("total").cast("decimal(12,2)").alias("total"),
         )
 
-        df = self._impl.remove_negative_totals(df=df, spark=self.spark, ctx=self.ctx)
-        assert_schema(df, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
+        orders = self._impl.remove_negative_totals(orders=orders, spark=self.spark, ctx=self.ctx)
+        assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
 
         # Subtransform: add_customer
-        df = df.alias("order_normalized")
+        orders = orders.alias("order_normalized")
         customers_df = F.broadcast(customers.alias("customers"))
-        df = df.join(
+        orders = orders.join(
             customers_df,
             F.col("customers.id") == F.col("order_normalized.customer_id"),
             "left",
@@ -183,12 +183,12 @@ class EnrichOrdersGenerated:
             F.col("order_normalized.product_id").alias("product_id"),
             F.col("order_normalized.total").alias("total"),
         )
-        assert_schema(df, ORDER_WITH_CUSTOMER_SCHEMA, name="OrderWithCustomer", mode="strict")
+        assert_schema(orders, ORDER_WITH_CUSTOMER_SCHEMA, name="OrderWithCustomer", mode="strict")
 
         # Subtransform: add_product
-        df = df.alias("order_with_customer")
+        orders = orders.alias("order_with_customer")
         products_df = products.alias("products")
-        df = df.join(
+        orders = orders.join(
             products_df,
             F.col("products.id") == F.col("order_with_customer.product_id"),
             "left",
@@ -205,11 +205,11 @@ class EnrichOrdersGenerated:
             F.col("order_with_customer.total").alias("total"),
         )
 
-        df = self._impl.add_quality_columns(df=df, spark=self.spark, ctx=self.ctx)
-        assert_schema(df, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="allow_extra_columns")
-        df = project_schema(df, ORDER_ENRICHED_SCHEMA)
-        assert_schema(df, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="strict")
-        return df
+        orders = self._impl.add_quality_columns(orders=orders, spark=self.spark, ctx=self.ctx)
+        assert_schema(orders, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="allow_extra_columns")
+        orders = project_schema(orders, ORDER_ENRICHED_SCHEMA)
+        assert_schema(orders, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="strict")
+        return orders
 ```
 
 The generated code is longer than the source, but that is the point when generated mode is useful: Structure lets

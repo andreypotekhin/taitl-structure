@@ -1,6 +1,8 @@
+from typing import Any
+
 import pytest
 
-from structure import Join, String, Structure, Transform, after, field, input, join_one, output, transform
+from structure import Join, String, Structure, Transform, after, before, field, input, join_one, output, transform
 from structure.app.compiler.api import Compiler
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
@@ -120,9 +122,9 @@ def test_multi_result_after_hooks_select_their_dataframe() -> None:
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 
-        @after(add_product, df=audited)
-        def audit(self, *, df, spark, ctx):
-            return df
+        @after(add_product, lane=audited)
+        def audit(self, *, audited, spark, ctx):
+            return audited
 
     step = compile_transform(AddProduct).steps[0]
 
@@ -148,9 +150,9 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 
-        @after(add_product, df=audited)
-        def audit(self, *, df, spark, ctx):
-            return df
+        @after(add_product, lane=audited)
+        def audit(self, *, audited, spark, ctx):
+            return audited
 
     text = PySpark.render.transform()(
         PySpark.plan.lower()(compile_transform(AddProduct)),
@@ -166,8 +168,8 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
     assert text.count(" = add_product_base.join(") == 1
     assert "        accepted = add_product_base.select(" in text
     assert "        audited = add_product_base.select(" in text
-    assert "        audited = self._impl.audit(df=audited, spark=self.spark, ctx=self.ctx)" in text
-    assert 'return TransformResult({"accepted": accepted_df, "audited": audited_df}, single=False)' in text
+    assert "        audited = self._impl.audit(audited=audited, spark=self.spark, ctx=self.ctx)" in text
+    assert 'return TransformResult({"accepted": accepted, "audited": audited}, single=False)' in text
 
     traceability = Compiler.traceability.build()(
         PySpark.plan.lower()(compile_transform(AddProduct)),
@@ -179,7 +181,7 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
     assert len([dependency for dependency in traceability.static_dataflow if dependency.operation == "step"]) == 1
 
 
-def test_multi_result_after_hook_requires_df_selection() -> None:
+def test_multi_result_after_hook_rejects_unproduced_output_selection() -> None:
     @transform
     class AddProduct(Transform):
         orders = input(OrderRaw)
@@ -197,11 +199,64 @@ def test_multi_result_after_hook_requires_df_selection() -> None:
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 
-        @after(add_product)
+        @after(add_product, lane=orders)
+        def audit(self, *, orders, spark, ctx):
+            return orders
+
+    with pytest.raises(Exception, match="does not produce"):
+        compile_transform(AddProduct)
+
+
+def test_before_hook_requires_explicit_lane_selector() -> None:
+    invalid_before: Any = before
+
+    with pytest.raises(TypeError, match="missing 1 required keyword-only argument: 'lane'"):
+
+        @transform
+        class AddProduct(Transform):
+            orders = input(OrderRaw)
+            enriched = output(OrderWithProduct)
+
+            def add_product(self, order: OrderRaw) -> OrderWithProduct:
+                return OrderWithProduct(id=order.id, product_name=None)
+
+            @invalid_before(add_product)
+            def audit(self, *, orders, spark, ctx):
+                return orders
+
+
+def test_after_hook_requires_explicit_lane_selector() -> None:
+    invalid_after: Any = after
+
+    with pytest.raises(TypeError, match="missing 1 required keyword-only argument: 'lane'"):
+
+        @transform
+        class AddProduct(Transform):
+            orders = input(OrderRaw)
+            enriched = output(OrderWithProduct)
+
+            def add_product(self, order: OrderRaw) -> OrderWithProduct:
+                return OrderWithProduct(id=order.id, product_name=None)
+
+            @invalid_after(add_product)
+            def audit(self, *, orders, spark, ctx):
+                return orders
+
+
+def test_hook_signature_must_match_selected_lane() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(OrderRaw)
+        enriched = output(OrderWithProduct)
+
+        def add_product(self, order: OrderRaw) -> OrderWithProduct:
+            return OrderWithProduct(id=order.id, product_name=None)
+
+        @after(add_product, lane=orders)
         def audit(self, *, df, spark, ctx):
             return df
 
-    with pytest.raises(Exception, match="is ambiguous"):
+    with pytest.raises(Exception, match="orders, spark, ctx"):
         compile_transform(AddProduct)
 
 

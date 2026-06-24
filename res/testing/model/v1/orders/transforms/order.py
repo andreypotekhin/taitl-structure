@@ -71,17 +71,17 @@ class EnrichOrders(Transform):
             is_large=total > 1000,
         )
 
-    @before(normalize, pass_inputs=True, streaming_safe=True)
-    def use_current_orders(self, *, df, inputs, spark, ctx):
+    @before(normalize, lane=orders, pass_inputs=True, streaming_safe=True)
+    def use_current_orders(self, *, orders, inputs, spark, ctx):
         if ctx is not None and getattr(ctx, "use_original_orders", False):
             return inputs.orders
-        return df
+        return orders
 
-    @after(normalize, streaming_safe=True)
-    def remove_negative_totals(self, *, df, spark, ctx):
+    @after(normalize, lane=orders, streaming_safe=True)
+    def remove_negative_totals(self, *, orders, spark, ctx):
         from pyspark.sql import functions as F
 
-        return df.where(F.col("net_total") >= 0)
+        return orders.where(F.col("net_total") >= 0)
 
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
         customer = self.customers.join_one(
@@ -124,12 +124,13 @@ class EnrichOrders(Transform):
             promotion_discount=promotion.discount,
         )
 
-    @after(add_promotion, pass_inputs=True, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, streaming_safe=True)
-    def note_lookup_inputs(self, *, df, inputs, spark, ctx):
+    @after(add_promotion, lane=orders, pass_inputs=True, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, streaming_safe=True)
+    def note_lookup_inputs(self, *, orders, inputs, spark, ctx):
         from pyspark.sql import functions as F
 
-        return df.withColumn("_lookup_inputs_seen", F.lit(inputs.customers is not None and inputs.products is not None))
+        return orders.withColumn("_lookup_inputs_seen", F.lit(inputs.customers is not None and inputs.products is not None))
 
+    @transform(output=published)
     def publish(self, order: OrderWithPromotion) -> OrderPublished:
         flags = PublicationFlags(
             has_promotion=order.promotion_name.is_not_null(),
@@ -137,8 +138,8 @@ class EnrichOrders(Transform):
 
         return OrderPublished.base(order, flags)
 
-    @after(publish, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True, streaming_safe=True)
-    def add_quality_columns(self, *, df, spark, ctx):
+    @after(publish, lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True, streaming_safe=True)
+    def add_quality_columns(self, *, published, spark, ctx):
         from pyspark.sql import functions as F
 
-        return df.withColumn("_has_customer", F.col("customer_name").isNotNull())
+        return published.withColumn("_has_customer", F.col("customer_name").isNotNull())

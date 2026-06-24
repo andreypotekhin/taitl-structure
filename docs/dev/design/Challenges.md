@@ -125,8 +125,8 @@ Resolved for design/specification coverage by `docs/specifications/DSL.md` and
 The preferred hook syntax is:
 
 ```python
-@after(normalize)
-def remove_bad_orders(self, *, df, spark, ctx):
+@after(normalize, lane=orders)
+def remove_bad_orders(self, *, orders, spark, ctx):
     ...
 ```
 
@@ -210,7 +210,7 @@ Resolved by `docs/specifications/HookSemantics.md` and decision
 The simplified hook signature is:
 
 ```python
-def hook(self, *, df, spark, ctx):
+def hook(self, *, orders, spark, ctx):
     ...
 ```
 
@@ -219,9 +219,9 @@ This is clean, but some hooks may need original input DataFrames for custom vali
 Recommended optional escape hatch:
 
 ```python
-@after(normalize, pass_inputs=True)
-def custom_check(self, *, df, inputs, spark, ctx):
-    orders = inputs.orders
+@after(normalize, lane=orders, pass_inputs=True)
+def custom_check(self, *, orders, inputs, spark, ctx):
+    raw_orders = inputs.orders
     ...
 ```
 
@@ -770,7 +770,7 @@ implementation, adoption, testing breadth, and governance gaps, not missing sema
 Add these to Sprint 0 before the first vertical slice:
 
 ```text
-SPIKE: Prove @after(method) inside class bodies.
+SPIKE: Prove @after(method, lane=lane) inside class bodies.
 SPIKE: Prove @expr_fn class-local helper without self parameter.
 SPIKE: Prove source-order method discovery with line numbers.
 SPIKE: Prove source-root discovery and generated `structure_generated.<source package>` import paths.

@@ -78,13 +78,13 @@ class EnrichOrders(Transform):
             customer_tier=customer.tier,
         )
 
-    @after(normalize)
-    def remove_negative_totals(self, *, df, spark, ctx):
-        return df.where(F.col("total") >= 0)
+    @after(normalize, lane=orders)
+    def remove_negative_totals(self, *, orders, spark, ctx):
+        return orders.where(F.col("total") >= 0)
 
-    @after(normalize, pass_inputs=True)
-    def compare_to_raw(self, *, df, inputs, spark, ctx):
-        return df
+    @after(normalize, lane=orders, pass_inputs=True)
+    def compare_to_raw(self, *, orders, inputs, spark, ctx):
+        return orders
 ```
 
 ## Rules
@@ -100,10 +100,10 @@ class EnrichOrders(Transform):
 - For multiple direct schema bases, `SchemaClass.base(...)` receives one row per direct base in declaration order.
 - `where(...)` records filter expressions in the current symbolic context.
 - `@expr_fn` functions execute symbolically and must return expressions.
-- `@after(method)` and `@before(method)` attach arbitrary PySpark hooks.
-- Hooks use signature `def hook(self, *, df, spark, ctx)`.
+- `@after(method, lane=lane)` and `@before(method, lane=lane)` attach arbitrary PySpark hooks.
+- Hooks use a selected lane signature such as `def hook(self, *, orders, spark, ctx)`.
 - Hooks may opt into original named inputs with `pass_inputs=True` and signature
-  `def hook(self, *, df, inputs, spark, ctx)`.
+  `def hook(self, *, orders, inputs, spark, ctx)`.
 
 ## Data Flow
 

@@ -243,8 +243,8 @@ Rules:
 
 - `inputs` preserve class-body input declaration order.
 - `steps` preserve source-order compiled subtransform order.
-- Undecorated steps consume and update the canonical `df` lane.
-- Method-level `@transform(output=lane)` consumes `df` and updates `lane`.
+- Undecorated steps consume and update the current input lane.
+- Method-level `@transform(output=lane)` consumes the current lane and updates `lane`.
 - Method-level `@transform(input=source_lane, output=target_lane)` consumes a lane already available earlier in source
   order and updates the target lane.
 - `outputs` preserve class-body output declaration order.

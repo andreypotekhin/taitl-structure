@@ -46,13 +46,13 @@ class NormalizeOrdersGenerated:
     def run(self, *, orders: DataFrame) -> DataFrame:
         assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")
 
-        df = orders.select(
+        orders = orders.select(
             F.col("id").alias("id"),
             F.col("total").cast("decimal(12,2)").alias("total"),
         )
 
-        assert_schema(df, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
-        return df
+        assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
+        return orders
 ```
 
 ## Generated Code Rules
@@ -60,7 +60,7 @@ class NormalizeOrdersGenerated:
 Generated code should:
 
 - use `DataFrame` and `Column` operations
-- use stable names such as `df`, `spark`, and `ctx`
+- use stable lane names such as `orders` and `published`, plus `spark` and `ctx`
 - validate inputs
 - validate intermediate schemas by default
 - validate outputs

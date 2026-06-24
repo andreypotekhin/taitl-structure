@@ -66,10 +66,7 @@ class RunOnlinePySparkTransform:
                 functions=F,
                 types=T,
             )
-            if isinstance(produced, dict):
-                frames.update(produced)
-            else:
-                frames[step.name] = produced
+            frames.update(produced)
 
         outputs = {}
         for output in plan.outputs:
@@ -162,7 +159,7 @@ class RunOnlinePySparkTransform:
             self._validator.validate(df, validation, types=types)
             if validation.project:
                 df = self._validator.project(df, validation, types=types, functions=functions)
-        return df
+        return {step.results[0].frame: df}
 
     def _output(
         self,

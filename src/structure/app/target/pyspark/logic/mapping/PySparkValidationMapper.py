@@ -11,7 +11,7 @@ class PySparkValidationMapper:
         if not last:
             recipes.append(
                 PySparkValidationRecipe(
-                    target=step.name,
+                    target=step.results[0].frame,
                     schema=step.output_schema,
                     mode=SchemaMode.STRICT,
                     project=False,

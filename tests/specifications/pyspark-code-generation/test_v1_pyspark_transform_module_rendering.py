@@ -60,11 +60,12 @@ def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
     assert "        # Subtransform: add_promotion" in text
     assert "        # Subtransform: publish" in text
     assert (
-        "        df = self._impl.use_current_orders(df=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)" in text
+        "        orders = self._impl.use_current_orders(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)"
+        in text
     )
-    assert "        df = project_schema(df, ORDER_PUBLISHED_SCHEMA)" in text
-    assert text.count('assert_schema(df, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")') == 2
-    assert text.rstrip().endswith('        return TransformResult({"published": published_df}, single=True)')
+    assert "        published = project_schema(published, ORDER_PUBLISHED_SCHEMA)" in text
+    assert text.count('assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")') == 2
+    assert text.rstrip().endswith('        return TransformResult({"published": published}, single=True)')
 
 
 def _schema_modules() -> dict[type, str]:

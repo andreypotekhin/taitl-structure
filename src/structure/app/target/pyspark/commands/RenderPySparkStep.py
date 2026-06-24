@@ -20,26 +20,28 @@ class RenderPySparkStep:
     ) -> str:
         if isinstance(step, PySparkStepRecipe) and len(step.results) > 1:
             return self._multiple(step, current=current, sources=sources or {})
+        target = self._target(step)
         lines = [f"        # Subtransform: {step.name}"]
         active = current
         if step.before_hooks:
-            lines.extend(self._hooks(step.before_hooks, current=current))
-            active = "df"
-        lines.append(f'        df = {active}.alias("{step.input_alias}")')
-        lines.extend(self._joins(step, sources=sources or {}))
+            lines.extend(self._hooks(step.before_hooks, current=current, target=target))
+            active = target
+        lines.append(f'        {target} = {active}.alias("{step.input_alias}")')
+        lines.extend(self._joins(step, sources=sources or {}, target=target))
         if step.filters:
-            lines.extend(self._filters(step))
-        lines.extend(self._projection(step))
-        lines.extend(self._hooks(step.after_hooks, current="df"))
-        lines.extend(self._validations(step.validations))
+            lines.extend(self._filters(step, target=target))
+        lines.extend(self._projection(step, target=target))
+        lines.extend(self._hooks(step.after_hooks, current=target, target=target))
+        lines.extend(self._validations(step.validations, target=target))
         return "\n".join(lines)
 
     def _multiple(self, step: PySparkStepRecipe, *, current: str, sources: dict[str, str]) -> str:
         lines = [f"        # Subtransform: {step.name}"]
         active = current
         if step.before_hooks:
-            lines.extend(self._hooks(step.before_hooks, current=current))
-            active = "df"
+            lane = step.before_hooks[0].lane
+            lines.extend(self._hooks(step.before_hooks, current=current, target=lane))
+            active = lane
         base = f"{step.name}_base"
         lines.append(f'        {base} = {active}.alias("{step.input_alias}")')
         lines.extend(self._joins(step, sources=sources, target=base))
@@ -70,7 +72,8 @@ class RenderPySparkStep:
         for hook in hooks:
             inputs = ", inputs=inputs" if hook.pass_inputs else ""
             lines.append(
-                f"        {target} = self._impl.{hook.name}" f"(df={current}{inputs}, spark=self.spark, ctx=self.ctx)"
+                f"        {target} = self._impl.{hook.name}"
+                f"({hook.lane}={current}{inputs}, spark=self.spark, ctx=self.ctx)"
             )
             current = target
         return lines
@@ -88,10 +91,10 @@ class RenderPySparkStep:
             right = f'{source}.alias("{join.right_alias}")'
             if join.hint is not None and join.hint.value == "broadcast":
                 right = f"F.broadcast({right})"
-            lines.append(f"        {join.input_name}_df = {right}")
+            lines.append(f"        {join.input_name}_joined = {right}")
             predicate = render_pyspark_expression(join.predicate, scope_aliases=self._scope_aliases(step, join))
             lines.append(f"        {target} = {target}.join(")
-            lines.append(f"            {join.input_name}_df,")
+            lines.append(f"            {join.input_name}_joined,")
             lines.append(f"            {predicate},")
             lines.append(f'            "{join.how.value}",')
             lines.append("        )")
@@ -103,15 +106,20 @@ class RenderPySparkStep:
         )
         return [f"        {target} = {target}.where({predicate})"]
 
-    def _projection(self, step: PySparkStepRecipe | PySparkOutputRecipe) -> list[str]:
+    def _projection(self, step: PySparkStepRecipe | PySparkOutputRecipe, *, target: str) -> list[str]:
         if not step.projection:
             return []
-        lines = ["        df = df.select("]
+        lines = [f"        {target} = {target}.select("]
         for assignment in step.projection:
             expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
             lines.append(f'            {expression}.alias("{assignment.field.name}"),')
         lines.append("        )")
         return lines
+
+    def _target(self, step: PySparkStepRecipe | PySparkOutputRecipe) -> str:
+        if isinstance(step, PySparkStepRecipe):
+            return step.results[0].frame
+        return step.name
 
     def _validations(
         self,
