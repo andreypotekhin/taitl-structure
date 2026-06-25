@@ -4,6 +4,7 @@ import pytest
 
 from structure.lib.cross.errors import Diagnostic, DiagnosticEntry, DiagnosticRegistry, diagnostic_registry
 
+ROOT = Path(__file__).resolve().parents[4]
 
 def test_diagnostic_registry_exposes_stable_codes_and_docs_links() -> None:
     """I can rely on stable diagnostic codes."""
@@ -18,8 +19,7 @@ def test_diagnostic_registry_exposes_stable_codes_and_docs_links() -> None:
 
 def test_public_diagnostics_documentation_contains_active_anchors() -> None:
     """I can look up a diagnostic code in public documentation."""
-
-    text = Path("docs/Diagnostics.md").read_text(encoding="utf-8").lower()
+    text = (ROOT / "docs" / "Diagnostics.md").read_text(encoding="utf-8").lower()
 
     for code in ["dsl-e0401", "schema-e0301", "join-w0601", "online-e1201", "stream-w0801"]:
         assert f"### {code}" in text

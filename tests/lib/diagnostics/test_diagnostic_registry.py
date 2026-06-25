@@ -6,6 +6,8 @@ import pytest
 
 from structure.lib.cross.errors import Diagnostic, DiagnosticEntry, DiagnosticRegistry, diagnostic_registry
 
+ROOT = Path(__file__).resolve().parents[3]
+
 
 def test_diagnostic_registry_is_spark_free_and_valid() -> None:
     before = {name for name in sys.modules if name.startswith("pyspark")}
@@ -45,7 +47,7 @@ def test_diagnostic_registry_rejects_deprecated_without_replacement() -> None:
 
 
 def test_public_docs_contain_anchors_for_active_registry_entries() -> None:
-    text = Path("docs/Diagnostics.md").read_text(encoding="utf-8").lower()
+    text = (ROOT / "docs" / "Diagnostics.md").read_text(encoding="utf-8").lower()
     anchors = {match.group(1).strip().lower() for match in re.finditer(r"^###\s+(.+)$", text, re.MULTILINE)}
 
     missing = []
