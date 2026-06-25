@@ -163,6 +163,11 @@ semantics. Allowed differences include:
 
 ## Operation Admission Rule
 
+A compiled operation should be admitted as a Structure semantic feature, not as a one-to-one clone of a PySpark
+function. New feature families such as aggregations, windows, arrays, maps, and higher-order expressions must define
+source semantics, IR, target recipes, parity tests, and guardrails before they become compiler-visible. If an operation
+is too rare, backend-specific, or arbitrary to justify that contract, it belongs in an explicit hook.
+
 A new compiled operation is not supported until all of these are true:
 
 1. The source DSL behavior is specified.

@@ -122,6 +122,14 @@ when(order.total.is_null(), 0).otherwise(order.total)
 Public examples should use these forms. Source-level `F.col`, `F.lit`, PySpark `Column` methods, Python string methods
 on symbolic expressions, and raw string column paths are not compiled-source forms in v1.
 
+The symbolic source surface is intentionally curated. Structure should not add one thin wrapper for every PySpark
+function. When a Spark capability becomes compiler-visible, define the smallest Structure-level operation family that
+captures the intended data-pipeline meaning, add IR for that operation, and lower it through target recipes. For
+example, future aggregation support should introduce aggregation and grouping semantics, while future array, map, and
+higher-order support should introduce symbolic collection operations and symbolic callback rules. Rare or arbitrary
+PySpark should stay in explicit hooks, where the compiler records an opaque boundary instead of pretending to understand
+the body.
+
 ## Execution Model
 
 For each compiled subtransform, the engine:

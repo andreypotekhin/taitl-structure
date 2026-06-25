@@ -90,6 +90,12 @@ compileability checks, IR construction, code generation, compiler provenance, st
 generated-file diff checks run without PySpark imports, Java, a SparkSession, or a Spark cluster. Online and generated
 PySpark execution may depend on PySpark at runtime; the compiler itself must not.
 
+Spark-free compilation does not mean Structure reimplements the whole PySpark API. The compiler owns a curated
+semantic surface: schema projections, predicates, joins, validations, and later feature families such as aggregations,
+windows, arrays, maps, and higher-order expressions. Each compiler-visible feature is represented as Structure DSL and
+IR first, then lowered to PySpark target recipes. Rare, highly backend-specific, or arbitrary DataFrame logic remains
+an explicit hook boundary instead of becoming a thin Structure wrapper around every Spark function.
+
 The v1 default target is `target_pyspark = ">=3.5,<4.1"`, covering PySpark 3.5.x and 4.0.x. The PySpark target layer
 should prefer the oldest clear optimizer-visible API inside the configured range. Unsupported backend targets and
 unsupported feature requirements fail through `BACKEND-E2401` and `BACKEND-E2402`.

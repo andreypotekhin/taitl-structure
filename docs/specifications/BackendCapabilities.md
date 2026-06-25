@@ -82,6 +82,12 @@ Allowed groups:
 
 `docs` points to this specification or a narrower semantic specification.
 
+Capability requirements describe Structure semantics, not individual PySpark API entrypoints. A backend profile should
+answer questions such as "can this target lower grouped aggregation", "can it lower symbolic higher-order array
+transforms", or "can it lower this join family" rather than exposing a registry of every Spark function. This keeps
+PySpark version choices isolated in the target layer while preventing the compiler surface from becoming a second
+PySpark API.
+
 ## Decision Shape
 
 ```text

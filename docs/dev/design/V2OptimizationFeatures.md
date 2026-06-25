@@ -4,6 +4,19 @@
 
 V2 introduces explicit manual optimization controls while preserving Structure's commitment to Spark-plan-visible generated code.
 
+## Design Stance
+
+V2 should grow compiler-visible feature families, not a second PySpark API. Each addition should expose the smallest
+Structure-level semantic concept that users need, represent it in IR, and lower it to optimizer-visible PySpark through
+the shared target recipes. Do not add wrappers merely because PySpark has a function with that name.
+
+This keeps the complexity budget bounded:
+
+- common operations become typed, traceable, generated, and parity-tested Structure semantics;
+- rare or highly backend-specific operations remain explicit hooks;
+- unsupported operations fail before rendering or online execution instead of silently becoming UDFs, RDD work, or
+  row-wise Python callbacks.
+
 ## Spark Higher-Order Functions
 
 Support array/map expressions without Python UDFs.
@@ -16,6 +29,9 @@ valid_items = arr_filter(order.items, lambda item: item.is_not_null())
 ```
 
 Generated code should use Spark SQL higher-order functions or PySpark equivalents.
+
+Higher-order callbacks must be symbolic callbacks over Structure expressions. They must not accept arbitrary Python
+callbacks that would require row-wise Python execution or hidden UDF generation.
 
 ## Caching and Persistence
 
@@ -83,6 +99,10 @@ def daily_customer_totals(self, order: OrderEnriched) -> CustomerDailyTotal:
         gross_total=sum(order.total),
     )
 ```
+
+Aggregation support should model grouping keys, aggregate expressions, filters, output shape, and null/type behavior as
+Structure semantics first. The PySpark target may lower those semantics to `groupBy(...).agg(...)`, window expressions,
+or compatible target syntax, but the public DSL should stay smaller than Spark's full aggregation API.
 
 ## Performance Guardrails
 
