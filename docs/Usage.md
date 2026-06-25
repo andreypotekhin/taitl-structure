@@ -80,26 +80,29 @@ Subtransforms execute in source order.
 OrderRaw -> OrderNormalized -> OrderWithCustomer -> OrderEnriched
 ```
 
-Declare intermediate lanes when you want named funnel stages:
+Most single-lane transforms need no method-level selectors. Declare intermediate lanes only when you want named funnel
+stages, branches, or repeated schemas that need disambiguation:
 
 ```python
 orders_raw = input(OrderRaw)
-orders = lane(OrderNormalized)
+orders_normalized = lane(OrderNormalized)
 orders_with_product = lane(OrderWithProduct)
 published = output(OrderEnriched)
 
-@transform(input=orders_raw, output=orders)
+@transform(output=orders_normalized)
 def normalize(self, order: OrderRaw) -> OrderNormalized:
     ...
 
-@transform(lane=orders, output=orders_with_product)
+@transform(output=orders_with_product)
 def add_product(self, order: OrderNormalized) -> OrderWithProduct:
     ...
 
-@transform(lane=orders_with_product, output=published)
 def publish(self, order: OrderWithProduct) -> OrderEnriched:
     ...
 ```
+
+Here the compiler infers the input and lane sources from parameter types. The decorators name the intermediate lanes;
+the final single output can be inferred from `publish` returning `OrderEnriched`.
 
 Subtransforms may declare additional schema parameters for relations used by the step. Bind repeated schemas
 explicitly and return a fixed schema tuple when the shared join/filter work produces multiple results:
@@ -180,7 +183,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 generates PySpark like this:
 
 ```python
-df = orders.where(
+orders = orders.where(
     F.col("id").isNotNull()
 ).select(
     F.col("id").alias("id"),
@@ -350,10 +353,10 @@ def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
 Generated PySpark:
 
 ```python
-df = df.alias("order_normalized")
+orders = orders.alias("order_normalized")
 customers_df = F.broadcast(customers.alias("customers"))
 
-df = df.join(
+orders = orders.join(
     customers_df,
     F.col("customers.id") == F.col("order_normalized.customer_id"),
     "left",
@@ -398,7 +401,7 @@ def check_against_raw_orders(self, *, orders, inputs, spark, ctx):
 `inputs` is a read-only namespace matching the transform's declared input names. It contains the original `run(...)`
 input DataFrames, not the current intermediate lane.
 
-Select hook DataFrames explicitly with input/output declarations:
+Select hook DataFrames explicitly with input, lane, or output declarations:
 
 ```python
 @after(add_product, lane=audited)

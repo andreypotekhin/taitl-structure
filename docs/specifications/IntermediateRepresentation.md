@@ -243,11 +243,12 @@ Rules:
 
 - `inputs` preserve class-body input declaration order.
 - `steps` preserve source-order compiled subtransform order.
-- Undecorated steps consume and update the current inferred lane.
-- Method-level `@transform(input=source_input, output=target_lane)` starts a funnel from an original input.
-- Method-level `@transform(lane=source_lane, output=target_lane)` consumes a lane already available earlier in source
-  order and updates the target lane.
-- Method-level `@transform(lane=source_lane)` updates the same lane.
+- Undecorated steps consume and update the uniquely inferred lane.
+- Method-level `@transform(output=target_lane)` writes a named lane or final output while the source is inferred.
+- Method-level `@transform(input=source_input, output=target_lane)` starts a funnel from a selected original input.
+- Method-level `@transform(lane=source_lane, output=target_lane)` consumes a selected earlier lane and updates the
+  target lane.
+- Method-level `@transform(lane=source_lane)` updates the same selected lane.
 - `outputs` preserve class-body output declaration order.
 - `TransformPlan.output_schema` is a compatibility accessor that returns the sole output schema and fails clearly when
   a transform has multiple outputs.

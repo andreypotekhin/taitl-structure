@@ -60,9 +60,9 @@ results expose the DataFrame as `result.df`. If the single output was declared a
 outputs such as `result.accepted` and `result["rejected"]`; `df` is present only when it is the sole output or when a
 field-declared output is explicitly named `df`.
 
-Online execution evaluates transform methods in source order while preserving independent lane frames. `input(s)` starts
-a funnel from original inputs. `lane(s)` continues an existing lane, such as `orders`. `@transform(lane=accepted,
-output=accepted)` continues the accepted lane without changing any sibling lane.
+Online execution evaluates transform methods in source order while preserving independent lane frames. When schemas are
+unambiguous, methods consume and update inferred lanes without method-level selectors. `input(s)` starts a funnel from
+selected original inputs, `lane(s)` selects existing lanes, and `output(s)` names intermediate lanes or final outputs.
 
 ## Configuration
 

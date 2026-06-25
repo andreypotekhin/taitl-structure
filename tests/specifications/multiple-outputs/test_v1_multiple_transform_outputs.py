@@ -237,7 +237,9 @@ def test_v1_declared_lane_can_update_itself() -> None:
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id)
 
-    assert [(step.name, step.source, step.input_lane, step.output_lane) for step in compile_transform(NormalizeOrders).steps] == [
+    assert [
+        (step.name, step.source, step.input_lane, step.output_lane) for step in compile_transform(NormalizeOrders).steps
+    ] == [
         ("normalize", "rows", "rows", "normalized"),
         ("keep_normalized", "normalized", "normalized", "normalized"),
         ("publish", "normalized", "normalized", "published"),

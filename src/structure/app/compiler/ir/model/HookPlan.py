@@ -7,7 +7,6 @@ from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
 
-
 HookDeclaration = InputDeclaration | LaneDeclaration | OutputDeclaration
 
 

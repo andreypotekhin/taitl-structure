@@ -36,7 +36,6 @@ class EnrichOrders(Transform):
     customers = input(Customer)
     products = input(Product)
     enriched = output(OrderEnriched)
-    enriched = output(OrderEnriched)
 
     @expr_fn
     def clean_id(value):
@@ -228,10 +227,10 @@ code generation all depend on expressing work through Spark's relational express
 For reusable custom logic, prefer `@expr_fn`. Expression helpers are the supported way to keep project-specific
 expression logic compiler-visible and reusable across transforms.
 
-Arbitrary PySpark is still supported, but only through explicit hooks. Hooks receive the current DataFrame by default;
+Arbitrary PySpark is still supported, but only through explicit hooks. Hooks receive the selected lane DataFrame;
 advanced hooks can opt into original named input DataFrames with `pass_inputs=True`. Hooks are honest escape hatches:
-Structure calls them, records them as opaque boundaries in traceability and explain output, and does not treat their body as
-compiler-visible logic.
+Structure calls them, records them as opaque boundaries in traceability and explain output, and does not treat their
+body as compiler-visible logic.
 
 ## Default Project Layout
 

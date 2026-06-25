@@ -134,7 +134,7 @@ def before(
     *,
     input: InputDeclaration | None = None,
     inputs: object | None = None,
-    lane: LaneDeclaration | OutputDeclaration | None = None,
+    lane: InputDeclaration | LaneDeclaration | OutputDeclaration | None = None,
     lanes: object | None = None,
     output: InputDeclaration | LaneDeclaration | OutputDeclaration | None = None,
     outputs: object | None = None,
@@ -164,7 +164,7 @@ def after(
     *,
     input: InputDeclaration | None = None,
     inputs: object | None = None,
-    lane: LaneDeclaration | OutputDeclaration | None = None,
+    lane: InputDeclaration | LaneDeclaration | OutputDeclaration | None = None,
     lanes: object | None = None,
     output: LaneDeclaration | OutputDeclaration | None = None,
     outputs: object | None = None,
@@ -202,7 +202,7 @@ def _hook(
     *,
     input: InputDeclaration | None,
     inputs: object | None,
-    lane: LaneDeclaration | OutputDeclaration | None,
+    lane: InputDeclaration | LaneDeclaration | OutputDeclaration | None,
     lanes: object | None,
     output: InputDeclaration | LaneDeclaration | OutputDeclaration | None,
     outputs: object | None,
@@ -262,4 +262,6 @@ def _hook_outputs(phase: str, kwargs: dict[str, object], *, default: tuple) -> t
         raise TypeError(f"@{phase}(...) cannot use both output= and outputs=")
     if kwargs["output"] is None and kwargs["outputs"] is None:
         return default
-    return _declarations(kwargs, singular="output", plural="outputs", allowed=(InputDeclaration, LaneDeclaration, OutputDeclaration))
+    return _declarations(
+        kwargs, singular="output", plural="outputs", allowed=(InputDeclaration, LaneDeclaration, OutputDeclaration)
+    )

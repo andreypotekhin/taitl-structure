@@ -30,7 +30,6 @@ from structure.app.dsl.model.types.DecimalType import DecimalType
 from structure.app.dsl.model.types.StructureType import StructureType
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 
-
 LaneSourceDeclaration = LaneDeclaration | OutputDeclaration
 WriteDeclaration = LaneDeclaration | OutputDeclaration
 
@@ -169,8 +168,7 @@ class CompileTransform:
                         transform_class=transform_class,
                         member=hook.name,
                         problem=(
-                            f"@after({name}) replaces lane(s) that {name} does not produce: "
-                            f"{', '.join(unknown)}."
+                            f"@after({name}) replaces lane(s) that {name} does not produce: " f"{', '.join(unknown)}."
                         ),
                         use=f"Select one of: {', '.join(output_lanes)}.",
                     )
