@@ -97,12 +97,13 @@ This document is a user-story specification for SDLC planning. Early sections co
 - + As a developer, I can define a public instance method returning a schema type so that it becomes a compiled subtransform.
 - + As a developer, I can declare multiple schema parameters on a subtransform so that its driving row and joined
   relations are explicit in the method signature.
-- + As a developer, I can bind repeated input schemas with ordered `inputs=[...]` so that parameter mapping is
+- + As a developer, I can bind repeated input schemas with ordered `input=[...]` so that parameter mapping is
   unambiguous.
-- + As a developer, I can return a fixed tuple of schema values and bind it with ordered `outputs=[...]` so that one
+- + As a developer, I can return a fixed tuple of schema values and bind it with ordered `output=[...]` so that one
   shared relational step can materialize several typed result lanes.
-- + As a developer, I can declare intermediate `lane(...)` fields and consume them with `lane(s)=...` so that funnel
+- + As a developer, I can declare intermediate `lane(...)` fields and consume them with `input=...` so that funnel
   stages are explicit without becoming public transform outputs.
+- + As a developer, I can use `inout=source | target` for compact subtransform source-to-target binding.
 - + As a developer, I can use method return annotations to define intermediate schema transitions.
 - + As a developer, I can rely on source order for subtransform execution so that pipeline flow is readable.
 - + As a developer, I can chain subtransforms by return type and next input type so that schema flow is validated.

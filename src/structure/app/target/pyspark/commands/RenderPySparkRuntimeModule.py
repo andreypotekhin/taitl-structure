@@ -55,7 +55,6 @@ class RenderPySparkRuntimeModule:
                 "        if single:",
                 "            if len(values) != 1:",
                 '                raise ValueError("single-output TransformResult requires exactly one output")',
-                "            values.setdefault('df', next(iter(values.values())))",
                 "        object.__setattr__(self, '_structure_outputs', MappingProxyType(values))",
                 "",
                 "    def __getitem__(self, name):",

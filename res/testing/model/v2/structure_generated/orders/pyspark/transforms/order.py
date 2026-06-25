@@ -17,7 +17,7 @@ from testing.model.v2.structure_generated.orders.pyspark.schemas.product import 
 from testing.model.v2.structure_generated.orders.pyspark.schemas.promotion import PROMOTION_SCHEMA
 from testing.model.v2.structure_generated.orders.pyspark.schemas.shipment import SHIPMENT_SCHEMA
 from testing.model.v2.structure_generated.runtime.hook_inputs import HookInputs
-from testing.model.v2.structure_generated.runtime.schema_assert import assert_schema, project_schema
+from testing.model.v2.structure_generated.runtime.schema_assert import TransformResult, assert_schema, project_schema
 
 
 class EnrichOrdersGenerated:
@@ -35,7 +35,7 @@ class EnrichOrdersGenerated:
         products: DataFrame,
         promotions: DataFrame,
         shipments: DataFrame,
-    ) -> DataFrame:
+    ) -> TransformResult:
         assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")
         assert_schema(customers, CUSTOMER_SCHEMA, name="Customer", mode="strict")
         assert_schema(products, PRODUCT_SCHEMA, name="Product", mode="strict")
@@ -258,7 +258,7 @@ class EnrichOrdersGenerated:
         assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="allow_extra_columns")
         published = project_schema(published, ORDER_PUBLISHED_SCHEMA)
         assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")
-        return published
+        return TransformResult({"published": published}, single=True)
 
 
 def enrich_orders(
@@ -270,7 +270,7 @@ def enrich_orders(
     shipments: DataFrame,
     spark: SparkSession,
     ctx=None,
-) -> DataFrame:
+) -> TransformResult:
     return EnrichOrdersGenerated(spark=spark, ctx=ctx).run(
         orders=orders,
         customers=customers,

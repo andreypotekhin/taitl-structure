@@ -245,10 +245,12 @@ Rules:
 - `steps` preserve source-order compiled subtransform order.
 - Undecorated steps consume and update the uniquely inferred lane.
 - Method-level `@transform(output=target_lane)` writes a named lane or final output while the source is inferred.
-- Method-level `@transform(input=source_input, output=target_lane)` starts a funnel from a selected original input.
-- Method-level `@transform(lane=source_lane, output=target_lane)` consumes a selected earlier lane and updates the
+- Method-level `@transform(input=source, output=target_lane)` selects an original input or existing lane and writes the
   target lane.
-- Method-level `@transform(lane=source_lane)` updates the same selected lane.
+- Method-level `input=[...]` and `output=[...]` bind multiple schema parameters or returned values in order.
+- Method-level `inout=source | target` is normalized to the same input and output declaration tuples.
+- If an input declaration name already exists as a lane, that lane shadows the original input for method-level
+  `input=`.
 - `outputs` preserve class-body output declaration order.
 - `TransformPlan.output_schema` is a compatibility accessor that returns the sole output schema and fails clearly when
   a transform has multiple outputs.
@@ -351,10 +353,10 @@ Fields:
 
 Rules:
 
-- One field-declared output with no explicit output method is satisfied by the final `df` lane and is exposed as both
-  `result.df` and the field name.
+- A field-declared output with no explicit output method may be satisfied by a unique source lane with the same schema.
+  Results are exposed by declared output name.
 - A transform with no field-declared outputs is invalid.
-- More than one field-declared output requires every declared output lane to be written explicitly.
+- Multiple field-declared outputs require explicit output bindings or unique schema matches.
 - Result construction returns all field-declared output lanes in declaration order.
 
 ## Scopes

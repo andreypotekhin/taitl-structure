@@ -144,9 +144,28 @@ Focus each suggestion on a specific topic, so it may be implemented in parallel 
 
 Upon completion, move suggestions to /docs/dev/suggestions/done.
 
+## Task completion
+Ensure the project fully builds with tests ('make build') at the end of each task.
+Resolve any build or test issues revealed before completing the task.
+
+Suggestion items
+- Upon completion, move suggestion items to docs/dev/suggestions/done.
+
+User stories (UserStories.md)
+- Back completed user stories with test cases in tests/user_stories/[]/[]
+- In UserStories.md, prefix the completed user stories with + sign
+
+Troubleshooting documentation
+- Output encountered issues and remedies into corresponding Troubleshooting.md documents, and deep-link to them from error messages.
+- End-user issues go to /Troubleshooting.md
+- Development issues go to /docs/dev/Troubleshooting.md
+
+## Automation Contract
+See /docs/dev/auto/Automation.md document for automation contract and details on agents' parallel work.  
+See /docs/dev/auto/AutomationFocus.md document for automation focus.
 
 ## Team roles
-All roles: see 'Task completion' section below for task completion requirements.
+All roles: see 'Task completion' section above for task completion requirements.
 Consult the style guide (/docs/dev/Style.md) when writing or refactoring code.
 
 ### Mastermind role
@@ -326,23 +345,3 @@ As edge scrutinizer, you obsessively hunt for bugs, edge cases and edge conditio
 You leave no stones unturned. However, you do not interfere in ongoing, 'pardon our dust' areas.
 Focus on the stable parts first.
 Add code and test cases for edge cases, and create suggestions and todo items for larger items. 
-
-## Task completion
-Ensure the project fully builds with tests at the end of each task.
-Resolve any build or test issues revealed before completing the task.
-
-Suggestion items
-- Upon completion, move suggestion items to docs/dev/suggestions/done.
-
-User stories (UserStories.md)
-- Back completed user stories with test cases in tests/user_stories/[]/[]
-- In UserStories.md, prefix the completed user stories with + sign
-
-Troubleshooting documentation
-- Output encountered issues and remedies into corresponding Troubleshooting.md documents, and deep-link to them from error messages.
-- End-user issues go to /Troubleshooting.md
-- Development issues go to /docs/dev/Troubleshooting.md
-
-## Automation Contract
-See /docs/dev/auto/Automation.md document for automation contract and details on agents' parallel work.  
-See /docs/dev/auto/AutomationFocus.md document for automation focus.

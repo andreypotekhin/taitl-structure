@@ -27,7 +27,7 @@ def test_multiple_schema_parameters_and_results_are_explicit() -> None:
         accepted = output(Enriched)
         audited = output(Enriched)
 
-        @transform(inputs=[external, products], outputs=[accepted, audited])
+        @transform(input=[external, products], output=[accepted, audited])
         def add_product(
             self,
             order: Order,

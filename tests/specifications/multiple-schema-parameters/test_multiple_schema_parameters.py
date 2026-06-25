@@ -33,8 +33,8 @@ def test_multiple_schema_parameters_and_results_compile_in_order() -> None:
         audited = output(OrderWithProduct)
 
         @transform(
-            inputs=[orders_external, products],
-            outputs=[accepted, audited],
+            input=[orders_external, products],
+            output=[accepted, audited],
         )
         def add_product(
             self,
@@ -81,7 +81,7 @@ def test_unique_schema_parameters_are_inferred() -> None:
     assert [item.source for item in step.inputs] == ["orders", "products"]
 
 
-def test_plural_lanes_bind_schema_parameters_in_order() -> None:
+def test_array_input_binds_lane_parameters_in_order() -> None:
     @transform
     class AddProduct(Transform):
         orders = input(OrderRaw)
@@ -98,7 +98,7 @@ def test_plural_lanes_bind_schema_parameters_in_order() -> None:
         def seed_product(self, product: Product) -> Product:
             return Product(id=product.id, name=product.name)
 
-        @transform(lanes=[order_lane, product_lane], output=enriched)
+        @transform(input=[order_lane, product_lane], output=enriched)
         def add_product(self, order: OrderRaw, product: Product) -> OrderWithProduct:
             product = join_one(product, on=product.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product.name)
@@ -132,7 +132,7 @@ def test_repeated_schema_parameters_require_explicit_inputs() -> None:
         raise AssertionError("Expected ambiguous input diagnostic")
 
     assert "matched sources: orders_external, orders_internal" in message
-    assert "@transform(inputs=[...])" in message
+    assert "@transform(input=[...])" in message
 
 
 def test_multi_result_after_hooks_select_their_dataframe() -> None:
@@ -143,7 +143,7 @@ def test_multi_result_after_hooks_select_their_dataframe() -> None:
         accepted = output(OrderWithProduct)
         audited = output(OrderWithProduct)
 
-        @transform(inputs=[orders, products], outputs=[accepted, audited])
+        @transform(input=[orders, products], output=[accepted, audited])
         def add_product(
             self,
             order: OrderRaw,
@@ -171,7 +171,7 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
         accepted = output(OrderWithProduct)
         audited = output(OrderWithProduct)
 
-        @transform(inputs=[orders, products], outputs=[accepted, audited])
+        @transform(input=[orders, products], output=[accepted, audited])
         def add_product(
             self,
             order: OrderRaw,
@@ -220,7 +220,7 @@ def test_generated_plural_lane_hook_replaces_outputs_in_order() -> None:
         accepted = output(OrderWithProduct)
         audited = output(OrderWithProduct)
 
-        @transform(inputs=[orders, products], outputs=[accepted, audited])
+        @transform(input=[orders, products], output=[accepted, audited])
         def add_product(
             self,
             order: OrderRaw,
@@ -259,7 +259,7 @@ def test_multi_result_after_hook_rejects_unproduced_output_selection() -> None:
         accepted = output(OrderWithProduct)
         audited = output(OrderWithProduct)
 
-        @transform(inputs=[orders, products], outputs=[accepted, audited])
+        @transform(input=[orders, products], output=[accepted, audited])
         def add_product(
             self,
             order: OrderRaw,

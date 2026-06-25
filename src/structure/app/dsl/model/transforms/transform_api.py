@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import inspect
-from typing import Callable
+from typing import Callable, Iterable, cast
 
 from structure.app.compiler.symbolic_execution.model.CompileContext import current_context
 from structure.app.dsl.model.expr.expressions import literal
 from structure.app.dsl.model.expr.InputScope import InputScope, join_one
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.ExprFunction import ExprFunction
+from structure.app.dsl.model.transforms.InOutBinding import InOutBinding
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
@@ -65,68 +66,112 @@ def _decorate_transform_class(cls, kwargs):
 
 
 def _decorate_transform_method(function, kwargs):
-    allowed = {"input", "inputs", "lane", "lanes", "output", "outputs"}
+    kwargs = _normalize_method_options(kwargs)
+    allowed = {"input", "output", "inout"}
     unknown = set(kwargs) - allowed
     if unknown:
         raise TypeError(f"@transform got unknown method option(s): {', '.join(sorted(unknown))}")
     if not kwargs:
-        raise TypeError("@transform on a method requires input(s)=..., lane(s)=..., or output(s)=...")
-    if "input" in kwargs and "inputs" in kwargs:
-        raise TypeError("@transform on a method cannot use both input= and inputs=")
-    if "lane" in kwargs and "lanes" in kwargs:
-        raise TypeError("@transform on a method cannot use both lane= and lanes=")
-    if ("input" in kwargs or "inputs" in kwargs) and ("lane" in kwargs or "lanes" in kwargs):
-        raise TypeError("@transform on a method cannot mix input(s)=... with lane(s)=...")
-    if "output" in kwargs and "outputs" in kwargs:
-        raise TypeError("@transform on a method cannot use both output= and outputs=")
+        raise TypeError("@transform on a method requires input=..., output=..., or inout=...")
+    if "inout" in kwargs and ("input" in kwargs or "output" in kwargs):
+        raise TypeError("@transform on a method cannot combine inout=... with input=... or output=...")
 
-    inputs = _declarations(kwargs, singular="input", plural="inputs", allowed=(InputDeclaration,))
-    lanes = _declarations(kwargs, singular="lane", plural="lanes", allowed=(LaneDeclaration, OutputDeclaration))
-    outputs = _declarations(kwargs, singular="output", plural="outputs", allowed=(LaneDeclaration, OutputDeclaration))
+    inputs = _method_declarations(
+        kwargs,
+        name="input",
+        allowed=(InputDeclaration, LaneDeclaration),
+    )
+    outputs = _method_declarations(
+        kwargs,
+        name="output",
+        allowed=(LaneDeclaration, OutputDeclaration),
+    )
+    if "inout" in kwargs:
+        binding = kwargs["inout"]
+        if not isinstance(binding, InOutBinding):
+            raise TypeError("@transform(inout=...) requires a pipe binding such as source | target")
+        inputs = _method_declaration_values(
+            binding.inputs,
+            option="@transform(inout=...) input side",
+            allowed=(InputDeclaration, LaneDeclaration),
+        )
+        outputs = _method_declaration_values(
+            binding.outputs,
+            option="@transform(inout=...) output side",
+            allowed=(LaneDeclaration, OutputDeclaration),
+        )
     if len(set(map(id, inputs))) != len(inputs):
-        raise TypeError("@transform(inputs=...) cannot repeat a declaration")
-    if len(set(map(id, lanes))) != len(lanes):
-        raise TypeError("@transform(lanes=...) cannot repeat a declaration")
+        raise TypeError("@transform(input=...) cannot repeat a declaration")
     if len(set(map(id, outputs))) != len(outputs):
-        raise TypeError("@transform(outputs=...) cannot repeat a declaration")
+        raise TypeError("@transform(output=...) cannot repeat a declaration")
     setattr(
         function,
         "_structure_output_method",
         {
-            "input": inputs[0] if len(inputs) == 1 else None,
-            "lane": lanes[0] if len(lanes) == 1 else None,
-            "output": outputs[0] if len(outputs) == 1 else None,
             "inputs": inputs,
-            "lanes": lanes,
             "outputs": outputs,
         },
     )
     return function
 
 
+def _normalize_method_options(kwargs: dict[str, object]) -> dict[str, object]:
+    recycled = {"inputs", "outputs", "lane", "lanes", "in", "in_", "out"} & set(kwargs)
+    if recycled:
+        names = ", ".join(sorted(recycled))
+        raise TypeError(f"@transform method option(s) {names} were recycled; use input=..., output=..., or inout=...")
+    return dict(kwargs)
+
+
+def _method_declarations(kwargs, *, name: str, allowed: tuple[type, ...]) -> tuple:
+    if name not in kwargs or kwargs[name] is None:
+        return ()
+    return _method_declaration_values(kwargs[name], option=f"@transform({name}=...)", allowed=allowed)
+
+
+def _method_declaration_values(value: object, *, option: str, allowed: tuple[type, ...]) -> tuple:
+    if isinstance(value, allowed):
+        return (value,)
+    if isinstance(value, (InputDeclaration, LaneDeclaration, OutputDeclaration)):
+        raise TypeError(f"{option} requires {_declaration_kinds(allowed)} declarations")
+    values = _declaration_sequence(value, option=option)
+    if not all(isinstance(item, allowed) for item in values):
+        raise TypeError(f"{option} requires {_declaration_kinds(allowed)} declarations")
+    return values
+
+
 def _declarations(kwargs, *, singular: str, plural: str, allowed: tuple[type, ...]) -> tuple:
     if singular in kwargs and kwargs[singular] is not None:
         values = (kwargs[singular],)
     elif plural in kwargs and kwargs[plural] is not None:
-        value = kwargs[plural]
-        if isinstance(value, (str, bytes)):
-            raise TypeError(f"@transform({plural}=...) requires a non-empty declaration sequence")
-        try:
-            values = tuple(value)
-        except TypeError as error:
-            raise TypeError(f"@transform({plural}=...) requires a non-empty declaration sequence") from error
-        if not values:
-            raise TypeError(f"@transform({plural}=...) requires at least one declaration")
+        values = _declaration_sequence(kwargs[plural], option=f"@transform({plural}=...)")
     else:
         return ()
     if not all(isinstance(value, allowed) for value in values):
-        kinds = "input(...), lane(...), or output(...)"
-        if allowed == (InputDeclaration,):
-            kinds = "input(...) declarations"
-        elif allowed in ((LaneDeclaration, OutputDeclaration), (InputDeclaration, LaneDeclaration, OutputDeclaration)):
-            kinds = "lane(...) or output(...) declarations"
-        raise TypeError(f"@transform({plural}=...) requires {kinds} declarations")
+        raise TypeError(f"@transform({plural}=...) requires {_declaration_kinds(allowed)} declarations")
     return values
+
+
+def _declaration_sequence(value: object, *, option: str) -> tuple:
+    if isinstance(value, (str, bytes)):
+        raise TypeError(f"{option} requires a non-empty declaration sequence")
+    try:
+        values: tuple[object, ...] = tuple(cast(Iterable[object], value))
+    except TypeError as error:
+        raise TypeError(f"{option} requires a declaration or non-empty declaration sequence") from error
+    if not values:
+        raise TypeError(f"{option} requires at least one declaration")
+    return values
+
+
+def _declaration_kinds(allowed: tuple[type, ...]) -> str:
+    if allowed == (InputDeclaration,):
+        return "input(...)"
+    if allowed == (InputDeclaration, LaneDeclaration):
+        return "input(...) or lane(...)"
+    if allowed == (LaneDeclaration, OutputDeclaration):
+        return "lane(...) or output(...)"
+    return "input(...), lane(...), or output(...)"
 
 
 def before(

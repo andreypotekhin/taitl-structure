@@ -263,18 +263,17 @@ Rules:
 - A transform with no field-declared outputs is invalid.
 - A single-output transform does not need an explicit output method binding; the final current lane produces the
   result.
-- If a transform declares more than one output field, each final output lane must be written explicitly with method-level
-  `@transform(output=that_output)`.
-- Method-level `@transform(input=declared_input)` starts a funnel from an original class input when inference is
-  ambiguous or an earlier lane with the same schema would otherwise be selected.
-- Method-level `@transform(lane=declared_lane)` continues an already-produced lane when inference is ambiguous and
-  updates that same lane when `output=` is omitted.
-- Method-level `@transform(output=target_lane)` writes a declared lane or final output while the input source is
-  inferred.
-- Method-level `@transform(lane=source_lane, output=target_lane)` reads from a previously available lane and writes
-  another declared lane or final output when both sides need to be explicit.
-- `input(s)=...` and `lane(s)=...` are mutually exclusive on one subtransform.
-- Lane references use input, lane, or output declarations, not strings.
+- Final output fields must be materialized by explicit method-level `output=...` or by unique schema matching at the
+  end of the funnel.
+- Method-level `@transform(input=declared_input_or_lane)` selects an original class input or an already-produced lane.
+  If a lane with the same name as an input declaration already exists, the lane shadows the original input.
+- Method-level `@transform(output=declared_lane_or_output)` writes a declared lane or final output. If the selected
+  name already exists as a lane, the write updates that lane.
+- Method-level `input=[...]` and `output=[...]` bind multiple parameters or returned values in order.
+- Method-level `inout=source | target` is shorthand for one explicit source and target; one side may be a list.
+- Method-level `inputs=`, `outputs=`, `lane=`, and `lanes=` are retired. Hook decorators still use `lane=` and
+  `lanes=`.
+- Method-level references use declarations, not strings.
 
 Canonical multi-output form:
 
@@ -330,17 +329,14 @@ Rules:
 - The first parameter is the driving row. Later parameters are symbolic relations that must be joined before their
   fields are used in filters or projections.
 - The return annotation is either one `Structure` subclass or a fixed tuple such as `tuple[Accepted, Audited]`.
-- `inputs=[...]` starts a funnel from original inputs and binds input declarations to parameters in order when
-  inference is ambiguous.
-- `lanes=[...]` continues a funnel from existing lanes and binds lane declarations to parameters in order when
-  inference is ambiguous.
-- `outputs=[...]` binds lane or output declarations to returned values in order when tuple results cannot be inferred.
-  Singular `input=`, `lane=`, and `output=` remain one-item shorthands.
+- `input=[...]` binds input or lane declarations to parameters in order when inference is ambiguous.
+- `output=[...]` binds lane or output declarations to returned values in order when tuple results cannot be inferred.
+- `input=` and `output=` also accept a single declaration.
 - The compiler infers bindings only when every schema has one unambiguous available declaration.
 - Subtransforms execute in source order.
 - Source-order lane flow must be valid. Undecorated methods consume and update the uniquely inferred lane.
-  `@transform(output=target)` writes a named lane or output. `@transform(lane=source)` updates the same selected lane.
-  `@transform(input=source_input, output=target)` starts a funnel from a selected original input.
+  `@transform(output=target)` writes a named lane or output.
+  `@transform(input=source, output=target)` selects both sides explicitly.
 - If more than one declared input has the first subtransform's input schema, the compiler must require an unambiguous
   mapping such as `@transform(input=orders_external)` or emit a diagnostic.
 - A multi-result subtransform executes its joins and `where(...)` filters once, then projects every returned schema

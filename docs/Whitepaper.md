@@ -141,6 +141,7 @@ result = EnrichOrders(
     customers=customers_df,
     products=products_df,
 ).run(session)
+enriched = result.enriched
 ```
 
 The transform instance is a deferred invocation. `StructureSession` owns Spark, optional context, resolved
@@ -156,7 +157,7 @@ class EnrichOrdersGenerated:
         self.ctx = ctx
         self._impl = EnrichOrders()  # only when hooks exist
 
-    def run(self, *, orders: DataFrame, customers: DataFrame, products: DataFrame) -> DataFrame:
+    def run(self, *, orders: DataFrame, customers: DataFrame, products: DataFrame) -> TransformResult:
         ...
 ```
 

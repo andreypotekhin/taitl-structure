@@ -109,8 +109,8 @@ explicitly and return a fixed schema tuple when the shared join/filter work prod
 
 ```python
 @transform(
-    inputs=[orders_external, products],
-    outputs=[accepted, audited],
+    input=[orders_external, products],
+    output=[accepted, audited],
 )
 def add_product(
     self,
@@ -130,6 +130,8 @@ def add_product(
 
 The first parameter is the driving DataFrame. Later parameters are relations and must be joined before their fields
 are used. Joins and `where(...)` filters run once; each returned value is then projected into its named output frame.
+Use `input=` for original input or intermediate lane declarations, and `output=` for intermediate lane or final output
+declarations. Both options accept either one declaration or an ordered list. The plural method options are retired.
 
 ## Online Execution
 

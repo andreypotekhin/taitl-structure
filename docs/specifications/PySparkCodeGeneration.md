@@ -192,8 +192,8 @@ Rules:
 - `ctx` is passed to hooks.
 - `run(...)` uses keyword-only parameters matching declared transform input names.
 - `run(...)` returns a generated-runtime `TransformResult`.
-- Single-output generated transforms expose the DataFrame as `result.df`.
-- Multi-output generated transforms expose declared output names such as `result.accepted` and `result["rejected"]`.
+- Generated transforms expose declared output names such as `result.published`, `result.accepted`, and
+  `result["rejected"]`. There is no automatic `df` alias.
 - Generated transform bodies keep one local DataFrame variable per source-order lane producer, so a branch step reads
   the frame named by its input lane rather than the immediately preceding step.
 - Input parameter order follows source input declaration order.

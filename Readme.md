@@ -104,11 +104,12 @@ from orders.transforms.order import EnrichOrders
 
 session = StructureSession(spark=spark, ctx=ctx)
 
-enriched = EnrichOrders(
+result = EnrichOrders(
     orders=orders_df,
     customers=customers_df,
     products=products_df,
 ).run(session)
+enriched = result.enriched
 ```
 
 The transform instance is a deferred invocation. Construction binds DataFrame inputs; `.run(session)` asks the session
@@ -147,7 +148,7 @@ class EnrichOrdersGenerated:
         orders: DataFrame,
         customers: DataFrame,
         products: DataFrame,
-    ) -> DataFrame:
+    ) -> TransformResult:
         assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")
         assert_schema(customers, CUSTOMER_SCHEMA, name="Customer", mode="strict")
         assert_schema(products, PRODUCT_SCHEMA, name="Product", mode="strict")

@@ -25,7 +25,7 @@ result = EnrichOrders(
     products=products_df,
 ).run(session)
 
-enriched_df = result.df
+enriched_df = result.published
 ```
 
 The transform instance is a deferred invocation. Its constructor stores named input DataFrames and performs no Spark
@@ -54,15 +54,14 @@ output_schema = transform.schemas.output
 `transform.schemas.output` is a materialized PySpark `StructType` equivalent to the generated `*_SCHEMA` constant for
 the final output schema. The schema is available in online mode without requiring generated files to exist.
 
-`run(session)` returns a read-only `TransformResult` for both single-output and multi-output transforms. Single-output
-results expose the DataFrame as `result.df`. If the single output was declared as a field, such as
-`out = output(OrderPublished)`, the same DataFrame is also available as `result.out`. Multi-output results expose named
-outputs such as `result.accepted` and `result["rejected"]`; `df` is present only when it is the sole output or when a
-field-declared output is explicitly named `df`.
+`run(session)` returns a read-only `TransformResult` for both single-output and multi-output transforms. Results expose
+declared output names such as `result.published`, `result.accepted`, and `result["rejected"]`. There is no automatic
+`df` alias; `df` is present only when a field-declared output is explicitly named `df`.
 
 Online execution evaluates transform methods in source order while preserving independent lane frames. When schemas are
-unambiguous, methods consume and update inferred lanes without method-level selectors. `input(s)` starts a funnel from
-selected original inputs, `lane(s)` selects existing lanes, and `output(s)` names intermediate lanes or final outputs.
+unambiguous, methods consume and update inferred lanes without method-level selectors. Method-level `input=` selects
+original inputs or existing lanes, `output=` names intermediate lanes or final outputs, and both options accept ordered
+lists. If a lane shares an input name, the lane shadows that original input in method-level `input=`.
 
 ## Configuration
 

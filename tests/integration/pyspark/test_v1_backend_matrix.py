@@ -71,7 +71,7 @@ class AddLookupProduct(Transform):
     accepted = output(LookupEnriched)
     audited = output(LookupEnriched)
 
-    @transform(inputs=[orders, products], outputs=[accepted, audited])
+    @transform(input=[orders, products], output=[accepted, audited])
     def add_product(
         self,
         order: LookupOrder,

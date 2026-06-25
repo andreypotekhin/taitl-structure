@@ -80,8 +80,6 @@ class Customer(Structure):
 ```python
 # src/orders/transforms/order.py
 
-from pyspark.sql import functions as F
-
 from structure import (
     Transform,
     transform,
@@ -125,6 +123,8 @@ class EnrichOrders(Transform):
 
     @after(normalize, lane=orders)
     def remove_negative_totals(self, *, orders, spark, ctx):
+        from pyspark.sql import functions as F
+
         return orders.where(F.col("total") >= 0)
 
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:

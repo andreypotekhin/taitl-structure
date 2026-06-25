@@ -14,8 +14,6 @@ class TransformResult(Mapping[str, object]):
         if single:
             if len(values) != 1:
                 raise ValueError("single-output TransformResult requires exactly one output")
-            value = next(iter(values.values()))
-            values.setdefault("df", value)
         object.__setattr__(self, "_structure_outputs", MappingProxyType(values))
 
     def __getitem__(self, name: str) -> object:

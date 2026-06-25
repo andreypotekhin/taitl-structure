@@ -18,7 +18,7 @@ class EnrichOrdersGenerated:
         self.ctx = ctx
         self._impl = EnrichOrders()  # only if hooks exist
 
-    def run(self, *, orders: DataFrame, customers: DataFrame) -> DataFrame:
+    def run(self, *, orders: DataFrame, customers: DataFrame) -> TransformResult:
         ...
 ```
 
@@ -43,7 +43,7 @@ class NormalizeOrdersGenerated:
         self.spark = spark
         self.ctx = ctx
 
-    def run(self, *, orders: DataFrame) -> DataFrame:
+    def run(self, *, orders: DataFrame) -> TransformResult:
         assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")
 
         orders = orders.select(
@@ -52,7 +52,7 @@ class NormalizeOrdersGenerated:
         )
 
         assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
-        return orders
+        return TransformResult({"normalized": orders}, single=True)
 ```
 
 ## Generated Code Rules
@@ -79,6 +79,8 @@ caller-facing artifacts, not only generated transform internals.
 from structure_generated.orders.pyspark.schemas.order import ORDER_ENRICHED_SCHEMA
 from structure_generated.runtime.schema_assert import assert_schema, project_schema
 
+result = EnrichOrdersGenerated(spark=spark).run(orders=orders, customers=customers)
+df = result.enriched
 assert_schema(df, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="strict")
 df = project_schema(df, ORDER_ENRICHED_SCHEMA)
 df.write.mode("overwrite").parquet(target_path)
