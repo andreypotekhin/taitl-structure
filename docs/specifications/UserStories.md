@@ -101,6 +101,8 @@ This document is a user-story specification for SDLC planning. Early sections co
   unambiguous.
 - + As a developer, I can return a fixed tuple of schema values and bind it with ordered `outputs=[...]` so that one
   shared relational step can materialize several typed result lanes.
+- + As a developer, I can declare intermediate `lane(...)` fields and consume them with `lane(s)=...` so that funnel
+  stages are explicit without becoming public transform outputs.
 - + As a developer, I can use method return annotations to define intermediate schema transitions.
 - + As a developer, I can rely on source order for subtransform execution so that pipeline flow is readable.
 - + As a developer, I can chain subtransforms by return type and next input type so that schema flow is validated.

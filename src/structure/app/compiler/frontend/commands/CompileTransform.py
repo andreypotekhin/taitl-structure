@@ -23,11 +23,16 @@ from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
+from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.types.DecimalType import DecimalType
 from structure.app.dsl.model.types.StructureType import StructureType
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
+
+
+LaneSourceDeclaration = LaneDeclaration | OutputDeclaration
+WriteDeclaration = LaneDeclaration | OutputDeclaration
 
 
 class CompileTransform:
@@ -153,14 +158,19 @@ class CompileTransform:
             result_plans: list[StepResultPlan] = []
             after_hooks = hooks.get(("after", name), ())
             for hook in after_hooks:
-                self._declared_lane(transform_class, hook.lane, member=hook.name, role="output")
-                if hook.lane.name not in output_lanes:
+                for lane in hook.lanes:
+                    self._declared_lane(transform_class, lane, member=hook.name, role="lane")
+                for output in hook.outputs:
+                    self._declared_lane(transform_class, output, member=hook.name, role="output")
+                unknown = [output.name for output in hook.outputs if output.name not in output_lanes]
+                if unknown:
                     raise self._error(
                         "DSL-E0402",
                         transform_class=transform_class,
                         member=hook.name,
                         problem=(
-                            f"@after({name}, lane={hook.lane.name}) selects a lane " f"that {name} does not produce."
+                            f"@after({name}) replaces lane(s) that {name} does not produce: "
+                            f"{', '.join(unknown)}."
                         ),
                         use=f"Select one of: {', '.join(output_lanes)}.",
                     )
@@ -285,13 +295,13 @@ class CompileTransform:
         *,
         member: str,
     ) -> list[StepInputPlan]:
-        declarations = (
-            cast(tuple[InputDeclaration | OutputDeclaration, ...], metadata.get("inputs", ())) if metadata else ()
-        )
+        input_declarations = cast(tuple[InputDeclaration, ...], metadata.get("inputs", ())) if metadata else ()
+        lane_declarations = cast(tuple[LaneSourceDeclaration, ...], metadata.get("lanes", ())) if metadata else ()
+        declarations = cast(tuple[object, ...], input_declarations or lane_declarations)
         if len(parameters) == 1:
             parameter = parameters[0]
             schema = cast(type[Structure], parameter.annotation)
-            lane, source = self._input_lane(
+            lane, source = self._driving_source(
                 transform_class,
                 metadata,
                 lanes,
@@ -336,15 +346,16 @@ class CompileTransform:
                 )
             ]
         if declarations and len(declarations) != len(parameters):
+            option = "lanes" if lane_declarations else "inputs"
             raise self._error(
                 "DSL-E0402",
                 transform_class=transform_class,
                 member=member,
                 problem=(
-                    f"@transform(inputs=...) binds {len(declarations)} source(s), "
+                    f"@transform({option}=...) binds {len(declarations)} source(s), "
                     f"but {transform_class.__name__}.{member} declares {len(parameters)} schema parameter(s)."
                 ),
-                use="List one input(...) or available output(...) declaration for every schema parameter, in order.",
+                use=f"List one declaration in {option}=[...] for every schema parameter, in order.",
             )
 
         bindings: list[StepInputPlan] = []
@@ -360,6 +371,7 @@ class CompileTransform:
                 schema,
                 member=member,
                 driving=ordinal == 0,
+                lane_mode=bool(lane_declarations),
                 used=used,
             )
             actual = cast(type[Structure], source["schema"])
@@ -407,17 +419,13 @@ class CompileTransform:
         *,
         member: str,
         driving: bool,
+        lane_mode: bool,
         used: set[tuple[str, str]],
     ) -> tuple[str, dict[str, object]]:
         if declaration is not None:
-            return self._input_lane(
-                transform_class,
-                {"input": declaration},
-                lanes,
-                inputs,
-                schema,
-                member=member,
-            )
+            if lane_mode:
+                return self._declared_lane_source(transform_class, declaration, lanes, member=member)
+            return self._declared_input_source(transform_class, declaration, member=member)
         if driving:
             current = [
                 (lane, source)
@@ -467,6 +475,72 @@ class CompileTransform:
             )
         return candidates[0]
 
+    def _driving_source(
+        self,
+        transform_class: type[Transform],
+        metadata: dict[str, object] | None,
+        lanes: dict[str, dict[str, object]],
+        inputs: list[InputPlan],
+        input_schema: type[Structure],
+        *,
+        member: str,
+    ) -> tuple[str, dict[str, object]]:
+        lane_declaration = metadata.get("lane") if metadata else None
+        if lane_declaration is not None:
+            return self._declared_lane_source(transform_class, lane_declaration, lanes, member=member)
+        return self._input_lane(transform_class, metadata, lanes, inputs, input_schema, member=member)
+
+    def _declared_input_source(
+        self,
+        transform_class: type[Transform],
+        declaration: object,
+        *,
+        member: str,
+    ) -> tuple[str, dict[str, object]]:
+        if not isinstance(declaration, InputDeclaration):
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem="@transform(input=...) must reference an input(...) field.",
+                use="Use input(s)=... only for original transform inputs; use lane(s)=... for produced lanes.",
+            )
+        self._declared_input(transform_class, declaration, member=member)
+        return declaration.name, {
+            "kind": "input",
+            "schema": declaration.schema,
+            "source": declaration.name,
+            "scope": declaration.name,
+        }
+
+    def _declared_lane_source(
+        self,
+        transform_class: type[Transform],
+        declaration: object,
+        lanes: dict[str, dict[str, object]],
+        *,
+        member: str,
+    ) -> tuple[str, dict[str, object]]:
+        if not isinstance(declaration, (LaneDeclaration, OutputDeclaration)):
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem="@transform(lane=...) must reference a lane(...) or output(...) field.",
+                use="Use lane(s)=... for existing produced lanes, or input(s)=... to start from original inputs.",
+            )
+        self._declared_lane(transform_class, declaration, member=member, role="lane")
+        if declaration.name not in lanes:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"Lane {declaration.name} is not available yet.",
+                use="Consume only lanes produced earlier in source order, or use input(s)=... to start a funnel.",
+                context={"lane": declaration.name},
+            )
+        return declaration.name, lanes[declaration.name]
+
     def _output_lanes(
         self,
         transform_class: type[Transform],
@@ -477,7 +551,7 @@ class CompileTransform:
         explicit_outputs: set[str],
         default_lane: str,
     ) -> tuple[str, ...]:
-        declarations = cast(tuple[OutputDeclaration, ...], metadata.get("outputs", ())) if metadata else ()
+        declarations = cast(tuple[WriteDeclaration, ...], metadata.get("outputs", ())) if metadata else ()
         if len(output_schemas) == 1:
             return (
                 self._output_lane(
@@ -503,21 +577,21 @@ class CompileTransform:
                 )
             lanes: list[str] = []
             for schema, declaration in zip(output_schemas, declarations, strict=True):
-                assert isinstance(declaration, OutputDeclaration)
-                self._declared_output(transform_class, declaration, member=member, role="output")
-                if schema is not declaration.schema:
+                self._declared_write(transform_class, declaration, member=member)
+                if not self._write_compatible(schema, declaration):
                     raise self._error(
                         "DSL-E0402",
                         transform_class=transform_class,
                         member=member,
                         problem=(
                             f"Result {len(lanes)} returns {schema.__name__}, "
-                            f"not output {declaration.name}'s {declaration.schema.__name__}."
+                            f"not {declaration.name}'s {declaration.schema.__name__}."
                         ),
                         use="Order outputs=[...] to match the tuple return annotation.",
                     )
                 lanes.append(declaration.name)
-                explicit_outputs.add(declaration.name)
+                if isinstance(declaration, OutputDeclaration):
+                    explicit_outputs.add(declaration.name)
             return tuple(lanes)
         available = list(transform_class._structure_outputs.values())
         selected: list[str] = []
@@ -585,7 +659,7 @@ class CompileTransform:
     ) -> tuple[HookPlan, ...]:
         selected: list[HookPlan] = []
         for hook in hooks:
-            if hook.lane.name == lane:
+            if hook.outputs[0].name == lane:
                 self._validate_hook_signature(transform_class, hook)
                 selected.append(hook)
         return tuple(selected)
@@ -598,13 +672,17 @@ class CompileTransform:
         hooks: tuple[HookPlan, ...],
     ) -> tuple[HookPlan, ...]:
         for hook in hooks:
-            self._declared_lane(transform_class, hook.lane, member=hook.name, role="input")
-            if hook.lane.name != lane:
+            for source in hook.lanes:
+                self._declared_lane(transform_class, source, member=hook.name, role="lane")
+            for output in hook.outputs:
+                self._declared_lane(transform_class, output, member=hook.name, role="output")
+            unknown = [output.name for output in hook.outputs if output.name != lane]
+            if unknown:
                 raise self._error(
                     "DSL-E0402",
                     transform_class=transform_class,
                     member=hook.name,
-                    problem=f"@before({member}, lane={hook.lane.name}) selects a lane that {member} does not consume.",
+                    problem=f"@before({member}) replaces lane(s) that {member} does not consume: {', '.join(unknown)}.",
                     use=f"Select lane={lane}.",
                 )
             self._validate_hook_signature(transform_class, hook)
@@ -665,26 +743,13 @@ class CompileTransform:
                 "scope": declaration.name,
             }
 
-        if not isinstance(declaration, OutputDeclaration):
-            raise self._error(
-                "DSL-E0402",
-                transform_class=transform_class,
-                member=member,
-                problem="@transform(input=...) must reference an input(...) or output(...) field.",
-                use="Pass a class field declared as name = input(Schema) or name = output(Schema).",
-            )
-        self._declared_output(transform_class, declaration, member=member, role="input")
-        lane = declaration.name
-        if lane not in lanes:
-            raise self._error(
-                "DSL-E0402",
-                transform_class=transform_class,
-                member=member,
-                problem=f"Input lane {lane} is not available yet.",
-                use="Consume only lanes produced earlier in source order, or omit input= to keep the current lane.",
-                context={"lane": lane},
-            )
-        return lane, lanes[lane]
+        raise self._error(
+            "DSL-E0402",
+            transform_class=transform_class,
+            member=member,
+            problem="@transform(input=...) must reference an input(...) field.",
+            use="Use @transform(lane=that_lane) to consume an existing lane.",
+        )
 
     def _output_lane(
         self,
@@ -702,18 +767,22 @@ class CompileTransform:
         declaration = metadata.get("output")
         if declaration is None:
             return default_lane
-        assert isinstance(declaration, OutputDeclaration)
-        self._declared_output(transform_class, declaration, member=member, role="output")
-        if output_schema is not declaration.schema:
+        assert isinstance(declaration, (LaneDeclaration, OutputDeclaration))
+        self._declared_write(transform_class, declaration, member=member)
+        if not self._write_compatible(output_schema, declaration):
             raise self._error(
                 "DSL-E0402",
                 transform_class=transform_class,
                 member=member,
-                problem=f"{transform_class.__name__}.{member} returns {output_schema.__name__}, not {declaration.schema.__name__}.",
+                problem=(
+                    f"{transform_class.__name__}.{member} returns {output_schema.__name__}, "
+                    f"not {declaration.schema.__name__}."
+                ),
                 use="Return the schema declared by the bound output(...) field.",
                 context={"expected": declaration.schema.__name__, "actual": output_schema.__name__},
             )
-        explicit_outputs.add(declaration.name)
+        if isinstance(declaration, OutputDeclaration):
+            explicit_outputs.add(declaration.name)
         return declaration.name
 
     def _outputs(
@@ -836,6 +905,50 @@ class CompileTransform:
                 context={"output": declaration.name or "<unnamed>"},
             )
 
+    def _declared_lane_declaration(
+        self,
+        transform_class: type[Transform],
+        declaration: LaneDeclaration,
+        *,
+        member: str,
+    ) -> None:
+        declared = transform_class._structure_lanes.get(declaration.name)
+        if declared is not declaration:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"@transform(lane=...) references a lane that is not declared on {transform_class.__name__}.",
+                use="Use a lane(...) field from the same transform class.",
+                context={"lane": declaration.name or "<unnamed>"},
+            )
+
+    def _declared_write(
+        self,
+        transform_class: type[Transform],
+        declaration: WriteDeclaration,
+        *,
+        member: str,
+    ) -> None:
+        if isinstance(declaration, LaneDeclaration):
+            self._declared_lane_declaration(transform_class, declaration, member=member)
+            return
+        if isinstance(declaration, OutputDeclaration):
+            self._declared_output(transform_class, declaration, member=member, role="output")
+            return
+        raise self._error(
+            "DSL-E0402",
+            transform_class=transform_class,
+            member=member,
+            problem="@transform(output=...) must reference a lane(...) or output(...) field.",
+            use="Use output(s)=... to write declared intermediate lanes or final outputs.",
+        )
+
+    def _write_compatible(self, schema: type[Structure], declaration: WriteDeclaration) -> bool:
+        if isinstance(declaration, LaneDeclaration):
+            return issubclass(schema, declaration.schema)
+        return schema is declaration.schema
+
     def _declared_input(
         self,
         transform_class: type[Transform],
@@ -857,13 +970,16 @@ class CompileTransform:
     def _declared_lane(
         self,
         transform_class: type[Transform],
-        declaration: InputDeclaration | OutputDeclaration,
+        declaration: InputDeclaration | LaneDeclaration | OutputDeclaration,
         *,
         member: str,
         role: str,
     ) -> None:
         if isinstance(declaration, InputDeclaration):
             self._declared_input(transform_class, declaration, member=member)
+            return
+        if isinstance(declaration, LaneDeclaration):
+            self._declared_lane_declaration(transform_class, declaration, member=member)
             return
         if isinstance(declaration, OutputDeclaration):
             self._declared_output(transform_class, declaration, member=member, role=role)
@@ -872,8 +988,8 @@ class CompileTransform:
             "DSL-E0402",
             transform_class=transform_class,
             member=member,
-            problem=f"@{role}(...) must reference an input(...) or output(...) field.",
-            use="Pass a class field declared as name = input(Schema) or name = output(Schema).",
+            problem=f"@{role}(...) must reference an input(...), lane(...), or output(...) field.",
+            use="Pass a class field declared as name = input(Schema), lane(Schema), or output(Schema).",
         )
 
     def _validate_hook_signature(self, transform_class: type[Transform], hook: HookPlan) -> None:
@@ -892,9 +1008,9 @@ class CompileTransform:
                 hook,
                 problem=f"{transform_class.__name__}.{hook.name} hook parameters must be keyword-only.",
             )
-        expected = [hook.lane.name, "spark", "ctx"]
+        expected = [lane.name for lane in hook.lanes] + ["spark", "ctx"]
         if hook.pass_inputs:
-            expected.insert(1, "inputs")
+            expected.insert(len(hook.lanes), "inputs")
         names = [parameter.name for parameter in runtime]
         if names != expected:
             raise self._hook_signature_error(
@@ -914,13 +1030,14 @@ class CompileTransform:
         problem: str,
     ) -> StructureCompileError:
         inputs = ", inputs" if hook.pass_inputs else ""
+        lane_names = ", ".join(lane.name for lane in hook.lanes)
         return self._error(
             "DSL-E0402",
             transform_class=transform_class,
             member=hook.name,
             problem=problem,
-            use=f"Use def {hook.name}(self, *, {hook.lane.name}{inputs}, spark, ctx): ...",
-            context={"hook": hook.name, "lane": hook.lane.name},
+            use=f"Use def {hook.name}(self, *, {lane_names}{inputs}, spark, ctx): ...",
+            context={"hook": hook.name, "lane": lane_names},
         )
 
     def _row_parameters(self, method, hints: dict[str, object]) -> tuple[inspect.Parameter, ...]:

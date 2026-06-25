@@ -90,13 +90,14 @@ class RunOnlinePySparkTransform:
     ):
         active = current
         if step.before_hooks:
-            active = self._hooks.apply(
+            self._hooks.apply(
                 step.before_hooks,
-                current=active,
+                frames=frames,
                 inputs=hook_inputs,
                 invocation=invocation,
                 session=session,
             )
+            active = frames[step.source]
 
         df = active.alias(step.input_alias)
         for join in step.joins:
@@ -124,14 +125,20 @@ class RunOnlinePySparkTransform:
                         for assignment in result.projection
                     )
                 )
+                produced[result.frame] = projected
+            for result in step.results:
                 if result.after_hooks:
-                    projected = self._hooks.apply(
+                    hook_frames = dict(frames)
+                    hook_frames.update(produced)
+                    self._hooks.apply(
                         result.after_hooks,
-                        current=projected,
+                        frames=hook_frames,
                         inputs=hook_inputs,
                         invocation=invocation,
                         session=session,
                     )
+                    produced.update({name: hook_frames[name] for hook in result.after_hooks for name in hook.outputs})
+                projected = produced[result.frame]
                 for validation in result.validations:
                     self._validator.validate(projected, validation, types=types)
                     if validation.project:
@@ -148,13 +155,16 @@ class RunOnlinePySparkTransform:
             )
         )
         if step.after_hooks:
-            df = self._hooks.apply(
+            step_frames = dict(frames)
+            step_frames[step.results[0].frame] = df
+            self._hooks.apply(
                 step.after_hooks,
-                current=df,
+                frames=step_frames,
                 inputs=hook_inputs,
                 invocation=invocation,
                 session=session,
             )
+            df = step_frames[step.results[0].frame]
         for validation in step.validations:
             self._validator.validate(df, validation, types=types)
             if validation.project:

@@ -2,7 +2,7 @@ from typing import Any
 
 import pytest
 
-from structure import Join, String, Structure, Transform, after, before, field, input, join_one, output, transform
+from structure import Join, String, Structure, Transform, after, before, field, input, join_one, lane, output, transform
 from structure.app.compiler.api import Compiler
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
@@ -79,6 +79,37 @@ def test_unique_schema_parameters_are_inferred() -> None:
     step = compile_transform(AddProduct).steps[0]
 
     assert [item.source for item in step.inputs] == ["orders", "products"]
+
+
+def test_plural_lanes_bind_schema_parameters_in_order() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(OrderRaw)
+        products = input(Product)
+        order_lane = lane(OrderRaw)
+        product_lane = lane(Product)
+        enriched = output(OrderWithProduct)
+
+        @transform(input=orders, output=order_lane)
+        def seed_order(self, order: OrderRaw) -> OrderRaw:
+            return OrderRaw(id=order.id, product_id=order.product_id)
+
+        @transform(input=products, output=product_lane)
+        def seed_product(self, product: Product) -> Product:
+            return Product(id=product.id, name=product.name)
+
+        @transform(lanes=[order_lane, product_lane], output=enriched)
+        def add_product(self, order: OrderRaw, product: Product) -> OrderWithProduct:
+            product = join_one(product, on=product.id == order.product_id)
+            return OrderWithProduct(id=order.id, product_name=product.name)
+
+    step = compile_transform(AddProduct).steps[2]
+
+    assert [(item.parameter, item.source, item.lane) for item in step.inputs] == [
+        ("order", "order_lane", "order_lane"),
+        ("product", "product_lane", "product_lane"),
+    ]
+    assert step.output_lane == "enriched"
 
 
 def test_repeated_schema_parameters_require_explicit_inputs() -> None:
@@ -181,6 +212,45 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
     assert len([dependency for dependency in traceability.static_dataflow if dependency.operation == "step"]) == 1
 
 
+def test_generated_plural_lane_hook_replaces_outputs_in_order() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(OrderRaw)
+        products = input(Product)
+        accepted = output(OrderWithProduct)
+        audited = output(OrderWithProduct)
+
+        @transform(inputs=[orders, products], outputs=[accepted, audited])
+        def add_product(
+            self,
+            order: OrderRaw,
+            product: Product,
+        ) -> tuple[OrderWithProduct, OrderWithProduct]:
+            product = join_one(product, on=product.id == order.product_id)
+            row = OrderWithProduct(id=order.id, product_name=product.name)
+            return row, row
+
+        @after(add_product, lanes=[accepted, audited], outputs=[accepted, audited])
+        def polish(self, *, accepted, audited, spark, ctx):
+            return accepted, audited
+
+    text = PySpark.render.transform()(
+        PySpark.plan.lower()(compile_transform(AddProduct)),
+        source_transform="tests.specifications.multiple_schema_parameters.AddProduct",
+        runtime_module="testing.runtime",
+        schema_modules={
+            OrderRaw: "testing.schemas",
+            Product: "testing.schemas",
+            OrderWithProduct: "testing.schemas",
+        },
+    )
+
+    assert (
+        "        accepted, audited = self._impl.polish("
+        "accepted=accepted, audited=audited, spark=self.spark, ctx=self.ctx)"
+    ) in text
+
+
 def test_multi_result_after_hook_rejects_unproduced_output_selection() -> None:
     @transform
     class AddProduct(Transform):
@@ -210,7 +280,7 @@ def test_multi_result_after_hook_rejects_unproduced_output_selection() -> None:
 def test_before_hook_requires_explicit_lane_selector() -> None:
     invalid_before: Any = before
 
-    with pytest.raises(TypeError, match="missing 1 required keyword-only argument: 'lane'"):
+    with pytest.raises(TypeError, match="requires input\\(s\\)=... or lane\\(s\\)=..."):
 
         @transform
         class AddProduct(Transform):
@@ -228,7 +298,7 @@ def test_before_hook_requires_explicit_lane_selector() -> None:
 def test_after_hook_requires_explicit_lane_selector() -> None:
     invalid_after: Any = after
 
-    with pytest.raises(TypeError, match="missing 1 required keyword-only argument: 'lane'"):
+    with pytest.raises(TypeError, match="requires input\\(s\\)=... or lane\\(s\\)=..."):
 
         @transform
         class AddProduct(Transform):

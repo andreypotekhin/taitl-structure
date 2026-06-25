@@ -236,7 +236,17 @@ Rules:
 Input DataFrame schema validation is governed by the validation configuration and runtime specifications. The DSL only
 declares the expected schema.
 
-## Outputs
+## Lanes And Outputs
+
+`lane(schema)` declares a named intermediate DataFrame stream on a transform class:
+
+```python
+orders = lane(OrderNormalized)
+orders_with_product = lane(OrderWithProduct)
+```
+
+Lane declarations are not constructor inputs and are not returned from `run(...)`. They name internal funnel streams
+that can be produced, consumed, and updated by subtransforms.
 
 `output(schema)` declares a named transform result on a transform class. Every transform must declare at least one:
 
@@ -253,16 +263,15 @@ Rules:
 - A transform with no field-declared outputs is invalid.
 - A single-output transform does not need an explicit output method binding; the final current lane produces the
   result.
-- If a transform declares more than one output field, each output lane must be written explicitly with method-level
+- If a transform declares more than one output field, each final output lane must be written explicitly with method-level
   `@transform(output=that_output)`.
-- Method-level `@transform(output=lane)` reads from the current lane and writes the named lane.
-- Method-level `@transform(input=declared_input)` reads from an original class input and keeps that input lane name
-  unless `output=` is also specified.
-- Method-level `@transform(input=source_lane, output=target_lane)` reads from a previously available output lane and
-  writes another lane.
-- Any method that specifies an output lane as `input=` must also specify `output=`.
-- Lane references use input or output declarations, not strings. The default current lane starts with the selected
-  `input(...)` declaration name and changes only through explicit `@transform(output=...)`.
+- Method-level `@transform(input=declared_input)` starts a funnel from an original class input.
+- Method-level `@transform(lane=declared_lane)` continues an already-produced lane and updates that same lane when
+  `output=` is omitted.
+- Method-level `@transform(lane=source_lane, output=target_lane)` reads from a previously available lane and writes
+  another declared lane or final output.
+- `input(s)=...` and `lane(s)=...` are mutually exclusive on one subtransform.
+- Lane references use input, lane, or output declarations, not strings.
 
 Canonical multi-output form:
 
@@ -270,32 +279,33 @@ Canonical multi-output form:
 @transform
 class RouteOrders(Transform):
     orders = input(OrderRaw)
+    normalized = lane(OrderNormalized)
     accepted = output(OrderAccepted)
     rejected = output(OrderRejected)
 
+    @transform(input=orders, output=normalized)
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         return OrderNormalized.base(order)()
 
-    @transform(output=accepted)
+    @transform(lane=normalized, output=accepted)
     def accept(self, order: OrderNormalized) -> OrderAccepted:
         where(order.customer_id.is_not_null())
         return OrderAccepted.base(order)(status="accepted")
 
-    @transform(input=accepted, output=accepted)
+    @transform(lane=accepted, output=accepted)
     def keep_accepted(self, order: OrderAccepted) -> OrderAccepted:
         where(order.status == "accepted")
         return OrderAccepted.base(order)()
 
-    @transform(output=rejected)
+    @transform(lane=normalized, output=rejected)
     def reject(self, order: OrderNormalized) -> OrderRejected:
         where(order.customer_id.is_null())
         return OrderRejected.base(order)(reason="missing customer")
 ```
 
-Transform methods execute in source order, but each method reads from its declared input lane and writes to its declared
-output lane. Ordinary undecorated methods keep the current lane. Output-local `where(...)` filters affect only
-the lane written by that method, so `reject(...)` above still reads the normalized input lane rather than the filtered
-`accepted` lane.
+Transform methods execute in source order, but each method reads from its declared input or lane and writes to its
+declared lane or final output. Output-local `where(...)` filters affect only the lane written by that method, so
+`reject(...)` above still reads the normalized lane rather than the filtered `accepted` lane.
 
 ## Subtransforms
 
@@ -317,14 +327,15 @@ Rules:
 - The first parameter is the driving row. Later parameters are symbolic relations that must be joined before their
   fields are used in filters or projections.
 - The return annotation is either one `Structure` subclass or a fixed tuple such as `tuple[Accepted, Audited]`.
-- `inputs=[...]` binds declarations to parameters in order. `outputs=[...]` binds output declarations to returned
-  values in order. Singular `input=` and `output=` remain one-item shorthands.
+- `inputs=[...]` starts a funnel from original inputs and binds input declarations to parameters in order.
+- `lanes=[...]` continues a funnel from existing lanes and binds lane declarations to parameters in order.
+- `outputs=[...]` binds lane or output declarations to returned values in order. Singular `input=`, `lane=`, and
+  `output=` remain one-item shorthands.
 - The compiler infers bindings only when every schema has one unambiguous available declaration.
 - Subtransforms execute in source order.
-- Source-order lane flow must be valid: undecorated methods consume and update the current lane;
-  `@transform(output=lane)` consumes the current lane and updates `lane`; `@transform(input=declared_input)` consumes
-  an original input and keeps that input lane name;
-  `@transform(input=source, output=target)` consumes a previously available lane and updates the target lane.
+- Source-order lane flow must be valid: `@transform(input=declared_input, output=target)` starts a funnel;
+  `@transform(lane=source, output=target)` consumes a previously available lane and updates the target lane;
+  `@transform(lane=source)` updates the same lane.
 - If more than one declared input has the first subtransform's input schema, the compiler must require an unambiguous
   mapping such as `@transform(input=orders_external)` or emit a diagnostic.
 - A multi-result subtransform executes its joins and `where(...)` filters once, then projects every returned schema

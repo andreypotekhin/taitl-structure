@@ -24,14 +24,13 @@ class RenderPySparkStep:
         lines = [f"        # Subtransform: {step.name}"]
         active = current
         if step.before_hooks:
-            lines.extend(self._hooks(step.before_hooks, current=current, target=target))
-            active = target
+            lines.extend(self._hooks(step.before_hooks))
         lines.append(f'        {target} = {active}.alias("{step.input_alias}")')
         lines.extend(self._joins(step, sources=sources or {}, target=target))
         if step.filters:
             lines.extend(self._filters(step, target=target))
         lines.extend(self._projection(step, target=target))
-        lines.extend(self._hooks(step.after_hooks, current=target, target=target))
+        lines.extend(self._hooks(step.after_hooks))
         lines.extend(self._validations(step.validations, target=target))
         return "\n".join(lines)
 
@@ -39,43 +38,39 @@ class RenderPySparkStep:
         lines = [f"        # Subtransform: {step.name}"]
         active = current
         if step.before_hooks:
-            lane = step.before_hooks[0].lane
-            lines.extend(self._hooks(step.before_hooks, current=current, target=lane))
-            active = lane
+            lines.extend(self._hooks(step.before_hooks))
         base = f"{step.name}_base"
         lines.append(f'        {base} = {active}.alias("{step.input_alias}")')
         lines.extend(self._joins(step, sources=sources, target=base))
         if step.filters:
             lines.extend(self._filters(step, target=base))
         for result in step.results:
-            lines.extend(self._result(step, result, base=base))
+            lines.extend(self._result_projection(step, result, base=base))
+        for result in step.results:
+            lines.extend(self._hooks(result.after_hooks))
+            lines.extend(self._validations(result.validations, target=result.frame))
         return "\n".join(lines)
 
-    def _result(self, step: PySparkStepRecipe, result, *, base: str) -> list[str]:
+    def _result_projection(self, step: PySparkStepRecipe, result, *, base: str) -> list[str]:
         lines = [f"        {result.frame} = {base}.select("]
         for assignment in result.projection:
             expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
             lines.append(f'            {expression}.alias("{assignment.field.name}"),')
         lines.append("        )")
-        lines.extend(self._hooks(result.after_hooks, current=result.frame, target=result.frame))
-        lines.extend(self._validations(result.validations, target=result.frame))
         return lines
 
     def _hooks(
         self,
         hooks: tuple[PySparkHookRecipe, ...],
-        *,
-        current: str,
-        target: str = "df",
     ) -> list[str]:
         lines: list[str] = []
         for hook in hooks:
             inputs = ", inputs=inputs" if hook.pass_inputs else ""
-            lines.append(
-                f"        {target} = self._impl.{hook.name}"
-                f"({hook.lane}={current}{inputs}, spark=self.spark, ctx=self.ctx)"
-            )
-            current = target
+            arguments = ", ".join(f"{lane}={lane}" for lane in hook.lanes)
+            if inputs:
+                arguments = f"{arguments}{inputs}"
+            outputs = ", ".join(hook.outputs)
+            lines.append(f"        {outputs} = self._impl.{hook.name}({arguments}, spark=self.spark, ctx=self.ctx)")
         return lines
 
     def _joins(

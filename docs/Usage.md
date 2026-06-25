@@ -80,6 +80,27 @@ Subtransforms execute in source order.
 OrderRaw -> OrderNormalized -> OrderWithCustomer -> OrderEnriched
 ```
 
+Declare intermediate lanes when you want named funnel stages:
+
+```python
+orders_raw = input(OrderRaw)
+orders = lane(OrderNormalized)
+orders_with_product = lane(OrderWithProduct)
+published = output(OrderEnriched)
+
+@transform(input=orders_raw, output=orders)
+def normalize(self, order: OrderRaw) -> OrderNormalized:
+    ...
+
+@transform(lane=orders, output=orders_with_product)
+def add_product(self, order: OrderNormalized) -> OrderWithProduct:
+    ...
+
+@transform(lane=orders_with_product, output=published)
+def publish(self, order: OrderWithProduct) -> OrderEnriched:
+    ...
+```
+
 Subtransforms may declare additional schema parameters for relations used by the step. Bind repeated schemas
 explicitly and return a fixed schema tuple when the shared join/filter work produces multiple results:
 

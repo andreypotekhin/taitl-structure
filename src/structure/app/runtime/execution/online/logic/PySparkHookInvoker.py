@@ -23,15 +23,24 @@ class PySparkHookInvoker:
         self,
         hooks: tuple[PySparkHookRecipe, ...],
         *,
-        current,
+        frames: dict[str, object],
         inputs,
         invocation: Transform,
         session,
-    ):
-        frame = current
+    ) -> None:
         for hook in hooks:
-            kwargs = {hook.lane: frame, "spark": session.spark, "ctx": session.ctx}
+            kwargs = {lane: frames[lane] for lane in hook.lanes}
+            kwargs.update({"spark": session.spark, "ctx": session.ctx})
             if hook.pass_inputs:
                 kwargs["inputs"] = inputs
-            frame = getattr(invocation, hook.name)(**kwargs)
-        return frame
+            result = getattr(invocation, hook.name)(**kwargs)
+            if len(hook.outputs) == 1:
+                frames[hook.outputs[0]] = result
+                continue
+            if not isinstance(result, tuple) or len(result) != len(hook.outputs):
+                raise TypeError(
+                    f"Hook {hook.name} must return {len(hook.outputs)} DataFrames for outputs: "
+                    f"{', '.join(hook.outputs)}"
+                )
+            for name, frame in zip(hook.outputs, result, strict=True):
+                frames[name] = frame
