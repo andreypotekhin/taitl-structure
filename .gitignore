@@ -56,3 +56,5 @@ node_modules/
 .black_cache/
 src/structure/app/target/pyspark/logic/model/PySparkStepResultRecipe.py.isorted
 *.pickle
+*.isorted
+.coverage

@@ -232,4 +232,4 @@ We generally avoid, unless there is a valid reason:
 - Camel-case abbreviations (e.g. HTML -> Html)
 - HTML formatting tags in docstrings, such as <p> and <br>
 - non-Docstrings comments (the meaning should stem from code)
-- testing a class in total isolation (we test cohesive clusters of classes instead of mocking around) 
+- testing a class in total isolation (we test cohesive clusters of classes instead of mocking around (faking around)) 

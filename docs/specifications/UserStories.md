@@ -253,7 +253,7 @@ This document is a user-story specification for SDLC planning. Early sections co
 - + As a developer, I can see an inline DSL alternative so that simple fixes are obvious.
 - + As a developer, I can see an `@expr_fn` helper alternative so that reusable fixes are encouraged.
 - + As a developer, I can see a hook alternative so that arbitrary PySpark migration is explicit.
-- As a developer, I can see a configuration workaround when a safe config setting exists.
+- + As a developer, I can see a configuration workaround when a safe config setting exists.
 
 ## 21. Testing
 

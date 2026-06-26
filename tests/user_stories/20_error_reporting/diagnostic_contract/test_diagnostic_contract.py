@@ -1,10 +1,15 @@
 from pathlib import Path
+from types import SimpleNamespace
+from typing import Any, cast
 
 import pytest
 
+from structure import StructureRuntimeError
+from structure.app.runtime.execution.online.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 from structure.lib.cross.errors import Diagnostic, DiagnosticEntry, DiagnosticRegistry, diagnostic_registry
 
 ROOT = Path(__file__).resolve().parents[4]
+
 
 def test_diagnostic_registry_exposes_stable_codes_and_docs_links() -> None:
     """I can rely on stable diagnostic codes."""
@@ -36,6 +41,29 @@ def test_diagnostic_values_render_problem_and_use_guidance_from_registry() -> No
     assert "structure compile" in diagnostic.use_text()
 
 
+def test_online_runner_reports_configuration_workaround_without_live_runtime() -> None:
+    """I can see a configuration workaround when a safe config setting exists."""
+
+    session = SimpleNamespace(
+        online_executor=None,
+        spark=None,
+        execution_mode="online",
+        target_backend="pyspark",
+    )
+
+    with pytest.raises(StructureRuntimeError) as raised:
+        RunOnlinePySparkTransform()(
+            cast(Any, DiagnosticTransformInvocation()),
+            cast(Any, SimpleNamespace()),
+            session=session,
+        )
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == "ONLINE-E1202"
+    assert "no live SparkSession or injected online executor" in diagnostic.problem
+    assert 'execution_mode = "generated"' in diagnostic.use
+
+
 def test_diagnostic_registry_rejects_duplicate_codes() -> None:
     """Duplicate diagnostic codes are rejected during registry validation."""
 
@@ -53,3 +81,7 @@ def test_diagnostic_registry_rejects_duplicate_codes() -> None:
 
     with pytest.raises(ValueError, match="Duplicate diagnostic code"):
         DiagnosticRegistry([entry, entry])
+
+
+class DiagnosticTransformInvocation:
+    pass
