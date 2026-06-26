@@ -67,8 +67,11 @@ class RenderPySparkTransformModule:
             lines.extend(self._validation(input.validation))
         if plan.requires_hook_inputs:
             lines.extend(self._hook_inputs(plan))
+        for input in plan.inputs:
+            lines.append(f"        {self._raw_input_name(input.name)} = {input.name}")
 
         sources = {input.name: input.name for input in plan.inputs}
+        sources.update({f"input:{input.name}": self._raw_input_name(input.name) for input in plan.inputs})
         for step in plan.steps:
             lines.append("")
             lines.append(render_pyspark_step(step, current=sources[step.source], sources=sources))
@@ -99,6 +102,9 @@ class RenderPySparkTransformModule:
             lines.append(f"            {input.name}={input.name},")
         lines.append("        )")
         return lines
+
+    def _raw_input_name(self, name: str) -> str:
+        return f"_input_{name}"
 
     def _validation(self, validation: PySparkValidationRecipe) -> list[str]:
         schema = render_pyspark_schema.constant_name(validation.schema)

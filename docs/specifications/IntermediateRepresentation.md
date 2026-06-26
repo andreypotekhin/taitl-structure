@@ -251,6 +251,8 @@ Rules:
 - Method-level `inout=source | target` is normalized to the same input and output declaration tuples.
 - If an input declaration name already exists as a lane, that lane shadows the original input for method-level
   `input=`.
+- Role selectors preserve raw input, lane, and final output intent. A source key such as `input:orders` identifies the
+  original runtime input even after the logical lane `orders` has been updated.
 - `outputs` preserve class-body output declaration order.
 - `TransformPlan.output_schema` is a compatibility accessor that returns the sole output schema and fails clearly when
   a transform has multiple outputs.

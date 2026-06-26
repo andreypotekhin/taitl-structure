@@ -271,6 +271,78 @@ def test_v1_method_input_declaration_is_shadowed_by_existing_lane() -> None:
     ]
 
 
+def test_v1_input_selector_reads_original_input_after_shadowing() -> None:
+    @transform
+    class PublishOrders(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, customer_id=row.customer_id)
+
+        @transform(input=input(rows), output=output(published))
+        def publish_raw(self, row: Raw) -> Published:
+            return Published(id=row.id)
+
+    plan = compile_transform(PublishOrders)
+
+    assert [(step.name, step.source, step.input_lane, step.output_lane, step.input_schema) for step in plan.steps] == [
+        ("normalize", "rows", "rows", "rows", Raw),
+        ("publish_raw", "input:rows", "rows", "published", Raw),
+    ]
+
+    text = PySpark.render.transform()(
+        PySpark.plan.lower()(plan),
+        source_transform="tests.specifications.multiple_outputs.PublishOrders",
+        runtime_module="testing.runtime",
+        schema_modules={
+            Raw: "testing.schemas",
+            Normalized: "testing.schemas",
+            Published: "testing.schemas",
+        },
+    )
+
+    assert "        _input_rows = rows" in text
+    assert "        published = _input_rows.alias(\"raw\")" in text
+
+
+def test_v1_lane_selector_requires_available_lane() -> None:
+    @transform
+    class PublishOrders(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        @transform(input=lane(rows), output=published)
+        def publish(self, row: Raw) -> Published:
+            return Published(id=row.id)
+
+    with pytest.raises(Exception, match="Lane rows is not available yet"):
+        compile_transform(PublishOrders)
+
+
+def test_v1_lane_and_output_selectors_bind_inout_roles() -> None:
+    @transform
+    class PublishOrders(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        @transform(inout=input(rows) | lane(rows))
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, customer_id=row.customer_id)
+
+        @transform(inout=lane(rows) | output(published))
+        def publish(self, row: Normalized) -> Published:
+            return Published(id=row.id)
+
+    assert [
+        (step.name, step.source, step.input_lane, step.output_lane, step.input_schema)
+        for step in compile_transform(PublishOrders).steps
+    ] == [
+        ("normalize", "input:rows", "rows", "rows", Raw),
+        ("publish", "rows", "rows", "published", Normalized),
+    ]
+
+
 def test_v1_final_output_materializes_named_result_from_implicit_lane() -> None:
     @transform
     class PublishOrders(Transform):

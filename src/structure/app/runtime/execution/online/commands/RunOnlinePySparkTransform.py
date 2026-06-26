@@ -54,6 +54,7 @@ class RunOnlinePySparkTransform:
 
         hook_inputs = HookInputs(**inputs) if plan.requires_hook_inputs else None
         frames = dict(inputs)
+        frames.update({f"input:{name}": frame for name, frame in inputs.items()})
         for step in plan.steps:
             produced = self._step(
                 step,

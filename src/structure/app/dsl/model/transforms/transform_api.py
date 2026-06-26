@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 import inspect
-from typing import Callable, Iterable, cast
+from typing import Callable, Iterable, cast, overload
 
 from structure.app.compiler.symbolic_execution.model.CompileContext import current_context
 from structure.app.dsl.model.expr.expressions import literal
 from structure.app.dsl.model.expr.InputScope import InputScope, join_one
 from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.transforms.BindingSelector import BindingSelector, SelectedDeclaration
 from structure.app.dsl.model.transforms.ExprFunction import ExprFunction
 from structure.app.dsl.model.transforms.InOutBinding import InOutBinding
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
@@ -16,22 +17,52 @@ from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.app.dsl.model.transforms.Transform import Transform
 
 
-def input(schema: type[Structure]) -> InputDeclaration:
-    if not isinstance(schema, type) or not issubclass(schema, Structure):
+@overload
+def input(value: type[Structure]) -> InputDeclaration: ...
+
+
+@overload
+def input(value: InputDeclaration) -> BindingSelector: ...
+
+
+def input(value: type[Structure] | InputDeclaration) -> InputDeclaration | BindingSelector:
+    if isinstance(value, InputDeclaration):
+        return BindingSelector("input", value)
+    if not isinstance(value, type) or not issubclass(value, Structure):
         raise TypeError("input(...) requires a Structure schema class")
-    return InputDeclaration(schema=schema)
+    return InputDeclaration(schema=value)
 
 
-def output(schema: type[Structure]) -> OutputDeclaration:
-    if not isinstance(schema, type) or not issubclass(schema, Structure):
+@overload
+def output(value: type[Structure]) -> OutputDeclaration: ...
+
+
+@overload
+def output(value: OutputDeclaration) -> BindingSelector: ...
+
+
+def output(value: type[Structure] | OutputDeclaration) -> OutputDeclaration | BindingSelector:
+    if isinstance(value, OutputDeclaration):
+        return BindingSelector("output", value)
+    if not isinstance(value, type) or not issubclass(value, Structure):
         raise TypeError("output(...) requires a Structure schema class")
-    return OutputDeclaration(schema=schema)
+    return OutputDeclaration(schema=value)
 
 
-def lane(schema: type[Structure]) -> LaneDeclaration:
-    if not isinstance(schema, type) or not issubclass(schema, Structure):
+@overload
+def lane(value: type[Structure]) -> LaneDeclaration: ...
+
+
+@overload
+def lane(value: SelectedDeclaration) -> BindingSelector: ...
+
+
+def lane(value: type[Structure] | SelectedDeclaration) -> LaneDeclaration | BindingSelector:
+    if isinstance(value, (InputDeclaration, LaneDeclaration, OutputDeclaration)):
+        return BindingSelector("lane", value)
+    if not isinstance(value, type) or not issubclass(value, Structure):
         raise TypeError("lane(...) requires a Structure schema class")
-    return LaneDeclaration(schema=schema)
+    return LaneDeclaration(schema=value)
 
 
 def transform(target=None, **kwargs):
@@ -79,12 +110,14 @@ def _decorate_transform_method(function, kwargs):
     inputs = _method_declarations(
         kwargs,
         name="input",
-        allowed=(InputDeclaration, LaneDeclaration),
+        bare=(InputDeclaration, LaneDeclaration),
+        roles={"input", "lane"},
     )
     outputs = _method_declarations(
         kwargs,
         name="output",
-        allowed=(LaneDeclaration, OutputDeclaration),
+        bare=(LaneDeclaration, OutputDeclaration),
+        roles={"lane", "output"},
     )
     if "inout" in kwargs:
         binding = kwargs["inout"]
@@ -93,16 +126,18 @@ def _decorate_transform_method(function, kwargs):
         inputs = _method_declaration_values(
             binding.inputs,
             option="@transform(inout=...) input side",
-            allowed=(InputDeclaration, LaneDeclaration),
+            bare=(InputDeclaration, LaneDeclaration),
+            roles={"input", "lane"},
         )
         outputs = _method_declaration_values(
             binding.outputs,
             option="@transform(inout=...) output side",
-            allowed=(LaneDeclaration, OutputDeclaration),
+            bare=(LaneDeclaration, OutputDeclaration),
+            roles={"lane", "output"},
         )
-    if len(set(map(id, inputs))) != len(inputs):
+    if len(set(map(_binding_key, inputs))) != len(inputs):
         raise TypeError("@transform(input=...) cannot repeat a declaration")
-    if len(set(map(id, outputs))) != len(outputs):
+    if len(set(map(_binding_key, outputs))) != len(outputs):
         raise TypeError("@transform(output=...) cannot repeat a declaration")
     setattr(
         function,
@@ -123,20 +158,20 @@ def _normalize_method_options(kwargs: dict[str, object]) -> dict[str, object]:
     return dict(kwargs)
 
 
-def _method_declarations(kwargs, *, name: str, allowed: tuple[type, ...]) -> tuple:
+def _method_declarations(kwargs, *, name: str, bare: tuple[type, ...], roles: set[str]) -> tuple:
     if name not in kwargs or kwargs[name] is None:
         return ()
-    return _method_declaration_values(kwargs[name], option=f"@transform({name}=...)", allowed=allowed)
+    return _method_declaration_values(kwargs[name], option=f"@transform({name}=...)", bare=bare, roles=roles)
 
 
-def _method_declaration_values(value: object, *, option: str, allowed: tuple[type, ...]) -> tuple:
-    if isinstance(value, allowed):
+def _method_declaration_values(value: object, *, option: str, bare: tuple[type, ...], roles: set[str]) -> tuple:
+    if _valid_binding(value, bare=bare, roles=roles):
         return (value,)
-    if isinstance(value, (InputDeclaration, LaneDeclaration, OutputDeclaration)):
-        raise TypeError(f"{option} requires {_declaration_kinds(allowed)} declarations")
+    if isinstance(value, (InputDeclaration, LaneDeclaration, OutputDeclaration, BindingSelector)):
+        raise TypeError(f"{option} requires {_declaration_kinds(bare, roles)} declarations")
     values = _declaration_sequence(value, option=option)
-    if not all(isinstance(item, allowed) for item in values):
-        raise TypeError(f"{option} requires {_declaration_kinds(allowed)} declarations")
+    if not all(_valid_binding(item, bare=bare, roles=roles) for item in values):
+        raise TypeError(f"{option} requires {_declaration_kinds(bare, roles)} declarations")
     return values
 
 
@@ -164,7 +199,27 @@ def _declaration_sequence(value: object, *, option: str) -> tuple:
     return values
 
 
-def _declaration_kinds(allowed: tuple[type, ...]) -> str:
+def _valid_binding(value: object, *, bare: tuple[type, ...], roles: set[str]) -> bool:
+    if isinstance(value, bare):
+        return True
+    if not isinstance(value, BindingSelector) or value.role not in roles:
+        return False
+    if value.role == "input":
+        return isinstance(value.declaration, InputDeclaration)
+    if value.role == "lane":
+        return isinstance(value.declaration, (InputDeclaration, LaneDeclaration, OutputDeclaration))
+    if value.role == "output":
+        return isinstance(value.declaration, OutputDeclaration)
+    return False
+
+
+def _binding_key(value: object) -> tuple[str, int]:
+    if isinstance(value, BindingSelector):
+        return value.role, id(value.declaration)
+    return "bare", id(value)
+
+
+def _declaration_kinds(allowed: tuple[type, ...], roles: set[str] | None = None) -> str:
     if allowed == (InputDeclaration,):
         return "input(...)"
     if allowed == (InputDeclaration, LaneDeclaration):

@@ -269,6 +269,11 @@ Rules:
   If a lane with the same name as an input declaration already exists, the lane shadows the original input.
 - Method-level `@transform(output=declared_lane_or_output)` writes a declared lane or final output. If the selected
   name already exists as a lane, the write updates that lane.
+- Method-level `input(...)`, `lane(...)`, and `output(...)` can also wrap declarations as role selectors:
+  `input(orders)` forces the original runtime input, `lane(orders)` selects or writes the current working lane named
+  `orders`, and `output(published)` selects the final output declaration.
+- Bare method-level declarations smart-resolve by the schema expected by the subtransform parameter or return. When an
+  original input and a latest same-named lane both match, the latest lane wins.
 - Method-level `input=[...]` and `output=[...]` bind multiple parameters or returned values in order.
 - Method-level `inout=source | target` is shorthand for one explicit source and target; one side may be a list.
 - Method-level `inputs=`, `outputs=`, `lane=`, and `lanes=` are retired. Hook decorators still use `lane=` and
@@ -332,6 +337,9 @@ Rules:
 - `input=[...]` binds input or lane declarations to parameters in order when inference is ambiguous.
 - `output=[...]` binds lane or output declarations to returned values in order when tuple results cannot be inferred.
 - `input=` and `output=` also accept a single declaration.
+- `input=`, `output=`, and `inout=` accept optional role selectors around declarations. Selectors are required when
+  source-order shadowing would otherwise hide an original input or when an input declaration name is intentionally used
+  as a working lane.
 - The compiler infers bindings only when every schema has one unambiguous available declaration.
 - Subtransforms execute in source order.
 - Source-order lane flow must be valid. Undecorated methods consume and update the uniquely inferred lane.

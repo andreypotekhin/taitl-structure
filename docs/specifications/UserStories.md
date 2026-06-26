@@ -104,6 +104,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 - + As a developer, I can declare intermediate `lane(...)` fields and consume them with `input=...` so that funnel
   stages are explicit without becoming public transform outputs.
 - + As a developer, I can use `inout=source | target` for compact subtransform source-to-target binding.
+- + As a developer, I can wrap subtransform bindings with `input(...)`, `lane(...)`, or `output(...)` role selectors so
+  that I can distinguish original inputs, current lanes, and final results after names are shadowed.
 - + As a developer, I can use method return annotations to define intermediate schema transitions.
 - + As a developer, I can rely on source order for subtransform execution so that pipeline flow is readable.
 - + As a developer, I can chain subtransforms by return type and next input type so that schema flow is validated.

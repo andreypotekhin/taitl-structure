@@ -133,6 +133,22 @@ are used. Joins and `where(...)` filters run once; each returned value is then p
 Use `input=` for original input or intermediate lane declarations, and `output=` for intermediate lane or final output
 declarations. Both options accept either one declaration or an ordered list. The plural method options are retired.
 
+Bare declarations resolve from the current source-order state. If a same-named lane already exists and its current
+schema matches the method parameter, it wins over the original input. Use role selectors when the distinction matters:
+
+```python
+@transform(input=input(orders), output=lane(orders))
+def restart_from_raw(self, order: OrderRaw) -> OrderNormalized:
+    ...
+
+@transform(inout=lane(orders) | output(published))
+def publish(self, order: OrderNormalized) -> OrderPublished:
+    ...
+```
+
+`input(orders)` means the original runtime input. `lane(orders)` means the current working lane named `orders`.
+`output(published)` means the final result declaration.
+
 ## Online Execution
 
 Constructing a transform binds inputs without starting Spark work. Running it through a session executes the configured
