@@ -1,4 +1,22 @@
-# Usage
+# Quick Reference
+
+## Schema Classes
+
+A schema class defines a named row contract by inheriting from `Structure` and declaring `field(...)` attributes.
+
+```python
+class OrderRaw(Structure):
+    id = field(String(), nullable=False)
+    customer_id = field(String(), nullable=False)
+    total = field(String(), nullable=True)
+
+
+class OrderWithCustomer(OrderRaw):
+    customer_name = field(String(), nullable=True)
+```
+
+Use schema classes for inputs, intermediate rows, and outputs. Inheritance keeps shared fields explicit without
+repeating declarations.
 
 ## Transform Classes
 
@@ -14,7 +32,7 @@ class NormalizeOrders(Transform):
         ...
 ```
 
-Structure runs transform classes online by default through `StructureSession`.
+Run transform:
 
 ```python
 session = StructureSession(spark=spark)
@@ -22,20 +40,11 @@ session = StructureSession(spark=spark)
 result = NormalizeOrders(
     orders=orders_df,
 ).run(session)
+
+normalized = result.normalized
 ```
 
-Structure can also generate one PySpark class per transform class for projects that choose generated execution.
-
-## Source and Generated Paths
-
-Default filesystem layout:
-
-```text
-src/orders/...
-generated/structure_generated/orders/...
-```
-
-These paths are configurable. Mark `src` and `generated` as source roots in the IDE.
+Structure can also generate PySpark code from transform classes for projects that prefer generated PySpark code.
 
 ## Inputs
 
@@ -159,28 +168,31 @@ from structure import StructureSession
 
 session = StructureSession(spark=spark, ctx=ctx)
 
-enriched = EnrichOrders(
+result = EnrichOrders(
     orders=orders_df,
     customers=customers_df,
     products=products_df,
 ).run(session)
+
+enriched = result.enriched
+enriched_schema = result.schema.enriched
 ```
 
 The session owns Spark, optional hook context, resolved Structure configuration, execution mode, and target backend
 selection.
 
-Keep the transform invocation when caller code needs the output Spark schema in online mode:
+Use `result.schema` when caller code needs an output Spark schema in online mode:
 
 ```python
-transform = EnrichOrders(
+result = EnrichOrders(
     orders=orders_df,
     customers=customers_df,
     products=products_df,
-)
+).run(session)
 
-enriched = transform.run(session)
-enriched = project_schema(enriched, transform.schemas.output)
-enriched.write.mode("overwrite").parquet(target_path)
+enriched_schema = result.schema.enriched
+same_schema = result.schema["enriched"]
+result.enriched.write.mode("overwrite").parquet(target_path)
 ```
 
 ## Optional Generated PySpark
@@ -352,13 +364,12 @@ customer_id=self.clean_id(order.customer_id)
 ## Joins
 
 Use symbolic joins.
-When the output schema inherits the current row schema, use `SchemaClass.base(row)(...)` to copy inherited fields and
-name only the joined fields.
 
 ```python
-def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
-    customer = self.customers.join_one(
-        on=self.customers.id == order.customer_id,
+def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
+    customer = join_one(
+        customer,
+        on=customer.id == order.customer_id,
         how=Join.LEFT,
         hint=JoinHint.BROADCAST,
     )
@@ -385,7 +396,24 @@ orders = orders.join(
 )
 ```
 
-Serial joins are N-step enrichment chains and are not limited to any fixed number of inputs.
+## Inheritance
+
+When the output schema inherits the current row schema, use `SchemaClass.base(row)(...)` to copy inherited fields and
+name only the joined fields.
+
+```python
+def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
+    customer = join_one(
+        customer,
+        on=customer.id == order.customer_id,
+        how=Join.LEFT,
+        hint=JoinHint.BROADCAST,
+    )
+
+    return OrderWithCustomer.base(order)(
+        customer_name=customer.name,
+    )
+```
 
 ## Hooks
 
@@ -429,6 +457,18 @@ def add_audit_columns(self, *, audited, spark, ctx):
 
 Single-result hooks still name the selected lane explicitly.
 
+## Source and Generated Paths
+
+Default filesystem layout:
+
+```text
+src/orders/...
+generated/structure_generated/orders/...
+```
+
+Generated paths are only used shwn Structure used for generating PySpark code (not by default).
+These paths are configurable. Mark `src` and `generated` as source roots in the IDE.
+
 ## Streaming Compatibility
 
 Structure transforms operate on DataFrames. If the input DataFrame is streaming and all compiled operations are
@@ -449,7 +489,48 @@ target_pyspark = ">=3.5,<4.1"
 Spark Connect support is planned for v4 unless it can be added earlier without changing the public DSL, generated class
 API, or streaming orchestration contract. See `docs/Compatibility.md`.
 
-## v2 Manual Optimization Features
+## Schema Generation Tool
+
+Generate starter Structure schema classes from live Spark schema metadata:
+
+```python
+from structure import StructureSession, StructureTools
+
+code = StructureTools.schemas.generate(schema=orders_df.schema, to="OrderRaw")
+code = StructureTools.schemas.generate(schema=orders_df, to="OrderRaw")
+
+session = StructureSession(spark=spark)
+code = StructureTools.schemas.generate(
+    from_path="data/orders.parquet",
+    format="parquet",
+    session=session,
+    to="OrderRaw",
+)
+```
+
+`schema=` accepts a PySpark `StructType` or any object exposing `.schema`. Path and table generation accept either
+`spark=...` or `session=StructureSession(...)`:
+
+```python
+StructureTools.schemas.generate(from_table="catalog.db.orders", spark=spark, to="OrderRaw")
+StructureTools.schemas.generate(from_table="catalog.db.orders", session=session, to="OrderRaw")
+```
+
+The CLI prints generated source to stdout:
+
+```bash
+structure tools schemas generate --from-path data/orders.parquet --format parquet --to OrderRaw
+structure tools schemas generate --from-table catalog.db.orders --to OrderRaw
+```
+
+The CLI command runs in its own Python process, so it requires a shell where PySpark is installed and Spark can start.
+For Delta paths, the shell must include the user's usual Delta-capable Spark configuration. In managed Spark notebooks
+or jobs, use the Python API with the existing `SparkSession` or `StructureSession`.
+
+Schema generation preserves Spark shape: field names, field order, Spark types, nullability, arrays, maps, decimals,
+and nested structs. It does not infer primary keys, descriptions, inheritance, or data-quality constraints.
+
+## Planned Features
 
 Planned v2 features include:
 

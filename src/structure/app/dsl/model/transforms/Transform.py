@@ -42,7 +42,6 @@ class Transform:
                 f"{type(self).__name__} got unknown input(s): {', '.join(sorted(unknown))}. Allowed: {allowed}"
             )
         self._structure_bound_inputs = dict(inputs)
-        self.schemas: object | None = None
 
     def run(self, session):
         return session.run(self)

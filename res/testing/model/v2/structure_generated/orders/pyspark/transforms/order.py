@@ -258,7 +258,7 @@ class EnrichOrdersGenerated:
         assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="allow_extra_columns")
         published = project_schema(published, ORDER_PUBLISHED_SCHEMA)
         assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")
-        return TransformResult({"published": published}, single=True)
+        return TransformResult({"published": published}, single=True, schema={"published": ORDER_PUBLISHED_SCHEMA})
 
 
 def enrich_orders(

@@ -192,4 +192,4 @@ class EnrichOrdersGenerated:
         # Subtransform: published
         published = published.alias("order_published")
         assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")
-        return TransformResult({"published": published}, single=True)
+        return TransformResult({"published": published}, single=True, schema={"published": ORDER_PUBLISHED_SCHEMA})

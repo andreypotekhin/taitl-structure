@@ -368,7 +368,9 @@ def test_v1_final_output_materializes_named_result_from_implicit_lane() -> None:
 
     assert "        # Subtransform: published\n        published = rows.alias(\"published\")" in text
     assert '        assert_schema(published, PUBLISHED_SCHEMA, name="Published", mode="strict")' in text
-    assert 'return TransformResult({"published": published}, single=True)' in text
+    assert (
+        'return TransformResult({"published": published}, single=True, schema={"published": PUBLISHED_SCHEMA})' in text
+    )
 
 
 def test_v1_inout_pipe_binds_source_and_output() -> None:
@@ -630,7 +632,10 @@ def test_v1_generated_pyspark_uses_per_lane_step_sources() -> None:
     assert "        # Subtransform: accept\n        accepted_lane = rows.alias(\"normalized\")" in text
     assert "        # Subtransform: keep_accepted\n        accepted = accepted_lane.alias(\"accepted\")" in text
     assert "        # Subtransform: reject\n        rejected = rows.alias(\"normalized\")" in text
-    assert 'return TransformResult({"accepted": accepted, "rejected": rejected}, single=False)' in text
+    assert (
+        'return TransformResult({"accepted": accepted, "rejected": rejected}, single=False, '
+        'schema={"accepted": ACCEPTED_SCHEMA, "rejected": REJECTED_SCHEMA})' in text
+    )
 
 
 def test_v1_online_executor_result_wraps_single_output() -> None:
@@ -649,6 +654,8 @@ def test_v1_online_executor_result_wraps_single_output() -> None:
     assert isinstance(result, TransformResult)
     assert result.published == "df"
     assert result["published"] == "df"
+    assert result.schema.published == [("id", "string", False)]
+    assert result.schema["published"] == [("id", "string", False)]
 
 
 def test_v1_online_executor_preserves_single_field_output() -> None:

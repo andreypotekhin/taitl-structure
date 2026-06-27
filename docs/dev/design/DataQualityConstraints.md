@@ -97,14 +97,14 @@ df = project_schema(df, ORDER_ENRICHED_SCHEMA)
 df.write.mode("overwrite").parquet(target_path)
 ```
 
-Online execution should expose the same shape through the transform invocation:
+Online execution should expose the same shape through the transform result:
 
 ```python
 transform = EnrichOrders(orders=orders_df, customers=customers_df, products=products_df)
-df = transform.run(session)
+result = transform.run(session)
 
-df = project_schema(df, transform.schemas.output)
-df.write.mode("overwrite").parquet(target_path)
+schema = result.schema.enriched
+result.enriched.write.mode("overwrite").parquet(target_path)
 ```
 
 Structure should not add a v1 write orchestration helper. Storage writes belong to the caller because partitioning,

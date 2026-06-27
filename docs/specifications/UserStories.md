@@ -343,6 +343,15 @@ over streaming orchestration, storage writes, Spark Connect, automatic cost-base
 - As a developer, I can use production incremental compilation so that large projects get fast local feedback.
 - As a developer, I can see cache invalidation diagnostics so that incremental compile never hides stale generated code.
 
+## 22E. StructureTools
+
+- + As a developer, I can generate Structure schema class source from a PySpark `StructType` or DataFrame schema so
+  that existing Spark shapes can seed Structure schemas.
+- + As a developer, I can generate Structure schema class source from a parquet path, Delta path, or Spark table using
+  a Spark session or existing `StructureSession` so that live data sources can seed Structure schemas.
+- + As a developer, I can use `structure tools schemas generate` in a Spark-available CLI runtime so that terminal
+  workflows can produce the same schema source.
+
 ## 23. v3 Roadmap
 
 - As a developer, I can define streaming sources so that Structure can generate `readStream` code.

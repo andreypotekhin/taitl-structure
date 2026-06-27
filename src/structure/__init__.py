@@ -32,7 +32,14 @@ from structure.app.dsl.api import (
     trim,
     where,
 )
-from structure.app.runtime.api import StructureRuntimeError, StructureSession, TransformResult, TransformSchemas
+from structure.app.runtime.api import (
+    ResultSchemas,
+    StructureRuntimeError,
+    StructureSession,
+    TransformResult,
+    TransformSchemas,
+)
+from structure.app.tools.api import StructureTools
 
 __all__ = [
     "Array",
@@ -46,6 +53,7 @@ __all__ = [
     "JoinHint",
     "Long",
     "Map",
+    "ResultSchemas",
     "SchemaMode",
     "String",
     "Structure",
@@ -53,6 +61,7 @@ __all__ = [
     "StructureRuntimeError",
     "StructureSession",
     "Struct",
+    "StructureTools",
     "Timestamp",
     "Transform",
     "TransformResult",

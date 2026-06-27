@@ -29,7 +29,7 @@ def enrich_orders(*, orders, customers, spark, ctx=None):
     return EnrichOrdersGenerated(spark=spark, ctx=ctx).run(
         orders=orders,
         customers=customers,
-    )
+    ).enriched
 ```
 
 ## Hook-Free Generated Code
@@ -52,7 +52,7 @@ class NormalizeOrdersGenerated:
         )
 
         assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
-        return TransformResult({"normalized": orders}, single=True)
+        return TransformResult({"normalized": orders}, single=True, schema={"normalized": ORDER_NORMALIZED_SCHEMA})
 ```
 
 ## Generated Code Rules
@@ -81,16 +81,16 @@ from structure_generated.runtime.schema_assert import assert_schema, project_sch
 
 result = EnrichOrdersGenerated(spark=spark).run(orders=orders, customers=customers)
 df = result.enriched
-assert_schema(df, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="strict")
-df = project_schema(df, ORDER_ENRICHED_SCHEMA)
+assert_schema(df, result.schema.enriched, name="OrderEnriched", mode="strict")
+df = project_schema(df, result.schema["enriched"])
 df.write.mode("overwrite").parquet(target_path)
 ```
 
 Generated `*_SCHEMA` constants are shape-only. Future data-quality constraint metadata must be generated separately
 unless a later design intentionally adds Spark-compatible metadata without changing schema shape semantics.
 
-Online execution exposes equivalent materialized schemas through the transform invocation after `run(session)`. Use
-that online surface when generated files are not committed or imported.
+Online execution exposes equivalent materialized schemas through `result.schema` after `run(session)`. Use that online
+surface when generated files are not committed or imported.
 
 ## Ownership Rules
 

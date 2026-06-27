@@ -200,7 +200,10 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
     assert "        accepted = add_product_base.select(" in text
     assert "        audited = add_product_base.select(" in text
     assert "        audited = self._impl.audit(audited=audited, spark=self.spark, ctx=self.ctx)" in text
-    assert 'return TransformResult({"accepted": accepted, "audited": audited}, single=False)' in text
+    assert (
+        'return TransformResult({"accepted": accepted, "audited": audited}, single=False, '
+        'schema={"accepted": ORDER_WITH_PRODUCT_SCHEMA, "audited": ORDER_WITH_PRODUCT_SCHEMA})' in text
+    )
 
     traceability = Compiler.traceability.build()(
         PySpark.plan.lower()(compile_transform(AddProduct)),

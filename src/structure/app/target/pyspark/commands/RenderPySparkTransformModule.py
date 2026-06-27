@@ -79,12 +79,19 @@ class RenderPySparkTransformModule:
                 sources[result.frame] = result.frame
 
         result_entries: list[str] = []
+        schema_entries: list[str] = []
         for output in plan.outputs:
             lines.append("")
             lines.append(render_pyspark_step(output, current=sources[output.source], sources=sources))
             result_entries.append(f'"{output.name}": {output.name}')
+            schema_entries.append(f'"{output.name}": {render_pyspark_schema.constant_name(output.output_schema)}')
         single = "True" if len(plan.outputs) == 1 else "False"
-        lines.append(f"        return TransformResult({{{', '.join(result_entries)}}}, single={single})")
+        lines.append(
+            f"        return TransformResult("
+            f"{{{', '.join(result_entries)}}}, "
+            f"single={single}, "
+            f"schema={{{', '.join(schema_entries)}}})"
+        )
         return "\n".join(lines)
 
     def _last_step_validates_final(self, plan: PySparkExecutionPlan) -> bool:

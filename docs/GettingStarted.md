@@ -148,10 +148,12 @@ from orders.transforms.order import EnrichOrders
 
 session = StructureSession(spark=spark)
 
-enriched = EnrichOrders(
+result = EnrichOrders(
     orders=orders_df,
     customers=customers_df,
 ).run(session)
+
+enriched = result.enriched
 ```
 
 Construction binds DataFrame inputs. Calling `.run(session)` executes the transform through the session's configured
@@ -233,10 +235,12 @@ The Structure source is shorter and schema-oriented. The generated PySpark is lo
 ```python
 from structure_generated.orders.pyspark.transforms.order import EnrichOrdersGenerated
 
-enriched = EnrichOrdersGenerated(spark=spark).run(
+result = EnrichOrdersGenerated(spark=spark).run(
     orders=orders_df,
     customers=customers_df,
 )
+
+enriched = result.enriched
 ```
 
 ## 9. Use from Airflow
@@ -251,12 +255,12 @@ def enrich_orders_task():
     customers = spark.read.parquet("/data/customers")
     session = StructureSession(spark=spark)
 
-    enriched = EnrichOrders(
+    result = EnrichOrders(
         orders=orders,
         customers=customers,
     ).run(session)
 
-    enriched.write.mode("overwrite").parquet("/data/orders_enriched")
+    result.enriched.write.mode("overwrite").parquet("/data/orders_enriched")
 ```
 
 ## 10. Optional Configuration

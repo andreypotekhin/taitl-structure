@@ -141,6 +141,7 @@ result = EnrichOrders(
     customers=customers_df,
     products=products_df,
 ).run(session)
+
 enriched = result.enriched
 ```
 

@@ -56,7 +56,7 @@ NormalizeOrders(orders=orders_df).run(session)
 ## M2: Schema Enforcement
 
 Status: v1 closeout. Spark schema source rendering, generated schema modules, generated runtime schema helpers,
-runtime schema materialization, validation recipe placement, and online-materialized `transform.schemas.output`
+runtime schema materialization, validation recipe placement, and online-materialized `result.schema[output_name]`
 exposure are implemented and tested. Live runtime schema assertion behavior is covered through the online/generated
 parity integration contract. Remaining closeout is broader negative schema-validation coverage against Spark
 DataFrames.

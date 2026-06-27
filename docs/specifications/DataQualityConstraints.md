@@ -116,16 +116,16 @@ work.
 Generated schema constants are supported caller-facing artifacts. A generated constant such as
 `ORDER_ENRICHED_SCHEMA` is an ordinary PySpark `StructType` and may be imported by caller code.
 
-Online execution must expose the same Spark `StructType` schemas without requiring generated files to exist. A transform
-invocation should make the materialized schemas available after `run(session)`:
+Online execution must expose the same Spark `StructType` schemas without requiring generated files to exist. The
+transform result makes the materialized schemas available by declared output name:
 
 ```python
 transform = EnrichOrders(orders=orders_df, customers=customers_df, products=products_df)
-df = transform.run(session)
+result = transform.run(session)
 
-assert_schema(df, transform.schemas.output, name="OrderEnriched", mode="strict")
-df = project_schema(df, transform.schemas.output)
-df.write.mode("overwrite").parquet(target_path)
+output_schema = result.schema.enriched
+same_schema = result.schema["enriched"]
+result.enriched.write.mode("overwrite").parquet(target_path)
 ```
 
 The online schema objects are produced from the same checked schema model as generated `*_SCHEMA` constants. They are

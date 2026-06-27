@@ -109,11 +109,16 @@ result = EnrichOrders(
     customers=customers_df,
     products=products_df,
 ).run(session)
+
 enriched = result.enriched
+enriched_schema = result.schema.enriched
 ```
 
 The transform instance is a deferred invocation. Construction binds DataFrame inputs; `.run(session)` asks the session
 to choose the configured runtime runner and execute the transform.
+
+Transform results are read-only mappings keyed by declared output name. The same names expose materialized output
+schemas through `result.schema`, for example `result.schema.enriched` or `result.schema["enriched"]`.
 
 ### Optional generated PySpark code
 
@@ -293,7 +298,41 @@ structure check
 structure compile
 structure compile --fail-on-diff
 structure explain orders.transforms.order.EnrichOrders
+structure tools schemas generate --from-path data/orders.parquet --format parquet --to OrderRaw
 ```
+
+## Schema Generation Tools
+
+`StructureTools` can generate starter Structure schema classes from existing Spark shapes:
+
+```python
+from structure import StructureSession, StructureTools
+
+code = StructureTools.schemas.generate(schema=orders_df.schema, to="OrderRaw")
+code = StructureTools.schemas.generate(schema=orders_df, to="OrderRaw")
+
+session = StructureSession(spark=spark)
+code = StructureTools.schemas.generate(
+    from_path="data/orders.parquet",
+    format="parquet",
+    session=session,
+    to="OrderRaw",
+)
+```
+
+The CLI variant prints generated source to stdout:
+
+```bash
+structure tools schemas generate --from-path data/orders.parquet --format parquet --to OrderRaw
+structure tools schemas generate --from-table catalog.db.orders --to OrderRaw
+```
+
+CLI schema generation requires a runtime where PySpark is installed and Spark can start. Delta paths also require the
+user's normal Delta-capable Spark configuration. In notebooks or managed Spark jobs, prefer the Python API with an
+existing `StructureSession`.
+
+Generated classes preserve Spark schema shape: field names, field order, types, nullability, arrays, maps, decimals,
+and nested structs. They do not infer primary keys, descriptions, inheritance, or data-quality constraints.
 
 ## License
 

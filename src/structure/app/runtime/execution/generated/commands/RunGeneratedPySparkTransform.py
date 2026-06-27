@@ -34,6 +34,8 @@ class RunGeneratedPySparkTransform:
         result = runner.run(**invocation._structure_bound_inputs)
         if isinstance(result, TransformResult):
             return result
+        if hasattr(result, "as_dict"):
+            return TransformResult(result.as_dict(), single=len(plan.outputs) == 1)
         return self._result(plan, result)
 
     def _result(self, plan: PySparkExecutionPlan, df) -> TransformResult:

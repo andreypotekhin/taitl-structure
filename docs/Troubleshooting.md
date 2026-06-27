@@ -25,6 +25,16 @@ Cause: The transform uses a DSL feature whose generated PySpark requires an API 
 Fix: Either raise `target_pyspark` in project configuration or rewrite the transform using APIs supported by the
 configured runtime. See `docs/Compatibility.md`.
 
+### Problem (tools): schema generation CLI cannot start Spark
+
+When: Running `structure tools schemas generate --from-path ...` or `structure tools schemas generate --from-table ...`.
+Error: "Schema generation from paths or tables requires a Spark-available CLI runtime" or "Spark could not start for
+schema generation."
+Cause: The CLI runs in its own Python process. That process must have PySpark installed and enough Spark configuration
+to read the requested path or table. Delta paths also need the user's normal Delta-capable Spark setup.
+Fix: Run the command from a Spark-capable shell, or use the Python API inside an existing Spark notebook/job:
+`StructureTools.schemas.generate(..., session=StructureSession(spark=spark), to="OrderRaw")`.
+
 ### Problem (context): `message` during [when]
 
 When: [describe when problem manifests]

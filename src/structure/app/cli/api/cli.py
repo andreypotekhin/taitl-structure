@@ -6,6 +6,8 @@ from pathlib import Path
 import click
 
 from structure.app.cli.api.CliApp import CliApp
+from structure.app.tools.api import StructureTools
+from structure.app.tools.model import StructureToolError
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry, render_diagnostic
 
 
@@ -106,9 +108,83 @@ def clean(**kwargs) -> None:
     _echo(CliApp.clean_generated_files()(config))
 
 
+@cli.group()
+def tools() -> None:
+    """End-user aid tools."""
+
+
+@tools.group()
+def schemas() -> None:
+    """Schema aid tools."""
+
+
+@schemas.command()
+@click.option("--from-path", "from_path")
+@click.option("--from-table", "from_table")
+@click.option("--format", "format")
+@click.option("--option", "options", multiple=True)
+@click.option("--to", "to", required=True)
+def generate(
+    from_path: str | None, from_table: str | None, format: str | None, options: tuple[str, ...], to: str
+) -> None:
+    """Generate Structure schema classes."""
+    try:
+        sources = sum(source is not None for source in (from_path, from_table))
+        reader_options = _reader_options(options)
+        needs_spark = (
+            sources == 1
+            and (from_table is not None or format in {"parquet", "delta"})
+            and (not reader_options or from_path is not None)
+        )
+        text = StructureTools.schemas.generate(
+            from_path=from_path,
+            from_table=from_table,
+            format=format,
+            spark=_spark_session() if needs_spark else None,
+            options=reader_options,
+            to=to,
+        )
+    except StructureToolError as error:
+        raise click.ClickException(str(error))
+    click.echo(text, nl=False)
+
+
 def _echo(lines: tuple[str, ...]) -> None:
     for line in lines:
         click.echo(line)
+
+
+def _reader_options(options: tuple[str, ...]) -> dict[str, str]:
+    parsed: dict[str, str] = {}
+    for option in options:
+        if "=" not in option:
+            raise click.ClickException(f"Invalid --option {option!r}. Use KEY=VALUE.")
+        key, value = option.split("=", 1)
+        if not key:
+            raise click.ClickException(f"Invalid --option {option!r}. Use KEY=VALUE.")
+        parsed[key] = value
+    return parsed
+
+
+def _spark_session():
+    try:
+        from pyspark.sql import SparkSession  # type: ignore[import-not-found]
+    except Exception as error:
+        raise click.ClickException(
+            "Schema generation from paths or tables requires a Spark-available CLI runtime. "
+            "Install/configure PySpark for this shell, or use StructureTools.schemas.generate(...) "
+            "inside an existing Spark application with session=StructureSession(spark=spark). "
+            "See docs/Troubleshooting.md."
+        ) from error
+
+    try:
+        return SparkSession.builder.getOrCreate()
+    except Exception as error:
+        raise click.ClickException(
+            "Spark could not start for schema generation. Run this command in a Spark-capable shell, "
+            "or use the Python API inside an existing Spark application with session=StructureSession(spark=spark). "
+            "See docs/Troubleshooting.md."
+        ) from error
 
 
 def _profile(started: float) -> None:

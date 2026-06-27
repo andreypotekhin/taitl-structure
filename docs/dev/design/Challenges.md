@@ -2,7 +2,7 @@
 
 This document captures the pre-implementation challenges identified for the **Structure** project. They are labeled **C1–C20** for reference in planning, backlog, risk tracking, and sprint discussions.
 
-Current inventory runs through C31. A challenge marked resolved here means the design/specification decision is
+Current inventory runs through C32. A challenge marked resolved here means the design/specification decision is
 settled; implementation work may still remain in the owning plan or sprint.
 
 ## +C1. Package and Import Layout Is Not Fully Resolved
@@ -616,7 +616,7 @@ uniqueness, referential checks, and row-count expectations belong to a future op
 
 Generated PySpark schema constants are supported caller-facing `StructType` artifacts. Callers may import them for
 `spark.read.schema(...)`, runtime validation, and projection before their own writes. Online execution exposes
-equivalent materialized schemas after `.run(session)`, for example through `transform.schemas.output`. Generated
+equivalent materialized schemas after `.run(session)`, for example through `result.schema.enriched`. Generated
 `*_SCHEMA` constants remain shape-only; future constraint metadata must live beside them rather than silently changing
 their meaning.
 
@@ -714,6 +714,12 @@ Recommended direction:
 - Decide whether the distribution name is `structure`, `taitl-structure`, or another collision-safe name.
 - Add governance basics before public release: contribution guide, security policy, code of conduct if desired,
   release process, support window, and vulnerability reporting path.
+
+## C32 Imported schema fields can conflict with Python keywords
+
+Field names in Structure schema classes are Python attribute names. If a Spark schema field name is not a valid Python
+identifier or is a Python keyword, Structure v1 cannot preserve it because it does not have field aliases. Renaming the
+field during schema generation would create an incorrect schema.
 
 # Appendix
 

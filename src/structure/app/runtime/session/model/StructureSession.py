@@ -36,12 +36,14 @@ class StructureSession:
     def run(self, invocation: Transform) -> TransformResult:
         plan = PySpark.plan.lower()(Compiler.frontend.compile()(type(invocation)))
         self._validate_inputs(invocation)
-        invocation.schemas = Schemas.build()(plan, types=self.schema_types)
+        schemas = Schemas.build()(plan, types=self.schema_types)
 
         if self.execution_mode == "online":
-            return Execution.online.pyspark()(invocation, plan, session=self)
+            result = Execution.online.pyspark()(invocation, plan, session=self)
+            return result._structure_with_schema(schemas.outputs)
         if self.execution_mode == "generated":
-            return Execution.generated.pyspark()(invocation, plan, session=self)
+            result = Execution.generated.pyspark()(invocation, plan, session=self)
+            return result._structure_with_schema(schemas.outputs)
         raise self._invalid_mode(invocation)
 
     def _validate_inputs(self, invocation: Transform) -> None:

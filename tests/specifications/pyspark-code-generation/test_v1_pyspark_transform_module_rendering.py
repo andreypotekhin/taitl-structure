@@ -65,7 +65,10 @@ def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
     )
     assert "        published = project_schema(published, ORDER_PUBLISHED_SCHEMA)" in text
     assert text.count('assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")') == 2
-    assert text.rstrip().endswith('        return TransformResult({"published": published}, single=True)')
+    assert text.rstrip().endswith(
+        '        return TransformResult({"published": published}, single=True, '
+        'schema={"published": ORDER_PUBLISHED_SCHEMA})'
+    )
 
 
 def _schema_modules() -> dict[type, str]:

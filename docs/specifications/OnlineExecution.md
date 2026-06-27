@@ -25,7 +25,7 @@ result = EnrichOrders(
     products=products_df,
 ).run(session)
 
-enriched_df = result.published
+enriched_df = result.enriched
 ```
 
 The transform instance is a deferred invocation. Its constructor stores named input DataFrames and performs no Spark
@@ -42,21 +42,23 @@ The session can also be used directly:
 result = session.run(EnrichOrders(orders=orders_df, customers=customers_df))
 ```
 
-When caller code needs the Spark schema after online execution, keep the transform invocation:
+When caller code needs the Spark schema after online execution, read it from the transform result:
 
 ```python
 transform = EnrichOrders(orders=orders_df, customers=customers_df)
 result = transform.run(session)
 
-output_schema = transform.schemas.output
+output_schema = result.schema.enriched
+same_schema = result.schema["enriched"]
 ```
 
-`transform.schemas.output` is a materialized PySpark `StructType` equivalent to the generated `*_SCHEMA` constant for
-the final output schema. The schema is available in online mode without requiring generated files to exist.
+`result.schema.enriched` is a materialized PySpark `StructType` equivalent to the generated `*_SCHEMA` constant for
+the `enriched` output. The schema is available in online mode without requiring generated files to exist.
 
 `run(session)` returns a read-only `TransformResult` for both single-output and multi-output transforms. Results expose
-declared output names such as `result.published`, `result.accepted`, and `result["rejected"]`. There is no automatic
-`df` alias; `df` is present only when a field-declared output is explicitly named `df`.
+declared output names such as `result.published`, `result.accepted`, and `result["rejected"]`. Output schemas expose
+the same names through `result.schema`, such as `result.schema.published` and `result.schema["rejected"]`. There is no
+automatic `df` alias; `df` is present only when a field-declared output is explicitly named `df`.
 
 Online execution evaluates transform methods in source order while preserving independent lane frames. When schemas are
 unambiguous, methods consume and update inferred lanes without method-level selectors. Method-level `input=` selects

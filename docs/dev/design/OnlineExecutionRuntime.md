@@ -21,6 +21,8 @@ result = EnrichOrders(
     customers=customers_df,
     products=products_df,
 ).run(session)
+
+enriched = result.enriched
 ```
 
 `EnrichOrders(...)` creates a deferred transform invocation. `.run(session)` delegates to `session.run(transform)`.

@@ -8,7 +8,10 @@ def test_generated_transform_is_reviewable_python_with_stable_entrypoint(orders_
     assert "class EnrichOrdersGenerated:" in orders_transform_text
     assert "        orders: DataFrame," in orders_transform_text
     assert "        promotions: DataFrame," in orders_transform_text
-    assert '        return TransformResult({"published": published}, single=True)' in orders_transform_text
+    assert (
+        '        return TransformResult({"published": published}, single=True, '
+        'schema={"published": ORDER_PUBLISHED_SCHEMA})' in orders_transform_text
+    )
 
 
 def test_generated_transform_uses_dataframe_and_column_operations(orders_transform_text) -> None:

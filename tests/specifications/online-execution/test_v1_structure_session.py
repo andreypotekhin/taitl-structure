@@ -97,9 +97,9 @@ def test_v1_online_session_defers_to_runner_and_exposes_schemas_without_pyspark(
     assert captured["ctx"] == "ctx"
     assert captured["inputs"]["orders"] == "orders-df"
     assert captured["plan"].transform == "EnrichOrders"
-    assert list(invocation.schemas.inputs) == ["orders", "customers", "products", "promotions"]
-    assert list(invocation.schemas.steps) == ["normalize", "add_customer", "add_product", "add_promotion", "publish"]
-    assert invocation.schemas.output.name == "StructType"
+    assert list(result.schema) == ["published"]
+    assert result.schema.published.name == "StructType"
+    assert result.schema["published"].name == "StructType"
 
 
 def test_v1_online_session_reports_missing_declared_inputs() -> None:
@@ -148,7 +148,7 @@ def test_v1_generated_session_delegates_to_generated_class() -> None:
             "products": "products-df",
             "promotions": "promotions-df",
         }
-        assert invocation.schemas.output.name == "StructType"
+        assert result.schema.published.name == "StructType"
     finally:
         for name in installed:
             sys.modules.pop(name, None)

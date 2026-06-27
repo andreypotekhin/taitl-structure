@@ -1,0 +1,2 @@
+class StructureToolError(Exception):
+    pass
