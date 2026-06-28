@@ -104,7 +104,7 @@ class EnrichOrders(Transform):
         where(order.customer_id.is_not_null())
         where(order.product_id.is_not_null())
 
-        return OrderNormalized(
+        return OrderNormalized.project(order)(
             id=order.id,
             customer_id=self.clean_id(order.customer_id),
             product_id=self.clean_id(order.product_id),

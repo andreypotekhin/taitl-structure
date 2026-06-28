@@ -2,6 +2,21 @@
 
 **Structure** is a Python-to-PySpark runtime compiler which allows writing Spark data pipelines in Pythonic way, creating optimizer-friendly PySpark code behind the scenes. It can also be used as PySpark code generator: output Python-style schemas and transformations as PySpark code. 
 
+## Why Structure?
+
+Hand-written PySpark is powerful, but large pipelines often become difficult to maintain:
+
+- Column names are frequently referred as strings.
+- Intermediate schemas are often implicit.
+- Schema drift is hard to catch before runtime.
+- Business logic can become hidden inside Python UDFs or row-wise callbacks.
+- Airflow DAGs can become tightly coupled to transformation details.
+- Generated or repeated transformation code is hard to review consistently.
+
+Structure attempts to address these problems by making schemas and transformations explicit Python classes while generating PySpark code that remains visible to Spark's optimizer.
+
+
+
 ## Less Code, More Spark!
 
 Structure can help replace hand-maintained PySpark boilerplate. Structure pipelines express filtering, joins, projections and normalization in plain Python. 
@@ -49,9 +64,6 @@ class Product(Structure):
 ### Example Transform
 
 ```python
-from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
-from orders.schemas.customer import Customer
-
 @transform
 class EnrichOrders(Transform):
 
@@ -122,7 +134,7 @@ class EnrichOrders(Transform):
 
 ### Running a Transform
 
-To execute a transform, specify input DataFrames and call .run(session):
+We can execute a transform using .run(session):
 
 ```python
 from structure import StructureSession
@@ -248,6 +260,59 @@ For custom logic, create expression helpers with `@expr_fn`. This keeps expressi
 
 Arbitrary PySpark is still supported, but only through explicit hooks. Hooks receive the underlying DataFrame(s) for arbitrary manipulation. Hooks are escape hatches: Structure calls them, records them as opaque boundaries, but does not treat their body as compiler-visible logic.
 
+## Default Project Layout
+
+For online execution (default):
+
+```text
+src/
+  my_package/
+    schemas/
+    transforms/
+```
+
+For generated code executions:
+
+```text
+src/
+  my_package/
+    schemas/
+    transforms/
+generated/
+  structure_generated/
+    my_package/
+      pyspark/
+        schemas/
+        transforms/
+    runtime/
+    traceability/  # compiler metadata, not runtime telemetry
+```
+
+For example,
+`src/my_package/` generates `generated/structure_generated/my_package/pyspark/`.
+
+Mark both `src` and `generated` as source roots in the IDE. The paths and package names are configurable.
+
+## Configuration
+
+Structure works by convention, so you often don't need to use a config. To configure (e.g. for repeatable builds), one can use `pyproject.toml`:
+
+```toml
+[tool.structure]
+source_roots = ["src"]
+generated_dir = "generated"
+generated_package = "structure_generated"
+execution_mode = "online"
+target_backend = "pyspark"
+target_pyspark = ">=3.5,<4.1"
+traceability = "compiler"
+validate_intermediate = true
+intermediate_validation_mode = "schema_only"
+strict_performance = true
+```
+
+See `pyproject.seed.toml` for defaults.
+
 ## Compatibility
 
 Structure targets Python 3.11+, PySpark 3.5.x and 4.0.x, Linux runtimes, and Linux/macOS/Windows development
@@ -259,23 +324,73 @@ Spark Connect support is scheduled for v4 unless it can be added earlier without
 
 See [Compatibility.md](docs/Compatibility.md) for the full versioning and compatibility policy.
 
-## Getting Started
+## CLI
 
-Project overview: [Overview.md](docs/Overview.md) 
+Command line tool to aid development:
+
+```bash
+structure check
+structure compile
+structure compile --fail-on-diff
+structure explain orders.transforms.order.EnrichOrders
+# Generate schema class from data:
+structure tools schemas generate --from-path data/orders.parquet --format parquet --to OrderRaw
+```
+
+## Tools
+
+`StructureTools` can generate starter Structure schema classes from existing Spark shapes.
+
+```python
+from structure import StructureSession, StructureTools
+
+code = StructureTools.schemas.generate(schema=orders_df.schema, to="OrderRaw")
+code = StructureTools.schemas.generate(schema=orders_df, to="OrderRaw")
+
+session = StructureSession(spark=spark)
+code = StructureTools.schemas.generate(
+    from_path="data/orders.parquet",
+    format="parquet",
+    session=session,
+    to="OrderRaw",
+)
+```
+
+The CLI variant prints generated source to stdout:
+
+```bash
+structure tools schemas generate --from-path data/orders.parquet \
+  --format parquet --to OrderRaw
+structure tools schemas generate --from-table catalog.db.orders --to OrderRaw
+```
+
+CLI schema generation requires a runtime where PySpark is installed and Spark can start. Delta paths also require the user's normal Delta-capable Spark configuration. In notebooks or managed Spark jobs, prefer the Python API with an existing `StructureSession`.
+
+Generated classes preserve Spark schema shape: field names, field order, types, nullability, arrays, maps, decimals, and nested structs. They do not infer primary keys, descriptions, inheritance, or data-quality constraints. Spark fields that are not Python identifiers are generated with safe Python names and `alias=...`, for example:
+
+```python
+promotion_code = field(String(), nullable=True, alias="promo-code")
+```
+
+Python code uses `promotion_code`; Spark schemas, validation, and projections use `promo-code`. 
+
+Aliases are schema-local, and Structure passes alias strings through to Spark without sanitizing them.
+
+
+
+## Next Steps
 
 Basic concepts: [Basics.md](Basics.md)
 
 Get started: [GettingStarted.md](GettingStarted.md)
 
-## License
 
-LGPL-2.1 + Ethical Use Policy
-
-See [Licence.md]()
 
 ## Roadmap
 
-- **v1:** online PySpark execution by default, optional generated PySpark classes, projection, filtering, joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow traceability, streaming-compatible transforms, diagnostic links, and setup checks.
+The roadmap follows an IR-first north star: the initial release proves that Structure can replace hand-maintained PySpark boilerplate with strict online execution and optional generated-code workflow; v2 makes that workflow useful for mainstream analytical pipelines; v3 takes ownership of streaming lifecycle concerns; v4 adds Spark Connect after the ordinary PySpark contract is stable.
+
+- **Initial release:** online PySpark execution by default, optional generated PySpark classes, projection, filtering, joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow traceability, streaming-compatible transforms, diagnostic links, and setup checks.
 - **v2:** windowing, deduplication, aggregations, advanced grouping, Spark higher-order functions,
   caching/persistence/repartition hints, `join_many(...)`, richer explain output, generated docs, and pytest helpers.
 - **v3:** full streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks,

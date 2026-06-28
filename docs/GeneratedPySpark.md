@@ -112,4 +112,4 @@ Structure allows developers to maintain compact source, while reviewers and oper
 
 Example: add_promotion() method (left) translated into PySpark (right)
 
-![](../docs/img/screenshots/add_promotion.screen.jpg)
+![](../res/img/screenshots/add_promotion.screen.jpg)
