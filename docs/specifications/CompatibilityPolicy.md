@@ -1,6 +1,6 @@
 ﻿# Compatibility Policy
 
-The policy is public-facing in `docs/Compatibility.md`. This specification defines the development contract behind that
+The policy is public-facing in [Compatibility.md](../Compatibility.md). This specification defines the development contract behind that
 page.
 
 ## Goals
@@ -49,7 +49,7 @@ The target layer must be version-aware enough to:
 - produce diagnostics that state the required PySpark version when a feature is unavailable;
 - keep online semantics and generated output deterministic for the same source, config, and Structure version.
 
-Backend support checks are owned by `docs/specifications/BackendCapabilities.md`. Compatibility checks must use that
+Backend support checks are owned by [BackendCapabilities.md](BackendCapabilities.md). Compatibility checks must use that
 interface instead of scattering PySpark-version or backend-feature conditionals across compiler phases.
 
 When a target range spans multiple supported PySpark lines, Structure should prefer the oldest compatible API that keeps
@@ -160,7 +160,7 @@ Breaking changes require a major traceability schema version bump. Additive fiel
 should ignore unknown fields so minor additions remain compatible.
 
 Runtime LDJSON traceability is not part of the v1 compatibility contract. It is tracked as a nice-to-have beyond v4 in
-`docs/dev/project-management/NiceToHave.md`.
+[NiceToHave.md](../dev/project-management/NiceToHave.md).
 
 ## Config Schema Versioning
 
@@ -175,17 +175,17 @@ Unknown config keys and invalid values are errors. The diagnostic must include:
 - the setting path;
 - the invalid value;
 - allowed values or expected type when known;
-- a link to `docs/Configuration.md` or `docs/Compatibility.md` when the problem is compatibility-related.
+- a link to [Configuration.md](../Configuration.md) or [Compatibility.md](../Compatibility.md) when the problem is compatibility-related.
 
 New optional keys may appear in minor releases. Removing or changing a documented key requires a major version after
 1.0. Deprecated keys should warn before removal when practical.
 
 ## Acceptance Criteria
 
-- `docs/Compatibility.md` documents the public policy.
+- [Compatibility.md](../Compatibility.md) documents the public policy.
 - `Readme.md` links to the compatibility policy.
-- `docs/Configuration.md` documents `target_backend`, `target_pyspark`, and compatibility diagnostics.
-- `docs/Configuration.md` documents `execution_mode`.
-- `docs/specifications/BackendCapabilities.md` documents the backend capability interface and PySpark v1 profile.
-- `docs/dev/Roadmap.md` and public roadmap text schedule Spark Connect for v4.
+- [Configuration.md](../Configuration.md) documents `target_backend`, `target_pyspark`, and compatibility diagnostics.
+- [Configuration.md](../Configuration.md) documents `execution_mode`.
+- [BackendCapabilities.md](BackendCapabilities.md) documents the backend capability interface and PySpark v1 profile.
+- [Roadmap.md](../dev/Roadmap.md) and public roadmap text schedule Spark Connect for v4.
 - The seed config defaults are `execution_mode = "online"` and `target_pyspark = ">=3.5,<4.1"`.

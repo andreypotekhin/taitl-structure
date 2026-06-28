@@ -5,16 +5,16 @@
 Prioritise 'top-to-bottom', 'working backwards from customer' order of implementation,
 putting effort into end-user facing artifacts first (source code, documentation),
 then proceeding with implementing library interfaces and user stories (specifications)
-(/docs/specifications/UserStories.md) and their backing test cases (tests/user_stories/[])
+([UserStories.md](../../specifications/UserStories.md)) and their backing test cases (tests/user_stories/[])
 and unit tests.
 
 See these documents for what to focus on:
-- /docs/auto/AutomationFocus.md
+- [AutomationFocus.md](AutomationFocus.md)
 
 PR titles and Git branch naming for PRs: use 'auto' followed by role name and brief description
 Example: auto/mastermind/file-extentions, auto/document/configurables
 
-Ensure any code changes adhere to the style guide (/docs/dev/Style.md)
+Ensure any code changes adhere to the style guide ([Style.md](../Style.md))
 Fully build and test the project at the end of each task that touches the code.
 Ensure build completion ('make build') completes without errors
 
@@ -62,7 +62,7 @@ See 'Planner role' section in 'Team roles' of Agents.md
 Automation instructions
 
 - Take a suggestion from /docs/dev/suggestions/planned
-- Create ExecPlan to implement the suggestion, as described in /docs/dev/auto/Plans.md
+- Create ExecPlan to implement the suggestion, as described in [Plans.md](Plans.md)
 - Output the resulting ExecPlan to /docs/dev/planning/ with short descriptive name and .plan.md extension
 - Switch to Plan Mode (as in /plan-mode)
 - Discuss and refine the plan with human user
@@ -88,7 +88,7 @@ Limits
 
 - Focus on public-facing public code, documentation;
   but be all-encompassing on the error messages/logging (cause they eventually bubble up to end-user).
-- Ensure to follow the style guide (/docs/dev/Style.md)
+- Ensure to follow the style guide ([Style.md](../Style.md))
 
 ### Open source specialist role
 
@@ -106,7 +106,7 @@ Automation instructions
 Limits
 
 - Only consider stable parts of the codebase not under active development.
-- Ensure to follow the style guide (/docs/dev/Style.md)
+- Ensure to follow the style guide ([Style.md](../Style.md))
 
 ### Extensibility specialist role
 
@@ -289,7 +289,7 @@ Automation instructions
 - Prioritize public packages (com.taitl.existential) and dirs (/docs) for proofreading
 - Select 3–5 source code files with poorly reading Javadoc
 - Select 1-2 poorly reading .md documents
-- Add/repair Javadoc. Ensure to adhere to style guide (/docs/dev/Style.md) 
+- Add/repair Javadoc. Ensure to adhere to style guide ([Style.md](../Style.md)) 
 - Add/repair .md
 - No logic changes
 

@@ -24,13 +24,13 @@ This specification owns:
 
 Related specifications own narrower behavior:
 
-- backend-neutral IR shape: `docs/specifications/IntermediateRepresentation.md`;
-- online runtime selection and session behavior: `docs/specifications/OnlineExecution.md`;
-- generated source text shape: `docs/specifications/PySparkCodeGeneration.md`;
-- symbolic capture: `docs/specifications/SymbolicExecution.md`;
-- type and literal compatibility: `docs/specifications/NullabilityAndTypeCoercion.md`;
-- join semantics: `docs/specifications/JoinSemantics.md`;
-- streaming classification: `docs/specifications/StreamingCompatibility.md`.
+- backend-neutral IR shape: [IntermediateRepresentation.md](IntermediateRepresentation.md);
+- online runtime selection and session behavior: [OnlineExecution.md](OnlineExecution.md);
+- generated source text shape: [PySparkCodeGeneration.md](PySparkCodeGeneration.md);
+- symbolic capture: [SymbolicExecution.md](SymbolicExecution.md);
+- type and literal compatibility: [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md);
+- join semantics: [JoinSemantics.md](JoinSemantics.md);
+- streaming classification: [StreamingCompatibility.md](StreamingCompatibility.md).
 
 When this document overlaps those specifications, this document owns how already-checked semantics are shared by online
 and generated PySpark consumers. The narrower specification still owns the feature's source-level behavior.

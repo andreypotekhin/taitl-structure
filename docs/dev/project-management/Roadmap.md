@@ -27,7 +27,7 @@ The project should prioritize:
 ## Pre-Coding Gate
 
 Before the first vertical slice, Sprint 00 must retire the highest-risk unknowns called out in
-`docs/dev/design/Challenges.md`.
+[Challenges.md](../design/Challenges.md).
 
 Required spikes:
 
@@ -134,7 +134,7 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
 - **Analytical transforms:** typed `group_by(...)`, aggregations, window expressions, deduplication helpers, ranking,
   lag/lead, rolling metrics, and compiler-visible Spark higher-order functions for arrays and maps.
 - **Analytical joins:** existence predicates, `join_many(...)`, deterministic lookup dedupe, temporal validity-window
-  joins, and backward as-of joins from `docs/specifications/AnalyticalJoinCoverage.md`.
+  joins, and backward as-of joins from [AnalyticalJoinCoverage.md](../../specifications/AnalyticalJoinCoverage.md).
 - **Explicit optimization controls:** cache, persist, repartition, coalesce, checkpoint, and join strategy directives
   that are visible in source, generated code, traceability, and explain output.
 - **Adoption and scale tooling:** richer static dataflow and generated-code explain reports, generated documentation
@@ -156,7 +156,7 @@ v1/v2 only maintain streaming compatibility when callers pass streaming DataFram
 
 ### v3 candidate features
 
-- Full featured joins ('Out of scope until a later design' from `docs/specifications/AnalyticalJoinCoverage.md`) 
+- Full featured joins ('Out of scope until a later design' from [AnalyticalJoinCoverage.md](../../specifications/AnalyticalJoinCoverage.md)) 
 - Generated `readStream` and `writeStream` code.
 - Streaming sinks/sources configuration.
 - Trigger configuration.

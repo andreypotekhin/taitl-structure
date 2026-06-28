@@ -47,7 +47,7 @@ spark.sql.storeAssignmentPolicy = "ANSI"
 ```
 
 When no configuration file exists, source-root discovery may replace `source_roots = ["src"]` with `["."]` according
-to `docs/specifications/SourceModuleRules.md`.
+to [SourceModuleRules.md](SourceModuleRules.md).
 
 ## Keys
 

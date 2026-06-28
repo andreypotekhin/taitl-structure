@@ -7,7 +7,7 @@ execution, IR validation, joins, hooks, backend capability checks, streaming com
 behavior, and runtime execution. They must be clear enough for a developer to fix the problem and stable enough for
 tests, CI annotations, IDEs, and documentation links.
 
-This specification resolves C29 from `docs/dev/design/Challenges.md`.
+This specification resolves C29 from [Challenges.md](../dev/design/Challenges.md).
 
 ## Scope
 
@@ -24,7 +24,7 @@ This specification owns:
 - renderer responsibilities.
 
 Feature specifications still own the domain meaning of their diagnostics. For example,
-`docs/specifications/JoinSemantics.md` owns which join shapes are invalid. This document owns the code, lifecycle, and
+[JoinSemantics.md](JoinSemantics.md) owns which join shapes are invalid. This document owns the code, lifecycle, and
 documentation contract that makes that join diagnostic stable.
 
 ## Design Principles
@@ -194,7 +194,7 @@ has not been published.
 
 ## Documentation Contract
 
-`docs/Diagnostics.md` is the compact public index. Every active, deprecated, and retired published code must have a
+[Diagnostics.md](../Diagnostics.md) is the compact public index. Every active, deprecated, and retired published code must have a
 stable lowercase Markdown heading anchor there:
 
 ```text
@@ -301,4 +301,4 @@ The diagnostic contract is implemented when tests prove:
 7. Route compiler errors through structured diagnostics.
 8. Route runtime Structure errors through structured diagnostics.
 9. Add spec tests for representative diagnostics.
-10. Generate or verify `docs/Diagnostics.md` anchors from the registry.
+10. Generate or verify [Diagnostics.md](../Diagnostics.md) anchors from the registry.

@@ -149,4 +149,4 @@ Targets:
 ## Notes
 
 Keep the default traceability explanation compact. Column-level details can be an opt-in `structure explain` view. Runtime
-LDJSON traceability is deferred beyond v4 in `docs/dev/project-management/NiceToHave.md`.
+LDJSON traceability is deferred beyond v4 in [NiceToHave.md](../NiceToHave.md).

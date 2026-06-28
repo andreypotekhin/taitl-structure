@@ -9,7 +9,7 @@ warnings rather than proven facts.
 
 The v1 goal is deliberately narrow: support explicit lookup joins without implicit deduplication, implicit string
 column references, or hidden data scans. Row-multiplying and existence-oriented joins are specified separately for v2+
-in `docs/specifications/AnalyticalJoinCoverage.md` because they change validation, traceability, and output-row
+in [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md) because they change validation, traceability, and output-row
 expectations.
 
 ## Public API Shape
@@ -65,7 +65,7 @@ The v1 compiled DSL supports:
 `Join.RIGHT`, `Join.FULL`, `Join.CROSS`, and semi/anti joins are deferred. They do not fit the v1 row-centric schema
 constructor cleanly because they can introduce rows that do not have a current-row source, or they return existence
 semantics rather than a joined right scope. The v2+ plan for semi/anti predicates lives in
-`docs/specifications/AnalyticalJoinCoverage.md`.
+[AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md).
 
 If the public enum exposes deferred values for forward compatibility, the compileability checker must reject them in
 compiled subtransforms with a diagnostic that names the supported v1 values.
@@ -204,7 +204,7 @@ semantics, but diagnostics should be designed so the promotion is straightforwar
 
 `join_many(...)` (v2) means row multiplication is intentional. If one current row matches three right rows, the
 downstream step sees three rows. Detailed v2+ behavior is owned by
-`docs/specifications/AnalyticalJoinCoverage.md`.
+[AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md).
 
 Rules:
 

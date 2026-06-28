@@ -372,4 +372,4 @@ The implementation is complete when tests prove these scenarios:
 - Global sort, aggregation, deduplication, limit, Python UDF, Pandas UDF, RDD conversion, and local actions are
   rejected.
 - Generated code for a compatible transform contains no `readStream`, `writeStream`, `collect`, `count`, or `toPandas`.
-- Diagnostics link to `docs/specifications/StreamingCompatibility.md`.
+- Diagnostics link to [StreamingCompatibility.md](StreamingCompatibility.md).

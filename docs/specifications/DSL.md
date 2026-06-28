@@ -30,15 +30,15 @@ This specification owns the public DSL surface and cross-cutting rules for:
 
 Detailed contracts are delegated to narrower specifications:
 
-- schemas and output construction: `docs/specifications/SchemaDeclarationSyntax.md`;
-- schema inheritance: `docs/specifications/SchemaInheritance.md`;
-- schema model: `docs/specifications/SchemaModel.md`;
-- assignment, literals, and nullability: `docs/specifications/NullabilityAndTypeCoercion.md`;
-- join behavior: `docs/specifications/JoinSemantics.md`;
-- online and generated runtime behavior: `docs/specifications/OnlineExecution.md`;
-- streaming compatibility: `docs/specifications/StreamingCompatibility.md`;
-- version and compatibility policy: `docs/specifications/CompatibilityPolicy.md`;
-- diagnostic code, registry, and documentation lifecycle: `docs/specifications/Diagnostics.md`.
+- schemas and output construction: [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md);
+- schema inheritance: [SchemaInheritance.md](SchemaInheritance.md);
+- schema model: [SchemaModel.md](SchemaModel.md);
+- assignment, literals, and nullability: [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md);
+- join behavior: [JoinSemantics.md](JoinSemantics.md);
+- online and generated runtime behavior: [OnlineExecution.md](OnlineExecution.md);
+- streaming compatibility: [StreamingCompatibility.md](StreamingCompatibility.md);
+- version and compatibility policy: [CompatibilityPolicy.md](CompatibilityPolicy.md);
+- diagnostic code, registry, and documentation lifecycle: [Diagnostics.md](Diagnostics.md).
 
 When this document and a narrower specification overlap, the narrower specification owns the detailed semantics. This
 document owns how those features appear and compose in the public DSL.
@@ -372,7 +372,7 @@ return OrderWithCustomer.base(order)(
 )
 ```
 
-Output construction details are owned by `docs/specifications/SchemaDeclarationSyntax.md`.
+Output construction details are owned by [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md).
 
 ## Symbolic Execution
 
@@ -425,7 +425,7 @@ Rules:
   online lowering, generated lowering, and diagnostics.
 - Backend-specific lowering belongs in target layers, not in public expression objects.
 
-Detailed type, literal, and nullability behavior is specified by `docs/specifications/NullabilityAndTypeCoercion.md`.
+Detailed type, literal, and nullability behavior is specified by [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md).
 
 ## Expression Helpers
 
@@ -488,7 +488,7 @@ Rules:
 - Filter placement in IR must preserve source semantics. Emitters may optimize only when observable semantics remain
   the same.
 - `where(...)` narrows simple `is_not_null()` field references according to
-  `docs/specifications/NullabilityAndTypeCoercion.md`.
+  [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md).
 - Calling `where(...)` outside an active subtransform is invalid and should mention that filters belong inside
   compiled subtransform methods.
 
@@ -527,7 +527,7 @@ Rules:
 - `join_many(...)` and row-multiplying joins are deferred to v2.
 
 Detailed join condition, null, aliasing, cardinality, projection, and diagnostics behavior is specified by
-`docs/specifications/JoinSemantics.md`.
+[JoinSemantics.md](JoinSemantics.md).
 
 ## Hooks
 
@@ -625,7 +625,7 @@ Rules:
 - The default execution mode is online.
 - Generated execution remains available through configuration.
 
-Detailed runtime behavior is specified by `docs/specifications/OnlineExecution.md`.
+Detailed runtime behavior is specified by [OnlineExecution.md](OnlineExecution.md).
 
 ## Discovery and Metadata
 
@@ -743,7 +743,7 @@ Checks must run without importing PySpark or starting Spark, except runtime-only
 ## Diagnostics
 
 Diagnostic code format, severity names, lifecycle rules, registry requirements, and stable documentation anchors are
-owned by `docs/specifications/Diagnostics.md`. This section defines the DSL-specific context and message content that
+owned by [Diagnostics.md](Diagnostics.md). This section defines the DSL-specific context and message content that
 DSL diagnostics must supply.
 
 DSL diagnostics must include:

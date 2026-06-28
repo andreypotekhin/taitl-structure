@@ -7,7 +7,7 @@ strong enough to catch drift and weak enough by default to avoid hidden Spark wo
 
 This specification owns validation phases, validation modes, strictness, hook integration, output projection,
 configuration precedence, runtime behavior, and acceptance tests. Data-quality constraint families are specified in
-`docs/specifications/DataQualityConstraints.md`.
+[DataQualityConstraints.md](DataQualityConstraints.md).
 
 ## Validation Phases
 

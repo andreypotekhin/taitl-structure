@@ -77,13 +77,13 @@ objects. The PySpark code generator lowers IR to concrete PySpark source code.
 Online and generated PySpark execution share a target semantic contract. Checked `TransformPlan` IR plus
 `PySparkCapabilities` lowers to deterministic PySpark execution recipes before either runtime path consumes it. The
 online runner interprets those recipes with live PySpark objects. The generated emitter renders those same recipes as
-source text. The contract is specified in `docs/specifications/ExecutionSemanticContract.md` and designed in
-`docs/dev/design/ExecutionSemanticContract.md`.
+source text. The contract is specified in [ExecutionSemanticContract.md](../specifications/ExecutionSemanticContract.md) and designed in
+[ExecutionSemanticContract.md](design/ExecutionSemanticContract.md).
 
 This boundary is important for keeping up with PySpark evolution. PySpark API compatibility should be isolated in the
 PySpark target layer rather than scattered across discovery, symbolic execution, or checks. The exact boundary is the
-backend capability interface specified in `docs/specifications/BackendCapabilities.md` and designed in
-`docs/dev/design/BackendCapabilities.md`.
+backend capability interface specified in [BackendCapabilities.md](../specifications/BackendCapabilities.md) and designed in
+[BackendCapabilities.md](design/BackendCapabilities.md).
 
 Compiler phases must not depend on a live Spark installation. Discovery, schema extraction, symbolic execution,
 compileability checks, IR construction, code generation, compiler provenance, static dataflow traceability, and

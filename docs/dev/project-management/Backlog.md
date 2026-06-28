@@ -245,4 +245,4 @@
 
 ## Nice To Have Beyond v4
 
-- Runtime LDJSON traceability emitter. See `docs/dev/project-management/NiceToHave.md`.
+- Runtime LDJSON traceability emitter. See [NiceToHave.md](NiceToHave.md).

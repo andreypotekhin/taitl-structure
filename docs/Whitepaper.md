@@ -319,7 +319,7 @@ source syntax, online invocation construction, generated class construction, `ru
 orchestration semantics, or generated-code reviewability.
 
 Generated PySpark, compiler traceability metadata, and configuration each have explicit versioning rules. The public policy
-lives in `docs/Compatibility.md`.
+lives in [Compatibility.md](Compatibility.md).
 
 ## Traceability
 

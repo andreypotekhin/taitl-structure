@@ -517,7 +517,7 @@ target_pyspark = ">=3.5,<4.1"
 ```
 
 Spark Connect support is planned for v4 unless it can be added earlier without changing the public DSL, generated class
-API, or streaming orchestration contract. See `docs/Compatibility.md`.
+API, or streaming orchestration contract. See [Compatibility.md](Compatibility.md).
 
 ## Schema Generation Tool
 

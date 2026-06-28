@@ -7,8 +7,8 @@ settled; implementation work may still remain in the owning plan or sprint.
 
 ## +C1. Package and Import Layout Is Not Fully Resolved
 
-Resolved by `docs/specifications/SourceModuleRules.md` and decision
-`docs/dev/design/decisions/D06172601.Source-root-resolution.md`.
+Resolved by [SourceModuleRules.md](../../specifications/SourceModuleRules.md) and decision
+[D06172601.Source-root-resolution.md](decisions/D06172601.Source-root-resolution.md).
 
 The default project paths need to avoid confusion with the open-source package name `structure`.
 
@@ -54,8 +54,8 @@ projects and smaller root-package projects.
 
 ## +C2. Schema Syntax Needs to Be Finalized
 
-Resolved by `docs/specifications/SchemaDeclarationSyntax.md` and decision
-`docs/dev/design/decisions/D06172602.Schema-declaration-syntax.md`.
+Resolved by [SchemaDeclarationSyntax.md](../../specifications/SchemaDeclarationSyntax.md) and decision
+[D06172602.Schema-declaration-syntax.md](decisions/D06172602.Schema-declaration-syntax.md).
 
 Deprecated examples used:
 
@@ -94,8 +94,8 @@ This scales better for nested schemas, Spark `StructType` generation, IDE behavi
 
 ## +C3. Nullability and Type Coercion Rules Are Missing
 
-Resolved by `docs/specifications/NullabilityAndTypeCoercion.md` and planned by
-`docs/dev/planning/P06172601.Nullability-and-type-coercion-rules.plan.md`.
+Resolved by [NullabilityAndTypeCoercion.md](../../specifications/NullabilityAndTypeCoercion.md) and planned by
+[P06172601.Nullability-and-type-coercion-rules.plan.md](../planning/done/P06172601.Nullability-and-type-coercion-rules.plan.md).
 
 Structure uses Spark SQL assumptions configured under `[tool.structure]` with Spark-native dotted key names:
 
@@ -119,8 +119,8 @@ total=coalesce(to_decimal(order.total, precision=12, scale=2), 0)
 
 ## +C4. Python Decorator Mechanics Need a Spike
 
-Resolved for design/specification coverage by `docs/specifications/DSL.md` and
-`docs/specifications/HookSemantics.md`. The implementation proof remains a Sprint 0 coding spike.
+Resolved for design/specification coverage by [DSL.md](../../specifications/DSL.md) and
+[HookSemantics.md](../../specifications/HookSemantics.md). The implementation proof remains a Sprint 0 coding spike.
 
 The preferred hook syntax is:
 
@@ -142,8 +142,8 @@ However, this needs an early implementation spike to prove:
 
 ## +C5. Class-Local `@expr_fn` Without `self` Needs a Spike
 
-Resolved for design/specification coverage by `docs/specifications/DSL.md` and
-`docs/specifications/SymbolicExecution.md`. The implementation proof remains a Sprint 0 coding spike.
+Resolved for design/specification coverage by [DSL.md](../../specifications/DSL.md) and
+[SymbolicExecution.md](../../specifications/SymbolicExecution.md). The implementation proof remains a Sprint 0 coding spike.
 
 Desired syntax:
 
@@ -167,7 +167,7 @@ This should be proven before building the full symbolic execution engine.
 
 ## +C6. Source Import Safety Is Underspecified
 
-Resolved by `docs/specifications/SourceModuleRules.md`.
+Resolved by [SourceModuleRules.md](../../specifications/SourceModuleRules.md).
 
 Discovery currently implies importing user source modules. This is simple, but imports execute top-level Python code.
 
@@ -187,7 +187,7 @@ The compiler may later use AST/LibCST for lower-risk discovery, but v1 can use i
 
 ## +C7. Generated Code Ownership Rules Need to Be Explicit
 
-Resolved by decision `docs/dev/design/decisions/D06182601.Generated-code-ownership.md`.
+Resolved by decision [D06182601.Generated-code-ownership.md](decisions/D06182601.Generated-code-ownership.md).
 
 Structure treats generated PySpark as committed, reviewable build output owned by the compiler. Developers review it,
 import it, test it, and regenerate it, but do not hand-edit it.
@@ -204,8 +204,8 @@ These rules are part of the Definition of Done.
 
 ## +C8. Hook Access to Original Inputs May Need an Escape Hatch
 
-Resolved by `docs/specifications/HookSemantics.md` and decision
-`docs/dev/design/decisions/D06182602.Hook-input-escape-hatch.md`.
+Resolved by [HookSemantics.md](../../specifications/HookSemantics.md) and decision
+[D06182602.Hook-input-escape-hatch.md](decisions/D06182602.Hook-input-escape-hatch.md).
 
 The simplified hook signature is:
 
@@ -229,8 +229,8 @@ Default hooks should remain minimal, but advanced hooks should have an opt-in pa
 
 ## +C9. Join Semantics Need Sharper Definitions
 
-Resolved by `docs/specifications/JoinSemantics.md` and decision
-`docs/dev/design/decisions/D06172607.Join-semantics.md`.
+Resolved by [JoinSemantics.md](../../specifications/JoinSemantics.md) and decision
+[D06172607.Join-semantics.md](decisions/D06172607.Join-semantics.md).
 
 `join_one(...)` needs precise semantics before implementation.
 
@@ -266,9 +266,9 @@ self.customers.id.null_safe_eq(order.customer_id)
 
 ## +C10. Intermediate Validation May Be Expensive
 
-Resolved by `docs/specifications/ValidationSemantics.md`,
-`docs/specifications/DataQualityConstraints.md`, and decision
-`docs/dev/design/decisions/D06182603.Intermediate-validation-policy.md`.
+Resolved by [ValidationSemantics.md](../../specifications/ValidationSemantics.md),
+[DataQualityConstraints.md](../../specifications/DataQualityConstraints.md), and decision
+[D06182603.Intermediate-validation-policy.md](decisions/D06182603.Intermediate-validation-policy.md).
 
 Intermediate schema validation is enabled by default, but the implementation must avoid unnecessary data scans.
 
@@ -305,8 +305,8 @@ This resolves the performance concern without weakening compile-time field and t
 
 ## +C11. Streaming Compatibility Needs a Precise v1 Definition
 
-Resolved by `docs/specifications/StreamingCompatibility.md` and decision
-`docs/dev/design/decisions/D06182604.Streaming-compatibility-v1.md`.
+Resolved by [StreamingCompatibility.md](../../specifications/StreamingCompatibility.md) and decision
+[D06182604.Streaming-compatibility-v1.md](decisions/D06182604.Streaming-compatibility-v1.md).
 
 Structure v1 streaming compatibility means generated DataFrame transforms can run inside a caller-owned Spark
 Structured Streaming query when the current pipeline DataFrame is streaming, side lookup inputs are static, and every
@@ -333,9 +333,9 @@ Deferred or rejected in v1:
 
 ## +C12. Compiler Traceability Schema Needs Versioning
 
-Resolved by `docs/specifications/IntermediateRepresentation.md`,
-`docs/specifications/PySparkCodeGeneration.md`, `docs/specifications/CompatibilityPolicy.md`, and
-`docs/dev/planning/P06182601.Compiler-provenance-static-dataflow-traceability.plan.md`.
+Resolved by [IntermediateRepresentation.md](../../specifications/IntermediateRepresentation.md),
+[PySparkCodeGeneration.md](../../specifications/PySparkCodeGeneration.md), [CompatibilityPolicy.md](../../specifications/CompatibilityPolicy.md), and
+[P06182601.Compiler-provenance-static-dataflow-traceability.plan.md](../planning/done/P06182601.Compiler-provenance-static-dataflow-traceability.plan.md).
 
 Traceability is split into three topics:
 
@@ -348,7 +348,7 @@ own record format later if the nice-to-have becomes scheduled work.
 
 ## +C13. Compile-Time Performance Needs Concrete Targets
 
-Resolved by `docs/specifications/CompilerPerformanceTargets.md`.
+Resolved by [CompilerPerformanceTargets.md](../../specifications/CompilerPerformanceTargets.md).
 
 Compiler speed should be a first-class metric.
 
@@ -372,7 +372,7 @@ startup during compile.
 
 ## +C14. Incremental Compile and Cache Are Missing
 
-Resolved for v1 architecture by `docs/specifications/CompilerPerformanceTargets.md`. Production incremental
+Resolved for v1 architecture by [CompilerPerformanceTargets.md](../../specifications/CompilerPerformanceTargets.md). Production incremental
 compilation remains v2 implementation work.
 
 Fast compilers need caching and change detection.
@@ -398,7 +398,7 @@ At minimum, design the compiler so v2 production incremental compilation can be 
 
 ## +C15. Need a “No Spark Dependency During Compile” Rule
 
-Resolved by decision `docs/dev/design/decisions/D06182606.No-spark-compile-dependency.md`.
+Resolved by decision [D06182606.No-spark-compile-dependency.md](decisions/D06182606.No-spark-compile-dependency.md).
 
 `structure check` and `structure compile` must not require a SparkSession, Spark cluster, Java runtime, or PySpark
 import. The compiler operates on Structure DSL objects, source metadata, backend-neutral IR, and emitter capability
@@ -440,7 +440,7 @@ This clarifies that Structure does not hide Spark; it reduces manually maintaine
 
 ## +C17. Testing Should Include Mutation and Error Tests
 
-Resolved as a testing contract by `docs/dev/Testing.md`, `docs/dev/Style.md`, and the acceptance criteria in the
+Resolved as a testing contract by [Testing.md](../Testing.md), [Style.md](../Style.md), and the acceptance criteria in the
 feature specifications. Broad executable coverage remains tracked by C30.
 
 Testing should cover both happy paths and intentionally broken transforms.
@@ -463,7 +463,7 @@ These tests protect developer experience and diagnostics.
 
 ## +C18. Configuration Schema Validation Is Missing
 
-Resolved by `docs/specifications/ConfigSchema.md`.
+Resolved by [ConfigSchema.md](../../specifications/ConfigSchema.md).
 
 Since Structure supports TOML config, config errors need structured diagnostics.
 
@@ -495,9 +495,9 @@ Config resolution order should also be explicit:
 
 ## +C19. Versioning and Compatibility Policy Are Missing
 
-Resolved by public policy `docs/Compatibility.md`, specification
-`docs/specifications/CompatibilityPolicy.md`, and decision
-`docs/dev/design/decisions/D06182605.Versioning-and-compatibility-policy.md`.
+Resolved by public policy [Compatibility.md](../../Compatibility.md), specification
+[CompatibilityPolicy.md](../../specifications/CompatibilityPolicy.md), and decision
+[D06182605.Versioning-and-compatibility-policy.md](decisions/D06182605.Versioning-and-compatibility-policy.md).
 
 v1 baseline:
 
@@ -536,7 +536,7 @@ Recommended direction:
 
 ## +C22. The v1 Scope Is Large Enough to Hide the First Useful Release
 
-Resolved by `docs/dev/planning/P06202601.v1-first-executable-slice.plan.md`, the first executable slice model fixture under
+Resolved by [P06202601.v1-first-executable-slice.plan.md](../planning/done/P06202601.v1-first-executable-slice.plan.md), the first executable slice model fixture under
 `res/testing/model/v1`, and the revised Sprint 01 plan.
 
 The roadmap's v1 remains the broad north star: online execution, optional generated PySpark, schemas, validation, joins,
@@ -558,9 +558,9 @@ Deferred from Sprint 01 into later v1 work:
 
 ## +C23. Backend Adaptability Needs a Capability Interface Before More Features
 
-Resolved by `docs/specifications/BackendCapabilities.md`, design `docs/dev/design/BackendCapabilities.md`, decision
-`docs/dev/design/decisions/D06202604.Backend-capability-interface.md`, and plan
-`docs/dev/planning/P06202604.Backend-capability-interface.plan.md`.
+Resolved by [BackendCapabilities.md](../../specifications/BackendCapabilities.md), design [BackendCapabilities.md](BackendCapabilities.md), decision
+[D06202604.Backend-capability-interface.md](decisions/D06202604.Backend-capability-interface.md), and plan
+[P06202604.Backend-capability-interface.plan.md](../planning/P06202604.Backend-capability-interface.plan.md).
 
 Backend adaptability is now an explicit internal capability contract. Compiler checks, online execution, generated
 PySpark emission, streaming compatibility checks, and future explain output should ask a `BackendCapabilities` object
@@ -572,10 +572,10 @@ New DSL operations must declare capability behavior before they are considered s
 
 ## +C24. Online and Generated Execution Need a Shared Semantic Contract
 
-Resolved by `docs/specifications/ExecutionSemanticContract.md`, design
-`docs/dev/design/ExecutionSemanticContract.md`, decision
-`docs/dev/design/decisions/D06202601.Online-generated-semantic-contract.md`, and plan
-`docs/dev/planning/P06202601.Online-generated-semantic-contract.plan.md`.
+Resolved by [ExecutionSemanticContract.md](../../specifications/ExecutionSemanticContract.md), design
+[ExecutionSemanticContract.md](ExecutionSemanticContract.md), decision
+[D06202601.Online-generated-semantic-contract.md](decisions/D06202601.Online-generated-semantic-contract.md), and plan
+[P06202601.Online-generated-semantic-contract.plan.md](../planning/done/P06202601.Online-generated-semantic-contract.plan.md).
 
 Online execution and generated code intentionally share semantics while differing in output form. The shared contract
 requires checked `TransformPlan` IR plus `PySparkCapabilities` to lower into deterministic PySpark execution recipes.
@@ -592,7 +592,7 @@ supported.
 
 ## +C25. Extension Points Are Not Yet Sorted Into Supported and Unsupported
 
-Resolved by clarifying extension compatibility in `Readme.md`, `docs/Compatibility.md`, and the compileability checker
+Resolved by clarifying extension compatibility in `Readme.md`, [Compatibility.md](../../Compatibility.md), and the compileability checker
 design. Structure now keeps the initial extension surface deliberately small:
 
 - `@expr_fn` is the supported public extension point for reusable compiler-visible expression logic.
@@ -606,10 +606,10 @@ should prefer direct DSL or `@expr_fn` fixes when logic can stay compiler-visibl
 
 ## +C26. Data Quality Constraints Stop at Schema Shape
 
-Resolved by `docs/specifications/DataQualityConstraints.md`, design
-`docs/dev/design/DataQualityConstraints.md`, decision
-`docs/dev/design/decisions/D06202602.Data-quality-constraints-boundary.md`, and plan
-`docs/dev/planning/P06202602.Data-quality-constraints.plan.md`.
+Resolved by [DataQualityConstraints.md](../../specifications/DataQualityConstraints.md), design
+[DataQualityConstraints.md](DataQualityConstraints.md), decision
+[D06202602.Data-quality-constraints-boundary.md](decisions/D06202602.Data-quality-constraints-boundary.md), and plan
+[P06202602.Data-quality-constraints.plan.md](../planning/P06202602.Data-quality-constraints.plan.md).
 
 Structure v1 validation is schema-first. Default intermediate validation remains `schema_only`, which checks shape
 metadata and must not scan rows. Accepted values, ranges, regex-like constraints, decimal domain rules, freshness,
@@ -627,10 +627,10 @@ boundaries and only when that phase allows `schema_and_constraints`.
 
 ## C27. Analytical Join Coverage Is Still Narrow
 
-Resolved by `docs/specifications/AnalyticalJoinCoverage.md`, design
-`docs/dev/design/AnalyticalJoinCoverage.md`, decision
-`docs/dev/design/decisions/D06212601.Analytical-join-coverage.md`, and plan
-`docs/dev/planning/P06212601.Analytical-join-coverage.plan.md`.
+Resolved by [AnalyticalJoinCoverage.md](../../specifications/AnalyticalJoinCoverage.md), design
+[AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md), decision
+[D06212601.Analytical-join-coverage.md](decisions/D06212601.Analytical-join-coverage.md), and plan
+[P06212601.Analytical-join-coverage.plan.md](../planning/P06212601.Analytical-join-coverage.plan.md).
 
 Remaining: implementation of AnalyticalJoinCoverage.md
 
@@ -670,16 +670,16 @@ Recommended direction:
 
 ## +C29. Diagnostics Need a Registry and Documentation Contract
 
-Resolved by public documentation `docs/Diagnostics.md`, specification `docs/specifications/Diagnostics.md`, design
-`docs/dev/design/DiagnosticsContract.md`, decision `docs/dev/design/decisions/D06202603.Diagnostics-registry-contract.md`,
-and plan `docs/dev/planning/P06202603.Diagnostics-registry-contract.plan.md`.
+Resolved by public documentation [Diagnostics.md](../../Diagnostics.md), specification [Diagnostics.md](../../specifications/Diagnostics.md), design
+[DiagnosticsContract.md](DiagnosticsContract.md), decision [D06202603.Diagnostics-registry-contract.md](decisions/D06202603.Diagnostics-registry-contract.md),
+and plan [P06202603.Diagnostics-registry-contract.plan.md](../planning/done/P06202603.Diagnostics-registry-contract.plan.md).
 
 Structure diagnostics are now specified as a registry-backed contract. Codes use `{component}-{severity}{number}`,
 where the prefix identifies the issuing component, such as `CONF`, `DSL`, `GEN`, `STREAM`, `ONLINE`, or `CLI`.
 
 Every published diagnostic must include severity, title, problem, suggested fix, documentation link, and contextual
 fields such as source location, transform, field, hook, join, generated path, setting, or runtime input when available.
-`docs/Diagnostics.md` owns stable public anchors, while specialized specifications provide deeper context. Tests must
+[Diagnostics.md](../../Diagnostics.md) owns stable public anchors, while specialized specifications provide deeper context. Tests must
 assert the code and high-signal structured fields, and registry validation must reject duplicate codes, malformed
 codes, missing documentation links, and invalid lifecycle transitions.
 

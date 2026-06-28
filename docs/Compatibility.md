@@ -126,7 +126,7 @@ Traceability schema rules:
 - Structure should keep default compiler traceability compact and stable across patch releases.
 
 Runtime LDJSON traceability is not part of the initial compatibility contract. It is tracked as a nice-to-have beyond v4 in
-`docs/dev/project-management/NiceToHave.md`.
+[NiceToHave.md](dev/project-management/NiceToHave.md).
 
 ## Config Schema Versioning
 

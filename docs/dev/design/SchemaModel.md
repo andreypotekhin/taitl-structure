@@ -1,9 +1,9 @@
 # Design: Schema Model
 
 The schema model implementation specification now lives at
-`docs/specifications/SchemaModel.md`.
+[SchemaModel.md](../../specifications/SchemaModel.md).
 
 Related specifications:
 
-- `docs/specifications/SchemaDeclarationSyntax.md`
-- `docs/specifications/SchemaInheritance.md`
+- [SchemaDeclarationSyntax.md](../../specifications/SchemaDeclarationSyntax.md)
+- [SchemaInheritance.md](../../specifications/SchemaInheritance.md)

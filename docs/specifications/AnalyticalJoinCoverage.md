@@ -3,7 +3,7 @@
 ## Purpose
 
 Analytical pipelines need more than lookup joins. This specification defines the staged v2+ join family that resolves
-C27 from `docs/dev/design/Challenges.md`: semi and anti existence filters, `join_many(...)`, deterministic lookup
+C27 from [Challenges.md](../dev/design/Challenges.md): semi and anti existence filters, `join_many(...)`, deterministic lookup
 dedupe, temporal lookups, as-of lookups, and slowly changing dimension lookups.
 
 The v1 `join_one(...)` contract remains unchanged. It is a narrow many-to-one or one-to-one lookup join. It warns when
@@ -11,7 +11,7 @@ right-side uniqueness is not proven and never deduplicates by surprise.
 
 ## Scope
 
-This specification owns future source semantics for analytical joins. `docs/specifications/JoinSemantics.md` remains
+This specification owns future source semantics for analytical joins. [JoinSemantics.md](JoinSemantics.md) remains
 the authority for v1 `join_one(...)`.
 
 In scope for the analytical join family:

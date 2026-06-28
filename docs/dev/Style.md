@@ -92,10 +92,10 @@ The goal of our way of object decomposition is to maximize 'graspability' - the 
   - Integrate with other 'apps' using their corresponding data model
 
 ### Code structure
-Main: /docs/Code.md
+Main: [Code.md](Code.md)
 
 ### Testing
-Main: /docs/Testing.md
+Main: [Testing.md](Testing.md)
 
 #### Testing Guidelines
 Some rules around testing we adopt:
@@ -120,7 +120,7 @@ Use modern test frameworks capabilities to the maximum for structuring the tests
 - Regression tests refer to issue number in test method name and issue title in docstring
 
 #### Feature Testing
-See /docs/Testing.md
+See [Testing.md](Testing.md)
 
 Directory structure:
 - /tests/app/[app]/[subapp]/package/subpackage - tests for app implementation code, mirroring the app package path
@@ -132,7 +132,7 @@ Examples:
 - /tests/lib/helper/ - Helper lib tests
 
 #### Specification Testing
-Test cases backing user stories (from /docs/specifications/UserStories.md) are in tests/user_stories/.
+Test cases backing user stories (from [UserStories.md](../specifications/UserStories.md)) are in tests/user_stories/.
 For each implemented user story from UserStories.md, create a test case 
 in the corresponding subpackage of tests/user_stories.
 
@@ -144,7 +144,7 @@ Directory structure:
 - /tests/specifications/[specification-doc-slug]/ - tests for specifications/ documents
 
 #### Concepts Testing
-We maintain a list of concepts in /docs/dev/Concepts.md that we want to be covered with tests.
+We maintain a list of concepts in [Concepts.md](Concepts.md) that we want to be covered with tests.
 Concept tests are end-to-end tests proving correctness around a specific concept, like 'join'  
 
 Directory structure:
@@ -166,12 +166,13 @@ Directory structure:
 
 ## Documenting
 ### End-User documentation
-The end-user documentation consists of /Readme.md, /Troubleshooting.md, and /docs/ directory.
+The end-user documentation consists of [Readme.md](../../Readme.md), [Troubleshooting.md](../../Troubleshooting.md),
+and the `/docs/` directory.
 It is characterized as being concise and all-encompassing, clearly conveying the meaning, 
 being complete without overwhelming the reader.
 Content style:
-- /Readme.md is the main entry point for end-users, a is more formal compared to other documents.
-- /Troubleshooting.md tracks common issues and remedies, prioritizes conciseness and clarity.
+- [Readme.md](../../Readme.md) is the main entry point for end-users, a is more formal compared to other documents.
+- [Troubleshooting.md](../../Troubleshooting.md) tracks common issues and remedies, prioritizes conciseness and clarity.
 - Other documents: prioritize focus and practicality. 
 
 ### Developer documentation
@@ -184,8 +185,8 @@ Content style:
 
 ### Documenting issues and remedies
 Document issues and remedies (fixes) in Troubleshooting.md documents.
-Separate end-user troubleshooting items (/Troubleshooting.md) from development troubleshooting items
-(/docs/dev/Troubleshooting.md)
+Separate end-user troubleshooting items ([Troubleshooting.md](../../Troubleshooting.md)) from development
+troubleshooting items ([Troubleshooting.md](Troubleshooting.md)).
 
 ### Documenting the design decisions
 Add decision items as [action id].[action-title].md file to docs/dev/design/decisions/.

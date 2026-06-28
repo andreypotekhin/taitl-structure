@@ -112,7 +112,7 @@ diagnostic must tell the user to run `structure compile`, fix import roots, or c
 
 Online execution and generated code must not become independent semantic implementations. The generated emitter owns
 text concerns such as imports, formatting, and stable source output. The shared contract in
-`docs/specifications/ExecutionSemanticContract.md` owns semantic concerns:
+[ExecutionSemanticContract.md](../../specifications/ExecutionSemanticContract.md) owns semantic concerns:
 
 - expression function mapping;
 - literal typing;

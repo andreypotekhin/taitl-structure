@@ -9,11 +9,11 @@ implementation-ready semantic contract.
 
 Detailed syntax remains owned by:
 
-- `docs/specifications/SchemaDeclarationSyntax.md`;
-- `docs/specifications/SchemaModel.md`;
-- `docs/specifications/SchemaInheritance.md`;
-- `docs/specifications/NullabilityAndTypeCoercion.md`;
-- `docs/specifications/DataQualityConstraints.md`.
+- [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md);
+- [SchemaModel.md](SchemaModel.md);
+- [SchemaInheritance.md](SchemaInheritance.md);
+- [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md);
+- [DataQualityConstraints.md](DataQualityConstraints.md).
 
 ## Semantic Layers
 

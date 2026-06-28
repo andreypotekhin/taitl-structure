@@ -1,7 +1,7 @@
 # Code
 
 ## Coding Standards
-Coding guidelines: See Coding section in Style.md
+Coding guidelines: See the Coding section in [Style.md](Style.md).
 
 ## Code structure 
 Our code consist of apps and libraries. Apps are active chunks of the system,
@@ -10,7 +10,7 @@ reuse, sharing and preventing app code bloat.
 
 ### Code structure guidelines
 - Adhere to Logic Oriented Programming principles to keep classes short and focused
-  (see OOP section in Style.md)
+  (see the OOP section in [Style.md](Style.md))
 - Apps are structured according to Common App Framework (see below)
 - Logic packages are structured according to Logic Oriented Programming
 - Rule: one-class-per-source-file for the classes

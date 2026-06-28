@@ -51,12 +51,12 @@ compare output column order, row contents, schema shape where Spark exposes it r
 placement.
 
 Generated-code snapshots are still required for reviewability, but snapshots are secondary. The semantic authority is
-runtime parity through the shared contract in `docs/specifications/ExecutionSemanticContract.md`.
+runtime parity through the shared contract in [ExecutionSemanticContract.md](../specifications/ExecutionSemanticContract.md).
 
 ## Concept Tests
 
 Concept tests live under `tests/concepts`. They are end-to-end, black-box tests for the project vocabulary in
-`docs/dev/Concepts.md`. Their job is to prove that a named concept works through public user-facing surfaces such as
+[Concepts.md](Concepts.md). Their job is to prove that a named concept works through public user-facing surfaces such as
 the DSL, CLI, `StructureSession`, generated packages, runtime diagnostics, and online/generated parity.
 
 Concept tests are also the concept coverage map. One test may cover several concept leaves, but the covered concept
@@ -156,9 +156,9 @@ Use these directories consistently:
 
 - `tests/app/[app]/[subapp]/...`: tests for app implementation code. Keep nesting aligned with the app and subapp
   package path.
-- `tests/concepts/[concept]/...`: end-to-end black-box tests for concepts from `docs/dev/Concepts.md`.
+- `tests/concepts/[concept]/...`: end-to-end black-box tests for concepts from [Concepts.md](Concepts.md).
 - `tests/helpers/...`: repo-local helpers for fixture-backed or pytest-specific test scenarios.
-- `tests/user_stories/[section-or-story]/...`: tests backing user stories from `docs/specifications/UserStories.md`.
+- `tests/user_stories/[section-or-story]/...`: tests backing user stories from [UserStories.md](../specifications/UserStories.md).
 - `tests/specifications/[specification-doc-slug]/...`: tests backing individual documents under `docs/specifications/`
   when we need to prove the behavior described by a specification document directly.
 
@@ -169,7 +169,7 @@ Examples:
 - PySpark target behavior: `tests/app/target/pyspark/...`
 - Join concept coverage: `tests/concepts/join/...`
 - Fixture-specific scenario helpers: `tests/helpers/scenarios/...`
-- User stories completed from `docs/specifications/UserStories.md`: `tests/user_stories/...`
+- User stories completed from [UserStories.md](../specifications/UserStories.md): `tests/user_stories/...`
 - Execution semantic contract checks: `tests/specifications/execution-semantic-contract/...`
 - PySpark code generation contract checks: `tests/specifications/pyspark-code-generation/...`
 

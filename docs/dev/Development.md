@@ -4,21 +4,22 @@
 TBD
 
 ## User stories and use cases
-See /docs/specifications/UserStories.md for detailed description of library external behavior.
+See [UserStories.md](../specifications/UserStories.md) for detailed description of library external behavior.
 
 ## Terminology
-See Terminology.md for project language. See Concepts.md for the concept-test coverage map.
+See [Terminology.md](Terminology.md) for project language. See [Concepts.md](Concepts.md) for the
+concept-test coverage map.
 
 ## Architecture
-Main: Architecture.md
+Main: [Architecture.md](Architecture.md)
 Docs: /docs/dev/design
 Specifications: /docs/specifications
 
 ## Coding
-Main: Code.md
+Main: [Code.md](Code.md)
 
 ## Setup
-See /docs/dev/Setup.md for project setup and prerequisites.
+See [Setup.md](Setup.md) for project setup and prerequisites.
 
 ## Building
 ### Prerequisites
@@ -35,8 +36,8 @@ See /docs/dev/Setup.md for project setup and prerequisites.
     make build
 
 ## Testing
-Main: Testing.md
-Testing guidelines: Style.md 
+Main: [Testing.md](Testing.md)
+Testing guidelines: [Style.md](Style.md)
 
 ## Troubleshooting
-Refer to /docs/dev/Troubleshooting.md.
+Refer to [Troubleshooting.md](Troubleshooting.md).

@@ -88,7 +88,7 @@ delegates to checked-in generated PySpark classes.
 
 `target_backend` and `target_pyspark` remain backend selection inputs. In v1 the only supported backend is `pyspark`.
 Future backends should be selected by the session, not by changing transform constructors. Backend support is checked
-through `docs/specifications/BackendCapabilities.md`, so online execution and generated PySpark share the same target
+through [BackendCapabilities.md](BackendCapabilities.md), so online execution and generated PySpark share the same target
 capability decisions.
 
 ## Session Responsibilities
@@ -146,7 +146,7 @@ projection shape, schema projection, result shape, and performance guardrails.
 For a multi-result step, joins and filters execute once. Each result projection starts from that shared DataFrame and is
 stored under its output lane name.
 
-Those shared semantics are owned by `docs/specifications/ExecutionSemanticContract.md`. Online execution owns live
+Those shared semantics are owned by [ExecutionSemanticContract.md](ExecutionSemanticContract.md). Online execution owns live
 DataFrame binding and runtime hook invocation; it must not independently choose aliases, validation placement,
 expression mapping, or literal typing when a shared PySpark recipe already defines them.
 
@@ -187,7 +187,7 @@ Diagnostics must include:
 - input name, hook name, subtransform, or field when relevant;
 - problem;
 - suggested fix;
-- link to this specification or `docs/Configuration.md`.
+- link to this specification or [Configuration.md](../Configuration.md).
 
 Example:
 
@@ -223,7 +223,7 @@ The implementation is complete when tests prove:
 - online and generated execution produce equivalent results for projection, filtering, expression helpers, joins,
   hooks, `pass_inputs=True`, validation, `schema_mode`, and `project_output`;
 - online execution consumes the shared PySpark execution recipes defined by
-  `docs/specifications/ExecutionSemanticContract.md`;
+  [ExecutionSemanticContract.md](ExecutionSemanticContract.md);
 - online execution exposes the final output Spark schema after `run(session)` without requiring generated files;
 - generated mode delegates through generated classes using the same builder-style transform invocation;
 - missing generated code in generated mode suggests `structure compile` or online mode;

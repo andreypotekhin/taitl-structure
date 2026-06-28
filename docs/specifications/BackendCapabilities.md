@@ -7,7 +7,7 @@ PySpark version choices, unsupported feature checks, streaming support, validati
 out of discovery, symbolic execution, generic IR construction, online runtime orchestration, and generated-code text
 rendering.
 
-This specification resolves C23 from `docs/dev/design/Challenges.md`.
+This specification resolves C23 from [Challenges.md](../dev/design/Challenges.md).
 
 ## Scope
 
@@ -158,7 +158,7 @@ not be lowered through silent fallback, Python UDFs, row-wise operations, or bac
 
 ## Diagnostics
 
-Backend capability diagnostics use the component prefix defined in `docs/specifications/Diagnostics.md`.
+Backend capability diagnostics use the component prefix defined in [Diagnostics.md](Diagnostics.md).
 
 ### BACKEND-E2401
 

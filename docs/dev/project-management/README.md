@@ -6,8 +6,8 @@ code.
 
 The sprint plan assumes the documentation set from the Structure design package already exists, especially:
 
-- `docs/specifications/UserStories.md`
-- `docs/GeneratedPySpark.md`
+- [UserStories.md](../../specifications/UserStories.md)
+- [GeneratedPySpark.md](../../GeneratedPySpark.md)
 - `devdocs/Architecture.md`
 - `devdocs/Implementation.md`
 - `devdocs/Testing.md`
@@ -43,7 +43,7 @@ project-management/
 
 ## Pre-Coding Spike Gate
 
-Sprint 00 includes a short spike gate before implementation of the first vertical slice. These spikes close the highest-risk design questions from `docs/dev/design/Challenges.md`:
+Sprint 00 includes a short spike gate before implementation of the first vertical slice. These spikes close the highest-risk design questions from [Challenges.md](../design/Challenges.md):
 
 - `@after(method, lane=lane)` binding inside class bodies.
 - Class-local `@expr_fn` helpers callable through `self` without a `self` parameter.

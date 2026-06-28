@@ -1,6 +1,6 @@
 ﻿# Schema Model
 
-This specification replaces `docs/dev/design/SchemaModel.md` as the implementation-level schema model reference.
+This specification replaces [SchemaModel.md](../dev/design/SchemaModel.md) as the implementation-level schema model reference.
 
 ## Purpose
 
@@ -9,8 +9,8 @@ compiler checks, generated Spark `StructType` code, runtime validation, traceabi
 diagnostics.
 
 Schema declarations are authored with the syntax specified in
-`docs/specifications/SchemaDeclarationSyntax.md`. Inheritance behavior is specified in
-`docs/specifications/SchemaInheritance.md`.
+[SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md). Inheritance behavior is specified in
+[SchemaInheritance.md](SchemaInheritance.md).
 
 ## Core Model
 
@@ -63,7 +63,7 @@ Rules:
 - `bases` lists direct schema bases in class definition order.
 - `fields` contains effective fields in generated output order.
 - `local_fields` contains fields declared directly on the class.
-- `constraints` contains schema-level constraints owned by `docs/specifications/DataQualityConstraints.md`.
+- `constraints` contains schema-level constraints owned by [DataQualityConstraints.md](DataQualityConstraints.md).
 - `metadata` is immutable.
 
 Each schema class has a distinct schema identity. Two schemas with identical fields are structurally compatible, but not
@@ -262,7 +262,7 @@ Runtime validation checks:
 - map key and value types where available.
 
 Row-level constraint validation is outside the base schema model and belongs to
-`docs/specifications/DataQualityConstraints.md`. Generated `*_SCHEMA` constants remain shape-only; future constraint
+[DataQualityConstraints.md](DataQualityConstraints.md). Generated `*_SCHEMA` constants remain shape-only; future constraint
 metadata must be generated separately unless a later design deliberately adds Spark-compatible metadata without changing
 shape semantics.
 

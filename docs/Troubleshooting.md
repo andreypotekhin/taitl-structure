@@ -7,7 +7,7 @@ Error: "Generated transform is not importable."
 Cause: Structure is configured to run checked-in generated PySpark, but the generated module is missing, stale, or not
 on the Python import path.
 Fix: Run `structure compile`, ensure the generated source root is importable, or set `execution_mode = "online"`. See
-`docs/specifications/OnlineExecution.md`.
+[OnlineExecution.md](specifications/OnlineExecution.md).
 
 ### Problem (online execution): unknown transform constructor input
 
@@ -23,7 +23,7 @@ When: Running `structure check` or `structure compile`.
 Error: "Feature requires PySpark [version], but target_pyspark is [range]."
 Cause: The transform uses a DSL feature whose generated PySpark requires an API outside the configured target range.
 Fix: Either raise `target_pyspark` in project configuration or rewrite the transform using APIs supported by the
-configured runtime. See `docs/Compatibility.md`.
+configured runtime. See [Compatibility.md](Compatibility.md).
 
 ### Problem (tools): schema generation CLI cannot start Spark
 

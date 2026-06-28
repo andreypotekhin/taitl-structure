@@ -11,7 +11,7 @@ The generator is a source-text emitter. It must not redefine transform semantics
 lowering, join aliasing, hook order, validation placement, schema projection, and performance guardrails must agree
 with online PySpark execution.
 
-Shared semantics are owned by `docs/specifications/ExecutionSemanticContract.md`. The generator renders
+Shared semantics are owned by [ExecutionSemanticContract.md](ExecutionSemanticContract.md). The generator renders
 `PySparkExecutionPlan` recipes, or the local implementation equivalent, into source text. It owns imports, formatting,
 file headers, generated paths, and readability. It must not make separate semantic choices that bypass the shared
 recipes.
@@ -30,18 +30,18 @@ This specification owns generated PySpark source shape and generator behavior fo
 
 Semantic contracts are owned by narrower specifications:
 
-- public DSL and transform IR: `docs/specifications/DSL.md`;
-- online/generated execution parity: `docs/specifications/ExecutionSemanticContract.md`;
-- online and generated runtime selection: `docs/specifications/OnlineExecution.md`;
-- schema model and Spark type mapping: `docs/specifications/SchemaModel.md`;
-- data quality constraint boundaries: `docs/specifications/DataQualityConstraints.md`;
-- schema declaration syntax: `docs/specifications/SchemaDeclarationSyntax.md`;
-- schema inheritance: `docs/specifications/SchemaInheritance.md`;
-- nullability and assignment compatibility: `docs/specifications/NullabilityAndTypeCoercion.md`;
-- join semantics: `docs/specifications/JoinSemantics.md`;
-- CLI command behavior and stale generated output checks: `docs/specifications/CLI.md`;
-- streaming constraints: `docs/specifications/StreamingCompatibility.md`;
-- compatibility policy: `docs/specifications/CompatibilityPolicy.md`.
+- public DSL and transform IR: [DSL.md](DSL.md);
+- online/generated execution parity: [ExecutionSemanticContract.md](ExecutionSemanticContract.md);
+- online and generated runtime selection: [OnlineExecution.md](OnlineExecution.md);
+- schema model and Spark type mapping: [SchemaModel.md](SchemaModel.md);
+- data quality constraint boundaries: [DataQualityConstraints.md](DataQualityConstraints.md);
+- schema declaration syntax: [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md);
+- schema inheritance: [SchemaInheritance.md](SchemaInheritance.md);
+- nullability and assignment compatibility: [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md);
+- join semantics: [JoinSemantics.md](JoinSemantics.md);
+- CLI command behavior and stale generated output checks: [CLI.md](CLI.md);
+- streaming constraints: [StreamingCompatibility.md](StreamingCompatibility.md);
+- compatibility policy: [CompatibilityPolicy.md](CompatibilityPolicy.md).
 
 When this document overlaps those specifications, this document owns how already-decided semantics are rendered as
 PySpark source text. The shared execution contract owns parity between online and generated PySpark consumers. The
@@ -282,7 +282,7 @@ Rules:
 - Online execution materializes equivalent Spark schemas from the same `SchemaDef.fields` model instead of importing
   generated schema modules.
 - Inherited fields are rendered in effective schema order after inheritance resolution.
-- Spark type mapping follows `docs/specifications/SchemaModel.md`.
+- Spark type mapping follows [SchemaModel.md](SchemaModel.md).
 - Nested `Struct(...)` fields render nested `T.StructType(...)` values.
 - `Array(...)` and `Map(...)` preserve item, key, value, and nullability metadata.
 - `primary_key` and Structure-only metadata do not affect Spark `StructField` nullability except where schema model
@@ -427,7 +427,7 @@ Rules:
 - Python literals lower to `F.lit(...)` where PySpark requires a Column.
 - `None` lowers to `F.lit(None)` with an explicit cast when target context requires one.
 - String, numeric, boolean, date, and timestamp literals follow
-  `docs/specifications/NullabilityAndTypeCoercion.md`.
+  [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md).
 - Helper calls lower to PySpark functions selected by `PySparkCapabilities`.
 - Boolean combination lowers with Column operators `&`, `|`, and `~` with parentheses that preserve source semantics.
 - Normal equality lowers to `==`.
@@ -474,7 +474,7 @@ enter the next step.
 
 ## Join Lowering
 
-Joins lower according to `docs/specifications/JoinSemantics.md`.
+Joins lower according to [JoinSemantics.md](JoinSemantics.md).
 
 Canonical generated shape:
 
@@ -592,7 +592,7 @@ future runtime helper contract explicitly chooses no-op modes.
 ## Capability Registry
 
 PySpark API choices must go through the backend capability interface specified in
-`docs/specifications/BackendCapabilities.md`.
+[BackendCapabilities.md](BackendCapabilities.md).
 
 Rules:
 
@@ -642,7 +642,7 @@ Rules:
 - Sort independent artifacts and import names deterministically.
 - Use stable alias names.
 - Use stable line wrapping through the formatter or renderer.
-- Normalize line endings for `--fail-on-diff` comparisons as specified by `docs/specifications/CLI.md`.
+- Normalize line endings for `--fail-on-diff` comparisons as specified by [CLI.md](CLI.md).
 
 Determinism is required for code review, snapshot tests, and CI stale-output checks.
 
@@ -787,7 +787,7 @@ See docs/specifications/PySparkCodeGeneration.md
 ## Generated Mode Import Failures
 
 Generated code generation must support the generated execution diagnostics specified by
-`docs/specifications/OnlineExecution.md`.
+[OnlineExecution.md](OnlineExecution.md).
 
 When generated mode cannot import a generated class, runtime diagnostics should suggest:
 
@@ -890,7 +890,7 @@ The implementation is complete when tests prove:
   target backend, and target capabilities.
 - `execution_mode = "generated"` can import a generated class and run it through `GeneratedPySparkRunner`.
 - Missing generated classes in generated mode produce the import-failure guidance from
-  `docs/specifications/OnlineExecution.md`.
+  [OnlineExecution.md](OnlineExecution.md).
 - `structure check` and `structure compile` run without PySpark, Java, Spark startup, a `SparkSession`, or a Spark
   cluster.
 - Generated and online execution produce equivalent DataFrames for projection, filtering, expression helpers, joins,
@@ -900,7 +900,7 @@ The implementation is complete when tests prove:
 
 Generator implementation tests belong under `tests/app/compiler/...` or the current compiler app test package
 equivalent. Runtime parity tests that require Spark belong under `tests/app/runtime/...` or the current runtime test
-package equivalent. Specification-backed user stories from `docs/specifications/UserStories.md` belong under `tests/user_stories/...`.
+package equivalent. Specification-backed user stories from [UserStories.md](UserStories.md) belong under `tests/user_stories/...`.
 Tests that directly back this specification document belong under `tests/specifications/pyspark-code-generation/...`.
 
 Recommended test groups:

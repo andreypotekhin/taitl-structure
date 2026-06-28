@@ -63,7 +63,7 @@ the pre-coding decision inventory.
 
 ## Challenge Resolution Index
 
-The pre-coding documentation gaps from `docs/dev/design/Challenges.md` are resolved as follows:
+The pre-coding documentation gaps from [Challenges.md](Challenges.md) are resolved as follows:
 
 | Challenge | Resolution |
 | --- | --- |
@@ -83,16 +83,16 @@ The pre-coding documentation gaps from `docs/dev/design/Challenges.md` are resol
 | C14 | `CompilerPerformanceTargets.md`; production incremental compile remains v2 implementation work |
 | C15 | `D06182606.No-spark-compile-dependency.md` |
 | C16 | `Readme.md` generated-code comparison |
-| C17 | `docs/dev/Testing.md`; `docs/dev/Style.md`; feature-spec acceptance criteria |
+| C17 | [Testing.md](../Testing.md); [Style.md](../Style.md); feature-spec acceptance criteria |
 | C18 | `ConfigSchema.md` |
-| C19 | `docs/Compatibility.md`; `CompatibilityPolicy.md`; `D06182605.Versioning-and-compatibility-policy.md` |
+| C19 | [Compatibility.md](../../Compatibility.md); `CompatibilityPolicy.md`; `D06182605.Versioning-and-compatibility-policy.md` |
 | C22 | `P06202601.v1-first-executable-slice.plan.md`; first executable slice model fixture; Sprint 01 plan |
 | C23 | `BackendCapabilities.md`; `BackendCapabilities` design; `D06202604.Backend-capability-interface.md` |
 | C24 | `ExecutionSemanticContract.md`; `ExecutionSemanticContract` design; `D06202601` |
-| C25 | `Readme.md`; `docs/Compatibility.md`; compileability checker design |
+| C25 | `Readme.md`; [Compatibility.md](../../Compatibility.md); compileability checker design |
 | C26 | `DataQualityConstraints.md`; `DataQualityConstraints` design; `D06202602` |
 | C27 | `AnalyticalJoinCoverage.md`; `AnalyticalJoinCoverage` design; `D06212601` |
-| C29 | `docs/Diagnostics.md`; `Diagnostics.md`; `DiagnosticsContract` design; `D06202603` |
+| C29 | [Diagnostics.md](../../Diagnostics.md); `Diagnostics.md`; `DiagnosticsContract` design; `D06202603` |
 
 C20 is superseded by C31. C21, C28, C30, and C31 remain real gaps, but they are not missing semantic design or
 specification documents. They track executable package wiring, operational integration recipes, executable test
@@ -223,7 +223,7 @@ JOIN-W0601  join_one uniqueness is not proven
 BACKEND-E2401 unsupported backend target
 ```
 
-Exact code numbers are owned by `docs/specifications/Diagnostics.md` and the diagnostic registry. Feature specs may
+Exact code numbers are owned by [Diagnostics.md](../../specifications/Diagnostics.md) and the diagnostic registry. Feature specs may
 use provisional examples until the registry exists, but implementation tests must assert registered codes.
 
 ## Implementation Checklist
@@ -234,11 +234,11 @@ use provisional examples until the registry exists, but implementation tests mus
 4. Implement import-safe schema and transform metadata before symbolic execution.
 5. Implement schema model, nullability, validation, hooks, joins, and generation against the shared IR contracts.
 6. Add diagnostics with links to the most specific public documentation.
-7. Add spec tests before marking user stories complete in `docs/specifications/UserStories.md`.
+7. Add spec tests before marking user stories complete in [UserStories.md](../../specifications/UserStories.md).
 
 ## Acceptance Criteria
 
-- Every item from `docs/dev/design/Challenges.md` under "Recommended Pre-Coding Docs to Add" has an owning
+- Every item from [Challenges.md](Challenges.md) under "Recommended Pre-Coding Docs to Add" has an owning
   implementation-ready specification.
 - A contributor can identify whether a feature belongs in Sprint 01, v1, v2, v3, or v4 without reading design discussion
   transcripts.

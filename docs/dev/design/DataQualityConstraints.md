@@ -80,7 +80,7 @@ Every data-quality diagnostic should include:
 - cost class;
 - whether the check can trigger a Spark action;
 - suggested source or configuration change;
-- link to `docs/specifications/DataQualityConstraints.md`.
+- link to [DataQualityConstraints.md](../../specifications/DataQualityConstraints.md).
 
 ## Generated Schema Reuse
 

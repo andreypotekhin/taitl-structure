@@ -31,14 +31,14 @@ This specification owns the compiler behavior for:
 
 Related specifications own detailed semantics for narrower topics:
 
-- public DSL shape: `docs/specifications/DSL.md`;
-- schema construction and base overlays: `docs/specifications/SchemaDeclarationSyntax.md`;
-- schema inheritance and field origin: `docs/specifications/SchemaInheritance.md`;
-- expression type and nullability checks: `docs/specifications/NullabilityAndTypeCoercion.md`;
-- join condition, alias, and cardinality checks: `docs/specifications/JoinSemantics.md`;
-- online lowering: `docs/specifications/OnlineExecution.md`;
-- streaming checks: `docs/specifications/StreamingCompatibility.md`;
-- CLI behavior and metrics: `docs/specifications/CLI.md`.
+- public DSL shape: [DSL.md](DSL.md);
+- schema construction and base overlays: [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md);
+- schema inheritance and field origin: [SchemaInheritance.md](SchemaInheritance.md);
+- expression type and nullability checks: [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md);
+- join condition, alias, and cardinality checks: [JoinSemantics.md](JoinSemantics.md);
+- online lowering: [OnlineExecution.md](OnlineExecution.md);
+- streaming checks: [StreamingCompatibility.md](StreamingCompatibility.md);
+- CLI behavior and metrics: [CLI.md](CLI.md).
 
 When this document overlaps with a narrower specification, this document owns how symbolic execution captures the
 source event. The narrower specification owns final validity, type rules, backend capability, and runtime behavior.

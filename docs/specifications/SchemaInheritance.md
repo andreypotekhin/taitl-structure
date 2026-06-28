@@ -1,7 +1,7 @@
 ﻿# Schema Inheritance
 
 This specification completes the inheritance semantics referenced by
-`docs/specifications/SchemaDeclarationSyntax.md`.
+[SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md).
 
 ## Purpose
 
@@ -201,7 +201,7 @@ uses schema identity unless a compatibility rule explicitly asks for structural 
 ## Base Overlay Construction
 
 Transform methods may construct inherited output schemas with `SchemaClass.base(...)(...)`, as specified in
-`docs/specifications/SchemaDeclarationSyntax.md`.
+[SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md).
 
 For a schema with one direct schema base, `base(...)` takes one symbolic source row compatible with that base. For a
 schema with multiple direct schema bases, `base(...)` takes one symbolic source row for each direct base in the same

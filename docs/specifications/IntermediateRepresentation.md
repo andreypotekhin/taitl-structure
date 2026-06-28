@@ -1,6 +1,6 @@
 # Intermediate Representation
 
-This specification replaces `docs/dev/design/IntermediateRepresentation.md` as the implementation-level IR reference.
+This specification replaces [IntermediateRepresentation.md](../dev/design/IntermediateRepresentation.md) as the implementation-level IR reference.
 
 ## Purpose
 
@@ -30,18 +30,18 @@ This specification owns:
 This specification does not own the public authoring API or backend rendering details. Those are owned by narrower
 specifications:
 
-- public DSL and symbolic execution entrypoints: `docs/specifications/DSL.md`;
-- schema model: `docs/specifications/SchemaModel.md`;
-- schema declaration syntax: `docs/specifications/SchemaDeclarationSyntax.md`;
-- schema inheritance: `docs/specifications/SchemaInheritance.md`;
-- type compatibility and nullability: `docs/specifications/NullabilityAndTypeCoercion.md`;
-- join semantics: `docs/specifications/JoinSemantics.md`;
-- online runtime behavior: `docs/specifications/OnlineExecution.md`;
-- generated PySpark rendering: `docs/specifications/PySparkCodeGeneration.md`;
-- streaming compatibility classification: `docs/specifications/StreamingCompatibility.md`;
-- CLI behavior and diff checks: `docs/specifications/CLI.md`;
-- compatibility policy: `docs/specifications/CompatibilityPolicy.md`;
-- diagnostic code, registry, and documentation lifecycle: `docs/specifications/Diagnostics.md`.
+- public DSL and symbolic execution entrypoints: [DSL.md](DSL.md);
+- schema model: [SchemaModel.md](SchemaModel.md);
+- schema declaration syntax: [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md);
+- schema inheritance: [SchemaInheritance.md](SchemaInheritance.md);
+- type compatibility and nullability: [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md);
+- join semantics: [JoinSemantics.md](JoinSemantics.md);
+- online runtime behavior: [OnlineExecution.md](OnlineExecution.md);
+- generated PySpark rendering: [PySparkCodeGeneration.md](PySparkCodeGeneration.md);
+- streaming compatibility classification: [StreamingCompatibility.md](StreamingCompatibility.md);
+- CLI behavior and diff checks: [CLI.md](CLI.md);
+- compatibility policy: [CompatibilityPolicy.md](CompatibilityPolicy.md);
+- diagnostic code, registry, and documentation lifecycle: [Diagnostics.md](Diagnostics.md).
 
 When this document overlaps another specification, this document owns the IR shape and invariants. The narrower
 semantic specification owns feature behavior.
@@ -84,7 +84,7 @@ PySpark DataFrame and Column operations at run time.
 
 For PySpark targets, online execution and generated code share an additional target semantic layer after IR validation.
 Checked `TransformPlan` IR plus `PySparkCapabilities` lowers to deterministic PySpark execution recipes as specified
-by `docs/specifications/ExecutionSemanticContract.md`. The IR remains backend-neutral; the shared recipes are
+by [ExecutionSemanticContract.md](ExecutionSemanticContract.md). The IR remains backend-neutral; the shared recipes are
 target-specific consumer input.
 
 ## Core Model
@@ -502,7 +502,7 @@ Rules:
 - `right_fields` records right-side fields needed by downstream filters, projections, diagnostics, or traceability.
 - IR must not silently deduplicate right-side rows.
 
-Detailed join behavior is owned by `docs/specifications/JoinSemantics.md`.
+Detailed join behavior is owned by [JoinSemantics.md](JoinSemantics.md).
 
 ## HookCall Operation
 
@@ -621,7 +621,7 @@ Literal
 
 Rules:
 
-- Literal typing follows `docs/specifications/NullabilityAndTypeCoercion.md`.
+- Literal typing follows [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md).
 - `None` is represented explicitly and is nullable.
 - Decimal, date, timestamp, string, numeric, and boolean literal metadata must be deterministic.
 - Literal values must be serializable or have a deterministic diagnostic rendering.
@@ -670,7 +670,7 @@ Supported v1 operator families:
 Rules:
 
 - Operand types must be checked before execution or generation.
-- Nullability and type coercion follow `docs/specifications/NullabilityAndTypeCoercion.md`.
+- Nullability and type coercion follow [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md).
 - Join key extraction may normalize equality operand order, but the original expression tree should remain available
   for diagnostics when practical.
 
@@ -985,7 +985,7 @@ Rules:
 ## Diagnostics
 
 Diagnostic code format, severity names, lifecycle rules, registry requirements, and stable documentation anchors are
-owned by `docs/specifications/Diagnostics.md`. This section defines IR-specific context and message content.
+owned by [Diagnostics.md](Diagnostics.md). This section defines IR-specific context and message content.
 
 IR diagnostics must include:
 
@@ -1221,14 +1221,14 @@ The implementation is complete when tests prove:
 - backend capability checks consume IR plus target metadata without live Spark objects;
 - online execution and generated PySpark emission consume the same checked `TransformPlan`;
 - online execution and generated PySpark emission share the PySpark execution recipes defined by
-  `docs/specifications/ExecutionSemanticContract.md`;
+  [ExecutionSemanticContract.md](ExecutionSemanticContract.md);
 - `structure check` and `structure compile` can build and validate IR without PySpark, Java, Spark startup,
   `SparkSession`, or a Spark cluster.
 
 ## Test Placement
 
 IR implementation tests belong under the compiler app test package, such as `tests/app/compiler/...`, or the current
-project-equivalent compiler app location. Specification-backed user stories from `docs/specifications/UserStories.md` belong
+project-equivalent compiler app location. Specification-backed user stories from [UserStories.md](UserStories.md) belong
 under `tests/user_stories/...`. Tests that directly back this specification document belong under
 `tests/specifications/intermediate-representation/...`.
 

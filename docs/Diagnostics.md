@@ -1,7 +1,7 @@
 # Diagnostics
 
-Below is an index for published diagnostic codes. Ror full diagnostic contract see
-[docs/specifications/Diagnostics.md](docs/specifications/Diagnostics.md).
+Below is an index for published diagnostic codes. For the full diagnostic contract, see
+[Diagnostics.md](specifications/Diagnostics.md).
 
 ## Active Codes
 
@@ -30,58 +30,58 @@ Below is an index for published diagnostic codes. Ror full diagnostic contract s
 ## Anchors
 
 ### CONF-E0101
-See [the full specification](docs/specifications/Diagnostics.md#conf-e0101).
+See [Diagnostics.md](specifications/Diagnostics.md#conf-e0101).
 
 ### CONF-E0102
-See [the full specification](docs/specifications/Diagnostics.md#conf-e0102).
+See [Diagnostics.md](specifications/Diagnostics.md#conf-e0102).
 
 ### DSL-E0401
-See [the full specification](docs/specifications/Diagnostics.md#dsl-e0401).
+See [Diagnostics.md](specifications/Diagnostics.md#dsl-e0401).
 
 ### DSL-E0402
-See [the full specification](docs/specifications/Diagnostics.md#dsl-e0402).
+See [Diagnostics.md](specifications/Diagnostics.md#dsl-e0402).
 
 ### SCHEMA-E0301
-See [the full specification](docs/specifications/Diagnostics.md#schema-e0301).
+See [Diagnostics.md](specifications/Diagnostics.md#schema-e0301).
 
 ### SCHEMA-E0302
-See [the full specification](docs/specifications/Diagnostics.md#schema-e0302).
+See [Diagnostics.md](specifications/Diagnostics.md#schema-e0302).
 
 ### SCHEMA-E0303
-See [the full specification](docs/specifications/Diagnostics.md#schema-e0303).
+See [Diagnostics.md](specifications/Diagnostics.md#schema-e0303).
 
 ### JOIN-E0601
-See [the full specification](docs/specifications/Diagnostics.md#join-e0601).
+See [Diagnostics.md](specifications/Diagnostics.md#join-e0601).
 
 ### JOIN-W0601
-See [the full specification](docs/specifications/Diagnostics.md#join-w0601).
+See [Diagnostics.md](specifications/Diagnostics.md#join-w0601).
 
 ### GEN-E0901
-See [the full specification](docs/specifications/Diagnostics.md#gen-e0901).
+See [Diagnostics.md](specifications/Diagnostics.md#gen-e0901).
 
 ### GEN-E0902
-See [the full specification](docs/specifications/Diagnostics.md#gen-e0902).
+See [Diagnostics.md](specifications/Diagnostics.md#gen-e0902).
 
 ### ONLINE-E1201
-See [the full specification](docs/specifications/Diagnostics.md#online-e1201).
+See [Diagnostics.md](specifications/Diagnostics.md#online-e1201).
 
 ### ONLINE-E1202
-See [the full specification](docs/specifications/Diagnostics.md#online-e1202).
+See [Diagnostics.md](specifications/Diagnostics.md#online-e1202).
 
 ### ONLINE-E1203
-See [the full specification](docs/specifications/Diagnostics.md#online-e1203).
+See [Diagnostics.md](specifications/Diagnostics.md#online-e1203).
 
 ### BACKEND-E2401
-See [the full specification](docs/specifications/Diagnostics.md#backend-e2401).
+See [Diagnostics.md](specifications/Diagnostics.md#backend-e2401).
 
 ### BACKEND-E2402
-See [the full specification](docs/specifications/Diagnostics.md#backend-e2402).
+See [Diagnostics.md](specifications/Diagnostics.md#backend-e2402).
 
 ### CLI-X1101
-See [the full specification](docs/specifications/Diagnostics.md#cli-x1101).
+See [Diagnostics.md](specifications/Diagnostics.md#cli-x1101).
 
 ### STREAM-E0801
-See [the full specification](docs/specifications/Diagnostics.md#stream-e0801).
+See [Diagnostics.md](specifications/Diagnostics.md#stream-e0801).
 
 ### STREAM-W0801
-See [the full specification](docs/specifications/Diagnostics.md#stream-w0801).
+See [Diagnostics.md](specifications/Diagnostics.md#stream-w0801).

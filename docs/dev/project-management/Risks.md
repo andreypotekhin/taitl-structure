@@ -50,7 +50,7 @@ Online or generated execution may become incompatible with newer Spark versions.
 ### Mitigation
 
 - Isolate PySpark calls in the PySpark target layer.
-- Maintain the backend capability interface specified in `docs/specifications/BackendCapabilities.md`.
+- Maintain the backend capability interface specified in [BackendCapabilities.md](../../specifications/BackendCapabilities.md).
 - Run multi-version CI.
 - Snapshot generated code and run online parity tests per target version where necessary.
 

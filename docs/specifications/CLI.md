@@ -73,7 +73,7 @@ Commands that compile, check, explain, or clean generated artifacts use this pre
 
 The resolved configuration must be visible to compiler phases as a single immutable config object. Unknown keys and
 invalid values are errors. Configuration diagnostics must include the setting path, invalid value, allowed values or
-expected type when known, suggested fix, and a link to `docs/Configuration.md` or the relevant specification.
+expected type when known, suggested fix, and a link to [Configuration.md](../Configuration.md) or the relevant specification.
 
 Recommended initial CLI override flags:
 
@@ -338,7 +338,7 @@ When used with `--fail-on-diff`, `files written` means files written to the temp
 ## Diagnostics
 
 Diagnostic code format, severity names, lifecycle rules, registry requirements, and stable documentation anchors are
-owned by `docs/specifications/Diagnostics.md`. This section defines CLI rendering and command-specific context.
+owned by [Diagnostics.md](Diagnostics.md). This section defines CLI rendering and command-specific context.
 
 CLI diagnostics should wrap compiler, configuration, discovery, generation, diff, and clean failures in one consistent
 shape:
@@ -442,7 +442,7 @@ The CLI implementation is complete when tests prove:
 ## Test Placement
 
 CLI implementation tests belong under `tests/app/cli/...`. Specification-backed user stories from
-`docs/specifications/UserStories.md` should have tests under `tests/user_stories/...`. Tests that directly back this specification
+[UserStories.md](UserStories.md) should have tests under `tests/user_stories/...`. Tests that directly back this specification
 document belong under `tests/specifications/cli/...`.
 
 Recommended test groups:
