@@ -42,8 +42,6 @@ format: install
 
 lint: install
 	$(POETRY) run isort $(PYTHON_ROOTS)
-	$(POETRY) run black $(SOURCE_ROOTS)
-	$(POETRY) run black $(TEST_ROOTS)
 	$(POETRY) run flake8 $(PYTHON_ROOTS)
 
 type: install
