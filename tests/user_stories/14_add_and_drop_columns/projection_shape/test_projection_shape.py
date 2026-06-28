@@ -33,9 +33,6 @@ def test_generated_projection_uses_select_instead_of_dataframe_drop(orders_trans
 
     assert '        published = orders.alias("order_with_promotion")' in orders_transform_text
     assert "        published = published.select(" in orders_transform_text
-    assert (
-        'F.col("order_with_promotion.product_name").cast(T.StringType()).alias("product_name")'
-        in orders_transform_text
-    )
+    assert 'F.col("order_with_promotion.product_name")' in orders_transform_text
     assert 'F.col("order_with_promotion.product_id").alias("product_id")' not in orders_transform_text
     assert ".drop(" not in orders_transform_text

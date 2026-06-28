@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -45,7 +46,9 @@ def run(*args: str, check: bool = True) -> None:
         str(COMPOSE),
         *args,
     ]
-    result = subprocess.run(command, cwd=ROOT)
+    env = os.environ.copy()
+    env["STRUCTURE_ROOT"] = str(ROOT)
+    result = subprocess.run(command, cwd=ROOT, env=env)
     if check and result.returncode:
         raise SystemExit(result.returncode)
     if not check and result.returncode:

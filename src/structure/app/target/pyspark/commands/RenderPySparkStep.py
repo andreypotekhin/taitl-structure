@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 
+from structure.app.dsl.model.types.DecimalType import DecimalType
 from structure.app.dsl.model.types.StructType import StructType
+from structure.app.dsl.model.types.StructureType import StructureType
 from structure.app.target.pyspark.commands.RenderPySparkExpression import render_pyspark_expression
 from structure.app.target.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
@@ -114,10 +116,32 @@ class RenderPySparkStep:
 
     def _assignment(self, assignment, *, scope_aliases: dict[str, str]) -> str:
         expression = render_pyspark_expression(assignment.expression, scope_aliases=scope_aliases)
-        if isinstance(assignment.field.type, StructType):
+        if self._needs_cast(assignment):
+            expression = f"{expression}.cast({render_pyspark_schema.type(assignment.field.type)})"
+        if self._needs_alias(assignment):
             return f"{expression}.alias({self._literal(assignment.field.column)})"
-        target_type = render_pyspark_schema.type(assignment.field.type)
-        return f"{expression}.cast({target_type}).alias({self._literal(assignment.field.column)})"
+        return expression
+
+    def _needs_cast(self, assignment) -> bool:
+        if isinstance(assignment.field.type, StructType):
+            return False
+        if assignment.expression.type is None:
+            return True
+        if not self._same_type(assignment.expression.type, assignment.field.type):
+            return True
+        return assignment.expression.kind == "sub" and isinstance(assignment.field.type, DecimalType)
+
+    def _needs_alias(self, assignment) -> bool:
+        if assignment.expression.kind != "field":
+            return True
+        return assignment.expression.data["field"] != assignment.field.column
+
+    def _same_type(self, actual: StructureType, target: StructureType) -> bool:
+        if actual.name != target.name:
+            return False
+        if isinstance(actual, DecimalType) and isinstance(target, DecimalType):
+            return actual.precision == target.precision and actual.scale == target.scale
+        return actual == target or actual.__class__.__name__.removesuffix("Type") == target.__class__.__name__
 
     def _target(self, step: PySparkStepRecipe | PySparkOutputRecipe) -> str:
         if isinstance(step, PySparkStepRecipe):

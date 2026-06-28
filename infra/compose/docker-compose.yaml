@@ -2,7 +2,7 @@ services:
   spark35-master:
     image: structure-integration-pyspark35
     build:
-      context: ../..
+      context: ${STRUCTURE_ROOT:-../..}
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK35_VERSION}
@@ -15,7 +15,7 @@ services:
   spark35-worker:
     image: structure-integration-pyspark35
     build:
-      context: ../..
+      context: ${STRUCTURE_ROOT:-../..}
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK35_VERSION}
@@ -29,7 +29,7 @@ services:
   spark40-master:
     image: structure-integration-pyspark40
     build:
-      context: ../..
+      context: ${STRUCTURE_ROOT:-../..}
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
@@ -42,7 +42,7 @@ services:
   spark40-worker:
     image: structure-integration-pyspark40
     build:
-      context: ../..
+      context: ${STRUCTURE_ROOT:-../..}
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
@@ -56,7 +56,7 @@ services:
   structure-integration-pyspark35:
     image: structure-integration-pyspark35
     build:
-      context: ../..
+      context: ${STRUCTURE_ROOT:-../..}
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK35_VERSION}
@@ -76,13 +76,18 @@ services:
       STRUCTURE_SPARK35_MASTER: spark://spark35-master:7077
       STRUCTURE_SPARK40_MASTER: spark://spark40-master:7077
     volumes:
-      - ../..:/workspace:ro
-      - ../../.pytest-workspace-tmp/integration:/workspace/.pytest-workspace-tmp/integration
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}
+        target: /workspace
+        read_only: true
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
+        target: /workspace/.pytest-workspace-tmp/integration
 
   structure-integration-pyspark40:
     image: structure-integration-pyspark40
     build:
-      context: ../..
+      context: ${STRUCTURE_ROOT:-../..}
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
@@ -102,5 +107,10 @@ services:
       STRUCTURE_SPARK35_MASTER: spark://spark35-master:7077
       STRUCTURE_SPARK40_MASTER: spark://spark40-master:7077
     volumes:
-      - ../..:/workspace:ro
-      - ../../.pytest-workspace-tmp/integration:/workspace/.pytest-workspace-tmp/integration
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}
+        target: /workspace
+        read_only: true
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
+        target: /workspace/.pytest-workspace-tmp/integration

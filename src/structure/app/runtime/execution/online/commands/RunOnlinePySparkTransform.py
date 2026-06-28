@@ -118,15 +118,7 @@ class RunOnlinePySparkTransform:
             for result in step.results:
                 projected = df.select(
                     *(
-                        self._validator.cast(
-                            self._expressions.evaluate(
-                                assignment.expression,
-                                functions=functions,
-                                aliases=self._scope_aliases(step),
-                            ),
-                            assignment.field,
-                            types=types,
-                        ).alias(assignment.field.column)
+                        self._assignment(assignment, step=step, functions=functions, types=types)
                         for assignment in result.projection
                     )
                 )
@@ -153,13 +145,7 @@ class RunOnlinePySparkTransform:
 
         df = df.select(
             *(
-                self._validator.cast(
-                    self._expressions.evaluate(
-                        assignment.expression, functions=functions, aliases=self._scope_aliases(step)
-                    ),
-                    assignment.field,
-                    types=types,
-                ).alias(assignment.field.column)
+                self._assignment(assignment, step=step, functions=functions, types=types)
                 for assignment in step.projection
             )
         )
@@ -205,18 +191,21 @@ class RunOnlinePySparkTransform:
         if output.projection:
             df = df.select(
                 *(
-                    self._validator.cast(
-                        self._expressions.evaluate(
-                            assignment.expression, functions=functions, aliases=self._scope_aliases(output)
-                        ),
-                        assignment.field,
-                        types=types,
-                    ).alias(assignment.field.column)
+                    self._assignment(assignment, step=output, functions=functions, types=types)
                     for assignment in output.projection
                 )
             )
         self._validator.validate(df, output.validation, types=types)
         return df
+
+    def _assignment(self, assignment, *, step, functions, types):
+        column = self._expressions.evaluate(
+            assignment.expression,
+            functions=functions,
+            aliases=self._scope_aliases(step),
+        )
+        column = self._validator.cast(column, assignment.field, assignment.expression, types=types)
+        return self._validator.alias(column, assignment.field, assignment.expression)
 
     def _scope_aliases(
         self, step: PySparkStepRecipe | PySparkOutputRecipe, join: PySparkJoinRecipe | None = None
