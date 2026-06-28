@@ -71,7 +71,7 @@ class EnrichOrdersGenerated:
             F.lower(F.trim(F.col("id"))).alias("id"),
             F.lower(F.trim(F.col("customer_id"))).alias("customer_id"),
             F.lower(F.trim(F.col("product_id"))).alias("product_id"),
-            F.lower(F.trim(F.col("promotion_code"))).alias("promotion_code"),
+            F.lower(F.trim(F.col("promo-code"))).alias("promotion_code"),
             total.alias("total"),
             discount.alias("discount"),
             (total - discount).alias("net_total"),

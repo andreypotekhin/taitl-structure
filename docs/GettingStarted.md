@@ -48,6 +48,7 @@ class OrderRaw(Structure):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
+    promotion_code = field(String(), nullable=True, alias="promo-code")
     total = field(String(), nullable=True)
 
 
@@ -55,6 +56,7 @@ class OrderNormalized(Structure):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
+    promotion_code = field(String(), nullable=True)
     total = field(Decimal(12, 2), nullable=True)
 
 
@@ -62,6 +64,10 @@ class OrderWithCustomer(OrderNormalized):
     customer_name = field(String(), nullable=True)
     customer_tier = field(String(), nullable=True)
 ```
+
+`alias=` names the Spark DataFrame column when it differs from the Python field name. In this example, `OrderRaw`
+expects `promo-code` in the input DataFrame, while `OrderNormalized` emits `promotion_code` because aliases are
+schema-local unless inherited.
 
 ```python
 # src/orders/schemas/customer.py

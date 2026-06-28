@@ -220,6 +220,28 @@ class EnrichOrdersGenerated:
 The generated code is longer than the source, but that is the point when generated mode is useful: Structure lets
 developers author compact schema logic while still producing explicit, reviewable PySpark.
 
+## Projection Narrowing
+
+Use `project(source, TargetSchema)` to copy same-name compatible fields without repeating every column, or
+`project(source, ["field", ...])` to narrow by source field names. For adjusted fields, use
+`TargetSchema.project(source)(...)` and override only the changed values.
+
+```python
+def publish(self, order: OrderWithPromotion) -> OrderPublished:
+    return project(order, OrderPublished)
+
+
+def publish_valid(self, order: OrderWithPromotion) -> OrderPublished:
+    return where(order.id.is_not_null()).project(order, OrderPublished)
+
+
+def normalize(self, order: OrderRaw) -> OrderNormalized:
+    return OrderNormalized.project(order)(
+        total=to_decimal(order.total, precision=12, scale=2),
+        quantity=coalesce(order.quantity, 1),
+    )
+```
+
 ## Performance Focus
 
 Structure is intentionally strict. Compiled subtransforms must lower to Spark-plan-visible expressions. Unsupported
@@ -333,6 +355,14 @@ existing `StructureSession`.
 
 Generated classes preserve Spark schema shape: field names, field order, types, nullability, arrays, maps, decimals,
 and nested structs. They do not infer primary keys, descriptions, inheritance, or data-quality constraints.
+Spark fields that are not Python identifiers are generated with safe Python names and `alias=...`, for example:
+
+```python
+promotion_code = field(String(), nullable=True, alias="promo-code")
+```
+
+Python code uses `promotion_code`; Spark schemas, validation, and projections use `promo-code`. Aliases are
+schema-local unless inherited, and Structure passes alias strings through to Spark without sanitizing them.
 
 ## License
 

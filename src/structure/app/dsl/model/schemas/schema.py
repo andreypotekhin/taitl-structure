@@ -23,14 +23,17 @@ def field(
     *,
     nullable: bool = True,
     primary_key: bool = False,
+    alias: str | None = None,
     metadata: Mapping[str, object] | None = None,
     description: str | None = None,
 ) -> FieldDeclaration:
     _require_type(type)
+    _require_alias(alias)
     return FieldDeclaration(
         type,
         nullable=nullable,
         primary_key=primary_key,
+        alias=alias,
         metadata=metadata,
         description=description,
     )
@@ -39,3 +42,8 @@ def field(
 def _require_type(type: StructureType) -> None:
     if not isinstance(type, StructureType):
         raise TypeError("field(...) requires an explicit Structure type object such as String()")
+
+
+def _require_alias(alias: str | None) -> None:
+    if alias is not None and (not isinstance(alias, str) or not alias):
+        raise ValueError("field alias must be a non-empty string when supplied")

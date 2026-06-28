@@ -40,7 +40,7 @@ def test_v1_first_slice_compiles_to_normalization_plan() -> None:
     assert step.ordinal == 0
 
     assert [predicate.kind for predicate in step.filters] == ["is_not_null", "is_not_null", "is_not_null"]
-    assert [predicate.args[0].data for predicate in step.filters] == [
+    assert [_field(predicate.args[0].data) for predicate in step.filters] == [
         {"scope": "orders", "field": "id"},
         {"scope": "orders", "field": "customer_id"},
         {"scope": "orders", "field": "product_id"},
@@ -74,7 +74,7 @@ def test_v1_first_slice_total_projection_captures_decimal_coalesce() -> None:
     decimal_cast, fallback = total.args
     assert decimal_cast.kind == "call"
     assert decimal_cast.data == {"function": "to_decimal", "precision": 12, "scale": 2}
-    assert decimal_cast.args[0].data == {"scope": "orders", "field": "total"}
+    assert _field(decimal_cast.args[0].data) == {"scope": "orders", "field": "total"}
     assert fallback.kind == "literal"
     assert fallback.data == {"value": 0}
 
@@ -106,3 +106,7 @@ def test_v1_transform_invocation_is_deferred_and_rejects_unknown_inputs() -> Non
 
     assert "unknown input" in message
     assert "orders" in message
+
+
+def _field(data):
+    return {key: data[key] for key in ("scope", "field")}

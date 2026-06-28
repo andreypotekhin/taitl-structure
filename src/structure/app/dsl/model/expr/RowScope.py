@@ -20,5 +20,11 @@ class RowScope:
             kind="field",
             type=field.type,
             nullable=self._structure_scope_nullable or field.nullable,
-            data={"scope": self._structure_scope_name, "field": field.name},
+            data={
+                "scope": self._structure_scope_name,
+                "field": field.column,
+                "name": field.name,
+                "path": (field.column,),
+                "name_path": (field.name,),
+            },
         )

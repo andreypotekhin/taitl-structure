@@ -48,7 +48,7 @@ class EnrichOrdersGenerated:
             F.lower(F.trim(F.col("order_raw.id"))).alias("id"),
             F.lower(F.trim(F.col("order_raw.customer_id"))).alias("customer_id"),
             F.lower(F.trim(F.col("order_raw.product_id"))).alias("product_id"),
-            F.lower(F.trim(F.col("order_raw.promotion_code"))).alias("promotion_code"),
+            F.lower(F.trim(F.col("order_raw.promo-code"))).alias("promotion_code"),
             F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0)).alias("total"),
             F.coalesce(F.col("order_raw.discount").cast("decimal(12,2)"), F.lit(0)).alias("discount"),
             (F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0)) - F.coalesce(F.col("order_raw.discount").cast("decimal(12,2)"), F.lit(0))).alias("net_total"),

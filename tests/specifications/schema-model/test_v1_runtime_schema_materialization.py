@@ -1,6 +1,7 @@
 import sys
 from dataclasses import dataclass
 
+from structure import String, Structure, field
 from structure.app.target.pyspark.api import PySpark
 
 
@@ -130,3 +131,17 @@ def test_v1_runtime_schema_materializes_effective_inherited_fields() -> None:
     assert names == list(OrderPublished._structure_fields)
     assert names[: len(OrderPublication._structure_fields)] == list(OrderPublication._structure_fields)
     assert names[flag_start:] == flag_names
+
+
+def test_v1_runtime_schema_materialization_uses_alias_column_name() -> None:
+    class Raw(Structure):
+        promotion_code = field(String(), nullable=True, alias="promo-code")
+
+    schema = PySpark.schema.materialize()(Raw, types=FakeTypes)
+
+    assert schema.args == (
+        FakeType(
+            "StructField",
+            ("promo-code", FakeType("StringType"), True),
+        ),
+    )

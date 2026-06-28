@@ -7,7 +7,7 @@ TBD
 See /docs/specifications/UserStories.md for detailed description of library external behavior.
 
 ## Terminology
-See Concepts.md for terminology.
+See Terminology.md for project language. See Concepts.md for the concept-test coverage map.
 
 ## Architecture
 Main: Architecture.md

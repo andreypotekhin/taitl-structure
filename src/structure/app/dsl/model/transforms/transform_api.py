@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 import inspect
-from typing import Callable, Iterable, cast, overload
+from typing import Any, Callable, Iterable, TypeVar, cast, overload
 
 from structure.app.compiler.symbolic_execution.model.CompileContext import current_context
 from structure.app.dsl.model.expr.expressions import literal
 from structure.app.dsl.model.expr.InputScope import InputScope, join_one
+from structure.app.dsl.model.schemas.Projection import Projection
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.BindingSelector import BindingSelector, SelectedDeclaration
 from structure.app.dsl.model.transforms.ExprFunction import ExprFunction
@@ -15,6 +16,8 @@ from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.app.dsl.model.transforms.Transform import Transform
+
+Projected = TypeVar("Projected", bound=Structure)
 
 
 @overload
@@ -289,11 +292,67 @@ def after(
     )
 
 
-def where(predicate: object) -> None:
+def where(predicate: object) -> "WhereChain":
     context = current_context()
     if context is None:
         raise RuntimeError("where(...) can only be used inside a compiled Structure subtransform")
     context.filters.append(literal(predicate))
+    return WhereChain()
+
+
+@overload
+def project(source: object, target: type[Projected]) -> Projected: ...
+
+
+@overload
+def project(source: object, target: Iterable[str]) -> Any: ...
+
+
+@overload
+def project(source: object) -> Any: ...
+
+
+def project(source: object, target: type[Structure] | Iterable[str] | None = None) -> object:
+    if target is None:
+        raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
+    if isinstance(source, type) and issubclass(source, Structure):
+        raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
+    if isinstance(target, type):
+        if not issubclass(target, Structure):
+            raise TypeError("project(source, target) requires a Structure schema class target")
+        return Projection(source=source, target=target)
+    return Projection(source=source, fields=_project_fields(target))
+
+
+class WhereChain:
+
+    def where(self, predicate: object) -> "WhereChain":
+        return where(predicate)
+
+    @overload
+    def project(self, source: object, target: type[Projected]) -> Projected: ...
+
+    @overload
+    def project(self, source: object, target: Iterable[str]) -> Any: ...
+
+    def project(self, source: object, target: type[Structure] | Iterable[str]) -> object:
+        return project(source, target)
+
+
+def _project_fields(value: object) -> tuple[str, ...]:
+    if isinstance(value, (str, bytes)):
+        raise TypeError("project(source, fields) requires a non-empty field sequence")
+    try:
+        fields = tuple(cast(Iterable[object], value))
+    except TypeError as error:
+        raise TypeError("project(source, fields) requires a non-empty field sequence") from error
+    if not fields:
+        raise TypeError("project(source, fields) requires at least one field")
+    if not all(isinstance(field, str) for field in fields):
+        raise TypeError("project(source, fields) requires field names as strings")
+    if len(set(fields)) != len(fields):
+        raise TypeError("project(source, fields) cannot repeat field names")
+    return cast(tuple[str, ...], fields)
 
 
 def _hook(

@@ -10,7 +10,7 @@ class OrderRaw(Structure):
     id = field(String(), nullable=False, primary_key=True)
     customer_id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
-    promotion_code = field(String(), nullable=True)
+    promotion_code = field(String(), nullable=True, alias="promo-code")
     total = field(String(), nullable=True)
     discount = field(String(), nullable=True)
     quantity = field(Integer(), nullable=True)

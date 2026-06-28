@@ -18,12 +18,14 @@ class FieldDeclaration:
         *,
         nullable: bool = True,
         primary_key: bool = False,
+        alias: str | None = None,
         metadata: Mapping[str, object] | None = None,
         description: str | None = None,
     ) -> None:
         self.type = type
         self.nullable = False if primary_key else nullable
         self.primary_key = primary_key
+        self.alias = alias
         self.metadata = MappingProxyType(dict(metadata or {}))
         self.description = description
         self.name = ""
@@ -37,6 +39,7 @@ class FieldDeclaration:
             type=self.type,
             nullable=self.nullable,
             primary_key=self.primary_key,
+            alias=self.alias,
             metadata=self.metadata,
             description=self.description,
         )

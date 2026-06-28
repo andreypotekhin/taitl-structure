@@ -8,7 +8,8 @@ def test_class_local_expression_helpers_lower_to_symbolic_calls(orders_plan) -> 
     assert customer_id.data == {"function": "lower"}
     assert customer_id.args[0].kind == "call"
     assert customer_id.args[0].data == {"function": "trim"}
-    assert customer_id.args[0].args[0].data == {"scope": "orders", "field": "customer_id"}
+    field = customer_id.args[0].args[0].data
+    assert {key: field[key] for key in ("scope", "field")} == {"scope": "orders", "field": "customer_id"}
 
 
 def test_expression_helpers_can_be_called_through_self(orders_transform_text) -> None:

@@ -11,9 +11,21 @@ def test_field_access_produces_symbolic_projection_expressions(orders_plan) -> N
     projection = {assignment.field.name: assignment.expression for assignment in normalize.projection}
 
     assert projection["tenant"].kind == "field"
-    assert projection["tenant"].data == {"scope": "orders", "field": "tenant"}
+    assert projection["tenant"].data == {
+        "scope": "orders",
+        "field": "tenant",
+        "name": "tenant",
+        "path": ("tenant",),
+        "name_path": ("tenant",),
+    }
     assert projection["tags"].kind == "field"
-    assert projection["tags"].data == {"scope": "orders", "field": "tags"}
+    assert projection["tags"].data == {
+        "scope": "orders",
+        "field": "tags",
+        "name": "tags",
+        "path": ("tags",),
+        "name_path": ("tags",),
+    }
 
 
 def test_dsl_functions_produce_nested_symbolic_expressions(orders_plan) -> None:
@@ -27,7 +39,43 @@ def test_dsl_functions_produce_nested_symbolic_expressions(orders_plan) -> None:
     assert total.data == {"function": "coalesce"}
     assert decimal_cast.kind == "call"
     assert decimal_cast.data == {"function": "to_decimal", "precision": 12, "scale": 2}
-    assert decimal_cast.args[0].data == {"scope": "orders", "field": "total"}
+    assert decimal_cast.args[0].data == {
+        "scope": "orders",
+        "field": "total",
+        "name": "total",
+        "path": ("total",),
+        "name_path": ("total",),
+    }
+
+
+def test_alias_field_access_uses_spark_column_and_preserves_python_name() -> None:
+    """Aliased fields keep Python names while referencing Spark columns."""
+
+    class Raw(Structure):
+        promotion_code = field(String(), nullable=True, alias="promo-code")
+
+    class Published(Structure):
+        promotion_code = field(String(), nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(promotion_code=row.promotion_code)
+
+    plan = compile_transform(Publish)
+    expression = plan.steps[0].projection[0].expression
+
+    assert plan.steps[0].projection[0].field.column == "promotion_code"
+    assert expression.data == {
+        "scope": "rows",
+        "field": "promo-code",
+        "name": "promotion_code",
+        "path": ("promo-code",),
+        "name_path": ("promotion_code",),
+    }
 
 
 def test_unsupported_python_control_flow_is_rejected() -> None:

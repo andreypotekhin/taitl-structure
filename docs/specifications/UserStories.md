@@ -59,6 +59,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 - + As a developer, I can define fields with types and nullability so that generated Spark schemas are explicit.
 - + As a developer, I can declare fields with explicit type objects such as `String()` and `Decimal(12, 2)` so that
   schema syntax is unambiguous and extensible.
+- + As a developer, I can declare field aliases so that Python schema code can use identifier-safe names while Spark
+  DataFrames keep their source column names.
 - + As a developer, I can declare array, map, and nested struct fields so that semi-structured Spark data remains typed.
 - + As a developer, I can inherit fields from other schema classes so that shared field groups do not need to be
   duplicated.
@@ -181,6 +183,13 @@ This document is a user-story specification for SDLC planning. Early sections co
 - + As a developer, I can drop columns by returning an output schema with fewer fields than the input schema.
 - + As a developer, I can rely on generated projection rather than Spark `drop(...)` so that output schema is deterministic.
 - + As a developer, I can remove temporary intermediate fields in a later subtransform so that final output remains clean.
+- + As a developer, I can return `project(source, TargetSchema)` so that same-name compatible fields are copied without
+  repeating every field.
+- + As a developer, I can return `project(source, [fields])` so that projection can be narrowed by input field names.
+- + As a developer, I can use `where(predicate).project(source, target)` so that filtered projection can be written
+  compactly.
+- + As a developer, I can use `SchemaClass.project(source)(...)` so that copied fields and explicit overrides can be
+  combined.
 
 ## 15. Joins
 

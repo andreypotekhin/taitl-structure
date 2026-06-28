@@ -122,7 +122,7 @@ class RunOnlinePySparkTransform:
                             assignment.expression,
                             functions=functions,
                             aliases=self._scope_aliases(step),
-                        ).alias(assignment.field.name)
+                        ).alias(assignment.field.column)
                         for assignment in result.projection
                     )
                 )
@@ -151,7 +151,7 @@ class RunOnlinePySparkTransform:
             *(
                 self._expressions.evaluate(
                     assignment.expression, functions=functions, aliases=self._scope_aliases(step)
-                ).alias(assignment.field.name)
+                ).alias(assignment.field.column)
                 for assignment in step.projection
             )
         )
@@ -199,7 +199,7 @@ class RunOnlinePySparkTransform:
                 *(
                     self._expressions.evaluate(
                         assignment.expression, functions=functions, aliases=self._scope_aliases(output)
-                    ).alias(assignment.field.name)
+                    ).alias(assignment.field.column)
                     for assignment in output.projection
                 )
             )

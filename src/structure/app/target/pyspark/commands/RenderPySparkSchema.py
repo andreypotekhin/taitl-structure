@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 
 from structure.app.dsl.model.schemas.FieldDefinition import FieldDefinition
@@ -43,7 +44,7 @@ class RenderPySparkSchema:
 
     def field(self, field: FieldDefinition) -> str:
         nullable = "True" if field.nullable else "False"
-        return f'    T.StructField("{field.name}", {self.type(field.type)}, {nullable}),'
+        return f"    T.StructField({json.dumps(field.column)}, {self.type(field.type)}, {nullable}),"
 
     def type(self, type: StructureType) -> str:
         if isinstance(type, StringType):

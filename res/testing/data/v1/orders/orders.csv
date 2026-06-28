@@ -1,3 +1,3 @@
-tenant.tenant_id,audit.source_system,audit.ingested_at,business.order_date,id,customer_id,product_id,promotion_code,total,discount,quantity,tags,attributes.channel,shipping.line1,shipping.line2,shipping.city,shipping.state,shipping.postal_code,shipping.country
+tenant.tenant_id,audit.source_system,audit.ingested_at,business.order_date,id,customer_id,product_id,promo-code,total,discount,quantity,tags,attributes.channel,shipping.line1,shipping.line2,shipping.city,shipping.state,shipping.postal_code,shipping.country
 t1,shop,2026-01-01T12:00:00,2026-01-02, O-1 , C-1 , P-1 , SUMMER ,1250.50,10.00,2,priority,web,1 Main,,Boston,MA,02108,US
 t1,shop,2026-01-01T12:05:00,2026-01-02,O-NEG,C-1,P-1,,1.00,10.00,,,,,,,,

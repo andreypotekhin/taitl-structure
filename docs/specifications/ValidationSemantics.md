@@ -92,6 +92,9 @@ Method-level overrides apply only to the decorated subtransform output. Hook-loc
 - array element type where available;
 - map key and value types where available.
 
+For aliased fields, validation checks the Spark column name, which is `alias` when supplied and the Python field name
+otherwise. Aliases are schema-local, so each validation boundary uses the schema declared for that boundary.
+
 It must not:
 
 - call `count`;

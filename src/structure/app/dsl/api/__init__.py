@@ -1,3 +1,4 @@
+from structure.app.compiler.diagnostics.api import StructureCompileError
 from structure.app.compiler.frontend.commands.CompileTransform import compile_transform
 from structure.app.dsl.model.expr.expressions import coalesce, lower, to_decimal, trim
 from structure.app.dsl.model.expr.InputScope import join_one
@@ -17,11 +18,10 @@ from structure.app.dsl.model.schemas.schema import (
     field,
 )
 from structure.app.dsl.model.schemas.Structure import Structure
-from structure.app.compiler.diagnostics.api import StructureCompileError
-from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.transforms.transform_api import (
     after,
     before,
@@ -29,6 +29,7 @@ from structure.app.dsl.model.transforms.transform_api import (
     input,
     lane,
     output,
+    project,
     transform,
     where,
 )
@@ -65,6 +66,7 @@ __all__ = [
     "lane",
     "lower",
     "output",
+    "project",
     "to_decimal",
     "transform",
     "trim",

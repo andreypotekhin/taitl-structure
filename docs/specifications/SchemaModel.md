@@ -32,6 +32,7 @@ FieldDef
   type
   nullable
   primary_key
+  alias
   metadata
   description
   declaring_schema
@@ -79,6 +80,7 @@ Rules:
 - `nullable` defaults to `True`.
 - `primary_key` defaults to `False`.
 - `primary_key=True` implies `nullable=False`.
+- `alias` is an optional Spark column name. If absent, the Spark column name is `name`.
 - `metadata` is immutable and defaults to empty.
 - `description` is optional.
 - `declaring_schema` is the schema class that declared the effective field.
@@ -87,6 +89,9 @@ Rules:
 - `overrides` points to the overridden field origin when the field replaces an inherited field.
 
 Field order is part of the schema contract. Generated Spark schemas and projections must use `SchemaDef.fields` order.
+Python constructors, symbolic field access, diagnostics, and compiler checks use `name`; Spark schemas, validation,
+expression rendering, and projection output use `alias or name`. Aliases are schema-local except through ordinary
+schema inheritance.
 
 ## Type Model
 
@@ -214,7 +219,9 @@ Struct(Address)      -> T.StructType([...])
 Map(String(), Long()) -> T.MapType(T.StringType(), T.LongType(), valueContainsNull=True)
 ```
 
-Spark schema generation must be deterministic and formatted consistently.
+Spark schema generation must be deterministic and formatted consistently. When a field has an alias, Spark schema
+generation uses the alias as the `StructField` name. Structure passes the alias through as the caller's Spark column
+name and does not sanitize or quote it.
 
 Generated Spark schemas are caller-facing shape artifacts. A constant such as `ORDER_ENRICHED_SCHEMA` is an ordinary
 PySpark `StructType` and may be imported by caller code for `spark.read.schema(...)`, runtime validation, and projection
@@ -234,6 +241,8 @@ Schema extraction must reject:
 - ambiguous inherited fields;
 - non-schema bases;
 - duplicate effective field names after inheritance resolution;
+- empty or non-string field aliases;
+- duplicate effective Spark column names after aliases and inheritance are resolved;
 - unsupported field declaration shapes.
 
 Errors should link to the most specific relevant spec.

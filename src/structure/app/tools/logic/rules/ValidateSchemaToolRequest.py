@@ -27,11 +27,8 @@ class ValidateSchemaToolRequest:
         self._spark_source(schema=schema, from_path=from_path, from_table=from_table, spark=spark, session=session)
 
     def field(self, name: str, *, path: str) -> None:
-        if not isinstance(name, str) or not name.isidentifier() or keyword.iskeyword(name):
-            raise StructureToolError(
-                f"Cannot generate Structure field for Spark field {path!r}. "
-                "Structure v1 requires Spark field names to be valid Python identifiers."
-            )
+        if not isinstance(name, str) or not name:
+            raise StructureToolError(f"Cannot generate Structure field for Spark field {path!r}. Field name is empty.")
 
     def _class_name(self, name: str) -> None:
         if not isinstance(name, str) or not name.isidentifier() or keyword.iskeyword(name) or not name[:1].isupper():

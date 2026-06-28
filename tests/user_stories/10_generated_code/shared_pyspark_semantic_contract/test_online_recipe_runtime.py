@@ -590,7 +590,7 @@ def _frame(name: str, schema: type[Structure]) -> "FakeFrame":
         name,
         FakeSchema(
             tuple(
-                FakeField(schema_field.name, _type(schema_field.type), schema_field.nullable)
+                FakeField(schema_field.column, _type(schema_field.type), schema_field.nullable)
                 for schema_field in schema._structure_fields.values()
             )
         ),

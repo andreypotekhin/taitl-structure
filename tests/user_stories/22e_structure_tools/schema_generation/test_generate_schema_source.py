@@ -50,3 +50,21 @@ def test_generate_structure_schema_from_dataframe_like_schema() -> None:
 
     assert "class OrderRaw(Structure):" in text
     assert "    id = field(String(), nullable=False)" in text
+
+
+def test_generate_structure_schema_uses_aliases_for_non_identifier_spark_fields() -> None:
+    schema = StructType(
+        (
+            StructField("promo-code", StringType(), True),
+            StructField("customer id", StringType(), True),
+            StructField("class", StringType(), True),
+            StructField("1st code", StringType(), True),
+        )
+    )
+
+    text = StructureTools.schemas.generate(schema=schema, to="OrderRaw")
+
+    assert '    promo_code = field(String(), nullable=True, alias="promo-code")' in text
+    assert '    customer_id = field(String(), nullable=True, alias="customer id")' in text
+    assert '    class_ = field(String(), nullable=True, alias="class")' in text
+    assert '    field_1st_code = field(String(), nullable=True, alias="1st code")' in text

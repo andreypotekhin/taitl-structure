@@ -19,6 +19,7 @@ from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.expr.expressions import literal
 from structure.app.dsl.model.expr.InputScope import InputScope
 from structure.app.dsl.model.expr.RowScope import RowScope
+from structure.app.dsl.model.schemas.Projection import Projection
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.BindingSelector import BindingSelector
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
@@ -717,9 +718,9 @@ class CompileTransform:
         member: str,
         schemas: tuple[type[Structure], ...],
         result: object,
-    ) -> tuple[Structure, ...]:
+    ) -> tuple[Structure | Projection, ...]:
         if len(schemas) == 1:
-            return (cast(Structure, result),)
+            return (cast(Structure | Projection, result),)
         if not isinstance(result, tuple) or len(result) != len(schemas):
             actual = len(result) if isinstance(result, tuple) else type(result).__name__
             raise self._error(
@@ -731,7 +732,15 @@ class CompileTransform:
                 ),
                 use="Return a tuple whose values match the fixed tuple annotation in order.",
             )
-        return cast(tuple[Structure, ...], result)
+        if any(isinstance(value, Projection) for value in result):
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"{transform_class.__name__}.{member} uses project(...) in a multi-output return.",
+                use="Return explicit schema instances for tuple-returning subtransforms.",
+            )
+        return cast(tuple[Structure | Projection, ...], result)
 
     def _result_hooks(
         self,
@@ -1184,10 +1193,18 @@ class CompileTransform:
         transform_class: type[Transform],
         member: str,
         output_schema: type[Structure],
-        result: Structure,
+        result: Structure | Projection,
         *,
         filters: tuple[Expression, ...] | list[Expression],
     ) -> list[ProjectAssignment]:
+        if isinstance(result, Projection):
+            return self._projection_assignments(
+                transform_class,
+                member,
+                output_schema,
+                result,
+                filters=filters,
+            )
         if not isinstance(result, output_schema):
             raise self._error(
                 "DSL-E0402",
@@ -1210,42 +1227,135 @@ class CompileTransform:
                     context={"field": field.name, "schema": output_schema.__name__},
                 )
             expression = literal(result._structure_values[field.name])
-            nullable = self._nullable(expression, filters)
-            if not field.nullable and nullable:
+            assignments.append(
+                self._assignment(transform_class, member, output_schema, field, expression, filters=filters)
+            )
+        return assignments
+
+    def _projection_assignments(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        output_schema: type[Structure],
+        result: Projection,
+        *,
+        filters: tuple[Expression, ...] | list[Expression],
+    ) -> list[ProjectAssignment]:
+        if result.target is not None and result.target is not output_schema:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=(
+                    f"{transform_class.__name__}.{member} returns {output_schema.__name__}, "
+                    f"but project(...) targets {result.target.__name__}."
+                ),
+                use="Make the project(...) target match the subtransform return annotation.",
+                context={"expected": output_schema.__name__, "actual": result.target.__name__},
+            )
+        source_schema = self._source_schema(result.source)
+        if source_schema is None:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem="project(...) source must be a Structure row or relation.",
+                use="Call project(order, TargetSchema) or project(order, ['field']).",
+            )
+
+        selected = set(result.fields) if result.fields is not None else set(source_schema._structure_fields)
+        unknown = selected - set(source_schema._structure_fields)
+        if unknown:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"project(...) source {source_schema.__name__} has no field(s): {', '.join(sorted(unknown))}.",
+                use=f"Select fields declared by {source_schema.__name__}.",
+            )
+
+        assignments: list[ProjectAssignment] = []
+        for field in output_schema._structure_fields.values():
+            if field.name not in selected:
                 raise self._error(
-                    "SCHEMA-E0301",
+                    "DSL-E0402",
                     transform_class=transform_class,
                     member=member,
-                    problem=(
-                        f"{output_schema.__name__}.{field.name} is non-nullable, "
-                        "but the assigned expression may produce null."
-                    ),
-                    use="Guard the source value with where(value.is_not_null()) or provide a non-null default with coalesce(...).",
+                    problem=f"{output_schema.__name__}.{field.name} is not selected by project(...).",
+                    use="Include the field in project(source, [...]) or use Schema.project(source)(...) with overrides.",
                     context={"field": field.name, "schema": output_schema.__name__},
                 )
-            if not self._assignable(expression.type, field.type, expression=expression):
-                code = (
-                    "SCHEMA-E0302"
-                    if self._requires_explicit_conversion(expression.type, field.type)
-                    else "SCHEMA-E0303"
-                )
+            expression = self._source_field(result.source, field.name)
+            if expression is None:
                 raise self._error(
-                    code,
+                    "DSL-E0402",
                     transform_class=transform_class,
                     member=member,
-                    problem=(
-                        f"{output_schema.__name__}.{field.name} expects {self._type_text(field.type)}, "
-                        f"but the assigned expression is {self._type_text(expression.type)}."
-                    ),
-                    use=self._assignment_use(expression.type, field.type, field.name),
-                    context={
-                        "field": field.name,
-                        "expected": self._type_text(field.type),
-                        "actual": self._type_text(expression.type),
-                    },
+                    problem=f"{source_schema.__name__}.{field.name} is not available for project(...).",
+                    use="Use a target schema whose fields exist on the source or provide explicit overrides.",
+                    context={"field": field.name, "schema": source_schema.__name__},
                 )
-            assignments.append(ProjectAssignment(field=field, expression=expression))
+            assignments.append(
+                self._assignment(transform_class, member, output_schema, field, expression, filters=filters)
+            )
         return assignments
+
+    def _assignment(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        output_schema: type[Structure],
+        field,
+        expression: Expression,
+        *,
+        filters: tuple[Expression, ...] | list[Expression],
+    ) -> ProjectAssignment:
+        nullable = self._nullable(expression, filters)
+        if not field.nullable and nullable:
+            raise self._error(
+                "SCHEMA-E0301",
+                transform_class=transform_class,
+                member=member,
+                problem=(
+                    f"{output_schema.__name__}.{field.name} is non-nullable, "
+                    "but the assigned expression may produce null."
+                ),
+                use="Guard the source value with where(value.is_not_null()) or provide a non-null default with coalesce(...).",
+                context={"field": field.name, "schema": output_schema.__name__},
+            )
+        if not self._assignable(expression.type, field.type, expression=expression):
+            code = "SCHEMA-E0302" if self._requires_explicit_conversion(expression.type, field.type) else "SCHEMA-E0303"
+            raise self._error(
+                code,
+                transform_class=transform_class,
+                member=member,
+                problem=(
+                    f"{output_schema.__name__}.{field.name} expects {self._type_text(field.type)}, "
+                    f"but the assigned expression is {self._type_text(expression.type)}."
+                ),
+                use=self._assignment_use(expression.type, field.type, field.name),
+                context={
+                    "field": field.name,
+                    "expected": self._type_text(field.type),
+                    "actual": self._type_text(expression.type),
+                },
+            )
+        return ProjectAssignment(field=field, expression=expression)
+
+    def _source_schema(self, source: object) -> type[Structure] | None:
+        if isinstance(source, Structure):
+            return type(source)
+        return cast(type[Structure] | None, getattr(source, "_structure_scope_schema", None))
+
+    def _source_field(self, source: object, field: str) -> Expression | None:
+        if isinstance(source, Structure):
+            if field not in source._structure_values:
+                return None
+            return literal(source._structure_values[field])
+        try:
+            return cast(Expression, getattr(source, field))
+        except AttributeError:
+            return None
 
     def _validate_joins(
         self,
@@ -1381,7 +1491,7 @@ class CompileTransform:
     ) -> bool:
         if expression.kind != "field" or not expression.data or expression.data.get("scope") != scope:
             return False
-        path = str(expression.data.get("field", ""))
+        path = str(expression.data.get("name", expression.data.get("field", "")))
         if "." in path:
             return False
         field = schema._structure_fields.get(path)

@@ -28,7 +28,7 @@ class OrderNormalized(Structure):
 
 The field declaration has three visible parts:
 
-1. A Python class attribute name, which becomes the field name.
+1. A Python class attribute name, which becomes the Structure field name.
 2. A `field(...)` call, which marks the attribute as a Structure field.
 3. An explicit type object such as `String()` or `Decimal(12, 2)`.
 
@@ -72,7 +72,7 @@ decimal_type      := Decimal(precision, scale)
 array_type        := Array(type_expr, contains_null=BOOL?)
 struct_type       := Struct(schema_ref)
 map_type          := Map(key_type, value_type, value_contains_null=BOOL?)
-field_kwarg       := nullable=BOOL | primary_key=BOOL | metadata=DICT | description=STRING
+field_kwarg       := nullable=BOOL | primary_key=BOOL | alias=STRING | metadata=DICT | description=STRING
 schema_ref        := Structure subclass object
 ```
 
@@ -89,6 +89,7 @@ field(
     *,
     nullable=True,
     primary_key=False,
+    alias=None,
     metadata=None,
     description=None,
 )
@@ -99,11 +100,18 @@ Rules:
 - `type_` is required and must be a Structure type object.
 - `nullable` defaults to `True`.
 - `primary_key` defaults to `False` and implies `nullable=False`.
+- `alias` is an optional Spark column name for the field.
 - `metadata` defaults to an empty immutable mapping.
 - `description` is optional end-user documentation for generated docs, diagnostics, and traceability.
 - Field declaration order is class body order.
-- The attribute name is the field name unless a future spec introduces aliases.
-- v1 must reject duplicate field names after inherited fields are resolved.
+- The attribute name is the Python field name.
+- The Spark column name is `alias` when supplied, otherwise the Python field name.
+- Aliases are schema-local. A later schema with the same Python field name does not inherit an alias unless it inherits
+  the field definition through schema inheritance.
+- Structure passes aliases through to Spark. It does not sanitize, normalize, or quote aliases for backend-specific
+  identifier edge cases.
+- v1 must reject duplicate Python field names and duplicate effective Spark column names after inherited fields are
+  resolved.
 
 `primary_key=True` on a nullable field is invalid unless `nullable=False` is explicitly supplied or inferred by the
 implementation. Preferred compiler behavior is to normalize it to non-nullable and emit no warning.
@@ -344,7 +352,6 @@ The following are not part of v1 canonical syntax:
 - Pydantic model inheritance as schema syntax;
 - lowercase type sentinels such as `string`;
 - implicit Spark type strings such as `"string"` or `"decimal(12,2)"`;
-- field aliases;
 - non-schema mixins.
 
 ## Migration Notes
@@ -389,9 +396,12 @@ fixtures, and generated examples must use only the canonical explicit type-objec
 - `items = field(Array(String()), nullable=True)` is accepted.
 - `address = field(Struct(Address), nullable=True)` is accepted.
 - `tags = field(Map(String(), String()), nullable=True)` is accepted.
+- `promotion_code = field(String(), nullable=True, alias="promo-code")` is accepted.
 - `id = field(string, nullable=False)` is rejected with a migration hint.
 - `total = field(Decimal(2, 12))` is rejected with a precision/scale diagnostic.
 - Generated Spark schema code matches the declared field order.
+- Generated Spark schema code uses field aliases as Spark column names.
+- Aliases are schema-local except when a field definition is inherited.
 - Schema-to-schema inheritance follows `SchemaInheritance.spec.md`.
 - `SchemaClass.base(source)(overrides...)` constructs the same projection as an equivalent explicit constructor.
 - `SchemaClass.base(source_a, source_b)(overrides...)` maps source rows to multiple direct schema bases in declaration

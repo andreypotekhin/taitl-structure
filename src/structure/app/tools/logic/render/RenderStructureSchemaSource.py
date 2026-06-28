@@ -1,3 +1,5 @@
+import json
+
 from structure.app.tools.logic.model.GeneratedSchemaClass import GeneratedSchemaClass
 from structure.app.tools.logic.model.GeneratedSchemaField import GeneratedSchemaField
 from structure.app.tools.logic.model.GeneratedSchemaSource import GeneratedSchemaSource
@@ -44,4 +46,5 @@ class RenderStructureSchemaSource:
 
     def _field(self, field: GeneratedSchemaField) -> str:
         nullable = "True" if field.nullable else "False"
-        return f"    {field.name} = field({field.type}, nullable={nullable})"
+        alias = f", alias={json.dumps(field.alias)}" if field.alias is not None else ""
+        return f"    {field.name} = field({field.type}, nullable={nullable}{alias})"

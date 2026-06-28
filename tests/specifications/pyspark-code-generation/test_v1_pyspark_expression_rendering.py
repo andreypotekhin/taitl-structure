@@ -1,3 +1,4 @@
+from structure import String, Structure, Transform, field, input, output, transform
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
@@ -57,3 +58,24 @@ def test_v1_expression_renderer_renders_join_predicates() -> None:
         '((F.col("promotions.tenant.tenant_id") == F.col("order_with_product.tenant.tenant_id")) & '
         'F.lower(F.trim(F.col("promotions.code"))).eqNullSafe(F.col("order_with_product.promotion_code")))'
     )
+
+
+def test_v1_expression_renderer_passes_field_aliases_to_spark() -> None:
+    class Raw(Structure):
+        promotion_code = field(String(), nullable=True, alias="promo-code")
+
+    class Published(Structure):
+        promotion_code = field(String(), nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(promotion_code=row.promotion_code)
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    expression = recipe.steps[0].projection[0].expression
+
+    assert PySpark.render.expression()(expression, scope_aliases={"rows": "rows"}) == 'F.col("rows.promo-code")'

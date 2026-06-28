@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from structure.app.target.pyspark.commands.RenderPySparkExpression import render_pyspark_expression
 from structure.app.target.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
@@ -55,7 +57,7 @@ class RenderPySparkStep:
         lines = [f"        {result.frame} = {base}.select("]
         for assignment in result.projection:
             expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
-            lines.append(f'            {expression}.alias("{assignment.field.name}"),')
+            lines.append(f"            {expression}.alias({self._literal(assignment.field.column)}),")
         lines.append("        )")
         return lines
 
@@ -107,7 +109,7 @@ class RenderPySparkStep:
         lines = [f"        {target} = {target}.select("]
         for assignment in step.projection:
             expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
-            lines.append(f'            {expression}.alias("{assignment.field.name}"),')
+            lines.append(f"            {expression}.alias({self._literal(assignment.field.column)}),")
         lines.append("        )")
         return lines
 
@@ -149,6 +151,9 @@ class RenderPySparkStep:
         if join is not None:
             aliases[join.input_name] = join.right_alias
         return aliases
+
+    def _literal(self, value: str) -> str:
+        return json.dumps(value)
 
 
 render_pyspark_step = RenderPySparkStep()

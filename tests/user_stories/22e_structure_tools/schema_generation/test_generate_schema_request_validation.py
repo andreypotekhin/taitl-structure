@@ -55,15 +55,16 @@ def test_path_sources_require_format_and_support_reader_options() -> None:
     assert spark.read.path == "orders.parquet"
 
 
-def test_invalid_class_and_field_names_fail_clearly() -> None:
+def test_invalid_class_names_fail_and_non_identifier_fields_generate_aliases() -> None:
     with pytest.raises(StructureToolError, match="Invalid Structure class name"):
         StructureTools.schemas.generate(schema=StructType(()), to="order_raw")
 
-    with pytest.raises(StructureToolError, match="valid Python identifiers"):
-        StructureTools.schemas.generate(
-            schema=StructType((StructField("order-id", StringType(), False),)),
-            to="OrderRaw",
-        )
+    text = StructureTools.schemas.generate(
+        schema=StructType((StructField("order-id", StringType(), False),)),
+        to="OrderRaw",
+    )
+
+    assert 'order_id = field(String(), nullable=False, alias="order-id")' in text
 
 
 class FakeSpark:

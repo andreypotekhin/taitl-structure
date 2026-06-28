@@ -14,7 +14,7 @@ ORDER_RAW_SCHEMA = T.StructType([
     T.StructField("id", T.StringType(), False),
     T.StructField("customer_id", T.StringType(), False),
     T.StructField("product_id", T.StringType(), False),
-    T.StructField("promotion_code", T.StringType(), True),
+    T.StructField("promo-code", T.StringType(), True),
     T.StructField("total", T.StringType(), True),
     T.StructField("discount", T.StringType(), True),
     T.StructField("quantity", T.IntegerType(), True),

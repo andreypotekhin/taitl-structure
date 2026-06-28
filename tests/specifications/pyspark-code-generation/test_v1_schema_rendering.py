@@ -1,5 +1,6 @@
 import sys
 
+from structure import String, Structure, field
 from structure.app.target.pyspark.api import PySpark
 
 
@@ -55,3 +56,12 @@ def test_v1_schema_renderer_uses_base_schema_composition_for_inheritance() -> No
     assert customer.startswith("T.StructType(ORDER_NORMALIZED_SCHEMA.fields + [")
     assert 'T.StructField("customer_name", T.StringType(), True),' in customer
     assert published == "T.StructType(ORDER_PUBLICATION_SCHEMA.fields + PUBLICATION_FLAGS_SCHEMA.fields)"
+
+
+def test_v1_schema_renderer_uses_field_alias_as_spark_column_name() -> None:
+    class Raw(Structure):
+        promotion_code = field(String(), nullable=True, alias="promo-code")
+
+    assert PySpark.schema.render().field(Raw._structure_fields["promotion_code"]) == (
+        '    T.StructField("promo-code", T.StringType(), True),'
+    )

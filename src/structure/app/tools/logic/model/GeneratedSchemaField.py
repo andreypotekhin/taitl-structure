@@ -6,3 +6,4 @@ class GeneratedSchemaField:
     name: str
     type: str
     nullable: bool
+    alias: str | None = None

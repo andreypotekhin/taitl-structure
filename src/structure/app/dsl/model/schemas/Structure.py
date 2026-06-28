@@ -24,6 +24,7 @@ class Structure:
                 local_fields[value.name] = definition
                 fields[value.name] = definition
 
+        cls._require_unique_columns(fields)
         cls._structure_fields = fields
         cls._structure_local_fields = local_fields
         cls._structure_schema_bases = tuple(
@@ -55,6 +56,15 @@ class Structure:
         return build
 
     @classmethod
+    def project(cls, source: object):
+        def build(**overrides: object) -> "Structure":
+            base = cls._base_values((source,))
+            base.update(overrides)
+            return cls(**base)
+
+        return build
+
+    @classmethod
     def _base_values(cls, sources: tuple[object, ...]) -> dict[str, object]:
         values: dict[str, object] = {}
         for field in cls._structure_fields:
@@ -74,6 +84,17 @@ class Structure:
             return getattr(source, field)
         except AttributeError:
             return _MISSING
+
+    @classmethod
+    def _require_unique_columns(cls, fields: dict[str, FieldDefinition]) -> None:
+        columns: dict[str, str] = {}
+        for field in fields.values():
+            other = columns.get(field.column)
+            if other is not None:
+                raise ValueError(
+                    f"{cls.__name__} has duplicate Spark column name {field.column!r}. " "Use a unique field alias."
+                )
+            columns[field.column] = field.name
 
 
 _MISSING = object()

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from typing import Mapping
 
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
@@ -50,7 +51,7 @@ class RenderPySparkExpression:
         scope = str(expression.data["scope"])
         field = str(expression.data["field"])
         alias = aliases.get(scope, scope)
-        return f'F.col("{alias}.{field}")'
+        return f"F.col({self._literal(f'{alias}.{field}')})"
 
     def _call(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         function = expression.data["function"]
@@ -70,6 +71,9 @@ class RenderPySparkExpression:
     def _binary(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str], operator: str) -> str:
         left, right = expression.args
         return f"({self._render(left, aliases)} {operator} {self._render(right, aliases)})"
+
+    def _literal(self, value: str) -> str:
+        return json.dumps(value)
 
 
 render_pyspark_expression = RenderPySparkExpression()

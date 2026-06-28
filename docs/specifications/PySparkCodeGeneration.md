@@ -277,6 +277,8 @@ Rules:
 
 - Constant names are upper snake case from the schema class name, suffixed with `_SCHEMA`.
 - Field order follows `SchemaDef.fields`.
+- Field names in generated Spark `StructField` declarations use the field's Spark column name, which is `alias` when
+  supplied and the Python field name otherwise.
 - Online execution materializes equivalent Spark schemas from the same `SchemaDef.fields` model instead of importing
   generated schema modules.
 - Inherited fields are rendered in effective schema order after inheritance resolution.
@@ -458,7 +460,9 @@ Rules:
 
 - Projection order follows the output schema field order.
 - Every output field is explicitly selected.
-- Every selected expression is explicitly aliased to the output field name.
+- Every selected expression is explicitly aliased to the output field's Spark column name.
+- Aliases are schema-local: an input alias is used to read that input schema, and the target schema decides the
+  projected output column name.
 - `SchemaClass.base(row)(...)` first maps inherited base fields from the base row, then applies explicit overrides and
   additions according to schema construction semantics.
 - Extra columns are not preserved through compiled projection unless a hook with `project_output=False` is allowed to

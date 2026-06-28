@@ -26,18 +26,19 @@ class MapPySparkSchemaToStructureSource:
     def _struct(self, schema, *, class_name: str, root: str, path: tuple[str, ...]) -> str:
         self._require_struct(schema, path=path)
         name = self._unique(class_name)
-        fields = tuple(self._field(field, root=root, path=path) for field in self._fields(schema))
+        used_fields: set[str] = set()
+        fields = tuple(self._field(field, root=root, path=path, used=used_fields) for field in self._fields(schema))
         self._classes.append(GeneratedSchemaClass(name=name, fields=fields))
         return name
 
-    def _field(self, field, *, root: str, path: tuple[str, ...]) -> GeneratedSchemaField:
-        name = getattr(field, "name", None)
-        field_path = ".".join((*path, str(name)))
-        self._validate.field(str(name), path=field_path)
+    def _field(self, field, *, root: str, path: tuple[str, ...], used: set[str]) -> GeneratedSchemaField:
+        column = str(getattr(field, "name", None))
+        self._validate.field(column, path=".".join((*path, column)))
         return GeneratedSchemaField(
-            name=str(name),
-            type=self._type(getattr(field, "dataType", None), root=root, path=(*path, str(name))),
+            name=self._field_name(column, used=used),
+            type=self._type(getattr(field, "dataType", None), root=root, path=(*path, column)),
             nullable=bool(getattr(field, "nullable", True)),
+            alias=None if self._identifier(column) else column,
         )
 
     def _type(self, type, *, root: str, path: tuple[str, ...]) -> str:
@@ -84,6 +85,24 @@ class MapPySparkSchemaToStructureSource:
     def _pascal(self, value: str) -> str:
         words = re.split(r"[^0-9A-Za-z]+|_", value)
         return "".join(word[:1].upper() + word[1:] for word in words if word)
+
+    def _field_name(self, column: str, *, used: set[str]) -> str:
+        words = [word.lower() for word in re.split(r"[^0-9A-Za-z]+|_", column) if word]
+        base = "_".join(words) or "field"
+        if base[:1].isdigit():
+            base = f"field_{base}"
+        if keyword.iskeyword(base):
+            base = f"{base}_"
+        candidate = base
+        index = 2
+        while candidate in used:
+            candidate = f"{base}_{index}"
+            index += 1
+        used.add(candidate)
+        return candidate
+
+    def _identifier(self, value: str) -> bool:
+        return value.isidentifier() and not keyword.iskeyword(value)
 
     def _unique(self, name: str) -> str:
         candidate = name

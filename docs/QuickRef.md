@@ -8,6 +8,7 @@ A schema class defines a named row contract by inheriting from `Structure` and d
 class OrderRaw(Structure):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
+    promotion_code = field(String(), nullable=True, alias="promo-code")
     total = field(String(), nullable=True)
 
 
@@ -17,6 +18,10 @@ class OrderWithCustomer(OrderRaw):
 
 Use schema classes for inputs, intermediate rows, and outputs. Inheritance keeps shared fields explicit without
 repeating declarations.
+
+Use `alias=` when the Spark DataFrame column is not a Python identifier. Python code still uses the field name, while
+Spark schemas, validation, reads, and projection output use the alias. Aliases are schema-local unless the field is
+inherited, and Structure passes alias strings through to Spark without sanitizing them.
 
 ## Transform Classes
 
@@ -343,6 +348,39 @@ def add_flags(self, order: OrderRaw) -> OrderWithFlags:
 
 Drop columns by returning a schema with fewer fields.
 
+Use `project(...)` when the output copies same-name compatible fields from a source row.
+
+```python
+def publish(self, order: OrderWithPromotion) -> OrderPublished:
+    return project(order, OrderPublished)
+```
+
+Use a field list when the output should copy only selected source fields. The list names fields on the source row; the
+method return annotation still defines the output schema and field order.
+
+```python
+def audit(self, order: OrderRaw) -> OrderAudit:
+    return project(order, ["tenant", "audit", "business"])
+```
+
+For compact filtered projection, chain `where(...).project(...)`.
+
+```python
+def publish_valid(self, order: OrderRaw) -> OrderPublished:
+    return where(order.id.is_not_null()).project(order, OrderPublished)
+```
+
+When copied fields need adjustments, use `SchemaClass.project(source)(...)` and override only the changed fields.
+
+```python
+def normalize(self, order: OrderRaw) -> OrderNormalized:
+    where(order.id.is_not_null())
+    return OrderNormalized.project(order)(
+        total=to_decimal(order.total, precision=12, scale=2),
+        quantity=coalesce(order.quantity, 1),
+    )
+```
+
 Generated code prefers explicit projection over `drop(...)` so the output schema is deterministic.
 
 ## Expression Helpers
@@ -529,6 +567,7 @@ or jobs, use the Python API with the existing `SparkSession` or `StructureSessio
 
 Schema generation preserves Spark shape: field names, field order, Spark types, nullability, arrays, maps, decimals,
 and nested structs. It does not infer primary keys, descriptions, inheritance, or data-quality constraints.
+When Spark field names are not Python identifiers, generated Structure fields use safe Python names with `alias=...`.
 
 ## Planned Features
 

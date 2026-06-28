@@ -56,6 +56,7 @@ def test_v1_order_schema_module_renders_nested_schema_imports() -> None:
         "from testing.model.v1.structure_generated.orders.pyspark.schemas.common import "
         "ADDRESS_SCHEMA, AUDIT_STAMP_SCHEMA, BUSINESS_DATE_SCHEMA, TENANT_KEY_SCHEMA"
     ) in text
+    assert '    T.StructField("promo-code", T.StringType(), True),' in text
     assert '    T.StructField("tags", T.ArrayType(T.StringType(), containsNull=False), True),' in text
     assert (
         '    T.StructField("attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),'

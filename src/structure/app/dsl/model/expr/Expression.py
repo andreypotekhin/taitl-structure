@@ -36,10 +36,18 @@ class Expression:
         data = dict(self.data or {})
         path_data = data.get("path")
         path = cast(tuple[object, ...], path_data) if isinstance(path_data, tuple) else (data.get("field"),)
+        name_path_data = data.get("name_path")
+        name_path = (
+            cast(tuple[object, ...], name_path_data) if isinstance(name_path_data, tuple) else (data.get("name"),)
+        )
         path_strings = tuple(str(item) for item in path if item)
-        path_strings = (*path_strings, name)
+        name_path_strings = tuple(str(item) for item in name_path if item)
+        path_strings = (*path_strings, field.column)
+        name_path_strings = (*name_path_strings, name)
         data["field"] = ".".join(path_strings)
+        data["name"] = ".".join(name_path_strings)
         data["path"] = path_strings
+        data["name_path"] = name_path_strings
         return Expression(kind="field", type=field.type, nullable=self.nullable or field.nullable, data=data)
 
     def __and__(self, other: object) -> "Expression":
