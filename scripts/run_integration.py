@@ -11,6 +11,7 @@ from ensure_compose_env import main as ensure_compose_env
 ROOT = Path(__file__).resolve().parents[1]
 COMPOSE = ROOT / "infra" / "compose" / "docker-compose.yaml"
 ENV = ROOT / "infra" / "compose" / ".env"
+WORKSPACE_TMP = ROOT / ".pytest-workspace-tmp" / "integration"
 BACKENDS = ("pyspark35", "pyspark40")
 SERVICES = ("spark35-master", "spark35-worker", "spark40-master", "spark40-worker")
 
@@ -18,6 +19,7 @@ SERVICES = ("spark35-master", "spark35-worker", "spark40-master", "spark40-worke
 def main() -> None:
     args = parse()
     ensure_compose_env()
+    WORKSPACE_TMP.mkdir(parents=True, exist_ok=True)
     backends = BACKENDS if args.backend == "all" else (args.backend,)
 
     try:

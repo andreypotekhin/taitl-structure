@@ -31,6 +31,14 @@ Error: Docker reports that it cannot connect to the Docker daemon.
 Cause: Docker Desktop is installed but the engine is stopped.
 Fix: Start Docker Desktop and rerun `make integration`. The integration runner will recreate the Compose stack.
 
+### Problem (integration): Windows Docker pipe access is denied
+
+When: Running `make integration` on Windows.
+Error: Docker reports `open //./pipe/docker_engine: Access is denied`.
+Cause: The current terminal cannot access the Docker engine pipe.
+Fix: Rerun the command from an elevated terminal, or add the user to the local Docker users group and start a new
+terminal session.
+
 ### Problem (integration): Spark UI or master port is already allocated
 
 When: Starting the local all-version integration stack.
