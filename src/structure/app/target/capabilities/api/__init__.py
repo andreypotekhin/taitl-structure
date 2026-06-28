@@ -1,4 +1,4 @@
-from structure.app.target.capabilities.api.Capabilities import Capabilities
+from structure.app.target.capabilities.api.capabilities import Capabilities
 from structure.app.target.capabilities.commands.ResolveBackendCapabilities import ResolveBackendCapabilities
 from structure.app.target.capabilities.logic.rules.PySparkCapabilityRules import PySparkCapabilities
 from structure.app.target.capabilities.model.BackendDiagnosticCodes import BACKEND_E2401, BACKEND_E2402
