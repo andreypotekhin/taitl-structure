@@ -15,6 +15,7 @@ from structure import (
     coalesce,
     field,
     input,
+    join_one,
     output,
     to_decimal,
     transform,
@@ -252,7 +253,7 @@ def test_v1_left_joined_non_nullable_field_is_nullable_until_guarded() -> None:
         clean = output(LabelClean)
 
         def normalize(self, row: Raw) -> LabelClean:
-            item = self.lookup.join_one(on=self.lookup.id == row.id, how=Join.LEFT)
+            item = join_one(self.lookup, on=self.lookup.id == row.id, how=Join.LEFT)
             return LabelClean(label=item.label)
 
     with pytest.raises(StructureCompileError) as raised:
@@ -271,7 +272,7 @@ def test_v1_join_on_primary_key_compiles_without_uniqueness_warning() -> None:
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            self.lookup.join_one(on=self.lookup.id == row.id, how=Join.LEFT)
+            join_one(self.lookup, on=self.lookup.id == row.id, how=Join.LEFT)
             return Clean(id=row.id)
 
     plan = compile_transform(UniqueJoin)
@@ -287,7 +288,7 @@ def test_v1_unproven_join_one_key_emits_uniqueness_warning() -> None:
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            self.lookup.join_one(on=self.lookup.group == row.id, how=Join.LEFT)
+            join_one(self.lookup, on=self.lookup.group == row.id, how=Join.LEFT)
             return Clean(id=row.id)
 
     plan = compile_transform(UnprovenJoin)
@@ -305,7 +306,7 @@ def test_v1_or_join_condition_reports_join_diagnostic() -> None:
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            self.lookup.join_one(on=(self.lookup.id == row.id) | (self.lookup.group == row.id), how=Join.LEFT)
+            join_one(self.lookup, on=(self.lookup.id == row.id) | (self.lookup.group == row.id), how=Join.LEFT)
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
@@ -326,7 +327,7 @@ def test_v1_same_side_join_condition_reports_join_diagnostic() -> None:
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            self.lookup.join_one(on=self.lookup.id == self.lookup.group, how=Join.LEFT)
+            join_one(self.lookup, on=self.lookup.id == self.lookup.group, how=Join.LEFT)
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
@@ -344,7 +345,7 @@ def test_v1_incompatible_join_key_types_report_join_diagnostic() -> None:
         clean = output(MoneyClean)
 
         def normalize(self, row: NullableRaw) -> MoneyClean:
-            self.lookup.join_one(on=self.lookup.id == row.count, how=Join.LEFT)
+            join_one(self.lookup, on=self.lookup.id == row.count, how=Join.LEFT)
             return MoneyClean(amount=coalesce(to_decimal(row.amount, precision=12, scale=2), 0), count=row.count)
 
     with pytest.raises(StructureCompileError) as raised:
@@ -353,3 +354,23 @@ def test_v1_incompatible_join_key_types_report_join_diagnostic() -> None:
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "JOIN-E0601"
     assert "Join key types are incompatible" in diagnostic.problem_text()
+
+
+def test_v1_member_join_one_reports_migration_diagnostic() -> None:
+    @transform
+    class MemberJoin(Transform):
+        rows = input(Raw)
+        lookup = input(Lookup)
+        clean = output(Clean)
+
+        def normalize(self, row: Raw) -> Clean:
+            self.lookup.join_one(on=self.lookup.id == row.id, how=Join.LEFT)
+            return Clean(id=row.id)
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(MemberJoin)
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == "DSL-E0401"
+    assert "self.customers.join_one(...) is no longer supported" in diagnostic.problem_text()
+    assert "join_one(self.customers, on=...)" in diagnostic.problem_text()

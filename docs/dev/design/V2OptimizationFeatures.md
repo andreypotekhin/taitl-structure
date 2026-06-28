@@ -56,7 +56,8 @@ Caching must be explicit. Structure should not silently cache.
 Extend join hints beyond broadcast.
 
 ```python
-customer = self.customers.join_one(
+customer = join_one(
+    self.customers,
     on=self.customers.id == order.customer_id,
     how=Join.LEFT,
     strategy=JoinStrategy.BROADCAST,

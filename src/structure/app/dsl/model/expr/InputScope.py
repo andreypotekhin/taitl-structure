@@ -20,7 +20,11 @@ class InputScope(RowScope):
         self._structure_input_schema = schema
 
     def join_one(self, *, on: Expression, how: Join = Join.LEFT, hint: JoinHint | None = None) -> RowScope:
-        return join_one(self, on=on, how=how, hint=hint)
+        raise TypeError(
+            "self.customers.join_one(...) is no longer supported. "
+            "Use join_one(self.customers, on=...) or add a relation parameter "
+            "and use join_one(customer, on=...)."
+        )
 
 
 Relation = TypeVar("Relation", bound=Structure | InputScope)

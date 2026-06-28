@@ -121,7 +121,8 @@ class EnrichOrders(Transform):
         )
 
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
-        customer = self.customers.join_one(
+        customer = join_one(
+            self.customers,
             on=self.customers.id == order.customer_id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
@@ -493,10 +494,11 @@ Rules:
 
 ## Joins
 
-The v1 DSL exposes lookup joins through input scopes:
+The v1 DSL exposes lookup joins through the free-standing `join_one(relation, ...)` function:
 
 ```python
-customer = self.customers.join_one(
+customer = join_one(
+    self.customers,
     on=self.customers.id == order.customer_id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
@@ -513,10 +515,11 @@ JoinHint.BROADCAST
 
 Rules:
 
-- `join_one(*, on, how, hint=None)` is the canonical v1 join method.
+- `join_one(relation, *, on, how, hint=None)` is the canonical v1 join function.
 - `on` and `how` are required.
 - `hint` is optional.
 - Join calls are valid only during symbolic execution of a compiled subtransform.
+- Member joins such as `self.customers.join_one(...)` are rejected with migration guidance.
 - `join_one(...)` returns a joined symbolic scope.
 - Field access on the joined scope is scoped and must not rely on unqualified string column names.
 - Join calls execute in source order.

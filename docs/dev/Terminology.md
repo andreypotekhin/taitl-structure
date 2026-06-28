@@ -17,8 +17,7 @@ Structure DSL source code
   -> online execution or generated PySpark
 ```
 
-DSL and IR describe transform meaning. PySpark-specific choices belong behind the
-target boundary.
+DSL and IR describe transform meaning. PySpark-specific choices belong behind the target boundary.
 
 ## DSL
 
@@ -28,7 +27,7 @@ helpers, filters, joins, hooks, validation policy, and runtime invocation.
 The DSL is not a general wrapper around PySpark. A DSL feature is compiler-visible only when Structure can capture it,
 represent it in IR, check it, and lower it to optimizer-visible target operations.
 
-Compact source shape:
+Example source shape:
 
 ```python
 @transform
@@ -48,11 +47,11 @@ class EnrichOrders(Transform):
 
 ### Schema
 
-A schema is a `Structure` subclass that describes a named row contract: field names, order, types, nullability,
-inheritance, and Structure metadata such as primary keys.
+A schema is a `Structure` subclass that describes a row contract: field names, order, types, nullability, inheritance, and Structure metadata such as primary keys.
 
-Schemas are used for input rows, intermediate rows, and output rows. A schema is not a Spark DataFrame and does not
-contain data.
+Schemas are used for input rows, intermediate rows, and output rows. 
+
+A schema is not a Spark DataFrame and does not contain data.
 
 Example:
 
@@ -65,31 +64,28 @@ class OrderRaw(Structure):
 
 ### Field
 
-A field is one named column in a schema. Field metadata is the source of type, nullability, field order, generated
-Spark schema shape, projection checks, and many diagnostics.
+A field is one named column in a schema. 
+
+Field metadata is the source of type, nullability, field order, generated Spark schema shape, projection checks, and many diagnostics.
 
 ### Transform
 
-A transform is a `Transform` subclass marked with `@transform`. It declares input DataFrames, output results, optional
-lanes, compiled subtransform methods, expression helpers, and hooks.
+A transform is a `Transform` subclass marked with `@transform`. It declares input DataFrames, output results, lanes, subtransform methods, expression helpers, and hooks.
 
-A transform class is source metadata. A transform instance created with `EnrichOrders(orders=df)` is a deferred
-invocation that stores runtime inputs until `.run(session)` is called.
+A transform instance created with `EnrichOrders(orders=df)` is a deferred invocation that stores runtime inputs until `.run(session)` is called.
 
 Example:
 
 ```python
 result = EnrichOrders(orders=orders_df, customers=customers_df).run(session)
-published = result.enriched
+enriched_df = result.enriched
 ```
 
 ### Input
 
-An input is a class-level `input(Schema)` declaration on a transform. The attribute name becomes the runtime input
-name, generated `run(...)` parameter name, hook input namespace attribute, and source scope name.
+An input is a class-level `input(Schema)` declaration on a transform. The attribute name becomes the runtime input name, generated `run(...)` parameter name, hook input namespace attribute, and source scope name.
 
-During symbolic execution, `self.orders` resolves to a symbolic input scope. During runtime, the invocation stores the
-actual DataFrame under the same declared name.
+During symbolic execution, `self.orders` resolves to a symbolic input scope. During runtime, the invocation stores the actual DataFrame under the same declared name.
 
 Example:
 
@@ -101,10 +97,9 @@ customers = input(Customer)
 ### Output
 
 An output is a class-level `output(Schema)` declaration. Outputs are the public result names returned from
-`TransformResult`, such as `result.enriched` or `result["accepted"]`.
+`TransformResult`, such as `result.enriched` or `result["enriched"]`.
 
-Output declarations are part of the transform contract. There is no implicit `df` result unless the transform declares
-an output named `df`.
+Output declarations are part of the transform contract. 
 
 Example:
 
@@ -115,11 +110,9 @@ rejected = output(OrderRejected)
 
 ### Lane
 
-A lane is a declared intermediate DataFrame stream inside a transform. Lanes let a transform name internal funnel
-states, branch outputs, or disambiguate repeated schemas.
+A lane is an intermediate DataFrame stream inside a transform. Lanes let a transform identify internal funnel states, branch outputs, or disambiguate repeated schemas.
 
-Lanes are not constructor inputs and are not public transform results. They are internal flow names used by method-level
-binding, hooks, IR, online execution, and generated code.
+Lanes are neither constructor inputs nor public transform results. They are internal flow identificators used by method-level binding, hooks, IR, online execution, and generated code.
 
 Example:
 
@@ -130,11 +123,9 @@ with_customer = lane(OrderWithCustomer)
 
 ### Subtransform
 
-A subtransform is a public instance method whose return annotation is a `Structure` schema or fixed schema tuple. The
-compiler symbolically executes subtransforms in source order.
+A subtransform is a public instance **method** within Transform class, returning a `Structure` or schemas tuple. The compiler symbolically executes subtransforms in the order of their appearance in the source.
 
-The first schema parameter is the driving row. Additional schema parameters are symbolic relations that must be joined
-before their fields are used in filters or projections.
+The first schema parameter is the driving row. Additional schema parameters are symbolic relations that must be joined before their fields are used in filters or projections.
 
 Example:
 
@@ -143,29 +134,25 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     return OrderNormalized(id=order.id, ...)
 ```
 
-### Method-Level Binding
+### Binding of Inputs and Outputs
 
-Method-level `@transform(input=...)`, `@transform(output=...)`, and `@transform(inout=...)` select which declared
-input, lane, or output a subtransform consumes or writes.
+Method-level `@transform(input=...)`, `@transform(output=...)`, and `@transform(inout=...)` select which declared input, lane, or output a subtransform consumes or writes.
 
-Most single-lane transforms rely on inference. Explicit binding is used for repeated schemas, branching, funnel lanes,
-and cases where a lane intentionally shadows an original input name.
+Binding is optional: most single-lane transforms rely on inference. Explicit binding is used for repeated schemas, branching, funnel lanes, and cases where a lane intentionally shadows an original input name.
 
 Example:
 
 ```python
-@transform(input=normalized, output=enriched)
+@transform(input=lane(normalized), output=enriched)
 def add_product(self, order: OrderNormalized) -> OrderEnriched:
     return OrderEnriched.base(order)(...)
 ```
 
-### Expression
+### Expressions
 
-An expression is a compiler-visible symbolic value, such as a field reference, literal, comparison, boolean expression,
-cast, conditional, or helper call.
+In the context of this library, an expression is a compiler-visible symbolic value, such as a field reference, literal, comparison, boolean expression, cast, conditional, or helper call.
 
-Expressions carry Structure type, nullability, referenced scopes, and source context. They do not contain PySpark
-`Column` objects.
+Expressions carry Structure type, nullability, referenced scopes, and source context. They do not contain PySpark `Column` objects.
 
 Example:
 
@@ -175,11 +162,9 @@ lower(trim(order.customer_id)) == "c-001"
 
 ### Expression Helper
 
-An expression helper is a reusable compiler-visible function marked with `@expr_fn`. When called with symbolic
-arguments, the helper is expanded or represented as expression IR.
+An expression helper function is a reusable compiler-visible function marked with `@expr_fn`. When called with symbolic arguments, the helper is expanded as expression IR.
 
-Expression helpers are the preferred way to reuse expression logic while keeping it visible to checks, traceability,
-online execution, and generated code.
+Expression helper functions are Structure's preferred way to use expression logic while keeping it visible to the compiler checks, traceability, online execution, and generated code.
 
 Example:
 
@@ -191,11 +176,9 @@ def clean_id(value):
 
 ### Filter
 
-A filter is recorded with `where(predicate)` inside a compiled subtransform. Multiple filters preserve source order and
-are semantically combined with logical AND where legal.
+A filter is recorded with `where(predicate)` inside a compiled subtransform method. Multiple filters preserve source order and are semantically combined with logical AND where legal.
 
-Filters are operations in IR, not immediate DataFrame calls. A filter can reference only scopes available at the point
-where it is recorded.
+Filters are operations in IR, not immediate DataFrame calls. A filter can reference only scopes available at the point where it is recorded.
 
 Example:
 
@@ -206,29 +189,30 @@ where(to_decimal(order.total, precision=12, scale=2) >= 0)
 
 ### Join
 
-A join is a symbolic relationship between the current row stream and a declared input scope. In v1, the main supported
-form is `join_one(...)`, which represents a lookup-style join.
+A join is a symbolic relationship between the current row and a declared input. In v1, the main supported form is `join_one(...)`, which represents a lookup-style join.
 
-A join creates a joined scope. Fields from that scope can then be used in later filters or in the returned output
-schema construction.
+A join creates a joined scope. Fields from that scope can be used in later filters or in the returned output schema.
 
 Example:
 
 ```python
-customer = self.customers.join_one(
-    on=self.customers.id == order.customer_id,
-    how=Join.LEFT,
-    hint=JoinHint.BROADCAST,
-)
+def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
+    customer = join_one(
+        customer,
+        on=customer.id == order.customer_id,
+        how=Join.LEFT,
+        hint=JoinHint.BROADCAST,
+    )
+    return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
 
 ### Hook
 
-A hook is an explicit PySpark escape hatch declared with `@before(...)` or `@after(...)`. Hooks run at runtime against a
-selected lane DataFrame.
+A hook is an explicit PySpark escape hatch for adding arbitrary (PySpark) code
 
-Hooks are opaque compiler boundaries. Structure validates hook metadata and signatures, preserves hook order, records
-the boundary in IR and traceability, and calls the hook in both online and generated execution. It does not inspect the
+Hooks are declared as `@before(...)` or `@after(...)`. 
+
+Hooks are opaque compiler boundaries. Structure validates hook metadata and signatures, preserves hook order, records the boundary in IR and traceability, and calls the hook in execution. It does not inspect the
 hook body as compiler-visible logic.
 
 Example:
@@ -236,20 +220,18 @@ Example:
 ```python
 @after(normalize, lane=orders, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
 def add_quality_columns(self, *, orders, spark, ctx):
-    ...
+    return published.withColumn("_checked", F.lit(True))
 ```
 
 ### Validation Policy
 
-Validation policy decides where Structure checks DataFrame schema shape: inputs, intermediate outputs, hook outputs,
-and final outputs. Policy combines project configuration, transform-level settings, and method-level overrides.
+Validation policy decides where Structure checks DataFrame schema: inputs, intermediate outputs, hook outputs, and final outputs. 
 
-Validation policy is represented so online and generated execution place checks identically.
+Policy is affected by project configuration, transform-level settings and method-level overrides.
 
 ### StructureSession
 
-`StructureSession` is the runtime session. It owns the caller-supplied Spark session, optional hook context, resolved
-configuration, execution mode, target backend, runner selection, and optional plan cache.
+`StructureSession` is the runtime session. It owns the caller-supplied Spark session, optional hook context, library configuration, execution mode, target backend, runner selection, and optional plan cache.
 
 The session does not own Spark lifecycle, orchestration lifecycle, reads, writes, or streaming query management.
 
@@ -258,15 +240,16 @@ Example:
 ```python
 session = StructureSession(spark=spark, ctx=ctx)
 result = session.run(EnrichOrders(orders=orders_df))
+enriched_df = result.enriched
 ```
 
 ## Symbolic Execution
 
-Symbolic execution is the compiler phase that runs compiled subtransform methods with symbolic row objects instead of
-real rows or DataFrames.
+Symbolic execution is the compiler phase that runs compiled subtransform methods with symbolic row objects instead of real rows or DataFrames.
 
-Its job is to capture source semantics: field references, expressions, filters, joins, and output projection. It is not
-a Python execution engine for data.
+Its job is to capture source semantics: field references, expressions, filters, joins, and output projection. 
+
+It is not a Python execution engine for data.
 
 Example capture:
 
@@ -285,18 +268,13 @@ Captured:
 
 ### Symbolic Context
 
-A symbolic context is the active per-subtransform capture state. It records the transform, method, available scopes,
-operations, source context, diagnostics, and configuration snapshot.
-
-Context cleanup matters. A failed symbolic execution must not leak active state into the next compilation.
+A symbolic context is the active per-subtransform capture state. It records the transform, method, defined scopes, operations, source context, diagnostics, and configuration snapshot.
 
 ### Row Proxy
 
-A row proxy represents a symbolic row stream with a schema and scope identity. Attribute access on a known field returns
-a field reference. Unknown fields produce diagnostics.
+A row proxy represents a symbolic row with a schema and scope identity. Attribute access on a known field returns a field reference. Unknown fields produce error/warning diagnostics.
 
-The current-row proxy is the main subtransform parameter. Joined and constructed row proxies represent later symbolic
-scopes.
+The current-row proxy is the main subtransform parameter. Joined and constructed row proxies represent later symbolic scopes.
 
 Example:
 
@@ -306,22 +284,20 @@ order.id  # FieldRef(scope="order", field="id")
 
 ### Input Scope
 
-An input scope represents a declared transform input during symbolic execution. It is accessible through `self.<input>`
-and is the source for `join_one(...)` in v1.
+An input scope represents a declared transform input during symbolic execution. It is accessible through `self.<input>` and is the source for `join_one(...)` in v1.
 
 Input scopes are not DataFrames and do not expose a live DataFrame API.
 
 ### Joined Scope
 
-A joined scope is created by a symbolic join. It owns the right-side fields made available by that join and carries
-stable occurrence metadata for repeated joins of the same input.
+A joined scope is created by a symbolic join. It owns the right-side fields made available by that join and carries stable occurrence metadata for repeated joins of the same input.
 
 Joined scopes are essential for deterministic aliasing, nullability adjustment, diagnostics, and traceability.
 
 Example:
 
 ```python
-customer = self.customers.join_one(...)
+customer = join_one(self.customers, on=self.customers.id == order.customer_id)
 customer.tier  # FieldRef(scope="customers#1", field="tier")
 ```
 
@@ -622,7 +598,7 @@ hints, ordered key pairs, and right-side field projection.
 Example:
 
 ```text
-self.customers.join_one(on=self.customers.id == order.customer_id, how=Join.LEFT)
+join_one(self.customers, on=self.customers.id == order.customer_id, how=Join.LEFT)
   -> orders.alias("order_normalized").join(customers.alias("customers"), ..., "left")
 ```
 

@@ -94,6 +94,7 @@ from structure import (
     expr_fn,
     where,
     after,
+    join_one,
     lower,
     trim,
     to_decimal,
@@ -134,7 +135,8 @@ class EnrichOrders(Transform):
         return orders.where(F.col("total") >= 0)
 
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
-        customer = self.customers.join_one(
+        customer = join_one(
+            self.customers,
             on=self.customers.id == order.customer_id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,

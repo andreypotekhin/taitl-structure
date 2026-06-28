@@ -8,6 +8,7 @@ from structure import (
     coalesce,
     expr_fn,
     input,
+    join_one,
     lower,
     output,
     to_decimal,
@@ -84,7 +85,8 @@ class EnrichOrders(Transform):
         return orders.where(F.col("net_total") >= 0)
 
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
-        customer = self.customers.join_one(
+        customer = join_one(
+            self.customers,
             on=(self.customers.tenant.tenant_id == order.tenant.tenant_id)
             & (self.clean_id(self.customers.id) == order.customer_id),
             how=Join.LEFT,
@@ -98,7 +100,8 @@ class EnrichOrders(Transform):
         )
 
     def add_product(self, order: OrderWithCustomer) -> OrderWithProduct:
-        product = self.products.join_one(
+        product = join_one(
+            self.products,
             on=(self.products.tenant.tenant_id == order.tenant.tenant_id) & (self.products.id == order.product_id),
             how=Join.LEFT,
         )
@@ -113,7 +116,8 @@ class EnrichOrders(Transform):
         )
 
     def add_promotion(self, order: OrderWithProduct) -> OrderWithPromotion:
-        promotion = self.promotions.join_one(
+        promotion = join_one(
+            self.promotions,
             on=(self.promotions.tenant.tenant_id == order.tenant.tenant_id)
             & self.clean_id(self.promotions.code).null_safe_eq(order.promotion_code),
             how=Join.LEFT,

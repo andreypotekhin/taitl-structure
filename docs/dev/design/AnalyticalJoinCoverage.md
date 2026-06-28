@@ -72,7 +72,8 @@ schema construction still decides which fields survive.
 Deterministic dedupe should be explicit on `join_one(...)`:
 
 ```python
-customer = self.customer_snapshots.join_one(
+customer = join_one(
+    self.customer_snapshots,
     on=self.customer_snapshots.id == order.customer_id,
     how=Join.LEFT,
     dedupe=JoinDedupe.latest_by(

@@ -106,7 +106,7 @@ The v1 symbolic engine must support these source forms inside compiled subtransf
 order.id
 lower(trim(order.customer_id))
 where(order.id.is_not_null())
-self.customers.join_one(on=self.customers.id == order.customer_id, how=Join.LEFT)
+join_one(self.customers, on=self.customers.id == order.customer_id, how=Join.LEFT)
 OrderNormalized(id=order.id)
 OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
@@ -362,7 +362,8 @@ source context
 Rules:
 
 - `join_one(...)` is valid only during symbolic execution.
-- It may be called only on a declared input scope in v1.
+- Its relation argument must be a declared input scope or schema relation parameter in v1.
+- Member joins such as `self.customers.join_one(...)` are rejected with migration guidance.
 - `on` and `how` are required.
 - `hint` is optional.
 - The `on` argument is captured as a symbolic expression.
@@ -377,7 +378,7 @@ Minimum join operation metadata:
 ```text
 joined input name
 joined input schema
-join method: join_one
+join operation: join_one
 join type
 optional hint
 condition expression

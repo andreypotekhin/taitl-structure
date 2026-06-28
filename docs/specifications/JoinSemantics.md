@@ -14,17 +14,19 @@ expectations.
 
 ## Public API Shape
 
-Join methods are called from an input scope declared with `input(Structure)`:
+Joins are recorded through the free-standing `join_one(relation, ...)` function. The relation may be a transform input
+scope or an explicit schema parameter:
 
 ```python
-customer = self.customers.join_one(
+customer = join_one(
+    self.customers,
     on=self.customers.id == order.customer_id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
 )
 ```
 
-When a subtransform declares the relation as a schema parameter, use the equivalent free-standing form:
+When a subtransform declares the relation as a schema parameter, pass that parameter:
 
 ```python
 def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
@@ -39,9 +41,12 @@ def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer
 The right-hand side is evaluated before Python rebinds `customer`, so reusing the parameter name is valid. A relation
 parameter cannot be used in a filter or projection until it has been joined.
 
-Canonical v1 method:
+The old member spelling `self.customers.join_one(...)` is rejected. Use `join_one(self.customers, ...)` or add a
+relation parameter and use `join_one(customer, ...)`.
 
-- `join_one(*, on, how, hint=None)`: a lookup join that promises at most one right-side row per current row.
+Canonical v1 function:
+
+- `join_one(relation, *, on, how, hint=None)`: a lookup join that promises at most one right-side row per current row.
 
 Rules:
 
@@ -101,7 +106,8 @@ operand order internally.
 Composite joins are expressed by combining equality pairs with `&`:
 
 ```python
-customer = self.customers.join_one(
+customer = join_one(
+    self.customers,
     on=(self.customers.country == order.country) & (self.customers.id == order.customer_id),
     how=Join.LEFT,
 )
@@ -144,7 +150,8 @@ Rules:
 Case normalization is expressed in the join condition with compileable expression helpers:
 
 ```python
-customer = self.customers.join_one(
+customer = join_one(
+    self.customers,
     on=lower(trim(self.customers.email)) == lower(trim(order.email)),
     how=Join.LEFT,
 )
@@ -276,7 +283,8 @@ because it is easier to review and debug.
 `hint=JoinHint.BROADCAST` applies to the joined right input in v1:
 
 ```python
-customer = self.customers.join_one(
+customer = join_one(
+    self.customers,
     on=self.customers.id == order.customer_id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
@@ -300,7 +308,7 @@ The join IR should preserve:
 
 - joined input scope;
 - joined scope occurrence;
-- method kind, `join_one` in v1 and `join_many` once v2 adds row-multiplying joins;
+- operation kind, `join_one` in v1 and `join_many` once v2 adds row-multiplying joins;
 - join type;
 - optional hint;
 - ordered key pairs;

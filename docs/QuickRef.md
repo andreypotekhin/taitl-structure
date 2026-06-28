@@ -363,18 +363,10 @@ def audit(self, order: OrderRaw) -> OrderAudit:
     return project(order, ["tenant", "audit", "business"])
 ```
 
-For compact filtered projection, chain `where(...).project(...)`.
-
-```python
-def publish_valid(self, order: OrderRaw) -> OrderPublished:
-    return where(order.id.is_not_null()).project(order, OrderPublished)
-```
-
-When copied fields need adjustments, use `SchemaClass.project(source)(...)` and override only the changed fields.
+When copied fields need adjustments, use `SchemaClass.project(source)(...)` and override the changed fields.
 
 ```python
 def normalize(self, order: OrderRaw) -> OrderNormalized:
-    where(order.id.is_not_null())
     return OrderNormalized.project(order)(
         total=to_decimal(order.total, precision=12, scale=2),
         quantity=coalesce(order.quantity, 1),
