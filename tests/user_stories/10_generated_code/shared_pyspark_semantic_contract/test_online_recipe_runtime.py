@@ -117,7 +117,8 @@ def test_online_runner_executes_lowered_pyspark_recipe(monkeypatch) -> None:
     assert published.operations == (
         "alias:orders",
         "where:col(orders.status).isNotNull()",
-        "select:id=col(orders.id),status=lower(trim(col(orders.status)))",
+        "select:id=cast(col(orders.id) as StringType()),"
+        "status=cast(lower(trim(col(orders.status))) as StringType())",
         "alias:published",
     )
 
@@ -173,13 +174,14 @@ def test_online_runner_applies_step_hooks_and_step_and_output_joins(monkeypatch)
         "before-hook",
         "alias:orders",
         "join:customers:left:col(orders.id).eqNullSafe(col(customers.id))",
-        "select:id=col(orders.id),status=coalesce(col(customers.segment),col(orders.status))",
+        "select:id=cast(col(orders.id) as StringType()),"
+        "status=cast(coalesce(col(customers.segment),col(orders.status)) as StringType())",
         "after-hook",
-        "select:id=col(id),status=col(status)",
+        "select:id=cast(col(id) as StringType()),status=cast(col(status) as StringType())",
         "alias:published",
         "join:customers:inner:(col(published.id) == col(customers.id))",
         "where:col(published.id).isNotNull()",
-        "select:id=col(published.id),status=col(published.status)",
+        "select:id=cast(col(published.id) as StringType()),status=cast(col(published.status) as StringType())",
     )
 
 
@@ -208,13 +210,17 @@ def test_online_runner_materializes_multiple_step_results(monkeypatch) -> None:
     assert ids.field_names == ["id"]
     assert ids.operations == (
         "alias:orders",
-        "select:id=col(orders.id)",
+        "select:id=cast(col(orders.id) as StringType())",
         "ids-hook",
-        "select:id=col(id)",
+        "select:id=cast(col(id) as StringType())",
         "alias:ids",
     )
     assert statuses.field_names == ["status"]
-    assert statuses.operations == ("alias:orders", "select:status=col(orders.status)", "alias:statuses")
+    assert statuses.operations == (
+        "alias:orders",
+        "select:status=cast(col(orders.status) as StringType())",
+        "alias:statuses",
+    )
 
 
 def test_online_schema_validation_projects_equivalent_spark_shapes() -> None:
@@ -243,7 +249,7 @@ def test_online_schema_validation_projects_equivalent_spark_shapes() -> None:
     projected = validator.project(frame, validation, types=FakeTypes, functions=FakeFunctions("functions"))
 
     assert projected.field_names == ["id", "status"]
-    assert projected.operations == ("select:id=col(id),status=col(status)",)
+    assert projected.operations == ("select:id=cast(col(id) as StringType()),status=cast(col(status) as StringType())",)
 
 
 def test_online_schema_validation_rejects_strict_shape_drift() -> None:
@@ -782,6 +788,11 @@ class FakeField:
 class FakeType:
     name: str
     args: tuple = ()
+
+    def __str__(self) -> str:
+        if not self.args:
+            return f"{self.name}()"
+        return f"{self.name}({', '.join(str(arg) for arg in self.args)})"
 
 
 class FakeTypes:

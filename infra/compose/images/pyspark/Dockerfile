@@ -1,8 +1,7 @@
-FROM python:3.11-slim
+FROM python:3.11-slim-bookworm
 
 ARG PYSPARK_VERSION
 
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV SPARK_HOME=/usr/local/lib/python3.11/site-packages/pyspark
@@ -11,7 +10,10 @@ ENV PYTHONPATH=/workspace/src:/workspace/res
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends bash openjdk-17-jre-headless procps tini \
+    && ln -s "$(dirname "$(dirname "$(readlink -f "$(command -v java)")")")" /usr/local/openjdk-17 \
     && rm -rf /var/lib/apt/lists/*
+
+ENV JAVA_HOME=/usr/local/openjdk-17
 
 RUN pip install --no-cache-dir \
     click==8.1.8 \

@@ -108,7 +108,8 @@ def test_v1_pyspark_recipe_places_validation_boundaries() -> None:
         ("intermediate", "OrderNormalized", SchemaMode.STRICT),
     ]
     assert [(validation.reason, validation.mode, validation.project) for validation in recipe.steps[3].validations] == [
-        ("hook", SchemaMode.ALLOW_EXTRA_COLUMNS, False),
+        ("hook", SchemaMode.ALLOW_EXTRA_COLUMNS, True),
+        ("hook_projected", SchemaMode.STRICT, False),
         ("intermediate", SchemaMode.STRICT, False),
     ]
     assert [(validation.reason, validation.mode, validation.project) for validation in recipe.steps[4].validations] == [

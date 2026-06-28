@@ -8,6 +8,7 @@ import time
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Callable
 
 import pytest
@@ -47,6 +48,7 @@ pytestmark = pytest.mark.integration
 
 ROOT = Path(__file__).resolve().parents[3]
 DATA = ROOT / "res" / "testing" / "data" / "v1" / "orders"
+TEST_MODULE = "tests.integration.pyspark.test_v1_backend_matrix"
 
 
 class LookupOrder(Structure):
@@ -90,7 +92,12 @@ class AddLookupProduct(Transform):
         return audited
 
 
-@pytest.fixture(scope="session")
+sys.modules.setdefault(TEST_MODULE, sys.modules[__name__])
+for _type in (LookupOrder, LookupProduct, LookupEnriched, AddLookupProduct):
+    _type.__module__ = TEST_MODULE
+
+
+@pytest.fixture
 def spark():
     pyspark = pytest.importorskip("pyspark")
     sql = pytest.importorskip("pyspark.sql")
@@ -100,6 +107,7 @@ def spark():
         .appName(f"structure-integration-{os.environ.get('STRUCTURE_INTEGRATION_BACKEND', 'local')}")
         .config("spark.sql.shuffle.partitions", "1")
         .config("spark.sql.session.timeZone", "UTC")
+        .config("spark.sql.artifact.dir", "/tmp/spark-artifacts")
         .config("spark.ui.enabled", "false")
     )
 
@@ -147,7 +155,7 @@ def test_v1_online_and_generated_execution_match_orders_contract_on_live_backend
     sys.path.insert(0, str(tmp_path))
     try:
         importlib.invalidate_caches()
-        schemas = importlib.import_module(f"{generated_package}.pyspark.schemas.order")
+        schemas = _generated_order_schemas(generated_package)
         generated = _run_generated_orders_transform(spark, generated_package, schemas)
         online = _run_online_orders_transform(spark, schemas)
 
@@ -192,10 +200,10 @@ def test_multiple_schema_parameters_and_results_match_online_and_generated(spark
     generated_package = "integration_multi_generated"
     files = PySpark.render.project()(
         PySpark.plan.lower()(compile_transform(AddLookupProduct)),
-        source_transform=f"{__name__}.AddLookupProduct",
+        source_transform=f"{TEST_MODULE}.AddLookupProduct",
         generated_package=generated_package,
         source_schema_modules={
-            __name__: [LookupOrder, LookupProduct, LookupEnriched],
+            TEST_MODULE: [LookupOrder, LookupProduct, LookupEnriched],
         },
     )
     _write_files(tmp_path, files)
@@ -268,6 +276,20 @@ def _source_schema_modules():
     }
 
 
+def _generated_order_schemas(package: str) -> SimpleNamespace:
+    order = importlib.import_module(f"{package}.pyspark.schemas.order")
+    customer = importlib.import_module(f"{package}.pyspark.schemas.customer")
+    product = importlib.import_module(f"{package}.pyspark.schemas.product")
+    promotion = importlib.import_module(f"{package}.pyspark.schemas.promotion")
+    return SimpleNamespace(
+        ORDER_RAW_SCHEMA=order.ORDER_RAW_SCHEMA,
+        ORDER_PUBLISHED_SCHEMA=order.ORDER_PUBLISHED_SCHEMA,
+        CUSTOMER_SCHEMA=customer.CUSTOMER_SCHEMA,
+        PRODUCT_SCHEMA=product.PRODUCT_SCHEMA,
+        PROMOTION_SCHEMA=promotion.PROMOTION_SCHEMA,
+    )
+
+
 def _write_files(root: Path, files: dict[str, str]) -> None:
     for name, text in files.items():
         path = root / name
@@ -278,14 +300,20 @@ def _write_files(root: Path, files: dict[str, str]) -> None:
 def _run_generated_orders_transform(spark, generated_package: str, schemas):
     invocation = EnrichOrders(**_input_frames(spark, schemas))
     session = StructureSession(spark=spark, execution_mode="generated", generated_package=generated_package)
-    return invocation.run(session)
+    return _published(invocation.run(session))
 
 
 def _run_online_orders_transform(spark, schemas):
     inputs = _input_frames(spark, schemas)
     invocation = EnrichOrders(**inputs)
     session = StructureSession(spark=spark, execution_mode="online")
-    return invocation.run(session)
+    return _published(invocation.run(session))
+
+
+def _published(result):
+    if hasattr(result, "as_dict"):
+        return result["published"]
+    return result
 
 
 def _input_frames(spark, schemas) -> dict[str, object]:

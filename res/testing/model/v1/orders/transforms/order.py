@@ -128,7 +128,14 @@ class EnrichOrders(Transform):
             promotion_discount=promotion.discount,
         )
 
-    @after(add_promotion, lane=orders, pass_inputs=True, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, streaming_safe=True)
+    @after(
+        add_promotion,
+        lane=orders,
+        pass_inputs=True,
+        schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS,
+        project_output=True,
+        streaming_safe=True,
+    )
     def note_lookup_inputs(self, *, orders, inputs, spark, ctx):
         from pyspark.sql import functions as F
 

@@ -37,6 +37,7 @@ class RenderPySparkTransformModule:
         lines = [
             "from pyspark.sql import DataFrame, SparkSession",
             "from pyspark.sql import functions as F",
+            "from pyspark.sql import types as T",
         ]
         if self._has_hooks(plan):
             module, name = source_transform.rsplit(".", 1)

@@ -150,8 +150,8 @@ def test_generated_projection_narrowing_uses_select_not_drop() -> None:
     )
 
     assert "rows = rows.select(" in text
-    assert 'F.col("raw.id").alias("id")' in text
-    assert 'F.col("raw.status").alias("status")' in text
+    assert 'F.col("raw.id").cast(T.StringType()).alias("id")' in text
+    assert 'F.col("raw.status").cast(T.StringType()).alias("status")' in text
     assert ".drop(" not in text
 
 

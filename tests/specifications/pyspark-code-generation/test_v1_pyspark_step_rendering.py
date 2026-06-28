@@ -27,7 +27,7 @@ def test_v1_step_renderer_renders_join_projection_and_validation() -> None:
     assert '        customers_joined = F.broadcast(customers.alias("customers"))' in text
     assert '            "left",' in text
     assert 'F.lower(F.trim(F.col("customers.id"))) == F.col("order_normalized.customer_id")' in text
-    assert '            F.col("customers.name").alias("customer_name"),' in text
+    assert '            F.col("customers.name").cast(T.StringType()).alias("customer_name"),' in text
     assert '        assert_schema(orders, ORDER_WITH_CUSTOMER_SCHEMA, name="OrderWithCustomer", mode="strict")' in text
 
 

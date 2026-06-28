@@ -31,7 +31,7 @@ class RenderPySparkRuntimeModule:
                 "",
                 "",
                 "def project_schema(df, schema):",
-                "    return df.select(*(F.col(field.name) for field in schema))",
+                "    return df.select(*(F.col(field.name).cast(field.dataType).alias(field.name) for field in schema))",
                 "",
                 "",
                 "class HookInputs:",

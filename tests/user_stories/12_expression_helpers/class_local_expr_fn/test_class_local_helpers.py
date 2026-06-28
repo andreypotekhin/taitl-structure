@@ -15,9 +15,15 @@ def test_class_local_expression_helpers_lower_to_symbolic_calls(orders_plan) -> 
 def test_expression_helpers_can_be_called_through_self(orders_transform_text) -> None:
     """I can call class-local expression helpers through self."""
 
-    assert 'F.lower(F.trim(F.col("order_raw.id"))).alias("id")' in orders_transform_text
-    assert 'F.lower(F.trim(F.col("order_raw.customer_id"))).alias("customer_id")' in orders_transform_text
-    assert 'F.lower(F.trim(F.col("order_raw.product_id"))).alias("product_id")' in orders_transform_text
+    assert 'F.lower(F.trim(F.col("order_raw.id"))).cast(T.StringType()).alias("id")' in orders_transform_text
+    assert (
+        'F.lower(F.trim(F.col("order_raw.customer_id"))).cast(T.StringType()).alias("customer_id")'
+        in orders_transform_text
+    )
+    assert (
+        'F.lower(F.trim(F.col("order_raw.product_id"))).cast(T.StringType()).alias("product_id")'
+        in orders_transform_text
+    )
 
 
 def test_money_helper_preserves_decimal_contract(orders_plan, orders_transform_text) -> None:

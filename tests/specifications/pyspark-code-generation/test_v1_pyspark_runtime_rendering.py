@@ -20,7 +20,7 @@ def test_v1_runtime_module_renderer_contains_schema_helpers_and_hook_inputs() ->
     assert 'raise ValueError(f"{name} is missing required column(s): {names}")' in text
     assert 'if mode == "strict":' in text
     assert "def project_schema(df, schema):" in text
-    assert "return df.select(*(F.col(field.name) for field in schema))" in text
+    assert "return df.select(*(F.col(field.name).cast(field.dataType).alias(field.name) for field in schema))" in text
     assert "class HookInputs:" in text
     assert 'raise AttributeError("HookInputs is read-only")' in text
     assert "class ResultSchemas(Mapping):" in text

@@ -60,6 +60,7 @@ def test_v1_symbolic_plan_records_joins_and_hooks() -> None:
     lookup_hook = plan.steps[3].after_hooks[0]
     assert lookup_hook.pass_inputs
     assert lookup_hook.schema_mode is SchemaMode.ALLOW_EXTRA_COLUMNS
+    assert lookup_hook.project_output
     assert lookup_hook.streaming_safe
 
     quality_hook = plan.steps[4].after_hooks[0]

@@ -1,3 +1,4 @@
+from structure.app.dsl.model.types.StructType import StructType
 from structure.app.target.pyspark.commands.MaterializePySparkSchema import materialize_pyspark_schema
 from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkValidationRecipe
 
@@ -28,4 +29,9 @@ class PySparkFrameValidator:
 
     def project(self, df, validation: PySparkValidationRecipe, *, types, functions):
         schema = materialize_pyspark_schema(validation.schema, types=types)
-        return df.select(*(functions.col(field.name) for field in schema))
+        return df.select(*(functions.col(field.name).cast(field.dataType).alias(field.name) for field in schema))
+
+    def cast(self, column, field, *, types):
+        if isinstance(field.type, StructType):
+            return column
+        return column.cast(materialize_pyspark_schema.type(field.type, types=types))

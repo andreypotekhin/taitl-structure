@@ -18,7 +18,15 @@ def test_hooks_record_input_access_and_projection_validation_contracts(orders_re
 
     assert lookup.pass_inputs
     assert lookup.schema_mode is SchemaMode.ALLOW_EXTRA_COLUMNS
+    assert lookup.project_output
     assert quality.project_output
+    assert [
+        (validation.reason, validation.mode, validation.project) for validation in orders_recipe.steps[3].validations
+    ] == [
+        ("hook", SchemaMode.ALLOW_EXTRA_COLUMNS, True),
+        ("hook_projected", SchemaMode.STRICT, False),
+        ("intermediate", SchemaMode.STRICT, False),
+    ]
     assert [
         (validation.reason, validation.mode, validation.project) for validation in orders_recipe.steps[4].validations
     ] == [

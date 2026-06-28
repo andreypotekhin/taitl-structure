@@ -118,10 +118,14 @@ class RunOnlinePySparkTransform:
             for result in step.results:
                 projected = df.select(
                     *(
-                        self._expressions.evaluate(
-                            assignment.expression,
-                            functions=functions,
-                            aliases=self._scope_aliases(step),
+                        self._validator.cast(
+                            self._expressions.evaluate(
+                                assignment.expression,
+                                functions=functions,
+                                aliases=self._scope_aliases(step),
+                            ),
+                            assignment.field,
+                            types=types,
                         ).alias(assignment.field.column)
                         for assignment in result.projection
                     )
@@ -149,8 +153,12 @@ class RunOnlinePySparkTransform:
 
         df = df.select(
             *(
-                self._expressions.evaluate(
-                    assignment.expression, functions=functions, aliases=self._scope_aliases(step)
+                self._validator.cast(
+                    self._expressions.evaluate(
+                        assignment.expression, functions=functions, aliases=self._scope_aliases(step)
+                    ),
+                    assignment.field,
+                    types=types,
                 ).alias(assignment.field.column)
                 for assignment in step.projection
             )
@@ -197,8 +205,12 @@ class RunOnlinePySparkTransform:
         if output.projection:
             df = df.select(
                 *(
-                    self._expressions.evaluate(
-                        assignment.expression, functions=functions, aliases=self._scope_aliases(output)
+                    self._validator.cast(
+                        self._expressions.evaluate(
+                            assignment.expression, functions=functions, aliases=self._scope_aliases(output)
+                        ),
+                        assignment.field,
+                        types=types,
                     ).alias(assignment.field.column)
                     for assignment in output.projection
                 )

@@ -1,67 +1,70 @@
 services:
   spark35-master:
+    image: structure-integration-pyspark35
     build:
       context: ../..
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK35_VERSION}
     command: >
-      sh -lc "/usr/local/lib/python3.11/site-packages/pyspark/sbin/start-master.sh -h 0.0.0.0 -p 7077
-      --webui-port 8080 && tail -F /usr/local/lib/python3.11/site-packages/pyspark/logs/*"
+      spark-class org.apache.spark.deploy.master.Master --host 0.0.0.0 --port 7077 --webui-port 8080
     ports:
       - "${SPARK35_MASTER_PORT}:7077"
       - "${SPARK35_MASTER_UI_PORT}:8080"
 
   spark35-worker:
+    image: structure-integration-pyspark35
     build:
       context: ../..
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK35_VERSION}
     command: >
-      sh -lc "/usr/local/lib/python3.11/site-packages/pyspark/sbin/start-worker.sh spark://spark35-master:7077
-      --webui-port 8081 && tail -F /usr/local/lib/python3.11/site-packages/pyspark/logs/*"
+      spark-class org.apache.spark.deploy.worker.Worker spark://spark35-master:7077 --webui-port 8081
     depends_on:
       - spark35-master
     ports:
       - "${SPARK35_WORKER_UI_PORT}:8081"
 
   spark40-master:
+    image: structure-integration-pyspark40
     build:
       context: ../..
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
     command: >
-      sh -lc "/usr/local/lib/python3.11/site-packages/pyspark/sbin/start-master.sh -h 0.0.0.0 -p 7077
-      --webui-port 8080 && tail -F /usr/local/lib/python3.11/site-packages/pyspark/logs/*"
+      spark-class org.apache.spark.deploy.master.Master --host 0.0.0.0 --port 7077 --webui-port 8080
     ports:
       - "${SPARK40_MASTER_PORT}:7077"
       - "${SPARK40_MASTER_UI_PORT}:8080"
 
   spark40-worker:
+    image: structure-integration-pyspark40
     build:
       context: ../..
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
     command: >
-      sh -lc "/usr/local/lib/python3.11/site-packages/pyspark/sbin/start-worker.sh spark://spark40-master:7077
-      --webui-port 8081 && tail -F /usr/local/lib/python3.11/site-packages/pyspark/logs/*"
+      spark-class org.apache.spark.deploy.worker.Worker spark://spark40-master:7077 --webui-port 8081
     depends_on:
       - spark40-master
     ports:
       - "${SPARK40_WORKER_UI_PORT}:8081"
 
   structure-integration-pyspark35:
+    image: structure-integration-pyspark35
     build:
       context: ../..
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK35_VERSION}
     command: >
-      python -m pytest tests/integration --run-integration --integration-backend=pyspark35
+      sh -lc "cd /tmp && python -m pytest /workspace/tests/integration --rootdir=/workspace
+      -p no:cacheprovider --run-integration --integration-backend=pyspark35
       ${INTEGRATION_PYTEST_ARGS}
+      "
     depends_on:
       - spark35-master
       - spark35-worker
@@ -77,14 +80,17 @@ services:
       - ../../.pytest-workspace-tmp/integration:/workspace/.pytest-workspace-tmp/integration
 
   structure-integration-pyspark40:
+    image: structure-integration-pyspark40
     build:
       context: ../..
       dockerfile: infra/compose/images/pyspark/Dockerfile
       args:
         PYSPARK_VERSION: ${PYSPARK40_VERSION}
     command: >
-      python -m pytest tests/integration --run-integration --integration-backend=pyspark40
+      sh -lc "cd /tmp && python -m pytest /workspace/tests/integration --rootdir=/workspace
+      -p no:cacheprovider --run-integration --integration-backend=pyspark40
       ${INTEGRATION_PYTEST_ARGS}
+      "
     depends_on:
       - spark40-master
       - spark40-worker

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 
+from structure.app.dsl.model.types.StructType import StructType
 from structure.app.target.pyspark.commands.RenderPySparkExpression import render_pyspark_expression
 from structure.app.target.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
@@ -56,8 +57,7 @@ class RenderPySparkStep:
     def _result_projection(self, step: PySparkStepRecipe, result, *, base: str) -> list[str]:
         lines = [f"        {result.frame} = {base}.select("]
         for assignment in result.projection:
-            expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
-            lines.append(f"            {expression}.alias({self._literal(assignment.field.column)}),")
+            lines.append(f"            {self._assignment(assignment, scope_aliases=self._scope_aliases(step))},")
         lines.append("        )")
         return lines
 
@@ -108,10 +108,16 @@ class RenderPySparkStep:
             return []
         lines = [f"        {target} = {target}.select("]
         for assignment in step.projection:
-            expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
-            lines.append(f"            {expression}.alias({self._literal(assignment.field.column)}),")
+            lines.append(f"            {self._assignment(assignment, scope_aliases=self._scope_aliases(step))},")
         lines.append("        )")
         return lines
+
+    def _assignment(self, assignment, *, scope_aliases: dict[str, str]) -> str:
+        expression = render_pyspark_expression(assignment.expression, scope_aliases=scope_aliases)
+        if isinstance(assignment.field.type, StructType):
+            return f"{expression}.alias({self._literal(assignment.field.column)})"
+        target_type = render_pyspark_schema.type(assignment.field.type)
+        return f"{expression}.cast({target_type}).alias({self._literal(assignment.field.column)})"
 
     def _target(self, step: PySparkStepRecipe | PySparkOutputRecipe) -> str:
         if isinstance(step, PySparkStepRecipe):
