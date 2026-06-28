@@ -126,7 +126,7 @@ class EnrichOrders(Transform):
 
 ### Running a Transform
 
-To execute a transform, specify input DataFrames and call .run(session):
+To execute a transform, specify DataFrame inputs and call .run(session):
 
 ```python
 from structure import StructureSession
@@ -270,6 +270,10 @@ Project overview: [Overview.md](docs/Overview.md)
 Basic concepts: [Basics.md](Basics.md)
 
 Get started: [GettingStarted.md](GettingStarted.md)
+
+## Development
+
+Development overview: [Development.md](docs/dev/Development.md) 
 
 ## License
 
