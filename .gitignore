@@ -58,3 +58,5 @@ src/structure/app/target/pyspark/logic/model/PySparkStepResultRecipe.py.isorted
 *.pickle
 *.isorted
 .coverage
+res/img/screenshots/add_promotion.screen.0.jpg
+res/img/screenshots/*.*.jpg

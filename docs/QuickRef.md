@@ -133,7 +133,7 @@ def add_product(
 ) -> tuple[OrderWithProduct, OrderWithProduct]:
     product = join_one(
         product,
-        on=product.id == order.product_id,
+        on=order.product_id == product.id,
         how=Join.LEFT,
     )
 
@@ -399,7 +399,7 @@ Use symbolic joins.
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
     customer = join_one(
         customer,
-        on=customer.id == order.customer_id,
+        on=order.customer_id == customer.id,
         how=Join.LEFT,
         hint=JoinHint.BROADCAST,
     )
@@ -417,7 +417,7 @@ customers_df = F.broadcast(customers.alias("customers"))
 
 orders = orders.join(
     customers_df,
-    F.col("customers.id") == F.col("order_normalized.customer_id"),
+    F.col("order_normalized.customer_id") == F.col("customers.id"),
     "left",
 ).select(
     F.col("order_normalized.id").alias("id"),
@@ -435,7 +435,7 @@ name only the joined fields.
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
     customer = join_one(
         customer,
-        on=customer.id == order.customer_id,
+        on=order.customer_id == customer.id,
         how=Join.LEFT,
         hint=JoinHint.BROADCAST,
     )

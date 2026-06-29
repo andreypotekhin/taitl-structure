@@ -106,7 +106,7 @@ The v1 symbolic engine must support these source forms inside compiled subtransf
 order.id
 lower(trim(order.customer_id))
 where(order.id.is_not_null())
-join_one(self.customers, on=self.customers.id == order.customer_id, how=Join.LEFT)
+join_one(self.customers, on=order.customer_id == self.customers.id, how=Join.LEFT)
 OrderNormalized(id=order.id)
 OrderWithCustomer.base(order)(customer_name=customer.name)
 ```

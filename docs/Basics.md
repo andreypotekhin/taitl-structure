@@ -180,7 +180,7 @@ Example:
 def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
     customer = join_one(
         customer,
-        on=customer.id == order.customer_id,
+        on=order.customer_id == customer.id,
         how=Join.LEFT,
         hint=JoinHint.BROADCAST,
     )

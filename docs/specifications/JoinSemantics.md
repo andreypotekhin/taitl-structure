@@ -20,7 +20,7 @@ scope or an explicit schema parameter:
 ```python
 customer = join_one(
     self.customers,
-    on=self.customers.id == order.customer_id,
+    on=order.customer_id == self.customers.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
 )
@@ -32,7 +32,7 @@ When a subtransform declares the relation as a schema parameter, pass that param
 def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
     customer = join_one(
         customer,
-        on=customer.id == order.customer_id,
+        on=order.customer_id == customer.id,
         how=Join.LEFT,
     )
     return OrderWithCustomer.base(order)(customer_name=customer.name)
@@ -78,13 +78,13 @@ AND.
 Accepted:
 
 ```python
-self.customers.id == order.customer_id
+order.customer_id == self.customers.id
 
-(self.customers.country == order.country) & (self.customers.id == order.customer_id)
+(order.country == self.customers.country) & (order.customer_id == self.customers.id)
 
-lower(trim(self.customers.email)) == lower(trim(order.email))
+lower(trim(order.email)) == lower(trim(self.customers.email))
 
-self.customers.external_id.null_safe_eq(order.customer_external_id)
+order.customer_external_id.null_safe_eq(self.customers.external_id)
 ```
 
 Rejected in v1:
@@ -98,8 +98,9 @@ Rejected in v1:
 - User Python functions unless they are declared as compileable expression helpers.
 
 Each equality comparison contributes one key pair. In a pair, one expression must reference the joined input scope and
-the other expression must reference the current row scope or a previously joined scope. The compiler may normalize
-operand order internally.
+the other expression must reference the current row scope or a previously joined scope. The compiler accepts either
+operand order. Public examples place the current-row expression on the left and the joined-input expression on the
+right because that reads naturally for `Join.LEFT` enrichment steps.
 
 ## Composite Keys
 
@@ -108,7 +109,7 @@ Composite joins are expressed by combining equality pairs with `&`:
 ```python
 customer = join_one(
     self.customers,
-    on=(self.customers.country == order.country) & (self.customers.id == order.customer_id),
+    on=(order.country == self.customers.country) & (order.customer_id == self.customers.id),
     how=Join.LEFT,
 )
 ```
@@ -131,7 +132,7 @@ Normal equality uses Spark SQL equality. If either side is null, the comparison 
 Null-safe equality is explicit:
 
 ```python
-self.customers.id.null_safe_eq(order.customer_id)
+order.customer_id.null_safe_eq(self.customers.id)
 ```
 
 This lowers to Spark's null-safe equality operation. It matches when both sides are null.
@@ -152,7 +153,7 @@ Case normalization is expressed in the join condition with compileable expressio
 ```python
 customer = join_one(
     self.customers,
-    on=lower(trim(self.customers.email)) == lower(trim(order.email)),
+    on=lower(trim(order.email)) == lower(trim(self.customers.email)),
     how=Join.LEFT,
 )
 ```
@@ -187,7 +188,7 @@ Joined input:
   customers
 
 Join key:
-  customers.id == order.customer_id
+  order.customer_id == customers.id
 
 Why this matters:
   If customers has duplicate id values, this join can multiply rows.
@@ -285,7 +286,7 @@ because it is easier to review and debug.
 ```python
 customer = join_one(
     self.customers,
-    on=self.customers.id == order.customer_id,
+    on=order.customer_id == self.customers.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
 )

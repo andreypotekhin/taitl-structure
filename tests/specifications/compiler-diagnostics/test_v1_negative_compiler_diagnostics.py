@@ -280,6 +280,22 @@ def test_v1_join_on_primary_key_compiles_without_uniqueness_warning() -> None:
     assert [diagnostic.code for diagnostic in plan.diagnostics] == []
 
 
+def test_v1_join_on_primary_key_accepts_current_row_left_operand() -> None:
+    @transform
+    class UniqueJoin(Transform):
+        rows = input(Raw)
+        lookup = input(Lookup)
+        clean = output(Clean)
+
+        def normalize(self, row: Raw) -> Clean:
+            join_one(self.lookup, on=row.id == self.lookup.id, how=Join.LEFT)
+            return Clean(id=row.id)
+
+    plan = compile_transform(UniqueJoin)
+
+    assert [diagnostic.code for diagnostic in plan.diagnostics] == []
+
+
 def test_v1_unproven_join_one_key_emits_uniqueness_warning() -> None:
     @transform
     class UnprovenJoin(Transform):

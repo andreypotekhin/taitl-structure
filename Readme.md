@@ -91,7 +91,7 @@ class EnrichOrders(Transform):
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
         customer = join_one(
             self.customers,
-            on=self.customers.id == order.customer_id,
+            on=order.customer_id == self.customers.id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
         )
@@ -104,7 +104,7 @@ class EnrichOrders(Transform):
     def add_product(self, order: OrderWithCustomer, product: Product) -> OrderEnriched:
         product = join_one(
             product,
-            on=product.id == order.product_id,
+            on=order.product_id == product.id,
             how=Join.LEFT,
         )
 
@@ -203,7 +203,7 @@ class EnrichOrdersGenerated:
         customers_df = F.broadcast(customers.alias("customers"))
         orders = orders.join(
             customers_df,
-            F.col("customers.id") == F.col("order_normalized.customer_id"),
+            F.col("order_normalized.customer_id") == F.col("customers.id"),
             "left",
         ).select(
             F.col("order_normalized.id").alias("id"),
@@ -220,7 +220,7 @@ class EnrichOrdersGenerated:
         products_df = products.alias("products")
         orders = orders.join(
             products_df,
-            F.col("products.id") == F.col("order_with_customer.product_id"),
+            F.col("order_with_customer.product_id") == F.col("products.id"),
             "left",
         ).where(
             F.col("products.id").isNotNull()
@@ -267,9 +267,9 @@ See [Compatibility.md](docs/Compatibility.md) for the full versioning and compat
 
 Project overview: [Overview.md](docs/Overview.md) 
 
-Basic concepts: [Basics.md](Basics.md)
+Basic concepts: [Basics.md](docs/Basics.md)
 
-Get started: [GettingStarted.md](GettingStarted.md)
+Get started: [GettingStarted.md](docs/GettingStarted.md)
 
 ## Development
 
@@ -279,7 +279,7 @@ Development overview: [Development.md](docs/dev/Development.md)
 
 LGPL-2.1 + Ethical Use Policy
 
-See [Licence.md]()
+See [License.md](License.md)
 
 ## Roadmap
 
