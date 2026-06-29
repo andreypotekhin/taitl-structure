@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 from typing import Any, Callable, Iterable, TypeVar, cast, overload
 
+from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import current_context
 from structure.app.dsl.model.expr.expressions import literal
 from structure.app.dsl.model.expr.InputScope import InputScope, join_one
@@ -296,7 +297,9 @@ def where(predicate: object) -> "WhereChain":
     context = current_context()
     if context is None:
         raise RuntimeError("where(...) can only be used inside a compiled Structure subtransform")
-    context.filters.append(literal(predicate))
+    expression = literal(predicate)
+    context.filters.append(expression)
+    context.operations.append(OperationPlan.filter_operation(expression))
     return WhereChain()
 
 
@@ -312,10 +315,17 @@ def project(source: object, target: Iterable[str]) -> Any: ...
 def project(source: object) -> Any: ...
 
 
-def project(source: object, target: type[Structure] | Iterable[str] | None = None) -> object:
+def project(source: object | None = None, target: type[Structure] | Iterable[str] | None = None) -> object:
     if target is None:
+        context = current_context()
+        if context is not None and isinstance(source, type) and issubclass(source, Structure):
+            return Projection(source=_default_project_source(context), target=source)
+        if context is not None and source is not None:
+            return Projection(source=_default_project_source(context), fields=_project_fields(source))
         raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
     if isinstance(source, type) and issubclass(source, Structure):
+        raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
+    if source is None:
         raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
     if isinstance(target, type):
         if not issubclass(target, Structure):
@@ -330,13 +340,31 @@ class WhereChain:
         return where(predicate)
 
     @overload
+    def project(self, source: type[Projected]) -> Projected: ...
+
+    @overload
+    def project(self, source: Iterable[str]) -> Any: ...
+
+    @overload
     def project(self, source: object, target: type[Projected]) -> Projected: ...
 
     @overload
     def project(self, source: object, target: Iterable[str]) -> Any: ...
 
-    def project(self, source: object, target: type[Structure] | Iterable[str]) -> object:
+    def project(
+        self,
+        source: object | None = None,
+        target: type[Structure] | Iterable[str] | None = None,
+    ) -> object:
+        if target is None:
+            return project(source)
         return project(source, target)
+
+
+def _default_project_source(context) -> object:
+    if context.default_project_source is None:
+        raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
+    return context.default_project_source
 
 
 def _project_fields(value: object) -> tuple[str, ...]:

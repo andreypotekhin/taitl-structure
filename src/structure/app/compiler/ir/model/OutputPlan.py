@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
+from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.ir.model.ProjectAssignment import ProjectAssignment
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.schemas.Structure import Structure
@@ -19,3 +20,4 @@ class OutputPlan:
     projection: tuple[ProjectAssignment, ...]
     ordinal: int
     joins: tuple[JoinPlan, ...] = ()
+    operations: tuple[OperationPlan, ...] = ()

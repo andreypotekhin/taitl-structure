@@ -7,6 +7,7 @@ from structure.app.dsl.model.types.StructType import StructType
 from structure.app.dsl.model.types.StructureType import StructureType
 from structure.app.target.pyspark.commands.RenderPySparkExpression import render_pyspark_expression
 from structure.app.target.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
+from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.app.target.pyspark.model.PySparkOutputRecipe import PySparkOutputRecipe
@@ -31,9 +32,7 @@ class RenderPySparkStep:
         if step.before_hooks:
             lines.extend(self._hooks(step.before_hooks))
         lines.append(f'        {target} = {active}.alias("{step.input_alias}")')
-        lines.extend(self._joins(step, sources=sources or {}, target=target))
-        if step.filters:
-            lines.extend(self._filters(step, target=target))
+        lines.extend(self._operations(step, sources=sources or {}, target=target))
         lines.extend(self._projection(step, target=target))
         lines.extend(self._hooks(step.after_hooks))
         lines.extend(self._validations(step.validations, target=target))
@@ -46,9 +45,7 @@ class RenderPySparkStep:
             lines.extend(self._hooks(step.before_hooks))
         base = f"{step.name}_base"
         lines.append(f'        {base} = {active}.alias("{step.input_alias}")')
-        lines.extend(self._joins(step, sources=sources, target=base))
-        if step.filters:
-            lines.extend(self._filters(step, target=base))
+        lines.extend(self._operations(step, sources=sources, target=base))
         for result in step.results:
             lines.extend(self._result_projection(step, result, base=base))
         for result in step.results:
@@ -86,22 +83,68 @@ class RenderPySparkStep:
     ) -> list[str]:
         lines: list[str] = []
         for join in step.joins:
-            source = sources.get(join.source, join.source)
-            right = f'{source}.alias("{join.right_alias}")'
-            if join.hint is not None and join.hint.value == "broadcast":
-                right = f"F.broadcast({right})"
-            lines.append(f"        {join.input_name}_joined = {right}")
-            predicate = render_pyspark_expression(join.predicate, scope_aliases=self._scope_aliases(step, join))
-            lines.append(f"        {target} = {target}.join(")
-            lines.append(f"            {join.input_name}_joined,")
-            lines.append(f"            {predicate},")
-            lines.append(f'            "{join.how.value}",')
-            lines.append("        )")
+            lines.extend(self._join(step, join, sources=sources, target=target))
         return lines
 
-    def _filters(self, step: PySparkStepRecipe | PySparkOutputRecipe, *, target: str = "df") -> list[str]:
+    def _operations(
+        self,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        *,
+        sources: dict[str, str],
+        target: str,
+    ) -> list[str]:
+        if not step.operations:
+            lines = self._joins(step, sources=sources, target=target)
+            if step.filters:
+                lines.extend(self._filters(step.filters, step=step, target=target))
+            return lines
+
+        ordered_lines: list[str] = []
+        pending_filters: list[PySparkExpressionRecipe] = []
+        for operation in step.operations:
+            if operation.kind == "filter" and operation.filter is not None:
+                pending_filters.append(operation.filter)
+                continue
+            if pending_filters:
+                ordered_lines.extend(self._filters(tuple(pending_filters), step=step, target=target))
+                pending_filters = []
+            if operation.kind == "join" and operation.join is not None:
+                ordered_lines.extend(self._join(step, operation.join, sources=sources, target=target))
+        if pending_filters:
+            ordered_lines.extend(self._filters(tuple(pending_filters), step=step, target=target))
+        return ordered_lines
+
+    def _join(
+        self,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        join: PySparkJoinRecipe,
+        *,
+        sources: dict[str, str],
+        target: str,
+    ) -> list[str]:
+        source = sources.get(join.source, join.source)
+        right = f'{source}.alias("{join.right_alias}")'
+        if join.hint is not None and join.hint.value == "broadcast":
+            right = f"F.broadcast({right})"
+        predicate = render_pyspark_expression(join.predicate, scope_aliases=self._scope_aliases(step, join))
+        return [
+            f"        {join.input_name}_joined = {right}",
+            f"        {target} = {target}.join(",
+            f"            {join.input_name}_joined,",
+            f"            {predicate},",
+            f'            "{join.how.value}",',
+            "        )",
+        ]
+
+    def _filters(
+        self,
+        filters: tuple[PySparkExpressionRecipe, ...],
+        *,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        target: str = "df",
+    ) -> list[str]:
         predicate = " & ".join(
-            f"({render_pyspark_expression(filter, scope_aliases=self._scope_aliases(step))})" for filter in step.filters
+            f"({render_pyspark_expression(filter, scope_aliases=self._scope_aliases(step))})" for filter in filters
         )
         return [f"        {target} = {target}.where({predicate})"]
 

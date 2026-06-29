@@ -368,6 +368,8 @@ Rules:
 - `hint` is optional.
 - The `on` argument is captured as a symbolic expression.
 - The engine records the join in source order before returning the joined scope.
+- For schema relation parameters, the symbolic parameter proxy is updated after `join_one(parameter, ...)` so later
+  field access reads the joined scope even when the return value is not assigned.
 - The joined scope occurrence id must be deterministic.
 - Repeated joins of the same input must receive stable occurrence ids.
 - Join condition validity, supported join types, null semantics, aliases, right-side projection, and uniqueness warnings

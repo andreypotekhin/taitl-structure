@@ -176,6 +176,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 - + As a developer, I can call `where(...)` multiple times so that predicates are combined with logical AND.
 - + As a developer, I can use expression helper predicates with `where(...)` so that reusable filters are supported.
 - + As a developer, I can filter on joined fields so that post-join match requirements are expressible.
+- + As a developer, I can mix `where(...)` and `join_one(...)` in source order so that filters run at the point where I
+  write them.
 
 ## 14. Add and Drop Columns
 
@@ -185,6 +187,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 - + As a developer, I can remove temporary intermediate fields in a later subtransform so that final output remains clean.
 - + As a developer, I can return `project(source, TargetSchema)` so that same-name compatible fields are copied without
   repeating every field.
+- + As a developer, I can return `project(TargetSchema)` so that the driving row can be projected concisely when it is
+  unambiguous.
 - + As a developer, I can return `project(source, [fields])` so that projection can be narrowed by input field names.
 - + As a developer, I can use `where(predicate).project(source, target)` so that filtered projection can be written
   compactly.
@@ -198,6 +202,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 - + As a developer, I can use `join_one(...)` for many-to-one or one-to-one lookup joins so that cardinality intent is explicit.
 - + As a developer, I can call `join_one(relation, ...)` with a schema parameter so that joins read like ordinary
   function composition.
+- + As a developer, I can call `join_one(relation, ...)` without assignment so that later reads from the same relation
+  parameter use the joined scope.
 - + As a developer, I can perform serial joins across an arbitrary number of inputs so that enrichment pipelines are not limited to three inputs.
 - + As a developer, I can specify join type and hints using enum values so that free-form join strings are avoided in source code.
 - + As a developer, I can see that semi, anti, row-multiplying, deduped lookup, temporal, and as-of joins are staged as

@@ -8,6 +8,7 @@ from structure.app.target.pyspark.logic.mapping.PySparkHookMapper import PySpark
 from structure.app.target.pyspark.logic.mapping.PySparkNameMapper import PySparkNameMapper
 from structure.app.target.pyspark.logic.mapping.PySparkValidationMapper import PySparkValidationMapper
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.app.target.pyspark.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.app.target.pyspark.model.PySparkProjectionRecipe import PySparkProjectionRecipe
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.target.pyspark.model.PySparkStepResultRecipe import PySparkStepResultRecipe
@@ -30,6 +31,11 @@ class PySparkStepMapper:
     ) -> PySparkStepRecipe:
         input_alias = self._names.alias(step.input_schema.__name__)
         output_alias = self._names.alias(step.output_schema.__name__)
+        operations = self._operations(step, input_alias=input_alias, capabilities=capabilities)
+        joins = tuple(operation.join for operation in operations if operation.join is not None) or tuple(
+            self._join(join, occurrence=occurrence, left_alias=input_alias, capabilities=capabilities)
+            for occurrence, join in enumerate(step.joins, start=1)
+        )
         results = tuple(
             PySparkStepResultRecipe(
                 schema=result.schema,
@@ -56,15 +62,38 @@ class PySparkStepMapper:
             output_alias=output_alias,
             before_hooks=tuple(self._hooks.map(hook) for hook in step.before_hooks),
             filters=tuple(self._expressions.map(filter, capabilities=capabilities) for filter in step.filters),
-            joins=tuple(
-                self._join(join, occurrence=occurrence, left_alias=input_alias, capabilities=capabilities)
-                for occurrence, join in enumerate(step.joins, start=1)
-            ),
+            joins=joins,
             projection=tuple(self._projection(assignment, capabilities=capabilities) for assignment in step.projection),
             after_hooks=tuple(self._hooks.map(hook) for hook in step.after_hooks),
             validations=self._validations.step(step, last=last),
             results=results,
+            operations=operations,
         )
+
+    def _operations(
+        self,
+        step: StepPlan,
+        *,
+        input_alias: str,
+        capabilities: BackendCapabilities,
+    ) -> tuple[PySparkOperationRecipe, ...]:
+        recipes: list[PySparkOperationRecipe] = []
+        occurrence = 0
+        for operation in step.operations:
+            if operation.kind == "filter" and operation.filter is not None:
+                recipes.append(
+                    PySparkOperationRecipe.filter_operation(
+                        self._expressions.map(operation.filter, capabilities=capabilities)
+                    )
+                )
+            if operation.kind == "join" and operation.join is not None:
+                occurrence += 1
+                recipes.append(
+                    PySparkOperationRecipe.join_operation(
+                        self._join(operation.join, occurrence=occurrence, left_alias=input_alias, capabilities=capabilities)
+                    )
+                )
+        return tuple(recipes)
 
     def _join(
         self,

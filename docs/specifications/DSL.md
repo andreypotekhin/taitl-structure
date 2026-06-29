@@ -372,6 +372,15 @@ return OrderWithCustomer.base(order)(
 )
 ```
 
+When the output copies same-name fields from the driving row, the subtransform may return source-less projection:
+
+```python
+return project(OrderPublished)
+```
+
+Use `project(source, TargetSchema)` when the intended source is not the driving row or when an explicit source makes a
+multi-relation method clearer.
+
 Output construction details are owned by [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md).
 
 ## Symbolic Execution
@@ -384,7 +393,7 @@ During symbolic execution:
 - Python literals in expression positions produce typed literal expressions;
 - expression helpers produce expression IR;
 - `where(...)` records filter operations in the active subtransform context;
-- `join_one(...)` records join operations;
+- `join_one(...)` records join operations in source order;
 - schema constructors record projection operations;
 - hooks are not executed;
 - live Spark objects are not created.
@@ -482,7 +491,7 @@ Rules:
 
 - `where(...)` is valid only during symbolic execution of a compiled subtransform.
 - `predicate` must be a non-nullable or nullable boolean expression accepted by the expression checker.
-- Multiple `where(...)` calls are combined with logical AND while preserving source order.
+- Adjacent `where(...)` calls may be combined with logical AND while preserving source order.
 - A `where(...)` call before a join can reference only scopes available before that join.
 - A `where(...)` call after a join may reference the joined scope.
 - Filter placement in IR must preserve source semantics. Emitters may optimize only when observable semantics remain
@@ -497,12 +506,27 @@ Rules:
 The v1 DSL exposes lookup joins through the free-standing `join_one(relation, ...)` function:
 
 ```python
+def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
+    join_one(
+        customer,
+        on=order.customer_id == customer.id,
+        how=Join.LEFT,
+        hint=JoinHint.BROADCAST,
+    )
+
+    return OrderWithCustomer.base(order)(customer_name=customer.name)
+```
+
+Class input scopes may also be joined directly. Assign the returned scope when the right-side fields are needed later:
+
+```python
 customer = join_one(
     self.customers,
     on=order.customer_id == self.customers.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
 )
+return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
 
 Public enum values required for v1:
@@ -521,10 +545,19 @@ Rules:
 - Join calls are valid only during symbolic execution of a compiled subtransform.
 - Member joins such as `self.customers.join_one(...)` are rejected with migration guidance.
 - `join_one(...)` returns a joined symbolic scope.
+- For relation parameters, `join_one(parameter, ...)` also makes later reads from that same parameter read from the
+  joined scope.
 - Field access on the joined scope is scoped and must not rely on unqualified string column names.
 - Join calls execute in source order.
 - Repeated joins of the same input must produce deterministic aliases.
 - `join_many(...)` and row-multiplying joins are deferred to v2.
+
+Explicit assignment remains valid and equivalent when a local name makes the method easier to read:
+
+```python
+customer = join_one(customer, on=order.customer_id == customer.id, how=Join.LEFT)
+return OrderWithCustomer.base(order)(customer_name=customer.name)
+```
 
 Detailed join condition, null, aliasing, cardinality, projection, and diagnostics behavior is specified by
 [JoinSemantics.md](JoinSemantics.md).

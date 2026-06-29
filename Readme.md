@@ -8,8 +8,9 @@ Structure can help replace hand-maintained PySpark boilerplate.
 
 ![add_promotion.screen](res/img/screenshots/add_promotion.screen.jpg)
 
-Structure pipelines express filtering, joins, projections and normalization as plain Python. 
+Structure pipelines express filtering, joins, projections, hydration and normalization as plain Python. 
 
+## Nutshell
 First, define schemas. Second, define transforms (pipelines).
 
 ### Example Schema
@@ -145,9 +146,9 @@ enriched_df = result.enriched
 
 ### Generated PySpark code
 
-We can also generate PySpark source code, if needed for your project.
+Transforms' .run() method generates and runs PySpark similar to shown below. 
 
-Example generated PySpark:
+We can also generate PySpark source code into a file, if that's needed for your project.
 
 ```python
 from pyspark.sql import DataFrame, SparkSession

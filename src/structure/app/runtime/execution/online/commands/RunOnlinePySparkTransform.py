@@ -101,17 +101,7 @@ class RunOnlinePySparkTransform:
             active = frames[step.source]
 
         df = active.alias(step.input_alias)
-        for join in step.joins:
-            right = frames[join.source].alias(join.right_alias)
-            if join.hint is not None and join.hint.value == "broadcast":
-                right = functions.broadcast(right)
-            predicate = self._expressions.evaluate(
-                join.predicate, functions=functions, aliases=self._scope_aliases(step, join)
-            )
-            df = df.join(right, predicate, join.how.value)
-
-        for filter in step.filters:
-            df = df.where(self._expressions.evaluate(filter, functions=functions, aliases=self._scope_aliases(step)))
+        df = self._operations(step, df, frames=frames, functions=functions)
 
         if len(step.results) > 1:
             produced = {}
@@ -176,17 +166,7 @@ class RunOnlinePySparkTransform:
         types,
     ):
         df = source.alias(output.input_alias)
-        for join in output.joins:
-            right = inputs[join.source].alias(join.right_alias)
-            if join.hint is not None and join.hint.value == "broadcast":
-                right = functions.broadcast(right)
-            predicate = self._expressions.evaluate(
-                join.predicate, functions=functions, aliases=self._scope_aliases(output, join)
-            )
-            df = df.join(right, predicate, join.how.value)
-
-        for filter in output.filters:
-            df = df.where(self._expressions.evaluate(filter, functions=functions, aliases=self._scope_aliases(output)))
+        df = self._operations(output, df, frames=inputs, functions=functions)
 
         if output.projection:
             df = df.select(
@@ -197,6 +177,38 @@ class RunOnlinePySparkTransform:
             )
         self._validator.validate(df, output.validation, types=types)
         return df
+
+    def _operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, *, frames, functions):
+        if not step.operations:
+            for join in step.joins:
+                df = self._join(step, df, join, frames=frames, functions=functions)
+            for filter in step.filters:
+                df = df.where(
+                    self._expressions.evaluate(filter, functions=functions, aliases=self._scope_aliases(step))
+                )
+            return df
+
+        for operation in step.operations:
+            if operation.kind == "join" and operation.join is not None:
+                df = self._join(step, df, operation.join, frames=frames, functions=functions)
+            if operation.kind == "filter" and operation.filter is not None:
+                df = df.where(
+                    self._expressions.evaluate(
+                        operation.filter,
+                        functions=functions,
+                        aliases=self._scope_aliases(step),
+                    )
+                )
+        return df
+
+    def _join(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, join, *, frames, functions):
+        right = frames[join.source].alias(join.right_alias)
+        if join.hint is not None and join.hint.value == "broadcast":
+            right = functions.broadcast(right)
+        predicate = self._expressions.evaluate(
+            join.predicate, functions=functions, aliases=self._scope_aliases(step, join)
+        )
+        return df.join(right, predicate, join.how.value)
 
     def _assignment(self, assignment, *, step, functions, types):
         column = self._expressions.evaluate(

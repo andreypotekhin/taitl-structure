@@ -134,6 +134,7 @@ class CompileTransform:
                 )
                 for binding in bindings
             ]
+            context.default_project_source = arguments[0]
 
             try:
                 with context:
@@ -216,8 +217,7 @@ class CompileTransform:
                 transform_class,
                 name,
                 bindings,
-                context.joins,
-                context.filters,
+                context.operations,
                 result_plans,
             )
             steps.append(
@@ -233,6 +233,7 @@ class CompileTransform:
                     projection=first.projection,
                     ordinal=len(steps),
                     joins=tuple(context.joins),
+                    operations=tuple(context.operations),
                     before_hooks=before_hooks,
                     after_hooks=first.after_hooks if len(result_plans) == 1 else (),
                     inputs=tuple(bindings),
@@ -260,30 +261,51 @@ class CompileTransform:
         transform_class: type[Transform],
         member: str,
         bindings: list[StepInputPlan],
-        joins: list,
-        filters: list[Expression],
+        operations: list,
         results: list[StepResultPlan],
     ) -> None:
-        joined = {join.input_name for join in joins}
+        joined: set[str] = set()
+        relation_scopes = {binding.scope: binding.parameter for binding in bindings[1:]}
+        for operation in operations:
+            if operation.kind == "filter" and operation.filter is not None:
+                self._validate_joined_relation_reads(
+                    transform_class,
+                    member,
+                    relation_scopes,
+                    joined,
+                    self._scopes(operation.filter),
+                )
+            if operation.kind == "join" and operation.join is not None:
+                joined.add(operation.join.input_name)
+
         reads = set().union(
-            *(self._scopes(expression) for expression in filters),
-            *(self._scopes(assignment.expression) for result in results for assignment in result.projection),
+            *(self._scopes(assignment.expression) for result in results for assignment in result.projection)
         )
-        for binding in bindings[1:]:
-            if binding.scope in reads and binding.scope not in joined:
+        self._validate_joined_relation_reads(transform_class, member, relation_scopes, joined, reads)
+
+    def _validate_joined_relation_reads(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        relation_scopes: dict[str, str],
+        joined: set[str],
+        reads: set[str],
+    ) -> None:
+        for scope, parameter in relation_scopes.items():
+            if scope in reads and scope not in joined:
                 raise self._error(
                     "JOIN-E0601",
                     transform_class=transform_class,
                     member=member,
                     problem=(
                         f"{transform_class.__name__}.{member} reads relation parameter "
-                        f"{binding.parameter} before it is joined."
+                        f"{parameter} before it is joined."
                     ),
                     use=(
-                        f"Use {binding.parameter} = join_one({binding.parameter}, on=...) "
+                        f"Use join_one({parameter}, on=...) "
                         f"before reading its fields."
                     ),
-                    context={"input": binding.parameter},
+                    context={"input": parameter},
                 )
 
     def _input_bindings(

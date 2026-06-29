@@ -6,6 +6,7 @@ from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.app.target.pyspark.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.app.target.pyspark.model.PySparkProjectionRecipe import PySparkProjectionRecipe
 from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkValidationRecipe
 
@@ -24,6 +25,7 @@ class PySparkOutputRecipe:
     joins: tuple[PySparkJoinRecipe, ...]
     projection: tuple[PySparkProjectionRecipe, ...]
     validation: PySparkValidationRecipe
+    operations: tuple[PySparkOperationRecipe, ...] = ()
 
     @property
     def before_hooks(self) -> tuple[PySparkHookRecipe, ...]:

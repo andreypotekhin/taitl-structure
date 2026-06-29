@@ -30,12 +30,19 @@ When a subtransform declares the relation as a schema parameter, pass that param
 
 ```python
 def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
-    customer = join_one(
+    join_one(
         customer,
         on=order.customer_id == customer.id,
         how=Join.LEFT,
     )
     return OrderWithCustomer.base(order)(customer_name=customer.name)
+```
+
+For relation parameters, assigning the returned joined scope is optional. `join_one(customer, on=...)` updates the
+symbolic parameter proxy, so later `customer.name` reads from the joined scope. The explicit form remains valid:
+
+```python
+customer = join_one(customer, on=order.customer_id == customer.id, how=Join.LEFT)
 ```
 
 The right-hand side is evaluated before Python rebinds `customer`, so reusing the parameter name is valid. A relation
@@ -54,6 +61,8 @@ Rules:
 - `how` is required in v1. Source should show whether unmatched rows are kept or removed.
 - `hint` is optional and advisory.
 - `join_one(...)` returns a joined symbolic scope. Fields are read from that scope, such as `customer.name`.
+- For schema relation parameters, later field reads from the same parameter use the joined scope after `join_one(...)`,
+  even when the return value is not assigned.
 
 ## Join Types
 

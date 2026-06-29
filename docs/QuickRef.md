@@ -326,6 +326,9 @@ def valid_orders(self, order: OrderRaw) -> OrderValid:
 
 Multiple `where(...)` calls are combined with logical AND.
 
+When filters and joins are mixed, Structure preserves the source order. A filter written before a join runs before that
+join; a filter written after a join can reference the joined relation.
+
 ## Add and Drop Columns
 
 Add columns by returning a schema with more fields.
@@ -353,6 +356,13 @@ Use `project(...)` when the output copies same-name compatible fields from a sou
 ```python
 def publish(self, order: OrderWithPromotion) -> OrderPublished:
     return project(order, OrderPublished)
+```
+
+Inside a compiled subtransform, the driving row can be omitted when it is the intended source:
+
+```python
+def publish(self, order: OrderWithPromotion) -> OrderPublished:
+    return project(OrderPublished)
 ```
 
 Use a field list when the output should copy only selected source fields. The list names fields on the source row; the
@@ -397,7 +407,7 @@ Use symbolic joins.
 
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-    customer = join_one(
+    join_one(
         customer,
         on=order.customer_id == customer.id,
         how=Join.LEFT,
@@ -408,6 +418,9 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
         customer_name=customer.name,
     )
 ```
+
+For relation parameters, assigning the returned joined scope is optional. Use explicit assignment when joining a class
+input scope such as `self.customers` and then reading its fields later.
 
 Generated PySpark:
 

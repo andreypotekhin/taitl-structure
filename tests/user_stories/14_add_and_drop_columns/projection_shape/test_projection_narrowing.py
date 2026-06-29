@@ -189,20 +189,18 @@ def test_projection_accepts_type_widening() -> None:
     assert plan.steps[0].projection[0].field.name == "count"
 
 
-def test_source_less_project_reports_clear_diagnostic() -> None:
+def test_source_less_project_uses_driving_row_when_unambiguous() -> None:
     @transform
-    class BadProject(Transform):
+    class Publish(Transform):
         rows = input(Raw)
         published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             return project(Published)
 
-    with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadProject)
+    plan = compile_transform(Publish)
 
-    assert raised.value.diagnostic.code == "DSL-E0401"
-    assert "source row first" in raised.value.diagnostic.problem_text()
+    assert [assignment.field.name for assignment in plan.steps[0].projection] == ["id", "status"]
 
 
 def test_project_field_list_rejects_unknown_source_field() -> None:

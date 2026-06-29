@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from structure.app.compiler.ir.model.HookPlan import HookPlan
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
+from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.ir.model.ProjectAssignment import ProjectAssignment
 from structure.app.compiler.ir.model.StepInputPlan import StepInputPlan
 from structure.app.compiler.ir.model.StepResultPlan import StepResultPlan
@@ -24,6 +25,7 @@ class StepPlan:
     projection: tuple[ProjectAssignment, ...]
     ordinal: int
     joins: tuple[JoinPlan, ...] = ()
+    operations: tuple[OperationPlan, ...] = ()
     before_hooks: tuple[HookPlan, ...] = ()
     after_hooks: tuple[HookPlan, ...] = ()
     inputs: tuple[StepInputPlan, ...] = ()
