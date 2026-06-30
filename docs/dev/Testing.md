@@ -20,6 +20,37 @@ runtime behavior, and performance guardrails.
 13. Online/generated parity tests.
 14. Performance guardrail tests.
 15. Compile-time performance benchmarks.
+16. Golden generated-output tests.
+17. Differential tests against independently written references.
+18. Metamorphic and property-based tests.
+19. Public API snapshot tests.
+20. Invariant tests.
+
+## Public Examples
+
+Public examples live under `examples/` and are treated as both documentation and test input. Example source packages
+live directly under `examples/<package>/`. Checked-in generated output for each example package lives under
+`examples/structure_generated/<package>/`.
+
+Example layout:
+
+```text
+examples/
+  orders/
+    schemas.py
+    transforms.py
+  fixtures/
+    orders/
+      orders.csv
+  structure_generated/
+    orders/
+      pyspark/
+      runtime/
+      traceability/
+```
+
+Keep `res/testing/model/v*` focused on internal model fixtures. Do not put every public example domain under
+`res/testing/model/v*`; use `examples/` for user-readable examples and their golden generated output.
 
 ## Generated-Code Correctness
 
@@ -31,6 +62,62 @@ Generated code should be tested by:
 - small Spark DataFrame input/output tests
 - schema validation failure tests
 - compiler provenance and static dataflow traceability tests
+
+## Golden Generated Output
+
+Golden generated-output tests live under `tests/golden`. They render generated files into an isolated test location
+such as `tmp_path` or an in-memory path-to-text map, then compare the result to checked-in files under
+`examples/structure_generated/<package>/`.
+
+Golden tests must:
+
+- fail with a readable unified diff;
+- never rewrite checked-in golden files during ordinary test runs;
+- compare file additions, removals, and content changes;
+- treat generated source stability as a reviewability contract.
+
+Golden generated-output tests prove that generated source is stable and reviewable. They do not by themselves prove
+runtime behavior. Runtime behavior is proved by online/generated parity, differential tests, and integration tests.
+
+## Differential Tests
+
+Differential tests live under `tests/differential`. They compare Structure behavior or behavioral artifacts against an
+independently written reference. The reference should be small, direct, and intentionally not implemented through the
+same compiler path as Structure.
+
+Use example source under `examples/<package>/` and small fixtures under `examples/fixtures/<package>/` when a scenario
+needs data. When PySpark is available, differential tests should compare online Structure, generated Structure, and a
+hand-written PySpark reference over the same rows. Spark-free differential tests may compare compiled/generated
+behavioral contracts against hand-written reference fragments, but live DataFrame equality belongs in integration or a
+PySpark-available differential suite.
+
+## Metamorphic and Property-Based Tests
+
+Metamorphic tests live under `tests/metamorphic`. They assert relationships that must hold across repeated or
+equivalent operations, such as:
+
+- rendering the same project twice produces byte-identical output;
+- generated file order is deterministic;
+- equivalent public source forms produce equivalent behavior;
+- diagnostic documentation links remain stable.
+
+Property-based tests also live under `tests/metamorphic` unless a narrower specification directory owns the behavior.
+Use Hypothesis for true property-based tests. Good first targets are identifier handling, aliases, field-order
+preservation, scalar type and nullability combinations, and generated path normalization.
+
+## Public API Snapshots
+
+Public API snapshot tests guard user-facing library shape. The root Structure API snapshot lives at
+`res/testing/snapshots/api/public_structure.v1.json` and is tested from `tests/app/test_public_api_snapshot.py`.
+
+Snapshot changes require review. A failing API snapshot means either the public API drifted accidentally or the snapshot
+must be intentionally regenerated as part of a compatibility change.
+
+## Invariant Tests
+
+Invariant tests prove internal phase-boundary truths that should hold after Structure has accepted user input. See
+[Invariants.md](../specifications/Invariants.md). Use invariants for impossible internal states, not user-correctable
+problems. User-correctable problems must still produce structured diagnostics with documentation links.
 
 ## Online Execution Correctness
 
@@ -157,6 +244,9 @@ Use these directories consistently:
 - `tests/app/[app]/[subapp]/...`: tests for app implementation code. Keep nesting aligned with the app and subapp
   package path.
 - `tests/concepts/[concept]/...`: end-to-end black-box tests for concepts from [Concepts.md](Concepts.md).
+- `tests/golden/...`: generated-output golden comparisons for public examples.
+- `tests/differential/...`: comparisons against independently written reference behavior.
+- `tests/metamorphic/...`: relationship-based and property-based behavior tests.
 - `tests/helpers/...`: repo-local helpers for fixture-backed or pytest-specific test scenarios.
 - `tests/user_stories/[section-or-story]/...`: tests backing user stories from [UserStories.md](../specifications/UserStories.md).
 - `tests/specifications/[specification-doc-slug]/...`: tests backing individual documents under `docs/specifications/`
@@ -168,6 +258,9 @@ Examples:
 - Target capability app behavior: `tests/app/target/capabilities/...`
 - PySpark target behavior: `tests/app/target/pyspark/...`
 - Join concept coverage: `tests/concepts/join/...`
+- Example generated-output drift: `tests/golden/...`
+- Independent reference comparison: `tests/differential/...`
+- Repeated-generation stability: `tests/metamorphic/...`
 - Fixture-specific scenario helpers: `tests/helpers/scenarios/...`
 - User stories completed from [UserStories.md](../specifications/UserStories.md): `tests/user_stories/...`
 - Execution semantic contract checks: `tests/specifications/execution-semantic-contract/...`
@@ -187,9 +280,29 @@ Recommended CI pipeline:
 7. pytest generated-code tests
 8. pytest PySpark execution tests
 9. pytest online/generated parity tests
-10. compile-time benchmark smoke test
-11. package build
+10. pytest golden tests
+11. pytest differential tests that do not require live infrastructure
+12. pytest metamorphic and property-based tests
+13. pytest public API snapshot tests
+14. pytest compatibility consistency tests
+15. compile-time benchmark smoke test
+16. package build
 ```
+
+## Make Targets
+
+Use these focused targets from the repository root:
+
+```text
+make golden
+make differential
+make metamorphic
+make concepts
+make rigidity
+```
+
+`make rigidity` runs the behavior-rigidity suites that do not require live Spark infrastructure. Keep Docker Compose,
+live PySpark sessions, and backend matrix execution under `make integration`.
 
 ## Integration Tests
 

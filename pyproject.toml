@@ -34,6 +34,7 @@ isort = "^5.13"
 mypy = "^1.13"
 pytest = "^8.3"
 pytest-mock = "^3.14"
+hypothesis = "^6.131"
 
 [tool.black]
 line-length = 120
@@ -82,12 +83,13 @@ disallow_untyped_defs = false
 check_untyped_defs = true
 warn_return_any = false
 explicit_package_bases = true
-mypy_path = ["src", "res"]
+mypy_path = ["src", "examples", "res", "tests"]
 files = ["src", "tests"]
 exclude = ["^res/testing/model/"]
 
 [[tool.mypy.overrides]]
 module = [
+    "orders.*",
     "testing.model.v1.orders.*",
     "testing.model.v1.structure_generated.*",
 ]
