@@ -8,10 +8,11 @@ POETRY ?= poetry
 PYTHON ?= python
 BACKEND ?= all
 
-SOURCE_ROOTS := src examples/orders
+SOURCE_ROOTS := src
+EXAMPLE_ROOTS := examples
 TEST_ROOTS := tests
-PYTHON_ROOTS := $(SOURCE_ROOTS) $(TEST_ROOTS)
-TYPE_ROOTS := src tests
+PYTHON_ROOTS := $(SOURCE_ROOTS) $(EXAMPLE_ROOTS) $(TEST_ROOTS)
+TYPE_ROOTS := src examples tests
 
 .PHONY: all help install update format lint type test golden differential metamorphic concepts rigidity check build compose-env integration clean
 
@@ -43,7 +44,7 @@ update:
 
 format: install
 	$(POETRY) run isort $(PYTHON_ROOTS)
-	$(POETRY) run black $(SOURCE_ROOTS)
+	$(POETRY) run black $(SOURCE_ROOTS) $(EXAMPLE_ROOTS)
 	$(POETRY) run black $(TEST_ROOTS)
 
 lint: install

@@ -38,7 +38,7 @@ def test_orders_example_matches_independent_reference_rows() -> None:
 
 
 def test_orders_generated_code_matches_independent_reference_operations() -> None:
-    transform = render_orders_example()["structure_generated/orders/pyspark/transforms/order.py"]
+    transform = render_orders_example()["examples/structure_generated/orders/pyspark/transforms/order.py"]
 
     reference_fragments = [
         'assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")',

@@ -1,5 +1,4 @@
-from orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
-
+from examples.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
 from structure import Array, Boolean, Decimal, Integer, Long, Map, String, Struct, Structure, field
 
 

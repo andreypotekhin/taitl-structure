@@ -1,6 +1,6 @@
-from orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
-from orders.schemas.customer import Customer
-from orders.schemas.order import (
+from examples.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
+from examples.orders.schemas.customer import Customer
+from examples.orders.schemas.order import (
     OrderNormalized,
     OrderPublication,
     OrderPublished,
@@ -10,5 +10,5 @@ from orders.schemas.order import (
     OrderWithPromotion,
     PublicationFlags,
 )
-from orders.schemas.product import Product
-from orders.schemas.promotion import Promotion
+from examples.orders.schemas.product import Product
+from examples.orders.schemas.promotion import Promotion

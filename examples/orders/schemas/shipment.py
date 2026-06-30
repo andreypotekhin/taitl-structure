@@ -1,5 +1,4 @@
-from orders.schemas.common import AuditStamp, TenantKey
-
+from examples.orders.schemas.common import AuditStamp, TenantKey
 from structure import Integer, String, Struct, Structure, Timestamp, field
 
 

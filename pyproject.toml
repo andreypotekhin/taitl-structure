@@ -43,16 +43,25 @@ extend-exclude = '''
 (^/)?.venv/
 | (^/)?node_modules/
 | /res/testing/model/
+| /examples/fixtures/
+| /examples/structure_generated/
 '''
 
 [tool.isort]
 profile = "black"
 line_length = 120
 skip = ["__init__.py"]
-skip_glob = ["res/testing/model/**"]
+skip_glob = ["res/testing/model/**", "examples/fixtures/**", "examples/structure_generated/**"]
 known_first_party = ["taitl", "o"]
 
 [tool.flake8]
+exclude = [
+    ".venv",
+    "node_modules",
+    "res/testing/model",
+    "examples/fixtures",
+    "examples/structure_generated",
+]
 ignore = [
     'E231', # multiple spaces after ','
     'E241', # missing whitespace after ','
@@ -83,17 +92,31 @@ disallow_untyped_defs = false
 check_untyped_defs = true
 warn_return_any = false
 explicit_package_bases = true
-mypy_path = ["src", "examples", "res", "tests"]
-files = ["src", "tests"]
-exclude = ["^res/testing/model/"]
+mypy_path = ["src", "res", "tests"]
+files = ["src", "examples", "tests"]
+exclude = ["^res/testing/model/", "^examples/(fixtures|structure_generated)/"]
 
 [[tool.mypy.overrides]]
 module = [
-    "orders.*",
+    "examples.orders.*",
+    "examples.structure_generated.*",
     "testing.model.v1.orders.*",
     "testing.model.v1.structure_generated.*",
 ]
 follow_imports = "skip"
+
+[[tool.mypy.overrides]]
+module = [
+    "examples.orders.transforms.*",
+]
+disable_error_code = ["attr-defined"]
+
+[[tool.mypy.overrides]]
+module = [
+    "pyspark",
+    "pyspark.*",
+]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 addopts = [

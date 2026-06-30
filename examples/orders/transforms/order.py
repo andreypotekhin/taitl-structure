@@ -1,5 +1,5 @@
-from orders.schemas.customer import Customer
-from orders.schemas.order import (
+from examples.orders.schemas.customer import Customer
+from examples.orders.schemas.order import (
     OrderNormalized,
     OrderPublished,
     OrderRaw,
@@ -8,9 +8,8 @@ from orders.schemas.order import (
     OrderWithPromotion,
     PublicationFlags,
 )
-from orders.schemas.product import Product
-from orders.schemas.promotion import Promotion
-
+from examples.orders.schemas.product import Product
+from examples.orders.schemas.promotion import Promotion
 from structure import (
     Join,
     JoinHint,
@@ -140,7 +139,9 @@ class EnrichOrders(Transform):
     def note_lookup_inputs(self, *, orders, inputs, spark, ctx):
         from pyspark.sql import functions as F
 
-        return orders.withColumn("_lookup_inputs_seen", F.lit(inputs.customers is not None and inputs.products is not None))
+        return orders.withColumn(
+            "_lookup_inputs_seen", F.lit(inputs.customers is not None and inputs.products is not None)
+        )
 
     @transform(output=published)
     def publish(self, order: OrderWithPromotion) -> OrderPublished:
@@ -150,7 +151,9 @@ class EnrichOrders(Transform):
 
         return OrderPublished.base(order, flags)
 
-    @after(publish, lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True, streaming_safe=True)
+    @after(
+        publish, lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True, streaming_safe=True
+    )
     def add_quality_columns(self, *, published, spark, ctx):
         from pyspark.sql import functions as F
 
