@@ -64,10 +64,7 @@ class EnrichOrders(Transform):
         total = self.money(order.total)
         discount = self.money(order.discount)
 
-        return OrderNormalized(
-            tenant=order.tenant,
-            audit=order.audit,
-            business=order.business,
+        return OrderNormalized.project(order)(
             id=self.clean_id(order.id),
             customer_id=self.clean_id(order.customer_id),
             product_id=self.clean_id(order.product_id),
