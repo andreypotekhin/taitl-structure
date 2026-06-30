@@ -89,12 +89,15 @@ class PySparkOutputMapper:
             source=join.source,
             input_schema=join.input_schema,
             left_alias=left_alias,
-            right_alias=self._names.join_alias(join.input_name, occurrence),
+            right_alias=self._names.join_alias(self._join_source_name(join.source), occurrence),
             how=join.how,
             hint=join.hint,
             predicate=self._expressions.map(join.predicate, capabilities=capabilities),
             occurrence=occurrence,
         )
+
+    def _join_source_name(self, source: str) -> str:
+        return source.removeprefix("input:")
 
     def _projection(self, assignment, *, capabilities: BackendCapabilities) -> PySparkProjectionRecipe:
         capabilities.require(CapabilityRequirement(group="expression", name="projection"))

@@ -86,7 +86,6 @@ class EnrichOrders(Transform):
 
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
         customer = join_one(
-            self.customers,
             on=(self.customers.tenant.tenant_id == order.tenant.tenant_id)
             & (self.clean_id(self.customers.id) == order.customer_id),
             how=Join.LEFT,
@@ -99,10 +98,9 @@ class EnrichOrders(Transform):
             customer_region=customer.region,
         )
 
-    def add_product(self, order: OrderWithCustomer) -> OrderWithProduct:
-        product = join_one(
-            self.products,
-            on=(self.products.tenant.tenant_id == order.tenant.tenant_id) & (self.products.id == order.product_id),
+    def add_product(self, order: OrderWithCustomer, product: Product) -> OrderWithProduct:
+        join_one(
+            on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id),
             how=Join.LEFT,
         )
 
@@ -116,16 +114,15 @@ class EnrichOrders(Transform):
         )
 
     def add_promotion(self, order: OrderWithProduct) -> OrderWithPromotion:
-        promotion = join_one(
-            self.promotions,
+        join_one(
             on=(self.promotions.tenant.tenant_id == order.tenant.tenant_id)
             & self.clean_id(self.promotions.code).null_safe_eq(order.promotion_code),
             how=Join.LEFT,
         )
 
         return OrderWithPromotion.base(order)(
-            promotion_name=promotion.name,
-            promotion_discount=promotion.discount,
+            promotion_name=self.promotions.name,
+            promotion_discount=self.promotions.discount,
         )
 
     @after(

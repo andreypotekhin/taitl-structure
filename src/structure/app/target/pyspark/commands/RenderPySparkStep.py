@@ -127,10 +127,11 @@ class RenderPySparkStep:
         if join.hint is not None and join.hint.value == "broadcast":
             right = f"F.broadcast({right})"
         predicate = render_pyspark_expression(join.predicate, scope_aliases=self._scope_aliases(step, join))
+        right_name = f"{join.right_alias}_joined"
         return [
-            f"        {join.input_name}_joined = {right}",
+            f"        {right_name} = {right}",
             f"        {target} = {target}.join(",
-            f"            {join.input_name}_joined,",
+            f"            {right_name},",
             f"            {predicate},",
             f'            "{join.how.value}",',
             "        )",

@@ -283,9 +283,9 @@
       "source": "source:examples.orders.transforms.order.EnrichOrders.add_product.filter.0"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.2.add_product.join.1.products",
-      "ir": "ir:EnrichOrders.step.2.add_product.join.1.products",
-      "source": "source:examples.orders.transforms.order.EnrichOrders.add_product.join.1.products"
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.2.add_product.join.1.product",
+      "ir": "ir:EnrichOrders.step.2.add_product.join.1.product",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_product.join.1.product"
     },
     {
       "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.2.add_product.select.tenant",
@@ -1202,7 +1202,7 @@
         "operation": "step",
         "sources": [
           "OrderWithCustomer",
-          "products"
+          "product"
         ],
         "step": "add_product",
         "target": "add_product"
@@ -1211,7 +1211,7 @@
         "detail": {},
         "operation": "filter",
         "sources": [
-          "products.id"
+          "product.id"
         ],
         "step": "add_product",
         "target": "add_product.filter[0]"
@@ -1224,13 +1224,13 @@
         },
         "operation": "join_one",
         "sources": [
-          "products.tenant.tenant_id",
-          "OrderWithCustomer.tenant.tenant_id",
-          "products.id",
-          "OrderWithCustomer.product_id"
+          "product.tenant.tenant_id",
+          "order.tenant.tenant_id",
+          "product.id",
+          "order.product_id"
         ],
         "step": "add_product",
-        "target": "add_product.join[1].products"
+        "target": "add_product.join[1].product"
       },
       {
         "detail": {
@@ -1238,7 +1238,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.tenant"
+          "order.tenant"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.tenant"
@@ -1249,7 +1249,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.audit"
+          "order.audit"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.audit"
@@ -1260,7 +1260,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.business"
+          "order.business"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.business"
@@ -1271,7 +1271,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.id"
+          "order.id"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.id"
@@ -1282,7 +1282,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.customer_id"
+          "order.customer_id"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.customer_id"
@@ -1293,7 +1293,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.product_id"
+          "order.product_id"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.product_id"
@@ -1304,7 +1304,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.promotion_code"
+          "order.promotion_code"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.promotion_code"
@@ -1315,7 +1315,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.total"
+          "order.total"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.total"
@@ -1326,7 +1326,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.discount"
+          "order.discount"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.discount"
@@ -1337,7 +1337,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.net_total"
+          "order.net_total"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.net_total"
@@ -1348,7 +1348,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.quantity"
+          "order.quantity"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.quantity"
@@ -1359,7 +1359,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.tags"
+          "order.tags"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.tags"
@@ -1370,7 +1370,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.attributes"
+          "order.attributes"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.attributes"
@@ -1381,7 +1381,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.shipping"
+          "order.shipping"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.shipping"
@@ -1392,7 +1392,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.is_large"
+          "order.is_large"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.is_large"
@@ -1403,7 +1403,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.customer_name"
+          "order.customer_name"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.customer_name"
@@ -1414,7 +1414,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.customer_tier"
+          "order.customer_tier"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.customer_tier"
@@ -1425,7 +1425,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithCustomer.customer_region"
+          "order.customer_region"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.customer_region"
@@ -1436,7 +1436,7 @@
         },
         "operation": "project",
         "sources": [
-          "products.name"
+          "product.name"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.product_name"
@@ -1447,7 +1447,7 @@
         },
         "operation": "project",
         "sources": [
-          "products.category"
+          "product.category"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.product_category"
@@ -1458,7 +1458,7 @@
         },
         "operation": "project",
         "sources": [
-          "products.active"
+          "product.active"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.product_active"
@@ -1469,7 +1469,7 @@
         },
         "operation": "project",
         "sources": [
-          "products.list_price"
+          "product.list_price"
         ],
         "step": "add_product",
         "target": "OrderWithProduct.product_list_price"
@@ -2093,7 +2093,7 @@
       "joins": [
         {
           "how": "left",
-          "input": "products",
+          "input": "product",
           "right_alias": "products"
         }
       ],
