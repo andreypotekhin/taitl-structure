@@ -1,13 +1,13 @@
 ﻿# Compatibility
 
-Structure has three compatibility surfaces:
+Structure compatibility has four public surfaces:
 
 - the Structure source DSL and configuration users write;
 - the online runtime behavior users execute through `StructureSession`;
 - the generated PySpark code optionally committed to user projects;
 - optional metadata artifacts such as compiler provenance and static dataflow traceability.
 
-This page defines the public compatibility policy for the initial release and the planned versioning rules after the
+This page defines the public compatibility policy for the initial release and the versioning rules after the
 first stable release.
 
 ## Initial Baseline
@@ -20,7 +20,7 @@ Structure targets:
 - Linux and macOS development environments;
 - Airflow and other schedulers without a hard runtime dependency on them.
 
-Windows development should remain usable where practical, but Linux is the runtime target for Spark jobs.
+Windows development should remain usable where practical. Linux is the runtime target for Spark jobs.
 
 ## PySpark Targeting
 
@@ -33,15 +33,15 @@ target_backend = "pyspark"
 target_pyspark = ">=3.5,<4.1"
 ```
 
-The `execution_mode` value is `online` by default. Projects may set it to `generated` when they want runtime execution
+`execution_mode` is `online` by default. Projects may set it to `generated` when runtime execution should go
 through checked-in generated classes.
 
 The `target_pyspark` value constrains which PySpark APIs online and generated execution may use. Structure should avoid
 APIs outside that range unless the user explicitly changes the target.
 
-When a transform uses a feature that cannot run for the configured target, Structure should fail during `structure
-check`, `structure compile`, or online runtime compilation with a backend capability diagnostic. Unknown backend targets
-use `BACKEND-E2401`; unsupported backend features use `BACKEND-E2402`.
+When a transform uses a feature that cannot run for the configured target, Structure should fail during
+`structure check`, `structure compile`, or online runtime compilation with a backend capability diagnostic.
+Unknown backend targets use `BACKEND-E2401`; unsupported backend features use `BACKEND-E2402`.
 
 ## Spark Connect
 
@@ -49,24 +49,26 @@ Spark Connect is not part of the initial release, v2, or v3 commitment. The init
 execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. v3 adds streaming orchestration on
 top of the ordinary PySpark contract.
 
-Spark Connect support is scheduled for v4 as backend expansion work. It may land earlier only if it can be implemented
-through the existing PySpark target boundary without changing public APIs, generated-code shape, streaming orchestration
-semantics, or compatibility guarantees.
+Spark Connect support is scheduled for v4 as backend expansion work. It may land earlier only if it can be
+implemented through the existing PySpark target boundary without changing public APIs, generated-code shape,
+streaming orchestration semantics, or compatibility guarantees.
 
 ## Semantic Versioning
 
-After Structure reaches 1.0, public releases follow semantic versioning:
+After 1.0, Structure follows semantic versioning:
 
-- `MAJOR` versions may change public DSL, configuration, runtime helper APIs, generated-code contracts, or supported
-  Python/PySpark ranges.
-- `MINOR` versions may add compatible DSL features, config keys, diagnostics, generated-code improvements, and support
-  for newer Python or PySpark versions.
+- `MAJOR` versions may change public DSL, configuration, runtime helper APIs, generated-code contracts, or
+  supported Python/PySpark ranges.
+- `MINOR` versions may add compatible DSL features, config keys, diagnostics, generated-code improvements, and
+  support for newer Python or PySpark versions.
 - `PATCH` versions should contain bug fixes, documentation fixes, and compatible diagnostic improvements.
 
-Before 1.0, minor versions may still change public contracts, but each release should document migration steps.
+Before 1.0, minor versions may still change public contracts, but each release should document migration
+steps.
 
-Dropping a supported Python or PySpark line is normally a major-version change. A line that is already unsupported by
-its upstream project may be dropped in a minor release if the release notes include a clear migration note.
+Dropping a supported Python or PySpark line is normally a major-version change. A line that is already
+unsupported by its upstream project may be dropped in a minor release if the release notes include a clear
+migration note.
 
 ## Online Runtime Compatibility
 
@@ -74,16 +76,17 @@ Online execution is the default runtime surface. Compatible online execution mea
 
 - transform invocations use declared input names;
 - `StructureSession` accepts caller-owned Spark sessions and optional hook context;
-- online execution preserves the same transform semantics as generated PySpark for supported initial-release features;
+- online execution preserves the same transform semantics as generated PySpark for supported initial-release
+  features;
 - compiler commands remain Spark-free even though online runtime execution may import PySpark.
 
-Breaking changes to `StructureSession`, transform invocation binding, or online/generated semantic parity require a
-major version after 1.0 or a compatibility shim.
+Breaking changes to `StructureSession`, transform invocation binding, or online/generated semantic parity
+require a major version after 1.0 or a compatibility shim.
 
 ## Generated-Code Compatibility
 
-Generated PySpark is optional committed build output owned by the Structure compiler. Regenerate it after upgrading
-Structure when your project commits generated files or uses `execution_mode = "generated"`.
+Generated PySpark is optional committed build output owned by the Structure compiler. Regenerate it after
+upgrading Structure when your project commits generated files or uses `execution_mode = "generated"`.
 
 Compatibility rules:
 
@@ -92,28 +95,30 @@ Compatibility rules:
 - Runtime helper breaking changes require either a major Structure version or a compatibility shim.
 - CI should run `structure compile --fail-on-diff` after upgrades for projects that commit generated files.
 
-Generated code is readable and reviewable, but not hand-edited. Change source Structure code, configuration, or the
+Generated code is readable and reviewable, but not hand-edited. Change Structure source, configuration, or the
 compiler instead.
 
 ## Extension Compatibility
 
-Structure keeps the initial extension surface narrow. Supported public extension points are:
+Structure keeps the initial extension surface narrow:
 
 - `@expr_fn` helpers for reusable compiler-visible expression logic;
-- explicit `@before(...)` and `@after(...)` hooks for arbitrary PySpark DataFrame code at named step boundaries.
+- explicit `@before(...)` and `@after(...)` hooks for arbitrary PySpark DataFrame code at named step
+  boundaries.
 
-These two paths have different guarantees. `@expr_fn` logic participates in compileability checks, generated code,
-traceability, and backend capability diagnostics. Hook bodies are opaque: Structure validates the hook declaration, calls the
-hook at the documented lifecycle point, and records the hook boundary, but it does not inspect arbitrary PySpark code
-inside the hook.
+These paths have different guarantees. `@expr_fn` logic participates in compileability checks, generated code,
+traceability, and backend capability diagnostics. Hook bodies are opaque: Structure validates the hook
+declaration, calls the hook at the documented lifecycle point, and records the boundary, but it does not
+inspect arbitrary PySpark code inside the hook.
 
-Backend capability providers, diagnostic renderers, schema type adapters, validation policy plugins, and hook lint rule
-registries are internal or deferred extension surfaces. Projects should not depend on monkey-patching those internals.
-Future releases may promote some of them to public APIs once their behavior, compatibility, and tests are specified.
+Backend capability providers, diagnostic renderers, schema type adapters, validation policy plugins, and hook
+lint rule registries are internal or deferred extension surfaces. Projects should not depend on
+monkey-patching those internals. Future releases may promote some of them to public APIs once their behavior,
+compatibility, and tests are specified.
 
 ## Compiler Traceability Schema Versioning
 
-Compiler traceability covers two metadata models:
+Compiler traceability has two metadata models:
 
 - compiler provenance, which maps source nodes to IR nodes to generated PySpark nodes;
 - static dataflow traceability, which records transform, table, and column dependencies inferred from IR.
@@ -125,12 +130,13 @@ Traceability schema rules:
 - Consumers should ignore unknown fields.
 - Structure should keep default compiler traceability compact and stable across patch releases.
 
-Runtime LDJSON traceability is not part of the initial compatibility contract. It is tracked as a nice-to-have beyond v4 in
-[NiceToHave.md](dev/project-management/NiceToHave.md).
+Runtime LDJSON traceability is not part of the initial compatibility contract. It is tracked as a nice-to-have
+beyond v4 in [NiceToHave.md](dev/project-management/NiceToHave.md).
 
 ## Config Schema Versioning
 
-Configuration has an implicit schema version for the initial release. A future explicit key may make this visible:
+Configuration has an implicit schema version for the initial release. A future explicit key may make this
+visible:
 
 ```toml
 config_schema_version = 1
@@ -145,10 +151,10 @@ Config schema rules:
 
 ## Roadmap
 
-v2 expands online/generated PySpark features and adoption tooling while preserving the same basic compatibility
-contract.
+v2 expands online/generated PySpark features and adoption tooling while preserving the same basic
+compatibility contract.
 
 v3 adds streaming orchestration once transform compilation is stable.
 
-v4 adds Spark Connect support when it can be specified, tested, and documented without weakening online execution or the
-generated-code review model.
+v4 adds Spark Connect support when it can be specified, tested, and documented without weakening online
+execution or the generated-code review model.

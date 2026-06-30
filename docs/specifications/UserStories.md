@@ -202,6 +202,8 @@ This document is a user-story specification for SDLC planning. Early sections co
 - + As a developer, I can use `join_one(...)` for many-to-one or one-to-one lookup joins so that cardinality intent is explicit.
 - + As a developer, I can call `join_one(relation, ...)` with a schema parameter so that joins read like ordinary
   function composition.
+- + As a developer, I can call `join_one(on=...)` when the join condition names exactly one relation so that simple
+  lookup joins avoid repeated relation arguments.
 - + As a developer, I can call `join_one(relation, ...)` without assignment so that later reads from the same relation
   parameter use the joined scope.
 - + As a developer, I can perform serial joins across an arbitrary number of inputs so that enrichment pipelines are not limited to three inputs.

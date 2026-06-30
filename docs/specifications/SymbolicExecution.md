@@ -106,7 +106,7 @@ The v1 symbolic engine must support these source forms inside compiled subtransf
 order.id
 lower(trim(order.customer_id))
 where(order.id.is_not_null())
-join_one(self.customers, on=order.customer_id == self.customers.id, how=Join.LEFT)
+join_one(on=order.customer_id == self.customers.id, how=Join.LEFT)
 OrderNormalized(id=order.id)
 OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
@@ -225,8 +225,8 @@ Rules:
 - Field access order is not itself an operation. Only expressions using the field in filters, joins, or projections are
   recorded in the final step.
 - The first proxy is the current row. Additional relation proxies become readable projection scopes only after
-  `join_one(relation, ...)` records their relational relationship.
-- A joined row proxy is returned by `join_one(...)` and owns the right-side joined fields.
+  `join_one(...)` records their relational relationship.
+- `join_one(...)` returns or updates a relation proxy whose fields read from the joined right-side scope.
 - A constructed row proxy may be used for intermediate symbolic schema objects created inside a method, such as
   `flags = PublicationFlags(...)`.
 
@@ -357,19 +357,22 @@ source context
 
 ## Joins
 
-`join_one(...)` records a lookup join operation and returns a joined row proxy.
+`join_one(...)` records a lookup join operation and returns a relation proxy with joined-field access.
 
 Rules:
 
 - `join_one(...)` is valid only during symbolic execution.
-- Its relation argument must be a declared input scope or schema relation parameter in v1.
+- Its relation argument may be omitted when `on` references exactly one unjoined declared input scope or schema
+  relation parameter.
+- An explicit relation argument must be a declared input scope or schema relation parameter in v1.
 - Member joins such as `self.customers.join_one(...)` are rejected with migration guidance.
 - `on` and `how` are required.
 - `hint` is optional.
 - The `on` argument is captured as a symbolic expression.
-- The engine records the join in source order before returning the joined scope.
-- For schema relation parameters, the symbolic parameter proxy is updated after `join_one(parameter, ...)` so later
-  field access reads the joined scope even when the return value is not assigned.
+- The engine records the join in source order before returning the relation proxy.
+- For schema relation parameters and cached class input scopes, the symbolic proxy is updated after `join_one(...)` so
+  later field access reads the joined scope even when the return value is not assigned.
+- Inferred and explicit joins must append equivalent ordered join operations.
 - The joined scope occurrence id must be deterministic.
 - Repeated joins of the same input must receive stable occurrence ids.
 - Join condition validity, supported join types, null semantics, aliases, right-side projection, and uniqueness warnings

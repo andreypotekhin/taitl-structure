@@ -22,7 +22,13 @@ class InputDeclaration:
     def __get__(self, instance: Transform | None, owner: type[Transform] | None = None):
         if instance is None:
             return self
-        return InputScope(name=self.name, schema=self.schema)
+        from structure.app.compiler.symbolic_execution.model.CompileContext import current_context
+
+        context = current_context()
+        scope = InputScope(name=self.name, schema=self.schema)
+        if context is None:
+            return scope
+        return context.register_relation_scope(self.name, scope)
 
     def __or__(self, outputs: object):
         return bind_inout(self, outputs)

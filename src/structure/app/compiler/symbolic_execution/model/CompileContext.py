@@ -18,6 +18,8 @@ class CompileContext:
         self.joins: list[JoinPlan] = []
         self.operations: list[OperationPlan] = []
         self.default_project_source: object | None = None
+        self.current_scopes: set[str] = set()
+        self.relation_scopes: dict[str, object] = {}
         self._token: Token[CompileContext | None] | None = None
 
     def __enter__(self) -> "CompileContext":
@@ -32,6 +34,16 @@ class CompileContext:
     ) -> None:
         if self._token is not None:
             _current.reset(self._token)
+
+    def register_current_scope(self, scope: str) -> None:
+        self.current_scopes.add(scope)
+
+    def register_relation_scope(self, scope: str, relation: object) -> object:
+        existing = self.relation_scopes.get(scope)
+        if existing is not None:
+            return existing
+        self.relation_scopes[scope] = relation
+        return relation
 
 
 def current_context() -> CompileContext | None:

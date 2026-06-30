@@ -14,28 +14,37 @@ expectations.
 
 ## Public API Shape
 
-Joins are recorded through the free-standing `join_one(relation, ...)` function. The relation may be a transform input
-scope or an explicit schema parameter:
+Joins are recorded through the free-standing `join_one(...)` function. In the ordinary case, omit the relation argument
+and let the compiler infer the joined relation from the `on` clause:
 
 ```python
 customer = join_one(
-    self.customers,
     on=order.customer_id == self.customers.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
 )
 ```
 
-When a subtransform declares the relation as a schema parameter, pass that parameter:
+When a subtransform declares the relation as a schema parameter, the relation can also be inferred:
 
 ```python
 def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
     join_one(
-        customer,
         on=order.customer_id == customer.id,
         how=Join.LEFT,
     )
     return OrderWithCustomer.base(order)(customer_name=customer.name)
+```
+
+Inference is valid only when the `on` condition references exactly one unjoined relation scope. If the condition
+references no unjoined relation or more than one, pass the relation explicitly:
+
+```python
+customer = join_one(
+    self.customers,
+    on=order.customer_id == self.customers.id,
+    how=Join.LEFT,
+)
 ```
 
 For relation parameters, assigning the returned joined scope is optional. `join_one(customer, on=...)` updates the
@@ -48,11 +57,13 @@ customer = join_one(customer, on=order.customer_id == customer.id, how=Join.LEFT
 The right-hand side is evaluated before Python rebinds `customer`, so reusing the parameter name is valid. A relation
 parameter cannot be used in a filter or projection until it has been joined.
 
-The old member spelling `self.customers.join_one(...)` is rejected. Use `join_one(self.customers, ...)` or add a
-relation parameter and use `join_one(customer, ...)`.
+The old member spelling `self.customers.join_one(...)` is rejected. Use `join_one(on=...)` when inference is
+unambiguous, `join_one(self.customers, on=...)` when it is not, or add a relation parameter and use either
+`join_one(on=customer.id == order.customer_id)` or `join_one(customer, on=...)`.
 
 Canonical v1 function:
 
+- `join_one(*, on, how, hint=None)`: an inferred lookup join.
 - `join_one(relation, *, on, how, hint=None)`: a lookup join that promises at most one right-side row per current row.
 
 Rules:
@@ -60,9 +71,10 @@ Rules:
 - `on` is required.
 - `how` is required in v1. Source should show whether unmatched rows are kept or removed.
 - `hint` is optional and advisory.
-- `join_one(...)` returns a joined symbolic scope. Fields are read from that scope, such as `customer.name`.
-- For schema relation parameters, later field reads from the same parameter use the joined scope after `join_one(...)`,
-  even when the return value is not assigned.
+- `join_one(...)` records the same ordered join operation whether the relation is inferred or explicit.
+- `join_one(...)` returns a relation proxy whose fields read from the joined scope, such as `customer.name`.
+- For schema relation parameters and cached transform input scopes, later field reads from the same proxy use the joined
+  scope after `join_one(...)`, even when the return value is not assigned.
 
 ## Join Types
 
@@ -87,13 +99,13 @@ AND.
 Accepted:
 
 ```python
-order.customer_id == self.customers.id
+join_one(on=order.customer_id == self.customers.id)
 
-(order.country == self.customers.country) & (order.customer_id == self.customers.id)
+join_one(on=(order.country == self.customers.country) & (order.customer_id == self.customers.id))
 
-lower(trim(order.email)) == lower(trim(self.customers.email))
+join_one(on=lower(trim(order.email)) == lower(trim(self.customers.email)))
 
-order.customer_external_id.null_safe_eq(self.customers.external_id)
+join_one(on=order.customer_external_id.null_safe_eq(self.customers.external_id))
 ```
 
 Rejected in v1:
@@ -111,13 +123,16 @@ the other expression must reference the current row scope or a previously joined
 operand order. Public examples place the current-row expression on the left and the joined-input expression on the
 right because that reads naturally for `Join.LEFT` enrichment steps.
 
+When the relation argument is omitted, all equality pairs in one `join_one(...)` call must point to the same unjoined
+relation. A predicate that mentions two unjoined relations is ambiguous and must be split into separate joins or use an
+explicit relation argument.
+
 ## Composite Keys
 
 Composite joins are expressed by combining equality pairs with `&`:
 
 ```python
 customer = join_one(
-    self.customers,
     on=(order.country == self.customers.country) & (order.customer_id == self.customers.id),
     how=Join.LEFT,
 )
@@ -160,8 +175,7 @@ Rules:
 Case normalization is expressed in the join condition with compileable expression helpers:
 
 ```python
-customer = join_one(
-    self.customers,
+join_one(
     on=lower(trim(order.email)) == lower(trim(self.customers.email)),
     how=Join.LEFT,
 )
@@ -294,7 +308,6 @@ because it is easier to review and debug.
 
 ```python
 customer = join_one(
-    self.customers,
     on=order.customer_id == self.customers.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,

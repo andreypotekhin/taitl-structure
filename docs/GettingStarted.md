@@ -1,7 +1,8 @@
 # Getting Started
 
-This guide builds a small but realistic Structure transform: normalize order rows, validate required keys, enrich with
-customer data, and run it through `StructureSession`. Generated PySpark remains available as an optional artifact.
+This guide builds a small but realistic Structure transform: normalize order rows, validate required keys,
+enrich with customer data, and run it through `StructureSession`. Generated PySpark remains available as
+optional build output.
 
 ## 1. Install
 
@@ -33,8 +34,8 @@ generated/
       pyspark/
 ```
 
-`src` is the source filesystem root. `generated` is optional unless your project commits generated PySpark artifacts.
-Generated modules mirror source import paths under `structure_generated`.
+`src` is the source filesystem root. `generated` is optional unless your project commits generated PySpark
+artifacts. Generated modules mirror source import paths under `structure_generated`.
 
 ## 3. Define Schemas
 
@@ -65,9 +66,9 @@ class OrderWithCustomer(OrderNormalized):
     customer_tier = field(String(), nullable=True)
 ```
 
-`alias=` names the Spark DataFrame column when it differs from the Python field name. In this example, `OrderRaw`
-expects `promo-code` in the input DataFrame, while `OrderNormalized` emits `promotion_code` because aliases are
-schema-local unless inherited.
+`alias=` names the Spark DataFrame column when it differs from the Python field name. In this example,
+`OrderRaw` expects `promo-code` in the input DataFrame, while `OrderNormalized` emits `promotion_code` because
+aliases are schema-local unless inherited.
 
 ```python
 # src/orders/schemas/customer.py
@@ -164,8 +165,8 @@ result = EnrichOrders(
 enriched = result.enriched
 ```
 
-Construction binds DataFrame inputs. Calling `.run(session)` executes the transform through the session's configured
-runtime runner.
+Construction binds DataFrame inputs. Calling `.run(session)` executes the transform through the session's
+configured runtime runner.
 
 ## 6. Check and Optionally Compile
 
@@ -236,7 +237,8 @@ class EnrichOrdersGenerated:
         return orders
 ```
 
-The Structure source is shorter and schema-oriented. The generated PySpark is longer, explicit, and reviewable.
+The Structure source is shorter and schema-oriented. The generated PySpark is longer, explicit, and
+reviewable.
 
 ## 8. Use Generated Code
 
@@ -285,4 +287,5 @@ generated_package = "structure_generated"
 execution_mode = "online"
 ```
 
-A complete default seed is provided in `pyproject.seed.toml`. Most projects should only specify settings that differ from defaults.
+A complete default seed is provided in `pyproject.seed.toml`. Most projects should only specify settings that
+differ from defaults.

@@ -135,6 +135,9 @@ class CompileTransform:
                 for binding in bindings
             ]
             context.default_project_source = arguments[0]
+            context.register_current_scope(bindings[0].scope)
+            for binding, argument in zip(bindings[1:], arguments[1:], strict=True):
+                context.register_relation_scope(binding.scope, argument)
 
             try:
                 with context:

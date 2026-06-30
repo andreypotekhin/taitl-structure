@@ -98,6 +98,53 @@ def test_bare_join_one_makes_later_relation_reads_joined() -> None:
     assert product_name.nullable
 
 
+def test_bare_inferred_join_one_makes_later_relation_reads_joined() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            join_one(on=product.id == order.product_id, how=Join.LEFT)
+            return Enriched(id=order.id, product_name=product.name)
+
+    step = compile_transform(AddProduct).steps[0]
+    projection = {assignment.field.name: assignment.expression for assignment in step.projection}
+    product_name = projection["product_name"]
+    product_name_data = cast(dict[str, object], product_name.data)
+
+    assert step.joins[0].source == "products"
+    assert step.operations[0].kind == "join"
+    assert step.operations[0].join == step.joins[0]
+    assert product_name_data["scope"] == "product"
+    assert product_name.nullable
+
+
+def test_inferred_join_one_preserves_filter_join_order() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            where(cast(Any, order.status).is_not_null())
+            join_one(on=product.id == order.product_id, how=Join.LEFT)
+            where(cast(Any, product).name.is_not_null())
+            return Enriched(id=order.id, product_name=product.name)
+
+    step = compile_transform(AddProduct).steps[0]
+
+    assert [operation.kind for operation in step.operations] == ["filter", "join", "filter"]
+
+    recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
+
+    assert text.index("orders = orders.where(") < text.index("orders = orders.join(")
+    assert text.rindex("orders = orders.where(") > text.index("orders = orders.join(")
+
+
 def test_pre_join_relation_filter_still_fails() -> None:
     @transform
     class AddProduct(Transform):

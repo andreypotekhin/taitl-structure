@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypeVar, cast
+from typing import TypeVar, cast, overload
 
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
@@ -47,21 +47,53 @@ class InputScope(RowScope):
 Relation = TypeVar("Relation", bound=Structure | InputScope)
 
 
+@overload
 def join_one(
     relation: Relation,
     *,
     on: object,
     how: Join = Join.LEFT,
     hint: JoinHint | None = None,
-) -> Relation:
+) -> Relation: ...
+
+
+@overload
+def join_one(
+    *,
+    on: object,
+    how: Join = Join.LEFT,
+    hint: JoinHint | None = None,
+) -> InputScope: ...
+
+
+def join_one(
+    relation: Relation | None = None,
+    *,
+    on: object,
+    how: Join = Join.LEFT,
+    hint: JoinHint | None = None,
+) -> Relation | InputScope:
     context = current_context()
     if context is None:
         raise RuntimeError("join_one(...) can only be used inside a compiled Structure subtransform")
-    if not isinstance(relation, InputScope):
-        raise TypeError("join_one(relation, ...) requires a Structure relation parameter or transform input")
     if not isinstance(on, Expression):
         raise TypeError("join_one(on=...) requires a Structure expression")
+    if relation is None:
+        relation = cast(Relation, _infer_relation(context, on))
+    if not isinstance(relation, InputScope):
+        raise TypeError("join_one(relation, ...) requires a Structure relation parameter or transform input")
 
+    _record_join(context, relation, on, how, hint)
+    return relation
+
+
+def _record_join(
+    context,
+    relation: InputScope,
+    on: Expression,
+    how: Join,
+    hint: JoinHint | None,
+) -> None:
     join = JoinPlan(
         input_name=relation._structure_input_name,
         source=relation._structure_source,
@@ -77,4 +109,58 @@ def join_one(
         schema=relation._structure_input_schema,
         nullable=how is Join.LEFT,
     )
-    return cast(Relation, relation)
+
+
+def _infer_relation(context, on: Expression) -> InputScope:
+    candidates = {
+        scope
+        for scope in _scopes(on)
+        if scope in context.relation_scopes
+        and getattr(context.relation_scopes[scope], "_structure_joined_scope", None) is None
+    }
+    if not candidates:
+        raise TypeError(
+            "Cannot infer joined relation for join_one(...): the join condition does not reference an unjoined "
+            "relation. Use join_one(relation, on=...) or compare against a declared input/relation parameter."
+        )
+    if len(candidates) > 1:
+        names = ", ".join(sorted(candidates))
+        first = sorted(candidates)[0]
+        raise TypeError(
+            "Cannot infer joined relation for join_one(...): the join condition references multiple unjoined "
+            f"relations: {names}. Use join_one({first}, on=...) or join_one(relation={first}, on=...) to choose one."
+        )
+
+    candidate = next(iter(candidates))
+    relation = context.relation_scopes[candidate]
+    _validate_inferred_pairs(candidate, on)
+    if not isinstance(relation, InputScope):
+        raise TypeError(f"Cannot infer joined relation for join_one(...): scope {candidate} is not a join relation.")
+    return relation
+
+
+def _validate_inferred_pairs(candidate: str, on: Expression) -> None:
+    for condition in _join_conditions(on):
+        left, right = condition.args
+        left_has_candidate = candidate in _scopes(left)
+        right_has_candidate = candidate in _scopes(right)
+        if left_has_candidate == right_has_candidate:
+            raise TypeError(
+                "Each join key pair must compare the inferred joined relation with the current row or an earlier "
+                "joined scope. Use join_one(relation, on=...) if the relation cannot be inferred safely."
+            )
+
+
+def _join_conditions(expression: Expression) -> list[Expression]:
+    if expression.kind == "and":
+        return [condition for argument in expression.args for condition in _join_conditions(argument)]
+    if expression.kind in {"eq", "null_safe_eq"}:
+        return [expression]
+    return []
+
+
+def _scopes(expression: Expression) -> set[str]:
+    scopes = set().union(*(_scopes(argument) for argument in expression.args))
+    if expression.kind == "field" and expression.data and "scope" in expression.data:
+        scopes.add(str(expression.data["scope"]))
+    return scopes

@@ -2,7 +2,8 @@
 
 ## Schema Classes
 
-A schema class defines a named row contract by inheriting from `Structure` and declaring `field(...)` attributes.
+A schema class defines a named row contract by inheriting from `Structure` and declaring `field(...)`
+attributes.
 
 ```python
 class OrderRaw(Structure):
@@ -16,11 +17,11 @@ class OrderWithCustomer(OrderRaw):
     customer_name = field(String(), nullable=True)
 ```
 
-Use schema classes for inputs, intermediate rows, and outputs. Inheritance keeps shared fields explicit without
-repeating declarations.
+Use schema classes for inputs, intermediate rows, and outputs. Inheritance keeps shared fields explicit
+without repeating declarations.
 
-Use `alias=` when the Spark DataFrame column is not a Python identifier. Python code still uses the field name, while
-Spark schemas, validation, reads, and projection output use the alias. Aliases are schema-local unless the field is
+Use `alias=` when the Spark DataFrame column is not a Python identifier. Python code uses the field name,
+while Spark schemas, validation, reads, and projection output use the alias. Aliases are schema-local unless
 inherited, and Structure passes alias strings through to Spark without sanitizing them.
 
 ## Transform Classes
@@ -37,7 +38,7 @@ class NormalizeOrders(Transform):
         ...
 ```
 
-Run transform:
+Run the transform:
 
 ```python
 session = StructureSession(spark=spark)
@@ -49,7 +50,8 @@ result = NormalizeOrders(
 normalized = result.normalized
 ```
 
-Structure can also generate PySpark code from transform classes for projects that prefer generated PySpark code.
+Structure can also generate PySpark code from transform classes for projects that prefer generated PySpark
+code.
 
 ## Inputs
 
@@ -94,7 +96,7 @@ Subtransforms execute in source order.
 OrderRaw -> OrderNormalized -> OrderWithCustomer -> OrderEnriched
 ```
 
-Most single-lane transforms need no method-level selectors. Declare intermediate lanes only when you want named funnel
+Most single-lane transforms need no method-level selectors. Declare intermediate lanes for named funnel
 stages, branches, or repeated schemas that need disambiguation:
 
 ```python
@@ -115,8 +117,8 @@ def publish(self, order: OrderWithProduct) -> OrderEnriched:
     ...
 ```
 
-Here the compiler infers the input and lane sources from parameter types. The decorators name the intermediate lanes;
-the final single output can be inferred from `publish` returning `OrderEnriched`.
+Here the compiler infers the input and lane sources from parameter types. The decorators name the intermediate
+lanes; the final single output can be inferred from `publish` returning `OrderEnriched`.
 
 Subtransforms may declare additional schema parameters for relations used by the step. Bind repeated schemas
 explicitly and return a fixed schema tuple when the shared join/filter work produces multiple results:
@@ -142,13 +144,15 @@ def add_product(
     return accepted_order, audited_order
 ```
 
-The first parameter is the driving DataFrame. Later parameters are relations and must be joined before their fields
-are used. Joins and `where(...)` filters run once; each returned value is then projected into its named output frame.
-Use `input=` for original input or intermediate lane declarations, and `output=` for intermediate lane or final output
-declarations. Both options accept either one declaration or an ordered list. The plural method options are retired.
+The first parameter is the driving DataFrame. Later parameters are relations and must be joined before their
+fields are used. Joins and `where(...)` filters run once; each returned value is then projected into its named
+output frame. Use `input=` for original input or intermediate lane declarations, and `output=` for
+intermediate lane or final output declarations. Both options accept either one declaration or an ordered list.
+The plural method options are retired.
 
-Bare declarations resolve from the current source-order state. If a same-named lane already exists and its current
-schema matches the method parameter, it wins over the original input. Use role selectors when the distinction matters:
+Bare declarations resolve from the current source-order state. If a same-named lane already exists and its
+current schema matches the method parameter, it wins over the original input. Use role selectors when the
+distinction matters:
 
 ```python
 @transform(input=input(orders), output=lane(orders))
@@ -160,13 +164,13 @@ def publish(self, order: OrderNormalized) -> OrderPublished:
     ...
 ```
 
-`input(orders)` means the original runtime input. `lane(orders)` means the current working lane named `orders`.
-`output(published)` means the final result declaration.
+`input(orders)` means the original runtime input. `lane(orders)` means the current working lane named
+`orders`. `output(published)` means the final result declaration.
 
 ## Online Execution
 
-Constructing a transform binds inputs without starting Spark work. Running it through a session executes the configured
-runtime target.
+Constructing a transform binds inputs without starting Spark work. Running it through a session executes the
+configured runtime target.
 
 ```python
 from structure import StructureSession
@@ -183,8 +187,8 @@ enriched = result.enriched
 enriched_schema = result.schema.enriched
 ```
 
-The session owns Spark, optional hook context, resolved Structure configuration, execution mode, and target backend
-selection.
+The session owns the caller-supplied Spark reference, optional hook context, resolved Structure configuration,
+execution mode, and target backend selection.
 
 Use `result.schema` when caller code needs an output Spark schema in online mode:
 
@@ -229,8 +233,8 @@ orders = orders.where(
 
 ## Generated Schemas in Caller Code
 
-Generated schema constants are ordinary PySpark `StructType` values. Caller code may import them for reads and for
-pre-write validation/projection.
+Generated schema constants are ordinary PySpark `StructType` values. Caller code may import them for reads and
+for pre-write validation/projection.
 
 ```python
 from structure_generated.orders.pyspark.schemas.order import ORDER_ENRICHED_SCHEMA, ORDER_RAW_SCHEMA
@@ -243,8 +247,8 @@ result = project_schema(result, ORDER_ENRICHED_SCHEMA)
 result.write.mode("overwrite").parquet(target_path)
 ```
 
-Structure does not own storage orchestration. Callers own `write`, `writeStream`, table creation, partitioning,
-checkpoints, output modes, and storage options.
+Structure does not own storage orchestration. Callers own `write`, `writeStream`, table creation,
+partitioning, checkpoints, output modes, and storage options.
 
 ## Intermediate Validation
 
@@ -280,10 +284,10 @@ Choose fuller validation only when the added Spark work is intentional:
 intermediate_validation_mode = "schema_and_constraints"
 ```
 
-`schema_and_constraints` is reserved for opt-in data-quality checks such as accepted values, ranges, uniqueness,
-referential checks, freshness, and row-count policies. These checks are separate from schema shape and may trigger Spark
-work when Structure supports them. Future constraints should bind to input, intermediate, or output phases; the matching
-phase mode controls whether those constraints run.
+`schema_and_constraints` is reserved for opt-in data-quality checks such as accepted values, ranges,
+uniqueness, referential checks, freshness, and row-count policies. These checks are separate from schema shape
+and may trigger Spark work when Structure supports them. Future constraints should bind to input,
+intermediate, or output phases; the matching phase mode controls whether those constraints run.
 
 ```python
 @transform(validate_intermediate=True)
@@ -326,8 +330,8 @@ def valid_orders(self, order: OrderRaw) -> OrderValid:
 
 Multiple `where(...)` calls are combined with logical AND.
 
-When filters and joins are mixed, Structure preserves the source order. A filter written before a join runs before that
-join; a filter written after a join can reference the joined relation.
+When filters and joins are mixed, Structure preserves the source order. A filter written before a join runs
+before that join; a filter written after a join can reference the joined relation.
 
 ## Add and Drop Columns
 
@@ -365,8 +369,8 @@ def publish(self, order: OrderWithPromotion) -> OrderPublished:
     return project(OrderPublished)
 ```
 
-Use a field list when the output should copy only selected source fields. The list names fields on the source row; the
-method return annotation still defines the output schema and field order.
+Use a field list when the output should copy only selected source fields. The list names source-row fields;
+the method return annotation still defines the output schema and field order.
 
 ```python
 def audit(self, order: OrderRaw) -> OrderAudit:
@@ -408,7 +412,6 @@ Use symbolic joins.
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
     join_one(
-        customer,
         on=order.customer_id == customer.id,
         how=Join.LEFT,
         hint=JoinHint.BROADCAST,
@@ -419,8 +422,8 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
     )
 ```
 
-For relation parameters, assigning the returned joined scope is optional. Use explicit assignment when joining a class
-input scope such as `self.customers` and then reading its fields later.
+For relation parameters and class input scopes, assigning the returned joined scope is optional when the `on`
+clause names exactly one unjoined relation. Use the explicit relation argument when a condition is ambiguous.
 
 Generated PySpark:
 
@@ -441,8 +444,8 @@ orders = orders.join(
 
 ## Inheritance
 
-When the output schema inherits the current row schema, use `SchemaClass.base(row)(...)` to copy inherited fields and
-name only the joined fields.
+When the output schema inherits the current row schema, use `SchemaClass.base(row)(...)` to copy inherited
+fields and name only the joined fields.
 
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
@@ -475,8 +478,8 @@ def hook_name(self, *, selected_lane_name, spark, ctx):
     ...
 ```
 
-Hooks receive `self`, the selected lane parameter, `spark`, and `ctx`. Named input DataFrames are not passed to hooks
-by default.
+Hooks receive `self`, the selected lane parameter, `spark`, and `ctx`. Named input DataFrames are not passed
+to hooks by default.
 
 When a hook needs the original named inputs, opt in explicitly:
 
@@ -487,8 +490,8 @@ def check_against_raw_orders(self, *, orders, inputs, spark, ctx):
     return orders
 ```
 
-`inputs` is a read-only namespace matching the transform's declared input names. It contains the original `run(...)`
-input DataFrames, not the current intermediate lane.
+`inputs` is a read-only namespace matching the transform's declared input names. It contains the original
+`run(...)` input DataFrames, not the current intermediate lane.
 
 Select hook DataFrames explicitly with input, lane, or output declarations:
 
@@ -509,28 +512,28 @@ src/orders/...
 generated/structure_generated/orders/...
 ```
 
-Generated paths are only used shwn Structure used for generating PySpark code (not by default).
-These paths are configurable. Mark `src` and `generated` as source roots in the IDE.
+Generated paths are used only when Structure is configured to emit PySpark code; online execution is the
+default. These paths are configurable. Mark `src` and `generated` as source roots in the IDE.
 
 ## Streaming Compatibility
 
-Structure transforms operate on DataFrames. If the input DataFrame is streaming and all compiled operations are
-supported by Spark Structured Streaming, the transform can be used in a streaming pipeline.
+Structure transforms operate on DataFrames. If the input DataFrame is streaming and every compiled operation
+is supported by Spark Structured Streaming, the transform can run in a streaming pipeline.
 
 Structure does not generate `readStream` or `writeStream` before v3; the caller owns streaming orchestration.
 
 ## Compatibility
 
-Online and generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs for PySpark
-3.5.x and 4.0.x by default:
+Online and generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs for
+PySpark 3.5.x and 4.0.x by default:
 
 ```toml
 execution_mode = "online"
 target_pyspark = ">=3.5,<4.1"
 ```
 
-Spark Connect support is planned for v4 unless it can be added earlier without changing the public DSL, generated class
-API, or streaming orchestration contract. See [Compatibility.md](Compatibility.md).
+Spark Connect support is planned for v4 unless it can be added earlier without changing the public DSL,
+generated class API, or streaming orchestration contract. See [Compatibility.md](Compatibility.md).
 
 ## Schema Generation Tool
 
@@ -551,8 +554,8 @@ code = StructureTools.schemas.generate(
 )
 ```
 
-`schema=` accepts a PySpark `StructType` or any object exposing `.schema`. Path and table generation accept either
-`spark=...` or `session=StructureSession(...)`:
+`schema=` accepts a PySpark `StructType` or any object exposing `.schema`. Path and table generation accept
+either `spark=...` or `session=StructureSession(...)`:
 
 ```python
 StructureTools.schemas.generate(from_table="catalog.db.orders", spark=spark, to="OrderRaw")
@@ -566,13 +569,14 @@ structure tools schemas generate --from-path data/orders.parquet --format parque
 structure tools schemas generate --from-table catalog.db.orders --to OrderRaw
 ```
 
-The CLI command runs in its own Python process, so it requires a shell where PySpark is installed and Spark can start.
-For Delta paths, the shell must include the user's usual Delta-capable Spark configuration. In managed Spark notebooks
-or jobs, use the Python API with the existing `SparkSession` or `StructureSession`.
+The CLI command runs in its own Python process, so it needs a shell where PySpark is installed and Spark can
+start. For Delta paths, the shell must include the user's usual Delta-capable Spark configuration. In managed
+Spark notebooks or jobs, use the Python API with the existing `SparkSession` or `StructureSession`.
 
-Schema generation preserves Spark shape: field names, field order, Spark types, nullability, arrays, maps, decimals,
-and nested structs. It does not infer primary keys, descriptions, inheritance, or data-quality constraints.
-When Spark field names are not Python identifiers, generated Structure fields use safe Python names with `alias=...`.
+Schema generation preserves Spark shape: field names, field order, Spark types, nullability, arrays, maps,
+decimals, and nested structs. It does not infer primary keys, descriptions, inheritance, or data-quality
+constraints. When Spark field names are not Python identifiers, generated Structure fields use safe Python
+names with `alias=...`.
 
 ## Planned Features
 
@@ -588,5 +592,6 @@ Planned v2 features include:
 
 These features remain explicit because Structure should not hide performance-sensitive choices.
 
-Planned v2 adoption tooling also includes richer explain output, generated documentation artifacts for schemas and
-transforms, production incremental compilation, and a pytest helper for compiler checks and generated-code freshness.
+Planned v2 adoption tooling also includes richer explain output, generated documentation artifacts for schemas
+and transforms, production incremental compilation, and a pytest helper for compiler checks and generated-code
+freshness.

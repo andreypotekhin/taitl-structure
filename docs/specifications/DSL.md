@@ -122,7 +122,6 @@ class EnrichOrders(Transform):
 
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
         customer = join_one(
-            self.customers,
             on=order.customer_id == self.customers.id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
@@ -503,12 +502,12 @@ Rules:
 
 ## Joins
 
-The v1 DSL exposes lookup joins through the free-standing `join_one(relation, ...)` function:
+The v1 DSL exposes lookup joins through the free-standing `join_one(...)` function. When the `on` clause names exactly
+one unjoined relation, the relation argument can be inferred:
 
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
     join_one(
-        customer,
         on=order.customer_id == customer.id,
         how=Join.LEFT,
         hint=JoinHint.BROADCAST,
@@ -517,7 +516,7 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
     return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
 
-Class input scopes may also be joined directly. Assign the returned scope when the right-side fields are needed later:
+Class input scopes may also be joined directly. Use the explicit relation form when inference would be ambiguous:
 
 ```python
 customer = join_one(
@@ -539,14 +538,17 @@ JoinHint.BROADCAST
 
 Rules:
 
+- `join_one(*, on, how, hint=None)` is the canonical concise v1 join function when the relation is inferable.
 - `join_one(relation, *, on, how, hint=None)` is the canonical v1 join function.
 - `on` and `how` are required.
 - `hint` is optional.
 - Join calls are valid only during symbolic execution of a compiled subtransform.
 - Member joins such as `self.customers.join_one(...)` are rejected with migration guidance.
-- `join_one(...)` returns a joined symbolic scope.
-- For relation parameters, `join_one(parameter, ...)` also makes later reads from that same parameter read from the
-  joined scope.
+- `join_one(...)` records the same ordered join operation for inferred and explicit relation forms.
+- `join_one(...)` returns a relation proxy whose fields read from the joined symbolic scope.
+- For relation parameters and cached class input scopes, `join_one(...)` also makes later reads from that same proxy
+  read from the joined scope.
+- Inferred joins are valid only when `on` references exactly one unjoined relation.
 - Field access on the joined scope is scoped and must not rely on unqualified string column names.
 - Join calls execute in source order.
 - Repeated joins of the same input must produce deterministic aliases.
@@ -555,7 +557,7 @@ Rules:
 Explicit assignment remains valid and equivalent when a local name makes the method easier to read:
 
 ```python
-customer = join_one(customer, on=order.customer_id == customer.id, how=Join.LEFT)
+customer = join_one(on=order.customer_id == customer.id, how=Join.LEFT)
 return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
 

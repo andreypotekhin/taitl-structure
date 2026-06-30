@@ -2,9 +2,9 @@
 
 Structure can emit generated PySpark code.
 
-Online execution is the default, so ordinary users can run transforms through `StructureSession` without committing
-generated files. Generated code remains useful when a team wants reviewable build output, provenance, snapshot tests,
-or generated-mode runtime entrypoints.
+Online execution is the default, so users can run transforms through `StructureSession` without committing
+generated files. Generated code remains useful when a team wants reviewable build output, provenance, snapshot
+tests, or generated-mode runtime entrypoints.
 
 ## Generated Class Shape
 
@@ -57,7 +57,7 @@ class NormalizeOrdersGenerated:
 
 ## Generated Code Rules
 
-Generated code should:
+Generated code should be explicit and Spark-visible. It should:
 
 - use `DataFrame` and `Column` operations
 - use stable lane names such as `orders` and `published`, plus `spark` and `ctx`
@@ -72,8 +72,8 @@ Generated code should:
 
 ## Generated Schema Constants
 
-Generated schema constants such as `ORDER_ENRICHED_SCHEMA` are ordinary PySpark `StructType` values. They are supported
-caller-facing artifacts, not only generated transform internals.
+Generated schema constants such as `ORDER_ENRICHED_SCHEMA` are ordinary PySpark `StructType` values. They are
+supported caller-facing artifacts, not only generated transform internals.
 
 ```python
 from structure_generated.orders.pyspark.schemas.order import ORDER_ENRICHED_SCHEMA
@@ -86,11 +86,11 @@ df = project_schema(df, result.schema["enriched"])
 df.write.mode("overwrite").parquet(target_path)
 ```
 
-Generated `*_SCHEMA` constants are shape-only. Future data-quality constraint metadata must be generated separately
-unless a later design intentionally adds Spark-compatible metadata without changing schema shape semantics.
+Generated `*_SCHEMA` constants are shape-only. Future data-quality constraint metadata must be generated
+separately unless a later design adds Spark-compatible metadata without changing schema shape semantics.
 
-Online execution exposes equivalent materialized schemas through `result.schema` after `run(session)`. Use that online
-surface when generated files are not committed or imported.
+Online execution exposes equivalent materialized schemas through `result.schema` after `run(session)`. Use
+that online surface when generated files are not committed or imported.
 
 ## Ownership Rules
 
@@ -108,8 +108,8 @@ configuration, or generator, then regenerate.
 
 ## Why Generated Code Is Longer
 
-Structure allows developers to maintain compact source, while reviewers and operators can inspect explicit PySpark.
+Structure lets developers maintain compact source while reviewers and operators can inspect explicit PySpark.
 
-Example: add_promotion() method (left) translated into PySpark (right)
+Example: `add_promotion()` source on the left, generated PySpark on the right.
 
 ![](../res/img/screenshots/add_promotion.screen.jpg)

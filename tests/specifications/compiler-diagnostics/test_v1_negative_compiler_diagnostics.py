@@ -50,6 +50,11 @@ class Lookup(Structure):
     label = field(String(), nullable=False)
 
 
+class Account(Structure):
+    id = field(String(), nullable=False, primary_key=True)
+    customer_id = field(String(), nullable=False)
+
+
 class OptionalClean(Structure):
     optional_id = field(String(), nullable=False)
 
@@ -370,6 +375,88 @@ def test_v1_incompatible_join_key_types_report_join_diagnostic() -> None:
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "JOIN-E0601"
     assert "Join key types are incompatible" in diagnostic.problem_text()
+
+
+def test_v1_inferred_join_without_relation_candidate_reports_diagnostic() -> None:
+    @transform
+    class MissingRelation(Transform):
+        rows = input(Raw)
+        clean = output(Clean)
+
+        def normalize(self, row: Raw) -> Clean:
+            join_one(on=row.id == row.id, how=Join.LEFT)
+            return Clean(id=row.id)
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(MissingRelation)
+
+    diagnostic = raised.value.diagnostic
+    assert "Cannot infer joined relation for join_one(...)" in diagnostic.problem_text()
+    assert "does not reference an unjoined relation" in diagnostic.problem_text()
+
+
+def test_v1_inferred_join_with_multiple_relation_candidates_reports_diagnostic() -> None:
+    @transform
+    class MultipleRelations(Transform):
+        rows = input(Raw)
+        lookup = input(Lookup)
+        accounts = input(Account)
+        clean = output(Clean)
+
+        def normalize(self, row: Raw) -> Clean:
+            join_one(on=self.lookup.id == self.accounts.customer_id, how=Join.LEFT)
+            return Clean(id=row.id)
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(MultipleRelations)
+
+    diagnostic = raised.value.diagnostic
+    assert "Cannot infer joined relation for join_one(...)" in diagnostic.problem_text()
+    assert "lookup" in diagnostic.problem_text()
+    assert "accounts" in diagnostic.problem_text()
+    assert "join_one(relation=" in diagnostic.problem_text()
+
+
+def test_v1_inferred_join_with_mixed_composite_candidates_reports_diagnostic() -> None:
+    @transform
+    class MixedCompositeRelations(Transform):
+        rows = input(Raw)
+        lookup = input(Lookup)
+        accounts = input(Account)
+        clean = output(Clean)
+
+        def normalize(self, row: Raw) -> Clean:
+            join_one(
+                on=(row.id == self.lookup.id) & (row.id == self.accounts.customer_id),
+                how=Join.LEFT,
+            )
+            return Clean(id=row.id)
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(MixedCompositeRelations)
+
+    diagnostic = raised.value.diagnostic
+    assert "Cannot infer joined relation for join_one(...)" in diagnostic.problem_text()
+    assert "lookup" in diagnostic.problem_text()
+    assert "accounts" in diagnostic.problem_text()
+
+
+def test_v1_inferred_join_self_only_relation_reports_diagnostic() -> None:
+    @transform
+    class SelfOnlyRelation(Transform):
+        rows = input(Raw)
+        lookup = input(Lookup)
+        clean = output(Clean)
+
+        def normalize(self, row: Raw) -> Clean:
+            join_one(on=self.lookup.id == self.lookup.group, how=Join.LEFT)
+            return Clean(id=row.id)
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(SelfOnlyRelation)
+
+    diagnostic = raised.value.diagnostic
+    assert "Each join key pair must compare the inferred joined relation" in diagnostic.problem_text()
 
 
 def test_v1_member_join_one_reports_migration_diagnostic() -> None:

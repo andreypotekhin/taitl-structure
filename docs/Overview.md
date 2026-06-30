@@ -6,22 +6,24 @@
 
 Hand-written PySpark is powerful, but large pipelines often become difficult to maintain:
 
-- Column names are frequently referred as strings.
+- Column names are often repeated as strings.
 - Intermediate schemas are often implicit.
 - Schema drift is hard to catch before runtime.
-- Business logic can become hidden inside Python UDFs or row-wise callbacks.
+- Business logic can hide inside Python UDFs or row-wise callbacks.
 - Airflow DAGs can become tightly coupled to transformation details.
 - Generated or repeated transformation code is hard to review consistently.
 
-Structure attempts to address these problems by making schemas and transformations explicit Python classes while generating PySpark code that remains visible to Spark's optimizer.
+Structure makes schemas and transformations explicit Python classes while keeping the emitted PySpark visible
+to Spark's optimizer.
 
 
 
 ## Less Code, More Spark!
 
-Structure can help replace hand-maintained PySpark boilerplate. Structure pipelines express filtering, joins, projections and normalization in plain Python. 
+Structure reduces hand-maintained PySpark boilerplate. Pipelines express filtering, joins, projections, and
+normalization in plain Python while Spark still sees optimizer-visible DataFrame logic.
 
-First, define schemas. Second, define transforms (pipelines).
+Define schemas. Define transforms. Run.
 
 ### Example Schema
 
@@ -98,7 +100,6 @@ class EnrichOrders(Transform):
 
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
         customer = join_one(
-            self.customers,
             on=order.customer_id == self.customers.id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
@@ -110,8 +111,7 @@ class EnrichOrders(Transform):
         )
 
     def add_product(self, order: OrderWithCustomer, product: Product) -> OrderEnriched:
-        product = join_one(
-            product,
+        join_one(
             on=order.product_id == product.id,
             how=Join.LEFT,
         )
@@ -134,7 +134,7 @@ class EnrichOrders(Transform):
 
 ### Running a Transform
 
-We can execute a transform using .run(session):
+Run a transform with `.run(session)`:
 
 ```python
 from structure import StructureSession
@@ -151,9 +151,9 @@ result = EnrichOrders(
 enriched_df = result.enriched
 ```
 
-### Generated PySpark code
+### Generated PySpark Code
 
-We can also generate PySpark source code, if needed for your project.
+Generate PySpark source when your project wants checked-in PySpark.
 
 Example generated PySpark:
 
@@ -288,14 +288,14 @@ generated/
     traceability/  # compiler metadata, not runtime telemetry
 ```
 
-For example,
-`src/my_package/` generates `generated/structure_generated/my_package/pyspark/`.
+For example, `src/my_package/` generates `generated/structure_generated/my_package/pyspark/`.
 
 Mark both `src` and `generated` as source roots in the IDE. The paths and package names are configurable.
 
 ## Configuration
 
-Structure works by convention, so you often don't need to use a config. To configure (e.g. for repeatable builds), one can use `pyproject.toml`:
+Structure works by convention, so many projects need no configuration. Add `pyproject.toml` when paths, modes,
+validation defaults, or build settings need to be explicit:
 
 ```toml
 [tool.structure]
@@ -316,17 +316,18 @@ See `pyproject.seed.toml` for defaults.
 ## Compatibility
 
 Structure targets Python 3.11+, PySpark 3.5.x and 4.0.x, Linux runtimes, and Linux/macOS/Windows development
-environments. 
+environments.
 
-Airflow is supported as a caller of online or generated transforms, not as a dependency.
+Airflow can call online or generated transforms. It is not a Structure dependency.
 
-Spark Connect support is scheduled for v4 unless it can be added earlier without changing the public DSL, generated class API, generated-code review model, or streaming orchestration contract.
+Spark Connect support is scheduled for v4 unless it can be added earlier without changing the public DSL,
+generated class API, generated-code review model, or streaming orchestration contract.
 
 See [Compatibility.md](docs/Compatibility.md) for the full versioning and compatibility policy.
 
 ## CLI
 
-Command line tool to aid development:
+The CLI supports local development and CI checks:
 
 ```bash
 structure check
@@ -339,7 +340,7 @@ structure tools schemas generate --from-path data/orders.parquet --format parque
 
 ## Tools
 
-`StructureTools` can generate starter Structure schema classes from existing Spark shapes.
+`StructureTools` can generate starter Structure schema classes from existing Spark schemes/DataFrames.
 
 ```python
 from structure import StructureSession, StructureTools
@@ -364,15 +365,19 @@ structure tools schemas generate --from-path data/orders.parquet \
 structure tools schemas generate --from-table catalog.db.orders --to OrderRaw
 ```
 
-CLI schema generation requires a runtime where PySpark is installed and Spark can start. Delta paths also require the user's normal Delta-capable Spark configuration. In notebooks or managed Spark jobs, prefer the Python API with an existing `StructureSession`.
+CLI schema generation needs a shell where PySpark is installed and Spark can start. Delta paths also need the
+user's normal Delta-capable Spark configuration. In notebooks or managed Spark jobs, prefer the Python API
+with an existing `StructureSession`.
 
-Generated classes preserve Spark schema shape: field names, field order, types, nullability, arrays, maps, decimals, and nested structs. They do not infer primary keys, descriptions, inheritance, or data-quality constraints. Spark fields that are not Python identifiers are generated with safe Python names and `alias=...`, for example:
+Generated classes preserve Spark schema shape: field names, field order, types, nullability, arrays, maps,
+decimals, and nested structs. They do not infer primary keys, descriptions, inheritance, or data-quality
+constraints. Spark fields that are not Python identifiers get safe Python names with `alias=...`:
 
 ```python
 promotion_code = field(String(), nullable=True, alias="promo-code")
 ```
 
-Python code uses `promotion_code`; Spark schemas, validation, and projections use `promo-code`. 
+Python code uses `promotion_code`; Spark schemas, validation, and projections use `promo-code`.
 
 Aliases are schema-local, and Structure passes alias strings through to Spark without sanitizing them.
 
@@ -388,11 +393,16 @@ Get started: [GettingStarted.md](GettingStarted.md)
 
 ## Roadmap
 
-The roadmap follows an IR-first north star: the initial release proves that Structure can replace hand-maintained PySpark boilerplate with strict online execution and optional generated-code workflow; v2 makes that workflow useful for mainstream analytical pipelines; v3 takes ownership of streaming lifecycle concerns; v4 adds Spark Connect after the ordinary PySpark contract is stable.
+The roadmap follows an IR-first path: prove strict online execution with optional generated code, grow into
+mainstream analytical pipelines, take ownership of streaming orchestration, then add Spark Connect once the
+ordinary PySpark contract is stable.
 
-- **Initial release:** online PySpark execution by default, optional generated PySpark classes, projection, filtering, joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow traceability, streaming-compatible transforms, diagnostic links, and setup checks.
-- **v2:** windowing, deduplication, aggregations, advanced grouping, Spark higher-order functions,
-  caching/persistence/repartition hints, `join_many(...)`, richer explain output, generated docs, and pytest helpers.
-- **v3:** full streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks,
-  output modes, and stateful policies.
+- **Initial release:** online PySpark execution by default, optional generated PySpark classes, projection,
+  filtering, joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow
+  traceability, streaming-compatible transforms, diagnostic links, and setup checks.
+- **v2:** mainstream analytical features: windowing, deduplication, aggregations, advanced grouping, Spark
+  higher-order functions, caching/persistence/repartition hints, `join_many(...)`, richer explain output,
+  generated docs, and pytest helpers.
+- **v3:** streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, output
+  modes, and stateful policies.
 - **v4:** Spark Connect support and backend capability reporting.

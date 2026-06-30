@@ -81,6 +81,100 @@ def test_unique_schema_parameters_are_inferred() -> None:
     assert [item.source for item in step.inputs] == ["orders", "products"]
 
 
+def test_join_relation_can_be_inferred_from_on_clause() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(OrderRaw)
+        products = input(Product)
+        enriched = output(OrderWithProduct)
+
+        def add_product(self, order: OrderRaw, product: Product) -> OrderWithProduct:
+            join_one(on=product.id == order.product_id, how=Join.LEFT)
+            return OrderWithProduct(id=order.id, product_name=product.name)
+
+    step = compile_transform(AddProduct).steps[0]
+
+    assert step.joins[0].input_name == "product"
+    assert step.joins[0].source == "products"
+    assert step.operations[0].kind == "join"
+    assert step.operations[0].join == step.joins[0]
+
+
+def test_join_relation_can_be_inferred_from_reversed_operands() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(OrderRaw)
+        products = input(Product)
+        enriched = output(OrderWithProduct)
+
+        def add_product(self, order: OrderRaw, product: Product) -> OrderWithProduct:
+            join_one(on=order.product_id == product.id, how=Join.LEFT)
+            return OrderWithProduct(id=order.id, product_name=product.name)
+
+    step = compile_transform(AddProduct).steps[0]
+
+    assert step.joins[0].input_name == "product"
+    assert step.joins[0].source == "products"
+
+
+def test_join_relation_can_be_inferred_from_class_input_scope() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(OrderRaw)
+        products = input(Product)
+        enriched = output(OrderWithProduct)
+
+        def add_product(self, order: OrderRaw) -> OrderWithProduct:
+            join_one(on=self.products.id == order.product_id, how=Join.LEFT)
+            return OrderWithProduct(id=order.id, product_name=self.products.name)
+
+    step = compile_transform(AddProduct).steps[0]
+    projection = {assignment.field.name: assignment.expression for assignment in step.projection}
+
+    assert step.joins[0].input_name == "products"
+    assert step.joins[0].source == "products"
+    assert projection["product_name"].nullable
+
+
+class ProductAlias(Structure):
+    id = field(String(), nullable=False, primary_key=True)
+    name = field(String(), nullable=False)
+
+
+class OrderWithProductAlias(Structure):
+    id = field(String(), nullable=False)
+    product_name = field(String(), nullable=True)
+    alias_name = field(String(), nullable=True)
+
+
+def test_serial_join_relation_can_be_inferred_from_earlier_joined_scope() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(OrderRaw)
+        products = input(Product)
+        aliases = input(ProductAlias)
+        enriched = output(OrderWithProductAlias)
+
+        def add_product(
+            self,
+            order: OrderRaw,
+            product: Product,
+            alias: ProductAlias,
+        ) -> OrderWithProductAlias:
+            join_one(on=product.id == order.product_id, how=Join.LEFT)
+            join_one(on=alias.id == product.id, how=Join.LEFT)
+            return OrderWithProductAlias(
+                id=order.id,
+                product_name=product.name,
+                alias_name=alias.name,
+            )
+
+    step = compile_transform(AddProduct).steps[0]
+
+    assert [join.input_name for join in step.joins] == ["product", "alias"]
+    assert [operation.kind for operation in step.operations] == ["join", "join"]
+
+
 def test_array_input_binds_lane_parameters_in_order() -> None:
     @transform
     class AddProduct(Transform):

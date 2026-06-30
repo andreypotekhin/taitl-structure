@@ -197,8 +197,7 @@ Example:
 
 ```python
 def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
-    customer = join_one(
-        customer,
+    join_one(
         on=order.customer_id == customer.id,
         how=Join.LEFT,
         hint=JoinHint.BROADCAST,
@@ -297,7 +296,7 @@ Joined scopes are essential for deterministic aliasing, nullability adjustment, 
 Example:
 
 ```python
-customer = join_one(self.customers, on=order.customer_id == self.customers.id)
+customer = join_one(on=order.customer_id == self.customers.id)
 customer.tier  # FieldRef(scope="customers#1", field="tier")
 ```
 
@@ -598,7 +597,7 @@ hints, ordered key pairs, and right-side field projection.
 Example:
 
 ```text
-join_one(self.customers, on=order.customer_id == self.customers.id, how=Join.LEFT)
+join_one(on=order.customer_id == self.customers.id, how=Join.LEFT)
   -> orders.alias("order_normalized").join(customers.alias("customers"), ..., "left")
 ```
 

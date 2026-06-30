@@ -8,10 +8,11 @@ Structure can help replace hand-maintained PySpark boilerplate.
 
 ![add_promotion.screen](res/img/screenshots/add_promotion.screen.jpg)
 
-Structure pipelines express filtering, joins, projections, hydration and normalization as plain Python. 
+Structure pipelines express filtering, joins, projections, hydration, and normalization as compact Python
+while Spark still sees optimizer-visible DataFrame logic.
 
 ## Nutshell
-First, define schemas. Second, define transforms (pipelines).
+Define schemas. Define transforms. Run.
 
 ### Example Schema
 
@@ -91,7 +92,6 @@ class EnrichOrders(Transform):
 
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
         customer = join_one(
-            self.customers,
             on=order.customer_id == self.customers.id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
@@ -103,8 +103,7 @@ class EnrichOrders(Transform):
         )
 
     def add_product(self, order: OrderWithCustomer, product: Product) -> OrderEnriched:
-        product = join_one(
-            product,
+        join_one(
             on=order.product_id == product.id,
             how=Join.LEFT,
         )
@@ -127,7 +126,7 @@ class EnrichOrders(Transform):
 
 ### Running a Transform
 
-To execute a transform, specify DataFrame inputs and call .run(session):
+Bind DataFrame inputs and call `.run(session)`:
 
 ```python
 from structure import StructureSession
@@ -144,9 +143,9 @@ result = EnrichOrders(
 enriched_df = result.enriched
 ```
 
-### Generated PySpark code
+### Generated PySpark Code
 
-Transforms' .run() method generates and runs PySpark similar to shown below. 
+Transforms' .run() method generates and runs PySpark similar to the code below. 
 
 We can also generate PySpark source code into a file, if that's needed for your project.
 
@@ -256,17 +255,18 @@ Arbitrary PySpark is still supported, but only through explicit hooks. Hooks rec
 ## Compatibility
 
 Structure targets Python 3.11+, PySpark 3.5.x and 4.0.x, Linux runtimes, and Linux/macOS/Windows development
-environments. 
+environments.
 
-Airflow is supported as a caller of online or generated transforms, not as a dependency.
+Airflow can call online or generated transforms. It is not a Structure dependency.
 
-Spark Connect support is scheduled for v4 unless it can be added earlier without changing the public DSL, generated class API, generated-code review model, or streaming orchestration contract.
+Spark Connect support is scheduled for v4 unless it can be added earlier without changing the public DSL,
+generated class API, generated-code review model, or streaming orchestration contract.
 
 See [Compatibility.md](docs/Compatibility.md) for the full versioning and compatibility policy.
 
 ## Getting Started
 
-Project overview: [Overview.md](docs/Overview.md) 
+Project overview: [Overview.md](docs/Overview.md)
 
 Basic concepts: [Basics.md](docs/Basics.md)
 
@@ -274,7 +274,7 @@ Get started: [GettingStarted.md](docs/GettingStarted.md)
 
 ## Development
 
-Development overview: [Development.md](docs/dev/Development.md) 
+Development overview: [Development.md](docs/dev/Development.md)
 
 ## License
 
@@ -284,9 +284,12 @@ See [License.md](License.md)
 
 ## Roadmap
 
-- **v1:** online PySpark execution by default, optional generated PySpark classes, projection, filtering, joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow traceability, streaming-compatible transforms, diagnostic links, and setup checks.
-- **v2:** windowing, deduplication, aggregations, advanced grouping, Spark higher-order functions,
-  caching/persistence/repartition hints, `join_many(...)`, richer explain output, generated docs, and pytest helpers.
-- **v3:** full streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks,
-  output modes, and stateful policies.
+- **v1:** online PySpark execution by default, optional generated PySpark classes, projection, filtering,
+  joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow traceability,
+  streaming-compatible transforms, diagnostic links, and setup checks.
+- **v2:** mainstream analytical features: windowing, deduplication, aggregations, advanced grouping, Spark
+  higher-order functions, caching/persistence/repartition hints, `join_many(...)`, richer explain output,
+  generated docs, and pytest helpers.
+- **v3:** streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, output
+  modes, and stateful policies.
 - **v4:** Spark Connect support and backend capability reporting.
