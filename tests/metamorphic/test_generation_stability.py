@@ -17,16 +17,28 @@ def test_orders_example_generated_file_order_is_deterministic() -> None:
         "structure_generated/orders/pyspark/transforms/__init__.py",
         "structure_generated/orders/runtime/__init__.py",
         "structure_generated/orders/runtime/schema_assert.py",
-        "structure_generated/orders/pyspark/schemas/schemas.py",
-        "structure_generated/orders/pyspark/transforms/transforms.py",
-        "structure_generated/orders/traceability/transforms/transforms.PublishOrders.json",
+        "structure_generated/orders/pyspark/schemas/common.py",
+        "structure_generated/orders/pyspark/schemas/customer.py",
+        "structure_generated/orders/pyspark/schemas/order.py",
+        "structure_generated/orders/pyspark/schemas/product.py",
+        "structure_generated/orders/pyspark/schemas/promotion.py",
+        "structure_generated/orders/pyspark/schemas/shipment.py",
+        "structure_generated/orders/pyspark/transforms/order.py",
+        "structure_generated/orders/traceability/transforms/order.EnrichOrders.json",
+        "structure_generated/orders/traceability/__init__.py",
+        "structure_generated/orders/traceability/transforms/__init__.py",
     ]
 
 
 def test_orders_example_generation_keeps_public_behavior_fragments_stable() -> None:
-    transform = render_orders_example()["structure_generated/orders/pyspark/transforms/transforms.py"]
+    transform = render_orders_example()["structure_generated/orders/pyspark/transforms/order.py"]
 
-    assert 'orders = orders.alias("order_raw")' in transform
-    assert 'orders = orders.where((F.col("order_raw.id").isNotNull())' in transform
-    assert 'F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0)).alias("total")' in transform
-    assert 'F.lit(\'ready\').alias("status")' in transform
+    assert "class EnrichOrdersGenerated:" in transform
+    assert "from orders.transforms.order import EnrichOrders" in transform
+    assert (
+        "orders = self._impl.use_current_orders(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)"
+        in transform
+    )
+    assert 'customers_joined = F.broadcast(customers.alias("customers"))' in transform
+    assert 'promotions_joined = promotions.alias("promotions")' in transform
+    assert 'published = self._impl.add_quality_columns(published=published, spark=self.spark, ctx=self.ctx)' in transform

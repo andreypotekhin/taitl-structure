@@ -13,15 +13,50 @@ EXAMPLES = Path("examples")
 
 def render_orders_example() -> dict[str, str]:
     with _example_imports():
-        from orders.schemas import OrderPublished, OrderRaw
-        from orders.transforms import PublishOrders
-
-        return PySpark.render.project()(
-            PySpark.plan.lower()(compile_transform(PublishOrders)),
-            source_transform="orders.transforms.PublishOrders",
-            generated_package="structure_generated.orders",
-            source_schema_modules={"orders.schemas": [OrderRaw, OrderPublished]},
+        from orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
+        from orders.schemas.customer import Customer
+        from orders.schemas.order import (
+            OrderNormalized,
+            OrderPublication,
+            OrderPublished,
+            OrderRaw,
+            OrderWithCustomer,
+            OrderWithProduct,
+            OrderWithPromotion,
+            PublicationFlags,
         )
+        from orders.schemas.product import Product
+        from orders.schemas.promotion import Promotion
+        from orders.schemas.shipment import Shipment
+        from orders.transforms.order import EnrichOrders
+
+        files = PySpark.render.project()(
+            PySpark.plan.lower()(compile_transform(EnrichOrders)),
+            source_transform="orders.transforms.order.EnrichOrders",
+            generated_package="structure_generated.orders",
+            source_schema_modules={
+                "orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
+                "orders.schemas.customer": [Customer],
+                "orders.schemas.order": [
+                    OrderRaw,
+                    OrderNormalized,
+                    OrderWithCustomer,
+                    OrderWithProduct,
+                    OrderWithPromotion,
+                    OrderPublication,
+                    PublicationFlags,
+                    OrderPublished,
+                ],
+                "orders.schemas.product": [Product],
+                "orders.schemas.promotion": [Promotion],
+                "orders.schemas.shipment": [Shipment],
+            },
+        )
+        files["structure_generated/orders/traceability/__init__.py"] = "# Generated traceability package marker.\n"
+        files["structure_generated/orders/traceability/transforms/__init__.py"] = (
+            "# Generated transform traceability package marker.\n"
+        )
+        return files
 
 
 def expected_orders_generated() -> dict[str, str]:
