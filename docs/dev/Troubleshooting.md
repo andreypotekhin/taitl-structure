@@ -116,3 +116,13 @@ Fix: Run the roots separately: `poetry run black --check src` and `poetry run bl
 `Makefile` uses separate invocations for both formatting and lint checks. If a previously timed-out Black process left
 the cache unusable, retry with a fresh temporary cache:
 `$env:BLACK_CACHE_DIR=Join-Path $env:TEMP 'structure-black-cache'; make build`.
+
+### Problem (mypy): `import-untyped` from a local package on macOS or Linux
+
+When: Running `poetry run mypy src tests` or `make build` on a case-sensitive filesystem.
+Error: Mypy reports `Skipping analyzing "...Capabilities": module is installed, but missing library stubs or py.typed marker`.
+Cause: A package `__init__.py` imports a local module with filename casing that does not match the real file on disk.
+Windows can hide this because its default filesystem is case-insensitive.
+Fix: Make the import path match the actual filename exactly. For example, import
+`structure.app.target.capabilities.api.capabilities` instead of
+`structure.app.target.capabilities.api.Capabilities`.
