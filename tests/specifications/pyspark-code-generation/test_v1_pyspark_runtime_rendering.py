@@ -1,6 +1,8 @@
 import sys
+from importlib.resources import files
 
 from structure.app.target.pyspark.api import PySpark
+from structure.app.target.pyspark.commands.RenderPySparkRuntimeModule import RESOURCE_PACKAGE, RUNTIME_MODULE_RESOURCE
 
 
 def test_v1_runtime_module_renderer_is_spark_free() -> None:
@@ -10,7 +12,15 @@ def test_v1_runtime_module_renderer_is_spark_free() -> None:
 
     after = {name for name in sys.modules if name.startswith("pyspark")}
     assert after == before
-    assert text.startswith("from pyspark.sql import functions as F\n")
+    assert "from pyspark.sql import functions as F\n" in text
+
+
+def test_v1_runtime_module_renderer_uses_packaged_resource() -> None:
+    text = PySpark.render.runtime()()
+    resource = files(RESOURCE_PACKAGE).joinpath(RUNTIME_MODULE_RESOURCE).read_text(encoding="utf-8")
+
+    assert text == resource
+    compile(text, RUNTIME_MODULE_RESOURCE, "exec")
 
 
 def test_v1_runtime_module_renderer_contains_schema_helpers_and_hook_inputs() -> None:

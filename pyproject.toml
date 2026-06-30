@@ -9,7 +9,10 @@ description = "Taitl Structure Library"
 authors = [ "Andrey <andrey1@taitl.com>" ]
 license = "LGPL-2.1 + Ethical Use Policy"
 readme = "Readme.md"
-include = [ "Readme.md" ]
+include = [
+    "Readme.md",
+    { path = "src/structure/app/target/pyspark/resources/runtime.py.template", format = [ "sdist", "wheel" ] },
+]
 packages = [
     { include = "structure", from = "src" },
 ]
