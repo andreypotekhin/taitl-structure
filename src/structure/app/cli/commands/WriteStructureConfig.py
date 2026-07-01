@@ -30,6 +30,7 @@ class WriteStructureConfig:
             'execution_mode = "online"',
             'target_backend = "pyspark"',
             'target_pyspark = ">=3.5,<4.1"',
+            'hook_target_default = ["pyspark"]',
             'traceability = "compiler"',
         ]
         if seed:

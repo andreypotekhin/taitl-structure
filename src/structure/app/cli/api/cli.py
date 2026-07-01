@@ -19,6 +19,8 @@ def _config_options(function):
         click.option("--execution-mode", type=click.Choice(["online", "generated"])),
         click.option("--target-backend"),
         click.option("--target-pyspark"),
+        click.option("--target-profile"),
+        click.option("--compat-targets"),
         click.option("--traceability", type=click.Choice(["none", "compiler", "columns", "debug"])),
         click.option("--fail-on-diff", is_flag=True, default=None),
     ]

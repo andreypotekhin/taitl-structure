@@ -33,6 +33,10 @@ class StructureConfigValidator:
 
         for key in ("generated_dir", "generated_package", "target_pyspark"):
             self._validate_type(values[key], key, str)
+        if values["target_profile"] is not None:
+            self._validate_type(values["target_profile"], "target_profile", str)
+        self._validate_string_list(values["compat_targets"], "compat_targets", "Use compat_targets = [\"polars\"].")
+        self._validate_hook_target_default(values["hook_target_default"])
         for key in self._bools:
             self._validate_type(values[key], key, bool)
         for key, allowed in self._enums.items():
@@ -77,6 +81,26 @@ class StructureConfigValidator:
             self._fail_invalid(
                 key, f"Expected {type_.__name__}, got {type(value).__name__}", f"Set {key} to a valid {type_.__name__}."
             )
+
+    def _validate_string_list(self, value: object, key: str, use: str) -> None:
+        self._validate_type(value, key, list)
+        if not all(isinstance(item, str) and item for item in cast(list[object], value)):
+            self._fail_invalid(key, f"{key} must be a list of non-empty strings", use)
+
+    def _validate_hook_target_default(self, value: object) -> None:
+        if value == "explicit":
+            return
+        if isinstance(value, str):
+            self._fail_invalid(
+                "hook_target_default",
+                "hook_target_default must be a list of backend names or explicit",
+                'Use hook_target_default = ["pyspark"].',
+            )
+        self._validate_string_list(
+            value,
+            "hook_target_default",
+            'Use hook_target_default = ["pyspark"] or hook_target_default = "explicit".',
+        )
 
     def _fail_invalid(self, setting: str, problem: str, use: str) -> None:
         raise ConfigError(ConfigDiagnostic(code="CONF-E0102", setting=setting, problem=problem, use=use))

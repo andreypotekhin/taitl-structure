@@ -16,4 +16,14 @@ class ExplainStructureTransform:
                 sys.path.insert(0, text)
         module_name, name = transform.rsplit(".", 1)
         module = importlib.import_module(module_name)
-        return (RenderExplainReport()(getattr(module, name)),)
+        report = RenderExplainReport()(getattr(module, name))
+        return (report, *self._compatibility(config))
+
+    def _compatibility(self, config: StructureConfig) -> tuple[str, ...]:
+        targets = tuple(target for target in config.compat_targets if target != "pyspark")
+        if not targets:
+            return ()
+        return (
+            f"compatibility targets: {', '.join(targets)}",
+            "compatibility status: non-PySpark target checks are reserved for v2+; active PySpark checks passed",
+        )

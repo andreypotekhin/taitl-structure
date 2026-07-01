@@ -9,6 +9,13 @@ class StructureConfigBuilder:
 
     def build(self, root: Path, values: Mapping[str, object], sources: Mapping[str, str]) -> StructureConfig:
         source_roots = cast(list[str], values["source_roots"])
+        compat_targets = cast(list[str], values["compat_targets"])
+        hook_target_default = values["hook_target_default"]
+        hook_targets = (
+            str(hook_target_default)
+            if isinstance(hook_target_default, str)
+            else tuple(cast(list[str], hook_target_default))
+        )
         return StructureConfig(
             project_root=root,
             source_roots=tuple((root / item).resolve() for item in source_roots),
@@ -17,6 +24,9 @@ class StructureConfigBuilder:
             execution_mode=str(values["execution_mode"]),
             target_backend=str(values["target_backend"]),
             target_pyspark=str(values["target_pyspark"]),
+            target_profile=None if values["target_profile"] is None else str(values["target_profile"]),
+            compat_targets=tuple(compat_targets),
+            hook_target_default=hook_targets,
             traceability=str(values["traceability"]),
             validate_inputs=bool(values["validate_inputs"]),
             input_validation_mode=str(values["input_validation_mode"]),
