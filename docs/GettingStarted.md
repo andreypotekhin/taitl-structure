@@ -122,7 +122,7 @@ class EnrichOrders(Transform):
         where(order.customer_id.is_not_null())
         where(order.product_id.is_not_null())
 
-        return OrderNormalized(
+        return OrderNormalized.project(order)(
             id=order.id,
             customer_id=self.clean_id(order.customer_id),
             product_id=self.clean_id(order.product_id),
@@ -149,7 +149,7 @@ class EnrichOrders(Transform):
         )
 ```
 
-## 5. Run Online
+## 5. Run Transform
 
 ```python
 from structure import StructureSession
@@ -162,20 +162,20 @@ result = EnrichOrders(
     customers=customers_df,
 ).run(session)
 
-enriched = result.enriched
+enriched_df = result.enriched
 ```
+Results are available as DataFrames in transform's declared outputs.
 
-Construction binds DataFrame inputs. Calling `.run(session)` executes the transform through the session's
-configured runtime runner.
+Use the next steps if you want generated PySpark code. 
 
-## 6. Check and Optionally Compile
+## 6. (Optional) Check and Compile
 
 ```bash
 structure check
 structure compile
 ```
 
-Generated files, when requested, appear under:
+Generated files will appear under:
 
 ```text
 generated/structure_generated/
@@ -186,7 +186,7 @@ generated/structure_generated/
   traceability/  # compiler metadata, not runtime telemetry
 ```
 
-## 7. Inspect Optional Generated PySpark
+## 7. (Optional) Inspect Generated PySpark
 
 Generated code is intentionally explicit.
 
@@ -237,10 +237,7 @@ class EnrichOrdersGenerated:
         return orders
 ```
 
-The Structure source is shorter and schema-oriented. The generated PySpark is longer, explicit, and
-reviewable.
-
-## 8. Use Generated Code
+## 8. (Optional) Use Generated Code
 
 ```python
 from structure_generated.orders.pyspark.transforms.order import EnrichOrdersGenerated
@@ -250,10 +247,12 @@ result = EnrichOrdersGenerated(spark=spark).run(
     customers=customers_df,
 )
 
-enriched = result.enriched
+enriched_df = result.enriched
 ```
 
-## 9. Use from Airflow
+## 9. Example use from Airflow
+
+We can run a Transform as part of Airflow or other orchestrator - no code generation needed.
 
 ```python
 from structure import StructureSession

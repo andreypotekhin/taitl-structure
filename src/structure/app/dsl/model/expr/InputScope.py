@@ -10,6 +10,7 @@ from structure.app.dsl.model.expr.RowScope import RowScope
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
+from structure.app.dsl.model.types.BooleanType import BooleanType
 
 
 class InputScope(RowScope):
@@ -78,6 +79,8 @@ def join_one(
         raise RuntimeError("join_one(...) can only be used inside a compiled Structure subtransform")
     if not isinstance(on, Expression):
         raise TypeError("join_one(on=...) requires a Structure expression")
+    if not isinstance(on.type, BooleanType):
+        raise TypeError("join_one(on=...) requires a boolean Structure expression")
     if relation is None:
         relation = cast(Relation, _infer_relation(context, on))
     if not isinstance(relation, InputScope):

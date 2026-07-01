@@ -23,11 +23,11 @@ class PySparkExpressionMapper:
             return "literal"
         if expression.kind in {"and", "or", "not", "is_null", "is_not_null"}:
             return "boolean_ops"
-        if expression.kind in {"eq", "ne", "gt"}:
+        if expression.kind in {"eq", "ne", "gt", "lt", "le", "ge"}:
             return "equality"
         if expression.kind == "null_safe_eq":
             return "null_safe_equality"
-        if expression.kind == "sub":
+        if expression.kind in {"add", "sub", "mul", "when"}:
             return "standard_helper_call"
         if expression.kind == "call":
             function = (expression.data or {}).get("function")

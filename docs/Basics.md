@@ -21,7 +21,6 @@ class EnrichOrders(Transform):
         where(order.id.is_not_null())
         return OrderNormalized(...)
 
-    @transform(input=normalized, output=enriched)
     def publish(self, order: OrderNormalized) -> OrderEnriched:
         return OrderEnriched.base(order)(...)
 ```
@@ -153,7 +152,12 @@ Example:
 
 ```python
 lower(trim(order.customer_id)) == "c-001"
+when(order.total >= 1000, "large").otherwise("standard")
 ```
+
+The v1 expression surface supports field references, Python literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`,
+`-`, `*`, boolean `&`, `|`, `~`, `is_null()`, `is_not_null()`, `null_safe_eq(...)`, `lower(...)`, `upper(...)`,
+`trim(...)`, `to_decimal(...)`, `coalesce(...)`, and `when(...).otherwise(...)`.
 
 ### Expression Helper
 

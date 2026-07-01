@@ -348,6 +348,22 @@
       "qualname": "trim",
       "signature": "(value: 'object') -> 'Expression'"
     },
+    "upper": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "upper",
+      "signature": "(value: 'object') -> 'Expression'"
+    },
+    "when": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "when",
+      "signature": "(condition: 'object', value: 'object') -> \"'WhenBuilder'\""
+    },
     "where": {
       "dataclass_fields": [],
       "enum_members": [],

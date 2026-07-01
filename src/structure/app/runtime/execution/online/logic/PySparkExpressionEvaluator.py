@@ -27,8 +27,23 @@ class PySparkExpressionEvaluator:
             return self._binary(expression, functions=functions, aliases=aliases, operator="ne")
         if expression.kind == "gt":
             return self._binary(expression, functions=functions, aliases=aliases, operator="gt")
+        if expression.kind == "lt":
+            return self._binary(expression, functions=functions, aliases=aliases, operator="lt")
+        if expression.kind == "le":
+            return self._binary(expression, functions=functions, aliases=aliases, operator="le")
+        if expression.kind == "ge":
+            return self._binary(expression, functions=functions, aliases=aliases, operator="ge")
+        if expression.kind == "add":
+            return self._binary(expression, functions=functions, aliases=aliases, operator="add")
         if expression.kind == "sub":
             return self._binary(expression, functions=functions, aliases=aliases, operator="sub")
+        if expression.kind == "mul":
+            return self._binary(expression, functions=functions, aliases=aliases, operator="mul")
+        if expression.kind == "when":
+            condition, value, fallback = (
+                self.evaluate(argument, functions=functions, aliases=aliases) for argument in expression.args
+            )
+            return functions.when(condition, value).otherwise(fallback)
         if expression.kind == "null_safe_eq":
             left, right = expression.args
             return self.evaluate(left, functions=functions, aliases=aliases).eqNullSafe(
@@ -45,6 +60,8 @@ class PySparkExpressionEvaluator:
             return functions.lower(args[0])
         if function == "trim":
             return functions.trim(args[0])
+        if function == "upper":
+            return functions.upper(args[0])
         if function == "coalesce":
             return functions.coalesce(*args)
         if function == "to_decimal":
@@ -65,6 +82,16 @@ class PySparkExpressionEvaluator:
             return left != right
         if operator == "gt":
             return left > right
+        if operator == "lt":
+            return left < right
+        if operator == "le":
+            return left <= right
+        if operator == "ge":
+            return left >= right
+        if operator == "add":
+            return left + right
         if operator == "sub":
             return left - right
+        if operator == "mul":
+            return left * right
         raise TypeError(f"Unsupported PySpark binary operator: {operator}")

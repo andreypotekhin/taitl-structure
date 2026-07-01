@@ -1,4 +1,6 @@
-from structure import String, Structure, Transform, field, input, output, transform
+from typing import Any, cast
+
+from structure import Boolean, Integer, String, Structure, Transform, field, input, output, transform, trim, upper, when
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
@@ -79,3 +81,58 @@ def test_v1_expression_renderer_passes_field_aliases_to_spark() -> None:
     expression = recipe.steps[0].projection[0].expression
 
     assert PySpark.render.expression()(expression, scope_aliases={"rows": "rows"}) == 'F.col("rows.promo-code")'
+
+
+def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> None:
+    class Raw(Structure):
+        customer_id = field(String(), nullable=False)
+        total = field(Integer(), nullable=False)
+        tax = field(Integer(), nullable=False)
+        price = field(Integer(), nullable=False)
+        quantity = field(Integer(), nullable=False)
+
+    class Published(Structure):
+        customer_id = field(String(), nullable=False)
+        size_tier = field(String(), nullable=False)
+        is_big = field(Boolean(), nullable=False)
+        is_small = field(Boolean(), nullable=False)
+        is_at_most_sample = field(Boolean(), nullable=False)
+        total_with_tax = field(Integer(), nullable=False)
+        line_total = field(Integer(), nullable=False)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            order = cast(Any, row)
+            return Published(
+                customer_id=upper(trim(order.customer_id)),
+                size_tier=when(order.total >= 1000, "large").otherwise("standard"),
+                is_big=order.total >= 1000,
+                is_small=order.total < 100,
+                is_at_most_sample=order.total <= 100,
+                total_with_tax=order.total + order.tax,
+                line_total=order.price * order.quantity,
+            )
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["customer_id"], scope_aliases={"rows": "orders"}) == 'F.upper(F.trim(F.col("orders.customer_id")))'
+    assert render(projection["size_tier"], scope_aliases={"rows": "orders"}) == (
+        'F.when((F.col("orders.total") >= F.lit(1000)), F.lit(\'large\')).otherwise(F.lit(\'standard\'))'
+    )
+    assert render(projection["is_big"], scope_aliases={"rows": "orders"}) == '(F.col("orders.total") >= F.lit(1000))'
+    assert render(projection["is_small"], scope_aliases={"rows": "orders"}) == '(F.col("orders.total") < F.lit(100))'
+    assert render(projection["is_at_most_sample"], scope_aliases={"rows": "orders"}) == (
+        '(F.col("orders.total") <= F.lit(100))'
+    )
+    assert render(projection["total_with_tax"], scope_aliases={"rows": "orders"}) == (
+        '(F.col("orders.total") + F.col("orders.tax"))'
+    )
+    assert render(projection["line_total"], scope_aliases={"rows": "orders"}) == (
+        '(F.col("orders.price") * F.col("orders.quantity"))'
+    )

@@ -31,6 +31,8 @@ from structure.app.dsl.api import (
     to_decimal,
     transform,
     trim,
+    upper,
+    when,
     where,
 )
 from structure.app.runtime.api import (
@@ -81,5 +83,7 @@ __all__ = [
     "to_decimal",
     "transform",
     "trim",
+    "upper",
+    "when",
     "where",
 ]

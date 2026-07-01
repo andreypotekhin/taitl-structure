@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import date, datetime
 
 from structure.app.dsl.model.expr.Expression import Expression
@@ -16,6 +17,9 @@ from structure.app.dsl.model.types.TimestampType import TimestampType
 def literal(value: object) -> Expression:
     if isinstance(value, Expression):
         return value
+
+    if isinstance(value, WhenBuilder):
+        raise TypeError("when(...) must end with .otherwise(...) before it can be used as an expression")
 
     if isinstance(value, bool):
         return Expression(kind="literal", type=BooleanType(), nullable=False, data={"value": value})
@@ -56,6 +60,13 @@ def trim(value: object) -> Expression:
     )
 
 
+def upper(value: object) -> Expression:
+    argument = literal(value)
+    return Expression(
+        kind="call", type=argument.type, nullable=argument.nullable, data={"function": "upper"}, args=(argument,)
+    )
+
+
 def to_decimal(value: object, *, precision: int, scale: int) -> Expression:
     argument = literal(value)
     return Expression(
@@ -71,3 +82,25 @@ def coalesce(*values: object) -> Expression:
     arguments = tuple(literal(value) for value in values)
     result_type = next((argument.type for argument in arguments if argument.type is not None), None)
     return Expression(kind="call", type=result_type, nullable=False, data={"function": "coalesce"}, args=arguments)
+
+
+def when(condition: object, value: object) -> "WhenBuilder":
+    predicate = literal(condition)
+    if not isinstance(predicate.type, BooleanType):
+        raise TypeError("when(...) requires a boolean Structure expression as its condition")
+    return WhenBuilder(condition=predicate, value=literal(value))
+
+
+@dataclass(frozen=True)
+class WhenBuilder:
+    condition: Expression
+    value: Expression
+
+    def otherwise(self, fallback: object) -> Expression:
+        alternative = literal(fallback)
+        return Expression(
+            kind="when",
+            type=self.value.type or alternative.type,
+            nullable=self.value.nullable or alternative.nullable,
+            args=(self.condition, self.value, alternative),
+        )

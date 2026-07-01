@@ -38,8 +38,24 @@ class RenderPySparkExpression:
             return self._binary(expression, aliases, "!=")
         if expression.kind == "gt":
             return self._binary(expression, aliases, ">")
+        if expression.kind == "lt":
+            return self._binary(expression, aliases, "<")
+        if expression.kind == "le":
+            return self._binary(expression, aliases, "<=")
+        if expression.kind == "ge":
+            return self._binary(expression, aliases, ">=")
+        if expression.kind == "add":
+            return self._binary(expression, aliases, "+")
         if expression.kind == "sub":
             return self._binary(expression, aliases, "-")
+        if expression.kind == "mul":
+            return self._binary(expression, aliases, "*")
+        if expression.kind == "when":
+            condition, value, fallback = expression.args
+            return (
+                f"F.when({self._render(condition, aliases)}, {self._render(value, aliases)})"
+                f".otherwise({self._render(fallback, aliases)})"
+            )
         if expression.kind == "null_safe_eq":
             left, right = expression.args
             return f"{self._render(left, aliases)}.eqNullSafe({self._render(right, aliases)})"
@@ -60,6 +76,8 @@ class RenderPySparkExpression:
             return f"F.lower({args[0]})"
         if function == "trim":
             return f"F.trim({args[0]})"
+        if function == "upper":
+            return f"F.upper({args[0]})"
         if function == "coalesce":
             return f"F.coalesce({', '.join(args)})"
         if function == "to_decimal":

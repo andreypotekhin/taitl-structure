@@ -389,6 +389,27 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 
 Generated code prefers explicit projection over `drop(...)` so the output schema is deterministic.
 
+## Expressions
+
+Structure expressions are compiler-visible and lower to Spark Column expressions. Use Python literals and the supported
+operators directly:
+
+```python
+def add_flags(self, order: OrderRaw) -> OrderWithFlags:
+    total = to_decimal(order.total, precision=12, scale=2)
+    return OrderWithFlags(
+        customer_id=upper(trim(order.customer_id)),
+        size_tier=when(total >= 1000, "large").otherwise("standard"),
+        is_small=total < 100,
+        total_with_tax=total + order.tax,
+        line_total=order.price * order.quantity,
+    )
+```
+
+Supported v1 expression forms are field references, literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `*`,
+boolean `&`, `|`, `~`, null checks, `null_safe_eq(...)`, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`,
+`coalesce(...)`, and `when(...).otherwise(...)`.
+
 ## Expression Helpers
 
 Use `@expr_fn` for reusable compileable expressions.

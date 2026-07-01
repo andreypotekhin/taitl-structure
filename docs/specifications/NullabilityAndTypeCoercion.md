@@ -116,6 +116,9 @@ Null-aware helpers have specific rules:
 Spark's SQL null semantics remain the inspiration for generated behavior. Normal comparisons involving null may produce
 null, while null-safe equality is a separate explicit operation if supported.
 
+Basic row-local arithmetic in v1 supports `+`, `-`, and `*`. Result typing is intentionally conservative and follows
+the left operand's Structure type until fuller numeric result formulas are specified.
+
 ## Filter Narrowing
 
 `where(expr.is_not_null())` narrows a simple field reference after the filter in the same subtransform:

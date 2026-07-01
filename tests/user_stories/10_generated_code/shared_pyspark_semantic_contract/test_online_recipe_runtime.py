@@ -70,12 +70,22 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
         (_binary("eq", _field(RawOrder, "id"), _literal("A-1")), "(col(orders.id) == lit('A-1'))"),
         (_binary("ne", _field(RawOrder, "status"), _literal("cancelled")), "(col(orders.status) != lit('cancelled'))"),
         (_binary("gt", _field(RawOrder, "id"), _literal("A-1")), "(col(orders.id) > lit('A-1'))"),
+        (_binary("lt", _field(RawOrder, "id"), _literal("A-1")), "(col(orders.id) < lit('A-1'))"),
+        (_binary("le", _field(RawOrder, "id"), _literal("A-1")), "(col(orders.id) <= lit('A-1'))"),
+        (_binary("ge", _field(RawOrder, "id"), _literal("A-1")), "(col(orders.id) >= lit('A-1'))"),
+        (_binary("add", _field(RawOrder, "id"), _literal("A-1")), "(col(orders.id) + lit('A-1'))"),
         (_binary("sub", _field(RawOrder, "id"), _literal("A-1")), "(col(orders.id) - lit('A-1'))"),
+        (_binary("mul", _field(RawOrder, "id"), _literal("A-1")), "(col(orders.id) * lit('A-1'))"),
         (
             _binary("null_safe_eq", _field(RawOrder, "status"), _literal(None)),
             "col(orders.status).eqNullSafe(lit(None))",
         ),
         (_not(_is_null(_field(RawOrder, "status"))), "~(col(orders.status).isNull())"),
+        (_call("upper", _call("trim", _field(RawOrder, "status"))), "upper(trim(col(orders.status)))"),
+        (
+            _when(_binary("ge", _field(RawOrder, "id"), _literal("M")), _literal("large"), _literal("standard")),
+            "when((col(orders.id) >= lit('M')), lit('large')).otherwise(lit('standard'))",
+        ),
         (_to_decimal(_field(RawOrder, "status"), precision=12, scale=2), "cast(col(orders.status) as decimal(12,2))"),
     ]
 
@@ -566,6 +576,14 @@ def _binary(kind: str, left: PySparkExpressionRecipe, right: PySparkExpressionRe
     return PySparkExpressionRecipe(kind, left.type, False, {}, (left, right))
 
 
+def _when(
+    condition: PySparkExpressionRecipe,
+    value: PySparkExpressionRecipe,
+    fallback: PySparkExpressionRecipe,
+) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe("when", value.type, value.nullable or fallback.nullable, {}, (condition, value, fallback))
+
+
 def _hook(
     name: str,
     *,
@@ -666,8 +684,14 @@ class FakeFunctions(ModuleType):
     def trim(self, column):
         return FakeColumn(f"trim({column.expression})", source_name=column.source_name)
 
+    def upper(self, column):
+        return FakeColumn(f"upper({column.expression})", source_name=column.source_name)
+
     def coalesce(self, *columns):
         return FakeColumn("coalesce(" + ",".join(column.expression for column in columns) + ")")
+
+    def when(self, condition, value):
+        return FakeWhen(condition, value)
 
     def broadcast(self, frame):
         return frame.with_operation("broadcast")
@@ -709,11 +733,37 @@ class FakeColumn:
     def __gt__(self, other):
         return FakeColumn(f"({self.expression} > {other.expression})")
 
+    def __lt__(self, other):
+        return FakeColumn(f"({self.expression} < {other.expression})")
+
+    def __le__(self, other):
+        return FakeColumn(f"({self.expression} <= {other.expression})")
+
+    def __ge__(self, other):
+        return FakeColumn(f"({self.expression} >= {other.expression})")
+
+    def __add__(self, other):
+        return FakeColumn(f"({self.expression} + {other.expression})", self.source_name)
+
     def __sub__(self, other):
         return FakeColumn(f"({self.expression} - {other.expression})", self.source_name)
 
+    def __mul__(self, other):
+        return FakeColumn(f"({self.expression} * {other.expression})", self.source_name)
+
     def __invert__(self):
         return FakeColumn(f"~({self.expression})")
+
+
+@dataclass(frozen=True)
+class FakeWhen:
+    condition: FakeColumn
+    value: FakeColumn
+
+    def otherwise(self, fallback: FakeColumn):
+        return FakeColumn(
+            f"when({self.condition.expression}, {self.value.expression}).otherwise({fallback.expression})"
+        )
 
 
 @dataclass(frozen=True)

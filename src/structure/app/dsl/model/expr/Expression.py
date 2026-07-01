@@ -65,11 +65,35 @@ class Expression:
     def __ne__(self, other: object) -> "Expression":  # type: ignore[override]
         return self._binary("ne", other, type=BooleanType())
 
+    def __add__(self, other: object) -> "Expression":
+        return self._binary("add", other, type=self.type, nullable=self.nullable)
+
+    def __radd__(self, other: object) -> "Expression":
+        return self._reverse_binary("add", other, type=self.type, nullable=self.nullable)
+
     def __sub__(self, other: object) -> "Expression":
         return self._binary("sub", other, type=self.type, nullable=self.nullable)
 
+    def __rsub__(self, other: object) -> "Expression":
+        return self._reverse_binary("sub", other, type=self.type, nullable=self.nullable)
+
+    def __mul__(self, other: object) -> "Expression":
+        return self._binary("mul", other, type=self.type, nullable=self.nullable)
+
+    def __rmul__(self, other: object) -> "Expression":
+        return self._reverse_binary("mul", other, type=self.type, nullable=self.nullable)
+
     def __gt__(self, other: object) -> "Expression":
         return self._binary("gt", other, type=BooleanType())
+
+    def __lt__(self, other: object) -> "Expression":
+        return self._binary("lt", other, type=BooleanType())
+
+    def __le__(self, other: object) -> "Expression":
+        return self._binary("le", other, type=BooleanType())
+
+    def __ge__(self, other: object) -> "Expression":
+        return self._binary("ge", other, type=BooleanType())
 
     def __bool__(self) -> bool:
         raise TypeError("Structure expressions cannot be used as Python booleans. Use where(...), &, |, or ~.")
@@ -85,3 +109,15 @@ class Expression:
         from structure.app.dsl.model.expr.expressions import literal
 
         return Expression(kind=kind, type=type, nullable=nullable, args=(self, literal(other)))
+
+    def _reverse_binary(
+        self,
+        kind: str,
+        other: object,
+        *,
+        type: StructureType | None = None,
+        nullable: bool = False,
+    ) -> "Expression":
+        from structure.app.dsl.model.expr.expressions import literal
+
+        return Expression(kind=kind, type=type, nullable=nullable, args=(literal(other), self))

@@ -17,6 +17,7 @@ from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.app.dsl.model.transforms.Transform import Transform
+from structure.app.dsl.model.types.BooleanType import BooleanType
 
 Projected = TypeVar("Projected", bound=Structure)
 
@@ -298,6 +299,8 @@ def where(predicate: object) -> "WhereChain":
     if context is None:
         raise RuntimeError("where(...) can only be used inside a compiled Structure subtransform")
     expression = literal(predicate)
+    if not isinstance(expression.type, BooleanType):
+        raise TypeError("where(...) requires a boolean Structure expression")
     context.filters.append(expression)
     context.operations.append(OperationPlan.filter_operation(expression))
     return WhereChain()

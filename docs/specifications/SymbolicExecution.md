@@ -105,6 +105,7 @@ The v1 symbolic engine must support these source forms inside compiled subtransf
 ```python
 order.id
 lower(trim(order.customer_id))
+upper(trim(order.customer_id))
 where(order.id.is_not_null())
 join_one(on=order.customer_id == self.customers.id, how=Join.LEFT)
 OrderNormalized(id=order.id)
@@ -117,6 +118,7 @@ The engine must also support literals accepted by `NullabilityAndTypeCoercion.md
 coalesce(order.total, "0")
 coalesce(to_decimal(order.total, precision=12, scale=2), 0)
 when(order.total.is_null(), 0).otherwise(order.total)
+when(order.total >= 1000, "large").otherwise("standard")
 ```
 
 Public examples should use these forms. Source-level `F.col`, `F.lit`, PySpark `Column` methods, Python string methods
@@ -286,7 +288,9 @@ WhenExpr
 Rules:
 
 - Python literals in expression positions become `Literal` nodes.
-- Comparison operators on expressions create `BinaryExpr` or equivalent comparison nodes.
+- Comparison operators `==`, `!=`, `<`, `<=`, `>`, and `>=` on expressions create `BinaryExpr` or equivalent
+  comparison nodes.
+- Basic row-local arithmetic `+`, `-`, and `*` on expressions creates binary expression nodes.
 - `&`, `|`, and `~` on boolean expressions create boolean expression nodes.
 - Python `and`, `or`, and `not` must fail because they ask Python for truthiness.
 - Symbolic expressions must not implement truthiness. `if order.id:` and `order.id and order.customer_id` must raise
@@ -296,8 +300,8 @@ Rules:
 
 ## Expression Helpers
 
-Public DSL helpers such as `lower(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and `when(...)` create
-symbolic call expressions when any argument is symbolic.
+Public DSL helpers such as `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and
+`when(...).otherwise(...)` create symbolic expressions when any argument is symbolic.
 
 Rules:
 
@@ -690,7 +694,7 @@ The following are outside v1 symbolic execution scope:
 4. Implement row proxy field access and unknown-field diagnostics.
 5. Implement `FieldRef` expression metadata with scope, type, nullability, field origin, and source context.
 6. Implement literal normalization for accepted Python literal values.
-7. Implement expression operators for comparison, boolean `&`, boolean `|`, and boolean `~`.
+7. Implement expression operators for comparisons, basic arithmetic, boolean `&`, boolean `|`, and boolean `~`.
 8. Reject expression truthiness and unsupported Python boolean operators with actionable diagnostics.
 9. Implement public DSL helper calls as symbolic `CallExpr` or equivalent expression nodes.
 10. Implement `@expr_fn` module-level and class-local symbolic expansion.

@@ -1,6 +1,24 @@
+from typing import Any, cast
+
 import pytest
 
-from structure import String, Structure, StructureCompileError, Transform, field, input, output, transform
+from structure import (
+    Boolean,
+    Integer,
+    String,
+    Structure,
+    StructureCompileError,
+    Transform,
+    field,
+    input,
+    join_one,
+    output,
+    transform,
+    trim,
+    upper,
+    when,
+    where,
+)
 from structure.app.dsl.api import compile_transform
 
 
@@ -102,3 +120,126 @@ def test_unsupported_python_control_flow_is_rejected() -> None:
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "unsupported symbolic code" in raised.value.diagnostic.problem_text()
+
+
+def test_plain_python_expression_extensions_are_symbolic() -> None:
+    """I can use common Python expression forms for compiler-visible derived fields."""
+
+    class Raw(Structure):
+        customer_id = field(String(), nullable=False)
+        total = field(Integer(), nullable=False)
+        tax = field(Integer(), nullable=False)
+        price = field(Integer(), nullable=False)
+        quantity = field(Integer(), nullable=False)
+
+    class Published(Structure):
+        customer_id = field(String(), nullable=False)
+        size_tier = field(String(), nullable=False)
+        is_big = field(Boolean(), nullable=False)
+        is_small = field(Boolean(), nullable=False)
+        total_with_tax = field(Integer(), nullable=False)
+        line_total = field(Integer(), nullable=False)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            order = cast(Any, row)
+            return Published(
+                customer_id=upper(trim(order.customer_id)),
+                size_tier=when(order.total >= 1000, "large").otherwise("standard"),
+                is_big=order.total >= 1000,
+                is_small=order.total < 100,
+                total_with_tax=order.total + order.tax,
+                line_total=order.price * order.quantity,
+            )
+
+    projection = {assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection}
+
+    assert projection["customer_id"].data == {"function": "upper"}
+    assert projection["customer_id"].args[0].data == {"function": "trim"}
+    assert projection["size_tier"].kind == "when"
+    assert projection["size_tier"].args[0].kind == "ge"
+    assert projection["is_big"].kind == "ge"
+    assert projection["is_small"].kind == "lt"
+    assert projection["total_with_tax"].kind == "add"
+    assert projection["line_total"].kind == "mul"
+
+
+def test_where_requires_boolean_expression() -> None:
+    """Filters reject non-boolean expressions before target lowering."""
+
+    class Raw(Structure):
+        total = field(Integer(), nullable=False)
+
+    class Published(Structure):
+        total = field(Integer(), nullable=False)
+
+    @transform
+    class BadFilter(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            where(row.total)
+            return Published(total=row.total)
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(BadFilter)
+
+    assert raised.value.diagnostic.code == "DSL-E0401"
+    assert "where(...) requires a boolean Structure expression" in raised.value.diagnostic.problem_text()
+
+
+def test_join_one_requires_boolean_expression() -> None:
+    """Join predicates reject non-boolean expressions before target lowering."""
+
+    class Raw(Structure):
+        id = field(String(), nullable=False)
+        total = field(Integer(), nullable=False)
+
+    class Lookup(Structure):
+        id = field(String(), nullable=False)
+
+    class Published(Structure):
+        id = field(String(), nullable=False)
+
+    @transform
+    class BadJoin(Transform):
+        rows = input(Raw)
+        lookups = input(Lookup)
+        published = output(Published)
+
+        def publish(self, row: Raw, lookup: Lookup) -> Published:
+            join_one(lookup, on=row.total)
+            return Published(id=row.id)
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(BadJoin)
+
+    assert raised.value.diagnostic.code == "DSL-E0401"
+    assert "join_one(on=...) requires a boolean Structure expression" in raised.value.diagnostic.problem_text()
+
+
+def test_bare_when_requires_otherwise() -> None:
+    """A conditional expression is complete only after otherwise(...)."""
+
+    class Raw(Structure):
+        total = field(Integer(), nullable=False)
+
+    class Published(Structure):
+        size_tier = field(String(), nullable=False)
+
+    @transform
+    class BadWhen(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            order = cast(Any, row)
+            return Published(size_tier=when(order.total >= 1000, "large"))
+
+    with pytest.raises(TypeError, match=r"when\(\.\.\.\) must end with \.otherwise\(\.\.\.\)"):
+        compile_transform(BadWhen)
