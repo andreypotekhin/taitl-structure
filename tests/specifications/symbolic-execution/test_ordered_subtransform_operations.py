@@ -4,6 +4,7 @@ import pytest
 
 from structure import (
     Join,
+    JoinStrategy,
     String,
     Structure,
     StructureCompileError,
@@ -16,7 +17,7 @@ from structure import (
     transform,
     where,
 )
-from structure.app.compiler.api import OperationCardinality, StreamingSupport
+from structure.app.compiler.api import Compiler, OperationCardinality, StreamingSupport
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
@@ -208,6 +209,47 @@ def test_not_exists_join_records_row_filtering_operation() -> None:
     assert step.operations[0].capability.name == "not_exists"
     assert step.operations[0].cardinality is OperationCardinality.ROW_FILTERING
     assert '"left_anti"' in text
+
+
+def test_join_many_records_row_multiplying_operation() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            item = cast(Any, product).join_many(
+                on=product.id == order.product_id,
+                how=Join.INNER,
+                strategy=JoinStrategy.SHUFFLE_HASH,
+            )
+            return Enriched(id=order.id, product_name=item.name)
+
+    plan = compile_transform(AddProduct)
+    step = plan.steps[0]
+    recipe_plan = PySpark.plan.lower()(plan)
+    recipe = recipe_plan.steps[0]
+    text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
+    traceability = Compiler.traceability.build()(
+        recipe_plan,
+        source_transform=f"{AddProduct.__module__}.AddProduct",
+        transform_module="generated.transforms.add_product",
+    )
+    dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
+
+    assert len(step.joins) == 1
+    assert step.joins[0].method is JoinMethod.MANY
+    assert step.joins[0].strategy is JoinStrategy.SHUFFLE_HASH
+    assert step.operations[0].kind == "join"
+    assert step.operations[0].join == step.joins[0]
+    assert step.operations[0].capability is not None
+    assert step.operations[0].capability.name == "join_many"
+    assert step.operations[0].cardinality is OperationCardinality.ROW_MULTIPLYING
+    assert '.hint("shuffle_hash").alias("products")' in text
+    assert '"inner"' in text
+    assert dependencies["add_product.join[1].product"].operation == "join_many"
+    assert dependencies["add_product.join[1].product"].detail["cardinality"] == "row_multiplying"
 
 
 def test_exists_join_does_not_make_relation_fields_readable() -> None:

@@ -1,6 +1,6 @@
 import sys
 
-from structure.app.target.capabilities.api import BackendCapabilityError, Capabilities, CapabilityRequirement
+from structure.app.target.capabilities.api import Capabilities, CapabilityRequirement
 
 
 def test_default_pyspark_support_range_resolves_without_importing_pyspark() -> None:
@@ -24,18 +24,10 @@ def test_v1_backend_profile_accepts_supported_lookup_joins() -> None:
     assert decision.code == ""
 
 
-def test_v2_join_many_remains_an_explicit_unsupported_capability() -> None:
-    """Unsupported v2 capabilities produce backend diagnostics."""
+def test_v2_join_many_is_supported_by_the_default_pyspark_profile() -> None:
+    """The PySpark backend profile supports v2 row-multiplying joins."""
 
-    try:
-        Capabilities.resolve()().require(CapabilityRequirement(group="join", name="join_many"))
-    except BackendCapabilityError as error:
-        diagnostic = error.diagnostic
-    else:
-        raise AssertionError("join_many should not be supported by the v1 PySpark profile")
+    decision = Capabilities.resolve()().require(CapabilityRequirement(group="join", name="join_many"))
 
-    assert diagnostic.code == "BACKEND-E2402"
-    assert diagnostic.backend == "pyspark"
-    assert diagnostic.target == ">=3.5,<4.1"
-    assert diagnostic.feature_group == "join"
-    assert diagnostic.feature_name == "join_many"
+    assert decision.supported
+    assert decision.code == ""

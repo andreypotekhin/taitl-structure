@@ -29,6 +29,7 @@ V1_CAPABILITIES = frozenset(
         ("join", "join_one"),
         ("join", "exists"),
         ("join", "not_exists"),
+        ("join", "join_many"),
         ("join", "left_join"),
         ("join", "inner_join"),
         ("join", "left_semi_join"),

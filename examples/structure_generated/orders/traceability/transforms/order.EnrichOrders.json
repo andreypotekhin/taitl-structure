@@ -1011,6 +1011,7 @@
       },
       {
         "detail": {
+          "cardinality": "select_one",
           "hint": "broadcast",
           "how": "left",
           "right_alias": "customers"
@@ -1249,11 +1250,12 @@
       },
       {
         "detail": {
+          "cardinality": "row_filtering",
           "hint": null,
           "how": "inner",
           "right_alias": "products"
         },
-        "operation": "join_one",
+        "operation": "exists",
         "sources": [
           "product.tenant.tenant_id",
           "order.tenant.tenant_id",
@@ -1265,11 +1267,12 @@
       },
       {
         "detail": {
+          "cardinality": "row_filtering",
           "hint": null,
           "how": "inner",
           "right_alias": "blocked_products_2"
         },
-        "operation": "join_one",
+        "operation": "not_exists",
         "sources": [
           "blocked_product.tenant.tenant_id",
           "order.tenant.tenant_id",
@@ -1281,6 +1284,7 @@
       },
       {
         "detail": {
+          "cardinality": "select_one",
           "hint": null,
           "how": "left",
           "right_alias": "products_3"
@@ -1552,6 +1556,7 @@
       },
       {
         "detail": {
+          "cardinality": "select_one",
           "hint": null,
           "how": "left",
           "right_alias": "promotions"

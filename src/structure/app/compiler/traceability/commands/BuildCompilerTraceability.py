@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.compiler.traceability.logic.CompilerDataflowReads import CompilerDataflowReads
 from structure.app.compiler.traceability.model.CompilerProvenance import CompilerProvenance
 from structure.app.compiler.traceability.model.CompilerTraceability import CompilerTraceability
@@ -287,16 +288,30 @@ class BuildCompilerTraceability:
             DataflowDependency(
                 target=f"{step.name}.join[{join.occurrence}].{join.input_name}",
                 sources=self._dataflow.reads(join.predicate),
-                operation="join_one",
+                operation=join.method.value,
                 step=step.name,
-                detail={
-                    "hint": join.hint.value if join.hint is not None else None,
-                    "how": join.how.value,
-                    "right_alias": join.right_alias,
-                },
+                detail=self._join_detail(join),
             )
             for join in step.joins
         )
+
+    def _join_detail(self, join) -> dict[str, str | None]:
+        detail = {
+            "cardinality": self._join_cardinality(join.method),
+            "hint": join.hint.value if join.hint is not None else None,
+            "how": join.how.value,
+            "right_alias": join.right_alias,
+        }
+        if join.strategy is not None:
+            detail["strategy"] = join.strategy.value
+        return detail
+
+    def _join_cardinality(self, method: JoinMethod) -> str:
+        if method in {JoinMethod.EXISTS, JoinMethod.NOT_EXISTS}:
+            return "row_filtering"
+        if method is JoinMethod.MANY:
+            return "row_multiplying"
+        return "select_one"
 
     def _projection_dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
         return tuple(

@@ -6,6 +6,7 @@ from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
+from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 
 
@@ -21,3 +22,4 @@ class PySparkJoinRecipe:
     predicate: PySparkExpressionRecipe
     occurrence: int
     method: JoinMethod = JoinMethod.ONE
+    strategy: JoinStrategy | None = None

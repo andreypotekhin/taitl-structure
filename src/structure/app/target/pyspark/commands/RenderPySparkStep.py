@@ -124,7 +124,10 @@ class RenderPySparkStep:
         target: str,
     ) -> list[str]:
         source = sources.get(join.source, join.source)
-        right = f'{source}.alias("{join.right_alias}")'
+        right = source
+        if join.strategy is not None:
+            right = f'{right}.hint("{join.strategy.value}")'
+        right = f'{right}.alias("{join.right_alias}")'
         if join.hint is not None and join.hint.value == "broadcast":
             right = f"F.broadcast({right})"
         predicate = render_pyspark_expression(join.predicate, scope_aliases=self._scope_aliases(step, join))

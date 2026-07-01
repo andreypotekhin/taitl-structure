@@ -7,6 +7,7 @@ from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
+from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
 
 
 @dataclass(frozen=True)
@@ -17,4 +18,5 @@ class JoinPlan:
     predicate: Expression
     how: Join
     hint: JoinHint | None = None
+    strategy: JoinStrategy | None = None
     method: JoinMethod = JoinMethod.ONE

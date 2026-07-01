@@ -70,9 +70,9 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
 2. + Implement `exists(...)` and `not_exists(...)` symbolic predicates.
 3. + Lower existence joins through shared PySpark recipes.
 4. + Add no-Spark online/generated semantic-contract tests for existence joins.
-5. Implement `join_many(...)` symbolic scope and IR.
-6. Lower `join_many(...)` through shared PySpark recipes.
-7. Add row multiplication parity tests.
+5. + Implement `join_many(...)` symbolic scope and IR.
+6. + Lower `join_many(...)` through shared PySpark recipes.
+7. + Add row multiplication parity tests.
 8. Add deterministic dedupe policy objects and checks.
 9. Add deduped `join_one(...)` recipe lowering and parity tests.
 10. Implement `temporal_one(...)` closed-open validity-window lookups.
@@ -88,6 +88,8 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
   capability support, and the no-right-field-read guardrail.
 - [x] (2026-07-01) Extended v2 model fixtures and examples with product-existence and blocked-product anti-existence
   filters.
+- [x] (2026-07-01) Implemented `join_many(...)` as a row-multiplying `JoinPlan`, lowered it through shared PySpark
+  recipes, rendered join strategy hints, and covered generated/online recipe parity without live Spark.
 
 ## Acceptance Criteria
 

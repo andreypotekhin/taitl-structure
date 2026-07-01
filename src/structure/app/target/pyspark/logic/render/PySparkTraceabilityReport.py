@@ -65,14 +65,7 @@ class PySparkTraceabilityReport:
             "after_hooks": [hook.name for hook in step.after_hooks],
             "before_hooks": [hook.name for hook in step.before_hooks],
             "input_alias": step.input_alias,
-            "joins": [
-                {
-                    "how": join.how.value,
-                    "input": join.input_name,
-                    "right_alias": join.right_alias,
-                }
-                for join in step.joins
-            ],
+            "joins": [self._join(join) for join in step.joins],
             "name": step.name,
             "output_alias": step.output_alias,
             "output_schema": step.output_schema.__name__,
@@ -95,3 +88,13 @@ class PySparkTraceabilityReport:
                 for validation in step.validations
             ],
         }
+
+    def _join(self, join) -> dict[str, str]:
+        data = {
+            "how": join.how.value,
+            "input": join.input_name,
+            "right_alias": join.right_alias,
+        }
+        if join.strategy is not None:
+            data["strategy"] = join.strategy.value
+        return data

@@ -203,7 +203,10 @@ class RunOnlinePySparkTransform:
         return df
 
     def _join(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, join, *, frames, functions):
-        right = frames[join.source].alias(join.right_alias)
+        right = frames[join.source]
+        if join.strategy is not None:
+            right = right.hint(join.strategy.value)
+        right = right.alias(join.right_alias)
         if join.hint is not None and join.hint.value == "broadcast":
             right = functions.broadcast(right)
         predicate = self._expressions.evaluate(

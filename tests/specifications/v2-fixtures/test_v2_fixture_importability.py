@@ -5,7 +5,7 @@ from typing import Any, cast
 
 import pytest
 
-from structure import Long, String, Structure, Transform, count, field, group_by, input, output, transform
+from structure import JoinStrategy, Long, String, Structure, Transform, count, field, group_by, input, output, transform
 from structure.app.compiler.api import OperationCardinality
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.api import compile_transform
@@ -51,6 +51,23 @@ def test_v2_order_fixture_records_supported_existence_joins(monkeypatch: pytest.
         OperationCardinality.ROW_FILTERING,
         OperationCardinality.ROW_FILTERING,
     ]
+
+
+def test_v2_order_fixture_records_join_many_shipments(monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_pyspark(monkeypatch)
+    module = importlib.import_module("testing.model.v2.orders.transforms.order")
+    transform = cast(Any, module).EnrichOrders
+
+    plan = compile_transform(transform)
+    add_shipments = next(step for step in plan.steps if step.name == "add_shipments")
+
+    assert len(add_shipments.joins) == 1
+    assert add_shipments.joins[0].method is JoinMethod.MANY
+    assert add_shipments.joins[0].input_name == "shipments"
+    assert add_shipments.joins[0].strategy is JoinStrategy.SHUFFLE_HASH
+    assert add_shipments.operations[0].capability is not None
+    assert add_shipments.operations[0].capability.name == "join_many"
+    assert add_shipments.operations[0].cardinality is OperationCardinality.ROW_MULTIPLYING
 
 
 def test_reserved_group_by_fails_through_backend_capability() -> None:

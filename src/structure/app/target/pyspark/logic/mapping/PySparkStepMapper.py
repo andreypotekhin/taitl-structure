@@ -137,6 +137,7 @@ class PySparkStepMapper:
             right_alias=self._names.join_alias(self._join_source_name(join.source), occurrence),
             how=join.how,
             hint=join.hint,
+            strategy=join.strategy,
             predicate=self._expressions.map(join.predicate, capabilities=capabilities),
             occurrence=occurrence,
             method=join.method,

@@ -26,6 +26,7 @@ from structure.app.dsl.model.transforms.BindingSelector import BindingSelector
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
+from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
 from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.app.dsl.model.transforms.reserved_v2 import reserved_operations
@@ -1425,6 +1426,15 @@ class CompileTransform:
                     occurrence,
                     f"{join.method.value}(...) hint must be a JoinHint value, not {type(join.hint).__name__}.",
                     "Use JoinHint.BROADCAST or omit hint=.",
+                )
+            if join.strategy is not None and not isinstance(join.strategy, JoinStrategy):
+                raise self._join_error(
+                    transform_class,
+                    member,
+                    join.input_name,
+                    occurrence,
+                    f"{join.method.value}(...) strategy must be a JoinStrategy value, not {type(join.strategy).__name__}.",
+                    "Use a JoinStrategy value or omit strategy=.",
                 )
 
             conditions = self._join_conditions(transform_class, member, join.input_name, occurrence, join.predicate)

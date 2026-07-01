@@ -2,10 +2,8 @@ from __future__ import annotations
 
 from typing import TypeVar, cast, overload
 
-from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
-from structure.app.compiler.ir.model.OperationCardinality import OperationCardinality
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import current_context
 from structure.app.dsl.model.expr.Expression import Expression
@@ -58,15 +56,17 @@ class InputScope(RowScope):
         if strategy is not None and not isinstance(strategy, JoinStrategy):
             raise TypeError("join_many(strategy=...) requires a JoinStrategy value")
 
-        context.operations.append(
-            OperationPlan.reserved_operation(
-                "join_many",
-                group="join",
-                name="join_many",
-                cardinality=OperationCardinality.ROW_MULTIPLYING,
-                streaming=StreamingSupport.UNKNOWN,
-            )
+        join = JoinPlan(
+            input_name=self._structure_input_name,
+            source=self._structure_source,
+            input_schema=self._structure_input_schema,
+            predicate=on,
+            how=how,
+            strategy=strategy,
+            method=JoinMethod.MANY,
         )
+        context.joins.append(join)
+        context.operations.append(OperationPlan.join_operation(join))
         self._structure_joined_scope = RowScope(
             name=self._structure_input_name,
             schema=self._structure_input_schema,
