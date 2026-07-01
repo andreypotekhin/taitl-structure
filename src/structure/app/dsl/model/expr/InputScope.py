@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TypeVar, cast, overload
 
 from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
+from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationCardinality import OperationCardinality
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
@@ -31,6 +32,12 @@ class InputScope(RowScope):
             "Use join_one(self.customers, on=...) or add a relation parameter "
             "and use join_one(customer, on=...)."
         )
+
+    def exists(self, *, on: Expression, hint: JoinHint | None = None) -> Expression:
+        return self._existence(JoinMethod.EXISTS, on=on, hint=hint)
+
+    def not_exists(self, *, on: Expression, hint: JoinHint | None = None) -> Expression:
+        return self._existence(JoinMethod.NOT_EXISTS, on=on, hint=hint)
 
     def join_many(
         self,
@@ -71,6 +78,35 @@ class InputScope(RowScope):
         if self._structure_joined_scope is not None:
             return getattr(self._structure_joined_scope, name)
         return super().__getattr__(name)
+
+    def _existence(self, method: JoinMethod, *, on: Expression, hint: JoinHint | None) -> Expression:
+        context = current_context()
+        if context is None:
+            raise RuntimeError(f"{method.value}(...) can only be used inside a compiled Structure subtransform")
+        if not isinstance(on, Expression):
+            raise TypeError(f"{method.value}(on=...) requires a Structure expression")
+        if not isinstance(on.type, BooleanType):
+            raise TypeError(f"{method.value}(on=...) requires a boolean Structure expression")
+        if hint is not None and not isinstance(hint, JoinHint):
+            raise TypeError(f"{method.value}(hint=...) requires a JoinHint value")
+
+        return Expression(
+            kind="existence_join",
+            type=BooleanType(),
+            nullable=False,
+            data={
+                "join": JoinPlan(
+                    input_name=self._structure_input_name,
+                    source=self._structure_source,
+                    input_schema=self._structure_input_schema,
+                    predicate=on,
+                    how=Join.INNER,
+                    hint=hint,
+                    method=method,
+                ),
+            },
+            args=(on,),
+        )
 
     def where(self, predicate: object):
         from structure.app.dsl.model.transforms.transform_api import where
@@ -142,6 +178,7 @@ def _record_join(
         predicate=on,
         how=how,
         hint=hint,
+        method=JoinMethod.ONE,
     )
     context.joins.append(join)
     context.operations.append(OperationPlan.join_operation(join))

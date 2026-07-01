@@ -8,4 +8,3 @@ class OperationCardinality(Enum):
     AGGREGATE = "aggregate"
     SELECT_ONE = "select_one"
     UNKNOWN = "unknown"
-

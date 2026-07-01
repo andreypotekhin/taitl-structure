@@ -38,6 +38,15 @@ def test_supported_v1_requirement_passes() -> None:
     assert decision.code == ""
 
 
+@pytest.mark.parametrize("name", ["exists", "not_exists", "left_semi_join", "left_anti_join"])
+def test_supported_v2_existence_join_requirement_passes(name: str) -> None:
+    resolved = Capabilities.resolve()()
+
+    decision = resolved.require(CapabilityRequirement(group="join", name=name))
+
+    assert decision.supported
+
+
 def test_unsupported_feature_uses_backend_capability_diagnostic() -> None:
     resolved = Capabilities.resolve()()
 
@@ -60,8 +69,6 @@ def test_unsupported_feature_uses_backend_capability_diagnostic() -> None:
 @pytest.mark.parametrize(
     ("group", "name"),
     [
-        ("join", "exists"),
-        ("join", "not_exists"),
         ("join", "join_many"),
         ("join", "temporal_one"),
         ("join", "as_of_one"),

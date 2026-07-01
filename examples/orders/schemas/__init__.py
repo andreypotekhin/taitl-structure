@@ -10,5 +10,5 @@ from examples.orders.schemas.order import (
     OrderWithPromotion,
     PublicationFlags,
 )
-from examples.orders.schemas.product import Product
+from examples.orders.schemas.product import BlockedProduct, Product, ProductBase
 from examples.orders.schemas.promotion import Promotion

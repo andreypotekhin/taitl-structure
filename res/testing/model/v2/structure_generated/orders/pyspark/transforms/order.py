@@ -13,7 +13,7 @@ from testing.model.v2.structure_generated.orders.pyspark.schemas.order import (
     ORDER_WITH_PRODUCT_SCHEMA,
     ORDER_WITH_PROMOTION_SCHEMA,
 )
-from testing.model.v2.structure_generated.orders.pyspark.schemas.product import PRODUCT_SCHEMA
+from testing.model.v2.structure_generated.orders.pyspark.schemas.product import BLOCKED_PRODUCT_SCHEMA, PRODUCT_SCHEMA
 from testing.model.v2.structure_generated.orders.pyspark.schemas.promotion import PROMOTION_SCHEMA
 from testing.model.v2.structure_generated.orders.pyspark.schemas.shipment import SHIPMENT_SCHEMA
 from testing.model.v2.structure_generated.runtime.hook_inputs import HookInputs
@@ -33,12 +33,14 @@ class EnrichOrdersGenerated:
         orders: DataFrame,
         customers: DataFrame,
         products: DataFrame,
+        blocked_products: DataFrame,
         promotions: DataFrame,
         shipments: DataFrame,
     ) -> TransformResult:
         assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")
         assert_schema(customers, CUSTOMER_SCHEMA, name="Customer", mode="strict")
         assert_schema(products, PRODUCT_SCHEMA, name="Product", mode="strict")
+        assert_schema(blocked_products, BLOCKED_PRODUCT_SCHEMA, name="BlockedProduct", mode="strict")
         assert_schema(promotions, PROMOTION_SCHEMA, name="Promotion", mode="strict")
         assert_schema(shipments, SHIPMENT_SCHEMA, name="Shipment", mode="strict")
 
@@ -46,6 +48,7 @@ class EnrichOrdersGenerated:
             orders=orders,
             customers=customers,
             products=products,
+            blocked_products=blocked_products,
             promotions=promotions,
             shipments=shipments,
         )
@@ -123,9 +126,23 @@ class EnrichOrdersGenerated:
             products_joined,
             (F.col("products.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id"))
             & (F.col("products.id") == F.col("order_with_customer.product_id")),
+            "left_semi",
+        )
+        blocked_products_2_joined = blocked_products.alias("blocked_products_2")
+        orders = orders.join(
+            blocked_products_2_joined,
+            (F.col("blocked_products_2.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id"))
+            & (F.col("blocked_products_2.product_id") == F.col("order_with_customer.product_id")),
+            "left_anti",
+        )
+        products_3_joined = products.alias("products_3")
+        orders = orders.join(
+            products_3_joined,
+            (F.col("products_3.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id"))
+            & (F.col("products_3.id") == F.col("order_with_customer.product_id")),
             "left",
         ).where(
-            F.col("products.id").isNotNull()
+            F.col("products_3.id").isNotNull()
         ).select(
             F.col("order_with_customer.tenant").alias("tenant"),
             F.col("order_with_customer.audit").alias("audit"),
@@ -145,10 +162,10 @@ class EnrichOrdersGenerated:
             F.col("order_with_customer.customer_name").alias("customer_name"),
             F.col("order_with_customer.customer_tier").alias("customer_tier"),
             F.col("order_with_customer.customer_region").alias("customer_region"),
-            F.col("products.name").alias("product_name"),
-            F.col("products.category").alias("product_category"),
-            F.col("products.active").alias("product_active"),
-            F.col("products.list_price").alias("product_list_price"),
+            F.col("products_3.name").alias("product_name"),
+            F.col("products_3.category").alias("product_category"),
+            F.col("products_3.active").alias("product_active"),
+            F.col("products_3.list_price").alias("product_list_price"),
         )
         assert_schema(orders, ORDER_WITH_PRODUCT_SCHEMA, name="OrderWithProduct", mode="strict")
 
@@ -266,6 +283,7 @@ def enrich_orders(
     orders: DataFrame,
     customers: DataFrame,
     products: DataFrame,
+    blocked_products: DataFrame,
     promotions: DataFrame,
     shipments: DataFrame,
     spark: SparkSession,
@@ -275,6 +293,7 @@ def enrich_orders(
         orders=orders,
         customers=customers,
         products=products,
+        blocked_products=blocked_products,
         promotions=promotions,
         shipments=shipments,
     )

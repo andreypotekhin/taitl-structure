@@ -21,8 +21,13 @@
       "schema": "Product"
     },
     {
-      "name": "promotions",
+      "name": "blocked_products",
       "ordinal": 3,
+      "schema": "BlockedProduct"
+    },
+    {
+      "name": "promotions",
+      "ordinal": 4,
       "schema": "Promotion"
     }
   ],
@@ -48,8 +53,13 @@
       "source": "source:examples.orders.transforms.order.EnrichOrders.input.products"
     },
     {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.input.blocked_products",
+      "ir": "ir:EnrichOrders.input.3.blocked_products",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.input.blocked_products"
+    },
+    {
       "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.input.promotions",
-      "ir": "ir:EnrichOrders.input.3.promotions",
+      "ir": "ir:EnrichOrders.input.4.promotions",
       "source": "source:examples.orders.transforms.order.EnrichOrders.input.promotions"
     },
     {
@@ -286,6 +296,16 @@
       "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.2.add_product.join.1.product",
       "ir": "ir:EnrichOrders.step.2.add_product.join.1.product",
       "source": "source:examples.orders.transforms.order.EnrichOrders.add_product.join.1.product"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.2.add_product.join.2.blocked_product",
+      "ir": "ir:EnrichOrders.step.2.add_product.join.2.blocked_product",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_product.join.2.blocked_product"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.2.add_product.join.3.product",
+      "ir": "ir:EnrichOrders.step.2.add_product.join.3.product",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_product.join.3.product"
     },
     {
       "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.2.add_product.select.tenant",
@@ -662,6 +682,10 @@
       "constant": "AUDIT_STAMP_SCHEMA",
       "module": "examples.structure_generated.orders.pyspark.schemas.common"
     },
+    "BlockedProduct": {
+      "constant": "BLOCKED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.product"
+    },
     "BusinessDate": {
       "constant": "BUSINESS_DATE_SCHEMA",
       "module": "examples.structure_generated.orders.pyspark.schemas.common"
@@ -702,6 +726,10 @@
       "constant": "PRODUCT_SCHEMA",
       "module": "examples.structure_generated.orders.pyspark.schemas.product"
     },
+    "ProductBase": {
+      "constant": "PRODUCT_BASE_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.product"
+    },
     "Promotion": {
       "constant": "PROMOTION_SCHEMA",
       "module": "examples.structure_generated.orders.pyspark.schemas.promotion"
@@ -731,6 +759,7 @@
           "orders",
           "customers",
           "products",
+          "blocked_products",
           "promotions"
         ],
         "step": null,
@@ -1202,6 +1231,8 @@
         "operation": "step",
         "sources": [
           "OrderWithCustomer",
+          "product",
+          "blocked_product",
           "product"
         ],
         "step": "add_product",
@@ -1219,7 +1250,7 @@
       {
         "detail": {
           "hint": null,
-          "how": "left",
+          "how": "inner",
           "right_alias": "products"
         },
         "operation": "join_one",
@@ -1231,6 +1262,38 @@
         ],
         "step": "add_product",
         "target": "add_product.join[1].product"
+      },
+      {
+        "detail": {
+          "hint": null,
+          "how": "inner",
+          "right_alias": "blocked_products_2"
+        },
+        "operation": "join_one",
+        "sources": [
+          "blocked_product.tenant.tenant_id",
+          "order.tenant.tenant_id",
+          "blocked_product.product_id",
+          "order.product_id"
+        ],
+        "step": "add_product",
+        "target": "add_product.join[2].blocked_product"
+      },
+      {
+        "detail": {
+          "hint": null,
+          "how": "left",
+          "right_alias": "products_3"
+        },
+        "operation": "join_one",
+        "sources": [
+          "product.tenant.tenant_id",
+          "order.tenant.tenant_id",
+          "product.id",
+          "order.product_id"
+        ],
+        "step": "add_product",
+        "target": "add_product.join[3].product"
       },
       {
         "detail": {
@@ -2092,9 +2155,19 @@
       "input_alias": "order_with_customer",
       "joins": [
         {
-          "how": "left",
+          "how": "inner",
           "input": "product",
           "right_alias": "products"
+        },
+        {
+          "how": "inner",
+          "input": "blocked_product",
+          "right_alias": "blocked_products_2"
+        },
+        {
+          "how": "left",
+          "input": "product",
+          "right_alias": "products_3"
         }
       ],
       "name": "add_product",

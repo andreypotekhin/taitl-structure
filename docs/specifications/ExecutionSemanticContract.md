@@ -200,6 +200,8 @@ inner join_one
 composite join keys
 null-safe join keys
 broadcast hints
+exists left-semi joins
+not_exists left-anti joins
 repeated joins of the same input
 before hooks
 after hooks

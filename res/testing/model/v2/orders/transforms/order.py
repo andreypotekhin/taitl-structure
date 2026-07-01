@@ -34,7 +34,7 @@ from testing.model.v2.orders.schemas.order import (
     OrderWithPromotion,
     PublicationFlags,
 )
-from testing.model.v2.orders.schemas.product import Product
+from testing.model.v2.orders.schemas.product import BlockedProduct, Product
 from testing.model.v2.orders.schemas.promotion import Promotion
 from testing.model.v2.orders.schemas.shipment import Shipment
 
@@ -44,6 +44,7 @@ class EnrichOrders(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)
     products = input(Product)
+    blocked_products = input(BlockedProduct)
     promotions = input(Promotion)
     shipments = input(Shipment)
     published = output(OrderPublished)
@@ -105,10 +106,21 @@ class EnrichOrders(Transform):
             customer_region=customer.region,
         )
 
-    def add_product(self, order: OrderWithCustomer) -> OrderWithProduct:
+    def add_product(
+        self, order: OrderWithCustomer, product: Product, blocked_product: BlockedProduct
+    ) -> OrderWithProduct:
+        where(
+            product.exists(on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id))
+        )
+        where(
+            blocked_product.not_exists(
+                on=(blocked_product.tenant.tenant_id == order.tenant.tenant_id)
+                & (blocked_product.product_id == order.product_id)
+            )
+        )
         product = join_one(
-            self.products,
-            on=(self.products.tenant.tenant_id == order.tenant.tenant_id) & (self.products.id == order.product_id),
+            product,
+            on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id),
             how=Join.LEFT,
         )
 

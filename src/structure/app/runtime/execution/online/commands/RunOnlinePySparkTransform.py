@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.runtime.execution.online.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
 from structure.app.runtime.execution.online.logic.PySparkFrameValidator import PySparkFrameValidator
@@ -208,7 +209,14 @@ class RunOnlinePySparkTransform:
         predicate = self._expressions.evaluate(
             join.predicate, functions=functions, aliases=self._scope_aliases(step, join)
         )
-        return df.join(right, predicate, join.how.value)
+        return df.join(right, predicate, self._join_mode(join))
+
+    def _join_mode(self, join: PySparkJoinRecipe) -> str:
+        if join.method is JoinMethod.EXISTS:
+            return "left_semi"
+        if join.method is JoinMethod.NOT_EXISTS:
+            return "left_anti"
+        return join.how.value
 
     def _assignment(self, assignment, *, step, functions, types):
         column = self._expressions.evaluate(

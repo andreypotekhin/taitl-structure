@@ -3,6 +3,7 @@ from __future__ import annotations
 import inspect
 from typing import Any, Callable, Iterable, TypeVar, cast, overload
 
+from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import current_context
 from structure.app.dsl.model.expr.expressions import literal
@@ -305,6 +306,11 @@ def where(predicate: object) -> "WhereChain":
     expression = literal(predicate)
     if not isinstance(expression.type, BooleanType):
         raise TypeError("where(...) requires a boolean Structure expression")
+    if expression.kind == "existence_join" and expression.data is not None:
+        join = cast(JoinPlan, expression.data["join"])
+        context.joins.append(join)
+        context.operations.append(OperationPlan.join_operation(join))
+        return WhereChain()
     context.filters.append(expression)
     context.operations.append(OperationPlan.filter_operation(expression))
     return WhereChain()

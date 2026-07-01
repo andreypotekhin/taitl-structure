@@ -237,8 +237,9 @@ join.temporal_one
 join.as_of_one
 ```
 
-Unsupported capability diagnostics use `BACKEND-E2402` and link to this specification. The diagnostic must name the
-join form and suggest either a supported join, a hook escape hatch, or waiting for the planned feature.
+The default PySpark profile supports `join.exists` and `join.not_exists`. Unsupported capability diagnostics use
+`BACKEND-E2402` and link to this specification. The diagnostic must name the join form and suggest either a supported
+join, a hook escape hatch, or waiting for the planned feature.
 
 ## Streaming Compatibility
 

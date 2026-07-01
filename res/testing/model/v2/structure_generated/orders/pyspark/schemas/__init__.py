@@ -20,6 +20,10 @@ from testing.model.v2.structure_generated.orders.pyspark.schemas.order import (
     ORDER_WITH_PROMOTION_SCHEMA,
     PUBLICATION_FLAGS_SCHEMA,
 )
-from testing.model.v2.structure_generated.orders.pyspark.schemas.product import PRODUCT_SCHEMA
+from testing.model.v2.structure_generated.orders.pyspark.schemas.product import (
+    BLOCKED_PRODUCT_SCHEMA,
+    PRODUCT_BASE_SCHEMA,
+    PRODUCT_SCHEMA,
+)
 from testing.model.v2.structure_generated.orders.pyspark.schemas.promotion import PROMOTION_SCHEMA
 from testing.model.v2.structure_generated.orders.pyspark.schemas.shipment import SHIPMENT_SCHEMA

@@ -66,10 +66,10 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
 
 ## Engineering Tasks
 
-1. Add analytical join capability requirements.
-2. Implement `exists(...)` and `not_exists(...)` symbolic predicates.
-3. Lower existence joins through shared PySpark recipes.
-4. Add existence join parity tests.
+1. + Add analytical join capability requirements for existence joins.
+2. + Implement `exists(...)` and `not_exists(...)` symbolic predicates.
+3. + Lower existence joins through shared PySpark recipes.
+4. + Add no-Spark online/generated semantic-contract tests for existence joins.
 5. Implement `join_many(...)` symbolic scope and IR.
 6. Lower `join_many(...)` through shared PySpark recipes.
 7. Add row multiplication parity tests.
@@ -78,6 +78,16 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
 10. Implement `temporal_one(...)` closed-open validity-window lookups.
 11. Implement backward `as_of_one(...)`.
 12. Update traceability, explain output, diagnostics, and streaming classification.
+
+## Progress
+
+- [x] (2026-07-01) Implemented `exists(...)` and `not_exists(...)` as compiler-visible row-filtering join methods.
+- [x] (2026-07-01) Lowered existence joins to default PySpark `left_semi` and `left_anti` recipes shared by generated
+  rendering and online execution.
+- [x] (2026-07-01) Added focused no-Spark coverage for IR metadata, generated rendering, online recipe execution,
+  capability support, and the no-right-field-read guardrail.
+- [x] (2026-07-01) Extended v2 model fixtures and examples with product-existence and blocked-product anti-existence
+  filters.
 
 ## Acceptance Criteria
 

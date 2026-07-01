@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
@@ -19,3 +20,4 @@ class PySparkJoinRecipe:
     hint: JoinHint | None
     predicate: PySparkExpressionRecipe
     occurrence: int
+    method: JoinMethod = JoinMethod.ONE

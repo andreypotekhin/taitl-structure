@@ -6,6 +6,8 @@ from typing import Any, cast
 import pytest
 
 from structure import Long, String, Structure, Transform, count, field, group_by, input, output, transform
+from structure.app.compiler.api import OperationCardinality
+from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.api import compile_transform
 from structure.app.target.capabilities.api import BackendCapabilityError
 from structure.app.target.pyspark.api import PySpark
@@ -30,6 +32,25 @@ def test_v2_source_fixtures_import_without_live_spark(monkeypatch: pytest.Monkey
 
     after = {name for name in sys.modules if name.startswith("pyspark")}
     assert after == before
+
+
+def test_v2_order_fixture_records_supported_existence_joins(monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_pyspark(monkeypatch)
+    module = importlib.import_module("testing.model.v2.orders.transforms.order")
+    transform = cast(Any, module).EnrichOrders
+
+    plan = compile_transform(transform)
+    add_product = next(step for step in plan.steps if step.name == "add_product")
+
+    assert [join.method for join in add_product.joins[:2]] == [JoinMethod.EXISTS, JoinMethod.NOT_EXISTS]
+    assert [operation.capability.name for operation in add_product.operations[:2] if operation.capability] == [
+        "exists",
+        "not_exists",
+    ]
+    assert [operation.cardinality for operation in add_product.operations[:2]] == [
+        OperationCardinality.ROW_FILTERING,
+        OperationCardinality.ROW_FILTERING,
+    ]
 
 
 def test_reserved_group_by_fails_through_backend_capability() -> None:

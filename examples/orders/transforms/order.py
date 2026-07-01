@@ -8,7 +8,7 @@ from examples.orders.schemas.order import (
     OrderWithPromotion,
     PublicationFlags,
 )
-from examples.orders.schemas.product import Product
+from examples.orders.schemas.product import BlockedProduct, Product
 from examples.orders.schemas.promotion import Promotion
 from structure import (
     Join,
@@ -35,6 +35,7 @@ class EnrichOrders(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)
     products = input(Product)
+    blocked_products = input(BlockedProduct)
     promotions = input(Promotion)
     published = output(OrderPublished)
 
@@ -95,7 +96,18 @@ class EnrichOrders(Transform):
             customer_region=customer.region,
         )
 
-    def add_product(self, order: OrderWithCustomer, product: Product) -> OrderWithProduct:
+    def add_product(
+        self, order: OrderWithCustomer, product: Product, blocked_product: BlockedProduct
+    ) -> OrderWithProduct:
+        where(
+            product.exists(on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id))
+        )
+        where(
+            blocked_product.not_exists(
+                on=(blocked_product.tenant.tenant_id == order.tenant.tenant_id)
+                & (blocked_product.product_id == order.product_id)
+            )
+        )
         join_one(
             on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id),
             how=Join.LEFT,

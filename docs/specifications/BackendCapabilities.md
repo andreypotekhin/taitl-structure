@@ -47,7 +47,8 @@ BackendId
   family
 ```
 
-For v1, `name = "pyspark"`, `target = ">=3.5,<4.1"`, and implementation `family = "ordinary_pyspark"` by default.
+For the default PySpark profile, `name = "pyspark"`, `target = ">=3.5,<4.1"`, and implementation
+`family = "ordinary_pyspark"`.
 Future alternative-backend reports may add semantic-family vocabulary such as `pyspark_dataframe` or `sql_relation`;
 that vocabulary must not require renaming the current v1 implementation family.
 
@@ -125,9 +126,9 @@ CapabilityDecision
 Supported decisions may leave diagnostic fields empty except for `docs`. Unsupported decisions must fill every
 diagnostic field.
 
-## v1 PySpark Profile
+## PySpark Profile
 
-The v1 PySpark capability profile supports these requirements:
+The default PySpark capability profile supports these requirements:
 
 ```text
 backend.ordinary_pyspark
@@ -141,8 +142,12 @@ expression.null_safe_equality
 expression.cast
 expression.standard_helper_call
 join.join_one
+join.exists
+join.not_exists
 join.left_join
 join.inner_join
+join.left_semi_join
+join.left_anti_join
 join.composite_equi_join
 join.broadcast_hint
 validation.schema_only_validation
@@ -158,8 +163,6 @@ imports.generated_pyspark_imports
 Deferred features must be represented as unsupported decisions. Examples:
 
 ```text
-join.exists
-join.not_exists
 join.join_many
 join.temporal_one
 join.as_of_one

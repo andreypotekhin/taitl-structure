@@ -8,7 +8,7 @@ from examples.orders.transforms.order import EnrichOrders
 from examples.structure_generated.orders.runtime.schema_assert import TransformResult, assert_schema, project_schema, HookInputs
 from examples.structure_generated.orders.pyspark.schemas.customer import CUSTOMER_SCHEMA
 from examples.structure_generated.orders.pyspark.schemas.order import ORDER_NORMALIZED_SCHEMA, ORDER_PUBLISHED_SCHEMA, ORDER_RAW_SCHEMA, ORDER_WITH_CUSTOMER_SCHEMA, ORDER_WITH_PRODUCT_SCHEMA, ORDER_WITH_PROMOTION_SCHEMA
-from examples.structure_generated.orders.pyspark.schemas.product import PRODUCT_SCHEMA
+from examples.structure_generated.orders.pyspark.schemas.product import BLOCKED_PRODUCT_SCHEMA, PRODUCT_SCHEMA
 from examples.structure_generated.orders.pyspark.schemas.promotion import PROMOTION_SCHEMA
 
 
@@ -25,21 +25,25 @@ class EnrichOrdersGenerated:
         orders: DataFrame,
         customers: DataFrame,
         products: DataFrame,
+        blocked_products: DataFrame,
         promotions: DataFrame,
     ) -> TransformResult:
         assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")
         assert_schema(customers, CUSTOMER_SCHEMA, name="Customer", mode="strict")
         assert_schema(products, PRODUCT_SCHEMA, name="Product", mode="strict")
+        assert_schema(blocked_products, BLOCKED_PRODUCT_SCHEMA, name="BlockedProduct", mode="strict")
         assert_schema(promotions, PROMOTION_SCHEMA, name="Promotion", mode="strict")
         inputs = HookInputs(
             orders=orders,
             customers=customers,
             products=products,
+            blocked_products=blocked_products,
             promotions=promotions,
         )
         _input_orders = orders
         _input_customers = customers
         _input_products = products
+        _input_blocked_products = blocked_products
         _input_promotions = promotions
 
         # Subtransform: normalize
@@ -103,9 +107,21 @@ class EnrichOrdersGenerated:
         orders = orders.join(
             products_joined,
             ((F.col("products.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id")) & (F.col("products.id") == F.col("order_with_customer.product_id"))),
+            "left_semi",
+        )
+        blocked_products_2_joined = blocked_products.alias("blocked_products_2")
+        orders = orders.join(
+            blocked_products_2_joined,
+            ((F.col("blocked_products_2.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id")) & (F.col("blocked_products_2.product_id") == F.col("order_with_customer.product_id"))),
+            "left_anti",
+        )
+        products_3_joined = products.alias("products_3")
+        orders = orders.join(
+            products_3_joined,
+            ((F.col("products_3.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id")) & (F.col("products_3.id") == F.col("order_with_customer.product_id"))),
             "left",
         )
-        orders = orders.where((F.col("products.id").isNotNull()))
+        orders = orders.where((F.col("products_3.id").isNotNull()))
         orders = orders.select(
             F.col("order_with_customer.tenant"),
             F.col("order_with_customer.audit"),
@@ -125,10 +141,10 @@ class EnrichOrdersGenerated:
             F.col("order_with_customer.customer_name"),
             F.col("order_with_customer.customer_tier"),
             F.col("order_with_customer.customer_region"),
-            F.col("products.name").alias("product_name"),
-            F.col("products.category").alias("product_category"),
-            F.col("products.active").alias("product_active"),
-            F.col("products.list_price").alias("product_list_price"),
+            F.col("products_3.name").alias("product_name"),
+            F.col("products_3.category").alias("product_category"),
+            F.col("products_3.active").alias("product_active"),
+            F.col("products_3.list_price").alias("product_list_price"),
         )
         assert_schema(orders, ORDER_WITH_PRODUCT_SCHEMA, name="OrderWithProduct", mode="strict")
 

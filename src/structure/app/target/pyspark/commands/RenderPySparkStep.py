@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 
+from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.model.types.DecimalType import DecimalType
 from structure.app.dsl.model.types.StructType import StructType
 from structure.app.dsl.model.types.StructureType import StructureType
@@ -133,9 +134,16 @@ class RenderPySparkStep:
             f"        {target} = {target}.join(",
             f"            {right_name},",
             f"            {predicate},",
-            f'            "{join.how.value}",',
+            f'            "{self._join_mode(join)}",',
             "        )",
         ]
+
+    def _join_mode(self, join: PySparkJoinRecipe) -> str:
+        if join.method is JoinMethod.EXISTS:
+            return "left_semi"
+        if join.method is JoinMethod.NOT_EXISTS:
+            return "left_anti"
+        return join.how.value
 
     def _filters(
         self,

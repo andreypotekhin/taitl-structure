@@ -12,6 +12,6 @@ from testing.model.v2.orders.schemas.order import (
     OrderWithPromotion,
     PublicationFlags,
 )
-from testing.model.v2.orders.schemas.product import Product
+from testing.model.v2.orders.schemas.product import BlockedProduct, Product, ProductBase
 from testing.model.v2.orders.schemas.promotion import Promotion
 from testing.model.v2.orders.schemas.shipment import Shipment

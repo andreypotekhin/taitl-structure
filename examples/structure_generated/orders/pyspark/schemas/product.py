@@ -5,9 +5,12 @@ from pyspark.sql import types as T
 from examples.structure_generated.orders.pyspark.schemas.common import AUDIT_STAMP_SCHEMA, TENANT_KEY_SCHEMA
 
 
-PRODUCT_SCHEMA = T.StructType([
+PRODUCT_BASE_SCHEMA = T.StructType([
     T.StructField("tenant", TENANT_KEY_SCHEMA, False),
     T.StructField("audit", AUDIT_STAMP_SCHEMA, False),
+])
+
+PRODUCT_SCHEMA = T.StructType(PRODUCT_BASE_SCHEMA.fields + [
     T.StructField("id", T.StringType(), False),
     T.StructField("name", T.StringType(), True),
     T.StructField("category", T.StringType(), True),
@@ -15,4 +18,9 @@ PRODUCT_SCHEMA = T.StructType([
     T.StructField("list_price", T.DecimalType(12, 2), True),
     T.StructField("weight", T.FloatType(), True),
     T.StructField("rating", T.DoubleType(), True),
+])
+
+BLOCKED_PRODUCT_SCHEMA = T.StructType(PRODUCT_BASE_SCHEMA.fields + [
+    T.StructField("product_id", T.StringType(), False),
+    T.StructField("reason", T.StringType(), True),
 ])

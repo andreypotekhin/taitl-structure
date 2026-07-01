@@ -6,6 +6,7 @@ from typing import Any, cast
 import pytest
 
 from structure import Join, JoinHint, SchemaMode, String, Structure, field
+from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.runtime.execution.online.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 from structure.app.runtime.execution.online.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
 from structure.app.runtime.execution.online.logic.PySparkFrameValidator import PySparkFrameValidator
@@ -16,6 +17,7 @@ from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkEx
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.target.pyspark.model.PySparkInputRecipe import PySparkInputRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.app.target.pyspark.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.app.target.pyspark.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.app.target.pyspark.model.PySparkProjectionRecipe import PySparkProjectionRecipe
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
@@ -190,6 +192,37 @@ def test_online_runner_applies_step_hooks_and_step_and_output_joins(monkeypatch)
         "join:customers:inner:(col(published.id) == col(customers.id))",
         "where:col(published.id).isNotNull()",
         "select:id=col(published.id),status=col(published.status)",
+    )
+
+
+def test_online_runner_applies_existence_join_modes(monkeypatch) -> None:
+    """I can rely on online and generated execution to share v2 existence join semantics."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(
+        orders=_frame("orders", RawOrder),
+        customers=_frame("customers", Customer),
+    )
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _existence_join_plan(),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target_backend="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:orders",
+        "join:customers:left_semi:(col(orders.id) == col(customers.id))",
+        "select:id=col(orders.id),status=col(orders.status)",
+        "alias:published",
     )
 
 
@@ -444,6 +477,86 @@ def _join_and_hook_plan() -> PySparkExecutionPlan:
     )
 
 
+def _existence_join_plan() -> PySparkExecutionPlan:
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
+    projection = (
+        PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
+        PySparkProjectionRecipe(PublishedOrder._structure_fields["status"], _field(RawOrder, "status")),
+    )
+    step = PySparkStepRecipe(
+        name="publish",
+        ordinal=0,
+        source="orders",
+        source_scope="orders",
+        input_schema=RawOrder,
+        output_schema=PublishedOrder,
+        input_alias="orders",
+        output_alias="published",
+        before_hooks=(),
+        filters=(),
+        joins=(),
+        projection=projection,
+        after_hooks=(),
+        validations=(),
+        results=(
+            PySparkStepResultRecipe(
+                schema=PublishedOrder,
+                lane="published",
+                frame="published",
+                output_alias="published",
+                projection=projection,
+                ordinal=0,
+                after_hooks=(),
+                validations=(published_validation,),
+            ),
+        ),
+        operations=(
+            PySparkOperationRecipe.join_operation(
+                PySparkJoinRecipe(
+                    input_name="customers",
+                    source="customers",
+                    input_schema=Customer,
+                    left_alias="orders",
+                    right_alias="customers",
+                    how=Join.INNER,
+                    hint=None,
+                    predicate=_binary("eq", _field(RawOrder, "id"), _field_scope("customers", Customer, "id")),
+                    occurrence=0,
+                    method=JoinMethod.EXISTS,
+                )
+            ),
+        ),
+    )
+    return PySparkExecutionPlan(
+        transform="PublishKnownCustomers",
+        backend=BackendId("PySpark", "3.5", "pyspark"),
+        inputs=(
+            PySparkInputRecipe("orders", RawOrder, 0, input_validation),
+            PySparkInputRecipe("customers", Customer, 1, customer_validation),
+        ),
+        steps=(step,),
+        outputs=(
+            PySparkOutputRecipe(
+                name="published",
+                ordinal=0,
+                source="published",
+                source_scope="published",
+                input_schema=PublishedOrder,
+                output_schema=PublishedOrder,
+                input_alias="published",
+                output_alias="published",
+                filters=(),
+                joins=(),
+                projection=(),
+                validation=published_validation,
+            ),
+        ),
+        requires_hook_inputs=False,
+    )
+
+
 def _multi_result_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     id_validation = PySparkValidationRecipe("ids", PublishedOrderId, SchemaMode.STRICT, True, "output")
@@ -581,7 +694,9 @@ def _when(
     value: PySparkExpressionRecipe,
     fallback: PySparkExpressionRecipe,
 ) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("when", value.type, value.nullable or fallback.nullable, {}, (condition, value, fallback))
+    return PySparkExpressionRecipe(
+        "when", value.type, value.nullable or fallback.nullable, {}, (condition, value, fallback)
+    )
 
 
 def _hook(

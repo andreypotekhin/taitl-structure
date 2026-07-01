@@ -1,3 +1,4 @@
+from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.compiler.ir.model.OperationCapability import OperationCapability
 from structure.app.compiler.ir.model.OutputPlan import OutputPlan
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
@@ -76,7 +77,9 @@ class PySparkOutputMapper:
                 occurrence += 1
                 recipes.append(
                     PySparkOperationRecipe.join_operation(
-                        self._join(operation.join, occurrence=occurrence, left_alias=input_alias, capabilities=capabilities)
+                        self._join(
+                            operation.join, occurrence=occurrence, left_alias=input_alias, capabilities=capabilities
+                        )
                     )
                 )
         return tuple(recipes)
@@ -98,8 +101,8 @@ class PySparkOutputMapper:
             )
 
     def _join(self, join, *, occurrence: int, left_alias: str, capabilities: BackendCapabilities) -> PySparkJoinRecipe:
-        capabilities.require(CapabilityRequirement(group="join", name="join_one"))
-        capabilities.require(CapabilityRequirement(group="join", name=f"{join.how.value}_join"))
+        capabilities.require(CapabilityRequirement(group="join", name=join.method.value))
+        capabilities.require(CapabilityRequirement(group="join", name=self._join_mode_capability(join)))
         if join.hint is not None:
             capabilities.require(CapabilityRequirement(group="join", name=f"{join.hint.value}_hint"))
         return PySparkJoinRecipe(
@@ -112,7 +115,15 @@ class PySparkOutputMapper:
             hint=join.hint,
             predicate=self._expressions.map(join.predicate, capabilities=capabilities),
             occurrence=occurrence,
+            method=join.method,
         )
+
+    def _join_mode_capability(self, join) -> str:
+        if join.method is JoinMethod.EXISTS:
+            return "left_semi_join"
+        if join.method is JoinMethod.NOT_EXISTS:
+            return "left_anti_join"
+        return f"{join.how.value}_join"
 
     def _join_source_name(self, source: str) -> str:
         return source.removeprefix("input:")

@@ -26,7 +26,7 @@ def render_orders_example() -> dict[str, str]:
             OrderWithPromotion,
             PublicationFlags,
         )
-        from examples.orders.schemas.product import Product
+        from examples.orders.schemas.product import BlockedProduct, Product, ProductBase
         from examples.orders.schemas.promotion import Promotion
         from examples.orders.schemas.shipment import Shipment
         from examples.orders.transforms.order import EnrichOrders
@@ -48,7 +48,7 @@ def render_orders_example() -> dict[str, str]:
                     PublicationFlags,
                     OrderPublished,
                 ],
-                "examples.orders.schemas.product": [Product],
+                "examples.orders.schemas.product": [ProductBase, Product, BlockedProduct],
                 "examples.orders.schemas.promotion": [Promotion],
                 "examples.orders.schemas.shipment": [Shipment],
             },

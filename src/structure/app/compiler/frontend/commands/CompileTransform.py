@@ -8,6 +8,7 @@ from structure.app.compiler.frontend.logic.CompilerHookCollector import Compiler
 from structure.app.compiler.frontend.logic.CompilerInputCollector import CompilerInputCollector
 from structure.app.compiler.ir.model.HookPlan import HookPlan
 from structure.app.compiler.ir.model.InputPlan import InputPlan
+from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.compiler.ir.model.OutputPlan import OutputPlan
 from structure.app.compiler.ir.model.ProjectAssignment import ProjectAssignment
 from structure.app.compiler.ir.model.StepInputPlan import StepInputPlan
@@ -281,7 +282,8 @@ class CompileTransform:
                     self._scopes(operation.filter),
                 )
             if operation.kind == "join" and operation.join is not None:
-                joined.add(operation.join.input_name)
+                if operation.join.method.exposes_fields():
+                    joined.add(operation.join.input_name)
 
         reads = set().union(
             *(self._scopes(assignment.expression) for result in results for assignment in result.projection)
@@ -306,10 +308,7 @@ class CompileTransform:
                         f"{transform_class.__name__}.{member} reads relation parameter "
                         f"{parameter} before it is joined."
                     ),
-                    use=(
-                        f"Use join_one({parameter}, on=...) "
-                        f"before reading its fields."
-                    ),
+                    use=(f"Use join_one({parameter}, on=...) " f"before reading its fields."),
                     context={"input": parameter},
                 )
 
@@ -1409,7 +1408,7 @@ class CompileTransform:
     ) -> list[Diagnostic]:
         diagnostics: list[Diagnostic] = []
         for occurrence, join in enumerate(joins, start=1):
-            if join.how not in {Join.LEFT, Join.INNER}:
+            if join.method is JoinMethod.ONE and join.how not in {Join.LEFT, Join.INNER}:
                 raise self._join_error(
                     transform_class,
                     member,
@@ -1424,7 +1423,7 @@ class CompileTransform:
                     member,
                     join.input_name,
                     occurrence,
-                    f"join_one(...) hint must be a JoinHint value, not {type(join.hint).__name__}.",
+                    f"{join.method.value}(...) hint must be a JoinHint value, not {type(join.hint).__name__}.",
                     "Use JoinHint.BROADCAST or omit hint=.",
                 )
 
@@ -1433,7 +1432,7 @@ class CompileTransform:
                 left, right = condition.args
                 self._validate_join_pair(transform_class, member, join.input_name, occurrence, left, right)
 
-            if not self._unique_join(join.input_name, join.input_schema, conditions):
+            if join.method is JoinMethod.ONE and not self._unique_join(join.input_name, join.input_schema, conditions):
                 diagnostics.append(
                     Diagnostic(
                         entry=diagnostic_registry.get("JOIN-W0601"),

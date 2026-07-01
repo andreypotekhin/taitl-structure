@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
+from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationCapability import OperationCapability
 from structure.app.compiler.ir.model.OperationCardinality import OperationCardinality
@@ -32,12 +33,18 @@ class OperationPlan:
 
     @staticmethod
     def join_operation(join: JoinPlan) -> "OperationPlan":
+        cardinality = {
+            JoinMethod.ONE: OperationCardinality.SELECT_ONE,
+            JoinMethod.EXISTS: OperationCardinality.ROW_FILTERING,
+            JoinMethod.NOT_EXISTS: OperationCardinality.ROW_FILTERING,
+            JoinMethod.MANY: OperationCardinality.ROW_MULTIPLYING,
+        }[join.method]
         return OperationPlan(
             kind="join",
             join=join,
             family="join",
-            capability=OperationCapability(group="join", name="join_one"),
-            cardinality=OperationCardinality.SELECT_ONE,
+            capability=OperationCapability(group="join", name=join.method.value),
+            cardinality=cardinality,
             streaming=StreamingSupport.UNKNOWN,
         )
 

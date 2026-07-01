@@ -8,4 +8,3 @@ class OperationCapability:
     name: str
     source: Mapping[str, str] = field(default_factory=dict)
     docs: str = "docs/specifications/BackendCapabilities.md"
-
