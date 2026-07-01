@@ -132,14 +132,19 @@ Type: version range string.
 
 Default: unset in v1.
 
+V1 status: recognized and stored as reserved metadata.
+
 Generic future target profile. Non-PySpark targets should use this instead of adding backend-specific version keys.
-`target_pyspark` remains the PySpark compatibility key.
+`target_pyspark` remains the active PySpark compatibility key in v1.
 
 ### compat_targets
 
 Type: list of strings.
 
 Default: empty list.
+
+V1 status: recognized and stored. `structure check` and `structure explain` may report non-PySpark targets as pending;
+they must not claim Polars, DuckDB, or other future checks have run.
 
 Future compatibility-report targets. This setting asks `structure check` and `StructureTools.compatibility` to report
 whether compiler-visible Structure source is portable to additional backends. It does not change the active
@@ -150,6 +155,8 @@ whether compiler-visible Structure source is portable to additional backends. It
 Type: list of strings or string enum.
 
 Default: `["pyspark"]`.
+
+V1 status: recognized by configuration and hook decorators. The executable hook target remains PySpark.
 
 Allowed future values:
 

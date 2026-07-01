@@ -1,4 +1,18 @@
-from structure.app.dsl.api import SchemaMode
+import pytest
+
+from structure import (
+    String,
+    Structure,
+    StructureCompileError,
+    Transform,
+    after,
+    before,
+    field,
+    input,
+    output,
+    transform,
+)
+from structure.app.dsl.api import SchemaMode, compile_transform
 
 
 def test_hooks_attach_to_declared_subtransform_boundaries(orders_recipe) -> None:
@@ -33,6 +47,61 @@ def test_hooks_record_input_access_and_projection_validation_contracts(orders_re
         ("hook", SchemaMode.ALLOW_EXTRA_COLUMNS, True),
         ("hook_projected", SchemaMode.STRICT, False),
     ]
+
+
+def test_hooks_record_target_backend_metadata() -> None:
+    """Hooks carry v1 target_backend metadata through the PySpark recipe."""
+
+    class Row(Structure):
+        id = field(String(), nullable=False)
+
+    @transform
+    class NormalizeRows(Transform):
+        rows = input(Row)
+        normalized = output(Row)
+
+        def normalize(self, row: Row) -> Row:
+            return Row(id=row.id)
+
+        @before(normalize, lane=rows, target_backend=["pyspark"])
+        def prepare(self, *, rows, spark, ctx):
+            return rows
+
+        @after(normalize, lane=rows, target_backend="pyspark")
+        def clean(self, *, rows, spark, ctx):
+            return rows
+
+    plan = compile_transform(NormalizeRows)
+
+    assert plan.steps[0].before_hooks[0].target_backend == ("pyspark",)
+    assert not plan.steps[0].before_hooks[0].target_defaulted
+    assert plan.steps[0].after_hooks[0].target_backend == ("pyspark",)
+    assert not plan.steps[0].after_hooks[0].target_defaulted
+
+
+def test_non_pyspark_only_hook_target_fails_before_runtime() -> None:
+    """V1 accepts hook target syntax, but active execution is still PySpark only."""
+
+    class Row(Structure):
+        id = field(String(), nullable=False)
+
+    @transform
+    class NormalizeRows(Transform):
+        rows = input(Row)
+        normalized = output(Row)
+
+        def normalize(self, row: Row) -> Row:
+            return Row(id=row.id)
+
+        @after(normalize, lane=rows, target_backend="polars")
+        def clean(self, *, rows, spark, ctx):
+            return rows
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(NormalizeRows)
+
+    assert "targets polars" in str(raised.value)
+    assert "PySpark only" in str(raised.value)
 
 
 def test_generated_code_calls_source_transform_hooks_directly(orders_transform_text) -> None:

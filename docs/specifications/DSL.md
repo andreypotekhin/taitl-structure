@@ -69,6 +69,7 @@ from structure import (
     output,
     expr_fn,
     where,
+    project,
     before,
     after,
     validate_output,

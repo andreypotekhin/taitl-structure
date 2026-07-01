@@ -16,6 +16,8 @@ class PySparkHookRecipe:
     schema_mode: SchemaMode
     project_output: bool
     streaming_safe: bool
+    target_backend: tuple[str, ...] = ("pyspark",)
+    target_defaulted: bool = True
 
     @property
     def lane(self) -> str:

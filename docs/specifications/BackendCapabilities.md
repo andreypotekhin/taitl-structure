@@ -47,7 +47,9 @@ BackendId
   family
 ```
 
-For v1, `name = "pyspark"`, `target = ">=3.5,<4.1"`, and `family = "ordinary_pyspark"` by default.
+For v1, `name = "pyspark"`, `target = ">=3.5,<4.1"`, and implementation `family = "ordinary_pyspark"` by default.
+Future alternative-backend reports may add semantic-family vocabulary such as `pyspark_dataframe` or `sql_relation`;
+that vocabulary must not require renaming the current v1 implementation family.
 
 `imports()` returns deterministic generated import metadata for the backend. For PySpark v1 this includes the aliases
 for `pyspark.sql.functions`, `pyspark.sql.types`, `DataFrame`, `SparkSession`, `Column`, and Structure generated

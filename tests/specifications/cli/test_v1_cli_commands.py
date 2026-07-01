@@ -102,6 +102,20 @@ def test_v1_cli_check_is_spark_free_and_does_not_write_generated_files() -> None
         assert not Path("generated").exists()
 
 
+def test_v1_cli_check_accepts_reserved_compat_targets() -> None:
+    with workspace_tmp() as root:
+        write_project(root)
+
+        result = CliRunner().invoke(
+            cli,
+            ["check", "--target-profile", ">=3.5,<4.1", "--compat-targets", "polars,duckdb"],
+        )
+
+        assert result.exit_code == 0, result.output
+        assert "compatibility targets: polars, duckdb" in result.output
+        assert "non-PySpark target checks are reserved for v2+" in result.output
+
+
 def test_v1_cli_compile_writes_generated_files_and_fail_on_diff_passes() -> None:
     with workspace_tmp() as root:
         write_project(root)
@@ -147,6 +161,21 @@ def test_v1_cli_explain_renders_transform_plan() -> None:
         assert "traceability:" in result.output
         assert "static dataflow:" in result.output
         assert "NormalizeOrders <- orders" in result.output
+
+
+def test_v1_cli_explain_accepts_reserved_compat_targets() -> None:
+    with workspace_tmp() as root:
+        write_project(root)
+
+        result = CliRunner().invoke(
+            cli,
+            ["explain", "--compat-targets", "polars,duckdb", "orders.transforms.NormalizeOrders"],
+        )
+
+        assert result.exit_code == 0, result.output
+        assert "NormalizeOrders" in result.output
+        assert "compatibility targets: polars, duckdb" in result.output
+        assert "non-PySpark target checks are reserved for v2+" in result.output
 
 
 def test_v1_cli_clean_removes_owned_generated_files_only() -> None:

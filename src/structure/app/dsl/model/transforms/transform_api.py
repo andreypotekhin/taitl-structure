@@ -247,6 +247,7 @@ def before(
     schema_mode: SchemaMode = SchemaMode.STRICT,
     project_output: bool = False,
     streaming_safe: bool = False,
+    target_backend: str | Iterable[str] | None = None,
 ):
     return _hook(
         "before",
@@ -261,6 +262,7 @@ def before(
         schema_mode=schema_mode,
         project_output=project_output,
         streaming_safe=streaming_safe,
+        target_backend=target_backend,
     )
 
 
@@ -277,6 +279,7 @@ def after(
     schema_mode: SchemaMode = SchemaMode.STRICT,
     project_output: bool = False,
     streaming_safe: bool = False,
+    target_backend: str | Iterable[str] | None = None,
 ):
     return _hook(
         "after",
@@ -291,6 +294,7 @@ def after(
         schema_mode=schema_mode,
         project_output=project_output,
         streaming_safe=streaming_safe,
+        target_backend=target_backend,
     )
 
 
@@ -400,12 +404,14 @@ def _hook(
     schema_mode: SchemaMode,
     project_output: bool,
     streaming_safe: bool,
+    target_backend: str | Iterable[str] | None,
 ):
     if not callable(target):
         raise TypeError(f"@{phase}(...) requires a subtransform method")
     kwargs = {"input": input, "inputs": inputs, "lane": lane, "lanes": lanes, "output": output, "outputs": outputs}
     sources = _hook_sources(phase, kwargs)
     targets = _hook_outputs(phase, kwargs, default=sources)
+    hook_targets, target_defaulted = _hook_target_backend(target_backend)
 
     def decorate(function: Callable) -> Callable:
         setattr(
@@ -422,11 +428,33 @@ def _hook(
                 "schema_mode": schema_mode,
                 "project_output": project_output,
                 "streaming_safe": streaming_safe,
+                "target_backend": hook_targets,
+                "target_defaulted": target_defaulted,
             },
         )
         return function
 
     return decorate
+
+
+def _hook_target_backend(value: str | Iterable[str] | None) -> tuple[tuple[str, ...], bool]:
+    if value is None:
+        return ("pyspark",), True
+    if isinstance(value, str):
+        if not value:
+            raise TypeError("target_backend must be a non-empty backend name")
+        if value == "configured":
+            return ("pyspark",), False
+        return (value,), False
+    if isinstance(value, bytes):
+        raise TypeError("target_backend must be a backend name or a non-empty backend name sequence")
+    try:
+        targets = tuple(cast(Iterable[object], value))
+    except TypeError as error:
+        raise TypeError("target_backend must be a backend name or a non-empty backend name sequence") from error
+    if not targets or not all(isinstance(target, str) and target for target in targets):
+        raise TypeError("target_backend must contain non-empty backend names")
+    return cast(tuple[str, ...], targets), False
 
 
 def _hook_sources(phase: str, kwargs: dict[str, object]) -> tuple:

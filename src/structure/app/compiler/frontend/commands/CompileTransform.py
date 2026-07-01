@@ -1126,6 +1126,7 @@ class CompileTransform:
             return
 
     def _validate_hook_signature(self, transform_class: type[Transform], hook: HookPlan) -> None:
+        self._validate_hook_target_backend(transform_class, hook)
         method = getattr(transform_class, hook.name)
         parameters = list(inspect.signature(method).parameters.values())
         if not parameters or parameters[0].name != "self":
@@ -1154,6 +1155,22 @@ class CompileTransform:
                     f"{', '.join(expected)}; got {', '.join(names) or 'none'}."
                 ),
             )
+
+    def _validate_hook_target_backend(self, transform_class: type[Transform], hook: HookPlan) -> None:
+        if "all" in hook.target_backend or "pyspark" in hook.target_backend:
+            return
+        targets = ", ".join(hook.target_backend)
+        raise self._error(
+            "DSL-E0402",
+            transform_class=transform_class,
+            member=hook.name,
+            problem=(
+                f"{transform_class.__name__}.{hook.name} targets {targets}, "
+                "but v1 active hook execution is PySpark only."
+            ),
+            use='Use target_backend="pyspark" for v1, or keep non-PySpark hook declarations for a future backend.',
+            context={"hook": hook.name, "target_backend": targets},
+        )
 
     def _hook_signature_error(
         self,

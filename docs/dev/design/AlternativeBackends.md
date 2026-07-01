@@ -54,14 +54,18 @@ Roadmap priority:
 
 ## Target Families
 
-Backends should be grouped by semantic family rather than by library name alone:
+Backends should be grouped by semantic family rather than by library name alone. This is future diagnostic vocabulary,
+distinct from the current v1 implementation family `ordinary_pyspark`.
 
 ```text
-distributed_relational
-local_lazy_relational
+pyspark_dataframe
+spark_connect_dataframe
+typed_python_dataframe
+local_lazy_dataframe
 local_eager_dataframe
 sql_relation
-meta_backend
+meta_relational_dsl
+distributed_python_dataframe
 ```
 
 Family metadata lets diagnostics say more than "unsupported". For example, Pandas may support a projection but not a

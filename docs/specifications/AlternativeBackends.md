@@ -67,6 +67,7 @@ BackendId
 Examples:
 
 ```text
+pyspark >=3.5,<4.1 ordinary_pyspark
 pyspark >=3.5,<4.1 pyspark_dataframe
 spark_sql >=3.5,<4.1 sql_relation
 polars >=1.0 local_lazy_dataframe
@@ -75,8 +76,9 @@ pandas >=2.0 local_eager_dataframe
 ibis >=9.0 meta_relational_dsl
 ```
 
-`name` is the configured backend id. `target` is a version range or capability profile. `family` captures semantic
-shape.
+`name` is the configured backend id. `target` is a version range or capability profile. In v1, `family` is the current
+implementation family and remains `ordinary_pyspark`. Future compatibility reports may additionally use semantic
+families such as `pyspark_dataframe` or `sql_relation` to describe target shape.
 
 ## Target Families
 
@@ -109,6 +111,8 @@ hook_target_default = ["pyspark"]
 
 Compatibility notes:
 
+- V1 recognizes these keys as reserved metadata while keeping active execution limited to `target_backend = "pyspark"`.
+- Non-PySpark entries in `compat_targets` are reported as pending in v1; their compatibility checks do not run yet.
 - `target_pyspark` remains supported for the PySpark target.
 - `target_profile` is the generic successor for non-PySpark targets.
 - `compat_targets` asks for a portability report and does not change the active target.

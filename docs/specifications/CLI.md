@@ -96,6 +96,9 @@ Recommended initial CLI override flags:
 Implementations may stage these flags across milestones, but every supported flag must behave as a config override and
 must appear in help text with the corresponding config key.
 
+V1 accepts `--target-profile` and `--compat-targets` as reserved alternative-backend metadata. Non-PySpark compatibility
+targets must be reported as pending, not as executed compatibility checks.
+
 ## `structure init`
 
 `structure init` creates a Structure configuration file for a project.
@@ -121,6 +124,7 @@ generated_package = "structure_generated"
 execution_mode = "online"
 target_backend = "pyspark"
 target_pyspark = ">=3.5,<4.1"
+hook_target_default = ["pyspark"]
 traceability = "compiler"
 validate_inputs = true
 input_validation_mode = "schema_only"
@@ -165,16 +169,15 @@ Structure check passed
 
 Warnings do not fail the command by default. Errors fail with exit code `1`.
 
-Future `--compat-targets` behavior:
+V1 `--compat-targets` behavior:
 
 ```bash
 structure check --compat-targets pyspark,polars,duckdb
 ```
 
-This mode validates the active target as usual, then reports portability for the listed targets using the same
-capability engine. Unsupported active-target requirements remain errors. Unsupported non-active targets are reported in
-a compatibility matrix unless a future fail flag asks to fail the whole command. Opaque hook boundaries and inherited
-hook target defaults should appear as warnings.
+V1 validates the active PySpark target as usual, then prints a pending-status summary for listed non-PySpark targets.
+It must not claim that Polars, DuckDB, Spark SQL, or Ibis checks have run. Future versions will replace the pending
+summary with capability-engine portability reports. Unsupported active-target requirements remain errors.
 
 ## `structure compile`
 

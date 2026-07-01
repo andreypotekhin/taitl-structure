@@ -185,6 +185,10 @@ Rules:
 Target scope prevents accidental runtime errors such as calling a PySpark hook with a Polars LazyFrame or DuckDB
 relation. It does not make hook internals compiler-visible.
 
+V1 accepts and carries `target_backend` metadata so documented PySpark hook examples are usable now. A hook whose
+effective target set excludes `pyspark` must fail during compilation in v1 because PySpark is the only executable hook
+ABI.
+
 ## Schema Handling
 
 Hooks receive and return DataFrames.

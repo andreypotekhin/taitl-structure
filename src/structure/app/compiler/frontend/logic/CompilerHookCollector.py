@@ -23,6 +23,8 @@ class CompilerHookCollector:
                     schema_mode=metadata["schema_mode"],
                     project_output=metadata["project_output"],
                     streaming_safe=metadata["streaming_safe"],
+                    target_backend=metadata["target_backend"],
+                    target_defaulted=metadata["target_defaulted"],
                 )
             )
         return {key: tuple(value) for key, value in grouped.items()}

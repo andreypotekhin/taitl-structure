@@ -21,6 +21,8 @@ class HookPlan:
     schema_mode: SchemaMode = SchemaMode.STRICT
     project_output: bool = False
     streaming_safe: bool = False
+    target_backend: tuple[str, ...] = ("pyspark",)
+    target_defaulted: bool = True
 
     @property
     def lane(self) -> HookDeclaration:
