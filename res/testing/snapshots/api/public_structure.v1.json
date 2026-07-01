@@ -95,6 +95,18 @@
       "qualname": "JoinHint",
       "signature": "(*values)"
     },
+    "JoinStrategy": {
+      "dataclass_fields": [],
+      "enum_members": [
+        "BROADCAST_HASH",
+        "SHUFFLE_HASH",
+        "SORT_MERGE"
+      ],
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.JoinStrategy",
+      "qualname": "JoinStrategy",
+      "signature": "(*values)"
+    },
     "Long": {
       "dataclass_fields": [
         "name"
@@ -244,6 +256,22 @@
       "qualname": "after",
       "signature": "(target: 'Callable', *, input: 'InputDeclaration | None' = None, inputs: 'object | None' = None, lane: 'InputDeclaration | LaneDeclaration | OutputDeclaration | None' = None, lanes: 'object | None' = None, output: 'LaneDeclaration | OutputDeclaration | None' = None, outputs: 'object | None' = None, pass_inputs: 'bool' = False, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming_safe: 'bool' = False, target_backend: 'str | Iterable[str] | None' = None)"
     },
+    "arr_filter": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "arr_filter",
+      "signature": "(value: 'object', function: 'Callable[[Expression], object]') -> 'Expression'"
+    },
+    "arr_transform": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "arr_transform",
+      "signature": "(value: 'object', function: 'Callable[[Expression], object]') -> 'Expression'"
+    },
     "before": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -252,6 +280,14 @@
       "qualname": "before",
       "signature": "(target: 'Callable', *, input: 'InputDeclaration | None' = None, inputs: 'object | None' = None, lane: 'InputDeclaration | LaneDeclaration | OutputDeclaration | None' = None, lanes: 'object | None' = None, output: 'InputDeclaration | LaneDeclaration | OutputDeclaration | None' = None, outputs: 'object | None' = None, pass_inputs: 'bool' = False, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming_safe: 'bool' = False, target_backend: 'str | Iterable[str] | None' = None)"
     },
+    "cache": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "cache",
+      "signature": "(storage_level: 'object') -> 'Callable[[F], F]'"
+    },
     "coalesce": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -259,6 +295,14 @@
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "coalesce",
       "signature": "(*values: 'object') -> 'Expression'"
+    },
+    "count": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "count",
+      "signature": "() -> 'Expression'"
     },
     "expr_fn": {
       "dataclass_fields": [],
@@ -275,6 +319,14 @@
       "module": "structure.app.dsl.model.schemas.schema",
       "qualname": "field",
       "signature": "(type: 'StructureType', *, nullable: 'bool' = True, primary_key: 'bool' = False, alias: 'str | None' = None, metadata: 'Mapping[str, object] | None' = None, description: 'str | None' = None) -> 'FieldDeclaration'"
+    },
+    "group_by": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "group_by",
+      "signature": "(**keys: 'object') -> 'None'"
     },
     "input": {
       "dataclass_fields": [],
@@ -323,6 +375,14 @@
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "project",
       "signature": "(source: 'object | None' = None, target: 'type[Structure] | Iterable[str] | None' = None) -> 'object'"
+    },
+    "sum": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "sum",
+      "signature": "(value: 'object') -> 'Expression'"
     },
     "to_decimal": {
       "dataclass_fields": [],

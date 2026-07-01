@@ -63,9 +63,10 @@ diagnostics, traceability, and tests.
 ## Progress
 
 - [x] (2026-06-23) v2 scope, user stories, backlog epics, milestone split, and sprint charters are drafted.
-- [ ] Add v2 fixture package skeleton.
-- [ ] Add IR operation taxonomy and backend capability placeholders.
-- [ ] Add diagnostics and explain placeholders.
+- [x] (2026-07-01) Added v2 fixture package skeleton and importability coverage for source fixtures.
+- [x] (2026-07-01) Added IR operation metadata for capability, cardinality, and streaming support placeholders.
+- [x] (2026-07-01) Added unsupported v2 backend capability checks and explain cardinality anchors.
+- [ ] Add compile-time performance baseline for the v2 fixture package.
 
 ## Compile-Time Performance Metric
 

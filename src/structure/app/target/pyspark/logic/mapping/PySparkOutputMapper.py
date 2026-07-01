@@ -1,3 +1,4 @@
+from structure.app.compiler.ir.model.OperationCapability import OperationCapability
 from structure.app.compiler.ir.model.OutputPlan import OutputPlan
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.app.target.capabilities.model.BackendCapabilities import BackendCapabilities
@@ -64,6 +65,7 @@ class PySparkOutputMapper:
         recipes: list[PySparkOperationRecipe] = []
         occurrence = 0
         for operation in output.operations:
+            self._require_operation_capability(operation.capability, capabilities=capabilities)
             if operation.kind == "filter" and operation.filter is not None:
                 recipes.append(
                     PySparkOperationRecipe.filter_operation(
@@ -78,6 +80,22 @@ class PySparkOutputMapper:
                     )
                 )
         return tuple(recipes)
+
+    def _require_operation_capability(
+        self,
+        capability: OperationCapability | None,
+        *,
+        capabilities: BackendCapabilities,
+    ) -> None:
+        if capability is not None:
+            capabilities.require(
+                CapabilityRequirement(
+                    group=capability.group,
+                    name=capability.name,
+                    source=capability.source,
+                    docs=capability.docs,
+                )
+            )
 
     def _join(self, join, *, occurrence: int, left_alias: str, capabilities: BackendCapabilities) -> PySparkJoinRecipe:
         capabilities.require(CapabilityRequirement(group="join", name="join_one"))

@@ -16,6 +16,7 @@ from structure import (
     transform,
     where,
 )
+from structure.app.compiler.api import OperationCardinality, StreamingSupport
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
@@ -117,6 +118,10 @@ def test_bare_inferred_join_one_makes_later_relation_reads_joined() -> None:
     assert step.joins[0].source == "products"
     assert step.operations[0].kind == "join"
     assert step.operations[0].join == step.joins[0]
+    assert step.operations[0].capability is not None
+    assert step.operations[0].capability.group == "join"
+    assert step.operations[0].capability.name == "join_one"
+    assert step.operations[0].cardinality is OperationCardinality.SELECT_ONE
     assert product_name_data["scope"] == "product"
     assert product_name.nullable
 
@@ -137,6 +142,16 @@ def test_inferred_join_one_preserves_filter_join_order() -> None:
     step = compile_transform(AddProduct).steps[0]
 
     assert [operation.kind for operation in step.operations] == ["filter", "join", "filter"]
+    assert [operation.cardinality for operation in step.operations] == [
+        OperationCardinality.ROW_FILTERING,
+        OperationCardinality.SELECT_ONE,
+        OperationCardinality.ROW_FILTERING,
+    ]
+    assert [operation.streaming for operation in step.operations] == [
+        StreamingSupport.COMPATIBLE,
+        StreamingSupport.UNKNOWN,
+        StreamingSupport.COMPATIBLE,
+    ]
 
     recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})

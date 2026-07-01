@@ -464,6 +464,50 @@ Rules:
 
 Projection is the typed schema boundary between steps. It is also the primary source for column-level static dataflow.
 
+## Operation Metadata
+
+Ordered `OperationPlan` records attach compiler-visible metadata to filters, joins, and reserved v2 operations before
+target lowering. This foundation metadata does not implement v2 behavior. It gives every later feature one shape for
+capability checks, cardinality reporting, and streaming classification.
+
+```text
+OperationPlan
+  kind
+  family
+  capability
+  cardinality
+  streaming
+  filter
+  join
+
+OperationCapability
+  group
+  name
+  source
+  docs
+```
+
+`capability` is backend-neutral IR metadata. Target mappers translate it to the target layer's
+`CapabilityRequirement` before lowering. The v1 PySpark profile accepts current v1 operation capabilities and rejects
+reserved v2 capabilities with `BACKEND-E2402`.
+
+Allowed cardinality values are:
+
+- `row_preserving`;
+- `row_filtering`;
+- `row_multiplying`;
+- `aggregate`;
+- `select_one`;
+- `unknown`.
+
+Current v1 filter operations record `row_filtering`. Current `join_one(...)` operations record `select_one` because
+the operation expresses lookup intent: one matching right-side row is selected for each left-side row, even when the
+compiler emits a warning that uniqueness is not proven. `streaming` reuses the compileability vocabulary
+`compatible`, `batch_only`, and `unknown`.
+
+`structure explain` displays each step's ordered operations as `kind(cardinality)`. This is an anchor for future v2
+explain output, not a full v2 lineage or optimizer report.
+
 ## Join Operation
 
 ```text
@@ -1196,6 +1240,7 @@ The implementation is complete when tests prove:
 - casts and decimal conversion produce `CastExpr` metadata;
 - conditional expressions produce ordered `WhenExpr` branches;
 - `where(...)` produces ordered `FilterOperation` records;
+- ordered operations carry capability, cardinality, and streaming metadata;
 - schema construction produces a `ProjectOperation` covering the output schema exactly once;
 - `SchemaClass.base(row)(...)` produces explicit assignments for inherited carry-through fields;
 - `join_one(...)` produces a `JoinOperation` with joined scope, join type, hint, ordered key pairs, and cardinality

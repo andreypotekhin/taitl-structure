@@ -1,6 +1,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[3]
 SRC = ROOT / "src"
 if str(SRC) not in sys.path:
@@ -53,6 +55,39 @@ def test_unsupported_feature_uses_backend_capability_diagnostic() -> None:
     assert diagnostic.feature_name == "join_many"
     assert "supported v1 Structure operation" in diagnostic.use
     assert diagnostic.docs == "docs/specifications/BackendCapabilities.md"
+
+
+@pytest.mark.parametrize(
+    ("group", "name"),
+    [
+        ("join", "exists"),
+        ("join", "not_exists"),
+        ("join", "join_many"),
+        ("join", "temporal_one"),
+        ("join", "as_of_one"),
+        ("aggregate", "group_by"),
+        ("aggregate", "count"),
+        ("aggregate", "sum"),
+        ("window", "window_project"),
+        ("higher_order", "array_transform"),
+        ("higher_order", "array_filter"),
+        ("optimization", "cache"),
+        ("optimization", "repartition"),
+        ("explain", "field_lineage"),
+        ("docs", "generated_docs"),
+        ("compile", "incremental"),
+    ],
+)
+def test_v2_operation_capabilities_are_explicitly_unsupported(group: str, name: str) -> None:
+    resolved = Capabilities.resolve()()
+
+    with pytest.raises(BackendCapabilityError) as raised:
+        resolved.require(CapabilityRequirement(group=group, name=name))
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == BACKEND_E2402
+    assert diagnostic.feature_group == group
+    assert diagnostic.feature_name == name
 
 
 def test_unknown_backend_uses_backend_target_diagnostic() -> None:

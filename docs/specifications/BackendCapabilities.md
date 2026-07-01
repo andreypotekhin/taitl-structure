@@ -73,9 +73,16 @@ Allowed groups:
 
 - `backend`;
 - `expression`;
+- `aggregate`;
+- `compile`;
+- `docs`;
+- `explain`;
+- `higher_order`;
 - `join`;
+- `optimization`;
 - `validation`;
 - `streaming`;
+- `window`;
 - `imports`.
 
 Future alternative backends may add these groups:
@@ -151,14 +158,22 @@ imports.generated_pyspark_imports
 Deferred features must be represented as unsupported decisions. Examples:
 
 ```text
-join.join_many
 join.exists
 join.not_exists
-join.lookup_dedupe
+join.join_many
 join.temporal_one
 join.as_of_one
-expression.aggregation
-expression.window
+aggregate.group_by
+aggregate.count
+aggregate.sum
+window.window_project
+higher_order.array_transform
+higher_order.array_filter
+optimization.cache
+optimization.repartition
+explain.field_lineage
+docs.generated_docs
+compile.incremental
 streaming.stream_stream_join
 streaming.streaming_orchestration
 backend.spark_connect

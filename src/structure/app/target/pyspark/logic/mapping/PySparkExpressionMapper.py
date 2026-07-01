@@ -7,7 +7,8 @@ from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkEx
 class PySparkExpressionMapper:
 
     def map(self, expression: Expression, *, capabilities: BackendCapabilities) -> PySparkExpressionRecipe:
-        capabilities.require(CapabilityRequirement(group="expression", name=self._requirement(expression)))
+        group, name = self._requirement(expression)
+        capabilities.require(CapabilityRequirement(group=group, name=name))
         return PySparkExpressionRecipe(
             kind=expression.kind,
             type=expression.type,
@@ -16,22 +17,25 @@ class PySparkExpressionMapper:
             args=tuple(self.map(argument, capabilities=capabilities) for argument in expression.args),
         )
 
-    def _requirement(self, expression: Expression) -> str:
+    def _requirement(self, expression: Expression) -> tuple[str, str]:
+        if expression.kind == "reserved_v2":
+            data = expression.data or {}
+            return str(data["capability_group"]), str(data["capability_name"])
         if expression.kind == "field":
-            return "field_ref"
+            return "expression", "field_ref"
         if expression.kind == "literal":
-            return "literal"
+            return "expression", "literal"
         if expression.kind in {"and", "or", "not", "is_null", "is_not_null"}:
-            return "boolean_ops"
+            return "expression", "boolean_ops"
         if expression.kind in {"eq", "ne", "gt", "lt", "le", "ge"}:
-            return "equality"
+            return "expression", "equality"
         if expression.kind == "null_safe_eq":
-            return "null_safe_equality"
+            return "expression", "null_safe_equality"
         if expression.kind in {"add", "sub", "mul", "when"}:
-            return "standard_helper_call"
+            return "expression", "standard_helper_call"
         if expression.kind == "call":
             function = (expression.data or {}).get("function")
             if function == "to_decimal":
-                return "cast"
-            return "standard_helper_call"
-        return "standard_helper_call"
+                return "expression", "cast"
+            return "expression", "standard_helper_call"
+        return "expression", "standard_helper_call"

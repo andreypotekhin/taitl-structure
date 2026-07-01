@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import TypeVar, cast, overload
 
+from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
+from structure.app.compiler.ir.model.OperationCardinality import OperationCardinality
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import current_context
 from structure.app.dsl.model.expr.Expression import Expression
@@ -10,6 +12,7 @@ from structure.app.dsl.model.expr.RowScope import RowScope
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
+from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
 from structure.app.dsl.model.types.BooleanType import BooleanType
 
 
@@ -28,6 +31,41 @@ class InputScope(RowScope):
             "Use join_one(self.customers, on=...) or add a relation parameter "
             "and use join_one(customer, on=...)."
         )
+
+    def join_many(
+        self,
+        *,
+        on: Expression,
+        how: Join = Join.INNER,
+        strategy: JoinStrategy | None = None,
+    ) -> RowScope:
+        context = current_context()
+        if context is None:
+            raise RuntimeError("join_many(...) can only be used inside a compiled Structure subtransform")
+        if not isinstance(on, Expression):
+            raise TypeError("join_many(on=...) requires a Structure expression")
+        if not isinstance(on.type, BooleanType):
+            raise TypeError("join_many(on=...) requires a boolean Structure expression")
+        if not isinstance(how, Join):
+            raise TypeError("join_many(how=...) requires a Join value")
+        if strategy is not None and not isinstance(strategy, JoinStrategy):
+            raise TypeError("join_many(strategy=...) requires a JoinStrategy value")
+
+        context.operations.append(
+            OperationPlan.reserved_operation(
+                "join_many",
+                group="join",
+                name="join_many",
+                cardinality=OperationCardinality.ROW_MULTIPLYING,
+                streaming=StreamingSupport.UNKNOWN,
+            )
+        )
+        self._structure_joined_scope = RowScope(
+            name=self._structure_input_name,
+            schema=self._structure_input_schema,
+            nullable=how is Join.LEFT,
+        )
+        return self._structure_joined_scope
 
     def __getattr__(self, name: str) -> Expression:
         if self._structure_joined_scope is not None:

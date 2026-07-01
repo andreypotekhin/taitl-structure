@@ -27,6 +27,7 @@ from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
+from structure.app.dsl.model.transforms.reserved_v2 import reserved_operations
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.types.DecimalType import DecimalType
 from structure.app.dsl.model.types.StructureType import StructureType
@@ -154,6 +155,7 @@ class CompileTransform:
                     context={"error": type(error).__name__},
                 ) from error
 
+            context.operations.extend(reserved_operations(member))
             diagnostics.extend(self._validate_joins(transform_class, name, context.joins))
             values = self._result_values(
                 transform_class,

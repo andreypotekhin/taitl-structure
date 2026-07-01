@@ -1,4 +1,5 @@
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
+from structure.app.compiler.ir.model.OperationCapability import OperationCapability
 from structure.app.compiler.ir.model.ProjectAssignment import ProjectAssignment
 from structure.app.compiler.ir.model.StepPlan import StepPlan
 from structure.app.target.capabilities.model.BackendCapabilities import BackendCapabilities
@@ -80,6 +81,7 @@ class PySparkStepMapper:
         recipes: list[PySparkOperationRecipe] = []
         occurrence = 0
         for operation in step.operations:
+            self._require_operation_capability(operation.capability, capabilities=capabilities)
             if operation.kind == "filter" and operation.filter is not None:
                 recipes.append(
                     PySparkOperationRecipe.filter_operation(
@@ -94,6 +96,22 @@ class PySparkStepMapper:
                     )
                 )
         return tuple(recipes)
+
+    def _require_operation_capability(
+        self,
+        capability: OperationCapability | None,
+        *,
+        capabilities: BackendCapabilities,
+    ) -> None:
+        if capability is not None:
+            capabilities.require(
+                CapabilityRequirement(
+                    group=capability.group,
+                    name=capability.name,
+                    source=capability.source,
+                    docs=capability.docs,
+                )
+            )
 
     def _join(
         self,

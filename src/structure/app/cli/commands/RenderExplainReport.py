@@ -43,13 +43,18 @@ class RenderExplainReport:
         for item in recipe.inputs:
             lines.append(f"    {item.name}: {item.schema.__name__}")
         lines.extend(["", "  steps:"])
-        for step in recipe.steps:
+        for step, source_step in zip(recipe.steps, plan.steps, strict=True):
             outputs = (
                 step.output_schema.__name__
                 if len(step.results) == 1
                 else ", ".join(f"{result.lane}: {result.schema.__name__}" for result in step.results)
             )
             lines.append(f"    {step.name}: {step.input_schema.__name__} -> {outputs}")
+            if source_step.operations:
+                operations = ", ".join(
+                    f"{operation.kind}({operation.cardinality.value})" for operation in source_step.operations
+                )
+                lines.append(f"      operations: {operations}")
             if step.filters:
                 lines.append(f"      filters: {len(step.filters)}")
             if step.joins:

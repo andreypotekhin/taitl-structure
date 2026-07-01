@@ -158,6 +158,7 @@ def test_v1_cli_explain_renders_transform_plan() -> None:
         assert "status: compatible" in result.output
         assert "orders: OrderRaw" in result.output
         assert "normalize: OrderRaw -> OrderNormalized" in result.output
+        assert "operations: filter(row_filtering)" in result.output
         assert "traceability:" in result.output
         assert "static dataflow:" in result.output
         assert "NormalizeOrders <- orders" in result.output
