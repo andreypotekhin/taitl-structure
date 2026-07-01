@@ -23,7 +23,7 @@ to Spark's optimizer.
 Structure reduces hand-maintained PySpark boilerplate. Pipelines express filtering, joins, projections, and
 normalization in plain Python while Spark still sees optimizer-visible DataFrame logic.
 
-Define schemas. Define transforms. Run.
+Define schemas. Define transforms. Run transforms.
 
 ### Example Schema
 

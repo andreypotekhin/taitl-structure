@@ -5,7 +5,8 @@
 Backend capabilities define what a configured execution target can lower from Structure IR. The interface keeps
 PySpark version choices, unsupported feature checks, streaming support, validation support, and generated import names
 out of discovery, symbolic execution, generic IR construction, online runtime orchestration, and generated-code text
-rendering.
+rendering. It is also the extension point for the future alternative backend contract specified in
+[AlternativeBackends.md](AlternativeBackends.md).
 
 This specification resolves C23 from [Challenges.md](../dev/design/Challenges.md).
 
@@ -75,6 +76,13 @@ Allowed groups:
 - `streaming`;
 - `imports`.
 
+Future alternative backends may add these groups:
+
+- `runtime`;
+- `output`;
+- `hook`;
+- `type`.
+
 `name` is the feature inside that group, such as `null_safe_equality`, `join_one`,
 `schema_only_validation`, `stream_static_left_join`, or `generated_pyspark_imports`.
 
@@ -86,7 +94,8 @@ Capability requirements describe Structure semantics, not individual PySpark API
 answer questions such as "can this target lower grouped aggregation", "can it lower symbolic higher-order array
 transforms", or "can it lower this join family" rather than exposing a registry of every Spark function. This keeps
 PySpark version choices isolated in the target layer while preventing the compiler surface from becoming a second
-PySpark API.
+PySpark API. The same rule applies to Spark SQL, typed PySpark DataFrame patterns, Polars, DuckDB, Pandas, Ibis, and
+other future targets: capability requirements describe Structure semantics, not a mirror of the target library.
 
 ## Decision Shape
 
@@ -156,6 +165,32 @@ backend.spark_connect
 Unsupported does not mean impossible forever. It means the feature is not part of the current backend contract and must
 not be lowered through silent fallback, Python UDFs, row-wise operations, or backend-specific ad hoc code.
 
+## Alternative Backend Extension
+
+Future backend profiles must be admitted through the rules in [AlternativeBackends.md](AlternativeBackends.md).
+
+Minimum profile data:
+
+```text
+BackendId
+  name
+  target
+  family
+
+CapabilityProfile
+  supported
+  degraded
+  unsupported
+  modes
+```
+
+The active target treats unsupported and unknown required capabilities as errors. Multi-target compatibility checks may
+also report degraded, opaque, and unknown features so users can decide whether a transform is portable enough for their
+project.
+
+Backends must not be supported by rewriting user Structure source. They must consume the same checked IR and either
+lower it honestly or fail with a backend diagnostic before online execution or generation.
+
 ## Diagnostics
 
 Backend capability diagnostics use the component prefix defined in [Diagnostics.md](Diagnostics.md).
@@ -197,6 +232,7 @@ Runtime PySpark execution tests may import PySpark. Capability tests and compile
 - `target_backend = "pyspark"` with `target_pyspark = ">=3.5,<4.1"` resolves a PySpark capability profile.
 - Unknown `target_backend` fails with `BACKEND-E2401`.
 - Unsupported feature requirements fail with `BACKEND-E2402`.
+- Future backend profiles can report degraded, opaque, and unknown capabilities without importing backend runtimes.
 - Supported v1 feature requirements return supported decisions.
 - Generated import metadata is deterministic.
 - Tests prove capability selection and checks do not import PySpark.

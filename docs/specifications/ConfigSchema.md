@@ -34,6 +34,7 @@ generated_package = "structure_generated"
 execution_mode = "online"
 target_backend = "pyspark"
 target_pyspark = ">=3.5,<4.1"
+hook_target_default = ["pyspark"]
 traceability = "compiler"
 validate_intermediate = true
 input_validation_mode = "schema_only"
@@ -124,6 +125,50 @@ Rules:
 - Must be parseable by the project's version range parser.
 - Must resolve to a supported PySpark capability profile.
 - Must not inspect the locally installed PySpark version during compiler commands.
+
+### target_profile
+
+Type: version range string.
+
+Default: unset in v1.
+
+Generic future target profile. Non-PySpark targets should use this instead of adding backend-specific version keys.
+`target_pyspark` remains the PySpark compatibility key.
+
+### compat_targets
+
+Type: list of strings.
+
+Default: empty list.
+
+Future compatibility-report targets. This setting asks `structure check` and `StructureTools.compatibility` to report
+whether compiler-visible Structure source is portable to additional backends. It does not change the active
+`target_backend`.
+
+### hook_target_default
+
+Type: list of strings or string enum.
+
+Default: `["pyspark"]`.
+
+Allowed future values:
+
+```text
+["pyspark"]
+["configured"]
+["all"]
+explicit
+```
+
+Rules:
+
+- The value supplies the effective target set for hooks that omit `target_backend`.
+- `["pyspark"]` preserves existing PySpark hook behavior.
+- `["configured"]` means unmarked hooks apply only to the active target.
+- `["all"]` means the author claims hook ABI portability and should produce compatibility warnings because the hook body
+  is opaque.
+- `explicit` means every hook must declare `target_backend`.
+- Runtime execution must refuse to call a hook outside its effective target set.
 
 ### traceability
 
@@ -299,6 +344,9 @@ StructureConfig
   execution_mode
   target_backend
   target_pyspark
+  target_profile
+  compat_targets
+  hook_target_default
   traceability
   validation
   strict_performance

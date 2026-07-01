@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Hooks are Structure's explicit runtime escape hatch. They let a developer attach arbitrary PySpark DataFrame logic to a
+Hooks are Structure's explicit runtime escape hatch. They let a developer attach arbitrary backend DataFrame logic to a
 specific compiled subtransform without pretending the hook body is compiler-visible.
 
 This specification owns hook decorator behavior, target binding, signatures, ordering, input access, schema handling,
@@ -47,6 +47,7 @@ pass_inputs=False
 schema_mode=None
 project_output=False
 streaming_safe=False
+target_backend=None
 ```
 
 Rules:
@@ -60,6 +61,7 @@ Rules:
 - `schema_mode=None` means strict default validation.
 - `project_output=True` requires a schema mode and target schema that make projection meaningful.
 - `streaming_safe=True` is an author promise, not compiler inspection of the hook body.
+- `target_backend=None` means the hook inherits the configured `hook_target_default`.
 
 ## Signatures
 
@@ -153,7 +155,35 @@ Rules:
 - Diagnostics should prefer direct DSL or `@expr_fn` fixes when logic can stay compiler-visible.
 - Generated code calls hooks on the source transform implementation instance.
 - Online execution calls the same hook methods on the transform invocation.
-- Hook internals may import PySpark because they run at runtime.
+- Hook internals may import backend libraries because they run at runtime.
+
+## Backend Target Scope
+
+Hooks are target-specific opaque code. The compiler-visible Structure source may be portable across backends, but a hook
+body can rely on one backend's DataFrame API.
+
+Optional hook target declaration:
+
+```python
+@after(normalize, lane=orders, target_backend="pyspark")
+def remove_negative_totals(self, *, orders, spark, ctx):
+    return orders.where(F.col("total") >= 0)
+```
+
+Rules:
+
+- `target_backend` may be a backend id, a list of backend ids, `"configured"`, or `"all"`.
+- Use `target_backend="pyspark"` for a single backend.
+- Use `target_backend=["pyspark", "polars"]` only when one hook intentionally supports multiple Python-hosted backends.
+- Missing `target_backend` resolves from `hook_target_default` in configuration.
+- The v1 compatibility default is `hook_target_default = ["pyspark"]`.
+- A future strict mode may use `hook_target_default = "explicit"` to require every hook to declare target backends.
+- Runtime execution must not invoke a hook when the active target is outside the hook's effective target set.
+- Compatibility checks warn when an unmarked hook inherits a default while checking other targets.
+- Compatibility checks warn when a hook appears to import or reference a backend outside its declared target set.
+
+Target scope prevents accidental runtime errors such as calling a PySpark hook with a Polars LazyFrame or DuckDB
+relation. It does not make hook internals compiler-visible.
 
 ## Schema Handling
 
@@ -184,11 +214,11 @@ Hooks are batch-only by default for streaming compatibility checks.
 Rules:
 
 - A hook in a streaming-compatible transform must declare `streaming_safe=True`.
-- `streaming_safe=True` means the author promises the hook uses only Spark operations valid for the runtime streaming
+- `streaming_safe=True` means the author promises the hook uses only backend operations valid for the runtime streaming
   shape.
 - Structure may still reject a streaming-safe hook when its declared schema mode or input access is incompatible with
   the configured backend.
-- Hook internals remain opaque, so runtime Spark failures inside a hook are not compiler proof failures.
+- Hook internals remain opaque, so runtime backend failures inside a hook are not compiler proof failures.
 
 ## IR Contract
 
@@ -204,6 +234,8 @@ HookDef
   schema_mode
   project_output
   streaming_safe
+  target_backend
+  target_defaulted
   source_path
   source_line
 ```

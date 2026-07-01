@@ -9,6 +9,7 @@ The compatibility policy must:
 
 - define supported Python versions;
 - define supported PySpark versions and the default `target_pyspark` range;
+- define the boundary for future non-PySpark backends;
 - define Spark Connect scope;
 - define semantic versioning expectations;
 - define online runtime compatibility;
@@ -54,6 +55,18 @@ interface instead of scattering PySpark-version or backend-feature conditionals 
 
 When a target range spans multiple supported PySpark lines, Structure should prefer the oldest compatible API that keeps
 the output clear and optimizer-visible.
+
+## Alternative Backend Scope
+
+Alternative backend support is specified in [AlternativeBackends.md](AlternativeBackends.md). The compatibility promise
+applies to compiler-visible Structure source, not to hook bodies. Hooks are target-specific opaque runtime code and must
+either declare `target_backend` or inherit a configured `hook_target_default`.
+
+Future backend work is Python-hosted: v2 prioritizes PySpark-family targets such as Spark SQL and typed PySpark
+DataFrame patterns, v3 adds Polars LazyFrame and DuckDB, and v4 adds Ibis. Other targets should come through Ibis when
+Ibis supports them. Dask DataFrame and Ray Dataset remain out of scope until after the relational core is stable.
+Unsupported active-target requirements must fail before online execution or generation. Multi-target compatibility
+checks may report non-active target issues as unsupported, degraded, opaque, or unknown.
 
 ## Spark Connect Scope
 

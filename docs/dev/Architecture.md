@@ -1,6 +1,7 @@
 ﻿# Architecture
 
-Structure is an IR-first runtime/compiler toolkit for schema-driven PySpark data pipelines.
+Structure is an IR-first runtime/compiler toolkit for schema-driven data pipelines. PySpark is the v1 runtime and
+generation target, but the compiler core is designed to remain backend-neutral.
 
 It is not intended to be a heavy runtime framework. Source DSL files compile to backend-neutral IR. In v1, that IR can
 be consumed by the online PySpark runner at runtime or by the PySpark code generator to emit optional generated classes.
@@ -9,8 +10,8 @@ be consumed by the online PySpark runner at runtime or by the PySpark code gener
 
 - Schema-first authoring.
 - IDE-friendly source code.
-- Spark optimizer-visible online and generated execution.
-- Explicit arbitrary PySpark hooks.
+- Spark optimizer-visible online and generated execution for the v1 target.
+- Explicit arbitrary target-scoped hooks.
 - Clean hook-free generated code.
 - Lightweight runtime session.
 - Fast compiler feedback.
@@ -99,6 +100,19 @@ an explicit hook boundary instead of becoming a thin Structure wrapper around ev
 The v1 default target is `target_pyspark = ">=3.5,<4.1"`, covering PySpark 3.5.x and 4.0.x. The PySpark target layer
 should prefer the oldest clear optimizer-visible API inside the configured range. Unsupported backend targets and
 unsupported feature requirements fail through `BACKEND-E2401` and `BACKEND-E2402`.
+
+Alternative backend support must follow the same boundary. The compiler-visible Structure source should lower to
+backend-neutral IR, then the selected target adapter checks capabilities and lowers that IR to a target execution plan
+or generated artifact. Candidate future targets are Python-hosted: Spark SQL and typed PySpark DataFrame patterns
+first, then Polars LazyFrame and DuckDB, then Ibis. Other targets should come through Ibis when practical. They must be
+admitted by capability profile, target adapter, diagnostics, and tests rather than by ad hoc source rewrites. The design
+is described in [AlternativeBackends.md](design/AlternativeBackends.md) and specified in
+[AlternativeBackends.md](../specifications/AlternativeBackends.md).
+
+Hooks are the exception to the same-source goal. Hook bodies are opaque runtime code and may rely on one backend's
+DataFrame API. Future hook metadata must make that scope explicit through `target_backend` or an inherited
+`hook_target_default`, and runtime execution must never invoke a hook against a backend outside its effective target
+set.
 
 Spark Connect belongs to v4 unless it can be supported through this target boundary without changing public DSL syntax,
 online invocation construction, generated class construction, `run(...)` signatures, or streaming orchestration

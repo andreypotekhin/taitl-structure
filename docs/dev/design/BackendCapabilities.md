@@ -4,7 +4,8 @@ Structure's compiler is IR-first, but IR does not remove the need for target kno
 step, or streaming-compatible operation can be valid Structure IR while still being unsupported by a concrete backend
 or PySpark target range.
 
-This design resolves C23 by making backend capability checks a named boundary.
+This design resolves C23 by making backend capability checks a named boundary. The same boundary is also the admission
+point for future alternative backends described in [AlternativeBackends.md](AlternativeBackends.md).
 
 ## Problem
 
@@ -53,9 +54,13 @@ Groups are intentionally broad:
 - `streaming`
 - `imports`
 
+Future alternative backends may add `runtime`, `output`, `hook`, and `type` groups when those requirements are needed
+to distinguish online execution, generated output mode, target-scoped hook support, and backend type limits.
+
 The current implementation has one concrete target profile: ordinary PySpark for `target_pyspark = ">=3.5,<4.1"`.
 The profile is static source data. Selecting it must not import `pyspark`, start Java, create a Spark session, or touch
-a Spark cluster.
+a Spark cluster. Future profiles must follow the same no-runtime-import rule for Spark SQL, typed PySpark DataFrame
+patterns, Pandas, Polars, DuckDB, Spark Connect, Ibis, or other backend runtimes.
 
 ## v1 Capability Shape
 

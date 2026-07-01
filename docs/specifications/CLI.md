@@ -18,6 +18,7 @@ The v1 command set is:
 structure init
 structure init --seed-config
 structure check
+structure check --compat-targets TARGETS
 structure check --profile
 structure compile
 structure compile --profile
@@ -84,6 +85,8 @@ Recommended initial CLI override flags:
 --execution-mode online|generated
 --target-backend pyspark
 --target-pyspark RANGE
+--target-profile RANGE
+--compat-targets TARGETS
 --traceability none|compiler
 --validate-intermediate / --no-validate-intermediate
 --intermediate-validation-mode schema_only|full
@@ -161,6 +164,17 @@ Structure check passed
 ```
 
 Warnings do not fail the command by default. Errors fail with exit code `1`.
+
+Future `--compat-targets` behavior:
+
+```bash
+structure check --compat-targets pyspark,polars,duckdb
+```
+
+This mode validates the active target as usual, then reports portability for the listed targets using the same
+capability engine. Unsupported active-target requirements remain errors. Unsupported non-active targets are reported in
+a compatibility matrix unless a future fail flag asks to fail the whole command. Opaque hook boundaries and inherited
+hook target defaults should appear as warnings.
 
 ## `structure compile`
 
@@ -265,6 +279,10 @@ EnrichOrders
 
 The report should include warnings relevant to the transform, such as unproven `join_one(...)` uniqueness. It should
 identify opaque hook boundaries so a reader can distinguish compiled logic from arbitrary PySpark hooks.
+
+Future compatibility explain output should show the active target and any requested compatibility targets. Hook
+boundaries should include their effective target set and whether that target set was explicit or inherited from
+configuration.
 
 If the transform is not found, the diagnostic must show the requested name, the source roots searched, and a suggested
 fix such as checking `source_roots` or the class name.
