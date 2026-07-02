@@ -27,9 +27,10 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert [path.name for path in config.source_roots] == ["src"]
         assert config.generated_package == "structure_generated"
         assert config.execution_mode == "online"
-        assert config.target_profile is None
+        assert config.target_profile == ">=3.5,<4.1"
         assert config.compat_targets == ()
         assert config.hook_target_default == ("pyspark",)
+        assert config.source_map["target_profile"] == "default"
         assert config.source_map["generated_package"] == "default"
 
 
@@ -76,7 +77,7 @@ def test_v1_config_unknown_key_suggests_known_key() -> None:
         assert "generated_dir" in diagnostic.use
 
 
-def test_v1_config_accepts_reserved_alternative_backend_fields() -> None:
+def test_v1_config_accepts_target_profile_and_future_backend_fields() -> None:
     with workspace_tmp() as root:
         (root / "src").mkdir()
         (root / "structure.toml").write_text(
@@ -98,6 +99,26 @@ def test_v1_config_accepts_reserved_alternative_backend_fields() -> None:
         assert config.target_profile == ">=3.5,<4.1"
         assert config.compat_targets == ("polars", "duckdb")
         assert config.hook_target_default == ("pyspark",)
+
+
+def test_v1_config_rejects_legacy_target_pyspark_key() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            '[tool.structure]\ntarget_pyspark = ">=3.5,<4.1"\n',
+            encoding="utf-8",
+        )
+
+        try:
+            Configuration.resolve()(project_root=root)
+        except ConfigError as error:
+            diagnostic = error.diagnostic
+        else:
+            raise AssertionError("target_pyspark should be rejected after the target_profile rename")
+
+        assert diagnostic.code == "CONF-E0101"
+        assert diagnostic.setting == "target_pyspark"
+        assert "target_profile" in diagnostic.use
 
 
 def test_v1_config_invalid_values_fail_before_discovery() -> None:

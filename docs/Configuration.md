@@ -3,8 +3,7 @@
 Structure works by convention and supports a small TOML configuration for project-wide settings.
 
 Use configuration for paths, package names, execution mode, validation defaults, Spark SQL assumptions, target
-PySpark version, compiler traceability settings, performance policy, compatibility behavior, and build
-behavior.
+backend profile, compiler traceability settings, performance policy, compatibility behavior, and build behavior.
 
 ## Defaults
 
@@ -128,7 +127,7 @@ Structure does not create or reconfigure Spark sessions.
 ```toml
 execution_mode = "online"
 target_backend = "pyspark"
-target_pyspark = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.1"
 ```
 
 `execution_mode` selects how transforms run. The default is `online`, where `StructureSession` executes
@@ -144,8 +143,8 @@ generated
 
 `target_backend` selects the runtime backend. The initial release supports `pyspark`.
 
-`target_pyspark` constrains which PySpark APIs online and generated execution may use. The default targets
-PySpark 3.5.x and 4.0.x. If a DSL feature cannot be generated for the configured range, `structure check` and
+`target_profile` constrains which PySpark APIs online and generated execution may use. The default targets
+PySpark 3.5.x and 4.0.x. If a DSL feature cannot be generated for the configured profile, `structure check` and
 `structure compile` should fail with `BACKEND-E2402` and name the unsupported capability. Unknown backend
 targets fail with `BACKEND-E2401`. Backend capability behavior is specified in
 [BackendCapabilities.md](specifications/BackendCapabilities.md).

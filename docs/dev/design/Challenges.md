@@ -501,7 +501,7 @@ Resolved by public policy [Compatibility.md](../../Compatibility.md), specificat
 v1 baseline:
 
 - Python 3.11+.
-- PySpark 3.5.x and 4.0.x target, with `target_pyspark = ">=3.5,<4.1"` by default.
+- PySpark 3.5.x and 4.0.x target, with `target_profile = ">=3.5,<4.1"` by default.
 - Airflow has no hard dependency.
 - Linux is the runtime target; Linux and macOS are development targets.
 - Spark Connect is scheduled for v4 unless it can be added earlier without changing the public DSL, generated class API,
@@ -564,7 +564,7 @@ Resolved by [BackendCapabilities.md](../../specifications/BackendCapabilities.md
 Backend adaptability is now an explicit internal capability contract. Compiler checks, online execution, generated
 PySpark emission, streaming compatibility checks, and future explain output should ask a `BackendCapabilities` object
 whether a `CapabilityRequirement` is supported. The v1 profile supports ordinary PySpark for
-`target_pyspark = ">=3.5,<4.1"` without importing PySpark during compiler commands.
+`target_profile = ">=3.5,<4.1"` without importing PySpark during compiler commands.
 
 Unsupported backend targets fail with `BACKEND-E2401`. Unsupported backend capabilities fail with `BACKEND-E2402`.
 New DSL operations must declare capability behavior before they are considered supported.

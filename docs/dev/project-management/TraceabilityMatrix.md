@@ -25,7 +25,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 - As a developer, I can rely on explicit configuration precedence.
 - As a developer, I can receive structured diagnostics for invalid configuration.
 - As a developer, I can rely on documented Python and PySpark support ranges.
-- As a developer, I can configure `target_pyspark`.
+- As a developer, I can configure `target_profile`.
 - As a developer, I can configure `execution_mode`.
 - As a developer, I can run `structure check`.
 - As a developer, I can run compiler commands without PySpark, Java, SparkSession, Spark startup, or a Spark cluster.

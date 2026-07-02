@@ -20,7 +20,6 @@ class ResolveStructureConfig:
         "generated_package",
         "execution_mode",
         "target_backend",
-        "target_pyspark",
         "target_profile",
         "compat_targets",
         "hook_target_default",
@@ -60,7 +59,7 @@ class ResolveStructureConfig:
         self._validator.validate(values, root)
         Capabilities.resolve()(
             target_backend=str(values["target_backend"]),
-            target_pyspark=str(values["target_pyspark"]),
+            target_profile=str(values["target_profile"]),
         )
         return self._builder.build(root, values, sources)
 

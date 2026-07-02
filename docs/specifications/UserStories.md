@@ -23,7 +23,7 @@ narrower use cases and roadmap features.
 - + As a developer, I can see allowed values for enum-like config settings so that values such as traceability levels are corrected quickly.
 - + As a developer, I can set `source_roots` so that transform source files are discovered predictably.
 - + As a developer, I can set `generated_dir` so that generated files are written predictably.
-- + As a developer, I can set `target_pyspark` so that generated code targets an intended PySpark version range.
+- + As a developer, I can set `target_profile` so that generated code targets an intended PySpark version range.
 - + As a developer, I can receive an error when a requested feature cannot be generated for the configured PySpark target.
 - + As a developer, I can configure `execution_mode` so that my project chooses online or generated execution.
 - As a developer, I can set validation defaults so that schema enforcement is project-wide and repeatable.
@@ -237,7 +237,7 @@ narrower use cases and roadmap features.
 
 - + As a developer, I can rely on a documented Python support range so that runtime expectations are clear.
 - + As a developer, I can rely on a documented PySpark support range so that generated code uses compatible APIs.
-- + As a developer, I can configure `target_pyspark` so that the emitter avoids APIs outside my deployment range.
+- + As a developer, I can configure `target_profile` so that the emitter avoids APIs outside my deployment range.
 - + As a developer, I can see that Spark Connect is planned for v4 so that v1/v2/v3 generated-code expectations are clear.
 - As a developer, I can rely on semantic versioning after 1.0 so that upgrades carry predictable risk.
 - + As a developer, I can rely on stable compiler provenance and static dataflow schemas so that diagnostics and explain

@@ -310,7 +310,7 @@ Full streaming orchestration belongs to v3.
 ## Compatibility Policy
 
 Structure targets Python 3.11+ and online/generated PySpark for PySpark 3.5.x and 4.0.x. The default project
-settings are `execution_mode = "online"` and `target_pyspark = ">=3.5,<4.1"`.
+settings are `execution_mode = "online"` and `target_profile = ">=3.5,<4.1"`.
 
 Online and generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Spark Connect
 support is scheduled for v4 with backend expansion work, unless it can be added earlier without changing Structure

@@ -73,7 +73,7 @@ Online execution is the default:
 [tool.structure]
 execution_mode = "online"
 target_backend = "pyspark"
-target_pyspark = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.1"
 ```
 
 Allowed execution modes:
@@ -86,7 +86,7 @@ generated
 `online` runs transforms through a runtime runner that consumes compiler IR and live PySpark objects. `generated`
 delegates to checked-in generated PySpark classes.
 
-`target_backend` and `target_pyspark` remain backend selection inputs. In v1 the only supported backend is `pyspark`.
+`target_backend` and `target_profile` remain backend selection inputs. In v1 the only supported backend is `pyspark`.
 Future backends should be selected by the session, not by changing transform constructors. Backend support is checked
 through [BackendCapabilities.md](BackendCapabilities.md), so online execution and generated PySpark share the same target
 capability decisions.

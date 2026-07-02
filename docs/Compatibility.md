@@ -15,7 +15,7 @@ first stable release.
 Structure targets:
 
 - Python 3.11 and newer;
-- PySpark 3.5.x and 4.0.x, expressed as `target_pyspark = ">=3.5,<4.1"` by default;
+- PySpark 3.5.x and 4.0.x, expressed as `target_profile = ">=3.5,<4.1"` by default;
 - Linux runtime environments for online and generated PySpark execution;
 - Linux and macOS development environments;
 - Airflow and other schedulers without a hard runtime dependency on them.
@@ -30,13 +30,13 @@ Set the runtime target in project configuration:
 [tool.structure]
 execution_mode = "online"
 target_backend = "pyspark"
-target_pyspark = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.1"
 ```
 
 `execution_mode` is `online` by default. Projects may set it to `generated` when runtime execution should go
 through checked-in generated classes.
 
-The `target_pyspark` value constrains which PySpark APIs online and generated execution may use. Structure should avoid
+The `target_profile` value constrains which PySpark APIs online and generated execution may use. Structure should avoid
 APIs outside that range unless the user explicitly changes the target.
 
 When a transform uses a feature that cannot run for the configured target, Structure should fail during

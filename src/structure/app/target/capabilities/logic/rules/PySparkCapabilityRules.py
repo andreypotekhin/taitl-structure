@@ -4,9 +4,9 @@ from structure.app.target.capabilities.model.CapabilityDecision import Capabilit
 from structure.app.target.capabilities.model.CapabilityRequirement import CapabilityRequirement
 from structure.app.target.capabilities.model.GeneratedImports import GeneratedImports
 
-DEFAULT_TARGET_PYSPARK = ">=3.5,<4.1"
+DEFAULT_TARGET_PROFILE = ">=3.5,<4.1"
 
-SUPPORTED_TARGETS = frozenset(
+SUPPORTED_PROFILES = frozenset(
     {
         ">=3.5,<4.1",
         ">=3.5,<4.0",
@@ -56,10 +56,10 @@ class PySparkCapabilities:
     def __init__(
         self,
         *,
-        target_pyspark: str = DEFAULT_TARGET_PYSPARK,
+        target_profile: str = DEFAULT_TARGET_PROFILE,
         supported: frozenset[tuple[str, str]] = V1_CAPABILITIES,
     ) -> None:
-        self.id = BackendId(name="pyspark", target=target_pyspark, family="ordinary_pyspark")
+        self.id = BackendId(name="pyspark", target=target_profile, family="ordinary_pyspark")
         self.supported = supported
         self._imports = GeneratedImports()
 
@@ -67,13 +67,13 @@ class PySparkCapabilities:
         return self._imports
 
     def supports(self, requirement: CapabilityRequirement) -> CapabilityDecision:
-        if self.id.target not in SUPPORTED_TARGETS:
+        if self.id.target not in SUPPORTED_PROFILES:
             return CapabilityDecision.unsupported_capability(
                 backend=self.id,
                 requirement=requirement,
                 rationale="No static PySpark capability profile exists for the configured target range.",
-                use=f"Set target_pyspark = {DEFAULT_TARGET_PYSPARK!r}.",
-                required_target=DEFAULT_TARGET_PYSPARK,
+                use=f"Set target_profile = {DEFAULT_TARGET_PROFILE!r}.",
+                required_target=DEFAULT_TARGET_PROFILE,
             )
 
         if requirement.key() in self.supported:

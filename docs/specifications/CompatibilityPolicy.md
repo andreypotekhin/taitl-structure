@@ -8,7 +8,7 @@ compatibility contract behind that page.
 The compatibility policy must:
 
 - define supported Python versions;
-- define supported PySpark versions and the default `target_pyspark` range;
+- define supported PySpark versions and the default `target_profile` range;
 - define the boundary for future non-PySpark backends;
 - define Spark Connect scope;
 - define semantic versioning expectations;
@@ -26,7 +26,7 @@ The default PySpark target is:
 ```toml
 execution_mode = "online"
 target_backend = "pyspark"
-target_pyspark = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.1"
 ```
 
 This means online and generated execution should target PySpark 3.5.x and 4.0.x APIs unless the user configures a
@@ -45,7 +45,7 @@ diagnostics must not scatter PySpark-version conditionals unless a narrow check 
 
 The target layer must be version-aware enough to:
 
-- avoid APIs outside the configured `target_pyspark` range;
+- avoid APIs outside the configured `target_profile` range;
 - reject requested DSL features that cannot run for that range;
 - produce diagnostics that state the required PySpark version when a feature is unavailable;
 - keep online semantics and generated output deterministic for the same source, config, and Structure version.
@@ -197,8 +197,8 @@ New optional keys may appear in minor releases. Removing or changing a documente
 
 - [Compatibility.md](../Compatibility.md) documents the public policy.
 - `Readme.md` links to the compatibility policy.
-- [Configuration.md](../Configuration.md) documents `target_backend`, `target_pyspark`, and compatibility diagnostics.
+- [Configuration.md](../Configuration.md) documents `target_backend`, `target_profile`, and compatibility diagnostics.
 - [Configuration.md](../Configuration.md) documents `execution_mode`.
 - [BackendCapabilities.md](BackendCapabilities.md) documents the backend capability interface and PySpark v1 profile.
 - [Roadmap.md](../dev/Roadmap.md) and public roadmap text schedule Spark Connect for v4.
-- The seed config defaults are `execution_mode = "online"` and `target_pyspark = ">=3.5,<4.1"`.
+- The seed config defaults are `execution_mode = "online"` and `target_profile = ">=3.5,<4.1"`.

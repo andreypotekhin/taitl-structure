@@ -26,7 +26,7 @@
 2. Caller creates StructureSession with spark, optional ctx, and optional config.
 3. Caller constructs a transform invocation with named input DataFrames.
 4. Transform.run(session) delegates to StructureSession.run(transform).
-5. Session resolves execution_mode, target_backend, and target_pyspark.
+5. Session resolves execution_mode, target_backend, and target_profile.
 6. Session selects OnlinePySparkRunner.
 7. Runner compiles or retrieves TransformPlan IR.
 8. Runner lowers checked IR to shared PySpark execution recipes.

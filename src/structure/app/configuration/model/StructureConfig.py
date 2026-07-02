@@ -13,8 +13,7 @@ class StructureConfig:
     generated_package: str
     execution_mode: str
     target_backend: str
-    target_pyspark: str
-    target_profile: str | None
+    target_profile: str
     compat_targets: tuple[str, ...]
     hook_target_default: tuple[str, ...] | str
     traceability: str

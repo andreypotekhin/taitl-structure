@@ -29,7 +29,7 @@ class WriteStructureConfig:
             'generated_package = "structure_generated"',
             'execution_mode = "online"',
             'target_backend = "pyspark"',
-            'target_pyspark = ">=3.5,<4.1"',
+            'target_profile = ">=3.5,<4.1"',
             'hook_target_default = ["pyspark"]',
             'traceability = "compiler"',
         ]

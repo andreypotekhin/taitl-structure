@@ -98,7 +98,7 @@ generated_dir = "generated"
 generated_package = "structure_generated"
 execution_mode = "online"
 target_backend = "pyspark"
-target_pyspark = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.1"
 traceability = "compiler"
 validate_inputs = true
 input_validation_mode = "schema_only"
@@ -113,7 +113,7 @@ format_generated = true
 Required behavior:
 
 - `target_backend` must be `pyspark` for this generator.
-- `target_pyspark` selects PySpark syntax through the backend capability registry.
+- `target_profile` selects PySpark syntax through the backend capability registry.
 - `generated_dir` and `generated_package` determine output paths and import paths.
 - `traceability = "compiler"` writes compiler provenance and static dataflow traceability files.
 - `traceability = "none"` skips traceability files.
@@ -601,7 +601,7 @@ PySpark API choices must go through the backend capability interface specified i
 
 Rules:
 
-- Capability selection uses configured `target_backend` and `target_pyspark`.
+- Capability selection uses configured `target_backend` and `target_profile`.
 - Capability checks run during compiler phases without importing PySpark.
 - Unsupported backend targets fail with `BACKEND-E2401`.
 - Unsupported feature requirements fail with `BACKEND-E2402`.
@@ -738,13 +738,13 @@ Unsupported target example:
 CompileError BACKEND-E2402: Unsupported backend capability
 
 Target:
-  target_pyspark = "<3.4"
+  target_profile = "<3.4"
 
 Problem:
   The PySpark generator has no capability profile for this target range.
 
 Use:
-  Set target_pyspark to a supported range such as ">=3.5,<4.1".
+  Set target_profile to a supported range such as ">=3.5,<4.1".
 
 See docs/specifications/BackendCapabilities.md
 ```
@@ -823,7 +823,7 @@ The following are outside v1 PySpark generation scope:
 
 ## Implementation Checklist
 
-1. Use the backend capability interface selected from `target_backend` and `target_pyspark`.
+1. Use the backend capability interface selected from `target_backend` and `target_profile`.
 2. Define generated path and module-name mapping from source modules.
 3. Add shared PySpark execution recipe lowering as specified by `ExecutionSemanticContract.md`.
 4. Generate package `__init__.py` files.

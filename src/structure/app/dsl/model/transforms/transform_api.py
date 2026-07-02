@@ -24,7 +24,7 @@ from structure.app.dsl.model.types.BooleanType import BooleanType
 Projected = TypeVar("Projected", bound=Structure)
 
 _CLASS_OPTIONS = {"validate_intermediate", "streaming_compatible"}
-_SUBTRANSFORM_OPTIONS = {"target_backend", "target_platform", "target_profile", "target_pyspark"}
+_SUBTRANSFORM_OPTIONS = {"target_backend", "target_platform", "target_profile"}
 _METHOD_BINDING_OPTIONS = {"input", "output", "inout"}
 _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
 
@@ -192,7 +192,7 @@ def _reserved_operations(kwargs: dict[str, object]) -> tuple[OperationPlan, ...]
 
 
 def _subtransform_option(name: str, value: object) -> object:
-    if name in {"target_backend", "target_platform", "target_profile", "target_pyspark"}:
+    if name in {"target_backend", "target_platform", "target_profile"}:
         if not isinstance(value, str) or not value:
             raise TypeError(f"{name} must be a non-empty string")
     return value

@@ -31,10 +31,8 @@ class StructureConfigValidator:
         if not values["source_roots"]:
             self._fail_invalid("source_roots", "source_roots cannot be empty", 'Set source_roots = ["src"].')
 
-        for key in ("generated_dir", "generated_package", "target_pyspark"):
+        for key in ("generated_dir", "generated_package", "target_profile"):
             self._validate_type(values[key], key, str)
-        if values["target_profile"] is not None:
-            self._validate_type(values["target_profile"], "target_profile", str)
         self._validate_string_list(values["compat_targets"], "compat_targets", "Use compat_targets = [\"polars\"].")
         self._validate_hook_target_default(values["hook_target_default"])
         for key in self._bools:

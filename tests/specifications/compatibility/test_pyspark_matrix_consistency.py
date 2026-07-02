@@ -11,7 +11,7 @@ def test_pyspark_compatibility_matrix_matches_docs_and_compose_defaults() -> Non
     script = Path("scripts/run_integration.py").read_text(encoding="utf-8")
 
     assert "PySpark 3.5.x and 4.0.x" in docs
-    assert 'target_pyspark = ">=3.5,<4.1"' in docs
+    assert 'target_profile = ">=3.5,<4.1"' in docs
     assert _env_value(env, "PYSPARK35_VERSION") == "3.5.0"
     assert _env_value(env, "PYSPARK40_VERSION") == "4.0.0"
     assert _backends(script) == ("pyspark35", "pyspark40")

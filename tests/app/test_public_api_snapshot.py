@@ -7,12 +7,59 @@ from pathlib import Path
 from typing import Any, cast
 
 import structure
+from structure.app.dsl.api import compile_transform
 
 SNAPSHOT = Path("res/testing/snapshots/api/public_structure.v1.json")
 
 
 def test_public_structure_api_matches_snapshot() -> None:
     assert _snapshot() == json.loads(SNAPSHOT.read_text(encoding="utf-8"))
+
+
+def test_public_structure_star_import_exports_only_public_api() -> None:
+    namespace: dict[str, object] = {}
+
+    exec("from structure import *", namespace)
+
+    exports = {name: value for name, value in namespace.items() if not name.startswith("__")}
+    assert set(exports) == set(structure.__all__)
+    assert all(exports[name] is getattr(structure, name) for name in structure.__all__)
+
+
+def test_public_structure_star_import_compiles_end_user_source() -> None:
+    namespace: dict[str, object] = {}
+
+    exec(
+        """
+from structure import *
+
+
+class Raw(Structure):
+    id = field(String(), nullable=False)
+
+
+class Published(Structure):
+    id = field(String(), nullable=False)
+
+
+@transform
+class Publish(Transform):
+    rows = input(Raw)
+    published = output(Published)
+
+    def publish(self, row: Raw) -> Published:
+        where(row.id.is_not_null())
+        return project(row, Published)
+""",
+        namespace,
+    )
+
+    plan = compile_transform(cast(Any, namespace["Publish"]))
+
+    assert plan.name == "Publish"
+    assert [input.name for input in plan.inputs] == ["rows"]
+    assert [output.name for output in plan.outputs] == ["published"]
+    assert [step.name for step in plan.steps] == ["publish"]
 
 
 def _snapshot() -> dict[str, object]:

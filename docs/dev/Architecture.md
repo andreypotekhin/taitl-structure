@@ -97,7 +97,7 @@ windows, arrays, maps, and higher-order expressions. Each compiler-visible featu
 IR first, then lowered to PySpark target recipes. Rare, highly backend-specific, or arbitrary DataFrame logic remains
 an explicit hook boundary instead of becoming a thin Structure wrapper around every Spark function.
 
-The v1 default target is `target_pyspark = ">=3.5,<4.1"`, covering PySpark 3.5.x and 4.0.x. The PySpark target layer
+The v1 default target is `target_profile = ">=3.5,<4.1"`, covering PySpark 3.5.x and 4.0.x. The PySpark target layer
 should prefer the oldest clear optimizer-visible API inside the configured range. Unsupported backend targets and
 unsupported feature requirements fail through `BACKEND-E2401` and `BACKEND-E2402`.
 

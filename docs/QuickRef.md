@@ -660,7 +660,7 @@ PySpark 3.5.x and 4.0.x by default:
 
 ```toml
 execution_mode = "online"
-target_pyspark = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.1"
 ```
 
 Spark Connect support is planned for v4 unless it can be added earlier without changing the public DSL,

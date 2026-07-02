@@ -123,7 +123,7 @@ generated_dir = "generated"
 generated_package = "structure_generated"
 execution_mode = "online"
 target_backend = "pyspark"
-target_pyspark = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.1"
 hook_target_default = ["pyspark"]
 traceability = "compiler"
 validate_inputs = true
@@ -368,13 +368,13 @@ shape:
 CompileError BACKEND-E2402: Unsupported backend capability
 
 Setting:
-  target_pyspark = "<3.0"
+  target_profile = "<3.0"
 
 Problem:
   Structure v1 supports PySpark 3.5.x and 4.0.x by default.
 
 Use:
-  Set `target_pyspark = ">=3.5,<4.1"` or choose a supported range.
+  Set `target_profile = ">=3.5,<4.1"` or choose a supported range.
 
 See docs/specifications/BackendCapabilities.md
 ```

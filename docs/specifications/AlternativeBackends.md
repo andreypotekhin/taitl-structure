@@ -113,8 +113,8 @@ Compatibility notes:
 
 - V1 recognizes these keys as reserved metadata while keeping active execution limited to `target_backend = "pyspark"`.
 - Non-PySpark entries in `compat_targets` are reported as pending in v1; their compatibility checks do not run yet.
-- `target_pyspark` remains supported for the PySpark target.
-- `target_profile` is the generic successor for non-PySpark targets.
+- `target_profile` is the active target version/capability key, including for PySpark.
+- Future backends should reuse `target_profile` instead of adding backend-specific version keys.
 - `compat_targets` asks for a portability report and does not change the active target.
 - `hook_target_default` supplies the effective target set for unmarked hooks.
 

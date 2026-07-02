@@ -250,7 +250,7 @@ Runtime PySpark execution tests may import PySpark. Capability tests and compile
 
 ## Acceptance Criteria
 
-- `target_backend = "pyspark"` with `target_pyspark = ">=3.5,<4.1"` resolves a PySpark capability profile.
+- `target_backend = "pyspark"` with `target_profile = ">=3.5,<4.1"` resolves a PySpark capability profile.
 - Unknown `target_backend` fails with `BACKEND-E2401`.
 - Unsupported feature requirements fail with `BACKEND-E2402`.
 - Future backend profiles can report degraded, opaque, and unknown capabilities without importing backend runtimes.

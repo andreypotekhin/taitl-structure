@@ -33,7 +33,7 @@ generated_dir = "generated"
 generated_package = "structure_generated"
 execution_mode = "online"
 target_backend = "pyspark"
-target_pyspark = ">=3.5,<4.1"
+target_profile = ">=3.5,<4.1"
 hook_target_default = ["pyspark"]
 traceability = "compiler"
 validate_intermediate = true
@@ -114,28 +114,18 @@ pyspark
 
 Unknown backends fail through backend capability diagnostics.
 
-### target_pyspark
-
-Type: version range string.
-
-Default: `">=3.5,<4.1"`.
-
-Rules:
-
-- Must be parseable by the project's version range parser.
-- Must resolve to a supported PySpark capability profile.
-- Must not inspect the locally installed PySpark version during compiler commands.
-
 ### target_profile
 
 Type: version range string.
 
-Default: unset in v1.
+Default: `">=3.5,<4.1"` in v1.
 
-V1 status: recognized and stored as reserved metadata.
+Rules:
 
-Generic future target profile. Non-PySpark targets should use this instead of adding backend-specific version keys.
-`target_pyspark` remains the active PySpark compatibility key in v1.
+- Must be parseable by the project's version range parser.
+- Must resolve to a supported backend capability profile.
+- For `target_backend = "pyspark"`, it selects the supported PySpark profile range.
+- Must not inspect the locally installed backend version during compiler commands.
 
 ### compat_targets
 
@@ -350,7 +340,6 @@ StructureConfig
   generated_package
   execution_mode
   target_backend
-  target_pyspark
   target_profile
   compat_targets
   hook_target_default

@@ -1,5 +1,5 @@
 from structure.app.target.capabilities.logic.rules.PySparkCapabilityRules import (
-    DEFAULT_TARGET_PYSPARK,
+    DEFAULT_TARGET_PROFILE,
     PySparkCapabilities,
 )
 from structure.app.target.capabilities.model.BackendCapabilities import BackendCapabilities
@@ -15,12 +15,12 @@ class ResolveBackendCapabilities:
         self,
         *,
         target_backend: str = "pyspark",
-        target_pyspark: str = DEFAULT_TARGET_PYSPARK,
+        target_profile: str = DEFAULT_TARGET_PROFILE,
     ) -> BackendCapabilities:
         if target_backend == "pyspark":
-            return PySparkCapabilities(target_pyspark=target_pyspark)
+            return PySparkCapabilities(target_profile=target_profile)
 
-        backend = BackendId(name=target_backend, target=target_pyspark, family="unknown")
+        backend = BackendId(name=target_backend, target=target_profile, family="unknown")
         requirement = CapabilityRequirement(
             group="backend",
             name=target_backend,
