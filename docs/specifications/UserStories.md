@@ -85,6 +85,8 @@ narrower use cases and roadmap features.
 - + As a developer, I can generate one PySpark class per source transform class so that generated code remains organized.
 - + As a developer, I can instantiate a generated transform class with `spark` and optional `ctx` so that runtime dependencies are explicit.
 - + As a developer, I can call `run(...)` on a generated transform class so that execution has a stable entrypoint.
+- + As a developer, I can inherit reusable subtransforms from undecorated `Transform` parent classes so that shared
+  pipeline fragments do not need to be complete standalone transforms.
 
 ## 7. Inputs
 
@@ -113,6 +115,10 @@ narrower use cases and roadmap features.
   that I can distinguish original inputs, current lanes, and final results after names are shadowed.
 - + As a developer, I can use method return annotations to define intermediate schema transitions.
 - + As a developer, I can rely on source order for subtransform execution so that pipeline flow is readable.
+- + As a developer, I can rely on parent transform subtransforms running before child subtransforms so that inherited
+  pipeline flow is readable.
+- + As a developer, I can override an inherited subtransform and explicitly schedule the parent implementation so that
+  parent and child logic remain separate execution boundaries.
 - + As a developer, I can chain subtransforms by return type and next input type so that schema flow is validated.
 - + As a developer, I can construct an output schema from inherited base schema rows plus explicit overrides so that
   enrichment transforms do not repeat every inherited field.
@@ -316,7 +322,7 @@ over streaming orchestration, storage writes, Spark Connect, automatic cost-base
   keys.
 - + As a developer, I can calculate count, sum, min, max, avg, and supported distinct counts so that common analytical
   summaries do not require hooks.
-- As a developer, I can receive type and nullability diagnostics for aggregate expressions so that invalid summaries
+- + As a developer, I can receive type and nullability diagnostics for aggregate expressions so that invalid summaries
   are caught at compile time.
 - As a developer, I can define advanced grouping patterns so that rollups, cubes, grouping sets, and multi-level
   summaries are supported when practical.

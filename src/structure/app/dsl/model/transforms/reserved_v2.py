@@ -30,34 +30,35 @@ def count() -> Expression:
 
 
 def count_distinct(value: object) -> Expression:
-    return _aggregate("count_distinct", literal(value), type=LongType())
+    return _aggregate("count_distinct", literal(value), type=LongType(), nullable=False)
 
 
 def min(value: object) -> Expression:
     argument = literal(value)
-    return _aggregate("min", argument, type=argument.type)
+    return _aggregate("min", argument, type=argument.type, nullable=argument.nullable)
 
 
 def max(value: object) -> Expression:
     argument = literal(value)
-    return _aggregate("max", argument, type=argument.type)
+    return _aggregate("max", argument, type=argument.type, nullable=argument.nullable)
 
 
 def avg(value: object) -> Expression:
-    return _aggregate("avg", literal(value), type=DoubleType())
+    argument = literal(value)
+    return _aggregate("avg", argument, type=DoubleType(), nullable=argument.nullable)
 
 
 def sum(value: object) -> Expression:
     argument = literal(value)
-    return _aggregate("sum", argument, type=argument.type)
+    return _aggregate("sum", argument, type=argument.type, nullable=argument.nullable)
 
 
-def _aggregate(function: str, argument: Expression | None = None, *, type) -> Expression:
+def _aggregate(function: str, argument: Expression | None = None, *, type, nullable: bool = False) -> Expression:
     args = () if argument is None else (argument,)
     return Expression(
         kind="aggregate",
         type=type,
-        nullable=False,
+        nullable=nullable,
         data={"function": function, "capability_group": "aggregate", "capability_name": function},
         args=args,
     )

@@ -18,6 +18,7 @@ from structure import (
     group_by,
     input,
     output,
+    sum,
     transform,
 )
 from structure.app.compiler.api import OperationCardinality
@@ -187,6 +188,59 @@ def test_aggregate_expression_without_group_by_fails_in_frontend() -> None:
 
     assert raised.value.diagnostic.code == "DSL-E0402"
     assert "outside group_by" in raised.value.diagnostic.problem
+
+
+def test_numeric_aggregate_rejects_non_numeric_input_type() -> None:
+    class Raw(Structure):
+        customer_id = field(String(), nullable=False)
+        label = field(String(), nullable=False)
+
+    class Total(Structure):
+        customer_id = field(String(), nullable=False)
+        label_total = field(String(), nullable=False)
+
+    @transform
+    class Totals(Transform):
+        rows = input(Raw)
+        totals = output(Total)
+
+        def total(self, row: Raw) -> Total:
+            group_by(customer_id=row.customer_id)
+            return Total(customer_id=row.customer_id, label_total=sum(row.label))
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(Totals)
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == "DSL-E0402"
+    assert "sum(...)" in diagnostic.problem
+    assert "numeric expression" in diagnostic.use
+
+
+def test_nullable_aggregate_input_cannot_feed_non_nullable_output() -> None:
+    class Raw(Structure):
+        customer_id = field(String(), nullable=False)
+        quantity = field(Long(), nullable=True)
+
+    class Total(Structure):
+        customer_id = field(String(), nullable=False)
+        quantity = field(Long(), nullable=False)
+
+    @transform
+    class Totals(Transform):
+        rows = input(Raw)
+        totals = output(Total)
+
+        def total(self, row: Raw) -> Total:
+            group_by(customer_id=row.customer_id)
+            return Total(customer_id=row.customer_id, quantity=sum(row.quantity))
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(Totals)
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == "SCHEMA-E0301"
+    assert "may produce null" in diagnostic.problem
 
 
 def test_v2_order_analytics_fixture_lowers_grouped_aggregates(monkeypatch: pytest.MonkeyPatch) -> None:

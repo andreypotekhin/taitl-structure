@@ -57,6 +57,30 @@ normalized = result.normalized
 Structure can also generate PySpark code from transform classes for projects that prefer generated PySpark
 code.
 
+Transform classes may inherit reusable steps from undecorated `Transform` parents:
+
+```python
+class NormalizeBase(Transform):
+    orders = input(OrderRaw)
+    normalized = lane(OrderNormalized)
+
+    @transform(output=normalized)
+    def normalize(self, order: OrderRaw) -> OrderNormalized:
+        ...
+
+
+@transform
+class PublishOrders(NormalizeBase):
+    published = output(OrderPublished)
+
+    def publish(self, order: OrderNormalized) -> OrderPublished:
+        ...
+```
+
+Parent steps run before child steps. Multiple parents run in the declared base-class order. An override can schedule a
+parent implementation as a separate step with `super().normalize(order)`, `Base.normalize(self, order)`, or
+`super(Base, self).normalize(order)`.
+
 Reference: [DSL](specifications/DSL.md), [online execution](specifications/OnlineExecution.md), and
 [PySpark code generation](specifications/PySparkCodeGeneration.md).
 

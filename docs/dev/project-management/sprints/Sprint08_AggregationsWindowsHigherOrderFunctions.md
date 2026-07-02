@@ -88,6 +88,7 @@ def summarize(self, order: OrderEnriched) -> CustomerSummary:
   fixture lowering.
 - [x] (2026-07-02) Extended aggregate builders and PySpark lowering to `min(...)`, `max(...)`, `avg(...)`, and
   `count_distinct(...)`, with generated rendering, online recipe, capability, and v2 fixture coverage.
+- [x] (2026-07-02) Added aggregate input type and nullable-output diagnostics for numeric aggregate expressions.
 - [ ] Implement aggregation source capture, IR, recipes, generated snapshots, and parity tests.
 - [ ] Implement window and dedupe helpers with deterministic policies.
 - [ ] Implement supported higher-order array and map helpers.

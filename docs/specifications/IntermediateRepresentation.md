@@ -507,6 +507,9 @@ Grouped aggregate operations record `aggregate` cardinality and carry explicit g
 Supported aggregate assignments are grouped key projection, `count()`, `count_distinct(...)`, `sum(...)`, `min(...)`,
 `max(...)`, `avg(...)`, and representative `first(...)` for grouped parent struct fields. Target recipes lower these
 assignments through Spark-visible `groupBy(...).agg(...)` operations, not hooks or UDFs.
+`sum(...)` and `avg(...)` accept numeric expressions. `min(...)` and `max(...)` accept orderable scalar expressions.
+Nullable inputs to null-sensitive aggregates produce nullable aggregate expressions and must not feed non-nullable
+output fields without an explicit repair.
 
 `structure explain` displays each step's ordered operations as `kind(cardinality)`. This is an anchor for future v2
 explain output, not a full v2 lineage or optimizer report.

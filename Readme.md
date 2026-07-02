@@ -257,12 +257,12 @@ For custom logic, create expression helpers with `@expr_fn`. This keeps expressi
 
 Arbitrary PySpark is still supported, but only through explicit hooks. Hooks receive the underlying DataFrame(s) for arbitrary manipulation. Hooks are escape hatches: Structure calls them, records them as opaque boundaries, but does not treat their body as compiler-visible logic.
 
-## IDE Focus
+## IDE Friendliness
 
 Python-first approach allows for IDE conveniences, such as:
-- Jumping to schema class definition from arbitrary line in code
-- Navigating to the locations where a schema/transform class is used
-- Showing and navigating inheritance hierarchy of schema classes 
+- Jumping to schema class definition from arbitrary line in code.
+- Navigating to the locations where a schema/transform class is used.
+- Showing and navigating inheritance hierarchy of schema classes.
 
 ## Compatibility
 
@@ -278,9 +278,7 @@ See [Compatibility.md](docs/Compatibility.md) for the full versioning and compat
 
 ## Getting Started
 
-Project overview: [Overview.md](docs/Overview.md)
-
-QuickRef: [QuickRef.md](QuickRef.md)
+QuickRef: [QuickRef.md](docs/QuickRef.md)
 
 Get started: [GettingStarted.md](docs/GettingStarted.md)
 

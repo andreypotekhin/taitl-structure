@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import inspect
+from contextlib import contextmanager
 from typing import cast, get_args, get_origin, get_type_hints
 
 from structure.app.compiler.diagnostics.api import StructureCompileError
 from structure.app.compiler.frontend.logic.CompilerHookCollector import CompilerHookCollector
 from structure.app.compiler.frontend.logic.CompilerInputCollector import CompilerInputCollector
+from structure.app.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
+from structure.app.compiler.frontend.logic.CompilerTransformMemberCollector import CompilerTransformMemberCollector
 from structure.app.compiler.ir.model.AggregateAssignment import AggregateAssignment
 from structure.app.compiler.ir.model.AggregateKey import AggregateKey
 from structure.app.compiler.ir.model.AggregatePlan import AggregatePlan
@@ -52,6 +55,7 @@ class CompileTransform:
     def __init__(self) -> None:
         self._hook_collector = CompilerHookCollector()
         self._input_collector = CompilerInputCollector()
+        self._member_collector = CompilerTransformMemberCollector()
 
     def __call__(self, transform_class: type[Transform]) -> TransformPlan:
         if not getattr(transform_class, "_structure_transform", False):
@@ -94,201 +98,25 @@ class CompileTransform:
         inputs: list[InputPlan],
     ) -> tuple[list[StepPlan], dict[str, dict[str, object]], set[str], list[Diagnostic]]:
         instance = transform_class()
-        hooks = self._hook_collector.collect(transform_class)
+        members = self._member_collector.collect(transform_class)
+        hooks = self._hook_collector.collect(transform_class, members)
         steps: list[StepPlan] = []
         lanes: dict[str, dict[str, object]] = {}
         explicit_outputs: set[str] = set()
         diagnostics: list[Diagnostic] = []
 
-        for name, member in transform_class.__dict__.items():
-            if name.startswith("_") or name == "run" or not inspect.isfunction(member):
-                continue
-
-            hints = get_type_hints(member)
-            output_schemas = self._return_schemas(hints.get("return"))
-            if not output_schemas:
-                if get_origin(hints.get("return")) is tuple:
-                    raise self._error(
-                        "DSL-E0402",
-                        transform_class=transform_class,
-                        member=name,
-                        problem=f"{transform_class.__name__}.{name} has an invalid tuple return annotation.",
-                        use="Use a fixed tuple of Structure schemas, such as tuple[Accepted, Audited].",
-                    )
-                continue
-            metadata = getattr(member, "_structure_output_method", None)
-            parameters = self._row_parameters(member, hints)
-            bindings = self._input_bindings(
+        for member in members:
+            self._compile_step(
                 transform_class,
-                metadata,
+                member,
+                instance,
+                hooks,
+                steps,
                 lanes,
                 inputs,
-                parameters,
-                member=name,
+                explicit_outputs,
+                diagnostics,
             )
-            output_lanes = self._output_lanes(
-                transform_class,
-                metadata,
-                lanes,
-                output_schemas,
-                member=name,
-                explicit_outputs=explicit_outputs,
-                default_lane=bindings[0].lane,
-            )
-            options = self._step_options(transform_class, metadata)
-
-            context = CompileContext(step=name)
-            arguments = [
-                (
-                    RowScope(name=binding.scope, schema=binding.schema)
-                    if binding.driving
-                    else InputScope(name=binding.scope, schema=binding.schema, source=binding.source)
-                )
-                for binding in bindings
-            ]
-            context.default_project_source = arguments[0]
-            context.register_current_scope(bindings[0].scope)
-            for binding, argument in zip(bindings[1:], arguments[1:], strict=True):
-                context.register_relation_scope(binding.scope, argument)
-
-            try:
-                with context:
-                    result = member(instance, *arguments)
-            except StructureCompileError:
-                raise
-            except Exception as error:
-                raise self._error(
-                    "DSL-E0401",
-                    transform_class=transform_class,
-                    member=name,
-                    problem=f"{transform_class.__name__}.{name} uses unsupported symbolic code: {error}",
-                    use="Use Structure expression helpers, combine predicates with &, |, or ~, or move arbitrary PySpark to a hook.",
-                    context={"error": type(error).__name__},
-                ) from error
-
-            context.operations.extend(self._reserved_operations(member, metadata))
-            diagnostics.extend(self._validate_joins(transform_class, name, context.joins))
-            values = self._result_values(
-                transform_class,
-                name,
-                output_schemas,
-                result,
-            )
-            if context.aggregate_keys is not None and len(values) > 1:
-                raise self._error(
-                    "DSL-E0402",
-                    transform_class=transform_class,
-                    member=name,
-                    problem=f"{transform_class.__name__}.{name} uses group_by(...) with multiple returned schemas.",
-                    use="Return one aggregate schema per grouped subtransform.",
-                )
-            result_plans: list[StepResultPlan] = []
-            after_hooks = hooks.get(("after", name), ())
-            for hook in after_hooks:
-                for lane in hook.lanes:
-                    self._declared_lane(transform_class, lane, member=hook.name, role="lane")
-                for output in hook.outputs:
-                    self._declared_lane(transform_class, output, member=hook.name, role="output")
-                unknown = [output.name for output in hook.outputs if output.name not in output_lanes]
-                if unknown:
-                    raise self._error(
-                        "DSL-E0402",
-                        transform_class=transform_class,
-                        member=hook.name,
-                        problem=(
-                            f"@after({name}) replaces lane(s) that {name} does not produce: " f"{', '.join(unknown)}."
-                        ),
-                        use=f"Select one of: {', '.join(output_lanes)}.",
-                    )
-            for ordinal, (output_schema, output_lane, value) in enumerate(
-                zip(output_schemas, output_lanes, values, strict=True)
-            ):
-                selected_hooks = self._result_hooks(
-                    transform_class,
-                    name,
-                    output_lane,
-                    after_hooks,
-                    multiple=len(output_schemas) > 1,
-                )
-                frame = output_lane
-                aggregate = (
-                    None
-                    if context.aggregate_keys is None
-                    else self._aggregate_plan(
-                        transform_class,
-                        name,
-                        output_schema,
-                        value,
-                        keys=context.aggregate_keys,
-                        filters=context.filters,
-                    )
-                )
-                result_plans.append(
-                    StepResultPlan(
-                        schema=output_schema,
-                        lane=output_lane,
-                        frame=frame,
-                        projection=tuple(
-                            ()
-                            if aggregate is not None
-                            else self._assignments(
-                                transform_class,
-                                name,
-                                output_schema,
-                                value,
-                                filters=context.filters,
-                            )
-                        ),
-                        ordinal=ordinal,
-                        aggregate=aggregate,
-                        after_hooks=selected_hooks,
-                    )
-                )
-            first = result_plans[0]
-            if first.aggregate is not None:
-                context.operations.append(OperationPlan.aggregate_operation(first.aggregate))
-            driver = bindings[0]
-            before_hooks = self._before_hooks(
-                transform_class,
-                name,
-                driver.lane,
-                hooks.get(("before", name), ()),
-            )
-            self._validate_relation_reads(
-                transform_class,
-                name,
-                bindings,
-                context.operations,
-                result_plans,
-            )
-            steps.append(
-                StepPlan(
-                    name=name,
-                    input_schema=driver.schema,
-                    output_schema=first.schema,
-                    source=driver.source,
-                    source_scope=driver.scope,
-                    input_lane=driver.lane,
-                    output_lane=first.lane,
-                    filters=tuple(context.filters),
-                    projection=first.projection,
-                    ordinal=len(steps),
-                    aggregate=first.aggregate,
-                    joins=tuple(context.joins),
-                    operations=tuple(context.operations),
-                    before_hooks=before_hooks,
-                    after_hooks=first.after_hooks if len(result_plans) == 1 else (),
-                    inputs=tuple(bindings),
-                    results=tuple(result_plans),
-                    options=options,
-                )
-            )
-            for item in result_plans:
-                lanes[item.lane] = {
-                    "schema": item.schema,
-                    "source": item.frame,
-                    "scope": item.schema.__name__,
-                }
 
         if not steps:
             raise self._error(
@@ -299,12 +127,323 @@ class CompileTransform:
             )
         return steps, lanes, explicit_outputs, diagnostics
 
+    def _compile_step(
+        self,
+        transform_class: type[Transform],
+        item: CompilerTransformMember,
+        instance: Transform,
+        hooks: dict[tuple[str, tuple[type[Transform], str, int]], tuple[HookPlan, ...]],
+        steps: list[StepPlan],
+        lanes: dict[str, dict[str, object]],
+        inputs: list[InputPlan],
+        explicit_outputs: set[str],
+        diagnostics: list[Diagnostic],
+        *,
+        plan_name: str | None = None,
+    ) -> tuple[StepResultPlan, ...] | None:
+        name = item.name
+        member = item.member
+        hints = get_type_hints(member)
+        output_schemas = self._return_schemas(hints.get("return"))
+        if not output_schemas:
+            if get_origin(hints.get("return")) is tuple:
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=name,
+                    problem=f"{transform_class.__name__}.{name} has an invalid tuple return annotation.",
+                    use="Use a fixed tuple of Structure schemas, such as tuple[Accepted, Audited].",
+                )
+            if item.overridden and any(self._return_schemas(get_type_hints(parent.member).get("return")) for parent in item.overridden):
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=name,
+                    problem=f"{transform_class.__name__}.{name} overrides an inherited subtransform but is not a subtransform.",
+                    use="Keep the Structure return annotation or rename the helper method.",
+                )
+            return None
+        metadata = getattr(member, "_structure_output_method", None)
+        parameters = self._row_parameters(member, hints)
+        bindings = self._input_bindings(
+            transform_class,
+            metadata,
+            lanes,
+            inputs,
+            parameters,
+            member=name,
+        )
+        output_lanes = self._output_lanes(
+            transform_class,
+            metadata,
+            lanes,
+            output_schemas,
+            member=name,
+            explicit_outputs=explicit_outputs,
+            default_lane=bindings[0].lane,
+        )
+        options = self._step_options(item.owner, metadata)
+        parent_call: dict[str, object] = {}
+
+        context = CompileContext(step=plan_name or name)
+        arguments = [
+            (
+                RowScope(name=binding.scope, schema=binding.schema)
+                if binding.driving
+                else InputScope(name=binding.scope, schema=binding.schema, source=binding.source)
+            )
+            for binding in bindings
+        ]
+        context.default_project_source = arguments[0]
+        context.register_current_scope(bindings[0].scope)
+        for binding, argument in zip(bindings[1:], arguments[1:], strict=True):
+            context.register_relation_scope(binding.scope, argument)
+
+        try:
+            with self._parent_call_patches(
+                transform_class,
+                item,
+                instance,
+                hooks,
+                steps,
+                lanes,
+                inputs,
+                explicit_outputs,
+                diagnostics,
+                parent_call,
+            ):
+                with context:
+                    result = member(instance, *arguments)
+        except StructureCompileError:
+            raise
+        except Exception as error:
+            raise self._error(
+                "DSL-E0401",
+                transform_class=transform_class,
+                member=name,
+                problem=f"{transform_class.__name__}.{name} uses unsupported symbolic code: {error}",
+                use="Use Structure expression helpers, combine predicates with &, |, or ~, or move arbitrary PySpark to a hook.",
+                context={"error": type(error).__name__},
+            ) from error
+
+        context.operations.extend(self._reserved_operations(member, metadata))
+        diagnostics.extend(self._validate_joins(transform_class, name, context.joins))
+        values = self._result_values(
+            transform_class,
+            name,
+            output_schemas,
+            result,
+        )
+        if context.aggregate_keys is not None and len(values) > 1:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=name,
+                problem=f"{transform_class.__name__}.{name} uses group_by(...) with multiple returned schemas.",
+                use="Return one aggregate schema per grouped subtransform.",
+            )
+        result_plans: list[StepResultPlan] = []
+        after_hooks = hooks.get(("after", item.key), ())
+        for hook in after_hooks:
+            for lane in hook.lanes:
+                self._declared_lane(transform_class, lane, member=hook.name, role="lane")
+            for output in hook.outputs:
+                self._declared_lane(transform_class, output, member=hook.name, role="output")
+            unknown = [output.name for output in hook.outputs if output.name not in output_lanes]
+            if unknown:
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=hook.name,
+                    problem=f"@after({name}) replaces lane(s) that {name} does not produce: {', '.join(unknown)}.",
+                    use=f"Select one of: {', '.join(output_lanes)}.",
+                )
+        for ordinal, (output_schema, output_lane, value) in enumerate(
+            zip(output_schemas, output_lanes, values, strict=True)
+        ):
+            selected_hooks = self._result_hooks(
+                transform_class,
+                name,
+                output_lane,
+                after_hooks,
+                multiple=len(output_schemas) > 1,
+            )
+            frame = output_lane
+            aggregate = (
+                None
+                if context.aggregate_keys is None
+                else self._aggregate_plan(
+                    transform_class,
+                    name,
+                    output_schema,
+                    value,
+                    keys=context.aggregate_keys,
+                    filters=context.filters,
+                )
+            )
+            result_plans.append(
+                StepResultPlan(
+                    schema=output_schema,
+                    lane=output_lane,
+                    frame=frame,
+                    projection=tuple(
+                        ()
+                        if aggregate is not None
+                        else self._assignments(
+                            transform_class,
+                            name,
+                            output_schema,
+                            value,
+                            filters=context.filters,
+                        )
+                    ),
+                    ordinal=ordinal,
+                    aggregate=aggregate,
+                    after_hooks=selected_hooks,
+                )
+            )
+        first = result_plans[0]
+        if first.aggregate is not None:
+            context.operations.append(OperationPlan.aggregate_operation(first.aggregate))
+        bindings = self._parent_call_bindings(bindings, parent_call)
+        driver = bindings[0]
+        before_hooks = self._before_hooks(
+            transform_class,
+            name,
+            driver.lane,
+            hooks.get(("before", item.key), ()),
+        )
+        self._validate_relation_reads(
+            transform_class,
+            name,
+            bindings,
+            context.operations,
+            result_plans,
+        )
+        steps.append(
+            StepPlan(
+                name=plan_name or name,
+                input_schema=driver.schema,
+                output_schema=first.schema,
+                source=driver.source,
+                source_scope=driver.scope,
+                input_lane=driver.lane,
+                output_lane=first.lane,
+                filters=tuple(context.filters),
+                projection=first.projection,
+                ordinal=len(steps),
+                aggregate=first.aggregate,
+                joins=tuple(context.joins),
+                operations=tuple(context.operations),
+                before_hooks=before_hooks,
+                after_hooks=first.after_hooks if len(result_plans) == 1 else (),
+                inputs=tuple(bindings),
+                results=tuple(result_plans),
+                options=options,
+            )
+        )
+        for result in result_plans:
+            lanes[result.lane] = {
+                "schema": result.schema,
+                "source": result.frame,
+                "scope": result.schema.__name__,
+            }
+        return tuple(result_plans)
+
+    def _parent_call_bindings(
+        self,
+        bindings: list[StepInputPlan],
+        parent_call: dict[str, object],
+    ) -> list[StepInputPlan]:
+        source = parent_call.get("source")
+        if source is None:
+            return bindings
+        source = cast(dict[str, object], source)
+        driver = bindings[0]
+        return [
+            StepInputPlan(
+                parameter=driver.parameter,
+                schema=cast(type[Structure], source["schema"]),
+                source=str(source["source"]),
+                scope=str(source["scope"]),
+                lane=str(source["lane"]),
+                ordinal=driver.ordinal,
+                driving=True,
+            ),
+            *bindings[1:],
+        ]
+
+    @contextmanager
+    def _parent_call_patches(
+        self,
+        transform_class: type[Transform],
+        item: CompilerTransformMember,
+        instance: Transform,
+        hooks: dict[tuple[str, tuple[type[Transform], str, int]], tuple[HookPlan, ...]],
+        steps: list[StepPlan],
+        lanes: dict[str, dict[str, object]],
+        inputs: list[InputPlan],
+        explicit_outputs: set[str],
+        diagnostics: list[Diagnostic],
+        parent_call: dict[str, object],
+    ):
+        originals: list[tuple[type[Transform], str, object]] = []
+        scheduled: dict[CompilerTransformMember, tuple[StepResultPlan, ...]] = {}
+
+        def stub(candidate: CompilerTransformMember):
+            def call(_self, *args, **kwargs):
+                if kwargs:
+                    raise TypeError("Parent subtransform calls must use positional schema arguments")
+                result = scheduled.get(candidate)
+                if result is None:
+                    result = self._compile_step(
+                        transform_class,
+                        candidate,
+                        instance,
+                        hooks,
+                        steps,
+                        lanes,
+                        inputs,
+                        explicit_outputs,
+                        diagnostics,
+                        plan_name=f"{candidate.owner.__name__}.{candidate.name}",
+                    )
+                    if result is None:
+                        raise TypeError(f"{candidate.source} is not a compiled subtransform")
+                    scheduled[candidate] = result
+                value = self._parent_call_result(result)
+                first = result[0]
+                parent_call["source"] = {
+                    "lane": first.lane,
+                    "schema": first.schema,
+                    "source": first.frame,
+                    "scope": first.schema.__name__,
+                }
+                return value
+
+            return call
+
+        try:
+            for candidate in item.overridden:
+                originals.append((candidate.owner, candidate.name, candidate.owner.__dict__[candidate.name]))
+                setattr(candidate.owner, candidate.name, stub(candidate))
+            yield
+        finally:
+            for owner, name, original in reversed(originals):
+                setattr(owner, name, original)
+
+    def _parent_call_result(self, results: tuple[StepResultPlan, ...]) -> RowScope | tuple[RowScope, ...]:
+        scopes = tuple(RowScope(name=result.schema.__name__, schema=result.schema) for result in results)
+        if len(scopes) == 1:
+            return scopes[0]
+        return scopes
+
     def _step_options(
         self,
         transform_class: type[Transform],
         metadata: dict[str, object] | None,
     ) -> dict[str, object] | None:
-        options = dict(getattr(transform_class, "_structure_subtransform_options", {}))
+        options = dict(transform_class.__dict__.get("_structure_subtransform_options", {}))
         if metadata:
             options.update(cast(dict[str, object], metadata.get("options", {})))
         return options or None
@@ -1459,6 +1598,7 @@ class CompileTransform:
                 )
                 continue
             if expression.kind == "aggregate":
+                self._validate_aggregate_expression(transform_class, member, output_schema, field.name, expression)
                 self._assignment(
                     transform_class,
                     member,
@@ -1485,6 +1625,45 @@ class CompileTransform:
                 context={"field": field.name, "schema": output_schema.__name__},
             )
         return AggregatePlan(keys=aggregate_keys, assignments=tuple(assignments))
+
+    def _validate_aggregate_expression(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        output_schema: type[Structure],
+        field: str,
+        expression: Expression,
+    ) -> None:
+        function = str((expression.data or {}).get("function"))
+        argument = expression.args[0] if expression.args else None
+        if function == "count":
+            return
+        if argument is None:
+            raise self._aggregate_error(transform_class, member, output_schema, field, function, "an input expression")
+        if function in {"avg", "sum"} and not self._numeric_type(argument.type):
+            raise self._aggregate_error(transform_class, member, output_schema, field, function, "a numeric expression")
+        if function in {"max", "min"} and not self._orderable_type(argument.type):
+            raise self._aggregate_error(transform_class, member, output_schema, field, function, "an orderable scalar expression")
+        if function == "count_distinct" and not self._scalar_type(argument.type):
+            raise self._aggregate_error(transform_class, member, output_schema, field, function, "a scalar expression")
+
+    def _aggregate_error(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        output_schema: type[Structure],
+        field: str,
+        function: str,
+        expected: str,
+    ) -> StructureCompileError:
+        return self._error(
+            "DSL-E0402",
+            transform_class=transform_class,
+            member=member,
+            problem=f"{output_schema.__name__}.{field} uses {function}(...) with unsupported input type.",
+            use=f"Pass {expected} to {function}(...), or move custom aggregation logic into an explicit hook.",
+            context={"field": field, "schema": output_schema.__name__, "function": function},
+        )
 
     def _aggregate_key_for(
         self,
@@ -2042,6 +2221,15 @@ class CompileTransform:
         return self._assignable(left, right, expression=Expression(kind="field", type=left)) or self._assignable(
             right, left, expression=Expression(kind="field", type=right)
         )
+
+    def _numeric_type(self, type: StructureType | None) -> bool:
+        return type is not None and type.name in {"decimal", "double", "float", "integer", "long"}
+
+    def _orderable_type(self, type: StructureType | None) -> bool:
+        return type is not None and type.name in {"date", "decimal", "double", "float", "integer", "long", "string", "timestamp"}
+
+    def _scalar_type(self, type: StructureType | None) -> bool:
+        return type is not None and type.name not in {"array", "map", "struct"}
 
     def _requires_explicit_conversion(self, actual: StructureType | None, target: StructureType) -> bool:
         return (

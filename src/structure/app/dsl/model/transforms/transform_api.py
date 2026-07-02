@@ -460,6 +460,7 @@ def _hook(
             {
                 "phase": phase,
                 "target": target.__name__,
+                "target_object": target,
                 "lane": sources[0] if len(sources) == 1 else None,
                 "lanes": sources,
                 "output": targets[0] if len(targets) == 1 else None,

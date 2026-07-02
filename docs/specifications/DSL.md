@@ -193,6 +193,15 @@ Rules:
 - A class decorated with `@transform` but not inheriting `Transform` is invalid.
 - A class inheriting `Transform` but missing `@transform` is not discovered as a compiled transform unless a future
   spec adds an explicit registration mode.
+- A direct or indirect parent class inheriting `Transform` may contribute reusable inputs, lanes, outputs, hooks,
+  helpers, and subtransforms to a decorated child even when the parent is not decorated with `@transform`.
+- Inherited parent subtransforms run before child subtransforms. Multiple direct parents run left to right in the
+  Python class declaration, and shared diamond ancestors contribute once.
+- A child subtransform with the same method name overrides the inherited scheduled step. Sibling parents that define
+  the same subtransform name are ambiguous unless the child overrides that name.
+- An overriding subtransform may explicitly schedule the overridden parent implementation with `super().method(row)`,
+  `Base.method(self, row)`, or `super(Base, self).method(row)`. The parent implementation runs as a separate scheduled
+  step before the child step and returns a symbolic row for the parent output.
 
 ## Transform Invocation
 
@@ -332,6 +341,8 @@ Rules:
 
 - Public instance methods are methods whose names do not start with `_`.
 - A public method with a `Structure` return annotation is a compiled subtransform.
+- Public schema-returning methods inherited from `Transform` ancestors are compiled as parent subtransforms before
+  local child subtransforms.
 - A compiled subtransform has one or more parameters after `self`; every parameter annotation must be a `Structure`
   subclass.
 - The first parameter is the driving row. Later parameters are symbolic relations that must be joined before their
@@ -353,6 +364,11 @@ Rules:
 - The compiler infers bindings only when every schema has one unambiguous available declaration after the name rule is
   applied.
 - Subtransforms execute in source order.
+- Inherited subtransforms execute in effective source order: parent classes first, direct parents left to right, then
+  child class methods. Diamond ancestors are visited once.
+- Overriding an inherited subtransform without calling the parent replaces the inherited step position.
+- Calling an overridden parent subtransform from the override schedules the parent as its own DataFrame step immediately
+  before the child override. Parent hooks, validation, lane writes, and traceability belong to the parent step.
 - Source-order lane flow must be valid. Undecorated methods consume and update the uniquely inferred lane.
   `@transform(output=target)` writes a named lane or output.
   `@transform(input=source, output=target)` selects both sides explicitly.
