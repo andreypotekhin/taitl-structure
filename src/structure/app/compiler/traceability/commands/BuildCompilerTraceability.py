@@ -304,6 +304,9 @@ class BuildCompilerTraceability:
         }
         if join.strategy is not None:
             detail["strategy"] = join.strategy.value
+        if join.dedupe is not None:
+            detail["dedupe"] = join.dedupe.direction
+            detail["ties"] = join.dedupe.ties.value
         return detail
 
     def _join_cardinality(self, method: JoinMethod) -> str:

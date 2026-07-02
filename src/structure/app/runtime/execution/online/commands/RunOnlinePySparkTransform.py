@@ -46,6 +46,7 @@ class RunOnlinePySparkTransform:
         return self._run(invocation, plan, session=session)
 
     def _run(self, invocation: Transform, plan: PySparkExecutionPlan, *, session):
+        from pyspark.sql import Window  # type: ignore[import-not-found]
         from pyspark.sql import functions as F  # type: ignore[import-not-found]
         from pyspark.sql import types as T  # type: ignore[import-not-found]
 
@@ -66,6 +67,7 @@ class RunOnlinePySparkTransform:
                 invocation=invocation,
                 session=session,
                 functions=F,
+                window=Window,
                 types=T,
             )
             frames.update(produced)
@@ -73,7 +75,12 @@ class RunOnlinePySparkTransform:
         outputs = {}
         for output in plan.outputs:
             outputs[output.name] = self._output(
-                output, source=frames[output.source], inputs=inputs, functions=F, types=T
+                output,
+                source=frames[output.source],
+                inputs=inputs,
+                functions=F,
+                window=Window,
+                types=T,
             )
         return TransformResult(outputs, single=len(plan.outputs) == 1)
 
@@ -88,6 +95,7 @@ class RunOnlinePySparkTransform:
         invocation: Transform,
         session,
         functions,
+        window,
         types,
     ):
         active = current
@@ -102,7 +110,7 @@ class RunOnlinePySparkTransform:
             active = frames[step.source]
 
         df = active.alias(step.input_alias)
-        df = self._operations(step, df, frames=frames, functions=functions)
+        df = self._operations(step, df, frames=frames, functions=functions, window=window)
 
         if len(step.results) > 1:
             produced = {}
@@ -164,10 +172,11 @@ class RunOnlinePySparkTransform:
         source,
         inputs,
         functions,
+        window,
         types,
     ):
         df = source.alias(output.input_alias)
-        df = self._operations(output, df, frames=inputs, functions=functions)
+        df = self._operations(output, df, frames=inputs, functions=functions, window=window)
 
         if output.projection:
             df = df.select(
@@ -179,10 +188,10 @@ class RunOnlinePySparkTransform:
         self._validator.validate(df, output.validation, types=types)
         return df
 
-    def _operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, *, frames, functions):
+    def _operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, *, frames, functions, window):
         if not step.operations:
             for join in step.joins:
-                df = self._join(step, df, join, frames=frames, functions=functions)
+                df = self._join(step, df, join, frames=frames, functions=functions, window=window)
             for filter in step.filters:
                 df = df.where(
                     self._expressions.evaluate(filter, functions=functions, aliases=self._scope_aliases(step))
@@ -191,7 +200,7 @@ class RunOnlinePySparkTransform:
 
         for operation in step.operations:
             if operation.kind == "join" and operation.join is not None:
-                df = self._join(step, df, operation.join, frames=frames, functions=functions)
+                df = self._join(step, df, operation.join, frames=frames, functions=functions, window=window)
             if operation.kind == "filter" and operation.filter is not None:
                 df = df.where(
                     self._expressions.evaluate(
@@ -202,17 +211,56 @@ class RunOnlinePySparkTransform:
                 )
         return df
 
-    def _join(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, join, *, frames, functions):
+    def _join(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, join, *, frames, functions, window):
         right = frames[join.source]
         if join.strategy is not None:
             right = right.hint(join.strategy.value)
         right = right.alias(join.right_alias)
+        if join.dedupe is not None:
+            right = self._dedupe(join, right, functions=functions, window=window)
         if join.hint is not None and join.hint.value == "broadcast":
             right = functions.broadcast(right)
         predicate = self._expressions.evaluate(
             join.predicate, functions=functions, aliases=self._scope_aliases(step, join)
         )
         return df.join(right, predicate, self._join_mode(join))
+
+    def _dedupe(self, join, right, *, functions, window):
+        rank = f"__structure_{join.right_alias}_rank"
+        partition = [
+            self._expressions.evaluate(key, functions=functions, aliases={join.input_name: join.right_alias})
+            for key in self._right_keys(join)
+        ]
+        order_by = self._expressions.evaluate(
+            join.dedupe.order_by,
+            functions=functions,
+            aliases={join.input_name: join.right_alias},
+        )
+        ordering = order_by.desc() if join.dedupe.direction == "latest" else order_by.asc()
+        ranked = right.withColumn(rank, functions.row_number().over(window.partitionBy(*partition).orderBy(ordering)))
+        return ranked.where(functions.col(rank) == functions.lit(1)).drop(rank).alias(join.right_alias)
+
+    def _right_keys(self, join: PySparkJoinRecipe):
+        return tuple(self._right_key(join, condition) for condition in self._join_conditions(join.predicate))
+
+    def _right_key(self, join: PySparkJoinRecipe, condition):
+        left, right = condition.args
+        if join.input_name in self._scopes(left):
+            return left
+        return right
+
+    def _join_conditions(self, expression):
+        if expression.kind == "and":
+            return tuple(condition for argument in expression.args for condition in self._join_conditions(argument))
+        if expression.kind in {"eq", "null_safe_eq"}:
+            return (expression,)
+        return ()
+
+    def _scopes(self, expression) -> set[str]:
+        scopes = set().union(*(self._scopes(argument) for argument in expression.args))
+        if expression.kind == "field" and "scope" in expression.data:
+            scopes.add(str(expression.data["scope"]))
+        return scopes
 
     def _join_mode(self, join: PySparkJoinRecipe) -> str:
         if join.method is JoinMethod.EXISTS:

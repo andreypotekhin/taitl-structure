@@ -20,9 +20,11 @@ from structure.app.dsl.model.schemas.schema import (
 )
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.Join import Join
+from structure.app.dsl.model.transforms.JoinDedupe import JoinDedupe
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.transforms.transform_api import (
     after,
@@ -47,6 +49,7 @@ __all__ = [
     "Float",
     "Integer",
     "Join",
+    "JoinDedupe",
     "JoinHint",
     "JoinStrategy",
     "Long",
@@ -57,6 +60,7 @@ __all__ = [
     "StructureCompileError",
     "Struct",
     "Timestamp",
+    "TiePolicy",
     "Transform",
     "after",
     "arr_filter",

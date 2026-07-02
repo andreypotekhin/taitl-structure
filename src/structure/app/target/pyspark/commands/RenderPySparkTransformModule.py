@@ -39,6 +39,8 @@ class RenderPySparkTransformModule:
             "from pyspark.sql import functions as F",
             "from pyspark.sql import types as T",
         ]
+        if self._has_dedupe(plan):
+            lines.insert(1, "from pyspark.sql import Window")
         if self._has_hooks(plan):
             module, name = source_transform.rsplit(".", 1)
             lines.append(f"from {module} import {name}")
@@ -149,6 +151,13 @@ class RenderPySparkTransformModule:
             step.before_hooks or step.after_hooks or any(result.after_hooks for result in step.results)
             for step in plan.steps
         )
+
+    def _has_dedupe(self, plan: PySparkExecutionPlan) -> bool:
+        joins = [join for step in plan.steps for join in step.joins]
+        joins.extend(join for output in plan.outputs for join in output.joins)
+        joins.extend(operation.join for step in plan.steps for operation in step.operations if operation.join)
+        joins.extend(operation.join for output in plan.outputs for operation in output.operations if operation.join)
+        return any(join.dedupe is not None for join in joins)
 
 
 render_pyspark_transform_module = RenderPySparkTransformModule()

@@ -73,8 +73,8 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
 5. + Implement `join_many(...)` symbolic scope and IR.
 6. + Lower `join_many(...)` through shared PySpark recipes.
 7. + Add row multiplication parity tests.
-8. Add deterministic dedupe policy objects and checks.
-9. Add deduped `join_one(...)` recipe lowering and parity tests.
+8. + Add deterministic dedupe policy objects and checks.
+9. + Add deduped `join_one(...)` recipe lowering and parity tests.
 10. Implement `temporal_one(...)` closed-open validity-window lookups.
 11. Implement backward `as_of_one(...)`.
 12. Update traceability, explain output, diagnostics, and streaming classification.
@@ -90,6 +90,9 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
   filters.
 - [x] (2026-07-01) Implemented `join_many(...)` as a row-multiplying `JoinPlan`, lowered it through shared PySpark
   recipes, rendered join strategy hints, and covered generated/online recipe parity without live Spark.
+- [x] (2026-07-01) Added `JoinDedupe.latest_by(...)` and `JoinDedupe.earliest_by(...)`, validated right-side ordering,
+  lowered deduped `join_one(...)` through deterministic PySpark `row_number()` window recipes, and covered generated
+  rendering plus online recipe interpretation without live Spark.
 
 ## Acceptance Criteria
 

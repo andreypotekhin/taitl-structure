@@ -9,6 +9,7 @@ from structure.app.target.pyspark.logic.mapping.PySparkExpressionMapper import P
 from structure.app.target.pyspark.logic.mapping.PySparkHookMapper import PySparkHookMapper
 from structure.app.target.pyspark.logic.mapping.PySparkNameMapper import PySparkNameMapper
 from structure.app.target.pyspark.logic.mapping.PySparkValidationMapper import PySparkValidationMapper
+from structure.app.target.pyspark.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.app.target.pyspark.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.app.target.pyspark.model.PySparkProjectionRecipe import PySparkProjectionRecipe
@@ -128,6 +129,7 @@ class PySparkStepMapper:
         capabilities.require(CapabilityRequirement(group="join", name=self._join_mode_capability(join)))
         if join.hint is not None:
             capabilities.require(CapabilityRequirement(group="join", name=f"{join.hint.value}_hint"))
+        dedupe = self._dedupe(join, capabilities=capabilities)
 
         return PySparkJoinRecipe(
             input_name=join.input_name,
@@ -141,6 +143,22 @@ class PySparkStepMapper:
             predicate=self._expressions.map(join.predicate, capabilities=capabilities),
             occurrence=occurrence,
             method=join.method,
+            dedupe=dedupe,
+        )
+
+    def _dedupe(
+        self,
+        join: JoinPlan,
+        *,
+        capabilities: BackendCapabilities,
+    ) -> PySparkJoinDedupeRecipe | None:
+        if join.dedupe is None:
+            return None
+        capabilities.require(CapabilityRequirement(group="join", name="lookup_dedupe"))
+        return PySparkJoinDedupeRecipe(
+            order_by=self._expressions.map(join.dedupe.order_by, capabilities=capabilities),
+            direction=join.dedupe.direction,
+            ties=join.dedupe.ties,
         )
 
     def _join_mode_capability(self, join: JoinPlan) -> str:

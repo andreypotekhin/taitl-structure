@@ -128,6 +128,8 @@ class RenderPySparkStep:
         if join.strategy is not None:
             right = f'{right}.hint("{join.strategy.value}")'
         right = f'{right}.alias("{join.right_alias}")'
+        if join.dedupe is not None:
+            right = self._dedupe(join, right=right)
         if join.hint is not None and join.hint.value == "broadcast":
             right = f"F.broadcast({right})"
         predicate = render_pyspark_expression(join.predicate, scope_aliases=self._scope_aliases(step, join))
@@ -140,6 +142,47 @@ class RenderPySparkStep:
             f'            "{self._join_mode(join)}",',
             "        )",
         ]
+
+    def _dedupe(self, join: PySparkJoinRecipe, *, right: str) -> str:
+        dedupe = join.dedupe
+        if dedupe is None:
+            raise TypeError("Cannot render lookup dedupe without a dedupe recipe")
+        rank = f"__structure_{join.right_alias}_rank"
+        partition = ", ".join(
+            render_pyspark_expression(key, scope_aliases={join.input_name: join.right_alias})
+            for key in self._right_keys(join)
+        )
+        order_by = render_pyspark_expression(dedupe.order_by, scope_aliases={join.input_name: join.right_alias})
+        ordering = f"{order_by}.desc()" if dedupe.direction == "latest" else f"{order_by}.asc()"
+        window = f"Window.partitionBy({partition}).orderBy({ordering})"
+        return (
+            f'{right}.withColumn("{rank}", F.row_number().over({window}))'
+            f'.where(F.col("{rank}") == F.lit(1))'
+            f'.drop("{rank}")'
+            f'.alias("{join.right_alias}")'
+        )
+
+    def _right_keys(self, join: PySparkJoinRecipe) -> tuple[PySparkExpressionRecipe, ...]:
+        return tuple(self._right_key(join, condition) for condition in self._join_conditions(join.predicate))
+
+    def _right_key(self, join: PySparkJoinRecipe, condition: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
+        left, right = condition.args
+        if join.input_name in self._scopes(left):
+            return left
+        return right
+
+    def _join_conditions(self, expression: PySparkExpressionRecipe) -> tuple[PySparkExpressionRecipe, ...]:
+        if expression.kind == "and":
+            return tuple(condition for argument in expression.args for condition in self._join_conditions(argument))
+        if expression.kind in {"eq", "null_safe_eq"}:
+            return (expression,)
+        return ()
+
+    def _scopes(self, expression: PySparkExpressionRecipe) -> set[str]:
+        scopes = set().union(*(self._scopes(argument) for argument in expression.args))
+        if expression.kind == "field" and "scope" in expression.data:
+            scopes.add(str(expression.data["scope"]))
+        return scopes
 
     def _join_mode(self, join: PySparkJoinRecipe) -> str:
         if join.method is JoinMethod.EXISTS:

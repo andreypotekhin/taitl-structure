@@ -85,6 +85,18 @@
       "qualname": "Join",
       "signature": "(*values)"
     },
+    "JoinDedupe": {
+      "dataclass_fields": [
+        "order_by",
+        "direction",
+        "ties"
+      ],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.JoinDedupe",
+      "qualname": "JoinDedupe",
+      "signature": "(order_by: 'Expression', direction: 'str', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> None"
+    },
     "JoinHint": {
       "dataclass_fields": [],
       "enum_members": [
@@ -209,6 +221,16 @@
       "module": "structure.app.tools.api.StructureTools",
       "qualname": "StructureTools",
       "signature": "()"
+    },
+    "TiePolicy": {
+      "dataclass_fields": [],
+      "enum_members": [
+        "ERROR"
+      ],
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.TiePolicy",
+      "qualname": "TiePolicy",
+      "signature": "(*values)"
     },
     "Timestamp": {
       "dataclass_fields": [
@@ -342,7 +364,7 @@
       "kind": "function",
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "join_one",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', how: 'Join' = <Join.LEFT: 'left'>, hint: 'JoinHint | None' = None) -> 'Relation | InputScope'"
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', how: 'Join' = <Join.LEFT: 'left'>, hint: 'JoinHint | None' = None, dedupe: 'JoinDedupe | None' = None) -> 'Relation | InputScope'"
     },
     "lane": {
       "dataclass_fields": [],

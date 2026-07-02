@@ -5,7 +5,7 @@ from typing import Any, cast
 
 import pytest
 
-from structure import Join, JoinHint, JoinStrategy, SchemaMode, String, Structure, field
+from structure import Join, JoinHint, JoinStrategy, SchemaMode, String, Structure, TiePolicy, field
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.runtime.execution.online.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 from structure.app.runtime.execution.online.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
@@ -16,6 +16,7 @@ from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecu
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.target.pyspark.model.PySparkInputRecipe import PySparkInputRecipe
+from structure.app.target.pyspark.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.app.target.pyspark.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.app.target.pyspark.model.PySparkOutputRecipe import PySparkOutputRecipe
@@ -255,6 +256,41 @@ def test_online_runner_applies_join_many_as_row_multiplying_join(monkeypatch) ->
         "select:id=col(orders.id),status=col(customers.segment)",
         "alias:published",
     )
+
+
+def test_online_runner_dedupes_lookup_input_deterministically(monkeypatch) -> None:
+    """I can rely on online and generated execution to share v2 deduped lookup semantics."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(
+        orders=_frame("orders", RawOrder),
+        customers=_frame("customers", Customer),
+    )
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _deduped_join_plan(),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target_backend="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:orders",
+        "withColumn:__structure_customers_rank=row_number().over(partitionBy(col(customers.id)).orderBy(col(customers.segment).desc()))",
+        "where:(col(__structure_customers_rank) == lit(1))",
+        "drop:__structure_customers_rank",
+        "join:customers:left:(col(orders.id) == col(customers.id))",
+        "select:id=col(orders.id),status=col(customers.segment)",
+        "alias:published",
+    )
+    assert invocation._structure_bound_inputs["customers"].operations == ()
 
 
 def test_online_runner_materializes_multiple_step_results(monkeypatch) -> None:
@@ -672,6 +708,93 @@ def _join_many_plan() -> PySparkExecutionPlan:
     )
 
 
+def _deduped_join_plan() -> PySparkExecutionPlan:
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
+    projection = (
+        PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
+        PySparkProjectionRecipe(
+            PublishedOrder._structure_fields["status"],
+            _field_scope("customers", Customer, "segment"),
+        ),
+    )
+    step = PySparkStepRecipe(
+        name="publish",
+        ordinal=0,
+        source="orders",
+        source_scope="orders",
+        input_schema=RawOrder,
+        output_schema=PublishedOrder,
+        input_alias="orders",
+        output_alias="published",
+        before_hooks=(),
+        filters=(),
+        joins=(),
+        projection=projection,
+        after_hooks=(),
+        validations=(),
+        results=(
+            PySparkStepResultRecipe(
+                schema=PublishedOrder,
+                lane="published",
+                frame="published",
+                output_alias="published",
+                projection=projection,
+                ordinal=0,
+                after_hooks=(),
+                validations=(published_validation,),
+            ),
+        ),
+        operations=(
+            PySparkOperationRecipe.join_operation(
+                PySparkJoinRecipe(
+                    input_name="customers",
+                    source="customers",
+                    input_schema=Customer,
+                    left_alias="orders",
+                    right_alias="customers",
+                    how=Join.LEFT,
+                    hint=None,
+                    predicate=_binary("eq", _field(RawOrder, "id"), _field_scope("customers", Customer, "id")),
+                    occurrence=0,
+                    dedupe=PySparkJoinDedupeRecipe(
+                        order_by=_field_scope("customers", Customer, "segment"),
+                        direction="latest",
+                        ties=TiePolicy.ERROR,
+                    ),
+                )
+            ),
+        ),
+    )
+    return PySparkExecutionPlan(
+        transform="PublishKnownCustomers",
+        backend=BackendId("PySpark", "3.5", "pyspark"),
+        inputs=(
+            PySparkInputRecipe("orders", RawOrder, 0, input_validation),
+            PySparkInputRecipe("customers", Customer, 1, customer_validation),
+        ),
+        steps=(step,),
+        outputs=(
+            PySparkOutputRecipe(
+                name="published",
+                ordinal=0,
+                source="published",
+                source_scope="published",
+                input_schema=PublishedOrder,
+                output_schema=PublishedOrder,
+                input_alias="published",
+                output_alias="published",
+                filters=(),
+                joins=(),
+                projection=(),
+                validation=published_validation,
+            ),
+        ),
+        requires_hook_inputs=False,
+    )
+
+
 def _multi_result_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     id_validation = PySparkValidationRecipe("ids", PublishedOrderId, SchemaMode.STRICT, True, "output")
@@ -875,6 +998,7 @@ def _install_fake_pyspark(monkeypatch, functions: ModuleType) -> None:
     setattr(pyspark, "sql", sql)
     setattr(sql, "functions", functions)
     setattr(sql, "types", types)
+    setattr(sql, "Window", FakeWindow)
     monkeypatch.setitem(sys.modules, "pyspark", pyspark)
     monkeypatch.setitem(sys.modules, "pyspark.sql", sql)
     monkeypatch.setitem(sys.modules, "pyspark.sql.functions", functions)
@@ -925,6 +1049,9 @@ class FakeFunctions(ModuleType):
 
     def broadcast(self, frame):
         return frame.with_operation("broadcast")
+
+    def row_number(self):
+        return FakeRowNumber()
 
 
 @dataclass(frozen=True)
@@ -984,6 +1111,34 @@ class FakeColumn:
     def __invert__(self):
         return FakeColumn(f"~({self.expression})")
 
+    def desc(self):
+        return FakeColumn(f"{self.expression}.desc()")
+
+    def asc(self):
+        return FakeColumn(f"{self.expression}.asc()")
+
+
+@dataclass(frozen=True)
+class FakeRowNumber:
+
+    def over(self, window):
+        return FakeColumn(f"row_number().over({window.expression})")
+
+
+class FakeWindow:
+
+    @staticmethod
+    def partitionBy(*columns):
+        return FakeWindowSpec("partitionBy(" + ",".join(column.expression for column in columns) + ")")
+
+
+@dataclass(frozen=True)
+class FakeWindowSpec:
+    expression: str
+
+    def orderBy(self, column):
+        return FakeWindowSpec(f"{self.expression}.orderBy({column.expression})")
+
 
 @dataclass(frozen=True)
 class FakeWhen:
@@ -1013,7 +1168,16 @@ class FakeFrame:
         return self.with_operation(f"where:{predicate.expression}")
 
     def join(self, right, predicate: FakeColumn, how: str):
-        return self.with_operation(f"join:{right.name}:{how}:{predicate.expression}")
+        dedupe = tuple(
+            operation
+            for operation in right.operations
+            if operation.startswith(("withColumn:", "drop:")) or "__structure_" in operation
+        )
+        return FakeFrame(
+            self.name,
+            self.schema,
+            self.operations + dedupe + (f"join:{right.name}:{how}:{predicate.expression}",),
+        )
 
     def hint(self, name: str):
         return self.with_operation(f"hint:{name}")
@@ -1035,6 +1199,12 @@ class FakeFrame:
 
     def with_operation(self, operation: str):
         return FakeFrame(self.name, self.schema, self.operations + (operation,))
+
+    def withColumn(self, name: str, column: FakeColumn):
+        return self.with_operation(f"withColumn:{name}={column.expression}")
+
+    def drop(self, name: str):
+        return self.with_operation(f"drop:{name}")
 
 
 @dataclass(frozen=True)

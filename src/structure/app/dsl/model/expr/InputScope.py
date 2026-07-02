@@ -10,6 +10,7 @@ from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.expr.RowScope import RowScope
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.Join import Join
+from structure.app.dsl.model.transforms.JoinDedupe import JoinDedupe
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
 from structure.app.dsl.model.types.BooleanType import BooleanType
@@ -129,6 +130,7 @@ def join_one(
     on: object,
     how: Join = Join.LEFT,
     hint: JoinHint | None = None,
+    dedupe: JoinDedupe | None = None,
 ) -> Relation: ...
 
 
@@ -138,6 +140,7 @@ def join_one(
     on: object,
     how: Join = Join.LEFT,
     hint: JoinHint | None = None,
+    dedupe: JoinDedupe | None = None,
 ) -> InputScope: ...
 
 
@@ -147,6 +150,7 @@ def join_one(
     on: object,
     how: Join = Join.LEFT,
     hint: JoinHint | None = None,
+    dedupe: JoinDedupe | None = None,
 ) -> Relation | InputScope:
     context = current_context()
     if context is None:
@@ -159,8 +163,10 @@ def join_one(
         relation = cast(Relation, _infer_relation(context, on))
     if not isinstance(relation, InputScope):
         raise TypeError("join_one(relation, ...) requires a Structure relation parameter or transform input")
+    if dedupe is not None and not isinstance(dedupe, JoinDedupe):
+        raise TypeError("join_one(dedupe=...) requires a JoinDedupe policy")
 
-    _record_join(context, relation, on, how, hint)
+    _record_join(context, relation, on, how, hint, dedupe)
     return relation
 
 
@@ -170,6 +176,7 @@ def _record_join(
     on: Expression,
     how: Join,
     hint: JoinHint | None,
+    dedupe: JoinDedupe | None,
 ) -> None:
     join = JoinPlan(
         input_name=relation._structure_input_name,
@@ -179,6 +186,7 @@ def _record_join(
         how=how,
         hint=hint,
         method=JoinMethod.ONE,
+        dedupe=dedupe,
     )
     context.joins.append(join)
     context.operations.append(OperationPlan.join_operation(join))

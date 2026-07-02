@@ -97,4 +97,7 @@ class PySparkTraceabilityReport:
         }
         if join.strategy is not None:
             data["strategy"] = join.strategy.value
+        if join.dedupe is not None:
+            data["dedupe"] = join.dedupe.direction
+            data["ties"] = join.dedupe.ties.value
         return data

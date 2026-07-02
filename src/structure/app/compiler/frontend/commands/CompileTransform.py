@@ -25,11 +25,13 @@ from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.BindingSelector import BindingSelector
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.app.dsl.model.transforms.Join import Join
+from structure.app.dsl.model.transforms.JoinDedupe import JoinDedupe
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
 from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.app.dsl.model.transforms.reserved_v2 import reserved_operations
+from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.types.DecimalType import DecimalType
 from structure.app.dsl.model.types.StructureType import StructureType
@@ -1436,13 +1438,19 @@ class CompileTransform:
                     f"{join.method.value}(...) strategy must be a JoinStrategy value, not {type(join.strategy).__name__}.",
                     "Use a JoinStrategy value or omit strategy=.",
                 )
+            if join.dedupe is not None:
+                self._validate_join_dedupe(transform_class, member, join.input_name, occurrence, join.dedupe)
 
             conditions = self._join_conditions(transform_class, member, join.input_name, occurrence, join.predicate)
             for condition in conditions:
                 left, right = condition.args
                 self._validate_join_pair(transform_class, member, join.input_name, occurrence, left, right)
 
-            if join.method is JoinMethod.ONE and not self._unique_join(join.input_name, join.input_schema, conditions):
+            if (
+                join.method is JoinMethod.ONE
+                and join.dedupe is None
+                and not self._unique_join(join.input_name, join.input_schema, conditions)
+            ):
                 diagnostics.append(
                     Diagnostic(
                         entry=diagnostic_registry.get("JOIN-W0601"),
@@ -1453,6 +1461,43 @@ class CompileTransform:
                     )
                 )
         return diagnostics
+
+    def _validate_join_dedupe(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        input_name: str,
+        occurrence: int,
+        dedupe: JoinDedupe,
+    ) -> None:
+        if not isinstance(dedupe.ties, TiePolicy):
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                f"join_one(dedupe=...) ties must be a TiePolicy value, not {type(dedupe.ties).__name__}.",
+                "Use TiePolicy.ERROR or omit ties=.",
+            )
+        if dedupe.direction not in {"latest", "earliest"}:
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                f"join_one(dedupe=...) direction {dedupe.direction!r} is not supported.",
+                "Use JoinDedupe.latest_by(...) or JoinDedupe.earliest_by(...).",
+            )
+        scopes = self._scopes(dedupe.order_by)
+        if input_name not in scopes or scopes - {input_name}:
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                "join_one(dedupe=...) order_by must read only the joined input.",
+                "Use a right-side field such as JoinDedupe.latest_by(customer.updated_at).",
+            )
 
     def _join_conditions(
         self,

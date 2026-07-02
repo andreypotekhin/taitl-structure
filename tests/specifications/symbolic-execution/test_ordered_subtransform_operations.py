@@ -4,10 +4,12 @@ import pytest
 
 from structure import (
     Join,
+    JoinDedupe,
     JoinStrategy,
     String,
     Structure,
     StructureCompileError,
+    TiePolicy,
     Transform,
     field,
     input,
@@ -250,6 +252,63 @@ def test_join_many_records_row_multiplying_operation() -> None:
     assert '"inner"' in text
     assert dependencies["add_product.join[1].product"].operation == "join_many"
     assert dependencies["add_product.join[1].product"].detail["cardinality"] == "row_multiplying"
+
+
+def test_deduped_join_one_records_policy_and_renders_deterministic_lookup() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            join_one(
+                product,
+                on=product.id == order.product_id,
+                how=Join.LEFT,
+                dedupe=JoinDedupe.latest_by(product.name),
+            )
+            return Enriched(id=order.id, product_name=product.name)
+
+    plan = compile_transform(AddProduct)
+    step = plan.steps[0]
+    recipe = PySpark.plan.lower()(plan).steps[0]
+    text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
+
+    assert len(plan.diagnostics) == 0
+    assert step.joins[0].dedupe is not None
+    assert step.joins[0].dedupe.direction == "latest"
+    assert step.joins[0].dedupe.ties is TiePolicy.ERROR
+    assert recipe.joins[0].dedupe is not None
+    assert (
+        "F.row_number().over(Window.partitionBy(F.col(\"products.id\")).orderBy(F.col(\"products.name\").desc()))"
+        in text
+    )
+    assert '.where(F.col("__structure_products_rank") == F.lit(1))' in text
+    assert '.drop("__structure_products_rank").alias("products")' in text
+
+
+def test_deduped_join_one_rejects_left_side_ordering() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            join_one(
+                product,
+                on=product.id == order.product_id,
+                how=Join.LEFT,
+                dedupe=JoinDedupe.latest_by(order.id),
+            )
+            return Enriched(id=order.id, product_name=product.name)
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(AddProduct)
+
+    assert raised.value.diagnostic.code == "JOIN-E0601"
+    assert "order_by must read only the joined input" in raised.value.diagnostic.problem_text()
 
 
 def test_exists_join_does_not_make_relation_fields_readable() -> None:
