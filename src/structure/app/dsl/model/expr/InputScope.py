@@ -9,12 +9,15 @@ from structure.app.compiler.symbolic_execution.model.CompileContext import curre
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.expr.RowScope import RowScope
 from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.transforms.AsOf import AsOf
 from structure.app.dsl.model.transforms.Join import Join
+from structure.app.dsl.model.transforms.JoinAsOf import JoinAsOf
 from structure.app.dsl.model.transforms.JoinDedupe import JoinDedupe
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
 from structure.app.dsl.model.transforms.JoinTemporal import JoinTemporal
 from structure.app.dsl.model.transforms.OverlapPolicy import OverlapPolicy
+from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.types.BooleanType import BooleanType
 
 
@@ -70,6 +73,33 @@ class InputScope(RowScope):
                 valid_to=valid_to,
                 how=how,
                 overlaps=overlaps,
+                hint=hint,
+            ),
+        )
+
+    def as_of_one(
+        self,
+        *,
+        on: Expression,
+        left_time: Expression,
+        right_time: Expression,
+        direction: AsOf = AsOf.BACKWARD,
+        tolerance: Expression | None = None,
+        how: Join = Join.LEFT,
+        ties: TiePolicy = TiePolicy.ERROR,
+        hint: JoinHint | None = None,
+    ) -> RowScope:
+        return cast(
+            RowScope,
+            as_of_one(
+                self,
+                on=on,
+                left_time=left_time,
+                right_time=right_time,
+                direction=direction,
+                tolerance=tolerance,
+                how=how,
+                ties=ties,
                 hint=hint,
             ),
         )
@@ -306,6 +336,85 @@ def temporal_one(
             valid_from=valid_from_expr,
             valid_to=valid_to_expr,
             overlaps=overlaps,
+        ),
+    )
+    _record_scoped_join(context, relation, join)
+    return relation
+
+
+@overload
+def as_of_one(
+    relation: Relation,
+    *,
+    on: object,
+    left_time: object,
+    right_time: object,
+    direction: AsOf = AsOf.BACKWARD,
+    tolerance: object | None = None,
+    how: Join = Join.LEFT,
+    ties: TiePolicy = TiePolicy.ERROR,
+    hint: JoinHint | None = None,
+) -> Relation: ...
+
+
+@overload
+def as_of_one(
+    *,
+    on: object,
+    left_time: object,
+    right_time: object,
+    direction: AsOf = AsOf.BACKWARD,
+    tolerance: object | None = None,
+    how: Join = Join.LEFT,
+    ties: TiePolicy = TiePolicy.ERROR,
+    hint: JoinHint | None = None,
+) -> InputScope: ...
+
+
+def as_of_one(
+    relation: Relation | None = None,
+    *,
+    on: object,
+    left_time: object,
+    right_time: object,
+    direction: AsOf = AsOf.BACKWARD,
+    tolerance: object | None = None,
+    how: Join = Join.LEFT,
+    ties: TiePolicy = TiePolicy.ERROR,
+    hint: JoinHint | None = None,
+) -> Relation | InputScope:
+    context = _join_context("as_of_one")
+    predicate = _join_predicate("as_of_one", on)
+    if relation is None:
+        relation = cast(Relation, _infer_relation("as_of_one", context, predicate))
+    if not isinstance(relation, InputScope):
+        raise TypeError("as_of_one(relation, ...) requires a Structure relation parameter or transform input")
+    left_time_expr = _expression("as_of_one", "left_time", left_time)
+    right_time_expr = _expression("as_of_one", "right_time", right_time)
+    tolerance_expr = None if tolerance is None else _expression("as_of_one", "tolerance", tolerance)
+    if not isinstance(direction, AsOf):
+        raise TypeError("as_of_one(direction=...) requires an AsOf value")
+    if not isinstance(how, Join):
+        raise TypeError("as_of_one(how=...) requires a Join value")
+    if not isinstance(ties, TiePolicy):
+        raise TypeError("as_of_one(ties=...) requires a TiePolicy value")
+    if hint is not None and not isinstance(hint, JoinHint):
+        raise TypeError("as_of_one(hint=...) requires a JoinHint value")
+
+    join = JoinPlan(
+        input_name=relation._structure_input_name,
+        source=relation._structure_source,
+        input_schema=relation._structure_input_schema,
+        predicate=predicate,
+        how=how,
+        hint=hint,
+        method=JoinMethod.AS_OF_ONE,
+        as_of=JoinAsOf(
+            left_time=left_time_expr,
+            right_time=right_time_expr,
+            direction=direction,
+            tolerance=tolerance_expr,
+            ties=ties,
         ),
     )
     _record_scoped_join(context, relation, join)

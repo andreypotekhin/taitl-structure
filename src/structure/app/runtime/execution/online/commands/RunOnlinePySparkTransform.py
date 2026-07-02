@@ -212,6 +212,10 @@ class RunOnlinePySparkTransform:
         return df
 
     def _join(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, join, *, frames, functions, window):
+        row_id = None
+        if join.as_of is not None:
+            row_id = f"__structure_{join.left_alias}_{join.right_alias}_row"
+            df = df.withColumn(row_id, functions.monotonically_increasing_id())
         right = frames[join.source]
         if join.strategy is not None:
             right = right.hint(join.strategy.value)
@@ -221,17 +225,41 @@ class RunOnlinePySparkTransform:
         if join.hint is not None and join.hint.value == "broadcast":
             right = functions.broadcast(right)
         predicate = self._predicate(step, join, functions=functions)
-        return df.join(right, predicate, self._join_mode(join))
+        joined = df.join(right, predicate, self._join_mode(join))
+        if join.as_of is not None:
+            return self._as_of(join, joined, row_id=row_id, functions=functions, window=window)
+        return joined
 
     def _predicate(self, step, join, *, functions):
         aliases = self._scope_aliases(step, join)
         predicate = self._expressions.evaluate(join.predicate, functions=functions, aliases=aliases)
-        if join.temporal is None:
-            return predicate
-        at = self._expressions.evaluate(join.temporal.at, functions=functions, aliases=aliases)
-        valid_from = self._expressions.evaluate(join.temporal.valid_from, functions=functions, aliases=aliases)
-        valid_to = self._expressions.evaluate(join.temporal.valid_to, functions=functions, aliases=aliases)
-        return predicate & (valid_from <= at) & ((at < valid_to) | valid_to.isNull())
+        if join.temporal is not None:
+            at = self._expressions.evaluate(join.temporal.at, functions=functions, aliases=aliases)
+            valid_from = self._expressions.evaluate(join.temporal.valid_from, functions=functions, aliases=aliases)
+            valid_to = self._expressions.evaluate(join.temporal.valid_to, functions=functions, aliases=aliases)
+            predicate = predicate & (valid_from <= at) & ((at < valid_to) | valid_to.isNull())
+        if join.as_of is not None:
+            left_time = self._expressions.evaluate(join.as_of.left_time, functions=functions, aliases=aliases)
+            right_time = self._expressions.evaluate(join.as_of.right_time, functions=functions, aliases=aliases)
+            as_of = right_time <= left_time
+            if join.as_of.tolerance is not None:
+                tolerance = self._expressions.evaluate(join.as_of.tolerance, functions=functions, aliases=aliases)
+                as_of = as_of & (right_time >= left_time - tolerance)
+            predicate = predicate & as_of
+        return predicate
+
+    def _as_of(self, join, df, *, row_id, functions, window):
+        rank = f"__structure_{join.right_alias}_as_of_rank"
+        right_time = self._expressions.evaluate(
+            join.as_of.right_time,
+            functions=functions,
+            aliases={join.input_name: join.right_alias},
+        )
+        ranked = df.withColumn(
+            rank,
+            functions.row_number().over(window.partitionBy(functions.col(row_id)).orderBy(right_time.desc())),
+        )
+        return ranked.where(functions.col(rank) == functions.lit(1)).drop(rank).drop(row_id)
 
     def _dedupe(self, join, right, *, functions, window):
         rank = f"__structure_{join.right_alias}_rank"

@@ -76,7 +76,7 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
 8. + Add deterministic dedupe policy objects and checks.
 9. + Add deduped `join_one(...)` recipe lowering and parity tests.
 10. + Implement `temporal_one(...)` closed-open validity-window lookups.
-11. Implement backward `as_of_one(...)`.
+11. + Implement backward `as_of_one(...)`.
 12. Update traceability, explain output, diagnostics, and streaming classification.
 
 ## Progress
@@ -95,6 +95,9 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
   rendering plus online recipe interpretation without live Spark.
 - [x] (2026-07-02) Implemented `temporal_one(...)` closed-open validity-window lookup capture, validation, PySpark
   recipe lowering, generated rendering, online recipe interpretation, capability support, and traceability detail.
+- [x] (2026-07-02) Implemented backward `as_of_one(...)` lookup capture, validation, PySpark candidate ranking,
+  generated rendering, online recipe interpretation, capability support, traceability detail, and batch-only streaming
+  classification.
 
 ## Acceptance Criteria
 

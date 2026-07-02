@@ -1,5 +1,6 @@
 from structure.app.dsl.api import (
     Array,
+    AsOf,
     Boolean,
     Date,
     Decimal,
@@ -24,6 +25,7 @@ from structure.app.dsl.api import (
     after,
     arr_filter,
     arr_transform,
+    as_of_one,
     before,
     coalesce,
     count,
@@ -59,6 +61,7 @@ from structure.app.tools.api import StructureTools
 
 __all__ = [
     "Array",
+    "AsOf",
     "Boolean",
     "Date",
     "Decimal",
@@ -89,6 +92,7 @@ __all__ = [
     "after",
     "arr_filter",
     "arr_transform",
+    "as_of_one",
     "before",
     "coalesce",
     "count",

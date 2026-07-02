@@ -31,3 +31,12 @@ def test_v2_join_many_is_supported_by_the_default_pyspark_profile() -> None:
 
     assert decision.supported
     assert decision.code == ""
+
+
+def test_v2_as_of_one_is_supported_by_the_default_pyspark_profile() -> None:
+    """The PySpark backend profile supports v2 backward as-of joins."""
+
+    decision = Capabilities.resolve()().require(CapabilityRequirement(group="join", name="as_of_one"))
+
+    assert decision.supported
+    assert decision.code == ""

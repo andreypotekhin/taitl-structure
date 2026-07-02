@@ -431,10 +431,9 @@ transforms, diagnostic links, and setup checks.
 
 ### v2
 
-Existence joins, `join_many(...)`, deterministic lookup dedupe, temporal validity-window joins, windowing,
-aggregations, advanced grouping, Spark higher-order functions, caching/persistence and repartition hints, richer
-explain output, generated docs, pytest helpers, and production incremental compile. Backward as-of joins remain staged
-until their tie and tolerance policy is implemented.
+Existence joins, `join_many(...)`, deterministic lookup dedupe, temporal validity-window joins, backward as-of joins,
+windowing, aggregations, advanced grouping, Spark higher-order functions, caching/persistence and repartition hints,
+richer explain output, generated docs, pytest helpers, and production incremental compile.
 
 ### v3
 

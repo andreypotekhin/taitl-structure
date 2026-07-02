@@ -39,6 +39,7 @@ class OperationPlan:
             JoinMethod.NOT_EXISTS: OperationCardinality.ROW_FILTERING,
             JoinMethod.MANY: OperationCardinality.ROW_MULTIPLYING,
             JoinMethod.TEMPORAL_ONE: OperationCardinality.SELECT_ONE,
+            JoinMethod.AS_OF_ONE: OperationCardinality.SELECT_ONE,
         }[join.method]
         return OperationPlan(
             kind="join",

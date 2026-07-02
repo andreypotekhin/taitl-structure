@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from typing import cast
 
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.model.types.DecimalType import DecimalType
@@ -134,25 +135,58 @@ class RenderPySparkStep:
             right = f"F.broadcast({right})"
         predicate = self._predicate(step, join)
         right_name = f"{join.right_alias}_joined"
-        return [
-            f"        {right_name} = {right}",
-            f"        {target} = {target}.join(",
-            f"            {right_name},",
-            f"            {predicate},",
-            f'            "{self._join_mode(join)}",',
-            "        )",
-        ]
+        lines = []
+        row_id = None
+        if join.as_of is not None:
+            row_id = f"__structure_{join.left_alias}_{join.right_alias}_row"
+            lines.append(f'        {target} = {target}.withColumn("{row_id}", F.monotonically_increasing_id())')
+        lines.extend(
+            [
+                f"        {right_name} = {right}",
+                f"        {target} = {target}.join(",
+                f"            {right_name},",
+                f"            {predicate},",
+                f'            "{self._join_mode(join)}",',
+                "        )",
+            ]
+        )
+        if join.as_of is not None:
+            lines.extend(self._as_of(join, target=target, row_id=cast(str, row_id)))
+        return lines
 
     def _predicate(self, step: PySparkStepRecipe | PySparkOutputRecipe, join: PySparkJoinRecipe) -> str:
         aliases = self._scope_aliases(step, join)
         predicate = render_pyspark_expression(join.predicate, scope_aliases=aliases)
-        if join.temporal is None:
+        if join.temporal is None and join.as_of is None:
             return predicate
-        at = render_pyspark_expression(join.temporal.at, scope_aliases=aliases)
-        valid_from = render_pyspark_expression(join.temporal.valid_from, scope_aliases=aliases)
-        valid_to = render_pyspark_expression(join.temporal.valid_to, scope_aliases=aliases)
-        valid_window = f"(({valid_from} <= {at}) & (({at} < {valid_to}) | {valid_to}.isNull()))"
-        return f"({predicate} & {valid_window})"
+        if join.temporal is not None:
+            at = render_pyspark_expression(join.temporal.at, scope_aliases=aliases)
+            valid_from = render_pyspark_expression(join.temporal.valid_from, scope_aliases=aliases)
+            valid_to = render_pyspark_expression(join.temporal.valid_to, scope_aliases=aliases)
+            valid_window = f"(({valid_from} <= {at}) & (({at} < {valid_to}) | {valid_to}.isNull()))"
+            predicate = f"({predicate} & {valid_window})"
+        if join.as_of is not None:
+            left_time = render_pyspark_expression(join.as_of.left_time, scope_aliases=aliases)
+            right_time = render_pyspark_expression(join.as_of.right_time, scope_aliases=aliases)
+            as_of = f"({right_time} <= {left_time})"
+            if join.as_of.tolerance is not None:
+                tolerance = render_pyspark_expression(join.as_of.tolerance, scope_aliases=aliases)
+                as_of = f"({as_of} & ({right_time} >= ({left_time} - {tolerance})))"
+            predicate = f"({predicate} & {as_of})"
+        return predicate
+
+    def _as_of(self, join: PySparkJoinRecipe, *, target: str, row_id: str) -> list[str]:
+        as_of = join.as_of
+        if as_of is None:
+            raise TypeError("Cannot render as-of lookup without an as-of recipe")
+        rank = f"__structure_{join.right_alias}_as_of_rank"
+        right_time = render_pyspark_expression(as_of.right_time, scope_aliases={join.input_name: join.right_alias})
+        window = f'Window.partitionBy(F.col("{row_id}")).orderBy({right_time}.desc())'
+        return [
+            f'        {target} = {target}.withColumn("{rank}", F.row_number().over({window}))',
+            f'        {target} = {target}.where(F.col("{rank}") == F.lit(1))',
+            f'        {target} = {target}.drop("{rank}").drop("{row_id}")',
+        ]
 
     def _dedupe(self, join: PySparkJoinRecipe, *, right: str) -> str:
         dedupe = join.dedupe

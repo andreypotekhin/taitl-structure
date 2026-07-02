@@ -7,6 +7,7 @@ class JoinMethod(Enum):
     NOT_EXISTS = "not_exists"
     MANY = "join_many"
     TEMPORAL_ONE = "temporal_one"
+    AS_OF_ONE = "as_of_one"
 
     def exposes_fields(self) -> bool:
-        return self in {JoinMethod.ONE, JoinMethod.MANY, JoinMethod.TEMPORAL_ONE}
+        return self in {JoinMethod.ONE, JoinMethod.MANY, JoinMethod.TEMPORAL_ONE, JoinMethod.AS_OF_ONE}

@@ -6,6 +6,7 @@ from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.Join import Join
+from structure.app.dsl.model.transforms.JoinAsOf import JoinAsOf
 from structure.app.dsl.model.transforms.JoinDedupe import JoinDedupe
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
@@ -24,3 +25,4 @@ class JoinPlan:
     method: JoinMethod = JoinMethod.ONE
     dedupe: JoinDedupe | None = None
     temporal: JoinTemporal | None = None
+    as_of: JoinAsOf | None = None

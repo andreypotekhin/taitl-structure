@@ -3,6 +3,7 @@ from typing import Any, cast
 import pytest
 
 from structure import (
+    AsOf,
     Join,
     JoinDedupe,
     JoinStrategy,
@@ -11,6 +12,7 @@ from structure import (
     StructureCompileError,
     TiePolicy,
     Transform,
+    as_of_one,
     exists,
     field,
     input,
@@ -381,6 +383,73 @@ def test_temporal_one_rejects_left_side_validity_bound() -> None:
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
     assert "valid_from=...) must read only the joined temporal input" in raised.value.diagnostic.problem_text()
+
+
+def test_as_of_one_records_backward_lookup_and_renders_ranked_selection() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            as_of_one(
+                on=product.id == order.product_id,
+                left_time=order.status,
+                right_time=product.valid_from,
+                direction=AsOf.BACKWARD,
+                how=Join.LEFT,
+            )
+            return Enriched(id=order.id, product_name=product.name)
+
+    plan = compile_transform(AddProduct)
+    step = plan.steps[0]
+    recipe_plan = PySpark.plan.lower()(plan)
+    recipe = recipe_plan.steps[0]
+    text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
+    traceability = Compiler.traceability.build()(
+        recipe_plan,
+        source_transform=f"{AddProduct.__module__}.AddProduct",
+        transform_module="generated.transforms.add_product",
+    )
+    dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
+
+    assert len(step.joins) == 1
+    assert step.joins[0].method is JoinMethod.AS_OF_ONE
+    assert step.joins[0].as_of is not None
+    assert step.operations[0].capability is not None
+    assert step.operations[0].capability.name == "as_of_one"
+    assert step.operations[0].cardinality is OperationCardinality.SELECT_ONE
+    assert recipe.joins[0].as_of is not None
+    assert "F.monotonically_increasing_id()" in text
+    assert "(F.col(\"products.valid_from\") <= F.col(\"order.status\"))" in text
+    assert "Window.partitionBy(F.col(\"__structure_order_products_row\"))" in text
+    assert ".orderBy(F.col(\"products.valid_from\").desc())" in text
+    assert dependencies["add_product.join[1].product"].operation == "as_of_one"
+    assert dependencies["add_product.join[1].product"].detail["as_of"] == "backward"
+
+
+def test_as_of_one_rejects_left_side_right_time() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            as_of_one(
+                on=product.id == order.product_id,
+                left_time=order.status,
+                right_time=order.status,
+                how=Join.LEFT,
+            )
+            return Enriched(id=order.id, product_name=product.name)
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(AddProduct)
+
+    assert raised.value.diagnostic.code == "JOIN-E0601"
+    assert "right_time=...) must read only the joined as-of input" in raised.value.diagnostic.problem_text()
 
 
 def test_exists_join_does_not_make_relation_fields_readable() -> None:

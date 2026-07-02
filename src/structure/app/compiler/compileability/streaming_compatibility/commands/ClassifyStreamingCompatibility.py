@@ -31,6 +31,17 @@ class ClassifyStreamingCompatibility:
         )
 
     def _join(self, step: str, join: PySparkJoinRecipe) -> tuple[StreamingFinding, ...]:
+        if join.as_of is not None:
+            return (
+                StreamingFinding(
+                    code="STREAM-E0801",
+                    support=StreamingSupport.BATCH_ONLY,
+                    step=step,
+                    operation=f"as-of join {join.input_name}",
+                    problem="As-of joins use candidate ranking and are batch-only until streaming state semantics exist.",
+                    use="Keep this transform batch-only or move the as-of lookup into explicit streaming code.",
+                ),
+            )
         if join.how.value in {Join.LEFT.value, "inner"}:
             return ()
         return (

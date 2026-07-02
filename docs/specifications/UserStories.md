@@ -338,7 +338,7 @@ over streaming orchestration, storage writes, Spark Connect, automatic cost-base
 - + As a developer, I can use `join_many(...)` for cardinality-expanding joins so that row multiplication is explicit.
 - As a developer, I can use deterministic lookup dedupe policies so that selected right-side rows are reviewable.
 - + As a developer, I can use temporal validity-window lookups so that SCD-style joins have explicit interval semantics.
-- As a developer, I can use backward as-of lookups so that time-relative enrichment stays compiler-visible.
+- + As a developer, I can use backward as-of lookups so that time-relative enrichment stays compiler-visible.
 - As a developer, I can receive tie and overlap diagnostics for deduped, temporal, and as-of joins so that ambiguous
   right-side records do not silently change facts.
 - + As a developer, I can see analytical join cardinality in generated traceability so that downstream consumers can spot

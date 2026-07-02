@@ -310,6 +310,9 @@ class BuildCompilerTraceability:
         if join.temporal is not None:
             detail["temporal"] = "closed_open"
             detail["overlaps"] = join.temporal.overlaps.value
+        if join.as_of is not None:
+            detail["as_of"] = join.as_of.direction.value
+            detail["ties"] = join.as_of.ties.value
         return detail
 
     def _join_cardinality(self, method: JoinMethod) -> str:

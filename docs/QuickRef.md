@@ -476,8 +476,7 @@ Implemented join forms in the default PySpark profile:
 | `not_exists(...)` | filter current rows by no right-side match | Anti join semantics. |
 | `join_many(...)` | multiply current rows by right-side matches | One output row per match. |
 | `temporal_one(...)` | select one right row by validity window | SCD-style or temporal lookup enrichment. |
-
-Backward as-of joins remain staged; use a hook for that shape until `as_of_one(...)` is implemented.
+| `as_of_one(...)` | select latest right row at or before a left time | Backward time-relative enrichment. |
 
 Prefer inferred `join_one(...)` when the `on` clause names exactly one unjoined relation:
 

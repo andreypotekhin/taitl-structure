@@ -5,7 +5,7 @@ from typing import Any, cast
 
 import pytest
 
-from structure import Join, JoinHint, JoinStrategy, SchemaMode, String, Structure, TiePolicy, field
+from structure import AsOf, Join, JoinHint, JoinStrategy, SchemaMode, String, Structure, TiePolicy, field
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.runtime.execution.online.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 from structure.app.runtime.execution.online.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
@@ -16,6 +16,7 @@ from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecu
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.target.pyspark.model.PySparkInputRecipe import PySparkInputRecipe
+from structure.app.target.pyspark.model.PySparkJoinAsOfRecipe import PySparkJoinAsOfRecipe
 from structure.app.target.pyspark.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.app.target.pyspark.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
@@ -322,6 +323,42 @@ def test_online_runner_applies_temporal_closed_open_lookup(monkeypatch) -> None:
     assert published.operations == (
         "alias:orders",
         "join:customers:left:(((col(orders.id) == col(customers.id)) AND (col(customers.valid_from) <= col(orders.status))) AND ((col(orders.status) < col(customers.valid_to)) OR col(customers.valid_to).isNull()))",
+        "select:id=col(orders.id),status=col(customers.segment)",
+        "alias:published",
+    )
+
+
+def test_online_runner_applies_backward_as_of_lookup(monkeypatch) -> None:
+    """I can rely on online and generated execution to share v2 as-of lookup semantics."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(
+        orders=_frame("orders", RawOrder),
+        customers=_frame("customers", Customer),
+    )
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _as_of_join_plan(),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target_backend="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:orders",
+        "withColumn:__structure_orders_customers_row=monotonically_increasing_id()",
+        "join:customers:left:((col(orders.id) == col(customers.id)) AND (col(customers.valid_from) <= col(orders.status)))",
+        "withColumn:__structure_customers_as_of_rank=row_number().over(partitionBy(col(__structure_orders_customers_row)).orderBy(col(customers.valid_from).desc()))",
+        "where:(col(__structure_customers_as_of_rank) == lit(1))",
+        "drop:__structure_customers_as_of_rank",
+        "drop:__structure_orders_customers_row",
         "select:id=col(orders.id),status=col(customers.segment)",
         "alias:published",
     )
@@ -917,6 +954,94 @@ def _temporal_join_plan() -> PySparkExecutionPlan:
     )
 
 
+def _as_of_join_plan() -> PySparkExecutionPlan:
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
+    projection = (
+        PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
+        PySparkProjectionRecipe(
+            PublishedOrder._structure_fields["status"],
+            _field_scope("customers", Customer, "segment"),
+        ),
+    )
+    step = PySparkStepRecipe(
+        name="publish",
+        ordinal=0,
+        source="orders",
+        source_scope="orders",
+        input_schema=RawOrder,
+        output_schema=PublishedOrder,
+        input_alias="orders",
+        output_alias="published",
+        before_hooks=(),
+        filters=(),
+        joins=(),
+        projection=projection,
+        after_hooks=(),
+        validations=(),
+        results=(
+            PySparkStepResultRecipe(
+                schema=PublishedOrder,
+                lane="published",
+                frame="published",
+                output_alias="published",
+                projection=projection,
+                ordinal=0,
+                after_hooks=(),
+                validations=(published_validation,),
+            ),
+        ),
+        operations=(
+            PySparkOperationRecipe.join_operation(
+                PySparkJoinRecipe(
+                    input_name="customers",
+                    source="customers",
+                    input_schema=Customer,
+                    left_alias="orders",
+                    right_alias="customers",
+                    how=Join.LEFT,
+                    hint=None,
+                    predicate=_binary("eq", _field(RawOrder, "id"), _field_scope("customers", Customer, "id")),
+                    occurrence=0,
+                    method=JoinMethod.AS_OF_ONE,
+                    as_of=PySparkJoinAsOfRecipe(
+                        left_time=_field(RawOrder, "status"),
+                        right_time=_field_scope("customers", Customer, "valid_from"),
+                        direction=AsOf.BACKWARD,
+                    ),
+                )
+            ),
+        ),
+    )
+    return PySparkExecutionPlan(
+        transform="PublishKnownCustomers",
+        backend=BackendId("PySpark", "3.5", "pyspark"),
+        inputs=(
+            PySparkInputRecipe("orders", RawOrder, 0, input_validation),
+            PySparkInputRecipe("customers", Customer, 1, customer_validation),
+        ),
+        steps=(step,),
+        outputs=(
+            PySparkOutputRecipe(
+                name="published",
+                ordinal=0,
+                source="published",
+                source_scope="published",
+                input_schema=PublishedOrder,
+                output_schema=PublishedOrder,
+                input_alias="published",
+                output_alias="published",
+                filters=(),
+                joins=(),
+                projection=(),
+                validation=published_validation,
+            ),
+        ),
+        requires_hook_inputs=False,
+    )
+
+
 def _multi_result_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     id_validation = PySparkValidationRecipe("ids", PublishedOrderId, SchemaMode.STRICT, True, "output")
@@ -1174,6 +1299,9 @@ class FakeFunctions(ModuleType):
 
     def row_number(self):
         return FakeRowNumber()
+
+    def monotonically_increasing_id(self):
+        return FakeColumn("monotonically_increasing_id()")
 
 
 @dataclass(frozen=True)

@@ -244,8 +244,8 @@ join.temporal_one
 join.as_of_one
 ```
 
-The default PySpark profile supports `join.exists`, `join.not_exists`, `join.join_many`, `join.lookup_dedupe`, and
-`join.temporal_one`.
+The default PySpark profile supports `join.exists`, `join.not_exists`, `join.join_many`, `join.lookup_dedupe`,
+`join.temporal_one`, and `join.as_of_one`.
 Unsupported capability diagnostics use `BACKEND-E2402` and link to this specification. The diagnostic must name the
 join form and suggest either a supported join, a hook escape hatch, or waiting for the planned feature.
 
@@ -255,8 +255,8 @@ v2 may classify stream-static `exists(...)`, `not_exists(...)`, and `join_many(.
 pipeline input is streaming and the right input is static, if Spark supports the lowered plan for the configured
 target.
 
-Temporal, deduped lookup, and runtime tie or overlap checks are batch-only until a streaming-specific design specifies
-their state, watermark, and output-mode requirements. As-of joins remain staged and are batch-only until implemented.
+Temporal, deduped lookup, as-of lookup, and runtime tie or overlap checks are batch-only until a streaming-specific
+design specifies their state, watermark, and output-mode requirements.
 
 ## Diagnostics
 

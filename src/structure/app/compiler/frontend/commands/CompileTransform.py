@@ -23,6 +23,7 @@ from structure.app.dsl.model.expr.InputScope import InputScope
 from structure.app.dsl.model.expr.RowScope import RowScope
 from structure.app.dsl.model.schemas.Projection import Projection
 from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.transforms.AsOf import AsOf
 from structure.app.dsl.model.transforms.BindingSelector import BindingSelector
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.app.dsl.model.transforms.Join import Join
@@ -313,6 +314,22 @@ class CompileTransform:
                         joined,
                         self._scopes(operation.join.temporal.at),
                     )
+                if operation.join.as_of is not None:
+                    self._validate_joined_relation_reads(
+                        transform_class,
+                        member,
+                        relation_scopes,
+                        joined,
+                        self._scopes(operation.join.as_of.left_time),
+                    )
+                    if operation.join.as_of.tolerance is not None:
+                        self._validate_joined_relation_reads(
+                            transform_class,
+                            member,
+                            relation_scopes,
+                            joined,
+                            self._scopes(operation.join.as_of.tolerance),
+                        )
                 if operation.join.method.exposes_fields():
                     joined.add(operation.join.input_name)
 
@@ -1527,6 +1544,8 @@ class CompileTransform:
                 self._validate_join_dedupe(transform_class, member, join.input_name, occurrence, join.dedupe)
             if join.temporal is not None:
                 self._validate_join_temporal(transform_class, member, join.input_name, occurrence, join.temporal)
+            if join.as_of is not None:
+                self._validate_join_as_of(transform_class, member, join.input_name, occurrence, join.as_of)
 
             conditions = self._join_conditions(transform_class, member, join.input_name, occurrence, join.predicate)
             for condition in conditions:
@@ -1598,6 +1617,71 @@ class CompileTransform:
                 occurrence,
                 f"temporal_one({field}=...) must read only the joined temporal input.",
                 f"Use a right-side validity field such as history.{field}.",
+            )
+
+    def _validate_join_as_of(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        input_name: str,
+        occurrence: int,
+        as_of,
+    ) -> None:
+        if as_of.direction is not AsOf.BACKWARD:
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                f"as_of_one(direction=...) policy {as_of.direction!r} is not supported.",
+                "Use AsOf.BACKWARD or omit direction=.",
+            )
+        if as_of.ties is not TiePolicy.ERROR:
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                f"as_of_one(ties=...) policy {as_of.ties!r} is not supported.",
+                "Use TiePolicy.ERROR or omit ties=.",
+            )
+        if input_name in self._scopes(as_of.left_time):
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                "as_of_one(left_time=...) must not read the joined as-of input.",
+                "Use a current-row event time such as trade.trade_time.",
+            )
+        self._validate_as_of_right_time(transform_class, member, input_name, occurrence, as_of.right_time)
+        if as_of.tolerance is not None and input_name in self._scopes(as_of.tolerance):
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                "as_of_one(tolerance=...) must not read the joined as-of input.",
+                "Use a literal or current-row tolerance expression.",
+            )
+
+    def _validate_as_of_right_time(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        input_name: str,
+        occurrence: int,
+        expression: Expression,
+    ) -> None:
+        scopes = self._scopes(expression)
+        if input_name not in scopes or scopes - {input_name}:
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                "as_of_one(right_time=...) must read only the joined as-of input.",
+                "Use a right-side event time such as prices.price_time.",
             )
 
     def _validate_join_dedupe(

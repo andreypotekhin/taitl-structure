@@ -198,7 +198,7 @@
 - + Implement `join_many(...)` for row-multiplying joins.
 - + Implement deterministic `JoinDedupe.latest_by(...)` and `JoinDedupe.earliest_by(...)` policies.
 - + Implement temporal validity-window `temporal_one(...)` joins for SCD-style lookups.
-- Implement backward `as_of_one(...)` joins with optional tolerance.
+- + Implement backward `as_of_one(...)` joins with optional tolerance.
 - Add tie and overlap policy diagnostics.
 - Show analytical join cardinality in traceability and `structure explain`.
 - Add online/generated parity tests for duplicate right rows, unmatched rows, temporal overlaps, and as-of ties.

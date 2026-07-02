@@ -12,6 +12,16 @@
       "qualname": "Array",
       "signature": "(element: structure.app.dsl.model.types.StructureType.StructureType, *, contains_null: bool = True) -> None"
     },
+    "AsOf": {
+      "dataclass_fields": [],
+      "enum_members": [
+        "BACKWARD"
+      ],
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.AsOf",
+      "qualname": "AsOf",
+      "signature": "(*values)"
+    },
     "Boolean": {
       "dataclass_fields": [
         "name"
@@ -303,6 +313,14 @@
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "arr_transform",
       "signature": "(value: 'object', function: 'Callable[[Expression], object]') -> 'Expression'"
+    },
+    "as_of_one": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.InputScope",
+      "qualname": "as_of_one",
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', left_time: 'object', right_time: 'object', direction: 'AsOf' = <AsOf.BACKWARD: 'backward'>, tolerance: 'object | None' = None, how: 'Join' = <Join.LEFT: 'left'>, ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>, hint: 'JoinHint | None' = None) -> 'Relation | InputScope'"
     },
     "before": {
       "dataclass_fields": [],
