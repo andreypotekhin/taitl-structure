@@ -2,9 +2,12 @@
 
 ## Purpose
 
-Analytical pipelines need more than lookup joins. This specification defines the staged v2+ join family that resolves
-C27 from [Challenges.md](../dev/design/Challenges.md): semi and anti existence filters, `join_many(...)`, deterministic lookup
-dedupe, temporal lookups, as-of lookups, and slowly changing dimension lookups.
+Analytical joins are join forms that go beyond one-row lookup enrichment. They let a transform filter rows by
+existence, intentionally multiply rows by matches, select deterministic lookup winners, and join against time-valid
+records.
+
+This specification defines Structure's analytical join family: semi and anti existence filters, `join_many(...)`,
+deterministic lookup dedupe, temporal lookups, as-of lookups, and slowly changing dimension lookups.
 
 The v1 `join_one(...)` contract remains unchanged. It is a narrow many-to-one or one-to-one lookup join. It warns when
 right-side uniqueness is not proven and never deduplicates by surprise.

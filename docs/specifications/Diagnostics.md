@@ -2,12 +2,12 @@
 
 ## Purpose
 
-Structure diagnostics are the durable error and warning contract for configuration, discovery, schemas, symbolic
+Structure diagnostics are the stable error and warning contract for configuration, discovery, schemas, symbolic
 execution, IR validation, joins, hooks, backend capability checks, streaming compatibility, generated-code drift, CLI
-behavior, and runtime execution. They must be clear enough for a developer to fix the problem and stable enough for
-tests, CI annotations, IDEs, and documentation links.
+behavior, and runtime execution.
 
-This specification resolves C29 from [Challenges.md](../dev/design/Challenges.md).
+Diagnostics must explain what failed, why it matters, and how to fix it. They are also stable enough for tests, CI
+annotations, IDEs, troubleshooting guides, and documentation links.
 
 ## Scope
 

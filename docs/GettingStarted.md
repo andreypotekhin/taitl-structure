@@ -4,6 +4,10 @@ This guide builds a small but realistic Structure transform: normalize order row
 enrich with customer data, and run it through `StructureSession`. Generated PySpark remains available as
 optional build output.
 
+## Read this first
+
+QuickRef: [QuickRef.md](QuickRef.md)
+
 ## 1. Install
 
 ```bash
@@ -272,7 +276,7 @@ def enrich_orders_task():
     result.enriched.write.mode("overwrite").parquet("/data/orders_enriched")
 ```
 
-## 10. Optional Configuration
+## 10. (Optional) Configuration
 
 Structure works by convention. Add TOML only when you need repeatable settings or non-default paths.
 

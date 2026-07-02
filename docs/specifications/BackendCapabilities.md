@@ -2,13 +2,13 @@
 
 ## Purpose
 
-Backend capabilities define what a configured execution target can lower from Structure IR. The interface keeps
-PySpark version choices, unsupported feature checks, streaming support, validation support, and generated import names
-out of discovery, symbolic execution, generic IR construction, online runtime orchestration, and generated-code text
-rendering. It is also the extension point for the future alternative backend contract specified in
-[AlternativeBackends.md](AlternativeBackends.md).
+Backend capabilities describe what a configured execution target can run or generate from Structure IR. They answer
+questions such as which PySpark versions are supported, which DSL features are available, whether streaming is safe,
+which validation modes are allowed, and which imports generated code should use.
 
-This specification resolves C23 from [Challenges.md](../dev/design/Challenges.md).
+The capability contract keeps backend-specific rules out of discovery, symbolic execution, generic IR construction,
+online runtime orchestration, and generated-code text rendering. It is also the extension point for the alternative
+backend contract specified in [AlternativeBackends.md](AlternativeBackends.md).
 
 ## Scope
 

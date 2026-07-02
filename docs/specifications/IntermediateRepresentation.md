@@ -1,7 +1,5 @@
 # Intermediate Representation
 
-This specification replaces [IntermediateRepresentation.md](../dev/design/IntermediateRepresentation.md) as the implementation-level IR reference.
-
 ## Purpose
 
 The Structure intermediate representation is the compiler contract between source DSL semantics and execution targets.

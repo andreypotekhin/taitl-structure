@@ -1,6 +1,7 @@
 # Structure Specification
 
-This document is a user-story specification for SDLC planning. Early sections cover general setup and getting started. Later sections cover narrower use cases and roadmap features.
+This document catalogs Structure user stories. Early sections cover setup and getting started; later sections cover
+narrower use cases and roadmap features.
 
 ## 1. Setup
 

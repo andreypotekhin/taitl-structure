@@ -1,7 +1,7 @@
 ﻿# Compatibility Policy
 
-The policy is public-facing in [Compatibility.md](../Compatibility.md). This specification defines the development contract behind that
-page.
+The policy is summarized for users in [Compatibility.md](../Compatibility.md). This specification defines the detailed
+compatibility contract behind that page.
 
 ## Goals
 
@@ -172,8 +172,8 @@ The traceability schema version follows `major.minor`.
 Breaking changes require a major traceability schema version bump. Additive fields require a minor version bump. Consumers
 should ignore unknown fields so minor additions remain compatible.
 
-Runtime LDJSON traceability is not part of the v1 compatibility contract. It is tracked as a nice-to-have beyond v4 in
-[NiceToHave.md](../dev/project-management/NiceToHave.md).
+Runtime LDJSON traceability is not part of the v1 compatibility contract. It remains future work beyond the published
+v4 scope.
 
 ## Config Schema Versioning
 

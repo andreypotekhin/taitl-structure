@@ -26,7 +26,7 @@ This specification owns generated PySpark source shape and generator behavior fo
 - compiler provenance and static dataflow traceability files;
 - deterministic imports, names, aliases, formatting, and write-if-changed behavior;
 - backend capability selection for PySpark syntax;
-- generated-code diagnostics and acceptance tests.
+- generated-code diagnostics and verification behavior.
 
 Semantic contracts are owned by narrower specifications:
 

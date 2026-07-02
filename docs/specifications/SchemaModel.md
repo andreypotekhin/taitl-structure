@@ -1,7 +1,5 @@
 ﻿# Schema Model
 
-This specification replaces [SchemaModel.md](../dev/design/SchemaModel.md) as the implementation-level schema model reference.
-
 ## Purpose
 
 The schema model represents user-declared data structures independently from PySpark. It is the source of truth for

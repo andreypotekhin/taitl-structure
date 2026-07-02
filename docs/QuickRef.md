@@ -24,6 +24,10 @@ Use `alias=` when the Spark DataFrame column is not a Python identifier. Python 
 while Spark schemas, validation, reads, and projection output use the alias. Aliases are schema-local unless
 inherited, and Structure passes alias strings through to Spark without sanitizing them.
 
+Reference: [schema declaration syntax](specifications/SchemaDeclarationSyntax.md),
+[schema semantics](specifications/SchemaSemantics.md), and
+[nullability and type coercion](specifications/NullabilityAndTypeCoercion.md).
+
 ## Transform Classes
 
 A transform class is declared with `@transform`.
@@ -53,6 +57,9 @@ normalized = result.normalized
 Structure can also generate PySpark code from transform classes for projects that prefer generated PySpark
 code.
 
+Reference: [DSL](specifications/DSL.md), [online execution](specifications/OnlineExecution.md), and
+[PySpark code generation](specifications/PySparkCodeGeneration.md).
+
 ## Inputs
 
 Inputs are named class attributes.
@@ -80,6 +87,9 @@ orders_internal = input(OrderRaw)
 def normalize(self, order: OrderRaw) -> OrderNormalized:
     ...
 ```
+
+Reference: [DSL inputs](specifications/DSL.md) and
+[source module rules](specifications/SourceModuleRules.md).
 
 ## Subtransforms
 
@@ -166,6 +176,10 @@ def publish(self, order: OrderNormalized) -> OrderPublished:
 `input(orders)` means the original runtime input. `lane(orders)` means the current working lane named
 `orders`. `output(published)` means the final result declaration.
 
+Reference: [DSL subtransforms](specifications/DSL.md),
+[symbolic execution](specifications/SymbolicExecution.md), and
+[execution semantics](specifications/ExecutionSemanticContract.md).
+
 ## Online Execution
 
 Constructing a transform binds inputs without starting Spark work. Running it through a session executes the
@@ -203,6 +217,9 @@ same_schema = result.schema["enriched"]
 result.enriched.write.mode("overwrite").parquet(target_path)
 ```
 
+Reference: [online execution](specifications/OnlineExecution.md) and
+[execution semantic contract](specifications/ExecutionSemanticContract.md).
+
 ## Optional Generated PySpark
 
 A source subtransform like this:
@@ -230,6 +247,8 @@ orders = orders.where(
 )
 ```
 
+Reference: [PySpark code generation](specifications/PySparkCodeGeneration.md).
+
 ## Generated Schemas in Caller Code
 
 Generated schema constants are ordinary PySpark `StructType` values. Caller code may import them for reads and
@@ -248,6 +267,9 @@ result.write.mode("overwrite").parquet(target_path)
 
 Structure does not own storage orchestration. Callers own `write`, `writeStream`, table creation,
 partitioning, checkpoints, output modes, and storage options.
+
+Reference: [PySpark code generation](specifications/PySparkCodeGeneration.md) and
+[streaming compatibility](specifications/StreamingCompatibility.md).
 
 ## Intermediate Validation
 
@@ -312,6 +334,9 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     ...
 ```
 
+Reference: [validation semantics](specifications/ValidationSemantics.md) and
+[data quality constraints](specifications/DataQualityConstraints.md).
+
 ## Filtering
 
 Use `where(...)` inside subtransforms.
@@ -331,6 +356,9 @@ Multiple `where(...)` calls are combined with logical AND.
 
 When filters and joins are mixed, Structure preserves the source order. A filter written before a join runs
 before that join; a filter written after a join can reference the joined relation.
+
+Reference: [DSL filtering](specifications/DSL.md) and
+[symbolic execution](specifications/SymbolicExecution.md).
 
 ## Add and Drop Columns
 
@@ -388,6 +416,9 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 
 Generated code prefers explicit projection over `drop(...)` so the output schema is deterministic.
 
+Reference: [schema semantics](specifications/SchemaSemantics.md) and
+[PySpark code generation](specifications/PySparkCodeGeneration.md).
+
 ## Expressions
 
 Structure expressions are compiler-visible and lower to Spark Column expressions. Use Python literals and the supported
@@ -409,6 +440,9 @@ Supported v1 expression forms are field references, literals, `==`, `!=`, `<`, `
 boolean `&`, `|`, `~`, null checks, `null_safe_eq(...)`, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`,
 `coalesce(...)`, and `when(...).otherwise(...)`.
 
+Reference: [DSL expressions](specifications/DSL.md) and
+[nullability and type coercion](specifications/NullabilityAndTypeCoercion.md).
+
 ## Expression Helpers
 
 Use `@expr_fn` for reusable compileable expressions.
@@ -425,6 +459,8 @@ Class-local helpers do not take `self`, but can be called through `self`.
 customer_id=self.clean_id(order.customer_id)
 ```
 
+Reference: [DSL expression helpers](specifications/DSL.md).
+
 ## Joins
 
 Use symbolic joins. Ref: [Join semantics](specifications/JoinSemantics.md) and
@@ -435,7 +471,7 @@ Implemented join forms in the default PySpark profile:
 | Form | Shape | Use |
 | --- | --- | --- |
 | `join_one(...)` | select one right row | Lookup enrichment. |
-| `join_one(..., dedupe=...)` | select one right row after deterministic right-side reduction | Snapshot or versioned lookups where a rule chooses one row. |
+| `join_one(..., dedupe=...)` | deterministic one-row lookup | Snapshot or versioned lookups. |
 | `exists(...)` | filter current rows by a right-side match | Semi join semantics. |
 | `not_exists(...)` | filter current rows by no right-side match | Anti join semantics. |
 | `join_many(...)` | multiply current rows by right-side matches | One output row per match. |
@@ -545,6 +581,9 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
     )
 ```
 
+Reference: [schema inheritance](specifications/SchemaInheritance.md) and
+[schema semantics](specifications/SchemaSemantics.md).
+
 ## Hooks
 
 Hooks are explicit PySpark escape hatches.
@@ -587,6 +626,9 @@ def add_audit_columns(self, *, audited, spark, ctx):
 
 Single-result hooks still name the selected lane explicitly.
 
+Reference: [hook semantics](specifications/HookSemantics.md) and
+[validation semantics](specifications/ValidationSemantics.md).
+
 ## Source and Generated Paths
 
 Default filesystem layout:
@@ -599,12 +641,18 @@ generated/structure_generated/orders/...
 Generated paths are used only when Structure is configured to emit PySpark code; online execution is the
 default. These paths are configurable. Mark `src` and `generated` as source roots in the IDE.
 
+Reference: [source module rules](specifications/SourceModuleRules.md),
+[configuration schema](specifications/ConfigSchema.md), and
+[PySpark code generation](specifications/PySparkCodeGeneration.md).
+
 ## Streaming Compatibility
 
 Structure transforms operate on DataFrames. If the input DataFrame is streaming and every compiled operation
 is supported by Spark Structured Streaming, the transform can run in a streaming pipeline.
 
 Structure does not generate `readStream` or `writeStream` before v3; the caller owns streaming orchestration.
+
+Reference: [streaming compatibility](specifications/StreamingCompatibility.md).
 
 ## Compatibility
 
@@ -618,6 +666,9 @@ target_pyspark = ">=3.5,<4.1"
 
 Spark Connect support is planned for v4 unless it can be added earlier without changing the public DSL,
 generated class API, or streaming orchestration contract. See [Compatibility.md](Compatibility.md).
+
+Reference: [compatibility policy](specifications/CompatibilityPolicy.md) and
+[backend capabilities](specifications/BackendCapabilities.md).
 
 ## Schema Generation Tool
 
@@ -662,6 +713,9 @@ decimals, and nested structs. It does not infer primary keys, descriptions, inhe
 constraints. When Spark field names are not Python identifiers, generated Structure fields use safe Python
 names with `alias=...`.
 
+Reference: [CLI](specifications/CLI.md) and
+[schema declaration syntax](specifications/SchemaDeclarationSyntax.md).
+
 ## Planned Features
 
 Implemented v2 analytical features include existence joins, `join_many(...)`, deterministic lookup dedupe,
@@ -680,6 +734,12 @@ Planned v2 adoption tooling also includes richer explain output, generated docum
 and transforms, production incremental compilation, and a pytest helper for compiler checks and generated-code
 freshness.
 
+Reference: [analytical join coverage](specifications/AnalyticalJoinCoverage.md),
+[backend capabilities](specifications/BackendCapabilities.md), and
+[alternative backends](specifications/AlternativeBackends.md).
+
 ## Next Steps
 
 Get started: [GettingStarted.md](GettingStarted.md)
+
+Browse deeper behavior definitions: [Reference.md](Reference.md)

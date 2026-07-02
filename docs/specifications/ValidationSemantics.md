@@ -5,8 +5,8 @@
 Validation is how Structure proves that live DataFrames conform to declared schemas at pipeline boundaries. It must be
 strong enough to catch drift and weak enough by default to avoid hidden Spark work.
 
-This specification owns validation phases, validation modes, strictness, hook integration, output projection,
-configuration precedence, runtime behavior, and acceptance tests. Data-quality constraint families are specified in
+This specification defines validation phases, validation modes, strictness, hook integration, output projection,
+configuration precedence, and runtime behavior. Data-quality constraint families are specified in
 [DataQualityConstraints.md](DataQualityConstraints.md).
 
 ## Validation Phases
