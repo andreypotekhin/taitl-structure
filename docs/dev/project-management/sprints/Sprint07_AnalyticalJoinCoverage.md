@@ -77,7 +77,7 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
 9. + Add deduped `join_one(...)` recipe lowering and parity tests.
 10. + Implement `temporal_one(...)` closed-open validity-window lookups.
 11. + Implement backward `as_of_one(...)`.
-12. Update traceability, explain output, diagnostics, and streaming classification.
+12. + Update traceability, explain output, diagnostics, and streaming classification.
 
 ## Progress
 
@@ -98,6 +98,9 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
 - [x] (2026-07-02) Implemented backward `as_of_one(...)` lookup capture, validation, PySpark candidate ranking,
   generated rendering, online recipe interpretation, capability support, traceability detail, and batch-only streaming
   classification.
+- [x] (2026-07-02) Completed analytical join explain reporting and streaming classification: existence and
+  `join_many(...)` stream-static forms are compatible, while dedupe, temporal, and as-of lookups are batch-only with
+  registered findings.
 
 ## Acceptance Criteria
 

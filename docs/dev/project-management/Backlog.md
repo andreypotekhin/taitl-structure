@@ -200,7 +200,7 @@
 - + Implement temporal validity-window `temporal_one(...)` joins for SCD-style lookups.
 - + Implement backward `as_of_one(...)` joins with optional tolerance.
 - Add tie and overlap policy diagnostics.
-- Show analytical join cardinality in traceability and `structure explain`.
+- + Show analytical join cardinality in traceability and `structure explain`.
 - Add online/generated parity tests for duplicate right rows, unmatched rows, temporal overlaps, and as-of ties.
 
 ### Epic: Explicit Optimization Directives

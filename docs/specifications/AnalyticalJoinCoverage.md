@@ -15,8 +15,8 @@ right-side uniqueness is not proven and never deduplicates by surprise.
 ## Scope
 
 This specification owns source semantics for analytical joins. Existence joins, `join_many(...)`, deterministic
-deduped `join_one(...)`, and temporal validity-window `temporal_one(...)` are implemented in the default PySpark
-profile. As-of joins remain staged.
+deduped `join_one(...)`, temporal validity-window `temporal_one(...)`, and backward `as_of_one(...)` are implemented in
+the default PySpark profile.
 [JoinSemantics.md](JoinSemantics.md) remains the authority for the strict v1 `join_one(...)` contract.
 
 In scope for the analytical join family:

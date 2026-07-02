@@ -159,7 +159,9 @@ Progress:
 
 - Existence joins, `join_many(...)`, deterministic deduped `join_one(...)`, and temporal validity-window joins are
   implemented for the default PySpark profile.
-- Runtime overlap diagnostics and richer explain output remain open.
+- Backward as-of joins, analytical join traceability, explain output, and streaming compatibility classification are
+  implemented for the default PySpark profile.
+- Runtime overlap diagnostics remain open.
 
 Exit Criteria:
 

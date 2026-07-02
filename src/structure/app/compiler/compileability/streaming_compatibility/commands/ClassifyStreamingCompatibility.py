@@ -3,6 +3,7 @@ from __future__ import annotations
 from structure.app.compiler.compileability.streaming_compatibility.model.StreamingFinding import StreamingFinding
 from structure.app.compiler.compileability.streaming_compatibility.model.StreamingReport import StreamingReport
 from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
+from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.model.transforms.Join import Join
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
@@ -31,6 +32,34 @@ class ClassifyStreamingCompatibility:
         )
 
     def _join(self, step: str, join: PySparkJoinRecipe) -> tuple[StreamingFinding, ...]:
+        if join.dedupe is not None:
+            return (
+                StreamingFinding(
+                    code="STREAM-E0801",
+                    support=StreamingSupport.BATCH_ONLY,
+                    step=step,
+                    operation=f"deduped lookup join {join.input_name}",
+                    problem=(
+                        "Deduped lookup joins use right-side ranking and are batch-only until streaming state "
+                        "semantics exist."
+                    ),
+                    use="Keep this transform batch-only or move the deterministic lookup reduction outside Structure.",
+                ),
+            )
+        if join.temporal is not None:
+            return (
+                StreamingFinding(
+                    code="STREAM-E0801",
+                    support=StreamingSupport.BATCH_ONLY,
+                    step=step,
+                    operation=f"temporal join {join.input_name}",
+                    problem=(
+                        "Temporal joins depend on validity-window selection and are batch-only until streaming "
+                        "state and watermark semantics exist."
+                    ),
+                    use="Keep this transform batch-only or move the temporal lookup into explicit streaming code.",
+                ),
+            )
         if join.as_of is not None:
             return (
                 StreamingFinding(
@@ -42,6 +71,8 @@ class ClassifyStreamingCompatibility:
                     use="Keep this transform batch-only or move the as-of lookup into explicit streaming code.",
                 ),
             )
+        if join.method in {JoinMethod.EXISTS, JoinMethod.NOT_EXISTS}:
+            return ()
         if join.how.value in {Join.LEFT.value, "inner"}:
             return ()
         return (

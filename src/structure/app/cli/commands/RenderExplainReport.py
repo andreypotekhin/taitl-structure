@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from structure.app.compiler.api import Compiler
+from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.target.pyspark.api import PySpark
+from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
 
 
 class RenderExplainReport:
@@ -51,14 +53,12 @@ class RenderExplainReport:
             )
             lines.append(f"    {step.name}: {step.input_schema.__name__} -> {outputs}")
             if source_step.operations:
-                operations = ", ".join(
-                    f"{operation.kind}({operation.cardinality.value})" for operation in source_step.operations
-                )
+                operations = ", ".join(self._operation(operation) for operation in source_step.operations)
                 lines.append(f"      operations: {operations}")
             if step.filters:
                 lines.append(f"      filters: {len(step.filters)}")
             if step.joins:
-                lines.append(f"      joins: {', '.join(join.input_name for join in step.joins)}")
+                lines.append(f"      joins: {', '.join(self._join(join) for join in step.joins)}")
             hooks = [
                 hook.name
                 for hook in (
@@ -87,6 +87,31 @@ class RenderExplainReport:
             for output in recipe.outputs:
                 lines.append(f"    {output.name}: {output.output_schema.__name__}")
         return "\n".join(lines)
+
+    def _operation(self, operation: OperationPlan) -> str:
+        name = operation.join.method.value if operation.join is not None else operation.kind
+        return f"{name}({operation.cardinality.value})"
+
+    def _join(self, join: PySparkJoinRecipe) -> str:
+        parts = [f"{join.input_name} {join.method.value} {self._cardinality(join)}"]
+        if join.dedupe is not None:
+            parts.append(f"dedupe={join.dedupe.direction}/{join.dedupe.ties.value}")
+        if join.temporal is not None:
+            parts.append(f"temporal=closed_open/{join.temporal.overlaps.value}")
+        if join.as_of is not None:
+            parts.append(f"as_of={join.as_of.direction.value}/{join.as_of.ties.value}")
+        if join.hint is not None:
+            parts.append(f"hint={join.hint.value}")
+        if join.strategy is not None:
+            parts.append(f"strategy={join.strategy.value}")
+        return " ".join(parts)
+
+    def _cardinality(self, join: PySparkJoinRecipe) -> str:
+        if join.method.value in {"exists", "not_exists"}:
+            return "row_filtering"
+        if join.method.value == "join_many":
+            return "row_multiplying"
+        return "select_one"
 
 
 render_explain_report = RenderExplainReport()
