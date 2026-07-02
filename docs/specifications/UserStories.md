@@ -101,6 +101,8 @@ This document is a user-story specification for SDLC planning. Early sections co
   relations are explicit in the method signature.
 - + As a developer, I can bind repeated input schemas with ordered `input=[...]` so that parameter mapping is
   unambiguous.
+- + As a developer, I can rely on simple plural parameter names to infer repeated input or lane schemas so that common
+  names such as `order1` and `orders1` do not need explicit method bindings.
 - + As a developer, I can return a fixed tuple of schema values and bind it with ordered `output=[...]` so that one
   shared relational step can materialize several typed result lanes.
 - + As a developer, I can declare intermediate `lane(...)` fields and consume them with `input=...` so that funnel

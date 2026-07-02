@@ -1,7 +1,7 @@
 from structure.app.compiler.diagnostics.api import StructureCompileError
 from structure.app.compiler.frontend.commands.CompileTransform import compile_transform
 from structure.app.dsl.model.expr.expressions import coalesce, lower, to_decimal, trim, upper, when
-from structure.app.dsl.model.expr.InputScope import join_one
+from structure.app.dsl.model.expr.InputScope import exists, join_many, join_one, not_exists, temporal_one
 from structure.app.dsl.model.schemas.schema import (
     Array,
     Boolean,
@@ -72,15 +72,19 @@ __all__ = [
     "count",
     "compile_transform",
     "expr_fn",
+    "exists",
     "field",
     "group_by",
     "input",
+    "join_many",
     "join_one",
     "lane",
     "lower",
+    "not_exists",
     "output",
     "project",
     "sum",
+    "temporal_one",
     "to_decimal",
     "transform",
     "trim",

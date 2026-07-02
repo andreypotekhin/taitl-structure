@@ -343,7 +343,15 @@ Rules:
 - `input=`, `output=`, and `inout=` accept optional role selectors around declarations. Selectors are required when
   source-order shadowing would otherwise hide an original input or when an input declaration name is intentionally used
   as a working lane.
-- The compiler infers bindings only when every schema has one unambiguous available declaration.
+- Without `input=`, the compiler infers parameter bindings from available input or lane schemas. If several sources have
+  the same schema, it prefers a source named after the parameter or its simple plural form. Plural inference adds a
+  trailing `s` before any non-alpha suffix, so `order` matches `orders` and `order1` matches `orders1`; irregular
+  English plurals are not inferred.
+- Once `input=` is present, it supplies all parameter bindings for that subtransform; parameter-name inference is not
+  mixed with partial explicit bindings.
+- Once `output=` is present on a tuple-returning subtransform, it supplies all result bindings for that subtransform.
+- The compiler infers bindings only when every schema has one unambiguous available declaration after the name rule is
+  applied.
 - Subtransforms execute in source order.
 - Source-order lane flow must be valid. Undecorated methods consume and update the uniquely inferred lane.
   `@transform(output=target)` writes a named lane or output.
@@ -519,17 +527,18 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
     return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
 
-Class input scopes may also be joined directly. Use the explicit relation form when inference would be ambiguous:
+Class input scopes may also be joined directly:
 
 ```python
 customer = join_one(
-    self.customers,
     on=order.customer_id == self.customers.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
 )
 return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
+
+Use the explicit relation form only when inference would be ambiguous.
 
 Public enum values required for v1:
 

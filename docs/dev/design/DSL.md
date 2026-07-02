@@ -68,7 +68,6 @@ class EnrichOrders(Transform):
 
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
         customer = join_one(
-            self.customers,
             on=self.customers.id == order.customer_id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,

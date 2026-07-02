@@ -328,6 +328,14 @@
       "qualname": "count",
       "signature": "() -> 'Expression'"
     },
+    "exists": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.InputScope",
+      "qualname": "exists",
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None) -> 'Expression'"
+    },
     "expr_fn": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -360,6 +368,14 @@
       "qualname": "input",
       "signature": "(value: 'type[Structure] | InputDeclaration') -> 'InputDeclaration | BindingSelector'"
     },
+    "join_many": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.InputScope",
+      "qualname": "join_many",
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', how: 'Join' = <Join.INNER: 'inner'>, strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
+    },
     "join_one": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -384,6 +400,14 @@
       "qualname": "lower",
       "signature": "(value: 'object') -> 'Expression'"
     },
+    "not_exists": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.InputScope",
+      "qualname": "not_exists",
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None) -> 'Expression'"
+    },
     "output": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -407,6 +431,14 @@
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "sum",
       "signature": "(value: 'object') -> 'Expression'"
+    },
+    "temporal_one": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.InputScope",
+      "qualname": "temporal_one",
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', at: 'object', valid_from: 'object', valid_to: 'object', how: 'Join' = <Join.LEFT: 'left'>, overlaps: 'OverlapPolicy' = <OverlapPolicy.ERROR: 'error'>, hint: 'JoinHint | None' = None) -> 'Relation | InputScope'"
     },
     "to_decimal": {
       "dataclass_fields": [],

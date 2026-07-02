@@ -50,9 +50,9 @@ joins in Structure source instead of hiding common join logic in hooks.
 
 ```python
 def with_items(self, order: OrderNormalized) -> OrderItemFact:
-    where(self.customers.exists(on=self.customers.id == order.customer_id))
+    where(exists(on=self.customers.id == order.customer_id))
 
-    item = self.order_items.join_many(
+    join_many(
         on=self.order_items.order_id == order.id,
         how=Join.INNER,
     )

@@ -12,10 +12,10 @@ dedupe, temporal lookups, and slowly changing dimension lookups.
 `join_one(...)` remains the v1 lookup primitive. It means zero or one right-side row per current row, and it must not
 silently deduplicate duplicate right rows. C27 does not change that contract.
 
-The analytical join family begins in v2. Existence joins, `join_many(...)`, and deterministic deduped `join_one(...)`
-are admitted in the default PySpark profile. Hooks remain the honest escape hatch for join shapes that are not yet
-specified, represented in IR, checked by backend capabilities, lowered through shared PySpark recipes, and covered by
-online/generated parity tests.
+The analytical join family begins in v2. Existence joins, `join_many(...)`, deterministic deduped `join_one(...)`, and
+temporal validity-window `temporal_one(...)` are admitted in the default PySpark profile. Hooks remain the honest escape
+hatch for join shapes that are not yet specified, represented in IR, checked by backend capabilities, lowered through
+shared PySpark recipes, and covered by online/generated parity tests.
 
 ## Feature Ladder
 
@@ -51,34 +51,33 @@ overlapping validity windows, or tie violations must be explicit because they ca
 Existence joins should read like predicates because they do not expose right-side fields:
 
 ```python
-where(self.customers.exists(on=self.customers.id == order.customer_id))
-where(self.suppressed_emails.not_exists(on=self.suppressed_emails.email == order.email))
+where(exists(on=self.customers.id == order.customer_id))
+where(not_exists(on=self.suppressed_emails.email == order.email))
 ```
 
 `exists(...)` is semi join semantics: keep current rows that have at least one right match. `not_exists(...)` is anti
 join semantics: keep current rows that have no right match. Both return symbolic boolean predicates, not joined scopes.
 
-Row-multiplying joins should use a distinct method:
+Row-multiplying joins should use a distinct free function:
 
 ```python
-item = self.order_items.join_many(
+join_many(
     on=self.order_items.order_id == order.id,
     how=Join.INNER,
 )
 ```
 
-`join_many(...)` returns a joined symbolic scope like `join_one(...)`, but row multiplication is intended. Output
-schema construction still decides which fields survive.
+`join_many(...)` updates the joined input scope like `join_one(...)`, but row multiplication is intended. Output schema
+construction still decides which fields survive.
 
 Deterministic dedupe should be explicit on `join_one(...)`:
 
 ```python
 customer = join_one(
-    self.customer_snapshots,
     on=self.customer_snapshots.id == order.customer_id,
     how=Join.LEFT,
     dedupe=JoinDedupe.latest_by(
-        order_by=self.customer_snapshots.updated_at,
+        self.customer_snapshots.updated_at,
         ties=TiePolicy.ERROR,
     ),
 )
@@ -91,7 +90,7 @@ and traceability; runtime tie checks are still explicit follow-up work because t
 Temporal joins should name the event time and the right-side validity facts:
 
 ```python
-customer = self.customer_history.temporal_one(
+temporal_one(
     on=self.customer_history.id == order.customer_id,
     at=order.order_time,
     valid_from=self.customer_history.valid_from,
@@ -136,7 +135,8 @@ The IR should extend `JoinOperation` rather than create unrelated operation fami
 The PySpark target plan stores analytical join metadata on shared `PySparkJoinRecipe` records. Existence joins map to
 left semi/anti join modes, `join_many(...)` maps to ordinary row-multiplying join modes plus optional strategy hints,
 and deduped `join_one(...)` carries a `PySparkJoinDedupeRecipe` with direction, order expression, and tie policy.
-Temporal and as-of joins may add dedicated policy records when implemented.
+Temporal joins add dedicated policy records for the event-time expression, right-side validity bounds, and overlap
+policy. As-of joins may add a dedicated policy record when implemented.
 
 Online execution and generated code must consume those recipes through the shared execution semantic contract.
 

@@ -52,11 +52,11 @@ as-of ordering.
 
 ## Existence Joins
 
-Existence joins should use predicate methods on right input scopes:
+Existence joins should use free predicate functions:
 
 ```python
-where(self.customers.exists(on=self.customers.id == order.customer_id))
-where(self.suppressed_emails.not_exists(on=self.suppressed_emails.email == order.email))
+where(exists(on=self.customers.id == order.customer_id))
+where(not_exists(on=self.suppressed_emails.email == order.email))
 ```
 
 `exists(...)` keeps current rows that have at least one right match. It has semi join semantics.
@@ -80,7 +80,7 @@ order, row count, schema, null semantics, and diagnostics remain equivalent.
 `join_many(...)` intentionally admits row multiplication:
 
 ```python
-item = self.order_items.join_many(
+join_many(
     on=self.order_items.order_id == order.id,
     how=Join.INNER,
 )
@@ -105,11 +105,10 @@ That rule must be explicit:
 
 ```python
 customer = join_one(
-    self.customer_snapshots,
     on=self.customer_snapshots.id == order.customer_id,
     how=Join.LEFT,
     dedupe=JoinDedupe.latest_by(
-        order_by=self.customer_snapshots.updated_at,
+        self.customer_snapshots.updated_at,
         ties=TiePolicy.ERROR,
     ),
 )
@@ -137,7 +136,7 @@ Initial policy family:
 Temporal validity lookups select a right row whose validity window contains a current-row event time:
 
 ```python
-customer = self.customer_history.temporal_one(
+temporal_one(
     on=self.customer_history.id == order.customer_id,
     at=order.order_time,
     valid_from=self.customer_history.valid_from,
@@ -252,8 +251,8 @@ v2 may classify stream-static `exists(...)`, `not_exists(...)`, and `join_many(.
 pipeline input is streaming and the right input is static, if Spark supports the lowered plan for the configured
 target.
 
-Temporal, as-of, deduped lookup, and runtime tie or overlap checks are batch-only until a streaming-specific design
-specifies their state, watermark, and output-mode requirements.
+Temporal, deduped lookup, and runtime tie or overlap checks are batch-only until a streaming-specific design specifies
+their state, watermark, and output-mode requirements. As-of joins remain staged and are batch-only until implemented.
 
 ## Diagnostics
 

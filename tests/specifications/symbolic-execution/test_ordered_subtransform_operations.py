@@ -11,11 +11,15 @@ from structure import (
     StructureCompileError,
     TiePolicy,
     Transform,
+    exists,
     field,
     input,
+    join_many,
     join_one,
+    not_exists,
     output,
     project,
+    temporal_one,
     transform,
     where,
 )
@@ -174,7 +178,7 @@ def test_exists_join_records_row_filtering_operation() -> None:
         published = output(Published)
 
         def publish(self, order: Order, product: Product) -> Published:
-            where(cast(Any, product).exists(on=product.id == order.product_id))
+            where(exists(on=product.id == order.product_id))
             return Published(id=order.id, status=order.status)
 
     step = compile_transform(PublishKnownProducts).steps[0]
@@ -201,7 +205,7 @@ def test_not_exists_join_records_row_filtering_operation() -> None:
         published = output(Published)
 
         def publish(self, order: Order, product: Product) -> Published:
-            where(cast(Any, product).not_exists(on=product.id == order.product_id))
+            where(not_exists(on=product.id == order.product_id))
             return Published(id=order.id, status=order.status)
 
     step = compile_transform(PublishUnknownProducts).steps[0]
@@ -223,12 +227,12 @@ def test_join_many_records_row_multiplying_operation() -> None:
         enriched = output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            item = cast(Any, product).join_many(
+            join_many(
                 on=product.id == order.product_id,
                 how=Join.INNER,
                 strategy=JoinStrategy.SHUFFLE_HASH,
             )
-            return Enriched(id=order.id, product_name=item.name)
+            return Enriched(id=order.id, product_name=product.name)
 
     plan = compile_transform(AddProduct)
     step = plan.steps[0]
@@ -321,14 +325,14 @@ def test_temporal_one_records_closed_open_validity_lookup() -> None:
         enriched = output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            snapshot = cast(Any, product).temporal_one(
+            temporal_one(
                 on=product.id == order.product_id,
                 at=order.status,
                 valid_from=product.valid_from,
                 valid_to=product.valid_to,
                 how=Join.LEFT,
             )
-            return Enriched(id=order.id, product_name=snapshot.name)
+            return Enriched(id=order.id, product_name=product.name)
 
     plan = compile_transform(AddProduct)
     step = plan.steps[0]
@@ -363,14 +367,14 @@ def test_temporal_one_rejects_left_side_validity_bound() -> None:
         enriched = output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            snapshot = cast(Any, product).temporal_one(
+            temporal_one(
                 on=product.id == order.product_id,
                 at=order.status,
                 valid_from=order.status,
                 valid_to=product.valid_to,
                 how=Join.LEFT,
             )
-            return Enriched(id=order.id, product_name=snapshot.name)
+            return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(StructureCompileError) as raised:
         compile_transform(AddProduct)
@@ -387,7 +391,7 @@ def test_exists_join_does_not_make_relation_fields_readable() -> None:
         enriched = output(Enriched)
 
         def publish(self, order: Order, product: Product) -> Enriched:
-            where(cast(Any, product).exists(on=product.id == order.product_id))
+            where(exists(on=product.id == order.product_id))
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(StructureCompileError) as raised:

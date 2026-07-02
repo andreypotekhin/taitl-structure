@@ -23,11 +23,15 @@ from structure import (
     after,
     before,
     coalesce,
+    exists,
     expr_fn,
     input,
+    join_many,
     join_one,
     lower,
+    not_exists,
     output,
+    temporal_one,
     to_decimal,
     transform,
     trim,
@@ -105,13 +109,11 @@ class EnrichOrders(Transform):
     def add_product(
         self, order: OrderWithCustomer, product: Product, blocked_product: BlockedProduct
     ) -> OrderWithProduct:
+        where(exists(on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id)))
         where(
-            product.exists(on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id))
-        )
-        where(
-            blocked_product.not_exists(
+            not_exists(
                 on=(blocked_product.tenant.tenant_id == order.tenant.tenant_id)
-                & (blocked_product.product_id == order.product_id)
+                & (blocked_product.id == order.product_id)
             )
         )
         join_one(
@@ -130,9 +132,12 @@ class EnrichOrders(Transform):
         )
 
     def add_promotion(self, order: OrderWithProduct) -> OrderWithPromotion:
-        join_one(
+        temporal_one(
             on=(self.promotions.tenant.tenant_id == order.tenant.tenant_id)
             & self.clean_id(self.promotions.code).null_safe_eq(order.promotion_code),
+            at=order.business.order_date,
+            valid_from=self.promotions.valid_from,
+            valid_to=self.promotions.valid_to,
             how=Join.LEFT,
         )
 
@@ -142,26 +147,21 @@ class EnrichOrders(Transform):
         )
 
     def add_shipments(self, order: OrderWithPromotion) -> OrderFulfillment:
-        shipment = self.shipments.join_many(
+        join_many(
             on=(self.shipments.tenant.tenant_id == order.tenant.tenant_id) & (self.shipments.order_id == order.id),
             how=Join.INNER,
             strategy=JoinStrategy.SHUFFLE_HASH,
         )
 
         return OrderFulfillment.base(order)(
-            shipment_line=shipment.line_number,
-            carrier=shipment.carrier,
-            tracking_number=shipment.tracking_number,
-            shipped_at=shipment.shipped_at,
+            shipment_line=self.shipments.line_number,
+            carrier=self.shipments.carrier,
+            tracking_number=self.shipments.tracking_number,
+            shipped_at=self.shipments.shipped_at,
         )
 
     @after(
-        add_shipments,
-        lane=orders,
-        pass_inputs=True,
-        schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS,
-        project_output=True,
-        streaming_safe=True,
+        add_shipments, lane=orders, pass_inputs=True, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, streaming_safe=True
     )
     def note_lookup_inputs(self, *, orders, inputs, spark, ctx):
         from pyspark.sql import functions as F
@@ -184,4 +184,6 @@ class EnrichOrders(Transform):
     def add_quality_columns(self, *, published, spark, ctx):
         from pyspark.sql import functions as F
 
-        return published.withColumn("_has_customer", F.col("customer_name").isNotNull())
+        return published.withColumn("_has_customer", F.col("customer_name").isNotNull()).withColumn(
+            "_has_tracking", F.col("tracking_number").isNotNull()
+        )

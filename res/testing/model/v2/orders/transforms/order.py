@@ -28,11 +28,15 @@ from structure import (
     arr_transform,
     before,
     coalesce,
+    exists,
     expr_fn,
     input,
+    join_many,
     join_one,
     lower,
+    not_exists,
     output,
+    temporal_one,
     to_decimal,
     transform,
     trim,
@@ -94,7 +98,6 @@ class EnrichOrders(Transform):
     @transform(cache=StorageLevel.MEMORY_AND_DISK)
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
         customer = join_one(
-            self.customers,
             on=(self.customers.tenant.tenant_id == order.tenant.tenant_id)
             & (self.clean_id(self.customers.id) == order.customer_id),
             how=Join.LEFT,
@@ -111,16 +114,15 @@ class EnrichOrders(Transform):
         self, order: OrderWithCustomer, product: Product, blocked_product: BlockedProduct
     ) -> OrderWithProduct:
         where(
-            product.exists(on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id))
+            exists(on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id))
         )
         where(
-            blocked_product.not_exists(
+            not_exists(
                 on=(blocked_product.tenant.tenant_id == order.tenant.tenant_id)
                 & (blocked_product.id == order.product_id)
             )
         )
-        product = join_one(
-            product,
+        join_one(
             on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id),
             how=Join.LEFT,
             dedupe=JoinDedupe.latest_by(product.audit.ingested_at, ties=TiePolicy.ERROR),
@@ -136,7 +138,7 @@ class EnrichOrders(Transform):
         )
 
     def add_promotion(self, order: OrderWithProduct) -> OrderWithPromotion:
-        promotion = self.promotions.temporal_one(
+        temporal_one(
             on=(self.promotions.tenant.tenant_id == order.tenant.tenant_id)
             & self.clean_id(self.promotions.code).null_safe_eq(order.promotion_code),
             at=order.business.order_date,
@@ -146,22 +148,22 @@ class EnrichOrders(Transform):
         )
 
         return OrderWithPromotion.base(order)(
-            promotion_name=promotion.name,
-            promotion_discount=promotion.discount,
+            promotion_name=self.promotions.name,
+            promotion_discount=self.promotions.discount,
         )
 
     def add_shipments(self, order: OrderWithPromotion) -> OrderFulfillment:
-        shipment = self.shipments.join_many(
+        join_many(
             on=(self.shipments.tenant.tenant_id == order.tenant.tenant_id) & (self.shipments.order_id == order.id),
             how=Join.INNER,
             strategy=JoinStrategy.SHUFFLE_HASH,
         )
 
         return OrderFulfillment.base(order)(
-            shipment_line=shipment.line_number,
-            carrier=shipment.carrier,
-            tracking_number=shipment.tracking_number,
-            shipped_at=shipment.shipped_at,
+            shipment_line=self.shipments.line_number,
+            carrier=self.shipments.carrier,
+            tracking_number=self.shipments.tracking_number,
+            shipped_at=self.shipments.shipped_at,
         )
 
     @after(

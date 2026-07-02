@@ -81,6 +81,90 @@ def test_unique_schema_parameters_are_inferred() -> None:
     assert [item.source for item in step.inputs] == ["orders", "products"]
 
 
+def test_plural_parameter_name_disambiguates_same_schema_driving_inputs() -> None:
+    @transform
+    class PickOrders(Transform):
+        orders1 = input(OrderRaw)
+        orders2 = input(OrderRaw)
+        picked = output(OrderRaw)
+
+        @transform(output=picked)
+        def pick(self, order1: OrderRaw) -> OrderRaw:
+            return OrderRaw(id=order1.id, product_id=order1.product_id)
+
+    step = compile_transform(PickOrders).steps[0]
+
+    assert [(item.parameter, item.source, item.lane) for item in step.inputs] == [
+        ("order1", "orders1", "orders1"),
+    ]
+
+
+def test_plural_parameter_name_disambiguates_same_schema_relation_inputs() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(OrderRaw)
+        products1 = input(Product)
+        products2 = input(Product)
+        enriched = output(OrderWithProduct)
+
+        @transform(output=enriched)
+        def add_product(self, order: OrderRaw, product2: Product) -> OrderWithProduct:
+            product2 = join_one(product2, on=product2.id == order.product_id)
+            return OrderWithProduct(id=order.id, product_name=product2.name)
+
+    step = compile_transform(AddProduct).steps[0]
+
+    assert [(item.parameter, item.source, item.lane) for item in step.inputs] == [
+        ("order", "orders", "orders"),
+        ("product2", "products2", "products2"),
+    ]
+
+
+def test_plural_parameter_name_disambiguates_same_schema_lanes() -> None:
+    @transform
+    class PickOrders(Transform):
+        raw1 = input(OrderRaw)
+        raw2 = input(OrderRaw)
+        orders1 = lane(OrderRaw)
+        orders2 = lane(OrderRaw)
+        picked = output(OrderRaw)
+
+        @transform(input=raw1, output=orders1)
+        def seed1(self, order: OrderRaw) -> OrderRaw:
+            return OrderRaw(id=order.id, product_id=order.product_id)
+
+        @transform(input=raw2, output=orders2)
+        def seed2(self, order: OrderRaw) -> OrderRaw:
+            return OrderRaw(id=order.id, product_id=order.product_id)
+
+        @transform(output=picked)
+        def pick(self, order2: OrderRaw) -> OrderRaw:
+            return OrderRaw(id=order2.id, product_id=order2.product_id)
+
+    step = compile_transform(PickOrders).steps[2]
+
+    assert [(item.parameter, item.source, item.lane) for item in step.inputs] == [
+        ("order2", "orders2", "orders2"),
+    ]
+
+
+def test_partial_explicit_input_declaration_disables_plural_parameter_inference() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(OrderRaw)
+        products1 = input(Product)
+        products2 = input(Product)
+        enriched = output(OrderWithProduct)
+
+        @transform(input=orders, output=enriched)
+        def add_product(self, order: OrderRaw, product2: Product) -> OrderWithProduct:
+            product2 = join_one(product2, on=product2.id == order.product_id)
+            return OrderWithProduct(id=order.id, product_name=product2.name)
+
+    with pytest.raises(Exception, match="@transform\\(input=\\.\\.\\.\\) binds 1 source"):
+        compile_transform(AddProduct)
+
+
 def test_join_relation_can_be_inferred_from_on_clause() -> None:
     @transform
     class AddProduct(Transform):

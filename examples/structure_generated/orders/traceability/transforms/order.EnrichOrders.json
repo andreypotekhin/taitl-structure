@@ -728,14 +728,9 @@
       "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.validation.0.hook"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.validation.1.hook_projected",
-      "ir": "ir:EnrichOrders.step.4.add_shipments.validation.1.hook_projected",
-      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.validation.1.hook_projected"
-    },
-    {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.validation.2.intermediate",
-      "ir": "ir:EnrichOrders.step.4.add_shipments.validation.2.intermediate",
-      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.validation.2.intermediate"
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.validation.1.intermediate",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.validation.1.intermediate",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.validation.1.intermediate"
     },
     {
       "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish",
@@ -1461,7 +1456,7 @@
         "sources": [
           "blocked_product.tenant.tenant_id",
           "order.tenant.tenant_id",
-          "blocked_product.product_id",
+          "blocked_product.id",
           "order.product_id"
         ],
         "step": "add_product",
@@ -1746,9 +1741,11 @@
           "cardinality": "select_one",
           "hint": null,
           "how": "left",
-          "right_alias": "promotions"
+          "overlaps": "error",
+          "right_alias": "promotions",
+          "temporal": "closed_open"
         },
-        "operation": "join_one",
+        "operation": "temporal_one",
         "sources": [
           "promotions.tenant.tenant_id",
           "OrderWithProduct.tenant.tenant_id",
@@ -2364,7 +2361,7 @@
       {
         "detail": {
           "phase": "after",
-          "project_output": true,
+          "project_output": false,
           "schema_mode": "allow_extra_columns"
         },
         "operation": "hook",
@@ -2817,14 +2814,8 @@
       "validation": [
         {
           "mode": "allow_extra_columns",
-          "project": true,
-          "reason": "hook",
-          "schema": "OrderFulfillment"
-        },
-        {
-          "mode": "strict",
           "project": false,
-          "reason": "hook_projected",
+          "reason": "hook",
           "schema": "OrderFulfillment"
         },
         {

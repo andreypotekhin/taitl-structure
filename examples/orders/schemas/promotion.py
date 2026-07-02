@@ -1,5 +1,5 @@
 from examples.orders.schemas.common import AuditStamp, TenantKey
-from structure import Decimal, String, Struct, Structure, field
+from structure import Date, Decimal, String, Struct, Structure, field
 
 
 class Promotion(Structure):
@@ -8,3 +8,5 @@ class Promotion(Structure):
     code = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=True)
     discount = field(Decimal(12, 2), nullable=True)
+    valid_from = field(Date(), nullable=False)
+    valid_to = field(Date(), nullable=True)

@@ -147,7 +147,6 @@ Accepted:
 
 ```python
 customer = join_one(
-    self.customers,
     on=order.customer_id == self.customers.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,

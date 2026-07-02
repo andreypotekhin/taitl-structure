@@ -134,7 +134,6 @@ def add_product(
     product: Product,
 ) -> tuple[OrderWithProduct, OrderWithProduct]:
     product = join_one(
-        product,
         on=order.product_id == product.id,
         how=Join.LEFT,
     )
@@ -428,7 +427,23 @@ customer_id=self.clean_id(order.customer_id)
 
 ## Joins
 
-Use symbolic joins.
+Use symbolic joins. Ref: [Join semantics](specifications/JoinSemantics.md) and
+[analytical join coverage](specifications/AnalyticalJoinCoverage.md).
+
+Implemented join forms in the default PySpark profile:
+
+| Form | Shape | Use |
+| --- | --- | --- |
+| `join_one(...)` | select one right row | Lookup enrichment. |
+| `join_one(..., dedupe=...)` | select one right row after deterministic right-side reduction | Snapshot or versioned lookups where a rule chooses one row. |
+| `exists(...)` | filter current rows by a right-side match | Semi join semantics. |
+| `not_exists(...)` | filter current rows by no right-side match | Anti join semantics. |
+| `join_many(...)` | multiply current rows by right-side matches | One output row per match. |
+| `temporal_one(...)` | select one right row by validity window | SCD-style or temporal lookup enrichment. |
+
+Backward as-of joins remain staged; use a hook for that shape until `as_of_one(...)` is implemented.
+
+Prefer inferred `join_one(...)` when the `on` clause names exactly one unjoined relation:
 
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
@@ -444,12 +459,26 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
 ```
 
 For relation parameters and class input scopes, assigning the returned joined scope is optional when the `on`
-clause names exactly one unjoined relation. Use the explicit relation argument when a condition is ambiguous.
+clause names exactly one unjoined relation. Use `join_one(relation, on=...)` only when the condition is ambiguous or
+the compiler cannot infer the intended relation.
+
+Use existence predicates when the right side decides whether the current row survives but does not contribute
+fields:
+
+```python
+where(exists(on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id)))
+where(
+    not_exists(
+        on=(blocked_product.tenant.tenant_id == order.tenant.tenant_id)
+        & (blocked_product.product_id == order.product_id)
+    )
+)
+```
 
 Use `join_many(...)` when one current row should intentionally produce one output row per right-side match:
 
 ```python
-shipment = self.shipments.join_many(
+join_many(
     on=(self.shipments.order_id == order.id),
     how=Join.INNER,
     strategy=JoinStrategy.SHUFFLE_HASH,
@@ -460,10 +489,24 @@ Use deterministic lookup dedupe when duplicate right-side rows exist but the bus
 
 ```python
 product = join_one(
-    product,
     on=product.id == order.product_id,
     how=Join.LEFT,
     dedupe=JoinDedupe.latest_by(product.audit.ingested_at, ties=TiePolicy.ERROR),
+)
+```
+
+Use `temporal_one(...)` when the right row must be valid at a current-row time. The default interval is
+closed-open: `valid_from <= at < valid_to`, with null `valid_to` treated as open-ended.
+
+```python
+temporal_one(
+    on=(self.customers.tenant.tenant_id == order.tenant.tenant_id)
+    & (self.customers.id == order.customer_id),
+    at=order.business.order_date,
+    valid_from=self.customers.valid_from,
+    valid_to=self.customers.valid_to,
+    how=Join.LEFT,
+    overlaps=OverlapPolicy.ERROR,
 )
 ```
 
@@ -492,7 +535,6 @@ fields and name only the joined fields.
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
     customer = join_one(
-        customer,
         on=order.customer_id == customer.id,
         how=Join.LEFT,
         hint=JoinHint.BROADCAST,
@@ -622,14 +664,15 @@ names with `alias=...`.
 
 ## Planned Features
 
-Planned v2 features include:
+Implemented v2 analytical features include existence joins, `join_many(...)`, deterministic lookup dedupe,
+temporal validity joins, aggregation/grouping, Spark higher-order array helpers, caching, and target capability
+checks.
+
+Remaining planned v2 features include:
 
 - Window functions and deduplication helpers.
-- Aggregation and advanced grouping.
-- Spark higher-order functions for arrays and maps.
-- Caching and persistence annotations.
 - Repartition and coalesce annotations.
-- Temporal and as-of analytical joins.
+- Backward as-of analytical joins.
 
 These features remain explicit because Structure should not hide performance-sensitive choices.
 

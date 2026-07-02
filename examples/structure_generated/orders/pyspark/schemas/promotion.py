@@ -11,4 +11,6 @@ PROMOTION_SCHEMA = T.StructType([
     T.StructField("code", T.StringType(), False),
     T.StructField("name", T.StringType(), True),
     T.StructField("discount", T.DecimalType(12, 2), True),
+    T.StructField("valid_from", T.DateType(), False),
+    T.StructField("valid_to", T.DateType(), True),
 ])

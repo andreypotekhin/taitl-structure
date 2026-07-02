@@ -375,6 +375,7 @@ class CompileTransform:
                 inputs,
                 schema,
                 member=member,
+                parameter=parameter.name,
             )
             actual = cast(type[Structure], source["schema"])
             if schema is not actual:
@@ -426,6 +427,7 @@ class CompileTransform:
                 schema,
                 member=member,
                 driving=ordinal == 0,
+                parameter=parameter.name,
                 used=used,
             )
             actual = cast(type[Structure], source["schema"])
@@ -473,6 +475,7 @@ class CompileTransform:
         *,
         member: str,
         driving: bool,
+        parameter: str,
         used: set[tuple[str, str]],
     ) -> tuple[str, dict[str, object]]:
         if declaration is not None:
@@ -483,6 +486,9 @@ class CompileTransform:
                 for lane, source in lanes.items()
                 if source["schema"] is schema and (lane, str(source["source"])) not in used
             ]
+            preferred = self._preferred_source(current, parameter)
+            if preferred is not None:
+                return preferred
             if len(current) == 1:
                 return current[0]
             if not current and lanes:
@@ -515,6 +521,9 @@ class CompileTransform:
             key = (lane, str(source["source"]))
             if source["schema"] is schema and key not in used:
                 candidates.append((lane, source))
+        preferred = self._preferred_source(candidates, parameter)
+        if preferred is not None:
+            return preferred
         if len(candidates) != 1:
             names = ", ".join(lane for lane, _ in candidates) or "none"
             raise self._error(
@@ -536,10 +545,11 @@ class CompileTransform:
         input_schema: type[Structure],
         *,
         member: str,
+        parameter: str,
     ) -> tuple[str, dict[str, object]]:
         if declaration is not None:
             return self._declared_source(transform_class, declaration, lanes, inputs, input_schema, member=member)
-        return self._input_lane(transform_class, lanes, inputs, input_schema, member=member)
+        return self._input_lane(transform_class, lanes, inputs, input_schema, member=member, parameter=parameter)
 
     def _declared_source(
         self,
@@ -847,8 +857,12 @@ class CompileTransform:
         input_schema: type[Structure],
         *,
         member: str,
+        parameter: str,
     ) -> tuple[str, dict[str, object]]:
         current = [(lane, source) for lane, source in lanes.items() if source["schema"] is input_schema]
+        preferred = self._preferred_source(current, parameter)
+        if preferred is not None:
+            return preferred
         if len(current) == 1:
             return current[0]
         if len(current) > 1:
@@ -874,7 +888,7 @@ class CompileTransform:
                 use="Add @transform(input=that_input) to select an original input or shadowing lane, or update the row parameter annotation.",
                 context={"expected": input_schema.__name__, "actual": actual.__name__},
             )
-        input_plan = self._input_for_schema(inputs, input_schema)
+        input_plan = self._input_for_schema(inputs, input_schema, parameter=parameter)
         return input_plan.name, {
             "kind": "input",
             "schema": input_plan.schema,
@@ -1249,8 +1263,18 @@ class CompileTransform:
             resolved.append(parameter.replace(annotation=annotation))
         return tuple(resolved)
 
-    def _input_for_schema(self, inputs: list[InputPlan], schema: type[Structure]) -> InputPlan:
+    def _input_for_schema(
+        self,
+        inputs: list[InputPlan],
+        schema: type[Structure],
+        *,
+        parameter: str | None = None,
+    ) -> InputPlan:
         matches = [input_plan for input_plan in inputs if input_plan.schema is schema]
+        if parameter is not None:
+            preferred = self._preferred_input(matches, parameter)
+            if preferred is not None:
+                return preferred
         if len(matches) != 1:
             names = ", ".join(input_plan.name for input_plan in matches) or "none"
             raise self._error(
@@ -1261,6 +1285,39 @@ class CompileTransform:
                 context={"schema": schema.__name__, "matches": str(len(matches))},
             )
         return matches[0]
+
+    def _preferred_input(self, inputs: list[InputPlan], parameter: str) -> InputPlan | None:
+        for name in self._source_name_choices(parameter):
+            matches = [input_plan for input_plan in inputs if input_plan.name == name]
+            if len(matches) == 1:
+                return matches[0]
+            if matches:
+                return None
+        return None
+
+    def _preferred_source(
+        self,
+        candidates: list[tuple[str, dict[str, object]]],
+        parameter: str,
+    ) -> tuple[str, dict[str, object]] | None:
+        for name in self._source_name_choices(parameter):
+            matches = [candidate for candidate in candidates if candidate[0] == name]
+            if len(matches) == 1:
+                return matches[0]
+            if matches:
+                return None
+        return None
+
+    def _source_name_choices(self, parameter: str) -> tuple[str, ...]:
+        end = len(parameter)
+        while end and not parameter[end - 1].isalpha():
+            end -= 1
+        stem = parameter[:end]
+        suffix = parameter[end:]
+        if not stem:
+            return (parameter,)
+        plural = f"{stem}s{suffix}"
+        return (parameter,) if plural == parameter else (parameter, plural)
 
     def _assignments(
         self,

@@ -118,7 +118,7 @@ class EnrichOrdersGenerated:
         blocked_products_2_joined = blocked_products.alias("blocked_products_2")
         orders = orders.join(
             blocked_products_2_joined,
-            ((F.col("blocked_products_2.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id")) & (F.col("blocked_products_2.product_id") == F.col("order_with_customer.product_id"))),
+            ((F.col("blocked_products_2.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id")) & (F.col("blocked_products_2.id") == F.col("order_with_customer.product_id"))),
             "left_anti",
         )
         products_3_joined = products.alias("products_3").withColumn("__structure_products_3_rank", F.row_number().over(Window.partitionBy(F.col("products_3.tenant.tenant_id"), F.col("products_3.id")).orderBy(F.col("products_3.audit.ingested_at").desc()))).where(F.col("__structure_products_3_rank") == F.lit(1)).drop("__structure_products_3_rank").alias("products_3")
@@ -159,7 +159,7 @@ class EnrichOrdersGenerated:
         promotions_joined = promotions.alias("promotions")
         orders = orders.join(
             promotions_joined,
-            ((F.col("promotions.tenant.tenant_id") == F.col("order_with_product.tenant.tenant_id")) & F.lower(F.trim(F.col("promotions.code"))).eqNullSafe(F.col("order_with_product.promotion_code"))),
+            (((F.col("promotions.tenant.tenant_id") == F.col("order_with_product.tenant.tenant_id")) & F.lower(F.trim(F.col("promotions.code"))).eqNullSafe(F.col("order_with_product.promotion_code"))) & ((F.col("promotions.valid_from") <= F.col("order_with_product.business.order_date")) & ((F.col("order_with_product.business.order_date") < F.col("promotions.valid_to")) | F.col("promotions.valid_to").isNull()))),
             "left",
         )
         orders = orders.select(
@@ -230,8 +230,6 @@ class EnrichOrdersGenerated:
         )
         orders = self._impl.note_lookup_inputs(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
         assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="allow_extra_columns")
-        orders = project_schema(orders, ORDER_FULFILLMENT_SCHEMA)
-        assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")
         assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")
 
         # Subtransform: publish

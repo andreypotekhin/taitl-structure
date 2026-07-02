@@ -35,10 +35,10 @@ class InputScope(RowScope):
         )
 
     def exists(self, *, on: Expression, hint: JoinHint | None = None) -> Expression:
-        return self._existence(JoinMethod.EXISTS, on=on, hint=hint)
+        return exists(self, on=on, hint=hint)
 
     def not_exists(self, *, on: Expression, hint: JoinHint | None = None) -> Expression:
-        return self._existence(JoinMethod.NOT_EXISTS, on=on, hint=hint)
+        return not_exists(self, on=on, hint=hint)
 
     def join_many(
         self,
@@ -47,35 +47,7 @@ class InputScope(RowScope):
         how: Join = Join.INNER,
         strategy: JoinStrategy | None = None,
     ) -> RowScope:
-        context = current_context()
-        if context is None:
-            raise RuntimeError("join_many(...) can only be used inside a compiled Structure subtransform")
-        if not isinstance(on, Expression):
-            raise TypeError("join_many(on=...) requires a Structure expression")
-        if not isinstance(on.type, BooleanType):
-            raise TypeError("join_many(on=...) requires a boolean Structure expression")
-        if not isinstance(how, Join):
-            raise TypeError("join_many(how=...) requires a Join value")
-        if strategy is not None and not isinstance(strategy, JoinStrategy):
-            raise TypeError("join_many(strategy=...) requires a JoinStrategy value")
-
-        join = JoinPlan(
-            input_name=self._structure_input_name,
-            source=self._structure_source,
-            input_schema=self._structure_input_schema,
-            predicate=on,
-            how=how,
-            strategy=strategy,
-            method=JoinMethod.MANY,
-        )
-        context.joins.append(join)
-        context.operations.append(OperationPlan.join_operation(join))
-        self._structure_joined_scope = RowScope(
-            name=self._structure_input_name,
-            schema=self._structure_input_schema,
-            nullable=how is Join.LEFT,
-        )
-        return self._structure_joined_scope
+        return cast(RowScope, join_many(self, on=on, how=how, strategy=strategy))
 
     def temporal_one(
         self,
@@ -88,78 +60,24 @@ class InputScope(RowScope):
         overlaps: OverlapPolicy = OverlapPolicy.ERROR,
         hint: JoinHint | None = None,
     ) -> RowScope:
-        context = current_context()
-        if context is None:
-            raise RuntimeError("temporal_one(...) can only be used inside a compiled Structure subtransform")
-        if not isinstance(on, Expression):
-            raise TypeError("temporal_one(on=...) requires a Structure expression")
-        if not isinstance(on.type, BooleanType):
-            raise TypeError("temporal_one(on=...) requires a boolean Structure expression")
-        if not isinstance(at, Expression):
-            raise TypeError("temporal_one(at=...) requires a Structure expression")
-        if not isinstance(valid_from, Expression):
-            raise TypeError("temporal_one(valid_from=...) requires a Structure expression")
-        if not isinstance(valid_to, Expression):
-            raise TypeError("temporal_one(valid_to=...) requires a Structure expression")
-        if not isinstance(how, Join):
-            raise TypeError("temporal_one(how=...) requires a Join value")
-        if not isinstance(overlaps, OverlapPolicy):
-            raise TypeError("temporal_one(overlaps=...) requires an OverlapPolicy value")
-        if hint is not None and not isinstance(hint, JoinHint):
-            raise TypeError("temporal_one(hint=...) requires a JoinHint value")
-
-        join = JoinPlan(
-            input_name=self._structure_input_name,
-            source=self._structure_source,
-            input_schema=self._structure_input_schema,
-            predicate=on,
-            how=how,
-            hint=hint,
-            method=JoinMethod.TEMPORAL_ONE,
-            temporal=JoinTemporal(at=at, valid_from=valid_from, valid_to=valid_to, overlaps=overlaps),
+        return cast(
+            RowScope,
+            temporal_one(
+                self,
+                on=on,
+                at=at,
+                valid_from=valid_from,
+                valid_to=valid_to,
+                how=how,
+                overlaps=overlaps,
+                hint=hint,
+            ),
         )
-        context.joins.append(join)
-        context.operations.append(OperationPlan.join_operation(join))
-        self._structure_joined_scope = RowScope(
-            name=self._structure_input_name,
-            schema=self._structure_input_schema,
-            nullable=how is Join.LEFT,
-        )
-        return self._structure_joined_scope
 
     def __getattr__(self, name: str) -> Expression:
         if self._structure_joined_scope is not None:
             return getattr(self._structure_joined_scope, name)
         return super().__getattr__(name)
-
-    def _existence(self, method: JoinMethod, *, on: Expression, hint: JoinHint | None) -> Expression:
-        context = current_context()
-        if context is None:
-            raise RuntimeError(f"{method.value}(...) can only be used inside a compiled Structure subtransform")
-        if not isinstance(on, Expression):
-            raise TypeError(f"{method.value}(on=...) requires a Structure expression")
-        if not isinstance(on.type, BooleanType):
-            raise TypeError(f"{method.value}(on=...) requires a boolean Structure expression")
-        if hint is not None and not isinstance(hint, JoinHint):
-            raise TypeError(f"{method.value}(hint=...) requires a JoinHint value")
-
-        return Expression(
-            kind="existence_join",
-            type=BooleanType(),
-            nullable=False,
-            data={
-                "join": JoinPlan(
-                    input_name=self._structure_input_name,
-                    source=self._structure_source,
-                    input_schema=self._structure_input_schema,
-                    predicate=on,
-                    how=Join.INNER,
-                    hint=hint,
-                    method=method,
-                ),
-            },
-            args=(on,),
-        )
 
     def where(self, predicate: object):
         from structure.app.dsl.model.transforms.transform_api import where
@@ -207,18 +125,190 @@ def join_one(
     context = current_context()
     if context is None:
         raise RuntimeError("join_one(...) can only be used inside a compiled Structure subtransform")
-    if not isinstance(on, Expression):
-        raise TypeError("join_one(on=...) requires a Structure expression")
-    if not isinstance(on.type, BooleanType):
-        raise TypeError("join_one(on=...) requires a boolean Structure expression")
+    on = _join_predicate("join_one", on)
     if relation is None:
-        relation = cast(Relation, _infer_relation(context, on))
+        relation = cast(Relation, _infer_relation("join_one", context, on))
     if not isinstance(relation, InputScope):
         raise TypeError("join_one(relation, ...) requires a Structure relation parameter or transform input")
     if dedupe is not None and not isinstance(dedupe, JoinDedupe):
         raise TypeError("join_one(dedupe=...) requires a JoinDedupe policy")
 
     _record_join(context, relation, on, how, hint, dedupe)
+    return relation
+
+
+@overload
+def exists(
+    relation: Relation,
+    *,
+    on: object,
+    hint: JoinHint | None = None,
+) -> Expression: ...
+
+
+@overload
+def exists(
+    *,
+    on: object,
+    hint: JoinHint | None = None,
+) -> Expression: ...
+
+
+def exists(
+    relation: Relation | None = None,
+    *,
+    on: object,
+    hint: JoinHint | None = None,
+) -> Expression:
+    return _existence_join(JoinMethod.EXISTS, relation, on=on, hint=hint)
+
+
+@overload
+def not_exists(
+    relation: Relation,
+    *,
+    on: object,
+    hint: JoinHint | None = None,
+) -> Expression: ...
+
+
+@overload
+def not_exists(
+    *,
+    on: object,
+    hint: JoinHint | None = None,
+) -> Expression: ...
+
+
+def not_exists(
+    relation: Relation | None = None,
+    *,
+    on: object,
+    hint: JoinHint | None = None,
+) -> Expression:
+    return _existence_join(JoinMethod.NOT_EXISTS, relation, on=on, hint=hint)
+
+
+@overload
+def join_many(
+    relation: Relation,
+    *,
+    on: object,
+    how: Join = Join.INNER,
+    strategy: JoinStrategy | None = None,
+) -> Relation: ...
+
+
+@overload
+def join_many(
+    *,
+    on: object,
+    how: Join = Join.INNER,
+    strategy: JoinStrategy | None = None,
+) -> InputScope: ...
+
+
+def join_many(
+    relation: Relation | None = None,
+    *,
+    on: object,
+    how: Join = Join.INNER,
+    strategy: JoinStrategy | None = None,
+) -> Relation | InputScope:
+    context = _join_context("join_many")
+    predicate = _join_predicate("join_many", on)
+    if relation is None:
+        relation = cast(Relation, _infer_relation("join_many", context, predicate))
+    if not isinstance(relation, InputScope):
+        raise TypeError("join_many(relation, ...) requires a Structure relation parameter or transform input")
+    if not isinstance(how, Join):
+        raise TypeError("join_many(how=...) requires a Join value")
+    if strategy is not None and not isinstance(strategy, JoinStrategy):
+        raise TypeError("join_many(strategy=...) requires a JoinStrategy value")
+
+    join = JoinPlan(
+        input_name=relation._structure_input_name,
+        source=relation._structure_source,
+        input_schema=relation._structure_input_schema,
+        predicate=predicate,
+        how=how,
+        strategy=strategy,
+        method=JoinMethod.MANY,
+    )
+    _record_scoped_join(context, relation, join)
+    return relation
+
+
+@overload
+def temporal_one(
+    relation: Relation,
+    *,
+    on: object,
+    at: object,
+    valid_from: object,
+    valid_to: object,
+    how: Join = Join.LEFT,
+    overlaps: OverlapPolicy = OverlapPolicy.ERROR,
+    hint: JoinHint | None = None,
+) -> Relation: ...
+
+
+@overload
+def temporal_one(
+    *,
+    on: object,
+    at: object,
+    valid_from: object,
+    valid_to: object,
+    how: Join = Join.LEFT,
+    overlaps: OverlapPolicy = OverlapPolicy.ERROR,
+    hint: JoinHint | None = None,
+) -> InputScope: ...
+
+
+def temporal_one(
+    relation: Relation | None = None,
+    *,
+    on: object,
+    at: object,
+    valid_from: object,
+    valid_to: object,
+    how: Join = Join.LEFT,
+    overlaps: OverlapPolicy = OverlapPolicy.ERROR,
+    hint: JoinHint | None = None,
+) -> Relation | InputScope:
+    context = _join_context("temporal_one")
+    predicate = _join_predicate("temporal_one", on)
+    if relation is None:
+        relation = cast(Relation, _infer_relation("temporal_one", context, predicate))
+    if not isinstance(relation, InputScope):
+        raise TypeError("temporal_one(relation, ...) requires a Structure relation parameter or transform input")
+    at_expr = _expression("temporal_one", "at", at)
+    valid_from_expr = _expression("temporal_one", "valid_from", valid_from)
+    valid_to_expr = _expression("temporal_one", "valid_to", valid_to)
+    if not isinstance(how, Join):
+        raise TypeError("temporal_one(how=...) requires a Join value")
+    if not isinstance(overlaps, OverlapPolicy):
+        raise TypeError("temporal_one(overlaps=...) requires an OverlapPolicy value")
+    if hint is not None and not isinstance(hint, JoinHint):
+        raise TypeError("temporal_one(hint=...) requires a JoinHint value")
+
+    join = JoinPlan(
+        input_name=relation._structure_input_name,
+        source=relation._structure_source,
+        input_schema=relation._structure_input_schema,
+        predicate=predicate,
+        how=how,
+        hint=hint,
+        method=JoinMethod.TEMPORAL_ONE,
+        temporal=JoinTemporal(
+            at=at_expr,
+            valid_from=valid_from_expr,
+            valid_to=valid_to_expr,
+            overlaps=overlaps,
+        ),
+    )
+    _record_scoped_join(context, relation, join)
     return relation
 
 
@@ -240,16 +330,75 @@ def _record_join(
         method=JoinMethod.ONE,
         dedupe=dedupe,
     )
+    _record_scoped_join(context, relation, join)
+
+
+def _join_context(function: str):
+    context = current_context()
+    if context is None:
+        raise RuntimeError(f"{function}(...) can only be used inside a compiled Structure subtransform")
+    return context
+
+
+def _join_predicate(function: str, value: object) -> Expression:
+    expression = _expression(function, "on", value)
+    if not isinstance(expression.type, BooleanType):
+        raise TypeError(f"{function}(on=...) requires a boolean Structure expression")
+    return expression
+
+
+def _expression(function: str, argument: str, value: object) -> Expression:
+    if not isinstance(value, Expression):
+        raise TypeError(f"{function}({argument}=...) requires a Structure expression")
+    return value
+
+
+def _record_scoped_join(context, relation: InputScope, join: JoinPlan) -> None:
     context.joins.append(join)
     context.operations.append(OperationPlan.join_operation(join))
     relation._structure_joined_scope = RowScope(
         name=relation._structure_input_name,
         schema=relation._structure_input_schema,
-        nullable=how is Join.LEFT,
+        nullable=join.how is Join.LEFT,
     )
 
 
-def _infer_relation(context, on: Expression) -> InputScope:
+def _existence_join(
+    method: JoinMethod,
+    relation: Relation | None,
+    *,
+    on: object,
+    hint: JoinHint | None,
+) -> Expression:
+    context = _join_context(method.value)
+    predicate = _join_predicate(method.value, on)
+    if relation is None:
+        relation = cast(Relation, _infer_relation(method.value, context, predicate))
+    if not isinstance(relation, InputScope):
+        raise TypeError(f"{method.value}(relation, ...) requires a Structure relation parameter or transform input")
+    if hint is not None and not isinstance(hint, JoinHint):
+        raise TypeError(f"{method.value}(hint=...) requires a JoinHint value")
+
+    return Expression(
+        kind="existence_join",
+        type=BooleanType(),
+        nullable=False,
+        data={
+            "join": JoinPlan(
+                input_name=relation._structure_input_name,
+                source=relation._structure_source,
+                input_schema=relation._structure_input_schema,
+                predicate=predicate,
+                how=Join.INNER,
+                hint=hint,
+                method=method,
+            ),
+        },
+        args=(predicate,),
+    )
+
+
+def _infer_relation(function: str, context, on: Expression) -> InputScope:
     candidates = {
         scope
         for scope in _scopes(on)
@@ -258,26 +407,26 @@ def _infer_relation(context, on: Expression) -> InputScope:
     }
     if not candidates:
         raise TypeError(
-            "Cannot infer joined relation for join_one(...): the join condition does not reference an unjoined "
-            "relation. Use join_one(relation, on=...) or compare against a declared input/relation parameter."
+            f"Cannot infer joined relation for {function}(...): the join condition does not reference an unjoined "
+            f"relation. Use {function}(relation, on=...) or compare against a declared input/relation parameter."
         )
     if len(candidates) > 1:
         names = ", ".join(sorted(candidates))
         first = sorted(candidates)[0]
         raise TypeError(
-            "Cannot infer joined relation for join_one(...): the join condition references multiple unjoined "
-            f"relations: {names}. Use join_one({first}, on=...) or join_one(relation={first}, on=...) to choose one."
+            f"Cannot infer joined relation for {function}(...): the join condition references multiple unjoined "
+            f"relations: {names}. Use {function}({first}, on=...) or {function}(relation={first}, on=...) to choose one."
         )
 
     candidate = next(iter(candidates))
     relation = context.relation_scopes[candidate]
-    _validate_inferred_pairs(candidate, on)
+    _validate_inferred_pairs(function, candidate, on)
     if not isinstance(relation, InputScope):
-        raise TypeError(f"Cannot infer joined relation for join_one(...): scope {candidate} is not a join relation.")
+        raise TypeError(f"Cannot infer joined relation for {function}(...): scope {candidate} is not a join relation.")
     return relation
 
 
-def _validate_inferred_pairs(candidate: str, on: Expression) -> None:
+def _validate_inferred_pairs(function: str, candidate: str, on: Expression) -> None:
     for condition in _join_conditions(on):
         left, right = condition.args
         left_has_candidate = candidate in _scopes(left)
@@ -285,7 +434,7 @@ def _validate_inferred_pairs(candidate: str, on: Expression) -> None:
         if left_has_candidate == right_has_candidate:
             raise TypeError(
                 "Each join key pair must compare the inferred joined relation with the current row or an earlier "
-                "joined scope. Use join_one(relation, on=...) if the relation cannot be inferred safely."
+                f"joined scope. Use {function}(relation, on=...) if the relation cannot be inferred safely."
             )
 
 
