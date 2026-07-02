@@ -17,6 +17,7 @@ def render_orders_example() -> dict[str, str]:
         from examples.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
         from examples.orders.schemas.customer import Customer
         from examples.orders.schemas.order import (
+            OrderFulfillment,
             OrderNormalized,
             OrderPublication,
             OrderPublished,
@@ -44,6 +45,7 @@ def render_orders_example() -> dict[str, str]:
                     OrderWithCustomer,
                     OrderWithProduct,
                     OrderWithPromotion,
+                    OrderFulfillment,
                     OrderPublication,
                     PublicationFlags,
                     OrderPublished,

@@ -4,8 +4,10 @@ from pyspark.sql import functions as F
 from structure import (
     JoinStrategy,
     Join,
+    JoinDedupe,
     JoinHint,
     SchemaMode,
+    TiePolicy,
     Transform,
     after,
     arr_filter,
@@ -122,6 +124,7 @@ class EnrichOrders(Transform):
             product,
             on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id),
             how=Join.LEFT,
+            dedupe=JoinDedupe.latest_by(product.audit.ingested_at, ties=TiePolicy.ERROR),
         )
 
         where(product.id.is_not_null())

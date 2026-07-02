@@ -194,9 +194,9 @@
 
 ### Epic: Analytical Joins
 
-- Implement semi `exists(...)` and anti `not_exists(...)` predicates.
-- Implement `join_many(...)` for row-multiplying joins.
-- Implement deterministic `JoinDedupe.latest_by(...)` and `JoinDedupe.earliest_by(...)` policies.
+- + Implement semi `exists(...)` and anti `not_exists(...)` predicates.
+- + Implement `join_many(...)` for row-multiplying joins.
+- + Implement deterministic `JoinDedupe.latest_by(...)` and `JoinDedupe.earliest_by(...)` policies.
 - Implement temporal validity-window `temporal_one(...)` joins for SCD-style lookups.
 - Implement backward `as_of_one(...)` joins with optional tolerance.
 - Add tie and overlap policy diagnostics.

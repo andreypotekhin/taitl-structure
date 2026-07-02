@@ -446,6 +446,27 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
 For relation parameters and class input scopes, assigning the returned joined scope is optional when the `on`
 clause names exactly one unjoined relation. Use the explicit relation argument when a condition is ambiguous.
 
+Use `join_many(...)` when one current row should intentionally produce one output row per right-side match:
+
+```python
+shipment = self.shipments.join_many(
+    on=(self.shipments.order_id == order.id),
+    how=Join.INNER,
+    strategy=JoinStrategy.SHUFFLE_HASH,
+)
+```
+
+Use deterministic lookup dedupe when duplicate right-side rows exist but the business rule still selects one row:
+
+```python
+product = join_one(
+    product,
+    on=product.id == order.product_id,
+    how=Join.LEFT,
+    dedupe=JoinDedupe.latest_by(product.audit.ingested_at, ties=TiePolicy.ERROR),
+)
+```
+
 Generated PySpark:
 
 ```python
@@ -608,8 +629,7 @@ Planned v2 features include:
 - Spark higher-order functions for arrays and maps.
 - Caching and persistence annotations.
 - Repartition and coalesce annotations.
-- Join strategy annotations.
-- `join_many(...)` and other row-multiplying or existence-oriented join forms.
+- Temporal and as-of analytical joins.
 
 These features remain explicit because Structure should not hide performance-sensitive choices.
 

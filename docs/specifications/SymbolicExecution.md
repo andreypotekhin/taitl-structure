@@ -675,8 +675,7 @@ The following are outside v1 symbolic execution scope:
 
 - arbitrary Python control-flow lowering into multiple dynamic DataFrame branches;
 - subtransform branching and merging;
-- row-multiplying `join_many(...)`;
-- aggregations, windows, grouping sets, rollups, cubes, and deduplication;
+- aggregations, broad windows, grouping sets, rollups, cubes, and general-purpose deduplication;
 - higher-order array and map transforms unless separately accepted by a v2 spec;
 - automatic fallback to hooks;
 - implicit UDF or Pandas UDF generation;

@@ -941,7 +941,9 @@ Rules:
 - Symbolic row proxies create scoped `FieldRef` expressions.
 - Expression helpers create expression IR.
 - `where(...)` records filter operations in the active step context.
-- `join_one(...)` records join operations and creates a joined scope.
+- `join_one(...)` records lookup join operations and creates a joined scope.
+- `join_many(...)` records row-multiplying join operations and creates a joined scope.
+- `exists(...)` and `not_exists(...)` record row-filtering join operations without exposing right-side fields.
 - Schema constructors create projection operations.
 - Hooks are collected from transform metadata, not executed.
 - Validation policy is resolved into explicit plan metadata.
@@ -967,7 +969,8 @@ Required IR validation checks:
 11. Every project covers the output schema exactly once and in schema order.
 12. Every project assignment is type-compatible and nullability-compatible.
 13. Every join condition satisfies `JoinSemantics.md`.
-14. Every `join_one(...)` records uniqueness proof, warning, or unchecked status.
+14. Every plain `join_one(...)` records uniqueness proof, warning, or unchecked status; deduped `join_one(...)`
+    records the deterministic policy that reduces the right side before lookup.
 14. Every hook target resolves to a step.
 15. Every hook call has valid timing, schema mode, and `pass_inputs` metadata.
 16. Every validation point has a schema, target, mode, and reason.

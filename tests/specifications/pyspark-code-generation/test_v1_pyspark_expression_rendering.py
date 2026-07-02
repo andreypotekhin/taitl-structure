@@ -121,7 +121,10 @@ def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> N
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
-    assert render(projection["customer_id"], scope_aliases={"rows": "orders"}) == 'F.upper(F.trim(F.col("orders.customer_id")))'
+    assert (
+        render(projection["customer_id"], scope_aliases={"rows": "orders"})
+        == 'F.upper(F.trim(F.col("orders.customer_id")))'
+    )
     assert render(projection["size_tier"], scope_aliases={"rows": "orders"}) == (
         'F.when((F.col("orders.total") >= F.lit(1000)), F.lit(\'large\')).otherwise(F.lit(\'standard\'))'
     )

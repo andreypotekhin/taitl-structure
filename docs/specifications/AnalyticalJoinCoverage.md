@@ -11,8 +11,9 @@ right-side uniqueness is not proven and never deduplicates by surprise.
 
 ## Scope
 
-This specification owns future source semantics for analytical joins. [JoinSemantics.md](JoinSemantics.md) remains
-the authority for v1 `join_one(...)`.
+This specification owns source semantics for analytical joins. Existence joins, `join_many(...)`, and deterministic
+deduped `join_one(...)` are implemented in the default PySpark profile. Temporal and as-of joins remain staged.
+[JoinSemantics.md](JoinSemantics.md) remains the authority for the strict v1 `join_one(...)` contract.
 
 In scope for the analytical join family:
 
@@ -121,6 +122,8 @@ Rules:
 - Structure must not lower dedupe to arbitrary `first(...)` or nondeterministic `dropDuplicates(...)`.
 - A deduped `join_one(...)` records both the original right input and the deduped lookup dependency in traceability.
 - Runtime tie checks are explicit because they can add Spark work.
+- Current PySpark lowering uses `row_number()` over a window partitioned by the right-side join keys, ordered by the
+  explicit policy expression, keeps rank `1`, drops the temporary rank column, and then applies the lookup join.
 
 Initial policy family:
 
@@ -212,12 +215,12 @@ Required fields:
 - runtime check requirements;
 - source location and source expression text.
 
-Allowed method values begin with:
+Allowed semantic method values begin with:
 
 - `exists`;
 - `not_exists`;
 - `join_many`;
-- `join_one_deduped`;
+- `join_one` with a dedupe policy;
 - `temporal_one`;
 - `as_of_one`.
 
@@ -237,9 +240,9 @@ join.temporal_one
 join.as_of_one
 ```
 
-The default PySpark profile supports `join.exists` and `join.not_exists`. Unsupported capability diagnostics use
-`BACKEND-E2402` and link to this specification. The diagnostic must name the join form and suggest either a supported
-join, a hook escape hatch, or waiting for the planned feature.
+The default PySpark profile supports `join.exists`, `join.not_exists`, `join.join_many`, and `join.lookup_dedupe`.
+Unsupported capability diagnostics use `BACKEND-E2402` and link to this specification. The diagnostic must name the
+join form and suggest either a supported join, a hook escape hatch, or waiting for the planned feature.
 
 ## Streaming Compatibility
 
@@ -307,7 +310,9 @@ Specific scenarios:
 - `join_many(...)` multiplies rows when multiple right rows match.
 - Left `join_many(...)` preserves unmatched current rows.
 - Deduped `join_one(...)` selects the latest right row by an explicit order expression.
-- Unproven dedupe ties emit a deterministic diagnostic.
+- Deduped `join_one(...)` does not emit the ordinary unproven-uniqueness warning because the right side is reduced by
+  policy before the lookup.
+- Runtime tie diagnostics are follow-up work for `TiePolicy.ERROR`.
 - `temporal_one(...)` matches a right row whose validity window contains the event time.
 - Overlapping temporal windows are diagnosed when overlap checks are enabled.
 - Backward `as_of_one(...)` selects the latest right row at or before the current-row time.

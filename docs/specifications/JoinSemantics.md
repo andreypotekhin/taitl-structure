@@ -217,8 +217,8 @@ Why this matters:
   If customers has duplicate id values, this join can multiply rows.
 
 Use:
-  mark Customer.id as primary_key=True, declare a unique key, or defer this transform until v2 join_many(...)
-  if multiplication is intended.
+  mark Customer.id as primary_key=True, declare a unique key, use join_many(...) if multiplication is intended,
+  or add an explicit JoinDedupe policy when one selected right row is the business rule.
 ```
 
 Projects may later add a strict setting that turns this warning into an error. That setting is not required for the v1
@@ -238,9 +238,9 @@ Rules:
 - `Join.INNER` removes current rows with no right match.
 - Output schema construction still decides which fields survive; right-side columns are not implicitly appended.
 
-Developers should choose `join_many(...)` (v2) when the output is naturally one row per match, such as
-order-to-line-item expansion. In v1, that shape belongs in an explicit hook or outside Structure until
-row-multiplying semantics are implemented.
+Developers should choose `join_many(...)` when the output is naturally one row per match, such as order-to-line-item
+expansion. The default PySpark profile now lowers this shape as an explicit row-multiplying join, so it no longer needs
+to hide in a hook.
 
 ## Right-Side Projection
 
@@ -331,9 +331,11 @@ The join IR should preserve:
 
 - joined input scope;
 - joined scope occurrence;
-- operation kind, `join_one` in v1 and `join_many` once v2 adds row-multiplying joins;
+- operation kind, including `join_one`, row-filtering existence joins, and row-multiplying `join_many`;
 - join type;
 - optional hint;
+- optional strategy hint for row-multiplying joins;
+- optional deterministic dedupe policy for lookup joins;
 - ordered key pairs;
 - equality kind per key pair, either normal equality or null-safe equality;
 - referenced right fields;

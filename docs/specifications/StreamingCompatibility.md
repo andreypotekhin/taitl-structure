@@ -167,15 +167,14 @@ Rules:
 Rejected in v1:
 
 - stream-stream joins;
-- row-multiplying joins such as `join_many(...)` until v2 implements them;
 - joins that require watermarks;
 - outer stream-stream joins;
 - stateful deduplication before or after a join;
 - join hints that apply to the streaming side.
 
-`join_many(...)` (v2) is compatible with static side inputs in principle because row multiplication is intentional and
-does not require streaming state by itself. It remains outside v1 only because the row-multiplying DSL is staged for
-v2.
+`exists(...)`, `not_exists(...)`, and `join_many(...)` are compatible with static side inputs in principle because they
+do not require streaming state by themselves. Deduped lookup joins remain batch-only until a streaming-specific design
+owns tie checking, watermark assumptions, and output-mode behavior.
 
 The checker should make the runtime-shape assumption explicit in diagnostics. If Structure later adds input metadata,
 the same rules can be applied using declared input modes instead of assumptions.

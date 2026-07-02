@@ -17,6 +17,6 @@ class Product(ProductBase):
     rating = field(Double(), nullable=True)
 
 
-class BlockedProduct(ProductBase):
+class BlockedProduct(Product):
     product_id = field(String(), nullable=False, primary_key=True)
     reason = field(String(), nullable=True)

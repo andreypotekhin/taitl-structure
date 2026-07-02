@@ -156,7 +156,9 @@ def test_plain_python_expression_extensions_are_symbolic() -> None:
                 line_total=order.price * order.quantity,
             )
 
-    projection = {assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection}
+    projection = {
+        assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
+    }
 
     assert projection["customer_id"].data == {"function": "upper"}
     assert projection["customer_id"].args[0].data == {"function": "trim"}

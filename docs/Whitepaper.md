@@ -432,9 +432,9 @@ transforms, diagnostic links, and setup checks.
 
 ### v2
 
-Windowing, deduplication, aggregations, advanced grouping, Spark higher-order functions, caching/persistence and
-repartition hints, `join_many(...)`, richer explain output, generated docs, pytest helpers, and production incremental
-compile.
+Existence joins, `join_many(...)`, deterministic lookup dedupe, windowing, aggregations, advanced grouping, Spark
+higher-order functions, caching/persistence and repartition hints, richer explain output, generated docs, pytest
+helpers, and production incremental compile.
 
 ### v3
 

@@ -144,6 +144,8 @@ expression.standard_helper_call
 join.join_one
 join.exists
 join.not_exists
+join.join_many
+join.lookup_dedupe
 join.left_join
 join.inner_join
 join.left_semi_join
@@ -163,7 +165,6 @@ imports.generated_pyspark_imports
 Deferred features must be represented as unsupported decisions. Examples:
 
 ```text
-join.join_many
 join.temporal_one
 join.as_of_one
 aggregate.group_by

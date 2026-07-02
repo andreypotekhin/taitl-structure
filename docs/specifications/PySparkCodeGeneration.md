@@ -506,8 +506,13 @@ Rules:
   projections, diagnostics, or traceability.
 - The final projection after the join must remove duplicate and temporary right-side columns.
 
-The generator must not silently deduplicate right-side rows for `join_one(...)`. Unproven uniqueness is a warning or
-error owned by join compileability checks, not by generated code.
+The generator must not silently deduplicate right-side rows for plain `join_one(...)`. Unproven uniqueness is a warning
+or error owned by join compileability checks, not by generated code.
+
+When `join_one(...)` carries an explicit `JoinDedupe` policy, generated code may reduce the right side before joining.
+The PySpark recipe must use deterministic ordering, currently `row_number()` over a `Window.partitionBy(...)` built
+from the right-side join keys and `orderBy(...)` built from the policy expression. It must not use arbitrary
+`first(...)` or nondeterministic `dropDuplicates(...)`.
 
 ## Hook Lowering
 

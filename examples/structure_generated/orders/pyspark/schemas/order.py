@@ -57,6 +57,13 @@ ORDER_WITH_PROMOTION_SCHEMA = T.StructType(ORDER_WITH_PRODUCT_SCHEMA.fields + [
     T.StructField("promotion_discount", T.DecimalType(12, 2), True),
 ])
 
+ORDER_FULFILLMENT_SCHEMA = T.StructType(ORDER_WITH_PROMOTION_SCHEMA.fields + [
+    T.StructField("shipment_line", T.IntegerType(), False),
+    T.StructField("carrier", T.StringType(), True),
+    T.StructField("tracking_number", T.StringType(), True),
+    T.StructField("shipped_at", T.TimestampType(), True),
+])
+
 ORDER_PUBLICATION_SCHEMA = T.StructType([
     T.StructField("tenant", TENANT_KEY_SCHEMA, False),
     T.StructField("business", BUSINESS_DATE_SCHEMA, False),
@@ -71,6 +78,9 @@ ORDER_PUBLICATION_SCHEMA = T.StructType([
     T.StructField("discount", T.DecimalType(12, 2), False),
     T.StructField("net_total", T.DecimalType(12, 2), False),
     T.StructField("quantity", T.LongType(), False),
+    T.StructField("carrier", T.StringType(), True),
+    T.StructField("tracking_number", T.StringType(), True),
+    T.StructField("shipped_at", T.TimestampType(), True),
     T.StructField("is_large", T.BooleanType(), False),
 ])
 

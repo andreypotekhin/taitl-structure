@@ -15,7 +15,7 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | SCHEMA-E0302 | error | Explicit conversion required | Use an explicit conversion helper such as `to_decimal(...)`. |
 | SCHEMA-E0303 | error | Incompatible output field type | Use a compatible expression type or explicit conversion. |
 | JOIN-E0601 | error | Unsupported join condition | Use equality pairs with `==` or `null_safe_eq(...)` and combine them with `&`. |
-| JOIN-W0601 | warning | join_one uniqueness is not proven | Mark the joined key `primary_key=True` or use `join_many(...)` in v2. |
+| JOIN-W0601 | warning | join_one uniqueness is not proven | Mark the joined key `primary_key=True`, use `join_many(...)`, or provide deterministic `JoinDedupe`. |
 | GEN-E0901 | error | Generated output is stale | Run `structure compile` and commit the generated changes. |
 | GEN-E0902 | error | Generated transform is not importable | Rebuild generated code or use `execution_mode = "online"`. |
 | ONLINE-E1201 | error | Transform input is missing | Pass every declared input DataFrame before `run(session)`. |

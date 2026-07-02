@@ -29,6 +29,11 @@
       "name": "promotions",
       "ordinal": 4,
       "schema": "Promotion"
+    },
+    {
+      "name": "shipments",
+      "ordinal": 5,
+      "schema": "Shipment"
     }
   ],
   "provenance": [
@@ -61,6 +66,11 @@
       "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.input.promotions",
       "ir": "ir:EnrichOrders.input.4.promotions",
       "source": "source:examples.orders.transforms.order.EnrichOrders.input.promotions"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.input.shipments",
+      "ir": "ir:EnrichOrders.input.5.shipments",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.input.shipments"
     },
     {
       "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.0.normalize",
@@ -553,118 +563,288 @@
       "source": "source:examples.orders.transforms.order.EnrichOrders.add_promotion.field.promotion_discount"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.3.add_promotion.hook.after.note_lookup_inputs",
-      "ir": "ir:EnrichOrders.step.3.add_promotion.hook.after.note_lookup_inputs",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.3.add_promotion.validation.0.intermediate",
+      "ir": "ir:EnrichOrders.step.3.add_promotion.validation.0.intermediate",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_promotion.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments",
+      "ir": "ir:EnrichOrders.step.4.add_shipments",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.join.1.shipments",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.join.1.shipments",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.join.1.shipments"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.tenant",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.tenant",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.audit",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.audit",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.audit"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.business",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.business",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.business"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.id",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.id",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.customer_id",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.customer_id",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.customer_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.product_id",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.product_id",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.promotion_code",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.promotion_code",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.promotion_code"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.total",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.total",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.total"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.discount",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.discount",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.discount"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.net_total",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.net_total",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.net_total"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.quantity",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.quantity",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.tags",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.tags",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.tags"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.attributes",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.attributes",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.attributes"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.shipping",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.shipping",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.shipping"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.is_large",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.is_large",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.is_large"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.customer_name",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.customer_name",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.customer_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.customer_tier",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.customer_tier",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.customer_tier"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.customer_region",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.customer_region",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.customer_region"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.product_name",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.product_name",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.product_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.product_category",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.product_category",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.product_category"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.product_active",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.product_active",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.product_active"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.product_list_price",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.product_list_price",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.product_list_price"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.promotion_name",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.promotion_name",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.promotion_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.promotion_discount",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.promotion_discount",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.promotion_discount"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.shipment_line",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.shipment_line",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.shipment_line"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.carrier",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.carrier",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.carrier"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.tracking_number",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.tracking_number",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.tracking_number"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.select.shipped_at",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.project.shipped_at",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.shipped_at"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.hook.after.note_lookup_inputs",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.hook.after.note_lookup_inputs",
       "source": "source:examples.orders.transforms.order.EnrichOrders.note_lookup_inputs"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.3.add_promotion.validation.0.hook",
-      "ir": "ir:EnrichOrders.step.3.add_promotion.validation.0.hook",
-      "source": "source:examples.orders.transforms.order.EnrichOrders.add_promotion.validation.0.hook"
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.validation.0.hook",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.validation.0.hook",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.validation.0.hook"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.3.add_promotion.validation.1.hook_projected",
-      "ir": "ir:EnrichOrders.step.3.add_promotion.validation.1.hook_projected",
-      "source": "source:examples.orders.transforms.order.EnrichOrders.add_promotion.validation.1.hook_projected"
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.validation.1.hook_projected",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.validation.1.hook_projected",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.validation.1.hook_projected"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.3.add_promotion.validation.2.intermediate",
-      "ir": "ir:EnrichOrders.step.3.add_promotion.validation.2.intermediate",
-      "source": "source:examples.orders.transforms.order.EnrichOrders.add_promotion.validation.2.intermediate"
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.validation.2.intermediate",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.validation.2.intermediate",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.validation.2.intermediate"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish",
-      "ir": "ir:EnrichOrders.step.4.publish",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish",
+      "ir": "ir:EnrichOrders.step.5.publish",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.tenant",
-      "ir": "ir:EnrichOrders.step.4.publish.project.tenant",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.tenant",
+      "ir": "ir:EnrichOrders.step.5.publish.project.tenant",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.tenant"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.business",
-      "ir": "ir:EnrichOrders.step.4.publish.project.business",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.business",
+      "ir": "ir:EnrichOrders.step.5.publish.project.business",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.business"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.id",
-      "ir": "ir:EnrichOrders.step.4.publish.project.id",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.id",
+      "ir": "ir:EnrichOrders.step.5.publish.project.id",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.id"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.customer_id",
-      "ir": "ir:EnrichOrders.step.4.publish.project.customer_id",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.customer_id",
+      "ir": "ir:EnrichOrders.step.5.publish.project.customer_id",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.customer_id"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.customer_name",
-      "ir": "ir:EnrichOrders.step.4.publish.project.customer_name",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.customer_name",
+      "ir": "ir:EnrichOrders.step.5.publish.project.customer_name",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.customer_name"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.customer_tier",
-      "ir": "ir:EnrichOrders.step.4.publish.project.customer_tier",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.customer_tier",
+      "ir": "ir:EnrichOrders.step.5.publish.project.customer_tier",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.customer_tier"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.product_name",
-      "ir": "ir:EnrichOrders.step.4.publish.project.product_name",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.product_name",
+      "ir": "ir:EnrichOrders.step.5.publish.project.product_name",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.product_name"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.product_category",
-      "ir": "ir:EnrichOrders.step.4.publish.project.product_category",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.product_category",
+      "ir": "ir:EnrichOrders.step.5.publish.project.product_category",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.product_category"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.promotion_name",
-      "ir": "ir:EnrichOrders.step.4.publish.project.promotion_name",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.promotion_name",
+      "ir": "ir:EnrichOrders.step.5.publish.project.promotion_name",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.promotion_name"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.total",
-      "ir": "ir:EnrichOrders.step.4.publish.project.total",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.total",
+      "ir": "ir:EnrichOrders.step.5.publish.project.total",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.total"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.discount",
-      "ir": "ir:EnrichOrders.step.4.publish.project.discount",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.discount",
+      "ir": "ir:EnrichOrders.step.5.publish.project.discount",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.discount"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.net_total",
-      "ir": "ir:EnrichOrders.step.4.publish.project.net_total",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.net_total",
+      "ir": "ir:EnrichOrders.step.5.publish.project.net_total",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.net_total"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.quantity",
-      "ir": "ir:EnrichOrders.step.4.publish.project.quantity",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.quantity",
+      "ir": "ir:EnrichOrders.step.5.publish.project.quantity",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.quantity"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.is_large",
-      "ir": "ir:EnrichOrders.step.4.publish.project.is_large",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.carrier",
+      "ir": "ir:EnrichOrders.step.5.publish.project.carrier",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.carrier"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.tracking_number",
+      "ir": "ir:EnrichOrders.step.5.publish.project.tracking_number",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.tracking_number"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.shipped_at",
+      "ir": "ir:EnrichOrders.step.5.publish.project.shipped_at",
+      "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.shipped_at"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.is_large",
+      "ir": "ir:EnrichOrders.step.5.publish.project.is_large",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.is_large"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.select.has_promotion",
-      "ir": "ir:EnrichOrders.step.4.publish.project.has_promotion",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.select.has_promotion",
+      "ir": "ir:EnrichOrders.step.5.publish.project.has_promotion",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.has_promotion"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.hook.after.add_quality_columns",
-      "ir": "ir:EnrichOrders.step.4.publish.hook.after.add_quality_columns",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.hook.after.add_quality_columns",
+      "ir": "ir:EnrichOrders.step.5.publish.hook.after.add_quality_columns",
       "source": "source:examples.orders.transforms.order.EnrichOrders.add_quality_columns"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.validation.0.hook",
-      "ir": "ir:EnrichOrders.step.4.publish.validation.0.hook",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.validation.0.hook",
+      "ir": "ir:EnrichOrders.step.5.publish.validation.0.hook",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.validation.0.hook"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.publish.validation.1.hook_projected",
-      "ir": "ir:EnrichOrders.step.4.publish.validation.1.hook_projected",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.validation.1.hook_projected",
+      "ir": "ir:EnrichOrders.step.5.publish.validation.1.hook_projected",
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.validation.1.hook_projected"
     },
     {
@@ -693,6 +873,10 @@
     "Customer": {
       "constant": "CUSTOMER_SCHEMA",
       "module": "examples.structure_generated.orders.pyspark.schemas.customer"
+    },
+    "OrderFulfillment": {
+      "constant": "ORDER_FULFILLMENT_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
     },
     "OrderNormalized": {
       "constant": "ORDER_NORMALIZED_SCHEMA",
@@ -760,7 +944,8 @@
           "customers",
           "products",
           "blocked_products",
-          "promotions"
+          "promotions",
+          "shipments"
         ],
         "step": null,
         "target": "EnrichOrders"
@@ -1285,9 +1470,11 @@
       {
         "detail": {
           "cardinality": "select_one",
+          "dedupe": "latest",
           "hint": null,
           "how": "left",
-          "right_alias": "products_3"
+          "right_alias": "products_3",
+          "ties": "error"
         },
         "operation": "join_one",
         "sources": [
@@ -1837,25 +2024,364 @@
       },
       {
         "detail": {
+          "input_schema": "OrderWithPromotion",
+          "output_schema": "OrderFulfillment"
+        },
+        "operation": "step",
+        "sources": [
+          "OrderWithPromotion",
+          "shipments"
+        ],
+        "step": "add_shipments",
+        "target": "add_shipments"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "shipments",
+          "strategy": "shuffle_hash"
+        },
+        "operation": "join_many",
+        "sources": [
+          "shipments.tenant.tenant_id",
+          "OrderWithPromotion.tenant.tenant_id",
+          "shipments.order_id",
+          "OrderWithPromotion.id"
+        ],
+        "step": "add_shipments",
+        "target": "add_shipments.join[1].shipments"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.tenant"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.tenant"
+      },
+      {
+        "detail": {
+          "field": "audit"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.audit"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.audit"
+      },
+      {
+        "detail": {
+          "field": "business"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.business"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.business"
+      },
+      {
+        "detail": {
+          "field": "id"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.id"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.id"
+      },
+      {
+        "detail": {
+          "field": "customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.customer_id"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.customer_id"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.product_id"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.product_id"
+      },
+      {
+        "detail": {
+          "field": "promotion_code"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.promotion_code"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.promotion_code"
+      },
+      {
+        "detail": {
+          "field": "total"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.total"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.total"
+      },
+      {
+        "detail": {
+          "field": "discount"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.discount"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.discount"
+      },
+      {
+        "detail": {
+          "field": "net_total"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.net_total"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.net_total"
+      },
+      {
+        "detail": {
+          "field": "quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.quantity"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.quantity"
+      },
+      {
+        "detail": {
+          "field": "tags"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.tags"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.tags"
+      },
+      {
+        "detail": {
+          "field": "attributes"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.attributes"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.attributes"
+      },
+      {
+        "detail": {
+          "field": "shipping"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.shipping"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.shipping"
+      },
+      {
+        "detail": {
+          "field": "is_large"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.is_large"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.is_large"
+      },
+      {
+        "detail": {
+          "field": "customer_name"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.customer_name"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.customer_name"
+      },
+      {
+        "detail": {
+          "field": "customer_tier"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.customer_tier"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.customer_tier"
+      },
+      {
+        "detail": {
+          "field": "customer_region"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.customer_region"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.customer_region"
+      },
+      {
+        "detail": {
+          "field": "product_name"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.product_name"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.product_name"
+      },
+      {
+        "detail": {
+          "field": "product_category"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.product_category"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.product_category"
+      },
+      {
+        "detail": {
+          "field": "product_active"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.product_active"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.product_active"
+      },
+      {
+        "detail": {
+          "field": "product_list_price"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.product_list_price"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.product_list_price"
+      },
+      {
+        "detail": {
+          "field": "promotion_name"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.promotion_name"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.promotion_name"
+      },
+      {
+        "detail": {
+          "field": "promotion_discount"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderWithPromotion.promotion_discount"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.promotion_discount"
+      },
+      {
+        "detail": {
+          "field": "shipment_line"
+        },
+        "operation": "project",
+        "sources": [
+          "shipments.line_number"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.shipment_line"
+      },
+      {
+        "detail": {
+          "field": "carrier"
+        },
+        "operation": "project",
+        "sources": [
+          "shipments.carrier"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.carrier"
+      },
+      {
+        "detail": {
+          "field": "tracking_number"
+        },
+        "operation": "project",
+        "sources": [
+          "shipments.tracking_number"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.tracking_number"
+      },
+      {
+        "detail": {
+          "field": "shipped_at"
+        },
+        "operation": "project",
+        "sources": [
+          "shipments.shipped_at"
+        ],
+        "step": "add_shipments",
+        "target": "OrderFulfillment.shipped_at"
+      },
+      {
+        "detail": {
           "phase": "after",
           "project_output": true,
           "schema_mode": "allow_extra_columns"
         },
         "operation": "hook",
         "sources": [
-          "OrderWithPromotion"
+          "OrderFulfillment"
         ],
-        "step": "add_promotion",
-        "target": "add_promotion.hook.note_lookup_inputs"
+        "step": "add_shipments",
+        "target": "add_shipments.hook.note_lookup_inputs"
       },
       {
         "detail": {
-          "input_schema": "OrderWithPromotion",
+          "input_schema": "OrderFulfillment",
           "output_schema": "OrderPublished"
         },
         "operation": "step",
         "sources": [
-          "OrderWithPromotion"
+          "OrderFulfillment"
         ],
         "step": "publish",
         "target": "publish"
@@ -1866,7 +2392,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.tenant"
+          "OrderFulfillment.tenant"
         ],
         "step": "publish",
         "target": "OrderPublished.tenant"
@@ -1877,7 +2403,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.business"
+          "OrderFulfillment.business"
         ],
         "step": "publish",
         "target": "OrderPublished.business"
@@ -1888,7 +2414,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.id"
+          "OrderFulfillment.id"
         ],
         "step": "publish",
         "target": "OrderPublished.id"
@@ -1899,7 +2425,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.customer_id"
+          "OrderFulfillment.customer_id"
         ],
         "step": "publish",
         "target": "OrderPublished.customer_id"
@@ -1910,7 +2436,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.customer_name"
+          "OrderFulfillment.customer_name"
         ],
         "step": "publish",
         "target": "OrderPublished.customer_name"
@@ -1921,7 +2447,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.customer_tier"
+          "OrderFulfillment.customer_tier"
         ],
         "step": "publish",
         "target": "OrderPublished.customer_tier"
@@ -1932,7 +2458,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.product_name"
+          "OrderFulfillment.product_name"
         ],
         "step": "publish",
         "target": "OrderPublished.product_name"
@@ -1943,7 +2469,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.product_category"
+          "OrderFulfillment.product_category"
         ],
         "step": "publish",
         "target": "OrderPublished.product_category"
@@ -1954,7 +2480,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.promotion_name"
+          "OrderFulfillment.promotion_name"
         ],
         "step": "publish",
         "target": "OrderPublished.promotion_name"
@@ -1965,7 +2491,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.total"
+          "OrderFulfillment.total"
         ],
         "step": "publish",
         "target": "OrderPublished.total"
@@ -1976,7 +2502,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.discount"
+          "OrderFulfillment.discount"
         ],
         "step": "publish",
         "target": "OrderPublished.discount"
@@ -1987,7 +2513,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.net_total"
+          "OrderFulfillment.net_total"
         ],
         "step": "publish",
         "target": "OrderPublished.net_total"
@@ -1998,10 +2524,43 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.quantity"
+          "OrderFulfillment.quantity"
         ],
         "step": "publish",
         "target": "OrderPublished.quantity"
+      },
+      {
+        "detail": {
+          "field": "carrier"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderFulfillment.carrier"
+        ],
+        "step": "publish",
+        "target": "OrderPublished.carrier"
+      },
+      {
+        "detail": {
+          "field": "tracking_number"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderFulfillment.tracking_number"
+        ],
+        "step": "publish",
+        "target": "OrderPublished.tracking_number"
+      },
+      {
+        "detail": {
+          "field": "shipped_at"
+        },
+        "operation": "project",
+        "sources": [
+          "OrderFulfillment.shipped_at"
+        ],
+        "step": "publish",
+        "target": "OrderPublished.shipped_at"
       },
       {
         "detail": {
@@ -2009,7 +2568,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.is_large"
+          "OrderFulfillment.is_large"
         ],
         "step": "publish",
         "target": "OrderPublished.is_large"
@@ -2020,7 +2579,7 @@
         },
         "operation": "project",
         "sources": [
-          "OrderWithPromotion.promotion_name"
+          "OrderFulfillment.promotion_name"
         ],
         "step": "publish",
         "target": "OrderPublished.has_promotion"
@@ -2071,9 +2630,9 @@
         "hook": "note_lookup_inputs",
         "phase": "after",
         "reason": "arbitrary PySpark hook body",
-        "schema": "OrderWithPromotion",
-        "step": "add_promotion",
-        "target": "add_promotion"
+        "schema": "OrderFulfillment",
+        "step": "add_shipments",
+        "target": "add_shipments"
       },
       {
         "hook": "add_quality_columns",
@@ -2170,9 +2729,11 @@
           "right_alias": "blocked_products_2"
         },
         {
+          "dedupe": "latest",
           "how": "left",
           "input": "product",
-          "right_alias": "products_3"
+          "right_alias": "products_3",
+          "ties": "error"
         }
       ],
       "name": "add_product",
@@ -2196,9 +2757,7 @@
       ]
     },
     {
-      "after_hooks": [
-        "note_lookup_inputs"
-      ],
+      "after_hooks": [],
       "before_hooks": [],
       "input_alias": "order_with_product",
       "joins": [
@@ -2213,27 +2772,13 @@
       "output_schema": "OrderWithPromotion",
       "results": [
         {
-          "after_hooks": [
-            "note_lookup_inputs"
-          ],
+          "after_hooks": [],
           "frame": "orders",
           "lane": "orders",
           "schema": "OrderWithPromotion"
         }
       ],
       "validation": [
-        {
-          "mode": "allow_extra_columns",
-          "project": true,
-          "reason": "hook",
-          "schema": "OrderWithPromotion"
-        },
-        {
-          "mode": "strict",
-          "project": false,
-          "reason": "hook_projected",
-          "schema": "OrderWithPromotion"
-        },
         {
           "mode": "strict",
           "project": false,
@@ -2244,10 +2789,58 @@
     },
     {
       "after_hooks": [
-        "add_quality_columns"
+        "note_lookup_inputs"
       ],
       "before_hooks": [],
       "input_alias": "order_with_promotion",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "shipments",
+          "right_alias": "shipments",
+          "strategy": "shuffle_hash"
+        }
+      ],
+      "name": "add_shipments",
+      "output_alias": "order_fulfillment",
+      "output_schema": "OrderFulfillment",
+      "results": [
+        {
+          "after_hooks": [
+            "note_lookup_inputs"
+          ],
+          "frame": "orders",
+          "lane": "orders",
+          "schema": "OrderFulfillment"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "allow_extra_columns",
+          "project": true,
+          "reason": "hook",
+          "schema": "OrderFulfillment"
+        },
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "hook_projected",
+          "schema": "OrderFulfillment"
+        },
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "OrderFulfillment"
+        }
+      ]
+    },
+    {
+      "after_hooks": [
+        "add_quality_columns"
+      ],
+      "before_hooks": [],
+      "input_alias": "order_fulfillment",
       "joins": [],
       "name": "publish",
       "output_alias": "order_published",

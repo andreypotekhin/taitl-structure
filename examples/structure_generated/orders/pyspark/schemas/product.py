@@ -20,7 +20,7 @@ PRODUCT_SCHEMA = T.StructType(PRODUCT_BASE_SCHEMA.fields + [
     T.StructField("rating", T.DoubleType(), True),
 ])
 
-BLOCKED_PRODUCT_SCHEMA = T.StructType(PRODUCT_BASE_SCHEMA.fields + [
+BLOCKED_PRODUCT_SCHEMA = T.StructType(PRODUCT_SCHEMA.fields + [
     T.StructField("product_id", T.StringType(), False),
     T.StructField("reason", T.StringType(), True),
 ])

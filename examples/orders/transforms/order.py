@@ -1,5 +1,6 @@
 from examples.orders.schemas.customer import Customer
 from examples.orders.schemas.order import (
+    OrderFulfillment,
     OrderNormalized,
     OrderPublished,
     OrderRaw,
@@ -10,10 +11,14 @@ from examples.orders.schemas.order import (
 )
 from examples.orders.schemas.product import BlockedProduct, Product
 from examples.orders.schemas.promotion import Promotion
+from examples.orders.schemas.shipment import Shipment
 from structure import (
     Join,
+    JoinDedupe,
     JoinHint,
+    JoinStrategy,
     SchemaMode,
+    TiePolicy,
     Transform,
     after,
     before,
@@ -37,6 +42,7 @@ class EnrichOrders(Transform):
     products = input(Product)
     blocked_products = input(BlockedProduct)
     promotions = input(Promotion)
+    shipments = input(Shipment)
     published = output(OrderPublished)
 
     @expr_fn
@@ -111,6 +117,7 @@ class EnrichOrders(Transform):
         join_one(
             on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id),
             how=Join.LEFT,
+            dedupe=JoinDedupe.latest_by(product.audit.ingested_at, ties=TiePolicy.ERROR),
         )
 
         where(product.id.is_not_null())
@@ -134,8 +141,22 @@ class EnrichOrders(Transform):
             promotion_discount=self.promotions.discount,
         )
 
+    def add_shipments(self, order: OrderWithPromotion) -> OrderFulfillment:
+        shipment = self.shipments.join_many(
+            on=(self.shipments.tenant.tenant_id == order.tenant.tenant_id) & (self.shipments.order_id == order.id),
+            how=Join.INNER,
+            strategy=JoinStrategy.SHUFFLE_HASH,
+        )
+
+        return OrderFulfillment.base(order)(
+            shipment_line=shipment.line_number,
+            carrier=shipment.carrier,
+            tracking_number=shipment.tracking_number,
+            shipped_at=shipment.shipped_at,
+        )
+
     @after(
-        add_promotion,
+        add_shipments,
         lane=orders,
         pass_inputs=True,
         schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS,
@@ -150,7 +171,7 @@ class EnrichOrders(Transform):
         )
 
     @transform(output=published)
-    def publish(self, order: OrderWithPromotion) -> OrderPublished:
+    def publish(self, order: OrderFulfillment) -> OrderPublished:
         flags = PublicationFlags(
             has_promotion=order.promotion_name.is_not_null(),
         )

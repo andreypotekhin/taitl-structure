@@ -5,7 +5,20 @@ from typing import Any, cast
 
 import pytest
 
-from structure import JoinStrategy, Long, String, Structure, Transform, count, field, group_by, input, output, transform
+from structure import (
+    JoinStrategy,
+    Long,
+    String,
+    Structure,
+    TiePolicy,
+    Transform,
+    count,
+    field,
+    group_by,
+    input,
+    output,
+    transform,
+)
 from structure.app.compiler.api import OperationCardinality
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.api import compile_transform
@@ -68,6 +81,23 @@ def test_v2_order_fixture_records_join_many_shipments(monkeypatch: pytest.Monkey
     assert add_shipments.operations[0].capability is not None
     assert add_shipments.operations[0].capability.name == "join_many"
     assert add_shipments.operations[0].cardinality is OperationCardinality.ROW_MULTIPLYING
+
+
+def test_v2_order_fixture_records_deduped_product_lookup(monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_pyspark(monkeypatch)
+    module = importlib.import_module("testing.model.v2.orders.transforms.order")
+    transform = cast(Any, module).EnrichOrders
+
+    plan = compile_transform(transform)
+    add_product = next(step for step in plan.steps if step.name == "add_product")
+    lookup = add_product.joins[2]
+
+    assert lookup.method is JoinMethod.ONE
+    assert lookup.dedupe is not None
+    assert lookup.dedupe.direction == "latest"
+    assert lookup.dedupe.ties is TiePolicy.ERROR
+    assert lookup.dedupe.order_by.data is not None
+    assert lookup.dedupe.order_by.data["field"] == "audit.ingested_at"
 
 
 def test_reserved_group_by_fails_through_backend_capability() -> None:

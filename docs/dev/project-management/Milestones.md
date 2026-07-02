@@ -136,7 +136,7 @@ checks.
 
 ## M7: v2 Analytical Pipeline Features
 
-Status: planned. v2 starts after v1 stabilization evidence is release-ready. The milestone is split into M7A-M7D so
+Status: in progress. v2 starts after v1 stabilization evidence is release-ready. The milestone is split into M7A-M7D so
 independent contributors can work on analytical transforms, analytical joins, and adoption tooling without stepping on
 one another.
 
@@ -154,6 +154,12 @@ Exit Criteria:
 - Diagnostics use stable codes and link to the relevant v2 specification or roadmap section.
 
 ### M7B: Analytical Join Coverage
+
+Progress:
+
+- Existence joins, `join_many(...)`, and deterministic deduped `join_one(...)` are implemented for the default PySpark
+  profile.
+- Temporal validity-window joins, backward as-of joins, and richer explain output remain open.
 
 Exit Criteria:
 

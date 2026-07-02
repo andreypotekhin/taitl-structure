@@ -2,14 +2,16 @@
 # Source: examples.orders.transforms.order.EnrichOrders
 
 from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.orders.transforms.order import EnrichOrders
 from examples.structure_generated.orders.runtime.schema_assert import TransformResult, assert_schema, project_schema, HookInputs
 from examples.structure_generated.orders.pyspark.schemas.customer import CUSTOMER_SCHEMA
-from examples.structure_generated.orders.pyspark.schemas.order import ORDER_NORMALIZED_SCHEMA, ORDER_PUBLISHED_SCHEMA, ORDER_RAW_SCHEMA, ORDER_WITH_CUSTOMER_SCHEMA, ORDER_WITH_PRODUCT_SCHEMA, ORDER_WITH_PROMOTION_SCHEMA
+from examples.structure_generated.orders.pyspark.schemas.order import ORDER_FULFILLMENT_SCHEMA, ORDER_NORMALIZED_SCHEMA, ORDER_PUBLISHED_SCHEMA, ORDER_RAW_SCHEMA, ORDER_WITH_CUSTOMER_SCHEMA, ORDER_WITH_PRODUCT_SCHEMA, ORDER_WITH_PROMOTION_SCHEMA
 from examples.structure_generated.orders.pyspark.schemas.product import BLOCKED_PRODUCT_SCHEMA, PRODUCT_SCHEMA
 from examples.structure_generated.orders.pyspark.schemas.promotion import PROMOTION_SCHEMA
+from examples.structure_generated.orders.pyspark.schemas.shipment import SHIPMENT_SCHEMA
 
 
 class EnrichOrdersGenerated:
@@ -27,24 +29,28 @@ class EnrichOrdersGenerated:
         products: DataFrame,
         blocked_products: DataFrame,
         promotions: DataFrame,
+        shipments: DataFrame,
     ) -> TransformResult:
         assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")
         assert_schema(customers, CUSTOMER_SCHEMA, name="Customer", mode="strict")
         assert_schema(products, PRODUCT_SCHEMA, name="Product", mode="strict")
         assert_schema(blocked_products, BLOCKED_PRODUCT_SCHEMA, name="BlockedProduct", mode="strict")
         assert_schema(promotions, PROMOTION_SCHEMA, name="Promotion", mode="strict")
+        assert_schema(shipments, SHIPMENT_SCHEMA, name="Shipment", mode="strict")
         inputs = HookInputs(
             orders=orders,
             customers=customers,
             products=products,
             blocked_products=blocked_products,
             promotions=promotions,
+            shipments=shipments,
         )
         _input_orders = orders
         _input_customers = customers
         _input_products = products
         _input_blocked_products = blocked_products
         _input_promotions = promotions
+        _input_shipments = shipments
 
         # Subtransform: normalize
         orders = self._impl.use_current_orders(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
@@ -115,7 +121,7 @@ class EnrichOrdersGenerated:
             ((F.col("blocked_products_2.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id")) & (F.col("blocked_products_2.product_id") == F.col("order_with_customer.product_id"))),
             "left_anti",
         )
-        products_3_joined = products.alias("products_3")
+        products_3_joined = products.alias("products_3").withColumn("__structure_products_3_rank", F.row_number().over(Window.partitionBy(F.col("products_3.tenant.tenant_id"), F.col("products_3.id")).orderBy(F.col("products_3.audit.ingested_at").desc()))).where(F.col("__structure_products_3_rank") == F.lit(1)).drop("__structure_products_3_rank").alias("products_3")
         orders = orders.join(
             products_3_joined,
             ((F.col("products_3.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id")) & (F.col("products_3.id") == F.col("order_with_customer.product_id"))),
@@ -182,30 +188,73 @@ class EnrichOrdersGenerated:
             F.col("promotions.name").alias("promotion_name"),
             F.col("promotions.discount").alias("promotion_discount"),
         )
-        orders = self._impl.note_lookup_inputs(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
-        assert_schema(orders, ORDER_WITH_PROMOTION_SCHEMA, name="OrderWithPromotion", mode="allow_extra_columns")
-        orders = project_schema(orders, ORDER_WITH_PROMOTION_SCHEMA)
-        assert_schema(orders, ORDER_WITH_PROMOTION_SCHEMA, name="OrderWithPromotion", mode="strict")
         assert_schema(orders, ORDER_WITH_PROMOTION_SCHEMA, name="OrderWithPromotion", mode="strict")
 
-        # Subtransform: publish
-        published = orders.alias("order_with_promotion")
-        published = published.select(
+        # Subtransform: add_shipments
+        orders = orders.alias("order_with_promotion")
+        shipments_joined = shipments.hint("shuffle_hash").alias("shipments")
+        orders = orders.join(
+            shipments_joined,
+            ((F.col("shipments.tenant.tenant_id") == F.col("order_with_promotion.tenant.tenant_id")) & (F.col("shipments.order_id") == F.col("order_with_promotion.id"))),
+            "inner",
+        )
+        orders = orders.select(
             F.col("order_with_promotion.tenant"),
+            F.col("order_with_promotion.audit"),
             F.col("order_with_promotion.business"),
             F.col("order_with_promotion.id"),
             F.col("order_with_promotion.customer_id"),
-            F.col("order_with_promotion.customer_name"),
-            F.col("order_with_promotion.customer_tier"),
-            F.col("order_with_promotion.product_name"),
-            F.col("order_with_promotion.product_category"),
-            F.col("order_with_promotion.promotion_name"),
+            F.col("order_with_promotion.product_id"),
+            F.col("order_with_promotion.promotion_code"),
             F.col("order_with_promotion.total"),
             F.col("order_with_promotion.discount"),
             F.col("order_with_promotion.net_total"),
             F.col("order_with_promotion.quantity"),
+            F.col("order_with_promotion.tags"),
+            F.col("order_with_promotion.attributes"),
+            F.col("order_with_promotion.shipping"),
             F.col("order_with_promotion.is_large"),
-            F.col("order_with_promotion.promotion_name").isNotNull().alias("has_promotion"),
+            F.col("order_with_promotion.customer_name"),
+            F.col("order_with_promotion.customer_tier"),
+            F.col("order_with_promotion.customer_region"),
+            F.col("order_with_promotion.product_name"),
+            F.col("order_with_promotion.product_category"),
+            F.col("order_with_promotion.product_active"),
+            F.col("order_with_promotion.product_list_price"),
+            F.col("order_with_promotion.promotion_name"),
+            F.col("order_with_promotion.promotion_discount"),
+            F.col("shipments.line_number").alias("shipment_line"),
+            F.col("shipments.carrier"),
+            F.col("shipments.tracking_number"),
+            F.col("shipments.shipped_at"),
+        )
+        orders = self._impl.note_lookup_inputs(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
+        assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="allow_extra_columns")
+        orders = project_schema(orders, ORDER_FULFILLMENT_SCHEMA)
+        assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")
+        assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")
+
+        # Subtransform: publish
+        published = orders.alias("order_fulfillment")
+        published = published.select(
+            F.col("order_fulfillment.tenant"),
+            F.col("order_fulfillment.business"),
+            F.col("order_fulfillment.id"),
+            F.col("order_fulfillment.customer_id"),
+            F.col("order_fulfillment.customer_name"),
+            F.col("order_fulfillment.customer_tier"),
+            F.col("order_fulfillment.product_name"),
+            F.col("order_fulfillment.product_category"),
+            F.col("order_fulfillment.promotion_name"),
+            F.col("order_fulfillment.total"),
+            F.col("order_fulfillment.discount"),
+            F.col("order_fulfillment.net_total"),
+            F.col("order_fulfillment.quantity"),
+            F.col("order_fulfillment.carrier"),
+            F.col("order_fulfillment.tracking_number"),
+            F.col("order_fulfillment.shipped_at"),
+            F.col("order_fulfillment.is_large"),
+            F.col("order_fulfillment.promotion_name").isNotNull().alias("has_promotion"),
         )
         published = self._impl.add_quality_columns(published=published, spark=self.spark, ctx=self.ctx)
         assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="allow_extra_columns")

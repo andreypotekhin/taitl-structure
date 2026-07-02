@@ -539,10 +539,13 @@ JoinHint.BROADCAST
 
 Rules:
 
-- `join_one(*, on, how, hint=None)` is the canonical concise v1 join function when the relation is inferable.
-- `join_one(relation, *, on, how, hint=None)` is the canonical v1 join function.
+- `join_one(*, on, how, hint=None, dedupe=None)` is the canonical concise lookup join function when the relation is
+  inferable.
+- `join_one(relation, *, on, how, hint=None, dedupe=None)` is the canonical lookup join function.
 - `on` and `how` are required.
 - `hint` is optional.
+- `dedupe` is optional. When present, it must be a deterministic `JoinDedupe` policy and reduces the right side before
+  the lookup join.
 - Join calls are valid only during symbolic execution of a compiled subtransform.
 - Member joins such as `self.customers.join_one(...)` are rejected with migration guidance.
 - `join_one(...)` records the same ordered join operation for inferred and explicit relation forms.
@@ -553,7 +556,8 @@ Rules:
 - Field access on the joined scope is scoped and must not rely on unqualified string column names.
 - Join calls execute in source order.
 - Repeated joins of the same input must produce deterministic aliases.
-- `join_many(...)` and row-multiplying joins are deferred to v2.
+- `join_many(...)` is the v2 row-multiplying join form. It is valid when the business output is one row per right-side
+  match.
 
 Explicit assignment remains valid and equivalent when a local name makes the method easier to read:
 
@@ -891,8 +895,8 @@ The following are outside v1 DSL scope:
 - RDD operations;
 - automatic fallback from compiled expressions to hooks;
 - automatic deduplication for `join_one(...)`;
-- row-multiplying `join_many(...)`;
-- aggregations, windows, deduplication, and higher-order collection transforms;
+- implicit or nondeterministic selected-row deduplication;
+- aggregations, windows outside lookup-dedupe lowering, and higher-order collection transforms;
 - streaming source, sink, trigger, checkpoint, and query lifecycle DSL;
 - Spark Connect-specific public syntax;
 - non-PySpark backends in v1.

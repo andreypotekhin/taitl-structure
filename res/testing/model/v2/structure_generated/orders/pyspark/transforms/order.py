@@ -1,5 +1,6 @@
 from pyspark import StorageLevel
 from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import Window
 from pyspark.sql import functions as F
 
 from testing.model.v2.orders.transforms.order import EnrichOrders
@@ -135,7 +136,18 @@ class EnrichOrdersGenerated:
             & (F.col("blocked_products_2.product_id") == F.col("order_with_customer.product_id")),
             "left_anti",
         )
-        products_3_joined = products.alias("products_3")
+        products_3_joined = products.alias("products_3").withColumn(
+            "__structure_products_3_rank",
+            F.row_number().over(
+                Window.partitionBy(F.col("products_3.tenant.tenant_id"), F.col("products_3.id")).orderBy(
+                    F.col("products_3.audit.ingested_at").desc()
+                )
+            ),
+        ).where(
+            F.col("__structure_products_3_rank") == F.lit(1)
+        ).drop(
+            "__structure_products_3_rank"
+        ).alias("products_3")
         orders = orders.join(
             products_3_joined,
             (F.col("products_3.tenant.tenant_id") == F.col("order_with_customer.tenant.tenant_id"))

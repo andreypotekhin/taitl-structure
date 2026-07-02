@@ -62,20 +62,21 @@ The profile is static source data. Selecting it must not import `pyspark`, start
 a Spark cluster. Future profiles must follow the same no-runtime-import rule for Spark SQL, typed PySpark DataFrame
 patterns, Pandas, Polars, DuckDB, Spark Connect, Ibis, or other backend runtimes.
 
-## v1 Capability Shape
+## Current Capability Shape
 
-The v1 PySpark profile supports:
+The default PySpark profile supports:
 
 - field references, literals, projection, filtering, boolean operations, equality, null-safe equality, casts, and
   standard expression helper calls;
-- `join_one`, left and inner lookup joins, composite equi-joins, and broadcast hints;
+- `join_one`, left and inner lookup joins, composite equi-joins, broadcast hints, existence joins, `join_many(...)`, and
+  deterministic lookup dedupe;
 - schema-only validation, strict projection, and allow-extra projection;
 - row-local projection and filtering for streaming-compatible transforms;
 - stream-static left and inner lookup joins;
 - deterministic generated PySpark import names.
 
-Features outside that set are unsupported until their specifications promote them. Examples include `join_many`,
-aggregations, windows, stream-stream joins, streaming orchestration, and Spark Connect.
+Features outside that set are unsupported until their specifications promote them. Examples include temporal joins,
+as-of joins, aggregations, broad window helpers, stream-stream joins, streaming orchestration, and Spark Connect.
 
 ## Diagnostics
 
