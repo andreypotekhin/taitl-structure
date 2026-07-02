@@ -24,9 +24,7 @@ def test_traceability_maps_source_ir_and_generated_nodes(orders_traceability) ->
         "generated:testing.model.v1.structure_generated.orders.pyspark.transforms.order."
         "EnrichOrdersGenerated.run.step.1.add_customer",
     ) in records
-    assert any(
-        record.ir == "ir:EnrichOrders.step.1.add_customer.join.1.customers" for record in orders_traceability.provenance
-    )
+    assert any(record.ir == "ir:EnrichOrders.step.1.add_customer.join.1.customer" for record in orders_traceability.provenance)
 
 
 def test_traceability_reports_static_dataflow_and_opaque_hook_boundaries(orders_traceability) -> None:
@@ -39,7 +37,7 @@ def test_traceability_reports_static_dataflow_and_opaque_hook_boundaries(orders_
     }
 
     assert dependencies["EnrichOrders"].sources == ("orders", "customers", "products", "promotions")
-    assert dependencies["add_customer.join[1].customers"].operation == "join_one"
+    assert dependencies["add_customer.join[1].customer"].operation == "join_one"
     assert dependencies["OrderWithCustomer.customer_name"].sources
     assert ("add_promotion", "note_lookup_inputs", "after", "arbitrary PySpark hook body") in boundaries
     assert ("publish", "add_quality_columns", "after", "arbitrary PySpark hook body") in boundaries

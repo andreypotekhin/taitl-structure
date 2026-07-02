@@ -48,14 +48,14 @@ def test_v1_expression_renderer_renders_join_predicates() -> None:
 
     assert PySpark.render.expression()(
         customer_join.predicate,
-        scope_aliases={"customers": "customers", "OrderNormalized": "order_normalized"},
+        scope_aliases={"customer": "customers", "order": "order_normalized"},
     ) == (
         '((F.col("customers.tenant.tenant_id") == F.col("order_normalized.tenant.tenant_id")) & '
         '(F.lower(F.trim(F.col("customers.id"))) == F.col("order_normalized.customer_id")))'
     )
     assert PySpark.render.expression()(
         promotion_join.predicate,
-        scope_aliases={"promotions": "promotions", "OrderWithProduct": "order_with_product"},
+        scope_aliases={"promotion": "promotions", "order": "order_with_product"},
     ) == (
         '((F.col("promotions.tenant.tenant_id") == F.col("order_with_product.tenant.tenant_id")) & '
         'F.lower(F.trim(F.col("promotions.code"))).eqNullSafe(F.col("order_with_product.promotion_code")))'

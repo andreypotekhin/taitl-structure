@@ -479,7 +479,7 @@ Use `join_many(...)` when one current row should intentionally produce one outpu
 
 ```python
 join_many(
-    on=(self.shipments.order_id == order.id),
+    on=(shipment.order_id == order.id),
     how=Join.INNER,
     strategy=JoinStrategy.SHUFFLE_HASH,
 )
@@ -500,11 +500,11 @@ closed-open: `valid_from <= at < valid_to`, with null `valid_to` treated as open
 
 ```python
 temporal_one(
-    on=(self.customers.tenant.tenant_id == order.tenant.tenant_id)
-    & (self.customers.id == order.customer_id),
+    on=(customer.tenant.tenant_id == order.tenant.tenant_id)
+    & (customer.id == order.customer_id),
     at=order.business.order_date,
-    valid_from=self.customers.valid_from,
-    valid_to=self.customers.valid_to,
+    valid_from=customer.valid_from,
+    valid_to=customer.valid_to,
     how=Join.LEFT,
     overlaps=OverlapPolicy.ERROR,
 )
@@ -683,4 +683,3 @@ freshness.
 ## Next Steps
 
 Get started: [GettingStarted.md](GettingStarted.md)
-

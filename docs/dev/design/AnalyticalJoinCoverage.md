@@ -51,8 +51,8 @@ overlapping validity windows, or tie violations must be explicit because they ca
 Existence joins should read like predicates because they do not expose right-side fields:
 
 ```python
-where(exists(on=self.customers.id == order.customer_id))
-where(not_exists(on=self.suppressed_emails.email == order.email))
+where(exists(on=customer.id == order.customer_id))
+where(not_exists(on=suppressed_email.email == order.email))
 ```
 
 `exists(...)` is semi join semantics: keep current rows that have at least one right match. `not_exists(...)` is anti
@@ -62,7 +62,7 @@ Row-multiplying joins should use a distinct free function:
 
 ```python
 join_many(
-    on=self.order_items.order_id == order.id,
+    on=order_item.order_id == order.id,
     how=Join.INNER,
 )
 ```

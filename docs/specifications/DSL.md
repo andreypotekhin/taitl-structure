@@ -121,9 +121,10 @@ class EnrichOrders(Transform):
             total=to_decimal(order.total, precision=12, scale=2),
         )
 
-    def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
+    def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
         customer = join_one(
-            on=order.customer_id == self.customers.id,
+            customer,
+            on=order.customer_id == customer.id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
         )
@@ -535,7 +536,7 @@ customer = join_one(
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
 )
-return OrderWithCustomer.base(order)(customer_name=customer.name)
+return OrderWithCustomer.base(order)(customer_name=self.customers.name)
 ```
 
 Use the explicit relation form only when inference would be ambiguous.

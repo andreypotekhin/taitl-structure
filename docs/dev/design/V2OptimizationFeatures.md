@@ -57,7 +57,7 @@ Extend join hints beyond broadcast.
 
 ```python
 customer = join_one(
-    on=self.customers.id == order.customer_id,
+    on=customer.id == order.customer_id,
     how=Join.LEFT,
     strategy=JoinStrategy.BROADCAST,
 )

@@ -135,9 +135,10 @@ class EnrichOrders(Transform):
 
         return orders.where(F.col("total") >= 0)
 
-    def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
+    def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
         customer = join_one(
-            on=order.customer_id == self.customers.id,
+            customer,
+            on=order.customer_id == customer.id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
         )

@@ -59,7 +59,7 @@ def test_v1_symbolic_plan_records_joins_and_hooks() -> None:
 
     assert [len(step.joins) for step in plan.steps] == [0, 1, 1, 1, 0]
     customer_join = plan.steps[1].joins[0]
-    assert customer_join.input_name == "customers"
+    assert customer_join.input_name == "customer"
     assert customer_join.how is Join.LEFT
     assert customer_join.hint is JoinHint.BROADCAST
     assert customer_join.predicate.kind == "and"

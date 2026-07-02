@@ -80,7 +80,7 @@ def test_v1_project_renderer_emits_runtime_schemas_transform_and_traceability() 
         "publish",
     ]
     assert traceability["steps"][1]["joins"] == [
-        {"how": "left", "input": "customers", "right_alias": "customers"},
+        {"how": "left", "input": "customer", "right_alias": "customers"},
     ]
     assert traceability["steps"][3]["after_hooks"] == ["note_lookup_inputs"]
     assert traceability["provenance"][0] == {

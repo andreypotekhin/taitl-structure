@@ -111,9 +111,10 @@ class EnrichOrders(Transform):
             total=to_decimal(order.total, precision=12, scale=2),
         )
 
-    def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
+    def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
         customer = join_one(
-            on=order.customer_id == self.customers.id,
+            customer,
+            on=order.customer_id == customer.id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
         )
@@ -276,7 +277,7 @@ Joins are symbolic and typed.
 
 ```python
 customer = join_one(
-    on=order.customer_id == self.customers.id,
+    on=order.customer_id == customer.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
 )

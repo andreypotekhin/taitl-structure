@@ -50,7 +50,7 @@ def test_v1_pyspark_recipe_records_joins_hooks_and_hook_inputs() -> None:
     assert [len(step.joins) for step in recipe.steps] == [0, 1, 1, 1, 0]
 
     customer_join = recipe.steps[1].joins[0]
-    assert customer_join.input_name == "customers"
+    assert customer_join.input_name == "customer"
     assert customer_join.left_alias == "order_normalized"
     assert customer_join.right_alias == "customers"
     assert customer_join.how is Join.LEFT

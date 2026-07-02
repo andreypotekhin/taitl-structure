@@ -39,7 +39,8 @@ Out of scope until a later design:
 
 A current row is the row flowing through the source-ordered transform chain.
 
-A right input is a named input referenced through an input scope, such as `self.customers`.
+A right input is a named input referenced through an input scope, such as typed parameter `customer` or class input
+scope `self.customers`.
 
 A row-preserving join keeps every current row. A left `join_one(...)` is row-preserving.
 
@@ -55,8 +56,8 @@ as-of ordering.
 Existence joins should use free predicate functions:
 
 ```python
-where(exists(on=self.customers.id == order.customer_id))
-where(not_exists(on=self.suppressed_emails.email == order.email))
+where(exists(on=customer.id == order.customer_id))
+where(not_exists(on=suppressed_email.email == order.email))
 ```
 
 `exists(...)` keeps current rows that have at least one right match. It has semi join semantics.
@@ -81,7 +82,7 @@ order, row count, schema, null semantics, and diagnostics remain equivalent.
 
 ```python
 join_many(
-    on=self.order_items.order_id == order.id,
+    on=order_item.order_id == order.id,
     how=Join.INNER,
 )
 ```

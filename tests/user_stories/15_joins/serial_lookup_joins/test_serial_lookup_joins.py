@@ -9,9 +9,9 @@ def test_serial_lookup_joins_record_explicit_sources_types_and_hints(orders_reci
     promotion = orders_recipe.steps[3].joins[0]
 
     assert [(join.input_name, join.source, join.how, join.hint) for join in [customer, product, promotion]] == [
-        ("customers", "customers", Join.LEFT, JoinHint.BROADCAST),
+        ("customer", "customers", Join.LEFT, JoinHint.BROADCAST),
         ("product", "products", Join.LEFT, None),
-        ("promotions", "promotions", Join.LEFT, None),
+        ("promotion", "promotions", Join.LEFT, None),
     ]
     assert customer.predicate.kind == "and"
     assert product.predicate.kind == "and"

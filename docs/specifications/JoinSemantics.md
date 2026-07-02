@@ -19,7 +19,7 @@ and let the compiler infer the joined relation from the `on` clause:
 
 ```python
 customer = join_one(
-    on=order.customer_id == self.customers.id,
+    on=order.customer_id == customer.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
 )
@@ -41,8 +41,8 @@ references no unjoined relation or more than one, pass the relation explicitly:
 
 ```python
 customer = join_one(
-    self.customers,
-    on=order.customer_id == self.customers.id,
+    customer,
+    on=order.customer_id == customer.id,
     how=Join.LEFT,
 )
 ```
@@ -58,8 +58,9 @@ The right-hand side is evaluated before Python rebinds `customer`, so reusing th
 parameter cannot be used in a filter or projection until it has been joined.
 
 The old member spelling `self.customers.join_one(...)` is rejected. Use `join_one(on=...)` when inference is
-unambiguous, `join_one(self.customers, on=...)` when it is not, or add a relation parameter and use either
-`join_one(on=customer.id == order.customer_id)` or `join_one(customer, on=...)`.
+unambiguous, `join_one(customer, on=...)` when you want to pass an explicit typed relation parameter, or
+`join_one(self.customers, on=...)` when the subtransform uses a class input scope instead of a typed relation
+parameter.
 
 Canonical v1 function:
 
@@ -99,13 +100,13 @@ AND.
 Accepted:
 
 ```python
-join_one(on=order.customer_id == self.customers.id)
+join_one(on=order.customer_id == customer.id)
 
-join_one(on=(order.country == self.customers.country) & (order.customer_id == self.customers.id))
+join_one(on=(order.country == customer.country) & (order.customer_id == customer.id))
 
-join_one(on=lower(trim(order.email)) == lower(trim(self.customers.email)))
+join_one(on=lower(trim(order.email)) == lower(trim(customer.email)))
 
-join_one(on=order.customer_external_id.null_safe_eq(self.customers.external_id))
+join_one(on=order.customer_external_id.null_safe_eq(customer.external_id))
 ```
 
 Rejected in v1:
@@ -133,7 +134,7 @@ Composite joins are expressed by combining equality pairs with `&`:
 
 ```python
 customer = join_one(
-    on=(order.country == self.customers.country) & (order.customer_id == self.customers.id),
+    on=(order.country == customer.country) & (order.customer_id == customer.id),
     how=Join.LEFT,
 )
 ```
@@ -156,7 +157,7 @@ Normal equality uses Spark SQL equality. If either side is null, the comparison 
 Null-safe equality is explicit:
 
 ```python
-order.customer_id.null_safe_eq(self.customers.id)
+order.customer_id.null_safe_eq(customer.id)
 ```
 
 This lowers to Spark's null-safe equality operation. It matches when both sides are null.
@@ -176,7 +177,7 @@ Case normalization is expressed in the join condition with compileable expressio
 
 ```python
 join_one(
-    on=lower(trim(order.email)) == lower(trim(self.customers.email)),
+    on=lower(trim(order.email)) == lower(trim(customer.email)),
     how=Join.LEFT,
 )
 ```
@@ -308,7 +309,7 @@ because it is easier to review and debug.
 
 ```python
 customer = join_one(
-    on=order.customer_id == self.customers.id,
+    on=order.customer_id == customer.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
 )

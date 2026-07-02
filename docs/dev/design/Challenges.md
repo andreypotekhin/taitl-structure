@@ -251,8 +251,8 @@ Composite joins should be supported early:
 
 ```python
 customer = join_one(
-    on=(self.customers.country == order.country)
-       & (self.customers.id == order.customer_id),
+    on=(customer.country == order.country)
+       & (customer.id == order.customer_id),
     how=Join.LEFT,
 )
 ```
@@ -260,7 +260,7 @@ customer = join_one(
 Consider explicit null-safe equality support:
 
 ```python
-self.customers.id.null_safe_eq(order.customer_id)
+customer.id.null_safe_eq(order.customer_id)
 ```
 
 ## +C10. Intermediate Validation May Be Expensive

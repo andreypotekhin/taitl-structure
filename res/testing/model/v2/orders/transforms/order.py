@@ -96,10 +96,11 @@ class EnrichOrders(Transform):
         return orders.where(F.col("net_total") >= 0)
 
     @transform(cache=StorageLevel.MEMORY_AND_DISK)
-    def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
+    def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
         customer = join_one(
-            on=(self.customers.tenant.tenant_id == order.tenant.tenant_id)
-            & (self.clean_id(self.customers.id) == order.customer_id),
+            customer,
+            on=(customer.tenant.tenant_id == order.tenant.tenant_id)
+            & (self.clean_id(customer.id) == order.customer_id),
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
         )
@@ -137,33 +138,35 @@ class EnrichOrders(Transform):
             product_list_price=product.list_price,
         )
 
-    def add_promotion(self, order: OrderWithProduct) -> OrderWithPromotion:
+    def add_promotion(self, order: OrderWithProduct, promotion: Promotion) -> OrderWithPromotion:
         temporal_one(
-            on=(self.promotions.tenant.tenant_id == order.tenant.tenant_id)
-            & self.clean_id(self.promotions.code).null_safe_eq(order.promotion_code),
+            promotion,
+            on=(promotion.tenant.tenant_id == order.tenant.tenant_id)
+            & self.clean_id(promotion.code).null_safe_eq(order.promotion_code),
             at=order.business.order_date,
-            valid_from=self.promotions.valid_from,
-            valid_to=self.promotions.valid_to,
+            valid_from=promotion.valid_from,
+            valid_to=promotion.valid_to,
             how=Join.LEFT,
         )
 
         return OrderWithPromotion.base(order)(
-            promotion_name=self.promotions.name,
-            promotion_discount=self.promotions.discount,
+            promotion_name=promotion.name,
+            promotion_discount=promotion.discount,
         )
 
-    def add_shipments(self, order: OrderWithPromotion) -> OrderFulfillment:
+    def add_shipments(self, order: OrderWithPromotion, shipment: Shipment) -> OrderFulfillment:
         join_many(
-            on=(self.shipments.tenant.tenant_id == order.tenant.tenant_id) & (self.shipments.order_id == order.id),
+            shipment,
+            on=(shipment.tenant.tenant_id == order.tenant.tenant_id) & (shipment.order_id == order.id),
             how=Join.INNER,
             strategy=JoinStrategy.SHUFFLE_HASH,
         )
 
         return OrderFulfillment.base(order)(
-            shipment_line=self.shipments.line_number,
-            carrier=self.shipments.carrier,
-            tracking_number=self.shipments.tracking_number,
-            shipped_at=self.shipments.shipped_at,
+            shipment_line=shipment.line_number,
+            carrier=shipment.carrier,
+            tracking_number=shipment.tracking_number,
+            shipped_at=shipment.shipped_at,
         )
 
     @after(

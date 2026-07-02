@@ -112,7 +112,7 @@ def test_v2_order_fixture_records_join_many_shipments(monkeypatch: pytest.Monkey
 
     assert len(add_shipments.joins) == 1
     assert add_shipments.joins[0].method is JoinMethod.MANY
-    assert add_shipments.joins[0].input_name == "shipments"
+    assert add_shipments.joins[0].input_name == "shipment"
     assert add_shipments.joins[0].strategy is JoinStrategy.SHUFFLE_HASH
     assert add_shipments.operations[0].capability is not None
     assert add_shipments.operations[0].capability.name == "join_many"

@@ -107,7 +107,7 @@ order.id
 lower(trim(order.customer_id))
 upper(trim(order.customer_id))
 where(order.id.is_not_null())
-join_one(on=order.customer_id == self.customers.id, how=Join.LEFT)
+join_one(on=order.customer_id == customer.id, how=Join.LEFT)
 OrderNormalized(id=order.id)
 OrderWithCustomer.base(order)(customer_name=customer.name)
 ```

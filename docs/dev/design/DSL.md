@@ -66,9 +66,10 @@ class EnrichOrders(Transform):
             total=to_decimal(order.total, precision=12, scale=2),
         )
 
-    def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
+    def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
         customer = join_one(
-            on=self.customers.id == order.customer_id,
+            customer,
+            on=order.customer_id == customer.id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
         )
