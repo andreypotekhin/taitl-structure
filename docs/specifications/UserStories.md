@@ -203,12 +203,10 @@ narrower use cases and roadmap features.
 - + As a developer, I can declare multiple named inputs so that join sources are explicit.
 - + As a developer, I can express joins symbolically using input scopes so that join logic avoids string column paths.
 - + As a developer, I can use `join_one(...)` for many-to-one or one-to-one lookup joins so that cardinality intent is explicit.
-- + As a developer, I can call `join_one(relation, ...)` with a schema parameter so that joins read like ordinary
-  function composition.
-- + As a developer, I can call `join_one(on=...)` when the join condition names exactly one relation so that simple
-  lookup joins avoid repeated relation arguments.
-- + As a developer, I can call `join_one(relation, ...)` without assignment so that later reads from the same relation
-  parameter use the joined scope.
+- + As a developer, I can call bare `join_one(on=...)` with a schema parameter so that simple lookup joins avoid
+  repeated relation names.
+- + As a developer, I can keep `join_one(...)` bare so that later reads from the same relation parameter use the joined
+  scope.
 - + As a developer, I can perform serial joins across an arbitrary number of inputs so that enrichment pipelines are not limited to three inputs.
 - + As a developer, I can specify join type and hints using enum values so that free-form join strings are avoided in source code.
 - + As a developer, I can see that semi, anti, row-multiplying, deduped lookup, temporal, and as-of joins are staged as
@@ -238,7 +236,9 @@ narrower use cases and roadmap features.
 - + As a developer, I can rely on a documented Python support range so that runtime expectations are clear.
 - + As a developer, I can rely on a documented PySpark support range so that generated code uses compatible APIs.
 - + As a developer, I can configure `target_profile` so that the emitter avoids APIs outside my deployment range.
-- + As a developer, I can see that Spark Connect is planned for v4 so that v1/v2/v3 generated-code expectations are clear.
+- + As a developer, I can configure `target_variant` so that ordinary PySpark and Spark Connect variant expectations are clear.
+- As a developer, I can see end-of-v2 experimental Spark Connect parity scope so that completed batch-feature
+  expectations are clear.
 - As a developer, I can rely on semantic versioning after 1.0 so that upgrades carry predictable risk.
 - + As a developer, I can rely on stable compiler provenance and static dataflow schemas so that diagnostics and explain
   output can evolve safely.
@@ -311,8 +311,8 @@ over streaming orchestration, storage writes, Spark Connect, automatic cost-base
 
 ## 22B. Aggregations, Windows, and Higher-Order Functions
 
-- As a developer, I can define typed aggregation subtransforms so that rollups compile to Spark `groupBy` and `agg`.
-- As a developer, I can group by one or more typed fields so that aggregate output schemas include explicit grouping
+- + As a developer, I can define typed aggregation subtransforms so that rollups compile to Spark `groupBy` and `agg`.
+- + As a developer, I can group by one or more typed fields so that aggregate output schemas include explicit grouping
   keys.
 - As a developer, I can calculate count, sum, min, max, average, and supported distinct counts so that common analytical
   summaries do not require hooks.
@@ -379,8 +379,10 @@ over streaming orchestration, storage writes, Spark Connect, automatic cost-base
 - As a developer, I can define triggers and checkpoint locations so that streaming jobs are deployable from generated code.
 - As a developer, I can define watermarks and state policies so that full streaming orchestration is explicit.
 
-## 24. v4 Roadmap
+## 24. Spark Connect Roadmap
 
-- As a developer, I can target Spark Connect when Structure defines and tests a compatible generated-code contract.
+- As a developer, I can target experimental Spark Connect for completed v1/v2 batch features when Structure defines and
+  tests a compatible generated-code contract.
+- As a developer, I can rely on a later promotion gate before Spark Connect is documented as fully supported.
 - As a developer, I can see backend capability diagnostics so that ordinary PySpark and Spark Connect differences are
   explicit.

@@ -83,6 +83,9 @@ def summarize(self, order: OrderEnriched) -> CustomerSummary:
 
 ## Progress
 
+- [x] (2026-07-02) Started the aggregation slice: implemented typed `group_by(...)` capture, aggregate IR, count/sum
+  builders, shared PySpark aggregate recipes, generated rendering coverage, online recipe coverage, and v2 analytics
+  fixture lowering.
 - [ ] Implement aggregation source capture, IR, recipes, generated snapshots, and parity tests.
 - [ ] Implement window and dedupe helpers with deterministic policies.
 - [ ] Implement supported higher-order array and map helpers.

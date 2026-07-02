@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from functools import wraps
+from dataclasses import dataclass
 from typing import TypeVar
 
 from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
@@ -15,28 +15,52 @@ from structure.app.dsl.model.types.LongType import LongType
 F = TypeVar("F", bound=Callable)
 
 
-def group_by(**keys: object) -> None:
+def group_by(*keys: object, **named_keys: object) -> "GroupedRows":
     context = _context("group_by(...)")
-    for key in keys.values():
-        literal(key)
-    context.operations.append(
-        OperationPlan.reserved_operation(
-            "group_by",
-            group="aggregate",
-            name="group_by",
-            cardinality=OperationCardinality.AGGREGATE,
-            streaming=StreamingSupport.BATCH_ONLY,
-        )
-    )
+    expressions = (*_positional_keys(keys), *_named_keys(named_keys))
+    if not expressions:
+        raise TypeError("group_by(...) requires at least one grouping key")
+    context.aggregate_keys = expressions
+    return GroupedRows(expressions)
 
 
 def count() -> Expression:
-    return _reserved_expression("count", group="aggregate", name="count", type=LongType(), nullable=False)
+    return Expression(
+        kind="aggregate",
+        type=LongType(),
+        nullable=False,
+        data={"function": "count", "capability_group": "aggregate", "capability_name": "count"},
+    )
 
 
 def sum(value: object) -> Expression:
     argument = literal(value)
-    return _reserved_expression("sum", group="aggregate", name="sum", type=argument.type, args=(argument,))
+    return Expression(
+        kind="aggregate",
+        type=argument.type,
+        nullable=False,
+        data={"function": "sum", "capability_group": "aggregate", "capability_name": "sum"},
+        args=(argument,),
+    )
+
+
+@dataclass(frozen=True)
+class GroupedRows:
+    keys: tuple[tuple[str, Expression], ...]
+
+    def agg(self, **aggregates: object) -> "GroupedAggregates":
+        return GroupedAggregates(self.keys, tuple((name, literal(value)) for name, value in aggregates.items()))
+
+
+@dataclass(frozen=True)
+class GroupedAggregates:
+    keys: tuple[tuple[str, Expression], ...]
+    aggregates: tuple[tuple[str, Expression], ...]
+
+    def as_schema(self, schema):
+        values = {name: expression for name, expression in self.keys}
+        values.update({name: expression for name, expression in self.aggregates})
+        return schema(**values)
 
 
 def arr_transform(value: object, function: Callable[[Expression], object]) -> Expression:
@@ -102,6 +126,22 @@ def _reserved_expression(
         data={"function": function, "capability_group": group, "capability_name": name},
         args=args,
     )
+
+
+def _positional_keys(keys: tuple[object, ...]) -> tuple[tuple[str, Expression], ...]:
+    return tuple((_key_name(literal(key)), literal(key)) for key in keys)
+
+
+def _named_keys(keys: dict[str, object]) -> tuple[tuple[str, Expression], ...]:
+    return tuple((name, literal(key)) for name, key in keys.items())
+
+
+def _key_name(expression: Expression) -> str:
+    if expression.data and expression.data.get("name"):
+        return str(expression.data["name"]).split(".")[-1]
+    if expression.data and expression.data.get("field"):
+        return str(expression.data["field"]).split(".")[-1]
+    raise TypeError("Positional group_by(...) keys must be named Structure field expressions")
 
 
 def _context(call: str) -> CompileContext:

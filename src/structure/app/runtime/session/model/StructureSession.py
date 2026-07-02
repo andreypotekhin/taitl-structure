@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from pathlib import Path
 
 from structure.app.compiler.api import Compiler
+from structure.app.configuration.model.StructureConfig import StructureConfig
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.runtime.execution.api import Execution
 from structure.app.runtime.schemas.api import Schemas
 from structure.app.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.app.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.app.runtime.session.model.TransformResult import TransformResult
+from structure.app.target.capabilities.api import Capabilities
 from structure.app.target.pyspark.api import PySpark
 
 
@@ -19,22 +22,48 @@ class StructureSession:
         *,
         spark=None,
         ctx=None,
-        execution_mode: str = "online",
-        target_backend: str = "pyspark",
-        generated_package: str = "structure_generated",
+        config: StructureConfig | None = None,
+        project_root: Path | str | None = None,
+        execution_mode: str | None = None,
+        target_backend: str | None = None,
+        target_profile: str | None = None,
+        target_variant: str | None = None,
+        generated_package: str | None = None,
         schema_types=None,
         online_executor: Callable[..., object] | None = None,
     ) -> None:
+        overrides = {
+            "execution_mode": execution_mode,
+            "target_backend": target_backend,
+            "target_profile": target_profile,
+            "target_variant": target_variant,
+            "generated_package": generated_package,
+        }
+        supplied_overrides = {key: value for key, value in overrides.items() if value is not None}
+        if config is not None and (project_root is not None or supplied_overrides):
+            raise ValueError(
+                "Pass either config=StructureConfig.resolve(...), or pass project_root/config override fields, not both."
+            )
+
+        resolved = config or StructureConfig.resolve(project_root=project_root, overrides=supplied_overrides)
         self.spark = spark
         self.ctx = ctx
-        self.execution_mode = execution_mode
-        self.target_backend = target_backend
-        self.generated_package = generated_package
+        self.config = resolved
+        self.execution_mode = resolved.execution_mode
+        self.target_backend = resolved.target_backend
+        self.target_profile = resolved.target_profile
+        self.target_variant = resolved.target_variant
+        self.generated_package = resolved.generated_package
         self.schema_types = schema_types
         self.online_executor = online_executor
 
     def run(self, invocation: Transform) -> TransformResult:
-        plan = PySpark.plan.lower()(Compiler.frontend.compile()(type(invocation)))
+        capabilities = Capabilities.resolve()(
+            target_backend=self.target_backend,
+            target_profile=self.target_profile,
+            target_variant=self.target_variant,
+        )
+        plan = PySpark.plan.lower()(Compiler.frontend.compile()(type(invocation)), capabilities=capabilities)
         self._validate_inputs(invocation)
         schemas = Schemas.build()(plan, types=self.schema_types)
 
@@ -87,6 +116,8 @@ class StructureSession:
             transform=transform,
             execution_mode=self.execution_mode,
             target_backend=self.target_backend,
+            target_profile=self.target_profile,
+            target_variant=self.target_variant,
             problem=problem,
             use=use,
             docs="docs/specifications/OnlineExecution.md",

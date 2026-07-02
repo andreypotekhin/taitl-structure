@@ -25,6 +25,8 @@ def test_default_pyspark_capabilities_do_not_import_pyspark() -> None:
 
     assert resolved.id.name == "pyspark"
     assert resolved.id.target == ">=3.5,<4.1"
+    assert resolved.id.variant == "ordinary"
+    assert resolved.id.family == "ordinary_pyspark"
     after = {name for name in sys.modules if name.startswith("pyspark")}
     assert after == before
 
@@ -49,31 +51,18 @@ def test_supported_v2_join_requirement_passes(name: str) -> None:
     assert decision.supported
 
 
-def test_unsupported_feature_uses_backend_capability_diagnostic() -> None:
+@pytest.mark.parametrize("name", ["group_by", "count", "sum"])
+def test_supported_v2_aggregate_requirement_passes(name: str) -> None:
     resolved = Capabilities.resolve()()
 
-    try:
-        resolved.require(CapabilityRequirement(group="aggregate", name="group_by"))
-    except BackendCapabilityError as error:
-        diagnostic = error.diagnostic
-    else:
-        raise AssertionError("group_by should be unsupported before aggregate lowering")
+    decision = resolved.require(CapabilityRequirement(group="aggregate", name=name))
 
-    assert diagnostic.code == BACKEND_E2402
-    assert diagnostic.backend == "pyspark"
-    assert diagnostic.target == ">=3.5,<4.1"
-    assert diagnostic.feature_group == "aggregate"
-    assert diagnostic.feature_name == "group_by"
-    assert "supported v1 Structure operation" in diagnostic.use
-    assert diagnostic.docs == "docs/specifications/BackendCapabilities.md"
+    assert decision.supported
 
 
 @pytest.mark.parametrize(
     ("group", "name"),
     [
-        ("aggregate", "group_by"),
-        ("aggregate", "count"),
-        ("aggregate", "sum"),
         ("window", "window_project"),
         ("higher_order", "array_transform"),
         ("higher_order", "array_filter"),
@@ -96,13 +85,23 @@ def test_v2_operation_capabilities_are_explicitly_unsupported(group: str, name: 
     assert diagnostic.feature_name == name
 
 
-def test_unknown_backend_uses_backend_target_diagnostic() -> None:
+def test_spark_connect_resolves_as_pyspark_variant() -> None:
+    resolved = Capabilities.resolve()(target_backend="pyspark", target_variant="spark-connect")
+
+    assert resolved.id.name == "pyspark"
+    assert resolved.id.target == ">=3.5,<4.1"
+    assert resolved.id.variant == "spark-connect"
+    assert resolved.id.family == "spark_connect_dataframe"
+    assert resolved.require(CapabilityRequirement(group="backend", name="spark_connect_dataframe")).supported
+
+
+def test_spark_connect_is_not_a_separate_backend_id() -> None:
     try:
-        Capabilities.resolve()(target_backend="spark_connect")
+        Capabilities.resolve()(target_backend="spark_connect", target_variant="spark-connect")
     except BackendCapabilityError as error:
         diagnostic = error.diagnostic
     else:
-        raise AssertionError("spark_connect should not resolve before a backend profile exists")
+        raise AssertionError("spark_connect should remain a rejected backend id")
 
     assert diagnostic.code == BACKEND_E2401
     assert diagnostic.backend == "spark_connect"
@@ -110,6 +109,18 @@ def test_unknown_backend_uses_backend_target_diagnostic() -> None:
     assert diagnostic.feature_name == "spark_connect"
     assert diagnostic.context()["target_backend"] == "spark_connect"
     assert "pyspark" in diagnostic.use
+
+
+def test_unknown_pyspark_variant_uses_capability_diagnostic() -> None:
+    with pytest.raises(BackendCapabilityError) as raised:
+        Capabilities.resolve()(target_backend="pyspark", target_variant="classic")
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == BACKEND_E2402
+    assert diagnostic.backend == "pyspark"
+    assert diagnostic.feature_group == "backend"
+    assert diagnostic.feature_name == "unknown"
+    assert 'target_variant = "ordinary"' in diagnostic.use
 
 
 def test_static_fixtures_evaluate_same_requirement_without_runtime_spark() -> None:

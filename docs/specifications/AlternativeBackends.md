@@ -5,9 +5,9 @@
 This specification defines the future backend-extension contract for Structure. It allows the same compiler-visible
 Structure source code to be checked against, and eventually emitted for, multiple execution backends.
 
-PySpark remains the only v1 supported runtime target. This document specifies the architecture that future work must
-follow before adding Python-hosted Spark SQL, type-safe PySpark DataFrame patterns, Pandas, Polars, DuckDB, Spark
-Connect, Ibis, or other targets through Ibis.
+PySpark remains the only v1 supported runtime target. Spark Connect is a PySpark target variant, not a peer alternative
+backend. This document specifies the architecture that future work must follow before adding Python-hosted Spark SQL,
+type-safe PySpark DataFrame patterns, Pandas, Polars, DuckDB, Ibis, or other targets through Ibis.
 
 ## Scope
 
@@ -61,24 +61,27 @@ Resolved configuration must select a target:
 BackendId
   name
   target
+  variant
   family
 ```
 
 Examples:
 
 ```text
-pyspark >=3.5,<4.1 ordinary_pyspark
-pyspark >=3.5,<4.1 pyspark_dataframe
-spark_sql >=3.5,<4.1 sql_relation
-polars >=1.0 local_lazy_dataframe
-duckdb >=1.0 sql_relation
-pandas >=2.0 local_eager_dataframe
-ibis >=9.0 meta_relational_dsl
+pyspark >=3.5,<4.1 ordinary ordinary_pyspark
+pyspark >=3.5,<4.1 spark-connect spark_connect_dataframe
+pyspark-sql >=3.5,<4.1 ordinary sql_relation
+polars >=1.0 ordinary local_lazy_dataframe
+duckdb >=1.0 ordinary sql_relation
+pandas >=2.0 ordinary local_eager_dataframe
+ibis >=9.0 ordinary meta_relational_dsl
 ```
 
-`name` is the configured backend id. `target` is a version range or capability profile. In v1, `family` is the current
-implementation family and remains `ordinary_pyspark`. Future compatibility reports may additionally use semantic
-families such as `pyspark_dataframe` or `sql_relation` to describe target shape.
+`name` is the configured backend id. `target` is a version range or capability profile. `variant` selects a runtime
+variant inside a backend family. In v1, `family` is the current implementation family and remains `ordinary_pyspark`.
+Spark Connect uses `name = "pyspark"` with `variant = "spark-connect"`, never `name = "spark_connect"`.
+Future compatibility reports may additionally use semantic families such as `pyspark_dataframe` or `sql_relation` to
+describe target shape.
 
 ## Target Families
 
@@ -105,6 +108,7 @@ Future configuration keys:
 [tool.structure]
 target_backend = "pyspark"
 target_profile = ">=3.5,<4.1"
+target_variant = "ordinary"
 compat_targets = ["pyspark", "polars", "duckdb"]
 hook_target_default = ["pyspark"]
 ```
@@ -114,6 +118,7 @@ Compatibility notes:
 - V1 recognizes these keys as reserved metadata while keeping active execution limited to `target_backend = "pyspark"`.
 - Non-PySpark entries in `compat_targets` are reported as pending in v1; their compatibility checks do not run yet.
 - `target_profile` is the active target version/capability key, including for PySpark.
+- `target_variant` selects ordinary PySpark or Spark Connect inside the PySpark-family target.
 - Future backends should reuse `target_profile` instead of adding backend-specific version keys.
 - `compat_targets` asks for a portability report and does not change the active target.
 - `hook_target_default` supplies the effective target set for unmarked hooks.

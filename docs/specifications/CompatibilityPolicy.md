@@ -27,6 +27,7 @@ The default PySpark target is:
 execution_mode = "online"
 target_backend = "pyspark"
 target_profile = ">=3.5,<4.1"
+target_variant = "ordinary"
 ```
 
 This means online and generated execution should target PySpark 3.5.x and 4.0.x APIs unless the user configures a
@@ -70,13 +71,19 @@ checks may report non-active target issues as unsupported, degraded, opaque, or 
 
 ## Spark Connect Scope
 
-Spark Connect is deferred to v4.
+Spark Connect is a PySpark target variant, not a separate backend id. The experimental configuration shape is:
 
-v1 and v2 online/generated execution targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. v3 adds
-streaming orchestration on top of that ordinary PySpark contract. The compiler must not claim Spark Connect support in
-public docs or diagnostics before a tested contract exists.
+```toml
+target_backend = "pyspark"
+target_profile = ">=3.5,<4.1"
+target_variant = "spark-connect"
+```
 
-Spark Connect may be implemented before v4 only if all of these are true:
+V1 and mainstream v2 online/generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column`
+APIs. The end of v2 may add experimental Spark Connect parity for completed v1 and v2 batch features after the
+ordinary PySpark contract is stable. V3 owns streaming orchestration on top of the ordinary PySpark contract.
+
+Experimental Spark Connect support may be claimed only if all of these are true:
 
 - it uses the existing PySpark target boundary cleanly;
 - it does not change public DSL syntax;
@@ -87,7 +94,10 @@ Spark Connect may be implemented before v4 only if all of these are true:
 - it has compatibility tests for the supported PySpark Connect versions;
 - public docs make the support level explicit.
 
-Otherwise, Spark Connect belongs in v4 as backend expansion work.
+Spark Connect must not rely on SparkContext, RDDs, direct JVM/Py4J access, `_jdf`, or private classic PySpark fields.
+Unsupported variant capabilities must fail through backend capability diagnostics before online execution or generated
+code is claimed compatible. Full support is a later promotion decision after parity evidence, diagnostics, and CI
+coverage exist.
 
 ## Semantic Versioning
 
@@ -143,6 +153,7 @@ The generator should include a compact header in generated files with:
 - Structure generator version;
 - configured backend;
 - configured PySpark target range;
+- configured target variant;
 - source module or transform identity where useful.
 
 Generated code may import Structure generated-runtime helpers. Those helpers are public to generated code, even if they
@@ -197,8 +208,11 @@ New optional keys may appear in minor releases. Removing or changing a documente
 
 - [Compatibility.md](../Compatibility.md) documents the public policy.
 - `Readme.md` links to the compatibility policy.
-- [Configuration.md](../Configuration.md) documents `target_backend`, `target_profile`, and compatibility diagnostics.
+- [Configuration.md](../Configuration.md) documents `target_backend`, `target_profile`, `target_variant`, and
+  compatibility diagnostics.
 - [Configuration.md](../Configuration.md) documents `execution_mode`.
 - [BackendCapabilities.md](BackendCapabilities.md) documents the backend capability interface and PySpark v1 profile.
-- [Roadmap.md](../dev/Roadmap.md) and public roadmap text schedule Spark Connect for v4.
-- The seed config defaults are `execution_mode = "online"` and `target_profile = ">=3.5,<4.1"`.
+- [Roadmap.md](../dev/Roadmap.md) and public roadmap text schedule experimental Spark Connect parity for the end of
+  v2 and full promotion or hardening for v4.
+- The seed config defaults are `execution_mode = "online"`, `target_profile = ">=3.5,<4.1"`, and
+  `target_variant = "ordinary"`.

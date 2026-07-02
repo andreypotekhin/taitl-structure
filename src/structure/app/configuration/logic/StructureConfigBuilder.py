@@ -24,6 +24,7 @@ class StructureConfigBuilder:
             execution_mode=str(values["execution_mode"]),
             target_backend=str(values["target_backend"]),
             target_profile=str(values["target_profile"]),
+            target_variant=str(values["target_variant"]),
             compat_targets=tuple(compat_targets),
             hook_target_default=hook_targets,
             traceability=str(values["traceability"]),

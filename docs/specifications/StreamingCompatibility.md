@@ -146,7 +146,7 @@ is static.
 Accepted:
 
 ```python
-customer = join_one(
+join_one(
     on=order.customer_id == customer.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,

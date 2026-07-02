@@ -108,7 +108,7 @@ Some lookup inputs contain multiple right rows per key, but the desired business
 That rule must be explicit:
 
 ```python
-customer = join_one(
+join_one(
     on=self.customer_snapshots.id == order.customer_id,
     how=Join.LEFT,
     dedupe=JoinDedupe.latest_by(

@@ -8,6 +8,7 @@ from structure.app.runtime.execution.online.logic.PySparkHookInvoker import Hook
 from structure.app.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.app.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.app.runtime.session.model.TransformResult import TransformResult
+from structure.app.target.pyspark.commands.MaterializePySparkSchema import materialize_pyspark_schema
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.app.target.pyspark.model.PySparkOutputRecipe import PySparkOutputRecipe
@@ -110,7 +111,7 @@ class RunOnlinePySparkTransform:
             active = frames[step.source]
 
         df = active.alias(step.input_alias)
-        df = self._operations(step, df, frames=frames, functions=functions, window=window)
+        df = self._operations(step, df, frames=frames, functions=functions, window=window, types=types)
 
         if len(step.results) > 1:
             produced = {}
@@ -142,12 +143,13 @@ class RunOnlinePySparkTransform:
                 produced[result.frame] = projected
             return produced
 
-        df = df.select(
-            *(
-                self._assignment(assignment, step=step, functions=functions, types=types)
-                for assignment in step.projection
+        if step.projection:
+            df = df.select(
+                *(
+                    self._assignment(assignment, step=step, functions=functions, types=types)
+                    for assignment in step.projection
+                )
             )
-        )
         if step.after_hooks:
             step_frames = dict(frames)
             step_frames[step.results[0].frame] = df
@@ -176,7 +178,7 @@ class RunOnlinePySparkTransform:
         types,
     ):
         df = source.alias(output.input_alias)
-        df = self._operations(output, df, frames=inputs, functions=functions, window=window)
+        df = self._operations(output, df, frames=inputs, functions=functions, window=window, types=types)
 
         if output.projection:
             df = df.select(
@@ -188,7 +190,7 @@ class RunOnlinePySparkTransform:
         self._validator.validate(df, output.validation, types=types)
         return df
 
-    def _operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, *, frames, functions, window):
+    def _operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, *, frames, functions, window, types):
         if not step.operations:
             for join in step.joins:
                 df = self._join(step, df, join, frames=frames, functions=functions, window=window)
@@ -209,7 +211,68 @@ class RunOnlinePySparkTransform:
                         aliases=self._scope_aliases(step),
                     )
                 )
+            if operation.kind == "aggregate" and operation.aggregate is not None:
+                df = self._aggregate(step, df, operation.aggregate, functions=functions, types=types)
         return df
+
+    def _aggregate(self, step, df, aggregate, *, functions, types):
+        grouped = df.groupBy(
+            *(
+                self._expressions.evaluate(
+                    key.expression, functions=functions, aliases=self._scope_aliases(step)
+                ).alias(key.name)
+                for key in aggregate.keys
+            )
+        )
+        aggregated = grouped.agg(
+            *(
+                self._aggregate_assignment(assignment, step=step, functions=functions, types=types)
+                for assignment in aggregate.assignments
+                if assignment.function != "key"
+            )
+        )
+        return aggregated.select(
+            *(self._aggregate_select(assignment, functions=functions) for assignment in aggregate.assignments)
+        )
+
+    def _aggregate_assignment(self, assignment, *, step, functions, types):
+        if assignment.function == "count":
+            return (
+                functions.count(functions.lit(1))
+                .cast(self._spark_type(assignment.field.type, types))
+                .alias(assignment.field.column)
+            )
+        if assignment.function == "sum" and assignment.expression is not None:
+            column = self._expressions.evaluate(
+                assignment.expression,
+                functions=functions,
+                aliases=self._scope_aliases(step),
+            )
+            return (
+                functions.sum(column)
+                .cast(self._spark_type(assignment.field.type, types))
+                .alias(assignment.field.column)
+            )
+        if assignment.function == "first" and assignment.expression is not None:
+            column = self._expressions.evaluate(
+                assignment.expression,
+                functions=functions,
+                aliases=self._scope_aliases(step),
+            )
+            return functions.first(column, ignorenulls=False).alias(assignment.field.column)
+        raise TypeError(f"Unsupported aggregate assignment: {assignment.function}")
+
+    def _aggregate_select(self, assignment, *, functions):
+        source = assignment.key if assignment.function == "key" else assignment.field.column
+        column = functions.col(str(source))
+        if str(source) != assignment.field.column:
+            return column.alias(assignment.field.column)
+        return column
+
+    def _spark_type(self, type, types):
+        if types is None:
+            return type.name
+        return materialize_pyspark_schema.type(type, types=types)
 
     def _join(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, join, *, frames, functions, window):
         row_id = None
@@ -339,6 +402,8 @@ class RunOnlinePySparkTransform:
             transform=transform,
             execution_mode=session.execution_mode,
             target_backend=session.target_backend,
+            target_profile=getattr(session, "target_profile", ">=3.5,<4.1"),
+            target_variant=getattr(session, "target_variant", "ordinary"),
             problem="Structure has no live SparkSession or injected online executor for this session.",
             use="Pass spark or online_executor to StructureSession, or use execution_mode = \"generated\".",
             docs="docs/specifications/OnlineExecution.md",

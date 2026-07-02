@@ -9,6 +9,8 @@ from structure.app.dsl.model.types.StructType import StructType
 from structure.app.dsl.model.types.StructureType import StructureType
 from structure.app.target.pyspark.commands.RenderPySparkExpression import render_pyspark_expression
 from structure.app.target.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
+from structure.app.target.pyspark.model.PySparkAggregateAssignment import PySparkAggregateAssignment
+from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
@@ -112,9 +114,52 @@ class RenderPySparkStep:
                 pending_filters = []
             if operation.kind == "join" and operation.join is not None:
                 ordered_lines.extend(self._join(step, operation.join, sources=sources, target=target))
+            if operation.kind == "aggregate" and operation.aggregate is not None:
+                ordered_lines.extend(self._aggregate(step, operation.aggregate, target=target))
         if pending_filters:
             ordered_lines.extend(self._filters(tuple(pending_filters), step=step, target=target))
         return ordered_lines
+
+    def _aggregate(
+        self,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        aggregate: PySparkAggregateRecipe,
+        *,
+        target: str,
+    ) -> list[str]:
+        lines = [f"        {target} = {target}.groupBy("]
+        for key in aggregate.keys:
+            expression = render_pyspark_expression(key.expression, scope_aliases=self._scope_aliases(step))
+            lines.append(f"            {expression}.alias({self._literal(key.name)}),")
+        lines.append("        ).agg(")
+        for assignment in aggregate.assignments:
+            if assignment.function == "key":
+                continue
+            lines.append(f"            {self._aggregate_assignment(assignment, step=step)},")
+        lines.append("        ).select(")
+        for assignment in aggregate.assignments:
+            lines.append(f"            {self._aggregate_select(assignment)},")
+        lines.append("        )")
+        return lines
+
+    def _aggregate_assignment(self, assignment: PySparkAggregateAssignment, *, step) -> str:
+        alias = self._literal(assignment.field.column)
+        if assignment.function == "count":
+            return f"F.count(F.lit(1)).cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
+        if assignment.function == "sum" and assignment.expression is not None:
+            expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
+            return f"F.sum({expression}).cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
+        if assignment.function == "first" and assignment.expression is not None:
+            expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
+            return f"F.first({expression}, ignorenulls=False).alias({alias})"
+        raise TypeError(f"Unsupported aggregate assignment: {assignment.function}")
+
+    def _aggregate_select(self, assignment: PySparkAggregateAssignment) -> str:
+        source = assignment.key if assignment.function == "key" else assignment.field.column
+        expression = f"F.col({self._literal(str(source))})"
+        if str(source) != assignment.field.column:
+            expression = f"{expression}.alias({self._literal(assignment.field.column)})"
+        return expression
 
     def _join(
         self,

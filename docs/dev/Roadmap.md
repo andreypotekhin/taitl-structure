@@ -2,9 +2,9 @@
 
 The roadmap is staged around an IR-first north star. v1 first proves one useful executable transform running both
 online and as generated PySpark, then broadens into the contract that lets Structure replace hand-maintained PySpark
-boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful for mainstream
-analytical pipelines. v3 takes ownership of streaming lifecycle concerns. v4 adds Spark Connect after the ordinary
-PySpark contract is stable.
+boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful for
+mainstream analytical pipelines and ends with experimental Spark Connect parity for completed batch features. v3 takes
+ownership of streaming lifecycle concerns. v4 promotes or hardens Spark Connect based on parity evidence.
 
 ## v1
 
@@ -57,6 +57,8 @@ PySpark contract is stable.
 - Production incremental compile and cache diagnostics.
 - Generated documentation artifacts for schemas and transforms.
 - Pytest helper or plugin.
+- Experimental Spark Connect parity for completed v1/v2 batch features, using `target_backend = "pyspark"` and
+  `target_variant = "spark-connect"`.
 
 ## v3
 
@@ -71,6 +73,6 @@ PySpark contract is stable.
 
 ## v4
 
-- Spark Connect support.
-- Spark Connect compatibility tests.
-- Backend capability reporting for ordinary PySpark and Spark Connect targets.
+- Promote Spark Connect from experimental to supported if parity evidence, diagnostics, and CI are complete.
+- Continue Spark Connect hardening if promotion criteria are not yet met.
+- Backend capability reporting for ordinary PySpark and Spark Connect variants.

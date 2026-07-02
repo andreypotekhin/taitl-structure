@@ -237,11 +237,16 @@
 - Watermarks.
 - Stateful streaming policies.
 
+## End-of-v2 Backlog
+
+- Experimental Spark Connect parity for completed v1/v2 batch features.
+- Spark Connect compatibility tests for the experimental PySpark variant.
+- Backend capability reporting for ordinary PySpark and Spark Connect variants.
+
 ## v4 Backlog
 
-- Spark Connect support.
-- Spark Connect compatibility tests.
-- Backend capability reporting for ordinary PySpark and Spark Connect targets.
+- Promote Spark Connect from experimental to supported if parity evidence, diagnostics, and CI are complete.
+- Continue Spark Connect hardening if promotion criteria are not yet met.
 
 ## Nice To Have Beyond v4
 

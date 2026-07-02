@@ -1,3 +1,6 @@
+from structure.app.compiler.ir.model.AggregateAssignment import AggregateAssignment
+from structure.app.compiler.ir.model.AggregateKey import AggregateKey
+from structure.app.compiler.ir.model.AggregatePlan import AggregatePlan
 from structure.app.compiler.ir.model.HookPlan import HookPlan
 from structure.app.compiler.ir.model.InputPlan import InputPlan
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
@@ -12,6 +15,9 @@ from structure.app.compiler.ir.model.StepResultPlan import StepResultPlan
 from structure.app.compiler.ir.model.TransformPlan import TransformPlan
 
 __all__ = [
+    "AggregateAssignment",
+    "AggregateKey",
+    "AggregatePlan",
     "HookPlan",
     "InputPlan",
     "JoinPlan",

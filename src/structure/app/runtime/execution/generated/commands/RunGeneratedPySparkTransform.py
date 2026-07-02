@@ -67,6 +67,8 @@ class RunGeneratedPySparkTransform:
             transform=transform,
             execution_mode=session.execution_mode,
             target_backend=session.target_backend,
+            target_profile=getattr(session, "target_profile", ">=3.5,<4.1"),
+            target_variant=getattr(session, "target_variant", "ordinary"),
             problem=problem,
             use=(
                 "Run `structure compile`, ensure the generated source root is importable, "

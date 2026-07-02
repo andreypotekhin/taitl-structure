@@ -112,8 +112,7 @@ class EnrichOrders(Transform):
         )
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        customer = join_one(
-            customer,
+        join_one(
             on=order.customer_id == customer.id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
@@ -276,7 +275,7 @@ not passed unless requested.
 Joins are symbolic and typed.
 
 ```python
-customer = join_one(
+join_one(
     on=order.customer_id == customer.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
@@ -310,12 +309,12 @@ Full streaming orchestration belongs to v3.
 ## Compatibility Policy
 
 Structure targets Python 3.11+ and online/generated PySpark for PySpark 3.5.x and 4.0.x. The default project
-settings are `execution_mode = "online"` and `target_profile = ">=3.5,<4.1"`.
+settings are `execution_mode = "online"`, `target_profile = ">=3.5,<4.1"`, and `target_variant = "ordinary"`.
 
-Online and generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Spark Connect
-support is scheduled for v4 with backend expansion work, unless it can be added earlier without changing Structure
-source syntax, online invocation construction, generated class construction, `run(...)` signatures, streaming
-orchestration semantics, or generated-code reviewability.
+Online and generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs by default.
+Spark Connect is planned as an experimental end-of-v2 PySpark variant for completed v1/v2 batch features. Full support
+is a later promotion decision and must not change Structure source syntax, online invocation construction, generated
+class construction, `run(...)` signatures, streaming orchestration semantics, or generated-code reviewability.
 
 Generated PySpark, compiler traceability metadata, and configuration each have explicit versioning rules. The public policy
 lives in [Compatibility.md](Compatibility.md).
@@ -420,8 +419,8 @@ Recommended implementation techniques:
 
 The roadmap follows an IR-first north star: the initial release proves that Structure can replace hand-maintained
 PySpark boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful
-for mainstream analytical pipelines. v3 takes ownership of streaming lifecycle concerns. v4 adds Spark Connect after
-the ordinary PySpark contract is stable.
+for mainstream analytical pipelines and ends with experimental Spark Connect parity for completed batch features. v3
+takes ownership of streaming lifecycle concerns. v4 promotes or hardens Spark Connect based on parity evidence.
 
 ### Initial Release
 

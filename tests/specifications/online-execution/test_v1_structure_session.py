@@ -1,10 +1,24 @@
+import shutil
 import sys
+from contextlib import contextmanager
 from dataclasses import dataclass
+from pathlib import Path
 from types import ModuleType
+from uuid import uuid4
 
 import pytest
 
-from structure import StructureRuntimeError, StructureSession
+from structure import StructureConfig, StructureRuntimeError, StructureSession
+
+
+@contextmanager
+def workspace_tmp():
+    root = Path(".pytest-workspace-tmp") / uuid4().hex
+    root.mkdir(parents=True)
+    try:
+        yield root.resolve()
+    finally:
+        shutil.rmtree(root, ignore_errors=True)
 
 
 @dataclass(frozen=True)
@@ -67,6 +81,70 @@ class FakeTypes:
     @staticmethod
     def MapType(key, value, *, valueContainsNull):
         return FakeType("MapType", (key, value), (("valueContainsNull", valueContainsNull),))
+
+
+def test_v1_session_reads_project_config() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            '[tool.structure]\nexecution_mode = "generated"\ngenerated_package = "project_generated"\n',
+            encoding="utf-8",
+        )
+
+        session = StructureSession(project_root=root, schema_types=FakeTypes)
+
+        assert session.config.execution_mode == "generated"
+        assert session.execution_mode == "generated"
+        assert session.generated_package == "project_generated"
+        assert session.config.source_map["generated_package"] == "structure.toml"
+
+
+def test_v1_session_convenience_overrides_win_over_project_config() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            '[tool.structure]\nexecution_mode = "generated"\ngenerated_package = "project_generated"\n',
+            encoding="utf-8",
+        )
+
+        session = StructureSession(
+            project_root=root,
+            execution_mode="online",
+            generated_package="programmatic_generated",
+            schema_types=FakeTypes,
+        )
+
+        assert session.config.execution_mode == "online"
+        assert session.generated_package == "programmatic_generated"
+        assert session.config.source_map["execution_mode"] == "programmatic"
+        assert session.config.source_map["generated_package"] == "programmatic"
+
+
+def test_v1_session_uses_supplied_config() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        config = StructureConfig.resolve(project_root=root, execution_mode="generated")
+
+        session = StructureSession(config=config, schema_types=FakeTypes)
+
+        assert session.config is config
+        assert session.execution_mode == "generated"
+
+
+def test_v1_session_rejects_config_mixed_with_project_or_overrides() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        config = StructureConfig.resolve(project_root=root)
+
+        with pytest.raises(ValueError) as raised:
+            StructureSession(config=config, project_root=root)
+
+        assert "config=StructureConfig.resolve" in str(raised.value)
+
+        with pytest.raises(ValueError) as raised:
+            StructureSession(config=config, execution_mode="generated")
+
+        assert "config override fields" in str(raised.value)
 
 
 def test_v1_online_session_defers_to_runner_and_exposes_schemas_without_pyspark() -> None:

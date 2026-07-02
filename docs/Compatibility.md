@@ -16,6 +16,7 @@ Structure targets:
 
 - Python 3.11 and newer;
 - PySpark 3.5.x and 4.0.x, expressed as `target_profile = ">=3.5,<4.1"` by default;
+- ordinary PySpark, expressed as `target_variant = "ordinary"` by default;
 - Linux runtime environments for online and generated PySpark execution;
 - Linux and macOS development environments;
 - Airflow and other schedulers without a hard runtime dependency on them.
@@ -31,6 +32,7 @@ Set the runtime target in project configuration:
 execution_mode = "online"
 target_backend = "pyspark"
 target_profile = ">=3.5,<4.1"
+target_variant = "ordinary"
 ```
 
 `execution_mode` is `online` by default. Projects may set it to `generated` when runtime execution should go
@@ -39,19 +41,32 @@ through checked-in generated classes.
 The `target_profile` value constrains which PySpark APIs online and generated execution may use. Structure should avoid
 APIs outside that range unless the user explicitly changes the target.
 
+`target_variant` selects the PySpark runtime variant. `ordinary` is the default in-process PySpark contract.
+`spark-connect` uses Spark Connect through the PySpark DataFrame and Column API.
+
 When a transform uses a feature that cannot run for the configured target, Structure should fail during
 `structure check`, `structure compile`, or online runtime compilation with a backend capability diagnostic.
 Unknown backend targets use `BACKEND-E2401`; unsupported backend features use `BACKEND-E2402`.
 
 ## Spark Connect
 
-Spark Connect is not part of the initial release, v2, or v3 commitment. The initial release and v2 online/generated
-execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. v3 adds streaming orchestration on
-top of the ordinary PySpark contract.
+Spark Connect is a PySpark target variant, not a separate backend id:
 
-Spark Connect support is scheduled for v4 as backend expansion work. It may land earlier only if it can be
-implemented through the existing PySpark target boundary without changing public APIs, generated-code shape,
-streaming orchestration semantics, or compatibility guarantees.
+```toml
+[tool.structure]
+target_backend = "pyspark"
+target_profile = ">=3.5,<4.1"
+target_variant = "spark-connect"
+```
+
+The initial release and mainstream v2 online/generated execution target ordinary PySpark `SparkSession`, `DataFrame`,
+and `Column` APIs. The end of v2 may add experimental Spark Connect parity for completed v1/v2 batch features. V3 adds
+streaming orchestration on top of the ordinary PySpark contract.
+
+Spark Connect must not change public DSL syntax, generated class APIs, transform `run(...)` signatures, generated-code
+review shape, or streaming orchestration semantics. It must also avoid classic-only internals such as SparkContext,
+RDDs, direct JVM/Py4J access, `_jdf`, and private classic PySpark fields. Full support is a later promotion decision
+after parity evidence, diagnostics, and CI coverage exist.
 
 ## Semantic Versioning
 
@@ -151,10 +166,10 @@ Config schema rules:
 
 ## Roadmap
 
-v2 expands online/generated PySpark features and adoption tooling while preserving the same basic
-compatibility contract.
+v2 expands online/generated PySpark features and adoption tooling while preserving the same basic compatibility
+contract. The end of v2 may add experimental Spark Connect parity for completed v1/v2 batch features.
 
 v3 adds streaming orchestration once transform compilation is stable.
 
-v4 adds Spark Connect support when it can be specified, tested, and documented without weakening online
-execution or the generated-code review model.
+v4 promotes Spark Connect from experimental to supported if parity evidence, diagnostics, and CI are complete;
+otherwise v4 continues hardening the variant.

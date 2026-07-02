@@ -24,13 +24,14 @@ schema and transform contract automatically, and get fast feedback in large proj
   online/generated parity.
 - Production incremental compile with `compile --changed-only`, cache invalidation, and cache diagnostics.
 - Performance fixtures for incremental compile on synthetic 10-transform and 100-transform projects.
+- Final experimental Spark Connect parity checks for completed v1/v2 batch features.
 
 ### Out of Scope
 
 - Automatic cost-based optimization.
 - Automatic join reordering.
 - Storage write orchestration.
-- Spark Connect support.
+- Full supported Spark Connect promotion.
 - Streaming source and sink generation.
 
 ## Relevant Specification Items

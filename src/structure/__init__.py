@@ -1,3 +1,4 @@
+from structure.app.configuration.api import StructureConfig
 from structure.app.dsl.api import (
     Array,
     AsOf,
@@ -29,8 +30,8 @@ from structure.app.dsl.api import (
     before,
     coalesce,
     count,
-    expr_fn,
     exists,
+    expr_fn,
     field,
     group_by,
     input,
@@ -79,6 +80,7 @@ __all__ = [
     "SchemaMode",
     "String",
     "Structure",
+    "StructureConfig",
     "StructureCompileError",
     "StructureRuntimeError",
     "StructureSession",

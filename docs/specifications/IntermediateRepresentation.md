@@ -503,6 +503,11 @@ the operation expresses lookup intent: one matching right-side row is selected f
 compiler emits a warning that uniqueness is not proven. `streaming` reuses the compileability vocabulary
 `compatible`, `batch_only`, and `unknown`.
 
+Grouped aggregate operations record `aggregate` cardinality and carry explicit grouping keys plus output assignments.
+Supported first-slice aggregate assignments are grouped key projection, `count()`, `sum(...)`, and representative
+`first(...)` for grouped parent struct fields. Target recipes lower these assignments through Spark-visible
+`groupBy(...).agg(...)` operations, not hooks or UDFs.
+
 `structure explain` displays each step's ordered operations as `kind(cardinality)`. This is an anchor for future v2
 explain output, not a full v2 lineage or optimizer report.
 

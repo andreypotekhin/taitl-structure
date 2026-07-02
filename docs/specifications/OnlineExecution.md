@@ -88,8 +88,17 @@ delegates to checked-in generated PySpark classes.
 
 `target_backend` and `target_profile` remain backend selection inputs. In v1 the only supported backend is `pyspark`.
 Future backends should be selected by the session, not by changing transform constructors. Backend support is checked
-through [BackendCapabilities.md](BackendCapabilities.md), so online execution and generated PySpark share the same target
-capability decisions.
+against the session's resolved `StructureConfig` through [BackendCapabilities.md](BackendCapabilities.md), so online
+execution and generated PySpark share the same target capability decisions.
+
+Python users may pass a resolved config to the runtime session:
+
+```python
+from structure import StructureConfig, StructureSession
+
+config = StructureConfig.resolve(project_root=".", execution_mode="generated")
+session = StructureSession(spark=spark, config=config)
+```
 
 ## Session Responsibilities
 

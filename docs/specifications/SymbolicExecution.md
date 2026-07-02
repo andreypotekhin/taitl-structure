@@ -366,9 +366,10 @@ source context
 Rules:
 
 - `join_one(...)` is valid only during symbolic execution.
-- Its relation argument may be omitted when `on` references exactly one unjoined declared input scope or schema
-  relation parameter.
-- An explicit relation argument must be a declared input scope or schema relation parameter in v1.
+- The documented form stays bare when `on` references exactly one unjoined declared input scope or schema relation
+  parameter.
+- Legacy explicit-selection overloads, when used, accept only declared input scopes or schema relation parameters in
+  v1.
 - Member joins such as `self.customers.join_one(...)` are rejected with migration guidance.
 - `on` and `how` are required.
 - `hint` is optional.

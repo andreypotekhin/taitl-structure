@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from structure.app.compiler.ir.model.AggregatePlan import AggregatePlan
 from structure.app.compiler.ir.model.HookPlan import HookPlan
 from structure.app.compiler.ir.model.ProjectAssignment import ProjectAssignment
 from structure.app.dsl.model.schemas.Structure import Structure
@@ -14,4 +15,5 @@ class StepResultPlan:
     frame: str
     projection: tuple[ProjectAssignment, ...]
     ordinal: int
+    aggregate: AggregatePlan | None = None
     after_hooks: tuple[HookPlan, ...] = ()

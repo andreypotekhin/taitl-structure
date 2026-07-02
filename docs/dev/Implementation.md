@@ -83,9 +83,9 @@
 
 ## Phase 5: v4
 
-- Spark Connect support.
-- Spark Connect compatibility tests.
-- Backend capability reporting for ordinary PySpark and Spark Connect targets.
+- Spark Connect support promotion or continued hardening.
+- Expanded Spark Connect compatibility tests.
+- Backend capability reporting for ordinary PySpark and Spark Connect variants.
 
 ## Build Integration
 

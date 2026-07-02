@@ -32,6 +32,41 @@ generated_package = "structure_generated"
 execution_mode = "online"
 ```
 
+## Python API
+
+Runtime code can resolve the same effective configuration without editing TOML:
+
+```python
+from structure import StructureConfig, StructureSession
+
+config = StructureConfig.resolve(
+    project_root=".",
+    execution_mode="generated",
+    generated_package="orders_generated",
+)
+
+session = StructureSession(spark=spark, config=config)
+```
+
+`StructureConfig.resolve(...)` starts with built-in defaults, merges `structure.toml`, merges
+`pyproject.toml [tool.structure]`, and then applies keyword or mapping overrides. Keyword overrides work for ordinary
+Python identifiers such as `execution_mode`; use `overrides={...}` for dotted keys such as
+`"spark.sql.ansi.enabled"`.
+
+For one-off runtime settings, pass the common config keys directly to `StructureSession`:
+
+```python
+session = StructureSession(
+    spark=spark,
+    project_root=".",
+    execution_mode="generated",
+    generated_package="orders_generated",
+)
+```
+
+Do not mix `config=...` with `project_root=...` or config override fields on the same session. Build the config first
+when the settings need to be shared or inspected.
+
 ## Path Settings
 
 ```toml
@@ -128,6 +163,7 @@ Structure does not create or reconfigure Spark sessions.
 execution_mode = "online"
 target_backend = "pyspark"
 target_profile = ">=3.5,<4.1"
+target_variant = "ordinary"
 ```
 
 `execution_mode` selects how transforms run. The default is `online`, where `StructureSession` executes
@@ -149,8 +185,9 @@ PySpark 3.5.x and 4.0.x. If a DSL feature cannot be generated for the configured
 targets fail with `BACKEND-E2401`. Backend capability behavior is specified in
 [BackendCapabilities.md](specifications/BackendCapabilities.md).
 
-Spark Connect is scheduled for v4 unless it can be added earlier without changing the public DSL, generated
-class API, generated-code review model, or streaming orchestration contract. See
+`target_variant` selects the runtime variant inside the PySpark target. `ordinary` is the default in-process PySpark
+contract. `spark-connect` is planned as an experimental end-of-v2 variant for completed v1/v2 batch features and must
+not change DSL syntax, generated class APIs, `run(...)` signatures, or streaming orchestration semantics. See
 [Compatibility.md](Compatibility.md).
 
 ## Traceability Settings

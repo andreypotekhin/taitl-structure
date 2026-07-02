@@ -5,6 +5,7 @@ from structure.app.target.capabilities.model.CapabilityRequirement import Capabi
 from structure.app.target.capabilities.model.GeneratedImports import GeneratedImports
 
 DEFAULT_TARGET_PROFILE = ">=3.5,<4.1"
+DEFAULT_TARGET_VARIANT = "ordinary"
 
 SUPPORTED_PROFILES = frozenset(
     {
@@ -14,9 +15,17 @@ SUPPORTED_PROFILES = frozenset(
     }
 )
 
+SUPPORTED_VARIANTS = frozenset({"ordinary", "spark-connect"})
+
+VARIANT_FAMILIES = {
+    "ordinary": "ordinary_pyspark",
+    "spark-connect": "spark_connect_dataframe",
+}
+
 V1_CAPABILITIES = frozenset(
     {
         ("backend", "ordinary_pyspark"),
+        ("backend", "spark_connect_dataframe"),
         ("expression", "field_ref"),
         ("expression", "literal"),
         ("expression", "projection"),
@@ -39,6 +48,9 @@ V1_CAPABILITIES = frozenset(
         ("join", "left_anti_join"),
         ("join", "composite_equi_join"),
         ("join", "broadcast_hint"),
+        ("aggregate", "group_by"),
+        ("aggregate", "count"),
+        ("aggregate", "sum"),
         ("validation", "schema_only_validation"),
         ("validation", "strict_projection"),
         ("validation", "allow_extra_projection"),
@@ -57,9 +69,11 @@ class PySparkCapabilities:
         self,
         *,
         target_profile: str = DEFAULT_TARGET_PROFILE,
+        target_variant: str = DEFAULT_TARGET_VARIANT,
         supported: frozenset[tuple[str, str]] = V1_CAPABILITIES,
     ) -> None:
-        self.id = BackendId(name="pyspark", target=target_profile, family="ordinary_pyspark")
+        family = VARIANT_FAMILIES.get(target_variant, "unknown")
+        self.id = BackendId(name="pyspark", target=target_profile, family=family, variant=target_variant)
         self.supported = supported
         self._imports = GeneratedImports()
 
@@ -74,6 +88,15 @@ class PySparkCapabilities:
                 rationale="No static PySpark capability profile exists for the configured target range.",
                 use=f"Set target_profile = {DEFAULT_TARGET_PROFILE!r}.",
                 required_target=DEFAULT_TARGET_PROFILE,
+            )
+
+        if self.id.variant not in SUPPORTED_VARIANTS:
+            return CapabilityDecision.unsupported_capability(
+                backend=self.id,
+                requirement=requirement,
+                rationale="No PySpark capability profile exists for the configured target variant.",
+                use='Set target_variant = "ordinary" or target_variant = "spark-connect".',
+                required_target=DEFAULT_TARGET_VARIANT,
             )
 
         if requirement.key() in self.supported:

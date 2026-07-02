@@ -1,7 +1,6 @@
+import tomllib
 from collections.abc import Mapping
 from pathlib import Path
-
-import toml  # type: ignore[import-untyped]
 
 
 class StructureConfigLoader:
@@ -10,14 +9,14 @@ class StructureConfigLoader:
         path = root / "structure.toml"
         if not path.exists():
             return {}
-        data = toml.load(path)
+        data = self._load(path)
         return self._section(data)
 
     def pyproject(self, root: Path) -> dict[str, object]:
         path = root / "pyproject.toml"
         if not path.exists():
             return {}
-        data = toml.load(path)
+        data = self._load(path)
         tool = data.get("tool", {})
         if not isinstance(tool, dict):
             return {}
@@ -39,3 +38,7 @@ class StructureConfigLoader:
             else:
                 flat[name] = value
         return flat
+
+    def _load(self, path: Path) -> Mapping[str, object]:
+        with path.open("rb") as file:
+            return tomllib.load(file)

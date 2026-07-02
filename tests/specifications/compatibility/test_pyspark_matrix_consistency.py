@@ -17,6 +17,27 @@ def test_pyspark_compatibility_matrix_matches_docs_and_compose_defaults() -> Non
     assert _backends(script) == ("pyspark35", "pyspark40")
 
 
+def test_public_docs_use_target_variant_and_do_not_claim_v4_only_spark_connect() -> None:
+    paths = [
+        Path("Readme.md"),
+        Path("docs/Overview.md"),
+        Path("docs/QuickRef.md"),
+        Path("docs/Configuration.md"),
+        Path("docs/Compatibility.md"),
+        Path("docs/specifications/ConfigSchema.md"),
+        Path("docs/specifications/CompatibilityPolicy.md"),
+        Path("docs/specifications/BackendCapabilities.md"),
+    ]
+    text = "\n".join(path.read_text(encoding="utf-8") for path in paths)
+
+    assert 'target_profile = ">=3.5,<4.1"' in text
+    assert 'target_variant = "ordinary"' in text
+    assert 'target_variant = "spark-connect"' in text
+    assert "scheduled for v4" not in text
+    assert "planned for v4" not in text
+    assert "not part of the initial release, v2, or v3" not in text
+
+
 def _env_value(text: str, key: str) -> str:
     match = re.search(rf"(?m)^{key}=(.+)$", text)
     assert match is not None

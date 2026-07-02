@@ -14,11 +14,11 @@ expectations.
 
 ## Public API Shape
 
-Joins are recorded through the free-standing `join_one(...)` function. In the ordinary case, omit the relation argument
-and let the compiler infer the joined relation from the `on` clause:
+Joins are recorded through the free-standing `join_one(...)` function. In the ordinary case, keep the call bare and let
+the compiler infer the joined relation from the `on` clause:
 
 ```python
-customer = join_one(
+join_one(
     on=order.customer_id == customer.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
@@ -37,35 +37,19 @@ def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer
 ```
 
 Inference is valid only when the `on` condition references exactly one unjoined relation scope. If the condition
-references no unjoined relation or more than one, pass the relation explicitly:
+references no unjoined relation or more than one, the inferred form is ambiguous and must be rewritten before the
+compiler can accept it.
 
-```python
-customer = join_one(
-    customer,
-    on=order.customer_id == customer.id,
-    how=Join.LEFT,
-)
-```
+For relation parameters and transform input scopes, `join_one(on=...)` updates the symbolic relation proxy, so later
+field reads use the joined scope. A relation parameter cannot be used in a filter or projection until it has been
+joined.
 
-For relation parameters, assigning the returned joined scope is optional. `join_one(customer, on=...)` updates the
-symbolic parameter proxy, so later `customer.name` reads from the joined scope. The explicit form remains valid:
-
-```python
-customer = join_one(customer, on=order.customer_id == customer.id, how=Join.LEFT)
-```
-
-The right-hand side is evaluated before Python rebinds `customer`, so reusing the parameter name is valid. A relation
-parameter cannot be used in a filter or projection until it has been joined.
-
-The old member spelling `self.customers.join_one(...)` is rejected. Use `join_one(on=...)` when inference is
-unambiguous, `join_one(customer, on=...)` when you want to pass an explicit typed relation parameter, or
-`join_one(self.customers, on=...)` when the subtransform uses a class input scope instead of a typed relation
-parameter.
+The old member spelling `self.customers.join_one(...)` is rejected. Use the free-standing bare form instead.
 
 Canonical v1 function:
 
 - `join_one(*, on, how, hint=None)`: an inferred lookup join.
-- `join_one(relation, *, on, how, hint=None)`: a lookup join that promises at most one right-side row per current row.
+- Legacy explicit-selection overloads remain supported, but they are not the documented style.
 
 Rules:
 
@@ -124,16 +108,15 @@ the other expression must reference the current row scope or a previously joined
 operand order. Public examples place the current-row expression on the left and the joined-input expression on the
 right because that reads naturally for `Join.LEFT` enrichment steps.
 
-When the relation argument is omitted, all equality pairs in one `join_one(...)` call must point to the same unjoined
-relation. A predicate that mentions two unjoined relations is ambiguous and must be split into separate joins or use an
-explicit relation argument.
+In the bare form, all equality pairs in one `join_one(...)` call must point to the same unjoined relation. A predicate
+that mentions two unjoined relations is ambiguous and must be split into separate joins.
 
 ## Composite Keys
 
 Composite joins are expressed by combining equality pairs with `&`:
 
 ```python
-customer = join_one(
+join_one(
     on=(order.country == customer.country) & (order.customer_id == customer.id),
     how=Join.LEFT,
 )
@@ -308,7 +291,7 @@ because it is easier to review and debug.
 `hint=JoinHint.BROADCAST` applies to the joined right input in v1:
 
 ```python
-customer = join_one(
+join_one(
     on=order.customer_id == customer.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,

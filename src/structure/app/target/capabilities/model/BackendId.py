@@ -6,6 +6,7 @@ class BackendId:
     name: str
     target: str
     family: str
+    variant: str = "ordinary"
 
     def display(self) -> str:
-        return f"{self.name} {self.target}"
+        return f"{self.name} {self.target} {self.variant}"

@@ -63,10 +63,10 @@ orchestration semantics are stable.
 
 ### Mitigation
 
-- Schedule Spark Connect for v4.
-- Allow earlier work only if it stays inside the existing PySpark target boundary.
-- Require compatibility tests before public support is documented.
-- Keep public v1/v2/v3 docs explicit that online and generated execution target ordinary PySpark APIs.
+- Gate end-of-v2 experimental parity behind no public API changes and no classic-only internals.
+- Keep Spark Connect inside the existing PySpark target boundary as `target_variant = "spark-connect"`.
+- Require compatibility tests before public support is promoted.
+- Keep public docs explicit that full supported Spark Connect is a later promotion decision.
 
 ## Risk: Hooks compromise performance
 

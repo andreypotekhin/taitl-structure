@@ -250,7 +250,7 @@ Define support for:
 Composite joins should be supported early:
 
 ```python
-customer = join_one(
+join_one(
     on=(customer.country == order.country)
        & (customer.id == order.customer_id),
     how=Join.LEFT,
@@ -502,10 +502,11 @@ v1 baseline:
 
 - Python 3.11+.
 - PySpark 3.5.x and 4.0.x target, with `target_profile = ">=3.5,<4.1"` by default.
+- Ordinary PySpark target variant, with `target_variant = "ordinary"` by default.
 - Airflow has no hard dependency.
 - Linux is the runtime target; Linux and macOS are development targets.
-- Spark Connect is scheduled for v4 unless it can be added earlier without changing the public DSL, generated class API,
-  or generated-code review model.
+- Spark Connect is planned as an end-of-v2 experimental PySpark variant for completed batch features, with full support
+  gated by parity evidence and diagnostics.
 
 ## +C20. Licensing and Governance Are Not Decided
 

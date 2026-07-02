@@ -122,8 +122,7 @@ class EnrichOrders(Transform):
         )
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        customer = join_one(
-            customer,
+        join_one(
             on=order.customer_id == customer.id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
@@ -515,7 +514,7 @@ Rules:
 ## Joins
 
 The v1 DSL exposes lookup joins through the free-standing `join_one(...)` function. When the `on` clause names exactly
-one unjoined relation, the relation argument can be inferred:
+one unjoined relation, the call stays bare:
 
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
@@ -531,7 +530,7 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
 Class input scopes may also be joined directly:
 
 ```python
-customer = join_one(
+join_one(
     on=order.customer_id == self.customers.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
@@ -539,7 +538,7 @@ customer = join_one(
 return OrderWithCustomer.base(order)(customer_name=self.customers.name)
 ```
 
-Use the explicit relation form only when inference would be ambiguous.
+Documentation uses inferred bare joins as the default style.
 
 Public enum values required for v1:
 
@@ -553,14 +552,14 @@ Rules:
 
 - `join_one(*, on, how, hint=None, dedupe=None)` is the canonical concise lookup join function when the relation is
   inferable.
-- `join_one(relation, *, on, how, hint=None, dedupe=None)` is the canonical lookup join function.
+- Legacy explicit-selection overloads remain supported, but they are not the documented style.
 - `on` and `how` are required.
 - `hint` is optional.
 - `dedupe` is optional. When present, it must be a deterministic `JoinDedupe` policy and reduces the right side before
   the lookup join.
 - Join calls are valid only during symbolic execution of a compiled subtransform.
 - Member joins such as `self.customers.join_one(...)` are rejected with migration guidance.
-- `join_one(...)` records the same ordered join operation for inferred and explicit relation forms.
+- `join_one(...)` records the same ordered join operation for inferred and legacy explicit-selection forms.
 - `join_one(...)` returns a relation proxy whose fields read from the joined symbolic scope.
 - For relation parameters and cached class input scopes, `join_one(...)` also makes later reads from that same proxy
   read from the joined scope.
@@ -571,10 +570,10 @@ Rules:
 - `join_many(...)` is the v2 row-multiplying join form. It is valid when the business output is one row per right-side
   match.
 
-Explicit assignment remains valid and equivalent when a local name makes the method easier to read:
+Documentation keeps the join bare and reads later fields from the joined relation proxy:
 
 ```python
-customer = join_one(on=order.customer_id == customer.id, how=Join.LEFT)
+join_one(on=order.customer_id == customer.id, how=Join.LEFT)
 return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
 

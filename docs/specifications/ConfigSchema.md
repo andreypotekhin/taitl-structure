@@ -15,12 +15,14 @@ Supported sources, lowest to highest precedence:
 1. Built-in defaults.
 2. `structure.toml`.
 3. `[tool.structure]` in `pyproject.toml`.
-4. CLI flags.
+4. CLI flags or Python API overrides.
 
 If both `structure.toml` and `[tool.structure]` exist, `[tool.structure]` wins for overlapping keys. Non-overlapping
 keys merge unless a later decision requires a single authoritative file.
 
-CLI flags override both files.
+CLI flags override both files for command-line workflows. Python API overrides supplied through
+`StructureConfig.resolve(...)` or `StructureSession(...)` use the same validation rules and override both files for
+runtime workflows.
 
 ## Default Configuration
 
@@ -34,6 +36,7 @@ generated_package = "structure_generated"
 execution_mode = "online"
 target_backend = "pyspark"
 target_profile = ">=3.5,<4.1"
+target_variant = "ordinary"
 hook_target_default = ["pyspark"]
 traceability = "compiler"
 validate_intermediate = true
@@ -126,6 +129,26 @@ Rules:
 - Must resolve to a supported backend capability profile.
 - For `target_backend = "pyspark"`, it selects the supported PySpark profile range.
 - Must not inspect the locally installed backend version during compiler commands.
+
+### target_variant
+
+Type: string enum.
+
+Allowed for `target_backend = "pyspark"`:
+
+```text
+ordinary
+spark-connect
+```
+
+Default: `"ordinary"`.
+
+Rules:
+
+- `ordinary` targets the normal in-process PySpark `SparkSession`, `DataFrame`, and `Column` contract.
+- `spark-connect` targets Spark Connect through the PySpark DataFrame and Column API while rejecting classic-only
+  internals through backend capability diagnostics.
+- Spark Connect must not require a different Structure DSL, generated class API, or transform `run(...)` signature.
 
 ### compat_targets
 
@@ -341,6 +364,7 @@ StructureConfig
   execution_mode
   target_backend
   target_profile
+  target_variant
   compat_targets
   hook_target_default
   traceability

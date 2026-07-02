@@ -4,6 +4,7 @@ from structure.app.cli.model.DiscoveredStructureProject import DiscoveredStructu
 from structure.app.compiler.api import Compiler
 from structure.app.configuration.model.StructureConfig import StructureConfig
 from structure.app.dsl.model.transforms.Transform import Transform
+from structure.app.target.capabilities.api import Capabilities
 from structure.app.target.pyspark.api import PySpark
 
 
@@ -17,10 +18,15 @@ class RenderConfiguredPySparkProject:
         transforms: tuple[type[Transform], ...] | None = None,
     ) -> dict[str, str]:
         files: dict[str, str] = {}
+        capabilities = Capabilities.resolve()(
+            target_backend=config.target_backend,
+            target_profile=config.target_profile,
+            target_variant=config.target_variant,
+        )
         for transform in transforms or project.transforms:
             files.update(
                 PySpark.render.project()(
-                    PySpark.plan.lower()(Compiler.frontend.compile()(transform)),
+                    PySpark.plan.lower()(Compiler.frontend.compile()(transform), capabilities=capabilities),
                     source_transform=f"{transform.__module__}.{transform.__name__}",
                     source_schema_modules=project.schema_modules,
                     generated_package=config.generated_package,

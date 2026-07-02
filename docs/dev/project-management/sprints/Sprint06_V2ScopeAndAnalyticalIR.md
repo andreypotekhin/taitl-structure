@@ -28,7 +28,7 @@ diagnostics, traceability, and tests.
 
 - Full lowering for aggregation, windowing, higher-order functions, or analytical joins.
 - Streaming orchestration.
-- Spark Connect support.
+- Spark Connect parity work beyond reserving the PySpark variant shape.
 - Automatic cost-based optimization or join reordering.
 
 ## Relevant Specification Items

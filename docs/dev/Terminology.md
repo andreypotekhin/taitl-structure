@@ -296,7 +296,7 @@ Joined scopes are essential for deterministic aliasing, nullability adjustment, 
 Example:
 
 ```python
-customer = join_one(on=order.customer_id == customer.id)
+join_one(on=order.customer_id == customer.id)
 customer.tier  # FieldRef(scope="customers#1", field="tier")
 ```
 

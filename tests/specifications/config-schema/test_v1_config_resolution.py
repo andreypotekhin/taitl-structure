@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
 
+from structure import StructureConfig
 from structure.app.configuration.api import ConfigError, Configuration
 
 
@@ -28,9 +29,11 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert config.generated_package == "structure_generated"
         assert config.execution_mode == "online"
         assert config.target_profile == ">=3.5,<4.1"
+        assert config.target_variant == "ordinary"
         assert config.compat_targets == ()
         assert config.hook_target_default == ("pyspark",)
         assert config.source_map["target_profile"] == "default"
+        assert config.source_map["target_variant"] == "default"
         assert config.source_map["generated_package"] == "default"
 
 
@@ -55,6 +58,55 @@ def test_v1_config_precedence_is_cli_pyproject_structure_defaults() -> None:
         assert config.traceability == "none"
         assert config.source_map["generated_package"] == "CLI"
         assert config.source_map["traceability"] == "structure.toml"
+
+
+def test_v1_programmatic_config_precedence_is_api_pyproject_structure_defaults() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            '[tool.structure]\ngenerated_package = "from_structure"\ntraceability = "none"\n',
+            encoding="utf-8",
+        )
+        (root / "pyproject.toml").write_text(
+            '[tool.structure]\ngenerated_package = "from_pyproject"\n',
+            encoding="utf-8",
+        )
+
+        config = StructureConfig.resolve(project_root=root, generated_package="from_programmatic")
+
+        assert config.generated_package == "from_programmatic"
+        assert config.traceability == "none"
+        assert config.source_map["generated_package"] == "programmatic"
+        assert config.source_map["traceability"] == "structure.toml"
+
+
+def test_v1_programmatic_config_accepts_mapping_overrides_for_dotted_keys() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+
+        config = StructureConfig.resolve(
+            project_root=root,
+            overrides={"spark.sql.ansi.enabled": False},
+        )
+
+        assert config.spark_sql["spark.sql.ansi.enabled"] is False
+        assert config.source_map["spark.sql.ansi.enabled"] == "programmatic"
+
+
+def test_v1_programmatic_config_rejects_duplicate_override_sources() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+
+        try:
+            StructureConfig.resolve(
+                project_root=root, overrides={"generated_package": "first"}, generated_package="next"
+            )
+        except ValueError as error:
+            message = str(error)
+        else:
+            raise AssertionError("duplicate programmatic overrides should fail")
+
+        assert "generated_package" in message
 
 
 def test_v1_config_unknown_key_suggests_known_key() -> None:
@@ -85,6 +137,7 @@ def test_v1_config_accepts_target_profile_and_future_backend_fields() -> None:
                 [
                     "[tool.structure]",
                     'target_profile = ">=3.5,<4.1"',
+                    'target_variant = "spark-connect"',
                     'compat_targets = ["polars", "duckdb"]',
                     'hook_target_default = ["pyspark"]',
                     "",
@@ -97,8 +150,29 @@ def test_v1_config_accepts_target_profile_and_future_backend_fields() -> None:
 
         assert config.target_backend == "pyspark"
         assert config.target_profile == ">=3.5,<4.1"
+        assert config.target_variant == "spark-connect"
         assert config.compat_targets == ("polars", "duckdb")
         assert config.hook_target_default == ("pyspark",)
+
+
+def test_v1_config_rejects_unknown_target_variant() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            '[tool.structure]\ntarget_variant = "classic"\n',
+            encoding="utf-8",
+        )
+
+        try:
+            Configuration.resolve()(project_root=root)
+        except ConfigError as error:
+            diagnostic = error.diagnostic
+        else:
+            raise AssertionError("unknown target_variant should fail")
+
+        assert diagnostic.code == "CONF-E0102"
+        assert diagnostic.setting == "target_variant"
+        assert "ordinary, spark-connect" in diagnostic.use
 
 
 def test_v1_config_rejects_legacy_target_pyspark_key() -> None:

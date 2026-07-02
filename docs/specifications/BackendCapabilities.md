@@ -44,11 +44,13 @@ BackendCapabilities
 BackendId
   name
   target
+  variant
   family
 ```
 
-For the default PySpark profile, `name = "pyspark"`, `target = ">=3.5,<4.1"`, and implementation
-`family = "ordinary_pyspark"`.
+For the default PySpark profile, `name = "pyspark"`, `target = ">=3.5,<4.1"`, `variant = "ordinary"`, and
+implementation `family = "ordinary_pyspark"`. For the experimental Spark Connect variant, `name = "pyspark"`,
+`target = ">=3.5,<4.1"`, `variant = "spark-connect"`, and semantic `family = "spark_connect_dataframe"`.
 Future alternative-backend reports may add semantic-family vocabulary such as `pyspark_dataframe` or `sql_relation`;
 that vocabulary must not require renaming the current v1 implementation family.
 
@@ -132,6 +134,7 @@ The default PySpark capability profile supports these requirements:
 
 ```text
 backend.ordinary_pyspark
+backend.spark_connect_dataframe
 expression.field_ref
 expression.literal
 expression.projection
@@ -152,6 +155,9 @@ join.left_semi_join
 join.left_anti_join
 join.composite_equi_join
 join.broadcast_hint
+aggregate.group_by
+aggregate.count
+aggregate.sum
 validation.schema_only_validation
 validation.strict_projection
 validation.allow_extra_projection
@@ -167,9 +173,6 @@ Deferred features must be represented as unsupported decisions. Examples:
 ```text
 join.temporal_one
 join.as_of_one
-aggregate.group_by
-aggregate.count
-aggregate.sum
 window.window_project
 higher_order.array_transform
 higher_order.array_filter
@@ -180,7 +183,6 @@ docs.generated_docs
 compile.incremental
 streaming.stream_stream_join
 streaming.streaming_orchestration
-backend.spark_connect
 ```
 
 Unsupported does not mean impossible forever. It means the feature is not part of the current backend contract and must
@@ -196,6 +198,7 @@ Minimum profile data:
 BackendId
   name
   target
+  variant
   family
 
 CapabilityProfile
@@ -240,6 +243,29 @@ wait until the feature's specification and backend profile promote it.
 Both diagnostics must include backend, target range, feature group, feature name, problem, rationale, suggested fix,
 and documentation link.
 
+## PySpark Target Variants
+
+`target_backend = "pyspark"` supports target variants inside the same PySpark-family adapter.
+
+```toml
+target_backend = "pyspark"
+target_profile = ">=3.5,<4.1"
+target_variant = "ordinary"
+```
+
+The ordinary variant uses a normal in-process PySpark `SparkSession`, `DataFrame`, and `Column` contract. Its backend
+family is `ordinary_pyspark`.
+
+```toml
+target_backend = "pyspark"
+target_profile = ">=3.5,<4.1"
+target_variant = "spark-connect"
+```
+
+The Spark Connect variant uses the PySpark DataFrame and Column API over a remote session. Its backend family is
+`spark_connect_dataframe`. It must reject classic-only assumptions before execution or generation, including
+SparkContext, RDDs, direct JVM/Py4J access, `_jdf`, and private classic PySpark implementation fields.
+
 ## No-Spark Contract
 
 Capability selection and checks must not import PySpark, start Java, create a `SparkSession`, connect to a Spark
@@ -250,7 +276,10 @@ Runtime PySpark execution tests may import PySpark. Capability tests and compile
 
 ## Acceptance Criteria
 
-- `target_backend = "pyspark"` with `target_profile = ">=3.5,<4.1"` resolves a PySpark capability profile.
+- `target_backend = "pyspark"` with `target_profile = ">=3.5,<4.1"` and `target_variant = "ordinary"` resolves the
+  ordinary PySpark capability profile.
+- `target_backend = "pyspark"` with `target_variant = "spark-connect"` resolves the experimental Spark Connect
+  PySpark-variant capability profile.
 - Unknown `target_backend` fails with `BACKEND-E2401`.
 - Unsupported feature requirements fail with `BACKEND-E2402`.
 - Future backend profiles can report degraded, opaque, and unknown capabilities without importing backend runtimes.

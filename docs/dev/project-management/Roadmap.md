@@ -144,7 +144,7 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
 ### v2 non-goals
 
 - Full streaming orchestration. v2 only maintains compatibility classification for caller-owned streaming DataFrames.
-- Spark Connect support.
+- Full supported Spark Connect promotion. End-of-v2 experimental parity for completed batch features remains in scope.
 - Automatic cost-based optimization, join reordering, or storage write planning.
 - Hidden UDF lowering or arbitrary Python execution in compiled paths.
 - Right, full, and cross joins unless a later design explicitly admits them.
@@ -167,14 +167,14 @@ v1/v2 only maintain streaming compatibility when callers pass streaming DataFram
 
 ## v4 Scope
 
-v4 adds Spark Connect support after the ordinary PySpark online/generated contract and streaming orchestration semantics
-are stable.
+v4 promotes Spark Connect from experimental to supported if parity evidence, diagnostics, and CI are complete;
+otherwise it continues hardening the PySpark variant.
 
 ### v4 candidate features
 
-- Spark Connect online/generated contract.
-- Spark Connect compatibility tests.
-- Backend capability reporting for ordinary PySpark and Spark Connect targets.
+- Spark Connect support promotion or hardening.
+- Expanded Spark Connect compatibility tests.
+- Backend capability reporting for ordinary PySpark and Spark Connect variants.
 - Public migration notes for projects that want Connect-compatible generated code.
 
 ## Release Milestones
@@ -188,6 +188,6 @@ are stable.
 | M4 | Hook model and no-hook generated-code cleanliness | Sprint 04 |
 | M5 | Joins, compiler traceability, build integration | Sprint 05 |
 | M6 | v1 stabilization and docs/examples | follow-up hardening sprint |
-| M7 | v2 analytical pipeline features, analytical join coverage, and adoption tooling | Sprints 06-09 |
+| M7 | v2 analytical pipeline features, analytical join coverage, adoption tooling, and Spark Connect experimental parity | Sprints 06-09 |
 | M8 | v3 streaming orchestration | future v3 sprints |
-| M9 | v4 Spark Connect backend expansion | future v4 sprints |
+| M9 | v4 Spark Connect promotion or hardening | future v4 sprints |

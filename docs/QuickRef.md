@@ -143,7 +143,7 @@ def add_product(
     order: OrderRaw,
     product: Product,
 ) -> tuple[OrderWithProduct, OrderWithProduct]:
-    product = join_one(
+    join_one(
         on=order.product_id == product.id,
         how=Join.LEFT,
     )
@@ -186,9 +186,10 @@ Constructing a transform binds inputs without starting Spark work. Running it th
 configured runtime target.
 
 ```python
-from structure import StructureSession
+from structure import StructureConfig, StructureSession
 
-session = StructureSession(spark=spark, ctx=ctx)
+config = StructureConfig.resolve(project_root=".")
+session = StructureSession(spark=spark, ctx=ctx, config=config)
 
 result = EnrichOrders(
     orders=orders_df,
@@ -493,9 +494,8 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
     )
 ```
 
-For relation parameters and class input scopes, assigning the returned joined scope is optional when the `on`
-clause names exactly one unjoined relation. Use `join_one(relation, on=...)` only when the condition is ambiguous or
-the compiler cannot infer the intended relation.
+For relation parameters and class input scopes, the documented style is a bare inferred join. When the `on` clause
+names exactly one unjoined relation, later reads from that relation parameter or input scope use the joined scope.
 
 Use existence predicates when the right side decides whether the current row survives but does not contribute
 fields:
@@ -523,7 +523,7 @@ join_many(
 Use deterministic lookup dedupe when duplicate right-side rows exist but the business rule still selects one row:
 
 ```python
-product = join_one(
+join_one(
     on=product.id == order.product_id,
     how=Join.LEFT,
     dedupe=JoinDedupe.latest_by(product.audit.ingested_at, ties=TiePolicy.ERROR),
@@ -569,7 +569,7 @@ fields and name only the joined fields.
 
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-    customer = join_one(
+    join_one(
         on=order.customer_id == customer.id,
         how=Join.LEFT,
         hint=JoinHint.BROADCAST,
@@ -660,11 +660,14 @@ PySpark 3.5.x and 4.0.x by default:
 
 ```toml
 execution_mode = "online"
+target_backend = "pyspark"
 target_profile = ">=3.5,<4.1"
+target_variant = "ordinary"
 ```
 
-Spark Connect support is planned for v4 unless it can be added earlier without changing the public DSL,
-generated class API, or streaming orchestration contract. See [Compatibility.md](Compatibility.md).
+Spark Connect uses `target_backend = "pyspark"` with `target_variant = "spark-connect"`. It is planned as an
+experimental end-of-v2 variant for completed v1/v2 batch features, with full support gated by parity evidence.
+See [Compatibility.md](Compatibility.md).
 
 Reference: [compatibility policy](specifications/CompatibilityPolicy.md) and
 [backend capabilities](specifications/BackendCapabilities.md).

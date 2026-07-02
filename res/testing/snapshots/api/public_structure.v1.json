@@ -218,6 +218,36 @@
       "qualname": "StructureCompileError",
       "signature": "(diagnostic: 'Diagnostic') -> 'None'"
     },
+    "StructureConfig": {
+      "dataclass_fields": [
+        "project_root",
+        "source_roots",
+        "generated_dir",
+        "generated_package",
+        "execution_mode",
+        "target_backend",
+        "target_profile",
+        "target_variant",
+        "compat_targets",
+        "hook_target_default",
+        "traceability",
+        "validate_inputs",
+        "input_validation_mode",
+        "validate_intermediate",
+        "intermediate_validation_mode",
+        "validate_outputs",
+        "output_validation_mode",
+        "strict_performance",
+        "fail_on_diff",
+        "spark_sql",
+        "source_map"
+      ],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.app.configuration.model.StructureConfig",
+      "qualname": "StructureConfig",
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', execution_mode: 'str', target_backend: 'str', target_profile: 'str', target_variant: 'str', compat_targets: 'tuple[str, ...]', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', source_map: 'Mapping[str, str]') -> None"
+    },
     "StructureRuntimeError": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -232,7 +262,7 @@
       "kind": "class",
       "module": "structure.app.runtime.session.model.StructureSession",
       "qualname": "StructureSession",
-      "signature": "(*, spark=None, ctx=None, execution_mode: 'str' = 'online', target_backend: 'str' = 'pyspark', generated_package: 'str' = 'structure_generated', schema_types=None, online_executor: 'Callable[..., object] | None' = None) -> 'None'"
+      "signature": "(*, spark=None, ctx=None, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, execution_mode: 'str | None' = None, target_backend: 'str | None' = None, target_profile: 'str | None' = None, target_variant: 'str | None' = None, generated_package: 'str | None' = None, schema_types=None, online_executor: 'Callable[..., object] | None' = None) -> 'None'"
     },
     "StructureTools": {
       "dataclass_fields": [],
@@ -376,7 +406,7 @@
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "group_by",
-      "signature": "(**keys: 'object') -> 'None'"
+      "signature": "(*keys: 'object', **named_keys: 'object') -> \"'GroupedRows'\""
     },
     "input": {
       "dataclass_fields": [],

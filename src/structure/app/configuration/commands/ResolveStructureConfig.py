@@ -21,6 +21,7 @@ class ResolveStructureConfig:
         "execution_mode",
         "target_backend",
         "target_profile",
+        "target_variant",
         "compat_targets",
         "hook_target_default",
         "traceability",
@@ -48,18 +49,23 @@ class ResolveStructureConfig:
         *,
         project_root: Path | str | None = None,
         overrides: Mapping[str, object] | None = None,
+        override_source: str = "CLI",
     ) -> StructureConfig:
         root = Path(project_root or Path.cwd()).resolve()
         values, sources = self._defaults.resolve(root)
         self._merger.merge(values, sources, self._loader.structure_toml(root), "structure.toml")
         self._merger.merge(values, sources, self._loader.pyproject(root), "pyproject.toml [tool.structure]")
         self._merger.merge(
-            values, sources, {key: value for key, value in (overrides or {}).items() if value is not None}, "CLI"
+            values,
+            sources,
+            {key: value for key, value in (overrides or {}).items() if value is not None},
+            override_source,
         )
         self._validator.validate(values, root)
         Capabilities.resolve()(
             target_backend=str(values["target_backend"]),
             target_profile=str(values["target_profile"]),
+            target_variant=str(values["target_variant"]),
         )
         return self._builder.build(root, values, sources)
 

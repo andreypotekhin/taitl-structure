@@ -11,6 +11,7 @@ class StructureConfigValidator:
     _enums = {
         "execution_mode": ("online", "generated"),
         "target_backend": ("pyspark",),
+        "target_variant": ("ordinary", "spark-connect"),
         "traceability": ("none", "compiler", "columns", "debug"),
         "input_validation_mode": ("off", "schema_only", "schema_and_constraints"),
         "intermediate_validation_mode": ("off", "schema_only", "schema_and_constraints"),

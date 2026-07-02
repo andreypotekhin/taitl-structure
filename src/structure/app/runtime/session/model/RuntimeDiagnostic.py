@@ -16,6 +16,8 @@ class RuntimeDiagnostic:
     problem: str
     use: str
     docs: str
+    target_profile: str = ">=3.5,<4.1"
+    target_variant: str = "ordinary"
     context: Mapping[str, str] = field(default_factory=dict)
 
     def to_diagnostic(self) -> Diagnostic:
@@ -23,6 +25,8 @@ class RuntimeDiagnostic:
             "transform": self.transform,
             "execution_mode": self.execution_mode,
             "target_backend": self.target_backend,
+            "target_profile": self.target_profile,
+            "target_variant": self.target_variant,
         }
         context.update(self.context)
         return Diagnostic(

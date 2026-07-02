@@ -12,9 +12,11 @@ Structure pipelines express filtering, joins, projections, hydration, and normal
 while Spark still sees optimizer-visible DataFrame logic.
 
 ## Nutshell
-Define schemas. Define transforms. Run.
+Define schemas. Define transforms. Run transforms.
 
 ### Example Schema
+
+Schema classes (direct or indirect subclasses of Structure) compile to PySpark schemas (StructType, StructField).
 
 ```python
 from structure import Structure, field, String, Decimal
@@ -54,6 +56,8 @@ class Product(Structure):
 
 ### Example Transform
 
+Transform class compiles into PySpark code operating on DataFrames (See 'Generated code' section below.)
+
 ```python
 from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
 from orders.schemas.customer import Customer
@@ -91,8 +95,7 @@ class EnrichOrders(Transform):
         return orders.where(F.col("total") >= 0)
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        customer = join_one(
-            customer,
+        join_one(
             on=order.customer_id == customer.id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
@@ -127,13 +130,14 @@ class EnrichOrders(Transform):
 
 ### Running a Transform
 
-Bind DataFrame inputs and call `.run(session)`:
+For transform object, specify DataFrame inputs and call `.run(session)`:
 
 ```python
-from structure import StructureSession
+from structure import StructureConfig, StructureSession
 from orders.transforms.order import EnrichOrders
 
-session = StructureSession(spark=spark, ctx=ctx)
+config = StructureConfig.resolve(project_root=".")
+session = StructureSession(spark=spark, ctx=ctx, config=config)
 
 result = EnrichOrders(
     orders=orders_df,
@@ -146,7 +150,7 @@ enriched_df = result.enriched
 
 ### Generated PySpark Code
 
-Transforms' .run() method generates and runs PySpark similar to the code below. 
+Transforms' .run() method generates and runs PySpark code similar to the code below. 
 
 We can also generate PySpark source code into a file, if that's needed for your project.
 
@@ -253,6 +257,13 @@ For custom logic, create expression helpers with `@expr_fn`. This keeps expressi
 
 Arbitrary PySpark is still supported, but only through explicit hooks. Hooks receive the underlying DataFrame(s) for arbitrary manipulation. Hooks are escape hatches: Structure calls them, records them as opaque boundaries, but does not treat their body as compiler-visible logic.
 
+## IDE Focus
+
+Python-first approach allows for IDE conveniences, such as:
+- Jumping to schema class definition from arbitrary line in code
+- Navigating to the locations where a schema/transform class is used
+- Showing and navigating inheritance hierarchy of schema classes 
+
 ## Compatibility
 
 Structure targets Python 3.11+, PySpark 3.5.x and 4.0.x, Linux runtimes, and Linux/macOS/Windows development
@@ -260,8 +271,8 @@ environments.
 
 Airflow can call online or generated transforms. It is not a Structure dependency.
 
-Spark Connect support is scheduled for v4 unless it can be added earlier without changing the public DSL,
-generated class API, generated-code review model, or streaming orchestration contract.
+Ordinary PySpark is the default target. Spark Connect is planned as an experimental end-of-v2 PySpark variant for
+completed v1/v2 batch features. Full support depends on parity evidence, diagnostics, and CI coverage.
 
 See [Compatibility.md](docs/Compatibility.md) for the full versioning and compatibility policy.
 
@@ -290,7 +301,9 @@ See [License.md](License.md)
   streaming-compatible transforms, diagnostic links, and setup checks.
 - **v2:** mainstream analytical features: existence joins, `join_many(...)`, deterministic lookup dedupe,
   temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions,
-  caching/persistence/repartition hints, richer explain output, generated docs, and pytest helpers.
+  caching/persistence/repartition hints, richer explain output, generated docs, pytest helpers, and experimental
+  Spark Connect parity for completed v1/v2 batch features.
 - **v3:** streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, output
   modes, and stateful policies.
-- **v4:** Spark Connect support and backend capability reporting.
+- **v4:** promote Spark Connect from experimental to supported if parity evidence, diagnostics, and CI are complete;
+  otherwise continue hardening.

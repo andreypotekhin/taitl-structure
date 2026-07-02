@@ -1,3 +1,6 @@
+from structure.app.target.pyspark.model.PySparkAggregateAssignment import PySparkAggregateAssignment
+from structure.app.target.pyspark.model.PySparkAggregateKey import PySparkAggregateKey
+from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
@@ -11,6 +14,9 @@ from structure.app.target.pyspark.model.PySparkStepResultRecipe import PySparkSt
 from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 __all__ = [
+    "PySparkAggregateAssignment",
+    "PySparkAggregateKey",
+    "PySparkAggregateRecipe",
     "PySparkExecutionPlan",
     "PySparkExpressionRecipe",
     "PySparkHookRecipe",

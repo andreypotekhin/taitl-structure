@@ -30,6 +30,7 @@ class WriteStructureConfig:
             'execution_mode = "online"',
             'target_backend = "pyspark"',
             'target_profile = ">=3.5,<4.1"',
+            'target_variant = "ordinary"',
             'hook_target_default = ["pyspark"]',
             'traceability = "compiler"',
         ]

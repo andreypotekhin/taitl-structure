@@ -7,6 +7,10 @@ from structure.app.configuration.model.ConfigError import ConfigError
 
 class StructureConfigMerger:
 
+    _retired = {
+        "target_pyspark": 'Use target_profile = ">=3.5,<4.1".',
+    }
+
     def __init__(self, keys: set[str]) -> None:
         self._keys = keys
 
@@ -20,6 +24,15 @@ class StructureConfigMerger:
             sources[key] = source
 
     def _fail_unknown(self, key: str) -> None:
+        if key in self._retired:
+            raise ConfigError(
+                ConfigDiagnostic(
+                    code="CONF-E0101",
+                    setting=key,
+                    problem="Unknown configuration key",
+                    use=self._retired[key],
+                )
+            )
         suggestion = difflib.get_close_matches(key, self._keys, n=1)
         use = (
             f"Did you mean {suggestion[0]}?"

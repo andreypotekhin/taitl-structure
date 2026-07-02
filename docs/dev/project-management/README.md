@@ -79,4 +79,5 @@ V2 starts after v1 stabilization evidence is release-ready. The v2 sprint sequen
 4. **Sprint 09: optimization, explain, docs, and test tooling**: explicit optimization directives, richer explain
    output, generated documentation artifacts, pytest helpers, and production incremental compile.
 
-V3 is reserved for streaming orchestration, and V4 is reserved for Spark Connect backend expansion.
+V3 is reserved for streaming orchestration. V4 is reserved for Spark Connect promotion or hardening after end-of-v2
+experimental parity evidence exists.

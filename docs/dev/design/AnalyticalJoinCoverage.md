@@ -73,7 +73,7 @@ construction still decides which fields survive.
 Deterministic dedupe should be explicit on `join_one(...)`:
 
 ```python
-customer = join_one(
+join_one(
     on=self.customer_snapshots.id == order.customer_id,
     how=Join.LEFT,
     dedupe=JoinDedupe.latest_by(

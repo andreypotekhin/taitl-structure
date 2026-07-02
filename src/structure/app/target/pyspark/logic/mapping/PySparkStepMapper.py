@@ -1,3 +1,4 @@
+from structure.app.compiler.ir.model.AggregatePlan import AggregatePlan
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationCapability import OperationCapability
@@ -9,6 +10,9 @@ from structure.app.target.pyspark.logic.mapping.PySparkExpressionMapper import P
 from structure.app.target.pyspark.logic.mapping.PySparkHookMapper import PySparkHookMapper
 from structure.app.target.pyspark.logic.mapping.PySparkNameMapper import PySparkNameMapper
 from structure.app.target.pyspark.logic.mapping.PySparkValidationMapper import PySparkValidationMapper
+from structure.app.target.pyspark.model.PySparkAggregateAssignment import PySparkAggregateAssignment
+from structure.app.target.pyspark.model.PySparkAggregateKey import PySparkAggregateKey
+from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
 from structure.app.target.pyspark.model.PySparkJoinAsOfRecipe import PySparkJoinAsOfRecipe
 from structure.app.target.pyspark.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
@@ -53,6 +57,9 @@ class PySparkStepMapper:
                 ordinal=result.ordinal,
                 after_hooks=tuple(self._hooks.map(hook) for hook in result.after_hooks),
                 validations=self._validations.result(result, last=last),
+                aggregate=(
+                    None if result.aggregate is None else self._aggregate(result.aggregate, capabilities=capabilities)
+                ),
             )
             for result in step.results
         )
@@ -71,6 +78,7 @@ class PySparkStepMapper:
             projection=tuple(self._projection(assignment, capabilities=capabilities) for assignment in step.projection),
             after_hooks=tuple(self._hooks.map(hook) for hook in step.after_hooks),
             validations=self._validations.step(step, last=last),
+            aggregate=None if step.aggregate is None else self._aggregate(step.aggregate, capabilities=capabilities),
             results=results,
             operations=operations,
         )
@@ -101,7 +109,47 @@ class PySparkStepMapper:
                         )
                     )
                 )
+            if operation.kind == "aggregate" and operation.aggregate is not None:
+                recipes.append(
+                    PySparkOperationRecipe.aggregate_operation(
+                        self._aggregate(operation.aggregate, capabilities=capabilities)
+                    )
+                )
         return tuple(recipes)
+
+    def _aggregate(
+        self,
+        aggregate: AggregatePlan,
+        *,
+        capabilities: BackendCapabilities,
+    ) -> PySparkAggregateRecipe:
+        capabilities.require(CapabilityRequirement(group="aggregate", name="group_by"))
+        assignments: list[PySparkAggregateAssignment] = []
+        for assignment in aggregate.assignments:
+            if assignment.function in {"count", "sum"}:
+                capabilities.require(CapabilityRequirement(group="aggregate", name=assignment.function))
+            assignments.append(
+                PySparkAggregateAssignment(
+                    field=assignment.field,
+                    function=assignment.function,
+                    expression=(
+                        None
+                        if assignment.expression is None
+                        else self._expressions.map(assignment.expression, capabilities=capabilities)
+                    ),
+                    key=assignment.key,
+                )
+            )
+        return PySparkAggregateRecipe(
+            keys=tuple(
+                PySparkAggregateKey(
+                    name=key.name,
+                    expression=self._expressions.map(key.expression, capabilities=capabilities),
+                )
+                for key in aggregate.keys
+            ),
+            assignments=tuple(assignments),
+        )
 
     def _require_operation_capability(
         self,

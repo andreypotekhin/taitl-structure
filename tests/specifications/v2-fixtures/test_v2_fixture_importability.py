@@ -10,6 +10,7 @@ from structure import (
     Long,
     String,
     Structure,
+    StructureCompileError,
     TiePolicy,
     Transform,
     count,
@@ -22,7 +23,6 @@ from structure import (
 from structure.app.compiler.api import OperationCardinality
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.api import compile_transform
-from structure.app.target.capabilities.api import BackendCapabilityError
 from structure.app.target.pyspark.api import PySpark
 
 
@@ -136,7 +136,7 @@ def test_v2_order_fixture_records_deduped_product_lookup(monkeypatch: pytest.Mon
     assert lookup.dedupe.order_by.data["field"] == "audit.ingested_at"
 
 
-def test_reserved_group_by_fails_through_backend_capability() -> None:
+def test_group_by_lowers_to_aggregate_recipe() -> None:
     class Raw(Structure):
         customer_id = field(String(), nullable=False)
         quantity = field(Long(), nullable=False)
@@ -154,13 +154,73 @@ def test_reserved_group_by_fails_through_backend_capability() -> None:
             group_by(customer_id=row.customer_id)
             return Total(customer_id=row.customer_id, quantity=count())
 
-    with pytest.raises(BackendCapabilityError) as raised:
-        PySpark.plan.lower()(compile_transform(Totals))
+    plan = PySpark.plan.lower()(compile_transform(Totals))
 
-    diagnostic = raised.value.diagnostic
-    assert diagnostic.code == "BACKEND-E2402"
-    assert diagnostic.feature_group == "aggregate"
-    assert diagnostic.feature_name == "group_by"
+    operation = plan.steps[0].operations[0]
+    assert operation.kind == "aggregate"
+    assert operation.aggregate is not None
+    assert [key.name for key in operation.aggregate.keys] == ["customer_id"]
+    assert [(item.field.name, item.function) for item in operation.aggregate.assignments] == [
+        ("customer_id", "key"),
+        ("quantity", "count"),
+    ]
+
+
+def test_aggregate_expression_without_group_by_fails_in_frontend() -> None:
+    class Raw(Structure):
+        customer_id = field(String(), nullable=False)
+
+    class Total(Structure):
+        customer_id = field(String(), nullable=False)
+        quantity = field(Long(), nullable=False)
+
+    @transform
+    class Totals(Transform):
+        rows = input(Raw)
+        totals = output(Total)
+
+        def total(self, row: Raw) -> Total:
+            return Total(customer_id=row.customer_id, quantity=count())
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(Totals)
+
+    assert raised.value.diagnostic.code == "DSL-E0402"
+    assert "outside group_by" in raised.value.diagnostic.problem
+
+
+def test_v2_order_analytics_fixture_lowers_grouped_aggregates(monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_pyspark(monkeypatch)
+    module = importlib.import_module("testing.model.v2.orders.transforms.analytics")
+
+    plan = PySpark.plan.lower()(compile_transform(module.OrderAnalytics))
+
+    assert [step.name for step in plan.steps] == ["customer_daily_totals", "product_daily_summary"]
+    assert [step.operations[0].kind for step in plan.steps] == ["aggregate", "aggregate"]
+    aggregates = tuple(step.operations[0].aggregate for step in plan.steps)
+    assert all(aggregate is not None for aggregate in aggregates)
+    assert [
+        [(assignment.field.name, assignment.function) for assignment in aggregate.assignments]
+        for aggregate in aggregates
+        if aggregate is not None
+    ] == [
+        [
+            ("tenant", "first"),
+            ("customer_id", "key"),
+            ("order_date", "key"),
+            ("order_count", "count"),
+            ("gross_total", "sum"),
+            ("net_total", "sum"),
+        ],
+        [
+            ("tenant", "first"),
+            ("product_id", "key"),
+            ("order_date", "key"),
+            ("order_count", "count"),
+            ("units", "sum"),
+            ("gross_total", "sum"),
+        ],
+    ]
 
 
 def _stub_pyspark(monkeypatch: pytest.MonkeyPatch) -> None:

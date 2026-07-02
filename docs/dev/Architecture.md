@@ -114,9 +114,9 @@ DataFrame API. Future hook metadata must make that scope explicit through `targe
 `hook_target_default`, and runtime execution must never invoke a hook against a backend outside its effective target
 set.
 
-Spark Connect belongs to v4 unless it can be supported through this target boundary without changing public DSL syntax,
-online invocation construction, generated class construction, `run(...)` signatures, or streaming orchestration
-semantics.
+Spark Connect belongs inside this PySpark target boundary as `target_variant = "spark-connect"`. End-of-v2
+experimental parity is acceptable for completed batch features only if it does not change public DSL syntax, online
+invocation construction, generated class construction, `run(...)` signatures, or streaming orchestration semantics.
 
 ## Compile-Time Performance
 

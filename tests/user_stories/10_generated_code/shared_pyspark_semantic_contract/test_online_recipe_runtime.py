@@ -5,13 +5,16 @@ from typing import Any, cast
 
 import pytest
 
-from structure import AsOf, Join, JoinHint, JoinStrategy, SchemaMode, String, Structure, TiePolicy, field
+from structure import AsOf, Join, JoinHint, JoinStrategy, Long, SchemaMode, String, Structure, TiePolicy, field
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.runtime.execution.online.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 from structure.app.runtime.execution.online.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
 from structure.app.runtime.execution.online.logic.PySparkFrameValidator import PySparkFrameValidator
 from structure.app.runtime.session.model.TransformResult import TransformResult
 from structure.app.target.capabilities.model.BackendId import BackendId
+from structure.app.target.pyspark.model.PySparkAggregateAssignment import PySparkAggregateAssignment
+from structure.app.target.pyspark.model.PySparkAggregateKey import PySparkAggregateKey
+from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
@@ -51,6 +54,17 @@ class PublishedOrderId(Structure):
 
 class PublishedOrderStatus(Structure):
     status = field(String(), nullable=True)
+
+
+class RawMetric(Structure):
+    customer_id = field(String(), nullable=False)
+    quantity = field(Long(), nullable=False)
+
+
+class CustomerMetric(Structure):
+    customer_id = field(String(), nullable=False)
+    order_count = field(Long(), nullable=False)
+    quantity = field(Long(), nullable=False)
 
 
 class PermissivePublishedOrder(PublishedOrder):
@@ -259,6 +273,35 @@ def test_online_runner_applies_join_many_as_row_multiplying_join(monkeypatch) ->
         "join:customers:inner:(col(orders.id) == col(customers.id))",
         "select:id=col(orders.id),status=col(customers.segment)",
         "alias:published",
+    )
+
+
+def test_online_runner_applies_grouped_aggregate_recipe(monkeypatch) -> None:
+    """I can rely on online and generated execution to share v2 aggregate semantics."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(metrics=_frame("metrics", RawMetric))
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _aggregate_plan(),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target_backend="pyspark",
+        ),
+    )
+
+    totals = cast(FakeFrame, result.totals)
+
+    assert totals.operations == (
+        "alias:metrics",
+        "groupBy:customer_id=col(metrics.customer_id)",
+        "agg:order_count=cast(count(lit(1)) as LongType()),quantity=cast(sum(col(metrics.quantity)) as LongType())",
+        "select:customer_id=col(customer_id),order_count=col(order_count),quantity=col(quantity)",
+        "alias:totals",
     )
 
 
@@ -779,6 +822,90 @@ def _join_many_plan() -> PySparkExecutionPlan:
     )
 
 
+def _aggregate_plan() -> PySparkExecutionPlan:
+    input_validation = PySparkValidationRecipe("metrics", RawMetric, SchemaMode.STRICT, False, "input")
+    total_validation = PySparkValidationRecipe("totals", CustomerMetric, SchemaMode.STRICT, False, "output")
+    aggregate = PySparkAggregateRecipe(
+        keys=(
+            PySparkAggregateKey(
+                name="customer_id",
+                expression=_field(RawMetric, "customer_id"),
+            ),
+        ),
+        assignments=(
+            PySparkAggregateAssignment(
+                field=CustomerMetric._structure_fields["customer_id"],
+                function="key",
+                expression=_field(RawMetric, "customer_id"),
+                key="customer_id",
+            ),
+            PySparkAggregateAssignment(
+                field=CustomerMetric._structure_fields["order_count"],
+                function="count",
+            ),
+            PySparkAggregateAssignment(
+                field=CustomerMetric._structure_fields["quantity"],
+                function="sum",
+                expression=_field(RawMetric, "quantity"),
+            ),
+        ),
+    )
+    step = PySparkStepRecipe(
+        name="summarize",
+        ordinal=0,
+        source="metrics",
+        source_scope="metrics",
+        input_schema=RawMetric,
+        output_schema=CustomerMetric,
+        input_alias="metrics",
+        output_alias="totals",
+        before_hooks=(),
+        filters=(),
+        joins=(),
+        projection=(),
+        after_hooks=(),
+        validations=(total_validation,),
+        aggregate=aggregate,
+        results=(
+            PySparkStepResultRecipe(
+                schema=CustomerMetric,
+                lane="totals",
+                frame="totals",
+                output_alias="totals",
+                projection=(),
+                ordinal=0,
+                after_hooks=(),
+                validations=(total_validation,),
+                aggregate=aggregate,
+            ),
+        ),
+        operations=(PySparkOperationRecipe.aggregate_operation(aggregate),),
+    )
+    return PySparkExecutionPlan(
+        transform="CustomerMetricTotals",
+        backend=BackendId("PySpark", "3.5", "pyspark"),
+        inputs=(PySparkInputRecipe("metrics", RawMetric, 0, input_validation),),
+        steps=(step,),
+        outputs=(
+            PySparkOutputRecipe(
+                name="totals",
+                ordinal=0,
+                source="totals",
+                source_scope="totals",
+                input_schema=CustomerMetric,
+                output_schema=CustomerMetric,
+                input_alias="totals",
+                output_alias="totals",
+                filters=(),
+                joins=(),
+                projection=(),
+                validation=total_validation,
+            ),
+        ),
+        requires_hook_inputs=False,
+    )
+
+
 def _deduped_join_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
@@ -1218,6 +1345,8 @@ def _frame(name: str, schema: type[Structure]) -> "FakeFrame":
 def _type(value):
     if value.__class__.__name__ == "String":
         return FakeTypes.StringType()
+    if value.__class__.__name__ == "Long":
+        return FakeTypes.LongType()
     return FakeTypes.StringType()
 
 
@@ -1290,6 +1419,15 @@ class FakeFunctions(ModuleType):
 
     def coalesce(self, *columns):
         return FakeColumn("coalesce(" + ",".join(column.expression for column in columns) + ")")
+
+    def count(self, column):
+        return FakeColumn(f"count({column.expression})")
+
+    def sum(self, column):
+        return FakeColumn(f"sum({column.expression})")
+
+    def first(self, column, *, ignorenulls: bool):
+        return FakeColumn(f"first({column.expression}, ignorenulls={ignorenulls})")
 
     def when(self, condition, value):
         return FakeWhen(condition, value)
@@ -1447,6 +1585,9 @@ class FakeFrame:
             rendered.append(f"{name}={column.expression}")
         return FakeFrame(self.name, FakeSchema(tuple(fields)), self.operations + ("select:" + ",".join(rendered),))
 
+    def groupBy(self, *columns: FakeColumn):
+        return FakeGroupedFrame(self, columns)
+
     def with_operation(self, operation: str):
         return FakeFrame(self.name, self.schema, self.operations + (operation,))
 
@@ -1455,6 +1596,45 @@ class FakeFrame:
 
     def drop(self, name: str):
         return self.with_operation(f"drop:{name}")
+
+
+@dataclass(frozen=True)
+class FakeGroupedFrame:
+    frame: FakeFrame
+    keys: tuple[FakeColumn, ...]
+
+    def agg(self, *columns: FakeColumn):
+        fields_by_name = {schema_field.name: schema_field for schema_field in self.frame.schema}
+        key_fields = tuple(self._key_field(column, fields_by_name) for column in self.keys)
+        aggregate_fields = tuple(
+            FakeField(column.output_name or column.expression, self._type(column), True) for column in columns
+        )
+        group = "groupBy:" + ",".join(
+            f"{column.output_name or column.source_name or column.expression}={column.expression}"
+            for column in self.keys
+        )
+        aggregate = "agg:" + ",".join(
+            f"{column.output_name or column.expression}={column.expression}" for column in columns
+        )
+        return FakeFrame(
+            self.frame.name,
+            FakeSchema((*key_fields, *aggregate_fields)),
+            self.frame.operations + (group, aggregate),
+        )
+
+    def _type(self, column: FakeColumn):
+        if "LongType()" in column.expression:
+            return FakeTypes.LongType()
+        return FakeTypes.StringType()
+
+    def _key_field(self, column: FakeColumn, fields_by_name: dict[str, "FakeField"]) -> "FakeField":
+        name = column.output_name or column.source_name or column.expression
+        source = fields_by_name.get(column.source_name or "")
+        return FakeField(
+            name,
+            source.dataType if source else FakeTypes.StringType(),
+            source.nullable if source else True,
+        )
 
 
 @dataclass(frozen=True)

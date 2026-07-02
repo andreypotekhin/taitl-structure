@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
+from structure.app.compiler.ir.model.AggregatePlan import AggregatePlan
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationCapability import OperationCapability
@@ -15,6 +16,7 @@ class OperationPlan:
     kind: str
     filter: Expression | None = None
     join: JoinPlan | None = None
+    aggregate: AggregatePlan | None = None
     family: str | None = None
     capability: OperationCapability | None = None
     cardinality: OperationCardinality = OperationCardinality.UNKNOWN
@@ -48,6 +50,17 @@ class OperationPlan:
             capability=OperationCapability(group="join", name=join.method.value),
             cardinality=cardinality,
             streaming=StreamingSupport.UNKNOWN,
+        )
+
+    @staticmethod
+    def aggregate_operation(aggregate: AggregatePlan) -> "OperationPlan":
+        return OperationPlan(
+            kind="aggregate",
+            aggregate=aggregate,
+            family="aggregate",
+            capability=OperationCapability(group="aggregate", name="group_by"),
+            cardinality=OperationCardinality.AGGREGATE,
+            streaming=StreamingSupport.BATCH_ONLY,
         )
 
     @staticmethod

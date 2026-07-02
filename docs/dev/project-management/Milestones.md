@@ -208,10 +208,18 @@ Exit Criteria:
 - Triggers, checkpoints, output modes, watermarks, and state policies are modeled and tested.
 - Existing v1/v2 streaming compatibility behavior remains valid for caller-owned streaming orchestration.
 
-## M9: v4 Spark Connect
+## M7E: Spark Connect Experimental Parity
 
 ### Exit Criteria
 
-- Spark Connect support has a tested online/generated contract.
-- Public docs explain the difference between ordinary PySpark and Spark Connect targets.
-- Backend capability reporting prevents accidental use of unsupported APIs.
+- `target_backend = "pyspark"` plus `target_variant = "spark-connect"` is documented as the experimental Connect shape.
+- Completed v1/v2 batch features have parity evidence for the Spark Connect variant.
+- Classic-only internals fail through backend capability diagnostics before execution or generation.
+
+## M9: v4 Spark Connect Promotion
+
+### Exit Criteria
+
+- Spark Connect is promoted from experimental to supported only if parity evidence, diagnostics, and CI are complete.
+- Public docs explain the difference between ordinary PySpark and Spark Connect variants.
+- Backend capability reporting prevents accidental use of unsupported classic-only APIs.

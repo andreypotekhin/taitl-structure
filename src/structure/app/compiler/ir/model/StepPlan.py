@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from structure.app.compiler.ir.model.AggregatePlan import AggregatePlan
 from structure.app.compiler.ir.model.HookPlan import HookPlan
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
@@ -24,6 +25,7 @@ class StepPlan:
     filters: tuple[Expression, ...]
     projection: tuple[ProjectAssignment, ...]
     ordinal: int
+    aggregate: AggregatePlan | None = None
     joins: tuple[JoinPlan, ...] = ()
     operations: tuple[OperationPlan, ...] = ()
     before_hooks: tuple[HookPlan, ...] = ()

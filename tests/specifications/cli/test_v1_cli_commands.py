@@ -84,7 +84,10 @@ def test_v1_cli_init_writes_seed_config() -> None:
 
         assert result.exit_code == 0
         assert Path("structure.toml").exists()
-        assert 'generated_package = "structure_generated"' in Path("structure.toml").read_text(encoding="utf-8")
+        text = Path("structure.toml").read_text(encoding="utf-8")
+        assert 'generated_package = "structure_generated"' in text
+        assert 'target_profile = ">=3.5,<4.1"' in text
+        assert 'target_variant = "ordinary"' in text
 
 
 def test_v1_cli_check_is_spark_free_and_does_not_write_generated_files() -> None:
@@ -108,7 +111,15 @@ def test_v1_cli_check_accepts_reserved_compat_targets() -> None:
 
         result = CliRunner().invoke(
             cli,
-            ["check", "--target-profile", ">=3.5,<4.1", "--compat-targets", "polars,duckdb"],
+            [
+                "check",
+                "--target-profile",
+                ">=3.5,<4.1",
+                "--target-variant",
+                "spark-connect",
+                "--compat-targets",
+                "polars,duckdb",
+            ],
         )
 
         assert result.exit_code == 0, result.output

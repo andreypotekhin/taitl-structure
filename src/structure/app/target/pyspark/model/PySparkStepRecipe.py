@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
@@ -28,5 +29,6 @@ class PySparkStepRecipe:
     projection: tuple[PySparkProjectionRecipe, ...]
     after_hooks: tuple[PySparkHookRecipe, ...]
     validations: tuple[PySparkValidationRecipe, ...]
+    aggregate: PySparkAggregateRecipe | None = None
     results: tuple[PySparkStepResultRecipe, ...] = ()
     operations: tuple[PySparkOperationRecipe, ...] = ()

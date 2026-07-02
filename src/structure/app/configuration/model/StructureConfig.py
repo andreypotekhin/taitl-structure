@@ -14,6 +14,7 @@ class StructureConfig:
     execution_mode: str
     target_backend: str
     target_profile: str
+    target_variant: str
     compat_targets: tuple[str, ...]
     hook_target_default: tuple[str, ...] | str
     traceability: str
@@ -27,3 +28,22 @@ class StructureConfig:
     fail_on_diff: bool
     spark_sql: Mapping[str, object]
     source_map: Mapping[str, str]
+
+    @classmethod
+    def resolve(
+        cls,
+        *,
+        project_root: Path | str | None = None,
+        overrides: Mapping[str, object] | None = None,
+        **settings: object,
+    ) -> StructureConfig:
+        merged = dict(overrides or {})
+        duplicates = set(merged).intersection(settings)
+        if duplicates:
+            names = ", ".join(sorted(duplicates))
+            raise ValueError(f"Configuration override supplied twice: {names}.")
+        merged.update(settings)
+
+        from structure.app.configuration.commands.ResolveStructureConfig import ResolveStructureConfig
+
+        return ResolveStructureConfig()(project_root=project_root, overrides=merged, override_source="programmatic")

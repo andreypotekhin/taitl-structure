@@ -12,6 +12,7 @@ class StructureConfigDefaults:
             "execution_mode": "online",
             "target_backend": "pyspark",
             "target_profile": ">=3.5,<4.1",
+            "target_variant": "ordinary",
             "compat_targets": [],
             "hook_target_default": ["pyspark"],
             "traceability": "compiler",

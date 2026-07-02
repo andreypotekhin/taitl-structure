@@ -8,6 +8,8 @@ symbolic execution, IR, diagnostics, or compatibility checks.
 
 This design describes how Structure can grow from a PySpark runtime/compiler into a backend-neutral Structure compiler
 with Python-hosted target adapters for PySpark, Spark SQL, Pandas, Polars, DuckDB, and other relational DataFrame DSLs.
+Spark Connect remains inside the PySpark target as a variant because it uses the PySpark DataFrame and Column API over a
+remote session.
 
 ## Same-Source Goal
 
@@ -34,7 +36,6 @@ Initial candidates:
 - Spark SQL: PySpark-family SQL/relation target through Python `SparkSession` APIs.
 - Type-safe Python Dataset/DataFrame patterns: an investigation area for Python apps that want stronger static typing
   over PySpark DataFrames without leaving Python.
-- Spark Connect: PySpark-family target with client/server constraints, deferred until the contract is tested.
 - Pandas DataFrame: local eager target, valuable for small data, tests, examples, and developer tooling.
 - Polars LazyFrame: local or distributed-adjacent lazy target, strong expression model, good fit for compiler-visible
   IR.
@@ -46,9 +47,10 @@ Initial candidates:
 
 Roadmap priority:
 
-- v2: PySpark-family targets first, including Spark SQL exploration and typed Python DataFrame/Dataset patterns.
+- v2: PySpark-family targets first, including Spark SQL exploration, typed Python DataFrame/Dataset patterns, and
+  end-of-v2 experimental Spark Connect parity for completed v1/v2 batch features.
 - v3: Polars LazyFrame and DuckDB as the first non-PySpark targets.
-- v4: Ibis as a meta-backend.
+- v4: Ibis as a meta-backend, plus Spark Connect promotion or hardening if parity evidence is complete.
 - Beyond v4: other targets only through Ibis when Ibis supports them, unless a later design reopens direct support.
 - Deferred: Dask DataFrame and Ray Dataset until after the relational core is stable.
 

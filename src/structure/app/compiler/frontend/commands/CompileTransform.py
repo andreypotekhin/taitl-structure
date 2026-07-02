@@ -6,6 +6,9 @@ from typing import cast, get_args, get_origin, get_type_hints
 from structure.app.compiler.diagnostics.api import StructureCompileError
 from structure.app.compiler.frontend.logic.CompilerHookCollector import CompilerHookCollector
 from structure.app.compiler.frontend.logic.CompilerInputCollector import CompilerInputCollector
+from structure.app.compiler.ir.model.AggregateAssignment import AggregateAssignment
+from structure.app.compiler.ir.model.AggregateKey import AggregateKey
+from structure.app.compiler.ir.model.AggregatePlan import AggregatePlan
 from structure.app.compiler.ir.model.HookPlan import HookPlan
 from structure.app.compiler.ir.model.InputPlan import InputPlan
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
@@ -171,6 +174,14 @@ class CompileTransform:
                 output_schemas,
                 result,
             )
+            if context.aggregate_keys is not None and len(values) > 1:
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=name,
+                    problem=f"{transform_class.__name__}.{name} uses group_by(...) with multiple returned schemas.",
+                    use="Return one aggregate schema per grouped subtransform.",
+                )
             result_plans: list[StepResultPlan] = []
             after_hooks = hooks.get(("after", name), ())
             for hook in after_hooks:
@@ -200,13 +211,27 @@ class CompileTransform:
                     multiple=len(output_schemas) > 1,
                 )
                 frame = output_lane
+                aggregate = (
+                    None
+                    if context.aggregate_keys is None
+                    else self._aggregate_plan(
+                        transform_class,
+                        name,
+                        output_schema,
+                        value,
+                        keys=context.aggregate_keys,
+                        filters=context.filters,
+                    )
+                )
                 result_plans.append(
                     StepResultPlan(
                         schema=output_schema,
                         lane=output_lane,
                         frame=frame,
                         projection=tuple(
-                            self._assignments(
+                            ()
+                            if aggregate is not None
+                            else self._assignments(
                                 transform_class,
                                 name,
                                 output_schema,
@@ -215,10 +240,13 @@ class CompileTransform:
                             )
                         ),
                         ordinal=ordinal,
+                        aggregate=aggregate,
                         after_hooks=selected_hooks,
                     )
                 )
             first = result_plans[0]
+            if first.aggregate is not None:
+                context.operations.append(OperationPlan.aggregate_operation(first.aggregate))
             driver = bindings[0]
             before_hooks = self._before_hooks(
                 transform_class,
@@ -245,6 +273,7 @@ class CompileTransform:
                     filters=tuple(context.filters),
                     projection=first.projection,
                     ordinal=len(steps),
+                    aggregate=first.aggregate,
                     joins=tuple(context.joins),
                     operations=tuple(context.operations),
                     before_hooks=before_hooks,
@@ -332,6 +361,16 @@ class CompileTransform:
                         )
                 if operation.join.method.exposes_fields():
                     joined.add(operation.join.input_name)
+            if operation.kind == "aggregate" and operation.aggregate is not None:
+                reads = set().union(*(self._scopes(key.expression) for key in operation.aggregate.keys))
+                reads.update(
+                    *(
+                        self._scopes(assignment.expression)
+                        for assignment in operation.aggregate.assignments
+                        if assignment.expression is not None
+                    )
+                )
+                self._validate_joined_relation_reads(transform_class, member, relation_scopes, joined, reads)
 
         reads = set().union(
             *(self._scopes(assignment.expression) for result in results for assignment in result.projection)
@@ -1380,6 +1419,99 @@ class CompileTransform:
             )
         return assignments
 
+    def _aggregate_plan(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        output_schema: type[Structure],
+        result: Structure | Projection,
+        *,
+        keys: tuple[tuple[str, Expression], ...],
+        filters: tuple[Expression, ...] | list[Expression],
+    ) -> AggregatePlan:
+        if isinstance(result, Projection) or not isinstance(result, output_schema):
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"{transform_class.__name__}.{member} uses group_by(...) but does not return {output_schema.__name__}.",
+                use="Return an aggregate output schema instance with grouped keys and aggregate expressions.",
+            )
+
+        aggregate_keys = tuple(AggregateKey(name=name, expression=expression) for name, expression in keys)
+        assignments: list[AggregateAssignment] = []
+        for field in output_schema._structure_fields.values():
+            if field.name not in result._structure_values:
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=member,
+                    problem=f"{output_schema.__name__}.{field.name} is not assigned.",
+                    use="Assign every aggregate output field.",
+                    context={"field": field.name, "schema": output_schema.__name__},
+                )
+            expression = literal(result._structure_values[field.name])
+            key = self._aggregate_key_for(field.name, expression, aggregate_keys)
+            if key is not None:
+                self._assignment(transform_class, member, output_schema, field, expression, filters=filters)
+                assignments.append(
+                    AggregateAssignment(field=field, function="key", expression=expression, key=key.name)
+                )
+                continue
+            if expression.kind == "aggregate":
+                self._assignment(
+                    transform_class,
+                    member,
+                    output_schema,
+                    field,
+                    expression,
+                    filters=(),
+                    allow_aggregate=True,
+                )
+                function = str((expression.data or {}).get("function"))
+                argument = expression.args[0] if expression.args else None
+                assignments.append(AggregateAssignment(field=field, function=function, expression=argument))
+                continue
+            if self._can_first(expression, aggregate_keys):
+                self._assignment(transform_class, member, output_schema, field, expression, filters=filters)
+                assignments.append(AggregateAssignment(field=field, function="first", expression=expression))
+                continue
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"{output_schema.__name__}.{field.name} is neither a grouped key nor an aggregate expression.",
+                use="Assign a group_by(...) key, count(), sum(...), or a grouped parent field.",
+                context={"field": field.name, "schema": output_schema.__name__},
+            )
+        return AggregatePlan(keys=aggregate_keys, assignments=tuple(assignments))
+
+    def _aggregate_key_for(
+        self,
+        field: str,
+        expression: Expression,
+        keys: tuple[AggregateKey, ...],
+    ) -> AggregateKey | None:
+        for key in keys:
+            if key.name == field or self._same_expression(key.expression, expression):
+                return key
+        return None
+
+    def _can_first(self, expression: Expression, keys: tuple[AggregateKey, ...]) -> bool:
+        return any(self._field_contains(expression, key.expression) for key in keys)
+
+    def _same_expression(self, left: Expression, right: Expression) -> bool:
+        return left.kind == right.kind and left.data == right.data and left.args == right.args
+
+    def _field_contains(self, parent: Expression, child: Expression) -> bool:
+        if parent.kind != "field" or child.kind != "field" or not parent.data or not child.data:
+            return False
+        if parent.data.get("scope") != child.data.get("scope"):
+            return False
+        parent_field = str(parent.data.get("field"))
+        child_field = str(child.data.get("field"))
+        return child_field.startswith(f"{parent_field}.")
+
     def _projection_assignments(
         self,
         transform_class: type[Transform],
@@ -1457,7 +1589,17 @@ class CompileTransform:
         expression: Expression,
         *,
         filters: tuple[Expression, ...] | list[Expression],
+        allow_aggregate: bool = False,
     ) -> ProjectAssignment:
+        if expression.kind == "aggregate" and not allow_aggregate:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"{output_schema.__name__}.{field.name} uses an aggregate expression outside group_by(...).",
+                use="Call group_by(...) in the subtransform before returning count(), sum(...), or another aggregate.",
+                context={"field": field.name, "schema": output_schema.__name__},
+            )
         nullable = self._nullable(expression, filters)
         if not field.nullable and nullable:
             raise self._error(
