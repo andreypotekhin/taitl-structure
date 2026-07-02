@@ -11,8 +11,9 @@ right-side uniqueness is not proven and never deduplicates by surprise.
 
 ## Scope
 
-This specification owns source semantics for analytical joins. Existence joins, `join_many(...)`, and deterministic
-deduped `join_one(...)` are implemented in the default PySpark profile. Temporal and as-of joins remain staged.
+This specification owns source semantics for analytical joins. Existence joins, `join_many(...)`, deterministic
+deduped `join_one(...)`, and temporal validity-window `temporal_one(...)` are implemented in the default PySpark
+profile. As-of joins remain staged.
 [JoinSemantics.md](JoinSemantics.md) remains the authority for the strict v1 `join_one(...)` contract.
 
 In scope for the analytical join family:
@@ -240,7 +241,8 @@ join.temporal_one
 join.as_of_one
 ```
 
-The default PySpark profile supports `join.exists`, `join.not_exists`, `join.join_many`, and `join.lookup_dedupe`.
+The default PySpark profile supports `join.exists`, `join.not_exists`, `join.join_many`, `join.lookup_dedupe`, and
+`join.temporal_one`.
 Unsupported capability diagnostics use `BACKEND-E2402` and link to this specification. The diagnostic must name the
 join form and suggest either a supported join, a hook escape hatch, or waiting for the planned feature.
 
@@ -314,6 +316,6 @@ Specific scenarios:
   policy before the lookup.
 - Runtime tie diagnostics are follow-up work for `TiePolicy.ERROR`.
 - `temporal_one(...)` matches a right row whose validity window contains the event time.
-- Overlapping temporal windows are diagnosed when overlap checks are enabled.
+- Runtime overlap diagnostics remain follow-up work for `OverlapPolicy.ERROR`.
 - Backward `as_of_one(...)` selects the latest right row at or before the current-row time.
 - As-of tolerance rejects matches outside the allowed time distance.

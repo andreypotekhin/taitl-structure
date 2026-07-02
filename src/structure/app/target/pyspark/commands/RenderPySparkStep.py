@@ -132,7 +132,7 @@ class RenderPySparkStep:
             right = self._dedupe(join, right=right)
         if join.hint is not None and join.hint.value == "broadcast":
             right = f"F.broadcast({right})"
-        predicate = render_pyspark_expression(join.predicate, scope_aliases=self._scope_aliases(step, join))
+        predicate = self._predicate(step, join)
         right_name = f"{join.right_alias}_joined"
         return [
             f"        {right_name} = {right}",
@@ -142,6 +142,17 @@ class RenderPySparkStep:
             f'            "{self._join_mode(join)}",',
             "        )",
         ]
+
+    def _predicate(self, step: PySparkStepRecipe | PySparkOutputRecipe, join: PySparkJoinRecipe) -> str:
+        aliases = self._scope_aliases(step, join)
+        predicate = render_pyspark_expression(join.predicate, scope_aliases=aliases)
+        if join.temporal is None:
+            return predicate
+        at = render_pyspark_expression(join.temporal.at, scope_aliases=aliases)
+        valid_from = render_pyspark_expression(join.temporal.valid_from, scope_aliases=aliases)
+        valid_to = render_pyspark_expression(join.temporal.valid_to, scope_aliases=aliases)
+        valid_window = f"(({valid_from} <= {at}) & (({at} < {valid_to}) | {valid_to}.isNull()))"
+        return f"({predicate} & {valid_window})"
 
     def _dedupe(self, join: PySparkJoinRecipe, *, right: str) -> str:
         dedupe = join.dedupe

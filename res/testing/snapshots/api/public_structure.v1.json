@@ -142,6 +142,16 @@
       "qualname": "Map",
       "signature": "(key: structure.app.dsl.model.types.StructureType.StructureType, value: structure.app.dsl.model.types.StructureType.StructureType, *, value_contains_null: bool = True) -> None"
     },
+    "OverlapPolicy": {
+      "dataclass_fields": [],
+      "enum_members": [
+        "ERROR"
+      ],
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.OverlapPolicy",
+      "qualname": "OverlapPolicy",
+      "signature": "(*values)"
+    },
     "ResultSchemas": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -301,14 +311,6 @@
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "before",
       "signature": "(target: 'Callable', *, input: 'InputDeclaration | None' = None, inputs: 'object | None' = None, lane: 'InputDeclaration | LaneDeclaration | OutputDeclaration | None' = None, lanes: 'object | None' = None, output: 'InputDeclaration | LaneDeclaration | OutputDeclaration | None' = None, outputs: 'object | None' = None, pass_inputs: 'bool' = False, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming_safe: 'bool' = False, target_backend: 'str | Iterable[str] | None' = None)"
-    },
-    "cache": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "function",
-      "module": "structure.app.dsl.model.transforms.reserved_v2",
-      "qualname": "cache",
-      "signature": "(storage_level: 'object') -> 'Callable[[F], F]'"
     },
     "coalesce": {
       "dataclass_fields": [],

@@ -75,7 +75,7 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
 7. + Add row multiplication parity tests.
 8. + Add deterministic dedupe policy objects and checks.
 9. + Add deduped `join_one(...)` recipe lowering and parity tests.
-10. Implement `temporal_one(...)` closed-open validity-window lookups.
+10. + Implement `temporal_one(...)` closed-open validity-window lookups.
 11. Implement backward `as_of_one(...)`.
 12. Update traceability, explain output, diagnostics, and streaming classification.
 
@@ -93,6 +93,8 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
 - [x] (2026-07-01) Added `JoinDedupe.latest_by(...)` and `JoinDedupe.earliest_by(...)`, validated right-side ordering,
   lowered deduped `join_one(...)` through deterministic PySpark `row_number()` window recipes, and covered generated
   rendering plus online recipe interpretation without live Spark.
+- [x] (2026-07-02) Implemented `temporal_one(...)` closed-open validity-window lookup capture, validation, PySpark
+  recipe lowering, generated rendering, online recipe interpretation, capability support, and traceability detail.
 
 ## Acceptance Criteria
 

@@ -9,6 +9,7 @@ from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.transforms.JoinDedupe import JoinDedupe
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
+from structure.app.dsl.model.transforms.JoinTemporal import JoinTemporal
 
 
 @dataclass(frozen=True)
@@ -22,3 +23,4 @@ class JoinPlan:
     strategy: JoinStrategy | None = None
     method: JoinMethod = JoinMethod.ONE
     dedupe: JoinDedupe | None = None
+    temporal: JoinTemporal | None = None

@@ -1,6 +1,18 @@
 import sys
 
-from structure.app.dsl.api import Join, JoinHint, SchemaMode, compile_transform
+from structure.app.dsl.api import (
+    Join,
+    JoinHint,
+    SchemaMode,
+    String,
+    Structure,
+    Transform,
+    compile_transform,
+    field,
+    input,
+    output,
+    transform,
+)
 
 
 def test_v1_fixture_imports_without_pyspark() -> None:
@@ -83,3 +95,27 @@ def test_v1_symbolic_plan_records_expression_operators() -> None:
     promotion_join = plan.steps[3].joins[0]
     assert promotion_join.predicate.kind == "and"
     assert promotion_join.predicate.args[1].kind == "null_safe_eq"
+
+
+def test_transform_class_options_default_subtransform_options() -> None:
+    """Class-level transform config options apply to every subtransform."""
+
+    class Row(Structure):
+        id = field(String(), nullable=False)
+
+    @transform(target_backend="pyspark", target_platform="spark")
+    class NormalizeRows(Transform):
+        rows = input(Row)
+        normalized = output(Row)
+
+        def normalize(self, row: Row) -> Row:
+            return Row(id=row.id)
+
+        @transform(target_platform="polars")
+        def publish(self, row: Row) -> Row:
+            return Row(id=row.id)
+
+    plan = compile_transform(NormalizeRows)
+
+    assert plan.steps[0].options == {"target_backend": "pyspark", "target_platform": "spark"}
+    assert plan.steps[1].options == {"target_backend": "pyspark", "target_platform": "polars"}

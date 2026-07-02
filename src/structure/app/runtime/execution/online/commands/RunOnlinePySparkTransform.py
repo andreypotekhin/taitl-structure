@@ -220,10 +220,18 @@ class RunOnlinePySparkTransform:
             right = self._dedupe(join, right, functions=functions, window=window)
         if join.hint is not None and join.hint.value == "broadcast":
             right = functions.broadcast(right)
-        predicate = self._expressions.evaluate(
-            join.predicate, functions=functions, aliases=self._scope_aliases(step, join)
-        )
+        predicate = self._predicate(step, join, functions=functions)
         return df.join(right, predicate, self._join_mode(join))
+
+    def _predicate(self, step, join, *, functions):
+        aliases = self._scope_aliases(step, join)
+        predicate = self._expressions.evaluate(join.predicate, functions=functions, aliases=aliases)
+        if join.temporal is None:
+            return predicate
+        at = self._expressions.evaluate(join.temporal.at, functions=functions, aliases=aliases)
+        valid_from = self._expressions.evaluate(join.temporal.valid_from, functions=functions, aliases=aliases)
+        valid_to = self._expressions.evaluate(join.temporal.valid_to, functions=functions, aliases=aliases)
+        return predicate & (valid_from <= at) & ((at < valid_to) | valid_to.isNull())
 
     def _dedupe(self, join, right, *, functions, window):
         rank = f"__structure_{join.right_alias}_rank"

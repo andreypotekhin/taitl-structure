@@ -9,6 +9,7 @@ from structure.app.dsl.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
+from structure.app.target.pyspark.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
 
 
 @dataclass(frozen=True)
@@ -25,3 +26,4 @@ class PySparkJoinRecipe:
     method: JoinMethod = JoinMethod.ONE
     strategy: JoinStrategy | None = None
     dedupe: PySparkJoinDedupeRecipe | None = None
+    temporal: PySparkJoinTemporalRecipe | None = None

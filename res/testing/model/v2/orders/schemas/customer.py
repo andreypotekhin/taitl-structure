@@ -1,6 +1,6 @@
-from structure import String, Struct, Structure, field
-
 from testing.model.v2.orders.schemas.common import AuditStamp, TenantKey
+
+from structure import String, Struct, Structure, field
 
 
 class Customer(Structure):

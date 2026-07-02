@@ -38,7 +38,9 @@ def test_supported_v1_requirement_passes() -> None:
     assert decision.code == ""
 
 
-@pytest.mark.parametrize("name", ["exists", "not_exists", "join_many", "left_semi_join", "left_anti_join"])
+@pytest.mark.parametrize(
+    "name", ["exists", "not_exists", "join_many", "temporal_one", "left_semi_join", "left_anti_join"]
+)
 def test_supported_v2_join_requirement_passes(name: str) -> None:
     resolved = Capabilities.resolve()()
 
@@ -51,17 +53,17 @@ def test_unsupported_feature_uses_backend_capability_diagnostic() -> None:
     resolved = Capabilities.resolve()()
 
     try:
-        resolved.require(CapabilityRequirement(group="join", name="temporal_one"))
+        resolved.require(CapabilityRequirement(group="join", name="as_of_one"))
     except BackendCapabilityError as error:
         diagnostic = error.diagnostic
     else:
-        raise AssertionError("temporal_one should be unsupported before temporal join lowering")
+        raise AssertionError("as_of_one should be unsupported before as-of join lowering")
 
     assert diagnostic.code == BACKEND_E2402
     assert diagnostic.backend == "pyspark"
     assert diagnostic.target == ">=3.5,<4.1"
     assert diagnostic.feature_group == "join"
-    assert diagnostic.feature_name == "temporal_one"
+    assert diagnostic.feature_name == "as_of_one"
     assert "supported v1 Structure operation" in diagnostic.use
     assert diagnostic.docs == "docs/specifications/BackendCapabilities.md"
 
@@ -69,7 +71,6 @@ def test_unsupported_feature_uses_backend_capability_diagnostic() -> None:
 @pytest.mark.parametrize(
     ("group", "name"),
     [
-        ("join", "temporal_one"),
         ("join", "as_of_one"),
         ("aggregate", "group_by"),
         ("aggregate", "count"),

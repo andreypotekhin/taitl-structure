@@ -157,9 +157,9 @@ Exit Criteria:
 
 Progress:
 
-- Existence joins, `join_many(...)`, and deterministic deduped `join_one(...)` are implemented for the default PySpark
-  profile.
-- Temporal validity-window joins, backward as-of joins, and richer explain output remain open.
+- Existence joins, `join_many(...)`, deterministic deduped `join_one(...)`, and temporal validity-window joins are
+  implemented for the default PySpark profile.
+- Backward as-of joins, runtime overlap diagnostics, and richer explain output remain open.
 
 Exit Criteria:
 

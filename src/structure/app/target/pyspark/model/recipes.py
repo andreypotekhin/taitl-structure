@@ -3,6 +3,7 @@ from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkEx
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.target.pyspark.model.PySparkInputRecipe import PySparkInputRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.app.target.pyspark.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
 from structure.app.target.pyspark.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.app.target.pyspark.model.PySparkProjectionRecipe import PySparkProjectionRecipe
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
@@ -15,6 +16,7 @@ __all__ = [
     "PySparkHookRecipe",
     "PySparkInputRecipe",
     "PySparkJoinRecipe",
+    "PySparkJoinTemporalRecipe",
     "PySparkOutputRecipe",
     "PySparkProjectionRecipe",
     "PySparkStepRecipe",

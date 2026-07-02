@@ -34,6 +34,8 @@ class Order(Structure):
 class Product(Structure):
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=False)
+    valid_from = field(String(), nullable=False)
+    valid_to = field(String(), nullable=True)
 
 
 class Published(Structure):
@@ -309,6 +311,72 @@ def test_deduped_join_one_rejects_left_side_ordering() -> None:
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
     assert "order_by must read only the joined input" in raised.value.diagnostic.problem_text()
+
+
+def test_temporal_one_records_closed_open_validity_lookup() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            snapshot = cast(Any, product).temporal_one(
+                on=product.id == order.product_id,
+                at=order.status,
+                valid_from=product.valid_from,
+                valid_to=product.valid_to,
+                how=Join.LEFT,
+            )
+            return Enriched(id=order.id, product_name=snapshot.name)
+
+    plan = compile_transform(AddProduct)
+    step = plan.steps[0]
+    recipe_plan = PySpark.plan.lower()(plan)
+    recipe = recipe_plan.steps[0]
+    text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
+    traceability = Compiler.traceability.build()(
+        recipe_plan,
+        source_transform=f"{AddProduct.__module__}.AddProduct",
+        transform_module="generated.transforms.add_product",
+    )
+    dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
+
+    assert len(step.joins) == 1
+    assert step.joins[0].method is JoinMethod.TEMPORAL_ONE
+    assert step.joins[0].temporal is not None
+    assert step.operations[0].capability is not None
+    assert step.operations[0].capability.name == "temporal_one"
+    assert step.operations[0].cardinality is OperationCardinality.SELECT_ONE
+    assert recipe.joins[0].temporal is not None
+    assert "(F.col(\"products.valid_from\") <= F.col(\"order.status\"))" in text
+    assert "((F.col(\"order.status\") < F.col(\"products.valid_to\")) | F.col(\"products.valid_to\").isNull())" in text
+    assert dependencies["add_product.join[1].product"].operation == "temporal_one"
+    assert dependencies["add_product.join[1].product"].detail["temporal"] == "closed_open"
+
+
+def test_temporal_one_rejects_left_side_validity_bound() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            snapshot = cast(Any, product).temporal_one(
+                on=product.id == order.product_id,
+                at=order.status,
+                valid_from=order.status,
+                valid_to=product.valid_to,
+                how=Join.LEFT,
+            )
+            return Enriched(id=order.id, product_name=snapshot.name)
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(AddProduct)
+
+    assert raised.value.diagnostic.code == "JOIN-E0601"
+    assert "valid_from=...) must read only the joined temporal input" in raised.value.diagnostic.problem_text()
 
 
 def test_exists_join_does_not_make_relation_fields_readable() -> None:

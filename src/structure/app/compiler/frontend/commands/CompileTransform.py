@@ -9,6 +9,7 @@ from structure.app.compiler.frontend.logic.CompilerInputCollector import Compile
 from structure.app.compiler.ir.model.HookPlan import HookPlan
 from structure.app.compiler.ir.model.InputPlan import InputPlan
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
+from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.ir.model.OutputPlan import OutputPlan
 from structure.app.compiler.ir.model.ProjectAssignment import ProjectAssignment
 from structure.app.compiler.ir.model.StepInputPlan import StepInputPlan
@@ -30,6 +31,7 @@ from structure.app.dsl.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
 from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
+from structure.app.dsl.model.transforms.OverlapPolicy import OverlapPolicy
 from structure.app.dsl.model.transforms.reserved_v2 import reserved_operations
 from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.transforms.Transform import Transform
@@ -129,6 +131,7 @@ class CompileTransform:
                 explicit_outputs=explicit_outputs,
                 default_lane=bindings[0].lane,
             )
+            options = self._step_options(transform_class, metadata)
 
             context = CompileContext(step=name)
             arguments = [
@@ -159,7 +162,7 @@ class CompileTransform:
                     context={"error": type(error).__name__},
                 ) from error
 
-            context.operations.extend(reserved_operations(member))
+            context.operations.extend(self._reserved_operations(member, metadata))
             diagnostics.extend(self._validate_joins(transform_class, name, context.joins))
             values = self._result_values(
                 transform_class,
@@ -247,6 +250,7 @@ class CompileTransform:
                     after_hooks=first.after_hooks if len(result_plans) == 1 else (),
                     inputs=tuple(bindings),
                     results=tuple(result_plans),
+                    options=options,
                 )
             )
             for item in result_plans:
@@ -264,6 +268,22 @@ class CompileTransform:
                 use="Add a public instance method with a Structure row parameter and Structure return annotation.",
             )
         return steps, lanes, explicit_outputs, diagnostics
+
+    def _step_options(
+        self,
+        transform_class: type[Transform],
+        metadata: dict[str, object] | None,
+    ) -> dict[str, object] | None:
+        options = dict(getattr(transform_class, "_structure_subtransform_options", {}))
+        if metadata:
+            options.update(cast(dict[str, object], metadata.get("options", {})))
+        return options or None
+
+    def _reserved_operations(self, member, metadata: dict[str, object] | None) -> tuple[OperationPlan, ...]:
+        operations = tuple(reserved_operations(member))
+        if metadata:
+            operations += cast(tuple[OperationPlan, ...], metadata.get("reserved_operations", ()))
+        return operations
 
     def _validate_relation_reads(
         self,
@@ -285,6 +305,14 @@ class CompileTransform:
                     self._scopes(operation.filter),
                 )
             if operation.kind == "join" and operation.join is not None:
+                if operation.join.temporal is not None:
+                    self._validate_joined_relation_reads(
+                        transform_class,
+                        member,
+                        relation_scopes,
+                        joined,
+                        self._scopes(operation.join.temporal.at),
+                    )
                 if operation.join.method.exposes_fields():
                     joined.add(operation.join.input_name)
 
@@ -1440,6 +1468,8 @@ class CompileTransform:
                 )
             if join.dedupe is not None:
                 self._validate_join_dedupe(transform_class, member, join.input_name, occurrence, join.dedupe)
+            if join.temporal is not None:
+                self._validate_join_temporal(transform_class, member, join.input_name, occurrence, join.temporal)
 
             conditions = self._join_conditions(transform_class, member, join.input_name, occurrence, join.predicate)
             for condition in conditions:
@@ -1461,6 +1491,57 @@ class CompileTransform:
                     )
                 )
         return diagnostics
+
+    def _validate_join_temporal(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        input_name: str,
+        occurrence: int,
+        temporal,
+    ) -> None:
+        if temporal.overlaps is not OverlapPolicy.ERROR:
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                f"temporal_one(overlaps=...) policy {temporal.overlaps!r} is not supported.",
+                "Use OverlapPolicy.ERROR or omit overlaps=.",
+            )
+        if input_name in self._scopes(temporal.at):
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                "temporal_one(at=...) must not read the joined temporal input.",
+                "Use a current-row event time such as order.order_time.",
+            )
+        self._validate_temporal_bound(
+            transform_class, member, input_name, occurrence, "valid_from", temporal.valid_from
+        )
+        self._validate_temporal_bound(transform_class, member, input_name, occurrence, "valid_to", temporal.valid_to)
+
+    def _validate_temporal_bound(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        input_name: str,
+        occurrence: int,
+        field: str,
+        expression: Expression,
+    ) -> None:
+        scopes = self._scopes(expression)
+        if input_name not in scopes or scopes - {input_name}:
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                f"temporal_one({field}=...) must read only the joined temporal input.",
+                f"Use a right-side validity field such as history.{field}.",
+            )
 
     def _validate_join_dedupe(
         self,

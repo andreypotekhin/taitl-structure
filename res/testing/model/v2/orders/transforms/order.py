@@ -1,30 +1,5 @@
 from pyspark import StorageLevel
 from pyspark.sql import functions as F
-
-from structure import (
-    JoinStrategy,
-    Join,
-    JoinDedupe,
-    JoinHint,
-    SchemaMode,
-    TiePolicy,
-    Transform,
-    after,
-    arr_filter,
-    arr_transform,
-    before,
-    cache,
-    coalesce,
-    expr_fn,
-    input,
-    join_one,
-    lower,
-    output,
-    to_decimal,
-    transform,
-    trim,
-    where,
-)
 from testing.model.v2.orders.schemas.customer import Customer
 from testing.model.v2.orders.schemas.order import (
     OrderFulfillment,
@@ -39,6 +14,30 @@ from testing.model.v2.orders.schemas.order import (
 from testing.model.v2.orders.schemas.product import BlockedProduct, Product
 from testing.model.v2.orders.schemas.promotion import Promotion
 from testing.model.v2.orders.schemas.shipment import Shipment
+
+from structure import (
+    Join,
+    JoinDedupe,
+    JoinHint,
+    JoinStrategy,
+    SchemaMode,
+    TiePolicy,
+    Transform,
+    after,
+    arr_filter,
+    arr_transform,
+    before,
+    coalesce,
+    expr_fn,
+    input,
+    join_one,
+    lower,
+    output,
+    to_decimal,
+    transform,
+    trim,
+    where,
+)
 
 
 @transform(streaming_compatible=True)
@@ -92,7 +91,7 @@ class EnrichOrders(Transform):
     def remove_negative_totals(self, *, orders, spark, ctx):
         return orders.where(F.col("net_total") >= 0)
 
-    @cache(StorageLevel.MEMORY_AND_DISK)
+    @transform(cache=StorageLevel.MEMORY_AND_DISK)
     def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
         customer = join_one(
             self.customers,
@@ -117,7 +116,7 @@ class EnrichOrders(Transform):
         where(
             blocked_product.not_exists(
                 on=(blocked_product.tenant.tenant_id == order.tenant.tenant_id)
-                & (blocked_product.product_id == order.product_id)
+                & (blocked_product.id == order.product_id)
             )
         )
         product = join_one(
@@ -137,10 +136,12 @@ class EnrichOrders(Transform):
         )
 
     def add_promotion(self, order: OrderWithProduct) -> OrderWithPromotion:
-        promotion = join_one(
-            self.promotions,
+        promotion = self.promotions.temporal_one(
             on=(self.promotions.tenant.tenant_id == order.tenant.tenant_id)
             & self.clean_id(self.promotions.code).null_safe_eq(order.promotion_code),
+            at=order.business.order_date,
+            valid_from=self.promotions.valid_from,
+            valid_to=self.promotions.valid_to,
             how=Join.LEFT,
         )
 
@@ -163,9 +164,13 @@ class EnrichOrders(Transform):
             shipped_at=shipment.shipped_at,
         )
 
-    @after(add_shipments, lane=orders, pass_inputs=True, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, streaming_safe=True)
+    @after(
+        add_shipments, lane=orders, pass_inputs=True, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, streaming_safe=True
+    )
     def note_lookup_inputs(self, *, orders, inputs, spark, ctx):
-        return orders.withColumn("_lookup_inputs_seen", F.lit(inputs.customers is not None and inputs.products is not None))
+        return orders.withColumn(
+            "_lookup_inputs_seen", F.lit(inputs.customers is not None and inputs.products is not None)
+        )
 
     @transform(output=published)
     def publish(self, order: OrderFulfillment) -> OrderPublished:
@@ -175,9 +180,10 @@ class EnrichOrders(Transform):
 
         return OrderPublished.base(order, flags)
 
-    @after(publish, lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True, streaming_safe=True)
+    @after(
+        publish, lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True, streaming_safe=True
+    )
     def add_quality_columns(self, *, published, spark, ctx):
-        return (
-            published.withColumn("_has_customer", F.col("customer_name").isNotNull())
-            .withColumn("_has_tracking", F.col("tracking_number").isNotNull())
+        return published.withColumn("_has_customer", F.col("customer_name").isNotNull()).withColumn(
+            "_has_tracking", F.col("tracking_number").isNotNull()
         )

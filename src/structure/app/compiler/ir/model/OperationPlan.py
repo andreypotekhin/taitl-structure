@@ -38,6 +38,7 @@ class OperationPlan:
             JoinMethod.EXISTS: OperationCardinality.ROW_FILTERING,
             JoinMethod.NOT_EXISTS: OperationCardinality.ROW_FILTERING,
             JoinMethod.MANY: OperationCardinality.ROW_MULTIPLYING,
+            JoinMethod.TEMPORAL_ONE: OperationCardinality.SELECT_ONE,
         }[join.method]
         return OperationPlan(
             kind="join",

@@ -66,6 +66,42 @@ def test_v2_order_fixture_records_supported_existence_joins(monkeypatch: pytest.
     ]
 
 
+def test_v2_order_fixture_records_temporal_promotion_lookup(monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_pyspark(monkeypatch)
+    module = importlib.import_module("testing.model.v2.orders.transforms.order")
+    transform = cast(Any, module).EnrichOrders
+
+    plan = compile_transform(transform)
+    add_promotion = next(step for step in plan.steps if step.name == "add_promotion")
+    lookup = add_promotion.joins[0]
+
+    assert lookup.method is JoinMethod.TEMPORAL_ONE
+    assert lookup.temporal is not None
+    assert lookup.temporal.valid_from.data is not None
+    assert lookup.temporal.valid_from.data["field"] == "valid_from"
+    assert lookup.temporal.valid_to.data is not None
+    assert lookup.temporal.valid_to.data["field"] == "valid_to"
+    operation = next(operation for operation in add_promotion.operations if operation.kind == "join")
+    assert operation.capability is not None
+    assert operation.capability.name == "temporal_one"
+    assert operation.cardinality is OperationCardinality.SELECT_ONE
+
+
+def test_v2_order_fixture_records_cache_as_transform_option(monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_pyspark(monkeypatch)
+    module = importlib.import_module("testing.model.v2.orders.transforms.order")
+    transform = cast(Any, module).EnrichOrders
+
+    plan = compile_transform(transform)
+    add_customer = next(step for step in plan.steps if step.name == "add_customer")
+    operation = next(operation for operation in add_customer.operations if operation.kind == "cache")
+
+    assert operation.capability is not None
+    assert operation.capability.group == "optimization"
+    assert operation.capability.name == "cache"
+    assert operation.cardinality is OperationCardinality.ROW_PRESERVING
+
+
 def test_v2_order_fixture_records_join_many_shipments(monkeypatch: pytest.MonkeyPatch) -> None:
     _stub_pyspark(monkeypatch)
     module = importlib.import_module("testing.model.v2.orders.transforms.order")

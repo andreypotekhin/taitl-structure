@@ -11,6 +11,7 @@ from structure.app.target.pyspark.logic.mapping.PySparkNameMapper import PySpark
 from structure.app.target.pyspark.logic.mapping.PySparkValidationMapper import PySparkValidationMapper
 from structure.app.target.pyspark.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.app.target.pyspark.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
 from structure.app.target.pyspark.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.app.target.pyspark.model.PySparkProjectionRecipe import PySparkProjectionRecipe
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
@@ -130,6 +131,7 @@ class PySparkStepMapper:
         if join.hint is not None:
             capabilities.require(CapabilityRequirement(group="join", name=f"{join.hint.value}_hint"))
         dedupe = self._dedupe(join, capabilities=capabilities)
+        temporal = self._temporal(join, capabilities=capabilities)
 
         return PySparkJoinRecipe(
             input_name=join.input_name,
@@ -144,6 +146,7 @@ class PySparkStepMapper:
             occurrence=occurrence,
             method=join.method,
             dedupe=dedupe,
+            temporal=temporal,
         )
 
     def _dedupe(
@@ -159,6 +162,22 @@ class PySparkStepMapper:
             order_by=self._expressions.map(join.dedupe.order_by, capabilities=capabilities),
             direction=join.dedupe.direction,
             ties=join.dedupe.ties,
+        )
+
+    def _temporal(
+        self,
+        join: JoinPlan,
+        *,
+        capabilities: BackendCapabilities,
+    ) -> PySparkJoinTemporalRecipe | None:
+        if join.temporal is None:
+            return None
+        capabilities.require(CapabilityRequirement(group="join", name="temporal_one"))
+        return PySparkJoinTemporalRecipe(
+            at=self._expressions.map(join.temporal.at, capabilities=capabilities),
+            valid_from=self._expressions.map(join.temporal.valid_from, capabilities=capabilities),
+            valid_to=self._expressions.map(join.temporal.valid_to, capabilities=capabilities),
+            overlaps=join.temporal.overlaps,
         )
 
     def _join_mode_capability(self, join: JoinPlan) -> str:

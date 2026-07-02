@@ -30,3 +30,4 @@ class StepPlan:
     after_hooks: tuple[HookPlan, ...] = ()
     inputs: tuple[StepInputPlan, ...] = ()
     results: tuple[StepResultPlan, ...] = ()
+    options: dict[str, object] | None = None

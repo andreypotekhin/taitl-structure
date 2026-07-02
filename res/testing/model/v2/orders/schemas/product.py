@@ -1,6 +1,6 @@
-from structure import Boolean, Decimal, Double, Float, String, Struct, Structure, field
-
 from testing.model.v2.orders.schemas.common import AuditStamp, TenantKey
+
+from structure import Boolean, Decimal, Double, Float, String, Struct, Structure, field
 
 
 class ProductBase(Structure):
@@ -19,5 +19,4 @@ class Product(ProductBase):
 
 
 class BlockedProduct(Product):
-    product_id = field(String(), nullable=False, primary_key=True)
     reason = field(String(), nullable=True)

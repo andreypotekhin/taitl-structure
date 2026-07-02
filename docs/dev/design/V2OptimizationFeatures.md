@@ -38,7 +38,7 @@ callbacks that would require row-wise Python execution or hidden UDF generation.
 Allow explicit annotations at subtransform boundaries.
 
 ```python
-@cache(StorageLevel.MEMORY_AND_DISK)
+@transform(cache=StorageLevel.MEMORY_AND_DISK)
 def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
     ...
 ```

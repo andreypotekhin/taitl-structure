@@ -277,6 +277,8 @@ Rules:
   original input and a latest same-named lane both match, the latest lane wins.
 - Method-level `input=[...]` and `output=[...]` bind multiple parameters or returned values in order.
 - Method-level `inout=source | target` is shorthand for one explicit source and target; one side may be a list.
+- Method-level `cache=...` records an explicit v2 cache directive for the subtransform. It is intentionally part of
+  `@transform(...)` rather than a separate public decorator so user projects can keep their own `@cache` helpers.
 - Method-level `inputs=`, `outputs=`, `lane=`, and `lanes=` are retired. Hook decorators still use `lane=` and
   `lanes=`.
 - Method-level references use declarations, not strings.

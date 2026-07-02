@@ -13,6 +13,8 @@ from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.transforms.JoinDedupe import JoinDedupe
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
+from structure.app.dsl.model.transforms.JoinTemporal import JoinTemporal
+from structure.app.dsl.model.transforms.OverlapPolicy import OverlapPolicy
 from structure.app.dsl.model.types.BooleanType import BooleanType
 
 
@@ -65,6 +67,56 @@ class InputScope(RowScope):
             how=how,
             strategy=strategy,
             method=JoinMethod.MANY,
+        )
+        context.joins.append(join)
+        context.operations.append(OperationPlan.join_operation(join))
+        self._structure_joined_scope = RowScope(
+            name=self._structure_input_name,
+            schema=self._structure_input_schema,
+            nullable=how is Join.LEFT,
+        )
+        return self._structure_joined_scope
+
+    def temporal_one(
+        self,
+        *,
+        on: Expression,
+        at: Expression,
+        valid_from: Expression,
+        valid_to: Expression,
+        how: Join = Join.LEFT,
+        overlaps: OverlapPolicy = OverlapPolicy.ERROR,
+        hint: JoinHint | None = None,
+    ) -> RowScope:
+        context = current_context()
+        if context is None:
+            raise RuntimeError("temporal_one(...) can only be used inside a compiled Structure subtransform")
+        if not isinstance(on, Expression):
+            raise TypeError("temporal_one(on=...) requires a Structure expression")
+        if not isinstance(on.type, BooleanType):
+            raise TypeError("temporal_one(on=...) requires a boolean Structure expression")
+        if not isinstance(at, Expression):
+            raise TypeError("temporal_one(at=...) requires a Structure expression")
+        if not isinstance(valid_from, Expression):
+            raise TypeError("temporal_one(valid_from=...) requires a Structure expression")
+        if not isinstance(valid_to, Expression):
+            raise TypeError("temporal_one(valid_to=...) requires a Structure expression")
+        if not isinstance(how, Join):
+            raise TypeError("temporal_one(how=...) requires a Join value")
+        if not isinstance(overlaps, OverlapPolicy):
+            raise TypeError("temporal_one(overlaps=...) requires an OverlapPolicy value")
+        if hint is not None and not isinstance(hint, JoinHint):
+            raise TypeError("temporal_one(hint=...) requires a JoinHint value")
+
+        join = JoinPlan(
+            input_name=self._structure_input_name,
+            source=self._structure_source,
+            input_schema=self._structure_input_schema,
+            predicate=on,
+            how=how,
+            hint=hint,
+            method=JoinMethod.TEMPORAL_ONE,
+            temporal=JoinTemporal(at=at, valid_from=valid_from, valid_to=valid_to, overlaps=overlaps),
         )
         context.joins.append(join)
         context.operations.append(OperationPlan.join_operation(join))

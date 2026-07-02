@@ -16,11 +16,17 @@ from structure.app.dsl.model.transforms.InOutBinding import InOutBinding
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
+from structure.app.dsl.model.transforms.reserved_v2 import cache_operation
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.types.BooleanType import BooleanType
 
 Projected = TypeVar("Projected", bound=Structure)
+
+_CLASS_OPTIONS = {"validate_intermediate", "streaming_compatible"}
+_SUBTRANSFORM_OPTIONS = {"target_backend", "target_platform", "target_profile", "target_pyspark"}
+_METHOD_BINDING_OPTIONS = {"input", "output", "inout"}
+_METHOD_OPTIMIZATION_OPTIONS = {"cache"}
 
 
 @overload
@@ -91,20 +97,22 @@ def expr_fn(function: Callable) -> ExprFunction:
 
 
 def _decorate_transform_class(cls, kwargs):
-    allowed = {"validate_intermediate", "streaming_compatible"}
+    allowed = _CLASS_OPTIONS | _SUBTRANSFORM_OPTIONS
     unknown = set(kwargs) - allowed
     if unknown:
         raise TypeError(f"@transform got unknown class option(s): {', '.join(sorted(unknown))}")
     if not issubclass(cls, Transform):
         raise TypeError("@transform classes must inherit from Transform")
+    options = _normalize_transform_options(kwargs)
     cls._structure_transform = True
-    cls._structure_transform_options = dict(kwargs)
+    cls._structure_transform_options = options
+    cls._structure_subtransform_options = _subtransform_options(options)
     return cls
 
 
 def _decorate_transform_method(function, kwargs):
     kwargs = _normalize_method_options(kwargs)
-    allowed = {"input", "output", "inout"}
+    allowed = _METHOD_BINDING_OPTIONS | _SUBTRANSFORM_OPTIONS | _METHOD_OPTIMIZATION_OPTIONS
     unknown = set(kwargs) - allowed
     if unknown:
         raise TypeError(f"@transform got unknown method option(s): {', '.join(sorted(unknown))}")
@@ -151,6 +159,8 @@ def _decorate_transform_method(function, kwargs):
         {
             "inputs": inputs,
             "outputs": outputs,
+            "options": _subtransform_options(kwargs),
+            "reserved_operations": _reserved_operations(kwargs),
         },
     )
     return function
@@ -161,7 +171,31 @@ def _normalize_method_options(kwargs: dict[str, object]) -> dict[str, object]:
     if recycled:
         names = ", ".join(sorted(recycled))
         raise TypeError(f"@transform method option(s) {names} were recycled; use input=..., output=..., or inout=...")
-    return dict(kwargs)
+    return _normalize_transform_options(kwargs)
+
+
+def _normalize_transform_options(kwargs: dict[str, object]) -> dict[str, object]:
+    options = dict(kwargs)
+    for name in _SUBTRANSFORM_OPTIONS & set(options):
+        options[name] = _subtransform_option(name, options[name])
+    return options
+
+
+def _subtransform_options(kwargs: dict[str, object]) -> dict[str, object]:
+    return {name: kwargs[name] for name in _SUBTRANSFORM_OPTIONS if name in kwargs}
+
+
+def _reserved_operations(kwargs: dict[str, object]) -> tuple[OperationPlan, ...]:
+    if "cache" not in kwargs:
+        return ()
+    return (cache_operation(kwargs["cache"]),)
+
+
+def _subtransform_option(name: str, value: object) -> object:
+    if name in {"target_backend", "target_platform", "target_profile", "target_pyspark"}:
+        if not isinstance(value, str) or not value:
+            raise TypeError(f"{name} must be a non-empty string")
+    return value
 
 
 def _method_declarations(kwargs, *, name: str, bare: tuple[type, ...], roles: set[str]) -> tuple:

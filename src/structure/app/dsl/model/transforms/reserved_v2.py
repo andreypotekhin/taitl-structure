@@ -66,17 +66,20 @@ def arr_filter(value: object, function: Callable[[Expression], object]) -> Expre
 def cache(storage_level: object) -> Callable[[F], F]:
     def decorate(function: F) -> F:
         operations = tuple(getattr(function, "_structure_reserved_operations", ()))
-        operation = OperationPlan.reserved_operation(
-            "cache",
-            group="optimization",
-            name="cache",
-            cardinality=OperationCardinality.ROW_PRESERVING,
-            streaming=StreamingSupport.BATCH_ONLY,
-        )
-        setattr(function, "_structure_reserved_operations", (*operations, operation))
+        setattr(function, "_structure_reserved_operations", (*operations, cache_operation(storage_level)))
         return function
 
     return decorate
+
+
+def cache_operation(storage_level: object) -> OperationPlan:
+    return OperationPlan.reserved_operation(
+        "cache",
+        group="optimization",
+        name="cache",
+        cardinality=OperationCardinality.ROW_PRESERVING,
+        streaming=StreamingSupport.BATCH_ONLY,
+    )
 
 
 def reserved_operations(function: Callable) -> tuple[OperationPlan, ...]:
