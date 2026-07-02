@@ -352,6 +352,14 @@
       "qualname": "as_of_one",
       "signature": "(relation: 'Relation | None' = None, *, on: 'object', left_time: 'object', right_time: 'object', direction: 'AsOf' = <AsOf.BACKWARD: 'backward'>, tolerance: 'object | None' = None, how: 'Join' = <Join.LEFT: 'left'>, ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>, hint: 'JoinHint | None' = None) -> 'Relation | InputScope'"
     },
+    "avg": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "avg",
+      "signature": "(value: 'object') -> 'Expression'"
+    },
     "before": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -375,6 +383,14 @@
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "count",
       "signature": "() -> 'Expression'"
+    },
+    "count_distinct": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "count_distinct",
+      "signature": "(value: 'object') -> 'Expression'"
     },
     "exists": {
       "dataclass_fields": [],
@@ -446,6 +462,22 @@
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "lower",
+      "signature": "(value: 'object') -> 'Expression'"
+    },
+    "max": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "max",
+      "signature": "(value: 'object') -> 'Expression'"
+    },
+    "min": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "min",
       "signature": "(value: 'object') -> 'Expression'"
     },
     "not_exists": {

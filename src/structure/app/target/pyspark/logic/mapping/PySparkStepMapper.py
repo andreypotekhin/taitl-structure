@@ -126,7 +126,7 @@ class PySparkStepMapper:
         capabilities.require(CapabilityRequirement(group="aggregate", name="group_by"))
         assignments: list[PySparkAggregateAssignment] = []
         for assignment in aggregate.assignments:
-            if assignment.function in {"count", "sum"}:
+            if assignment.function in {"avg", "count", "count_distinct", "max", "min", "sum"}:
                 capabilities.require(CapabilityRequirement(group="aggregate", name=assignment.function))
             assignments.append(
                 PySparkAggregateAssignment(

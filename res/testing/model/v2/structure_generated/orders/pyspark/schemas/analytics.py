@@ -17,6 +17,10 @@ PRODUCT_DAILY_SUMMARY_SCHEMA = T.StructType([
     T.StructField("product_id", T.StringType(), False),
     T.StructField("order_date", T.DateType(), True),
     T.StructField("order_count", T.LongType(), False),
+    T.StructField("distinct_customers", T.LongType(), False),
     T.StructField("units", T.LongType(), False),
+    T.StructField("min_units", T.LongType(), False),
+    T.StructField("max_units", T.LongType(), False),
+    T.StructField("avg_units", T.DoubleType(), False),
     T.StructField("gross_total", T.DecimalType(12, 2), False),
 ])

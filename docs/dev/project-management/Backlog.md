@@ -162,7 +162,7 @@
 ### Epic: Aggregations and Grouping
 
 - Implement typed `group_by(...)` source DSL.
-- Implement aggregation expression builders for count, sum, min, max, average, and distinct count where practical.
+- Implement aggregation expression builders for count, sum, min, max, avg, and distinct count where practical.
 - Support aggregate output schema construction with grouped keys and aggregate fields.
 - Validate aggregate expressions against input field types and nullable output expectations.
 - Lower group-by and aggregate plans through shared PySpark recipes.

@@ -24,7 +24,17 @@ from structure.app.dsl.model.transforms.JoinDedupe import JoinDedupe
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
 from structure.app.dsl.model.transforms.OverlapPolicy import OverlapPolicy
-from structure.app.dsl.model.transforms.reserved_v2 import arr_filter, arr_transform, count, group_by, sum
+from structure.app.dsl.model.transforms.reserved_v2 import (
+    arr_filter,
+    arr_transform,
+    avg,
+    count,
+    count_distinct,
+    group_by,
+    max,
+    min,
+    sum,
+)
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.transforms.Transform import Transform
@@ -69,10 +79,12 @@ __all__ = [
     "after",
     "arr_filter",
     "arr_transform",
+    "avg",
     "as_of_one",
     "before",
     "coalesce",
     "count",
+    "count_distinct",
     "compile_transform",
     "expr_fn",
     "exists",
@@ -83,6 +95,8 @@ __all__ = [
     "join_one",
     "lane",
     "lower",
+    "max",
+    "min",
     "not_exists",
     "output",
     "project",

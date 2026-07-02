@@ -242,14 +242,14 @@ class RunOnlinePySparkTransform:
                 .cast(self._spark_type(assignment.field.type, types))
                 .alias(assignment.field.column)
             )
-        if assignment.function == "sum" and assignment.expression is not None:
+        if assignment.function in {"avg", "count_distinct", "max", "min", "sum"} and assignment.expression is not None:
             column = self._expressions.evaluate(
                 assignment.expression,
                 functions=functions,
                 aliases=self._scope_aliases(step),
             )
             return (
-                functions.sum(column)
+                self._aggregate_function(functions, assignment.function)(column)
                 .cast(self._spark_type(assignment.field.type, types))
                 .alias(assignment.field.column)
             )
@@ -261,6 +261,15 @@ class RunOnlinePySparkTransform:
             )
             return functions.first(column, ignorenulls=False).alias(assignment.field.column)
         raise TypeError(f"Unsupported aggregate assignment: {assignment.function}")
+
+    def _aggregate_function(self, functions, function: str):
+        return {
+            "avg": functions.avg,
+            "count_distinct": functions.countDistinct,
+            "max": functions.max,
+            "min": functions.min,
+            "sum": functions.sum,
+        }[function]
 
     def _aggregate_select(self, assignment, *, functions):
         source = assignment.key if assignment.function == "key" else assignment.field.column

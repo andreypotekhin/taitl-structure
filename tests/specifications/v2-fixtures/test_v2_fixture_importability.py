@@ -217,7 +217,11 @@ def test_v2_order_analytics_fixture_lowers_grouped_aggregates(monkeypatch: pytes
             ("product_id", "key"),
             ("order_date", "key"),
             ("order_count", "count"),
+            ("distinct_customers", "count_distinct"),
             ("units", "sum"),
+            ("min_units", "min"),
+            ("max_units", "max"),
+            ("avg_units", "avg"),
             ("gross_total", "sum"),
         ],
     ]

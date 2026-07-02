@@ -314,7 +314,7 @@ over streaming orchestration, storage writes, Spark Connect, automatic cost-base
 - + As a developer, I can define typed aggregation subtransforms so that rollups compile to Spark `groupBy` and `agg`.
 - + As a developer, I can group by one or more typed fields so that aggregate output schemas include explicit grouping
   keys.
-- As a developer, I can calculate count, sum, min, max, average, and supported distinct counts so that common analytical
+- + As a developer, I can calculate count, sum, min, max, avg, and supported distinct counts so that common analytical
   summaries do not require hooks.
 - As a developer, I can receive type and nullability diagnostics for aggregate expressions so that invalid summaries
   are caught at compile time.

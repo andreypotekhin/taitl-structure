@@ -51,7 +51,7 @@ def test_supported_v2_join_requirement_passes(name: str) -> None:
     assert decision.supported
 
 
-@pytest.mark.parametrize("name", ["group_by", "count", "sum"])
+@pytest.mark.parametrize("name", ["group_by", "count", "count_distinct", "sum", "min", "max", "avg"])
 def test_supported_v2_aggregate_requirement_passes(name: str) -> None:
     resolved = Capabilities.resolve()()
 

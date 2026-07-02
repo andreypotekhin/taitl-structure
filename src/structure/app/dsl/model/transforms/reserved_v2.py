@@ -10,6 +10,7 @@ from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import CompileContext, current_context
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.expr.expressions import literal
+from structure.app.dsl.model.types.DoubleType import DoubleType
 from structure.app.dsl.model.types.LongType import LongType
 
 F = TypeVar("F", bound=Callable)
@@ -25,22 +26,40 @@ def group_by(*keys: object, **named_keys: object) -> "GroupedRows":
 
 
 def count() -> Expression:
-    return Expression(
-        kind="aggregate",
-        type=LongType(),
-        nullable=False,
-        data={"function": "count", "capability_group": "aggregate", "capability_name": "count"},
-    )
+    return _aggregate("count", type=LongType())
+
+
+def count_distinct(value: object) -> Expression:
+    return _aggregate("count_distinct", literal(value), type=LongType())
+
+
+def min(value: object) -> Expression:
+    argument = literal(value)
+    return _aggregate("min", argument, type=argument.type)
+
+
+def max(value: object) -> Expression:
+    argument = literal(value)
+    return _aggregate("max", argument, type=argument.type)
+
+
+def avg(value: object) -> Expression:
+    return _aggregate("avg", literal(value), type=DoubleType())
 
 
 def sum(value: object) -> Expression:
     argument = literal(value)
+    return _aggregate("sum", argument, type=argument.type)
+
+
+def _aggregate(function: str, argument: Expression | None = None, *, type) -> Expression:
+    args = () if argument is None else (argument,)
     return Expression(
         kind="aggregate",
-        type=argument.type,
+        type=type,
         nullable=False,
-        data={"function": "sum", "capability_group": "aggregate", "capability_name": "sum"},
-        args=(argument,),
+        data={"function": function, "capability_group": "aggregate", "capability_name": function},
+        args=args,
     )
 
 

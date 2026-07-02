@@ -5,7 +5,7 @@ from typing import Any, cast
 
 import pytest
 
-from structure import AsOf, Join, JoinHint, JoinStrategy, Long, SchemaMode, String, Structure, TiePolicy, field
+from structure import AsOf, Double, Join, JoinHint, JoinStrategy, Long, SchemaMode, String, Structure, TiePolicy, field
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.runtime.execution.online.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 from structure.app.runtime.execution.online.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
@@ -64,7 +64,11 @@ class RawMetric(Structure):
 class CustomerMetric(Structure):
     customer_id = field(String(), nullable=False)
     order_count = field(Long(), nullable=False)
+    distinct_customers = field(Long(), nullable=False)
     quantity = field(Long(), nullable=False)
+    min_quantity = field(Long(), nullable=False)
+    max_quantity = field(Long(), nullable=False)
+    avg_quantity = field(Double(), nullable=False)
 
 
 class PermissivePublishedOrder(PublishedOrder):
@@ -299,8 +303,15 @@ def test_online_runner_applies_grouped_aggregate_recipe(monkeypatch) -> None:
     assert totals.operations == (
         "alias:metrics",
         "groupBy:customer_id=col(metrics.customer_id)",
-        "agg:order_count=cast(count(lit(1)) as LongType()),quantity=cast(sum(col(metrics.quantity)) as LongType())",
-        "select:customer_id=col(customer_id),order_count=col(order_count),quantity=col(quantity)",
+        "agg:order_count=cast(count(lit(1)) as LongType()),"
+        "distinct_customers=cast(countDistinct(col(metrics.customer_id)) as LongType()),"
+        "quantity=cast(sum(col(metrics.quantity)) as LongType()),"
+        "min_quantity=cast(min(col(metrics.quantity)) as LongType()),"
+        "max_quantity=cast(max(col(metrics.quantity)) as LongType()),"
+        "avg_quantity=cast(avg(col(metrics.quantity)) as DoubleType())",
+        "select:customer_id=col(customer_id),order_count=col(order_count),"
+        "distinct_customers=col(distinct_customers),quantity=col(quantity),"
+        "min_quantity=col(min_quantity),max_quantity=col(max_quantity),avg_quantity=col(avg_quantity)",
         "alias:totals",
     )
 
@@ -844,8 +855,28 @@ def _aggregate_plan() -> PySparkExecutionPlan:
                 function="count",
             ),
             PySparkAggregateAssignment(
+                field=CustomerMetric._structure_fields["distinct_customers"],
+                function="count_distinct",
+                expression=_field(RawMetric, "customer_id"),
+            ),
+            PySparkAggregateAssignment(
                 field=CustomerMetric._structure_fields["quantity"],
                 function="sum",
+                expression=_field(RawMetric, "quantity"),
+            ),
+            PySparkAggregateAssignment(
+                field=CustomerMetric._structure_fields["min_quantity"],
+                function="min",
+                expression=_field(RawMetric, "quantity"),
+            ),
+            PySparkAggregateAssignment(
+                field=CustomerMetric._structure_fields["max_quantity"],
+                function="max",
+                expression=_field(RawMetric, "quantity"),
+            ),
+            PySparkAggregateAssignment(
+                field=CustomerMetric._structure_fields["avg_quantity"],
+                function="avg",
                 expression=_field(RawMetric, "quantity"),
             ),
         ),
@@ -1426,6 +1457,18 @@ class FakeFunctions(ModuleType):
     def sum(self, column):
         return FakeColumn(f"sum({column.expression})")
 
+    def min(self, column):
+        return FakeColumn(f"min({column.expression})")
+
+    def max(self, column):
+        return FakeColumn(f"max({column.expression})")
+
+    def avg(self, column):
+        return FakeColumn(f"avg({column.expression})")
+
+    def countDistinct(self, column):
+        return FakeColumn(f"countDistinct({column.expression})")
+
     def first(self, column, *, ignorenulls: bool):
         return FakeColumn(f"first({column.expression}, ignorenulls={ignorenulls})")
 
@@ -1625,6 +1668,8 @@ class FakeGroupedFrame:
     def _type(self, column: FakeColumn):
         if "LongType()" in column.expression:
             return FakeTypes.LongType()
+        if "DoubleType()" in column.expression:
+            return FakeTypes.DoubleType()
         return FakeTypes.StringType()
 
     def _key_field(self, column: FakeColumn, fields_by_name: dict[str, "FakeField"]) -> "FakeField":

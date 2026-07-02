@@ -157,7 +157,11 @@ join.composite_equi_join
 join.broadcast_hint
 aggregate.group_by
 aggregate.count
+aggregate.count_distinct
 aggregate.sum
+aggregate.min
+aggregate.max
+aggregate.avg
 validation.schema_only_validation
 validation.strict_projection
 validation.allow_extra_projection

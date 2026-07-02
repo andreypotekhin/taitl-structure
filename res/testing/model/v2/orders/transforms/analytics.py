@@ -1,4 +1,4 @@
-from structure import Transform, count, group_by, input, output, sum, transform
+from structure import Transform, avg, count, count_distinct, group_by, input, max, min, output, sum, transform
 
 from testing.model.v2.orders.schemas.analytics import CustomerDailyTotal, ProductDailySummary
 from testing.model.v2.orders.schemas.order import OrderFulfillment
@@ -40,6 +40,10 @@ class OrderAnalytics(Transform):
             product_id=order.product_id,
             order_date=order.business.order_date,
             order_count=count(),
+            distinct_customers=count_distinct(order.customer_id),
             units=sum(order.quantity),
+            min_units=min(order.quantity),
+            max_units=max(order.quantity),
+            avg_units=avg(order.quantity),
             gross_total=sum(order.total),
         )

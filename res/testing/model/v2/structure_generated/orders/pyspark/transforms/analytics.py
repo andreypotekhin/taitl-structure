@@ -50,14 +50,22 @@ class OrderAnalyticsGenerated:
         ).agg(
             F.first(F.col("tenant"), ignorenulls=False).alias("tenant"),
             F.count(F.lit(1)).cast("long").alias("order_count"),
+            F.countDistinct(F.col("customer_id")).cast("long").alias("distinct_customers"),
             F.sum(F.col("quantity")).cast("long").alias("units"),
+            F.min(F.col("quantity")).cast("long").alias("min_units"),
+            F.max(F.col("quantity")).cast("long").alias("max_units"),
+            F.avg(F.col("quantity")).cast("double").alias("avg_units"),
             F.sum(F.col("total")).cast("decimal(12,2)").alias("gross_total"),
         ).select(
             F.col("tenant").alias("tenant"),
             F.col("product_id").alias("product_id"),
             F.col("order_date").alias("order_date"),
             F.col("order_count").alias("order_count"),
+            F.col("distinct_customers").alias("distinct_customers"),
             F.col("units").alias("units"),
+            F.col("min_units").alias("min_units"),
+            F.col("max_units").alias("max_units"),
+            F.col("avg_units").alias("avg_units"),
             F.col("gross_total").alias("gross_total"),
         )
         assert_schema(df, PRODUCT_DAILY_SUMMARY_SCHEMA, name="ProductDailySummary", mode="strict")

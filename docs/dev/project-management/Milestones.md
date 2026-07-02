@@ -176,7 +176,7 @@ Exit Criteria:
 
 Exit Criteria:
 
-- Typed `group_by(...)` and aggregation support covers count, sum, min, max, average, distinct count where practical,
+- Typed `group_by(...)` and aggregation support covers count, sum, min, max, avg, distinct count where practical,
   and schema-checked aggregate output construction.
 - Windowing covers latest-row, ranking, lag/lead, rolling metrics, and duplicate-removal helpers.
 - Deduplication helpers expose deterministic tie policies and never lower to arbitrary `dropDuplicates(...)` when a

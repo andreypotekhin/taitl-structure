@@ -15,7 +15,7 @@ metrics, and array/map transformations without dropping into hooks or hiding wor
 ### In Scope
 
 - Typed `group_by(...)`.
-- Aggregate expression builders for count, sum, min, max, average, and supported distinct counts.
+- Aggregate expression builders for count, sum, min, max, avg, and supported distinct counts.
 - Aggregate output schema checks.
 - Window specification objects with partitioning, ordering, and frames.
 - Ranking, lag, lead, rolling metric, latest-row, earliest-row, and duplicate-removal helpers.
@@ -86,6 +86,8 @@ def summarize(self, order: OrderEnriched) -> CustomerSummary:
 - [x] (2026-07-02) Started the aggregation slice: implemented typed `group_by(...)` capture, aggregate IR, count/sum
   builders, shared PySpark aggregate recipes, generated rendering coverage, online recipe coverage, and v2 analytics
   fixture lowering.
+- [x] (2026-07-02) Extended aggregate builders and PySpark lowering to `min(...)`, `max(...)`, `avg(...)`, and
+  `count_distinct(...)`, with generated rendering, online recipe, capability, and v2 fixture coverage.
 - [ ] Implement aggregation source capture, IR, recipes, generated snapshots, and parity tests.
 - [ ] Implement window and dedupe helpers with deterministic policies.
 - [ ] Implement supported higher-order array and map helpers.

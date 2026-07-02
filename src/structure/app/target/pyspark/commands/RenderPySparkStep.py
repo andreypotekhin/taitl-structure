@@ -146,13 +146,23 @@ class RenderPySparkStep:
         alias = self._literal(assignment.field.column)
         if assignment.function == "count":
             return f"F.count(F.lit(1)).cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
-        if assignment.function == "sum" and assignment.expression is not None:
+        if assignment.function in {"avg", "count_distinct", "max", "min", "sum"} and assignment.expression is not None:
             expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
-            return f"F.sum({expression}).cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
+            function = self._aggregate_function(assignment.function)
+            return f"{function}({expression}).cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
         if assignment.function == "first" and assignment.expression is not None:
             expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
             return f"F.first({expression}, ignorenulls=False).alias({alias})"
         raise TypeError(f"Unsupported aggregate assignment: {assignment.function}")
+
+    def _aggregate_function(self, function: str) -> str:
+        return {
+            "avg": "F.avg",
+            "count_distinct": "F.countDistinct",
+            "max": "F.max",
+            "min": "F.min",
+            "sum": "F.sum",
+        }[function]
 
     def _aggregate_select(self, assignment: PySparkAggregateAssignment) -> str:
         source = assignment.key if assignment.function == "key" else assignment.field.column
