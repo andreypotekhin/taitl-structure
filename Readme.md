@@ -268,7 +268,7 @@ See [Compatibility.md](docs/Compatibility.md) for the full versioning and compat
 
 Project overview: [Overview.md](docs/Overview.md)
 
-Basic concepts: [Basics.md](docs/Basics.md)
+QuickRef: [QuickRef.md](QuickRef.md)
 
 Get started: [GettingStarted.md](docs/GettingStarted.md)
 

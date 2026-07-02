@@ -679,3 +679,8 @@ These features remain explicit because Structure should not hide performance-sen
 Planned v2 adoption tooling also includes richer explain output, generated documentation artifacts for schemas
 and transforms, production incremental compilation, and a pytest helper for compiler checks and generated-code
 freshness.
+
+## Next Steps
+
+Get started: [GettingStarted.md](GettingStarted.md)
+

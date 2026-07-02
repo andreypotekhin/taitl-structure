@@ -296,4 +296,4 @@ PySparkStepRecipe normalize
 
 ## Next
 
-Get started: [GettingStarted.md](GettingStarted.md)
+QuickRef: [QuickRef.md](QuickRef.md)

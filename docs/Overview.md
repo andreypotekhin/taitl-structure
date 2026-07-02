@@ -385,7 +385,7 @@ Aliases are schema-local, and Structure passes alias strings through to Spark wi
 
 ## Next Steps
 
-Basic concepts: [Basics.md](Basics.md)
+QuickRef: [QuickRef.md](QuickRef.md)
 
 Get started: [GettingStarted.md](GettingStarted.md)
 
