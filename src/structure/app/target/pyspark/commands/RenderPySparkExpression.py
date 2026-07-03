@@ -69,13 +69,34 @@ class RenderPySparkExpression:
 
     def _reserved(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         function = expression.data["function"]
-        array, body = expression.args
-        argument = str(body.data.get("name", "item")) if body.kind == "lambda_arg" else "item"
         if function == "array_transform":
+            array, body = expression.args
+            argument = self._lambda_name(body, "item")
             return f"F.transform({self._render(array, aliases)}, lambda {argument}: {self._render(body, aliases)})"
         if function == "array_filter":
+            array, body = expression.args
+            argument = self._lambda_name(body, "item")
             return f"F.filter({self._render(array, aliases)}, lambda {argument}: {self._render(body, aliases)})"
+        if function == "map_transform_values":
+            mapping, key, value, body = expression.args
+            key_name = self._lambda_name(key, "key")
+            value_name = self._lambda_name(value, "value")
+            return (
+                f"F.transform_values({self._render(mapping, aliases)}, "
+                f"lambda {key_name}, {value_name}: {self._render(body, aliases)})"
+            )
+        if function == "map_filter":
+            mapping, key, value, body = expression.args
+            key_name = self._lambda_name(key, "key")
+            value_name = self._lambda_name(value, "value")
+            return (
+                f"F.map_filter({self._render(mapping, aliases)}, "
+                f"lambda {key_name}, {value_name}: {self._render(body, aliases)})"
+            )
         raise TypeError(f"Unsupported PySpark reserved expression: {function}")
+
+    def _lambda_name(self, expression: PySparkExpressionRecipe, fallback: str) -> str:
+        return str(expression.data.get("name", fallback)) if expression.kind == "lambda_arg" else fallback
 
     def _field(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         scope = str(expression.data["scope"])

@@ -48,6 +48,10 @@ def test_orders_example_generation_keeps_public_behavior_fragments_stable() -> N
         'published = self._impl.add_quality_columns(published=published, spark=self.spark, ctx=self.ctx)' in transform
     )
     assert 'F.filter(F.transform(F.col("order_raw.tags"), lambda item: F.lower(F.trim(item)))' in transform
+    assert (
+        'F.map_filter(F.transform_values(F.col("order_raw.attributes"), '
+        'lambda key, value: F.lower(F.trim(value)))' in transform
+    )
 
     analytics = render_orders_example()["examples/structure_generated/orders/pyspark/transforms/analytics.py"]
 

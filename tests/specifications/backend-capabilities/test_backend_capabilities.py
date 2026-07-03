@@ -60,7 +60,7 @@ def test_supported_v2_aggregate_requirement_passes(name: str) -> None:
     assert decision.supported
 
 
-@pytest.mark.parametrize("name", ["array_transform", "array_filter"])
+@pytest.mark.parametrize("name", ["array_transform", "array_filter", "map_transform_values", "map_filter"])
 def test_supported_v2_higher_order_requirement_passes(name: str) -> None:
     resolved = Capabilities.resolve()()
 

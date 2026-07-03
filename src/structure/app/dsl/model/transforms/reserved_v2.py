@@ -14,6 +14,7 @@ from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.BooleanType import BooleanType
 from structure.app.dsl.model.types.DoubleType import DoubleType
 from structure.app.dsl.model.types.LongType import LongType
+from structure.app.dsl.model.types.MapType import MapType
 
 F = TypeVar("F", bound=Callable)
 
@@ -88,7 +89,7 @@ class GroupedAggregates:
 def arr_transform(value: object, function: Callable[[Expression], object]) -> Expression:
     argument = literal(value)
     array = _array_type(argument, "arr_transform(...)")
-    element = _lambda_arg(array)
+    element = _lambda_arg(array.element, nullable=array.contains_null, name="item")
     result = _callback_expression("arr_transform(...)", function, element)
     result_type = result.type
     if result_type is None:
@@ -106,7 +107,7 @@ def arr_transform(value: object, function: Callable[[Expression], object]) -> Ex
 def arr_filter(value: object, function: Callable[[Expression], object]) -> Expression:
     argument = literal(value)
     array = _array_type(argument, "arr_filter(...)")
-    element = _lambda_arg(array)
+    element = _lambda_arg(array.element, nullable=array.contains_null, name="item")
     predicate = _callback_expression("arr_filter(...)", function, element)
     if not isinstance(predicate.type, BooleanType):
         raise TypeError("arr_filter(...) callback must return a Boolean expression")
@@ -120,9 +121,46 @@ def arr_filter(value: object, function: Callable[[Expression], object]) -> Expre
     )
 
 
-def _callback_expression(call: str, function: Callable[[Expression], object], element: Expression) -> Expression:
+def map_transform_values(value: object, function: Callable[[Expression, Expression], object]) -> Expression:
+    argument = literal(value)
+    map_type = _map_type(argument, "map_transform_values(...)")
+    key = _lambda_arg(map_type.key, nullable=False, name="key")
+    item = _lambda_arg(map_type.value, nullable=map_type.value_contains_null, name="value")
+    result = _callback_expression("map_transform_values(...)", function, key, item)
+    result_type = result.type
+    if result_type is None:
+        raise AssertionError("higher-order callback validation must reject untyped results")
+    return _reserved_expression(
+        "map_transform_values",
+        group="higher_order",
+        name="map_transform_values",
+        type=MapType(map_type.key, result_type, value_contains_null=result.nullable),
+        nullable=argument.nullable,
+        args=(argument, key, item, result),
+    )
+
+
+def map_filter(value: object, function: Callable[[Expression, Expression], object]) -> Expression:
+    argument = literal(value)
+    map_type = _map_type(argument, "map_filter(...)")
+    key = _lambda_arg(map_type.key, nullable=False, name="key")
+    item = _lambda_arg(map_type.value, nullable=map_type.value_contains_null, name="value")
+    predicate = _callback_expression("map_filter(...)", function, key, item)
+    if not isinstance(predicate.type, BooleanType):
+        raise TypeError("map_filter(...) callback must return a Boolean expression")
+    return _reserved_expression(
+        "map_filter",
+        group="higher_order",
+        name="map_filter",
+        type=argument.type,
+        nullable=argument.nullable,
+        args=(argument, key, item, predicate),
+    )
+
+
+def _callback_expression(call: str, function: Callable[..., object], *arguments: Expression) -> Expression:
     try:
-        result = literal(function(element))
+        result = literal(function(*arguments))
     except Exception as error:
         raise TypeError(
             f"{call} callback must stay inside Structure expression helpers; "
@@ -180,12 +218,18 @@ def _array_type(expression: Expression, call: str) -> ArrayType:
     return expression.type
 
 
-def _lambda_arg(type: ArrayType) -> Expression:
+def _map_type(expression: Expression, call: str) -> MapType:
+    if not isinstance(expression.type, MapType):
+        raise TypeError(f"{call} requires a Map expression")
+    return expression.type
+
+
+def _lambda_arg(type, *, nullable: bool, name: str) -> Expression:
     return Expression(
         kind="lambda_arg",
-        type=type.element,
-        nullable=type.contains_null,
-        data={"name": "item"},
+        type=type,
+        nullable=nullable,
+        data={"name": name},
     )
 
 

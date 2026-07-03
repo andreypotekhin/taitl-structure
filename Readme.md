@@ -276,11 +276,9 @@ completed v1/v2 batch features. Full support depends on parity evidence, diagnos
 
 See [Compatibility.md](docs/Compatibility.md) for the full versioning and compatibility policy.
 
-## Getting Started
+## Next Steps
 
-QuickRef: [QuickRef.md](docs/QuickRef.md)
-
-Get started: [GettingStarted.md](docs/GettingStarted.md)
+Read QuickRef: [QuickRef.md](docs/QuickRef.md)
 
 ## Development
 

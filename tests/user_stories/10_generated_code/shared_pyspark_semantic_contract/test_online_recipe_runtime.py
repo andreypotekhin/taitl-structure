@@ -13,6 +13,7 @@ from structure import (
     JoinHint,
     JoinStrategy,
     Long,
+    Map,
     SchemaMode,
     String,
     Structure,
@@ -78,6 +79,10 @@ class RawTagBatch(Structure):
     tags = field(Array(String(), contains_null=False), nullable=True)
 
 
+class RawMapBatch(Structure):
+    attributes = field(Map(String(), String(), value_contains_null=True), nullable=True)
+
+
 class CustomerMetric(Structure):
     customer_id = field(String(), nullable=False)
     order_count = field(Long(), nullable=False)
@@ -130,6 +135,16 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
                 _not_null(_lambda_item()),
             ),
             "filter(transform(col(RawTagBatch.tags), lambda item: lower(trim(item))), lambda item: item.isNotNull())",
+        ),
+        (
+            _map_filter(
+                _map_transform_values(
+                    _field(RawMapBatch, "attributes"), _call("lower", _call("trim", _lambda_value()))
+                ),
+                _not_null(_lambda_value()),
+            ),
+            "map_filter(transform_values(col(RawMapBatch.attributes), "
+            "lambda key, value: lower(trim(value))), lambda key, value: value.isNotNull())",
         ),
         (
             _when(_binary("ge", _field(RawOrder, "id"), _literal("M")), _literal("large"), _literal("standard")),
@@ -1370,12 +1385,40 @@ def _lambda_item() -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe("lambda_arg", String(), False, {"name": "item"})
 
 
+def _lambda_key() -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe("lambda_arg", String(), False, {"name": "key"})
+
+
+def _lambda_value() -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe("lambda_arg", String(), True, {"name": "value"})
+
+
 def _array_transform(array: PySparkExpressionRecipe, body: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe("reserved_v2", array.type, array.nullable, {"function": "array_transform"}, (array, body))
 
 
 def _array_filter(array: PySparkExpressionRecipe, body: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe("reserved_v2", array.type, array.nullable, {"function": "array_filter"}, (array, body))
+
+
+def _map_transform_values(mapping: PySparkExpressionRecipe, body: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe(
+        "reserved_v2",
+        mapping.type,
+        mapping.nullable,
+        {"function": "map_transform_values"},
+        (mapping, _lambda_key(), _lambda_value(), body),
+    )
+
+
+def _map_filter(mapping: PySparkExpressionRecipe, body: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe(
+        "reserved_v2",
+        mapping.type,
+        mapping.nullable,
+        {"function": "map_filter"},
+        (mapping, _lambda_key(), _lambda_value(), body),
+    )
 
 
 def _hook(
@@ -1494,6 +1537,18 @@ class FakeFunctions(ModuleType):
     def filter(self, column, function):
         item = FakeColumn("item")
         return FakeColumn(f"filter({column.expression}, lambda item: {function(item).expression})")
+
+    def transform_values(self, column, function):
+        key = FakeColumn("key")
+        value = FakeColumn("value")
+        return FakeColumn(
+            f"transform_values({column.expression}, lambda key, value: {function(key, value).expression})"
+        )
+
+    def map_filter(self, column, function):
+        key = FakeColumn("key")
+        value = FakeColumn("value")
+        return FakeColumn(f"map_filter({column.expression}, lambda key, value: {function(key, value).expression})")
 
     def count(self, column):
         return FakeColumn(f"count({column.expression})")

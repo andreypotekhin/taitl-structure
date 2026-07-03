@@ -1,5 +1,6 @@
 from structure import (
     Array,
+    Map,
     String,
     Structure,
     Transform,
@@ -8,6 +9,8 @@ from structure import (
     field,
     input,
     lower,
+    map_filter,
+    map_transform_values,
     output,
     transform,
     trim,
@@ -27,6 +30,16 @@ class CleanTags(Structure):
     tags = field(Array(String(), contains_null=False), nullable=True)
 
 
+class RawAttributes(Structure):
+    id = field(String(), nullable=False)
+    attributes = field(Map(String(), String(), value_contains_null=True), nullable=True)
+
+
+class CleanAttributes(Structure):
+    id = field(String(), nullable=False)
+    attributes = field(Map(String(), String(), value_contains_null=False), nullable=True)
+
+
 @transform
 class CleanTagTransform(Transform):
     rows = input(RawTags)
@@ -37,6 +50,19 @@ class CleanTagTransform(Transform):
         return CleanTags(id=row.id, tags=tags)
 
 
+@transform
+class CleanAttributeTransform(Transform):
+    rows = input(RawAttributes)
+    clean = output(CleanAttributes)
+
+    def clean_attributes(self, row: RawAttributes) -> CleanAttributes:
+        attributes = map_filter(
+            map_transform_values(row.attributes, lambda key, value: lower(trim(value))),
+            lambda key, value: value.is_not_null(),
+        )
+        return CleanAttributes(id=row.id, attributes=attributes)
+
+
 def test_array_higher_order_helpers_render_spark_visible_lambdas() -> None:
     plan = PySpark.plan.lower()(compile_transform(CleanTagTransform))
 
@@ -45,4 +71,16 @@ def test_array_higher_order_helpers_render_spark_visible_lambdas() -> None:
     assert (
         'F.filter(F.transform(F.col("raw_tags.tags"), lambda item: F.lower(F.trim(item))), '
         "lambda item: item.isNotNull()).alias(\"tags\")"
+    ) in text
+
+
+def test_map_higher_order_helpers_render_spark_visible_lambdas() -> None:
+    plan = PySpark.plan.lower()(compile_transform(CleanAttributeTransform))
+
+    text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
+
+    assert (
+        'F.map_filter(F.transform_values(F.col("raw_attributes.attributes"), '
+        "lambda key, value: F.lower(F.trim(value))), "
+        "lambda key, value: value.isNotNull()).alias(\"attributes\")"
     ) in text

@@ -31,6 +31,8 @@ from structure import (
     join_many,
     join_one,
     lower,
+    map_filter,
+    map_transform_values,
     not_exists,
     output,
     temporal_one,
@@ -77,7 +79,10 @@ class EnrichOrders(Transform):
             net_total=total - discount,
             quantity=coalesce(order.quantity, 1),
             tags=arr_filter(arr_transform(order.tags, lambda tag: lower(trim(tag))), lambda tag: tag.is_not_null()),
-            attributes=order.attributes,
+            attributes=map_filter(
+                map_transform_values(order.attributes, lambda key, value: lower(trim(value))),
+                lambda key, value: value.is_not_null(),
+            ),
             shipping=order.shipping,
             is_large=total > 1000,
         )

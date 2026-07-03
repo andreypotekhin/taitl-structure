@@ -517,9 +517,10 @@ Supported aggregate helpers are `count()`, `count_distinct(...)`, `sum(...)`, `m
 `sum(...)` and `avg(...)` require numeric expressions. Nullable aggregate outputs must feed nullable fields or be
 repaired explicitly.
 
-## Array Higher-Order Helpers
+## Higher-Order Helpers
 
-Use `arr_transform(...)` and `arr_filter(...)` for Spark-plan-visible array callbacks.
+Use `arr_transform(...)`, `arr_filter(...)`, `map_transform_values(...)`, and `map_filter(...)` for Spark-plan-visible
+collection callbacks.
 
 ```python
 def normalize(self, order: OrderRaw) -> OrderNormalized:
@@ -528,6 +529,15 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
         lambda tag: tag.is_not_null(),
     )
     return OrderNormalized.project(order)(tags=tags)
+```
+
+```python
+def normalize(self, order: OrderRaw) -> OrderNormalized:
+    attributes = map_filter(
+        map_transform_values(order.attributes, lambda key, value: lower(trim(value))),
+        lambda key, value: value.is_not_null(),
+    )
+    return OrderNormalized.project(order)(attributes=attributes)
 ```
 
 Callbacks are symbolic: they are evaluated once against a Structure expression, not row-by-row in Python. Callback
@@ -793,7 +803,7 @@ Reference: [CLI](specifications/CLI.md) and
 ## Planned Features
 
 Implemented v2 analytical features include existence joins, `join_many(...)`, deterministic lookup dedupe,
-temporal validity joins, aggregation/grouping, Spark higher-order array helpers, caching, and target capability
+temporal validity joins, aggregation/grouping, Spark higher-order array/map helpers, caching, and target capability
 checks.
 
 Remaining planned v2 features include:

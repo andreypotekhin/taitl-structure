@@ -98,9 +98,11 @@ def summarize(self, order: OrderEnriched) -> CustomerSummary:
   Python boolean callback flow, and untyped callback returns.
 - [x] (2026-07-02) Updated QuickRef, example order/analytics models, generated example artifacts, and generation
   stability tests to cover admitted grouped aggregates and array higher-order helpers.
+- [x] (2026-07-02) Implemented Spark-visible map `map_transform_values(...)` and `map_filter(...)` callbacks with
+  generated rendering, online expression coverage, public API snapshots, docs, and example fixture coverage.
 - [ ] Implement aggregation source capture, IR, recipes, generated snapshots, and parity tests.
 - [ ] Implement window and dedupe helpers with deterministic policies.
-- [ ] Implement supported higher-order array and map helpers.
+- [x] Implement supported higher-order array and map helpers.
 - [ ] Update explain, traceability, diagnostics, and streaming compatibility classification.
 
 ## Compile-Time Performance Metric

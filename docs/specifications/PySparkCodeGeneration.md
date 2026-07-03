@@ -817,7 +817,7 @@ The following are outside v1 PySpark generation scope:
 - generating non-PySpark backends;
 - accepting manual edits inside `generated/` as source of truth;
 - optimizing source-order operations across hook boundaries;
-- generating unsupported window, deduplication, map higher-order, or advanced grouping forms before their specs exist;
+- generating unsupported window, deduplication, or advanced grouping forms before their specs exist;
 - producing runtime telemetry under `traceability/`.
 
 ## Implementation Checklist

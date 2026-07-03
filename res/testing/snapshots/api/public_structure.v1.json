@@ -464,6 +464,22 @@
       "qualname": "lower",
       "signature": "(value: 'object') -> 'Expression'"
     },
+    "map_filter": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "map_filter",
+      "signature": "(value: 'object', function: 'Callable[[Expression, Expression], object]') -> 'Expression'"
+    },
+    "map_transform_values": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "map_transform_values",
+      "signature": "(value: 'object', function: 'Callable[[Expression, Expression], object]') -> 'Expression'"
+    },
     "max": {
       "dataclass_fields": [],
       "enum_members": [],

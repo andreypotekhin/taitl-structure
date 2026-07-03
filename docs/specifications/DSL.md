@@ -923,7 +923,7 @@ The following are outside v1 DSL scope:
 - automatic fallback from compiled expressions to hooks;
 - automatic deduplication for `join_one(...)`;
 - implicit or nondeterministic selected-row deduplication;
-- advanced grouping sets, rollups, cubes, broad window helpers, and map higher-order helpers;
+- advanced grouping sets, rollups, cubes, and broad window helpers;
 - streaming source, sink, trigger, checkpoint, and query lifecycle DSL;
 - Spark Connect-specific public syntax;
 - non-PySpark backends in v1.

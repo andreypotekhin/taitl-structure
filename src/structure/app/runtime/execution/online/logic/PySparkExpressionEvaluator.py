@@ -59,26 +59,50 @@ class PySparkExpressionEvaluator:
 
     def _reserved(self, expression: PySparkExpressionRecipe, *, functions, aliases):
         function = expression.data["function"]
-        array, body = expression.args
         if function == "array_transform":
+            array, body = expression.args
             return functions.transform(
                 self.evaluate(array, functions=functions, aliases=aliases),
-                lambda item: self.evaluate(self._bind_lambda(body, item), functions=functions, aliases=aliases),
+                lambda item: self.evaluate(
+                    self._bind_lambdas(body, {"item": item}), functions=functions, aliases=aliases
+                ),
             )
         if function == "array_filter":
+            array, body = expression.args
             return functions.filter(
                 self.evaluate(array, functions=functions, aliases=aliases),
-                lambda item: self.evaluate(self._bind_lambda(body, item), functions=functions, aliases=aliases),
+                lambda item: self.evaluate(
+                    self._bind_lambdas(body, {"item": item}), functions=functions, aliases=aliases
+                ),
+            )
+        if function == "map_transform_values":
+            mapping, _, _, body = expression.args
+            return functions.transform_values(
+                self.evaluate(mapping, functions=functions, aliases=aliases),
+                lambda key, value: self.evaluate(
+                    self._bind_lambdas(body, {"key": key, "value": value}), functions=functions, aliases=aliases
+                ),
+            )
+        if function == "map_filter":
+            mapping, _, _, body = expression.args
+            return functions.map_filter(
+                self.evaluate(mapping, functions=functions, aliases=aliases),
+                lambda key, value: self.evaluate(
+                    self._bind_lambdas(body, {"key": key, "value": value}), functions=functions, aliases=aliases
+                ),
             )
         raise TypeError(f"Unsupported PySpark reserved expression: {function}")
 
-    def _bind_lambda(self, expression: PySparkExpressionRecipe, column):
+    def _bind_lambdas(self, expression: PySparkExpressionRecipe, columns):
         if expression.kind == "lambda_arg":
+            name = expression.data.get("name")
+            if name not in columns:
+                return expression
             return PySparkExpressionRecipe(
                 kind=expression.kind,
                 type=expression.type,
                 nullable=expression.nullable,
-                data={**expression.data, "column": column},
+                data={**expression.data, "column": columns[name]},
                 args=expression.args,
             )
         return PySparkExpressionRecipe(
@@ -86,7 +110,7 @@ class PySparkExpressionEvaluator:
             type=expression.type,
             nullable=expression.nullable,
             data=expression.data,
-            args=tuple(self._bind_lambda(argument, column) for argument in expression.args),
+            args=tuple(self._bind_lambdas(argument, columns) for argument in expression.args),
         )
 
     def _call(self, expression: PySparkExpressionRecipe, *, functions, aliases):
