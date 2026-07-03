@@ -3,9 +3,10 @@ from __future__ import annotations
 import sys
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator
+from typing import Iterator, Sequence
 
 from structure.app.dsl.api import compile_transform
+from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.target.pyspark.api import PySpark
 
 ROOT = Path(".")
@@ -14,6 +15,7 @@ EXAMPLES = ROOT / "examples"
 
 def render_orders_example() -> dict[str, str]:
     with _example_imports():
+        from examples.orders.schemas.analytics import CustomerDailyTotal, ProductDailySummary
         from examples.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
         from examples.orders.schemas.customer import Customer
         from examples.orders.schemas.order import (
@@ -30,31 +32,41 @@ def render_orders_example() -> dict[str, str]:
         from examples.orders.schemas.product import BlockedProduct, Product, ProductBase
         from examples.orders.schemas.promotion import Promotion
         from examples.orders.schemas.shipment import Shipment
+        from examples.orders.transforms.analytics import OrderAnalytics
         from examples.orders.transforms.order import EnrichOrders
 
-        files = PySpark.render.project()(
-            PySpark.plan.lower()(compile_transform(EnrichOrders)),
-            source_transform="examples.orders.transforms.order.EnrichOrders",
-            generated_package="examples.structure_generated.orders",
-            source_schema_modules={
-                "examples.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
-                "examples.orders.schemas.customer": [Customer],
-                "examples.orders.schemas.order": [
-                    OrderRaw,
-                    OrderNormalized,
-                    OrderWithCustomer,
-                    OrderWithProduct,
-                    OrderWithPromotion,
-                    OrderFulfillment,
-                    OrderPublication,
-                    PublicationFlags,
-                    OrderPublished,
-                ],
-                "examples.orders.schemas.product": [ProductBase, Product, BlockedProduct],
-                "examples.orders.schemas.promotion": [Promotion],
-                "examples.orders.schemas.shipment": [Shipment],
-            },
-        )
+        schema_modules: dict[str, Sequence[type[Structure]]] = {
+            "examples.orders.schemas.analytics": [CustomerDailyTotal, ProductDailySummary],
+            "examples.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
+            "examples.orders.schemas.customer": [Customer],
+            "examples.orders.schemas.order": [
+                OrderRaw,
+                OrderNormalized,
+                OrderWithCustomer,
+                OrderWithProduct,
+                OrderWithPromotion,
+                OrderFulfillment,
+                OrderPublication,
+                PublicationFlags,
+                OrderPublished,
+            ],
+            "examples.orders.schemas.product": [ProductBase, Product, BlockedProduct],
+            "examples.orders.schemas.promotion": [Promotion],
+            "examples.orders.schemas.shipment": [Shipment],
+        }
+        files = {}
+        for transform_class, source_transform in (
+            (EnrichOrders, "examples.orders.transforms.order.EnrichOrders"),
+            (OrderAnalytics, "examples.orders.transforms.analytics.OrderAnalytics"),
+        ):
+            files.update(
+                PySpark.render.project()(
+                    PySpark.plan.lower()(compile_transform(transform_class)),
+                    source_transform=source_transform,
+                    generated_package="examples.structure_generated.orders",
+                    source_schema_modules=schema_modules,
+                )
+            )
         files["examples/structure_generated/orders/traceability/__init__.py"] = (
             "# Generated traceability package marker.\n"
         )

@@ -1,3 +1,4 @@
+from examples.orders.schemas.analytics import CustomerDailyTotal, ProductDailySummary
 from examples.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
 from examples.orders.schemas.customer import Customer
 from examples.orders.schemas.order import (

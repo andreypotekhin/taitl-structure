@@ -486,6 +486,54 @@ customer_id=self.clean_id(order.customer_id)
 
 Reference: [DSL expression helpers](specifications/DSL.md).
 
+## Aggregations
+
+Use `group_by(...)` inside a subtransform that returns an aggregate schema. Aggregate assignments stay
+compiler-visible and lower to Spark `groupBy(...).agg(...)`.
+
+```python
+def product_daily_summary(self, order: OrderFulfillment) -> ProductDailySummary:
+    group_by(
+        tenant_id=order.tenant.tenant_id,
+        product_id=order.product_id,
+        order_date=order.business.order_date,
+    )
+
+    return ProductDailySummary(
+        tenant=order.tenant,
+        product_id=order.product_id,
+        order_date=order.business.order_date,
+        order_count=count(),
+        distinct_customers=count_distinct(order.customer_id),
+        units=sum(order.quantity),
+        min_units=min(order.quantity),
+        max_units=max(order.quantity),
+        avg_units=avg(order.quantity),
+        gross_total=sum(order.total),
+    )
+```
+
+Supported aggregate helpers are `count()`, `count_distinct(...)`, `sum(...)`, `min(...)`, `max(...)`, and `avg(...)`.
+`sum(...)` and `avg(...)` require numeric expressions. Nullable aggregate outputs must feed nullable fields or be
+repaired explicitly.
+
+## Array Higher-Order Helpers
+
+Use `arr_transform(...)` and `arr_filter(...)` for Spark-plan-visible array callbacks.
+
+```python
+def normalize(self, order: OrderRaw) -> OrderNormalized:
+    tags = arr_filter(
+        arr_transform(order.tags, lambda tag: lower(trim(tag))),
+        lambda tag: tag.is_not_null(),
+    )
+    return OrderNormalized.project(order)(tags=tags)
+```
+
+Callbacks are symbolic: they are evaluated once against a Structure expression, not row-by-row in Python. Callback
+bodies must return typed Structure expressions or typed literals. Python boolean control flow such as `tag and ...`
+is rejected; combine symbolic predicates with `&`, `|`, and `~`.
+
 ## Joins
 
 Use symbolic joins. Ref: [Join semantics](specifications/JoinSemantics.md) and

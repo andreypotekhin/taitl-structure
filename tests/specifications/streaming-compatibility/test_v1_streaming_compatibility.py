@@ -4,13 +4,16 @@ from structure import (
     AsOf,
     Join,
     JoinDedupe,
+    Long,
     String,
     Structure,
     Transform,
     after,
     as_of_one,
+    count,
     exists,
     field,
+    group_by,
     input,
     join_many,
     join_one,
@@ -44,6 +47,11 @@ class StreamLookup(Structure):
 class StreamEnriched(Structure):
     id = field(String(), nullable=False)
     value = field(String(), nullable=True)
+
+
+class StreamSummary(Structure):
+    id = field(String(), nullable=False)
+    row_count = field(Long(), nullable=False)
 
 
 @transform(streaming_compatible=True)
@@ -137,6 +145,15 @@ class StreamingAsOfLookup(Transform):
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
+@transform(streaming_compatible=True)
+class StreamingAggregate(Transform):
+    rows = input(StreamRaw)
+    summary = output(StreamSummary)
+
+    def summarize(self, row: StreamRaw) -> StreamSummary:
+        return group_by(row.id).agg(row_count=count()).as_schema(StreamSummary)
+
+
 def test_v1_streaming_projection_filter_and_schema_validation_are_compatible_without_spark() -> None:
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
@@ -185,6 +202,21 @@ def test_v2_windowed_lookup_joins_are_batch_only_without_spark() -> None:
         assert report.findings[0].operation == operation
 
 
+def test_v2_grouped_aggregates_are_batch_only_without_spark() -> None:
+    plan = compile_transform(StreamingAggregate)
+
+    report = Compiler.compileability.streaming()(
+        PySpark.plan.lower()(plan),
+        required=bool((plan.options or {})["streaming_compatible"]),
+    )
+
+    assert report.support is StreamingSupport.BATCH_ONLY
+    assert len(report.findings) == 1
+    assert report.findings[0].code == "STREAM-E0801"
+    assert report.findings[0].operation == "grouped aggregate"
+    assert "watermarks" in report.findings[0].problem
+
+
 def test_v1_streaming_unsafe_hook_is_unknown_with_registered_finding() -> None:
     plan = compile_transform(StreamingUnknownHook)
 
@@ -211,6 +243,16 @@ def test_v1_streaming_report_is_included_in_explain_output() -> None:
     assert "status: unknown" in report
     assert "required: true" in report
     assert "STREAM-W0801: unknown in normalize (after hook arbitrary_hook)" in report
+
+
+def test_v2_aggregate_streaming_report_is_included_in_explain_output() -> None:
+    from structure.app.cli.api import CliApp
+
+    report = CliApp.render_explain_report()(StreamingAggregate)
+
+    assert "status: batch_only" in report
+    assert "STREAM-E0801: batch_only in summarize (grouped aggregate)" in report
+    assert "operations: aggregate(aggregate keys=id metrics=count)" in report
 
 
 def test_v2_analytical_join_explain_output_names_join_shapes() -> None:

@@ -10,6 +10,8 @@ from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import CompileContext, current_context
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.expr.expressions import literal
+from structure.app.dsl.model.types.ArrayType import ArrayType
+from structure.app.dsl.model.types.BooleanType import BooleanType
 from structure.app.dsl.model.types.DoubleType import DoubleType
 from structure.app.dsl.model.types.LongType import LongType
 
@@ -85,26 +87,50 @@ class GroupedAggregates:
 
 def arr_transform(value: object, function: Callable[[Expression], object]) -> Expression:
     argument = literal(value)
+    array = _array_type(argument, "arr_transform(...)")
+    element = _lambda_arg(array)
+    result = _callback_expression("arr_transform(...)", function, element)
+    result_type = result.type
+    if result_type is None:
+        raise AssertionError("higher-order callback validation must reject untyped results")
     return _reserved_expression(
         "array_transform",
         group="higher_order",
         name="array_transform",
-        type=argument.type,
+        type=ArrayType(result_type, contains_null=result.nullable),
         nullable=argument.nullable,
-        args=(argument,),
+        args=(argument, result),
     )
 
 
 def arr_filter(value: object, function: Callable[[Expression], object]) -> Expression:
     argument = literal(value)
+    array = _array_type(argument, "arr_filter(...)")
+    element = _lambda_arg(array)
+    predicate = _callback_expression("arr_filter(...)", function, element)
+    if not isinstance(predicate.type, BooleanType):
+        raise TypeError("arr_filter(...) callback must return a Boolean expression")
     return _reserved_expression(
         "array_filter",
         group="higher_order",
         name="array_filter",
         type=argument.type,
         nullable=argument.nullable,
-        args=(argument,),
+        args=(argument, predicate),
     )
+
+
+def _callback_expression(call: str, function: Callable[[Expression], object], element: Expression) -> Expression:
+    try:
+        result = literal(function(element))
+    except Exception as error:
+        raise TypeError(
+            f"{call} callback must stay inside Structure expression helpers; "
+            f"unsupported Python callback code failed with {type(error).__name__}: {error}"
+        ) from error
+    if result.type is None:
+        raise TypeError(f"{call} callback must return a typed Structure expression or literal")
+    return result
 
 
 def cache(storage_level: object) -> Callable[[F], F]:
@@ -145,6 +171,21 @@ def _reserved_expression(
         nullable=nullable,
         data={"function": function, "capability_group": group, "capability_name": name},
         args=args,
+    )
+
+
+def _array_type(expression: Expression, call: str) -> ArrayType:
+    if not isinstance(expression.type, ArrayType):
+        raise TypeError(f"{call} requires an Array expression")
+    return expression.type
+
+
+def _lambda_arg(type: ArrayType) -> Expression:
+    return Expression(
+        kind="lambda_arg",
+        type=type.element,
+        nullable=type.contains_null,
+        data={"name": "item"},
     )
 
 

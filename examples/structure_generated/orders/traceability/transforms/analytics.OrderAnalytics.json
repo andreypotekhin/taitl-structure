@@ -1,0 +1,548 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "OrderAnalyticsGenerated",
+  "inputs": [
+    {
+      "name": "fulfilled",
+      "ordinal": 0,
+      "schema": "OrderFulfillment"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated",
+      "ir": "ir:OrderAnalytics",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.input.fulfilled",
+      "ir": "ir:OrderAnalytics.input.0.fulfilled",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.input.fulfilled"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.customer_daily_totals"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.aggregate.tenant",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.aggregate.tenant",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.customer_daily_totals.aggregate.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.aggregate.customer_id",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.aggregate.customer_id",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.customer_daily_totals.aggregate.customer_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.aggregate.order_date",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.aggregate.order_date",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.customer_daily_totals.aggregate.order_date"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.aggregate.order_count",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.aggregate.order_count",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.customer_daily_totals.aggregate.order_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.aggregate.gross_total",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.aggregate.gross_total",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.customer_daily_totals.aggregate.gross_total"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.aggregate.net_total",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.aggregate.net_total",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.customer_daily_totals.aggregate.net_total"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.validation.0.intermediate",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.validation.0.intermediate",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.customer_daily_totals.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.product_daily_summary"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.tenant",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.tenant",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.product_id",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.product_id",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.order_date",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.order_date",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.order_date"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.order_count",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.order_count",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.order_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.distinct_customers",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.distinct_customers",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.distinct_customers"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.units",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.units",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.units"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.min_units",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.min_units",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.min_units"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.max_units",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.max_units",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.max_units"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.avg_units",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.avg_units",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.avg_units"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.gross_total",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.gross_total",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.gross_total"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.output.0.customer_totals.validation.final",
+      "ir": "ir:OrderAnalytics.output.0.customer_totals.validation.final",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.output.customer_totals"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.output.1.product_summary.validation.final",
+      "ir": "ir:OrderAnalytics.output.1.product_summary.validation.final",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.output.product_summary"
+    }
+  ],
+  "schema_constants": {
+    "Address": {
+      "constant": "ADDRESS_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.common"
+    },
+    "AuditStamp": {
+      "constant": "AUDIT_STAMP_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.common"
+    },
+    "BlockedProduct": {
+      "constant": "BLOCKED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.product"
+    },
+    "BusinessDate": {
+      "constant": "BUSINESS_DATE_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.common"
+    },
+    "Customer": {
+      "constant": "CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.customer"
+    },
+    "CustomerDailyTotal": {
+      "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.analytics"
+    },
+    "OrderFulfillment": {
+      "constant": "ORDER_FULFILLMENT_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderNormalized": {
+      "constant": "ORDER_NORMALIZED_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderPublication": {
+      "constant": "ORDER_PUBLICATION_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderPublished": {
+      "constant": "ORDER_PUBLISHED_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderRaw": {
+      "constant": "ORDER_RAW_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderWithCustomer": {
+      "constant": "ORDER_WITH_CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderWithProduct": {
+      "constant": "ORDER_WITH_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderWithPromotion": {
+      "constant": "ORDER_WITH_PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "Product": {
+      "constant": "PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.product"
+    },
+    "ProductBase": {
+      "constant": "PRODUCT_BASE_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.product"
+    },
+    "ProductDailySummary": {
+      "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.analytics"
+    },
+    "Promotion": {
+      "constant": "PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.promotion"
+    },
+    "PublicationFlags": {
+      "constant": "PUBLICATION_FLAGS_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "Shipment": {
+      "constant": "SHIPMENT_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.shipment"
+    },
+    "TenantKey": {
+      "constant": "TENANT_KEY_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.common"
+    }
+  },
+  "source_transform": "examples.orders.transforms.analytics.OrderAnalytics",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "fulfilled"
+        ],
+        "step": null,
+        "target": "OrderAnalytics"
+      },
+      {
+        "detail": {
+          "input_schema": "OrderFulfillment",
+          "output_schema": "CustomerDailyTotal"
+        },
+        "operation": "step",
+        "sources": [
+          "fulfilled"
+        ],
+        "step": "customer_daily_totals",
+        "target": "customer_daily_totals"
+      },
+      {
+        "detail": {
+          "field": "tenant",
+          "function": "first",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.tenant"
+        ],
+        "step": "customer_daily_totals",
+        "target": "CustomerDailyTotal.tenant"
+      },
+      {
+        "detail": {
+          "field": "customer_id",
+          "function": "key",
+          "key": "customer_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_daily_totals",
+        "target": "CustomerDailyTotal.customer_id"
+      },
+      {
+        "detail": {
+          "field": "order_date",
+          "function": "key",
+          "key": "order_date"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.business.order_date"
+        ],
+        "step": "customer_daily_totals",
+        "target": "CustomerDailyTotal.order_date"
+      },
+      {
+        "detail": {
+          "field": "order_count",
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled"
+        ],
+        "step": "customer_daily_totals",
+        "target": "CustomerDailyTotal.order_count"
+      },
+      {
+        "detail": {
+          "field": "gross_total",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.total"
+        ],
+        "step": "customer_daily_totals",
+        "target": "CustomerDailyTotal.gross_total"
+      },
+      {
+        "detail": {
+          "field": "net_total",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.net_total"
+        ],
+        "step": "customer_daily_totals",
+        "target": "CustomerDailyTotal.net_total"
+      },
+      {
+        "detail": {
+          "input_schema": "OrderFulfillment",
+          "output_schema": "ProductDailySummary"
+        },
+        "operation": "step",
+        "sources": [
+          "CustomerDailyTotal"
+        ],
+        "step": "product_daily_summary",
+        "target": "product_daily_summary"
+      },
+      {
+        "detail": {
+          "field": "tenant",
+          "function": "first",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.tenant"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.tenant"
+      },
+      {
+        "detail": {
+          "field": "product_id",
+          "function": "key",
+          "key": "product_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.product_id"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.product_id"
+      },
+      {
+        "detail": {
+          "field": "order_date",
+          "function": "key",
+          "key": "order_date"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.business.order_date"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.order_date"
+      },
+      {
+        "detail": {
+          "field": "order_count",
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.order_count"
+      },
+      {
+        "detail": {
+          "field": "distinct_customers",
+          "function": "count_distinct",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.customer_id"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.distinct_customers"
+      },
+      {
+        "detail": {
+          "field": "units",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.units"
+      },
+      {
+        "detail": {
+          "field": "min_units",
+          "function": "min",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.min_units"
+      },
+      {
+        "detail": {
+          "field": "max_units",
+          "function": "max",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.max_units"
+      },
+      {
+        "detail": {
+          "field": "avg_units",
+          "function": "avg",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.avg_units"
+      },
+      {
+        "detail": {
+          "field": "gross_total",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.total"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.gross_total"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "CustomerDailyTotal"
+        ],
+        "step": null,
+        "target": "CustomerDailyTotal.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "ProductDailySummary"
+        ],
+        "step": null,
+        "target": "ProductDailySummary.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "order_fulfillment",
+      "joins": [],
+      "name": "customer_daily_totals",
+      "output_alias": "customer_daily_total",
+      "output_schema": "CustomerDailyTotal",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "customer_totals",
+          "lane": "customer_totals",
+          "schema": "CustomerDailyTotal"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "CustomerDailyTotal"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "order_fulfillment",
+      "joins": [],
+      "name": "product_daily_summary",
+      "output_alias": "product_daily_summary",
+      "output_schema": "ProductDailySummary",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "product_summary",
+          "lane": "product_summary",
+          "schema": "ProductDailySummary"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.orders.pyspark.transforms.analytics",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "customer_totals",
+        "schema": "CustomerDailyTotal"
+      },
+      {
+        "mode": "strict",
+        "name": "product_summary",
+        "schema": "ProductDailySummary"
+      }
+    ]
+  }
+}

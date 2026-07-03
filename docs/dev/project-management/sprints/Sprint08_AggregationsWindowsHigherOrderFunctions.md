@@ -89,6 +89,15 @@ def summarize(self, order: OrderEnriched) -> CustomerSummary:
 - [x] (2026-07-02) Extended aggregate builders and PySpark lowering to `min(...)`, `max(...)`, `avg(...)`, and
   `count_distinct(...)`, with generated rendering, online recipe, capability, and v2 fixture coverage.
 - [x] (2026-07-02) Added aggregate input type and nullable-output diagnostics for numeric aggregate expressions.
+- [x] (2026-07-02) Added aggregate static dataflow traceability and explain output for grouped keys and aggregate
+  metrics.
+- [x] (2026-07-02) Classified grouped aggregates as batch-only in streaming compatibility reports and explain output.
+- [x] (2026-07-02) Implemented Spark-visible array `arr_transform(...)` and `arr_filter(...)` callbacks with generated
+  rendering and online expression coverage.
+- [x] (2026-07-02) Added array higher-order helper diagnostics for non-array inputs, non-Boolean filters, arbitrary
+  Python boolean callback flow, and untyped callback returns.
+- [x] (2026-07-02) Updated QuickRef, example order/analytics models, generated example artifacts, and generation
+  stability tests to cover admitted grouped aggregates and array higher-order helpers.
 - [ ] Implement aggregation source capture, IR, recipes, generated snapshots, and parity tests.
 - [ ] Implement window and dedupe helpers with deterministic policies.
 - [ ] Implement supported higher-order array and map helpers.

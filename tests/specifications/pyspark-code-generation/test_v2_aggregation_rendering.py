@@ -16,6 +16,8 @@ from structure import (
     sum,
     transform,
 )
+from structure.app.cli.api import CliApp
+from structure.app.compiler.api import Compiler
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
@@ -66,3 +68,31 @@ def test_grouped_aggregate_step_renders_spark_visible_group_by() -> None:
     assert 'F.max(F.col("raw_order.quantity")).cast(T.LongType()).alias("max_quantity")' in text
     assert 'F.avg(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("avg_quantity")' in text
     assert 'F.col("customer_id")' in text
+
+
+def test_grouped_aggregate_traceability_records_static_dataflow() -> None:
+    recipe = PySpark.plan.lower()(compile_transform(CustomerTotals))
+    traceability = Compiler.traceability.build()(
+        recipe,
+        source_transform="tests.CustomerTotals",
+        transform_module="tests.CustomerTotalsGenerated",
+    )
+
+    dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
+
+    assert dependencies["CustomerTotal.customer_id"].operation == "aggregate"
+    assert dependencies["CustomerTotal.customer_id"].detail["function"] == "key"
+    assert dependencies["CustomerTotal.quantity"].sources == ("rows.quantity",)
+    assert dependencies["CustomerTotal.quantity"].detail["function"] == "sum"
+    assert dependencies["CustomerTotal.order_count"].sources == ("rows",)
+    assert dependencies["CustomerTotal.order_count"].detail["function"] == "count"
+    assert any(record.ir.endswith(".aggregate.quantity") for record in traceability.provenance)
+
+
+def test_grouped_aggregate_explain_names_keys_and_metrics() -> None:
+    report = CliApp.render_explain_report()(CustomerTotals)
+
+    assert (
+        "operations: aggregate(aggregate keys=customer_id "
+        "metrics=count,count_distinct,sum,min,max,avg)"
+    ) in report

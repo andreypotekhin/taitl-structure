@@ -55,6 +55,8 @@ V1_CAPABILITIES = frozenset(
         ("aggregate", "min"),
         ("aggregate", "max"),
         ("aggregate", "avg"),
+        ("higher_order", "array_transform"),
+        ("higher_order", "array_filter"),
         ("validation", "schema_only_validation"),
         ("validation", "strict_projection"),
         ("validation", "allow_extra_projection"),

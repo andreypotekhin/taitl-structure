@@ -68,7 +68,7 @@ class EnrichOrdersGenerated:
             F.coalesce(F.col("order_raw.discount").cast("decimal(12,2)"), F.lit(0)).alias("discount"),
             (F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0)) - F.coalesce(F.col("order_raw.discount").cast("decimal(12,2)"), F.lit(0))).cast(T.DecimalType(12, 2)).alias("net_total"),
             F.coalesce(F.col("order_raw.quantity"), F.lit(1)).cast(T.LongType()).alias("quantity"),
-            F.col("order_raw.tags"),
+            F.filter(F.transform(F.col("order_raw.tags"), lambda item: F.lower(F.trim(item))), lambda item: item.isNotNull()).alias("tags"),
             F.col("order_raw.attributes"),
             F.col("order_raw.shipping"),
             (F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0)) > F.lit(1000)).alias("is_large"),

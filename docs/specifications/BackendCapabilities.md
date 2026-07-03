@@ -162,6 +162,8 @@ aggregate.sum
 aggregate.min
 aggregate.max
 aggregate.avg
+higher_order.array_transform
+higher_order.array_filter
 validation.schema_only_validation
 validation.strict_projection
 validation.allow_extra_projection
@@ -178,8 +180,6 @@ Deferred features must be represented as unsupported decisions. Examples:
 join.temporal_one
 join.as_of_one
 window.window_project
-higher_order.array_transform
-higher_order.array_filter
 optimization.cache
 optimization.repartition
 explain.field_lineage

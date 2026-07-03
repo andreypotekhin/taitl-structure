@@ -45,6 +45,8 @@ class BuildCompilerTraceability:
             dependencies.extend(self._filter_dependencies(step))
             provenance.extend(self._join_provenance(plan, step, source_transform, transform_module))
             dependencies.extend(self._join_dependencies(step))
+            provenance.extend(self._aggregate_provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._aggregate_dependencies(step))
             if len(step.results) <= 1:
                 provenance.extend(self._projection_provenance(plan, step, source_transform, transform_module))
                 dependencies.extend(self._projection_dependencies(step))
@@ -205,6 +207,27 @@ class BuildCompilerTraceability:
             for assignment in step.projection
         )
 
+    def _aggregate_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        step: PySparkStepRecipe,
+        source_transform: str,
+        transform_module: str,
+    ) -> tuple[CompilerProvenance, ...]:
+        if step.aggregate is None:
+            return ()
+        return tuple(
+            CompilerProvenance(
+                source=f"source:{source_transform}.{step.name}.aggregate.{assignment.field.name}",
+                ir=f"ir:{plan.transform}.step.{step.ordinal}.{step.name}.aggregate.{assignment.field.name}",
+                generated=(
+                    f"generated:{transform_module}.{plan.transform}Generated.run."
+                    f"step.{step.ordinal}.{step.name}.aggregate.{assignment.field.name}"
+                ),
+            )
+            for assignment in step.aggregate.assignments
+        )
+
     def _hook_provenance(
         self,
         plan: PySparkExecutionPlan,
@@ -332,6 +355,28 @@ class BuildCompilerTraceability:
                 detail={"field": assignment.field.name},
             )
             for assignment in step.projection
+        )
+
+    def _aggregate_dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
+        if step.aggregate is None:
+            return ()
+        return tuple(
+            DataflowDependency(
+                target=f"{step.output_schema.__name__}.{assignment.field.name}",
+                sources=(
+                    self._dataflow.reads(assignment.expression)
+                    if assignment.expression is not None
+                    else (step.source,)
+                ),
+                operation="aggregate",
+                step=step.name,
+                detail={
+                    "field": assignment.field.name,
+                    "function": assignment.function,
+                    "key": assignment.key,
+                },
+            )
+            for assignment in step.aggregate.assignments
         )
 
     def _hook_dependency(self, step: PySparkStepRecipe, hook: PySparkHookRecipe) -> DataflowDependency:

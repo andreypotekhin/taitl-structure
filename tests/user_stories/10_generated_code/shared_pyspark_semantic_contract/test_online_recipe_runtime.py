@@ -5,7 +5,20 @@ from typing import Any, cast
 
 import pytest
 
-from structure import AsOf, Double, Join, JoinHint, JoinStrategy, Long, SchemaMode, String, Structure, TiePolicy, field
+from structure import (
+    Array,
+    AsOf,
+    Double,
+    Join,
+    JoinHint,
+    JoinStrategy,
+    Long,
+    SchemaMode,
+    String,
+    Structure,
+    TiePolicy,
+    field,
+)
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.runtime.execution.online.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 from structure.app.runtime.execution.online.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
@@ -61,6 +74,10 @@ class RawMetric(Structure):
     quantity = field(Long(), nullable=False)
 
 
+class RawTagBatch(Structure):
+    tags = field(Array(String(), contains_null=False), nullable=True)
+
+
 class CustomerMetric(Structure):
     customer_id = field(String(), nullable=False)
     order_count = field(Long(), nullable=False)
@@ -107,6 +124,13 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
         ),
         (_not(_is_null(_field(RawOrder, "status"))), "~(col(orders.status).isNull())"),
         (_call("upper", _call("trim", _field(RawOrder, "status"))), "upper(trim(col(orders.status)))"),
+        (
+            _array_filter(
+                _array_transform(_field(RawTagBatch, "tags"), _call("lower", _call("trim", _lambda_item()))),
+                _not_null(_lambda_item()),
+            ),
+            "filter(transform(col(RawTagBatch.tags), lambda item: lower(trim(item))), lambda item: item.isNotNull())",
+        ),
         (
             _when(_binary("ge", _field(RawOrder, "id"), _literal("M")), _literal("large"), _literal("standard")),
             "when((col(orders.id) >= lit('M')), lit('large')).otherwise(lit('standard'))",
@@ -1342,6 +1366,18 @@ def _when(
     )
 
 
+def _lambda_item() -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe("lambda_arg", String(), False, {"name": "item"})
+
+
+def _array_transform(array: PySparkExpressionRecipe, body: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe("reserved_v2", array.type, array.nullable, {"function": "array_transform"}, (array, body))
+
+
+def _array_filter(array: PySparkExpressionRecipe, body: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe("reserved_v2", array.type, array.nullable, {"function": "array_filter"}, (array, body))
+
+
 def _hook(
     name: str,
     *,
@@ -1450,6 +1486,14 @@ class FakeFunctions(ModuleType):
 
     def coalesce(self, *columns):
         return FakeColumn("coalesce(" + ",".join(column.expression for column in columns) + ")")
+
+    def transform(self, column, function):
+        item = FakeColumn("item")
+        return FakeColumn(f"transform({column.expression}, lambda item: {function(item).expression})")
+
+    def filter(self, column, function):
+        item = FakeColumn("item")
+        return FakeColumn(f"filter({column.expression}, lambda item: {function(item).expression})")
 
     def count(self, column):
         return FakeColumn(f"count({column.expression})")

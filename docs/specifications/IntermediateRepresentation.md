@@ -511,8 +511,15 @@ assignments through Spark-visible `groupBy(...).agg(...)` operations, not hooks 
 Nullable inputs to null-sensitive aggregates produce nullable aggregate expressions and must not feed non-nullable
 output fields without an explicit repair.
 
-`structure explain` displays each step's ordered operations as `kind(cardinality)`. This is an anchor for future v2
-explain output, not a full v2 lineage or optimizer report.
+`structure explain` displays each step's ordered operations as `kind(cardinality)`. Aggregate explain output also names
+grouping keys and aggregate metric functions. This is an anchor for future v2 explain output, not a full v2 lineage or
+optimizer report.
+
+Array higher-order helper expressions currently support `arr_transform(...)` and `arr_filter(...)`. Their callbacks are
+captured once against a symbolic array-element expression and lower to Spark-visible `transform` and `filter` lambdas.
+They do not lower through Python UDFs or row-wise callbacks. Callback bodies must return typed Structure expressions or
+typed literals; arbitrary Python boolean control flow and untyped callback values are rejected during symbolic
+compilation with helper-specific diagnostics.
 
 ## Join Operation
 

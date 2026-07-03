@@ -869,6 +869,10 @@
       "constant": "CUSTOMER_SCHEMA",
       "module": "examples.structure_generated.orders.pyspark.schemas.customer"
     },
+    "CustomerDailyTotal": {
+      "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.analytics"
+    },
     "OrderFulfillment": {
       "constant": "ORDER_FULFILLMENT_SCHEMA",
       "module": "examples.structure_generated.orders.pyspark.schemas.order"
@@ -908,6 +912,10 @@
     "ProductBase": {
       "constant": "PRODUCT_BASE_SCHEMA",
       "module": "examples.structure_generated.orders.pyspark.schemas.product"
+    },
+    "ProductDailySummary": {
+      "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.analytics"
     },
     "Promotion": {
       "constant": "PROMOTION_SCHEMA",

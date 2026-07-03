@@ -15,6 +15,8 @@ class ClassifyStreamingCompatibility:
     def __call__(self, plan: PySparkExecutionPlan, *, required: bool = False) -> StreamingReport:
         findings: list[StreamingFinding] = []
         for step in plan.steps:
+            if step.aggregate is not None:
+                findings.extend(self._aggregate(step.name))
             for join in step.joins:
                 findings.extend(self._join(step.name, join))
             for hook in (
@@ -29,6 +31,21 @@ class ClassifyStreamingCompatibility:
             support=self._fold(findings),
             required=required,
             findings=tuple(findings),
+        )
+
+    def _aggregate(self, step: str) -> tuple[StreamingFinding, ...]:
+        return (
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=step,
+                operation="grouped aggregate",
+                problem=(
+                    "Grouped aggregations are batch-only until Structure defines streaming output modes, "
+                    "watermarks, and state semantics."
+                ),
+                use="Keep this transform batch-only or move streaming aggregation orchestration outside Structure.",
+            ),
         )
 
     def _join(self, step: str, join: PySparkJoinRecipe) -> tuple[StreamingFinding, ...]:

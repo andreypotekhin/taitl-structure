@@ -17,6 +17,7 @@ def test_orders_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/orders/pyspark/transforms/__init__.py",
         "examples/structure_generated/orders/runtime/__init__.py",
         "examples/structure_generated/orders/runtime/schema_assert.py",
+        "examples/structure_generated/orders/pyspark/schemas/analytics.py",
         "examples/structure_generated/orders/pyspark/schemas/common.py",
         "examples/structure_generated/orders/pyspark/schemas/customer.py",
         "examples/structure_generated/orders/pyspark/schemas/order.py",
@@ -25,6 +26,8 @@ def test_orders_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/orders/pyspark/schemas/shipment.py",
         "examples/structure_generated/orders/pyspark/transforms/order.py",
         "examples/structure_generated/orders/traceability/transforms/order.EnrichOrders.json",
+        "examples/structure_generated/orders/pyspark/transforms/analytics.py",
+        "examples/structure_generated/orders/traceability/transforms/analytics.OrderAnalytics.json",
         "examples/structure_generated/orders/traceability/__init__.py",
         "examples/structure_generated/orders/traceability/transforms/__init__.py",
     ]
@@ -44,3 +47,10 @@ def test_orders_example_generation_keeps_public_behavior_fragments_stable() -> N
     assert (
         'published = self._impl.add_quality_columns(published=published, spark=self.spark, ctx=self.ctx)' in transform
     )
+    assert 'F.filter(F.transform(F.col("order_raw.tags"), lambda item: F.lower(F.trim(item)))' in transform
+
+    analytics = render_orders_example()["examples/structure_generated/orders/pyspark/transforms/analytics.py"]
+
+    assert "class OrderAnalyticsGenerated:" in analytics
+    assert 'product_summary = product_summary.groupBy(' in analytics
+    assert 'F.avg(F.col("order_fulfillment.quantity")).cast(T.DoubleType()).alias("avg_units")' in analytics

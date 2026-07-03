@@ -21,6 +21,8 @@ class PySparkExpressionMapper:
         if expression.kind == "reserved_v2":
             data = expression.data or {}
             return str(data["capability_group"]), str(data["capability_name"])
+        if expression.kind == "lambda_arg":
+            return "expression", "standard_helper_call"
         if expression.kind == "field":
             return "expression", "field_ref"
         if expression.kind == "literal":

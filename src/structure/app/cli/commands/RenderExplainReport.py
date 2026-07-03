@@ -89,8 +89,19 @@ class RenderExplainReport:
         return "\n".join(lines)
 
     def _operation(self, operation: OperationPlan) -> str:
+        if operation.aggregate is not None:
+            return f"aggregate({operation.cardinality.value} {self._aggregate(operation)})"
         name = operation.join.method.value if operation.join is not None else operation.kind
         return f"{name}({operation.cardinality.value})"
+
+    def _aggregate(self, operation: OperationPlan) -> str:
+        if operation.aggregate is None:
+            return ""
+        keys = ",".join(key.name for key in operation.aggregate.keys)
+        metrics = ",".join(
+            assignment.function for assignment in operation.aggregate.assignments if assignment.function != "key"
+        )
+        return f"keys={keys} metrics={metrics}"
 
     def _join(self, join: PySparkJoinRecipe) -> str:
         parts = [f"{join.input_name} {join.method.value} {self._cardinality(join)}"]

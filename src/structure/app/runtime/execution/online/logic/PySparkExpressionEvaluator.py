@@ -11,8 +11,12 @@ class PySparkExpressionEvaluator:
             return functions.col(f"{alias}.{field}")
         if expression.kind == "literal":
             return functions.lit(expression.data["value"])
+        if expression.kind == "lambda_arg":
+            return expression.data["column"]
         if expression.kind == "call":
             return self._call(expression, functions=functions, aliases=aliases)
+        if expression.kind == "reserved_v2":
+            return self._reserved(expression, functions=functions, aliases=aliases)
         if expression.kind == "is_not_null":
             return self.evaluate(expression.args[0], functions=functions, aliases=aliases).isNotNull()
         if expression.kind == "is_null":
@@ -52,6 +56,38 @@ class PySparkExpressionEvaluator:
         if expression.kind == "not":
             return ~self.evaluate(expression.args[0], functions=functions, aliases=aliases)
         raise TypeError(f"Unsupported PySpark expression recipe: {expression.kind}")
+
+    def _reserved(self, expression: PySparkExpressionRecipe, *, functions, aliases):
+        function = expression.data["function"]
+        array, body = expression.args
+        if function == "array_transform":
+            return functions.transform(
+                self.evaluate(array, functions=functions, aliases=aliases),
+                lambda item: self.evaluate(self._bind_lambda(body, item), functions=functions, aliases=aliases),
+            )
+        if function == "array_filter":
+            return functions.filter(
+                self.evaluate(array, functions=functions, aliases=aliases),
+                lambda item: self.evaluate(self._bind_lambda(body, item), functions=functions, aliases=aliases),
+            )
+        raise TypeError(f"Unsupported PySpark reserved expression: {function}")
+
+    def _bind_lambda(self, expression: PySparkExpressionRecipe, column):
+        if expression.kind == "lambda_arg":
+            return PySparkExpressionRecipe(
+                kind=expression.kind,
+                type=expression.type,
+                nullable=expression.nullable,
+                data={**expression.data, "column": column},
+                args=expression.args,
+            )
+        return PySparkExpressionRecipe(
+            kind=expression.kind,
+            type=expression.type,
+            nullable=expression.nullable,
+            data=expression.data,
+            args=tuple(self._bind_lambda(argument, column) for argument in expression.args),
+        )
 
     def _call(self, expression: PySparkExpressionRecipe, *, functions, aliases):
         function = expression.data["function"]

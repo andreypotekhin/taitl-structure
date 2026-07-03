@@ -22,8 +22,12 @@ class RenderPySparkExpression:
             return self._field(expression, aliases)
         if expression.kind == "literal":
             return f"F.lit({expression.data['value']!r})"
+        if expression.kind == "lambda_arg":
+            return str(expression.data["name"])
         if expression.kind == "call":
             return self._call(expression, aliases)
+        if expression.kind == "reserved_v2":
+            return self._reserved(expression, aliases)
         if expression.kind == "is_not_null":
             return f"{self._render(expression.args[0], aliases)}.isNotNull()"
         if expression.kind == "is_null":
@@ -62,6 +66,16 @@ class RenderPySparkExpression:
         if expression.kind == "not":
             return f"~({self._render(expression.args[0], aliases)})"
         raise TypeError(f"Unsupported PySpark expression recipe: {expression.kind}")
+
+    def _reserved(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
+        function = expression.data["function"]
+        array, body = expression.args
+        argument = str(body.data.get("name", "item")) if body.kind == "lambda_arg" else "item"
+        if function == "array_transform":
+            return f"F.transform({self._render(array, aliases)}, lambda {argument}: {self._render(body, aliases)})"
+        if function == "array_filter":
+            return f"F.filter({self._render(array, aliases)}, lambda {argument}: {self._render(body, aliases)})"
+        raise TypeError(f"Unsupported PySpark reserved expression: {function}")
 
     def _field(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         scope = str(expression.data["scope"])
