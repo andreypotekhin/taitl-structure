@@ -510,6 +510,12 @@ class CompileTransform:
                     )
                 )
                 self._validate_joined_relation_reads(transform_class, member, relation_scopes, joined, reads)
+            if operation.kind == "selected_rows" and operation.selected_rows is not None:
+                reads = set().union(
+                    self._scopes(operation.selected_rows.order_by),
+                    *(self._scopes(expression) for expression in operation.selected_rows.partition_by),
+                )
+                self._validate_joined_relation_reads(transform_class, member, relation_scopes, joined, reads)
 
         reads = set().union(
             *(self._scopes(assignment.expression) for result in results for assignment in result.projection)

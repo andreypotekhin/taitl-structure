@@ -331,7 +331,7 @@ over streaming orchestration, storage writes, Spark Connect, automatic cost-base
 - As a developer, I can define lag and lead expressions so that time-relative comparisons remain compiler-visible.
 - As a developer, I can remove exact duplicates explicitly so that duplicate cleanup is visible in source and explain
   output.
-- As a developer, I can select latest or earliest rows with deterministic tie policy so that dedupe never chooses an
+- + As a developer, I can select latest or earliest rows with deterministic tie policy so that dedupe never chooses an
   arbitrary row.
 - + As a developer, I can use higher-order function helpers so that array and map transformations remain
   Spark-plan-visible.

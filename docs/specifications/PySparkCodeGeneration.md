@@ -514,6 +514,10 @@ The PySpark recipe must use deterministic ordering, currently `row_number()` ove
 from the right-side join keys and `orderBy(...)` built from the policy expression. It must not use arbitrary
 `first(...)` or nondeterministic `dropDuplicates(...)`.
 
+Selected-row helpers use the same visible ranking pattern on the current step frame. `latest_by(...)` renders
+`row_number()` over `Window.partitionBy(...).orderBy(order.desc())`; `earliest_by(...)` uses ascending order. Generated
+code keeps rank `1` and drops the temporary rank column before projection or output validation.
+
 ## Hook Lowering
 
 Hooks are explicit runtime escape hatches and are called on the source transform instance.
@@ -817,7 +821,7 @@ The following are outside v1 PySpark generation scope:
 - generating non-PySpark backends;
 - accepting manual edits inside `generated/` as source of truth;
 - optimizing source-order operations across hook boundaries;
-- generating unsupported window, deduplication, or advanced grouping forms before their specs exist;
+- generating unsupported broad window, broad deduplication, or advanced grouping forms before their specs exist;
 - producing runtime telemetry under `traceability/`.
 
 ## Implementation Checklist
@@ -883,6 +887,7 @@ The implementation is complete when tests prove:
 - Broadcast hints apply to the right side of the join.
 - Repeated joins of the same input produce deterministic aliases.
 - Right-side join columns do not leak into output projection unless explicitly selected.
+- Selected-row helpers render a deterministic temporary rank column, filter rank `1`, and drop the temporary column.
 - Generated code contains no UDFs, Pandas UDFs, RDD operations, `collect`, `toPandas`, or row-wise maps in compiled
   paths.
 - Generated output is byte-stable for identical source and configuration.
@@ -898,7 +903,8 @@ The implementation is complete when tests prove:
 - `structure check` and `structure compile` run without PySpark, Java, Spark startup, a `SparkSession`, or a Spark
   cluster.
 - Generated and online execution produce equivalent DataFrames for projection, filtering, expression helpers, joins,
-  hooks, `pass_inputs=True`, validation, `schema_mode`, and `project_output`.
+  grouped aggregates, selected-row helpers, hooks, `pass_inputs=True`, validation, `schema_mode`, and
+  `project_output`.
 
 ## Test Placement
 

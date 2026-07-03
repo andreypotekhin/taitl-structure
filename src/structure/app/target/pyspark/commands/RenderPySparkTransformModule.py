@@ -157,7 +157,19 @@ class RenderPySparkTransformModule:
         joins.extend(join for output in plan.outputs for join in output.joins)
         joins.extend(operation.join for step in plan.steps for operation in step.operations if operation.join)
         joins.extend(operation.join for output in plan.outputs for operation in output.operations if operation.join)
-        return any(join.dedupe is not None or join.as_of is not None for join in joins)
+        selected_rows = [
+            operation.selected_rows
+            for step in plan.steps
+            for operation in step.operations
+            if operation.selected_rows is not None
+        ]
+        selected_rows.extend(
+            operation.selected_rows
+            for output in plan.outputs
+            for operation in output.operations
+            if operation.selected_rows is not None
+        )
+        return bool(selected_rows) or any(join.dedupe is not None or join.as_of is not None for join in joins)
 
 
 render_pyspark_transform_module = RenderPySparkTransformModule()

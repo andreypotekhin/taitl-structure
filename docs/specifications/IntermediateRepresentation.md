@@ -511,9 +511,14 @@ assignments through Spark-visible `groupBy(...).agg(...)` operations, not hooks 
 Nullable inputs to null-sensitive aggregates produce nullable aggregate expressions and must not feed non-nullable
 output fields without an explicit repair.
 
+Selected-row operations record `select_one` cardinality and carry explicit `partition_by` expressions, one `order_by`
+expression, a `latest` or `earliest` direction, and a deterministic tie policy. They are the admitted narrow window
+slice for latest/earliest row selection and lower through target recipes to Spark-visible ranking, not hooks or UDFs.
+Broad ranking, lag/lead, rolling frames, and exact duplicate removal remain separate window features.
+
 `structure explain` displays each step's ordered operations as `kind(cardinality)`. Aggregate explain output also names
-grouping keys and aggregate metric functions. This is an anchor for future v2 explain output, not a full v2 lineage or
-optimizer report.
+grouping keys and aggregate metric functions, and selected-row output names the helper direction and partition count.
+This is an anchor for future v2 explain output, not a full v2 lineage or optimizer report.
 
 Higher-order helper expressions currently support `arr_transform(...)`, `arr_filter(...)`,
 `map_transform_values(...)`, and `map_filter(...)`. Their callbacks are captured once against symbolic collection
@@ -1125,10 +1130,11 @@ Target:
   pyspark >=3.5,<4.1
 
 Problem:
-  WindowProject is a v2 IR operation and is not enabled for the v1 compiler.
+  Broad WindowProject forms are not enabled for the current compiler.
 
 Use:
-  Move the logic into an explicit hook for now, or wait for the v2 windowing specification.
+  Use latest_by(...) or earliest_by(...) for admitted selected-row windows, move broader logic into an explicit hook,
+  or wait for the broader v2 windowing specification.
 
 See docs/specifications/IntermediateRepresentation.md
 ```
@@ -1143,7 +1149,7 @@ The following are outside v1 IR scope:
 - storing runtime hook output values;
 - modeling Airflow DAGs, Spark submit jobs, or orchestration lifecycle;
 - modeling `readStream`, `writeStream`, triggers, checkpoints, and query starts;
-- modeling aggregations, windows, deduplication, grouping sets, and higher-order functions before their staged specs;
+- modeling grouping sets, broad windows, broad deduplication, or higher-order forms before their staged specs;
 - exposing raw IR classes as public user-facing DSL APIs;
 - treating serialized IR as a stable public interchange format.
 
@@ -1151,12 +1157,10 @@ The following are outside v1 IR scope:
 
 Planned v2 IR variants:
 
-- `Aggregate`;
 - `GroupingSets`;
 - `Rollup`;
 - `Cube`;
 - `WindowProject`;
-- `HigherOrderFunctionExpr`;
 - `CacheHint`;
 - `JoinStrategyHint`;
 - `CardinalityExpandingJoin`;

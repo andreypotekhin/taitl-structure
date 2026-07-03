@@ -10,6 +10,7 @@ from structure.app.compiler.ir.model.OperationCapability import OperationCapabil
 from structure.app.compiler.ir.model.OperationCardinality import OperationCardinality
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.ir.model.ProjectAssignment import ProjectAssignment
+from structure.app.compiler.ir.model.SelectedRowsPlan import SelectedRowsPlan
 from structure.app.compiler.ir.model.StepPlan import StepPlan
 from structure.app.compiler.ir.model.TransformPlan import TransformPlan
 
@@ -26,6 +27,7 @@ __all__ = [
     "OperationCardinality",
     "OperationPlan",
     "ProjectAssignment",
+    "SelectedRowsPlan",
     "StepPlan",
     "TransformPlan",
 ]

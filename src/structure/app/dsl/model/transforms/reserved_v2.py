@@ -7,9 +7,11 @@ from typing import TypeVar
 from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
 from structure.app.compiler.ir.model.OperationCardinality import OperationCardinality
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
+from structure.app.compiler.ir.model.SelectedRowsPlan import SelectedRowsPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import CompileContext, current_context
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.expr.expressions import literal
+from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.BooleanType import BooleanType
 from structure.app.dsl.model.types.DoubleType import DoubleType
@@ -56,6 +58,14 @@ def sum(value: object) -> Expression:
     return _aggregate("sum", argument, type=argument.type, nullable=argument.nullable)
 
 
+def latest_by(order_by: object, *, partition_by: object, ties: TiePolicy = TiePolicy.ERROR) -> None:
+    _selected_rows("latest", order_by, partition_by=partition_by, ties=ties)
+
+
+def earliest_by(order_by: object, *, partition_by: object, ties: TiePolicy = TiePolicy.ERROR) -> None:
+    _selected_rows("earliest", order_by, partition_by=partition_by, ties=ties)
+
+
 def _aggregate(function: str, argument: Expression | None = None, *, type, nullable: bool = False) -> Expression:
     args = () if argument is None else (argument,)
     return Expression(
@@ -65,6 +75,26 @@ def _aggregate(function: str, argument: Expression | None = None, *, type, nulla
         data={"function": function, "capability_group": "aggregate", "capability_name": function},
         args=args,
     )
+
+
+def _selected_rows(direction: str, order_by: object, *, partition_by: object, ties: TiePolicy) -> None:
+    if ties is not TiePolicy.ERROR:
+        raise TypeError(f"{direction}_by(...) currently supports ties=TiePolicy.ERROR only")
+    order = literal(order_by)
+    partitions = _partition_by(partition_by, call=f"{direction}_by(...)")
+    _context(f"{direction}_by(...)").operations.append(
+        OperationPlan.selected_rows_operation(
+            SelectedRowsPlan(direction=direction, order_by=order, partition_by=partitions, ties=ties)
+        )
+    )
+
+
+def _partition_by(partition_by: object, *, call: str) -> tuple[Expression, ...]:
+    values = partition_by if isinstance(partition_by, (tuple, list)) else (partition_by,)
+    partitions = tuple(literal(value) for value in values)
+    if not partitions:
+        raise TypeError(f"{call} requires at least one partition_by expression")
+    return partitions
 
 
 @dataclass(frozen=True)

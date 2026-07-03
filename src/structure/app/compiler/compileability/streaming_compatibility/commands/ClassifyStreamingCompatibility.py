@@ -17,6 +17,9 @@ class ClassifyStreamingCompatibility:
         for step in plan.steps:
             if step.aggregate is not None:
                 findings.extend(self._aggregate(step.name))
+            for operation in step.operations:
+                if operation.selected_rows is not None:
+                    findings.extend(self._selected_rows(step.name, operation.selected_rows.direction))
             for join in step.joins:
                 findings.extend(self._join(step.name, join))
             for hook in (
@@ -45,6 +48,21 @@ class ClassifyStreamingCompatibility:
                     "watermarks, and state semantics."
                 ),
                 use="Keep this transform batch-only or move streaming aggregation orchestration outside Structure.",
+            ),
+        )
+
+    def _selected_rows(self, step: str, direction: str) -> tuple[StreamingFinding, ...]:
+        return (
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=step,
+                operation=f"{direction}-row selection",
+                problem=(
+                    "Selected-row window helpers use ranking over partitions and are batch-only until Structure "
+                    "defines streaming state and watermark semantics."
+                ),
+                use="Keep this transform batch-only or move selected-row streaming state management outside Structure.",
             ),
         )
 

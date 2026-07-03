@@ -203,6 +203,10 @@ broadcast hints
 exists left-semi joins
 not_exists left-anti joins
 repeated joins of the same input
+grouped aggregates
+selected-row latest/earliest helpers
+array higher-order helpers
+map higher-order helpers
 before hooks
 after hooks
 pass_inputs=True hook namespace
@@ -284,10 +288,11 @@ Operation:
   WindowProject
 
 Problem:
-  WindowProject has no v1 PySpark execution recipe, so online and generated execution could drift.
+  Broad WindowProject forms have no PySpark execution recipe, so online and generated execution could drift.
 
 Use:
-  Move the logic into an explicit hook for now, or wait for the v2 windowing specification.
+  Use latest_by(...) or earliest_by(...) for admitted selected-row windows, move broader logic into an explicit hook,
+  or wait for the broader v2 windowing specification.
 
 See docs/specifications/ExecutionSemanticContract.md
 ```

@@ -69,6 +69,19 @@ from structure import (
     output,
     expr_fn,
     where,
+    group_by,
+    count,
+    count_distinct,
+    sum,
+    min,
+    max,
+    avg,
+    latest_by,
+    earliest_by,
+    arr_transform,
+    arr_filter,
+    map_transform_values,
+    map_filter,
     project,
     before,
     after,
@@ -81,7 +94,11 @@ from structure import (
     coalesce,
     StructureSession,
     Join,
+    JoinDedupe,
     JoinHint,
+    JoinStrategy,
+    TiePolicy,
+    OverlapPolicy,
     SchemaMode,
 )
 ```
@@ -923,7 +940,8 @@ The following are outside v1 DSL scope:
 - automatic fallback from compiled expressions to hooks;
 - automatic deduplication for `join_one(...)`;
 - implicit or nondeterministic selected-row deduplication;
-- advanced grouping sets, rollups, cubes, and broad window helpers;
+- advanced grouping sets, rollups, cubes, and broad window helpers beyond admitted latest/earliest selected-row
+  helpers;
 - streaming source, sink, trigger, checkpoint, and query lifecycle DSL;
 - Spark Connect-specific public syntax;
 - non-PySpark backends in v1.

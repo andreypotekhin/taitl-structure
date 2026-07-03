@@ -91,6 +91,11 @@ class RenderExplainReport:
     def _operation(self, operation: OperationPlan) -> str:
         if operation.aggregate is not None:
             return f"aggregate({operation.cardinality.value} {self._aggregate(operation)})"
+        if operation.selected_rows is not None:
+            return (
+                f"{operation.selected_rows.direction}_by("
+                f"{operation.cardinality.value} partitions={len(operation.selected_rows.partition_by)})"
+            )
         name = operation.join.method.value if operation.join is not None else operation.kind
         return f"{name}({operation.cardinality.value})"
 

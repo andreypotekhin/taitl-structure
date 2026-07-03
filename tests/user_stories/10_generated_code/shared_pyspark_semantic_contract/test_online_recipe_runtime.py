@@ -40,6 +40,7 @@ from structure.app.target.pyspark.model.PySparkJoinTemporalRecipe import PySpark
 from structure.app.target.pyspark.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.app.target.pyspark.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.app.target.pyspark.model.PySparkProjectionRecipe import PySparkProjectionRecipe
+from structure.app.target.pyspark.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.target.pyspark.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkValidationRecipe
@@ -352,6 +353,37 @@ def test_online_runner_applies_grouped_aggregate_recipe(monkeypatch) -> None:
         "distinct_customers=col(distinct_customers),quantity=col(quantity),"
         "min_quantity=col(min_quantity),max_quantity=col(max_quantity),avg_quantity=col(avg_quantity)",
         "alias:totals",
+    )
+
+
+def test_online_runner_applies_selected_row_window_recipe(monkeypatch) -> None:
+    """I can rely on online and generated execution to share v2 selected-row semantics."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(orders=_frame("orders", RawOrder))
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _selected_row_plan(),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target_backend="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:orders",
+        "withColumn:__structure_publish_latest_rank="
+        "row_number().over(partitionBy(col(orders.id)).orderBy(col(orders.status).desc()))",
+        "where:(col(__structure_publish_latest_rank) == lit(1))",
+        "drop:__structure_publish_latest_rank",
+        "select:id=col(orders.id),status=col(orders.status)",
+        "alias:published",
     )
 
 
@@ -970,6 +1002,73 @@ def _aggregate_plan() -> PySparkExecutionPlan:
                 joins=(),
                 projection=(),
                 validation=total_validation,
+            ),
+        ),
+        requires_hook_inputs=False,
+    )
+
+
+def _selected_row_plan() -> PySparkExecutionPlan:
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
+    projection = (
+        PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
+        PySparkProjectionRecipe(PublishedOrder._structure_fields["status"], _field(RawOrder, "status")),
+    )
+    selected_rows = PySparkSelectedRowsRecipe(
+        direction="latest",
+        order_by=_field(RawOrder, "status"),
+        partition_by=(_field(RawOrder, "id"),),
+        ties=TiePolicy.ERROR,
+    )
+    step = PySparkStepRecipe(
+        name="publish",
+        ordinal=0,
+        source="orders",
+        source_scope="orders",
+        input_schema=RawOrder,
+        output_schema=PublishedOrder,
+        input_alias="orders",
+        output_alias="published",
+        before_hooks=(),
+        filters=(),
+        joins=(),
+        projection=projection,
+        after_hooks=(),
+        validations=(published_validation,),
+        results=(
+            PySparkStepResultRecipe(
+                schema=PublishedOrder,
+                lane="published",
+                frame="published",
+                output_alias="published",
+                projection=projection,
+                ordinal=0,
+                after_hooks=(),
+                validations=(published_validation,),
+            ),
+        ),
+        operations=(PySparkOperationRecipe.selected_rows_operation(selected_rows),),
+    )
+    return PySparkExecutionPlan(
+        transform="LatestOrders",
+        backend=BackendId("PySpark", "3.5", "pyspark"),
+        inputs=(PySparkInputRecipe("orders", RawOrder, 0, input_validation),),
+        steps=(step,),
+        outputs=(
+            PySparkOutputRecipe(
+                name="published",
+                ordinal=0,
+                source="published",
+                source_scope="published",
+                input_schema=PublishedOrder,
+                output_schema=PublishedOrder,
+                input_alias="published",
+                output_alias="published",
+                filters=(),
+                joins=(),
+                projection=(),
+                validation=published_validation,
             ),
         ),
         requires_hook_inputs=False,

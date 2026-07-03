@@ -149,6 +149,8 @@ join.exists
 join.not_exists
 join.join_many
 join.lookup_dedupe
+join.temporal_one
+join.as_of_one
 join.left_join
 join.inner_join
 join.left_semi_join
@@ -166,6 +168,8 @@ higher_order.array_transform
 higher_order.array_filter
 higher_order.map_transform_values
 higher_order.map_filter
+window.select_latest
+window.select_earliest
 validation.schema_only_validation
 validation.strict_projection
 validation.allow_extra_projection
@@ -179,8 +183,6 @@ imports.generated_pyspark_imports
 Deferred features must be represented as unsupported decisions. Examples:
 
 ```text
-join.temporal_one
-join.as_of_one
 window.window_project
 optimization.cache
 optimization.repartition

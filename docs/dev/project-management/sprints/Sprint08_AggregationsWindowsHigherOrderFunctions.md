@@ -100,10 +100,14 @@ def summarize(self, order: OrderEnriched) -> CustomerSummary:
   stability tests to cover admitted grouped aggregates and array higher-order helpers.
 - [x] (2026-07-02) Implemented Spark-visible map `map_transform_values(...)` and `map_filter(...)` callbacks with
   generated rendering, online expression coverage, public API snapshots, docs, and example fixture coverage.
+- [x] (2026-07-02) Implemented `latest_by(...)` and `earliest_by(...)` selected-row helpers with selected-row IR,
+  shared PySpark recipes, generated and online `row_number()` lowering, explain output, traceability, streaming
+  batch-only classification, backend capability coverage, and public docs.
 - [ ] Implement aggregation source capture, IR, recipes, generated snapshots, and parity tests.
-- [ ] Implement window and dedupe helpers with deterministic policies.
+- [ ] Implement broad window and dedupe helpers with deterministic policies.
 - [x] Implement supported higher-order array and map helpers.
-- [ ] Update explain, traceability, diagnostics, and streaming compatibility classification.
+- [ ] Finish explain, traceability, diagnostics, and streaming compatibility classification for remaining Sprint 08
+  feature families.
 
 ## Compile-Time Performance Metric
 
@@ -122,5 +126,6 @@ Targets:
 
 ## Notes
 
-Ship simple grouped rollups before advanced grouping sets. Ship deterministic latest-row helpers before broad dedupe
-shortcuts so the public API defaults to explainable behavior.
+Simple grouped rollups, higher-order collection helpers, and deterministic latest/earliest row selection are the
+admitted v2 analytical slice. Keep broad dedupe shortcuts behind explicit specs so the public API defaults to
+explainable behavior.

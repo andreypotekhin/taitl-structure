@@ -15,6 +15,7 @@ from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkEx
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.app.target.pyspark.model.PySparkOutputRecipe import PySparkOutputRecipe
+from structure.app.target.pyspark.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkValidationRecipe
 
@@ -116,9 +117,32 @@ class RenderPySparkStep:
                 ordered_lines.extend(self._join(step, operation.join, sources=sources, target=target))
             if operation.kind == "aggregate" and operation.aggregate is not None:
                 ordered_lines.extend(self._aggregate(step, operation.aggregate, target=target))
+            if operation.kind == "selected_rows" and operation.selected_rows is not None:
+                ordered_lines.extend(self._selected_rows(step, operation.selected_rows, target=target))
         if pending_filters:
             ordered_lines.extend(self._filters(tuple(pending_filters), step=step, target=target))
         return ordered_lines
+
+    def _selected_rows(
+        self,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        selected_rows: PySparkSelectedRowsRecipe,
+        *,
+        target: str,
+    ) -> list[str]:
+        rank = f"__structure_{step.name}_{selected_rows.direction}_rank"
+        aliases = self._scope_aliases(step)
+        partition = ", ".join(
+            render_pyspark_expression(expression, scope_aliases=aliases) for expression in selected_rows.partition_by
+        )
+        order_by = render_pyspark_expression(selected_rows.order_by, scope_aliases=aliases)
+        ordering = f"{order_by}.desc()" if selected_rows.direction == "latest" else f"{order_by}.asc()"
+        window = f"Window.partitionBy({partition}).orderBy({ordering})"
+        return [
+            f'        {target} = {target}.withColumn("{rank}", F.row_number().over({window}))',
+            f'        {target} = {target}.where(F.col("{rank}") == F.lit(1))',
+            f'        {target} = {target}.drop("{rank}")',
+        ]
 
     def _aggregate(
         self,

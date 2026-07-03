@@ -213,7 +213,21 @@ class RunOnlinePySparkTransform:
                 )
             if operation.kind == "aggregate" and operation.aggregate is not None:
                 df = self._aggregate(step, df, operation.aggregate, functions=functions, types=types)
+            if operation.kind == "selected_rows" and operation.selected_rows is not None:
+                df = self._selected_rows(step, df, operation.selected_rows, functions=functions, window=window)
         return df
+
+    def _selected_rows(self, step, df, selected_rows, *, functions, window):
+        rank = f"__structure_{step.name}_{selected_rows.direction}_rank"
+        aliases = self._scope_aliases(step)
+        partition = tuple(
+            self._expressions.evaluate(expression, functions=functions, aliases=aliases)
+            for expression in selected_rows.partition_by
+        )
+        order_by = self._expressions.evaluate(selected_rows.order_by, functions=functions, aliases=aliases)
+        ordering = order_by.desc() if selected_rows.direction == "latest" else order_by.asc()
+        ranked = df.withColumn(rank, functions.row_number().over(window.partitionBy(*partition).orderBy(ordering)))
+        return ranked.where(functions.col(rank) == functions.lit(1)).drop(rank)
 
     def _aggregate(self, step, df, aggregate, *, functions, types):
         grouped = df.groupBy(

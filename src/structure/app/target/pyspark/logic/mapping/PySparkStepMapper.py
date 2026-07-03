@@ -19,6 +19,7 @@ from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinReci
 from structure.app.target.pyspark.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
 from structure.app.target.pyspark.model.PySparkOperationRecipe import PySparkOperationRecipe
 from structure.app.target.pyspark.model.PySparkProjectionRecipe import PySparkProjectionRecipe
+from structure.app.target.pyspark.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.target.pyspark.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 
@@ -113,6 +114,20 @@ class PySparkStepMapper:
                 recipes.append(
                     PySparkOperationRecipe.aggregate_operation(
                         self._aggregate(operation.aggregate, capabilities=capabilities)
+                    )
+                )
+            if operation.kind == "selected_rows" and operation.selected_rows is not None:
+                recipes.append(
+                    PySparkOperationRecipe.selected_rows_operation(
+                        PySparkSelectedRowsRecipe(
+                            direction=operation.selected_rows.direction,
+                            order_by=self._expressions.map(operation.selected_rows.order_by, capabilities=capabilities),
+                            partition_by=tuple(
+                                self._expressions.map(expression, capabilities=capabilities)
+                                for expression in operation.selected_rows.partition_by
+                            ),
+                            ties=operation.selected_rows.ties,
+                        )
                     )
                 )
         return tuple(recipes)

@@ -8,6 +8,7 @@ from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationCapability import OperationCapability
 from structure.app.compiler.ir.model.OperationCardinality import OperationCardinality
+from structure.app.compiler.ir.model.SelectedRowsPlan import SelectedRowsPlan
 from structure.app.dsl.model.expr.Expression import Expression
 
 
@@ -17,6 +18,7 @@ class OperationPlan:
     filter: Expression | None = None
     join: JoinPlan | None = None
     aggregate: AggregatePlan | None = None
+    selected_rows: SelectedRowsPlan | None = None
     family: str | None = None
     capability: OperationCapability | None = None
     cardinality: OperationCardinality = OperationCardinality.UNKNOWN
@@ -60,6 +62,17 @@ class OperationPlan:
             family="aggregate",
             capability=OperationCapability(group="aggregate", name="group_by"),
             cardinality=OperationCardinality.AGGREGATE,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def selected_rows_operation(selected_rows: SelectedRowsPlan) -> "OperationPlan":
+        return OperationPlan(
+            kind="selected_rows",
+            selected_rows=selected_rows,
+            family="window",
+            capability=OperationCapability(group="window", name=f"select_{selected_rows.direction}"),
+            cardinality=OperationCardinality.SELECT_ONE,
             streaming=StreamingSupport.BATCH_ONLY,
         )
 

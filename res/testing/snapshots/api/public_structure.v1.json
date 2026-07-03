@@ -392,6 +392,14 @@
       "qualname": "count_distinct",
       "signature": "(value: 'object') -> 'Expression'"
     },
+    "earliest_by": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "earliest_by",
+      "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'"
+    },
     "exists": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -455,6 +463,14 @@
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "lane",
       "signature": "(value: 'type[Structure] | SelectedDeclaration') -> 'LaneDeclaration | BindingSelector'"
+    },
+    "latest_by": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "latest_by",
+      "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'"
     },
     "lower": {
       "dataclass_fields": [],

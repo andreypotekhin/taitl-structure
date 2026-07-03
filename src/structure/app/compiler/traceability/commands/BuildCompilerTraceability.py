@@ -47,6 +47,8 @@ class BuildCompilerTraceability:
             dependencies.extend(self._join_dependencies(step))
             provenance.extend(self._aggregate_provenance(plan, step, source_transform, transform_module))
             dependencies.extend(self._aggregate_dependencies(step))
+            provenance.extend(self._selected_rows_provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._selected_rows_dependencies(step))
             if len(step.results) <= 1:
                 provenance.extend(self._projection_provenance(plan, step, source_transform, transform_module))
                 dependencies.extend(self._projection_dependencies(step))
@@ -228,6 +230,29 @@ class BuildCompilerTraceability:
             for assignment in step.aggregate.assignments
         )
 
+    def _selected_rows_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        step: PySparkStepRecipe,
+        source_transform: str,
+        transform_module: str,
+    ) -> tuple[CompilerProvenance, ...]:
+        return tuple(
+            CompilerProvenance(
+                source=f"source:{source_transform}.{step.name}.{operation.selected_rows.direction}_by.{index}",
+                ir=(
+                    f"ir:{plan.transform}.step.{step.ordinal}.{step.name}."
+                    f"{operation.selected_rows.direction}_by.{index}"
+                ),
+                generated=(
+                    f"generated:{transform_module}.{plan.transform}Generated.run."
+                    f"step.{step.ordinal}.{step.name}.{operation.selected_rows.direction}_by.{index}"
+                ),
+            )
+            for index, operation in enumerate(step.operations)
+            if operation.selected_rows is not None
+        )
+
     def _hook_provenance(
         self,
         plan: PySparkExecutionPlan,
@@ -378,6 +403,29 @@ class BuildCompilerTraceability:
             )
             for assignment in step.aggregate.assignments
         )
+
+    def _selected_rows_dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
+        return tuple(
+            DataflowDependency(
+                target=f"{step.name}.{operation.selected_rows.direction}_by[{index}]",
+                sources=self._selected_rows_sources(operation.selected_rows),
+                operation=f"{operation.selected_rows.direction}_by",
+                step=step.name,
+                detail={
+                    "direction": operation.selected_rows.direction,
+                    "partitions": str(len(operation.selected_rows.partition_by)),
+                    "ties": operation.selected_rows.ties.value,
+                },
+            )
+            for index, operation in enumerate(step.operations)
+            if operation.selected_rows is not None
+        )
+
+    def _selected_rows_sources(self, selected_rows) -> tuple[str, ...]:
+        reads = self._dataflow.reads(selected_rows.order_by)
+        for expression in selected_rows.partition_by:
+            reads = (*reads, *self._dataflow.reads(expression))
+        return reads
 
     def _hook_dependency(self, step: PySparkStepRecipe, hook: PySparkHookRecipe) -> DataflowDependency:
         return DataflowDependency(

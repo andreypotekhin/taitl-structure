@@ -8,6 +8,7 @@ from structure.app.target.pyspark.model.PySparkInputRecipe import PySparkInputRe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.app.target.pyspark.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.app.target.pyspark.model.PySparkProjectionRecipe import PySparkProjectionRecipe
+from structure.app.target.pyspark.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.target.pyspark.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkValidationRecipe
@@ -20,6 +21,7 @@ __all__ = [
     "PySparkJoinRecipe",
     "PySparkOutputRecipe",
     "PySparkProjectionRecipe",
+    "PySparkSelectedRowsRecipe",
     "PySparkStepRecipe",
     "PySparkStepResultRecipe",
     "PySparkValidationRecipe",

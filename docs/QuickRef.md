@@ -517,6 +517,36 @@ Supported aggregate helpers are `count()`, `count_distinct(...)`, `sum(...)`, `m
 `sum(...)` and `avg(...)` require numeric expressions. Nullable aggregate outputs must feed nullable fields or be
 repaired explicitly.
 
+Reference: [DSL](specifications/DSL.md), [IR](specifications/IntermediateRepresentation.md),
+[PySpark code generation](specifications/PySparkCodeGeneration.md), and
+[streaming compatibility](specifications/StreamingCompatibility.md).
+
+## Latest and Earliest Rows
+
+Use `latest_by(...)` or `earliest_by(...)` when a grouped set of rows must keep one row per partition by an explicit
+ordering expression.
+
+```python
+def latest_events(self, event: RawEvent) -> LatestEvent:
+    latest_by(event.sequence, partition_by=event.account_id)
+
+    return LatestEvent(
+        account_id=event.account_id,
+        event_id=event.event_id,
+        sequence=event.sequence,
+    )
+```
+
+The PySpark target lowers these helpers to `row_number()` over
+`Window.partitionBy(...).orderBy(...)`, keeps rank `1`, then drops the temporary rank column. `partition_by` is
+required so the selection is reviewable, and the current public tie policy is `TiePolicy.ERROR`. Selected-row helpers
+are batch-only in v2 streaming compatibility checks because streaming-safe ranking needs explicit watermark and state
+semantics.
+
+Reference: [DSL](specifications/DSL.md), [IR](specifications/IntermediateRepresentation.md),
+[PySpark code generation](specifications/PySparkCodeGeneration.md), and
+[streaming compatibility](specifications/StreamingCompatibility.md).
+
 ## Higher-Order Helpers
 
 Use `arr_transform(...)`, `arr_filter(...)`, `map_transform_values(...)`, and `map_filter(...)` for Spark-plan-visible
@@ -803,14 +833,13 @@ Reference: [CLI](specifications/CLI.md) and
 ## Planned Features
 
 Implemented v2 analytical features include existence joins, `join_many(...)`, deterministic lookup dedupe,
-temporal validity joins, aggregation/grouping, Spark higher-order array/map helpers, caching, and target capability
-checks.
+temporal validity joins, backward as-of joins, aggregation/grouping, latest/earliest selected-row helpers,
+Spark higher-order array/map helpers, caching, and target capability checks.
 
 Remaining planned v2 features include:
 
-- Window functions and deduplication helpers.
+- Ranking, lag/lead, rolling windows, exact duplicate-removal, and broader deduplication helpers.
 - Repartition and coalesce annotations.
-- Backward as-of analytical joins.
 
 These features remain explicit because Structure should not hide performance-sensitive choices.
 
