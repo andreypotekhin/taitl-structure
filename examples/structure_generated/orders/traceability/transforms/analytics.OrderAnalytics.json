@@ -58,6 +58,11 @@
       "source": "source:examples.orders.transforms.analytics.OrderAnalytics.customer_daily_totals.aggregate.net_total"
     },
     {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.drop_duplicates.0",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.drop_duplicates.0",
+      "source": "source:examples.orders.transforms.analytics.OrderAnalytics.customer_daily_totals.drop_duplicates.0"
+    },
+    {
       "generated": "generated:examples.structure_generated.orders.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.validation.0.intermediate",
       "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.validation.0.intermediate",
       "source": "source:examples.orders.transforms.analytics.OrderAnalytics.customer_daily_totals.validation.0.intermediate"
@@ -317,6 +322,18 @@
         ],
         "step": "customer_daily_totals",
         "target": "CustomerDailyTotal.net_total"
+      },
+      {
+        "detail": {
+          "scope": "current_step_frame",
+          "subset": "0"
+        },
+        "operation": "drop_duplicates",
+        "sources": [
+          "current_frame.*"
+        ],
+        "step": "customer_daily_totals",
+        "target": "customer_daily_totals.drop_duplicates[0]"
       },
       {
         "detail": {

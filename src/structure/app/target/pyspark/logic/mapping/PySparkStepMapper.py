@@ -13,6 +13,7 @@ from structure.app.target.pyspark.logic.mapping.PySparkValidationMapper import P
 from structure.app.target.pyspark.model.PySparkAggregateAssignment import PySparkAggregateAssignment
 from structure.app.target.pyspark.model.PySparkAggregateKey import PySparkAggregateKey
 from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
+from structure.app.target.pyspark.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
 from structure.app.target.pyspark.model.PySparkJoinAsOfRecipe import PySparkJoinAsOfRecipe
 from structure.app.target.pyspark.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
@@ -127,6 +128,18 @@ class PySparkStepMapper:
                                 for expression in operation.selected_rows.partition_by
                             ),
                             ties=operation.selected_rows.ties,
+                        )
+                    )
+                )
+            if operation.kind == "drop_duplicates":
+                duplicate_rows = operation.duplicate_rows
+                subset = () if duplicate_rows is None else duplicate_rows.subset
+                recipes.append(
+                    PySparkOperationRecipe.drop_duplicates_operation(
+                        PySparkDuplicateRowsRecipe(
+                            subset=tuple(
+                                self._expressions.map(expression, capabilities=capabilities) for expression in subset
+                            )
                         )
                     )
                 )

@@ -547,6 +547,38 @@ Reference: [DSL](specifications/DSL.md), [IR](specifications/IntermediateReprese
 [PySpark code generation](specifications/PySparkCodeGeneration.md), and
 [streaming compatibility](specifications/StreamingCompatibility.md).
 
+## Exact Duplicate Rows
+
+Use `distinct()` when the current step frame may contain exact duplicate rows and duplicate cleanup should stay visible
+to Structure. `drop_duplicates()` is the explicit synonym.
+
+```python
+def unique_events(self, event: RawEvent) -> RawEvent:
+    distinct()
+    return RawEvent.project(event)
+```
+
+`drop_duplicates(...)` also accepts typed field expressions for PySpark-compatible subset dedupe:
+
+```python
+def unique_accounts(self, event: RawEvent) -> RawEvent:
+    drop_duplicates(event.account_id)
+    return RawEvent.project(event)
+```
+
+These helpers lower to Spark `dropDuplicates()` on the current step frame. Subset dedupe renders
+`dropDuplicates(["column_name", ...])`; Spark chooses the representative row for non-subset columns. When the selected
+row must be deterministic, prefer `latest_by(...)` or `earliest_by(...)` with an explicit ordering and tie policy. If
+duplicate removal must apply after a narrowing projection, split the projection and `distinct()` into adjacent
+subtransforms so the narrowed schema is the current step frame.
+
+Exact duplicate removal is batch-only in v2 streaming compatibility checks because streaming dedupe needs explicit
+watermark, state, and output-mode semantics.
+
+Reference: [DSL](specifications/DSL.md), [IR](specifications/IntermediateRepresentation.md),
+[PySpark code generation](specifications/PySparkCodeGeneration.md), and
+[streaming compatibility](specifications/StreamingCompatibility.md).
+
 ## Higher-Order Helpers
 
 Use `arr_transform(...)`, `arr_filter(...)`, `map_transform_values(...)`, and `map_filter(...)` for Spark-plan-visible
@@ -692,8 +724,35 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
     )
 ```
 
+Transform classes can also inherit reusable inputs, lanes, outputs, hooks, helpers, and subtransforms from an
+undecorated `Transform` parent. Parent subtransforms run before child subtransforms; a child method with the same name
+overrides the inherited scheduled step. Use this for shared pipelines that several concrete transforms publish
+differently.
+
+```python
+class NormalizeBase(Transform):
+    orders = input(OrderRaw)
+    normalized = lane(OrderNormalized)
+
+    @transform(output=normalized)
+    def normalize(self, order: OrderRaw) -> OrderNormalized:
+        return OrderNormalized(
+            id=lower(trim(order.id)),
+            customer_id=lower(trim(order.customer_id)),
+        )
+
+
+@transform
+class PublishOrders(NormalizeBase):
+    published = output(OrderPublished)
+
+    def publish(self, order: OrderNormalized) -> OrderPublished:
+        return OrderPublished.project(order)
+```
+
 Reference: [schema inheritance](specifications/SchemaInheritance.md) and
-[schema semantics](specifications/SchemaSemantics.md).
+[schema semantics](specifications/SchemaSemantics.md). Transform inheritance is covered by
+[DSL](specifications/DSL.md) and [execution semantics](specifications/ExecutionSemanticContract.md).
 
 ## Hooks
 
@@ -833,12 +892,12 @@ Reference: [CLI](specifications/CLI.md) and
 ## Planned Features
 
 Implemented v2 analytical features include existence joins, `join_many(...)`, deterministic lookup dedupe,
-temporal validity joins, backward as-of joins, aggregation/grouping, latest/earliest selected-row helpers,
-Spark higher-order array/map helpers, caching, and target capability checks.
+temporal validity joins, backward as-of joins, aggregation/grouping, latest/earliest selected-row helpers, exact
+duplicate-row removal, Spark higher-order array/map helpers, caching, and target capability checks.
 
 Remaining planned v2 features include:
 
-- Ranking, lag/lead, rolling windows, exact duplicate-removal, and broader deduplication helpers.
+- Ranking, lag/lead, rolling windows, deterministic keyed dedupe shortcuts, and broader deduplication helpers.
 - Repartition and coalesce annotations.
 
 These features remain explicit because Structure should not hide performance-sensitive choices.

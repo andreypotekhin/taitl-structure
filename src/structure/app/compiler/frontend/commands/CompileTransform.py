@@ -516,6 +516,9 @@ class CompileTransform:
                     *(self._scopes(expression) for expression in operation.selected_rows.partition_by),
                 )
                 self._validate_joined_relation_reads(transform_class, member, relation_scopes, joined, reads)
+            if operation.kind == "drop_duplicates" and operation.duplicate_rows is not None:
+                reads = set().union(*(self._scopes(expression) for expression in operation.duplicate_rows.subset))
+                self._validate_joined_relation_reads(transform_class, member, relation_scopes, joined, reads)
 
         reads = set().union(
             *(self._scopes(assignment.expression) for result in results for assignment in result.projection)

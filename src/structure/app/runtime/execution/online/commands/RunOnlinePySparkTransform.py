@@ -215,7 +215,20 @@ class RunOnlinePySparkTransform:
                 df = self._aggregate(step, df, operation.aggregate, functions=functions, types=types)
             if operation.kind == "selected_rows" and operation.selected_rows is not None:
                 df = self._selected_rows(step, df, operation.selected_rows, functions=functions, window=window)
+            if operation.kind == "drop_duplicates":
+                subset = () if operation.duplicate_rows is None else operation.duplicate_rows.subset
+                df = df.dropDuplicates(self._drop_duplicates_subset(subset))
         return df
+
+    def _drop_duplicates_subset(self, subset) -> list[str] | None:
+        if not subset:
+            return None
+        return [self._field_column(expression) for expression in subset]
+
+    def _field_column(self, expression) -> str:
+        if expression.kind != "field":
+            raise TypeError("drop_duplicates(...) subset can only use field expressions")
+        return str(expression.data["field"])
 
     def _selected_rows(self, step, df, selected_rows, *, functions, window):
         rank = f"__structure_{step.name}_{selected_rows.direction}_rank"

@@ -78,6 +78,7 @@ Allowed groups:
 - `expression`;
 - `aggregate`;
 - `compile`;
+- `dedupe`;
 - `docs`;
 - `explain`;
 - `higher_order`;
@@ -168,6 +169,7 @@ higher_order.array_transform
 higher_order.array_filter
 higher_order.map_transform_values
 higher_order.map_filter
+dedupe.drop_duplicates
 window.select_latest
 window.select_earliest
 validation.schema_only_validation

@@ -125,7 +125,7 @@ These operations are not streaming-compatible in v1:
 
 - global `orderBy(...)` or `sort(...)` on the streaming current DataFrame;
 - `limit(...)`, `offset(...)`, or global top-N operations;
-- `distinct(...)` or `dropDuplicates(...)`;
+- `distinct(...)` or `dropDuplicates(...)`, including Structure `distinct()` and `drop_duplicates()`;
 - aggregations, including `groupBy(...).agg(...)`;
 - windowed aggregations;
 - ranking or analytic window functions;

@@ -205,6 +205,7 @@ not_exists left-anti joins
 repeated joins of the same input
 grouped aggregates
 selected-row latest/earliest helpers
+exact duplicate-row removal
 array higher-order helpers
 map higher-order helpers
 before hooks

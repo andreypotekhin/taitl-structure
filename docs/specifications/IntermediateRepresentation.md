@@ -514,7 +514,13 @@ output fields without an explicit repair.
 Selected-row operations record `select_one` cardinality and carry explicit `partition_by` expressions, one `order_by`
 expression, a `latest` or `earliest` direction, and a deterministic tie policy. They are the admitted narrow window
 slice for latest/earliest row selection and lower through target recipes to Spark-visible ranking, not hooks or UDFs.
-Broad ranking, lag/lead, rolling frames, and exact duplicate removal remain separate window features.
+Broad ranking, lag/lead, rolling frames, and keyed duplicate removal remain separate features.
+
+Duplicate-removal operations, exposed as `distinct()` and `drop_duplicates(...)`, record `row_filtering` cardinality
+and an optional field subset. `distinct()` and empty `drop_duplicates()` lower to current-frame exact duplicate
+removal. Subset `drop_duplicates(field, ...)` lowers to PySpark-compatible subset dedupe; non-subset fields come from
+Spark's representative row. Deterministic selected-row dedupe remains modeled through `latest_by(...)` and
+`earliest_by(...)`.
 
 `structure explain` displays each step's ordered operations as `kind(cardinality)`. Aggregate explain output also names
 grouping keys and aggregate metric functions, and selected-row output names the helper direction and partition count.
@@ -1149,7 +1155,7 @@ The following are outside v1 IR scope:
 - storing runtime hook output values;
 - modeling Airflow DAGs, Spark submit jobs, or orchestration lifecycle;
 - modeling `readStream`, `writeStream`, triggers, checkpoints, and query starts;
-- modeling grouping sets, broad windows, broad deduplication, or higher-order forms before their staged specs;
+- modeling grouping sets, broad windows, keyed deduplication, or higher-order forms before their staged specs;
 - exposing raw IR classes as public user-facing DSL APIs;
 - treating serialized IR as a stable public interchange format.
 

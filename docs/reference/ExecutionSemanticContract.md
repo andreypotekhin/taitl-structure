@@ -1,0 +1,296 @@
+﻿# Execution Semantic Contract
+
+Online execution and generated execution are two ways to run the same Structure transform. They differ in output form:
+online execution uses live PySpark objects at runtime, while generated execution imports checked-in PySpark source.
+They does not differ in transform meaning.
+
+This reference defines the shared semantic contract between checked `TransformPlan` IR, online PySpark execution,
+and generated PySpark emission. The contract exists to prevent two independent lowerers from drifting apart on
+projection order, filter order, join aliasing, hook order, validation placement, schema projection, literal typing, or
+performance guardrails.
+
+## Scope
+
+This reference covers:
+
+- the shared PySpark semantic lowering layer;
+- parity requirements for online and generated PySpark execution;
+- deterministic operation recipes consumed by online runners and generated emitters;
+- the boundary between semantic concerns and source-text concerns;
+- operation-by-operation parity test requirements;
+- compiled-path performance guardrails.
+
+Related specifications own narrower behavior:
+
+- backend-neutral IR shape: [IntermediateRepresentation.md](IntermediateRepresentation.md);
+- online runtime selection and session behavior: [OnlineExecution.md](OnlineExecution.md);
+- generated source text shape: [PySparkCodeGeneration.md](PySparkCodeGeneration.md);
+- symbolic capture: [SymbolicExecution.md](SymbolicExecution.md);
+- type and literal compatibility: [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md);
+- join semantics: [JoinSemantics.md](JoinSemantics.md);
+- streaming classification: [StreamingCompatibility.md](StreamingCompatibility.md).
+
+When this document overlaps those specifications, this document owns how already-checked semantics are shared by online
+and generated PySpark consumers. The narrower specification still owns the feature's source-level behavior.
+
+## Core Rule
+
+`TransformPlan` is the backend-neutral source of truth. A target-specific PySpark lowering pass turns checked
+`TransformPlan` IR plus `PySparkCapabilities` into deterministic PySpark execution recipes.
+
+```text
+TransformPlan
+  + PySparkCapabilities
+  -> PySparkExecutionPlan
+       -> OnlinePySparkRunner interprets recipes with live PySpark objects
+       -> PySparkCodeGenerator renders recipes as source text
+```
+
+The generated code emitter does not re-decide transform semantics while rendering source text. The online runner must
+not execute generated Python source text. Both consume the same PySpark execution recipes.
+
+## Shared Target Plan
+
+The shared target plan is not a public end-user API. Its conceptual records are:
+
+```text
+PySparkExecutionPlan
+  transform
+  capabilities
+  inputs
+  steps
+  final_validation
+  guardrails
+
+PySparkStepRecipe
+  step
+  inputs
+  before_hooks
+  shared_operations
+  results
+
+PySparkStepResultRecipe
+  output_lane
+  projection
+  after_hooks
+  validations
+
+PySparkExpressionRecipe
+  expression
+  type
+  nullable
+  function
+  arguments
+  literal
+  field_reference
+
+PySparkJoinRecipe
+  joined_input
+  left_alias
+  right_alias
+  join_type
+  hint
+  key_pairs
+  right_fields
+
+PySparkValidationRecipe
+  target
+  schema
+  mode
+  projection
+  reason
+
+PySparkHookRecipe
+  name
+  timing
+  pass_inputs
+  schema_mode
+  project_output
+```
+
+Structure may rename these records when a local naming pattern is clearer. The observable requirement is that a
+single target plan carries the semantic choices consumed by both online and generated execution.
+
+The shared target plan does not contain:
+
+- live Spark sessions;
+- live PySpark DataFrames;
+- live PySpark Columns;
+- generated source text;
+- formatter state;
+- import collectors;
+- file paths for generated output;
+- runtime hook return values.
+
+## Semantic Invariants
+
+The shared PySpark execution plan must decide these items once:
+
+- input validation order and mode;
+- step order;
+- ordered schema-parameter binding and the driving relation;
+- before-hook and after-hook order;
+- filter order and legal filter combination;
+- expression function mapping;
+- literal typing, casts, and null literal handling;
+- projection field order;
+- projection aliases;
+- one shared join/filter prefix followed by ordered result projections for multi-result steps;
+- schema base overlay expansion;
+- join type spelling;
+- join alias names;
+- repeated join occurrence suffixes;
+- broadcast and other supported hints;
+- right-side join field projection;
+- validation placement and validation mode;
+- hook input namespace shape;
+- hook `schema_mode` and `project_output` behavior;
+- final schema projection and validation;
+- compiled-path performance guardrails.
+
+Online and generated execution may differ only in representation details that do not change observable DataFrame
+semantics. Allowed differences include:
+
+- Python imports and generated file headers;
+- formatting and line wrapping;
+- temporary local variable layout when the same operations occur in the same semantic order;
+- whether PySpark calls are made directly or represented as rendered source;
+- runtime object identity for live DataFrames and Columns;
+- source comments in generated files.
+
+## Operation Admission Rule
+
+A compiled operation should be admitted as a Structure semantic feature, not as a one-to-one clone of a PySpark
+function. New feature families such as aggregations, windows, arrays, maps, and higher-order expressions defines
+source semantics, IR, target recipes, parity tests, and guardrails before they become compiler-visible. If an operation
+is too rare, backend-specific, or arbitrary to justify that contract, it belongs in an explicit hook.
+
+A new compiled operation is not supported until all of these are true:
+
+1. The source DSL behavior is specified.
+2. The backend-neutral IR shape is specified.
+3. The PySpark execution recipe is specified.
+4. The online runner can consume the recipe or the feature is explicitly unsupported online.
+5. The generated emitter can render the recipe or the feature is explicitly unsupported for generated mode.
+6. A parity test proves online and generated behavior match for the operation when both modes support it.
+7. Guardrail behavior shows compiled paths do not use prohibited PySpark escape hatches.
+
+Unsupported operations fails through diagnostics before online execution or generated source rendering.
+
+## Parity Matrix
+
+The parity matrix is cumulative. Each row has at least one small deterministic Spark fixture before the operation
+is considered supported.
+
+```text
+projection-only
+projection with typed literals
+input validation
+output validation
+filter before projection
+multiple filters
+expression helpers
+class-local @expr_fn helpers
+schema base overlays
+left join_one
+inner join_one
+composite join keys
+null-safe join keys
+broadcast hints
+exists left-semi joins
+not_exists left-anti joins
+repeated joins of the same input
+grouped aggregates
+selected-row latest/earliest helpers
+exact duplicate-row removal
+array higher-order helpers
+map higher-order helpers
+before hooks
+after hooks
+pass_inputs=True hook namespace
+schema_mode after hooks
+project_output after hooks
+intermediate validation
+final validation
+streaming-compatible supported operations
+```
+
+Parity tests should compare:
+
+- output column order;
+- output data types where Spark exposes them reliably;
+- output nullability where Spark exposes it reliably;
+- row contents;
+- presence or absence of extra columns;
+- expected diagnostics for unsupported cases.
+
+Generated-code snapshots are useful, but they are not a substitute for runtime parity tests.
+
+## Guardrails
+
+Compiled recipes does not introduce:
+
+- Python UDFs;
+- Pandas UDFs;
+- RDD operations;
+- `collect`;
+- `toPandas`;
+- row-wise maps;
+- hidden Python loops over DataFrame rows.
+
+Hooks remain explicit escape hatches. Hook internals are opaque to the compiler, but hook boundaries remains visible
+in recipes, generated code, traceability, and diagnostics.
+
+## Determinism
+
+For identical source, configuration, Structure version, and PySpark capabilities, the shared PySpark execution plan must
+be deterministic.
+
+Rules:
+
+- Preserve source order where order changes semantics.
+- Sort independent collections before recipe serialization.
+- Use stable aliases derived from IR scopes and occurrence numbers.
+- Do not include timestamps, memory addresses, object ids, or absolute workspace paths.
+- Emit diagnostics in deterministic order.
+
+Determinism is required for generated-code review, review workflows, parity tests, compiler provenance, and future
+incremental compilation.
+
+## Diagnostics
+
+Diagnostics from the shared lowering layer includes:
+
+- diagnostic code;
+- transform class;
+- target backend;
+- target PySpark range;
+- step, operation, field, hook, join, or expression when relevant;
+- problem;
+- why it matters when not obvious;
+- suggested fix;
+- documentation link.
+
+Example:
+
+```text
+CompileError BACKEND-E0802: Operation is not supported by the PySpark target plan
+
+Transform:
+  orders.transforms.order.EnrichOrders
+
+Subtransform:
+  summarize
+
+Operation:
+  WindowProject
+
+Problem:
+  Broad WindowProject forms have no PySpark execution recipe, so online and generated execution could drift.
+
+Use:
+  Use latest_by(...) or earliest_by(...) for admitted selected-row windows, move broader logic into an explicit hook,
+  or wait for the broader v2 windowing specification.
+
+See docs/reference/ExecutionSemanticContract.md
+```

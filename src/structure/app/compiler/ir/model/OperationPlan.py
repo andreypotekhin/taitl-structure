@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
 from structure.app.compiler.ir.model.AggregatePlan import AggregatePlan
+from structure.app.compiler.ir.model.DuplicateRowsPlan import DuplicateRowsPlan
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationCapability import OperationCapability
@@ -19,6 +20,7 @@ class OperationPlan:
     join: JoinPlan | None = None
     aggregate: AggregatePlan | None = None
     selected_rows: SelectedRowsPlan | None = None
+    duplicate_rows: DuplicateRowsPlan | None = None
     family: str | None = None
     capability: OperationCapability | None = None
     cardinality: OperationCardinality = OperationCardinality.UNKNOWN
@@ -73,6 +75,17 @@ class OperationPlan:
             family="window",
             capability=OperationCapability(group="window", name=f"select_{selected_rows.direction}"),
             cardinality=OperationCardinality.SELECT_ONE,
+            streaming=StreamingSupport.BATCH_ONLY,
+        )
+
+    @staticmethod
+    def drop_duplicates_operation(duplicate_rows: DuplicateRowsPlan | None = None) -> "OperationPlan":
+        return OperationPlan(
+            kind="drop_duplicates",
+            duplicate_rows=duplicate_rows or DuplicateRowsPlan(),
+            family="dedupe",
+            capability=OperationCapability(group="dedupe", name="drop_duplicates"),
+            cardinality=OperationCardinality.ROW_FILTERING,
             streaming=StreamingSupport.BATCH_ONLY,
         )
 

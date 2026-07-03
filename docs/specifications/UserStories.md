@@ -329,7 +329,7 @@ over streaming orchestration, storage writes, Spark Connect, automatic cost-base
 - As a developer, I can define window expressions so that ranking, deduplication, latest-record selection, and rolling
   metrics compile to Spark window operations.
 - As a developer, I can define lag and lead expressions so that time-relative comparisons remain compiler-visible.
-- As a developer, I can remove exact duplicates explicitly so that duplicate cleanup is visible in source and explain
+- + As a developer, I can remove exact duplicates explicitly so that duplicate cleanup is visible in source and explain
   output.
 - + As a developer, I can select latest or earliest rows with deterministic tie policy so that dedupe never chooses an
   arbitrary row.

@@ -59,6 +59,7 @@ V1_CAPABILITIES = frozenset(
         ("higher_order", "array_filter"),
         ("higher_order", "map_transform_values"),
         ("higher_order", "map_filter"),
+        ("dedupe", "drop_duplicates"),
         ("window", "select_latest"),
         ("window", "select_earliest"),
         ("validation", "schema_only_validation"),

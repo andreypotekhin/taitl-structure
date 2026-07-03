@@ -518,6 +518,11 @@ Selected-row helpers use the same visible ranking pattern on the current step fr
 `row_number()` over `Window.partitionBy(...).orderBy(order.desc())`; `earliest_by(...)` uses ascending order. Generated
 code keeps rank `1` and drops the temporary rank column before projection or output validation.
 
+Exact duplicate cleanup from `distinct()` or empty `drop_duplicates()` renders `dropDuplicates()` on the current step
+frame. Subset `drop_duplicates(field, ...)` renders `dropDuplicates(["field", ...])` using Spark column names from the
+typed field expressions. Generated code must not use keyed `dropDuplicates(...)` as a replacement for deterministic
+selected-row dedupe when a specific representative row matters.
+
 ## Hook Lowering
 
 Hooks are explicit runtime escape hatches and are called on the source transform instance.
@@ -821,7 +826,7 @@ The following are outside v1 PySpark generation scope:
 - generating non-PySpark backends;
 - accepting manual edits inside `generated/` as source of truth;
 - optimizing source-order operations across hook boundaries;
-- generating unsupported broad window, broad deduplication, or advanced grouping forms before their specs exist;
+- generating unsupported broad window, keyed deduplication, or advanced grouping forms before their specs exist;
 - producing runtime telemetry under `traceability/`.
 
 ## Implementation Checklist
@@ -888,6 +893,7 @@ The implementation is complete when tests prove:
 - Repeated joins of the same input produce deterministic aliases.
 - Right-side join columns do not leak into output projection unless explicitly selected.
 - Selected-row helpers render a deterministic temporary rank column, filter rank `1`, and drop the temporary column.
+- Exact duplicate cleanup renders `dropDuplicates()` on the current step frame.
 - Generated code contains no UDFs, Pandas UDFs, RDD operations, `collect`, `toPandas`, or row-wise maps in compiled
   paths.
 - Generated output is byte-stable for identical source and configuration.

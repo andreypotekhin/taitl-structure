@@ -25,6 +25,7 @@ class OrderAnalyticsGenerated:
 
         # Subtransform: customer_daily_totals
         customer_totals = fulfilled.alias("order_fulfillment")
+        customer_totals = customer_totals.dropDuplicates()
         customer_totals = customer_totals.groupBy(
             F.col("order_fulfillment.tenant.tenant_id").alias("tenant_id"),
             F.col("order_fulfillment.customer_id").alias("customer_id"),

@@ -11,6 +11,7 @@ from structure.app.target.pyspark.commands.RenderPySparkExpression import render
 from structure.app.target.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
 from structure.app.target.pyspark.model.PySparkAggregateAssignment import PySparkAggregateAssignment
 from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
+from structure.app.target.pyspark.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
@@ -119,9 +120,22 @@ class RenderPySparkStep:
                 ordered_lines.extend(self._aggregate(step, operation.aggregate, target=target))
             if operation.kind == "selected_rows" and operation.selected_rows is not None:
                 ordered_lines.extend(self._selected_rows(step, operation.selected_rows, target=target))
+            if operation.kind == "drop_duplicates":
+                duplicate_rows = operation.duplicate_rows or PySparkDuplicateRowsRecipe()
+                ordered_lines.append(f"        {target} = {target}.dropDuplicates({self._dedupe_subset(duplicate_rows)})")
         if pending_filters:
             ordered_lines.extend(self._filters(tuple(pending_filters), step=step, target=target))
         return ordered_lines
+
+    def _dedupe_subset(self, duplicate_rows: PySparkDuplicateRowsRecipe) -> str:
+        if not duplicate_rows.subset:
+            return ""
+        return json.dumps(tuple(self._field_column(expression) for expression in duplicate_rows.subset))
+
+    def _field_column(self, expression: PySparkExpressionRecipe) -> str:
+        if expression.kind != "field":
+            raise TypeError("drop_duplicates(...) subset can only render field expressions")
+        return str(expression.data["field"])
 
     def _selected_rows(
         self,

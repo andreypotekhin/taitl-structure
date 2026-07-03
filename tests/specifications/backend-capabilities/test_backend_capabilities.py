@@ -69,6 +69,14 @@ def test_supported_v2_higher_order_requirement_passes(name: str) -> None:
     assert decision.supported
 
 
+def test_supported_v2_dedupe_requirement_passes() -> None:
+    resolved = Capabilities.resolve()()
+
+    decision = resolved.require(CapabilityRequirement(group="dedupe", name="drop_duplicates"))
+
+    assert decision.supported
+
+
 @pytest.mark.parametrize("name", ["select_latest", "select_earliest"])
 def test_supported_v2_window_requirement_passes(name: str) -> None:
     resolved = Capabilities.resolve()()

@@ -392,6 +392,22 @@
       "qualname": "count_distinct",
       "signature": "(value: 'object') -> 'Expression'"
     },
+    "distinct": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "distinct",
+      "signature": "() -> 'None'"
+    },
+    "drop_duplicates": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "drop_duplicates",
+      "signature": "(*subset: 'object') -> 'None'"
+    },
     "earliest_by": {
       "dataclass_fields": [],
       "enum_members": [],

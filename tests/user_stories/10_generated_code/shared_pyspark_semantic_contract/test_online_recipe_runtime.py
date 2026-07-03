@@ -29,6 +29,7 @@ from structure.app.target.capabilities.model.BackendId import BackendId
 from structure.app.target.pyspark.model.PySparkAggregateAssignment import PySparkAggregateAssignment
 from structure.app.target.pyspark.model.PySparkAggregateKey import PySparkAggregateKey
 from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
+from structure.app.target.pyspark.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
@@ -382,6 +383,62 @@ def test_online_runner_applies_selected_row_window_recipe(monkeypatch) -> None:
         "row_number().over(partitionBy(col(orders.id)).orderBy(col(orders.status).desc()))",
         "where:(col(__structure_publish_latest_rank) == lit(1))",
         "drop:__structure_publish_latest_rank",
+        "select:id=col(orders.id),status=col(orders.status)",
+        "alias:published",
+    )
+
+
+def test_online_runner_applies_exact_duplicate_removal_recipe(monkeypatch) -> None:
+    """I can rely on online and generated execution to share exact duplicate cleanup semantics."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(orders=_frame("orders", RawOrder))
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _drop_duplicates_plan(),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target_backend="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:orders",
+        "dropDuplicates",
+        "select:id=col(orders.id),status=col(orders.status)",
+        "alias:published",
+    )
+
+
+def test_online_runner_applies_subset_duplicate_removal_recipe(monkeypatch) -> None:
+    """I can use PySpark-compatible subset duplicate cleanup when representative rows are acceptable."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(orders=_frame("orders", RawOrder))
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _drop_duplicates_plan(subset=True),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target_backend="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:orders",
+        "dropDuplicates:id",
         "select:id=col(orders.id),status=col(orders.status)",
         "alias:published",
     )
@@ -1052,6 +1109,71 @@ def _selected_row_plan() -> PySparkExecutionPlan:
     )
     return PySparkExecutionPlan(
         transform="LatestOrders",
+        backend=BackendId("PySpark", "3.5", "pyspark"),
+        inputs=(PySparkInputRecipe("orders", RawOrder, 0, input_validation),),
+        steps=(step,),
+        outputs=(
+            PySparkOutputRecipe(
+                name="published",
+                ordinal=0,
+                source="published",
+                source_scope="published",
+                input_schema=PublishedOrder,
+                output_schema=PublishedOrder,
+                input_alias="published",
+                output_alias="published",
+                filters=(),
+                joins=(),
+                projection=(),
+                validation=published_validation,
+            ),
+        ),
+        requires_hook_inputs=False,
+    )
+
+
+def _drop_duplicates_plan(*, subset: bool = False) -> PySparkExecutionPlan:
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
+    projection = (
+        PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
+        PySparkProjectionRecipe(PublishedOrder._structure_fields["status"], _field(RawOrder, "status")),
+    )
+    step = PySparkStepRecipe(
+        name="publish",
+        ordinal=0,
+        source="orders",
+        source_scope="orders",
+        input_schema=RawOrder,
+        output_schema=PublishedOrder,
+        input_alias="orders",
+        output_alias="published",
+        before_hooks=(),
+        filters=(),
+        joins=(),
+        projection=projection,
+        after_hooks=(),
+        validations=(published_validation,),
+        results=(
+            PySparkStepResultRecipe(
+                schema=PublishedOrder,
+                lane="published",
+                frame="published",
+                output_alias="published",
+                projection=projection,
+                ordinal=0,
+                after_hooks=(),
+                validations=(published_validation,),
+            ),
+        ),
+        operations=(
+            PySparkOperationRecipe.drop_duplicates_operation(
+                PySparkDuplicateRowsRecipe(subset=(_field(RawOrder, "id"),) if subset else ())
+            ),
+        ),
+    )
+    return PySparkExecutionPlan(
+        transform="UniqueOrders",
         backend=BackendId("PySpark", "3.5", "pyspark"),
         inputs=(PySparkInputRecipe("orders", RawOrder, 0, input_validation),),
         steps=(step,),
@@ -1837,6 +1959,10 @@ class FakeFrame:
 
     def drop(self, name: str):
         return self.with_operation(f"drop:{name}")
+
+    def dropDuplicates(self, subset=None):
+        suffix = "" if subset is None else ":" + ",".join(subset)
+        return self.with_operation(f"dropDuplicates{suffix}")
 
 
 @dataclass(frozen=True)

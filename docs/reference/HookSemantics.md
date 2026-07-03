@@ -1,0 +1,279 @@
+# Hook Semantics
+
+Hooks are Structure's explicit runtime escape hatch. They let a developer attach arbitrary backend DataFrame logic to a
+specific compiled subtransform without pretending the hook body is compiler-visible.
+
+This reference covers hook decorator behavior, target binding, signatures, ordering, input access, schema handling,
+streaming-safety metadata, generated and online invocation, diagnostics, and tests.
+
+## Public API
+
+Canonical hook forms:
+
+```python
+@before(normalize, lane=orders)
+def prepare(self, *, orders, spark, ctx):
+    return orders
+```
+
+```python
+@after(normalize, lane=orders, pass_inputs=True)
+def compare_to_raw(self, *, orders, inputs, spark, ctx):
+    return orders
+```
+
+```python
+@after(publish, lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+def add_quality_columns(self, *, published, spark, ctx):
+    return published.withColumn("_checked", F.lit(True))
+```
+
+`@before(...)` runs before the compiled operations of the target subtransform. `@after(...)` runs after the compiled
+operations of the target subtransform.
+
+## Decorator Arguments
+
+Required positional argument:
+
+- target subtransform method object.
+
+Keyword arguments:
+
+```text
+lane=declaration
+pass_inputs=False
+schema_mode=None
+project_output=False
+streaming_safe=False
+target_backend=None
+```
+
+Rules:
+
+- Unknown keyword arguments are errors.
+- More than one positional argument is an error.
+- The target must be a compiled subtransform on the same transform class.
+- `@before(...)` must select the target input lane with `lane=...`.
+- `@after(...)` must select the target output lane with `lane=...`.
+- The target may be referenced inside the class body because earlier methods are present in the class namespace.
+- `schema_mode=None` means strict default validation.
+- `project_output=True` requires a schema mode and target schema that make projection meaningful.
+- `streaming_safe=True` is an author promise, not compiler inspection of the hook body.
+- `target_backend=None` means the hook inherits the configured `hook_target_default`.
+
+## Signatures
+
+Default signature:
+
+```python
+def hook(self, *, selected_lane_name, spark, ctx):
+    ...
+```
+
+Every hook explicitly selects the lane it receives. A before hook selects the target subtransform input lane:
+
+```python
+@before(normalize, lane=orders)
+def prepare(self, *, orders, spark, ctx):
+    ...
+```
+
+An after hook selects the target subtransform output lane:
+
+```python
+@after(add_product, lane=audited)
+def audit(self, *, audited, spark, ctx):
+    ...
+```
+
+The selected lane is passed through a keyword parameter with the same name. The hook return value replaces only that
+lane.
+
+Input-access signature:
+
+```python
+def hook(self, *, selected_lane_name, inputs, spark, ctx):
+    ...
+```
+
+Rules:
+
+- `self` is required.
+- Hook runtime parameters must be keyword-only.
+- the selected lane parameter, `spark`, and `ctx` are required.
+- `inputs` is required only when `pass_inputs=True`.
+- `inputs` is invalid when `pass_inputs=False`.
+- Extra parameters are invalid in .
+- Hooks returns a DataFrame at runtime.
+
+Signature validation should happen during compiler checks, not only when a hook is first invoked in production.
+
+## Hook Inputs
+
+When at least one hook declares `pass_inputs=True`, runtime execution creates a read-only namespace of original
+transform inputs.
+
+Example:
+
+```python
+@after(normalize, lane=orders, pass_inputs=True)
+def compare_to_raw(self, *, orders, inputs, spark, ctx):
+    return orders.join(inputs.orders.select("id"), "id", "left")
+```
+
+Rules:
+
+- `inputs.orders` refers to the original DataFrame bound to the declared `orders = input(...)`.
+- The namespace contains original declared inputs only.
+- It does not contain intermediate step DataFrames.
+- It is read-only; assigning `inputs.orders = ...` is invalid if the namespace can prevent it.
+- Missing original inputs are normal transform input binding errors, not hook-specific errors.
+
+## Ordering
+
+Hook order is deterministic:
+
+1. Subtransforms execute in source order.
+2. For each subtransform, `@before` hooks run in source order.
+3. Compiled operations for the subtransform run.
+4. `@after` hooks run in source order.
+5. Validation and hook projection follow the shared execution semantic contract.
+
+Multiple hooks of the same timing and target are allowed. A hook can rely on the DataFrame returned by the previous hook
+for the same timing and target.
+
+## Opaque Boundary
+
+Hooks are not symbolically executed.
+
+Rules:
+
+- The compiler does not inspect hook internals for expressions, joins, filters, traceability, or performance guardrails.
+- Traceability and explain output must show an opaque hook boundary.
+- Diagnostics should prefer direct DSL or `@expr_fn` fixes when logic can stay compiler-visible.
+- Generated code calls hooks on the source transform implementation instance.
+- Online execution calls the same hook methods on the transform invocation.
+- Hook internals may import backend libraries because they run at runtime.
+
+## Backend Target Scope
+
+Hooks are target-specific opaque code. The compiler-visible Structure source may be portable across backends, but a hook
+body can rely on one backend's DataFrame API.
+
+Optional hook target declaration:
+
+```python
+@after(normalize, lane=orders, target_backend="pyspark")
+def remove_negative_totals(self, *, orders, spark, ctx):
+    return orders.where(F.col("total") >= 0)
+```
+
+Rules:
+
+- `target_backend` may be a backend id, a list of backend ids, `"configured"`, or `"all"`.
+- Use `target_backend="pyspark"` for a single backend.
+- Use `target_backend=["pyspark", "polars"]` only when one hook intentionally supports multiple Python-hosted backends.
+- Missing `target_backend` resolves from `hook_target_default` in configuration.
+- The compatibility default is `hook_target_default = ["pyspark"]`.
+- A later strict mode may use `hook_target_default = "explicit"` to require every hook to declare target backends.
+- Runtime execution does not invoke a hook when the active target is outside the hook's effective target set.
+- Compatibility checks warn when an unmarked hook inherits a default while checking other targets.
+- Compatibility checks warn when a hook appears to import or reference a backend outside its declared target set.
+
+Target scope prevents accidental runtime errors such as calling a PySpark hook with a Polars LazyFrame or DuckDB
+relation. It does not make hook internals compiler-visible.
+
+accepts and carries `target_backend` metadata so documented PySpark hook examples are usable now. A hook whose
+effective target set excludes `pyspark` fails during compilation in because PySpark is the only executable hook
+ABI.
+
+## Schema Handling
+
+Hooks receive and return DataFrames.
+
+Rules:
+
+- The selected lane parameter has the shape produced by the previous stage at that boundary.
+- A hook returns a DataFrame.
+- By default, returned shape must match the target schema in strict mode.
+- `schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS` permits additional columns at that hook boundary.
+- `project_output=True` projects the hook result back to the target schema.
+- Hook output validation placement must match online and generated execution.
+
+`SchemaMode` includes at least:
+
+```text
+STRICT
+ALLOW_EXTRA_COLUMNS
+```
+
+Public examples may omit the strict default.
+
+## Streaming Safety
+
+Hooks are batch-only by default for streaming compatibility checks.
+
+Rules:
+
+- A hook in a streaming-compatible transform must declare `streaming_safe=True`.
+- `streaming_safe=True` means the author promises the hook uses only backend operations valid for the runtime streaming
+  shape.
+- Structure may still reject a streaming-safe hook when its declared schema mode or input access is incompatible with
+  the configured backend.
+- Hook internals remain opaque, so runtime backend failures inside a hook are not compiler proof failures.
+
+## IR Contract
+
+Hook metadata recorded in IR:
+
+```text
+HookDef
+  name
+  target_step
+  timing
+  source_order
+  pass_inputs
+  schema_mode
+  project_output
+  streaming_safe
+  target_backend
+  target_defaulted
+  source_path
+  source_line
+```
+
+The shared PySpark execution plan lowers each `HookDef` to a deterministic hook call recipe consumed by online and
+generated execution.
+
+## Diagnostics
+
+Hook diagnostics includes:
+
+- transform class;
+- hook name;
+- target subtransform;
+- timing;
+- source location when available;
+- decorator options;
+- signature shape;
+- problem;
+- suggested fix;
+- documentation link.
+
+Example:
+
+```text
+CompileError HOOK-E0701: Invalid hook signature
+
+Hook:
+  EnrichOrders.compare_to_raw after normalize
+
+Problem:
+  Hooks with pass_inputs=True must declare keyword-only inputs.
+
+Use:
+  def compare_to_raw(self, *, orders, inputs, spark, ctx):
+      return orders
+
+See docs/reference/HookSemantics.md
+```

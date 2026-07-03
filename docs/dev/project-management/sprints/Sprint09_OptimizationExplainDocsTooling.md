@@ -1,30 +1,26 @@
-# Sprint 09: Optimization, Explain, Docs, and Test Tooling
+# Sprint 09: Spark Connect, Optimization, and Explain
 
 ## Sprint Goal
 
-Make v2 analytical pipelines practical to adopt at project scale by adding explicit optimization directives, richer
-explain output, generated documentation, pytest helpers, and incremental compile.
+Build directly on Sprint 08 analytical operations by proving the completed batch feature set against the experimental
+Spark Connect variant, adding explicit optimization directives, and making explain output rich enough to review
+aggregation, selected-row, dedupe, and higher-order pipelines.
 
 ## Product Outcome
 
-Developers can review complex generated analytical code, keep generated artifacts fresh in tests and CI, document the
-schema and transform contract automatically, and get fast feedback in large projects.
+Developers can try completed batch transforms with Spark Connect, request important Spark physical-plan hints
+explicitly, and inspect analytical dataflow without reading generated code line by line.
 
 ## Scope
 
 ### In Scope
 
+- Experimental Spark Connect parity checks for completed batch features.
 - Cache and persistence directives at subtransform boundaries.
 - Repartition and coalesce directives.
 - Checkpoint hints where the configured backend supports them.
 - Join strategy directives for broadcast, shuffle hash, sort merge, and lookup projection where supported.
 - Rich `structure explain` mode for field-level lineage.
-- Generated Markdown or JSON documentation artifacts for schemas and transforms.
-- Pytest helpers for compiler checks, generated-code freshness, generated-code snapshots, expected diagnostics, and
-  online/generated parity.
-- Production incremental compile with `compile --changed-only`, cache invalidation, and cache diagnostics.
-- Performance fixtures for incremental compile on synthetic 10-transform and 100-transform projects.
-- Final experimental Spark Connect parity checks for completed v1/v2 batch features.
 
 ### Out of Scope
 
@@ -33,6 +29,9 @@ schema and transform contract automatically, and get fast feedback in large proj
 - Storage write orchestration.
 - Full supported Spark Connect promotion.
 - Streaming source and sink generation.
+- Generated documentation artifacts.
+- Public pytest helper package.
+- Production incremental compile and cache diagnostics.
 
 ## Relevant Specification Items
 
@@ -42,22 +41,19 @@ schema and transform contract automatically, and get fast feedback in large proj
 - As a developer, I can specify join strategies and hints.
 - As a developer, I can generate richer static dataflow explain output.
 - As a developer, I can explain generated-code sections.
-- As a developer, I can generate documentation artifacts for schemas and transforms.
-- As a developer, I can use pytest helpers for compiler checks, freshness, snapshots, diagnostics, and parity.
-- As a developer, I can use production incremental compilation.
+- As a developer, I can run experimental Spark Connect parity checks for completed batch features.
 
 ## Engineering Tasks
 
-1. Implement optimization directive source capture and IR.
-2. Add backend capability checks and diagnostics for each directive.
-3. Render directives in online and generated PySpark through shared recipes.
-4. Add tests proving directives do not change row or schema semantics.
-5. Add rich explain output for field-level lineage through v1 and v2 operations.
-6. Add generated documentation artifact emitter.
-7. Add pytest helpers for compiler checks, generated freshness, snapshots, diagnostics, and parity.
-8. Implement `compile --changed-only`.
-9. Add cache invalidation rules for source, config, schema, dependency, and generated-target changes.
-10. Add cache diagnostics and performance fixtures.
+1. Add Spark Connect experimental parity checks at the beginning of the sprint for completed batch features.
+2. Document and enforce Spark Connect exclusions for classic-only internals.
+3. Implement optimization directive source capture and IR.
+4. Add backend capability checks and diagnostics for each directive.
+5. Render directives in online and generated PySpark through shared recipes.
+6. Add tests proving directives do not change row or schema semantics.
+7. Add rich explain output for field-level lineage through projections, filters, joins, aggregations, selected-row
+   helpers, exact/subset dedupe, higher-order expressions, hooks, and optimization boundaries.
+8. Add generated-code section labels where they help explain reports point to emitted code.
 
 ## Acceptance Criteria
 
@@ -65,35 +61,32 @@ schema and transform contract automatically, and get fast feedback in large proj
 - Unsupported directives fail with backend capability diagnostics before runtime.
 - Rich explain output can follow field lineage through projections, filters, joins, aggregations, windows, hooks, and
   optimization boundaries.
-- Generated docs summarize schemas, transform inputs, outputs, subtransforms, dependencies, and target artifacts.
-- Pytest helpers let downstream projects assert compiler success, expected diagnostics, generated freshness, snapshots,
-  and online/generated parity.
-- `compile --changed-only` recompiles changed transforms and affected dependents without hiding stale output.
+- Experimental Spark Connect parity covers completed batch features without changing public DSL or generated
+  class APIs.
 
 ## Progress
 
+- [ ] Add experimental Spark Connect parity for completed batch features.
 - [ ] Implement explicit optimization directives.
-- [ ] Implement rich explain output and generated docs.
-- [ ] Implement pytest helpers.
-- [ ] Implement incremental compile and cache diagnostics.
+- [ ] Implement rich explain output for completed batch operations.
 
-## Compile-Time Performance Metric
+## Explain Performance Metric
 
-Track cold and warm incremental compile time.
+Track explain rendering time for analytical fixture transforms.
 
 Targets:
 
-- A no-change `compile --changed-only` on a 100-transform synthetic project completes in under 2 seconds excluding
-  interpreter startup.
-- A one-transform change recompiles only the changed transform and affected dependents.
+- A 10-transform analytical fixture explain report renders in under 2 seconds excluding interpreter startup.
+- Explain output remains compact by default and expands only when requested.
 
 ## Risks
 
 - Optimization directives can imply guarantees Spark does not make.
 - Rich explain output can become noisy if compact summaries are not the default.
-- Incremental compile can be worse than full compile if cache invalidation rules are vague.
+- Spark Connect parity can become noisy if classic-only exclusions are not explicit.
 
 ## Notes
 
 Keep optimization directives honest: they are explicit user intent and backend requests, not promises that Spark will
-always choose a particular physical plan.
+always choose a particular physical plan. Keep Spark Connect experimental: this sprint proves parity for completed
+batch features, not general support.

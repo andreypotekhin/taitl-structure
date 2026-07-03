@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
+from structure.app.target.pyspark.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.app.target.pyspark.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
@@ -15,6 +16,7 @@ class PySparkOperationRecipe:
     join: PySparkJoinRecipe | None = None
     aggregate: PySparkAggregateRecipe | None = None
     selected_rows: PySparkSelectedRowsRecipe | None = None
+    duplicate_rows: PySparkDuplicateRowsRecipe | None = None
 
     @staticmethod
     def filter_operation(predicate: PySparkExpressionRecipe) -> "PySparkOperationRecipe":
@@ -31,3 +33,10 @@ class PySparkOperationRecipe:
     @staticmethod
     def selected_rows_operation(selected_rows: PySparkSelectedRowsRecipe) -> "PySparkOperationRecipe":
         return PySparkOperationRecipe(kind="selected_rows", selected_rows=selected_rows)
+
+    @staticmethod
+    def drop_duplicates_operation(duplicate_rows: PySparkDuplicateRowsRecipe | None = None) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(
+            kind="drop_duplicates",
+            duplicate_rows=duplicate_rows or PySparkDuplicateRowsRecipe(),
+        )

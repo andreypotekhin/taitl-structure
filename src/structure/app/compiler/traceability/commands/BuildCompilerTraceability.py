@@ -49,6 +49,8 @@ class BuildCompilerTraceability:
             dependencies.extend(self._aggregate_dependencies(step))
             provenance.extend(self._selected_rows_provenance(plan, step, source_transform, transform_module))
             dependencies.extend(self._selected_rows_dependencies(step))
+            provenance.extend(self._drop_duplicates_provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._drop_duplicates_dependencies(step))
             if len(step.results) <= 1:
                 provenance.extend(self._projection_provenance(plan, step, source_transform, transform_module))
                 dependencies.extend(self._projection_dependencies(step))
@@ -420,6 +422,49 @@ class BuildCompilerTraceability:
             for index, operation in enumerate(step.operations)
             if operation.selected_rows is not None
         )
+
+    def _drop_duplicates_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        step: PySparkStepRecipe,
+        source_transform: str,
+        transform_module: str,
+    ) -> tuple[CompilerProvenance, ...]:
+        return tuple(
+            CompilerProvenance(
+                source=f"source:{source_transform}.{step.name}.drop_duplicates.{index}",
+                ir=f"ir:{plan.transform}.step.{step.ordinal}.{step.name}.drop_duplicates.{index}",
+                generated=(
+                    f"generated:{transform_module}.{plan.transform}Generated.run."
+                    f"step.{step.ordinal}.{step.name}.drop_duplicates.{index}"
+                ),
+            )
+            for index, operation in enumerate(step.operations)
+            if operation.kind == "drop_duplicates"
+        )
+
+    def _drop_duplicates_dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
+        return tuple(
+            DataflowDependency(
+                target=f"{step.name}.drop_duplicates[{index}]",
+                sources=self._drop_duplicates_sources(operation),
+                operation="drop_duplicates",
+                step=step.name,
+                detail={"scope": "current_step_frame", "subset": str(self._drop_duplicates_subset_count(operation))},
+            )
+            for index, operation in enumerate(step.operations)
+            if operation.kind == "drop_duplicates"
+        )
+
+    def _drop_duplicates_sources(self, operation) -> tuple[str, ...]:
+        duplicate_rows = operation.duplicate_rows
+        if duplicate_rows is None or not duplicate_rows.subset:
+            return ("current_frame.*",)
+        return tuple(source for expression in duplicate_rows.subset for source in self._dataflow.reads(expression))
+
+    def _drop_duplicates_subset_count(self, operation) -> int:
+        duplicate_rows = operation.duplicate_rows
+        return 0 if duplicate_rows is None else len(duplicate_rows.subset)
 
     def _selected_rows_sources(self, selected_rows) -> tuple[str, ...]:
         reads = self._dataflow.reads(selected_rows.order_by)

@@ -1,6 +1,6 @@
 from examples.orders.schemas.analytics import CustomerDailyTotal, ProductDailySummary
 from examples.orders.schemas.order import OrderFulfillment
-from structure import Transform, avg, count, count_distinct, group_by, input, max, min, output, sum, transform
+from structure import Transform, avg, count, count_distinct, distinct, group_by, input, max, min, output, sum, transform
 
 
 @transform
@@ -11,6 +11,7 @@ class OrderAnalytics(Transform):
 
     @transform(input=fulfilled, output=customer_totals)
     def customer_daily_totals(self, order: OrderFulfillment) -> CustomerDailyTotal:
+        distinct()
         group_by(
             tenant_id=order.tenant.tenant_id,
             customer_id=order.customer_id,

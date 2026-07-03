@@ -96,6 +96,10 @@ class RenderExplainReport:
                 f"{operation.selected_rows.direction}_by("
                 f"{operation.cardinality.value} partitions={len(operation.selected_rows.partition_by)})"
             )
+        if operation.kind == "drop_duplicates":
+            subset = 0 if operation.duplicate_rows is None else len(operation.duplicate_rows.subset)
+            suffix = "" if not subset else f" subset={subset}"
+            return f"drop_duplicates({operation.cardinality.value}{suffix})"
         name = operation.join.method.value if operation.join is not None else operation.kind
         return f"{name}({operation.cardinality.value})"
 

@@ -1,6 +1,7 @@
 from structure.app.target.pyspark.api.PySpark import PySpark
 from structure.app.target.pyspark.model.GeneratedFileChange import GeneratedFileChange
 from structure.app.target.pyspark.model.GeneratedFileSetResult import GeneratedFileSetResult
+from structure.app.target.pyspark.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
@@ -15,6 +16,7 @@ from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkVa
 
 __all__ = [
     "PySparkExecutionPlan",
+    "PySparkDuplicateRowsRecipe",
     "PySparkExpressionRecipe",
     "PySparkHookRecipe",
     "PySparkInputRecipe",

@@ -1,0 +1,217 @@
+# Online Execution
+
+Online execution is the default way to run Structure transforms. A user depends on the Structure library, supplies an
+existing Spark session, constructs a transform invocation with input DataFrames, and runs it through a
+`StructureSession`. The user does not need to commit generated PySpark code to their repository.
+
+Generated PySpark remains available for provenance, review, debugging, CI diff checks, and projects that deliberately
+choose generated execution.
+
+## Public API
+
+The default runtime shape is:
+
+```python
+from structure import StructureSession
+from orders.transforms.order import EnrichOrders
+
+session = StructureSession(spark=spark, ctx=ctx)
+
+result = EnrichOrders(
+    orders=orders_df,
+    customers=customers_df,
+    products=products_df,
+).run(session)
+
+enriched_df = result.enriched
+```
+
+The transform instance is a deferred invocation. Its constructor stores named input DataFrames and performs no Spark
+work. Calling `run(session)` delegates to the session:
+
+```python
+transform = EnrichOrders(orders=orders_df, customers=customers_df)
+result = transform.run(session)
+```
+
+The session can also be used directly:
+
+```python
+result = session.run(EnrichOrders(orders=orders_df, customers=customers_df))
+```
+
+When caller code needs the Spark schema after online execution, read it from the transform result:
+
+```python
+transform = EnrichOrders(orders=orders_df, customers=customers_df)
+result = transform.run(session)
+
+output_schema = result.schema.enriched
+same_schema = result.schema["enriched"]
+```
+
+`result.schema.enriched` is a materialized PySpark `StructType` equivalent to the generated `*_SCHEMA` constant for
+the `enriched` output. The schema is available in online mode without requiring generated files to exist.
+
+`run(session)` returns a read-only `TransformResult` for both single-output and multi-output transforms. Results expose
+declared output names such as `result.published`, `result.accepted`, and `result["rejected"]`. Output schemas expose
+the same names through `result.schema`, such as `result.schema.published` and `result.schema["rejected"]`. There is no
+automatic `df` alias; `df` is present only when a field-declared output is explicitly named `df`.
+
+Online execution evaluates transform methods in source order while preserving independent lane frames. When schemas are
+unambiguous, methods consume and update inferred lanes without method-level selectors. Method-level `input=` selects
+original inputs or existing lanes, `output=` names intermediate lanes or final outputs, and both options accept ordered
+lists. If a lane shares an input name, the lane shadows that original input in method-level `input=`.
+
+## Configuration
+
+Online execution is the default:
+
+```toml
+[tool.structure]
+execution_mode = "online"
+target_backend = "pyspark"
+target_profile = ">=3.5,<4.1"
+```
+
+Allowed execution modes:
+
+```text
+online
+generated
+```
+
+`online` runs transforms through a runtime runner that consumes compiler IR and live PySpark objects. `generated`
+delegates to checked-in generated PySpark classes.
+
+`target_backend` and `target_profile` remain backend selection inputs. In the only supported backend is `pyspark`.
+Later backends should be selected by the session, not by changing transform constructors. Backend support is checked
+against the session's resolved `StructureConfig` through [BackendCapabilities.md](BackendCapabilities.md), so online
+execution and generated PySpark share the same target capability decisions.
+
+Python users may pass a resolved config to the runtime session:
+
+```python
+from structure import StructureConfig, StructureSession
+
+config = StructureConfig.resolve(project_root=".", execution_mode="generated")
+session = StructureSession(spark=spark, config=config)
+```
+
+## Session Responsibilities
+
+`StructureSession` owns runtime knowledge:
+
+- Spark session supplied by the caller;
+- optional `ctx` passed to hooks;
+- resolved Structure configuration;
+- selected execution mode;
+- selected target backend and PySpark target range;
+- runtime runner delegation;
+- materializing Spark `StructType` schemas for online execution;
+- optional in-memory compiled-plan cache.
+
+`StructureSession` does not start Spark, stop Spark, mutate Spark configuration silently, read or write streaming
+queries, or own orchestration concerns such as Airflow DAGs, triggers, checkpoints, or output sinks.
+
+## Execution Modes
+
+In online mode, the session delegates to `OnlinePySparkRunner`. The runner compiles the transform class to
+`TransformPlan` IR on demand, lowers that IR through the shared PySpark execution semantic contract, then interprets
+the resulting recipes with PySpark DataFrame and Column APIs. It does not write generated files and does not execute
+generated Python source text.
+
+The online runner must also materialize the transform's Spark schemas from the checked schema model and expose them on
+the transform invocation. This gives caller code the same shape contract that generated schema modules provide in
+generated-code workflows.
+
+In generated mode, the session delegates to `GeneratedPySparkRunner`. The runner imports the generated PySpark class,
+instantiates it with `spark=session.spark` and `ctx=session.ctx`, and calls `run(...)` with the transform invocation's
+stored inputs.
+
+If generated mode cannot import the generated class, Structure fails with a diagnostic that suggests running
+`structure compile`, making the generated source root importable, or switching to `execution_mode = "online"`.
+
+## Execution Order
+
+Online execution preserves generated-code semantics:
+
+1. Validate declared input DataFrames.
+2. Create a read-only hook input namespace only when at least one hook declares `pass_inputs=True`.
+3. Execute subtransforms in source order.
+4. Run `@before` hooks before the compiled operations for their target step.
+5. Lower shared filters and joins, then materialize every ordered result projection.
+6. Run each `@after` hook against its selected result DataFrame.
+7. Validate intermediate schemas according to project, class, and method policy.
+8. Apply hook `schema_mode` and `project_output` rules.
+9. Validate every output DataFrame.
+10. Return a read-only `TransformResult`.
+
+Online and generated execution agrees on hook order, validation placement, expression lowering, join aliasing,
+projection shape, schema projection, result shape, and performance guardrails.
+
+For a multi-result step, joins and filters execute once. Each result projection starts from that shared DataFrame and is
+stored under its output lane name.
+
+Those shared semantics are owned by [ExecutionSemanticContract.md](ExecutionSemanticContract.md). Online execution owns live
+DataFrame binding and runtime hook invocation; it does not independently choose aliases, validation placement,
+expression mapping, or literal typing when a shared PySpark recipe already defines them.
+
+## Transform Input Binding
+
+`Transform.__init__(**inputs)` stores DataFrame inputs by declared Structure input name. Positional arguments are not
+allowed. Unknown input names are errors. Missing declared inputs is reported no later than `run(session)`.
+
+For , custom transform construction parameters should not be mixed into the transform constructor. Runtime context
+belongs in `StructureSession(ctx=...)`. Later explicit APIs may add richer parameter binding if a concrete use case
+requires it.
+
+`run` is reserved for online execution. A public schema-returning subtransform named `run` fails with a structured
+diagnostic that asks the user to rename it.
+
+## Compiler Boundary
+
+`structure check`, `structure compile`, and generated-file diff checks remain Spark-free. They does not require
+PySpark, Java, SparkSession, Spark startup, or a Spark cluster.
+
+Online execution is a runtime boundary and may import PySpark. Runtime tests for online execution may require a local
+Spark runtime.
+
+## Streaming Compatibility
+
+Online execution does not change the streaming contract. A transform is streaming-compatible when its compiled
+operations are valid for the caller's streaming DataFrame shape. The caller still owns `readStream`, `writeStream`,
+triggers, checkpoints, output modes, and query lifecycle.
+
+## Diagnostics
+
+Diagnostics includes:
+
+- diagnostic code;
+- transform class;
+- execution mode;
+- target backend;
+- input name, hook name, subtransform, or field when relevant;
+- problem;
+- suggested fix;
+- link to this specification or [Configuration.md](../Configuration.md).
+
+Example:
+
+```text
+RuntimeError GEN-E0902: Generated transform is not importable
+
+Transform:
+  orders.transforms.order.EnrichOrders
+
+Execution mode:
+  generated
+
+Problem:
+  Structure could not import the generated PySpark class for this transform.
+
+Use:
+  Run `structure compile`, ensure the generated source root is importable, or set `execution_mode = "online"`.
+
+See docs/reference/OnlineExecution.md
+```

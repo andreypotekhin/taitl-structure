@@ -20,6 +20,9 @@ class ClassifyStreamingCompatibility:
             for operation in step.operations:
                 if operation.selected_rows is not None:
                     findings.extend(self._selected_rows(step.name, operation.selected_rows.direction))
+                if operation.kind == "drop_duplicates":
+                    subset = 0 if operation.duplicate_rows is None else len(operation.duplicate_rows.subset)
+                    findings.extend(self._drop_duplicates(step.name, subset=subset))
             for join in step.joins:
                 findings.extend(self._join(step.name, join))
             for hook in (
@@ -63,6 +66,22 @@ class ClassifyStreamingCompatibility:
                     "defines streaming state and watermark semantics."
                 ),
                 use="Keep this transform batch-only or move selected-row streaming state management outside Structure.",
+            ),
+        )
+
+    def _drop_duplicates(self, step: str, *, subset: int) -> tuple[StreamingFinding, ...]:
+        operation = "exact duplicate removal" if not subset else "subset duplicate removal"
+        return (
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=step,
+                operation=operation,
+                problem=(
+                    "Duplicate removal uses DataFrame dropDuplicates() and is batch-only until Structure "
+                    "defines streaming state, watermark, and output-mode semantics."
+                ),
+                use="Keep this transform batch-only or move streaming deduplication orchestration outside Structure.",
             ),
         )
 

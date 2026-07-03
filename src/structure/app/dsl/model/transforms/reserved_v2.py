@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import TypeVar
 
 from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
+from structure.app.compiler.ir.model.DuplicateRowsPlan import DuplicateRowsPlan
 from structure.app.compiler.ir.model.OperationCardinality import OperationCardinality
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.ir.model.SelectedRowsPlan import SelectedRowsPlan
@@ -66,6 +67,17 @@ def earliest_by(order_by: object, *, partition_by: object, ties: TiePolicy = Tie
     _selected_rows("earliest", order_by, partition_by=partition_by, ties=ties)
 
 
+def drop_duplicates(*subset: object) -> None:
+    fields = _dedupe_subset(subset, call="drop_duplicates(...)")
+    _context("drop_duplicates()").operations.append(
+        OperationPlan.drop_duplicates_operation(DuplicateRowsPlan(subset=fields))
+    )
+
+
+def distinct() -> None:
+    _context("distinct()").operations.append(OperationPlan.drop_duplicates_operation())
+
+
 def _aggregate(function: str, argument: Expression | None = None, *, type, nullable: bool = False) -> Expression:
     args = () if argument is None else (argument,)
     return Expression(
@@ -95,6 +107,15 @@ def _partition_by(partition_by: object, *, call: str) -> tuple[Expression, ...]:
     if not partitions:
         raise TypeError(f"{call} requires at least one partition_by expression")
     return partitions
+
+
+def _dedupe_subset(subset: tuple[object, ...], *, call: str) -> tuple[Expression, ...]:
+    values = subset[0] if len(subset) == 1 and isinstance(subset[0], (tuple, list)) else subset
+    fields = tuple(literal(value) for value in values)
+    for field in fields:
+        if field.kind != "field":
+            raise TypeError(f"{call} subset accepts field expressions such as row.id")
+    return fields
 
 
 @dataclass(frozen=True)
