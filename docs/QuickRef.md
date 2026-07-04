@@ -547,6 +547,32 @@ Reference: [DSL](specifications/DSL.md), [IR](specifications/IntermediateReprese
 [PySpark code generation](specifications/PySparkCodeGeneration.md), and
 [streaming compatibility](specifications/StreamingCompatibility.md).
 
+## Window Projection Helpers
+
+Use `row_number(...)`, `rank(...)`, `dense_rank(...)`, `lag(...)`, and `lead(...)` when a projected output field needs a
+Spark-visible analytical window value.
+
+```python
+def rank_events(self, event: RawEvent) -> RankedEvent:
+    return RankedEvent(
+        account_id=event.account_id,
+        event_id=event.event_id,
+        row_number=row_number(partition_by=event.account_id, order_by=event.sequence),
+        rank=rank(partition_by=event.account_id, order_by=event.sequence, descending=True),
+        previous_sequence=lag(event.sequence, partition_by=event.account_id, order_by=event.sequence),
+        next_sequence=lead(event.sequence, partition_by=event.account_id, order_by=event.sequence),
+    )
+```
+
+`partition_by` is required and accepts one expression or a list/tuple of expressions. `order_by` is required.
+Set `descending=True` when the window order should be descending. `lag(...)` and `lead(...)` default to offset `1`;
+pass `offset=...` and `default=...` when needed. These helpers render as PySpark window expressions in the projection,
+not Python UDFs.
+
+Reference: [DSL](specifications/DSL.md), [IR](specifications/IntermediateRepresentation.md),
+[PySpark code generation](specifications/PySparkCodeGeneration.md), and
+[streaming compatibility](specifications/StreamingCompatibility.md).
+
 ## Exact Duplicate Rows
 
 Use `distinct()` when the current step frame may contain exact duplicate rows and duplicate cleanup should stay visible
@@ -897,7 +923,7 @@ duplicate-row removal, Spark higher-order array/map helpers, caching, and target
 
 Remaining planned v2 features include:
 
-- Ranking, lag/lead, rolling windows, deterministic keyed dedupe shortcuts, and broader deduplication helpers.
+- Rolling windows, deterministic keyed dedupe shortcuts, and broader deduplication helpers.
 - Repartition and coalesce annotations.
 
 These features remain explicit because Structure should not hide performance-sensitive choices.

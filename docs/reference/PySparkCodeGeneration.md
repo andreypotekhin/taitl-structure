@@ -487,6 +487,10 @@ Selected-row helpers use the same visible ranking pattern on the current step fr
 `row_number()` over `Window.partitionBy(...).orderBy(order.desc())`; `earliest_by(...)` uses ascending order. Generated
 code keeps rank `1` and drops the temporary rank column before projection or output validation.
 
+Projection window helpers render directly in `select(...)` expressions. `row_number(...)`, `rank(...)`,
+`dense_rank(...)`, `lag(...)`, and `lead(...)` render as `F.<helper>(...).over(Window.partitionBy(...).orderBy(...))`.
+Generated modules import `Window` whenever a join, selected-row operation, or projection expression needs it.
+
 Exact duplicate cleanup from `distinct()` or empty `drop_duplicates()` renders `dropDuplicates()` on the current step
 frame. Subset `drop_duplicates(field, ...)` renders `dropDuplicates(["field", ...])` using Spark column names from the
 typed field expressions. Generated code does not use keyed `dropDuplicates(...)` as a replacement for deterministic

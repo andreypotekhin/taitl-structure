@@ -6,6 +6,7 @@ from pathlib import Path
 from structure.app.compiler.api import Compiler
 from structure.app.configuration.model.StructureConfig import StructureConfig
 from structure.app.dsl.model.transforms.Transform import Transform
+from structure.app.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.app.runtime.execution.api import Execution
 from structure.app.runtime.schemas.api import Schemas
 from structure.app.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
@@ -63,7 +64,8 @@ class StructureSession:
             target_profile=self.target_profile,
             target_variant=self.target_variant,
         )
-        plan = PySpark.plan.lower()(Compiler.frontend.compile()(type(invocation)), capabilities=capabilities)
+        compile_target = invocation if isinstance(invocation, TransformPipeline) else type(invocation)
+        plan = PySpark.plan.lower()(Compiler.frontend.compile()(compile_target), capabilities=capabilities)
         self._validate_inputs(invocation)
         schemas = Schemas.build()(plan, types=self.schema_types)
 
@@ -76,7 +78,10 @@ class StructureSession:
         raise self._invalid_mode(invocation)
 
     def _validate_inputs(self, invocation: Transform) -> None:
-        declared = set(type(invocation)._structure_inputs)
+        if isinstance(invocation, TransformPipeline):
+            declared = set(input.name for input in Compiler.frontend.compile()(invocation).inputs)
+        else:
+            declared = set(type(invocation)._structure_inputs)
         bound = set(invocation._structure_bound_inputs)
         missing = sorted(declared - bound)
         if missing:

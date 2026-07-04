@@ -108,8 +108,11 @@ def summarize(self, order: OrderEnriched) -> CustomerSummary:
   streaming batch-only classification, backend capability coverage, and public docs.
 - [x] (2026-07-03) Extended `drop_duplicates(...)` with PySpark-compatible typed field subsets for convenience, while
   keeping `distinct()` exact-only and documenting the representative-row tradeoff.
-- [ ] Implement aggregation source capture, IR, recipes, generated snapshots, and parity tests.
-- [ ] Implement broad window and deterministic keyed dedupe helpers.
+- [x] (2026-07-03) Implemented projection window helpers `row_number(...)`, `rank(...)`, `dense_rank(...)`,
+  `lag(...)`, and `lead(...)` with Spark-visible generated rendering, online expression evaluation, capability
+  coverage, streaming batch-only classification, public docs, and user-story coverage.
+- [x] Implement aggregation source capture, IR, recipes, generated snapshots, and parity tests.
+- [ ] Implement rolling window metrics and deterministic keyed dedupe shortcuts.
 - [x] Implement supported higher-order array and map helpers.
 - [ ] Finish explain, traceability, diagnostics, and streaming compatibility classification for remaining Sprint 08
   feature families.
@@ -131,6 +134,6 @@ Targets:
 
 ## Notes
 
-Simple grouped rollups, higher-order collection helpers, deterministic latest/earliest row selection, and exact
-current-frame duplicate cleanup are the admitted v2 analytical slice. Keep keyed dedupe shortcuts behind explicit
-specs so the public API defaults to explainable behavior.
+Simple grouped rollups, projection window helpers, higher-order collection helpers, deterministic latest/earliest row
+selection, and exact current-frame duplicate cleanup are the admitted v2 analytical slice. Keep keyed dedupe shortcuts
+behind explicit specs so the public API defaults to explainable behavior.

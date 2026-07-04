@@ -169,7 +169,31 @@ class RenderPySparkTransformModule:
             for operation in output.operations
             if operation.selected_rows is not None
         )
-        return bool(selected_rows) or any(join.dedupe is not None or join.as_of is not None for join in joins)
+        return (
+            bool(selected_rows)
+            or any(join.dedupe is not None or join.as_of is not None for join in joins)
+            or any(self._has_window_projection(assignment.expression) for step in plan.steps for assignment in step.projection)
+            or any(
+                self._has_window_projection(assignment.expression)
+                for step in plan.steps
+                for result in step.results
+                for assignment in result.projection
+            )
+            or any(
+                self._has_window_projection(assignment.expression)
+                for output in plan.outputs
+                for assignment in output.projection
+            )
+        )
+
+    def _has_window_projection(self, expression) -> bool:
+        data = expression.data or {}
+        function = data.get("function")
+        return (
+            expression.kind == "reserved_v2"
+            and isinstance(function, str)
+            and function.startswith("window_")
+        ) or any(self._has_window_projection(argument) for argument in expression.args)
 
 
 render_pyspark_transform_module = RenderPySparkTransformModule()

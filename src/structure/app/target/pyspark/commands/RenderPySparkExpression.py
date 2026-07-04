@@ -93,7 +93,32 @@ class RenderPySparkExpression:
                 f"F.map_filter({self._render(mapping, aliases)}, "
                 f"lambda {key_name}, {value_name}: {self._render(body, aliases)})"
             )
+        if function in {"window_row_number", "window_rank", "window_dense_rank"}:
+            order_by, *partition_by = expression.args
+            call = function.removeprefix("window_")
+            return f"F.{call}().over({self._window(order_by, partition_by, expression, aliases)})"
+        if function in {"window_lag", "window_lead"}:
+            value, order_by, *partition_by = expression.args
+            call = function.removeprefix("window_")
+            offset = expression.data["offset"]
+            default = f", {expression.data['default']!r}" if expression.data.get("has_default") else ""
+            return (
+                f"F.{call}({self._render(value, aliases)}, {offset}{default})"
+                f".over({self._window(order_by, partition_by, expression, aliases)})"
+            )
         raise TypeError(f"Unsupported PySpark reserved expression: {function}")
+
+    def _window(
+        self,
+        order_by: PySparkExpressionRecipe,
+        partition_by: list[PySparkExpressionRecipe],
+        expression: PySparkExpressionRecipe,
+        aliases: Mapping[str, str],
+    ) -> str:
+        partitions = ", ".join(self._render(partition, aliases) for partition in partition_by)
+        order = self._render(order_by, aliases)
+        direction = "desc" if expression.data.get("descending") else "asc"
+        return f"Window.partitionBy({partitions}).orderBy({order}.{direction}())"
 
     def _lambda_name(self, expression: PySparkExpressionRecipe, fallback: str) -> str:
         return str(expression.data.get("name", fallback)) if expression.kind == "lambda_arg" else fallback

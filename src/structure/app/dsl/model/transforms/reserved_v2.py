@@ -67,6 +67,85 @@ def earliest_by(order_by: object, *, partition_by: object, ties: TiePolicy = Tie
     _selected_rows("earliest", order_by, partition_by=partition_by, ties=ties)
 
 
+def row_number(*, partition_by: object, order_by: object, descending: bool = False) -> Expression:
+    return _window_expression(
+        "row_number",
+        type=LongType(),
+        nullable=False,
+        partition_by=partition_by,
+        order_by=order_by,
+        descending=descending,
+    )
+
+
+def rank(*, partition_by: object, order_by: object, descending: bool = False) -> Expression:
+    return _window_expression(
+        "rank",
+        type=LongType(),
+        nullable=False,
+        partition_by=partition_by,
+        order_by=order_by,
+        descending=descending,
+    )
+
+
+def dense_rank(*, partition_by: object, order_by: object, descending: bool = False) -> Expression:
+    return _window_expression(
+        "dense_rank",
+        type=LongType(),
+        nullable=False,
+        partition_by=partition_by,
+        order_by=order_by,
+        descending=descending,
+    )
+
+
+def lag(
+    value: object,
+    *,
+    partition_by: object,
+    order_by: object,
+    offset: int = 1,
+    default: object = None,
+    descending: bool = False,
+) -> Expression:
+    argument = literal(value)
+    return _window_expression(
+        "lag",
+        argument,
+        type=argument.type,
+        nullable=argument.nullable or default is None,
+        partition_by=partition_by,
+        order_by=order_by,
+        offset=offset,
+        default=default,
+        descending=descending,
+    )
+
+
+def lead(
+    value: object,
+    *,
+    partition_by: object,
+    order_by: object,
+    offset: int = 1,
+    default: object = None,
+    descending: bool = False,
+) -> Expression:
+    argument = literal(value)
+    return _window_expression(
+        "lead",
+        argument,
+        type=argument.type,
+        nullable=argument.nullable or default is None,
+        partition_by=partition_by,
+        order_by=order_by,
+        offset=offset,
+        default=default,
+        descending=descending,
+    )
+
+
 def drop_duplicates(*subset: object) -> None:
     fields = _dedupe_subset(subset, call="drop_duplicates(...)")
     _context("drop_duplicates()").operations.append(
@@ -99,6 +178,36 @@ def _selected_rows(direction: str, order_by: object, *, partition_by: object, ti
             SelectedRowsPlan(direction=direction, order_by=order, partition_by=partitions, ties=ties)
         )
     )
+
+
+def _window_expression(
+    function: str,
+    value: Expression | None = None,
+    *,
+    type,
+    nullable: bool,
+    partition_by: object,
+    order_by: object,
+    descending: bool,
+    offset: int | None = None,
+    default: object = None,
+) -> Expression:
+    if offset is not None and offset < 1:
+        raise TypeError(f"{function}(...) offset must be greater than or equal to 1")
+    partitions = _partition_by(partition_by, call=f"{function}(...)")
+    ordering = literal(order_by)
+    data = {
+        "function": f"window_{function}",
+        "capability_group": "window",
+        "capability_name": function,
+        "descending": descending,
+    }
+    if offset is not None:
+        data["offset"] = offset
+        data["default"] = default
+        data["has_default"] = default is not None
+    args = (() if value is None else (value,)) + (ordering, *partitions)
+    return Expression(kind="reserved_v2", type=type, nullable=nullable, data=data, args=args)
 
 
 def _partition_by(partition_by: object, *, call: str) -> tuple[Expression, ...]:

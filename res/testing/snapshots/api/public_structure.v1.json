@@ -392,6 +392,14 @@
       "qualname": "count_distinct",
       "signature": "(value: 'object') -> 'Expression'"
     },
+    "dense_rank": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "dense_rank",
+      "signature": "(*, partition_by: 'object', order_by: 'object', descending: 'bool' = False) -> 'Expression'"
+    },
     "distinct": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -472,6 +480,14 @@
       "qualname": "join_one",
       "signature": "(relation: 'Relation | None' = None, *, on: 'object', how: 'Join' = <Join.LEFT: 'left'>, hint: 'JoinHint | None' = None, dedupe: 'JoinDedupe | None' = None) -> 'Relation | InputScope'"
     },
+    "lag": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "lag",
+      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', offset: 'int' = 1, default: 'object' = None, descending: 'bool' = False) -> 'Expression'"
+    },
     "lane": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -487,6 +503,14 @@
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "latest_by",
       "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'"
+    },
+    "lead": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "lead",
+      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', offset: 'int' = 1, default: 'object' = None, descending: 'bool' = False) -> 'Expression'"
     },
     "lower": {
       "dataclass_fields": [],
@@ -551,6 +575,22 @@
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "project",
       "signature": "(source: 'object | None' = None, target: 'type[Structure] | Iterable[str] | None' = None) -> 'object'"
+    },
+    "rank": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "rank",
+      "signature": "(*, partition_by: 'object', order_by: 'object', descending: 'bool' = False) -> 'Expression'"
+    },
+    "row_number": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "row_number",
+      "signature": "(*, partition_by: 'object', order_by: 'object', descending: 'bool' = False) -> 'Expression'"
     },
     "sum": {
       "dataclass_fields": [],

@@ -72,6 +72,11 @@ from structure import (
     avg,
     latest_by,
     earliest_by,
+    row_number,
+    rank,
+    dense_rank,
+    lag,
+    lead,
     distinct,
     drop_duplicates,
     arr_transform,
@@ -540,6 +545,35 @@ Rules:
 - Calling `where(...)` outside an active subtransform is invalid and should mention that filters belong inside
   compiled subtransform methods.
 
+## Window Projection Helpers
+
+Projection-level window helpers return symbolic expressions that render as Spark window expressions:
+
+```python
+def rank_events(self, event: RawEvent) -> RankedEvent:
+    return RankedEvent(
+        account_id=event.account_id,
+        row_number=row_number(partition_by=event.account_id, order_by=event.sequence),
+        rank=rank(partition_by=event.account_id, order_by=event.sequence, descending=True),
+        dense_rank=dense_rank(partition_by=event.account_id, order_by=event.sequence),
+        previous_sequence=lag(event.sequence, partition_by=event.account_id, order_by=event.sequence),
+        next_sequence=lead(event.sequence, partition_by=event.account_id, order_by=event.sequence),
+    )
+```
+
+Rules:
+
+- `row_number(...)`, `rank(...)`, and `dense_rank(...)` return non-nullable `Long` expressions.
+- `lag(value, ...)` and `lead(value, ...)` return the value expression type and are nullable unless a non-null default
+  is supplied.
+- `partition_by` is required and accepts one expression or a list/tuple of expressions.
+- `order_by` is required.
+- `descending=True` reverses the order expression.
+- `offset` for `lag(...)` and `lead(...)` is greater than or equal to `1`.
+- Window helpers are valid in projection expressions and remain Spark-plan-visible.
+- Window helpers are batch-only for streaming compatibility until explicit streaming state and watermark semantics
+  exist.
+
 ## Joins
 
 The DSL exposes lookup joins through the free-standing `join_one(...)` function. When the `on` clause names exactly
@@ -936,7 +970,8 @@ The following are outside DSL scope:
 - automatic fallback from compiled expressions to hooks;
 - automatic deduplication for `join_one(...)`;
 - implicit or nondeterministic selected-row deduplication;
-- advanced grouping sets, rollups, cubes, and broad window helpers beyond admitted latest/earliest selected-row helpers;
+- advanced grouping sets, rollups, cubes, and rolling window helpers beyond admitted projection and selected-row
+  helpers;
 - streaming source, sink, trigger, checkpoint, and query lifecycle DSL;
 - Spark Connect-specific public syntax;
 - non-PySpark backends in .

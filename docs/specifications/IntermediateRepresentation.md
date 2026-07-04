@@ -514,7 +514,11 @@ output fields without an explicit repair.
 Selected-row operations record `select_one` cardinality and carry explicit `partition_by` expressions, one `order_by`
 expression, a `latest` or `earliest` direction, and a deterministic tie policy. They are the admitted narrow window
 slice for latest/earliest row selection and lower through target recipes to Spark-visible ranking, not hooks or UDFs.
-Broad ranking, lag/lead, rolling frames, and keyed duplicate removal remain separate features.
+
+Projection window expressions cover `row_number(...)`, `rank(...)`, `dense_rank(...)`, `lag(...)`, and `lead(...)`.
+They remain symbolic expressions with explicit partition and ordering expressions, and target recipes render them as
+Spark-visible `Window.partitionBy(...).orderBy(...)` projections. Rolling frames and keyed duplicate-removal shortcuts
+remain separate features.
 
 Duplicate-removal operations, exposed as `distinct()` and `drop_duplicates(...)`, record `row_filtering` cardinality
 and an optional field subset. `distinct()` and empty `drop_duplicates()` lower to current-frame exact duplicate
@@ -1136,11 +1140,11 @@ Target:
   pyspark >=3.5,<4.1
 
 Problem:
-  Broad WindowProject forms are not enabled for the current compiler.
+  Rolling WindowProject forms are not enabled for the current compiler.
 
 Use:
-  Use latest_by(...) or earliest_by(...) for admitted selected-row windows, move broader logic into an explicit hook,
-  or wait for the broader v2 windowing specification.
+  Use admitted projection window helpers or selected-row helpers, move broader logic into an explicit hook, or wait for
+  the broader v2 windowing specification.
 
 See docs/specifications/IntermediateRepresentation.md
 ```

@@ -6,6 +6,7 @@ from structure.app.compiler.compileability.streaming_compatibility.model.Streami
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.model.transforms.Join import Join
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
 
@@ -17,6 +18,11 @@ class ClassifyStreamingCompatibility:
         for step in plan.steps:
             if step.aggregate is not None:
                 findings.extend(self._aggregate(step.name))
+            findings.extend(self._window_projection(step.name, tuple(assignment.expression for assignment in step.projection)))
+            for result in step.results:
+                findings.extend(
+                    self._window_projection(result.lane, tuple(assignment.expression for assignment in result.projection))
+                )
             for operation in step.operations:
                 if operation.selected_rows is not None:
                     findings.extend(self._selected_rows(step.name, operation.selected_rows.direction))
@@ -31,6 +37,10 @@ class ClassifyStreamingCompatibility:
                 *(hook for result in step.results for hook in result.after_hooks if len(step.results) > 1),
             ):
                 findings.extend(self._hook(step.name, hook))
+        for output in plan.outputs:
+            findings.extend(
+                self._window_projection(output.name, tuple(assignment.expression for assignment in output.projection))
+            )
 
         return StreamingReport(
             transform=plan.transform,
@@ -84,6 +94,32 @@ class ClassifyStreamingCompatibility:
                 use="Keep this transform batch-only or move streaming deduplication orchestration outside Structure.",
             ),
         )
+
+    def _window_projection(self, step: str, expressions: tuple[PySparkExpressionRecipe, ...]) -> tuple[StreamingFinding, ...]:
+        if not any(self._has_window(expression) for expression in expressions):
+            return ()
+        return (
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=step,
+                operation="window projection",
+                problem=(
+                    "Ranking, lag, and lead window projections are batch-only until Structure defines streaming "
+                    "state and watermark semantics."
+                ),
+                use="Keep this transform batch-only or move streaming window state management outside Structure.",
+            ),
+        )
+
+    def _has_window(self, expression: PySparkExpressionRecipe) -> bool:
+        data = expression.data or {}
+        function = data.get("function")
+        return (
+            expression.kind == "reserved_v2"
+            and isinstance(function, str)
+            and function.startswith("window_")
+        ) or any(self._has_window(argument) for argument in expression.args)
 
     def _join(self, step: str, join: PySparkJoinRecipe) -> tuple[StreamingFinding, ...]:
         if join.dedupe is not None:

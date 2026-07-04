@@ -23,3 +23,15 @@ class ProductDailySummary(Structure):
     max_units = field(Long(), nullable=False)
     avg_units = field(Double(), nullable=False)
     gross_total = field(Decimal(12, 2), nullable=False)
+
+
+class CustomerEventRank(Structure):
+    tenant = field(Struct(TenantKey), nullable=False)
+    customer_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    sequence = field(Long(), nullable=False)
+    row_number = field(Long(), nullable=False)
+    rank = field(Long(), nullable=False)
+    dense_rank = field(Long(), nullable=False)
+    previous_sequence = field(Long(), nullable=True)
+    next_sequence = field(Long(), nullable=True)

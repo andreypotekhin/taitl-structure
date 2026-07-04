@@ -1,6 +1,23 @@
-from structure import Transform, avg, count, count_distinct, group_by, input, max, min, output, sum, transform
+from structure import (
+    Transform,
+    avg,
+    count,
+    count_distinct,
+    dense_rank,
+    group_by,
+    input,
+    lag,
+    lead,
+    max,
+    min,
+    output,
+    rank,
+    row_number,
+    sum,
+    transform,
+)
 
-from testing.model.v2.orders.schemas.analytics import CustomerDailyTotal, ProductDailySummary
+from testing.model.v2.orders.schemas.analytics import CustomerDailyTotal, CustomerEventRank, ProductDailySummary
 from testing.model.v2.orders.schemas.order import OrderFulfillment
 
 
@@ -9,6 +26,7 @@ class OrderAnalytics(Transform):
     fulfilled = input(OrderFulfillment)
     customer_totals = output(CustomerDailyTotal)
     product_summary = output(ProductDailySummary)
+    customer_event_rank = output(CustomerEventRank)
 
     @transform(input=fulfilled, output=customer_totals)
     def customer_daily_totals(self, order: OrderFulfillment) -> CustomerDailyTotal:
@@ -46,4 +64,26 @@ class OrderAnalytics(Transform):
             max_units=max(order.quantity),
             avg_units=avg(order.quantity),
             gross_total=sum(order.total),
+        )
+
+    @transform(input=fulfilled, output=customer_event_rank)
+    def customer_event_ranks(self, order: OrderFulfillment) -> CustomerEventRank:
+        return CustomerEventRank(
+            tenant=order.tenant,
+            customer_id=order.customer_id,
+            event_id=order.id,
+            sequence=order.quantity,
+            row_number=row_number(partition_by=order.customer_id, order_by=order.quantity),
+            rank=rank(partition_by=order.customer_id, order_by=order.quantity, descending=True),
+            dense_rank=dense_rank(partition_by=order.customer_id, order_by=order.quantity),
+            previous_sequence=lag(
+                order.quantity,
+                partition_by=order.customer_id,
+                order_by=order.quantity,
+            ),
+            next_sequence=lead(
+                order.quantity,
+                partition_by=order.customer_id,
+                order_by=order.quantity,
+            ),
         )

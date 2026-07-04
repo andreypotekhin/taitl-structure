@@ -249,9 +249,13 @@ def test_v2_order_analytics_fixture_lowers_grouped_aggregates(monkeypatch: pytes
 
     plan = PySpark.plan.lower()(compile_transform(module.OrderAnalytics))
 
-    assert [step.name for step in plan.steps] == ["customer_daily_totals", "product_daily_summary"]
-    assert [step.operations[0].kind for step in plan.steps] == ["aggregate", "aggregate"]
-    aggregates = tuple(step.operations[0].aggregate for step in plan.steps)
+    assert [step.name for step in plan.steps] == [
+        "customer_daily_totals",
+        "product_daily_summary",
+        "customer_event_ranks",
+    ]
+    assert [step.operations[0].kind for step in plan.steps[:2]] == ["aggregate", "aggregate"]
+    aggregates = tuple(step.operations[0].aggregate for step in plan.steps[:2])
     assert all(aggregate is not None for aggregate in aggregates)
     assert [
         [(assignment.field.name, assignment.function) for assignment in aggregate.assignments]
@@ -278,6 +282,14 @@ def test_v2_order_analytics_fixture_lowers_grouped_aggregates(monkeypatch: pytes
             ("avg_units", "avg"),
             ("gross_total", "sum"),
         ],
+    ]
+    projection = plan.steps[2].projection
+    assert [(assignment.field.name, assignment.expression.data["function"]) for assignment in projection[4:]] == [
+        ("row_number", "window_row_number"),
+        ("rank", "window_rank"),
+        ("dense_rank", "window_dense_rank"),
+        ("previous_sequence", "window_lag"),
+        ("next_sequence", "window_lead"),
     ]
 
 

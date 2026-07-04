@@ -9,6 +9,7 @@ from structure.app.compiler.frontend.logic.CompilerHookCollector import Compiler
 from structure.app.compiler.frontend.logic.CompilerInputCollector import CompilerInputCollector
 from structure.app.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
 from structure.app.compiler.frontend.logic.CompilerTransformMemberCollector import CompilerTransformMemberCollector
+from structure.app.compiler.frontend.logic.ComposeTransformPlans import ComposeTransformPlans
 from structure.app.compiler.ir.model.AggregateAssignment import AggregateAssignment
 from structure.app.compiler.ir.model.AggregateKey import AggregateKey
 from structure.app.compiler.ir.model.AggregatePlan import AggregatePlan
@@ -42,6 +43,7 @@ from structure.app.dsl.model.transforms.OverlapPolicy import OverlapPolicy
 from structure.app.dsl.model.transforms.reserved_v2 import reserved_operations
 from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.transforms.Transform import Transform
+from structure.app.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.app.dsl.model.types.DecimalType import DecimalType
 from structure.app.dsl.model.types.StructureType import StructureType
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
@@ -53,11 +55,14 @@ WriteDeclaration = LaneDeclaration | OutputDeclaration | BindingSelector
 class CompileTransform:
 
     def __init__(self) -> None:
+        self._composer = ComposeTransformPlans()
         self._hook_collector = CompilerHookCollector()
         self._input_collector = CompilerInputCollector()
         self._member_collector = CompilerTransformMemberCollector()
 
-    def __call__(self, transform_class: type[Transform]) -> TransformPlan:
+    def __call__(self, transform_class: type[Transform] | TransformPipeline) -> TransformPlan:
+        if isinstance(transform_class, TransformPipeline):
+            return self._compose_pipeline(transform_class, name="ComposedTransform")
         if not getattr(transform_class, "_structure_transform", False):
             raise self._error(
                 "DSL-E0402",
@@ -65,6 +70,9 @@ class CompileTransform:
                 problem=f"{transform_class.__name__} is not decorated with @transform.",
                 use="Add @transform to the class or compile a decorated Structure transform.",
             )
+        pipeline = getattr(transform_class, "_structure_pipeline", None)
+        if pipeline is not None:
+            return self._compose_pipeline(pipeline, name=transform_class.__name__, wrapper_class=transform_class)
         if not transform_class._structure_outputs:
             raise self._error(
                 "DSL-E0402",
@@ -90,6 +98,20 @@ class CompileTransform:
             outputs=tuple(outputs),
             options=dict(getattr(transform_class, "_structure_transform_options", {})),
             diagnostics=tuple(diagnostics),
+        )
+
+    def _compose_pipeline(
+        self,
+        pipeline: TransformPipeline,
+        *,
+        name: str,
+        wrapper_class: type[Transform] | None = None,
+    ) -> TransformPlan:
+        return self._composer(
+            pipeline,
+            name=name,
+            compile_stage=self.__call__,
+            wrapper_class=wrapper_class,
         )
 
     def _steps(

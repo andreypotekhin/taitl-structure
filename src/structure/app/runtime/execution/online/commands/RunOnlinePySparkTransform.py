@@ -118,7 +118,7 @@ class RunOnlinePySparkTransform:
             for result in step.results:
                 projected = df.select(
                     *(
-                        self._assignment(assignment, step=step, functions=functions, types=types)
+                        self._assignment(assignment, step=step, functions=functions, window=window, types=types)
                         for assignment in result.projection
                     )
                 )
@@ -146,7 +146,7 @@ class RunOnlinePySparkTransform:
         if step.projection:
             df = df.select(
                 *(
-                    self._assignment(assignment, step=step, functions=functions, types=types)
+                    self._assignment(assignment, step=step, functions=functions, window=window, types=types)
                     for assignment in step.projection
                 )
             )
@@ -183,7 +183,7 @@ class RunOnlinePySparkTransform:
         if output.projection:
             df = df.select(
                 *(
-                    self._assignment(assignment, step=output, functions=functions, types=types)
+                    self._assignment(assignment, step=output, functions=functions, window=window, types=types)
                     for assignment in output.projection
                 )
             )
@@ -196,7 +196,7 @@ class RunOnlinePySparkTransform:
                 df = self._join(step, df, join, frames=frames, functions=functions, window=window)
             for filter in step.filters:
                 df = df.where(
-                    self._expressions.evaluate(filter, functions=functions, aliases=self._scope_aliases(step))
+                    self._expressions.evaluate(filter, functions=functions, aliases=self._scope_aliases(step), window=window)
                 )
             return df
 
@@ -209,6 +209,7 @@ class RunOnlinePySparkTransform:
                         operation.filter,
                         functions=functions,
                         aliases=self._scope_aliases(step),
+                        window=window,
                     )
                 )
             if operation.kind == "aggregate" and operation.aggregate is not None:
@@ -404,11 +405,12 @@ class RunOnlinePySparkTransform:
             return "left_anti"
         return join.how.value
 
-    def _assignment(self, assignment, *, step, functions, types):
+    def _assignment(self, assignment, *, step, functions, window, types):
         column = self._expressions.evaluate(
             assignment.expression,
             functions=functions,
             aliases=self._scope_aliases(step),
+            window=window,
         )
         column = self._validator.cast(column, assignment.field, assignment.expression, types=types)
         return self._validator.alias(column, assignment.field, assignment.expression)

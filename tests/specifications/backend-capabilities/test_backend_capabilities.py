@@ -77,7 +77,7 @@ def test_supported_v2_dedupe_requirement_passes() -> None:
     assert decision.supported
 
 
-@pytest.mark.parametrize("name", ["select_latest", "select_earliest"])
+@pytest.mark.parametrize("name", ["dense_rank", "lag", "lead", "rank", "row_number", "select_latest", "select_earliest"])
 def test_supported_v2_window_requirement_passes(name: str) -> None:
     resolved = Capabilities.resolve()()
 

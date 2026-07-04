@@ -123,7 +123,8 @@ These operations are not streaming-compatible in :
 - `distinct(...)` or `dropDuplicates(...)`, including Structure `distinct()` and `drop_duplicates()`;
 - aggregations, including `groupBy(...).agg(...)`;
 - windowed aggregations;
-- ranking or analytic window functions;
+- ranking or analytic window functions, including Structure `row_number(...)`, `rank(...)`, `dense_rank(...)`,
+  `lag(...)`, and `lead(...)`;
 - stream-stream joins;
 - right, full, cross, semi, or anti joins involving the streaming current DataFrame;
 - Python UDFs, Pandas UDFs, RDD operations, `mapInPandas`, and `foreachPartition`;

@@ -3,6 +3,7 @@ from __future__ import annotations
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
+from structure.app.dsl.model.transforms.TransformPipeline import TransformPipeline
 
 
 class Transform:
@@ -10,6 +11,7 @@ class Transform:
     _structure_inputs: dict[str, InputDeclaration] = {}
     _structure_lanes: dict[str, LaneDeclaration] = {}
     _structure_outputs: dict[str, OutputDeclaration] = {}
+    _structure_pipeline: TransformPipeline | None = None
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -33,6 +35,10 @@ class Transform:
         cls._structure_inputs = inputs
         cls._structure_lanes = lanes
         cls._structure_outputs = outputs
+        pipelines = [value for value in cls.__dict__.values() if isinstance(value, TransformPipeline)]
+        if len(pipelines) > 1:
+            raise TypeError(f"{cls.__name__} declares more than one transform pipeline field")
+        cls._structure_pipeline = pipelines[0] if pipelines else None
 
     def __init__(self, **inputs: object) -> None:
         unknown = set(inputs) - set(self._structure_inputs)
@@ -45,3 +51,6 @@ class Transform:
 
     def run(self, session):
         return session.run(self)
+
+    def to(self, *stages: "Transform") -> TransformPipeline:
+        return TransformPipeline((self, *stages))

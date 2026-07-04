@@ -3,18 +3,24 @@ from structure import (
     String,
     Structure,
     Transform,
+    dense_rank,
     distinct,
     drop_duplicates,
     field,
     input,
+    lag,
     latest_by,
+    lead,
     output,
+    rank,
+    row_number,
     transform,
 )
 from structure.app.cli.commands.RenderExplainReport import render_explain_report
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
+from structure.app.target.pyspark.commands.RenderPySparkTransformModule import render_pyspark_transform_module
 
 
 class RawEvent(Structure):
@@ -29,6 +35,17 @@ class LatestEvent(Structure):
     sequence = field(Long(), nullable=False)
 
 
+class RankedEvent(Structure):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    sequence = field(Long(), nullable=False)
+    row_number = field(Long(), nullable=False)
+    rank = field(Long(), nullable=False)
+    dense_rank = field(Long(), nullable=False)
+    previous_sequence = field(Long(), nullable=True)
+    next_sequence = field(Long(), nullable=True)
+
+
 @transform
 class LatestEventTransform(Transform):
     events = input(RawEvent)
@@ -37,6 +54,24 @@ class LatestEventTransform(Transform):
     def latest_events(self, row: RawEvent) -> LatestEvent:
         latest_by(row.sequence, partition_by=row.account_id)
         return LatestEvent(account_id=row.account_id, event_id=row.event_id, sequence=row.sequence)
+
+
+@transform
+class RankedEventTransform(Transform):
+    events = input(RawEvent)
+    ranked = output(RankedEvent)
+
+    def rank_events(self, row: RawEvent) -> RankedEvent:
+        return RankedEvent(
+            account_id=row.account_id,
+            event_id=row.event_id,
+            sequence=row.sequence,
+            row_number=row_number(partition_by=row.account_id, order_by=row.sequence),
+            rank=rank(partition_by=row.account_id, order_by=row.sequence, descending=True),
+            dense_rank=dense_rank(partition_by=row.account_id, order_by=row.sequence),
+            previous_sequence=lag(row.sequence, partition_by=row.account_id, order_by=row.sequence),
+            next_sequence=lead(row.sequence, partition_by=row.account_id, order_by=row.sequence),
+        )
 
 
 @transform
@@ -71,6 +106,52 @@ def test_latest_by_renders_spark_visible_row_number_window() -> None:
     ) in text
     assert 'events = events.where(F.col("__structure_latest_events_latest_rank") == F.lit(1))' in text
     assert 'events = events.drop("__structure_latest_events_latest_rank")' in text
+
+
+def test_window_projection_helpers_render_spark_visible_windows() -> None:
+    plan = PySpark.plan.lower()(compile_transform(RankedEventTransform))
+
+    text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
+
+    assert (
+        'F.row_number().over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'orderBy(F.col("raw_event.sequence").asc())).alias("row_number")'
+    ) in text
+    assert (
+        'F.rank().over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'orderBy(F.col("raw_event.sequence").desc())).alias("rank")'
+    ) in text
+    assert (
+        'F.dense_rank().over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'orderBy(F.col("raw_event.sequence").asc())).alias("dense_rank")'
+    ) in text
+    assert (
+        'F.lag(F.col("raw_event.sequence"), 1).over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'orderBy(F.col("raw_event.sequence").asc())).alias("previous_sequence")'
+    ) in text
+    assert (
+        'F.lead(F.col("raw_event.sequence"), 1).over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'orderBy(F.col("raw_event.sequence").asc())).alias("next_sequence")'
+    ) in text
+
+
+def test_window_projection_helpers_add_window_import_to_generated_module() -> None:
+    plan = PySpark.plan.lower()(compile_transform(RankedEventTransform))
+
+    text = render_pyspark_transform_module(
+        plan,
+        source_transform="tests.RankedEventTransform",
+        schema_modules={RawEvent: "tests.schemas", RankedEvent: "tests.schemas"},
+        runtime_module="tests.runtime",
+    )
+
+    assert "from pyspark.sql import Window" in text
+
+
+def test_window_projection_helpers_are_batch_only_in_explain() -> None:
+    text = render_explain_report(RankedEventTransform)
+
+    assert "STREAM-E0801: batch_only in rank_events (window projection)" in text
 
 
 def test_latest_by_explain_names_window_operation_and_streaming_status() -> None:

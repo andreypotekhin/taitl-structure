@@ -160,6 +160,42 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
     ]
 
 
+def test_online_expression_evaluator_preserves_window_projection_semantics() -> None:
+    evaluator = PySparkExpressionEvaluator()
+    functions = FakeFunctions("functions")
+    aliases = {RawMetric.__name__: "metrics"}
+    quantity = _field(RawMetric, "quantity")
+    customer_id = _field(RawMetric, "customer_id")
+
+    cases = [
+        (
+            _window("row_number", partition_by=customer_id, order_by=quantity),
+            "row_number().over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc()))",
+        ),
+        (
+            _window("rank", partition_by=customer_id, order_by=quantity, descending=True),
+            "rank().over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).desc()))",
+        ),
+        (
+            _window("dense_rank", partition_by=customer_id, order_by=quantity),
+            "dense_rank().over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc()))",
+        ),
+        (
+            _window("lag", value=quantity, partition_by=customer_id, order_by=quantity),
+            "lag(col(metrics.quantity),1).over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc()))",
+        ),
+        (
+            _window("lead", value=quantity, partition_by=customer_id, order_by=quantity),
+            "lead(col(metrics.quantity),1).over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc()))",
+        ),
+    ]
+
+    assert [
+        evaluator.evaluate(recipe, functions=functions, aliases=aliases, window=FakeWindow).expression
+        for recipe, _ in cases
+    ] == [expected for _, expected in cases]
+
+
 def test_online_runner_executes_lowered_pyspark_recipe(monkeypatch) -> None:
     """I can rely on online execution and generated execution to consume the same PySpark semantic contract."""
 
@@ -1642,6 +1678,28 @@ def _map_filter(mapping: PySparkExpressionRecipe, body: PySparkExpressionRecipe)
     )
 
 
+def _window(
+    function: str,
+    *,
+    partition_by: PySparkExpressionRecipe,
+    order_by: PySparkExpressionRecipe,
+    value: PySparkExpressionRecipe | None = None,
+    descending: bool = False,
+) -> PySparkExpressionRecipe:
+    args = (() if value is None else (value,)) + (order_by, partition_by)
+    return PySparkExpressionRecipe(
+        "reserved_v2",
+        value.type if value is not None else Long(),
+        value.nullable if value is not None else False,
+        {
+            "function": f"window_{function}",
+            "descending": descending,
+            "offset": 1,
+        },
+        args,
+    )
+
+
 def _hook(
     name: str,
     *,
@@ -1799,7 +1857,25 @@ class FakeFunctions(ModuleType):
         return frame.with_operation("broadcast")
 
     def row_number(self):
-        return FakeRowNumber()
+        return FakeWindowFunction("row_number")
+
+    def rank(self):
+        return FakeWindowFunction("rank")
+
+    def dense_rank(self):
+        return FakeWindowFunction("dense_rank")
+
+    def lag(self, column, offset, default=None):
+        arguments = f"{column.expression},{offset}"
+        if default is not None:
+            arguments = f"{arguments},{default!r}"
+        return FakeWindowFunction(f"lag({arguments})", call_has_parentheses=False)
+
+    def lead(self, column, offset, default=None):
+        arguments = f"{column.expression},{offset}"
+        if default is not None:
+            arguments = f"{arguments},{default!r}"
+        return FakeWindowFunction(f"lead({arguments})", call_has_parentheses=False)
 
     def monotonically_increasing_id(self):
         return FakeColumn("monotonically_increasing_id()")
@@ -1870,10 +1946,13 @@ class FakeColumn:
 
 
 @dataclass(frozen=True)
-class FakeRowNumber:
+class FakeWindowFunction:
+    name: str
+    call_has_parentheses: bool = True
 
     def over(self, window):
-        return FakeColumn(f"row_number().over({window.expression})")
+        call = f"{self.name}()" if self.call_has_parentheses else self.name
+        return FakeColumn(f"{call}.over({window.expression})")
 
 
 class FakeWindow:

@@ -1,4 +1,4 @@
-from testing.model.v2.orders.schemas.analytics import CustomerDailyTotal, ProductDailySummary
+from testing.model.v2.orders.schemas.analytics import CustomerDailyTotal, CustomerEventRank, ProductDailySummary
 from testing.model.v2.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
 from testing.model.v2.orders.schemas.customer import Customer
 from testing.model.v2.orders.schemas.order import (
