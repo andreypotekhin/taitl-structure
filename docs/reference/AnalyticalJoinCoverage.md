@@ -1,13 +1,15 @@
-﻿# Analytical Join Coverage
+# Analytical Join Coverage
+
+## Purpose
 
 Analytical joins are join forms that go beyond one-row lookup enrichment. They let a transform filter rows by
 existence, intentionally multiply rows by matches, select deterministic lookup winners, and join against time-valid
 records.
 
-This reference defines Structure's analytical join family: semi and anti existence filters, `join_many(...)`,
+This specification defines Structure's analytical join family: semi and anti existence filters, `join_many(...)`,
 deterministic lookup dedupe, temporal lookups, as-of lookups, and slowly changing dimension lookups.
 
-The `join_one(...)` contract remains unchanged. It is a narrow many-to-one or one-to-one lookup join. It warns when
+The v1 `join_one(...)` contract remains unchanged. It is a narrow many-to-one or one-to-one lookup join. It warns when
 right-side uniqueness is not proven and never deduplicates by surprise.
 
 ## Scope
@@ -15,11 +17,11 @@ right-side uniqueness is not proven and never deduplicates by surprise.
 This reference covers source semantics for analytical joins. Existence joins, `join_many(...)`, deterministic
 deduped `join_one(...)`, temporal validity-window `temporal_one(...)`, and backward `as_of_one(...)` are implemented in
 the default PySpark profile.
-[JoinSemantics.md](JoinSemantics.md) remains the authority for the strict `join_one(...)` contract.
+[JoinSemantics.md](JoinSemantics.md) remains the authority for the strict v1 `join_one(...)` contract.
 
 In scope for the analytical join family:
 
-- existence predicates for semi and anti joins;
+- existence predicates that lower to semi and anti joins;
 - row-multiplying `join_many(...)`;
 - deterministic right-side dedupe before `join_one(...)`;
 - temporal validity-window lookup joins;
@@ -95,7 +97,7 @@ Rules:
 - Duplicate right rows are allowed and expected.
 - No uniqueness warning is emitted.
 - The joined scope exposes right-side fields.
-- Output schema construction controls final fields; Structure does not append right-side fields implicitly.
+- Output schema construction controls final fields; Structure must not append right-side fields implicitly.
 - Right-side projection should carry only keys and referenced fields.
 
 `join_many(...)` should be used when the business output is one row per match, such as order-to-line-item expansion.
@@ -103,7 +105,7 @@ Rules:
 ## Deterministic Lookup Dedupe
 
 Some lookup inputs contain multiple right rows per key, but the desired business rule is still one selected right row.
-That rule is explicit:
+That rule must be explicit:
 
 ```python
 join_one(
@@ -121,9 +123,11 @@ Rules:
 - Dedupe policies reduce the right input before the lookup join.
 - A dedupe policy must name the ordering or selection rule.
 - The default tie policy is `TiePolicy.ERROR`.
-- Structure does not use arbitrary `first(...)` or nondeterministic `dropDuplicates(...)` for lookup dedupe.
+- Structure must not lower dedupe to arbitrary `first(...)` or nondeterministic `dropDuplicates(...)`.
 - A deduped `join_one(...)` records both the original right input and the deduped lookup dependency in traceability.
 - Runtime tie checks are explicit because they can add Spark work.
+- Current PySpark lowering uses `row_number()` over a window partitioned by the right-side join keys, ordered by the
+  explicit policy expression, keeps rank `1`, drops the temporary rank column, and then applies the lookup join.
 
 Initial policy family:
 
@@ -224,7 +228,7 @@ Allowed semantic method values begin with:
 - `temporal_one`;
 - `as_of_one`.
 
-The exact enum names may follow the implementation's local naming style, but the semantic categories remains
+The exact enum names may follow the implementation's local naming style, but the semantic categories must remain
 separate.
 
 ## Backend Capabilities
@@ -255,19 +259,6 @@ Temporal, deduped lookup, as-of lookup, and runtime tie or overlap checks are ba
 design specifies their state, watermark, and output-mode requirements.
 
 ## Diagnostics
-
-Diagnostics includes:
-
-- transform and subtransform;
-- join method;
-- right input;
-- source condition;
-- cardinality classification;
-- key pairs;
-- dedupe, temporal, as-of, tie, or overlap policy when present;
-- runtime check cost when present;
-- suggested source fix;
-- link to this specification.
 
 Example:
 

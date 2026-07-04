@@ -83,6 +83,10 @@ from structure import (
     dense_rank,
     lag,
     lead,
+    rolling_sum,
+    rolling_avg,
+    rolling_min,
+    rolling_max,
     distinct,
     drop_duplicates,
     arr_transform,
@@ -564,6 +568,7 @@ def rank_events(self, event: RawEvent) -> RankedEvent:
         dense_rank=dense_rank(partition_by=event.account_id, order_by=event.sequence),
         previous_sequence=lag(event.sequence, partition_by=event.account_id, order_by=event.sequence),
         next_sequence=lead(event.sequence, partition_by=event.account_id, order_by=event.sequence),
+        rolling_total=rolling_sum(event.amount, partition_by=event.account_id, order_by=event.sequence, preceding=6),
     )
 ```
 
@@ -576,6 +581,8 @@ Rules:
 - `order_by` is required.
 - `descending=True` reverses the order expression.
 - `offset` for `lag(...)` and `lead(...)` must be greater than or equal to `1`.
+- `rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and `rolling_max(...)` require `preceding=...` and use a
+  row frame from `-preceding` through the current row.
 - Window helpers are valid in projection expressions and must remain Spark-plan-visible.
 - Window helpers are batch-only for streaming compatibility until explicit streaming state and watermark semantics
   exist.
@@ -918,7 +925,7 @@ Hook workaround:
   def clean_customer_id(self, *, orders, spark, ctx):
       return orders.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 
-See docs/specifications/DSL.md
+See docs/dev/specifications/DSL.md
 ```
 
 Invalid hook example:
@@ -939,7 +946,7 @@ Use:
   def compare_to_raw(self, *, orders, inputs, spark, ctx):
       return orders
 
-See docs/specifications/DSL.md
+See docs/dev/specifications/DSL.md
 ```
 
 Invalid transform invocation example:
@@ -959,7 +966,7 @@ Problem:
 Use:
   EnrichOrders(orders=orders_df, customers=customers_df)
 
-See docs/specifications/DSL.md
+See docs/dev/specifications/DSL.md
 ```
 
 ## Non-Goals

@@ -196,7 +196,7 @@ Diagnostics must include:
 - input name, hook name, subtransform, or field when relevant;
 - problem;
 - suggested fix;
-- link to this specification or [Configuration.md](../Configuration.md).
+- link to this specification or [Configuration.md](../../Configuration.md).
 
 Example:
 
@@ -215,7 +215,7 @@ Problem:
 Use:
   Run `structure compile`, ensure the generated source root is importable, or set `execution_mode = "online"`.
 
-See docs/specifications/OnlineExecution.md
+See docs/dev/specifications/OnlineExecution.md
 ```
 
 ## Acceptance Criteria

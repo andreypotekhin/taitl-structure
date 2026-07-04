@@ -1,4 +1,6 @@
-﻿# Diagnostics
+# Diagnostics
+
+## Purpose
 
 Structure diagnostics are the stable error and warning contract for configuration, discovery, schemas, symbolic
 execution, IR validation, joins, hooks, backend capability checks, streaming compatibility, generated-code drift, CLI
@@ -27,7 +29,7 @@ documentation contract that makes that join diagnostic stable.
 
 ## Design Principles
 
-Diagnostics are:
+Diagnostics must be:
 
 - actionable;
 - deterministic for the same source, configuration, command, Structure version, and target capability set;
@@ -118,16 +120,16 @@ Required when available:
   or runtime argument.
 - `why`: why the problem matters when the risk is not obvious.
 
-Diagnostic values may include additional structured fields for renderers and integrations. Unknown fields does not
+Diagnostic values may include additional structured fields for renderers and integrations. Unknown fields must not
 change the meaning of the diagnostic code.
 
 ## Registry
 
-The implementation contains a diagnostic registry before broad diagnostic work begins. The registry may be a Python
-module, data file, or generated artifact, but it is reviewed as source and is available to tests without
+The implementation must contain a diagnostic registry before broad diagnostic work begins. The registry may be a Python
+module, data file, or generated artifact, but it must be reviewed as source and must be available to tests without
 importing PySpark.
 
-Each registry entry includes:
+Each registry entry must include:
 
 ```text
 code
@@ -150,7 +152,7 @@ context_schema
 examples
 ```
 
-The registry rejects duplicate codes at test time. It should also reject missing docs links, malformed codes,
+The registry must reject duplicate codes at test time. It should also reject missing docs links, malformed codes,
 unknown statuses, and codes that use an unknown or wrong component prefix.
 
 ## Lifecycle
@@ -167,11 +169,11 @@ retired     no longer emitted, anchor kept for compatibility
 Rules:
 
 - A draft code may change before release.
-- An active code does not change meaning.
+- An active code must not change meaning.
 - A deprecated code must name `replaced_by`.
-- A retired code keeps its documentation anchor.
-- A code never be reused for a different meaning.
-- Public examples does not use draft codes unless the surrounding document says the example is provisional.
+- A retired code must keep its documentation anchor.
+- A code must never be reused for a different meaning.
+- Public examples must not use draft codes unless the surrounding document says the example is provisional.
 
 Compatible changes:
 
@@ -192,7 +194,7 @@ has not been published.
 
 ## Documentation Contract
 
-[Diagnostics.md](../Diagnostics.md) is the compact public index. Every active, deprecated, and retired published code has a
+[Diagnostics.md](../Diagnostics.md) is the compact public index. Every active, deprecated, and retired published code must have a
 stable lowercase Markdown heading anchor there:
 
 ```text
@@ -218,10 +220,10 @@ Renderers map structured diagnostics to a surface:
 - CLI terminal text;
 - test assertion strings;
 - CI annotations;
-- later IDE diagnostics;
+- future IDE diagnostics;
 - runtime exceptions.
 
-Renderers may choose layout, indentation, color, and truncation. They preserves:
+Renderers may choose layout, indentation, color, and truncation. They must preserve:
 
 - code;
 - severity;
@@ -236,7 +238,7 @@ available to logs or debug mode when that exists.
 
 ## Determinism and Security
 
-Diagnostics does not include:
+Diagnostics must not include:
 
 - memory addresses;
 - object `repr(...)` output that embeds addresses;

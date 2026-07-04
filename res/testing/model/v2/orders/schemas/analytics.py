@@ -35,3 +35,7 @@ class CustomerEventRank(Structure):
     dense_rank = field(Long(), nullable=False)
     previous_sequence = field(Long(), nullable=True)
     next_sequence = field(Long(), nullable=True)
+    rolling_units = field(Long(), nullable=False)
+    rolling_avg_units = field(Double(), nullable=False)
+    rolling_min_units = field(Long(), nullable=False)
+    rolling_max_units = field(Long(), nullable=False)

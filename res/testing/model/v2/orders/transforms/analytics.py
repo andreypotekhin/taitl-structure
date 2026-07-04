@@ -13,6 +13,10 @@ from structure import (
     output,
     rank,
     row_number,
+    rolling_avg,
+    rolling_max,
+    rolling_min,
+    rolling_sum,
     sum,
     transform,
 )
@@ -85,5 +89,29 @@ class OrderAnalytics(Transform):
                 order.quantity,
                 partition_by=order.customer_id,
                 order_by=order.quantity,
+            ),
+            rolling_units=rolling_sum(
+                order.quantity,
+                partition_by=order.customer_id,
+                order_by=order.quantity,
+                preceding=2,
+            ),
+            rolling_avg_units=rolling_avg(
+                order.quantity,
+                partition_by=order.customer_id,
+                order_by=order.quantity,
+                preceding=2,
+            ),
+            rolling_min_units=rolling_min(
+                order.quantity,
+                partition_by=order.customer_id,
+                order_by=order.quantity,
+                preceding=2,
+            ),
+            rolling_max_units=rolling_max(
+                order.quantity,
+                partition_by=order.customer_id,
+                order_by=order.quantity,
+                preceding=2,
             ),
         )

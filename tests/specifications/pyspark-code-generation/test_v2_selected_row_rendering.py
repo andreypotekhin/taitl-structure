@@ -1,4 +1,5 @@
 from structure import (
+    Double,
     Long,
     String,
     Structure,
@@ -13,6 +14,10 @@ from structure import (
     lead,
     output,
     rank,
+    rolling_avg,
+    rolling_max,
+    rolling_min,
+    rolling_sum,
     row_number,
     transform,
 )
@@ -44,6 +49,10 @@ class RankedEvent(Structure):
     dense_rank = field(Long(), nullable=False)
     previous_sequence = field(Long(), nullable=True)
     next_sequence = field(Long(), nullable=True)
+    rolling_units = field(Long(), nullable=False)
+    rolling_avg_units = field(Double(), nullable=False)
+    rolling_min_units = field(Long(), nullable=False)
+    rolling_max_units = field(Long(), nullable=False)
 
 
 @transform
@@ -71,6 +80,10 @@ class RankedEventTransform(Transform):
             dense_rank=dense_rank(partition_by=row.account_id, order_by=row.sequence),
             previous_sequence=lag(row.sequence, partition_by=row.account_id, order_by=row.sequence),
             next_sequence=lead(row.sequence, partition_by=row.account_id, order_by=row.sequence),
+            rolling_units=rolling_sum(row.sequence, partition_by=row.account_id, order_by=row.sequence, preceding=2),
+            rolling_avg_units=rolling_avg(row.sequence, partition_by=row.account_id, order_by=row.sequence, preceding=2),
+            rolling_min_units=rolling_min(row.sequence, partition_by=row.account_id, order_by=row.sequence, preceding=2),
+            rolling_max_units=rolling_max(row.sequence, partition_by=row.account_id, order_by=row.sequence, preceding=2),
         )
 
 
@@ -132,6 +145,22 @@ def test_window_projection_helpers_render_spark_visible_windows() -> None:
     assert (
         'F.lead(F.col("raw_event.sequence"), 1).over(Window.partitionBy(F.col("raw_event.account_id")).'
         'orderBy(F.col("raw_event.sequence").asc())).alias("next_sequence")'
+    ) in text
+    assert (
+        'F.sum(F.col("raw_event.sequence")).over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'orderBy(F.col("raw_event.sequence").asc()).rowsBetween(-2, 0)).alias("rolling_units")'
+    ) in text
+    assert (
+        'F.avg(F.col("raw_event.sequence")).over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'orderBy(F.col("raw_event.sequence").asc()).rowsBetween(-2, 0)).alias("rolling_avg_units")'
+    ) in text
+    assert (
+        'F.min(F.col("raw_event.sequence")).over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'orderBy(F.col("raw_event.sequence").asc()).rowsBetween(-2, 0)).alias("rolling_min_units")'
+    ) in text
+    assert (
+        'F.max(F.col("raw_event.sequence")).over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'orderBy(F.col("raw_event.sequence").asc()).rowsBetween(-2, 0)).alias("rolling_max_units")'
     ) in text
 
 

@@ -166,7 +166,7 @@ Why this matters:
 Use:
   customer_id=lower(trim(order.customer_id))
 
-See docs/specifications/CompilerPerformanceTargets.md
+See docs/dev/specifications/CompilerPerformanceTargets.md
 ```
 
 ## Generated and Online Plan Guardrails

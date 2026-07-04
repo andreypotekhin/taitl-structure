@@ -1,5 +1,7 @@
 # Nullability and Type Coercion
 
+## Purpose
+
 Structure schemas declare field types and nullability. Transform methods produce expressions assigned to those fields.
 The compiler must know when an assignment is safe, when a filter has made a value non-null, when a Python literal can be
 used as an expression, and when a developer must write an explicit conversion helper.
@@ -26,11 +28,11 @@ Rules:
 
 - `spark.sql.ansi.enabled` must be a boolean.
 - `spark.sql.storeAssignmentPolicy` must be one of `ANSI`, `LEGACY`, or `STRICT`.
-- specifies detailed assignment rules for the default ANSI policy.
-- `LEGACY` and `STRICT` may be parsed in , but diagnostics may say that detailed checking for those policies is
+- v1 specifies detailed assignment rules for the default ANSI policy.
+- `LEGACY` and `STRICT` may be parsed in v1, but diagnostics may say that detailed checking for those policies is
   deferred unless implemented.
 - These settings are compiler assumptions and generated-runtime expectations.
-- Structure does not start Spark sessions or mutate Spark session configuration in .
+- Structure does not start Spark sessions or mutate Spark session configuration in v1.
 
 Generated runtime code may assert that an existing Spark session matches these assumptions if runtime assertion support
 is enabled later. If such an assertion is added, the error should tell users to set the corresponding Spark session
@@ -46,7 +48,7 @@ Fully implicit casting is also wrong for Structure. Assigning a string field to 
 parse data and choose runtime failure or null behavior based on Spark mode. That is a business rule and should be
 visible in source code.
 
-The policy is therefore balanced:
+The v1 policy is therefore balanced:
 
 - Accept Spark-ANSI-compatible assignment coercions for unsurprising type widening and typed literals.
 - Require explicit helper calls for semantic parsing conversions.
@@ -114,7 +116,7 @@ Null-aware helpers have specific rules:
 Spark's SQL null semantics remain the inspiration for generated behavior. Normal comparisons involving null may produce
 null, while null-safe equality is a separate explicit operation if supported.
 
-Basic row-local arithmetic in supports `+`, `-`, and `*`. Result typing is intentionally conservative and follows
+Basic row-local arithmetic in v1 supports `+`, `-`, and `*`. Result typing is intentionally conservative and follows
 the left operand's Structure type until fuller numeric result formulas are specified.
 
 ## Filter Narrowing
@@ -134,7 +136,7 @@ Narrowing rules:
 
 - Narrow direct field references such as `order.id`.
 - Narrow direct aliases if the compiler represents them explicitly.
-- Do not infer broad facts from arbitrary boolean expressions in .
+- Do not infer broad facts from arbitrary boolean expressions in v1.
 - Narrowing applies after the `where(...)` call in the same subtransform.
 - Narrowing does not cross hook boundaries unless a later spec defines hook postconditions.
 
@@ -176,7 +178,7 @@ configuration.
 
 Every expression has a Structure type. Assignment compatibility compares the expression type with the output field type.
 
-The scalar types are those from the schema syntax specification:
+The v1 scalar types are those from the schema syntax specification:
 
 - `String()`
 - `Integer()`
@@ -188,13 +190,13 @@ The scalar types are those from the schema syntax specification:
 - `Timestamp()`
 - `Decimal(precision, scale)`
 
-Arrays and structs follow the same assignment idea recursively when implemented in .
+Arrays and structs follow the same assignment idea recursively when implemented in v1.
 
 ## Assignment Compatibility
 
 An expression can be assigned to an output field when both nullability and type compatibility pass.
 
-In the default Spark SQL ANSI policy, should accept:
+In the default Spark SQL ANSI policy, v1 should accept:
 
 - exact type matches;
 - untyped `None` for nullable fields;
@@ -207,7 +209,7 @@ In the default Spark SQL ANSI policy, should accept:
 - values assigned to `String()` only when the source type is already `String()` or the conversion is explicitly
   requested.
 
-should reject:
+v1 should reject:
 
 - nullable expression to non-nullable field;
 - `String()` to numeric, date, or timestamp fields without an explicit helper;
@@ -218,7 +220,7 @@ should reject:
 - array or struct assignment when element or field compatibility fails.
 
 If `spark.sql.storeAssignmentPolicy = "STRICT"`, the checker should reject any assignment that can lose precision or
-truncate data. If detailed strict checking is not implemented in , reject non-exact assignments with a clear message.
+truncate data. If detailed strict checking is not implemented in v1, reject non-exact assignments with a clear message.
 
 If `spark.sql.storeAssignmentPolicy = "LEGACY"`, the checker may allow Spark-valid casts only when the implementation
 can explain the behavior. Until then, prefer a diagnostic that says legacy assignment checking is not yet implemented
@@ -239,12 +241,12 @@ This preserves both fractional and integer digits.
 `Integer()` to `Decimal(p, s)` is accepted when `p - s >= 10`, because a 32-bit integer may need ten integer digits
 including sign range. `Long()` to `Decimal(p, s)` is accepted when `p - s >= 19`.
 
-Decimal arithmetic result typing may follow Spark's formulas later. only needs assignment compatibility and helper
+Decimal arithmetic result typing may follow Spark's formulas later. v1 only needs assignment compatibility and helper
 result types used by current expression helpers.
 
 ## Explicit Conversion Helpers
 
-Semantic parsing conversions is explicit:
+Semantic parsing conversions must be explicit:
 
 ```python
 to_decimal(order.total, precision=12, scale=2)
@@ -266,7 +268,7 @@ that a parsing conversion is non-null just because the target field is non-null.
 
 Helpers that combine multiple values, especially `coalesce(...)`, need a result type.
 
-For , use a small Structure type join rule:
+For v1, use a small Structure type join rule:
 
 - untyped `None` adopts the other argument type;
 - exact matches keep that type;
@@ -286,18 +288,6 @@ total=coalesce(to_decimal(order.total, precision=12, scale=2), 0)
 The literal `0` may be typed as `Decimal(12, 2)` because the other argument and target field agree on that decimal type.
 
 ## Diagnostics
-
-Diagnostics includes:
-
-- error code;
-- transform class when available;
-- subtransform when available;
-- output field;
-- source expression;
-- expected field type and nullability;
-- actual expression type and nullability;
-- concise fix;
-- link to this specification.
 
 Nullable-to-non-nullable example:
 
@@ -331,7 +321,7 @@ Source expression:
   order.total: String(), nullable=True
 
 Problem:
-  String-to-decimal parsing is data-quality logic and is visible in Structure source.
+  String-to-decimal parsing is data-quality logic and must be visible in Structure source.
 
 Use:
   total=to_decimal(order.total, precision=12, scale=2)

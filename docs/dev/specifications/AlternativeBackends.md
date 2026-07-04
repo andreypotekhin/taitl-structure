@@ -360,7 +360,7 @@ Problem:
 Use:
   Rewrite the join to use supported equality semantics, or keep target_backend = "pyspark" for this transform.
 
-See docs/specifications/AlternativeBackends.md
+See docs/dev/specifications/AlternativeBackends.md
 ```
 
 Opaque hook warning example:
@@ -380,7 +380,7 @@ Problem:
 Use:
   Add target_backend="pyspark", write a Polars-specific hook, or move the logic into compiler-visible Structure DSL.
 
-See docs/specifications/AlternativeBackends.md
+See docs/dev/specifications/AlternativeBackends.md
 ```
 
 ## Backend Admission Criteria

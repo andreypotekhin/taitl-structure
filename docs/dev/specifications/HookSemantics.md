@@ -277,7 +277,7 @@ Use:
   def compare_to_raw(self, *, orders, inputs, spark, ctx):
       return orders
 
-See docs/specifications/HookSemantics.md
+See docs/dev/specifications/HookSemantics.md
 ```
 
 ## Implementation Checklist

@@ -1,7 +1,7 @@
 # Terminology
 
 Structure is an IR-first runtime/compiler toolkit.
-For exact behavior, see the specifications under `docs/specifications/`.
+For exact behavior, see the specifications under `docs/dev/specifications/`.
 
 ## General flow
 
@@ -646,9 +646,9 @@ shape, and diagnostics for unsupported cases.
 ## Related Documents
 
 - [Concepts.md](Concepts.md): concept-test coverage map.
-- [DSL.md](../specifications/DSL.md): public DSL contract.
-- [SymbolicExecution.md](../specifications/SymbolicExecution.md): symbolic capture contract.
-- [IntermediateRepresentation.md](../specifications/IntermediateRepresentation.md): IR shape and invariants.
-- [ExecutionSemanticContract.md](../specifications/ExecutionSemanticContract.md): shared online/generated lowering contract.
-- [PySparkCodeGeneration.md](../specifications/PySparkCodeGeneration.md): generated PySpark rendering contract.
-- [OnlineExecution.md](../specifications/OnlineExecution.md): runtime session and online runner behavior.
+- [DSL.md](specifications/DSL.md): public DSL contract.
+- [SymbolicExecution.md](specifications/SymbolicExecution.md): symbolic capture contract.
+- [IntermediateRepresentation.md](specifications/IntermediateRepresentation.md): IR shape and invariants.
+- [ExecutionSemanticContract.md](specifications/ExecutionSemanticContract.md): shared online/generated lowering contract.
+- [PySparkCodeGeneration.md](specifications/PySparkCodeGeneration.md): generated PySpark rendering contract.
+- [OnlineExecution.md](specifications/OnlineExecution.md): runtime session and online runner behavior.

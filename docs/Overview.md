@@ -324,7 +324,7 @@ Airflow can call online or generated transforms. It is not a Structure dependenc
 Ordinary PySpark is the default target. Spark Connect is planned as an experimental end-of-v2 PySpark variant for
 completed v1/v2 batch features. Full support depends on parity evidence, diagnostics, and CI coverage.
 
-See [Compatibility.md](docs/Compatibility.md) for the full versioning and compatibility policy.
+See [Compatibility.md](Compatibility.md) for the full versioning and compatibility policy.
 
 ## CLI
 

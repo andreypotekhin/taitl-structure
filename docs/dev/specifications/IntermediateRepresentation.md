@@ -515,10 +515,11 @@ Selected-row operations record `select_one` cardinality and carry explicit `part
 expression, a `latest` or `earliest` direction, and a deterministic tie policy. They are the admitted narrow window
 slice for latest/earliest row selection and lower through target recipes to Spark-visible ranking, not hooks or UDFs.
 
-Projection window expressions cover `row_number(...)`, `rank(...)`, `dense_rank(...)`, `lag(...)`, and `lead(...)`.
-They remain symbolic expressions with explicit partition and ordering expressions, and target recipes render them as
-Spark-visible `Window.partitionBy(...).orderBy(...)` projections. Rolling frames and keyed duplicate-removal shortcuts
-remain separate features.
+Projection window expressions cover `row_number(...)`, `rank(...)`, `dense_rank(...)`, `lag(...)`, `lead(...)`,
+`rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and `rolling_max(...)`. They remain symbolic expressions
+with explicit partition and ordering expressions, and target recipes render them as Spark-visible
+`Window.partitionBy(...).orderBy(...)` projections. Rolling metric helpers add a row frame from `-preceding` through
+the current row. Keyed duplicate-removal shortcuts remain separate features.
 
 Duplicate-removal operations, exposed as `distinct()` and `drop_duplicates(...)`, record `row_filtering` cardinality
 and an optional field subset. `distinct()` and empty `drop_duplicates()` lower to current-frame exact duplicate
@@ -1096,7 +1097,7 @@ Problem:
 Use:
   Add total=... to the OrderNormalized(...) constructor, or remove the field from the schema.
 
-See docs/specifications/IntermediateRepresentation.md
+See docs/dev/specifications/IntermediateRepresentation.md
 ```
 
 Invalid scope example:
@@ -1119,7 +1120,7 @@ Problem:
 Use:
   Move the expression after the join_one(...) call or use a field from the current row scope.
 
-See docs/specifications/IntermediateRepresentation.md
+See docs/dev/specifications/IntermediateRepresentation.md
 ```
 
 Backend capability example:
@@ -1146,7 +1147,7 @@ Use:
   Use admitted projection window helpers or selected-row helpers, move broader logic into an explicit hook, or wait for
   the broader v2 windowing specification.
 
-See docs/specifications/IntermediateRepresentation.md
+See docs/dev/specifications/IntermediateRepresentation.md
 ```
 
 ## Non-Goals

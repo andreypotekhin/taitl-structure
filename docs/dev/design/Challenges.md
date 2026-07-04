@@ -7,7 +7,7 @@ settled; implementation work may still remain in the owning plan or sprint.
 
 ## +C1. Package and Import Layout Is Not Fully Resolved
 
-Resolved by [SourceModuleRules.md](../../specifications/SourceModuleRules.md) and decision
+Resolved by [SourceModuleRules.md](../specifications/SourceModuleRules.md) and decision
 [D06172601.Source-root-resolution.md](decisions/D06172601.Source-root-resolution.md).
 
 The default project paths need to avoid confusion with the open-source package name `structure`.
@@ -54,7 +54,7 @@ projects and smaller root-package projects.
 
 ## +C2. Schema Syntax Needs to Be Finalized
 
-Resolved by [SchemaDeclarationSyntax.md](../../specifications/SchemaDeclarationSyntax.md) and decision
+Resolved by [SchemaDeclarationSyntax.md](../specifications/SchemaDeclarationSyntax.md) and decision
 [D06172602.Schema-declaration-syntax.md](decisions/D06172602.Schema-declaration-syntax.md).
 
 Deprecated examples used:
@@ -94,7 +94,7 @@ This scales better for nested schemas, Spark `StructType` generation, IDE behavi
 
 ## +C3. Nullability and Type Coercion Rules Are Missing
 
-Resolved by [NullabilityAndTypeCoercion.md](../../specifications/NullabilityAndTypeCoercion.md) and planned by
+Resolved by [NullabilityAndTypeCoercion.md](../specifications/NullabilityAndTypeCoercion.md) and planned by
 [P06172601.Nullability-and-type-coercion-rules.plan.md](../planning/done/P06172601.Nullability-and-type-coercion-rules.plan.md).
 
 Structure uses Spark SQL assumptions configured under `[tool.structure]` with Spark-native dotted key names:
@@ -119,8 +119,8 @@ total=coalesce(to_decimal(order.total, precision=12, scale=2), 0)
 
 ## +C4. Python Decorator Mechanics Need a Spike
 
-Resolved for design/specification coverage by [DSL.md](../../specifications/DSL.md) and
-[HookSemantics.md](../../specifications/HookSemantics.md). The implementation proof remains a Sprint 0 coding spike.
+Resolved for design/specification coverage by [DSL.md](../specifications/DSL.md) and
+[HookSemantics.md](../specifications/HookSemantics.md). The implementation proof remains a Sprint 0 coding spike.
 
 The preferred hook syntax is:
 
@@ -142,8 +142,8 @@ However, this needs an early implementation spike to prove:
 
 ## +C5. Class-Local `@expr_fn` Without `self` Needs a Spike
 
-Resolved for design/specification coverage by [DSL.md](../../specifications/DSL.md) and
-[SymbolicExecution.md](../../specifications/SymbolicExecution.md). The implementation proof remains a Sprint 0 coding spike.
+Resolved for design/specification coverage by [DSL.md](../specifications/DSL.md) and
+[SymbolicExecution.md](../specifications/SymbolicExecution.md). The implementation proof remains a Sprint 0 coding spike.
 
 Desired syntax:
 
@@ -167,7 +167,7 @@ This should be proven before building the full symbolic execution engine.
 
 ## +C6. Source Import Safety Is Underspecified
 
-Resolved by [SourceModuleRules.md](../../specifications/SourceModuleRules.md).
+Resolved by [SourceModuleRules.md](../specifications/SourceModuleRules.md).
 
 Discovery currently implies importing user source modules. This is simple, but imports execute top-level Python code.
 
@@ -204,7 +204,7 @@ These rules are part of the Definition of Done.
 
 ## +C8. Hook Access to Original Inputs May Need an Escape Hatch
 
-Resolved by [HookSemantics.md](../../specifications/HookSemantics.md) and decision
+Resolved by [HookSemantics.md](../specifications/HookSemantics.md) and decision
 [D06182602.Hook-input-escape-hatch.md](decisions/D06182602.Hook-input-escape-hatch.md).
 
 The simplified hook signature is:
@@ -229,7 +229,7 @@ Default hooks should remain minimal, but advanced hooks should have an opt-in pa
 
 ## +C9. Join Semantics Need Sharper Definitions
 
-Resolved by [JoinSemantics.md](../../specifications/JoinSemantics.md) and decision
+Resolved by [JoinSemantics.md](../specifications/JoinSemantics.md) and decision
 [D06172607.Join-semantics.md](decisions/D06172607.Join-semantics.md).
 
 `join_one(...)` needs precise semantics before implementation.
@@ -265,8 +265,8 @@ customer.id.null_safe_eq(order.customer_id)
 
 ## +C10. Intermediate Validation May Be Expensive
 
-Resolved by [ValidationSemantics.md](../../specifications/ValidationSemantics.md),
-[DataQualityConstraints.md](../../specifications/DataQualityConstraints.md), and decision
+Resolved by [ValidationSemantics.md](../specifications/ValidationSemantics.md),
+[DataQualityConstraints.md](../specifications/DataQualityConstraints.md), and decision
 [D06182603.Intermediate-validation-policy.md](decisions/D06182603.Intermediate-validation-policy.md).
 
 Intermediate schema validation is enabled by default, but the implementation must avoid unnecessary data scans.
@@ -304,7 +304,7 @@ This resolves the performance concern without weakening compile-time field and t
 
 ## +C11. Streaming Compatibility Needs a Precise v1 Definition
 
-Resolved by [StreamingCompatibility.md](../../specifications/StreamingCompatibility.md) and decision
+Resolved by [StreamingCompatibility.md](../specifications/StreamingCompatibility.md) and decision
 [D06182604.Streaming-compatibility-v1.md](decisions/D06182604.Streaming-compatibility-v1.md).
 
 Structure v1 streaming compatibility means generated DataFrame transforms can run inside a caller-owned Spark
@@ -332,8 +332,8 @@ Deferred or rejected in v1:
 
 ## +C12. Compiler Traceability Schema Needs Versioning
 
-Resolved by [IntermediateRepresentation.md](../../specifications/IntermediateRepresentation.md),
-[PySparkCodeGeneration.md](../../specifications/PySparkCodeGeneration.md), [CompatibilityPolicy.md](../../specifications/CompatibilityPolicy.md), and
+Resolved by [IntermediateRepresentation.md](../specifications/IntermediateRepresentation.md),
+[PySparkCodeGeneration.md](../specifications/PySparkCodeGeneration.md), [CompatibilityPolicy.md](../specifications/CompatibilityPolicy.md), and
 [P06182601.Compiler-provenance-static-dataflow-traceability.plan.md](../planning/done/P06182601.Compiler-provenance-static-dataflow-traceability.plan.md).
 
 Traceability is split into three topics:
@@ -347,7 +347,7 @@ own record format later if the nice-to-have becomes scheduled work.
 
 ## +C13. Compile-Time Performance Needs Concrete Targets
 
-Resolved by [CompilerPerformanceTargets.md](../../specifications/CompilerPerformanceTargets.md).
+Resolved by [CompilerPerformanceTargets.md](../specifications/CompilerPerformanceTargets.md).
 
 Compiler speed should be a first-class metric.
 
@@ -371,7 +371,7 @@ startup during compile.
 
 ## +C14. Incremental Compile and Cache Are Missing
 
-Resolved for v1 architecture by [CompilerPerformanceTargets.md](../../specifications/CompilerPerformanceTargets.md). Production incremental
+Resolved for v1 architecture by [CompilerPerformanceTargets.md](../specifications/CompilerPerformanceTargets.md). Production incremental
 compilation remains v2 implementation work.
 
 Fast compilers need caching and change detection.
@@ -462,7 +462,7 @@ These tests protect developer experience and diagnostics.
 
 ## +C18. Configuration Schema Validation Is Missing
 
-Resolved by [ConfigSchema.md](../../specifications/ConfigSchema.md).
+Resolved by [ConfigSchema.md](../specifications/ConfigSchema.md).
 
 Since Structure supports TOML config, config errors need structured diagnostics.
 
@@ -495,7 +495,7 @@ Config resolution order should also be explicit:
 ## +C19. Versioning and Compatibility Policy Are Missing
 
 Resolved by public policy [Compatibility.md](../../Compatibility.md), specification
-[CompatibilityPolicy.md](../../specifications/CompatibilityPolicy.md), and decision
+[CompatibilityPolicy.md](../specifications/CompatibilityPolicy.md), and decision
 [D06182605.Versioning-and-compatibility-policy.md](decisions/D06182605.Versioning-and-compatibility-policy.md).
 
 v1 baseline:
@@ -558,7 +558,7 @@ Deferred from Sprint 01 into later v1 work:
 
 ## +C23. Backend Adaptability Needs a Capability Interface Before More Features
 
-Resolved by [BackendCapabilities.md](../../specifications/BackendCapabilities.md), design [BackendCapabilities.md](BackendCapabilities.md), decision
+Resolved by [BackendCapabilities.md](../specifications/BackendCapabilities.md), design [BackendCapabilities.md](BackendCapabilities.md), decision
 [D06202604.Backend-capability-interface.md](decisions/D06202604.Backend-capability-interface.md), and plan
 [P06202604.Backend-capability-interface.plan.md](../planning/P06202604.Backend-capability-interface.plan.md).
 
@@ -572,7 +572,7 @@ New DSL operations must declare capability behavior before they are considered s
 
 ## +C24. Online and Generated Execution Need a Shared Semantic Contract
 
-Resolved by [ExecutionSemanticContract.md](../../specifications/ExecutionSemanticContract.md), design
+Resolved by [ExecutionSemanticContract.md](../specifications/ExecutionSemanticContract.md), design
 [ExecutionSemanticContract.md](ExecutionSemanticContract.md), decision
 [D06202601.Online-generated-semantic-contract.md](decisions/D06202601.Online-generated-semantic-contract.md), and plan
 [P06202601.Online-generated-semantic-contract.plan.md](../planning/done/P06202601.Online-generated-semantic-contract.plan.md).
@@ -606,7 +606,7 @@ should prefer direct DSL or `@expr_fn` fixes when logic can stay compiler-visibl
 
 ## +C26. Data Quality Constraints Stop at Schema Shape
 
-Resolved by [DataQualityConstraints.md](../../specifications/DataQualityConstraints.md), design
+Resolved by [DataQualityConstraints.md](../specifications/DataQualityConstraints.md), design
 [DataQualityConstraints.md](DataQualityConstraints.md), decision
 [D06202602.Data-quality-constraints-boundary.md](decisions/D06202602.Data-quality-constraints-boundary.md), and plan
 [P06202602.Data-quality-constraints.plan.md](../planning/P06202602.Data-quality-constraints.plan.md).
@@ -627,7 +627,7 @@ boundaries and only when that phase allows `schema_and_constraints`.
 
 ## C27. Analytical Join Coverage Is Still Narrow
 
-Resolved by [AnalyticalJoinCoverage.md](../../specifications/AnalyticalJoinCoverage.md), design
+Resolved by [AnalyticalJoinCoverage.md](../specifications/AnalyticalJoinCoverage.md), design
 [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md), decision
 [D06212601.Analytical-join-coverage.md](decisions/D06212601.Analytical-join-coverage.md), and plan
 [P06212601.Analytical-join-coverage.plan.md](../planning/P06212601.Analytical-join-coverage.plan.md).
@@ -670,7 +670,7 @@ Recommended direction:
 
 ## +C29. Diagnostics Need a Registry and Documentation Contract
 
-Resolved by public documentation [Diagnostics.md](../../Diagnostics.md), specification [Diagnostics.md](../../specifications/Diagnostics.md), design
+Resolved by public documentation [Diagnostics.md](../../Diagnostics.md), specification [Diagnostics.md](../specifications/Diagnostics.md), design
 [DiagnosticsContract.md](DiagnosticsContract.md), decision [D06202603.Diagnostics-registry-contract.md](decisions/D06202603.Diagnostics-registry-contract.md),
 and plan [P06202603.Diagnostics-registry-contract.plan.md](../planning/done/P06202603.Diagnostics-registry-contract.plan.md).
 
@@ -722,6 +722,29 @@ Field names in Structure schema classes are Python attribute names. If a Spark s
 identifier or is a Python keyword, Structure v1 cannot preserve it because it does not have field aliases. Renaming the
 field during schema generation would create an incorrect schema.
 
+## C33. Transform Composition Needs Hook Ownership Rules
+
+The first `.to(...)` composition slice deliberately supports hook-free transform stages. That keeps composition focused
+on declared `input(...)` and `output(...)` contracts and avoids pretending that `lane(...)` is a public transform
+boundary.
+
+Risk: enabling hook-bearing stages without a design would either drop hook behavior silently or make hook dispatch
+depend on whichever wrapper, source stage, or runtime pipeline object happens to execute the composed plan. Generated
+composition has the same risk for source imports, `_impl` construction, hook order, validation points, traceability, and
+online/generated parity.
+
+Recommended direction:
+
+- Add a follow-up design for composed hook ownership before admitting hook-bearing stages.
+- Specify whether hooks are called on each source stage instance, on a composed wrapper instance, or through an explicit
+  delegate model.
+- Define generated-code imports and `_impl` construction for composed hook stages.
+- Preserve hook lifecycle order, validation boundaries, traceability, and streaming compatibility reporting.
+- Decide separately whether composed wrappers may expose earlier-stage outputs or mix wrapper-local subtransforms and
+  hooks with a class-field pipeline.
+- Keep `lane(...)` internal to a transform implementation and unavailable for composition matching unless a later design
+  explicitly changes that boundary.
+
 # Appendix
 
 ## Recommended Pre-Coding Docs to Add
@@ -732,7 +755,7 @@ Resolved by implementation-ready specifications:
 docs/dev/design/
   DecisionsBeforeCoding.md
 
-docs/specifications/
+docs/dev/specifications/
   SourceModuleRules.md
   DSL.md
   SymbolicExecution.md

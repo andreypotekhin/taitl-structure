@@ -188,7 +188,7 @@ Use:
   Fix the upstream read schema, rename the column before calling the transform, or update OrderRaw if the source
   contract changed.
 
-See docs/specifications/ValidationSemantics.md
+See docs/dev/specifications/ValidationSemantics.md
 ```
 
 ## Implementation Checklist

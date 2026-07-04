@@ -324,7 +324,7 @@ Problem:
 Use:
   generated_dir = "generated"
 
-See docs/specifications/ConfigSchema.md
+See docs/dev/specifications/ConfigSchema.md
 ```
 
 ## Invalid Values
@@ -348,7 +348,7 @@ Allowed:
 Use:
   traceability = "columns"
 
-See docs/specifications/ConfigSchema.md
+See docs/dev/specifications/ConfigSchema.md
 ```
 
 ## Effective Config

@@ -1,12 +1,14 @@
-﻿# Schema Inheritance
+# Schema Inheritance
 
 This specification completes the inheritance semantics referenced by
 [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md).
 
+## Purpose
+
 Schema inheritance lets developers reuse common field definitions without repeating schema code. It is especially useful
 for shared identifiers, audit columns, partition columns, tenancy fields, and common source metadata.
 
-Structure supports schema-to-schema inheritance in as a declarative field composition mechanism. The compiler treats
+Structure supports schema-to-schema inheritance in v1 as a declarative field composition mechanism. The compiler treats
 the final schema as an ordered structural contract and keeps inheritance details available for diagnostics and traceability.
 
 ## Canonical Form
@@ -14,13 +16,16 @@ the final schema as an ordered structural contract and keeps inheritance details
 ```python
 from structure import Structure, field, String, Timestamp, Decimal
 
+
 class EntityKeys(Structure):
     id = field(String(), nullable=False, primary_key=True)
     tenant_id = field(String(), nullable=False)
 
+
 class AuditFields(Structure):
     created_at = field(Timestamp(), nullable=False)
     updated_at = field(Timestamp(), nullable=True)
+
 
 class Order(EntityKeys, AuditFields):
     customer_id = field(String(), nullable=False)
@@ -45,8 +50,8 @@ Rules:
 - A schema class may inherit from `Structure` directly.
 - A schema class may inherit from one or more user-defined `Structure` subclasses.
 - All non-`object` bases of a schema class must be `Structure` subclasses.
-- Python can construct a valid C3 MRO for the class.
-- The compiler rejects base classes that are not import-safe.
+- Python must be able to construct a valid C3 MRO for the class.
+- The compiler must reject base classes that are not import-safe.
 
 Examples:
 
@@ -60,7 +65,7 @@ class Order(EntityKeys, AuditFields):
     total = field(Decimal(12, 2), nullable=True)
 ```
 
-Non-schema mixins are not supported in :
+Non-schema mixins are not supported in v1:
 
 ```python
 class Order(EntityKeys, SomePlainMixin):  # rejected
@@ -92,6 +97,7 @@ A schema class may override an inherited field by redeclaring the same field nam
 class SoftDeleteFields(Structure):
     deleted_at = field(Timestamp(), nullable=True)
 
+
 class RequiredDeleteMarker(SoftDeleteFields):
     deleted_at = field(Timestamp(), nullable=False)
 ```
@@ -104,7 +110,7 @@ Override rules:
 - Metadata is not merged.
 - Description is not merged.
 - Overriding a field with a non-field value is rejected.
-- Deleting an inherited field is not supported in .
+- Deleting an inherited field is not supported in v1.
 
 Whole-field replacement keeps behavior simple and visible. A reader can inspect the overriding line and know the final
 field definition.
@@ -120,8 +126,10 @@ Rejected:
 class SourceKeys(Structure):
     id = field(String(), nullable=False)
 
+
 class BusinessKeys(Structure):
     id = field(String(), nullable=False, primary_key=True)
+
 
 class Order(SourceKeys, BusinessKeys):
     total = field(Decimal(12, 2), nullable=True)
@@ -143,11 +151,14 @@ Diamond inheritance through a shared base is not a duplicate:
 class Keys(Structure):
     id = field(String(), nullable=False)
 
+
 class CustomerKeys(Keys):
     customer_id = field(String(), nullable=False)
 
+
 class ProductKeys(Keys):
     product_id = field(String(), nullable=False)
+
 
 class CustomerProduct(CustomerKeys, ProductKeys):
     score = field(Decimal(8, 4), nullable=True)
@@ -179,6 +190,7 @@ Each schema class remains a distinct schema type even when it inherits all field
 class OrderRaw(EntityKeys):
     pass
 
+
 class CustomerRaw(EntityKeys):
     pass
 ```
@@ -200,6 +212,7 @@ sources for a matching field name.
 class OrderPublished(OrderPublication, PublicationFlags):
     pass
 
+
 flags = PublicationFlags(
     has_promotion=order.promotion_name.is_not_null(),
 )
@@ -210,7 +223,7 @@ return OrderPublished.base(order, flags)
 In this example, fields inherited through `OrderPublication` are copied from `order`, and fields inherited through
 `PublicationFlags` are copied from `flags`. The `order` row may have extra fields from earlier enrichment stages; only
 fields required by `OrderPublication` are copied. Fields introduced locally by a target schema, and inherited fields
-locally overridden by a target schema, are supplied explicitly in the overlay call. This keeps changed meaning
+locally overridden by a target schema, must be supplied explicitly in the overlay call. This keeps changed meaning
 visible at the construction site.
 
 ## Nested Structs
@@ -221,8 +234,10 @@ visible at the construction site.
 class AddressBase(Structure):
     city = field(String(), nullable=True)
 
+
 class ShippingAddress(AddressBase):
     postal_code = field(String(), nullable=True)
+
 
 class Order(Structure):
     shipping = field(Struct(ShippingAddress), nullable=True)
@@ -231,14 +246,6 @@ class Order(Structure):
 Generated Spark schema for `shipping` includes both `city` and `postal_code`.
 
 ## Diagnostics
-
-Inheritance diagnostics includes:
-
-- schema class name;
-- conflicting field name when applicable;
-- base classes involved;
-- source file and line when available;
-- a concise fix.
 
 Example:
 
@@ -266,7 +273,7 @@ See docs/reference/SchemaInheritance.md
 
 ## Non-Goals
 
-The following are not part of :
+The following are not part of v1:
 
 - deleting inherited fields;
 - partial field overrides;

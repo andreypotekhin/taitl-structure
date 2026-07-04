@@ -1,6 +1,6 @@
 ﻿# Compatibility Policy
 
-The policy is summarized for users in [Compatibility.md](../Compatibility.md). This specification defines the detailed
+The policy is summarized for users in [Compatibility.md](../../Compatibility.md). This specification defines the detailed
 compatibility contract behind that page.
 
 ## Goals
@@ -199,20 +199,20 @@ Unknown config keys and invalid values are errors. The diagnostic must include:
 - the setting path;
 - the invalid value;
 - allowed values or expected type when known;
-- a link to [Configuration.md](../Configuration.md) or [Compatibility.md](../Compatibility.md) when the problem is compatibility-related.
+- a link to [Configuration.md](../../Configuration.md) or [Compatibility.md](../../Compatibility.md) when the problem is compatibility-related.
 
 New optional keys may appear in minor releases. Removing or changing a documented key requires a major version after
 1.0. Deprecated keys should warn before removal when practical.
 
 ## Acceptance Criteria
 
-- [Compatibility.md](../Compatibility.md) documents the public policy.
+- [Compatibility.md](../../Compatibility.md) documents the public policy.
 - `Readme.md` links to the compatibility policy.
-- [Configuration.md](../Configuration.md) documents `target_backend`, `target_profile`, `target_variant`, and
+- [Configuration.md](../../Configuration.md) documents `target_backend`, `target_profile`, `target_variant`, and
   compatibility diagnostics.
-- [Configuration.md](../Configuration.md) documents `execution_mode`.
+- [Configuration.md](../../Configuration.md) documents `execution_mode`.
 - [BackendCapabilities.md](BackendCapabilities.md) documents the backend capability interface and PySpark v1 profile.
-- [Roadmap.md](../dev/Roadmap.md) and public roadmap text schedule experimental Spark Connect parity for the end of
+- [Roadmap.md](../Roadmap.md) and public roadmap text schedule experimental Spark Connect parity for the end of
   v2 and full promotion or hardening for v4.
 - The seed config defaults are `execution_mode = "online"`, `target_profile = ">=3.5,<4.1"`, and
   `target_variant = "ordinary"`.

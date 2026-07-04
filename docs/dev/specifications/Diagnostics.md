@@ -194,7 +194,7 @@ has not been published.
 
 ## Documentation Contract
 
-[Diagnostics.md](../Diagnostics.md) is the compact public index. Every active, deprecated, and retired published code must have a
+[Diagnostics.md](../../Diagnostics.md) is the compact public index. Every active, deprecated, and retired published code must have a
 stable lowercase Markdown heading anchor there:
 
 ```text
@@ -301,4 +301,4 @@ The diagnostic contract is implemented when tests prove:
 7. Route compiler errors through structured diagnostics.
 8. Route runtime Structure errors through structured diagnostics.
 9. Add spec tests for representative diagnostics.
-10. Generate or verify [Diagnostics.md](../Diagnostics.md) anchors from the registry.
+10. Generate or verify [Diagnostics.md](../../Diagnostics.md) anchors from the registry.

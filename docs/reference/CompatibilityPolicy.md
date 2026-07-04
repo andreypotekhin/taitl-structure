@@ -1,6 +1,6 @@
-﻿# Compatibility Policy
+# Compatibility Policy
 
-The policy is summarized for users in [Compatibility.md](../Compatibility.md). This reference defines the detailed
+The policy is summarized for users in [Compatibility.md](../Compatibility.md). This specification defines the detailed
 compatibility contract behind that page.
 
 ## Goals
@@ -9,7 +9,7 @@ The compatibility policy must:
 
 - define supported Python versions;
 - define supported PySpark versions and the default `target_profile` range;
-- define the boundary for later non-PySpark backends;
+- define the boundary for future non-PySpark backends;
 - define Spark Connect scope;
 - define semantic versioning expectations;
 - define online runtime compatibility;
@@ -17,9 +17,9 @@ The compatibility policy must:
 - define compiler traceability schema versioning;
 - define config schema versioning.
 
-## Runtime Baseline
+## v1 Runtime Baseline
 
-Structure supports Python 3.11 and newer.
+Structure v1 supports Python 3.11 and newer.
 
 The default PySpark target is:
 
@@ -36,22 +36,22 @@ different target.
 Airflow is not a hard dependency. Online and generated transforms should be usable from Airflow, Spark jobs, notebooks,
 or other orchestrators without pulling in scheduler-specific runtime dependencies.
 
-Linux is the runtime target. Linux and macOS are the development targets. Windows development may work where the
+Linux is the v1 runtime target. Linux and macOS are the v1 development targets. Windows development may work where the
 toolchain allows it, but Spark jobs should be designed and tested primarily for Linux deployment.
 
 ## PySpark Version Targeting
 
 The PySpark target layer owns PySpark API compatibility. Discovery, symbolic execution, IR checks, traceability, and generic
-diagnostics does not scatter PySpark-version conditionals unless a narrow check directly belongs there.
+diagnostics must not scatter PySpark-version conditionals unless a narrow check directly belongs there.
 
-The target layer is version-aware enough to:
+The target layer must be version-aware enough to:
 
 - avoid APIs outside the configured `target_profile` range;
 - reject requested DSL features that cannot run for that range;
 - produce diagnostics that state the required PySpark version when a feature is unavailable;
 - keep online semantics and generated output deterministic for the same source, config, and Structure version.
 
-Backend support checks are owned by [BackendCapabilities.md](BackendCapabilities.md). Compatibility checks uses that
+Backend support checks are owned by [BackendCapabilities.md](BackendCapabilities.md). Compatibility checks must use that
 interface instead of scattering PySpark-version or backend-feature conditionals across compiler phases.
 
 When a target range spans multiple supported PySpark lines, Structure should prefer the oldest compatible API that keeps
@@ -63,10 +63,10 @@ Alternative backend support is specified in [AlternativeBackends.md](Alternative
 applies to compiler-visible Structure source, not to hook bodies. Hooks are target-specific opaque runtime code and must
 either declare `target_backend` or inherit a configured `hook_target_default`.
 
-Later backend work is Python-hosted: v2 prioritizes PySpark-family targets such as Spark SQL and typed PySpark
+Future backend work is Python-hosted: v2 prioritizes PySpark-family targets such as Spark SQL and typed PySpark
 DataFrame patterns, v3 adds Polars LazyFrame and DuckDB, and v4 adds Ibis. Other targets should come through Ibis when
 Ibis supports them. Dask DataFrame and Ray Dataset remain out of scope until after the relational core is stable.
-Unsupported active-target requirements fails before online execution or generation. Multi-target compatibility
+Unsupported active-target requirements must fail before online execution or generation. Multi-target compatibility
 checks may report non-active target issues as unsupported, degraded, opaque, or unknown.
 
 ## Spark Connect Scope
@@ -79,8 +79,8 @@ target_profile = ">=3.5,<4.1"
 target_variant = "spark-connect"
 ```
 
-and mainstream v2 online/generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column`
-APIs. The end of v2 may add experimental Spark Connect parity for completed batch features after the
+V1 and mainstream v2 online/generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column`
+APIs. The end of v2 may add experimental Spark Connect parity for completed v1 and v2 batch features after the
 ordinary PySpark contract is stable. V3 owns streaming orchestration on top of the ordinary PySpark contract.
 
 Experimental Spark Connect support may be claimed only if all of these are true:
@@ -94,8 +94,8 @@ Experimental Spark Connect support may be claimed only if all of these are true:
 - it has compatibility tests for the supported PySpark Connect versions;
 - public docs make the support level explicit.
 
-Spark Connect does not rely on SparkContext, RDDs, direct JVM/Py4J access, `_jdf`, or private classic PySpark fields.
-Unsupported variant capabilities fails through backend capability diagnostics before online execution or generated
+Spark Connect must not rely on SparkContext, RDDs, direct JVM/Py4J access, `_jdf`, or private classic PySpark fields.
+Unsupported variant capabilities must fail through backend capability diagnostics before online execution or generated
 code is claimed compatible. Full support is a later promotion decision after parity evidence, diagnostics, and CI
 coverage exist.
 
@@ -134,11 +134,11 @@ Before 1.0, minor releases may change public contracts, but every breaking chang
 
 ## Online Runtime Compatibility
 
-Online execution is the default runtime surface. Compatible online execution means:
+Online execution is the default v1 runtime surface. Compatible online execution means:
 
 - transform invocations bind declared input DataFrames by name;
 - `StructureSession` accepts caller-owned Spark sessions and optional hook context;
-- online execution preserves the same transform semantics as generated PySpark for supported features;
+- online execution preserves the same transform semantics as generated PySpark for supported v1 features;
 - compiler commands remain Spark-free even though online runtime execution may import PySpark.
 
 Breaking changes to `StructureSession`, transform invocation binding, or online/generated semantic parity require a
@@ -173,7 +173,7 @@ structure compile --fail-on-diff
 
 ## Compiler Traceability Schema Versioning
 
-Compiler traceability has two metadata models:
+Compiler traceability has two v1 metadata models:
 
 - compiler provenance, which maps source nodes to IR nodes to generated PySpark nodes;
 - static dataflow traceability, which records transform, table, and column dependencies inferred from IR.
@@ -183,18 +183,18 @@ The traceability schema version follows `major.minor`.
 Breaking changes require a major traceability schema version bump. Additive fields require a minor version bump. Consumers
 should ignore unknown fields so minor additions remain compatible.
 
-Runtime LDJSON traceability is not part of the compatibility contract. It remains later work beyond the published
+Runtime LDJSON traceability is not part of the v1 compatibility contract. It remains future work beyond the published
 v4 scope.
 
 ## Config Schema Versioning
 
-Config schema versioning is implicit for . A later explicit key may expose it:
+Config schema versioning is implicit for v1. A future explicit key may expose it:
 
 ```toml
 config_schema_version = 1
 ```
 
-Unknown config keys and invalid values are errors. The diagnostic includes:
+Unknown config keys and invalid values are errors. The diagnostic must include:
 
 - the setting path;
 - the invalid value;

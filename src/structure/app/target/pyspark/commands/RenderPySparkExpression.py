@@ -106,6 +106,13 @@ class RenderPySparkExpression:
                 f"F.{call}({self._render(value, aliases)}, {offset}{default})"
                 f".over({self._window(order_by, partition_by, expression, aliases)})"
             )
+        if function in {"window_rolling_sum", "window_rolling_avg", "window_rolling_min", "window_rolling_max"}:
+            value, order_by, *partition_by = expression.args
+            call = function.removeprefix("window_rolling_")
+            return (
+                f"F.{call}({self._render(value, aliases)})"
+                f".over({self._window(order_by, partition_by, expression, aliases)})"
+            )
         raise TypeError(f"Unsupported PySpark reserved expression: {function}")
 
     def _window(
@@ -118,7 +125,10 @@ class RenderPySparkExpression:
         partitions = ", ".join(self._render(partition, aliases) for partition in partition_by)
         order = self._render(order_by, aliases)
         direction = "desc" if expression.data.get("descending") else "asc"
-        return f"Window.partitionBy({partitions}).orderBy({order}.{direction}())"
+        window = f"Window.partitionBy({partitions}).orderBy({order}.{direction}())"
+        if "preceding" in expression.data:
+            return f"{window}.rowsBetween(-{expression.data['preceding']}, 0)"
+        return window
 
     def _lambda_name(self, expression: PySparkExpressionRecipe, fallback: str) -> str:
         return str(expression.data.get("name", fallback)) if expression.kind == "lambda_arg" else fallback

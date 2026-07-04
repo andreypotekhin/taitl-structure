@@ -265,7 +265,7 @@ Resolve the field in Order:
   class Order(SourceKeys, BusinessKeys):
       id = field(String(), nullable=False, primary_key=True)
 
-See docs/specifications/SchemaInheritance.md
+See docs/dev/specifications/SchemaInheritance.md
 ```
 
 Example:
@@ -276,7 +276,7 @@ Invalid schema base:
 
 Use only Structure subclasses in schema inheritance.
 
-See docs/specifications/SchemaInheritance.md
+See docs/dev/specifications/SchemaInheritance.md
 ```
 
 ## Non-Goals

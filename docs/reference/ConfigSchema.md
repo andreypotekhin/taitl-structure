@@ -1,7 +1,9 @@
-﻿# Configuration Schema
+# Configuration Schema
+
+## Purpose
 
 Structure configuration controls source discovery, generated output, execution mode, target backend, validation,
-traceability, Spark SQL assumptions, and CI behavior. Configuration errors fails early with structured diagnostics and
+traceability, Spark SQL assumptions, and CI behavior. Configuration errors must fail early with structured diagnostics and
 allowed values.
 
 This reference covers configuration files, resolution order, keys, defaults, validation rules, diagnostics, and tests.
@@ -62,9 +64,9 @@ Default: discovered by source-root rules.
 Rules:
 
 - Values are project-relative paths unless absolute paths are explicitly allowed later.
-- The list does not be empty.
-- Each path exists by the time discovery runs.
-- Paths does not be inside `generated_dir`.
+- The list must not be empty.
+- Each path must exist by the time discovery runs.
+- Paths must not be inside `generated_dir`.
 
 ### generated_dir
 
@@ -74,9 +76,9 @@ Default: `"generated"`.
 
 Rules:
 
-- Must be a project-relative directory path in .
+- Must be a project-relative directory path in v1.
 - The compiler may create it during `structure compile`.
-- `structure check` does not require it to exist.
+- `structure check` must not require it to exist.
 
 ### generated_package
 
@@ -107,7 +109,7 @@ Default: `"online"`.
 
 Type: string enum.
 
-Allowed in :
+Allowed in v1:
 
 ```text
 pyspark
@@ -119,7 +121,7 @@ Unknown backends fail through backend capability diagnostics.
 
 Type: version range string.
 
-Default: `">=3.5,<4.1"` in .
+Default: `">=3.5,<4.1"` in v1.
 
 Rules:
 
@@ -146,7 +148,7 @@ Rules:
 - `ordinary` targets the normal in-process PySpark `SparkSession`, `DataFrame`, and `Column` contract.
 - `spark-connect` targets Spark Connect through the PySpark DataFrame and Column API while rejecting classic-only
   internals through backend capability diagnostics.
-- Spark Connect does not require a different Structure DSL, generated class API, or transform `run(...)` signature.
+- Spark Connect must not require a different Structure DSL, generated class API, or transform `run(...)` signature.
 
 ### compat_targets
 
@@ -154,10 +156,10 @@ Type: list of strings.
 
 Default: empty list.
 
-status: recognized and stored. `structure check` and `structure explain` may report non-PySpark targets as pending;
-they does not claim Polars, DuckDB, or other later checks have run.
+V1 status: recognized and stored. `structure check` and `structure explain` may report non-PySpark targets as pending;
+they must not claim Polars, DuckDB, or other future checks have run.
 
-Later compatibility-report targets. This setting asks `structure check` and `StructureTools.compatibility` to report
+Future compatibility-report targets. This setting asks `structure check` and `StructureTools.compatibility` to report
 whether compiler-visible Structure source is portable to additional backends. It does not change the active
 `target_backend`.
 
@@ -167,9 +169,9 @@ Type: list of strings or string enum.
 
 Default: `["pyspark"]`.
 
-status: recognized by configuration and hook decorators. The executable hook target remains PySpark.
+V1 status: recognized by configuration and hook decorators. The executable hook target remains PySpark.
 
-Allowed later values:
+Allowed future values:
 
 ```text
 ["pyspark"]
@@ -204,7 +206,7 @@ debug
 Default: `"compiler"`.
 
 `compiler` includes compiler provenance and static dataflow basics. `columns` and `debug` may be richer modes, but
-remains deterministic and documented before release.
+must remain deterministic and documented before release.
 
 ### validate_intermediate
 
@@ -266,7 +268,7 @@ Rules:
 
 - When true, unsupported compiler-visible operations fail instead of silently becoming UDFs, row-wise callbacks, RDD
   operations, or opaque generated code.
-- docs should keep this true in examples.
+- v1 docs should keep this true in examples.
 
 ### fail_on_diff
 
@@ -301,7 +303,7 @@ STRICT
 
 Default: `"ANSI"`.
 
-Detailed assignment rules are specified for `ANSI`.
+Detailed v1 assignment rules are specified for `ANSI`.
 
 ## Unknown Keys
 
@@ -327,7 +329,7 @@ See docs/reference/ConfigSchema.md
 
 ## Invalid Values
 
-Invalid values includes allowed values.
+Invalid values must include allowed values.
 
 Example:
 
@@ -351,7 +353,7 @@ See docs/reference/ConfigSchema.md
 
 ## Effective Config
 
-The resolver produces an immutable effective configuration object:
+The resolver must produce an immutable effective configuration object:
 
 ```text
 StructureConfig
@@ -377,5 +379,5 @@ StructureConfig
 
 ## Security
 
-Configuration diagnostics does not print secrets. Structure config should avoid secret-bearing fields. If future
+Configuration diagnostics must not print secrets. v1 Structure config should avoid secret-bearing fields. If future
 settings can include credentials or tokens, diagnostics must redact values by default.

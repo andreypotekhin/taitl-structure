@@ -24,9 +24,9 @@ Use `alias=` when the Spark DataFrame column is not a Python identifier. Python 
 while Spark schemas, validation, reads, and projection output use the alias. Aliases are schema-local unless
 inherited, and Structure passes alias strings through to Spark without sanitizing them.
 
-Reference: [schema declaration syntax](specifications/SchemaDeclarationSyntax.md),
-[schema semantics](specifications/SchemaSemantics.md), and
-[nullability and type coercion](specifications/NullabilityAndTypeCoercion.md).
+Reference: [schema declaration syntax](reference/SchemaDeclarationSyntax.md),
+[schema semantics](reference/SchemaSemantics.md), and
+[nullability and type coercion](reference/NullabilityAndTypeCoercion.md).
 
 ## Transform Classes
 
@@ -81,8 +81,8 @@ Parent steps run before child steps. Multiple parents run in the declared base-c
 parent implementation as a separate step with `super().normalize(order)`, `Base.normalize(self, order)`, or
 `super(Base, self).normalize(order)`.
 
-Reference: [DSL](specifications/DSL.md), [online execution](specifications/OnlineExecution.md), and
-[PySpark code generation](specifications/PySparkCodeGeneration.md).
+Reference: [DSL](reference/DSL.md), [online execution](reference/OnlineExecution.md), and
+[PySpark code generation](reference/PySparkCodeGeneration.md).
 
 ## Inputs
 
@@ -112,8 +112,8 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     ...
 ```
 
-Reference: [DSL inputs](specifications/DSL.md) and
-[source module rules](specifications/SourceModuleRules.md).
+Reference: [DSL inputs](reference/DSL.md) and
+[source module rules](reference/SourceModuleRules.md).
 
 ## Subtransforms
 
@@ -200,9 +200,9 @@ def publish(self, order: OrderNormalized) -> OrderPublished:
 `input(orders)` means the original runtime input. `lane(orders)` means the current working lane named
 `orders`. `output(published)` means the final result declaration.
 
-Reference: [DSL subtransforms](specifications/DSL.md),
-[symbolic execution](specifications/SymbolicExecution.md), and
-[execution semantics](specifications/ExecutionSemanticContract.md).
+Reference: [DSL subtransforms](reference/DSL.md),
+[symbolic execution](reference/SymbolicExecution.md), and
+[execution semantics](reference/ExecutionSemanticContract.md).
 
 ## Online Execution
 
@@ -242,8 +242,8 @@ same_schema = result.schema["enriched"]
 result.enriched.write.mode("overwrite").parquet(target_path)
 ```
 
-Reference: [online execution](specifications/OnlineExecution.md) and
-[execution semantic contract](specifications/ExecutionSemanticContract.md).
+Reference: [online execution](reference/OnlineExecution.md) and
+[execution semantic contract](reference/ExecutionSemanticContract.md).
 
 ## Optional Generated PySpark
 
@@ -272,7 +272,7 @@ orders = orders.where(
 )
 ```
 
-Reference: [PySpark code generation](specifications/PySparkCodeGeneration.md).
+Reference: [PySpark code generation](reference/PySparkCodeGeneration.md).
 
 ## Generated Schemas in Caller Code
 
@@ -293,8 +293,8 @@ result.write.mode("overwrite").parquet(target_path)
 Structure does not own storage orchestration. Callers own `write`, `writeStream`, table creation,
 partitioning, checkpoints, output modes, and storage options.
 
-Reference: [PySpark code generation](specifications/PySparkCodeGeneration.md) and
-[streaming compatibility](specifications/StreamingCompatibility.md).
+Reference: [PySpark code generation](reference/PySparkCodeGeneration.md) and
+[streaming compatibility](reference/StreamingCompatibility.md).
 
 ## Intermediate Validation
 
@@ -359,8 +359,8 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     ...
 ```
 
-Reference: [validation semantics](specifications/ValidationSemantics.md) and
-[data quality constraints](specifications/DataQualityConstraints.md).
+Reference: [validation semantics](reference/ValidationSemantics.md) and
+[data quality constraints](reference/DataQualityConstraints.md).
 
 ## Filtering
 
@@ -382,8 +382,8 @@ Multiple `where(...)` calls are combined with logical AND.
 When filters and joins are mixed, Structure preserves the source order. A filter written before a join runs
 before that join; a filter written after a join can reference the joined relation.
 
-Reference: [DSL filtering](specifications/DSL.md) and
-[symbolic execution](specifications/SymbolicExecution.md).
+Reference: [DSL filtering](reference/DSL.md) and
+[symbolic execution](reference/SymbolicExecution.md).
 
 ## Add and Drop Columns
 
@@ -441,8 +441,8 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 
 Generated code prefers explicit projection over `drop(...)` so the output schema is deterministic.
 
-Reference: [schema semantics](specifications/SchemaSemantics.md) and
-[PySpark code generation](specifications/PySparkCodeGeneration.md).
+Reference: [schema semantics](reference/SchemaSemantics.md) and
+[PySpark code generation](reference/PySparkCodeGeneration.md).
 
 ## Expressions
 
@@ -465,8 +465,8 @@ Supported v1 expression forms are field references, literals, `==`, `!=`, `<`, `
 boolean `&`, `|`, `~`, null checks, `null_safe_eq(...)`, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`,
 `coalesce(...)`, and `when(...).otherwise(...)`.
 
-Reference: [DSL expressions](specifications/DSL.md) and
-[nullability and type coercion](specifications/NullabilityAndTypeCoercion.md).
+Reference: [DSL expressions](reference/DSL.md) and
+[nullability and type coercion](reference/NullabilityAndTypeCoercion.md).
 
 ## Expression Helpers
 
@@ -484,7 +484,7 @@ Class-local helpers do not take `self`, but can be called through `self`.
 customer_id=self.clean_id(order.customer_id)
 ```
 
-Reference: [DSL expression helpers](specifications/DSL.md).
+Reference: [DSL expression helpers](reference/DSL.md).
 
 ## Aggregations
 
@@ -517,9 +517,9 @@ Supported aggregate helpers are `count()`, `count_distinct(...)`, `sum(...)`, `m
 `sum(...)` and `avg(...)` require numeric expressions. Nullable aggregate outputs must feed nullable fields or be
 repaired explicitly.
 
-Reference: [DSL](specifications/DSL.md), [IR](specifications/IntermediateRepresentation.md),
-[PySpark code generation](specifications/PySparkCodeGeneration.md), and
-[streaming compatibility](specifications/StreamingCompatibility.md).
+Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md),
+[PySpark code generation](reference/PySparkCodeGeneration.md), and
+[streaming compatibility](reference/StreamingCompatibility.md).
 
 ## Latest and Earliest Rows
 
@@ -543,14 +543,14 @@ required so the selection is reviewable, and the current public tie policy is `T
 are batch-only in v2 streaming compatibility checks because streaming-safe ranking needs explicit watermark and state
 semantics.
 
-Reference: [DSL](specifications/DSL.md), [IR](specifications/IntermediateRepresentation.md),
-[PySpark code generation](specifications/PySparkCodeGeneration.md), and
-[streaming compatibility](specifications/StreamingCompatibility.md).
+Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md),
+[PySpark code generation](reference/PySparkCodeGeneration.md), and
+[streaming compatibility](reference/StreamingCompatibility.md).
 
 ## Window Projection Helpers
 
-Use `row_number(...)`, `rank(...)`, `dense_rank(...)`, `lag(...)`, and `lead(...)` when a projected output field needs a
-Spark-visible analytical window value.
+Use `row_number(...)`, `rank(...)`, `dense_rank(...)`, `lag(...)`, `lead(...)`, and rolling metric helpers when a
+projected output field needs a Spark-visible analytical window value.
 
 ```python
 def rank_events(self, event: RawEvent) -> RankedEvent:
@@ -561,17 +561,20 @@ def rank_events(self, event: RawEvent) -> RankedEvent:
         rank=rank(partition_by=event.account_id, order_by=event.sequence, descending=True),
         previous_sequence=lag(event.sequence, partition_by=event.account_id, order_by=event.sequence),
         next_sequence=lead(event.sequence, partition_by=event.account_id, order_by=event.sequence),
+        rolling_total=rolling_sum(event.amount, partition_by=event.account_id, order_by=event.sequence, preceding=6),
+        rolling_average=rolling_avg(event.amount, partition_by=event.account_id, order_by=event.sequence, preceding=6),
     )
 ```
 
 `partition_by` is required and accepts one expression or a list/tuple of expressions. `order_by` is required.
 Set `descending=True` when the window order should be descending. `lag(...)` and `lead(...)` default to offset `1`;
-pass `offset=...` and `default=...` when needed. These helpers render as PySpark window expressions in the projection,
-not Python UDFs.
+pass `offset=...` and `default=...` when needed. `rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and
+`rolling_max(...)` require `preceding=...`, the number of prior rows included with the current row. These helpers render
+as PySpark window expressions in the projection, not Python UDFs.
 
-Reference: [DSL](specifications/DSL.md), [IR](specifications/IntermediateRepresentation.md),
-[PySpark code generation](specifications/PySparkCodeGeneration.md), and
-[streaming compatibility](specifications/StreamingCompatibility.md).
+Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md),
+[PySpark code generation](reference/PySparkCodeGeneration.md), and
+[streaming compatibility](reference/StreamingCompatibility.md).
 
 ## Exact Duplicate Rows
 
@@ -601,9 +604,9 @@ subtransforms so the narrowed schema is the current step frame.
 Exact duplicate removal is batch-only in v2 streaming compatibility checks because streaming dedupe needs explicit
 watermark, state, and output-mode semantics.
 
-Reference: [DSL](specifications/DSL.md), [IR](specifications/IntermediateRepresentation.md),
-[PySpark code generation](specifications/PySparkCodeGeneration.md), and
-[streaming compatibility](specifications/StreamingCompatibility.md).
+Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md),
+[PySpark code generation](reference/PySparkCodeGeneration.md), and
+[streaming compatibility](reference/StreamingCompatibility.md).
 
 ## Higher-Order Helpers
 
@@ -634,8 +637,8 @@ is rejected; combine symbolic predicates with `&`, `|`, and `~`.
 
 ## Joins
 
-Use symbolic joins. Ref: [Join semantics](specifications/JoinSemantics.md) and
-[analytical join coverage](specifications/AnalyticalJoinCoverage.md).
+Use symbolic joins. Ref: [Join semantics](reference/JoinSemantics.md) and
+[analytical join coverage](reference/AnalyticalJoinCoverage.md).
 
 Implemented join forms in the default PySpark profile:
 
@@ -776,9 +779,9 @@ class PublishOrders(NormalizeBase):
         return OrderPublished.project(order)
 ```
 
-Reference: [schema inheritance](specifications/SchemaInheritance.md) and
-[schema semantics](specifications/SchemaSemantics.md). Transform inheritance is covered by
-[DSL](specifications/DSL.md) and [execution semantics](specifications/ExecutionSemanticContract.md).
+Reference: [schema inheritance](reference/SchemaInheritance.md) and
+[schema semantics](reference/SchemaSemantics.md). Transform inheritance is covered by
+[DSL](reference/DSL.md) and [execution semantics](reference/ExecutionSemanticContract.md).
 
 ## Hooks
 
@@ -822,8 +825,8 @@ def add_audit_columns(self, *, audited, spark, ctx):
 
 Single-result hooks still name the selected lane explicitly.
 
-Reference: [hook semantics](specifications/HookSemantics.md) and
-[validation semantics](specifications/ValidationSemantics.md).
+Reference: [hook semantics](reference/HookSemantics.md) and
+[validation semantics](reference/ValidationSemantics.md).
 
 ## Source and Generated Paths
 
@@ -837,9 +840,9 @@ generated/structure_generated/orders/...
 Generated paths are used only when Structure is configured to emit PySpark code; online execution is the
 default. These paths are configurable. Mark `src` and `generated` as source roots in the IDE.
 
-Reference: [source module rules](specifications/SourceModuleRules.md),
-[configuration schema](specifications/ConfigSchema.md), and
-[PySpark code generation](specifications/PySparkCodeGeneration.md).
+Reference: [source module rules](reference/SourceModuleRules.md),
+[configuration schema](reference/ConfigSchema.md), and
+[PySpark code generation](reference/PySparkCodeGeneration.md).
 
 ## Streaming Compatibility
 
@@ -848,7 +851,7 @@ is supported by Spark Structured Streaming, the transform can run in a streaming
 
 Structure does not generate `readStream` or `writeStream` before v3; the caller owns streaming orchestration.
 
-Reference: [streaming compatibility](specifications/StreamingCompatibility.md).
+Reference: [streaming compatibility](reference/StreamingCompatibility.md).
 
 ## Compatibility
 
@@ -866,8 +869,8 @@ Spark Connect uses `target_backend = "pyspark"` with `target_variant = "spark-co
 experimental end-of-v2 variant for completed v1/v2 batch features, with full support gated by parity evidence.
 See [Compatibility.md](Compatibility.md).
 
-Reference: [compatibility policy](specifications/CompatibilityPolicy.md) and
-[backend capabilities](specifications/BackendCapabilities.md).
+Reference: [compatibility policy](reference/CompatibilityPolicy.md) and
+[backend capabilities](reference/BackendCapabilities.md).
 
 ## Schema Generation Tool
 
@@ -912,8 +915,8 @@ decimals, and nested structs. It does not infer primary keys, descriptions, inhe
 constraints. When Spark field names are not Python identifiers, generated Structure fields use safe Python
 names with `alias=...`.
 
-Reference: [CLI](specifications/CLI.md) and
-[schema declaration syntax](specifications/SchemaDeclarationSyntax.md).
+Reference: [CLI](reference/CLI.md) and
+[schema declaration syntax](reference/SchemaDeclarationSyntax.md).
 
 ## Planned Features
 
@@ -932,9 +935,9 @@ Planned v2 adoption tooling also includes richer explain output, generated docum
 and transforms, production incremental compilation, and a pytest helper for compiler checks and generated-code
 freshness.
 
-Reference: [analytical join coverage](specifications/AnalyticalJoinCoverage.md),
-[backend capabilities](specifications/BackendCapabilities.md), and
-[alternative backends](specifications/AlternativeBackends.md).
+Reference: [analytical join coverage](reference/AnalyticalJoinCoverage.md),
+[backend capabilities](reference/BackendCapabilities.md), and
+[alternative backends](reference/AlternativeBackends.md).
 
 ## Next Steps
 

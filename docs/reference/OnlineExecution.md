@@ -1,6 +1,8 @@
 # Online Execution
 
-Online execution is the default way to run Structure transforms. A user depends on the Structure library, supplies an
+## Purpose
+
+Online execution is the default v1 way to run Structure transforms. A user depends on the Structure library, supplies an
 existing Spark session, constructs a transform invocation with input DataFrames, and runs it through a
 `StructureSession`. The user does not need to commit generated PySpark code to their repository.
 
@@ -84,8 +86,8 @@ generated
 `online` runs transforms through a runtime runner that consumes compiler IR and live PySpark objects. `generated`
 delegates to checked-in generated PySpark classes.
 
-`target_backend` and `target_profile` remain backend selection inputs. In the only supported backend is `pyspark`.
-Later backends should be selected by the session, not by changing transform constructors. Backend support is checked
+`target_backend` and `target_profile` remain backend selection inputs. In v1 the only supported backend is `pyspark`.
+Future backends should be selected by the session, not by changing transform constructors. Backend support is checked
 against the session's resolved `StructureConfig` through [BackendCapabilities.md](BackendCapabilities.md), so online
 execution and generated PySpark share the same target capability decisions.
 
@@ -111,14 +113,14 @@ session = StructureSession(spark=spark, config=config)
 - materializing Spark `StructType` schemas for online execution;
 - optional in-memory compiled-plan cache.
 
-`StructureSession` does not start Spark, stop Spark, mutate Spark configuration silently, read or write streaming
+`StructureSession` must not start Spark, stop Spark, mutate Spark configuration silently, read or write streaming
 queries, or own orchestration concerns such as Airflow DAGs, triggers, checkpoints, or output sinks.
 
 ## Execution Modes
 
 In online mode, the session delegates to `OnlinePySparkRunner`. The runner compiles the transform class to
 `TransformPlan` IR on demand, lowers that IR through the shared PySpark execution semantic contract, then interprets
-the resulting recipes with PySpark DataFrame and Column APIs. It does not write generated files and does not execute
+the resulting recipes with PySpark DataFrame and Column APIs. It must not write generated files and must not execute
 generated Python source text.
 
 The online runner must also materialize the transform's Spark schemas from the checked schema model and expose them on
@@ -129,12 +131,12 @@ In generated mode, the session delegates to `GeneratedPySparkRunner`. The runner
 instantiates it with `spark=session.spark` and `ctx=session.ctx`, and calls `run(...)` with the transform invocation's
 stored inputs.
 
-If generated mode cannot import the generated class, Structure fails with a diagnostic that suggests running
+If generated mode cannot import the generated class, Structure must fail with a diagnostic that suggests running
 `structure compile`, making the generated source root importable, or switching to `execution_mode = "online"`.
 
 ## Execution Order
 
-Online execution preserves generated-code semantics:
+Online execution must preserve generated-code semantics:
 
 1. Validate declared input DataFrames.
 2. Create a read-only hook input namespace only when at least one hook declares `pass_inputs=True`.
@@ -147,31 +149,31 @@ Online execution preserves generated-code semantics:
 9. Validate every output DataFrame.
 10. Return a read-only `TransformResult`.
 
-Online and generated execution agrees on hook order, validation placement, expression lowering, join aliasing,
+Online and generated execution must agree on hook order, validation placement, expression lowering, join aliasing,
 projection shape, schema projection, result shape, and performance guardrails.
 
 For a multi-result step, joins and filters execute once. Each result projection starts from that shared DataFrame and is
 stored under its output lane name.
 
 Those shared semantics are owned by [ExecutionSemanticContract.md](ExecutionSemanticContract.md). Online execution owns live
-DataFrame binding and runtime hook invocation; it does not independently choose aliases, validation placement,
+DataFrame binding and runtime hook invocation; it must not independently choose aliases, validation placement,
 expression mapping, or literal typing when a shared PySpark recipe already defines them.
 
 ## Transform Input Binding
 
 `Transform.__init__(**inputs)` stores DataFrame inputs by declared Structure input name. Positional arguments are not
-allowed. Unknown input names are errors. Missing declared inputs is reported no later than `run(session)`.
+allowed. Unknown input names are errors. Missing declared inputs must be reported no later than `run(session)`.
 
-For , custom transform construction parameters should not be mixed into the transform constructor. Runtime context
-belongs in `StructureSession(ctx=...)`. Later explicit APIs may add richer parameter binding if a concrete use case
+For v1, custom transform construction parameters should not be mixed into the transform constructor. Runtime context
+belongs in `StructureSession(ctx=...)`. Future explicit APIs may add richer parameter binding if a concrete use case
 requires it.
 
-`run` is reserved for online execution. A public schema-returning subtransform named `run` fails with a structured
+`run` is reserved for online execution. A public schema-returning subtransform named `run` must fail with a structured
 diagnostic that asks the user to rename it.
 
 ## Compiler Boundary
 
-`structure check`, `structure compile`, and generated-file diff checks remain Spark-free. They does not require
+`structure check`, `structure compile`, and generated-file diff checks remain Spark-free. They must not require
 PySpark, Java, SparkSession, Spark startup, or a Spark cluster.
 
 Online execution is a runtime boundary and may import PySpark. Runtime tests for online execution may require a local
@@ -179,22 +181,11 @@ Spark runtime.
 
 ## Streaming Compatibility
 
-Online execution does not change the streaming contract. A transform is streaming-compatible when its compiled
+Online execution does not change the v1 streaming contract. A transform is streaming-compatible when its compiled
 operations are valid for the caller's streaming DataFrame shape. The caller still owns `readStream`, `writeStream`,
 triggers, checkpoints, output modes, and query lifecycle.
 
 ## Diagnostics
-
-Diagnostics includes:
-
-- diagnostic code;
-- transform class;
-- execution mode;
-- target backend;
-- input name, hook name, subtransform, or field when relevant;
-- problem;
-- suggested fix;
-- link to this specification or [Configuration.md](../Configuration.md).
 
 Example:
 

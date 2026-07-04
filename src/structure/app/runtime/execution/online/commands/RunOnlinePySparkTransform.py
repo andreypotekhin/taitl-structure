@@ -444,7 +444,7 @@ class RunOnlinePySparkTransform:
             target_variant=getattr(session, "target_variant", "ordinary"),
             problem="Structure has no live SparkSession or injected online executor for this session.",
             use="Pass spark or online_executor to StructureSession, or use execution_mode = \"generated\".",
-            docs="docs/specifications/OnlineExecution.md",
+            docs="docs/reference/OnlineExecution.md",
         )
         return StructureRuntimeError(diagnostic)
 

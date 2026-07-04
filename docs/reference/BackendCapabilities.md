@@ -1,5 +1,7 @@
 # Backend Capabilities
 
+## Purpose
+
 Backend capabilities describe what a configured execution target can run or generate from Structure IR. They answer
 questions such as which PySpark versions are supported, which DSL features are available, whether streaming is safe,
 which validation modes are allowed, and which imports generated code should use.
@@ -17,7 +19,7 @@ This reference covers:
 - capability decision shape;
 - unsupported backend diagnostics;
 - generated import-name capability;
-- PySpark default capability profile;
+- PySpark v1 default capability profile;
 - Spark-free capability selection;
 - tests for capability decisions.
 
@@ -26,7 +28,7 @@ cardinality rules. This document owns whether the selected backend profile says 
 
 ## Interface
 
-Structure exposes an internal capability object:
+The implementation must expose an internal capability object:
 
 ```text
 BackendCapabilities
@@ -49,14 +51,14 @@ BackendId
 For the default PySpark profile, `name = "pyspark"`, `target = ">=3.5,<4.1"`, `variant = "ordinary"`, and
 implementation `family = "ordinary_pyspark"`. For the experimental Spark Connect variant, `name = "pyspark"`,
 `target = ">=3.5,<4.1"`, `variant = "spark-connect"`, and semantic `family = "spark_connect_dataframe"`.
-Later alternative-backend reports may add semantic-family vocabulary such as `pyspark_dataframe` or `sql_relation`;
-that vocabulary does not require renaming the current implementation family.
+Future alternative-backend reports may add semantic-family vocabulary such as `pyspark_dataframe` or `sql_relation`;
+that vocabulary must not require renaming the current v1 implementation family.
 
-`imports()` returns deterministic generated import metadata for the backend. For PySpark this includes the aliases
+`imports()` returns deterministic generated import metadata for the backend. For PySpark v1 this includes the aliases
 for `pyspark.sql.functions`, `pyspark.sql.types`, `DataFrame`, `SparkSession`, `Column`, and Structure generated
 runtime schema helpers.
 
-`supports(requirement)` returns a `CapabilityDecision` and never raise.
+`supports(requirement)` returns a `CapabilityDecision` and must never raise.
 
 `require(requirement)` returns a supported decision or fails through the backend diagnostic path.
 
@@ -87,7 +89,7 @@ Allowed groups:
 - `window`;
 - `imports`.
 
-Later alternative backends may add these groups:
+Future alternative backends may add these groups:
 
 - `runtime`;
 - `output`;
@@ -106,7 +108,7 @@ answer questions such as "can this target lower grouped aggregation", "can it lo
 transforms", or "can it lower this join family" rather than exposing a registry of every Spark function. This keeps
 PySpark version choices isolated in the target layer while preventing the compiler surface from becoming a second
 PySpark API. The same rule applies to Spark SQL, typed PySpark DataFrame patterns, Polars, DuckDB, Pandas, Ibis, and
-other later targets: capability requirements describe Structure semantics, not a mirror of the target library.
+other future targets: capability requirements describe Structure semantics, not a mirror of the target library.
 
 ## Decision Shape
 
@@ -173,6 +175,10 @@ window.rank
 window.dense_rank
 window.lag
 window.lead
+window.rolling_sum
+window.rolling_avg
+window.rolling_min
+window.rolling_max
 window.select_latest
 window.select_earliest
 validation.schema_only_validation
@@ -185,7 +191,7 @@ streaming.stream_static_inner_join
 imports.generated_pyspark_imports
 ```
 
-Deferred features is represented as unsupported decisions. Examples:
+Deferred features must be represented as unsupported decisions. Examples:
 
 ```text
 window.window_project
@@ -203,7 +209,7 @@ not be lowered through silent fallback, Python UDFs, row-wise operations, or bac
 
 ## Alternative Backend Extension
 
-Later backend profiles must be admitted through the rules in [AlternativeBackends.md](AlternativeBackends.md).
+Future backend profiles must be admitted through the rules in [AlternativeBackends.md](AlternativeBackends.md).
 
 Minimum profile data:
 
@@ -225,7 +231,7 @@ The active target treats unsupported and unknown required capabilities as errors
 also report degraded, opaque, and unknown features so users can decide whether a transform is portable enough for their
 project.
 
-Backends does not be supported by rewriting user Structure source. They must consume the same checked IR and either
+Backends must not be supported by rewriting user Structure source. They must consume the same checked IR and either
 lower it honestly or fail with a backend diagnostic before online execution or generation.
 
 ## Diagnostics
@@ -240,7 +246,7 @@ Title: Unsupported backend target
 
 Common cause: configuration selects a `target_backend` for which Structure has no capability profile.
 
-Use: set `target_backend = "pyspark"` for .
+Use: set `target_backend = "pyspark"` for v1.
 
 ### BACKEND-E2402
 
@@ -252,9 +258,6 @@ Common cause: source or IR asks the configured backend to lower a feature outsid
 
 Use: choose a supported Structure operation, use an explicit hook when arbitrary PySpark is the honest escape hatch, or
 wait until the feature's specification and backend profile promote it.
-
-Both diagnostics includes backend, target range, feature group, feature name, problem, rationale, suggested fix,
-and documentation link.
 
 ## PySpark Target Variants
 
@@ -276,12 +279,12 @@ target_variant = "spark-connect"
 ```
 
 The Spark Connect variant uses the PySpark DataFrame and Column API over a remote session. Its backend family is
-`spark_connect_dataframe`. It rejects classic-only assumptions before execution or generation, including
+`spark_connect_dataframe`. It must reject classic-only assumptions before execution or generation, including
 SparkContext, RDDs, direct JVM/Py4J access, `_jdf`, and private classic PySpark implementation fields.
 
 ## No-Spark Contract
 
-Capability selection and checks does not import PySpark, start Java, create a `SparkSession`, connect to a Spark
+Capability selection and checks must not import PySpark, start Java, create a `SparkSession`, connect to a Spark
 cluster, or inspect the developer machine's installed Spark runtime. They use static source metadata selected from
 configuration.
 

@@ -1,7 +1,9 @@
-﻿# Compiler Performance Targets
+# Compiler Performance Targets
+
+## Purpose
 
 Structure must feel fast during local development and CI. Compiler commands should validate source, build IR, and check
-generated-code freshness without starting Spark. This reference defines compiler-speed expectations, measurement
+generated-code freshness without starting Spark. This specification defines compiler-speed expectations, measurement
 rules, architecture constraints, diagnostics, and verification boundaries.
 
 Runtime Spark job performance is outside this document except where compiler choices affect generated or online plan
@@ -18,7 +20,7 @@ structure compile --fail-on-diff
 structure explain <transform>
 ```
 
-`structure clean` and later cache commands should remain cheap but do not need the same targets.
+`structure clean` and future cache commands should remain cheap but do not need the same targets.
 
 ## Project Sizes
 
@@ -57,7 +59,7 @@ Medium project:
 Single-file edit, v2 incremental compile:
   affected-transform feedback under 2 seconds
 
-Large project, later target:
+Large project, future target:
   structure check under 60 seconds cold
 ```
 
@@ -66,7 +68,7 @@ be chosen so these numbers remain plausible.
 
 ## Hard Constraints
 
-Compiler commands does not:
+Compiler commands must not:
 
 - import PySpark;
 - start Java;
@@ -115,12 +117,12 @@ Rules:
 
 - Cache keys include Structure version, effective configuration, source root list, generated package, target backend,
   and target version range.
-- Cache contents is deterministic and safe to delete.
-- Deleting `.structure/cache` does not break correctness.
+- Cache contents must be deterministic and safe to delete.
+- Deleting `.structure/cache` must not break correctness.
 - `structure check` may rebuild cache.
-- `structure compile --fail-on-diff` does not trust stale generated hashes without verifying source fingerprints.
+- `structure compile --fail-on-diff` must not trust stale generated hashes without verifying source fingerprints.
 
-may use full recomputation. v2 incremental compile should be possible without replacing public APIs.
+v1 may use full recomputation. v2 incremental compile should be possible without replacing public APIs.
 
 ## Measurement
 
@@ -141,14 +143,7 @@ claims.
 
 ## Performance Diagnostics
 
-When `strict_performance = true`, unsupported source fails rather than falling back to slow hidden behavior.
-
-Diagnostics are emitted for:
-
-- compiler path attempts to import PySpark;
-- unsupported Python operations that would require UDF-like fallback;
-- hook-heavy transforms when explain output can show opaque boundaries;
-- cache corruption or stale cache invalidation.
+When `strict_performance = true`, unsupported source must fail rather than falling back to slow hidden behavior.
 
 Example:
 
@@ -169,7 +164,7 @@ See docs/reference/CompilerPerformanceTargets.md
 
 ## Generated and Online Plan Guardrails
 
-Compiled target plans does not contain:
+Compiled target plans must not contain:
 
 - Python UDFs;
 - Pandas UDFs;

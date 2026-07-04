@@ -213,6 +213,15 @@
 - Add diagnostics when a directive is unsafe, unsupported, or likely ignored by the configured PySpark target.
 - Add tests proving directives do not change row or schema semantics.
 
+### Epic: Transform Composition Maturity
+
+- Design and implement hook-bearing stages in `.to(...)` composition.
+- Define hook method ownership and dispatch for composed runtime pipelines and generated wrapper classes.
+- Preserve online/generated parity for composed hooks, including source hook imports and traceability boundaries.
+- Decide whether composed transforms can expose selected earlier-stage outputs in addition to final-stage outputs.
+- Design whether class-field pipelines may be mixed with wrapper-local subtransforms, hooks, or lifecycle policy.
+- Keep `lane(...)` unavailable for composition matching unless a later design explicitly changes the public boundary.
+
 ### Epic: Explain, Documentation, and Test Tooling
 
 - Add rich `structure explain` mode for field-level lineage through projections, filters, joins, aggregations, windows,

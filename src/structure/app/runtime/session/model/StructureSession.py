@@ -125,7 +125,7 @@ class StructureSession:
             target_variant=self.target_variant,
             problem=problem,
             use=use,
-            docs="docs/specifications/OnlineExecution.md",
+            docs="docs/reference/OnlineExecution.md",
             context=context,
         )
         return StructureRuntimeError(diagnostic)

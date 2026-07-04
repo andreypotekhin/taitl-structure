@@ -14,7 +14,7 @@ class StreamingFinding:
     operation: str
     problem: str
     use: str
-    docs: str = "docs/specifications/StreamingCompatibility.md"
+    docs: str = "docs/reference/StreamingCompatibility.md"
 
     def to_diagnostic(self) -> Diagnostic:
         return Diagnostic(

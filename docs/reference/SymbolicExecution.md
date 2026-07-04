@@ -1,5 +1,7 @@
 # Symbolic Execution
 
+## Purpose
+
 Symbolic execution is the compiler phase that turns user-written compiled subtransform methods into backend-neutral
 IR. It executes the method body with symbolic schema row proxies instead of real data, records filters, joins,
 expressions, and output projection, and then hands a deterministic `StepPlan` to compileability checks, online
@@ -7,7 +9,7 @@ execution, generated PySpark emission, compiler provenance, and static dataflow 
 
 The purpose is not to run the user's pipeline in Python. The purpose is to let developers write readable schema-oriented
 Python while preserving Spark optimizer visibility. Any source behavior that cannot be represented as Structure IR
-fails at compile time with a structured diagnostic instead of falling back to UDFs, row-wise callbacks, RDD
+must fail at compile time with a structured diagnostic instead of falling back to UDFs, row-wise callbacks, RDD
 operations, or opaque generated code.
 
 ## Scope
@@ -59,7 +61,7 @@ Rules:
 
 - Discovery decides which classes and methods are compiled.
 - Schema inspection provides `SchemaDef`, `FieldDef`, inheritance, and field-origin metadata.
-- Symbolic execution does not decide backend-specific PySpark details.
+- Symbolic execution must not decide backend-specific PySpark details.
 - Compileability checks may reject IR created by symbolic execution.
 - Online execution and generated code must consume the same IR.
 
@@ -98,7 +100,7 @@ rows, call Spark, or inspect live DataFrames.
 
 ## Public Source Forms
 
-The symbolic engine supports these source forms inside compiled subtransforms:
+The v1 symbolic engine must support these source forms inside compiled subtransforms:
 
 ```python
 order.id
@@ -120,12 +122,12 @@ when(order.total >= 1000, "large").otherwise("standard")
 ```
 
 Public examples should use these forms. Source-level `F.col`, `F.lit`, PySpark `Column` methods, Python string methods
-on symbolic expressions, and raw string column paths are not compiled-source forms in .
+on symbolic expressions, and raw string column paths are not compiled-source forms in v1.
 
 The symbolic source surface is intentionally curated. Structure should not add one thin wrapper for every PySpark
 function. When a Spark capability becomes compiler-visible, define the smallest Structure-level operation family that
 captures the intended data-pipeline meaning, add IR for that operation, and lower it through target recipes. For
-example, later aggregation support should introduce aggregation and grouping semantics, while later array, map, and
+example, future aggregation support should introduce aggregation and grouping semantics, while future array, map, and
 higher-order support should introduce symbolic collection operations and symbolic callback rules. Rare or arbitrary
 PySpark should stay in explicit hooks, where the compiler records an opaque boundary instead of pretending to understand
 the body.
@@ -159,7 +161,7 @@ Rules:
 
 `SymbolicContext` is the per-subtransform capture state.
 
-It contains at least:
+It must contain at least:
 
 ```text
 transform definition
@@ -181,7 +183,7 @@ Rules:
 - Operation order is append-only and follows source execution order.
 - Source context stack entries may include helper name, schema constructor, output field, filter call, join call, and
   base overlay call.
-- The context preserves enough information to report transform, subtransform, output field, source expression, and
+- The context must preserve enough information to report transform, subtransform, output field, source expression, and
   suggested fix when available.
 - The context should be immutable after `StepPlan` construction or treated as consumed.
 
@@ -196,10 +198,10 @@ The compiler invokes subtransform methods on a transform implementation object. 
 
 Rules:
 
-- Input scope access does not expose a live DataFrame API.
+- Input scope access must not expose a live DataFrame API.
 - Unknown `self` attributes use normal Python behavior unless the compiler can provide a clearer diagnostic.
-- The transform object does not be given a Spark session, runtime `ctx`, or generated-code state during compilation.
-- If a transform method tries to call `self.run(...)`, access runtime inputs, or perform runtime execution, it fails
+- The transform object must not be given a Spark session, runtime `ctx`, or generated-code state during compilation.
+- If a transform method tries to call `self.run(...)`, access runtime inputs, or perform runtime execution, it must fail
   as unsupported compiled-transform behavior.
 
 ## Row Proxies
@@ -271,7 +273,7 @@ referenced scopes
 source metadata when available
 ```
 
-The symbolic expression kinds are:
+The v1 symbolic expression kinds are:
 
 ```text
 FieldRef
@@ -290,10 +292,10 @@ Rules:
   comparison nodes.
 - Basic row-local arithmetic `+`, `-`, and `*` on expressions creates binary expression nodes.
 - `&`, `|`, and `~` on boolean expressions create boolean expression nodes.
-- Python `and`, `or`, and `not` fails because they ask Python for truthiness.
-- Symbolic expressions does not implement truthiness. `if order.id:` and `order.id and order.customer_id` must raise
+- Python `and`, `or`, and `not` must fail because they ask Python for truthiness.
+- Symbolic expressions must not implement truthiness. `if order.id:` and `order.id and order.customer_id` must raise
   diagnostics.
-- Expression nodes does not import PySpark or store PySpark `Column` objects.
+- Expression nodes must not import PySpark or store PySpark `Column` objects.
 - Target-specific lowering metadata belongs in target layers, not in symbolic expression objects.
 
 ## Expression Helpers
@@ -305,7 +307,7 @@ Rules:
 
 - Helper calls preserve function identity, argument order, keyword arguments, result type, result nullability, and
   source context.
-- Helper keyword arguments is explicit IR data, not hidden Python closures.
+- Helper keyword arguments must be explicit IR data, not hidden Python closures.
 - Helper validation may run during capture when the result type is needed immediately.
 - Final compatibility checks may still reject helper calls after IR construction.
 - Helper calls with only non-symbolic arguments may return ordinary Python values only when the public DSL explicitly
@@ -319,11 +321,11 @@ Rules:
 
 - Calling an `@expr_fn` with symbolic arguments executes the helper body under a helper source context.
 - The helper result must be a symbolic expression or a Python literal accepted in expression position.
-- The engine records the outer helper call identity for diagnostics and provenance.
+- The engine must record the outer helper call identity for diagnostics and provenance.
 - The engine may either inline the expanded expression into IR or preserve a `CallExpr` with expansion metadata, as long
   as online execution, generated code, traceability, and diagnostics agree.
 - Class-local helpers declared without `self` must be callable through `self`.
-- Recursive helpers are invalid in unless a later spec defines recursion limits.
+- Recursive helpers are invalid in v1 unless a future spec defines recursion limits.
 - Helper expansion should be cacheable when the helper identity, argument symbolic shapes, and keyword values are the
   same and caching cannot hide diagnostics or source context.
 
@@ -345,7 +347,7 @@ Rules:
 - A filter recorded before a join cannot reference that joined scope.
 - A filter recorded after a join may reference the joined scope.
 - A filter with simple `field.is_not_null()` narrows that field for later expressions in the same subtransform.
-- Narrowing facts do not cross hook boundaries unless a later spec adds explicit hook postconditions.
+- Narrowing facts do not cross hook boundaries unless a future spec adds explicit hook postconditions.
 
 Minimum filter operation metadata:
 
@@ -367,7 +369,7 @@ Rules:
 - The documented form stays bare when `on` references exactly one unjoined declared input scope or schema relation
   parameter.
 - Legacy explicit-selection overloads, when used, accept only declared input scopes or schema relation parameters in
-  .
+  v1.
 - Member joins such as `self.customers.join_one(...)` are rejected with migration guidance.
 - `on` and `how` are required.
 - `hint` is optional.
@@ -376,7 +378,7 @@ Rules:
 - For schema relation parameters and cached class input scopes, the symbolic proxy is updated after `join_one(...)` so
   later field access reads the joined scope even when the return value is not assigned.
 - Inferred and explicit joins must append equivalent ordered join operations.
-- The joined scope occurrence id is deterministic.
+- The joined scope occurrence id must be deterministic.
 - Repeated joins of the same input must receive stable occurrence ids.
 - Join condition validity, supported join types, null semantics, aliases, right-side projection, and uniqueness warnings
   are checked according to `JoinSemantics.md`.
@@ -405,7 +407,7 @@ Rules:
 - Keyword names are schema field names.
 - Unknown keyword names are errors.
 - Missing fields are checked according to `SchemaDeclarationSyntax.md`.
-- The returned object preserves assignment expressions by target field name.
+- The returned object must preserve assignment expressions by target field name.
 - Projection order follows output schema field order, not keyword argument order.
 - Assignments must be type- and nullability-checked later according to `NullabilityAndTypeCoercion.md`.
 - The final returned schema construction becomes the `Project` operation for the step.
@@ -434,8 +436,8 @@ Rules:
 - Field copying is based on inherited field origin, not fuzzy field-name matching.
 - Extra fields on source rows are ignored.
 - Explicit overrides win over copied fields.
-- Locally declared target fields are supplied explicitly.
-- Target fields that locally override inherited fields are supplied explicitly.
+- Locally declared target fields must be supplied explicitly.
+- Target fields that locally override inherited fields must be supplied explicitly.
 - Missing copied or explicit fields are errors.
 - The symbolic result is the same projection shape as the equivalent explicit constructor.
 
@@ -488,15 +490,15 @@ validation metadata
 Rules:
 
 - The returned value must be a symbolic schema construction compatible with the subtransform return annotation.
-- Exactly one final projection is allowed per subtransform in .
+- Exactly one final projection is allowed per subtransform in v1.
 - A subtransform returning `None`, a DataFrame, a Python list, a dict, a generator, or an arbitrary object is invalid.
 - A method may construct helper symbolic schema objects before the final return.
-- The step contains enough source and provenance data for diagnostics, explain output, and static dataflow.
+- The step must contain enough source and provenance data for diagnostics, explain output, and static dataflow.
 - IR objects should be immutable or treated as immutable after construction.
 
 ## Unsupported Operations
 
-Unsupported behavior fails with structured compile errors. Required unsupported cases include:
+Unsupported behavior must fail with structured compile errors. Required unsupported cases include:
 
 - Python truthiness on symbolic expressions;
 - Python `and`, `or`, and `not` for symbolic boolean logic;
@@ -506,7 +508,7 @@ Unsupported behavior fails with structured compile errors. Required unsupported 
 - raw string column paths;
 - DataFrame methods inside compiled subtransforms;
 - iteration over symbolic rows or expressions;
-- indexing a symbolic row by string unless a later spec permits it;
+- indexing a symbolic row by string unless a future spec permits it;
 - mutation of symbolic rows or expressions;
 - async, generator, or coroutine subtransform behavior;
 - returning non-schema symbolic values from compiled subtransforms;
@@ -522,22 +524,6 @@ Rules:
   have a configuration workaround.
 
 ## Diagnostics
-
-Symbolic execution diagnostics includes:
-
-- diagnostic code;
-- severity;
-- transform class when available;
-- subtransform method when available;
-- output field when available;
-- helper, filter, join, or schema constructor context when relevant;
-- source expression or source operation when available;
-- problem;
-- why it matters when not obvious;
-- suggested DSL fix;
-- `@expr_fn` helper fix when reuse is likely;
-- hook workaround when arbitrary PySpark is appropriate;
-- documentation link.
 
 Unsupported expression example:
 
@@ -590,7 +576,7 @@ Subtransform:
   normalize
 
 Problem:
-  Compiled subtransforms returns a Structure schema construction.
+  Compiled subtransforms must return a Structure schema construction.
 
 Use:
   return OrderNormalized(id=order.id, customer_id=order.customer_id)
@@ -616,16 +602,16 @@ Symbolic execution should capture source metadata when practical:
 
 Rules:
 
-- Lack of source spans does not prevent compilation when the semantic source objects are valid.
+- Lack of source spans must not prevent compilation when the semantic source objects are valid.
 - AST parsing should be avoided except for source spans, expression text, and diagnostics.
-- Source metadata does not change semantic behavior.
-- Source metadata should be stable enough for review workflows and compiler provenance.
+- Source metadata must not change semantic behavior.
+- Source metadata should be stable enough for snapshot tests and compiler provenance.
 
 ## Import and Runtime Safety
 
-Symbolic execution preserves the no-Spark compiler contract.
+Symbolic execution must preserve the no-Spark compiler contract.
 
-Compiler phases does not:
+Compiler phases must not:
 
 - import PySpark;
 - create a Spark session;
@@ -637,7 +623,7 @@ Compiler phases does not:
 
 Rules:
 
-- Public DSL imports is import-safe.
+- Public DSL imports must be import-safe.
 - User module import may execute normal Python class declarations, but symbolic execution happens only in compiler or
   runtime compile phases.
 - Online execution may import PySpark after it receives IR and live DataFrames; that belongs to the runtime runner.
@@ -646,11 +632,11 @@ Rules:
 ## Determinism and Performance
 
 Symbolic execution is on the developer feedback path for `structure check`, `structure compile`, online first run, and
-CI. It is deterministic and fast.
+CI. It must be deterministic and fast.
 
 Rules:
 
-- The same source and configuration produces the same IR order, ids, aliases, diagnostics, and provenance paths.
+- The same source and configuration must produce the same IR order, ids, aliases, diagnostics, and provenance paths.
 - Do not rely on Python object identity where stable semantic ids are required.
 - Avoid AST parsing on the hot path except for diagnostics.
 - Avoid importing target backends.
@@ -670,7 +656,7 @@ Required compile metrics:
 
 ## Non-Goals
 
-The following are outside symbolic execution scope:
+The following are outside v1 symbolic execution scope:
 
 - arbitrary Python control-flow lowering into multiple dynamic DataFrame branches;
 - subtransform branching and merging;

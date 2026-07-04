@@ -1,5 +1,7 @@
 # Source Module Rules
 
+## Purpose
+
 Structure discovers user schemas and transforms from ordinary Python projects. Discovery must fit common source layouts,
 produce deterministic import paths, and stay safe enough for compiler commands that run in local development and CI.
 
@@ -21,9 +23,9 @@ Resolution order:
 Rules:
 
 - Source roots are interpreted relative to the project root unless absolute paths are explicitly allowed later.
-- Resolved source roots exists.
+- Resolved source roots must exist.
 - A source root may contain several packages or modules.
-- A source root does not be inside `generated_dir`.
+- A source root must not be inside `generated_dir`.
 - Duplicate source roots after path normalization are collapsed.
 - Source roots must be ordered deterministically.
 - The compiler must report which source roots were selected in debug or explain output.
@@ -63,8 +65,8 @@ The default generated package is `structure_generated`.
 
 ## Import-Safe Modules
 
-Structure may import user source modules to discover `Structure` and `Transform` classes. Therefore user modules
-is import-safe.
+Structure v1 may import user source modules to discover `Structure` and `Transform` classes. Therefore user modules
+must be import-safe.
 
 Import-safe means importing the module only declares Python objects and does not perform application work.
 
@@ -106,7 +108,7 @@ Rules:
 - Private modules are not automatically excluded. A later config option may add include and exclude patterns.
 - Discovery order is deterministic by source root order, path sort order, then module import path.
 - Source location metadata should include project-relative path and line number when available.
-- Discovery does not import PySpark, start Java, create Spark sessions, or inspect live DataFrames.
+- Discovery must not import PySpark, start Java, create Spark sessions, or inspect live DataFrames.
 
 ## Source Order
 
@@ -123,7 +125,7 @@ Rules:
 
 - Source order must be captured during class creation or through inspectable metadata.
 - If source order cannot be recovered for a required ordering decision, discovery fails with a diagnostic.
-- Generated output and diagnostics is deterministic for the same source.
+- Generated output and diagnostics must be deterministic for the same source.
 
 ## Reloading and Caching
 
@@ -135,20 +137,10 @@ Compiler commands may cache source fingerprints, discovered metadata, and IR. Ca
 - generated package or backend target changes;
 - a dependency that participates in discovered symbols changes, when detectable.
 
-may implement conservative full rediscovery instead of incremental caching. The implementation does not bake in a
+v1 may implement conservative full rediscovery instead of incremental caching. The implementation must not bake in a
 design that prevents v2 incremental compilation.
 
 ## Diagnostics
-
-Discovery diagnostics includes:
-
-- project root;
-- selected source root;
-- source path or module path;
-- conflicting module path when relevant;
-- problem;
-- suggested fix;
-- documentation link.
 
 Examples:
 

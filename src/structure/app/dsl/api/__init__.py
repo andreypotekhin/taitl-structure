@@ -44,6 +44,10 @@ from structure.app.dsl.model.transforms.reserved_v2 import (
     min,
     rank,
     row_number,
+    rolling_avg,
+    rolling_max,
+    rolling_min,
+    rolling_sum,
     sum,
 )
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
@@ -122,6 +126,10 @@ __all__ = [
     "project",
     "rank",
     "row_number",
+    "rolling_avg",
+    "rolling_max",
+    "rolling_min",
+    "rolling_sum",
     "sum",
     "temporal_one",
     "to_decimal",

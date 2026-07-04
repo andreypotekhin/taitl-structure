@@ -1,18 +1,30 @@
 # Alternative Backends
 
-This reference defines the later backend-extension contract for Structure. It allows the same compiler-visible
+## Purpose
+
+This specification defines the future backend-extension contract for Structure. It allows the same compiler-visible
 Structure source code to be checked against, and eventually emitted for, multiple execution backends.
 
-PySpark remains the only supported runtime target. Spark Connect is a PySpark target variant, not a peer alternative
-backend. This document specifies the architecture that later work must follow before adding Python-hosted Spark SQL,
+PySpark remains the only v1 supported runtime target. Spark Connect is a PySpark target variant, not a peer alternative
+backend. This document specifies the architecture that future work must follow before adding Python-hosted Spark SQL,
 type-safe PySpark DataFrame patterns, Pandas, Polars, DuckDB, Ibis, or other targets through Ibis.
 
 ## Scope
 
 This reference covers:
 
-Backend-specific reference documents still own concrete rendering. For example, `PySparkCodeGeneration.md` owns
-PySpark source rendering. A later `PolarsCodeGeneration.md` or `DuckDBCodeGeneration.md` would own those targets.
+- backend-neutral source compatibility;
+- backend target identity and families;
+- active-target and multi-target compatibility checks;
+- target adapter responsibilities;
+- fail-fast behavior for unsupported IR;
+- warnings for opaque or potentially non-portable source;
+- hook target scoping;
+- StructureTools compatibility APIs;
+- acceptance criteria for future backend additions.
+
+Backend-specific specifications still own concrete lowering. For example, `PySparkCodeGeneration.md` owns PySpark
+source rendering. A future `PolarsCodeGeneration.md` or `DuckDBCodeGeneration.md` would own those targets.
 
 ## Same-Source Contract
 
@@ -39,7 +51,7 @@ Opaque runtime source includes:
 - arbitrary imports or side effects inside code the compiler does not inspect.
 
 The same-source portability promise applies only to compiler-visible source. Hooks may still live in the same class, but
-they are target-scoped and excluded from claims that the compiled Structure source is backend-neutral.
+they must be target-scoped and excluded from claims that the compiled Structure source is backend-neutral.
 
 ## Target Identity
 
@@ -66,9 +78,9 @@ ibis >=9.0 ordinary meta_relational_dsl
 ```
 
 `name` is the configured backend id. `target` is a version range or capability profile. `variant` selects a runtime
-variant inside a backend family. For current PySpark output, `family` remains `ordinary_pyspark`.
+variant inside a backend family. In v1, `family` is the current implementation family and remains `ordinary_pyspark`.
 Spark Connect uses `name = "pyspark"` with `variant = "spark-connect"`, never `name = "spark_connect"`.
-Later compatibility reports may additionally use semantic families such as `pyspark_dataframe` or `sql_relation` to
+Future compatibility reports may additionally use semantic families such as `pyspark_dataframe` or `sql_relation` to
 describe target shape.
 
 ## Target Families
@@ -90,7 +102,7 @@ Family is diagnostic metadata. Support is still decided by explicit capability r
 
 ## Configuration
 
-Later configuration keys:
+Future configuration keys:
 
 ```toml
 [tool.structure]
@@ -103,11 +115,11 @@ hook_target_default = ["pyspark"]
 
 Compatibility notes:
 
-- recognizes these keys as reserved metadata while keeping active execution limited to `target_backend = "pyspark"`.
-- Non-PySpark entries in `compat_targets` are reported as pending in ; their compatibility checks do not run yet.
+- V1 recognizes these keys as reserved metadata while keeping active execution limited to `target_backend = "pyspark"`.
+- Non-PySpark entries in `compat_targets` are reported as pending in v1; their compatibility checks do not run yet.
 - `target_profile` is the active target version/capability key, including for PySpark.
 - `target_variant` selects ordinary PySpark or Spark Connect inside the PySpark-family target.
-- Later backends should reuse `target_profile` instead of adding backend-specific version keys.
+- Future backends should reuse `target_profile` instead of adding backend-specific version keys.
 - `compat_targets` asks for a portability report and does not change the active target.
 - `hook_target_default` supplies the effective target set for unmarked hooks.
 
@@ -209,7 +221,7 @@ structure check --target-backend pyspark
 structure check --target-backend polars --target-profile ">=1.0"
 ```
 
-Later multi-target checks:
+Future multi-target checks:
 
 ```bash
 structure check --compat-targets pyspark,polars,duckdb
@@ -264,9 +276,9 @@ StructureTools.compatibility.targets()
 
 Rules:
 
-- the API uses the same target registry and diagnostics as the CLI;
+- the API must use the same target registry and diagnostics as the CLI;
 - results must be structured values before any text rendering;
-- the API does not import backend runtimes during compiler checks;
+- the API must not import backend runtimes during compiler checks;
 - callers can choose fail-fast exceptions or report-returning behavior.
 
 ## Hook Target Scoping
@@ -314,7 +326,7 @@ whether the target set was explicit or inherited from configuration.
 
 ## Diagnostics
 
-Later diagnostics should extend the backend and hook code ranges. Proposed codes:
+Future diagnostics should extend the backend and hook code ranges. Proposed codes:
 
 ```text
 BACKEND-E2403  unsupported execution mode for backend
@@ -398,6 +410,6 @@ Backend roadmap priority:
 
 ## Non-Goals
 
-This specification does not require to implement non-PySpark execution. It also does not require Structure to become
+This specification does not require v1 to implement non-PySpark execution. It also does not require Structure to become
 a wrapper around every backend's native API. Backend support is admitted only for Structure semantics that can be
 represented in IR, checked, lowered, tested, and explained.

@@ -520,6 +520,8 @@ code keeps rank `1` and drops the temporary rank column before projection or out
 
 Projection window helpers render directly in `select(...)` expressions. `row_number(...)`, `rank(...)`,
 `dense_rank(...)`, `lag(...)`, and `lead(...)` render as `F.<helper>(...).over(Window.partitionBy(...).orderBy(...))`.
+Rolling metric helpers render as `F.sum(...)`, `F.avg(...)`, `F.min(...)`, or `F.max(...)` over the same ordered window
+with `.rowsBetween(-preceding, 0)`.
 Generated modules import `Window` whenever a join, selected-row operation, or projection expression needs it.
 
 Exact duplicate cleanup from `distinct()` or empty `drop_duplicates()` renders `dropDuplicates()` on the current step
@@ -759,7 +761,7 @@ Problem:
 Use:
   Set target_profile to a supported range such as ">=3.5,<4.1".
 
-See docs/specifications/BackendCapabilities.md
+See docs/dev/specifications/BackendCapabilities.md
 ```
 
 Generation failure example:
@@ -782,7 +784,7 @@ Problem:
 Use:
   customer_id=lower(trim(order.customer_id))
 
-See docs/specifications/DSL.md
+See docs/dev/specifications/DSL.md
 ```
 
 Formatting failure example:
@@ -799,7 +801,7 @@ Problem:
 Use:
   Run structure compile --profile and report this as a Structure generator bug.
 
-See docs/specifications/PySparkCodeGeneration.md
+See docs/dev/specifications/PySparkCodeGeneration.md
 ```
 
 ## Generated Mode Import Failures

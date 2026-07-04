@@ -175,6 +175,10 @@ window.rank
 window.dense_rank
 window.lag
 window.lead
+window.rolling_sum
+window.rolling_avg
+window.rolling_min
+window.rolling_max
 window.select_latest
 window.select_earliest
 validation.schema_only_validation

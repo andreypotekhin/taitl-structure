@@ -129,7 +129,7 @@ These operations are not streaming-compatible in v1:
 - aggregations, including `groupBy(...).agg(...)`;
 - windowed aggregations;
 - ranking or analytic window functions, including Structure `row_number(...)`, `rank(...)`, `dense_rank(...)`,
-  `lag(...)`, and `lead(...)`;
+  `lag(...)`, `lead(...)`, `rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and `rolling_max(...)`;
 - stream-stream joins;
 - right, full, cross, semi, or anti joins involving the streaming current DataFrame;
 - Python UDFs, Pandas UDFs, RDD operations, `mapInPandas`, and `foreachPartition`;
@@ -314,7 +314,7 @@ Problem:
 Use:
   pass a static lookup DataFrame for customers, or keep this transform batch-only.
 
-See docs/specifications/StreamingCompatibility.md
+See docs/dev/specifications/StreamingCompatibility.md
 ```
 
 Hook example:
@@ -335,7 +335,7 @@ Use:
   mark the hook as @after(normalize, streaming_safe=True) only if it avoids actions, RDD/Pandas conversion,
   readStream/writeStream, and stateful streaming operations.
 
-See docs/specifications/StreamingCompatibility.md
+See docs/dev/specifications/StreamingCompatibility.md
 ```
 
 ## Generated Code Requirements

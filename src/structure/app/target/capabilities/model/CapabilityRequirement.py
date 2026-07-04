@@ -7,7 +7,7 @@ class CapabilityRequirement:
     group: str
     name: str
     source: Mapping[str, str] = field(default_factory=dict)
-    docs: str = "docs/specifications/BackendCapabilities.md"
+    docs: str = "docs/reference/BackendCapabilities.md"
 
     def key(self) -> tuple[str, str]:
         return self.group, self.name

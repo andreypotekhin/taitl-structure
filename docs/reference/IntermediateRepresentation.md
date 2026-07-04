@@ -1,10 +1,12 @@
 # Intermediate Representation
 
+## Purpose
+
 The Structure intermediate representation is the compiler contract between source DSL semantics and execution targets.
 The DSL frontend produces IR. Compileability checkers, online PySpark execution, PySpark code generation, streaming
 compatibility checks, compiler provenance, and static dataflow traceability consume IR.
 
-The IR is backend-neutral. It describes what the transform means, not how PySpark source text happens to spell
+The IR must be backend-neutral. It must describe what the transform means, not how PySpark source text happens to spell
 that meaning.
 
 ## Scope
@@ -44,7 +46,7 @@ semantic specification owns feature behavior.
 
 ## Design Principles
 
-The IR is:
+The IR must be:
 
 - backend-neutral;
 - deterministic for identical source, configuration, and Structure version;
@@ -53,9 +55,9 @@ The IR is:
 - explicit about scopes, aliases, and schema boundaries;
 - rich enough for diagnostics, provenance, traceability, online execution, generated output, and streaming checks;
 - compact enough to build and inspect quickly during `structure check`;
-- serializable for debugging, review workflows, and later incremental compile fingerprints.
+- serializable for debugging, snapshot tests, and future incremental compile fingerprints.
 
-IR nodes do not contain live Spark objects, PySpark `Column` objects, PySpark `DataFrame` objects, file handles,
+IR nodes must not contain live Spark objects, PySpark `Column` objects, PySpark `DataFrame` objects, file handles,
 runtime hook return values, or mutable compiler state.
 
 ## Compiler Flow
@@ -71,16 +73,21 @@ source import
   -> online runner or generated PySpark emitter
 ```
 
-`structure check`, `structure compile`, `structure compile --fail-on-diff`, and `structure explain` can
+`structure check`, `structure compile`, `structure compile --fail-on-diff`, and `structure explain` must be able to
 construct and validate IR without importing PySpark, starting Java, creating a `SparkSession`, or contacting a Spark
 cluster.
 
 Online execution is the runtime exception: `OnlinePySparkRunner` consumes the already checked IR and lowers it to live
 PySpark DataFrame and Column operations at run time.
 
+For PySpark targets, online execution and generated code share an additional target semantic layer after IR validation.
+Checked `TransformPlan` IR plus `PySparkCapabilities` lowers to deterministic PySpark execution recipes as specified
+by [ExecutionSemanticContract.md](ExecutionSemanticContract.md). The IR remains backend-neutral; the shared recipes are
+target-specific consumer input.
+
 ## Core Model
 
-Minimum model:
+Minimum v1 model:
 
 ```text
 TransformPlan
@@ -152,7 +159,7 @@ Expr
   WhenExpr
 ```
 
-Structure may split these records into smaller classes or sealed variants. The observable contract is the data
+Implementations may split these records into smaller classes or sealed variants. The observable contract is the data
 and invariants, not exact class names.
 
 ## Node Identity
@@ -171,10 +178,10 @@ expr:orders.transforms.order.EnrichOrders.normalize.003.filter.predicate
 
 Rules:
 
-- Ids is deterministic.
-- Ids does not include timestamps, memory addresses, object ids, or absolute workspace paths.
+- Ids must be deterministic.
+- Ids must not include timestamps, memory addresses, object ids, or absolute workspace paths.
 - Operation ids include source-order ordinals within the owning step.
-- Expression ids may be structural or path-based. They is stable enough for diagnostics and review workflows.
+- Expression ids may be structural or path-based. They must be stable enough for diagnostics and snapshot tests.
 - Generated PySpark and traceability metadata may refer to IR ids.
 - Ids are internal compatibility surface, not public DSL API.
 
@@ -201,9 +208,9 @@ Rules:
 
 - `module` and `qualified_name` are import-oriented identities.
 - `path` should be project-relative when available.
-- Absolute paths does not be written to deterministic generated artifacts.
+- Absolute paths must not be written to deterministic generated artifacts.
 - Line and column fields are optional because some Python objects may lack reliable source spans.
-- Missing source spans does not prevent compilation when the semantic information is otherwise valid.
+- Missing source spans must not prevent compilation when the semantic information is otherwise valid.
 - Diagnostics should use source anchors whenever available.
 - Provenance metadata should use source anchors to map source nodes to IR nodes and generated nodes.
 
@@ -247,9 +254,9 @@ Rules:
 - `outputs` preserve class-body output declaration order.
 - `TransformPlan.output_schema` is a compatibility accessor that returns the sole output schema and fails clearly when
   a transform has multiple outputs.
-- A transform with no compiled steps is invalid unless a later specification defines passthrough transforms.
-- `TransformPlan` does not contain live input DataFrames.
-- `TransformPlan` does not contain source transform instances created for hook execution.
+- A transform with no compiled steps is invalid unless a future specification defines passthrough transforms.
+- `TransformPlan` must not contain live input DataFrames.
+- `TransformPlan` must not contain source transform instances created for hook execution.
 
 The plan may retain source class metadata for diagnostics and hook resolution, but deterministic serialized forms should
 record importable identities rather than object representations.
@@ -273,7 +280,7 @@ Rules:
 - Input order controls generated `run(...)` parameter order and hook input namespace order.
 - Input plans do not record runtime DataFrame objects.
 
-If two inputs use the same schema and the first step consumes that schema, the compiler records how the current
+If two inputs use the same schema and the first step consumes that schema, the compiler must record how the current
 pipeline input was selected or emit an ambiguity diagnostic before execution.
 
 ## StepPlan
@@ -377,7 +384,7 @@ Rules:
 
 - Every `FieldRef` must reference a `ScopeRef`.
 - Scopes must be unique within a transform plan.
-- Joined scopes records the joined input and occurrence number.
+- Joined scopes must record the joined input and occurrence number.
 - Repeated joins of the same input must receive deterministic occurrence numbers.
 - Scope names used for generated aliases must be derived from scope metadata, not Python object identity.
 - Field names are resolved through scopes, never through unqualified strings after a join.
@@ -405,9 +412,9 @@ Rules:
 - `reads` records referenced scopes and fields when available.
 - `writes` records output fields or scopes produced by the operation when available.
 - `streaming_support` may be absent before the streaming compatibility pass and filled later.
-- Operations is immutable after construction or copied on update by later passes.
+- Operations must be immutable after construction or copied on update by later passes.
 
-Operation kinds outside the supported set fails before online execution or generation.
+Operation kinds outside the supported set must fail before online execution or generation.
 
 ## Filter Operation
 
@@ -457,9 +464,9 @@ Projection is the typed schema boundary between steps. It is also the primary so
 
 ## Operation Metadata
 
-Ordered `OperationPlan` records attach compiler-visible metadata to filters, joins, and reserved operations before
-target lowering. The metadata gives each operation family one shape for capability checks, cardinality reporting, and
-streaming classification.
+Ordered `OperationPlan` records attach compiler-visible metadata to filters, joins, and reserved v2 operations before
+target lowering. This foundation metadata does not implement v2 behavior. It gives every later feature one shape for
+capability checks, cardinality reporting, and streaming classification.
 
 ```text
 OperationPlan
@@ -479,8 +486,8 @@ OperationCapability
 ```
 
 `capability` is backend-neutral IR metadata. Target mappers translate it to the target layer's
-`CapabilityRequirement` before lowering. The PySpark profile accepts supported operation capabilities and rejects
-reserved capabilities with `BACKEND-E2402`.
+`CapabilityRequirement` before lowering. The v1 PySpark profile accepts current v1 operation capabilities and rejects
+reserved v2 capabilities with `BACKEND-E2402`.
 
 Allowed cardinality values are:
 
@@ -491,7 +498,7 @@ Allowed cardinality values are:
 - `select_one`;
 - `unknown`.
 
-Current filter operations record `row_filtering`. Current `join_one(...)` operations record `select_one` because
+Current v1 filter operations record `row_filtering`. Current `join_one(...)` operations record `select_one` because
 the operation expresses lookup intent: one matching right-side row is selected for each left-side row, even when the
 compiler emits a warning that uniqueness is not proven. `streaming` reuses the compileability vocabulary
 `compatible`, `batch_only`, and `unknown`.
@@ -501,21 +508,34 @@ Supported aggregate assignments are grouped key projection, `count()`, `count_di
 `max(...)`, `avg(...)`, and representative `first(...)` for grouped parent struct fields. Target recipes lower these
 assignments through Spark-visible `groupBy(...).agg(...)` operations, not hooks or UDFs.
 `sum(...)` and `avg(...)` accept numeric expressions. `min(...)` and `max(...)` accept orderable scalar expressions.
-Nullable inputs to null-sensitive aggregates produce nullable aggregate expressions and does not feed non-nullable
+Nullable inputs to null-sensitive aggregates produce nullable aggregate expressions and must not feed non-nullable
 output fields without an explicit repair.
 
 Selected-row operations record `select_one` cardinality and carry explicit `partition_by` expressions, one `order_by`
 expression, a `latest` or `earliest` direction, and a deterministic tie policy. They are the admitted narrow window
 slice for latest/earliest row selection and lower through target recipes to Spark-visible ranking, not hooks or UDFs.
 
-Projection window expressions cover `row_number(...)`, `rank(...)`, `dense_rank(...)`, `lag(...)`, and `lead(...)`.
-They remain symbolic expressions with explicit partition and ordering expressions, and target recipes render them as
-Spark-visible `Window.partitionBy(...).orderBy(...)` projections. Rolling frames and keyed duplicate-removal shortcuts
-remain separate features.
+Projection window expressions cover `row_number(...)`, `rank(...)`, `dense_rank(...)`, `lag(...)`, `lead(...)`,
+`rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and `rolling_max(...)`. They remain symbolic expressions
+with explicit partition and ordering expressions, and target recipes render them as Spark-visible
+`Window.partitionBy(...).orderBy(...)` projections. Rolling metric helpers add a row frame from `-preceding` through
+the current row. Keyed duplicate-removal shortcuts remain separate features.
+
+Duplicate-removal operations, exposed as `distinct()` and `drop_duplicates(...)`, record `row_filtering` cardinality
+and an optional field subset. `distinct()` and empty `drop_duplicates()` lower to current-frame exact duplicate
+removal. Subset `drop_duplicates(field, ...)` lowers to PySpark-compatible subset dedupe; non-subset fields come from
+Spark's representative row. Deterministic selected-row dedupe remains modeled through `latest_by(...)` and
+`earliest_by(...)`.
 
 `structure explain` displays each step's ordered operations as `kind(cardinality)`. Aggregate explain output also names
 grouping keys and aggregate metric functions, and selected-row output names the helper direction and partition count.
-This is an anchor for later v2 explain output, not a full v2 lineage or optimizer report.
+This is an anchor for future v2 explain output, not a full v2 lineage or optimizer report.
+
+Higher-order helper expressions currently support `arr_transform(...)`, `arr_filter(...)`,
+`map_transform_values(...)`, and `map_filter(...)`. Their callbacks are captured once against symbolic collection
+element expressions and lower to Spark-visible higher-order lambdas. They do not lower through Python UDFs or row-wise
+callbacks. Callback bodies must return typed Structure expressions or typed literals; arbitrary Python boolean control
+flow and untyped callback values are rejected during symbolic compilation with helper-specific diagnostics.
 
 ## Join Operation
 
@@ -537,7 +557,7 @@ JoinKeyPair
   ordinal
 ```
 
-Supported values:
+Supported v1 values:
 
 - `method`: `join_one`;
 - `join_type`: `left`, `inner`;
@@ -547,13 +567,13 @@ Supported values:
 Rules:
 
 - Key-pair order follows source order after flattening boolean AND.
-- Each key pair includes one expression from the joined input scope and one expression from the current or already
+- Each key pair must include one expression from the joined input scope and one expression from the current or already
   available scope.
 - Composite keys must reference the same joined input for one join operation.
 - `joined_scope` records occurrence and alias metadata.
 - `cardinality` records whether `join_one(...)` uniqueness is proven, unproven, or explicitly unchecked.
 - `right_fields` records right-side fields needed by downstream filters, projections, diagnostics, or traceability.
-- IR does not silently deduplicate right-side rows.
+- IR must not silently deduplicate right-side rows.
 
 Detailed join behavior is owned by [JoinSemantics.md](JoinSemantics.md).
 
@@ -581,10 +601,10 @@ Rules:
 - Hooks are opaque runtime boundaries.
 - Hook calls preserve source order for the same timing and target step.
 - `target_step` references a `StepPlan`.
-- `pass_inputs` records whether online and generated execution passes the original named inputs namespace.
-- Hook calls does not contain the runtime DataFrame returned by the hook.
-- Hook calls does not contain generated PySpark source text.
-- `schema_mode` and `project_output` is present for after-hook validation and projection decisions.
+- `pass_inputs` records whether online and generated execution must pass the original named inputs namespace.
+- Hook calls must not contain the runtime DataFrame returned by the hook.
+- Hook calls must not contain generated PySpark source text.
+- `schema_mode` and `project_output` must be present for after-hook validation and projection decisions.
 - `streaming_safe` records the author promise used by streaming compatibility checks.
 
 If hooks are stored outside `operations`, the compiler must still expose them as IR nodes with stable ids and
@@ -640,10 +660,10 @@ Rules:
 - `nullable` is the expression-level nullability after known narrowing.
 - `reads` records referenced fields and scopes when available.
 - Expressions must be side-effect-free symbolic values.
-- Expressions does not store Python call frames, live Spark objects, or backend-specific rendered code.
-- Unsupported expression kinds fails before online execution or generation.
+- Expressions must not store Python call frames, live Spark objects, or backend-specific rendered code.
+- Unsupported expression kinds must fail before online execution or generation.
 
-Backends lower expression IR to their own expression model. In the only backend is PySpark.
+Backends lower expression IR to their own expression model. In v1 the only backend is PySpark.
 
 ## FieldRef Expression
 
@@ -676,9 +696,9 @@ Rules:
 
 - Literal typing follows [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md).
 - `None` is represented explicitly and is nullable.
-- Decimal, date, timestamp, string, numeric, and boolean literal metadata is deterministic.
+- Decimal, date, timestamp, string, numeric, and boolean literal metadata must be deterministic.
 - Literal values must be serializable or have a deterministic diagnostic rendering.
-- Large binary literals and unsupported Python objects are out of scope for .
+- Large binary literals and unsupported Python objects are out of scope for v1.
 
 The IR does not decide whether a literal is rendered with `F.lit(...)`. That is a backend lowering decision.
 
@@ -695,7 +715,7 @@ CallExpr
 
 Rules:
 
-- Function identity is deterministic and import-oriented when possible.
+- Function identity must be deterministic and import-oriented when possible.
 - Argument order is preserved.
 - Keyword arguments are preserved in source order or sorted stable order where semantics allow.
 - Calls must be pure symbolic expression calls.
@@ -713,7 +733,7 @@ BinaryExpr
   right
 ```
 
-Supported operator families:
+Supported v1 operator families:
 
 - equality and inequality comparisons;
 - ordering comparisons where the operand types support ordering;
@@ -746,7 +766,7 @@ Rules:
 - `and` and `or` operands preserve source order.
 - Boolean IR represents symbolic `&`, `|`, and `~`, not Python `and`, `or`, and `not`.
 - Python truthiness of symbolic expressions is invalid and should fail before IR construction completes.
-- Join conditions in accept AND-combined equality pairs only. Other boolean shapes may still be valid for filters.
+- Join conditions in v1 accept AND-combined equality pairs only. Other boolean shapes may still be valid for filters.
 
 ## CastExpr
 
@@ -782,7 +802,7 @@ Rules:
 
 - Branch order follows source order.
 - Conditions must be boolean expressions.
-- Branch value types has a common assignable type.
+- Branch value types must have a common assignable type.
 - Nullability is derived from branch values and the presence or absence of `otherwise`.
 - Backend-specific `when(...).otherwise(...)` rendering belongs to the target layer.
 
@@ -802,8 +822,8 @@ Rules:
 - Expression types are Structure types.
 - Field types come from `SchemaDef.fields`.
 - Joined field nullability is adjusted according to join type.
-- Filter-based nullability narrowing is represented in the checker state or in copied expression metadata.
-- IR validation rejects assignments that violate type or nullability rules.
+- Filter-based nullability narrowing must be represented in the checker state or in copied expression metadata.
+- IR validation must reject assignments that violate type or nullability rules.
 
 The IR may either store final checked type metadata on every expression or store enough raw information for a separate
 type checker to derive it deterministically.
@@ -830,7 +850,7 @@ Rules:
 - Input, intermediate, and output validation should be explicit in the executable IR or derivable from policy without
   ambiguity.
 - The policy model must distinguish disabled validation from permissive validation.
-- Online and generated execution uses the same effective policy.
+- Online and generated execution must use the same effective policy.
 
 `input_validation_mode`, `intermediate_validation_mode`, and `output_validation_mode` values are configured outside this
 spec. The IR stores the resolved mode used by validation passes.
@@ -854,7 +874,7 @@ Rules:
 - Transform-level streaming compatibility is derived from operation classifications and policy.
 - Streaming metadata should be included in compile reports and traceability when configured.
 
-The checker must be conservative. Unknown is not reported as compatible.
+The checker must be conservative. Unknown must not be reported as compatible.
 
 ## Provenance Model
 
@@ -875,12 +895,12 @@ Rules:
 - `source` uses `SourceAnchor`.
 - `ir_id` references a stable IR node id.
 - Generated fields are optional until code generation runs.
-- Provenance records is deterministic.
+- Provenance records must be deterministic.
 - Provenance must mark hook boundaries as opaque.
-- Provenance does not include runtime row counts, Spark application ids, cluster details, or wall-clock execution
+- Provenance must not include runtime row counts, Spark application ids, cluster details, or wall-clock execution
   telemetry.
 
-Compiler provenance is compile-time metadata. Runtime LDJSON traceability is outside through v4 scope unless a future
+Compiler provenance is compile-time metadata. Runtime LDJSON traceability is outside v1 through v4 scope unless a future
 specification changes that roadmap.
 
 ## Static Dataflow Traceability
@@ -914,10 +934,10 @@ Rules:
 - Joins create table and key dependency records.
 - Hooks create opaque dependency boundaries.
 - Validation creates schema dependency records, not data dependency records.
-- Traceability records uses source input names, schema names, field names, step names, and IR ids.
-- Traceability is deterministic and compact by default.
+- Traceability records must use source input names, schema names, field names, step names, and IR ids.
+- Traceability must be deterministic and compact by default.
 
-Traceability precision may improve over time, but must at least expose transform, input, step, join, projection, hook,
+Traceability precision may improve over time, but v1 must at least expose transform, input, step, join, projection, hook,
 and validation dependencies.
 
 ## Capability Metadata
@@ -936,10 +956,10 @@ Rules:
 - The IR semantic model is not PySpark-specific.
 - PySpark capability choices belong to the PySpark target layer.
 - Capability diagnostics may attach to IR nodes.
-- Unsupported backend operations fails before online execution or generation.
-- Online and generated PySpark paths uses the same capability data.
+- Unsupported backend operations must fail before online execution or generation.
+- Online and generated PySpark paths must use the same capability data.
 
-For , `backend` is `pyspark`. Later backends does not require changing public DSL source for existing semantics.
+For v1, `backend` is `pyspark`. Future backends must not require changing public DSL source for existing v1 semantics.
 
 ## IR Construction
 
@@ -958,7 +978,7 @@ Rules:
 - Validation policy is resolved into explicit plan metadata.
 - Source-order semantics are preserved.
 
-IR construction rejects source that cannot be represented safely. It does not create placeholder nodes that later
+IR construction must reject source that cannot be represented safely. It must not create placeholder nodes that later
 emitters guess how to interpret.
 
 ## IR Validation
@@ -991,7 +1011,7 @@ Validation should run before any backend lowering. Backend-specific checks may r
 
 ## Determinism
 
-For identical source, configuration, Structure version, and target capabilities, the IR is deterministic.
+For identical source, configuration, Structure version, and target capabilities, the IR must be deterministic.
 
 Rules:
 
@@ -1004,8 +1024,8 @@ Rules:
 - Use stable scope and operation occurrence numbers.
 - Emit diagnostics in deterministic order.
 
-Deterministic IR is required for generated-code stability, `--fail-on-diff`, review workflows, provenance, traceability, and
-later incremental compilation.
+Deterministic IR is required for generated-code stability, `--fail-on-diff`, snapshot tests, provenance, traceability, and
+future incremental compilation.
 
 ## Immutability and Thread Safety
 
@@ -1017,10 +1037,10 @@ Rules:
 - If mutable builders are used, freeze or copy the result before validation and backend consumption.
 - Later analysis passes should produce new annotated plans or side reports rather than mutating shared state in place.
 - Parallel generation may read the same plan from multiple workers.
-- Shared name registries, import collectors, and diagnostics accumulators does not be mutated from parallel workers
+- Shared name registries, import collectors, and diagnostics accumulators must not be mutated from parallel workers
   without deterministic merge logic.
 
-Immutability enables caching, safe parallel rendering, and later v2 incremental compile fingerprints.
+Immutability enables caching, safe parallel rendering, and future v2 incremental compile fingerprints.
 
 ## Serialization and Debug Output
 
@@ -1034,7 +1054,7 @@ Rules:
 - Python object reprs are not acceptable for deterministic snapshots.
 - Large expression trees may be abbreviated in human CLI output, but full debug dumps should remain available for
   tests and bug reports.
-- Serialized IR is a diagnostic/testing aid unless a later compatibility policy makes it a public file format.
+- Serialized IR is a diagnostic/testing aid unless a future compatibility policy makes it a public file format.
 
 `structure explain` may use the same model, but it should present a user-oriented subset rather than a raw object dump.
 
@@ -1042,20 +1062,6 @@ Rules:
 
 Diagnostic code format, severity names, lifecycle rules, registry requirements, and stable documentation anchors are
 owned by [Diagnostics.md](Diagnostics.md). This section defines IR-specific context and message content.
-
-IR diagnostics includes:
-
-- diagnostic code;
-- severity;
-- transform class;
-- step when relevant;
-- operation kind when relevant;
-- expression, field, input, join, or hook when relevant;
-- source location when available;
-- problem;
-- why it matters when not obvious;
-- suggested fix;
-- link to this specification or the narrower semantic specification.
 
 Invalid project example:
 
@@ -1132,7 +1138,7 @@ See docs/reference/IntermediateRepresentation.md
 
 ## Non-Goals
 
-The following are outside IR scope:
+The following are outside v1 IR scope:
 
 - representing arbitrary Python control flow as dynamic DataFrame branches;
 - representing implicit Python UDF fallback;
@@ -1144,9 +1150,9 @@ The following are outside IR scope:
 - exposing raw IR classes as public user-facing DSL APIs;
 - treating serialized IR as a stable public interchange format.
 
-## Later Extensions
+## v2 Extensions
 
-Planned IR variants:
+Planned v2 IR variants:
 
 - `GroupingSets`;
 - `Rollup`;
@@ -1158,7 +1164,7 @@ Planned IR variants:
 - `DocumentationModel`;
 - `IncrementalCompileFingerprint`.
 
-Rules for adding variants:
+Rules for adding v2 variants:
 
 - Add the semantic specification first or at the same time.
 - Add generic IR validation.
@@ -1166,10 +1172,10 @@ Rules for adding variants:
 - Add online and generated lowering or explicitly mark the feature unsupported for one path.
 - Add streaming classification.
 - Add provenance and traceability records.
-- Add review workflows and parity tests where runtime behavior exists.
+- Add snapshot tests and parity tests where runtime behavior exists.
 
 `IncrementalCompileFingerprint` should hash stable IR, resolved configuration, relevant source fingerprints, and target
-capabilities. It does not hash absolute workspace paths or wall-clock times.
+capabilities. It must not hash absolute workspace paths or wall-clock times.
 
 ## v3 Extensions
 
@@ -1187,7 +1193,7 @@ Rules:
 - v3 streaming lifecycle IR must distinguish transform semantics from query orchestration.
 - Checkpoints, triggers, watermarks, output modes, and state policies require explicit user-facing semantics before
   they enter IR.
-- Runtime telemetry remains separate from compiler traceability unless a later specification merges them deliberately.
+- Runtime telemetry remains separate from compiler traceability unless a future specification merges them deliberately.
 
 ## v4 Extensions
 
@@ -1198,7 +1204,7 @@ Planned v4 IR variants:
 
 Rules:
 
-- Spark Connect support remains behind the backend target boundary.
-- Existing transform IR should not change public DSL syntax, generated class construction, `run(...)` signatures,
+- Spark Connect support must remain behind the backend target boundary.
+- Existing v1 transform IR should not change public DSL syntax, generated class construction, `run(...)` signatures,
   or streaming orchestration semantics.
 - Backend compatibility reports should explain which operations are supported, unsupported, or degraded for the target.

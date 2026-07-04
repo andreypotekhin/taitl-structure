@@ -1,9 +1,11 @@
 # Validation Semantics
 
-Validation proves that live DataFrames conform to declared schemas at pipeline boundaries. It is
+## Purpose
+
+Validation is how Structure proves that live DataFrames conform to declared schemas at pipeline boundaries. It must be
 strong enough to catch drift and weak enough by default to avoid hidden Spark work.
 
-This reference defines validation phases, validation modes, strictness, hook integration, output projection,
+This specification defines validation phases, validation modes, strictness, hook integration, output projection,
 configuration precedence, and runtime behavior. Data-quality constraint families are specified in
 [DataQualityConstraints.md](DataQualityConstraints.md).
 
@@ -58,9 +60,9 @@ output_validation_mode = "schema_only"
 Rules:
 
 - `validate_intermediate = false` is a compatibility shortcut for `intermediate_validation_mode = "off"`.
-- If both are set, `intermediate_validation_mode` is authoritative and `validate_intermediate` agrees or produce a
+- If both are set, `intermediate_validation_mode` is authoritative and `validate_intermediate` must agree or produce a
   configuration diagnostic.
-- The default does not trigger row scans.
+- The default must not trigger row scans.
 - Output validation remains enabled by default.
 
 ## Policy Precedence
@@ -93,7 +95,7 @@ Method-level overrides apply only to the decorated subtransform output. Hook-loc
 For aliased fields, validation checks the Spark column name, which is `alias` when supplied and the Python field name
 otherwise. Aliases are schema-local, so each validation boundary uses the schema declared for that boundary.
 
-It does not:
+It must not:
 
 - call `count`;
 - call `collect`;
@@ -135,7 +137,7 @@ Execution order for one subtransform:
 
 Input validation happens before the first subtransform. Final output validation happens before returning the result.
 
-Online and generated execution uses identical validation placement.
+Online and generated execution must use identical validation placement.
 
 ## Streaming Compatibility
 
@@ -145,25 +147,11 @@ operations.
 
 Rules:
 
-- Default validation is compatible with streaming-compatible transforms.
-- Constraint modes is rejected or warned for streaming when the constraint cost class is unsupported.
-- Validation does not own streaming query lifecycle.
+- Default validation must be compatible with v1 streaming-compatible transforms.
+- Constraint modes must be rejected or warned for streaming when the constraint cost class is unsupported.
+- Validation must not own streaming query lifecycle.
 
 ## Diagnostics
-
-Validation diagnostics includes:
-
-- phase;
-- transform;
-- subtransform when relevant;
-- schema name;
-- validation mode;
-- field or column;
-- expected shape;
-- actual shape;
-- problem;
-- suggested fix;
-- documentation link.
 
 Example:
 

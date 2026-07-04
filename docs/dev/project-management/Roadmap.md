@@ -134,9 +134,11 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
 - **Analytical transforms:** typed `group_by(...)`, aggregations, window expressions, deduplication helpers, ranking,
   lag/lead, rolling metrics, and compiler-visible Spark higher-order functions for arrays and maps.
 - **Analytical joins:** existence predicates, `join_many(...)`, deterministic lookup dedupe, temporal validity-window
-  joins, and backward as-of joins from [AnalyticalJoinCoverage.md](../../specifications/AnalyticalJoinCoverage.md).
+  joins, and backward as-of joins from [AnalyticalJoinCoverage.md](../specifications/AnalyticalJoinCoverage.md).
 - **Explicit optimization controls:** cache, persist, repartition, coalesce, checkpoint, and join strategy directives
   that are visible in source, generated code, traceability, and explain output.
+- **Transform composition maturity:** hook-bearing stages, composed hook ownership and dispatch, traceability for
+  composed hook boundaries, and explicit decisions on earlier-stage output exposure and mixed wrapper-local logic.
 - **Adoption and scale tooling:** richer static dataflow and generated-code explain reports, generated documentation
   artifacts for schemas and transforms, pytest helpers, generated-code freshness checks, snapshots, and production
   incremental compilation with cache diagnostics.
@@ -148,6 +150,7 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
 - Automatic cost-based optimization, join reordering, or storage write planning.
 - Hidden UDF lowering or arbitrary Python execution in compiled paths.
 - Right, full, and cross joins unless a later design explicitly admits them.
+- Using `lane(...)` as a transform-composition matching boundary.
 
 ## v3 Scope
 
@@ -156,7 +159,7 @@ v1/v2 only maintain streaming compatibility when callers pass streaming DataFram
 
 ### v3 candidate features
 
-- Full featured joins ('Out of scope until a later design' from [AnalyticalJoinCoverage.md](../../specifications/AnalyticalJoinCoverage.md)) 
+- Full featured joins ('Out of scope until a later design' from [AnalyticalJoinCoverage.md](../specifications/AnalyticalJoinCoverage.md)) 
 - Generated `readStream` and `writeStream` code.
 - Streaming sinks/sources configuration.
 - Trigger configuration.
@@ -188,6 +191,6 @@ otherwise it continues hardening the PySpark variant.
 | M4 | Hook model and no-hook generated-code cleanliness | Sprint 04 |
 | M5 | Joins, compiler traceability, build integration | Sprint 05 |
 | M6 | v1 stabilization and docs/examples | follow-up hardening sprint |
-| M7 | v2 analytical pipeline features, analytical join coverage, adoption tooling, and Spark Connect experimental parity | Sprints 06-09 |
+| M7 | v2 analytical pipeline features, analytical join coverage, composition maturity, adoption tooling, and Spark Connect experimental parity | Sprints 06-09 |
 | M8 | v3 streaming orchestration | future v3 sprints |
 | M9 | v4 Spark Connect promotion or hardening | future v4 sprints |

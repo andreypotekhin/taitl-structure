@@ -4,7 +4,7 @@
 [Overview.md](../Overview.md)
 
 ## User stories and use cases
-See [UserStories.md](../specifications/UserStories.md) for detailed description of library external behavior.
+See [UserStories.md](specifications/UserStories.md) for detailed description of library external behavior.
 
 ## Terminology
 See [Terminology.md](Terminology.md) for project language. 
@@ -17,7 +17,7 @@ Main: [Architecture.md](Architecture.md)
 
 Design docs: **/docs/dev/design**
 
-Specifications: **/docs/specifications**
+Specifications: **/docs/dev/specifications**
 
 ## Coding
 Code structure: [Code.md](Code.md)

@@ -1,17 +1,19 @@
 # PySpark Code Generation
 
+## Purpose
+
 PySpark code generation lowers Structure compiler IR into deterministic, readable Python modules that use PySpark
 DataFrame and Column APIs. The generated modules are optional for ordinary runtime execution, because online execution
-is the default, but they remain first-class artifacts for provenance, code review, debugging, review workflows, and
+is the v1 default, but they remain first-class artifacts for provenance, code review, debugging, snapshot tests, and
 projects that deliberately choose `execution_mode = "generated"`.
 
-The generator is a source-text emitter. It does not redefine transform semantics. Projection, filtering, expression
-lowering, join aliasing, hook order, validation placement, schema projection, and performance guardrails agree
+The generator is a source-text emitter. It must not redefine transform semantics. Projection, filtering, expression
+lowering, join aliasing, hook order, validation placement, schema projection, and performance guardrails must agree
 with online PySpark execution.
 
 Shared semantics are owned by [ExecutionSemanticContract.md](ExecutionSemanticContract.md). The generator renders
 `PySparkExecutionPlan` recipes, or the local implementation equivalent, into source text. It owns imports, formatting,
-file headers, generated paths, and readability. It does not make separate semantic choices that bypass the shared
+file headers, generated paths, and readability. It must not make separate semantic choices that bypass the shared
 recipes.
 
 ## Scope
@@ -71,9 +73,9 @@ Rules:
 - `transforms/` contains generated transform classes.
 - `runtime/` contains small generated-runtime helpers, such as schema validation and schema projection.
 - `traceability/` contains compiler metadata and static dataflow traceability, not runtime telemetry.
-- Every generated Python package directory contains an `__init__.py` file when the target layout requires it for
+- Every generated Python package directory must contain an `__init__.py` file when the target layout requires it for
   importability.
-- Generated paths are stable for the same source root, module name, class name, configuration, and target backend.
+- Generated paths must be stable for the same source root, module name, class name, configuration, and target backend.
 
 Example mapping:
 
@@ -126,8 +128,8 @@ compiler option. The generated text must still be deterministic and readable.
 
 ## Compiler Boundary
 
-`structure check`, `structure compile`, `structure compile --fail-on-diff`, and `structure explain` remains
-Spark-free. PySpark code generation does not import PySpark while compiling. It emits Python source text that imports
+`structure check`, `structure compile`, `structure compile --fail-on-diff`, and `structure explain` must remain
+Spark-free. PySpark code generation must not import PySpark while compiling. It emits Python source text that imports
 PySpark only when the generated module is later imported at runtime.
 
 The generator consumes compiler data structures, not live Spark objects:
@@ -141,7 +143,7 @@ CompilerProvenance
 StaticDataflowTraceability
 ```
 
-The generator does not:
+The generator must not:
 
 - start Java;
 - create or require a `SparkSession`;
@@ -197,8 +199,8 @@ Rules:
 - Input parameter order follows source input declaration order.
 - A source transform instance is created only when at least one hook exists.
 - Hook-free generated classes must omit the source transform import and `_impl` field.
-- The generated class does not inherit from the source transform class.
-- Generated classes are owned by the compiler. Users does not subclass or edit generated classes.
+- The generated class must not inherit from the source transform class.
+- Generated classes are owned by the compiler. Users must not subclass or edit generated classes.
 
 Generated execution through `GeneratedPySparkRunner` imports this class, instantiates it with
 `spark=session.spark` and `ctx=session.ctx`, and calls `run(...)` with the transform invocation's stored input
@@ -215,7 +217,7 @@ Every generated Python file must start with a stable ownership header:
 
 Rules:
 
-- The header does not include timestamps, machine-specific paths, random IDs, or absolute workspace paths.
+- The header must not include timestamps, machine-specific paths, random IDs, or absolute workspace paths.
 - Schema modules may list the source schema module instead of a single transform.
 - Runtime support files may use `Source: Structure generated runtime`.
 - Traceability metadata files may include compiler version when available, but not wall-clock time unless a future
@@ -224,7 +226,7 @@ Rules:
 
 ## Imports
 
-Generated imports is deterministic and minimal.
+Generated imports must be deterministic and minimal.
 
 Common transform imports:
 
@@ -255,11 +257,11 @@ Rules:
 - Do not use wildcard imports.
 - Do not emit unused imports.
 
-Formatting may collapse or expand import blocks, but does not make import order nondeterministic.
+Formatting may collapse or expand import blocks, but must not make import order nondeterministic.
 
 ## Schema Module Generation
 
-Each discovered Structure schema produces a Spark schema constant.
+Each discovered Structure schema must produce a Spark schema constant.
 
 Example:
 
@@ -285,10 +287,10 @@ Rules:
 - `Array(...)` and `Map(...)` preserve item, key, value, and nullability metadata.
 - `primary_key` and Structure-only metadata do not affect Spark `StructField` nullability except where schema model
   rules say `primary_key=True` implies `nullable=False`.
-- Generated `*_SCHEMA` constants are shape-only. Later data-quality constraint metadata must be emitted separately
+- Generated `*_SCHEMA` constants are shape-only. Future data-quality constraint metadata must be emitted separately
   unless a later design deliberately adds Spark-compatible metadata without changing schema shape semantics.
-- Generated schema text does not import source schema classes.
-- Identical schema names in different modules remains disambiguated by module path, not by altering constant names.
+- Generated schema text must not import source schema classes.
+- Identical schema names in different modules must remain disambiguated by module path, not by altering constant names.
 
 Schema modules may contain multiple constants when multiple schema classes are declared in one source module.
 
@@ -320,8 +322,8 @@ Rules:
 - Runtime helper APIs must stay small and stable, because all generated transform modules import them.
 - Runtime helper diagnostics must mention the schema name, validation mode, offending column or field, suggested fix,
   and a link to the relevant specification or troubleshooting document.
-- Runtime helpers does not start or stop Spark sessions.
-- Runtime helpers does not call `collect`, `toPandas`, or row-wise operations.
+- Runtime helpers must not start or stop Spark sessions.
+- Runtime helpers must not call `collect`, `toPandas`, or row-wise operations.
 
 The first implementation may keep runtime helpers as source-controlled library code instead of generated files if that
 is simpler. The generated import path must still be stable for generated classes.
@@ -365,7 +367,7 @@ Rules:
 
 - The first compiled step starts from the declared input DataFrame selected by source-order schema flow.
 - After each step, the current lane variable contains that step's output DataFrame.
-- Hooks receive the selected lane keyword and returns the new selected lane DataFrame.
+- Hooks receive the selected lane keyword and must return the new selected lane DataFrame.
 - Joins may introduce temporary DataFrame variables named from stable aliases, such as `customers_df`.
 - Avoid reusing input parameter names for aliased or projected temporary DataFrames.
 - For a multi-result subtransform, emit one shared join/filter frame and use each output declaration name as the
@@ -410,14 +412,30 @@ Rules:
 - Projection should use `select(...)`.
 - Output columns in `select(...)` follow the output schema field order.
 - Output field names are explicit with `.alias("field_name")`.
-- Generated code does not rely on implicit carry-through columns.
-- Generated code does not append right-side join columns implicitly.
+- Generated code must not rely on implicit carry-through columns.
+- Generated code must not append right-side join columns implicitly.
 
 ## Expression Lowering
 
+Expressions lower to PySpark `Column` expressions.
+
 Rules:
 
-The generator does not lower unsupported expressions to Python UDFs, Pandas UDFs, row-wise functions, RDD operations,
+- Field references lower to qualified `F.col("alias.field")` when multiple scopes are present.
+- Field references may lower to unqualified `F.col("field")` only when the current DataFrame has a single unambiguous
+  scope and no join alias is required.
+- Python literals lower to `F.lit(...)` where PySpark requires a Column.
+- `None` lowers to `F.lit(None)` with an explicit cast when target context requires one.
+- String, numeric, boolean, date, and timestamp literals follow
+  [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md).
+- Helper calls lower to PySpark functions selected by `PySparkCapabilities`.
+- Boolean combination lowers with Column operators `&`, `|`, and `~` with parentheses that preserve source semantics.
+- Normal equality lowers to `==`.
+- Null-safe equality lowers to the PySpark null-safe equality operation selected by capabilities.
+- Casts lower to Spark SQL type strings or `DataType` objects consistently for the selected PySpark range.
+- Unsupported expression kinds must fail before text is written.
+
+The generator must not lower unsupported expressions to Python UDFs, Pandas UDFs, row-wise functions, RDD operations,
 or hooks.
 
 ## Filter Lowering
@@ -427,11 +445,11 @@ or hooks.
 Rules:
 
 - Multiple adjacent filters may be combined into one `.where(...)` with `&` when source-order semantics are unchanged.
-- Filters separated by joins or hooks does not be moved across those boundaries unless a later optimizer proves it is
+- Filters separated by joins or hooks must not be moved across those boundaries unless a future optimizer proves it is
   safe and parity tests cover the move.
 - Filters that reference joined scopes must be rendered after the corresponding join.
 - Filter expressions must be parenthesized enough to preserve Column operator precedence.
-- `where(...)` does not be replaced with `filter(...)` unless the project deliberately standardizes on that spelling.
+- `where(...)` must not be replaced with `filter(...)` unless the project deliberately standardizes on that spelling.
   Use one spelling consistently. The canonical spelling is `.where(...)`.
 
 ## Projection Lowering
@@ -451,7 +469,7 @@ Rules:
   leave them and validation mode permits it.
 - Duplicate output field names are compile errors before generation.
 
-Projection is the boundary where generated code becomes reviewable: a reader can see exactly which columns
+Projection is the boundary where generated code becomes reviewable: a reader must be able to see exactly which columns
 enter the next step.
 
 ## Join Lowering
@@ -475,12 +493,25 @@ orders = orders.join(
 
 Rules:
 
-The generator does not silently deduplicate right-side rows for plain `join_one(...)`. Unproven uniqueness is a warning
+- The current DataFrame receives a stable alias derived from the current schema or step name.
+- The right DataFrame receives a stable alias derived from the input name.
+- Repeated joins of the same input receive deterministic suffixes such as `customers_2`.
+- Diagnostics and traceability refer to repeated joins as `customers#1`, `customers#2`, and so on.
+- `Join.LEFT` lowers to Spark join type `"left"`.
+- `Join.INNER` lowers to Spark join type `"inner"`.
+- `JoinHint.BROADCAST` applies to the right side and may lower to `F.broadcast(right_df)`.
+- Composite keys render key comparisons in IR order, combined with `&`.
+- Null-safe key pairs render with the selected PySpark null-safe equality syntax.
+- Right-side projection should carry only right-side key expressions and fields needed by downstream filters,
+  projections, diagnostics, or traceability.
+- The final projection after the join must remove duplicate and temporary right-side columns.
+
+The generator must not silently deduplicate right-side rows for plain `join_one(...)`. Unproven uniqueness is a warning
 or error owned by join compileability checks, not by generated code.
 
 When `join_one(...)` carries an explicit `JoinDedupe` policy, generated code may reduce the right side before joining.
-The PySpark recipe uses deterministic ordering, currently `row_number()` over a `Window.partitionBy(...)` built
-from the right-side join keys and `orderBy(...)` built from the policy expression. It does not use arbitrary
+The PySpark recipe must use deterministic ordering, currently `row_number()` over a `Window.partitionBy(...)` built
+from the right-side join keys and `orderBy(...)` built from the policy expression. It must not use arbitrary
 `first(...)` or nondeterministic `dropDuplicates(...)`.
 
 Selected-row helpers use the same visible ranking pattern on the current step frame. `latest_by(...)` renders
@@ -489,11 +520,13 @@ code keeps rank `1` and drops the temporary rank column before projection or out
 
 Projection window helpers render directly in `select(...)` expressions. `row_number(...)`, `rank(...)`,
 `dense_rank(...)`, `lag(...)`, and `lead(...)` render as `F.<helper>(...).over(Window.partitionBy(...).orderBy(...))`.
+Rolling metric helpers render as `F.sum(...)`, `F.avg(...)`, `F.min(...)`, or `F.max(...)` over the same ordered window
+with `.rowsBetween(-preceding, 0)`.
 Generated modules import `Window` whenever a join, selected-row operation, or projection expression needs it.
 
 Exact duplicate cleanup from `distinct()` or empty `drop_duplicates()` renders `dropDuplicates()` on the current step
 frame. Subset `drop_duplicates(field, ...)` renders `dropDuplicates(["field", ...])` using Spark column names from the
-typed field expressions. Generated code does not use keyed `dropDuplicates(...)` as a replacement for deterministic
+typed field expressions. Generated code must not use keyed `dropDuplicates(...)` as a replacement for deterministic
 selected-row dedupe when a specific representative row matters.
 
 ## Hook Lowering
@@ -545,7 +578,7 @@ Rules:
 - Attributes are read-only after construction.
 - Unknown attributes raise normal `AttributeError`.
 - The namespace is lightweight and does not copy DataFrames.
-- It does not expose mutation helpers such as `__setitem__`.
+- It must not expose mutation helpers such as `__setitem__`.
 - Its constructor preserves input declaration order for deterministic `repr` if a `repr` is implemented.
 
 Using a frozen dataclass, named tuple, or small custom class is acceptable. The public API is attribute access.
@@ -563,7 +596,7 @@ Rules:
   strictly.
 - Validate the final returned DataFrame unless validation is disabled for that final step by policy.
 - Validation uses generated schema constants and generated runtime helpers.
-- Validation calls includes the schema display name and validation mode.
+- Validation calls must include the schema display name and validation mode.
 
 Example:
 
@@ -574,7 +607,7 @@ assert_schema(orders, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="strict"
 ```
 
 Disabling validation should remove the corresponding `assert_schema(...)` call, not call it with a no-op mode, unless a
-later runtime helper contract explicitly chooses no-op modes.
+future runtime helper contract explicitly chooses no-op modes.
 
 ## Capability Registry
 
@@ -589,12 +622,12 @@ Rules:
 - Unsupported feature requirements fail with `BACKEND-E2402`.
 - The online runner and generated generator use the same capability data.
 - PySpark-specific syntax choices belong in the PySpark target layer, not in DSL objects.
-- Adding support for a new PySpark range should usually add capability tests and review workflows, not change transform
+- Adding support for a new PySpark range should usually add capability tests and snapshot tests, not change transform
   source.
 
 ## Performance Guardrails
 
-Generated compiled paths does not contain:
+Generated compiled paths must not contain:
 
 - Python UDFs;
 - Pandas UDFs;
@@ -608,8 +641,8 @@ Generated compiled paths does not contain:
 Rules:
 
 - If `strict_performance = true`, any IR operation requiring a prohibited construct is a compile error.
-- If a user needs arbitrary PySpark, they uses an explicit hook.
-- Hooks may contain arbitrary user PySpark code, but generated compiled code keeps hook boundaries visible.
+- If a user needs arbitrary PySpark, they must use an explicit hook.
+- Hooks may contain arbitrary user PySpark code, but generated compiled code must keep hook boundaries visible.
 - Generated source should remain optimizer-visible through DataFrame and Column APIs.
 
 The generator should include simple static self-checks before writing files so prohibited text patterns are caught even
@@ -631,7 +664,7 @@ Rules:
 - Use stable line wrapping through the formatter or renderer.
 - Normalize line endings for `--fail-on-diff` comparisons as specified by [CLI.md](CLI.md).
 
-Determinism is required for code review, review workflows, and CI stale-output checks.
+Determinism is required for code review, snapshot tests, and CI stale-output checks.
 
 ## Write-If-Changed and Formatting
 
@@ -665,7 +698,7 @@ Rules:
 - Write files in sorted path order after rendering completes.
 - Report diagnostics in deterministic order even if rendering ran in parallel.
 
-Parallelism is an implementation optimization. It does not change generated output.
+Parallelism is an implementation optimization. It must not change generated output.
 
 ## Compiler Provenance and Traceability
 
@@ -693,26 +726,14 @@ target capabilities
 Rules:
 
 - Traceability files are deterministic compiler artifacts, not runtime telemetry.
-- Traceability does not include row counts, execution time, Spark application IDs, or cluster details.
+- Traceability must not include row counts, execution time, Spark application IDs, or cluster details.
 - File format may be JSON in the first implementation because it is easy to diff and consume.
 - JSON keys must be sorted or rendered in a stable order.
 - Paths inside traceability should be project-relative where paths are needed.
 - Hook boundaries must be marked opaque.
-- Generated transform files and traceability files agrees on step, alias, join, hook, and validation names.
+- Generated transform files and traceability files must agree on step, alias, join, hook, and validation names.
 
 ## Diagnostics
-
-Generation diagnostics includes:
-
-- diagnostic code;
-- generated path when available;
-- source transform or schema when relevant;
-- source subtransform, hook, join, field, or expression when relevant;
-- target backend and target PySpark range when relevant;
-- problem;
-- why it matters when not obvious;
-- suggested fix;
-- link to this specification or the narrower semantic specification.
 
 Unsupported target example:
 
@@ -773,7 +794,7 @@ See docs/reference/PySparkCodeGeneration.md
 
 ## Generated Mode Import Failures
 
-Generated code generation supports the generated execution diagnostics specified by
+Generated code generation must support the generated execution diagnostics specified by
 [OnlineExecution.md](OnlineExecution.md).
 
 When generated mode cannot import a generated class, runtime diagnostics should suggest:
@@ -788,7 +809,7 @@ The generator should make this easy by using stable, predictable module names an
 
 ## Non-Goals
 
-The following are outside PySpark generation scope:
+The following are outside v1 PySpark generation scope:
 
 - generating Python UDFs or Pandas UDFs from compiled expressions;
 - generating RDD-based implementations;

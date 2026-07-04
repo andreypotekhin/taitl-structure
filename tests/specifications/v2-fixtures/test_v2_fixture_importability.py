@@ -290,6 +290,10 @@ def test_v2_order_analytics_fixture_lowers_grouped_aggregates(monkeypatch: pytes
         ("dense_rank", "window_dense_rank"),
         ("previous_sequence", "window_lag"),
         ("next_sequence", "window_lead"),
+        ("rolling_units", "window_rolling_sum"),
+        ("rolling_avg_units", "window_rolling_avg"),
+        ("rolling_min_units", "window_rolling_min"),
+        ("rolling_max_units", "window_rolling_max"),
     ]
 
 

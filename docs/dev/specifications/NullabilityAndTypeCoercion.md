@@ -318,7 +318,7 @@ Problem:
 Use:
   total=coalesce(to_decimal(order.total, precision=12, scale=2), 0)
 
-See docs/specifications/NullabilityAndTypeCoercion.md
+See docs/dev/specifications/NullabilityAndTypeCoercion.md
 ```
 
 Parsing conversion example:
@@ -338,7 +338,7 @@ Problem:
 Use:
   total=to_decimal(order.total, precision=12, scale=2)
 
-See docs/specifications/NullabilityAndTypeCoercion.md
+See docs/dev/specifications/NullabilityAndTypeCoercion.md
 ```
 
 Type mismatch example:
@@ -358,7 +358,7 @@ Problem:
 Use:
   is_paid=order.payment_count > 0
 
-See docs/specifications/NullabilityAndTypeCoercion.md
+See docs/dev/specifications/NullabilityAndTypeCoercion.md
 ```
 
 ## Implementation Checklist

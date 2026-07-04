@@ -577,7 +577,7 @@ Hook workaround:
   def clean_customer_id(self, *, orders, spark, ctx):
       return orders.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 
-See docs/specifications/SymbolicExecution.md
+See docs/dev/specifications/SymbolicExecution.md
 ```
 
 Invalid return example:
@@ -597,7 +597,7 @@ Problem:
 Use:
   return OrderNormalized(id=order.id, customer_id=order.customer_id)
 
-See docs/specifications/SymbolicExecution.md
+See docs/dev/specifications/SymbolicExecution.md
 ```
 
 ## Source Metadata

@@ -1,4 +1,4 @@
-﻿# Join Semantics
+# Join Semantics
 
 ## Purpose
 
@@ -361,7 +361,7 @@ Problem:
 Use:
   split the logic into separate subtransforms or move custom join logic into an @after hook.
 
-See docs/specifications/JoinSemantics.md
+See docs/dev/specifications/JoinSemantics.md
 ```
 
 ```text
@@ -376,7 +376,7 @@ Key:
 Use:
   field(String(), primary_key=True) on Customer.id, declare a unique key, or wait for v2 join_many(...).
 
-See docs/specifications/JoinSemantics.md
+See docs/dev/specifications/JoinSemantics.md
 ```
 
 ## Acceptance Scenarios

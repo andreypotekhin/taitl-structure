@@ -114,6 +114,12 @@ class PySparkExpressionEvaluator:
             return getattr(functions, function.removeprefix("window_"))(*arguments).over(
                 self._window(order_by, partition_by, expression, functions=functions, aliases=aliases, window=window)
             )
+        if function in {"window_rolling_sum", "window_rolling_avg", "window_rolling_min", "window_rolling_max"}:
+            value, order_by, *partition_by = expression.args
+            column = self.evaluate(value, functions=functions, aliases=aliases, window=window)
+            return getattr(functions, function.removeprefix("window_rolling_"))(column).over(
+                self._window(order_by, partition_by, expression, functions=functions, aliases=aliases, window=window)
+            )
         raise TypeError(f"Unsupported PySpark reserved expression: {function}")
 
     def _window(self, order_by, partition_by, expression, *, functions, aliases, window):
@@ -125,7 +131,10 @@ class PySparkExpressionEvaluator:
         ]
         order = self.evaluate(order_by, functions=functions, aliases=aliases, window=window)
         ordering = order.desc() if expression.data.get("descending") else order.asc()
-        return window.partitionBy(*partitions).orderBy(ordering)
+        spec = window.partitionBy(*partitions).orderBy(ordering)
+        if "preceding" in expression.data:
+            return spec.rowsBetween(-int(expression.data["preceding"]), 0)
+        return spec
 
     def _bind_lambdas(self, expression: PySparkExpressionRecipe, columns):
         if expression.kind == "lambda_arg":

@@ -25,7 +25,7 @@ class ResolveBackendCapabilities:
                 CapabilityRequirement(
                     group="backend",
                     name=capabilities.id.family,
-                    docs="docs/specifications/BackendCapabilities.md#pyspark-target-variants",
+                    docs="docs/reference/BackendCapabilities.md#pyspark-target-variants",
                 )
             )
             return capabilities
@@ -34,7 +34,7 @@ class ResolveBackendCapabilities:
         requirement = CapabilityRequirement(
             group="backend",
             name=target_backend,
-            docs="docs/specifications/BackendCapabilities.md#unsupported-backend-targets",
+            docs="docs/reference/BackendCapabilities.md#unsupported-backend-targets",
         )
         decision = CapabilityDecision.unsupported_backend(
             backend=backend,

@@ -136,9 +136,9 @@ checks.
 
 ## M7: v2 Analytical Pipeline Features
 
-Status: in progress. v2 starts after v1 stabilization evidence is release-ready. The milestone is split into M7A-M7D so
-independent contributors can work on analytical transforms, analytical joins, and adoption tooling without stepping on
-one another.
+Status: in progress. v2 starts after v1 stabilization evidence is release-ready. The milestone is split into M7A-M7F so
+independent contributors can work on analytical transforms, analytical joins, composition maturity, and adoption tooling
+without stepping on one another.
 
 ### M7A: v2 Scope and Analytical IR Foundations
 
@@ -198,6 +198,19 @@ Exit Criteria:
 - Pytest helpers cover `structure check`, generated-code freshness, generated-code snapshots, diagnostics, and
   online/generated parity fixtures.
 - Production incremental compile has cache invalidation tests and diagnostics.
+
+### M7F: Transform Composition Maturity
+
+Exit Criteria:
+
+- Hook-bearing stages in `.to(...)` composition have a specified owner and dispatch model for both online and generated
+  execution.
+- Composed hook traceability, source imports, lifecycle ordering, and validation boundaries have online/generated parity
+  tests.
+- The project has an explicit decision on whether composed wrappers may expose earlier-stage outputs, mix local
+  subtransforms or hooks with class-field pipelines, or remain final-output-only composition shells.
+- `lane(...)` remains unavailable for composition matching unless a later accepted design changes the public transform
+  boundary.
 
 ## M8: v3 Streaming Orchestration
 

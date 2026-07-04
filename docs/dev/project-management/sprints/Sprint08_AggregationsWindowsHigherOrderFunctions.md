@@ -111,8 +111,11 @@ def summarize(self, order: OrderEnriched) -> CustomerSummary:
 - [x] (2026-07-03) Implemented projection window helpers `row_number(...)`, `rank(...)`, `dense_rank(...)`,
   `lag(...)`, and `lead(...)` with Spark-visible generated rendering, online expression evaluation, capability
   coverage, streaming batch-only classification, public docs, and user-story coverage.
+- [x] (2026-07-04) Implemented rolling projection metrics `rolling_sum(...)`, `rolling_avg(...)`,
+  `rolling_min(...)`, and `rolling_max(...)` with explicit row-frame semantics, generated and online PySpark window
+  rendering, capability coverage, docs, and tests.
 - [x] Implement aggregation source capture, IR, recipes, generated snapshots, and parity tests.
-- [ ] Implement rolling window metrics and deterministic keyed dedupe shortcuts.
+- [ ] Implement deterministic keyed dedupe shortcuts.
 - [x] Implement supported higher-order array and map helpers.
 - [ ] Finish explain, traceability, diagnostics, and streaming compatibility classification for remaining Sprint 08
   feature families.
@@ -134,6 +137,6 @@ Targets:
 
 ## Notes
 
-Simple grouped rollups, projection window helpers, higher-order collection helpers, deterministic latest/earliest row
-selection, and exact current-frame duplicate cleanup are the admitted v2 analytical slice. Keep keyed dedupe shortcuts
-behind explicit specs so the public API defaults to explainable behavior.
+Simple grouped rollups, projection window helpers, rolling metrics, higher-order collection helpers, deterministic
+latest/earliest row selection, and exact current-frame duplicate cleanup are the admitted v2 analytical slice. Keep
+keyed dedupe shortcuts behind explicit specs so the public API defaults to explainable behavior.

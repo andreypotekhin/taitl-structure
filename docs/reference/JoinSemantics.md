@@ -1,11 +1,13 @@
-﻿# Join Semantics
+# Join Semantics
+
+## Purpose
 
 Structure joins let developers enrich a current typed row stream with fields from other named inputs while keeping the
 logic symbolic, compileable, and visible to Spark's optimizer. The compiler must know whether a join may multiply rows,
 which keys define the match, how nulls behave, which aliases own each field, and when cardinality assumptions are only
 warnings rather than proven facts.
 
-The goal is deliberately narrow: support explicit lookup joins without implicit deduplication, implicit string
+The v1 goal is deliberately narrow: support explicit lookup joins without implicit deduplication, implicit string
 column references, or hidden data scans. Row-multiplying and existence-oriented joins are specified separately for v2+
 in [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md) because they change validation, traceability, and output-row
 expectations.
@@ -44,7 +46,7 @@ joined.
 
 The old member spelling `self.customers.join_one(...)` is rejected. Use the free-standing bare form instead.
 
-Canonical function:
+Canonical v1 function:
 
 - `join_one(*, on, how, hint=None)`: an inferred lookup join.
 - Legacy explicit-selection overloads remain supported, but they are not the documented style.
@@ -52,7 +54,7 @@ Canonical function:
 Rules:
 
 - `on` is required.
-- `how` is required in . Source should show whether unmatched rows are kept or removed.
+- `how` is required in v1. Source should show whether unmatched rows are kept or removed.
 - `hint` is optional and advisory.
 - `join_one(...)` records the same ordered join operation whether the relation is inferred or explicit.
 - `join_one(...)` returns a relation proxy whose fields read from the joined scope, such as `customer.name`.
@@ -61,22 +63,22 @@ Rules:
 
 ## Join Types
 
-The compiled DSL supports:
+The v1 compiled DSL supports:
 
 - `Join.LEFT`: keep every current row; right fields are null when no match exists.
 - `Join.INNER`: keep only current rows that have at least one right match.
 
-`Join.RIGHT`, `Join.FULL`, `Join.CROSS`, and semi/anti joins are deferred. They do not fit the row-centric schema
+`Join.RIGHT`, `Join.FULL`, `Join.CROSS`, and semi/anti joins are deferred. They do not fit the v1 row-centric schema
 constructor cleanly because they can introduce rows that do not have a current-row source, or they return existence
 semantics rather than a joined right scope. The v2+ plan for semi/anti predicates lives in
 [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md).
 
-If the public enum exposes deferred values for forward compatibility, the compileability checker rejects them in
-compiled subtransforms with a diagnostic that names the supported values.
+If the public enum exposes deferred values for forward compatibility, the compileability checker must reject them in
+compiled subtransforms with a diagnostic that names the supported v1 values.
 
 ## Join Conditions
 
-The join condition is an equi-join condition: a boolean expression made from equality comparisons joined by logical
+The v1 join condition is an equi-join condition: a boolean expression made from equality comparisons joined by logical
 AND.
 
 Accepted:
@@ -91,7 +93,7 @@ join_one(on=lower(trim(order.email)) == lower(trim(customer.email)))
 join_one(on=order.customer_external_id.null_safe_eq(customer.external_id))
 ```
 
-Rejected in :
+Rejected in v1:
 
 - `OR` conditions.
 - Inequality conditions such as `<`, `<=`, `>`, or `>=`.
@@ -106,7 +108,7 @@ the other expression must reference the current row scope or a previously joined
 operand order. Public examples place the current-row expression on the left and the joined-input expression on the
 right because that reads naturally for `Join.LEFT` enrichment steps.
 
-In the bare form, all equality pairs in one `join_one(...)` call points to the same unjoined relation. A predicate
+In the bare form, all equality pairs in one `join_one(...)` call must point to the same unjoined relation. A predicate
 that mentions two unjoined relations is ambiguous and must be split into separate joins.
 
 ## Composite Keys
@@ -121,7 +123,7 @@ join_one(
 ```
 
 The key order in IR must follow source order after flattening the `&` tree from left to right. This makes diagnostics,
-traceability, generated code, and review workflows deterministic.
+traceability, generated code, and snapshot tests deterministic.
 
 Composite key rules:
 
@@ -141,9 +143,11 @@ Null-safe equality is explicit:
 order.customer_id.null_safe_eq(customer.id)
 ```
 
+This lowers to Spark's null-safe equality operation. It matches when both sides are null.
+
 Rules:
 
-- Structure does not infer null-safe equality from nullable fields.
+- Structure must not infer null-safe equality from nullable fields.
 - Composite joins may mix normal equality and null-safe equality per key pair.
 - Diagnostics must name which key pair is null-safe when explaining generated join conditions.
 - For `Join.LEFT`, every field from the joined scope is nullable after the join, even if the right schema declares the
@@ -161,10 +165,10 @@ join_one(
 )
 ```
 
-There is no `case_insensitive=True` join option. Normalization belongs in the expression because it is part of the
+There is no v1 `case_insensitive=True` join option. Normalization belongs in the expression because it is part of the
 business key. Keeping it visible makes generated PySpark and traceability reviewable.
 
-The `lower(...)` helper follows Spark's backend behavior. It is not a promise of full Unicode case folding or
+The v1 `lower(...)` helper follows Spark's backend behavior. It is not a promise of full Unicode case folding or
 locale-specific collation. If the project later adds richer collation semantics, that should be a separate expression
 helper or configuration contract.
 
@@ -174,15 +178,15 @@ helper or configuration contract.
 to match the same right row. In relational terms, it covers many-to-one and one-to-one lookup joins.
 
 Duplicate right-side rows for the chosen key are a contract violation for `join_one(...)` because Spark would multiply
-the current row. Structure does not silently deduplicate or choose an arbitrary first row.
+the current row. Structure must not silently deduplicate or choose an arbitrary first row.
 
 Uniqueness proof sources:
 
 - A right-side schema field marked `primary_key=True` when the join key is exactly that field.
-- A later unique-key metadata feature when the join key exactly matches one declared unique key.
+- A future unique-key metadata feature when the join key exactly matches one declared unique key.
 - A user-enabled runtime uniqueness check, if implemented later.
 
-When no uniqueness proof exists, should compile with a warning by default:
+When no uniqueness proof exists, v1 should compile with a warning by default:
 
 ```text
 CompileWarning JOIN-W0601: join_one(...) uniqueness is not proven
@@ -201,7 +205,8 @@ Use:
   or add an explicit JoinDedupe policy when one selected right row is the business rule.
 ```
 
-Projects may later add a strict setting that turns this warning into an error. That setting is not required for the semantics, but diagnostics should be designed so the promotion is straightforward.
+Projects may later add a strict setting that turns this warning into an error. That setting is not required for the v1
+semantics, but diagnostics should be designed so the promotion is straightforward.
 
 ## `join_many(...)` Cardinality
 
@@ -223,7 +228,7 @@ to hide in a hook.
 
 ## Right-Side Projection
 
-Generated PySpark does not carry all right-side columns through the join by default. The generator should select only:
+Generated PySpark must not carry all right-side columns through the join by default. The generator should select only:
 
 - right-side key expressions needed by the join condition;
 - right-side fields referenced by output projection;
@@ -244,7 +249,7 @@ Alias rules:
 - The first join of an input may use the input name as the generated DataFrame alias, such as `customers`.
 - Repeated joins of the same input in one subtransform must receive deterministic suffixes, such as `customers_2`.
 - Diagnostics should refer to the source input name and join occurrence when needed, for example `customers#2`.
-- Generated aliases is stable across runs for the same source.
+- Generated aliases must be stable across runs for the same source.
 
 The compiler does not rely on Python local variable names for correctness. The local name is useful to the developer
 but may not be available after symbolic execution without source analysis.
@@ -264,8 +269,8 @@ Rules:
 - A collision between `order.id` and `customer.id` is harmless while expressions remain scoped.
 - The output schema constructor or schema base overlay determines final output field names.
 - A duplicate output field name is a schema construction issue, not a join issue.
-- Generated PySpark uses qualified column references and explicit aliases.
-- Structure does not implicitly append right-side columns to the output.
+- Generated PySpark must use qualified column references and explicit aliases.
+- Structure must not implicitly append right-side columns to the output.
 
 ## Join Order
 
@@ -278,12 +283,12 @@ Filters obey source order:
 - A `where(...)` recorded after a join may reference that joined scope and is applied after the join.
 - Projection into the returned output schema happens after recorded joins and filters for the subtransform.
 
-The generator may perform safe Spark-plan optimizations later, but should preserve source order in generated code
+The generator may perform safe Spark-plan optimizations later, but v1 should preserve source order in generated code
 because it is easier to review and debug.
 
 ## Broadcast Hints
 
-`hint=JoinHint.BROADCAST` applies to the joined right input in :
+`hint=JoinHint.BROADCAST` applies to the joined right input in v1:
 
 ```python
 join_one(
@@ -294,15 +299,15 @@ join_one(
 ```
 
 Generated PySpark may lower this to `F.broadcast(right_df)` or to a Spark hint on the right DataFrame. The hint is
-advisory. It does not change row semantics.
+advisory. It must not change row semantics.
 
 Rules:
 
-- Broadcast hints apply to the right side only in .
-- Unsupported hints is rejected or warned by backend capability checks.
-- Streaming compatibility checks rejects hints or join shapes that Spark cannot run for the configured streaming
+- Broadcast hints apply to the right side only in v1.
+- Unsupported hints must be rejected or warned by backend capability checks.
+- Streaming compatibility checks must reject hints or join shapes that Spark cannot run for the configured streaming
   mode.
-- Later join strategy hints belong in the optimization roadmap, not in the semantic core.
+- Future join strategy hints belong in the optimization roadmap, not in the v1 semantic core.
 
 ## IR Contract
 
@@ -326,19 +331,6 @@ alias uniqueness, and `join_one(...)` uniqueness warnings.
 
 ## Diagnostics
 
-Join diagnostics should include:
-
-- transform class;
-- subtransform method;
-- joined input;
-- join occurrence or generated alias;
-- join method, join type, and hint;
-- source condition;
-- normalized key pairs;
-- problem;
-- suggested DSL fix;
-- link to this specification.
-
 Examples:
 
 ```text
@@ -351,7 +343,7 @@ Source condition:
   (customers.country == order.country) | (customers.id == order.customer_id)
 
 Problem:
-  joins support equality key pairs combined with AND. OR conditions are not compileable.
+  v1 joins support equality key pairs combined with AND. OR conditions are not compileable.
 
 Use:
   split the logic into separate subtransforms or move custom join logic into an @after hook.

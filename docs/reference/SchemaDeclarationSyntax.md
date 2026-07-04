@@ -1,20 +1,24 @@
-﻿# Schema Declaration Syntax
+# Schema Declaration Syntax
+
+## Purpose
 
 Structure schemas declare the row contracts used by compiler checks, generated Spark `StructType` code, runtime schema
-validation, traceability, and IDE navigation. The syntax is explicit, readable, and cheap to inspect without importing
+validation, traceability, and IDE navigation. The syntax must be explicit, readable, and cheap to inspect without importing
 PySpark or creating a Spark session.
 
-## Canonical Form
+## Canonical v1 Form
 
-The canonical schema declaration form is:
+The v1 canonical schema declaration form is:
 
 ```python
 from structure import Structure, field, String, Decimal
+
 
 class OrderRaw(Structure):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     total = field(String(), nullable=True)
+
 
 class OrderNormalized(Structure):
     id = field(String(), nullable=False)
@@ -28,11 +32,11 @@ The field declaration has three visible parts:
 2. A `field(...)` call, which marks the attribute as a Structure field.
 3. An explicit type object such as `String()` or `Decimal(12, 2)`.
 
-Lowercase type sentinels such as `string`, `decimal(12, 2)`, and `boolean` are not canonical syntax.
+Lowercase type sentinels such as `string`, `decimal(12, 2)`, and `boolean` are not canonical v1 syntax.
 
 ## Public Imports
 
-The public schema DSL is importable from `structure`:
+The public schema DSL must be importable from `structure`:
 
 ```python
 from structure import (
@@ -53,11 +57,11 @@ from structure import (
 )
 ```
 
-`Map` is part of the schema type surface.
+`Map` is part of the v1 schema type surface.
 
 ## Grammar
 
-This is the accepted schema declaration grammar in descriptive form:
+This is the accepted v1 schema declaration grammar in descriptive form:
 
 ```text
 schema_class      := class NAME(Structure): field_decl+
@@ -77,7 +81,7 @@ when import-based discovery is used. Source text or AST inspection may still be 
 
 ## Field Rules
 
-`field(...)` has this shape:
+`field(...)` has this v1 shape:
 
 ```python
 field(
@@ -106,7 +110,7 @@ Rules:
   the field definition through schema inheritance.
 - Structure passes aliases through to Spark. It does not sanitize, normalize, or quote aliases for backend-specific
   identifier edge cases.
-- rejects duplicate Python field names and duplicate effective Spark column names after inherited fields are
+- v1 must reject duplicate Python field names and duplicate effective Spark column names after inherited fields are
   resolved.
 
 `primary_key=True` on a nullable field is invalid unless `nullable=False` is explicitly supplied or inferred by the
@@ -118,7 +122,7 @@ All schema type constructors return immutable value objects. Equality is structu
 
 ### Scalar Types
 
-The scalar type constructors are:
+The v1 scalar type constructors are:
 
 ```python
 String()
@@ -153,7 +157,7 @@ Rules:
 - `precision >= 1`
 - `scale >= 0`
 - `scale <= precision`
-- should reject omitted precision and scale.
+- v1 should reject omitted precision and scale.
 
 Generated PySpark mapping:
 
@@ -186,8 +190,8 @@ Array(String(), contains_null=False)  -> T.ArrayType(T.StringType(), containsNul
 Rules:
 
 - `schema` must be a `Structure` subclass, not an instance.
-- Self-recursive schemas are rejected in .
-- Recursive cycles across multiple schemas are rejected in .
+- Self-recursive schemas are rejected in v1.
+- Recursive cycles across multiple schemas are rejected in v1.
 - Nested struct field order follows the referenced schema class.
 
 Generated PySpark mapping:
@@ -240,9 +244,9 @@ return OrderNormalized(
 
 Rules:
 
-- All non-nullable output fields are supplied unless defaults are introduced by a later spec.
+- All non-nullable output fields must be supplied unless defaults are introduced by a later spec.
 - Unknown keyword arguments are errors.
-- Missing nullable fields are errors in . Developers should be explicit to keep generated projections reviewable.
+- Missing nullable fields are errors in v1. Developers should be explicit to keep generated projections reviewable.
 - Positional arguments are rejected.
 - Field keyword order may differ from declaration order; generated projection order follows schema declaration order.
 
@@ -273,9 +277,9 @@ Base overlay rules:
 - For a target schema with one direct schema base, `base(...)` takes one source row compatible with that base.
 - For a target schema with multiple direct schema bases, `base(...)` takes one source row per direct schema base, in the
   same left-to-right order as the class declaration.
-- Fields introduced locally by the target schema are supplied as explicit overrides unless they can be copied by a
+- Fields introduced locally by the target schema must be supplied as explicit overrides unless they can be copied by a
   later spec-defined default.
-- Fields locally overriding inherited fields are supplied explicitly; this keeps changed type, nullability,
+- Fields locally overriding inherited fields must be supplied explicitly; this keeps changed type, nullability,
   metadata, or meaning visible at the construction site.
 
 Example with multiple schema bases:
@@ -286,15 +290,19 @@ class OrderPublication(Structure):
     customer_name = field(String(), nullable=True)
     total = field(Decimal(12, 2), nullable=False)
 
+
 class PublicationFlags(Structure):
     has_promotion = field(Boolean(), nullable=False)
+
 
 class OrderPublished(OrderPublication, PublicationFlags):
     pass
 
+
 flags = PublicationFlags(
     has_promotion=order.promotion_name.is_not_null(),
 )
+
 
 return OrderPublished.base(order, flags)
 ```
@@ -304,14 +312,6 @@ In this example, fields inherited through `OrderPublication` are copied from `or
 only fields needed by `OrderPublication` are copied.
 
 ## Diagnostics
-
-Schema declaration diagnostics includes:
-
-- schema class name;
-- field name when available;
-- source file and line when available;
-- the invalid value or syntax shape;
-- a concise fix.
 
 Examples:
 
@@ -337,7 +337,7 @@ See docs/reference/SchemaDeclarationSyntax.md
 
 ## Non-Goals
 
-The following are not part of canonical syntax:
+The following are not part of v1 canonical syntax:
 
 - annotation-only field declarations such as `id: String`;
 - dataclass-style defaults;
@@ -361,4 +361,4 @@ field(double)          -> field(Double())
 ```
 
 The compiler may include a temporary compatibility mode for lowercase aliases during early implementation, but docs,
-fixtures, and generated examples uses only the canonical explicit type-object form.
+fixtures, and generated examples must use only the canonical explicit type-object form.

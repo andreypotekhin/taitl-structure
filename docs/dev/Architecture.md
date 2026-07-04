@@ -78,12 +78,12 @@ objects. The PySpark code generator lowers IR to concrete PySpark source code.
 Online and generated PySpark execution share a target semantic contract. Checked `TransformPlan` IR plus
 `PySparkCapabilities` lowers to deterministic PySpark execution recipes before either runtime path consumes it. The
 online runner interprets those recipes with live PySpark objects. The generated emitter renders those same recipes as
-source text. The contract is specified in [ExecutionSemanticContract.md](../specifications/ExecutionSemanticContract.md) and designed in
+source text. The contract is specified in [ExecutionSemanticContract.md](specifications/ExecutionSemanticContract.md) and designed in
 [ExecutionSemanticContract.md](design/ExecutionSemanticContract.md).
 
 This boundary is important for keeping up with PySpark evolution. PySpark API compatibility should be isolated in the
 PySpark target layer rather than scattered across discovery, symbolic execution, or checks. The exact boundary is the
-backend capability interface specified in [BackendCapabilities.md](../specifications/BackendCapabilities.md) and designed in
+backend capability interface specified in [BackendCapabilities.md](specifications/BackendCapabilities.md) and designed in
 [BackendCapabilities.md](design/BackendCapabilities.md).
 
 Compiler phases must not depend on a live Spark installation. Discovery, schema extraction, symbolic execution,
@@ -107,7 +107,7 @@ or generated artifact. Candidate future targets are Python-hosted: Spark SQL and
 first, then Polars LazyFrame and DuckDB, then Ibis. Other targets should come through Ibis when practical. They must be
 admitted by capability profile, target adapter, diagnostics, and tests rather than by ad hoc source rewrites. The design
 is described in [AlternativeBackends.md](design/AlternativeBackends.md) and specified in
-[AlternativeBackends.md](../specifications/AlternativeBackends.md).
+[AlternativeBackends.md](specifications/AlternativeBackends.md).
 
 Hooks are the exception to the same-source goal. Hook bodies are opaque runtime code and may rely on one backend's
 DataFrame API. Future hook metadata must make that scope explicit through `target_backend` or an inherited

@@ -1,13 +1,15 @@
 # Streaming Compatibility
 
-Structure generates PySpark DataFrame transforms. It does not generate Spark Structured Streaming jobs. A generated
+## Purpose
+
+Structure v1 generates PySpark DataFrame transforms. It does not generate Spark Structured Streaming jobs. A generated
 transform is streaming-compatible when a caller can pass a streaming DataFrame as the current pipeline input and Spark
 can analyze the resulting DataFrame plan without Structure adding unsupported streaming operations, actions, stateful
 streaming features, or streaming lifecycle code.
 
-The contract is intentionally narrow: row-local projection, row-local filtering, schema-only validation, and
+The v1 contract is intentionally narrow: row-local projection, row-local filtering, schema-only validation, and
 stream-static lookup joins are in scope. Watermarks, output modes, triggers, checkpoints, streaming sources, streaming
-sinks, stream-stream joins, and stateful aggregations are outside .
+sinks, stream-stream joins, and stateful aggregations are outside v1.
 
 ## Definition
 
@@ -22,12 +24,12 @@ Streaming compatibility means all of these are true:
 - Opaque hooks are absent or explicitly marked streaming-safe.
 
 Streaming compatibility does not mean Structure guarantees every Spark expression is valid for every Spark version or
-every output mode. Structure checks the operation contract at compile time and leaves query lifecycle choices to the
+every output mode. Structure checks the v1 operation contract at compile time and leaves query lifecycle choices to the
 caller.
 
 ## Runtime Shape
 
-The streaming-compatible runtime shape is one streaming current pipeline DataFrame plus zero or more static side
+The v1 streaming-compatible runtime shape is one streaming current pipeline DataFrame plus zero or more static side
 inputs.
 
 Example:
@@ -49,9 +51,9 @@ query = result.writeStream \
 Rules:
 
 - The current pipeline DataFrame is the DataFrame flowing through the source-ordered subtransform chain.
-- Additional named inputs referenced only through joins are static side inputs in .
-- Passing a streaming DataFrame as a joined side input creates a stream-stream join and is outside .
-- Transforms with two independent streaming roots are outside because Structure does not model streaming
+- Additional named inputs referenced only through joins are static side inputs in v1.
+- Passing a streaming DataFrame as a joined side input creates a stream-stream join and is outside v1.
+- Transforms with two independent streaming roots are outside v1 because Structure does not model streaming
   synchronization, watermarks, or output modes.
 - Generated code should not branch on `df.isStreaming`; the same transform body should work for batch and streaming
   inputs when the operation contract is satisfied.
@@ -86,10 +88,10 @@ Severity rules:
 - If checks are disabled and a transform opts in with `streaming_compatible=True`, the transform-level marker wins and
   Structure still runs the compatibility pass for that transform.
 
-This gives ordinary batch projects useful visibility without making every later batch-only operation fail, while still
+This gives ordinary batch projects useful visibility without making every future batch-only operation fail, while still
 letting streaming-bound transforms enforce the contract in CI.
 
-## Supported Operations
+## Supported v1 Operations
 
 Projection is compatible when every projected value is a compileable, row-local Spark Column expression:
 
@@ -108,15 +110,18 @@ where(order.id.is_not_null())
 where(to_decimal(order.total, precision=12, scale=2) >= 0)
 ```
 
+Expression-based derived columns are compatible when they lower to Spark SQL functions or Column operators that do not
+require cross-row state, local collection, Python UDF execution, or RDD conversion.
+
 Schema-only validation is compatible. It may inspect `df.schema`, column names, data types, and nullability metadata.
-It does not trigger Spark jobs.
+It must not trigger Spark jobs.
 
 Compiler traceability generation is compatible when it records compile-time or generated-code metadata. Runtime traceability
-hooks are out of scope for and does not be introduced by streaming-compatible generated code.
+hooks are out of scope for v1 and must not be introduced by streaming-compatible generated code.
 
 ## Deferred or Rejected Operations
 
-These operations are not streaming-compatible in :
+These operations are not streaming-compatible in v1:
 
 - global `orderBy(...)` or `sort(...)` on the streaming current DataFrame;
 - `limit(...)`, `offset(...)`, or global top-N operations;
@@ -124,7 +129,7 @@ These operations are not streaming-compatible in :
 - aggregations, including `groupBy(...).agg(...)`;
 - windowed aggregations;
 - ranking or analytic window functions, including Structure `row_number(...)`, `rank(...)`, `dense_rank(...)`,
-  `lag(...)`, and `lead(...)`;
+  `lag(...)`, `lead(...)`, `rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and `rolling_max(...)`;
 - stream-stream joins;
 - right, full, cross, semi, or anti joins involving the streaming current DataFrame;
 - Python UDFs, Pandas UDFs, RDD operations, `mapInPandas`, and `foreachPartition`;
@@ -132,11 +137,11 @@ These operations are not streaming-compatible in :
 - arbitrary hooks unless marked streaming-safe.
 
 Some of these operations are supported by Spark Structured Streaming under specific watermarks, output modes, or state
-policies. Structure defers them because does not model those lifecycle and state contracts.
+policies. Structure defers them because v1 does not model those lifecycle and state contracts.
 
 ## Joins
 
-Structure allows stream-static joins only when the current pipeline DataFrame may be streaming and the joined input
+Structure v1 allows stream-static joins only when the current pipeline DataFrame may be streaming and the joined input
 is static.
 
 Accepted:
@@ -157,9 +162,9 @@ Rules:
 - Join conditions must satisfy `JoinSemantics.spec.md`.
 - `join_one(...)` uniqueness warnings still apply; streaming compatibility does not prove uniqueness.
 - `JoinHint.BROADCAST` is compatible only for the static joined side.
-- A side input that may be streaming is rejected for streaming compatibility.
+- A side input that may be streaming must be rejected for v1 streaming compatibility.
 
-Rejected in :
+Rejected in v1:
 
 - stream-stream joins;
 - joins that require watermarks;
@@ -180,7 +185,7 @@ Hooks are opaque because Structure cannot inspect arbitrary PySpark code safely.
 
 Default rule:
 
-- Any `@before(...)` or `@after(...)` hook makes the transform streaming-unknown for compatibility.
+- Any `@before(...)` or `@after(...)` hook makes the transform streaming-unknown for v1 compatibility.
 
 Opt-in rule:
 
@@ -199,7 +204,7 @@ def remove_negative_totals(self, *, orders, spark, ctx):
 - The hook does not introduce stateful streaming operations outside this specification.
 - If `pass_inputs=True`, any joined or consulted input DataFrames are static unless a later spec declares otherwise.
 
-The checker does not need to parse hook bodies in . It should validate the hook signature and record that
+The checker does not need to parse hook bodies in v1. It should validate the hook signature and record that
 streaming-safe hooks are trusted boundaries in traceability and diagnostics.
 
 ## Validation
@@ -214,7 +219,7 @@ Compatible checks:
 - nullable flags where Spark metadata is reliable;
 - nested struct, array, and map shape where available from schema metadata.
 
-Not compatible in :
+Not compatible in v1:
 
 - validation that calls `count()`, `collect()`, `head()`, or equivalent actions;
 - row-level constraints that require scanning data;
@@ -254,7 +259,7 @@ The checker folds operation classifications into a transform-level result:
 - `batch_only` when at least one operation is known to be incompatible;
 - `unknown` when at least one operation is opaque and none are known incompatible.
 
-Unknown is acceptable for batch generation but fails an explicit streaming-compatible requirement.
+Unknown is acceptable for batch generation but must fail an explicit streaming-compatible requirement.
 
 ## Compile-Time Checks
 
@@ -276,18 +281,6 @@ rather than compatible.
 
 ## Diagnostics
 
-Diagnostics should include:
-
-- error or warning code;
-- transform class;
-- subtransform;
-- operation kind;
-- source expression or hook name;
-- compatibility classification;
-- problem;
-- suggested fix;
-- link to this specification.
-
 Example:
 
 ```text
@@ -303,7 +296,7 @@ Operation:
   join customers#1
 
 Problem:
-  streaming compatibility supports stream-static joins only. The joined input may be streaming, which would create
+  v1 streaming compatibility supports stream-static joins only. The joined input may be streaming, which would create
   a stream-stream join.
 
 Use:
@@ -346,4 +339,4 @@ Generated PySpark must:
 - keep generated code reviewable and deterministic.
 
 Generated PySpark may use the same code path for batch and streaming DataFrames. Separate batch and streaming generated
-classes are not required in .
+classes are not required in v1.

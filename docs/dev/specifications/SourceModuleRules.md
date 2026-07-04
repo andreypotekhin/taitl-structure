@@ -166,7 +166,7 @@ Problem:
 Use:
   Create the directory, correct the path, or remove the setting to use the default source-root discovery.
 
-See docs/specifications/SourceModuleRules.md
+See docs/dev/specifications/SourceModuleRules.md
 ```
 
 ```text
@@ -181,7 +181,7 @@ Problem:
 Use:
   Move Spark session creation, data reads, network calls, and other side effects behind runtime functions or hooks.
 
-See docs/specifications/SourceModuleRules.md
+See docs/dev/specifications/SourceModuleRules.md
 ```
 
 ```text
@@ -196,7 +196,7 @@ Problem:
 Use:
   Remove one source root, rename one package, or configure source_roots so each import path is unique.
 
-See docs/specifications/SourceModuleRules.md
+See docs/dev/specifications/SourceModuleRules.md
 ```
 
 ## Implementation Checklist

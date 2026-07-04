@@ -213,7 +213,7 @@ Problem:
 Use:
   Add total=... to the constructor or copy it through OrderNormalized.base(source) when compatible.
 
-See docs/specifications/SchemaSemantics.md
+See docs/dev/specifications/SchemaSemantics.md
 ```
 
 ## Implementation Checklist

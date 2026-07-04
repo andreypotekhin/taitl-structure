@@ -74,7 +74,7 @@ Commands that compile, check, explain, or clean generated artifacts use this pre
 
 The resolved configuration must be visible to compiler phases as a single immutable config object. Unknown keys and
 invalid values are errors. Configuration diagnostics must include the setting path, invalid value, allowed values or
-expected type when known, suggested fix, and a link to [Configuration.md](../Configuration.md) or the relevant specification.
+expected type when known, suggested fix, and a link to [Configuration.md](../../Configuration.md) or the relevant specification.
 
 Recommended initial CLI override flags:
 
@@ -235,7 +235,7 @@ Changed files:
 Use:
   Run `structure compile` and commit the generated changes.
 
-See docs/specifications/CLI.md
+See docs/dev/specifications/CLI.md
 ```
 
 The comparison should normalize line endings so Windows checkouts do not fail solely because of CRLF/LF differences.
@@ -376,7 +376,7 @@ Problem:
 Use:
   Set `target_profile = ">=3.5,<4.1"` or choose a supported range.
 
-See docs/specifications/BackendCapabilities.md
+See docs/dev/specifications/BackendCapabilities.md
 ```
 
 Diagnostics should include, when relevant:

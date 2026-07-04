@@ -24,9 +24,9 @@ def test_public_docs_use_target_variant_and_do_not_claim_v4_only_spark_connect()
         Path("docs/QuickRef.md"),
         Path("docs/Configuration.md"),
         Path("docs/Compatibility.md"),
-        Path("docs/specifications/ConfigSchema.md"),
-        Path("docs/specifications/CompatibilityPolicy.md"),
-        Path("docs/specifications/BackendCapabilities.md"),
+        Path("docs/dev/specifications/ConfigSchema.md"),
+        Path("docs/dev/specifications/CompatibilityPolicy.md"),
+        Path("docs/dev/specifications/BackendCapabilities.md"),
     ]
     text = "\n".join(path.read_text(encoding="utf-8") for path in paths)
 

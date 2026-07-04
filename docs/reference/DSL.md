@@ -1,5 +1,11 @@
 # DSL
 
+## Purpose
+
+The Structure DSL is the public Python API for declaring schemas, transforms, expressions, filters, joins, hooks,
+validation policy, and runtime invocation. It must feel like ordinary typed Python while preserving one strict promise:
+compiled subtransforms lower to Spark-plan-visible DataFrame and Column operations through backend-neutral IR.
+
 The DSL is not a second PySpark wrapper layer. It is a small authoring surface that captures enough metadata and
 symbolic behavior for `structure check`, online execution, optional generated PySpark, compiler provenance, static
 dataflow traceability, and streaming compatibility checks to agree.
@@ -39,7 +45,7 @@ document owns how those features appear and compose in the public DSL.
 
 ## Public Imports
 
-The public DSL is importable from `structure`:
+The v1 public DSL must be importable from `structure`:
 
 ```python
 from structure import (
@@ -77,6 +83,10 @@ from structure import (
     dense_rank,
     lag,
     lead,
+    rolling_sum,
+    rolling_avg,
+    rolling_min,
+    rolling_max,
     distinct,
     drop_duplicates,
     arr_transform,
@@ -109,15 +119,15 @@ Rules:
 - Public examples must import from `structure`, not from internal modules.
 - Internal modules may exist for implementation, but they are not part of the compatibility contract unless exported
   from `structure`.
-- Importing `structure` and importing user modules that use the DSL does not import PySpark, start Spark, create a
+- Importing `structure` and importing user modules that use the DSL must not import PySpark, start Spark, create a
   Spark session, inspect live DataFrames, or read project data.
-- Decorators and declaration helpers attaches metadata only during import.
+- Decorators and declaration helpers must attach metadata only during import.
 - Expensive validation, symbolic execution, compileability checks, and backend capability checks happen in compiler or
   runtime phases, not during module import.
 
 ## Canonical Source Shape
 
-The canonical source shape is:
+The canonical v1 source shape is:
 
 ```python
 @transform
@@ -203,11 +213,11 @@ Rules:
 - Positional arguments to `@transform(...)` are rejected.
 - Unknown keyword arguments are rejected with allowed values.
 - `output=` is not a class-level option; it is reserved for method-level lane output binding.
-- The decorator preserves the original class identity enough for IDE navigation, `isinstance`, subclass checks,
+- The decorator must preserve the original class identity enough for IDE navigation, `isinstance`, subclass checks,
   and direct instantiation to behave normally.
-- The decorator records source metadata for discovery, diagnostics, generated class naming, provenance, and
+- The decorator must record source metadata for discovery, diagnostics, generated class naming, provenance, and
   static dataflow traceability.
-- Transform classes should be import-safe. They does not do Spark work in class bodies.
+- Transform classes should be import-safe. They must not do Spark work in class bodies.
 - A class decorated with `@transform` but not inheriting `Transform` is invalid.
 - A class inheriting `Transform` but missing `@transform` is not discovered as a compiled transform unless a future
   spec adds an explicit registration mode.
@@ -230,10 +240,10 @@ Rules:
 - Transform constructors accept keyword arguments matching declared `input(...)` names.
 - Positional arguments are rejected.
 - Unknown input names are rejected at construction time when possible.
-- Missing declared inputs fails no later than `run(session)`.
+- Missing declared inputs must fail no later than `run(session)`.
 - Construction stores input objects and performs no Spark action.
 - Runtime context belongs in `StructureSession(ctx=...)`, not in transform constructors.
-- Custom transform construction parameters are out of scope for .
+- Custom transform construction parameters are out of scope for v1.
 - A transform invocation can be run through `transform.run(session)` or `session.run(transform)`.
 - `run` is reserved for runtime execution. A public schema-returning subtransform named `run` is invalid.
 
@@ -387,7 +397,7 @@ Rules:
 - Overriding an inherited subtransform without calling the parent replaces the inherited step position.
 - Calling an overridden parent subtransform from the override schedules the parent as its own DataFrame step immediately
   before the child override. Parent hooks, validation, lane writes, and traceability belong to the parent step.
-- Source-order lane flow is valid. Undecorated methods consume and update the uniquely inferred lane.
+- Source-order lane flow must be valid. Undecorated methods consume and update the uniquely inferred lane.
   `@transform(output=target)` writes a named lane or output.
   `@transform(input=source, output=target)` selects both sides explicitly.
 - If more than one declared input has the first subtransform's input schema, the compiler must require an unambiguous
@@ -397,9 +407,9 @@ Rules:
 - Private helper methods are allowed and are not compiled as subtransforms.
 - Public helper methods without a `Structure` return annotation are ignored by the subtransform collector, but should
   not be used for compileable expression reuse. Use `@expr_fn` instead.
-- Async subtransforms, generator subtransforms, classmethods, and staticmethods are out of scope for compiled DSL.
+- Async subtransforms, generator subtransforms, classmethods, and staticmethods are out of scope for v1 compiled DSL.
 
-The body of a compiled subtransform is symbolically executed. It returns a symbolic schema construction expression:
+The body of a compiled subtransform is symbolically executed. It must return a symbolic schema construction expression:
 
 ```python
 return OrderNormalized(
@@ -444,10 +454,10 @@ During symbolic execution:
 
 Rules:
 
-- Symbolic execution is deterministic for the same source and configuration.
-- User code outside compiled subtransform bodies does not be symbolically executed except expression helpers called
+- Symbolic execution must be deterministic for the same source and configuration.
+- User code outside compiled subtransform bodies must not be symbolically executed except expression helpers called
   from those bodies.
-- Unsupported operations fails with structured compile errors. Structure does not silently lower unsupported
+- Unsupported operations must fail with structured compile errors. Structure must not silently lower unsupported
   Python code to UDFs, RDD operations, Pandas conversion, row-wise callbacks, or opaque generated code.
 - Symbolic execution should avoid AST parsing except where needed for source spans, expression text, or diagnostics.
 - If symbolic execution invokes user code and that user code performs side effects, Structure is not required to undo
@@ -457,7 +467,7 @@ Rules:
 
 Compiled expressions are symbolic objects with type, nullability, scope, source metadata, and lowering behavior.
 
-The expression surface includes:
+The v1 expression surface includes:
 
 - field references such as `order.customer_id`;
 - Python literals described by `NullabilityAndTypeCoercion.md`;
@@ -471,7 +481,7 @@ Rules:
 
 - Python `and`, `or`, and `not` are not valid for symbolic boolean expressions because Python evaluates truthiness
   instead of building expression trees. Diagnostics should suggest `&`, `|`, and `~`.
-- Symbolic expressions does not be truthy or falsey in Python. `if order.id:` fails with a diagnostic.
+- Symbolic expressions must not be truthy or falsey in Python. `if order.id:` must fail with a diagnostic.
 - Python string methods such as `order.customer_id.strip().lower()` are not compileable. Diagnostics should suggest
   direct DSL helpers such as `lower(trim(order.customer_id))`.
 - Expression helpers must carry enough metadata for type checking, nullability checking, streaming compatibility, IR,
@@ -507,14 +517,14 @@ Rules:
 
 - `@expr_fn` functions are ordinary Python callables at import time.
 - `@expr_fn` attaches metadata and wraps calls so symbolic arguments produce symbolic expressions.
-- An expression helper returns a symbolic expression or a Python literal accepted as a source expression.
+- An expression helper must return a symbolic expression or a Python literal accepted as a source expression.
 - A helper returning `None`, a DataFrame, an RDD, a Python collection of rows, or another unsupported object is invalid
   when called from a compiled subtransform.
 - Class-local `@expr_fn` helpers do not take `self`, but may be called through `self` for IDE discoverability.
 - Module-level helpers and class-local helpers use the same expression semantics.
-- Helpers should be pure and deterministic. Non-deterministic helpers require an explicit later contract.
-- Helpers does not import or require PySpark during compiler phases.
-- Recursive expression helpers are invalid in unless a later spec defines recursion limits and expansion behavior.
+- Helpers should be pure and deterministic. Non-deterministic helpers require an explicit future contract.
+- Helpers must not import or require PySpark during compiler phases.
+- Recursive expression helpers are invalid in v1 unless a future spec defines recursion limits and expansion behavior.
 
 When a helper call is unsupported, diagnostics should show the helper name and the call site, not only the expanded
 expression internals.
@@ -538,7 +548,7 @@ Rules:
 - Adjacent `where(...)` calls may be combined with logical AND while preserving source order.
 - A `where(...)` call before a join can reference only scopes available before that join.
 - A `where(...)` call after a join may reference the joined scope.
-- Filter placement in IR preserves source semantics. Emitters may optimize only when observable semantics remain
+- Filter placement in IR must preserve source semantics. Emitters may optimize only when observable semantics remain
   the same.
 - `where(...)` narrows simple `is_not_null()` field references according to
   [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md).
@@ -558,6 +568,7 @@ def rank_events(self, event: RawEvent) -> RankedEvent:
         dense_rank=dense_rank(partition_by=event.account_id, order_by=event.sequence),
         previous_sequence=lag(event.sequence, partition_by=event.account_id, order_by=event.sequence),
         next_sequence=lead(event.sequence, partition_by=event.account_id, order_by=event.sequence),
+        rolling_total=rolling_sum(event.amount, partition_by=event.account_id, order_by=event.sequence, preceding=6),
     )
 ```
 
@@ -569,14 +580,16 @@ Rules:
 - `partition_by` is required and accepts one expression or a list/tuple of expressions.
 - `order_by` is required.
 - `descending=True` reverses the order expression.
-- `offset` for `lag(...)` and `lead(...)` is greater than or equal to `1`.
-- Window helpers are valid in projection expressions and remain Spark-plan-visible.
+- `offset` for `lag(...)` and `lead(...)` must be greater than or equal to `1`.
+- `rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and `rolling_max(...)` require `preceding=...` and use a
+  row frame from `-preceding` through the current row.
+- Window helpers are valid in projection expressions and must remain Spark-plan-visible.
 - Window helpers are batch-only for streaming compatibility until explicit streaming state and watermark semantics
   exist.
 
 ## Joins
 
-The DSL exposes lookup joins through the free-standing `join_one(...)` function. When the `on` clause names exactly
+The v1 DSL exposes lookup joins through the free-standing `join_one(...)` function. When the `on` clause names exactly
 one unjoined relation, the call stays bare:
 
 ```python
@@ -603,7 +616,7 @@ return OrderWithCustomer.base(order)(customer_name=self.customers.name)
 
 Documentation uses inferred bare joins as the default style.
 
-Public enum values required for :
+Public enum values required for v1:
 
 ```text
 Join.LEFT
@@ -627,9 +640,9 @@ Rules:
 - For relation parameters and cached class input scopes, `join_one(...)` also makes later reads from that same proxy
   read from the joined scope.
 - Inferred joins are valid only when `on` references exactly one unjoined relation.
-- Field access on the joined scope is scoped and does not rely on unqualified string column names.
+- Field access on the joined scope is scoped and must not rely on unqualified string column names.
 - Join calls execute in source order.
-- Repeated joins of the same input produces deterministic aliases.
+- Repeated joins of the same input must produce deterministic aliases.
 - `join_many(...)` is the v2 row-multiplying join form. It is valid when the business output is one row per right-side
   match.
 
@@ -684,17 +697,17 @@ Rules:
 - Hook order for the same target and timing is source order.
 - Hooks are not symbolically executed and are opaque to the compiler except for metadata, signature, declared options,
   provenance, and streaming compatibility classification.
-- A hook without `pass_inputs=True` has signature `def hook(self, *, selected_lane_name, spark, ctx)`.
-- A hook with `pass_inputs=True` has signature `def hook(self, *, selected_lane_name, inputs, spark, ctx)`.
+- A hook without `pass_inputs=True` must have signature `def hook(self, *, selected_lane_name, spark, ctx)`.
+- A hook with `pass_inputs=True` must have signature `def hook(self, *, selected_lane_name, inputs, spark, ctx)`.
 - `inputs` is a read-only namespace containing the original DataFrames bound to the transform invocation. It does not
   contain intermediate DataFrames unless they were also declared original inputs.
-- Hooks returns a DataFrame at runtime.
+- Hooks must return a DataFrame at runtime.
 - Generated code and online execution call hooks on the source transform instance so hook behavior remains transparent.
 - Hooks may import and use PySpark because they execute at runtime, not during compiler phases.
-- Hook metadata is present in IR so generated code can call hooks and traceability can mark opaque boundaries.
+- Hook metadata must be present in IR so generated code can call hooks and traceability can mark opaque boundaries.
 
-`SchemaMode` includes at least the strict default mode and `SchemaMode.ALLOW_EXTRA_COLUMNS`. The exact enum names
-for the default strict mode may be implementation-defined in , but public documentation should use the default by
+`SchemaMode` must include at least the strict default mode and `SchemaMode.ALLOW_EXTRA_COLUMNS`. The exact enum names
+for the default strict mode may be implementation-defined in v1, but public documentation should use the default by
 omitting `schema_mode`.
 
 ## Validation Policy
@@ -734,7 +747,7 @@ Rules:
 - `spark` is supplied by the caller.
 - `ctx` is optional and passed to hooks.
 - The session owns resolved configuration, execution mode, target backend, runner selection, and optional plan cache.
-- The session does not start Spark, stop Spark, mutate Spark configuration silently, own streaming lifecycle, or manage
+- The session must not start Spark, stop Spark, mutate Spark configuration silently, own streaming lifecycle, or manage
   orchestration concerns.
 - The default execution mode is online.
 - Generated execution remains available through configuration.
@@ -743,7 +756,7 @@ Detailed runtime behavior is specified by [OnlineExecution.md](OnlineExecution.m
 
 ## Discovery and Metadata
 
-The DSL produces metadata sufficient for discovery and compilation:
+The DSL must produce metadata sufficient for discovery and compilation:
 
 ```text
 TransformDef
@@ -763,9 +776,9 @@ Rules:
 - Metadata should preserve source order for input declarations, subtransforms, hooks, fields, filters, joins, and
   projections.
 - Metadata should be immutable or treated as immutable after discovery.
-- Source locations should be captured when practical, but lack of source spans does not prevent compilation when the
+- Source locations should be captured when practical, but lack of source spans must not prevent compilation when the
   source object is otherwise valid.
-- Metadata extraction does not require PySpark, Java, Spark startup, a Spark cluster, or live DataFrames.
+- Metadata extraction must not require PySpark, Java, Spark startup, a Spark cluster, or live DataFrames.
 
 ## IR Contract
 
@@ -823,15 +836,15 @@ WhenExpr
 
 Rules:
 
-- Public DSL objects do not expose backend-specific PySpark behavior as their semantic model.
+- Public DSL objects must not expose backend-specific PySpark implementation details as their semantic model.
 - IR should contain enough source context for actionable diagnostics and provenance.
-- IR preserves deterministic operation order.
+- IR must preserve deterministic operation order.
 - IR must be consumable by both online PySpark execution and generated PySpark emission.
 - Backend capability checks consume IR plus target metadata, not live Spark objects.
 
 ## Compileability Checks
 
-The DSL frontend rejects source that cannot be lowered safely.
+The DSL frontend must reject source that cannot be lowered safely.
 
 Required checks include:
 
@@ -859,22 +872,6 @@ Checks must run without importing PySpark or starting Spark, except runtime-only
 Diagnostic code format, severity names, lifecycle rules, registry requirements, and stable documentation anchors are
 owned by [Diagnostics.md](Diagnostics.md). This section defines the DSL-specific context and message content that
 DSL diagnostics must supply.
-
-DSL diagnostics includes:
-
-- diagnostic code;
-- severity;
-- transform class when available;
-- subtransform method when available;
-- input, hook, field, expression, or decorator when relevant;
-- source file and line when available;
-- problem;
-- why it matters when the issue is not obvious;
-- direct DSL fix when one exists;
-- `@expr_fn` helper fix when reuse is likely;
-- hook workaround when arbitrary PySpark is appropriate;
-- configuration workaround only when safe and real;
-- link to the most specific specification or public docs page.
 
 Unsupported expression example:
 
@@ -958,7 +955,7 @@ See docs/reference/DSL.md
 
 ## Non-Goals
 
-The following are outside DSL scope:
+The following are outside v1 DSL scope:
 
 - arbitrary Python control flow as a source of multiple dynamic DataFrame branches;
 - subtransform branching and merging;
@@ -974,4 +971,4 @@ The following are outside DSL scope:
   helpers;
 - streaming source, sink, trigger, checkpoint, and query lifecycle DSL;
 - Spark Connect-specific public syntax;
-- non-PySpark backends in .
+- non-PySpark backends in v1.

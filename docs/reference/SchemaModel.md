@@ -1,4 +1,6 @@
-﻿# Schema Model
+# Schema Model
+
+## Purpose
 
 The schema model represents user-declared data structures independently from PySpark. It is the source of truth for
 compiler checks, generated Spark `StructType` code, runtime validation, traceability, documentation, and IDE-oriented
@@ -84,7 +86,7 @@ Rules:
 - `inherited` is true when `declaring_schema != owning_schema`.
 - `overrides` points to the overridden field origin when the field replaces an inherited field.
 
-Field order is part of the schema contract. Generated Spark schemas and projections uses `SchemaDef.fields` order.
+Field order is part of the schema contract. Generated Spark schemas and projections must use `SchemaDef.fields` order.
 Python constructors, symbolic field access, diagnostics, and compiler checks use `name`; Spark schemas, validation,
 expression rendering, and projection output use `alias or name`. Aliases are schema-local except through ordinary
 schema inheritance.
@@ -108,7 +110,7 @@ StructType(schema)
 MapType(key_type, value_type, value_contains_null)
 ```
 
-`MapType` is included in for schema declaration, Spark schema generation, and runtime validation. Higher-order map
+`MapType` is included in v1 for schema declaration, Spark schema generation, and runtime validation. Higher-order map
 transformations remain a v2 expression feature.
 
 Type equality is structural:
@@ -120,7 +122,9 @@ Array(String()) == Array(String())
 Struct(Address) == Struct(Address)
 ```
 
-## Supported Types - `String()`
+## Supported Types v1
+
+- `String()`
 - `Integer()`
 - `Long()`
 - `Float()`
@@ -146,7 +150,7 @@ Schema class
   -> runtime validation
 ```
 
-Extraction does not import PySpark or create a Spark session.
+Extraction must not import PySpark or create a Spark session.
 
 ## Inheritance Integration
 
@@ -164,6 +168,7 @@ Example:
 ```python
 class EntityKeys(Structure):
     id = field(String(), nullable=False, primary_key=True)
+
 
 class Order(EntityKeys):
     total = field(Decimal(12, 2), nullable=True)
@@ -212,7 +217,7 @@ Struct(Address)      -> T.StructType([...])
 Map(String(), Long()) -> T.MapType(T.StringType(), T.LongType(), valueContainsNull=True)
 ```
 
-Spark schema generation is deterministic and formatted consistently. When a field has an alias, Spark schema
+Spark schema generation must be deterministic and formatted consistently. When a field has an alias, Spark schema
 generation uses the alias as the `StructField` name. Structure passes the alias through as the caller's Spark column
 name and does not sanitize or quote it.
 
@@ -225,7 +230,7 @@ invocation after `run(session)`. This gives online callers the same shape contra
 
 ## Validation Rules
 
-Schema extraction rejects:
+Schema extraction must reject:
 
 - non-Structure type values in `field(...)`;
 - invalid decimal precision or scale;
@@ -255,7 +260,7 @@ Runtime validation checks:
 - map key and value types where available.
 
 Row-level constraint validation is outside the base schema model and belongs to
-[DataQualityConstraints.md](DataQualityConstraints.md). Generated `*_SCHEMA` constants remain shape-only; later constraint
+[DataQualityConstraints.md](DataQualityConstraints.md). Generated `*_SCHEMA` constants remain shape-only; future constraint
 metadata must be generated separately unless a later design deliberately adds Spark-compatible metadata without changing
 shape semantics.
 

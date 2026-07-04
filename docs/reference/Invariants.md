@@ -1,7 +1,9 @@
 # Invariants
 
-Structure invariants are truth checks that keep compiler and runtime phases honest. They complement diagnostics, user
-stories, generated-code comparisons, parity tests, differential tests, and integration tests.
+## Purpose
+
+Structure invariants are internal truth checks that keep compiler and runtime phases honest. They complement
+diagnostics, specifications, user stories, golden files, parity tests, differential tests, and integration tests.
 
 Diagnostics explain user-correctable problems. Invariants catch impossible internal states after Structure has accepted
 source, configuration, or runtime inputs. A failed invariant means Structure has a bug or a phase boundary passed an
@@ -9,7 +11,7 @@ invalid model to the next phase.
 
 ## Principles
 
-Invariants are:
+Invariants must be:
 
 - deterministic for the same source, configuration, Structure version, and target backend;
 - close to the phase boundary that can first prove the condition;
@@ -43,6 +45,16 @@ After symbolic compilation, Structure should be able to prove:
 - every join references one current or joined side and one declared input side;
 - every hook target resolves to a known step and lane.
 
+## PySpark-Plan Invariants
+
+After lowering to the PySpark execution plan, Structure should be able to prove:
+
+- every input, step, output, and validation recipe names a known lane;
+- every schema recipe maps to a generated schema constant;
+- every generated expression recipe lowers to optimizer-visible PySpark DataFrame or Column operations;
+- performance guardrails remain absent from generated paths unless a hook owns the arbitrary PySpark boundary;
+- online and generated execution consume the same target-level recipe model.
+
 ## Generated-File Invariants
 
 Before writing or comparing generated files, Structure should be able to prove:
@@ -62,6 +74,3 @@ After online or generated execution result assembly, Structure should be able to
 - result schemas are keyed by declared output lane;
 - final validation runs at the specified output boundary;
 - generated-mode import failures are reported through structured runtime diagnostics, not raw import errors.
-
-Invariant failures are narrow and actionable for Structure maintainers. User-facing failures continue to use the
-diagnostic registry and public documentation links.

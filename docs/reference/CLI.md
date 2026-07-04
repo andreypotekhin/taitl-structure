@@ -1,16 +1,18 @@
 # CLI
 
+## Purpose
+
 The Structure CLI is the command-line entrypoint for working with Structure projects. It initializes configuration,
 validates Structure source, generates optional PySpark artifacts, verifies checked-in generated output, explains
 compiler understanding, and cleans generated files.
 
 The CLI is intentionally a compiler surface, not a Spark job runner. `structure check`, `structure compile`, and
 `structure compile --fail-on-diff` must run without PySpark, Java, Spark startup, a `SparkSession`, or a Spark cluster.
-Online runtime execution remains available through `StructureSession`, not through the CLI.
+Online runtime execution remains available through `StructureSession`, not through the v1 CLI.
 
 ## Command Surface
 
-The command set is:
+The v1 command set is:
 
 ```bash
 structure init
@@ -59,7 +61,7 @@ Exit codes:
 
 Output should be deterministic for the same source tree, configuration, Structure version, terminal width class, and
 command flags. Diagnostics and profile summaries may include elapsed times, but generated code and diff comparisons
-does not depend on wall-clock values.
+must not depend on wall-clock values.
 
 ## Configuration Resolution
 
@@ -70,9 +72,9 @@ Commands that compile, check, explain, or clean generated artifacts use this pre
 3. `structure.toml`.
 4. defaults.
 
-The resolved configuration is visible to compiler phases as a single immutable config object. Unknown keys and
-invalid values are errors. Configuration diagnostics includes the setting path, invalid value, allowed values or
-expected type when known, suggested fix, and a link to [Configuration.md](../Configuration.md) or the relevant specification.
+The resolved configuration must be visible to compiler phases as a single immutable config object. Unknown keys and
+invalid values are errors. Configuration diagnostics name the setting path, invalid value, allowed values or expected
+type when known, suggested fix, and a link to [Configuration.md](../Configuration.md) or the relevant reference page.
 
 Recommended initial CLI override flags:
 
@@ -91,11 +93,11 @@ Recommended initial CLI override flags:
 --strict-performance / --no-strict-performance
 ```
 
-Structure may stage these flags across milestones, but every supported flag behaves as a config override and
+Implementations may stage these flags across milestones, but every supported flag must behave as a config override and
 must appear in help text with the corresponding config key.
 
-accepts `--target-profile` and `--compat-targets` as reserved alternative-backend metadata. Non-PySpark compatibility
-targets is reported as pending, not as executed compatibility checks.
+V1 accepts `--target-profile` and `--compat-targets` as reserved alternative-backend metadata. Non-PySpark compatibility
+targets must be reported as pending, not as executed compatibility checks.
 
 ## `structure init`
 
@@ -106,7 +108,7 @@ Default behavior:
 - if `pyproject.toml` exists, add `[tool.structure]` only when the table is absent;
 - otherwise create `structure.toml`;
 - write a compact recommended configuration;
-- refuse to overwrite existing Structure configuration unless a later explicit force flag is added;
+- refuse to overwrite existing Structure configuration unless a future explicit force flag is added;
 - print the file path written and a short next command, usually `structure check`.
 
 `structure init --seed-config` writes every default setting with comments when comments are practical for the target
@@ -152,7 +154,7 @@ It must run:
 7. compatibility checks for the configured target backend and PySpark range;
 8. compiler provenance and static dataflow traceability construction in memory when enabled.
 
-It does not write generated schemas, transforms, runtime support, provenance files, traceability files, cache files, or temp
+It must not write generated schemas, transforms, runtime support, provenance files, traceability files, cache files, or temp
 artifacts that survive command completion. Temporary files are allowed only if they are cleaned before exit.
 
 Successful output should be compact:
@@ -167,14 +169,14 @@ Structure check passed
 
 Warnings do not fail the command by default. Errors fail with exit code `1`.
 
-`--compat-targets` behavior:
+V1 `--compat-targets` behavior:
 
 ```bash
 structure check --compat-targets pyspark,polars,duckdb
 ```
 
-validates the active PySpark target as usual, then prints a pending-status summary for listed non-PySpark targets.
-It does not claim that Polars, DuckDB, Spark SQL, or Ibis checks have run. Later versions will replace the pending
+V1 validates the active PySpark target as usual, then prints a pending-status summary for listed non-PySpark targets.
+It must not claim that Polars, DuckDB, Spark SQL, or Ibis checks have run. Future versions will replace the pending
 summary with capability-engine portability reports. Unsupported active-target requirements remain errors.
 
 ## `structure compile`
@@ -189,7 +191,7 @@ It performs the same compiler pipeline as `check`, then writes:
 - compiler provenance files when traceability is enabled;
 - static dataflow traceability files when traceability is enabled.
 
-Generation is deterministic. For unchanged content, the command should use write-if-changed behavior so file
+Generation must be deterministic. For unchanged content, the command should use write-if-changed behavior so file
 timestamps do not churn and editor/build tools do not see false changes.
 
 Successful output should summarize the work:
@@ -203,7 +205,7 @@ Structure compile passed
   warnings: 0
 ```
 
-`compile` fails before writing partial generated output when configuration or source validation fails. Once writing
+`compile` must fail before writing partial generated output when configuration or source validation fails. Once writing
 begins, it should use a safe strategy: write to temporary files and replace final paths atomically where practical, or
 write each file only after its content is complete.
 
@@ -219,7 +221,7 @@ Behavior:
 4. fail with exit code `1` if any file is added, removed, or changed;
 5. delete the temporary directory before exit.
 
-This mode does not modify the configured generated directory.
+This mode must not modify the configured generated directory.
 
 Failure output must name changed paths and show enough context for CI users to act:
 
@@ -237,7 +239,7 @@ See docs/reference/CLI.md
 ```
 
 The comparison should normalize line endings so Windows checkouts do not fail solely because of CRLF/LF differences.
-It does not normalize whitespace inside files otherwise.
+It must not normalize whitespace inside files otherwise.
 
 ## `structure explain`
 
@@ -250,7 +252,7 @@ structure explain orders.transforms.order.EnrichOrders
 ```
 
 The command must run configuration resolution, discovery, symbolic execution, IR construction, and compileability
-checks for the requested transform and its dependencies. It does not write generated output.
+checks for the requested transform and its dependencies. It must not write generated output.
 
 Default output is a compact, stable text report:
 
@@ -281,7 +283,7 @@ EnrichOrders
 The report should include warnings relevant to the transform, such as unproven `join_one(...)` uniqueness. It should
 identify opaque hook boundaries so a reader can distinguish compiled logic from arbitrary PySpark hooks.
 
-Later compatibility explain output should show the active target and any requested compatibility targets. Hook
+Future compatibility explain output should show the active target and any requested compatibility targets. Hook
 boundaries should include their effective target set and whether that target set was explicit or inherited from
 configuration.
 
@@ -293,14 +295,14 @@ fix such as checking `source_roots` or the class name.
 `structure clean` removes generated artifacts owned by Structure.
 
 By default it removes only paths under the configured `generated_dir` that Structure can identify as generated output.
-It never delete files outside the project root or outside `generated_dir`. The implementation should use one or
+It must never delete files outside the project root or outside `generated_dir`. The implementation should use one or
 both of these safety markers:
 
 - a generated manifest written by `structure compile`;
 - file headers that identify Structure-generated files.
 
 If the configured `generated_dir` contains unknown files, `clean` should refuse to remove the directory wholesale and
-print the unknown paths. A later explicit force flag may remove unknown files, but should be conservative.
+print the unknown paths. A future explicit force flag may remove unknown files, but v1 should be conservative.
 
 Successful output:
 
@@ -332,7 +334,7 @@ Metrics:
 - transforms compiled;
 - cache hits or cache hit ratio.
 
-profiling measures cold compiler work. Production incremental compilation belongs to v2, but should preserve
+v1 profiling measures cold compiler work. Production incremental compilation belongs to v2, but v1 should preserve
 source fingerprints, deterministic outputs, and stable phase boundaries so the later cache can reuse this structure.
 
 Profile output should be compact and human-readable:
@@ -369,26 +371,13 @@ Setting:
   target_profile = "<3.0"
 
 Problem:
-  Structure supports PySpark 3.5.x and 4.0.x by default.
+  Structure v1 supports PySpark 3.5.x and 4.0.x by default.
 
 Use:
   Set `target_profile = ">=3.5,<4.1"` or choose a supported range.
 
 See docs/reference/BackendCapabilities.md
 ```
-
-Diagnostics should include, when relevant:
-
-- diagnostic code;
-- command name;
-- config file path and setting;
-- source file and line;
-- transform class;
-- subtransform method;
-- input, field, hook, join, or generated path;
-- problem;
-- suggested fix;
-- documentation link.
 
 The CLI should print warning diagnostics before the success summary. Error diagnostics should be printed without a
 success summary.
@@ -404,7 +393,7 @@ structure compile --fail-on-diff
 structure explain
 ```
 
-These commands does not import PySpark, start Java, create a `SparkSession`, connect to a Spark cluster, or require
+These commands must not import PySpark, start Java, create a `SparkSession`, connect to a Spark cluster, or require
 Spark environment variables. They may import user source modules only if discovery keeps module import Structure-safe.
 If a user module starts Spark at import time and discovery executes that import, Structure should fail with a diagnostic
 that explains module imports must be compiler-safe and suggests moving Spark startup into runtime code.

@@ -330,7 +330,7 @@ Invalid schema field type:
 Use an explicit Structure type object:
   id = field(String(), nullable=False)
 
-See docs/specifications/SchemaDeclarationSyntax.md
+See docs/dev/specifications/SchemaDeclarationSyntax.md
 ```
 
 ```text
@@ -340,7 +340,7 @@ Invalid decimal type:
 Decimal scale must be less than or equal to precision:
   total = field(Decimal(12, 2), nullable=True)
 
-See docs/specifications/SchemaDeclarationSyntax.md
+See docs/dev/specifications/SchemaDeclarationSyntax.md
 ```
 
 ## Non-Goals

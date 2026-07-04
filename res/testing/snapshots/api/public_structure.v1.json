@@ -584,6 +584,38 @@
       "qualname": "rank",
       "signature": "(*, partition_by: 'object', order_by: 'object', descending: 'bool' = False) -> 'Expression'"
     },
+    "rolling_avg": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "rolling_avg",
+      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', preceding: 'int', descending: 'bool' = False) -> 'Expression'"
+    },
+    "rolling_max": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "rolling_max",
+      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', preceding: 'int', descending: 'bool' = False) -> 'Expression'"
+    },
+    "rolling_min": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "rolling_min",
+      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', preceding: 'int', descending: 'bool' = False) -> 'Expression'"
+    },
+    "rolling_sum": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "rolling_sum",
+      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', preceding: 'int', descending: 'bool' = False) -> 'Expression'"
+    },
     "row_number": {
       "dataclass_fields": [],
       "enum_members": [],

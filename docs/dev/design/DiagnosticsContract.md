@@ -30,7 +30,7 @@ CONF-E0101
 ```
 
 The prefix names the component that issued the diagnostic, and the severity letter is part of the code. Component
-prefixes are documented in [Diagnostics.md](../../specifications/Diagnostics.md). Both errors and warnings use the same component
+prefixes are documented in [Diagnostics.md](../specifications/Diagnostics.md). Both errors and warnings use the same component
 prefix for their feature area.
 
 [Diagnostics.md](../../Diagnostics.md) is the public index. Feature specs may include deeper examples, but public diagnostic links

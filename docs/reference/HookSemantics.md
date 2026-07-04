@@ -1,5 +1,7 @@
 # Hook Semantics
 
+## Purpose
+
 Hooks are Structure's explicit runtime escape hatch. They let a developer attach arbitrary backend DataFrame logic to a
 specific compiled subtransform without pretending the hook body is compiler-visible.
 
@@ -103,8 +105,8 @@ Rules:
 - the selected lane parameter, `spark`, and `ctx` are required.
 - `inputs` is required only when `pass_inputs=True`.
 - `inputs` is invalid when `pass_inputs=False`.
-- Extra parameters are invalid in .
-- Hooks returns a DataFrame at runtime.
+- Extra parameters are invalid in v1.
+- Hooks must return a DataFrame at runtime.
 
 Signature validation should happen during compiler checks, not only when a hook is first invoked in production.
 
@@ -174,17 +176,17 @@ Rules:
 - Use `target_backend="pyspark"` for a single backend.
 - Use `target_backend=["pyspark", "polars"]` only when one hook intentionally supports multiple Python-hosted backends.
 - Missing `target_backend` resolves from `hook_target_default` in configuration.
-- The compatibility default is `hook_target_default = ["pyspark"]`.
-- A later strict mode may use `hook_target_default = "explicit"` to require every hook to declare target backends.
-- Runtime execution does not invoke a hook when the active target is outside the hook's effective target set.
+- The v1 compatibility default is `hook_target_default = ["pyspark"]`.
+- A future strict mode may use `hook_target_default = "explicit"` to require every hook to declare target backends.
+- Runtime execution must not invoke a hook when the active target is outside the hook's effective target set.
 - Compatibility checks warn when an unmarked hook inherits a default while checking other targets.
 - Compatibility checks warn when a hook appears to import or reference a backend outside its declared target set.
 
 Target scope prevents accidental runtime errors such as calling a PySpark hook with a Polars LazyFrame or DuckDB
 relation. It does not make hook internals compiler-visible.
 
-accepts and carries `target_backend` metadata so documented PySpark hook examples are usable now. A hook whose
-effective target set excludes `pyspark` fails during compilation in because PySpark is the only executable hook
+V1 accepts and carries `target_backend` metadata so documented PySpark hook examples are usable now. A hook whose
+effective target set excludes `pyspark` must fail during compilation in v1 because PySpark is the only executable hook
 ABI.
 
 ## Schema Handling
@@ -194,13 +196,13 @@ Hooks receive and return DataFrames.
 Rules:
 
 - The selected lane parameter has the shape produced by the previous stage at that boundary.
-- A hook returns a DataFrame.
+- A hook must return a DataFrame.
 - By default, returned shape must match the target schema in strict mode.
 - `schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS` permits additional columns at that hook boundary.
 - `project_output=True` projects the hook result back to the target schema.
 - Hook output validation placement must match online and generated execution.
 
-`SchemaMode` includes at least:
+`SchemaMode` must include at least:
 
 ```text
 STRICT
@@ -246,19 +248,6 @@ The shared PySpark execution plan lowers each `HookDef` to a deterministic hook 
 generated execution.
 
 ## Diagnostics
-
-Hook diagnostics includes:
-
-- transform class;
-- hook name;
-- target subtransform;
-- timing;
-- source location when available;
-- decorator options;
-- signature shape;
-- problem;
-- suggested fix;
-- documentation link.
 
 Example:
 

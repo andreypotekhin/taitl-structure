@@ -1,4 +1,6 @@
-﻿# Schema Semantics
+# Schema Semantics
+
+## Purpose
 
 Structure schemas define row shape and type meaning for compiler checks, generated Spark schemas, runtime validation,
 online execution, generated code, diagnostics, and traceability. This specification ties together schema declaration
@@ -20,14 +22,14 @@ Structure schema behavior has four layers:
 1. Source declarations: Python classes that inherit `Structure` and declare fields with `field(...)`.
 2. Compiler model: backend-neutral `SchemaDef`, `FieldDef`, and type values.
 3. Runtime shape: generated or materialized Spark `StructType` values.
-4. Value constraints: later explicit data-quality checks outside the base shape model.
+4. Value constraints: future explicit data-quality checks outside the base shape model.
 
 The schema model is the source of truth. Generated PySpark schemas and online materialized schemas are derived
 artifacts.
 
 ## Canonical Declaration
 
-The canonical declaration form is:
+The canonical v1 declaration form is:
 
 ```python
 class OrderRaw(Structure):
@@ -43,7 +45,7 @@ Rules:
 - Field order is class-body order after inheritance is resolved.
 - Field names are Python attribute names.
 - `primary_key=True` implies `nullable=False`.
-- Public examples uses this form.
+- Public examples must use this form.
 
 ## Schema Identity
 
@@ -80,12 +82,12 @@ Rules:
 - Extra DataFrame columns are failures in strict validation mode.
 - Unknown field constructor keywords are declaration errors.
 - Field metadata and descriptions do not change Spark shape semantics unless a narrower spec says so.
-- Later aliases does not be added without a migration specification because generated code and diagnostics rely on
+- Future aliases must not be added without a migration specification because generated code and diagnostics rely on
   field names.
 
 ## Type Semantics
 
-schema types:
+v1 schema types:
 
 ```text
 String()
@@ -105,7 +107,7 @@ Map(key_type, value_type, value_contains_null=True)
 Rules:
 
 - Type objects are immutable and structurally comparable.
-- Decimal precision and scale is valid before a `SchemaDef` is emitted.
+- Decimal precision and scale must be valid before a `SchemaDef` is emitted.
 - Nested struct cycles are rejected.
 - Map keys are never nullable because Spark map keys cannot be null.
 - Higher-order array and map transformations are not implied by declaring array or map fields.
@@ -138,7 +140,7 @@ Rules:
 
 - Positional arguments are rejected.
 - Unknown keyword fields are rejected.
-- All target fields are supplied or copied through a specified base overlay.
+- All target fields must be supplied or copied through a specified base overlay.
 - Projection order follows the target schema, not source keyword order.
 - Assignment type and nullability are checked before generated or online runtime execution.
 
@@ -177,22 +179,11 @@ Generated schema constants and online materialized schemas are shape-only Spark 
 Rules:
 
 - They include field names, field order, Spark data types, nullability, and nested shape.
-- They do not include later value-level constraints as executable behavior.
+- They do not include future value-level constraints as executable behavior.
 - They may be used by caller code for `spark.read.schema(...)`, validation, and pre-write projection.
 - Online execution exposes equivalent schemas after `.run(session)` without requiring generated files.
 
 ## Diagnostics
-
-Schema diagnostics includes:
-
-- schema class;
-- field name when relevant;
-- expected type and nullability;
-- actual declaration or expression metadata;
-- source location when available;
-- problem;
-- suggested fix;
-- link to the most specific schema specification.
 
 Example:
 

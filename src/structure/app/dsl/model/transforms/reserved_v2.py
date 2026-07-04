@@ -146,6 +146,90 @@ def lead(
     )
 
 
+def rolling_sum(
+    value: object,
+    *,
+    partition_by: object,
+    order_by: object,
+    preceding: int,
+    descending: bool = False,
+) -> Expression:
+    argument = literal(value)
+    return _rolling_expression(
+        "sum",
+        argument,
+        type=argument.type,
+        nullable=argument.nullable,
+        partition_by=partition_by,
+        order_by=order_by,
+        preceding=preceding,
+        descending=descending,
+    )
+
+
+def rolling_avg(
+    value: object,
+    *,
+    partition_by: object,
+    order_by: object,
+    preceding: int,
+    descending: bool = False,
+) -> Expression:
+    argument = literal(value)
+    return _rolling_expression(
+        "avg",
+        argument,
+        type=DoubleType(),
+        nullable=argument.nullable,
+        partition_by=partition_by,
+        order_by=order_by,
+        preceding=preceding,
+        descending=descending,
+    )
+
+
+def rolling_min(
+    value: object,
+    *,
+    partition_by: object,
+    order_by: object,
+    preceding: int,
+    descending: bool = False,
+) -> Expression:
+    argument = literal(value)
+    return _rolling_expression(
+        "min",
+        argument,
+        type=argument.type,
+        nullable=argument.nullable,
+        partition_by=partition_by,
+        order_by=order_by,
+        preceding=preceding,
+        descending=descending,
+    )
+
+
+def rolling_max(
+    value: object,
+    *,
+    partition_by: object,
+    order_by: object,
+    preceding: int,
+    descending: bool = False,
+) -> Expression:
+    argument = literal(value)
+    return _rolling_expression(
+        "max",
+        argument,
+        type=argument.type,
+        nullable=argument.nullable,
+        partition_by=partition_by,
+        order_by=order_by,
+        preceding=preceding,
+        descending=descending,
+    )
+
+
 def drop_duplicates(*subset: object) -> None:
     fields = _dedupe_subset(subset, call="drop_duplicates(...)")
     _context("drop_duplicates()").operations.append(
@@ -208,6 +292,36 @@ def _window_expression(
         data["has_default"] = default is not None
     args = (() if value is None else (value,)) + (ordering, *partitions)
     return Expression(kind="reserved_v2", type=type, nullable=nullable, data=data, args=args)
+
+
+def _rolling_expression(
+    function: str,
+    value: Expression,
+    *,
+    type,
+    nullable: bool,
+    partition_by: object,
+    order_by: object,
+    preceding: int,
+    descending: bool,
+) -> Expression:
+    if preceding < 0:
+        raise TypeError(f"rolling_{function}(...) preceding must be greater than or equal to 0")
+    partitions = _partition_by(partition_by, call=f"rolling_{function}(...)")
+    ordering = literal(order_by)
+    return Expression(
+        kind="reserved_v2",
+        type=type,
+        nullable=nullable,
+        data={
+            "function": f"window_rolling_{function}",
+            "capability_group": "window",
+            "capability_name": f"rolling_{function}",
+            "descending": descending,
+            "preceding": preceding,
+        },
+        args=(value, ordering, *partitions),
+    )
 
 
 def _partition_by(partition_by: object, *, call: str) -> tuple[Expression, ...]:

@@ -328,7 +328,7 @@ over streaming orchestration, storage writes, Spark Connect, automatic cost-base
   summaries are supported when practical.
 - + As a developer, I can define ranking window expressions so that row number, rank, and dense rank compile to Spark
   window operations.
-- As a developer, I can define rolling window metrics so that moving analytical summaries remain compiler-visible.
+- + As a developer, I can define rolling window metrics so that moving analytical summaries remain compiler-visible.
 - + As a developer, I can define lag and lead expressions so that time-relative comparisons remain compiler-visible.
 - + As a developer, I can remove exact duplicates explicitly so that duplicate cleanup is visible in source and explain
   output.

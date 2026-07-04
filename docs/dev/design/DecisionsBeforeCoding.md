@@ -32,30 +32,30 @@ The v1 implementation must follow these decisions:
 The implementation must treat these documents as the source of truth:
 
 ```text
-docs/specifications/SourceModuleRules.md
-docs/specifications/DSL.md
-docs/specifications/SymbolicExecution.md
-docs/specifications/SchemaDeclarationSyntax.md
-docs/specifications/SchemaModel.md
-docs/specifications/SchemaSemantics.md
-docs/specifications/SchemaInheritance.md
-docs/specifications/NullabilityAndTypeCoercion.md
-docs/specifications/ValidationSemantics.md
-docs/specifications/JoinSemantics.md
-docs/specifications/HookSemantics.md
-docs/specifications/ConfigSchema.md
-docs/specifications/CLI.md
-docs/specifications/CompatibilityPolicy.md
-docs/specifications/CompilerPerformanceTargets.md
-docs/specifications/Diagnostics.md
-docs/specifications/IntermediateRepresentation.md
-docs/specifications/ExecutionSemanticContract.md
-docs/specifications/OnlineExecution.md
-docs/specifications/PySparkCodeGeneration.md
-docs/specifications/BackendCapabilities.md
-docs/specifications/DataQualityConstraints.md
-docs/specifications/StreamingCompatibility.md
-docs/specifications/AnalyticalJoinCoverage.md
+docs/dev/specifications/SourceModuleRules.md
+docs/dev/specifications/DSL.md
+docs/dev/specifications/SymbolicExecution.md
+docs/dev/specifications/SchemaDeclarationSyntax.md
+docs/dev/specifications/SchemaModel.md
+docs/dev/specifications/SchemaSemantics.md
+docs/dev/specifications/SchemaInheritance.md
+docs/dev/specifications/NullabilityAndTypeCoercion.md
+docs/dev/specifications/ValidationSemantics.md
+docs/dev/specifications/JoinSemantics.md
+docs/dev/specifications/HookSemantics.md
+docs/dev/specifications/ConfigSchema.md
+docs/dev/specifications/CLI.md
+docs/dev/specifications/CompatibilityPolicy.md
+docs/dev/specifications/CompilerPerformanceTargets.md
+docs/dev/specifications/Diagnostics.md
+docs/dev/specifications/IntermediateRepresentation.md
+docs/dev/specifications/ExecutionSemanticContract.md
+docs/dev/specifications/OnlineExecution.md
+docs/dev/specifications/PySparkCodeGeneration.md
+docs/dev/specifications/BackendCapabilities.md
+docs/dev/specifications/DataQualityConstraints.md
+docs/dev/specifications/StreamingCompatibility.md
+docs/dev/specifications/AnalyticalJoinCoverage.md
 ```
 
 When these documents overlap, the narrower feature specification owns the detailed behavior. This document owns only
@@ -223,7 +223,7 @@ JOIN-W0601  join_one uniqueness is not proven
 BACKEND-E2401 unsupported backend target
 ```
 
-Exact code numbers are owned by [Diagnostics.md](../../specifications/Diagnostics.md) and the diagnostic registry. Feature specs may
+Exact code numbers are owned by [Diagnostics.md](../specifications/Diagnostics.md) and the diagnostic registry. Feature specs may
 use provisional examples until the registry exists, but implementation tests must assert registered codes.
 
 ## Implementation Checklist
@@ -234,7 +234,7 @@ use provisional examples until the registry exists, but implementation tests mus
 4. Implement import-safe schema and transform metadata before symbolic execution.
 5. Implement schema model, nullability, validation, hooks, joins, and generation against the shared IR contracts.
 6. Add diagnostics with links to the most specific public documentation.
-7. Add spec tests before marking user stories complete in [UserStories.md](../../specifications/UserStories.md).
+7. Add spec tests before marking user stories complete in [UserStories.md](../specifications/UserStories.md).
 
 ## Acceptance Criteria
 

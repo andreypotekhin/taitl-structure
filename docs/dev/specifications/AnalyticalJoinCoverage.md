@@ -291,7 +291,7 @@ Use:
   return a schema that represents one row per item, aggregate before this step, or use join_one(...) when the right key
   is unique.
 
-See docs/specifications/AnalyticalJoinCoverage.md
+See docs/dev/specifications/AnalyticalJoinCoverage.md
 ```
 
 ## Acceptance Scenarios

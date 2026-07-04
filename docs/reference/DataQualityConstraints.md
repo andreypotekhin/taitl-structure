@@ -1,12 +1,14 @@
-﻿# Data Quality Constraints
+# Data Quality Constraints
+
+## Purpose
 
 Structure schemas already describe DataFrame shape: column names, field order, Spark types, nullability, and nested
 structure. Data quality constraints describe facts about the data values inside that shape. Examples include accepted
 values, ranges, regex-like patterns, decimal domains, uniqueness, referential checks, freshness, and row-count
 expectations.
 
-This reference defines the boundary. validation is schema-first and schema-only by default. Richer data quality
-checks are deferred and is explicit because many of them trigger Spark actions, scans, aggregations, or joins.
+This specification defines the boundary. v1 validation is schema-first and schema-only by default. Richer data quality
+checks are deferred and must be explicit because many of them trigger Spark actions, scans, aggregations, or joins.
 
 ## Validation Layers
 
@@ -18,14 +20,14 @@ DataFrames.
 
 Schema-only runtime validation compares a live DataFrame schema against a generated Spark `StructType`. It checks
 column names, missing columns, unexpected columns in strict mode, Spark data types, nullability where Spark exposes it
-reliably, and nested shape. It does not scan rows.
+reliably, and nested shape. It must not scan rows.
 
 Data-quality runtime validation evaluates value-level or dataset-level facts. It may add filters, aggregations, joins,
-limits, counts, or other Spark work. Any check that can trigger Spark work is explicit in source or configuration.
+limits, counts, or other Spark work. Any check that can trigger Spark work must be explicit in source or configuration.
 
-## Boundary
+## v1 Boundary
 
-validation is schema-first.
+v1 validation is schema-first.
 
 Default intermediate validation uses:
 
@@ -36,7 +38,7 @@ intermediate_validation_mode = "schema_only"
 output_validation_mode = "schema_only"
 ```
 
-`schema_only` does not trigger row scans. It validates shape only.
+`schema_only` must not trigger row scans. It validates shape only.
 
 `schema_and_constraints` is reserved for explicit opt-in constraint validation:
 
@@ -48,7 +50,7 @@ output_validation_mode = "schema_and_constraints"
 
 Until Structure implements specific constraint families, this mode may be accepted as a configuration value while
 diagnostics explain that row-level constraint checks are not yet available. Once implemented, checks that require Spark
-actions is visible in diagnostics, generated code, traceability, and documentation links.
+actions must be visible in diagnostics, generated code, traceability, and documentation links.
 
 Constraint declarations should bind to one or more validation phases: input, intermediate, output, or a narrower named
 boundary. Phase validation modes are a project-level cost guard. A constraint is eligible to run only when it is bound
@@ -56,7 +58,7 @@ to the current phase and that phase's validation mode is `schema_and_constraints
 
 ## Constraint Families
 
-Later constraint support should cover these families without making all of them commitments.
+Future constraint support should cover these families without making all of them v1 commitments.
 
 Field-local constraints:
 
@@ -87,7 +89,7 @@ default.
 ## Source Model
 
 The exact public DSL is deferred. Candidate forms may include field arguments, schema-level declarations, or decorators.
-The implementation does not commit to a public constraint syntax until it can support diagnostics, generated code,
+The implementation must not commit to a public constraint syntax until it can support diagnostics, generated code,
 online/generated parity, and testing.
 
 Conceptually, the compiler model should be able to represent:
@@ -114,7 +116,7 @@ work.
 Generated schema constants are supported caller-facing artifacts. A generated constant such as
 `ORDER_ENRICHED_SCHEMA` is an ordinary PySpark `StructType` and may be imported by caller code.
 
-Online execution exposes the same Spark `StructType` schemas without requiring generated files to exist. The
+Online execution must expose the same Spark `StructType` schemas without requiring generated files to exist. The
 transform result makes the materialized schemas available by declared output name:
 
 ```python
@@ -151,9 +153,9 @@ df.write.mode("overwrite").parquet(target_path)
 Structure validates and projects DataFrames. The caller owns storage orchestration: `write`, `writeStream`, table
 creation, partitioning, checkpoints, output modes, and storage-specific options.
 
-Generated `*_SCHEMA` constants remain shape-only. Later data quality constraints must generate separate metadata or
+Generated `*_SCHEMA` constants remain shape-only. Future data quality constraints must generate separate metadata or
 runtime validation artifacts unless Spark-compatible metadata is deliberately added later. Adding constraint validation
-does not silently change the meaning of existing `*_SCHEMA` constants.
+must not silently change the meaning of existing `*_SCHEMA` constants.
 
 ## Diagnostics
 

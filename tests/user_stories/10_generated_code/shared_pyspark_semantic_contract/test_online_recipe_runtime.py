@@ -188,6 +188,16 @@ def test_online_expression_evaluator_preserves_window_projection_semantics() -> 
             _window("lead", value=quantity, partition_by=customer_id, order_by=quantity),
             "lead(col(metrics.quantity),1).over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc()))",
         ),
+        (
+            _window("rolling_sum", value=quantity, partition_by=customer_id, order_by=quantity, preceding=2),
+            "sum(col(metrics.quantity)).over("
+            "partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc()).rowsBetween(-2,0))",
+        ),
+        (
+            _window("rolling_avg", value=quantity, partition_by=customer_id, order_by=quantity, preceding=2),
+            "avg(col(metrics.quantity)).over("
+            "partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc()).rowsBetween(-2,0))",
+        ),
     ]
 
     assert [
@@ -1685,17 +1695,21 @@ def _window(
     order_by: PySparkExpressionRecipe,
     value: PySparkExpressionRecipe | None = None,
     descending: bool = False,
+    preceding: int | None = None,
 ) -> PySparkExpressionRecipe:
     args = (() if value is None else (value,)) + (order_by, partition_by)
+    data = {
+        "function": f"window_{function}",
+        "descending": descending,
+        "offset": 1,
+    }
+    if preceding is not None:
+        data["preceding"] = preceding
     return PySparkExpressionRecipe(
         "reserved_v2",
         value.type if value is not None else Long(),
         value.nullable if value is not None else False,
-        {
-            "function": f"window_{function}",
-            "descending": descending,
-            "offset": 1,
-        },
+        data,
         args,
     )
 
@@ -1893,6 +1907,9 @@ class FakeColumn:
     def cast(self, target: str):
         return FakeColumn(f"cast({self.expression} as {target})", self.source_name)
 
+    def over(self, window):
+        return FakeColumn(f"{self.expression}.over({window.expression})")
+
     def isNotNull(self):
         return FakeColumn(f"{self.expression}.isNotNull()")
 
@@ -1968,6 +1985,9 @@ class FakeWindowSpec:
 
     def orderBy(self, column):
         return FakeWindowSpec(f"{self.expression}.orderBy({column.expression})")
+
+    def rowsBetween(self, start, end):
+        return FakeWindowSpec(f"{self.expression}.rowsBetween({start},{end})")
 
 
 @dataclass(frozen=True)

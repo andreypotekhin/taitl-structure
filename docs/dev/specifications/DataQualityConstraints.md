@@ -192,7 +192,7 @@ Problem:
 Use:
   Repair the source data, filter invalid rows explicitly, or relax the constraint if negative totals are valid.
 
-See docs/specifications/DataQualityConstraints.md
+See docs/dev/specifications/DataQualityConstraints.md
 ```
 
 ## Streaming Compatibility
