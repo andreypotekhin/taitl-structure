@@ -320,6 +320,8 @@ over streaming orchestration, storage writes, Spark Connect, automatic cost-base
   output.
 - + As a developer, I can select latest or earliest rows with deterministic tie policy so that dedupe never chooses an
   arbitrary row.
+- + As a developer, I can use keyed dedupe shortcuts so that deterministic duplicate cleanup reads like the business
+  intent.
 - + As a developer, I can use higher-order function helpers so that array and map transformations remain
   Spark-plan-visible.
 - + As a developer, I can receive diagnostics when a higher-order helper callback would become arbitrary Python

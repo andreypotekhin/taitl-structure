@@ -174,6 +174,11 @@ Content style:
 - [Readme.md](../../Readme.md) is the main entry point for end-users, a is more formal compared to other documents.
 - [Troubleshooting.md](../../Troubleshooting.md) tracks common issues and remedies, prioritizes conciseness and clarity.
 - Other documents: prioritize focus and practicality. 
+- Public reference pages in `/docs/reference/` are end-user references, not implementation specifications. Do not keep
+  `## Purpose` as the first section heading; put an end-user-oriented introduction directly under the H1 instead.
+  Refer to these pages as "reference" pages, not "specifications". Drop implementation details, acceptance criteria,
+  test placement, internal checklists, and lowering explanations when the lowering is the same or similar to a PySpark
+  concept.
 
 ### Developer documentation
 The developer documentation is in the /docs/dev/ directory.

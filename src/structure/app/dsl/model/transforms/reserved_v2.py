@@ -60,11 +60,19 @@ def sum(value: object) -> Expression:
 
 
 def latest_by(order_by: object, *, partition_by: object, ties: TiePolicy = TiePolicy.ERROR) -> None:
-    _selected_rows("latest", order_by, partition_by=partition_by, ties=ties)
+    _selected_rows("latest", order_by, partition_by=partition_by, ties=ties, call="latest_by(...)")
 
 
 def earliest_by(order_by: object, *, partition_by: object, ties: TiePolicy = TiePolicy.ERROR) -> None:
-    _selected_rows("earliest", order_by, partition_by=partition_by, ties=ties)
+    _selected_rows("earliest", order_by, partition_by=partition_by, ties=ties, call="earliest_by(...)")
+
+
+def dedupe_latest_by(order_by: object, *, partition_by: object, ties: TiePolicy = TiePolicy.ERROR) -> None:
+    _selected_rows("latest", order_by, partition_by=partition_by, ties=ties, call="dedupe_latest_by(...)")
+
+
+def dedupe_earliest_by(order_by: object, *, partition_by: object, ties: TiePolicy = TiePolicy.ERROR) -> None:
+    _selected_rows("earliest", order_by, partition_by=partition_by, ties=ties, call="dedupe_earliest_by(...)")
 
 
 def row_number(*, partition_by: object, order_by: object, descending: bool = False) -> Expression:
@@ -252,12 +260,12 @@ def _aggregate(function: str, argument: Expression | None = None, *, type, nulla
     )
 
 
-def _selected_rows(direction: str, order_by: object, *, partition_by: object, ties: TiePolicy) -> None:
+def _selected_rows(direction: str, order_by: object, *, partition_by: object, ties: TiePolicy, call: str) -> None:
     if ties is not TiePolicy.ERROR:
-        raise TypeError(f"{direction}_by(...) currently supports ties=TiePolicy.ERROR only")
+        raise TypeError(f"{call} currently supports ties=TiePolicy.ERROR only")
     order = literal(order_by)
-    partitions = _partition_by(partition_by, call=f"{direction}_by(...)")
-    _context(f"{direction}_by(...)").operations.append(
+    partitions = _partition_by(partition_by, call=call)
+    _context(call).operations.append(
         OperationPlan.selected_rows_operation(
             SelectedRowsPlan(direction=direction, order_by=order, partition_by=partitions, ties=ties)
         )

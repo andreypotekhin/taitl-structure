@@ -64,6 +64,19 @@ explicitly, and inspect analytical dataflow without reading generated code line 
 - Experimental Spark Connect parity covers completed batch features without changing public DSL or generated
   class APIs.
 
+## Outstanding Challenges
+
+- Spark Connect support starts experimental. The sprint must identify classic-only behavior explicitly before any
+  public support claim.
+- Explain output must expose lineage through analytical operations without becoming noisy by default.
+- Optimization directives are user intent and backend requests, not physical-plan guarantees.
+- Diagnostics and explain links should point end users to public `docs/reference` pages while keeping implementation
+  details in `docs/dev/specifications`.
+- Streaming compatibility remains conservative for selected-row windows, analytical windows, aggregation, and dedupe
+  until watermark, state, and output-mode contracts are designed.
+- Transform composition and generated documentation/tooling remain adjacent v2 work; Sprint 09 must preserve the
+  metadata Sprint 10 needs rather than hiding it inside target-specific renderers.
+
 ## Progress
 
 - [ ] Add experimental Spark Connect parity for completed batch features.

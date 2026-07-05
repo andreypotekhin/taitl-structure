@@ -284,6 +284,11 @@ def test_v2_order_analytics_fixture_lowers_grouped_aggregates(monkeypatch: pytes
         ],
     ]
     projection = plan.steps[2].projection
+    selected_rows = plan.steps[2].operations[0].selected_rows
+    assert selected_rows is not None
+    assert selected_rows.direction == "latest"
+    assert selected_rows.order_by.data is not None
+    assert selected_rows.order_by.data["field"] == "quantity"
     assert [(assignment.field.name, assignment.expression.data["function"]) for assignment in projection[4:]] == [
         ("row_number", "window_row_number"),
         ("rank", "window_rank"),

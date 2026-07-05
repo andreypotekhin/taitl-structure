@@ -524,8 +524,8 @@ the current row. Keyed duplicate-removal shortcuts remain separate features.
 Duplicate-removal operations, exposed as `distinct()` and `drop_duplicates(...)`, record `row_filtering` cardinality
 and an optional field subset. `distinct()` and empty `drop_duplicates()` lower to current-frame exact duplicate
 removal. Subset `drop_duplicates(field, ...)` lowers to PySpark-compatible subset dedupe; non-subset fields come from
-Spark's representative row. Deterministic selected-row dedupe remains modeled through `latest_by(...)` and
-`earliest_by(...)`.
+Spark's representative row. Deterministic selected-row dedupe remains modeled through selected-row operations produced
+by `latest_by(...)`, `earliest_by(...)`, `dedupe_latest_by(...)`, and `dedupe_earliest_by(...)`.
 
 `structure explain` displays each step's ordered operations as `kind(cardinality)`. Aggregate explain output also names
 grouping keys and aggregate metric functions, and selected-row output names the helper direction and partition count.

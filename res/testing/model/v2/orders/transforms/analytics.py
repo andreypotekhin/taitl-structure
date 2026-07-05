@@ -3,6 +3,7 @@ from structure import (
     avg,
     count,
     count_distinct,
+    dedupe_latest_by,
     dense_rank,
     group_by,
     input,
@@ -72,6 +73,7 @@ class OrderAnalytics(Transform):
 
     @transform(input=fulfilled, output=customer_event_rank)
     def customer_event_ranks(self, order: OrderFulfillment) -> CustomerEventRank:
+        dedupe_latest_by(order.quantity, partition_by=order.customer_id)
         return CustomerEventRank(
             tenant=order.tenant,
             customer_id=order.customer_id,

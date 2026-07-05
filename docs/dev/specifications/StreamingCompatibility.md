@@ -130,6 +130,8 @@ These operations are not streaming-compatible in v1:
 - windowed aggregations;
 - ranking or analytic window functions, including Structure `row_number(...)`, `rank(...)`, `dense_rank(...)`,
   `lag(...)`, `lead(...)`, `rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and `rolling_max(...)`;
+- selected-row helpers, including Structure `latest_by(...)`, `earliest_by(...)`, `dedupe_latest_by(...)`, and
+  `dedupe_earliest_by(...)`;
 - stream-stream joins;
 - right, full, cross, semi, or anti joins involving the streaming current DataFrame;
 - Python UDFs, Pandas UDFs, RDD operations, `mapInPandas`, and `foreachPartition`;

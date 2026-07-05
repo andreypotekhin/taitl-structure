@@ -514,9 +514,10 @@ The PySpark recipe must use deterministic ordering, currently `row_number()` ove
 from the right-side join keys and `orderBy(...)` built from the policy expression. It must not use arbitrary
 `first(...)` or nondeterministic `dropDuplicates(...)`.
 
-Selected-row helpers use the same visible ranking pattern on the current step frame. `latest_by(...)` renders
-`row_number()` over `Window.partitionBy(...).orderBy(order.desc())`; `earliest_by(...)` uses ascending order. Generated
-code keeps rank `1` and drops the temporary rank column before projection or output validation.
+Selected-row helpers use the same visible ranking pattern on the current step frame. `latest_by(...)` and
+`dedupe_latest_by(...)` render `row_number()` over `Window.partitionBy(...).orderBy(order.desc())`;
+`earliest_by(...)` and `dedupe_earliest_by(...)` use ascending order. Generated code keeps rank `1` and drops the
+temporary rank column before projection or output validation.
 
 Projection window helpers render directly in `select(...)` expressions. `row_number(...)`, `rank(...)`,
 `dense_rank(...)`, `lag(...)`, and `lead(...)` render as `F.<helper>(...).over(Window.partitionBy(...).orderBy(...))`.

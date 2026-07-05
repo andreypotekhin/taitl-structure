@@ -392,6 +392,22 @@
       "qualname": "count_distinct",
       "signature": "(value: 'object') -> 'Expression'"
     },
+    "dedupe_earliest_by": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "dedupe_earliest_by",
+      "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'"
+    },
+    "dedupe_latest_by": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "dedupe_latest_by",
+      "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'"
+    },
     "dense_rank": {
       "dataclass_fields": [],
       "enum_members": [],

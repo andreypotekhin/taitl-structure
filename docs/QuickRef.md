@@ -524,11 +524,12 @@ Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md
 ## Latest and Earliest Rows
 
 Use `latest_by(...)` or `earliest_by(...)` when a grouped set of rows must keep one row per partition by an explicit
-ordering expression.
+ordering expression. Use `dedupe_latest_by(...)` or `dedupe_earliest_by(...)` when the same deterministic selection is
+best described as keyed deduplication.
 
 ```python
 def latest_events(self, event: RawEvent) -> LatestEvent:
-    latest_by(event.sequence, partition_by=event.account_id)
+    dedupe_latest_by(event.sequence, partition_by=event.account_id)
 
     return LatestEvent(
         account_id=event.account_id,
@@ -597,7 +598,8 @@ def unique_accounts(self, event: RawEvent) -> RawEvent:
 
 These helpers lower to Spark `dropDuplicates()` on the current step frame. Subset dedupe renders
 `dropDuplicates(["column_name", ...])`; Spark chooses the representative row for non-subset columns. When the selected
-row must be deterministic, prefer `latest_by(...)` or `earliest_by(...)` with an explicit ordering and tie policy. If
+row must be deterministic, prefer `dedupe_latest_by(...)` or `dedupe_earliest_by(...)` with an explicit ordering and
+tie policy. If
 duplicate removal must apply after a narrowing projection, split the projection and `distinct()` into adjacent
 subtransforms so the narrowed schema is the current step frame.
 
@@ -921,12 +923,12 @@ Reference: [CLI](reference/CLI.md) and
 ## Planned Features
 
 Implemented v2 analytical features include existence joins, `join_many(...)`, deterministic lookup dedupe,
-temporal validity joins, backward as-of joins, aggregation/grouping, latest/earliest selected-row helpers, exact
-duplicate-row removal, Spark higher-order array/map helpers, caching, and target capability checks.
+temporal validity joins, backward as-of joins, aggregation/grouping, latest/earliest selected-row and keyed-dedupe
+helpers, exact duplicate-row removal, Spark higher-order array/map helpers, caching, and target capability checks.
 
 Remaining planned v2 features include:
 
-- Rolling windows, deterministic keyed dedupe shortcuts, and broader deduplication helpers.
+- Broader deduplication helpers.
 - Repartition and coalesce annotations.
 
 These features remain explicit because Structure should not hide performance-sensitive choices.

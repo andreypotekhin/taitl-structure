@@ -4,6 +4,8 @@ from structure import (
     String,
     Structure,
     Transform,
+    dedupe_earliest_by,
+    dedupe_latest_by,
     dense_rank,
     distinct,
     drop_duplicates,
@@ -66,6 +68,26 @@ class LatestEventTransform(Transform):
 
 
 @transform
+class LatestDedupeEventTransform(Transform):
+    events = input(RawEvent)
+    latest = output(LatestEvent)
+
+    def latest_events(self, row: RawEvent) -> LatestEvent:
+        dedupe_latest_by(row.sequence, partition_by=row.account_id)
+        return LatestEvent(account_id=row.account_id, event_id=row.event_id, sequence=row.sequence)
+
+
+@transform
+class EarliestDedupeEventTransform(Transform):
+    events = input(RawEvent)
+    earliest = output(LatestEvent)
+
+    def earliest_events(self, row: RawEvent) -> LatestEvent:
+        dedupe_earliest_by(row.sequence, partition_by=row.account_id)
+        return LatestEvent(account_id=row.account_id, event_id=row.event_id, sequence=row.sequence)
+
+
+@transform
 class RankedEventTransform(Transform):
     events = input(RawEvent)
     ranked = output(RankedEvent)
@@ -119,6 +141,29 @@ def test_latest_by_renders_spark_visible_row_number_window() -> None:
     ) in text
     assert 'events = events.where(F.col("__structure_latest_events_latest_rank") == F.lit(1))' in text
     assert 'events = events.drop("__structure_latest_events_latest_rank")' in text
+
+
+def test_dedupe_latest_by_renders_deterministic_selected_row_window() -> None:
+    plan = PySpark.plan.lower()(compile_transform(LatestDedupeEventTransform))
+
+    text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
+
+    assert (
+        'events = events.withColumn("__structure_latest_events_latest_rank", '
+        'F.row_number().over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'orderBy(F.col("raw_event.sequence").desc())))'
+    ) in text
+    assert 'events = events.where(F.col("__structure_latest_events_latest_rank") == F.lit(1))' in text
+
+
+def test_dedupe_earliest_by_records_selected_row_operation() -> None:
+    plan = PySpark.plan.lower()(compile_transform(EarliestDedupeEventTransform))
+    operation = plan.steps[0].operations[0]
+
+    assert operation.selected_rows is not None
+    assert operation.selected_rows.direction == "earliest"
+    assert operation.selected_rows.partition_by[0].data is not None
+    assert operation.selected_rows.partition_by[0].data["field"] == "account_id"
 
 
 def test_window_projection_helpers_render_spark_visible_windows() -> None:

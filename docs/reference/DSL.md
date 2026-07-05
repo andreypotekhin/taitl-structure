@@ -78,6 +78,8 @@ from structure import (
     avg,
     latest_by,
     earliest_by,
+    dedupe_latest_by,
+    dedupe_earliest_by,
     row_number,
     rank,
     dense_rank,
@@ -554,6 +556,28 @@ Rules:
   [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md).
 - Calling `where(...)` outside an active subtransform is invalid and should mention that filters belong inside
   compiled subtransform methods.
+
+## Selected-Row Dedupe
+
+`latest_by(...)` and `earliest_by(...)` keep one row per partition by explicit order. `dedupe_latest_by(...)` and
+`dedupe_earliest_by(...)` are end-user convenience aliases for the same deterministic selected-row behavior when the
+source intent is keyed deduplication:
+
+```python
+def latest_events(self, event: RawEvent) -> LatestEvent:
+    dedupe_latest_by(event.sequence, partition_by=event.account_id)
+    return LatestEvent(account_id=event.account_id, event_id=event.event_id, sequence=event.sequence)
+```
+
+Rules:
+
+- `partition_by` is required and accepts one expression or a list/tuple of expressions.
+- `order_by` is required and defines which row survives within each partition.
+- `latest_by(...)` and `dedupe_latest_by(...)` order descending.
+- `earliest_by(...)` and `dedupe_earliest_by(...)` order ascending.
+- The current public tie policy is `TiePolicy.ERROR`; other policies are rejected until their behavior is specified.
+- These helpers are batch-only for streaming compatibility until explicit streaming state and watermark semantics
+  exist.
 
 ## Window Projection Helpers
 
