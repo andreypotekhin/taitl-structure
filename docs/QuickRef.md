@@ -708,6 +708,9 @@ cross_join(calendar_day, allow_cartesian=True)
 `left_join(...)`, `inner_join(...)`, `right_join(...)`, `full_join(...)`, and `cross_join(...)` are shortcuts over
 `join_rowset(...)`. Predicate shortcuts can be bare when the right relation is unambiguous.
 
+See `examples/orders/transforms/rowset_join.py` for a generated example covering `full_join(...)`, `right_join(...)`,
+and `cross_join(...)`.
+
 Use deterministic lookup dedupe when duplicate right-side rows exist but the business rule still selects one row:
 
 ```python

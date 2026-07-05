@@ -164,6 +164,8 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
   promotion.
 - [x] (2026-07-05) Added design, specification, public reference, deferred-feature reference, and execution plan for
   first-slice Spark streaming support scheduled into Sprint 09.
+- [x] (2026-07-05) Implemented the first full PySpark rowset join pass: `join_rowset(...)`, rowset shortcuts,
+  right/full/cross lowering, broad predicate support, v2 fixture coverage, and checked-in generated example output.
 - [ ] Add live Spark Connect online/generated runtime evidence.
 - [ ] Add Spark Connect CI or manual verification script.
 - [ ] Add hook and StructureTools Spark Connect boundary diagnostics.

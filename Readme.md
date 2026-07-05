@@ -295,8 +295,8 @@ See [License.md](License.md)
 - **v1:** online PySpark execution by default, optional generated PySpark classes, projection, filtering,
   joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow traceability,
   streaming-compatible transforms, diagnostic links, and setup checks.
-- **v2:** mainstream analytical features: existence joins, `join_many(...)`, deterministic lookup dedupe,
-  temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions,
+- **v2:** mainstream analytical features: existence joins, `join_many(...)`, broad rowset joins, deterministic lookup
+  dedupe, temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions,
   caching/persistence/repartition hints, richer explain output, generated docs, pytest helpers, and Spark Connect
   support for completed v1/v2 batch features.
 - **v3:** streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, output

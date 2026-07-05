@@ -80,6 +80,16 @@ cross_join(calendar_day, allow_cartesian=True)
 
 The acknowledgement prevents an accidentally missing predicate from creating a Cartesian product.
 
+## Example Project
+
+The checked-in orders example includes a compact rowset-join transform:
+
+- source: `examples/orders/transforms/rowset_join.py`;
+- generated PySpark: `examples/structure_generated/orders/pyspark/transforms/rowset_join.py`.
+
+It demonstrates a bare `full_join(...)`, a bare `right_join(...)`, and an explicit `cross_join(...,
+allow_cartesian=True)`.
+
 ## Compatibility
 
 The first implementation treats right, full, cross, non-equi, and disjunctive rowset joins as batch-only. Existing

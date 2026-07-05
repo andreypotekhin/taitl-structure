@@ -666,6 +666,12 @@ Rules:
 - Repeated joins of the same input must produce deterministic aliases.
 - `join_many(...)` is the v2 row-multiplying join form. It is valid when the business output is one row per right-side
   match.
+- `join_rowset(...)` is the broad v2 rowset join form for right, full, cross, non-equi, and disjunctive joins.
+- `left_join(...)`, `inner_join(...)`, `right_join(...)`, `full_join(...)`, and `cross_join(...)` are shortcuts over
+  `join_rowset(...)`.
+- `cross_join(...)` requires `allow_cartesian=True` and does not accept `on`.
+- Rowset shortcuts compile to the canonical `join_rowset` operation with the specific join kind recorded on the join
+  plan.
 
 Documentation keeps the join bare and reads later fields from the joined relation proxy:
 
@@ -674,8 +680,9 @@ join_one(on=order.customer_id == customer.id, how=Join.LEFT)
 return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
 
-Detailed join condition, null, aliasing, cardinality, projection, and diagnostics behavior is specified by
-[JoinSemantics.md](JoinSemantics.md).
+Detailed lookup join condition, null, aliasing, cardinality, projection, and diagnostics behavior is specified by
+[JoinSemantics.md](JoinSemantics.md). Broad rowset join behavior is specified by
+[FullPySparkJoinSupport.md](FullPySparkJoinSupport.md).
 
 ## Hooks
 

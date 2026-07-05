@@ -89,3 +89,30 @@ PUBLICATION_FLAGS_SCHEMA = T.StructType([
 ])
 
 ORDER_PUBLISHED_SCHEMA = T.StructType(ORDER_PUBLICATION_SCHEMA.fields + PUBLICATION_FLAGS_SCHEMA.fields)
+
+ORDER_CUSTOMER_RECONCILIATION_SCHEMA = T.StructType([
+    T.StructField("tenant_id", T.StringType(), True),
+    T.StructField("order_id", T.StringType(), True),
+    T.StructField("order_customer_id", T.StringType(), True),
+    T.StructField("customer_id", T.StringType(), True),
+    T.StructField("customer_name", T.StringType(), True),
+    T.StructField("match_status", T.StringType(), True),
+])
+
+CUSTOMER_ORDER_BACKFILL_SCHEMA = T.StructType([
+    T.StructField("tenant_id", T.StringType(), True),
+    T.StructField("order_id", T.StringType(), True),
+    T.StructField("order_customer_id", T.StringType(), True),
+    T.StructField("customer_id", T.StringType(), True),
+    T.StructField("customer_name", T.StringType(), True),
+    T.StructField("customer_region", T.StringType(), True),
+])
+
+ORDER_PRODUCT_CANDIDATE_SCHEMA = T.StructType([
+    T.StructField("tenant_id", T.StringType(), True),
+    T.StructField("order_id", T.StringType(), True),
+    T.StructField("customer_id", T.StringType(), True),
+    T.StructField("customer_name", T.StringType(), True),
+    T.StructField("product_id", T.StringType(), True),
+    T.StructField("product_name", T.StringType(), True),
+])

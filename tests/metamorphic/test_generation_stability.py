@@ -26,6 +26,8 @@ def test_orders_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/orders/pyspark/schemas/shipment.py",
         "examples/structure_generated/orders/pyspark/transforms/order.py",
         "examples/structure_generated/orders/traceability/transforms/order.EnrichOrders.json",
+        "examples/structure_generated/orders/pyspark/transforms/rowset_join.py",
+        "examples/structure_generated/orders/traceability/transforms/rowset_join.RowsetJoinExamples.json",
         "examples/structure_generated/orders/pyspark/transforms/analytics.py",
         "examples/structure_generated/orders/traceability/transforms/analytics.OrderAnalytics.json",
         "examples/structure_generated/orders/traceability/__init__.py",
@@ -62,6 +64,13 @@ def test_orders_example_generation_keeps_public_behavior_fragments_stable() -> N
         'F.map_filter(F.transform_values(F.col("order_raw.attributes"), '
         'lambda key, value: F.lower(F.trim(value)))' in transform
     )
+
+    rowset = render_orders_example()["examples/structure_generated/orders/pyspark/transforms/rowset_join.py"]
+
+    assert "class RowsetJoinExamplesGenerated:" in rowset
+    assert '"full"' in rowset
+    assert '"right"' in rowset
+    assert ".crossJoin(" in rowset
 
     analytics = render_orders_example()["examples/structure_generated/orders/pyspark/transforms/analytics.py"]
 

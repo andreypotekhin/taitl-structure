@@ -873,12 +873,24 @@
       "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
       "module": "examples.structure_generated.orders.pyspark.schemas.analytics"
     },
+    "CustomerOrderBackfill": {
+      "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderCustomerReconciliation": {
+      "constant": "ORDER_CUSTOMER_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
     "OrderFulfillment": {
       "constant": "ORDER_FULFILLMENT_SCHEMA",
       "module": "examples.structure_generated.orders.pyspark.schemas.order"
     },
     "OrderNormalized": {
       "constant": "ORDER_NORMALIZED_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderProductCandidate": {
+      "constant": "ORDER_PRODUCT_CANDIDATE_SCHEMA",
       "module": "examples.structure_generated.orders.pyspark.schemas.order"
     },
     "OrderPublication": {

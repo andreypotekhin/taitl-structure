@@ -88,3 +88,30 @@ class PublicationFlags(Structure):
 
 class OrderPublished(OrderPublication, PublicationFlags):
     pass
+
+
+class OrderCustomerReconciliation(Structure):
+    tenant_id = field(String(), nullable=True)
+    order_id = field(String(), nullable=True)
+    order_customer_id = field(String(), nullable=True)
+    customer_id = field(String(), nullable=True)
+    customer_name = field(String(), nullable=True)
+    match_status = field(String(), nullable=True)
+
+
+class CustomerOrderBackfill(Structure):
+    tenant_id = field(String(), nullable=True)
+    order_id = field(String(), nullable=True)
+    order_customer_id = field(String(), nullable=True)
+    customer_id = field(String(), nullable=True)
+    customer_name = field(String(), nullable=True)
+    customer_region = field(String(), nullable=True)
+
+
+class OrderProductCandidate(Structure):
+    tenant_id = field(String(), nullable=True)
+    order_id = field(String(), nullable=True)
+    customer_id = field(String(), nullable=True)
+    customer_name = field(String(), nullable=True)
+    product_id = field(String(), nullable=True)
+    product_name = field(String(), nullable=True)

@@ -359,11 +359,11 @@ the first analytical join slice.
   right-side records do not silently change facts.
 - + As a developer, I can see analytical join cardinality in generated traceability so that downstream consumers can spot
   row multiplication and row filtering.
-- As a developer, I can use right and full rowset joins so that reconciliation pipelines can keep right-only and
+- + As a developer, I can use right and full rowset joins so that reconciliation pipelines can keep right-only and
   left-only records without hooks.
-- As a developer, I can use explicit cross joins so that planned Cartesian expansion is visible and accidental missing
+- + As a developer, I can use explicit cross joins so that planned Cartesian expansion is visible and accidental missing
   predicates fail early.
-- As a developer, I can use non-equi and disjunctive join predicates when they remain compiler-visible so that range
+- + As a developer, I can use non-equi and disjunctive join predicates when they remain compiler-visible so that range
   and alternative-key joins do not require string SQL or hooks.
 - As a developer, I can see nullable sides and rowset join cardinality in explain output so that broad joins are
   reviewable before runtime.

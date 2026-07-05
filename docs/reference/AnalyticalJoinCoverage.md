@@ -243,12 +243,16 @@ join.join_many
 join.lookup_dedupe
 join.temporal_one
 join.as_of_one
+join.join_rowset
 ```
 
 The default PySpark profile supports `join.exists`, `join.not_exists`, `join.join_many`, `join.lookup_dedupe`,
-`join.temporal_one`, and `join.as_of_one`.
+`join.temporal_one`, `join.as_of_one`, and `join.join_rowset`.
 Unsupported capability diagnostics use `BACKEND-E2402` and link to this reference. The diagnostic names the
 join form and suggest either a supported join, a hook escape hatch, or waiting for the planned feature.
+
+Right, full, cross, non-equi, and disjunctive rowset joins are covered in
+[FullPySparkJoinSupport.md](FullPySparkJoinSupport.md).
 
 ## Streaming Compatibility
 

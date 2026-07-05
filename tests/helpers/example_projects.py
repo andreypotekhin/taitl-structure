@@ -19,8 +19,11 @@ def render_orders_example() -> dict[str, str]:
         from examples.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
         from examples.orders.schemas.customer import Customer
         from examples.orders.schemas.order import (
+            CustomerOrderBackfill,
+            OrderCustomerReconciliation,
             OrderFulfillment,
             OrderNormalized,
+            OrderProductCandidate,
             OrderPublication,
             OrderPublished,
             OrderRaw,
@@ -34,6 +37,7 @@ def render_orders_example() -> dict[str, str]:
         from examples.orders.schemas.shipment import Shipment
         from examples.orders.transforms.analytics import OrderAnalytics
         from examples.orders.transforms.order import EnrichOrders
+        from examples.orders.transforms.rowset_join import RowsetJoinExamples
 
         schema_modules: dict[str, Sequence[type[Structure]]] = {
             "examples.orders.schemas.analytics": [CustomerDailyTotal, ProductDailySummary],
@@ -49,6 +53,9 @@ def render_orders_example() -> dict[str, str]:
                 OrderPublication,
                 PublicationFlags,
                 OrderPublished,
+                OrderCustomerReconciliation,
+                CustomerOrderBackfill,
+                OrderProductCandidate,
             ],
             "examples.orders.schemas.product": [ProductBase, Product, BlockedProduct],
             "examples.orders.schemas.promotion": [Promotion],
@@ -57,6 +64,7 @@ def render_orders_example() -> dict[str, str]:
         files = {}
         for transform_class, source_transform in (
             (EnrichOrders, "examples.orders.transforms.order.EnrichOrders"),
+            (RowsetJoinExamples, "examples.orders.transforms.rowset_join.RowsetJoinExamples"),
             (OrderAnalytics, "examples.orders.transforms.analytics.OrderAnalytics"),
         ):
             files.update(

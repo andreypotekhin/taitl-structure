@@ -6,6 +6,7 @@ from typing import Any, cast
 import pytest
 
 from structure import (
+    Join,
     JoinStrategy,
     Long,
     String,
@@ -41,6 +42,7 @@ def test_v2_source_fixtures_import_without_live_spark(monkeypatch: pytest.Monkey
         "testing.model.v2.orders.schemas.shipment",
         "testing.model.v2.orders.transforms.analytics",
         "testing.model.v2.orders.transforms.order",
+        "testing.model.v2.orders.transforms.rowset_join",
     ):
         importlib.import_module(module)
 
@@ -135,6 +137,69 @@ def test_v2_order_fixture_records_deduped_product_lookup(monkeypatch: pytest.Mon
     assert lookup.dedupe.ties is TiePolicy.ERROR
     assert lookup.dedupe.order_by.data is not None
     assert lookup.dedupe.order_by.data["field"] == "audit.ingested_at"
+
+
+def test_v2_rowset_join_fixture_records_full_right_and_cross_joins(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _stub_pyspark(monkeypatch)
+    module = importlib.import_module("testing.model.v2.orders.transforms.rowset_join")
+    order_schema = importlib.import_module("testing.model.v2.orders.schemas.order")
+    customer_schema = importlib.import_module("testing.model.v2.orders.schemas.customer")
+    product_schema = importlib.import_module("testing.model.v2.orders.schemas.product")
+
+    plan = compile_transform(module.RowsetJoinExamples)
+    recipe = PySpark.plan.lower()(plan)
+
+    assert [step.name for step in plan.steps] == [
+        "reconcile_orders",
+        "keep_customers",
+        "expand_product_candidates",
+    ]
+    assert [step.joins[0].method for step in plan.steps[:3]] == [
+        JoinMethod.ROWSET,
+        JoinMethod.ROWSET,
+        JoinMethod.ROWSET,
+    ]
+    assert [step.joins[0].how for step in plan.steps[:3]] == [Join.FULL, Join.RIGHT, Join.CROSS]
+    assert [step.operations[0].capability.name for step in plan.steps[:3] if step.operations[0].capability] == [
+        "join_rowset",
+        "join_rowset",
+        "join_rowset",
+    ]
+    assert [step.operations[0].cardinality for step in plan.steps[:3]] == [
+        OperationCardinality.ROW_MULTIPLYING,
+        OperationCardinality.ROW_MULTIPLYING,
+        OperationCardinality.ROW_MULTIPLYING,
+    ]
+
+    text = PySpark.render.transform()(
+        recipe,
+        source_transform="testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples",
+        schema_modules={
+            order_schema.OrderRaw: "testing.model.v2.structure_generated.orders.pyspark.schemas.order",
+            order_schema.OrderCustomerReconciliation: (
+                "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+            ),
+            order_schema.CustomerOrderBackfill: (
+                "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+            ),
+            order_schema.OrderProductCandidate: (
+                "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+            ),
+            customer_schema.Customer: (
+                "testing.model.v2.structure_generated.orders.pyspark.schemas.customer"
+            ),
+            product_schema.Product: (
+                "testing.model.v2.structure_generated.orders.pyspark.schemas.product"
+            ),
+        },
+        runtime_module="testing.model.v2.structure_generated.orders.runtime.schema_assert",
+    )
+
+    assert '"full"' in text
+    assert '"right"' in text
+    assert ".crossJoin(" in text
 
 
 def test_group_by_lowers_to_aggregate_recipe() -> None:
