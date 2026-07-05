@@ -173,15 +173,15 @@ def test_window_projection_helpers_render_spark_visible_windows() -> None:
 
     assert (
         'F.row_number().over(Window.partitionBy(F.col("raw_event.account_id")).'
-        'orderBy(F.col("raw_event.sequence").asc())).alias("row_number")'
+        'orderBy(F.col("raw_event.sequence").asc())).cast(T.LongType()).alias("row_number")'
     ) in text
     assert (
         'F.rank().over(Window.partitionBy(F.col("raw_event.account_id")).'
-        'orderBy(F.col("raw_event.sequence").desc())).alias("rank")'
+        'orderBy(F.col("raw_event.sequence").desc())).cast(T.LongType()).alias("rank")'
     ) in text
     assert (
         'F.dense_rank().over(Window.partitionBy(F.col("raw_event.account_id")).'
-        'orderBy(F.col("raw_event.sequence").asc())).alias("dense_rank")'
+        'orderBy(F.col("raw_event.sequence").asc())).cast(T.LongType()).alias("dense_rank")'
     ) in text
     assert (
         'F.lag(F.col("raw_event.sequence"), 1).over(Window.partitionBy(F.col("raw_event.account_id")).'

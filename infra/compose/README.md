@@ -23,6 +23,11 @@ Run one backend's test selection against the all-version stack:
 
     make integration BACKEND=pyspark35
     make integration BACKEND=pyspark40
+    make integration BACKEND=spark-connect35
+    make integration BACKEND=spark-connect40
+
+The Spark Connect lanes are experimental. They start the Spark Connect gateway inside the test runner container and do
+not add separate Connect services to the Compose stack.
 
 Include integration tests after the ordinary build:
 

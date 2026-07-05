@@ -9,12 +9,17 @@ def test_pyspark_compatibility_matrix_matches_docs_and_compose_defaults() -> Non
     docs = Path("docs/Compatibility.md").read_text(encoding="utf-8")
     env = Path("infra/compose/.env_example").read_text(encoding="utf-8")
     script = Path("scripts/run_integration.py").read_text(encoding="utf-8")
+    compose = Path("infra/compose/docker-compose.yaml").read_text(encoding="utf-8")
 
     assert "PySpark 3.5.x and 4.0.x" in docs
     assert 'target_profile = ">=3.5,<4.1"' in docs
     assert _env_value(env, "PYSPARK35_VERSION") == "3.5.0"
     assert _env_value(env, "PYSPARK40_VERSION") == "4.0.0"
-    assert _backends(script) == ("pyspark35", "pyspark40")
+    assert _backends(script) == ("pyspark35", "pyspark40", "spark-connect35", "spark-connect40")
+    assert "structure-integration-spark-connect35" in compose
+    assert "structure-integration-spark-connect40" in compose
+    assert "spark35-connect" not in compose
+    assert "spark40-connect" not in compose
 
 
 def test_public_docs_use_target_variant_and_do_not_claim_v4_only_spark_connect() -> None:
@@ -33,8 +38,11 @@ def test_public_docs_use_target_variant_and_do_not_claim_v4_only_spark_connect()
     assert 'target_profile = ">=3.5,<4.1"' in text
     assert 'target_variant = "ordinary"' in text
     assert 'target_variant = "spark-connect"' in text
+    assert "spark-connect35" in text
+    assert "spark-connect40" in text
     assert "scheduled for v4" not in text
     assert "planned for v4" not in text
+    assert "planned as an experimental end-of-v2" not in text
     assert "not part of the initial release, v2, or v3" not in text
 
 

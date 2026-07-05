@@ -40,3 +40,7 @@ class PySparkOperationRecipe:
             kind="drop_duplicates",
             duplicate_rows=duplicate_rows or PySparkDuplicateRowsRecipe(),
         )
+
+    @staticmethod
+    def cache_operation() -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="cache")

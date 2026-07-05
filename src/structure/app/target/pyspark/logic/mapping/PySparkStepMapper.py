@@ -143,6 +143,8 @@ class PySparkStepMapper:
                         )
                     )
                 )
+            if operation.kind == "cache":
+                recipes.append(PySparkOperationRecipe.cache_operation())
         return tuple(recipes)
 
     def _aggregate(

@@ -69,6 +69,7 @@ COMMON_CAPABILITIES = frozenset(
         ("window", "rolling_sum"),
         ("window", "select_latest"),
         ("window", "select_earliest"),
+        ("optimization", "cache"),
         ("validation", "schema_only_validation"),
         ("validation", "strict_projection"),
         ("validation", "allow_extra_projection"),

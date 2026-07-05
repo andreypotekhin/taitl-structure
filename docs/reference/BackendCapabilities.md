@@ -178,6 +178,7 @@ window.rolling_min
 window.rolling_max
 window.select_latest
 window.select_earliest
+optimization.cache
 validation.schema_only_validation
 validation.strict_projection
 validation.allow_extra_projection
@@ -192,7 +193,6 @@ Deferred features must be represented as unsupported decisions. Examples:
 
 ```text
 window.window_project
-optimization.cache
 optimization.repartition
 explain.field_lineage
 docs.generated_docs

@@ -47,6 +47,16 @@ def test_orders_example_generation_keeps_public_behavior_fragments_stable() -> N
     assert (
         'published = self._impl.add_quality_columns(published=published, spark=self.spark, ctx=self.ctx)' in transform
     )
+    assert (
+        'assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="allow_extra_columns")'
+        in transform
+    )
+    assert (
+        transform.count(
+            'assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="allow_extra_columns")'
+        )
+        == 2
+    )
     assert 'F.filter(F.transform(F.col("order_raw.tags"), lambda item: F.lower(F.trim(item)))' in transform
     assert (
         'F.map_filter(F.transform_values(F.col("order_raw.attributes"), '

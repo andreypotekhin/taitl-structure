@@ -41,11 +41,18 @@ class PySparkFrameValidator:
     def _needs_cast(self, field_type: StructureType, expression) -> bool:
         if isinstance(field_type, StructType):
             return False
+        if self._window_rank_expression(expression):
+            return True
         if expression.type is None:
             return True
         if not self._same_type(expression.type, field_type):
             return True
         return expression.kind == "sub" and isinstance(field_type, DecimalType)
+
+    def _window_rank_expression(self, expression) -> bool:
+        if expression.kind != "reserved_v2":
+            return False
+        return expression.data.get("function") in {"window_row_number", "window_rank", "window_dense_rank"}
 
     def _same_type(self, actual: StructureType, target: StructureType) -> bool:
         if actual.name != target.name:

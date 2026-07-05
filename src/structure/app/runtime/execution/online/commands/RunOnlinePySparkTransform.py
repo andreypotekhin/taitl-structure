@@ -140,6 +140,7 @@ class RunOnlinePySparkTransform:
                     self._validator.validate(projected, validation, types=types)
                     if validation.project:
                         projected = self._validator.project(projected, validation, types=types, functions=functions)
+                projected = self._post_operations(step, projected)
                 produced[result.frame] = projected
             return produced
 
@@ -165,6 +166,7 @@ class RunOnlinePySparkTransform:
             self._validator.validate(df, validation, types=types)
             if validation.project:
                 df = self._validator.project(df, validation, types=types, functions=functions)
+        df = self._post_operations(step, df)
         return {step.results[0].frame: df}
 
     def _output(
@@ -188,6 +190,7 @@ class RunOnlinePySparkTransform:
                 )
             )
         self._validator.validate(df, output.validation, types=types)
+        df = self._post_operations(output, df)
         return df
 
     def _operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, *, frames, functions, window, types):
@@ -219,6 +222,12 @@ class RunOnlinePySparkTransform:
             if operation.kind == "drop_duplicates":
                 subset = () if operation.duplicate_rows is None else operation.duplicate_rows.subset
                 df = df.dropDuplicates(self._drop_duplicates_subset(subset))
+        return df
+
+    def _post_operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df):
+        for operation in step.operations:
+            if operation.kind == "cache":
+                df = df.persist()
         return df
 
     def _drop_duplicates_subset(self, subset) -> list[str] | None:

@@ -2827,7 +2827,7 @@
           "schema": "OrderFulfillment"
         },
         {
-          "mode": "strict",
+          "mode": "allow_extra_columns",
           "project": false,
           "reason": "intermediate",
           "schema": "OrderFulfillment"

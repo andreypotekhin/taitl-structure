@@ -42,6 +42,7 @@ class RenderPySparkStep:
         lines.extend(self._projection(step, target=target))
         lines.extend(self._hooks(step.after_hooks))
         lines.extend(self._validations(step.validations, target=target))
+        lines.extend(self._post_operations(step, target=target))
         return "\n".join(lines)
 
     def _multiple(self, step: PySparkStepRecipe, *, current: str, sources: dict[str, str]) -> str:
@@ -57,6 +58,7 @@ class RenderPySparkStep:
         for result in step.results:
             lines.extend(self._hooks(result.after_hooks))
             lines.extend(self._validations(result.validations, target=result.frame))
+            lines.extend(self._post_operations(step, target=result.frame))
         return "\n".join(lines)
 
     def _result_projection(self, step: PySparkStepRecipe, result, *, base: str) -> list[str]:
@@ -126,6 +128,9 @@ class RenderPySparkStep:
         if pending_filters:
             ordered_lines.extend(self._filters(tuple(pending_filters), step=step, target=target))
         return ordered_lines
+
+    def _post_operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, *, target: str) -> list[str]:
+        return [f"        {target} = {target}.persist()" for operation in step.operations if operation.kind == "cache"]
 
     def _dedupe_subset(self, duplicate_rows: PySparkDuplicateRowsRecipe) -> str:
         if not duplicate_rows.subset:
@@ -361,11 +366,18 @@ class RenderPySparkStep:
     def _needs_cast(self, assignment) -> bool:
         if isinstance(assignment.field.type, StructType):
             return False
+        if self._window_rank_expression(assignment.expression):
+            return True
         if assignment.expression.type is None:
             return True
         if not self._same_type(assignment.expression.type, assignment.field.type):
             return True
         return assignment.expression.kind == "sub" and isinstance(assignment.field.type, DecimalType)
+
+    def _window_rank_expression(self, expression: PySparkExpressionRecipe) -> bool:
+        if expression.kind != "reserved_v2":
+            return False
+        return expression.data.get("function") in {"window_row_number", "window_rank", "window_dense_rank"}
 
     def _needs_alias(self, assignment) -> bool:
         if assignment.expression.kind != "field":

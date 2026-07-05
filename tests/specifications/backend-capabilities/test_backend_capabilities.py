@@ -101,11 +101,18 @@ def test_supported_v2_window_requirement_passes(name: str) -> None:
     assert decision.supported
 
 
+def test_supported_v2_cache_requirement_passes() -> None:
+    resolved = Capabilities.resolve()()
+
+    decision = resolved.require(CapabilityRequirement(group="optimization", name="cache"))
+
+    assert decision.supported
+
+
 @pytest.mark.parametrize(
     ("group", "name"),
     [
         ("window", "window_project"),
-        ("optimization", "cache"),
         ("optimization", "repartition"),
         ("explain", "field_lineage"),
         ("docs", "generated_docs"),

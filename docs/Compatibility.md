@@ -60,8 +60,9 @@ target_variant = "spark-connect"
 ```
 
 The initial release and mainstream v2 online/generated execution target ordinary PySpark `SparkSession`, `DataFrame`,
-and `Column` APIs. The end of v2 may add experimental Spark Connect parity for completed v1/v2 batch features. V3 adds
-streaming orchestration on top of the ordinary PySpark contract.
+and `Column` APIs. Spark Connect is experimental for completed v1/v2 batch features and is covered by the integration
+matrix lanes `spark-connect35` and `spark-connect40`. V3 adds streaming orchestration on top of the ordinary PySpark
+contract.
 
 Spark Connect must not change public DSL syntax, generated class APIs, transform `run(...)` signatures, generated-code
 review shape, or streaming orchestration semantics. It must also avoid classic-only internals such as SparkContext,
@@ -167,7 +168,8 @@ Config schema rules:
 ## Roadmap
 
 v2 expands online/generated PySpark features and adoption tooling while preserving the same basic compatibility
-contract. The end of v2 may add experimental Spark Connect parity for completed v1/v2 batch features.
+contract. Experimental Spark Connect parity covers completed v1/v2 batch features through the PySpark target variant
+`spark-connect`.
 
 v3 adds streaming orchestration once transform compilation is stable.
 

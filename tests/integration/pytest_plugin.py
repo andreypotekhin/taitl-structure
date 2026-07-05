@@ -13,7 +13,7 @@ def pytest_addoption(parser) -> None:
     parser.addoption(
         "--integration-backend",
         action="store",
-        choices=("all", "pyspark35", "pyspark40"),
+        choices=("all", "pyspark35", "pyspark40", "spark-connect35", "spark-connect40"),
         default="all",
         help="Select the integration backend lane to exercise.",
     )

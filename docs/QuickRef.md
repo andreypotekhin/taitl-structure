@@ -871,6 +871,15 @@ Spark Connect uses `target_backend = "pyspark"` with `target_variant = "spark-co
 completed compiler-visible batch features, with full support gated by broader runtime and CI evidence.
 See [Compatibility.md](Compatibility.md).
 
+Local integration lanes cover ordinary PySpark and experimental Spark Connect:
+
+```text
+make integration BACKEND=pyspark35
+make integration BACKEND=pyspark40
+make integration BACKEND=spark-connect35
+make integration BACKEND=spark-connect40
+```
+
 Reference: [compatibility policy](reference/CompatibilityPolicy.md) and
 [backend capabilities](reference/BackendCapabilities.md).
 

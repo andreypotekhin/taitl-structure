@@ -20,7 +20,10 @@ RUN pip install --no-cache-dir \
     pytest==8.4.2 \
     rich==13.9.4 \
     toml==0.10.2 \
-    "pyspark==${PYSPARK_VERSION}"
+    "pyspark[connect]==${PYSPARK_VERSION}"
+
+COPY infra/compose/images/pyspark/run-integration.sh /usr/local/bin/run-integration
+RUN chmod +x /usr/local/bin/run-integration
 
 WORKDIR /workspace
 ENTRYPOINT ["tini", "--"]

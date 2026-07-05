@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 COMPOSE = ROOT / "infra" / "compose" / "docker-compose.yaml"
 ENV = ROOT / "infra" / "compose" / ".env"
 WORKSPACE_TMP = ROOT / ".pytest-workspace-tmp" / "integration"
-BACKENDS = ("pyspark35", "pyspark40")
+BACKENDS = ("pyspark35", "pyspark40", "spark-connect35", "spark-connect40")
 SERVICES = ("spark35-master", "spark35-worker", "spark40-master", "spark40-worker")
 
 

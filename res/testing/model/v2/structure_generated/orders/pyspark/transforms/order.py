@@ -255,9 +255,8 @@ class EnrichOrdersGenerated:
             F.col("shipments.tracking_number").alias("tracking_number"),
             F.col("shipments.shipped_at").alias("shipped_at"),
         )
-        assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")
-
         orders = self._impl.note_lookup_inputs(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
+        assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="allow_extra_columns")
         assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="allow_extra_columns")
 
         # Subtransform: publish

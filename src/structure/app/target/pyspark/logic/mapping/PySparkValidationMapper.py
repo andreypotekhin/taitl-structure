@@ -13,7 +13,7 @@ class PySparkValidationMapper:
                 PySparkValidationRecipe(
                     target=step.results[0].frame,
                     schema=step.output_schema,
-                    mode=SchemaMode.STRICT,
+                    mode=self._intermediate_mode(step.after_hooks),
                     project=False,
                     reason="intermediate",
                 )
@@ -27,7 +27,7 @@ class PySparkValidationMapper:
                 PySparkValidationRecipe(
                     target=result.frame,
                     schema=result.schema,
-                    mode=SchemaMode.STRICT,
+                    mode=self._intermediate_mode(result.after_hooks),
                     project=False,
                     reason="intermediate",
                 )
@@ -57,3 +57,8 @@ class PySparkValidationMapper:
                     )
                 )
         return recipes
+
+    def _intermediate_mode(self, hooks) -> SchemaMode:
+        if any(hook.schema_mode is SchemaMode.ALLOW_EXTRA_COLUMNS and not hook.project_output for hook in hooks):
+            return SchemaMode.ALLOW_EXTRA_COLUMNS
+        return SchemaMode.STRICT
