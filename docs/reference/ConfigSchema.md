@@ -1,7 +1,5 @@
 # Configuration Schema
 
-## Purpose
-
 Structure configuration controls source discovery, generated output, execution mode, target backend, validation,
 traceability, Spark SQL assumptions, and CI behavior. Configuration errors must fail early with structured diagnostics and
 allowed values.

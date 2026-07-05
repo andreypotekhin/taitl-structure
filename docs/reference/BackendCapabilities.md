@@ -1,7 +1,5 @@
 # Backend Capabilities
 
-## Purpose
-
 Backend capabilities describe what a configured execution target can run or generate from Structure IR. They answer
 questions such as which PySpark versions are supported, which DSL features are available, whether streaming is safe,
 which validation modes are allowed, and which imports generated code should use.
@@ -20,15 +18,14 @@ This reference covers:
 - unsupported backend diagnostics;
 - generated import-name capability;
 - PySpark v1 default capability profile;
-- Spark-free capability selection;
-- tests for capability decisions.
+- Spark-free capability selection.
 
-Feature specifications still own the domain meaning of a feature. For example, `JoinSemantics.md` owns `join_one`
+Feature references still own the domain meaning of a feature. For example, `JoinSemantics.md` owns `join_one`
 cardinality rules. This document owns whether the selected backend profile says `join_one` can be lowered.
 
 ## Interface
 
-The implementation must expose an internal capability object:
+Internally, Structure represents backend support with a capability object:
 
 ```text
 BackendCapabilities
@@ -52,13 +49,13 @@ For the default PySpark profile, `name = "pyspark"`, `target = ">=3.5,<4.1"`, `v
 implementation `family = "ordinary_pyspark"`. For the experimental Spark Connect variant, `name = "pyspark"`,
 `target = ">=3.5,<4.1"`, `variant = "spark-connect"`, and semantic `family = "spark_connect_dataframe"`.
 Future alternative-backend reports may add semantic-family vocabulary such as `pyspark_dataframe` or `sql_relation`;
-that vocabulary must not require renaming the current v1 implementation family.
+that vocabulary does not require renaming the current implementation family.
 
 `imports()` returns deterministic generated import metadata for the backend. For PySpark v1 this includes the aliases
 for `pyspark.sql.functions`, `pyspark.sql.types`, `DataFrame`, `SparkSession`, `Column`, and Structure generated
 runtime schema helpers.
 
-`supports(requirement)` returns a `CapabilityDecision` and must never raise.
+`supports(requirement)` returns a `CapabilityDecision` without raising.
 
 `require(requirement)` returns a supported decision or fails through the backend diagnostic path.
 
@@ -101,7 +98,7 @@ Future alternative backends may add these groups:
 
 `source` is optional structured context such as transform, step, field, join, hook, or config setting.
 
-`docs` points to this specification or a narrower semantic specification.
+`docs` points to this reference or a narrower semantic reference.
 
 Capability requirements describe Structure semantics, not individual PySpark API entrypoints. A backend profile should
 answer questions such as "can this target lower grouped aggregation", "can it lower symbolic higher-order array
@@ -257,7 +254,7 @@ Title: Unsupported backend capability
 Common cause: source or IR asks the configured backend to lower a feature outside its supported capability profile.
 
 Use: choose a supported Structure operation, use an explicit hook when arbitrary PySpark is the honest escape hatch, or
-wait until the feature's specification and backend profile promote it.
+wait until the feature's reference and backend profile promote it.
 
 ## PySpark Target Variants
 
@@ -279,8 +276,12 @@ target_variant = "spark-connect"
 ```
 
 The Spark Connect variant uses the PySpark DataFrame and Column API over a remote session. Its backend family is
-`spark_connect_dataframe`. It must reject classic-only assumptions before execution or generation, including
-SparkContext, RDDs, direct JVM/Py4J access, `_jdf`, and private classic PySpark implementation fields.
+`spark_connect_dataframe`. It accepts the completed compiler-visible batch feature families covered by the ordinary
+PySpark profile: projections, filters, joins, analytical joins, aggregates, exact/subset dedupe, selected-row helpers,
+window projections, rolling metrics, and higher-order array/map helpers.
+
+Spark Connect rejects classic-only assumptions before execution or generation. These requirements are ordinary-only:
+`backend.spark_context`, `backend.rdd_access`, `backend.jvm_access`, and `backend.private_classic_fields`.
 
 ## No-Spark Contract
 

@@ -1,12 +1,10 @@
 # Execution Semantic Contract
 
-## Purpose
-
 Online execution and generated execution are two ways to run the same Structure transform. They differ in output form:
 online execution uses live PySpark objects at runtime, while generated execution imports checked-in PySpark source.
-They must not differ in transform meaning.
+They share the same transform meaning.
 
-This specification defines the shared semantic contract between checked `TransformPlan` IR, online PySpark execution,
+This reference defines the shared semantic contract between checked `TransformPlan` IR, online PySpark execution,
 and generated PySpark emission. The contract exists to prevent two independent lowerers from drifting apart on
 projection order, filter order, join aliasing, hook order, validation placement, schema projection, literal typing, or
 performance guardrails.
@@ -19,10 +17,9 @@ This reference covers:
 - parity requirements for online and generated PySpark execution;
 - deterministic operation recipes consumed by online runners and generated emitters;
 - the boundary between semantic concerns and source-text concerns;
-- operation-by-operation parity test requirements;
 - compiled-path performance guardrails.
 
-Related specifications own narrower behavior:
+Related references own narrower behavior:
 
 - backend-neutral IR shape: [IntermediateRepresentation.md](IntermediateRepresentation.md);
 - online runtime selection and session behavior: [OnlineExecution.md](OnlineExecution.md);
@@ -32,8 +29,8 @@ Related specifications own narrower behavior:
 - join semantics: [JoinSemantics.md](JoinSemantics.md);
 - streaming classification: [StreamingCompatibility.md](StreamingCompatibility.md).
 
-When this document overlaps those specifications, this document owns how already-checked semantics are shared by online
-and generated PySpark consumers. The narrower specification still owns the feature's source-level behavior.
+When this document overlaps those references, this document owns how already-checked semantics are shared by online
+and generated PySpark consumers. The narrower reference still owns the feature's source-level behavior.
 
 ## Core Rule
 
@@ -48,13 +45,12 @@ TransformPlan
        -> PySparkCodeGenerator renders recipes as source text
 ```
 
-The generated code emitter must not re-decide transform semantics while rendering source text. The online runner must
+The generated code emitter does not re-decide transform semantics while rendering source text. The online runner does
 not execute generated Python source text. Both consume the same PySpark execution recipes.
 
 ## Shared Target Plan
 
-The shared target plan is internal implementation detail, not a public end-user API. The required conceptual records
-are:
+The shared target plan is not a public end-user API. Conceptually, it contains:
 
 ```text
 PySparkExecutionPlan
@@ -281,7 +277,7 @@ Problem:
 
 Use:
   Use latest_by(...) or earliest_by(...) for admitted selected-row windows, move broader logic into an explicit hook,
-  or wait for the broader v2 windowing specification.
+  or wait for the broader v2 windowing reference.
 
 See docs/reference/ExecutionSemanticContract.md
 ```

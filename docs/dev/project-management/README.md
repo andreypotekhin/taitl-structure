@@ -33,8 +33,10 @@ project-management/
     Sprint05_JoinsTraceabilityBuildIntegration.md
     Sprint06_V2ScopeAndAnalyticalIR.md
     Sprint07_AnalyticalJoinCoverage.md
-    Sprint08_AggregationsWindowsHigherOrderFunctions.md
     Sprint09_OptimizationExplainDocsTooling.md
+    Sprint10_DocsTestingIncrementalCompile.md
+    done/
+      Sprint08_AggregationsWindowsHigherOrderFunctions.md
   templates/
     SprintReview.md
     ADR.md
@@ -76,8 +78,10 @@ V2 starts after v1 stabilization evidence is release-ready. The v2 sprint sequen
    temporal validity-window joins, and backward as-of joins.
 3. **Sprint 08: aggregations, windows, and higher-order functions**: typed `group_by(...)`, aggregate helpers,
    windowing, dedupe helpers, and compiler-visible array/map helpers.
-4. **Sprint 09: optimization, explain, docs, and test tooling**: explicit optimization directives, richer explain
-   output, generated documentation artifacts, pytest helpers, and production incremental compile.
+4. **Sprint 09: Spark Connect, optimization, and explain**: experimental Spark Connect parity, explicit optimization
+   directives, and richer explain output for completed analytical operations.
+5. **Sprint 10: docs, testing, and incremental compile**: generated documentation artifacts, pytest helpers, and
+   production incremental compile.
 
 V3 is reserved for streaming orchestration. V4 is reserved for Spark Connect promotion or hardening after end-of-v2
 experimental parity evidence exists.

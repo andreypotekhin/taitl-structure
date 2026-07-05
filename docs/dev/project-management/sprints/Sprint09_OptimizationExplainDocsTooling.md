@@ -79,7 +79,9 @@ explicitly, and inspect analytical dataflow without reading generated code line 
 
 ## Progress
 
-- [ ] Add experimental Spark Connect parity for completed batch features.
+- [x] (2026-07-05) Added experimental Spark Connect parity for completed compiler-visible batch features with
+  variant-specific backend capability checks, classic-only internal exclusions, identical generated-code shape checks,
+  traceability-shape checks, and public compatibility docs.
 - [ ] Implement explicit optimization directives.
 - [ ] Implement rich explain output for completed batch operations.
 

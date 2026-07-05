@@ -22,10 +22,8 @@ VARIANT_FAMILIES = {
     "spark-connect": "spark_connect_dataframe",
 }
 
-V1_CAPABILITIES = frozenset(
+COMMON_CAPABILITIES = frozenset(
     {
-        ("backend", "ordinary_pyspark"),
-        ("backend", "spark_connect_dataframe"),
         ("expression", "field_ref"),
         ("expression", "literal"),
         ("expression", "projection"),
@@ -82,6 +80,25 @@ V1_CAPABILITIES = frozenset(
     }
 )
 
+ORDINARY_ONLY_CAPABILITIES = frozenset(
+    {
+        ("backend", "ordinary_pyspark"),
+        ("backend", "spark_context"),
+        ("backend", "rdd_access"),
+        ("backend", "jvm_access"),
+        ("backend", "private_classic_fields"),
+    }
+)
+
+SPARK_CONNECT_ONLY_CAPABILITIES = frozenset({("backend", "spark_connect_dataframe")})
+
+VARIANT_CAPABILITIES = {
+    "ordinary": COMMON_CAPABILITIES | ORDINARY_ONLY_CAPABILITIES,
+    "spark-connect": COMMON_CAPABILITIES | SPARK_CONNECT_ONLY_CAPABILITIES,
+}
+
+V1_CAPABILITIES = VARIANT_CAPABILITIES[DEFAULT_TARGET_VARIANT]
+
 
 class PySparkCapabilities:
 
@@ -90,11 +107,11 @@ class PySparkCapabilities:
         *,
         target_profile: str = DEFAULT_TARGET_PROFILE,
         target_variant: str = DEFAULT_TARGET_VARIANT,
-        supported: frozenset[tuple[str, str]] = V1_CAPABILITIES,
+        supported: frozenset[tuple[str, str]] | None = None,
     ) -> None:
         family = VARIANT_FAMILIES.get(target_variant, "unknown")
         self.id = BackendId(name="pyspark", target=target_profile, family=family, variant=target_variant)
-        self.supported = supported
+        self.supported = supported or VARIANT_CAPABILITIES.get(target_variant, COMMON_CAPABILITIES)
         self._imports = GeneratedImports()
 
     def imports(self) -> GeneratedImports:

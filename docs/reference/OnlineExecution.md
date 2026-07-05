@@ -1,7 +1,5 @@
 # Online Execution
 
-## Purpose
-
 Online execution is the default v1 way to run Structure transforms. A user depends on the Structure library, supplies an
 existing Spark session, constructs a transform invocation with input DataFrames, and runs it through a
 `StructureSession`. The user does not need to commit generated PySpark code to their repository.
@@ -176,8 +174,8 @@ diagnostic that asks the user to rename it.
 `structure check`, `structure compile`, and generated-file diff checks remain Spark-free. They must not require
 PySpark, Java, SparkSession, Spark startup, or a Spark cluster.
 
-Online execution is a runtime boundary and may import PySpark. Runtime tests for online execution may require a local
-Spark runtime.
+Online execution is a runtime boundary and may import PySpark. It requires a local or remote Spark runtime supplied by
+the caller.
 
 ## Streaming Compatibility
 

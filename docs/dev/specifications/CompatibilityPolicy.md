@@ -79,11 +79,11 @@ target_profile = ">=3.5,<4.1"
 target_variant = "spark-connect"
 ```
 
-V1 and mainstream v2 online/generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column`
-APIs. The end of v2 may add experimental Spark Connect parity for completed v1 and v2 batch features after the
-ordinary PySpark contract is stable. V3 owns streaming orchestration on top of the ordinary PySpark contract.
+Mainstream online/generated execution targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs.
+Experimental Spark Connect parity covers completed compiler-visible batch features through the same PySpark-family
+target boundary. V3 owns streaming orchestration on top of the ordinary PySpark contract.
 
-Experimental Spark Connect support may be claimed only if all of these are true:
+Experimental Spark Connect support is intentionally narrow:
 
 - it uses the existing PySpark target boundary cleanly;
 - it does not change public DSL syntax;
@@ -91,13 +91,13 @@ Experimental Spark Connect support may be claimed only if all of these are true:
 - it does not change generated class construction or `run(...)` signatures;
 - it does not change streaming orchestration semantics;
 - it does not weaken generated-code readability or reviewability;
-- it has compatibility tests for the supported PySpark Connect versions;
+- it has parity evidence for completed compiler-visible batch features;
 - public docs make the support level explicit.
 
 Spark Connect must not rely on SparkContext, RDDs, direct JVM/Py4J access, `_jdf`, or private classic PySpark fields.
 Unsupported variant capabilities must fail through backend capability diagnostics before online execution or generated
-code is claimed compatible. Full support is a later promotion decision after parity evidence, diagnostics, and CI
-coverage exist.
+code is claimed compatible. Full support is a later promotion decision after broader runtime evidence, diagnostics, and
+CI coverage exist.
 
 ## Semantic Versioning
 

@@ -282,8 +282,12 @@ target_variant = "spark-connect"
 ```
 
 The Spark Connect variant uses the PySpark DataFrame and Column API over a remote session. Its backend family is
-`spark_connect_dataframe`. It must reject classic-only assumptions before execution or generation, including
-SparkContext, RDDs, direct JVM/Py4J access, `_jdf`, and private classic PySpark implementation fields.
+`spark_connect_dataframe`. It accepts the completed compiler-visible batch feature families covered by the ordinary
+PySpark profile: projections, filters, joins, analytical joins, aggregates, exact/subset dedupe, selected-row helpers,
+window projections, rolling metrics, and higher-order array/map helpers.
+
+Spark Connect rejects classic-only assumptions before execution or generation. These requirements are ordinary-only:
+`backend.spark_context`, `backend.rdd_access`, `backend.jvm_access`, and `backend.private_classic_fields`.
 
 ## No-Spark Contract
 
@@ -299,6 +303,8 @@ Runtime PySpark execution tests may import PySpark. Capability tests and compile
   ordinary PySpark capability profile.
 - `target_backend = "pyspark"` with `target_variant = "spark-connect"` resolves the experimental Spark Connect
   PySpark-variant capability profile.
+- Spark Connect supports completed compiler-visible batch feature capabilities and rejects classic-only backend
+  internals with `BACKEND-E2402`.
 - Unknown `target_backend` fails with `BACKEND-E2401`.
 - Unsupported feature requirements fail with `BACKEND-E2402`.
 - Future backend profiles can report degraded, opaque, and unknown capabilities without importing backend runtimes.

@@ -1,7 +1,5 @@
 # Schema Model
 
-## Purpose
-
 The schema model represents user-declared data structures independently from PySpark. It is the source of truth for
 compiler checks, generated Spark `StructType` code, runtime validation, traceability, documentation, and IDE-oriented
 diagnostics.

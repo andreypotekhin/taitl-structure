@@ -1,15 +1,13 @@
 # Streaming Compatibility
 
-## Purpose
-
-Structure v1 generates PySpark DataFrame transforms. It does not generate Spark Structured Streaming jobs. A generated
+Structure generates PySpark DataFrame transforms. It does not generate Spark Structured Streaming jobs. A generated
 transform is streaming-compatible when a caller can pass a streaming DataFrame as the current pipeline input and Spark
 can analyze the resulting DataFrame plan without Structure adding unsupported streaming operations, actions, stateful
 streaming features, or streaming lifecycle code.
 
-The v1 contract is intentionally narrow: row-local projection, row-local filtering, schema-only validation, and
-stream-static lookup joins are in scope. Watermarks, output modes, triggers, checkpoints, streaming sources, streaming
-sinks, stream-stream joins, and stateful aggregations are outside v1.
+The streaming-compatible contract is intentionally narrow: row-local projection, row-local filtering, schema-only
+validation, and stream-static lookup joins are in scope. Watermarks, output modes, triggers, checkpoints, streaming
+sources, streaming sinks, stream-stream joins, and stateful aggregations are outside the current contract.
 
 ## Definition
 
@@ -29,7 +27,7 @@ caller.
 
 ## Runtime Shape
 
-The v1 streaming-compatible runtime shape is one streaming current pipeline DataFrame plus zero or more static side
+The streaming-compatible runtime shape is one streaming current pipeline DataFrame plus zero or more static side
 inputs.
 
 Example:
@@ -203,7 +201,7 @@ def remove_negative_totals(self, *, orders, spark, ctx):
 - The hook does not call Spark actions.
 - The hook does not convert to RDD, Pandas, local Python collections, or external side effects.
 - The hook does not call `readStream`, `writeStream`, `start()`, or query lifecycle APIs.
-- The hook does not introduce stateful streaming operations outside this specification.
+- The hook does not introduce stateful streaming operations outside this reference.
 - If `pass_inputs=True`, any joined or consulted input DataFrames are static unless a later spec declares otherwise.
 
 The checker does not need to parse hook bodies in v1. It should validate the hook signature and record that
@@ -269,14 +267,14 @@ The checker must run without starting Spark and without importing PySpark when p
 
 Required checks:
 
-1. Reject or warn on operations not listed as supported in this specification.
+1. Reject or warn on operations not listed as supported in this reference.
 2. Reject stream-stream join shapes for explicit streaming-compatible transforms.
 3. Reject global sorts, aggregations, deduplication, limits, and actions in compiled DSL operations.
 4. Reject or warn on hooks without `streaming_safe=True`.
 5. Reject `streaming_safe=True` hooks with invalid hook signatures.
 6. Reject schema-and-constraints validation when constraints are not schema-only.
 7. Preserve streaming compatibility status in compile reports and compiler traceability metadata.
-8. Link diagnostics to this specification.
+8. Link diagnostics to this reference.
 
 The checker should be conservative. If it cannot prove an operation is compatible, it should classify it as unknown
 rather than compatible.

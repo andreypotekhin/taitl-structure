@@ -1,14 +1,12 @@
 # Schema Declaration Syntax
 
-## Purpose
-
 Structure schemas declare the row contracts used by compiler checks, generated Spark `StructType` code, runtime schema
-validation, traceability, and IDE navigation. The syntax must be explicit, readable, and cheap to inspect without importing
+validation, traceability, and IDE navigation. The syntax is explicit, readable, and cheap to inspect without importing
 PySpark or creating a Spark session.
 
-## Canonical v1 Form
+## Canonical Form
 
-The v1 canonical schema declaration form is:
+The canonical schema declaration form is:
 
 ```python
 from structure import Structure, field, String, Decimal
@@ -32,11 +30,11 @@ The field declaration has three visible parts:
 2. A `field(...)` call, which marks the attribute as a Structure field.
 3. An explicit type object such as `String()` or `Decimal(12, 2)`.
 
-Lowercase type sentinels such as `string`, `decimal(12, 2)`, and `boolean` are not canonical v1 syntax.
+Lowercase type sentinels such as `string`, `decimal(12, 2)`, and `boolean` are not canonical syntax.
 
 ## Public Imports
 
-The public schema DSL must be importable from `structure`:
+The public schema DSL is importable from `structure`:
 
 ```python
 from structure import (
@@ -57,11 +55,11 @@ from structure import (
 )
 ```
 
-`Map` is part of the v1 schema type surface.
+`Map` is part of the schema type surface.
 
 ## Grammar
 
-This is the accepted v1 schema declaration grammar in descriptive form:
+This is the accepted schema declaration grammar in descriptive form:
 
 ```text
 schema_class      := class NAME(Structure): field_decl+

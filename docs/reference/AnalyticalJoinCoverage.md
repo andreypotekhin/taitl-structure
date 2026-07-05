@@ -1,15 +1,13 @@
 # Analytical Join Coverage
 
-## Purpose
-
 Analytical joins are join forms that go beyond one-row lookup enrichment. They let a transform filter rows by
 existence, intentionally multiply rows by matches, select deterministic lookup winners, and join against time-valid
 records.
 
-This specification defines Structure's analytical join family: semi and anti existence filters, `join_many(...)`,
+This reference describes Structure's analytical join family: semi and anti existence filters, `join_many(...)`,
 deterministic lookup dedupe, temporal lookups, as-of lookups, and slowly changing dimension lookups.
 
-The v1 `join_one(...)` contract remains unchanged. It is a narrow many-to-one or one-to-one lookup join. It warns when
+The `join_one(...)` contract remains unchanged. It is a narrow many-to-one or one-to-one lookup join. It warns when
 right-side uniqueness is not proven and never deduplicates by surprise.
 
 ## Scope
@@ -17,7 +15,7 @@ right-side uniqueness is not proven and never deduplicates by surprise.
 This reference covers source semantics for analytical joins. Existence joins, `join_many(...)`, deterministic
 deduped `join_one(...)`, temporal validity-window `temporal_one(...)`, and backward `as_of_one(...)` are implemented in
 the default PySpark profile.
-[JoinSemantics.md](JoinSemantics.md) remains the authority for the strict v1 `join_one(...)` contract.
+[JoinSemantics.md](JoinSemantics.md) covers the strict `join_one(...)` contract.
 
 In scope for the analytical join family:
 
@@ -26,7 +24,7 @@ In scope for the analytical join family:
 - deterministic right-side dedupe before `join_one(...)`;
 - temporal validity-window lookup joins;
 - as-of lookup joins;
-- diagnostics, IR, backend capability requirements, traceability, and tests for those forms.
+- diagnostics, IR, backend capability requirements, and traceability for those forms.
 
 Out of scope until a later design:
 
@@ -246,7 +244,7 @@ join.as_of_one
 
 The default PySpark profile supports `join.exists`, `join.not_exists`, `join.join_many`, `join.lookup_dedupe`,
 `join.temporal_one`, and `join.as_of_one`.
-Unsupported capability diagnostics use `BACKEND-E2402` and link to this specification. The diagnostic must name the
+Unsupported capability diagnostics use `BACKEND-E2402` and link to this reference. The diagnostic names the
 join form and suggest either a supported join, a hook escape hatch, or waiting for the planned feature.
 
 ## Streaming Compatibility

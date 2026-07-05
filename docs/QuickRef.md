@@ -867,8 +867,8 @@ target_profile = ">=3.5,<4.1"
 target_variant = "ordinary"
 ```
 
-Spark Connect uses `target_backend = "pyspark"` with `target_variant = "spark-connect"`. It is planned as an
-experimental end-of-v2 variant for completed v1/v2 batch features, with full support gated by parity evidence.
+Spark Connect uses `target_backend = "pyspark"` with `target_variant = "spark-connect"`. It is experimental for
+completed compiler-visible batch features, with full support gated by broader runtime and CI evidence.
 See [Compatibility.md](Compatibility.md).
 
 Reference: [compatibility policy](reference/CompatibilityPolicy.md) and

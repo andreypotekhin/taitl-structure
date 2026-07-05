@@ -1,15 +1,13 @@
 # PySpark Code Generation
 
-## Purpose
-
 PySpark code generation lowers Structure compiler IR into deterministic, readable Python modules that use PySpark
-DataFrame and Column APIs. The generated modules are optional for ordinary runtime execution, because online execution
-is the v1 default, but they remain first-class artifacts for provenance, code review, debugging, snapshot tests, and
+DataFrame and Column APIs. The generated modules are optional for ordinary runtime execution because online execution
+is the default, but they remain first-class artifacts for provenance, code review, debugging, snapshot tests, and
 projects that deliberately choose `execution_mode = "generated"`.
 
-The generator is a source-text emitter. It must not redefine transform semantics. Projection, filtering, expression
-lowering, join aliasing, hook order, validation placement, schema projection, and performance guardrails must agree
-with online PySpark execution.
+The generator is a source-text emitter. It does not redefine transform semantics. Projection, filtering, expression
+lowering, join aliasing, hook order, validation placement, schema projection, and performance guardrails agree with
+online PySpark execution.
 
 Shared semantics are owned by [ExecutionSemanticContract.md](ExecutionSemanticContract.md). The generator renders
 `PySparkExecutionPlan` recipes, or the local implementation equivalent, into source text. It owns imports, formatting,
@@ -28,7 +26,7 @@ This reference covers generated PySpark source shape and generator behavior for:
 - backend capability selection for PySpark syntax;
 - generated-code diagnostics and verification behavior.
 
-Semantic contracts are owned by narrower specifications:
+Semantic behavior is covered by narrower references:
 
 - public DSL and transform IR: [DSL.md](DSL.md);
 - online/generated execution parity: [ExecutionSemanticContract.md](ExecutionSemanticContract.md);
@@ -43,9 +41,9 @@ Semantic contracts are owned by narrower specifications:
 - streaming constraints: [StreamingCompatibility.md](StreamingCompatibility.md);
 - compatibility policy: [CompatibilityPolicy.md](CompatibilityPolicy.md).
 
-When this document overlaps those specifications, this document owns how already-decided semantics are rendered as
+When this document overlaps those references, this document owns how already-decided semantics are rendered as
 PySpark source text. The shared execution contract owns parity between online and generated PySpark consumers. The
-narrower specification owns feature behavior.
+narrower reference owns feature behavior.
 
 ## Generated Layout
 
@@ -321,7 +319,7 @@ Rules:
 - Runtime helpers are also useful to caller code that wants to validate and project before a caller-owned write.
 - Runtime helper APIs must stay small and stable, because all generated transform modules import them.
 - Runtime helper diagnostics must mention the schema name, validation mode, offending column or field, suggested fix,
-  and a link to the relevant specification or troubleshooting document.
+  and a link to the relevant reference or troubleshooting document.
 - Runtime helpers must not start or stop Spark sessions.
 - Runtime helpers must not call `collect`, `toPandas`, or row-wise operations.
 

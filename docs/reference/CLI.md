@@ -1,7 +1,5 @@
 # CLI
 
-## Purpose
-
 The Structure CLI is the command-line entrypoint for working with Structure projects. It initializes configuration,
 validates Structure source, generates optional PySpark artifacts, verifies checked-in generated output, explains
 compiler understanding, and cleans generated files.

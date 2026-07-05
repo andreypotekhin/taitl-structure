@@ -1,17 +1,14 @@
 # Intermediate Representation
 
-## Purpose
+The Structure intermediate representation is the shared transform model between source DSL semantics and execution
+targets. Compileability checks, online PySpark execution, PySpark code generation, streaming compatibility checks,
+compiler provenance, and static dataflow traceability all read the same IR.
 
-The Structure intermediate representation is the compiler contract between source DSL semantics and execution targets.
-The DSL frontend produces IR. Compileability checkers, online PySpark execution, PySpark code generation, streaming
-compatibility checks, compiler provenance, and static dataflow traceability consume IR.
-
-The IR must be backend-neutral. It must describe what the transform means, not how PySpark source text happens to spell
-that meaning.
+The IR is backend-neutral. It describes what the transform means, not how a specific backend spells that meaning.
 
 ## Scope
 
-This reference covers:
+This reference covers the public meaning of:
 
 - `TransformPlan`;
 - `InputPlan`;
@@ -25,8 +22,7 @@ This reference covers:
 - IR construction, validation, determinism, and immutability rules;
 - extension points for v2, v3, and v4 roadmap features.
 
-This specification does not own the public authoring API or backend rendering details. Those are owned by narrower
-specifications:
+Public authoring API and backend rendering details are covered by narrower references:
 
 - public DSL and symbolic execution entrypoints: [DSL.md](DSL.md);
 - schema model: [SchemaModel.md](SchemaModel.md);
@@ -41,12 +37,12 @@ specifications:
 - compatibility policy: [CompatibilityPolicy.md](CompatibilityPolicy.md);
 - diagnostic code, registry, and documentation lifecycle: [Diagnostics.md](Diagnostics.md).
 
-When this document overlaps another specification, this document owns the IR shape and invariants. The narrower
-semantic specification owns feature behavior.
+When this document overlaps another reference, this document owns the IR shape and invariants. The narrower
+semantic reference owns feature behavior.
 
 ## Design Principles
 
-The IR must be:
+The IR is:
 
 - backend-neutral;
 - deterministic for identical source, configuration, and Structure version;
@@ -57,7 +53,7 @@ The IR must be:
 - compact enough to build and inspect quickly during `structure check`;
 - serializable for debugging, snapshot tests, and future incremental compile fingerprints.
 
-IR nodes must not contain live Spark objects, PySpark `Column` objects, PySpark `DataFrame` objects, file handles,
+IR nodes do not contain live Spark objects, PySpark `Column` objects, PySpark `DataFrame` objects, file handles,
 runtime hook return values, or mutable compiler state.
 
 ## Compiler Flow
@@ -254,7 +250,7 @@ Rules:
 - `outputs` preserve class-body output declaration order.
 - `TransformPlan.output_schema` is a compatibility accessor that returns the sole output schema and fails clearly when
   a transform has multiple outputs.
-- A transform with no compiled steps is invalid unless a future specification defines passthrough transforms.
+- A transform with no compiled steps is invalid unless a future reference defines passthrough transforms.
 - `TransformPlan` must not contain live input DataFrames.
 - `TransformPlan` must not contain source transform instances created for hook execution.
 
@@ -737,7 +733,7 @@ Supported v1 operator families:
 
 - equality and inequality comparisons;
 - ordering comparisons where the operand types support ordering;
-- arithmetic only where admitted by the type compatibility specification;
+- arithmetic only where admitted by the type compatibility reference;
 - null-safe equality when exposed by expression objects.
 
 Rules:
@@ -901,7 +897,7 @@ Rules:
   telemetry.
 
 Compiler provenance is compile-time metadata. Runtime LDJSON traceability is outside v1 through v4 scope unless a future
-specification changes that roadmap.
+reference changes that roadmap.
 
 ## Static Dataflow Traceability
 
@@ -1131,7 +1127,7 @@ Problem:
 
 Use:
   Use admitted projection window helpers or selected-row helpers, move broader logic into an explicit hook, or wait for
-  the broader v2 windowing specification.
+  the broader v2 windowing reference.
 
 See docs/reference/IntermediateRepresentation.md
 ```
@@ -1166,7 +1162,7 @@ Planned v2 IR variants:
 
 Rules for adding v2 variants:
 
-- Add the semantic specification first or at the same time.
+- Add the semantic reference first or at the same time.
 - Add generic IR validation.
 - Add backend capability checks.
 - Add online and generated lowering or explicitly mark the feature unsupported for one path.
@@ -1193,7 +1189,7 @@ Rules:
 - v3 streaming lifecycle IR must distinguish transform semantics from query orchestration.
 - Checkpoints, triggers, watermarks, output modes, and state policies require explicit user-facing semantics before
   they enter IR.
-- Runtime telemetry remains separate from compiler traceability unless a future specification merges them deliberately.
+- Runtime telemetry remains separate from compiler traceability unless a future reference merges them deliberately.
 
 ## v4 Extensions
 

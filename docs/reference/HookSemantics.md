@@ -1,7 +1,5 @@
 # Hook Semantics
 
-## Purpose
-
 Hooks are Structure's explicit runtime escape hatch. They let a developer attach arbitrary backend DataFrame logic to a
 specific compiled subtransform without pretending the hook body is compiler-visible.
 

@@ -1,7 +1,5 @@
 # Symbolic Execution
 
-## Purpose
-
 Symbolic execution is the compiler phase that turns user-written compiled subtransform methods into backend-neutral
 IR. It executes the method body with symbolic schema row proxies instead of real data, records filters, joins,
 expressions, and output projection, and then hands a deterministic `StepPlan` to compileability checks, online
@@ -29,7 +27,7 @@ This reference covers the compiler behavior for:
 - unsupported-operation diagnostics;
 - deterministic `StepPlan` construction.
 
-Related specifications own detailed semantics for narrower topics:
+Related references own detailed semantics for narrower topics:
 
 - public DSL shape: [DSL.md](DSL.md);
 - schema construction and base overlays: [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md);
@@ -40,8 +38,8 @@ Related specifications own detailed semantics for narrower topics:
 - streaming checks: [StreamingCompatibility.md](StreamingCompatibility.md);
 - CLI behavior and metrics: [CLI.md](CLI.md).
 
-When this document overlaps with a narrower specification, this document owns how symbolic execution captures the
-source event. The narrower specification owns final validity, type rules, backend capability, and runtime behavior.
+When this document overlaps with a narrower reference, this document owns how symbolic execution captures the
+source event. The narrower reference owns final validity, type rules, backend capability, and runtime behavior.
 
 ## Compile Flow Position
 

@@ -1,9 +1,7 @@
 # Schema Semantics
 
-## Purpose
-
 Structure schemas define row shape and type meaning for compiler checks, generated Spark schemas, runtime validation,
-online execution, generated code, diagnostics, and traceability. This specification ties together schema declaration
+online execution, generated code, diagnostics, and traceability. This reference ties together schema declaration
 syntax, schema model extraction, inheritance, output construction, nullability, and assignment compatibility into one
 schema semantics reference.
 
@@ -82,7 +80,7 @@ Rules:
 - Extra DataFrame columns are failures in strict validation mode.
 - Unknown field constructor keywords are declaration errors.
 - Field metadata and descriptions do not change Spark shape semantics unless a narrower spec says so.
-- Future aliases must not be added without a migration specification because generated code and diagnostics rely on
+- Future aliases must not be added without a migration reference because generated code and diagnostics rely on
   field names.
 
 ## Type Semantics

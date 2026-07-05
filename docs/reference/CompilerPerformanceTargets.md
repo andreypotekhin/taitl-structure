@@ -1,9 +1,7 @@
 # Compiler Performance Targets
 
-## Purpose
-
 Structure must feel fast during local development and CI. Compiler commands should validate source, build IR, and check
-generated-code freshness without starting Spark. This specification defines compiler-speed expectations, measurement
+generated-code freshness without starting Spark. This reference defines compiler-speed expectations, measurement
 rules, architecture constraints, diagnostics, and verification boundaries.
 
 Runtime Spark job performance is outside this document except where compiler choices affect generated or online plan

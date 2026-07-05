@@ -1,14 +1,11 @@
 # DSL
 
-## Purpose
-
 The Structure DSL is the public Python API for declaring schemas, transforms, expressions, filters, joins, hooks,
-validation policy, and runtime invocation. It must feel like ordinary typed Python while preserving one strict promise:
-compiled subtransforms lower to Spark-plan-visible DataFrame and Column operations through backend-neutral IR.
+validation policy, and runtime invocation. It reads like ordinary typed Python while preserving one strict promise:
+compiled subtransforms stay visible to Structure and Spark.
 
-The DSL is not a second PySpark wrapper layer. It is a small authoring surface that captures enough metadata and
-symbolic behavior for `structure check`, online execution, optional generated PySpark, compiler provenance, static
-dataflow traceability, and streaming compatibility checks to agree.
+The DSL is not a second PySpark wrapper layer. It is a small authoring surface that keeps checks, online execution,
+generated PySpark, explain output, traceability, and streaming compatibility aligned.
 
 ## Scope
 
@@ -28,7 +25,7 @@ This reference covers the public DSL surface and cross-cutting rules for:
 - hook and schema mode enum imports;
 - import-time and symbolic-execution behavior.
 
-Detailed contracts are delegated to narrower specifications:
+Detailed behavior is covered by narrower references:
 
 - schemas and output construction: [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md);
 - schema inheritance: [SchemaInheritance.md](SchemaInheritance.md);
@@ -40,12 +37,12 @@ Detailed contracts are delegated to narrower specifications:
 - version and compatibility policy: [CompatibilityPolicy.md](CompatibilityPolicy.md);
 - diagnostic code, registry, and documentation lifecycle: [Diagnostics.md](Diagnostics.md).
 
-When this document and a narrower specification overlap, the narrower specification owns the detailed semantics. This
+When this document and a narrower reference overlap, the narrower reference owns the detailed semantics. This
 document owns how those features appear and compose in the public DSL.
 
 ## Public Imports
 
-The v1 public DSL must be importable from `structure`:
+The public DSL is importable from `structure`:
 
 ```python
 from structure import (
@@ -207,7 +204,7 @@ class NormalizeOrders(Transform):
 
 - `validate_intermediate`: optional class-level override for intermediate output validation.
 - `streaming_compatible`: optional author promise that the transform must satisfy the streaming compatibility
-  specification.
+  reference.
 
 Rules:
 
@@ -273,7 +270,7 @@ Rules:
 - Method-level `@transform(input=declared_input)` selects a class input explicitly when the row schema is ambiguous
   or cannot be inferred safely.
 
-Input DataFrame schema validation is governed by the validation configuration and runtime specifications. The DSL only
+Input DataFrame schema validation is governed by the validation configuration and runtime references. The DSL only
 declares the expected schema.
 
 ## Lanes And Outputs
@@ -860,7 +857,7 @@ WhenExpr
 
 Rules:
 
-- Public DSL objects must not expose backend-specific PySpark implementation details as their semantic model.
+- Public DSL objects keep backend-specific PySpark details out of the semantic model.
 - IR should contain enough source context for actionable diagnostics and provenance.
 - IR must preserve deterministic operation order.
 - IR must be consumable by both online PySpark execution and generated PySpark emission.

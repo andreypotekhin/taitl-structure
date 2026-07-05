@@ -1,15 +1,13 @@
 # Join Semantics
 
-## Purpose
-
 Structure joins let developers enrich a current typed row stream with fields from other named inputs while keeping the
-logic symbolic, compileable, and visible to Spark's optimizer. The compiler must know whether a join may multiply rows,
+logic symbolic, compileable, and visible to Spark's optimizer. Structure records whether a join may multiply rows,
 which keys define the match, how nulls behave, which aliases own each field, and when cardinality assumptions are only
 warnings rather than proven facts.
 
-The v1 goal is deliberately narrow: support explicit lookup joins without implicit deduplication, implicit string
-column references, or hidden data scans. Row-multiplying and existence-oriented joins are specified separately for v2+
-in [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md) because they change validation, traceability, and output-row
+The core join model supports explicit lookup joins without implicit deduplication, implicit string column references,
+or hidden data scans. Row-multiplying and existence-oriented joins are covered in
+[AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md) because they change validation, traceability, and output-row
 expectations.
 
 ## Public API Shape
@@ -46,7 +44,7 @@ joined.
 
 The old member spelling `self.customers.join_one(...)` is rejected. Use the free-standing bare form instead.
 
-Canonical v1 function:
+Canonical function:
 
 - `join_one(*, on, how, hint=None)`: an inferred lookup join.
 - Legacy explicit-selection overloads remain supported, but they are not the documented style.
@@ -54,7 +52,7 @@ Canonical v1 function:
 Rules:
 
 - `on` is required.
-- `how` is required in v1. Source should show whether unmatched rows are kept or removed.
+- `how` is required. Source should show whether unmatched rows are kept or removed.
 - `hint` is optional and advisory.
 - `join_one(...)` records the same ordered join operation whether the relation is inferred or explicit.
 - `join_one(...)` returns a relation proxy whose fields read from the joined scope, such as `customer.name`.
@@ -63,7 +61,7 @@ Rules:
 
 ## Join Types
 
-The v1 compiled DSL supports:
+The compiled DSL supports:
 
 - `Join.LEFT`: keep every current row; right fields are null when no match exists.
 - `Join.INNER`: keep only current rows that have at least one right match.
@@ -130,7 +128,7 @@ Composite key rules:
 - All key pairs must be compileable expressions.
 - All key pairs must involve the same joined input scope for a single join call.
 - A key pair may compare expression helpers, not only bare fields, when the helpers are deterministic and row-local.
-- Type compatibility follows the nullability and type coercion specification.
+- Type compatibility follows the nullability and type coercion reference.
 - A composite `join_one(...)` is uniqueness-proven only when the exact right-side key set is known unique.
 
 ## Null Semantics

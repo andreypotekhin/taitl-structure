@@ -81,6 +81,7 @@ class CapabilityDecision:
             title=self.title,
             backend=self.backend.name,
             target=self.backend.target,
+            target_variant=self.backend.variant,
             feature_group=self.requirement.group,
             feature_name=self.requirement.name,
             problem=self.problem,

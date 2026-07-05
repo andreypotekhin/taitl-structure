@@ -1,9 +1,7 @@
 # Invariants
 
-## Purpose
-
 Structure invariants are internal truth checks that keep compiler and runtime phases honest. They complement
-diagnostics, specifications, user stories, golden files, parity tests, differential tests, and integration tests.
+diagnostics, references, user stories, golden files, parity tests, differential tests, and integration tests.
 
 Diagnostics explain user-correctable problems. Invariants catch impossible internal states after Structure has accepted
 source, configuration, or runtime inputs. A failed invariant means Structure has a bug or a phase boundary passed an
@@ -30,7 +28,7 @@ After schema inspection, Structure should be able to prove:
 - field names are unique within a schema;
 - Spark column names, including aliases, are unique within a schema;
 - field definitions preserve type, nullability, primary-key, metadata, and description values;
-- inherited fields precede local fields unless a specification explicitly says otherwise;
+- inherited fields precede local fields unless a reference explicitly says otherwise;
 - recursive struct references are rejected by diagnostics before schema materialization.
 
 ## Transform-Plan Invariants

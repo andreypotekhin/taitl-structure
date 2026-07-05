@@ -1,9 +1,8 @@
 # Schema Inheritance
 
-This specification completes the inheritance semantics referenced by
+This reference completes the inheritance semantics referenced by
 [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md).
 
-## Purpose
 
 Schema inheritance lets developers reuse common field definitions without repeating schema code. It is especially useful
 for shared identifiers, audit columns, partition columns, tenancy fields, and common source metadata.

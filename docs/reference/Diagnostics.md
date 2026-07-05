@@ -1,7 +1,5 @@
 # Diagnostics
 
-## Purpose
-
 Structure diagnostics are the stable error and warning contract for configuration, discovery, schemas, symbolic
 execution, IR validation, joins, hooks, backend capability checks, streaming compatibility, generated-code drift, CLI
 behavior, and runtime execution.
@@ -23,7 +21,7 @@ This reference covers:
 - test expectations;
 - renderer responsibilities.
 
-Feature specifications still own the domain meaning of their diagnostics. For example,
+Feature references still own the domain meaning of their diagnostics. For example,
 [JoinSemantics.md](JoinSemantics.md) owns which join shapes are invalid. This document owns the code, lifecycle, and
 documentation contract that makes that join diagnostic stable.
 
@@ -82,7 +80,7 @@ ONLINE  online execution, sessions, transform invocation, and input binding
 CLI     CLI command behavior, clean safety, profile output, and command usage
 ```
 
-New feature specifications must either use an existing component prefix or reserve a new prefix here before publishing
+New feature references must either use an existing component prefix or reserve a new prefix here before publishing
 examples with codes.
 
 ## Diagnostic Model
@@ -208,7 +206,7 @@ The public entry should contain:
 - short explanation;
 - common causes;
 - suggested fix;
-- links to deeper documentation or specifications.
+- links to deeper documentation or references.
 
 Specialized specs may contain richer examples, but diagnostics should link through the public index when practical so
 external tools have one stable target.

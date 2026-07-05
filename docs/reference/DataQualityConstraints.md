@@ -1,13 +1,11 @@
 # Data Quality Constraints
 
-## Purpose
-
 Structure schemas already describe DataFrame shape: column names, field order, Spark types, nullability, and nested
 structure. Data quality constraints describe facts about the data values inside that shape. Examples include accepted
 values, ranges, regex-like patterns, decimal domains, uniqueness, referential checks, freshness, and row-count
 expectations.
 
-This specification defines the boundary. v1 validation is schema-first and schema-only by default. Richer data quality
+This reference defines the boundary. v1 validation is schema-first and schema-only by default. Richer data quality
 checks are deferred and must be explicit because many of them trigger Spark actions, scans, aggregations, or joins.
 
 ## Validation Layers

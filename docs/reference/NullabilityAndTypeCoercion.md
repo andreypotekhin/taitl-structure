@@ -1,7 +1,5 @@
 # Nullability and Type Coercion
 
-## Purpose
-
 Structure schemas declare field types and nullability. Transform methods produce expressions assigned to those fields.
 The compiler must know when an assignment is safe, when a filter has made a value non-null, when a Python literal can be
 used as an expression, and when a developer must write an explicit conversion helper.
@@ -178,7 +176,7 @@ configuration.
 
 Every expression has a Structure type. Assignment compatibility compares the expression type with the output field type.
 
-The v1 scalar types are those from the schema syntax specification:
+The v1 scalar types are those from the schema syntax reference:
 
 - `String()`
 - `Integer()`

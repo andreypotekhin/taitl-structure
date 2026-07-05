@@ -134,6 +134,77 @@ def test_spark_connect_resolves_as_pyspark_variant() -> None:
     assert resolved.require(CapabilityRequirement(group="backend", name="spark_connect_dataframe")).supported
 
 
+@pytest.mark.parametrize(
+    "name",
+    [
+        "group_by",
+        "count",
+        "count_distinct",
+        "sum",
+        "min",
+        "max",
+        "avg",
+    ],
+)
+def test_spark_connect_accepts_completed_aggregate_batch_capabilities(name: str) -> None:
+    resolved = Capabilities.resolve()(target_backend="pyspark", target_variant="spark-connect")
+
+    assert resolved.require(CapabilityRequirement(group="aggregate", name=name)).supported
+
+
+@pytest.mark.parametrize(
+    ("group", "name"),
+    [
+        ("join", "exists"),
+        ("join", "not_exists"),
+        ("join", "join_many"),
+        ("join", "lookup_dedupe"),
+        ("join", "temporal_one"),
+        ("dedupe", "drop_duplicates"),
+        ("higher_order", "array_transform"),
+        ("higher_order", "array_filter"),
+        ("higher_order", "map_transform_values"),
+        ("higher_order", "map_filter"),
+        ("window", "row_number"),
+        ("window", "rank"),
+        ("window", "dense_rank"),
+        ("window", "lag"),
+        ("window", "lead"),
+        ("window", "rolling_sum"),
+        ("window", "rolling_avg"),
+        ("window", "rolling_min"),
+        ("window", "rolling_max"),
+        ("window", "select_latest"),
+        ("window", "select_earliest"),
+    ],
+)
+def test_spark_connect_accepts_completed_compiler_visible_batch_capabilities(group: str, name: str) -> None:
+    resolved = Capabilities.resolve()(target_backend="pyspark", target_variant="spark-connect")
+
+    assert resolved.require(CapabilityRequirement(group=group, name=name)).supported
+
+
+@pytest.mark.parametrize("name", ["spark_context", "rdd_access", "jvm_access", "private_classic_fields"])
+def test_spark_connect_rejects_classic_only_backend_internals(name: str) -> None:
+    resolved = Capabilities.resolve()(target_backend="pyspark", target_variant="spark-connect")
+
+    with pytest.raises(BackendCapabilityError) as raised:
+        resolved.require(CapabilityRequirement(group="backend", name=name))
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == BACKEND_E2402
+    assert diagnostic.backend == "pyspark"
+    assert diagnostic.context()["target_variant"] == "spark-connect"
+    assert "explicit hook" in diagnostic.use
+
+
+@pytest.mark.parametrize("name", ["spark_context", "rdd_access", "jvm_access", "private_classic_fields"])
+def test_ordinary_pyspark_accepts_classic_backend_internals(name: str) -> None:
+    resolved = Capabilities.resolve()(target_backend="pyspark", target_variant="ordinary")
+
+    assert resolved.require(CapabilityRequirement(group="backend", name=name)).supported
+
+
 def test_spark_connect_is_not_a_separate_backend_id() -> None:
     try:
         Capabilities.resolve()(target_backend="spark_connect", target_variant="spark-connect")

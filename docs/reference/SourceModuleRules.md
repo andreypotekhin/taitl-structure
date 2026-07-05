@@ -1,7 +1,5 @@
 # Source Module Rules
 
-## Purpose
-
 Structure discovers user schemas and transforms from ordinary Python projects. Discovery must fit common source layouts,
 produce deterministic import paths, and stay safe enough for compiler commands that run in local development and CI.
 

@@ -9,6 +9,7 @@ class BackendDiagnostic:
     title: str
     backend: str
     target: str
+    target_variant: str
     feature_group: str
     feature_name: str
     problem: str
@@ -21,6 +22,7 @@ class BackendDiagnostic:
         context = {
             "target_backend": self.backend,
             "target": self.target,
+            "target_variant": self.target_variant,
             "feature_group": self.feature_group,
             "feature_name": self.feature_name,
         }

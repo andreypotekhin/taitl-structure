@@ -1,13 +1,11 @@
 # Alternative Backends
 
-## Purpose
-
-This specification defines the future backend-extension contract for Structure. It allows the same compiler-visible
+This reference describes the backend-extension boundary for Structure. It allows the same compiler-visible
 Structure source code to be checked against, and eventually emitted for, multiple execution backends.
 
-PySpark remains the only v1 supported runtime target. Spark Connect is a PySpark target variant, not a peer alternative
-backend. This document specifies the architecture that future work must follow before adding Python-hosted Spark SQL,
-type-safe PySpark DataFrame patterns, Pandas, Polars, DuckDB, Ibis, or other targets through Ibis.
+PySpark remains the supported runtime target. Spark Connect is a PySpark target variant, not a peer alternative
+backend. This page describes the architecture for future Python-hosted Spark SQL, type-safe PySpark DataFrame
+patterns, Pandas, Polars, DuckDB, Ibis, or other targets through Ibis.
 
 ## Scope
 
@@ -21,9 +19,9 @@ This reference covers:
 - warnings for opaque or potentially non-portable source;
 - hook target scoping;
 - StructureTools compatibility APIs;
-- acceptance criteria for future backend additions.
+- user-visible compatibility expectations for future backend additions.
 
-Backend-specific specifications still own concrete lowering. For example, `PySparkCodeGeneration.md` owns PySpark
+Backend-specific references still own concrete lowering. For example, `PySparkCodeGeneration.md` owns PySpark
 source rendering. A future `PolarsCodeGeneration.md` or `DuckDBCodeGeneration.md` would own those targets.
 
 ## Same-Source Contract
@@ -161,7 +159,7 @@ Adapter rules:
 - no silent UDF, row-wise, collect, or local-materialization fallback;
 - deterministic output for identical source, config, target profile, and Structure version;
 - diagnostics with target, feature, source location when available, suggested fix, and docs link;
-- capability tests for every supported and unsupported feature family.
+- explicit capability decisions for every supported and unsupported feature family.
 
 ## Capability Requirements
 
@@ -391,7 +389,7 @@ A new backend may be documented as supported only when it has:
 - generic compatibility checks;
 - type mapping for every supported schema type;
 - expression, filter, projection, join, and validation lowering for every claimed feature;
-- generated or online execution mode specification;
+- generated or online execution mode reference;
 - hook ABI rules or an explicit no-hooks limitation;
 - diagnostics for unsupported capabilities;
 - deterministic output tests;
@@ -410,6 +408,6 @@ Backend roadmap priority:
 
 ## Non-Goals
 
-This specification does not require v1 to implement non-PySpark execution. It also does not require Structure to become
+This reference does not require v1 to implement non-PySpark execution. It also does not require Structure to become
 a wrapper around every backend's native API. Backend support is admitted only for Structure semantics that can be
 represented in IR, checked, lowered, tested, and explained.
