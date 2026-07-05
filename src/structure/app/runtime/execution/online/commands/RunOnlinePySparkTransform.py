@@ -333,8 +333,11 @@ class RunOnlinePySparkTransform:
             right = self._dedupe(join, right, functions=functions, window=window)
         if join.hint is not None and join.hint.value == "broadcast":
             right = functions.broadcast(right)
-        predicate = self._predicate(step, join, functions=functions)
-        joined = df.join(right, predicate, self._join_mode(join))
+        if join.how.value == "cross":
+            joined = df.crossJoin(right)
+        else:
+            predicate = self._predicate(step, join, functions=functions)
+            joined = df.join(right, predicate, self._join_mode(join))
         if join.as_of is not None:
             return self._as_of(join, joined, row_id=row_id, functions=functions, window=window)
         return joined

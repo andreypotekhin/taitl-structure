@@ -13,7 +13,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 06 v2 Scope/Analytical IR | v2 Foundations, Backend Capabilities, Traceability, Streaming Compatibility | v2 scope, non-goals, operation taxonomy, capability placeholders, fixture skeletons, diagnostic anchors |
 | Sprint 07 Analytical Join Coverage | Analytical Joins, Backend Capabilities, Traceability, Streaming Compatibility | existence joins, `join_many`, deterministic lookup dedupe, temporal joins, as-of joins |
 | Sprint 08 Aggregations/Windows/HOFs | Aggregations, Windowing, Deduplication, Higher-Order Functions, Testing | typed `group_by`, aggregate helpers, window helpers, deterministic dedupe, array/map helpers, parity tests |
-| Sprint 09 Optimization/Explain/Docs/Tooling | Optimization Directives, Explain, Generated Docs, Testing, Build Integration | cache/persist/repartition/coalesce/checkpoint hints, rich explain, generated docs, pytest helpers, incremental compile |
+| Sprint 09 Spark Connect/Optimization/Explain | Advanced Analytics, Spark Connect, Full PySpark Joins, Optimization Directives, Explain, Testing | full aggregation/window/HOF coverage, supported Spark Connect batch variant, right/full/cross rowset joins, non-equi/disjunctive predicates, cache/persist/repartition/coalesce/checkpoint hints, rich explain |
 
 ## Relevant Specification Items by Sprint
 
@@ -104,12 +104,20 @@ This matrix maps early sprints to specification sections and major deliverables.
 
 ### Sprint 09
 
+- As a developer, I can define advanced grouping patterns so that rollups, cubes, grouping sets, and multi-level
+  summaries are supported when practical.
+- As a developer, I can calculate Boolean, statistical, approximate, and collection aggregate metrics.
+- As a developer, I can reuse named window specifications with explicit row and range frames.
+- As a developer, I can define distribution, value, and aggregate window expressions.
+- As a developer, I can use additional symbolic array and map higher-order helpers.
 - As a developer, I can add caching and persistence hints at step boundaries.
 - As a developer, I can add repartition and coalesce hints.
 - As a developer, I can add checkpoint hints where supported.
 - As a developer, I can specify join strategies and hints.
+- As a developer, I can express right, full, and cross rowset joins.
+- As a developer, I can express non-equi and disjunctive join predicates when they remain compiler-visible.
 - As a developer, I can generate richer static dataflow explain output.
-- As a developer, I can generate documentation artifacts for schemas and transforms.
-- As a developer, I can use pytest helpers for compiler checks, generated-code freshness, generated-code snapshots,
-  expected diagnostics, and parity tests.
-- As a developer, I can use production incremental compilation.
+- As a developer, I can run completed batch transforms online against Spark Connect.
+- As a developer, I can run generated completed batch transforms against Spark Connect.
+- As a developer, I receive diagnostics before Spark Connect runs classic-only internals.
+- As a maintainer, I can verify Spark Connect support through CI or a documented manual script.

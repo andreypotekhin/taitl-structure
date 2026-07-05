@@ -129,7 +129,7 @@ class RenderExplainReport:
     def _cardinality(self, join: PySparkJoinRecipe) -> str:
         if join.method.value in {"exists", "not_exists"}:
             return "row_filtering"
-        if join.method.value == "join_many":
+        if join.method.value in {"join_many", "join_rowset"}:
             return "row_multiplying"
         return "select_one"
 

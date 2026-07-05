@@ -203,6 +203,18 @@
 - + Show analytical join cardinality in traceability and `structure explain`.
 - Add online/generated parity tests for duplicate right rows, unmatched rows, temporal overlaps, and as-of ties.
 
+### Epic: Full PySpark Joins
+
+- Implement `join_rowset(...)` for broad rowset joins.
+- Implement right and full outer joins with nullable-side type checks.
+- Implement explicit cross joins with `allow_cartesian=True`.
+- Implement non-equi join predicates.
+- Implement disjunctive join predicates.
+- Add backend capabilities for rowset joins and broad predicate classes.
+- Reject current-row base constructors after row-admitting joins.
+- Show rowset join cardinality, predicate class, nullable sides, and strategy in traceability and `structure explain`.
+- Add online/generated parity tests for right-only, left-only, matched, Cartesian, non-equi, and disjunctive cases.
+
 ### Epic: Explicit Optimization Directives
 
 - Implement cache and persist directives at subtransform boundaries.
@@ -246,16 +258,23 @@
 - Watermarks.
 - Stateful streaming policies.
 
-## End-of-v2 Backlog
+## Sprint 09 Backlog
 
-- Experimental Spark Connect parity for completed v1/v2 batch features.
-- Spark Connect compatibility tests for the experimental PySpark variant.
-- Backend capability reporting for ordinary PySpark and Spark Connect variants.
+- Promote Spark Connect from experimental parity to supported batch status for completed v1/v2 features.
+- Add live online and generated Spark Connect parity tests for the supported batch matrix.
+- Add generated-source scans and backend diagnostics that reject classic-only internals.
+- Add Spark Connect runtime verification through CI or a documented manual script.
+- Document hook, StructureTools, streaming, and storage-write exclusions.
+- Implement first-slice Spark streaming support for caller-owned streaming DataFrames.
+- Add online and generated streaming evidence for row-local projection, row-local filtering, schema-only validation,
+  and stream-static left/inner lookup joins.
+- Keep generated streaming sources, generated sinks, lifecycle ownership, watermarks, output modes, and state policy
+  deferred behind explicit public references.
 
 ## v4 Backlog
 
-- Promote Spark Connect from experimental to supported if parity evidence, diagnostics, and CI are complete.
-- Continue Spark Connect hardening if promotion criteria are not yet met.
+- Continue Spark Connect hardening only for non-batch or explicitly deferred Sprint 09 gaps.
+- Explore additional backend families after the PySpark-family batch contract is stable.
 
 ## Nice To Have Beyond v4
 

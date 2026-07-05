@@ -48,9 +48,9 @@ Initial candidates:
 Roadmap priority:
 
 - v2: PySpark-family targets first, including Spark SQL exploration, typed Python DataFrame/Dataset patterns, and
-  end-of-v2 experimental Spark Connect parity for completed v1/v2 batch features.
+  Sprint 09 Spark Connect support for completed v1/v2 batch features.
 - v3: Polars LazyFrame and DuckDB as the first non-PySpark targets.
-- v4: Ibis as a meta-backend, plus Spark Connect promotion or hardening if parity evidence is complete.
+- v4: Ibis as a meta-backend, plus non-batch Spark Connect hardening if Sprint 09 records deferred gaps.
 - Beyond v4: other targets only through Ibis when Ibis supports them, unless a later design reopens direct support.
 - Deferred: Dask DataFrame and Ray Dataset until after the relational core is stable.
 

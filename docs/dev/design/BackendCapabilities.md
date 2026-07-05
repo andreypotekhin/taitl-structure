@@ -107,6 +107,6 @@ New DSL operations must declare backend capability behavior before they are cons
 online lowering, generated code, streaming classification, and future explain output should all ask the same capability
 object instead of owning their own backend support rules.
 
-Spark Connect is a PySpark target variant with backend family `spark_connect_dataframe`. End-of-v2 experimental parity
-is acceptable for completed batch features only if it can be expressed as a capability profile without changing public
-DSL syntax, generated class construction, `run(...)` signatures, or streaming orchestration semantics.
+Spark Connect is a PySpark target variant with backend family `spark_connect_dataframe`. Sprint 09 support for
+completed batch features is acceptable only if it can be expressed as a capability profile without changing public DSL
+syntax, generated class construction, `run(...)` signatures, or streaming orchestration semantics.

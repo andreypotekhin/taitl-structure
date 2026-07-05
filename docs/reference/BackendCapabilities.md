@@ -46,7 +46,7 @@ BackendId
 ```
 
 For the default PySpark profile, `name = "pyspark"`, `target = ">=3.5,<4.1"`, `variant = "ordinary"`, and
-implementation `family = "ordinary_pyspark"`. For the experimental Spark Connect variant, `name = "pyspark"`,
+implementation `family = "ordinary_pyspark"`. For the Spark Connect variant, `name = "pyspark"`,
 `target = ">=3.5,<4.1"`, `variant = "spark-connect"`, and semantic `family = "spark_connect_dataframe"`.
 Future alternative-backend reports may add semantic-family vocabulary such as `pyspark_dataframe` or `sql_relation`;
 that vocabulary does not require renaming the current implementation family.
@@ -193,6 +193,17 @@ Deferred features must be represented as unsupported decisions. Examples:
 
 ```text
 window.window_project
+join.join_rowset
+join.right_join
+join.full_join
+join.cross_join
+join.non_equi_condition
+join.disjunctive_condition
+join.using_keys
+join.strategy_broadcast
+join.strategy_shuffle_hash
+join.strategy_shuffle_replicate_nl
+join.strategy_merge
 optimization.repartition
 explain.field_lineage
 docs.generated_docs

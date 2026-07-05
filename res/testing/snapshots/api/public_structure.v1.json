@@ -88,7 +88,10 @@
       "dataclass_fields": [],
       "enum_members": [
         "LEFT",
-        "INNER"
+        "INNER",
+        "RIGHT",
+        "FULL",
+        "CROSS"
       ],
       "kind": "class",
       "module": "structure.app.dsl.model.transforms.Join",
@@ -392,6 +395,14 @@
       "qualname": "count_distinct",
       "signature": "(value: 'object') -> 'Expression'"
     },
+    "cross_join": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.InputScope",
+      "qualname": "cross_join",
+      "signature": "(relation: 'Relation | None' = None, *, right: 'Relation | None' = None, allow_cartesian: 'bool' = False, strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
+    },
     "dedupe_earliest_by": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -464,6 +475,14 @@
       "qualname": "field",
       "signature": "(type: 'StructureType', *, nullable: 'bool' = True, primary_key: 'bool' = False, alias: 'str | None' = None, metadata: 'Mapping[str, object] | None' = None, description: 'str | None' = None) -> 'FieldDeclaration'"
     },
+    "full_join": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.InputScope",
+      "qualname": "full_join",
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
+    },
     "group_by": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -471,6 +490,14 @@
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "group_by",
       "signature": "(*keys: 'object', **named_keys: 'object') -> \"'GroupedRows'\""
+    },
+    "inner_join": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.InputScope",
+      "qualname": "inner_join",
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
     },
     "input": {
       "dataclass_fields": [],
@@ -495,6 +522,14 @@
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "join_one",
       "signature": "(relation: 'Relation | None' = None, *, on: 'object', how: 'Join' = <Join.LEFT: 'left'>, hint: 'JoinHint | None' = None, dedupe: 'JoinDedupe | None' = None) -> 'Relation | InputScope'"
+    },
+    "join_rowset": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.InputScope",
+      "qualname": "join_rowset",
+      "signature": "(relation: 'Relation | None' = None, *, left: 'object | None' = None, right: 'Relation | None' = None, on: 'object | None' = None, how: 'Join' = <Join.INNER: 'inner'>, strategy: 'JoinStrategy | None' = None, allow_cartesian: 'bool' = False) -> 'Relation | InputScope'"
     },
     "lag": {
       "dataclass_fields": [],
@@ -527,6 +562,14 @@
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "lead",
       "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', offset: 'int' = 1, default: 'object' = None, descending: 'bool' = False) -> 'Expression'"
+    },
+    "left_join": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.InputScope",
+      "qualname": "left_join",
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
     },
     "lower": {
       "dataclass_fields": [],
@@ -599,6 +642,14 @@
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "rank",
       "signature": "(*, partition_by: 'object', order_by: 'object', descending: 'bool' = False) -> 'Expression'"
+    },
+    "right_join": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.InputScope",
+      "qualname": "right_join",
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
     },
     "rolling_avg": {
       "dataclass_fields": [],

@@ -133,6 +133,8 @@ class PySparkOutputMapper:
     def _join(self, join, *, occurrence: int, left_alias: str, capabilities: BackendCapabilities) -> PySparkJoinRecipe:
         capabilities.require(CapabilityRequirement(group="join", name=join.method.value))
         capabilities.require(CapabilityRequirement(group="join", name=self._join_mode_capability(join)))
+        if join.method is JoinMethod.ROWSET:
+            self._require_rowset_predicate_capabilities(join, capabilities=capabilities)
         if join.hint is not None:
             capabilities.require(CapabilityRequirement(group="join", name=f"{join.hint.value}_hint"))
         dedupe = self._dedupe(join, capabilities=capabilities)
@@ -180,6 +182,20 @@ class PySparkOutputMapper:
         if join.method is JoinMethod.NOT_EXISTS:
             return "left_anti_join"
         return f"{join.how.value}_join"
+
+    def _require_rowset_predicate_capabilities(self, join, *, capabilities: BackendCapabilities) -> None:
+        if self._has_disjunction(join.predicate):
+            capabilities.require(CapabilityRequirement(group="join", name="disjunctive_condition"))
+        if self._has_non_equi_condition(join.predicate):
+            capabilities.require(CapabilityRequirement(group="join", name="non_equi_condition"))
+
+    def _has_disjunction(self, expression) -> bool:
+        return expression.kind == "or" or any(self._has_disjunction(argument) for argument in expression.args)
+
+    def _has_non_equi_condition(self, expression) -> bool:
+        if expression.kind in {"gt", "lt", "le", "ge", "ne"}:
+            return True
+        return any(self._has_non_equi_condition(argument) for argument in expression.args)
 
     def _join_source_name(self, source: str) -> str:
         return source.removeprefix("input:")

@@ -13,14 +13,18 @@ from structure import (
     TiePolicy,
     Transform,
     as_of_one,
+    cross_join,
     exists,
     field,
+    full_join,
     input,
     join_many,
     join_one,
+    join_rowset,
     not_exists,
     output,
     project,
+    right_join,
     temporal_one,
     transform,
     where,
@@ -260,6 +264,119 @@ def test_join_many_records_row_multiplying_operation() -> None:
     assert '"inner"' in text
     assert dependencies["add_product.join[1].product"].operation == "join_many"
     assert dependencies["add_product.join[1].product"].detail["cardinality"] == "row_multiplying"
+
+
+def test_bare_right_join_records_rowset_operation() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            right_join(on=product.id == order.product_id)
+            return Enriched(id=order.id, product_name=product.name)
+
+    plan = compile_transform(AddProduct)
+    step = plan.steps[0]
+    recipe_plan = PySpark.plan.lower()(plan)
+    recipe = recipe_plan.steps[0]
+    text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
+    traceability = Compiler.traceability.build()(
+        recipe_plan,
+        source_transform=f"{AddProduct.__module__}.AddProduct",
+        transform_module="generated.transforms.add_product",
+    )
+    dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
+
+    assert step.joins[0].method is JoinMethod.ROWSET
+    assert step.joins[0].how is Join.RIGHT
+    assert step.operations[0].capability is not None
+    assert step.operations[0].capability.name == "join_rowset"
+    assert step.operations[0].cardinality is OperationCardinality.ROW_MULTIPLYING
+    assert '"right"' in text
+    assert dependencies["add_product.join[1].product"].operation == "join_rowset"
+    assert dependencies["add_product.join[1].product"].detail["cardinality"] == "row_multiplying"
+
+
+def test_explicit_full_join_rowset_accepts_disjunctive_predicate() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            join_rowset(
+                left=order,
+                right=product,
+                on=(product.id == order.product_id) | (product.name == order.status),
+                how=Join.FULL,
+            )
+            return Enriched(id=order.id, product_name=product.name)
+
+    plan = compile_transform(AddProduct)
+    recipe = PySpark.plan.lower()(plan).steps[0]
+    text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
+
+    assert plan.steps[0].joins[0].method is JoinMethod.ROWSET
+    assert plan.steps[0].joins[0].how is Join.FULL
+    assert '"full"' in text
+    assert "|" in text
+
+
+def test_full_join_shortcut_accepts_non_equi_predicate() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            full_join(on=cast(Any, product).valid_from <= cast(Any, order).status)
+            return Enriched(id=order.id, product_name=product.name)
+
+    recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
+
+    assert recipe.joins[0].method is JoinMethod.ROWSET
+    assert recipe.joins[0].how is Join.FULL
+    assert "<=" in text
+
+
+def test_cross_join_requires_cartesian_acknowledgement() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            cross_join(product)
+            return Enriched(id=order.id, product_name=product.name)
+
+    with pytest.raises(TypeError, match="allow_cartesian=True"):
+        compile_transform(AddProduct)
+
+
+def test_cross_join_renders_cross_join_call() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            cross_join(product, allow_cartesian=True)
+            return Enriched(id=order.id, product_name=product.name)
+
+    recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
+
+    assert recipe.joins[0].method is JoinMethod.ROWSET
+    assert recipe.joins[0].how is Join.CROSS
+    assert ".crossJoin(products_joined)" in text
+    assert '".cross"' not in text
 
 
 def test_deduped_join_one_records_policy_and_renders_deterministic_lookup() -> None:

@@ -7,6 +7,7 @@ from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import current_context
 from structure.app.dsl.model.expr.Expression import Expression
+from structure.app.dsl.model.expr.expressions import literal
 from structure.app.dsl.model.expr.RowScope import RowScope
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.AsOf import AsOf
@@ -51,6 +52,19 @@ class InputScope(RowScope):
         strategy: JoinStrategy | None = None,
     ) -> RowScope:
         return cast(RowScope, join_many(self, on=on, how=how, strategy=strategy))
+
+    def join_rowset(
+        self,
+        *,
+        on: Expression | None = None,
+        how: Join = Join.INNER,
+        strategy: JoinStrategy | None = None,
+        allow_cartesian: bool = False,
+    ) -> RowScope:
+        return cast(
+            RowScope,
+            join_rowset(self, on=on, how=how, strategy=strategy, allow_cartesian=allow_cartesian),
+        )
 
     def temporal_one(
         self,
@@ -270,6 +284,148 @@ def join_many(
 
 
 @overload
+def join_rowset(
+    relation: Relation,
+    *,
+    left: object | None = None,
+    right: Relation | None = None,
+    on: object | None = None,
+    how: Join = Join.INNER,
+    strategy: JoinStrategy | None = None,
+    allow_cartesian: bool = False,
+) -> Relation: ...
+
+
+@overload
+def join_rowset(
+    *,
+    left: object | None = None,
+    right: Relation | None = None,
+    on: object | None = None,
+    how: Join = Join.INNER,
+    strategy: JoinStrategy | None = None,
+    allow_cartesian: bool = False,
+) -> InputScope: ...
+
+
+def join_rowset(
+    relation: Relation | None = None,
+    *,
+    left: object | None = None,
+    right: Relation | None = None,
+    on: object | None = None,
+    how: Join = Join.INNER,
+    strategy: JoinStrategy | None = None,
+    allow_cartesian: bool = False,
+) -> Relation | InputScope:
+    context = _join_context("join_rowset")
+    if relation is not None and right is not None:
+        raise TypeError("join_rowset(...) accepts either a positional relation or right=, not both")
+    relation = relation or right
+    if not isinstance(how, Join):
+        raise TypeError("join_rowset(how=...) requires a Join value")
+    if strategy is not None and not isinstance(strategy, JoinStrategy):
+        raise TypeError("join_rowset(strategy=...) requires a JoinStrategy value")
+    if not isinstance(allow_cartesian, bool):
+        raise TypeError("join_rowset(allow_cartesian=...) requires a bool")
+    if left is not None and not isinstance(left, (Structure, RowScope)):
+        raise TypeError("join_rowset(left=...) requires the current row scope or a joined row scope")
+
+    predicate: Expression
+    if how is Join.CROSS:
+        if on is not None:
+            raise TypeError("join_rowset(..., how=Join.CROSS) does not accept on=; use allow_cartesian=True")
+        if not allow_cartesian:
+            raise TypeError("join_rowset(..., how=Join.CROSS) requires allow_cartesian=True")
+        predicate = literal(True)
+        if relation is None:
+            raise TypeError("join_rowset(..., how=Join.CROSS) requires an explicit right relation")
+    else:
+        if on is None:
+            raise TypeError("join_rowset(on=...) is required unless how=Join.CROSS")
+        predicate = _join_predicate("join_rowset", on)
+        if relation is None:
+            relation = cast(Relation, _infer_relation("join_rowset", context, predicate, validate_pairs=False))
+
+    if not isinstance(relation, InputScope):
+        raise TypeError("join_rowset(relation, ...) requires a Structure relation parameter or transform input")
+
+    join = JoinPlan(
+        input_name=relation._structure_input_name,
+        source=relation._structure_source,
+        input_schema=relation._structure_input_schema,
+        predicate=predicate,
+        how=how,
+        strategy=strategy,
+        method=JoinMethod.ROWSET,
+    )
+    _record_scoped_join(context, relation, join)
+    return relation
+
+
+def left_join(
+    relation: Relation | None = None,
+    *,
+    on: object,
+    strategy: JoinStrategy | None = None,
+) -> Relation | InputScope:
+    if relation is None:
+        return join_rowset(on=on, how=Join.LEFT, strategy=strategy)
+    return join_rowset(relation, on=on, how=Join.LEFT, strategy=strategy)
+
+
+def inner_join(
+    relation: Relation | None = None,
+    *,
+    on: object,
+    strategy: JoinStrategy | None = None,
+) -> Relation | InputScope:
+    if relation is None:
+        return join_rowset(on=on, how=Join.INNER, strategy=strategy)
+    return join_rowset(relation, on=on, how=Join.INNER, strategy=strategy)
+
+
+def right_join(
+    relation: Relation | None = None,
+    *,
+    on: object,
+    strategy: JoinStrategy | None = None,
+) -> Relation | InputScope:
+    if relation is None:
+        return join_rowset(on=on, how=Join.RIGHT, strategy=strategy)
+    return join_rowset(relation, on=on, how=Join.RIGHT, strategy=strategy)
+
+
+def full_join(
+    relation: Relation | None = None,
+    *,
+    on: object,
+    strategy: JoinStrategy | None = None,
+) -> Relation | InputScope:
+    if relation is None:
+        return join_rowset(on=on, how=Join.FULL, strategy=strategy)
+    return join_rowset(relation, on=on, how=Join.FULL, strategy=strategy)
+
+
+def cross_join(
+    relation: Relation | None = None,
+    *,
+    right: Relation | None = None,
+    allow_cartesian: bool = False,
+    strategy: JoinStrategy | None = None,
+) -> Relation | InputScope:
+    if relation is None:
+        return join_rowset(right=right, how=Join.CROSS, strategy=strategy, allow_cartesian=allow_cartesian)
+    return join_rowset(
+        relation,
+        right=right,
+        how=Join.CROSS,
+        strategy=strategy,
+        allow_cartesian=allow_cartesian,
+    )
+
+
+@overload
 def temporal_one(
     relation: Relation,
     *,
@@ -468,7 +624,7 @@ def _record_scoped_join(context, relation: InputScope, join: JoinPlan) -> None:
     relation._structure_joined_scope = RowScope(
         name=relation._structure_input_name,
         schema=relation._structure_input_schema,
-        nullable=join.how is Join.LEFT,
+        nullable=join.how in {Join.LEFT, Join.FULL},
     )
 
 
@@ -507,7 +663,7 @@ def _existence_join(
     )
 
 
-def _infer_relation(function: str, context, on: Expression) -> InputScope:
+def _infer_relation(function: str, context, on: Expression, *, validate_pairs: bool = True) -> InputScope:
     candidates = {
         scope
         for scope in _scopes(on)
@@ -529,7 +685,8 @@ def _infer_relation(function: str, context, on: Expression) -> InputScope:
 
     candidate = next(iter(candidates))
     relation = context.relation_scopes[candidate]
-    _validate_inferred_pairs(function, candidate, on)
+    if validate_pairs:
+        _validate_inferred_pairs(function, candidate, on)
     if not isinstance(relation, InputScope):
         raise TypeError(f"Cannot infer joined relation for {function}(...): scope {candidate} is not a join relation.")
     return relation

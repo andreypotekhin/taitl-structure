@@ -368,7 +368,7 @@ class BuildCompilerTraceability:
     def _join_cardinality(self, method: JoinMethod) -> str:
         if method in {JoinMethod.EXISTS, JoinMethod.NOT_EXISTS}:
             return "row_filtering"
-        if method is JoinMethod.MANY:
+        if method in {JoinMethod.MANY, JoinMethod.ROWSET}:
             return "row_multiplying"
         return "select_one"
 

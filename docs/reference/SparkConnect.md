@@ -1,0 +1,78 @@
+# Spark Connect
+
+Spark Connect is a PySpark target variant. It lets Structure run completed compiler-visible batch transforms with a
+caller-supplied Spark Connect session while keeping the same Structure DSL and generated-code API.
+
+## Configuration
+
+```toml
+[tool.structure]
+target_backend = "pyspark"
+target_profile = ">=3.5,<4.1"
+target_variant = "spark-connect"
+```
+
+Ordinary PySpark remains the default:
+
+```toml
+target_variant = "ordinary"
+```
+
+## What Is Supported
+
+Spark Connect support covers completed v1/v2 batch features that lower through public PySpark DataFrame and Column APIs:
+
+- projections, filters, casts, literals, and expression helpers;
+- v1 joins and completed analytical joins;
+- aggregations, selected-row helpers, ranking, lag/lead, rolling metrics, and dedupe helpers;
+- compiler-visible array and map helpers;
+- schema-only validation and strict projection;
+- online execution through `StructureSession`;
+- generated PySpark execution with the same constructor and `run(...)` signature as ordinary PySpark.
+
+## What Is Not Included
+
+Spark Connect support does not include:
+
+- Structure-owned streaming sources, sinks, triggers, watermarks, output modes, or state policies;
+- storage write orchestration;
+- RDD access;
+- SparkContext access;
+- direct JVM/Py4J access;
+- `_jdf` or private classic PySpark fields;
+- hidden fallback to Python UDFs, local collection, row-wise loops, or SQL string rewrites.
+
+Hooks remain user-owned PySpark code. Structure validates hook signatures and target scope, but arbitrary hook bodies are
+opaque. For Spark Connect, hook bodies must use public Connect-compatible PySpark APIs.
+
+## Runtime Use
+
+Create the Spark Connect session outside Structure and pass it in:
+
+```python
+session = StructureSession(spark=spark, ctx=ctx, config=config)
+result = NormalizeOrders(orders=orders_df).run(session)
+```
+
+Generated classes keep the same shape:
+
+```python
+result = NormalizeOrdersGenerated(spark=spark, ctx=ctx).run(orders=orders_df)
+```
+
+Structure does not create or manage the remote Spark Connect server.
+
+## Diagnostics
+
+When a transform asks Spark Connect to run classic-only behavior, Structure should fail before execution or generation
+with a backend capability diagnostic. The diagnostic should name the unsupported feature and suggest one of these fixes:
+
+- use `target_variant = "ordinary"` when the project depends on classic-only PySpark;
+- remove SparkContext, RDD, JVM, Py4J, `_jdf`, or private-field usage;
+- move hook logic into compiler-visible Structure DSL;
+- rewrite hook logic with public Connect-compatible PySpark APIs.
+
+## Support Boundary
+
+Spark Connect is supported for completed compiler-visible batch features only after the project has parity evidence
+against a real Spark Connect session. Streaming orchestration remains separate roadmap work.

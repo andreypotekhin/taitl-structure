@@ -1874,6 +1874,24 @@ class CompileTransform:
                     f"v1 join_one(...) supports Join.LEFT and Join.INNER, not {join.how!r}.",
                     "Use Join.LEFT or Join.INNER, or move non-v1 join semantics into an explicit hook.",
                 )
+            if join.method is JoinMethod.MANY and join.how not in {Join.LEFT, Join.INNER}:
+                raise self._join_error(
+                    transform_class,
+                    member,
+                    join.input_name,
+                    occurrence,
+                    f"join_many(...) supports Join.LEFT and Join.INNER, not {join.how!r}.",
+                    "Use join_rowset(...) or a right_join/full_join/cross_join shortcut for broad rowset joins.",
+                )
+            if join.method is JoinMethod.ROWSET and join.how not in {Join.LEFT, Join.INNER, Join.RIGHT, Join.FULL, Join.CROSS}:
+                raise self._join_error(
+                    transform_class,
+                    member,
+                    join.input_name,
+                    occurrence,
+                    f"join_rowset(...) does not support join type {join.how!r}.",
+                    "Use Join.LEFT, Join.INNER, Join.RIGHT, Join.FULL, or Join.CROSS.",
+                )
             if join.hint is not None and not isinstance(join.hint, JoinHint):
                 raise self._join_error(
                     transform_class,
@@ -1899,7 +1917,12 @@ class CompileTransform:
             if join.as_of is not None:
                 self._validate_join_as_of(transform_class, member, join.input_name, occurrence, join.as_of)
 
-            conditions = self._join_conditions(transform_class, member, join.input_name, occurrence, join.predicate)
+            if join.method is JoinMethod.ROWSET:
+                conditions = self._rowset_join_conditions(
+                    transform_class, member, join.input_name, occurrence, join.predicate
+                )
+            else:
+                conditions = self._join_conditions(transform_class, member, join.input_name, occurrence, join.predicate)
             for condition in conditions:
                 left, right = condition.args
                 self._validate_join_pair(transform_class, member, join.input_name, occurrence, left, right)
@@ -2097,6 +2120,44 @@ class CompileTransform:
             "v1 joins support equality key pairs combined with AND.",
             "Replace OR, inequality, or arbitrary predicates with equality pairs, or move custom join logic into a hook.",
         )
+
+    def _rowset_join_conditions(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        input_name: str,
+        occurrence: int,
+        predicate: Expression,
+    ) -> list[Expression]:
+        if predicate.kind == "literal":
+            return []
+        scopes = self._scopes(predicate)
+        if input_name not in scopes:
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                "join_rowset(...) predicate must reference the joined input.",
+                "Compare the joined input with the current row or another joined scope.",
+            )
+        if not scopes - {input_name}:
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                "join_rowset(...) predicate cannot reference only the joined input.",
+                "Compare the joined input with the current row or another joined scope.",
+            )
+        return self._equality_conditions(predicate)
+
+    def _equality_conditions(self, predicate: Expression) -> list[Expression]:
+        if predicate.kind == "and":
+            return [condition for argument in predicate.args for condition in self._equality_conditions(argument)]
+        if predicate.kind in {"eq", "null_safe_eq"}:
+            return [predicate]
+        return []
 
     def _validate_join_pair(
         self,

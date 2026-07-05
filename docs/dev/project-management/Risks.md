@@ -54,19 +54,19 @@ Online or generated execution may become incompatible with newer Spark versions.
 - Run multi-version CI.
 - Snapshot generated code and run online parity tests per target version where necessary.
 
-## Risk: Spark Connect support distorts v1/v2/v3/v4 scope
+## Risk: Spark Connect support distorts v2/v3/v4 scope
 
 ### Impact
 
-Early Spark Connect work could force online or generated API changes before the ordinary PySpark contract and streaming
-orchestration semantics are stable.
+Spark Connect work could force online or generated API changes, or accidentally absorb streaming orchestration and
+storage-write responsibilities, before those contracts are ready.
 
 ### Mitigation
 
-- Gate end-of-v2 experimental parity behind no public API changes and no classic-only internals.
+- Gate Sprint 09 batch support behind no public API changes, no classic-only internals, and live runtime evidence.
 - Keep Spark Connect inside the existing PySpark target boundary as `target_variant = "spark-connect"`.
-- Require compatibility tests before public support is promoted.
-- Keep public docs explicit that full supported Spark Connect is a later promotion decision.
+- Require online and generated parity tests before public batch support is claimed.
+- Keep public docs explicit that streaming orchestration and storage writes remain outside the Sprint 09 support claim.
 
 ## Risk: Hooks compromise performance
 

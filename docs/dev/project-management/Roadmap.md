@@ -10,8 +10,10 @@ The north star is deliberately strict: v1 first proves one useful executable tra
 generated PySpark, then broadens into the contract that lets Structure replace hand-maintained PySpark boilerplate
 with a strict online runtime and optional generated-code workflow. v2 makes that workflow useful for mainstream
 analytical pipelines.
-v3 takes ownership of streaming lifecycle concerns only after the transform compiler has earned trust. v4 adds backend
-expansion through Spark Connect after the ordinary PySpark contract is stable.
+v3 takes ownership of streaming lifecycle concerns only after the transform compiler has earned trust. Sprint 09 moves
+Spark Connect from experimental parity to supported status for completed batch features and proves the first
+caller-owned Spark streaming slice, while v4 remains available for non-batch Connect hardening and broader backend
+expansion.
 
 The project should prioritize:
 
@@ -131,10 +133,13 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
 
 ### v2 release pillars
 
-- **Analytical transforms:** typed `group_by(...)`, aggregations, window expressions, deduplication helpers, ranking,
-  lag/lead, rolling metrics, and compiler-visible Spark higher-order functions for arrays and maps.
+- **Analytical transforms:** typed `group_by(...)`, first-slice aggregations, selected-row helpers, deduplication,
+  ranking, lag/lead, rolling metrics, compiler-visible Spark higher-order functions for arrays and maps, and advanced
+  analytical coverage from [AdvancedAnalyticalOperations.md](../specifications/AdvancedAnalyticalOperations.md).
 - **Analytical joins:** existence predicates, `join_many(...)`, deterministic lookup dedupe, temporal validity-window
   joins, and backward as-of joins from [AnalyticalJoinCoverage.md](../specifications/AnalyticalJoinCoverage.md).
+- **Full PySpark rowset joins:** right joins, full joins, cross joins, non-equi predicates, and disjunctive predicates
+  from [FullPySparkJoinSupport.md](../specifications/FullPySparkJoinSupport.md).
 - **Explicit optimization controls:** cache, persist, repartition, coalesce, checkpoint, and join strategy directives
   that are visible in source, generated code, traceability, and explain output.
 - **Transform composition maturity:** hook-bearing stages, composed hook ownership and dispatch, traceability for
@@ -145,21 +150,23 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
 
 ### v2 non-goals
 
-- Full streaming orchestration. v2 only maintains compatibility classification for caller-owned streaming DataFrames.
-- Full supported Spark Connect promotion. End-of-v2 experimental parity for completed batch features remains in scope.
+- Full streaming orchestration. v2 supports only caller-owned streaming DataFrames in the first streaming slice and
+  maintains compatibility classification for everything else.
+- Spark Connect streaming orchestration or storage write ownership. Sprint 09 owns batch support promotion only.
 - Automatic cost-based optimization, join reordering, or storage write planning.
 - Hidden UDF lowering or arbitrary Python execution in compiled paths.
-- Right, full, and cross joins unless a later design explicitly admits them.
 - Using `lane(...)` as a transform-composition matching boundary.
 
 ## v3 Scope
 
-v3 completes joins work and introduces streaming orchestration. 
-v1/v2 only maintain streaming compatibility when callers pass streaming DataFrames.
+v3 introduces streaming orchestration and advanced optimizer work.
+v1/v2 only support the first caller-owned streaming DataFrame slice and maintain streaming compatibility
+classification for broader streaming behavior.
 
 ### v3 candidate features
 
-- Full featured joins ('Out of scope until a later design' from [AnalyticalJoinCoverage.md](../specifications/AnalyticalJoinCoverage.md)) 
+- Join reordering and cost-based join planning.
+- Lateral joins and table-valued-function joins if a later PySpark design admits them.
 - Generated `readStream` and `writeStream` code.
 - Streaming sinks/sources configuration.
 - Trigger configuration.
@@ -170,15 +177,16 @@ v1/v2 only maintain streaming compatibility when callers pass streaming DataFram
 
 ## v4 Scope
 
-v4 promotes Spark Connect from experimental to supported if parity evidence, diagnostics, and CI are complete;
-otherwise it continues hardening the PySpark variant.
+v4 handles backend expansion after the completed PySpark-family batch contract is stable. Spark Connect may continue
+there only for non-batch coverage, expanded operational hardening, or gaps that Sprint 09 explicitly records as outside
+the supported batch surface.
 
 ### v4 candidate features
 
-- Spark Connect support promotion or hardening.
-- Expanded Spark Connect compatibility tests.
-- Backend capability reporting for ordinary PySpark and Spark Connect variants.
-- Public migration notes for projects that want Connect-compatible generated code.
+- Ibis or other meta-backend exploration.
+- Expanded Spark Connect streaming, storage-write, or operational hardening if needed.
+- Backend capability reporting for additional backend families.
+- Public migration notes for projects adopting new backend families.
 
 ## Release Milestones
 
@@ -191,6 +199,6 @@ otherwise it continues hardening the PySpark variant.
 | M4 | Hook model and no-hook generated-code cleanliness | Sprint 04 |
 | M5 | Joins, compiler traceability, build integration | Sprint 05 |
 | M6 | v1 stabilization and docs/examples | follow-up hardening sprint |
-| M7 | v2 analytical pipeline features, analytical join coverage, composition maturity, adoption tooling, and Spark Connect experimental parity | Sprints 06-09 |
+| M7 | v2 analytical pipeline features, analytical join coverage, composition maturity, adoption tooling, and Spark Connect batch support | Sprints 06-09 |
 | M8 | v3 streaming orchestration | future v3 sprints |
-| M9 | v4 Spark Connect promotion or hardening | future v4 sprints |
+| M9 | v4 backend expansion and non-batch Spark Connect hardening | future v4 sprints |

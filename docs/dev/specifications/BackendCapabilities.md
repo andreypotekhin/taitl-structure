@@ -49,7 +49,7 @@ BackendId
 ```
 
 For the default PySpark profile, `name = "pyspark"`, `target = ">=3.5,<4.1"`, `variant = "ordinary"`, and
-implementation `family = "ordinary_pyspark"`. For the experimental Spark Connect variant, `name = "pyspark"`,
+implementation `family = "ordinary_pyspark"`. For the Spark Connect variant, `name = "pyspark"`,
 `target = ">=3.5,<4.1"`, `variant = "spark-connect"`, and semantic `family = "spark_connect_dataframe"`.
 Future alternative-backend reports may add semantic-family vocabulary such as `pyspark_dataframe` or `sql_relation`;
 that vocabulary must not require renaming the current v1 implementation family.
@@ -195,6 +195,17 @@ Deferred features must be represented as unsupported decisions. Examples:
 
 ```text
 window.window_project
+join.join_rowset
+join.right_join
+join.full_join
+join.cross_join
+join.non_equi_condition
+join.disjunctive_condition
+join.using_keys
+join.strategy_broadcast
+join.strategy_shuffle_hash
+join.strategy_shuffle_replicate_nl
+join.strategy_merge
 optimization.cache
 optimization.repartition
 explain.field_lineage
@@ -301,8 +312,8 @@ Runtime PySpark execution tests may import PySpark. Capability tests and compile
 
 - `target_backend = "pyspark"` with `target_profile = ">=3.5,<4.1"` and `target_variant = "ordinary"` resolves the
   ordinary PySpark capability profile.
-- `target_backend = "pyspark"` with `target_variant = "spark-connect"` resolves the experimental Spark Connect
-  PySpark-variant capability profile.
+- `target_backend = "pyspark"` with `target_variant = "spark-connect"` resolves the Spark Connect PySpark-variant
+  capability profile.
 - Spark Connect supports completed compiler-visible batch feature capabilities and rejects classic-only backend
   internals with `BACKEND-E2402`.
 - Unknown `target_backend` fails with `BACKEND-E2401`.

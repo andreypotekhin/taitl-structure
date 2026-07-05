@@ -78,10 +78,11 @@ V2 starts after v1 stabilization evidence is release-ready. The v2 sprint sequen
    temporal validity-window joins, and backward as-of joins.
 3. **Sprint 08: aggregations, windows, and higher-order functions**: typed `group_by(...)`, aggregate helpers,
    windowing, dedupe helpers, and compiler-visible array/map helpers.
-4. **Sprint 09: Spark Connect, optimization, and explain**: experimental Spark Connect parity, explicit optimization
-   directives, and richer explain output for completed analytical operations.
+4. **Sprint 09: Spark Connect, Spark streaming, optimization, and explain**: supported Spark Connect batch execution,
+   first-slice caller-owned Spark streaming support, explicit optimization directives, and richer explain output for
+   completed analytical operations.
 5. **Sprint 10: docs, testing, and incremental compile**: generated documentation artifacts, pytest helpers, and
    production incremental compile.
 
-V3 is reserved for streaming orchestration. V4 is reserved for Spark Connect promotion or hardening after end-of-v2
-experimental parity evidence exists.
+V3 is reserved for full streaming orchestration. V4 is reserved for backend expansion and any non-batch Spark Connect
+hardening left outside the Sprint 09 support claim.

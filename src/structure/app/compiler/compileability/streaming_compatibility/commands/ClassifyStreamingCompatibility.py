@@ -161,6 +161,20 @@ class ClassifyStreamingCompatibility:
                     use="Keep this transform batch-only or move the as-of lookup into explicit streaming code.",
                 ),
             )
+        if join.method is JoinMethod.ROWSET:
+            return (
+                StreamingFinding(
+                    code="STREAM-E0801",
+                    support=StreamingSupport.BATCH_ONLY,
+                    step=step,
+                    operation=f"rowset join {join.input_name}",
+                    problem=(
+                        "Full PySpark rowset joins are batch-only until Structure defines streaming state, "
+                        "watermark, and output-mode semantics for broad joins."
+                    ),
+                    use="Keep this transform batch-only or use a supported stream-static lookup join.",
+                ),
+            )
         if join.method in {JoinMethod.EXISTS, JoinMethod.NOT_EXISTS}:
             return ()
         if join.how.value in {Join.LEFT.value, "inner"}:

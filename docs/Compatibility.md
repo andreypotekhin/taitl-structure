@@ -59,15 +59,13 @@ target_profile = ">=3.5,<4.1"
 target_variant = "spark-connect"
 ```
 
-The initial release and mainstream v2 online/generated execution target ordinary PySpark `SparkSession`, `DataFrame`,
-and `Column` APIs. Spark Connect is experimental for completed v1/v2 batch features and is covered by the integration
-matrix lanes `spark-connect35` and `spark-connect40`. V3 adds streaming orchestration on top of the ordinary PySpark
-contract.
+The initial release targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Sprint 09 promotes Spark
+Connect to supported status for completed v1/v2 compiler-visible batch features once runtime evidence, diagnostics, and
+CI or documented verification are in place. V3 adds streaming orchestration separately.
 
 Spark Connect must not change public DSL syntax, generated class APIs, transform `run(...)` signatures, generated-code
 review shape, or streaming orchestration semantics. It must also avoid classic-only internals such as SparkContext,
-RDDs, direct JVM/Py4J access, `_jdf`, and private classic PySpark fields. Full support is a later promotion decision
-after parity evidence, diagnostics, and CI coverage exist.
+RDDs, direct JVM/Py4J access, `_jdf`, and private classic PySpark fields.
 
 ## Semantic Versioning
 
@@ -168,10 +166,8 @@ Config schema rules:
 ## Roadmap
 
 v2 expands online/generated PySpark features and adoption tooling while preserving the same basic compatibility
-contract. Experimental Spark Connect parity covers completed v1/v2 batch features through the PySpark target variant
-`spark-connect`.
+contract. Sprint 09 supports completed v1/v2 batch features through the PySpark target variant `spark-connect`.
 
 v3 adds streaming orchestration once transform compilation is stable.
 
-v4 promotes Spark Connect from experimental to supported if parity evidence, diagnostics, and CI are complete;
-otherwise v4 continues hardening the variant.
+v4 handles backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support claim.

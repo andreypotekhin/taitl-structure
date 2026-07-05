@@ -312,9 +312,10 @@ Structure targets Python 3.11+ and online/generated PySpark for PySpark 3.5.x an
 settings are `execution_mode = "online"`, `target_profile = ">=3.5,<4.1"`, and `target_variant = "ordinary"`.
 
 Online and generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs by default.
-Spark Connect is planned as an experimental end-of-v2 PySpark variant for completed v1/v2 batch features. Full support
-is a later promotion decision and must not change Structure source syntax, online invocation construction, generated
-class construction, `run(...)` signatures, streaming orchestration semantics, or generated-code reviewability.
+Sprint 09 promotes Spark Connect to supported status for completed v1/v2 batch features after live runtime evidence,
+diagnostics, and CI or documented verification are in place. Spark Connect must not change Structure source syntax,
+online invocation construction, generated class construction, `run(...)` signatures, streaming orchestration semantics,
+or generated-code reviewability.
 
 Generated PySpark, compiler traceability metadata, and configuration each have explicit versioning rules. The public policy
 lives in [Compatibility.md](Compatibility.md).
@@ -419,8 +420,9 @@ Recommended implementation techniques:
 
 The roadmap follows an IR-first north star: the initial release proves that Structure can replace hand-maintained
 PySpark boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful
-for mainstream analytical pipelines and ends with experimental Spark Connect parity for completed batch features. v3
-takes ownership of streaming lifecycle concerns. v4 promotes or hardens Spark Connect based on parity evidence.
+for mainstream analytical pipelines and promotes Spark Connect for completed batch features. v3 takes ownership of
+streaming lifecycle concerns. v4 handles backend expansion and non-batch Spark Connect hardening left outside the
+Sprint 09 support claim.
 
 ### Initial Release
 

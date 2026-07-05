@@ -341,8 +341,8 @@ The Compose stack is defined in `infra/compose/docker-compose.yaml`. Local value
 `infra/compose/.env`, created automatically from the tracked `infra/compose/.env_example` when missing. The full stack
 starts the currently claimed PySpark backend versions at the same time on distinct services and ports.
 
-The current matrix covers ordinary PySpark 3.5/4.0 and experimental Spark Connect over PySpark 3.5/4.0. Spark Connect
-lanes start the Connect gateway inside the runner container instead of adding separate Compose services.
+The current matrix covers ordinary PySpark 3.5/4.0 and Spark Connect over PySpark 3.5/4.0. Spark Connect lanes start
+the Connect gateway inside the runner container instead of adding separate Compose services.
 
 Pytest integration tests must use `pytest.mark.integration` and must not import PySpark at module import time. Import
 PySpark inside fixtures or test functions so the default suite can collect tests without Spark installed.

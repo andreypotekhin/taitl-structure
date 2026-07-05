@@ -23,7 +23,7 @@ and get fast feedback in large projects without recompiling unaffected transform
 ### Out of Scope
 
 - Optimization directives and rich explain work covered by Sprint 09.
-- Full supported Spark Connect promotion.
+- Spark Connect batch support promotion covered by Sprint 09.
 - Streaming source and sink generation.
 
 ## Relevant Specification Items

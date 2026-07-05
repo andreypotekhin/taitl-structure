@@ -271,8 +271,8 @@ environments.
 
 Airflow can call online or generated transforms. It is not a Structure dependency.
 
-Ordinary PySpark is the default target. Spark Connect is an experimental PySpark variant for completed v1/v2 batch
-features. Full support depends on parity evidence, diagnostics, and CI coverage.
+Ordinary PySpark is the default target. Spark Connect is a PySpark variant for completed v1/v2 batch features once
+Sprint 09 support evidence is in place.
 
 See [Compatibility.md](docs/Compatibility.md) for the full versioning and compatibility policy.
 
@@ -297,9 +297,8 @@ See [License.md](License.md)
   streaming-compatible transforms, diagnostic links, and setup checks.
 - **v2:** mainstream analytical features: existence joins, `join_many(...)`, deterministic lookup dedupe,
   temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions,
-  caching/persistence/repartition hints, richer explain output, generated docs, pytest helpers, and experimental
-  Spark Connect parity for completed v1/v2 batch features.
+  caching/persistence/repartition hints, richer explain output, generated docs, pytest helpers, and Spark Connect
+  support for completed v1/v2 batch features.
 - **v3:** streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, output
-  modes, stateful policies, and Spark Connect hardening for completed v1/v2 batch features.
-- **v4:** promote Spark Connect from experimental to supported if parity evidence, diagnostics, and CI are complete;
-  otherwise continue hardening.
+  modes, and stateful policies.
+- **v4:** backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support claim.

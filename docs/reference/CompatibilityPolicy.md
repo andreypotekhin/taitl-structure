@@ -71,7 +71,7 @@ checks may report non-active target issues as unsupported, degraded, opaque, or 
 
 ## Spark Connect Scope
 
-Spark Connect is a PySpark target variant, not a separate backend id. The experimental configuration shape is:
+Spark Connect is a PySpark target variant, not a separate backend id. The configuration shape is:
 
 ```toml
 target_backend = "pyspark"
@@ -79,11 +79,12 @@ target_profile = ">=3.5,<4.1"
 target_variant = "spark-connect"
 ```
 
-Mainstream online/generated execution targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs.
-Experimental Spark Connect parity covers completed compiler-visible batch features through the same PySpark-family
-target boundary. V3 owns streaming orchestration on top of the ordinary PySpark contract.
+Mainstream online/generated execution targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Sprint
+09 promotes Spark Connect from experimental parity to supported status for completed compiler-visible batch features
+only, after live runtime evidence, diagnostics, and CI or documented verification are in place. V3 owns streaming
+orchestration separately.
 
-Experimental Spark Connect support is intentionally narrow:
+Spark Connect support is intentionally narrow:
 
 - it uses the existing PySpark target boundary cleanly;
 - it does not change public DSL syntax;
@@ -96,8 +97,7 @@ Experimental Spark Connect support is intentionally narrow:
 
 Spark Connect must not rely on SparkContext, RDDs, direct JVM/Py4J access, `_jdf`, or private classic PySpark fields.
 Unsupported variant capabilities must fail through backend capability diagnostics before online execution or generated
-code is claimed compatible. Full support is a later promotion decision after broader runtime evidence, diagnostics, and
-CI coverage exist.
+code is claimed compatible. The detailed support contract is specified in [SparkConnect.md](SparkConnect.md).
 
 ## Semantic Versioning
 

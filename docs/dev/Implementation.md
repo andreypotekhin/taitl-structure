@@ -83,9 +83,9 @@
 
 ## Phase 5: v4
 
-- Spark Connect support promotion or continued hardening.
-- Expanded Spark Connect compatibility tests.
-- Backend capability reporting for ordinary PySpark and Spark Connect variants.
+- Backend expansion after the PySpark-family batch contract is stable.
+- Non-batch Spark Connect hardening left outside Sprint 09.
+- Backend capability reporting for additional backend families.
 
 ## Build Integration
 

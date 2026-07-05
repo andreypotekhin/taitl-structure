@@ -1,7 +1,20 @@
 from structure.app.compiler.diagnostics.api import StructureCompileError
 from structure.app.compiler.frontend.commands.CompileTransform import compile_transform
 from structure.app.dsl.model.expr.expressions import coalesce, lower, to_decimal, trim, upper, when
-from structure.app.dsl.model.expr.InputScope import as_of_one, exists, join_many, join_one, not_exists, temporal_one
+from structure.app.dsl.model.expr.InputScope import (
+    as_of_one,
+    cross_join,
+    exists,
+    full_join,
+    inner_join,
+    join_many,
+    join_one,
+    join_rowset,
+    left_join,
+    not_exists,
+    right_join,
+    temporal_one,
+)
 from structure.app.dsl.model.schemas.schema import (
     Array,
     Boolean,
@@ -102,6 +115,7 @@ __all__ = [
     "coalesce",
     "count",
     "count_distinct",
+    "cross_join",
     "dedupe_earliest_by",
     "dedupe_latest_by",
     "dense_rank",
@@ -112,12 +126,16 @@ __all__ = [
     "expr_fn",
     "exists",
     "field",
+    "full_join",
     "group_by",
+    "inner_join",
     "input",
     "join_many",
     "join_one",
+    "join_rowset",
     "lag",
     "lane",
+    "left_join",
     "latest_by",
     "lead",
     "lower",
@@ -129,6 +147,7 @@ __all__ = [
     "output",
     "project",
     "rank",
+    "right_join",
     "row_number",
     "rolling_avg",
     "rolling_max",

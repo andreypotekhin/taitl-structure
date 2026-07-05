@@ -27,8 +27,9 @@ The v2 order should follow production frequency and semantic risk:
 4. Temporal and as-of lookups: time-aware joins that select records relative to an event time.
 5. SCD-style lookups: validity-window joins with explicit overlap handling.
 
-Right, full, and cross joins remain deferred. They do not fit Structure's current row-centric transform model cleanly
-because they can introduce rows without a current-row source or create unbounded multiplication.
+Right, full, and cross joins are outside the first analytical slice. They do not fit Structure's current row-centric
+transform model cleanly because they can introduce rows without a current-row source or create unbounded multiplication.
+Their rowset model is designed separately in [FullPySparkJoinSupport.md](FullPySparkJoinSupport.md).
 
 ## Semantic Principles
 

@@ -104,14 +104,13 @@
     },
     {
       "id": "S09",
-      "name": "Optimization, Explain, Docs, Tooling",
+      "name": "Spark Connect, Optimization, Explain",
       "milestone": "M7D",
       "spec_sections": [
+        "Spark Connect",
         "Optimization Directives",
         "Explain",
-        "Generated Docs",
-        "Testing",
-        "Build Integration"
+        "Testing"
       ]
     }
   ]

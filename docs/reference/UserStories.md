@@ -243,8 +243,7 @@ narrower use cases and roadmap features.
 - + As a developer, I can rely on a documented PySpark support range so that generated code uses compatible APIs.
 - + As a developer, I can configure `target_profile` so that the emitter avoids APIs outside my deployment range.
 - + As a developer, I can configure `target_variant` so that ordinary PySpark and Spark Connect variant expectations are clear.
-- + As a developer, I can see end-of-v2 experimental Spark Connect parity scope so that completed batch-feature
-  expectations are clear.
+- + As a developer, I can see Spark Connect batch scope so that completed batch-feature expectations are clear.
 - As a developer, I can rely on semantic versioning after 1.0 so that upgrades carry predictable risk.
 - + As a developer, I can rely on stable compiler provenance and static dataflow schemas so that diagnostics and explain
   output can evolve safely.
@@ -286,7 +285,9 @@ narrower use cases and roadmap features.
 ## 22. v2 Roadmap
 
 v2 makes Structure useful for mainstream analytical batch pipelines. It extends the v1 transform model without taking
-over streaming orchestration, storage writes, Spark Connect, automatic cost-based optimization, or hidden UDF execution.
+over streaming orchestration, storage writes, automatic cost-based optimization, or hidden UDF execution. Sprint 09 adds
+Spark Connect support for completed compiler-visible batch features and the full PySpark rowset join forms left out of
+the first analytical join slice.
 
 ## 22A. v2 Foundations
 
@@ -312,10 +313,25 @@ over streaming orchestration, storage writes, Spark Connect, automatic cost-base
   are caught at compile time.
 - As a developer, I can define advanced grouping patterns so that rollups, cubes, grouping sets, and multi-level
   summaries are supported when practical.
+- As a developer, I can distinguish subtotal rows with grouping metadata so that rollup, cube, and grouping-set
+  outputs are unambiguous.
+- As a developer, I can calculate Boolean, statistical, approximate, and collection aggregate metrics so that common
+  analytical summaries remain compiler-visible.
+- As a developer, I can filter individual aggregate metrics so that conditional summaries do not require separate
+  subtransforms.
+- As a developer, I can filter aggregate output with `having(...)` so that post-aggregate predicates are explicit.
 - + As a developer, I can define ranking window expressions so that row number, rank, and dense rank compile to Spark
   window operations.
 - + As a developer, I can define rolling window metrics so that moving analytical summaries remain compiler-visible.
 - + As a developer, I can define lag and lead expressions so that time-relative comparisons remain compiler-visible.
+- As a developer, I can reuse named window specifications so that partition, ordering, and frame rules are written
+  once and reviewed consistently.
+- As a developer, I can define explicit row and range frames so that broad window semantics do not depend on Spark
+  defaults.
+- As a developer, I can define distribution and value window expressions so that percent rank, cumulative
+  distribution, buckets, and first/last/nth values remain compiler-visible.
+- As a developer, I can define aggregate window expressions so that framed running summaries are not limited to the
+  first-slice rolling helpers.
 - + As a developer, I can remove exact duplicates explicitly so that duplicate cleanup is visible in source and explain
   output.
 - + As a developer, I can select latest or earliest rows with deterministic tie policy so that dedupe never chooses an
@@ -326,6 +342,11 @@ over streaming orchestration, storage writes, Spark Connect, automatic cost-base
   Spark-plan-visible.
 - + As a developer, I can receive diagnostics when a higher-order helper callback would become arbitrary Python
   so that I can move the logic to the DSL, `@expr_fn`, or a hook.
+- As a developer, I can use array exists, forall, zip, aggregate, sort, flatten, distinct, and position helpers so that
+  nested array logic remains Spark-plan-visible.
+- As a developer, I can use map key transformation, map zip, keys, values, entries, and from-entries helpers so that
+  map logic remains Spark-plan-visible.
+- As a developer, I can receive duplicate-key diagnostics for map key transforms so that map results are deterministic.
 
 ## 22C. Analytical Joins
 
@@ -338,6 +359,14 @@ over streaming orchestration, storage writes, Spark Connect, automatic cost-base
   right-side records do not silently change facts.
 - + As a developer, I can see analytical join cardinality in generated traceability so that downstream consumers can spot
   row multiplication and row filtering.
+- As a developer, I can use right and full rowset joins so that reconciliation pipelines can keep right-only and
+  left-only records without hooks.
+- As a developer, I can use explicit cross joins so that planned Cartesian expansion is visible and accidental missing
+  predicates fail early.
+- As a developer, I can use non-equi and disjunctive join predicates when they remain compiler-visible so that range
+  and alternative-key joins do not require string SQL or hooks.
+- As a developer, I can see nullable sides and rowset join cardinality in explain output so that broad joins are
+  reviewable before runtime.
 
 ## 22D. Optimization, Explain, Docs, and Test Tooling
 
@@ -376,8 +405,15 @@ over streaming orchestration, storage writes, Spark Connect, automatic cost-base
 
 ## 24. Spark Connect Roadmap
 
-- + As a developer, I can target experimental Spark Connect for completed v1/v2 batch features when Structure defines and
-  tests a compatible generated-code contract.
-- As a developer, I can rely on a later promotion gate before Spark Connect is documented as fully supported.
+- + As a developer, I can target Spark Connect for completed v1/v2 batch features when Structure defines and tests a
+  compatible generated-code contract.
+- As a developer, I can run completed batch transforms online through Spark Connect so that remote Spark execution uses
+  the same StructureSession contract.
+- As a developer, I can run generated completed batch transforms through Spark Connect so that generated artifacts remain
+  usable in Connect deployments.
+- As a maintainer, I can verify Spark Connect support through CI or a documented manual script so that support is based
+  on live runtime evidence rather than generated-code shape alone.
 - + As a developer, I can see backend capability diagnostics so that ordinary PySpark and Spark Connect differences are
   explicit.
+- As a developer, I can see clear exclusions for streaming orchestration, storage writes, and arbitrary hook internals so
+  that the batch support boundary is not mistaken for general Spark ownership.

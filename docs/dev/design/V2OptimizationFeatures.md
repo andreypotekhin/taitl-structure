@@ -104,6 +104,11 @@ Aggregation support should model grouping keys, aggregate expressions, filters, 
 Structure semantics first. The PySpark target may lower those semantics to `groupBy(...).agg(...)`, window expressions,
 or compatible target syntax, but the public DSL should stay smaller than Spark's full aggregation API.
 
+The full post-first-slice analytical design lives in
+[AdvancedAnalyticalOperations.md](AdvancedAnalyticalOperations.md). Sprint 09 should use that document and
+[AdvancedAnalyticalOperations.md](../specifications/AdvancedAnalyticalOperations.md) as the contract for broader
+aggregation, window, and higher-order helper support.
+
 ## Performance Guardrails
 
 All optimization features should be explicit and visible in generated code. They should never hide Python UDFs or row-wise execution.

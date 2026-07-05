@@ -32,6 +32,10 @@ behavior Structure aims to keep stable.
   field references.
 - [Analytical join coverage](reference/AnalyticalJoinCoverage.md): existence joins, row-multiplying joins,
   deterministic dedupe, and temporal lookup joins.
+- [Full PySpark join support](reference/FullPySparkJoinSupport.md): right, full, cross, non-equi, and disjunctive
+  rowset joins.
+- [Advanced analytical operations](reference/AdvancedAnalyticalOperations.md): broader aggregation, window, and
+  higher-order collection helper behavior after the first analytical slice.
 - [Hook semantics](reference/HookSemantics.md): explicit runtime escape hatches and target-scoped hook behavior.
 - [Validation semantics](reference/ValidationSemantics.md): schema validation phases, modes, strictness, hooks,
   and output projection.
@@ -47,6 +51,11 @@ behavior Structure aims to keep stable.
 - [Diagnostics](reference/Diagnostics.md): error and warning format, stability, severity, and documentation links.
 - [Streaming compatibility](reference/StreamingCompatibility.md): when transforms can be used with streaming
   DataFrames.
+- [Spark streaming](reference/SparkStreaming.md): caller-owned Structured Streaming first-slice support.
+- [Spark streaming deferred features](reference/SparkStreamingDeferredFeatures.md): generated streaming source, sink,
+  lifecycle, watermark, and state-policy work left outside the first slice.
+- [Spark Connect](reference/SparkConnect.md): PySpark Connect target variant, supported batch scope, diagnostics, and
+  exclusions.
 - [Compatibility policy](reference/CompatibilityPolicy.md): Python, PySpark, backend, generated-code, and
   versioning compatibility.
 

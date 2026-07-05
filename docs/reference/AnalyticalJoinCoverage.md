@@ -26,7 +26,7 @@ In scope for the analytical join family:
 - as-of lookup joins;
 - diagnostics, IR, backend capability requirements, and traceability for those forms.
 
-Out of scope until a later design:
+Out of scope for this first analytical join slice:
 
 - right joins;
 - full joins;
@@ -35,6 +35,9 @@ Out of scope until a later design:
 - cost-based optimization;
 - stream-stream temporal joins;
 - storage write behavior after row-multiplying joins.
+
+Right, full, cross, non-equi, and disjunctive rowset joins are covered in
+[FullPySparkJoinSupport.md](FullPySparkJoinSupport.md).
 
 ## Terms
 

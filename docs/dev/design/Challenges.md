@@ -505,8 +505,8 @@ v1 baseline:
 - Ordinary PySpark target variant, with `target_variant = "ordinary"` by default.
 - Airflow has no hard dependency.
 - Linux is the runtime target; Linux and macOS are development targets.
-- Spark Connect is planned as an end-of-v2 experimental PySpark variant for completed batch features, with full support
-  gated by parity evidence and diagnostics.
+- Spark Connect is planned as a Sprint 09 supported PySpark variant for completed batch features, gated by live runtime
+  evidence, diagnostics, and CI or documented verification.
 
 ## +C20. Licensing and Governance Are Not Decided
 

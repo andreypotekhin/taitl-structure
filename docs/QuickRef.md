@@ -639,8 +639,9 @@ is rejected; combine symbolic predicates with `&`, `|`, and `~`.
 
 ## Joins
 
-Use symbolic joins. Ref: [Join semantics](reference/JoinSemantics.md) and
-[analytical join coverage](reference/AnalyticalJoinCoverage.md).
+Use symbolic joins. Ref: [Join semantics](reference/JoinSemantics.md),
+[analytical join coverage](reference/AnalyticalJoinCoverage.md), and
+[full PySpark join support](reference/FullPySparkJoinSupport.md).
 
 Implemented join forms in the default PySpark profile:
 
@@ -651,6 +652,7 @@ Implemented join forms in the default PySpark profile:
 | `exists(...)` | filter current rows by a right-side match | Semi join semantics. |
 | `not_exists(...)` | filter current rows by no right-side match | Anti join semantics. |
 | `join_many(...)` | multiply current rows by right-side matches | One output row per match. |
+| `join_rowset(...)` | broad rowset join | Right, full, cross, non-equi, or disjunctive joins. |
 | `temporal_one(...)` | select one right row by validity window | SCD-style or temporal lookup enrichment. |
 | `as_of_one(...)` | select latest right row at or before a left time | Backward time-relative enrichment. |
 
@@ -694,6 +696,17 @@ join_many(
     strategy=JoinStrategy.SHUFFLE_HASH,
 )
 ```
+
+Use rowset joins when the join can admit right-only rows, left-only rows, or a Cartesian product:
+
+```python
+full_join(on=customer.id == order.customer_id)
+right_join(on=customer.id == order.customer_id)
+cross_join(calendar_day, allow_cartesian=True)
+```
+
+`left_join(...)`, `inner_join(...)`, `right_join(...)`, `full_join(...)`, and `cross_join(...)` are shortcuts over
+`join_rowset(...)`. Predicate shortcuts can be bare when the right relation is unambiguous.
 
 Use deterministic lookup dedupe when duplicate right-side rows exist but the business rule still selects one row:
 
@@ -867,11 +880,11 @@ target_profile = ">=3.5,<4.1"
 target_variant = "ordinary"
 ```
 
-Spark Connect uses `target_backend = "pyspark"` with `target_variant = "spark-connect"`. It is experimental for
-completed compiler-visible batch features, with full support gated by broader runtime and CI evidence.
+Spark Connect uses `target_backend = "pyspark"` with `target_variant = "spark-connect"`. It is the supported PySpark
+variant for completed compiler-visible batch features once Sprint 09 runtime and CI evidence is in place.
 See [Compatibility.md](Compatibility.md).
 
-Local integration lanes cover ordinary PySpark and experimental Spark Connect:
+Local integration lanes cover ordinary PySpark and Spark Connect:
 
 ```text
 make integration BACKEND=pyspark35

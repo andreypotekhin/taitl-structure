@@ -174,14 +174,26 @@ Exit Criteria:
 
 ### M7C: Aggregations, Windows, and Higher-Order Functions
 
+Progress:
+
+- Sprint 08 completed the first analytical slice: grouped aggregates, selected-row helpers, exact/subset dedupe,
+  projection windows, rolling row metrics, and basic array/map higher-order helpers.
+- Sprint 09 carries advanced analytical support from
+  [P07052601.Advanced-analytical-operations.plan.md](../planning/P07052601.Advanced-analytical-operations.plan.md).
+
 Exit Criteria:
 
 - Typed `group_by(...)` and aggregation support covers count, sum, min, max, avg, distinct count where practical,
   and schema-checked aggregate output construction.
+- Advanced grouping support covers rollup, cube, grouping sets, subtotal metadata, filtered metrics, `having(...)`,
+  and additional exact, statistical, approximate, and collection metrics admitted by the Sprint 09 specification.
 - Windowing covers latest-row, ranking, lag/lead, rolling metrics, and duplicate-removal helpers.
+- Broad windowing covers reusable window specs, explicit row/range frames, distribution/value helpers, and aggregate
+  window expressions admitted by the Sprint 09 specification.
 - Deduplication helpers expose deterministic tie policies and never lower to arbitrary `dropDuplicates(...)` when a
   selected row matters.
 - Spark higher-order helpers for arrays and maps remain Spark-plan-visible and reject unsupported Python callbacks.
+- Advanced HOF support covers additional array and map helpers while preserving symbolic callback diagnostics.
 - Online/generated parity tests cover every admitted aggregation, window, dedupe, and higher-order helper form.
 
 ### M7D: Optimization, Explain, Docs, and Test Tooling
@@ -189,6 +201,8 @@ Exit Criteria:
 Exit Criteria:
 
 - Manual optimization directives are explicit in source and obvious in generated code.
+- Right, full, cross, non-equi, and disjunctive rowset joins are represented in source, IR, backend capability checks,
+  generated code, online recipes, traceability, and explain output.
 - Cache, persist, repartition, coalesce, checkpoint, and join strategy directives are represented in IR and backend
   capability checks.
 - Richer static dataflow explain output can show field lineage through projections, filters, joins, aggregations,
@@ -221,18 +235,20 @@ Exit Criteria:
 - Triggers, checkpoints, output modes, watermarks, and state policies are modeled and tested.
 - Existing v1/v2 streaming compatibility behavior remains valid for caller-owned streaming orchestration.
 
-## M7E: Spark Connect Experimental Parity
+## M7E: Spark Connect Batch Support
 
 ### Exit Criteria
 
-- `target_backend = "pyspark"` plus `target_variant = "spark-connect"` is documented as the experimental Connect shape.
-- Completed v1/v2 batch features have parity evidence for the Spark Connect variant.
+- `target_backend = "pyspark"` plus `target_variant = "spark-connect"` is documented as the supported Connect batch shape.
+- Completed v1/v2 batch features have online and generated parity evidence for the Spark Connect variant.
 - Classic-only internals fail through backend capability diagnostics before execution or generation.
+- CI or a documented manual verification script proves Spark Connect execution against supported PySpark lines.
+- Public docs explain supported batch behavior and the remaining streaming, storage-write, and hook-body exclusions.
 
-## M9: v4 Spark Connect Promotion
+## M9: v4 Backend Expansion and Connect Hardening
 
 ### Exit Criteria
 
-- Spark Connect is promoted from experimental to supported only if parity evidence, diagnostics, and CI are complete.
-- Public docs explain the difference between ordinary PySpark and Spark Connect variants.
-- Backend capability reporting prevents accidental use of unsupported classic-only APIs.
+- New backend-family work has an explicit capability profile and compatibility report.
+- Spark Connect follow-up work covers only non-batch, operational, or explicitly deferred gaps from Sprint 09.
+- Public docs explain the difference between supported batch Connect and any later streaming or storage-write coverage.

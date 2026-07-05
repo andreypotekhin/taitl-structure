@@ -4,6 +4,7 @@ import json
 from typing import cast
 
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
+from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.types.DecimalType import DecimalType
 from structure.app.dsl.model.types.StructType import StructType
 from structure.app.dsl.model.types.StructureType import StructureType
@@ -238,16 +239,19 @@ class RenderPySparkStep:
         if join.as_of is not None:
             row_id = f"__structure_{join.left_alias}_{join.right_alias}_row"
             lines.append(f'        {target} = {target}.withColumn("{row_id}", F.monotonically_increasing_id())')
-        lines.extend(
-            [
-                f"        {right_name} = {right}",
-                f"        {target} = {target}.join(",
-                f"            {right_name},",
-                f"            {predicate},",
-                f'            "{self._join_mode(join)}",',
-                "        )",
-            ]
-        )
+        lines.append(f"        {right_name} = {right}")
+        if join.how is Join.CROSS:
+            lines.append(f"        {target} = {target}.crossJoin({right_name})")
+        else:
+            lines.extend(
+                [
+                    f"        {target} = {target}.join(",
+                    f"            {right_name},",
+                    f"            {predicate},",
+                    f'            "{self._join_mode(join)}",',
+                    "        )",
+                ]
+            )
         if join.as_of is not None:
             lines.extend(self._as_of(join, target=target, row_id=cast(str, row_id)))
         return lines
