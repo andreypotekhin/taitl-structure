@@ -51,7 +51,35 @@ def test_supported_v2_join_requirement_passes(name: str) -> None:
     assert decision.supported
 
 
-@pytest.mark.parametrize("name", ["group_by", "count", "count_distinct", "sum", "min", "max", "avg"])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "approx_count_distinct",
+        "approx_percentile",
+        "avg",
+        "bool_and",
+        "bool_or",
+        "collect_list",
+        "collect_set",
+        "corr",
+        "count",
+        "count_distinct",
+        "covar",
+        "cube",
+        "filtered_metric",
+        "first_value",
+        "group_by",
+        "grouping_id",
+        "is_grouped",
+        "last_value",
+        "max",
+        "min",
+        "rollup",
+        "stddev",
+        "sum",
+        "variance",
+    ],
+)
 def test_supported_v2_aggregate_requirement_passes(name: str) -> None:
     resolved = Capabilities.resolve()()
 
@@ -60,7 +88,29 @@ def test_supported_v2_aggregate_requirement_passes(name: str) -> None:
     assert decision.supported
 
 
-@pytest.mark.parametrize("name", ["array_transform", "array_filter", "map_transform_values", "map_filter"])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "array_aggregate",
+        "array_distinct",
+        "array_exists",
+        "array_filter",
+        "array_flatten",
+        "array_forall",
+        "array_position",
+        "array_sort_by",
+        "array_transform",
+        "array_zip_with",
+        "map_entries",
+        "map_filter",
+        "map_from_entries",
+        "map_keys",
+        "map_transform_keys",
+        "map_transform_values",
+        "map_values",
+        "map_zip_with",
+    ],
+)
 def test_supported_v2_higher_order_requirement_passes(name: str) -> None:
     resolved = Capabilities.resolve()()
 
@@ -81,10 +131,22 @@ def test_supported_v2_dedupe_requirement_passes() -> None:
     "name",
     [
         "dense_rank",
+        "avg",
+        "count",
+        "count_distinct",
+        "cume_dist",
+        "first_value",
         "lag",
+        "last_value",
         "lead",
+        "max",
+        "min",
+        "nth_value",
+        "ntile",
+        "percent_rank",
         "rank",
         "row_number",
+        "sum",
         "rolling_avg",
         "rolling_max",
         "rolling_min",
@@ -113,6 +175,7 @@ def test_supported_v2_cache_requirement_passes() -> None:
     ("group", "name"),
     [
         ("window", "window_project"),
+        ("aggregate", "grouping_sets"),
         ("optimization", "repartition"),
         ("explain", "field_lineage"),
         ("docs", "generated_docs"),

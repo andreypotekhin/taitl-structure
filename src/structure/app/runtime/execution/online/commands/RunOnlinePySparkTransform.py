@@ -253,7 +253,15 @@ class RunOnlinePySparkTransform:
         return ranked.where(functions.col(rank) == functions.lit(1)).drop(rank)
 
     def _aggregate(self, step, df, aggregate, *, functions, types):
-        grouped = df.groupBy(
+        if aggregate.grouping == "group_by":
+            group = df.groupBy
+        elif aggregate.grouping == "rollup":
+            group = df.rollup
+        elif aggregate.grouping == "cube":
+            group = df.cube
+        else:
+            raise TypeError(f"Unsupported aggregate grouping: {aggregate.grouping}")
+        grouped = group(
             *(
                 self._expressions.evaluate(
                     key.expression, functions=functions, aliases=self._scope_aliases(step)
@@ -274,22 +282,56 @@ class RunOnlinePySparkTransform:
 
     def _aggregate_assignment(self, assignment, *, step, functions, types):
         if assignment.function == "count":
+            column = functions.lit(1)
+            if assignment.filter is not None:
+                predicate = self._expressions.evaluate(
+                    assignment.filter,
+                    functions=functions,
+                    aliases=self._scope_aliases(step),
+                )
+                column = functions.when(predicate, functions.lit(1))
             return (
-                functions.count(functions.lit(1))
+                functions.count(column)
                 .cast(self._spark_type(assignment.field.type, types))
                 .alias(assignment.field.column)
             )
-        if assignment.function in {"avg", "count_distinct", "max", "min", "sum"} and assignment.expression is not None:
-            column = self._expressions.evaluate(
-                assignment.expression,
-                functions=functions,
-                aliases=self._scope_aliases(step),
-            )
+        if assignment.function == "grouping_id":
+            return functions.grouping_id().cast(self._spark_type(assignment.field.type, types)).alias(assignment.field.column)
+        if assignment.function == "is_grouped" and assignment.expression is not None:
+            column = self._expressions.evaluate(assignment.expression, functions=functions, aliases=self._scope_aliases(step))
+            return functions.grouping(column).cast(self._spark_type(assignment.field.type, types)).alias(assignment.field.column)
+        arguments = assignment.arguments or (() if assignment.expression is None else (assignment.expression,))
+        if assignment.function in self._aggregate_functions() and arguments:
+            columns = [
+                self._expressions.evaluate(argument, functions=functions, aliases=self._scope_aliases(step))
+                for argument in arguments
+            ]
+            if assignment.filter is not None:
+                predicate = self._expressions.evaluate(
+                    assignment.filter,
+                    functions=functions,
+                    aliases=self._scope_aliases(step),
+                )
+                columns[0] = functions.when(predicate, columns[0])
+            options = dict(assignment.options)
+            if assignment.function == "approx_count_distinct" and "relative_sd" in options:
+                columns.append(options["relative_sd"])
+            if assignment.function == "approx_percentile":
+                columns.append(options["percentage"])
+                if "accuracy" in options:
+                    columns.append(options["accuracy"])
             return (
-                self._aggregate_function(functions, assignment.function)(column)
+                self._aggregate_function(functions, assignment.function)(*columns)
                 .cast(self._spark_type(assignment.field.type, types))
                 .alias(assignment.field.column)
             )
+        if assignment.function in {"first_value", "last_value"} and assignment.expression is not None:
+            if assignment.order_by is None:
+                raise TypeError(f"{assignment.function}(...) requires order_by")
+            column = self._expressions.evaluate(assignment.expression, functions=functions, aliases=self._scope_aliases(step))
+            order_by = self._expressions.evaluate(assignment.order_by, functions=functions, aliases=self._scope_aliases(step))
+            function = functions.min_by if assignment.function == "first_value" else functions.max_by
+            return function(column, order_by).alias(assignment.field.column)
         if assignment.function == "first" and assignment.expression is not None:
             column = self._expressions.evaluate(
                 assignment.expression,
@@ -299,14 +341,44 @@ class RunOnlinePySparkTransform:
             return functions.first(column, ignorenulls=False).alias(assignment.field.column)
         raise TypeError(f"Unsupported aggregate assignment: {assignment.function}")
 
-    def _aggregate_function(self, functions, function: str):
+    def _aggregate_functions(self) -> set[str]:
         return {
-            "avg": functions.avg,
-            "count_distinct": functions.countDistinct,
-            "max": functions.max,
-            "min": functions.min,
-            "sum": functions.sum,
+            "approx_count_distinct",
+            "approx_percentile",
+            "avg",
+            "bool_and",
+            "bool_or",
+            "collect_list",
+            "collect_set",
+            "corr",
+            "covar",
+            "count_distinct",
+            "max",
+            "min",
+            "stddev",
+            "sum",
+            "variance",
+        }
+
+    def _aggregate_function(self, functions, function: str):
+        name = {
+            "approx_count_distinct": "approx_count_distinct",
+            "approx_percentile": "percentile_approx",
+            "avg": "avg",
+            "bool_and": "bool_and",
+            "bool_or": "bool_or",
+            "collect_list": "collect_list",
+            "collect_set": "collect_set",
+            "corr": "corr",
+            "covar": "covar_samp",
+            "count_distinct": "countDistinct",
+            "max": "max",
+            "min": "min",
+            "stddev": "stddev",
+            "sum": "sum",
+            "variance": "variance",
         }[function]
+        return getattr(functions, name)
 
     def _aggregate_select(self, assignment, *, functions):
         source = assignment.key if assignment.function == "key" else assignment.field.column

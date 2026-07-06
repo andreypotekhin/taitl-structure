@@ -12,3 +12,7 @@ class AggregateAssignment:
     function: str
     expression: Expression | None = None
     key: str | None = None
+    arguments: tuple[Expression, ...] = ()
+    filter: Expression | None = None
+    order_by: Expression | None = None
+    options: tuple[tuple[str, object], ...] = ()

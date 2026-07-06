@@ -1,28 +1,30 @@
 # Advanced Analytical Operations
 
-Advanced analytical operations are the broader aggregation, window, and collection-helper features planned after the
+Advanced analytical operations are the broader aggregation, window, and collection-helper features added after the
 first v2 analytical slice. They let Structure cover multi-level summaries, explicit window frames, and richer array/map
 logic while keeping the work visible to Spark.
 
 The first slice already supports common grouped aggregates, ranking, lag/lead, rolling row metrics, deterministic
 latest/earliest selection, exact/subset duplicate removal, and basic array/map callbacks. This page describes the
-larger planned surface and the rules users should expect as it becomes available.
+Sprint 09 analytical surface and the boundaries still enforced by backend capability checks.
 
 ## Advanced Grouping
 
-Planned grouping helpers:
+Supported grouping helpers:
 
 - `rollup(...)` for hierarchical totals;
 - `cube(...)` for all combinations of grouping keys;
-- `grouping_sets(...)` for explicit subtotal levels;
 - `grouping_id()` and `is_grouped(field)` to distinguish detail rows from subtotal rows.
+
+`grouping_sets(...)` is reserved and capability-gated. It remains deferred until Structure admits a stable lowering
+contract for explicit grouping-set levels across generated and online PySpark execution.
 
 Grouping expression keys should be named. Subtotal rows may omit some grouping keys, so output fields for those keys
 must be nullable or explicitly filled with a literal label.
 
 ## Additional Aggregates
 
-Planned aggregate families include:
+Supported aggregate families include:
 
 - Boolean metrics such as `bool_and(...)` and `bool_or(...)`;
 - deterministic `first_value(...)` and `last_value(...)` with explicit ordering;
@@ -30,12 +32,12 @@ Planned aggregate families include:
 - approximate metrics such as `approx_count_distinct(...)` and `approx_percentile(...)`;
 - collection metrics such as `collect_list(...)` and `collect_set(...)` with clear ordering warnings.
 
-Aggregate helpers may also support `where=...` for metric-local filters, and `having(...)` for filtering aggregate
-output rows.
+Aggregate helpers support `where=...` for metric-local filters. Post-aggregate `having(...)` remains deferred because
+it needs a separate aggregate-output predicate scope rather than pre-aggregate row predicates.
 
 ## Reusable Windows
 
-Planned window support includes reusable specs:
+Window support includes reusable specs:
 
 ```python
 customer_window = window(
@@ -48,14 +50,14 @@ customer_window = window(
 Window frames are explicit. Row frames count physical rows. Range frames use values in the ordering column and require
 a compatible order type.
 
-Planned helpers include `percent_rank(...)`, `cume_dist(...)`, `ntile(...)`, `first_value(...)`, `last_value(...)`,
+Supported helpers include `percent_rank(...)`, `cume_dist(...)`, `ntile(...)`, `first_value(...)`, `last_value(...)`,
 `nth_value(...)`, and window aggregate helpers such as `window_sum(...)` and `window_avg(...)`.
 
 Broad window features remain batch-only until Structure has explicit streaming watermark and state semantics.
 
 ## Higher-Order Helpers
 
-Planned array helpers include:
+Supported array helpers include:
 
 - `arr_exists(...)`;
 - `arr_forall(...)`;
@@ -66,7 +68,7 @@ Planned array helpers include:
 - `arr_distinct(...)`;
 - `arr_position(...)`.
 
-Planned map helpers include:
+Supported map helpers include:
 
 - `map_transform_keys(...)`;
 - `map_zip_with(...)`;

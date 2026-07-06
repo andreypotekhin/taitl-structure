@@ -10,3 +10,4 @@ from structure.app.target.pyspark.model.PySparkAggregateKey import PySparkAggreg
 class PySparkAggregateRecipe:
     keys: tuple[PySparkAggregateKey, ...]
     assignments: tuple[PySparkAggregateAssignment, ...]
+    grouping: str = "group_by"

@@ -166,15 +166,18 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
   first-slice Spark streaming support scheduled into Sprint 09.
 - [x] (2026-07-05) Implemented the first full PySpark rowset join pass: `join_rowset(...)`, rowset shortcuts,
   right/full/cross lowering, broad predicate support, v2 fixture coverage, and checked-in generated example output.
+- [x] (2026-07-05) Implemented the admitted advanced analytical operations pass: rollup/cube grouping, grouping
+  metadata, additional aggregate metrics, metric-local filters, reusable explicit windows, broad window expressions,
+  additional array/map HOF helpers, capability gates, traceability, public exports, and focused tests.
 - [ ] Add live Spark Connect online/generated runtime evidence.
 - [ ] Add Spark Connect CI or manual verification script.
 - [ ] Add hook and StructureTools Spark Connect boundary diagnostics.
 - [ ] Implement Spark streaming first-slice support from
   [P07052604.Spark-streaming-first-slice.plan.md](../../planning/P07052604.Spark-streaming-first-slice.plan.md).
 - [ ] Add live Spark streaming online/generated runtime evidence or a release-blocking manual verification script.
-- [ ] Implement advanced aggregation/window/HOF support from
+- [x] Implement advanced aggregation/window/HOF support from
   [P07052601.Advanced-analytical-operations.plan.md](../../planning/P07052601.Advanced-analytical-operations.plan.md).
-- [ ] Implement full PySpark rowset join support.
+- [x] Implement full PySpark rowset join support.
 - [ ] Implement explicit optimization directives.
 - [ ] Implement rich explain output for completed batch operations.
 

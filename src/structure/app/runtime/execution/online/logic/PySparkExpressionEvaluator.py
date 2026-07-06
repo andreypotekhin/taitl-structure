@@ -76,6 +76,69 @@ class PySparkExpressionEvaluator:
                     self._bind_lambdas(body, {"item": item}), functions=functions, aliases=aliases, window=window
                 ),
             )
+        if function == "array_exists":
+            array, body = expression.args
+            return functions.exists(
+                self.evaluate(array, functions=functions, aliases=aliases, window=window),
+                lambda item: self.evaluate(
+                    self._bind_lambdas(body, {"item": item}), functions=functions, aliases=aliases, window=window
+                ),
+            )
+        if function == "array_forall":
+            array, body = expression.args
+            return functions.forall(
+                self.evaluate(array, functions=functions, aliases=aliases, window=window),
+                lambda item: self.evaluate(
+                    self._bind_lambdas(body, {"item": item}), functions=functions, aliases=aliases, window=window
+                ),
+            )
+        if function == "array_zip_with":
+            left, right, _, _, body = expression.args
+            return functions.zip_with(
+                self.evaluate(left, functions=functions, aliases=aliases, window=window),
+                self.evaluate(right, functions=functions, aliases=aliases, window=window),
+                lambda left_item, right_item: self.evaluate(
+                    self._bind_lambdas(body, {"left_item": left_item, "right_item": right_item}),
+                    functions=functions,
+                    aliases=aliases,
+                    window=window,
+                ),
+            )
+        if function == "array_aggregate":
+            array, initial, _, _, merged, finished = expression.args
+            aggregate = functions.aggregate(
+                self.evaluate(array, functions=functions, aliases=aliases, window=window),
+                self.evaluate(initial, functions=functions, aliases=aliases, window=window),
+                lambda acc, item: self.evaluate(
+                    self._bind_lambdas(merged, {"acc": acc, "item": item}),
+                    functions=functions,
+                    aliases=aliases,
+                    window=window,
+                ),
+            )
+            if finished == merged:
+                return aggregate
+            return functions.transform(aggregate, lambda acc: self.evaluate(
+                self._bind_lambdas(finished, {"acc": acc}), functions=functions, aliases=aliases, window=window
+            ))
+        if function == "array_sort_by":
+            [array] = expression.args
+            return functions.sort_array(
+                self.evaluate(array, functions=functions, aliases=aliases, window=window),
+                asc=not expression.data.get("descending"),
+            )
+        if function == "array_flatten":
+            [array] = expression.args
+            return functions.flatten(self.evaluate(array, functions=functions, aliases=aliases, window=window))
+        if function == "array_distinct":
+            [array] = expression.args
+            return functions.array_distinct(self.evaluate(array, functions=functions, aliases=aliases, window=window))
+        if function == "array_position":
+            array, item = expression.args
+            return functions.array_position(
+                self.evaluate(array, functions=functions, aliases=aliases, window=window),
+                self.evaluate(item, functions=functions, aliases=aliases, window=window),
+            )
         if function == "map_transform_values":
             mapping, _, _, body = expression.args
             return functions.transform_values(
@@ -98,9 +161,56 @@ class PySparkExpressionEvaluator:
                     window=window,
                 ),
             )
+        if function == "map_transform_keys":
+            mapping, _, _, body = expression.args
+            return functions.transform_keys(
+                self.evaluate(mapping, functions=functions, aliases=aliases, window=window),
+                lambda key, value: self.evaluate(
+                    self._bind_lambdas(body, {"key": key, "value": value}),
+                    functions=functions,
+                    aliases=aliases,
+                    window=window,
+                ),
+            )
+        if function == "map_zip_with":
+            left, right, _, _, _, body = expression.args
+            return functions.map_zip_with(
+                self.evaluate(left, functions=functions, aliases=aliases, window=window),
+                self.evaluate(right, functions=functions, aliases=aliases, window=window),
+                lambda key, left_value, right_value: self.evaluate(
+                    self._bind_lambdas(
+                        body,
+                        {"key": key, "left_value": left_value, "right_value": right_value},
+                    ),
+                    functions=functions,
+                    aliases=aliases,
+                    window=window,
+                ),
+            )
+        if function in {"map_keys", "map_values", "map_entries", "map_from_entries"}:
+            [value] = expression.args
+            name = {
+                "map_keys": "map_keys",
+                "map_values": "map_values",
+                "map_entries": "map_entries",
+                "map_from_entries": "map_from_entries",
+            }[function]
+            return getattr(functions, name)(
+                self.evaluate(value, functions=functions, aliases=aliases, window=window)
+            )
         if function in {"window_row_number", "window_rank", "window_dense_rank"}:
             order_by, *partition_by = expression.args
             return getattr(functions, function.removeprefix("window_"))().over(
+                self._window(order_by, partition_by, expression, functions=functions, aliases=aliases, window=window)
+            )
+        if function in {"window_percent_rank", "window_cume_dist"}:
+            order_by, *partition_by = expression.args
+            return getattr(functions, function.removeprefix("window_"))().over(
+                self._window(order_by, partition_by, expression, functions=functions, aliases=aliases, window=window)
+            )
+        if function == "window_ntile":
+            order_by, *partition_by = expression.args
+            return functions.ntile(expression.data["buckets"]).over(
                 self._window(order_by, partition_by, expression, functions=functions, aliases=aliases, window=window)
             )
         if function in {"window_lag", "window_lead"}:
@@ -120,6 +230,40 @@ class PySparkExpressionEvaluator:
             return getattr(functions, function.removeprefix("window_rolling_"))(column).over(
                 self._window(order_by, partition_by, expression, functions=functions, aliases=aliases, window=window)
             )
+        if function in {"window_first_value", "window_last_value", "window_nth_value"}:
+            count = self._int_data(expression, "value_count", 1)
+            values = expression.args[:count]
+            order_by = expression.args[count]
+            partition_by = list(expression.args[count + 1:])
+            arguments = [self.evaluate(values[0], functions=functions, aliases=aliases, window=window)]
+            if function == "window_nth_value":
+                arguments.append(expression.data["n"])
+            if expression.data.get("ignore_nulls"):
+                arguments.append(True)
+            return getattr(functions, function.removeprefix("window_"))(*arguments).over(
+                self._window(order_by, partition_by, expression, functions=functions, aliases=aliases, window=window)
+            )
+        if function in {
+            "window_sum",
+            "window_avg",
+            "window_min",
+            "window_max",
+            "window_count",
+            "window_count_distinct",
+        }:
+            count = self._int_data(expression, "value_count", 1)
+            values = expression.args[:count]
+            order_by = expression.args[count]
+            partition_by = list(expression.args[count + 1:])
+            name = "countDistinct" if function == "window_count_distinct" else function.removeprefix("window_")
+            argument = (
+                self.evaluate(values[0], functions=functions, aliases=aliases, window=window)
+                if values
+                else functions.lit(1)
+            )
+            return getattr(functions, name)(argument).over(
+                self._window(order_by, partition_by, expression, functions=functions, aliases=aliases, window=window)
+            )
         raise TypeError(f"Unsupported PySpark reserved expression: {function}")
 
     def _window(self, order_by, partition_by, expression, *, functions, aliases, window):
@@ -132,9 +276,24 @@ class PySparkExpressionEvaluator:
         order = self.evaluate(order_by, functions=functions, aliases=aliases, window=window)
         ordering = order.desc() if expression.data.get("descending") else order.asc()
         spec = window.partitionBy(*partitions).orderBy(ordering)
+        if "frame_kind" in expression.data:
+            frame = spec.rowsBetween if expression.data["frame_kind"] == "rows" else spec.rangeBetween
+            return frame(
+                self._window_bound(expression.data["frame_start"], window),
+                self._window_bound(expression.data["frame_end"], window),
+            )
         if "preceding" in expression.data:
             return spec.rowsBetween(-int(expression.data["preceding"]), 0)
         return spec
+
+    def _window_bound(self, value, window):
+        if value == "Window.currentRow":
+            return window.currentRow
+        if value == "Window.unboundedPreceding":
+            return window.unboundedPreceding
+        if value == "Window.unboundedFollowing":
+            return window.unboundedFollowing
+        return value
 
     def _bind_lambdas(self, expression: PySparkExpressionRecipe, columns):
         if expression.kind == "lambda_arg":
@@ -175,6 +334,10 @@ class PySparkExpressionEvaluator:
             scale = expression.data["scale"]
             return args[0].cast(f"decimal({precision},{scale})")
         raise TypeError(f"Unsupported PySpark helper call: {function}")
+
+    def _int_data(self, expression: PySparkExpressionRecipe, key: str, default: int) -> int:
+        value = expression.data.get(key, default)
+        return value if isinstance(value, int) else default
 
     def _binary(self, expression: PySparkExpressionRecipe, *, functions, aliases, window, operator: str):
         left, right = (

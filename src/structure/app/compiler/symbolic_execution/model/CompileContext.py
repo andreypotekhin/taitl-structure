@@ -18,6 +18,7 @@ class CompileContext:
         self.joins: list[JoinPlan] = []
         self.operations: list[OperationPlan] = []
         self.aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
+        self.aggregate_grouping: str = "group_by"
         self.default_project_source: object | None = None
         self.current_scopes: set[str] = set()
         self.relation_scopes: dict[str, object] = {}

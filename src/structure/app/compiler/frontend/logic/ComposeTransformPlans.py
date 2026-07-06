@@ -356,9 +356,14 @@ class ComposeTransformPlans:
                     function=assignment.function,
                     expression=None if assignment.expression is None else self._expression(assignment.expression),
                     key=assignment.key,
+                    arguments=tuple(self._expression(argument) for argument in assignment.arguments),
+                    filter=None if assignment.filter is None else self._expression(assignment.filter),
+                    order_by=None if assignment.order_by is None else self._expression(assignment.order_by),
+                    options=assignment.options,
                 )
                 for assignment in aggregate.assignments
             ),
+            grouping=aggregate.grouping,
         )
 
     def _selected_rows(self, selected_rows: SelectedRowsPlan) -> SelectedRowsPlan:

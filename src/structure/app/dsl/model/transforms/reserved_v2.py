@@ -16,47 +16,214 @@ from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.BooleanType import BooleanType
 from structure.app.dsl.model.types.DoubleType import DoubleType
+from structure.app.dsl.model.types.IntegerType import IntegerType
 from structure.app.dsl.model.types.LongType import LongType
 from structure.app.dsl.model.types.MapType import MapType
+from structure.app.dsl.model.types.StringType import StringType
+from structure.app.dsl.model.types.StructureType import StructureType
 
 F = TypeVar("F", bound=Callable)
 
 
 def group_by(*keys: object, **named_keys: object) -> "GroupedRows":
-    context = _context("group_by(...)")
-    expressions = (*_positional_keys(keys), *_named_keys(named_keys))
+    return _grouping("group_by", "group_by(...)", keys, named_keys)
+
+
+def rollup(*keys: object, **named_keys: object) -> "GroupedRows":
+    return _grouping("rollup", "rollup(...)", keys, named_keys)
+
+
+def cube(*keys: object, **named_keys: object) -> "GroupedRows":
+    return _grouping("cube", "cube(...)", keys, named_keys)
+
+
+def grouping_sets(*levels: object, **named_levels: object) -> "GroupedRows":
+    context = _context("grouping_sets(...)")
+    named = _named_keys(named_levels)
+    positional = tuple((f"group_{index}", literal(level)) for index, level in enumerate(levels, start=1))
+    expressions = (*positional, *named)
     if not expressions:
-        raise TypeError("group_by(...) requires at least one grouping key")
+        raise TypeError("grouping_sets(...) requires at least one grouping level")
     context.aggregate_keys = expressions
+    context.aggregate_grouping = "grouping_sets"
     return GroupedRows(expressions)
 
 
-def count() -> Expression:
-    return _aggregate("count", type=LongType())
+def grouping_id() -> Expression:
+    return _aggregate("grouping_id", type=IntegerType(), nullable=False)
 
 
-def count_distinct(value: object) -> Expression:
-    return _aggregate("count_distinct", literal(value), type=LongType(), nullable=False)
+def is_grouped(value: object) -> Expression:
+    return _aggregate("is_grouped", literal(value), type=BooleanType(), nullable=False)
 
 
-def min(value: object) -> Expression:
+def _grouping(kind: str, call: str, keys: tuple[object, ...], named_keys: dict[str, object]) -> "GroupedRows":
+    context = _context(call)
+    expressions = (*_positional_keys(keys), *_named_keys(named_keys))
+    if not expressions:
+        raise TypeError(f"{call} requires at least one grouping key")
+    context.aggregate_keys = expressions
+    context.aggregate_grouping = kind
+    return GroupedRows(expressions)
+
+
+def count(*, where: object | None = None) -> Expression:
+    return _aggregate("count", type=LongType(), where=where)
+
+
+def count_distinct(value: object, *, where: object | None = None) -> Expression:
+    return _aggregate("count_distinct", literal(value), type=LongType(), nullable=False, where=where)
+
+
+def min(value: object, *, where: object | None = None) -> Expression:
     argument = literal(value)
-    return _aggregate("min", argument, type=argument.type, nullable=argument.nullable)
+    return _aggregate("min", argument, type=argument.type, nullable=argument.nullable, where=where)
 
 
-def max(value: object) -> Expression:
+def max(value: object, *, where: object | None = None) -> Expression:
     argument = literal(value)
-    return _aggregate("max", argument, type=argument.type, nullable=argument.nullable)
+    return _aggregate("max", argument, type=argument.type, nullable=argument.nullable, where=where)
 
 
-def avg(value: object) -> Expression:
+def avg(value: object, *, where: object | None = None) -> Expression:
     argument = literal(value)
-    return _aggregate("avg", argument, type=DoubleType(), nullable=argument.nullable)
+    return _aggregate("avg", argument, type=DoubleType(), nullable=argument.nullable, where=where)
 
 
-def sum(value: object) -> Expression:
+def sum(value: object, *, where: object | None = None) -> Expression:
     argument = literal(value)
-    return _aggregate("sum", argument, type=argument.type, nullable=argument.nullable)
+    return _aggregate("sum", argument, type=argument.type, nullable=argument.nullable, where=where)
+
+
+def bool_and(value: object, *, where: object | None = None) -> Expression:
+    return _aggregate("bool_and", literal(value), type=BooleanType(), nullable=True, where=where)
+
+
+def bool_or(value: object, *, where: object | None = None) -> Expression:
+    return _aggregate("bool_or", literal(value), type=BooleanType(), nullable=True, where=where)
+
+
+def stddev(value: object, *, where: object | None = None) -> Expression:
+    return _aggregate("stddev", literal(value), type=DoubleType(), nullable=True, where=where)
+
+
+def variance(value: object, *, where: object | None = None) -> Expression:
+    return _aggregate("variance", literal(value), type=DoubleType(), nullable=True, where=where)
+
+
+def corr(left: object, right: object, *, where: object | None = None) -> Expression:
+    return _aggregate("corr", literal(left), literal(right), type=DoubleType(), nullable=True, where=where)
+
+
+def covar(left: object, right: object, *, where: object | None = None) -> Expression:
+    return _aggregate("covar", literal(left), literal(right), type=DoubleType(), nullable=True, where=where)
+
+
+def approx_count_distinct(value: object, *, relative_sd: float | None = None, where: object | None = None) -> Expression:
+    return _aggregate(
+        "approx_count_distinct",
+        literal(value),
+        type=LongType(),
+        nullable=False,
+        where=where,
+        options=(("relative_sd", relative_sd),),
+    )
+
+
+def approx_percentile(
+    value: object,
+    percentage: float,
+    *,
+    accuracy: int | None = None,
+    where: object | None = None,
+) -> Expression:
+    argument = literal(value)
+    return _aggregate(
+        "approx_percentile",
+        argument,
+        type=argument.type,
+        nullable=True,
+        where=where,
+        options=(("percentage", percentage), ("accuracy", accuracy)),
+    )
+
+
+def collect_list(
+    value: object, *, element_type: StructureType | None = None, where: object | None = None
+) -> Expression:
+    argument = literal(value)
+    return _aggregate(
+        "collect_list",
+        argument,
+        type=ArrayType(_collection_element_type(argument, element_type), contains_null=argument.nullable),
+        nullable=True,
+        where=where,
+    )
+
+
+def collect_set(
+    value: object, *, element_type: StructureType | None = None, where: object | None = None
+) -> Expression:
+    argument = literal(value)
+    return _aggregate(
+        "collect_set",
+        argument,
+        type=ArrayType(_collection_element_type(argument, element_type), contains_null=argument.nullable),
+        nullable=True,
+        where=where,
+    )
+
+
+def first_value(
+    value: object,
+    *,
+    order_by: object | None = None,
+    over: "WindowSpec | None" = None,
+    ignore_nulls: bool = False,
+    where: object | None = None,
+    ties: TiePolicy = TiePolicy.ERROR,
+) -> Expression:
+    argument = literal(value)
+    if over is not None:
+        return _window_over_expression("first_value", argument, over=over, type=argument.type, nullable=True, ignore_nulls=ignore_nulls)
+    if order_by is None:
+        raise TypeError("first_value(...) aggregate requires order_by=...")
+    if ties is not TiePolicy.ERROR:
+        raise TypeError("first_value(...) currently supports ties=TiePolicy.ERROR only")
+    return _aggregate(
+        "first_value",
+        argument,
+        type=argument.type,
+        nullable=argument.nullable,
+        where=where,
+        order_by=literal(order_by),
+    )
+
+
+def last_value(
+    value: object,
+    *,
+    order_by: object | None = None,
+    over: "WindowSpec | None" = None,
+    ignore_nulls: bool = False,
+    where: object | None = None,
+    ties: TiePolicy = TiePolicy.ERROR,
+) -> Expression:
+    argument = literal(value)
+    if over is not None:
+        return _window_over_expression("last_value", argument, over=over, type=argument.type, nullable=True, ignore_nulls=ignore_nulls)
+    if order_by is None:
+        raise TypeError("last_value(...) aggregate requires order_by=...")
+    if ties is not TiePolicy.ERROR:
+        raise TypeError("last_value(...) currently supports ties=TiePolicy.ERROR only")
+    return _aggregate(
+        "last_value",
+        argument,
+        type=argument.type,
+        nullable=argument.nullable,
+        where=where,
+        order_by=literal(order_by),
+    )
 
 
 def latest_by(order_by: object, *, partition_by: object, ties: TiePolicy = TiePolicy.ERROR) -> None:
@@ -238,6 +405,103 @@ def rolling_max(
     )
 
 
+def window(*, partition_by: object, order_by: object, frame: "WindowFrame | None" = None) -> "WindowSpec":
+    return WindowSpec(
+        partition_by=_partition_by(partition_by, call="window(...)"),
+        order_by=literal(order_by),
+        frame=frame,
+    )
+
+
+def rows_between(start: "WindowBound", end: "WindowBound") -> "WindowFrame":
+    return WindowFrame(kind="rows", start=start, end=end)
+
+
+def range_between(start: "WindowBound", end: "WindowBound") -> "WindowFrame":
+    return WindowFrame(kind="range", start=start, end=end)
+
+
+def unbounded_preceding() -> "WindowBound":
+    return WindowBound("unbounded_preceding")
+
+
+def unbounded_following() -> "WindowBound":
+    return WindowBound("unbounded_following")
+
+
+def current_row() -> "WindowBound":
+    return WindowBound("current_row")
+
+
+def preceding(value: int) -> "WindowBound":
+    if value < 0:
+        raise TypeError("preceding(...) value must be greater than or equal to 0")
+    return WindowBound("preceding", value)
+
+
+def following(value: int) -> "WindowBound":
+    if value < 0:
+        raise TypeError("following(...) value must be greater than or equal to 0")
+    return WindowBound("following", value)
+
+
+def percent_rank(*, over: "WindowSpec") -> Expression:
+    return _window_over_expression("percent_rank", over=over, type=DoubleType(), nullable=False)
+
+
+def cume_dist(*, over: "WindowSpec") -> Expression:
+    return _window_over_expression("cume_dist", over=over, type=DoubleType(), nullable=False)
+
+
+def ntile(value: int, *, over: "WindowSpec") -> Expression:
+    if value < 1:
+        raise TypeError("ntile(...) value must be greater than or equal to 1")
+    return _window_over_expression("ntile", over=over, type=IntegerType(), nullable=False, options=(("buckets", value),))
+
+
+def nth_value(value: object, n: int, *, over: "WindowSpec", ignore_nulls: bool = False) -> Expression:
+    if n < 1:
+        raise TypeError("nth_value(...) n must be greater than or equal to 1")
+    argument = literal(value)
+    return _window_over_expression(
+        "nth_value",
+        argument,
+        over=over,
+        type=argument.type,
+        nullable=True,
+        ignore_nulls=ignore_nulls,
+        options=(("n", n),),
+    )
+
+
+def window_sum(value: object, *, over: "WindowSpec") -> Expression:
+    argument = literal(value)
+    return _window_over_expression("sum", argument, over=over, type=argument.type, nullable=argument.nullable)
+
+
+def window_avg(value: object, *, over: "WindowSpec") -> Expression:
+    return _window_over_expression("avg", literal(value), over=over, type=DoubleType(), nullable=True)
+
+
+def window_min(value: object, *, over: "WindowSpec") -> Expression:
+    argument = literal(value)
+    return _window_over_expression("min", argument, over=over, type=argument.type, nullable=argument.nullable)
+
+
+def window_max(value: object, *, over: "WindowSpec") -> Expression:
+    argument = literal(value)
+    return _window_over_expression("max", argument, over=over, type=argument.type, nullable=argument.nullable)
+
+
+def window_count(value: object | None = None, *, over: "WindowSpec") -> Expression:
+    args = () if value is None else (literal(value),)
+    return _window_over_expression("count", *args, over=over, type=LongType(), nullable=False)
+
+
+def window_count_distinct(value: object, *, over: "WindowSpec") -> Expression:
+    return _window_over_expression("count_distinct", literal(value), over=over, type=LongType(), nullable=False)
+
+
 def drop_duplicates(*subset: object) -> None:
     fields = _dedupe_subset(subset, call="drop_duplicates(...)")
     _context("drop_duplicates()").operations.append(
@@ -249,13 +513,34 @@ def distinct() -> None:
     _context("distinct()").operations.append(OperationPlan.drop_duplicates_operation())
 
 
-def _aggregate(function: str, argument: Expression | None = None, *, type, nullable: bool = False) -> Expression:
-    args = () if argument is None else (argument,)
+def _aggregate(
+    function: str,
+    *arguments: Expression,
+    type,
+    nullable: bool = False,
+    where: object | None = None,
+    order_by: Expression | None = None,
+    options: tuple[tuple[str, object], ...] = (),
+) -> Expression:
+    args = arguments
+    data: dict[str, object] = {
+        "function": function,
+        "capability_group": "aggregate",
+        "capability_name": function,
+        "arg_count": len(arguments),
+    }
+    if where is not None:
+        data["where_index"] = len(args)
+        args = (*args, literal(where))
+    if order_by is not None:
+        data["order_by_index"] = len(args)
+        args = (*args, order_by)
+    data.update({key: value for key, value in options if value is not None})
     return Expression(
         kind="aggregate",
         type=type,
         nullable=nullable,
-        data={"function": function, "capability_group": "aggregate", "capability_name": function},
+        data=data,
         args=args,
     )
 
@@ -332,6 +617,36 @@ def _rolling_expression(
     )
 
 
+def _window_over_expression(
+    function: str,
+    *values: Expression,
+    over: "WindowSpec",
+    type,
+    nullable: bool,
+    ignore_nulls: bool = False,
+    options: tuple[tuple[str, object], ...] = (),
+) -> Expression:
+    data: dict[str, object] = {
+        "function": f"window_{function}",
+        "capability_group": "window",
+        "capability_name": function,
+        "value_count": len(values),
+        "ignore_nulls": ignore_nulls,
+    }
+    if over.frame is not None:
+        data["frame_kind"] = over.frame.kind
+        data["frame_start"] = over.frame.start.as_pyspark()
+        data["frame_end"] = over.frame.end.as_pyspark()
+    data.update({key: value for key, value in options if value is not None})
+    return Expression(
+        kind="reserved_v2",
+        type=type,
+        nullable=nullable,
+        data=data,
+        args=(*values, over.order_by, *over.partition_by),
+    )
+
+
 def _partition_by(partition_by: object, *, call: str) -> tuple[Expression, ...]:
     values = partition_by if isinstance(partition_by, (tuple, list)) else (partition_by,)
     partitions = tuple(literal(value) for value in values)
@@ -366,6 +681,39 @@ class GroupedAggregates:
         values = {name: expression for name, expression in self.keys}
         values.update({name: expression for name, expression in self.aggregates})
         return schema(**values)
+
+
+@dataclass(frozen=True)
+class WindowSpec:
+    partition_by: tuple[Expression, ...]
+    order_by: Expression
+    frame: "WindowFrame | None" = None
+
+
+@dataclass(frozen=True)
+class WindowFrame:
+    kind: str
+    start: "WindowBound"
+    end: "WindowBound"
+
+
+@dataclass(frozen=True)
+class WindowBound:
+    kind: str
+    value: int | None = None
+
+    def as_pyspark(self) -> str | int:
+        if self.kind == "unbounded_preceding":
+            return "Window.unboundedPreceding"
+        if self.kind == "unbounded_following":
+            return "Window.unboundedFollowing"
+        if self.kind == "current_row":
+            return "Window.currentRow"
+        if self.kind == "preceding":
+            return -(self.value or 0)
+        if self.kind == "following":
+            return self.value or 0
+        raise TypeError(f"Unsupported window bound: {self.kind}")
 
 
 def arr_transform(value: object, function: Callable[[Expression], object]) -> Expression:
@@ -440,6 +788,249 @@ def map_filter(value: object, function: Callable[[Expression, Expression], objec
     )
 
 
+def arr_exists(value: object, function: Callable[[Expression], object]) -> Expression:
+    argument = literal(value)
+    array = _array_type(argument, "arr_exists(...)")
+    element = _lambda_arg(array.element, nullable=array.contains_null, name="item")
+    predicate = _callback_expression("arr_exists(...)", function, element)
+    if not isinstance(predicate.type, BooleanType):
+        raise TypeError("arr_exists(...) callback must return a Boolean expression")
+    return _reserved_expression(
+        "array_exists",
+        group="higher_order",
+        name="array_exists",
+        type=BooleanType(),
+        nullable=argument.nullable,
+        args=(argument, predicate),
+    )
+
+
+def arr_forall(value: object, function: Callable[[Expression], object]) -> Expression:
+    argument = literal(value)
+    array = _array_type(argument, "arr_forall(...)")
+    element = _lambda_arg(array.element, nullable=array.contains_null, name="item")
+    predicate = _callback_expression("arr_forall(...)", function, element)
+    if not isinstance(predicate.type, BooleanType):
+        raise TypeError("arr_forall(...) callback must return a Boolean expression")
+    return _reserved_expression(
+        "array_forall",
+        group="higher_order",
+        name="array_forall",
+        type=BooleanType(),
+        nullable=argument.nullable,
+        args=(argument, predicate),
+    )
+
+
+def arr_zip_with(left: object, right: object, function: Callable[[Expression, Expression], object]) -> Expression:
+    left_arg = literal(left)
+    right_arg = literal(right)
+    left_array = _array_type(left_arg, "arr_zip_with(...)")
+    right_array = _array_type(right_arg, "arr_zip_with(...)")
+    left_item = _lambda_arg(left_array.element, nullable=True, name="left_item")
+    right_item = _lambda_arg(right_array.element, nullable=True, name="right_item")
+    result = _callback_expression("arr_zip_with(...)", function, left_item, right_item)
+    result_type = result.type
+    if result_type is None:
+        raise AssertionError("higher-order callback validation must reject untyped results")
+    return _reserved_expression(
+        "array_zip_with",
+        group="higher_order",
+        name="array_zip_with",
+        type=ArrayType(result_type, contains_null=result.nullable),
+        nullable=left_arg.nullable or right_arg.nullable,
+        args=(left_arg, right_arg, left_item, right_item, result),
+    )
+
+
+def arr_aggregate(
+    value: object,
+    initial: object,
+    merge: Callable[[Expression, Expression], object],
+    finish: Callable[[Expression], object] | None = None,
+) -> Expression:
+    argument = literal(value)
+    initial_value = literal(initial)
+    array = _array_type(argument, "arr_aggregate(...)")
+    accumulator = _lambda_arg(initial_value.type, nullable=initial_value.nullable, name="acc")
+    item = _lambda_arg(array.element, nullable=array.contains_null, name="item")
+    merged = _callback_expression("arr_aggregate(...)", merge, accumulator, item)
+    finished = _callback_expression("arr_aggregate(...)", finish, merged) if finish is not None else merged
+    result_type = finished.type
+    if result_type is None:
+        raise AssertionError("higher-order callback validation must reject untyped results")
+    return _reserved_expression(
+        "array_aggregate",
+        group="higher_order",
+        name="array_aggregate",
+        type=result_type,
+        nullable=finished.nullable,
+        args=(argument, initial_value, accumulator, item, merged, finished),
+    )
+
+
+def arr_sort_by(value: object, function: Callable[[Expression], object], *, descending: bool = False) -> Expression:
+    argument = literal(value)
+    array = _array_type(argument, "arr_sort_by(...)")
+    element = _lambda_arg(array.element, nullable=array.contains_null, name="item")
+    _callback_expression("arr_sort_by(...)", function, element)
+    return _reserved_expression(
+        "array_sort_by",
+        group="higher_order",
+        name="array_sort_by",
+        type=argument.type,
+        nullable=argument.nullable,
+        args=(argument,),
+        data=(("descending", descending),),
+    )
+
+
+def arr_flatten(value: object) -> Expression:
+    argument = literal(value)
+    array = _array_type(argument, "arr_flatten(...)")
+    nested = array.element
+    if not isinstance(nested, ArrayType):
+        raise TypeError("arr_flatten(...) requires an Array of Array expression")
+    return _reserved_expression(
+        "array_flatten",
+        group="higher_order",
+        name="array_flatten",
+        type=ArrayType(nested.element, contains_null=nested.contains_null),
+        nullable=argument.nullable,
+        args=(argument,),
+    )
+
+
+def arr_distinct(value: object) -> Expression:
+    argument = literal(value)
+    _array_type(argument, "arr_distinct(...)")
+    return _reserved_expression(
+        "array_distinct",
+        group="higher_order",
+        name="array_distinct",
+        type=argument.type,
+        nullable=argument.nullable,
+        args=(argument,),
+    )
+
+
+def arr_position(value: object, item: object) -> Expression:
+    argument = literal(value)
+    _array_type(argument, "arr_position(...)")
+    return _reserved_expression(
+        "array_position",
+        group="higher_order",
+        name="array_position",
+        type=LongType(),
+        nullable=True,
+        args=(argument, literal(item)),
+    )
+
+
+def map_transform_keys(
+    value: object,
+    function: Callable[[Expression, Expression], object],
+    *,
+    duplicates: str = "error",
+) -> Expression:
+    if duplicates != "error":
+        raise TypeError('map_transform_keys(...) currently supports duplicates="error" only')
+    argument = literal(value)
+    map_type = _map_type(argument, "map_transform_keys(...)")
+    key = _lambda_arg(map_type.key, nullable=False, name="key")
+    item = _lambda_arg(map_type.value, nullable=map_type.value_contains_null, name="value")
+    result = _callback_expression("map_transform_keys(...)", function, key, item)
+    result_type = result.type
+    if result_type is None:
+        raise AssertionError("higher-order callback validation must reject untyped results")
+    return _reserved_expression(
+        "map_transform_keys",
+        group="higher_order",
+        name="map_transform_keys",
+        type=MapType(result_type, map_type.value, value_contains_null=map_type.value_contains_null),
+        nullable=argument.nullable,
+        args=(argument, key, item, result),
+    )
+
+
+def map_zip_with(
+    left: object,
+    right: object,
+    function: Callable[[Expression, Expression, Expression], object],
+) -> Expression:
+    left_arg = literal(left)
+    right_arg = literal(right)
+    left_map = _map_type(left_arg, "map_zip_with(...)")
+    right_map = _map_type(right_arg, "map_zip_with(...)")
+    key = _lambda_arg(left_map.key, nullable=False, name="key")
+    left_value = _lambda_arg(left_map.value, nullable=True, name="left_value")
+    right_value = _lambda_arg(right_map.value, nullable=True, name="right_value")
+    result = _callback_expression("map_zip_with(...)", function, key, left_value, right_value)
+    result_type = result.type
+    if result_type is None:
+        raise AssertionError("higher-order callback validation must reject untyped results")
+    return _reserved_expression(
+        "map_zip_with",
+        group="higher_order",
+        name="map_zip_with",
+        type=MapType(left_map.key, result_type, value_contains_null=result.nullable),
+        nullable=left_arg.nullable or right_arg.nullable,
+        args=(left_arg, right_arg, key, left_value, right_value, result),
+    )
+
+
+def map_keys(value: object) -> Expression:
+    argument = literal(value)
+    map_type = _map_type(argument, "map_keys(...)")
+    return _reserved_expression(
+        "map_keys",
+        group="higher_order",
+        name="map_keys",
+        type=ArrayType(map_type.key, contains_null=False),
+        nullable=argument.nullable,
+        args=(argument,),
+    )
+
+
+def map_values(value: object) -> Expression:
+    argument = literal(value)
+    map_type = _map_type(argument, "map_values(...)")
+    return _reserved_expression(
+        "map_values",
+        group="higher_order",
+        name="map_values",
+        type=ArrayType(map_type.value, contains_null=map_type.value_contains_null),
+        nullable=argument.nullable,
+        args=(argument,),
+    )
+
+
+def map_entries(value: object) -> Expression:
+    argument = literal(value)
+    _map_type(argument, "map_entries(...)")
+    return _reserved_expression(
+        "map_entries",
+        group="higher_order",
+        name="map_entries",
+        type=ArrayType(MapType(StringType(), StringType()), contains_null=False),
+        nullable=argument.nullable,
+        args=(argument,),
+    )
+
+
+def map_from_entries(value: object) -> Expression:
+    argument = literal(value)
+    _array_type(argument, "map_from_entries(...)")
+    return _reserved_expression(
+        "map_from_entries",
+        group="higher_order",
+        name="map_from_entries",
+        type=MapType(StringType(), StringType()),
+        nullable=argument.nullable,
+        args=(argument,),
+    )
+
+
 def _callback_expression(call: str, function: Callable[..., object], *arguments: Expression) -> Expression:
     try:
         result = literal(function(*arguments))
@@ -484,14 +1075,26 @@ def _reserved_expression(
     type=None,
     nullable: bool = True,
     args: tuple[Expression, ...] = (),
+    data: tuple[tuple[str, object], ...] = (),
 ) -> Expression:
+    payload: dict[str, object] = {"function": function, "capability_group": group, "capability_name": name}
+    for key, value in data:
+        payload[key] = value
     return Expression(
         kind="reserved_v2",
         type=type,
         nullable=nullable,
-        data={"function": function, "capability_group": group, "capability_name": name},
+        data=payload,
         args=args,
     )
+
+
+def _collection_element_type(argument: Expression, element_type: StructureType | None) -> StructureType:
+    if element_type is not None:
+        return element_type
+    if argument.type is None:
+        raise TypeError("Collection aggregate element type is required when the value type is unknown")
+    return argument.type
 
 
 def _array_type(expression: Expression, call: str) -> ArrayType:

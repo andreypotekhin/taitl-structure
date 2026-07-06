@@ -13,9 +13,9 @@ traceability and explain output, and reject unsupported forms before runtime.
 
 In scope:
 
-- advanced grouping through `rollup(...)`, `cube(...)`, and `grouping_sets(...)`;
+- advanced grouping through `rollup(...)` and `cube(...)`;
 - additional aggregate metric helpers;
-- filtered aggregates and post-aggregate `having(...)`;
+- filtered aggregates;
 - reusable `window(...)` specifications and explicit row/range frames;
 - ranking, distribution, value, offset, and aggregate window expressions beyond the first slice;
 - additional array and map higher-order helpers;
@@ -25,6 +25,8 @@ Out of scope:
 
 - streaming aggregation and streaming window orchestration;
 - automatic cost-based optimization;
+- explicit `grouping_sets(...)` lowering;
+- post-aggregate `having(...)` predicates;
 - hidden UDFs, RDD fallback, Pandas UDF fallback, or arbitrary row-wise Python callbacks;
 - storage writes, table management, and Spark job lifecycle.
 
@@ -52,7 +54,6 @@ from structure import (
     grouping_sets,
     grouping_id,
     is_grouped,
-    having,
     approx_count_distinct,
     approx_percentile,
     stddev,
@@ -100,12 +101,12 @@ from structure import (
 )
 ```
 
-Public export is part of implementation acceptance. The symbol names may be narrowed only by updating this
-specification and the Sprint 09 execution plan.
+Public export is part of implementation acceptance. `grouping_sets(...)` is intentionally exported as a reserved
+helper that fails through backend capability checks until an explicit grouping-set lowering is admitted.
 
 ## Advanced Grouping
 
-`rollup(...)`, `cube(...)`, and `grouping_sets(...)` are subtransform-level operations like `group_by(...)`.
+`rollup(...)` and `cube(...)` are subtransform-level operations like `group_by(...)`.
 
 Example:
 
@@ -134,13 +135,12 @@ Rules:
 - Expression grouping keys must be named so the output schema can refer to them.
 - `rollup(...)` preserves the declared key order from most detailed to broadest subtotal.
 - `cube(...)` creates subtotal combinations for all declared keys.
-- `grouping_sets(...)` accepts explicit named levels. Each level is an ordered tuple of grouping keys.
-- An empty grouping-set level means grand total.
 - Output fields for grouping keys that may be absent in subtotal rows must be nullable unless the user assigns an
   explicit literal replacement.
 - `grouping_id()` returns a non-nullable integer-like expression.
 - `is_grouped(field)` returns a non-nullable Boolean expression indicating whether a grouping key is absent in the
   current subtotal level.
+- `grouping_sets(...)` is reserved for explicit subtotal levels and currently fails through backend capability checks.
 
 ## Aggregate Metrics
 
@@ -180,7 +180,7 @@ Rules:
 - Collection metrics should emit a warning that element ordering is not guaranteed unless an ordered form is later
   admitted.
 
-## Filtered Aggregates And Having
+## Filtered Aggregates
 
 Aggregate metric helpers may accept `where=predicate`:
 
@@ -194,27 +194,6 @@ Rules:
 - The filter predicate is applied only to the metric that owns it.
 - Filtered metrics must not change grouping key membership.
 - Unsupported backends reject filtered metrics through backend capability diagnostics before rendering.
-
-`having(predicate)` filters aggregate output rows:
-
-```python
-def active_customers(self, order: OrderFulfillment) -> ActiveCustomer:
-    group_by(customer_id=order.customer_id)
-
-    return having(count() > 1).project(
-        ActiveCustomer(
-            customer_id=order.customer_id,
-            order_count=count(),
-        )
-    )
-```
-
-Rules:
-
-- `having(...)` is valid only after a grouping operation and before the aggregate output leaves the subtransform.
-- A having predicate may reference grouping keys and aggregate expressions.
-- A having predicate must not reference non-grouped pre-aggregate fields directly.
-- Multiple `having(...)` predicates combine with logical AND in source order.
 
 ## Window Specifications
 

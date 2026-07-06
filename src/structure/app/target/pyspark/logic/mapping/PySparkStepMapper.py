@@ -153,11 +153,13 @@ class PySparkStepMapper:
         *,
         capabilities: BackendCapabilities,
     ) -> PySparkAggregateRecipe:
-        capabilities.require(CapabilityRequirement(group="aggregate", name="group_by"))
+        capabilities.require(CapabilityRequirement(group="aggregate", name=aggregate.grouping))
         assignments: list[PySparkAggregateAssignment] = []
         for assignment in aggregate.assignments:
-            if assignment.function in {"avg", "count", "count_distinct", "max", "min", "sum"}:
+            if assignment.function != "key":
                 capabilities.require(CapabilityRequirement(group="aggregate", name=assignment.function))
+            if assignment.filter is not None:
+                capabilities.require(CapabilityRequirement(group="aggregate", name="filtered_metric"))
             assignments.append(
                 PySparkAggregateAssignment(
                     field=assignment.field,
@@ -168,6 +170,21 @@ class PySparkStepMapper:
                         else self._expressions.map(assignment.expression, capabilities=capabilities)
                     ),
                     key=assignment.key,
+                    arguments=tuple(
+                        self._expressions.map(argument, capabilities=capabilities)
+                        for argument in assignment.arguments
+                    ),
+                    filter=(
+                        None
+                        if assignment.filter is None
+                        else self._expressions.map(assignment.filter, capabilities=capabilities)
+                    ),
+                    order_by=(
+                        None
+                        if assignment.order_by is None
+                        else self._expressions.map(assignment.order_by, capabilities=capabilities)
+                    ),
+                    options=assignment.options,
                 )
             )
         return PySparkAggregateRecipe(
@@ -179,6 +196,7 @@ class PySparkStepMapper:
                 for key in aggregate.keys
             ),
             assignments=tuple(assignments),
+            grouping=aggregate.grouping,
         )
 
     def _require_operation_capability(

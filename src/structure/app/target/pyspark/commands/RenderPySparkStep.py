@@ -171,7 +171,10 @@ class RenderPySparkStep:
         *,
         target: str,
     ) -> list[str]:
-        lines = [f"        {target} = {target}.groupBy("]
+        grouping = {"group_by": "groupBy", "rollup": "rollup", "cube": "cube"}.get(aggregate.grouping)
+        if grouping is None:
+            raise TypeError(f"Unsupported aggregate grouping: {aggregate.grouping}")
+        lines = [f"        {target} = {target}.{grouping}("]
         for key in aggregate.keys:
             expression = render_pyspark_expression(key.expression, scope_aliases=self._scope_aliases(step))
             lines.append(f"            {expression}.alias({self._literal(key.name)}),")
@@ -189,23 +192,85 @@ class RenderPySparkStep:
     def _aggregate_assignment(self, assignment: PySparkAggregateAssignment, *, step) -> str:
         alias = self._literal(assignment.field.column)
         if assignment.function == "count":
-            return f"F.count(F.lit(1)).cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
-        if assignment.function in {"avg", "count_distinct", "max", "min", "sum"} and assignment.expression is not None:
+            expression = "F.lit(1)"
+            if assignment.filter is not None:
+                predicate = render_pyspark_expression(assignment.filter, scope_aliases=self._scope_aliases(step))
+                expression = f"F.when({predicate}, F.lit(1))"
+            return f"F.count({expression}).cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
+        if assignment.function == "grouping_id":
+            return f"F.grouping_id().cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
+        if assignment.function == "is_grouped" and assignment.expression is not None:
             expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
+            return f"F.grouping({expression}).cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
+        arguments = assignment.arguments or (() if assignment.expression is None else (assignment.expression,))
+        if assignment.function in self._aggregate_functions() and arguments:
+            rendered_arguments = [
+                render_pyspark_expression(argument, scope_aliases=self._scope_aliases(step))
+                for argument in arguments
+            ]
+            if assignment.filter is not None:
+                predicate = render_pyspark_expression(assignment.filter, scope_aliases=self._scope_aliases(step))
+                rendered_arguments[0] = f"F.when({predicate}, {rendered_arguments[0]})"
             function = self._aggregate_function(assignment.function)
-            return f"{function}({expression}).cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
+            options = dict(assignment.options)
+            if assignment.function == "approx_count_distinct" and "relative_sd" in options:
+                rendered_arguments.append(repr(options["relative_sd"]))
+            if assignment.function == "approx_percentile":
+                rendered_arguments.append(repr(options["percentage"]))
+                if "accuracy" in options:
+                    rendered_arguments.append(repr(options["accuracy"]))
+            return (
+                f"{function}({', '.join(rendered_arguments)}).cast({render_pyspark_schema.type(assignment.field.type)})"
+                f".alias({alias})"
+            )
+        if assignment.function in {"first_value", "last_value"} and assignment.expression is not None:
+            if assignment.order_by is None:
+                raise TypeError(f"{assignment.function}(...) requires order_by")
+            value = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
+            order_by = render_pyspark_expression(assignment.order_by, scope_aliases=self._scope_aliases(step))
+            function = "F.min_by" if assignment.function == "first_value" else "F.max_by"
+            return f"{function}({value}, {order_by}).alias({alias})"
         if assignment.function == "first" and assignment.expression is not None:
             expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
             return f"F.first({expression}, ignorenulls=False).alias({alias})"
         raise TypeError(f"Unsupported aggregate assignment: {assignment.function}")
 
+    def _aggregate_functions(self) -> set[str]:
+        return {
+            "approx_count_distinct",
+            "approx_percentile",
+            "avg",
+            "bool_and",
+            "bool_or",
+            "collect_list",
+            "collect_set",
+            "corr",
+            "covar",
+            "count_distinct",
+            "max",
+            "min",
+            "stddev",
+            "sum",
+            "variance",
+        }
+
     def _aggregate_function(self, function: str) -> str:
         return {
+            "approx_count_distinct": "F.approx_count_distinct",
+            "approx_percentile": "F.percentile_approx",
             "avg": "F.avg",
+            "bool_and": "F.bool_and",
+            "bool_or": "F.bool_or",
+            "collect_list": "F.collect_list",
+            "collect_set": "F.collect_set",
+            "corr": "F.corr",
+            "covar": "F.covar_samp",
             "count_distinct": "F.countDistinct",
             "max": "F.max",
             "min": "F.min",
+            "stddev": "F.stddev",
             "sum": "F.sum",
+            "variance": "F.variance",
         }[function]
 
     def _aggregate_select(self, assignment: PySparkAggregateAssignment) -> str:

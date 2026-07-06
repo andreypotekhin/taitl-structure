@@ -44,6 +44,7 @@ from structure.app.dsl.model.transforms.reserved_v2 import reserved_operations
 from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.transforms.TransformPipeline import TransformPipeline
+from structure.app.dsl.model.types.BooleanType import BooleanType
 from structure.app.dsl.model.types.DecimalType import DecimalType
 from structure.app.dsl.model.types.StructureType import StructureType
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
@@ -300,6 +301,7 @@ class CompileTransform:
                     output_schema,
                     value,
                     keys=context.aggregate_keys,
+                    grouping=context.aggregate_grouping,
                     filters=context.filters,
                 )
             )
@@ -1597,6 +1599,7 @@ class CompileTransform:
         result: Structure | Projection,
         *,
         keys: tuple[tuple[str, Expression], ...],
+        grouping: str,
         filters: tuple[Expression, ...] | list[Expression],
     ) -> AggregatePlan:
         if isinstance(result, Projection) or not isinstance(result, output_schema):
@@ -1639,9 +1642,38 @@ class CompileTransform:
                     filters=(),
                     allow_aggregate=True,
                 )
-                function = str((expression.data or {}).get("function"))
-                argument = expression.args[0] if expression.args else None
-                assignments.append(AggregateAssignment(field=field, function=function, expression=argument))
+                data = expression.data or {}
+                function = str(data.get("function"))
+                arg_count = self._int_data(data, "arg_count", len(expression.args))
+                arguments = expression.args[:arg_count]
+                where_index = self._optional_int_data(data, "where_index")
+                order_by_index = self._optional_int_data(data, "order_by_index")
+                metric_filter = expression.args[where_index] if where_index is not None else None
+                order_by = expression.args[order_by_index] if order_by_index is not None else None
+                options = tuple(
+                    (key, value)
+                    for key, value in data.items()
+                    if key
+                    not in {
+                        "function",
+                        "capability_group",
+                        "capability_name",
+                        "arg_count",
+                        "where_index",
+                        "order_by_index",
+                    }
+                )
+                assignments.append(
+                    AggregateAssignment(
+                        field=field,
+                        function=function,
+                        expression=arguments[0] if arguments else None,
+                        arguments=arguments,
+                        filter=metric_filter,
+                        order_by=order_by,
+                        options=options,
+                    )
+                )
                 continue
             if self._can_first(expression, aggregate_keys):
                 self._assignment(transform_class, member, output_schema, field, expression, filters=filters)
@@ -1655,7 +1687,7 @@ class CompileTransform:
                 use="Assign a group_by(...) key, count(), sum(...), or a grouped parent field.",
                 context={"field": field.name, "schema": output_schema.__name__},
             )
-        return AggregatePlan(keys=aggregate_keys, assignments=tuple(assignments))
+        return AggregatePlan(keys=aggregate_keys, assignments=tuple(assignments), grouping=grouping)
 
     def _validate_aggregate_expression(
         self,
@@ -1665,18 +1697,34 @@ class CompileTransform:
         field: str,
         expression: Expression,
     ) -> None:
-        function = str((expression.data or {}).get("function"))
-        argument = expression.args[0] if expression.args else None
-        if function == "count":
+        data = expression.data or {}
+        function = str(data.get("function"))
+        arg_count = self._int_data(data, "arg_count", len(expression.args))
+        arguments = expression.args[:arg_count]
+        argument = arguments[0] if arguments else None
+        if function in {"count", "grouping_id"}:
+            return
+        if function == "is_grouped" and argument is not None:
             return
         if argument is None:
             raise self._aggregate_error(transform_class, member, output_schema, field, function, "an input expression")
-        if function in {"avg", "sum"} and not self._numeric_type(argument.type):
+        numeric_functions = {
+            "avg",
+            "sum",
+            "stddev",
+            "variance",
+            "corr",
+            "covar",
+            "approx_percentile",
+        }
+        if function in numeric_functions and not all(self._numeric_type(item.type) for item in arguments):
             raise self._aggregate_error(transform_class, member, output_schema, field, function, "a numeric expression")
-        if function in {"max", "min"} and not self._orderable_type(argument.type):
+        if function in {"max", "min", "first_value", "last_value"} and not self._orderable_type(argument.type):
             raise self._aggregate_error(transform_class, member, output_schema, field, function, "an orderable scalar expression")
-        if function == "count_distinct" and not self._scalar_type(argument.type):
+        if function in {"count_distinct", "approx_count_distinct"} and not self._scalar_type(argument.type):
             raise self._aggregate_error(transform_class, member, output_schema, field, function, "a scalar expression")
+        if function in {"bool_and", "bool_or"} and not isinstance(argument.type, BooleanType):
+            raise self._aggregate_error(transform_class, member, output_schema, field, function, "a Boolean expression")
 
     def _aggregate_error(
         self,
@@ -1695,6 +1743,14 @@ class CompileTransform:
             use=f"Pass {expected} to {function}(...), or move custom aggregation logic into an explicit hook.",
             context={"field": field, "schema": output_schema.__name__, "function": function},
         )
+
+    def _int_data(self, data, key: str, default: int) -> int:
+        value = data.get(key, default)
+        return value if isinstance(value, int) else default
+
+    def _optional_int_data(self, data, key: str) -> int | None:
+        value = data.get(key)
+        return value if isinstance(value, int) else None
 
     def _aggregate_key_for(
         self,

@@ -390,11 +390,7 @@ class BuildCompilerTraceability:
         return tuple(
             DataflowDependency(
                 target=f"{step.output_schema.__name__}.{assignment.field.name}",
-                sources=(
-                    self._dataflow.reads(assignment.expression)
-                    if assignment.expression is not None
-                    else (step.source,)
-                ),
+                sources=self._aggregate_sources(step, assignment),
                 operation="aggregate",
                 step=step.name,
                 detail={
@@ -405,6 +401,20 @@ class BuildCompilerTraceability:
             )
             for assignment in step.aggregate.assignments
         )
+
+    def _aggregate_sources(self, step: PySparkStepRecipe, assignment) -> tuple[str, ...]:
+        sources: list[str] = []
+        expressions = (
+            assignment.expression,
+            *assignment.arguments,
+            assignment.filter,
+            assignment.order_by,
+        )
+        for expression in expressions:
+            if expression is None:
+                continue
+            sources.extend(source for source in self._dataflow.reads(expression) if source not in sources)
+        return tuple(sources) or (step.source,)
 
     def _selected_rows_dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
         return tuple(

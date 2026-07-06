@@ -4,6 +4,8 @@ from structure import (
     String,
     Structure,
     Transform,
+    cume_dist,
+    current_row,
     dedupe_earliest_by,
     dedupe_latest_by,
     dense_rank,
@@ -14,14 +16,20 @@ from structure import (
     lag,
     latest_by,
     lead,
+    ntile,
     output,
+    percent_rank,
+    preceding,
     rank,
     rolling_avg,
     rolling_max,
     rolling_min,
     rolling_sum,
     row_number,
+    rows_between,
     transform,
+    window,
+    window_sum,
 )
 from structure.app.cli.commands.RenderExplainReport import render_explain_report
 from structure.app.dsl.api import compile_transform
@@ -55,6 +63,14 @@ class RankedEvent(Structure):
     rolling_avg_units = field(Double(), nullable=False)
     rolling_min_units = field(Long(), nullable=False)
     rolling_max_units = field(Long(), nullable=False)
+
+
+class AdvancedRankedEvent(Structure):
+    account_id = field(String(), nullable=False)
+    percent_rank = field(Double(), nullable=False)
+    cume_dist = field(Double(), nullable=False)
+    bucket = field(Long(), nullable=False)
+    framed_total = field(Long(), nullable=False)
 
 
 @transform
@@ -106,6 +122,26 @@ class RankedEventTransform(Transform):
             rolling_avg_units=rolling_avg(row.sequence, partition_by=row.account_id, order_by=row.sequence, preceding=2),
             rolling_min_units=rolling_min(row.sequence, partition_by=row.account_id, order_by=row.sequence, preceding=2),
             rolling_max_units=rolling_max(row.sequence, partition_by=row.account_id, order_by=row.sequence, preceding=2),
+        )
+
+
+@transform
+class AdvancedRankedEventTransform(Transform):
+    events = input(RawEvent)
+    ranked = output(AdvancedRankedEvent)
+
+    def rank_events(self, row: RawEvent) -> AdvancedRankedEvent:
+        spec = window(
+            partition_by=row.account_id,
+            order_by=row.sequence,
+            frame=rows_between(preceding(3), current_row()),
+        )
+        return AdvancedRankedEvent(
+            account_id=row.account_id,
+            percent_rank=percent_rank(over=spec),
+            cume_dist=cume_dist(over=spec),
+            bucket=ntile(4, over=spec),
+            framed_total=window_sum(row.sequence, over=spec),
         )
 
 
@@ -206,6 +242,29 @@ def test_window_projection_helpers_render_spark_visible_windows() -> None:
     assert (
         'F.max(F.col("raw_event.sequence")).over(Window.partitionBy(F.col("raw_event.account_id")).'
         'orderBy(F.col("raw_event.sequence").asc()).rowsBetween(-2, 0)).alias("rolling_max_units")'
+    ) in text
+
+
+def test_advanced_window_helpers_render_explicit_frames() -> None:
+    plan = PySpark.plan.lower()(compile_transform(AdvancedRankedEventTransform))
+
+    text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
+
+    assert (
+        'F.percent_rank().over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'orderBy(F.col("raw_event.sequence").asc()).rowsBetween(-3, Window.currentRow))'
+    ) in text
+    assert (
+        'F.cume_dist().over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'orderBy(F.col("raw_event.sequence").asc()).rowsBetween(-3, Window.currentRow))'
+    ) in text
+    assert (
+        'F.ntile(4).over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'orderBy(F.col("raw_event.sequence").asc()).rowsBetween(-3, Window.currentRow))'
+    ) in text
+    assert (
+        'F.sum(F.col("raw_event.sequence")).over(Window.partitionBy(F.col("raw_event.account_id")).'
+        'orderBy(F.col("raw_event.sequence").asc()).rowsBetween(-3, Window.currentRow))'
     ) in text
 
 

@@ -1,24 +1,34 @@
 from structure import (
+    Array,
+    Boolean,
     Double,
     Long,
     String,
     Structure,
     Transform,
+    approx_count_distinct,
     avg,
+    bool_or,
+    collect_set,
     count,
     count_distinct,
     field,
+    first_value,
     group_by,
     input,
+    last_value,
     max,
     min,
     output,
+    rollup,
+    stddev,
     sum,
     transform,
 )
 from structure.app.cli.api import CliApp
 from structure.app.compiler.api import Compiler
 from structure.app.dsl.api import compile_transform
+from structure.app.dsl.model.expr.expressions import literal
 from structure.app.target.pyspark.api import PySpark
 from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
 
@@ -38,6 +48,17 @@ class CustomerTotal(Structure):
     avg_quantity = field(Double(), nullable=False)
 
 
+class AdvancedCustomerTotal(Structure):
+    customer_id = field(String(), nullable=True)
+    paid_quantity = field(Long(), nullable=True)
+    any_large = field(Boolean(), nullable=True)
+    quantity_stddev = field(Double(), nullable=True)
+    approximate_customers = field(Long(), nullable=False)
+    ordered_first_customer = field(String(), nullable=False)
+    ordered_last_customer = field(String(), nullable=False)
+    customers = field(Array(String(), contains_null=False), nullable=True)
+
+
 @transform
 class CustomerTotals(Transform):
     rows = input(RawOrder)
@@ -52,6 +73,23 @@ class CustomerTotals(Transform):
             max_quantity=max(row.quantity),
             avg_quantity=avg(row.quantity),
         ).as_schema(CustomerTotal)
+
+
+@transform
+class AdvancedCustomerTotals(Transform):
+    rows = input(RawOrder)
+    totals = output(AdvancedCustomerTotal)
+
+    def summarize(self, row: RawOrder) -> AdvancedCustomerTotal:
+        return rollup(customer_id=row.customer_id).agg(
+            paid_quantity=sum(row.quantity, where=literal(row.quantity) > 0),
+            any_large=bool_or(literal(row.quantity) > 10),
+            quantity_stddev=stddev(row.quantity),
+            approximate_customers=approx_count_distinct(row.customer_id),
+            ordered_first_customer=first_value(row.customer_id, order_by=row.quantity),
+            ordered_last_customer=last_value(row.customer_id, order_by=row.quantity),
+            customers=collect_set(row.customer_id, element_type=String()),
+        ).as_schema(AdvancedCustomerTotal)
 
 
 def test_grouped_aggregate_step_renders_spark_visible_group_by() -> None:
@@ -96,3 +134,18 @@ def test_grouped_aggregate_explain_names_keys_and_metrics() -> None:
         "operations: aggregate(aggregate keys=customer_id "
         "metrics=count,count_distinct,sum,min,max,avg)"
     ) in report
+
+
+def test_advanced_aggregate_helpers_render_spark_visible_rollup_and_metrics() -> None:
+    plan = PySpark.plan.lower()(compile_transform(AdvancedCustomerTotals))
+
+    text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
+
+    assert ".rollup(" in text
+    assert 'F.sum(F.when((F.col("raw_order.quantity") > F.lit(0)), F.col("raw_order.quantity")))' in text
+    assert 'F.bool_or((F.col("raw_order.quantity") > F.lit(10))).cast(T.BooleanType()).alias("any_large")' in text
+    assert 'F.stddev(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_stddev")' in text
+    assert 'F.approx_count_distinct(F.col("raw_order.customer_id")).cast(T.LongType())' in text
+    assert 'F.min_by(F.col("raw_order.customer_id"), F.col("raw_order.quantity")).alias("ordered_first_customer")' in text
+    assert 'F.max_by(F.col("raw_order.customer_id"), F.col("raw_order.quantity")).alias("ordered_last_customer")' in text
+    assert 'F.collect_set(F.col("raw_order.customer_id")).cast(T.ArrayType(T.StringType(), containsNull=False))' in text

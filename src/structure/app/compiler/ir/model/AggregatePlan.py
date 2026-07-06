@@ -10,3 +10,4 @@ from structure.app.compiler.ir.model.AggregateKey import AggregateKey
 class AggregatePlan:
     keys: tuple[AggregateKey, ...]
     assignments: tuple[AggregateAssignment, ...]
+    grouping: str = "group_by"
