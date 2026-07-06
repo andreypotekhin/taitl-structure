@@ -26,7 +26,6 @@ from testing.model.v2.orders.schemas.analytics import CustomerDailyTotal, Custom
 from testing.model.v2.orders.schemas.order import OrderFulfillment
 
 
-@transform
 class OrderAnalytics(Transform):
     fulfilled = input(OrderFulfillment)
     customer_totals = output(CustomerDailyTotal)

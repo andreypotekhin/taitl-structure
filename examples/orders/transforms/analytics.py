@@ -3,7 +3,6 @@ from examples.orders.schemas.order import OrderFulfillment
 from structure import Transform, avg, count, count_distinct, distinct, group_by, input, max, min, output, sum, transform
 
 
-@transform
 class OrderAnalytics(Transform):
     fulfilled = input(OrderFulfillment)
     customer_totals = output(CustomerDailyTotal)

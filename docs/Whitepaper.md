@@ -84,10 +84,9 @@ Never silently choose the slow path.
 
 ## Core Model
 
-A Structure source transform is a decorated Python class.
+A Structure source transform is a Python class inheriting `Transform`.
 
 ```python
-@transform
 class EnrichOrders(Transform):
 
     orders = input(OrderRaw)

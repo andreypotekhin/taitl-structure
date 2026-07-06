@@ -30,7 +30,6 @@ represent it in IR, check it, and lower it to optimizer-visible target operation
 Example source shape:
 
 ```python
-@transform
 class EnrichOrders(Transform):
     orders = input(OrderRaw)
     normalized = lane(OrderNormalized)

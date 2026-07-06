@@ -27,7 +27,6 @@ class NormalizeBase(Transform):
         )
 
 
-@transform
 class PublishOrders(NormalizeBase):
     published = output(OrderPublished)
 
@@ -55,7 +54,6 @@ An override can call a parent implementation to schedule the parent as a separat
 step:
 
 ```python
-@transform
 class StrictPublishOrders(NormalizeBase):
     published = output(OrderPublished)
 
@@ -120,7 +118,6 @@ Generated PySpark needs source-time metadata and a stable generated class name. 
 one pipeline field:
 
 ```python
-@transform
 class OrderPipeline(Transform):
     orders = input(OrderRaw)
     products = input(Product)
@@ -171,7 +168,6 @@ return OrderPublished.base(order, flags)
 Prefer transform inheritance when one transform specializes a parent pipeline:
 
 ```python
-@transform
 class RetailPublishOrders(NormalizeBase):
     ...
 ```

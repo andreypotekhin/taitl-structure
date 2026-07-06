@@ -65,7 +65,6 @@ from testing.model.v2.orders.schemas.adv_analytics import (
 from testing.model.v2.orders.schemas.order import OrderFulfillment
 
 
-@transform
 class AdvancedOrderAnalytics(Transform):
     fulfilled = input(OrderFulfillment)
     collections = input(OrderCollectionSource)

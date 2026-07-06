@@ -325,7 +325,6 @@ Rules:
 Canonical multi-output form:
 
 ```python
-@transform
 class RouteOrders(Transform):
     orders = input(OrderRaw)
     normalized = lane(OrderNormalized)

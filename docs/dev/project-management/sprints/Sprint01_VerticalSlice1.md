@@ -19,7 +19,6 @@ Generated PySpark can be emitted and compared against online execution as the sa
 ## Example Source
 
 ```python
-@transform
 class NormalizeOrders(Transform):
 
     orders = input(OrderRaw)

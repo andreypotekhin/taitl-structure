@@ -30,10 +30,9 @@ Reference: [schema declaration syntax](reference/SchemaDeclarationSyntax.md),
 
 ## Transform Classes
 
-A transform class is declared with `@transform`.
+A transform class is declared by inheriting `Transform`. Use `@transform(...)` only for class-level options.
 
 ```python
-@transform
 class NormalizeOrders(Transform):
     orders = input(OrderRaw)
     normalized = output(OrderNormalized)
@@ -68,8 +67,6 @@ class NormalizeBase(Transform):
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         ...
 
-
-@transform
 class PublishOrders(NormalizeBase):
     published = output(OrderPublished)
 
@@ -954,8 +951,6 @@ class NormalizeBase(Transform):
             customer_id=lower(trim(order.customer_id)),
         )
 
-
-@transform
 class PublishOrders(NormalizeBase):
     published = output(OrderPublished)
 
@@ -1015,7 +1010,6 @@ result = (
 For generated PySpark, wrap the pipeline in one transform field:
 
 ```python
-@transform
 class OrderPipeline(Transform):
     orders = input(OrderRaw)
     products = input(Product)

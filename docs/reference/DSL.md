@@ -327,7 +327,6 @@ Rules:
 Generated-capable composition uses a wrapper transform with one pipeline field:
 
 ```python
-@transform
 class OrderPipeline(Transform):
     orders = input(OrderRaw)
     products = input(Product)
@@ -417,7 +416,6 @@ Rules:
 Canonical multi-output form:
 
 ```python
-@transform
 class RouteOrders(Transform):
     orders = input(OrderRaw)
     normalized = lane(OrderNormalized)

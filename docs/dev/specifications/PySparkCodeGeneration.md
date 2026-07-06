@@ -160,7 +160,6 @@ Each source transform class maps to one generated class.
 Source:
 
 ```python
-@transform
 class EnrichOrders(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)

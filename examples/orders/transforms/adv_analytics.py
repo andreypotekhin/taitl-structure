@@ -64,7 +64,6 @@ from structure import (
 )
 
 
-@transform
 class AdvancedOrderAnalytics(Transform):
     fulfilled = input(OrderFulfillment)
     collections = input(OrderCollectionSource)

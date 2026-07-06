@@ -11,7 +11,6 @@ it, represent it in IR, check it, and lower it to optimizer-visible target opera
 Example source shape:
 
 ```python
-@transform
 class EnrichOrders(Transform):
     orders = input(OrderRaw)
     normalized = lane(OrderNormalized)

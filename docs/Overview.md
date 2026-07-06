@@ -66,7 +66,6 @@ class Product(Structure):
 ### Example Transform
 
 ```python
-@transform
 class EnrichOrders(Transform):
 
     orders = input(OrderRaw)

@@ -48,7 +48,6 @@ from structure import (
 ## Source Example
 
 ```python
-@transform
 class EnrichOrders(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)

@@ -110,7 +110,6 @@ from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
 from orders.schemas.customer import Customer
 
 
-@transform
 class EnrichOrders(Transform):
 
     orders = input(OrderRaw)

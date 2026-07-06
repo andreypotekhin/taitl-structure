@@ -10,7 +10,6 @@ from testing.model.v2.orders.schemas.product import Product
 from structure import Transform, coalesce, cross_join, full_join, input, output, right_join, transform
 
 
-@transform
 class RowsetJoinExamples(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)
