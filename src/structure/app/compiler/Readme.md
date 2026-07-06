@@ -23,5 +23,5 @@ available from the `api/` packages as simplified imports.
 
 ## Inner Workings
 Compiler apps divide the pipeline by responsibility: `frontend` inspects source classes, `symbolic_execution`
-captures `where(...)` and `join_one(...)` effects, `ir` stores plan records, `compileability` classifies target
+captures `where(...)` and `lookup_join(...)` effects, `ir` stores plan records, `compileability` classifies target
 fitness, `diagnostics` defines compile errors, and `traceability` maps source, IR, recipes, and generated artifacts.

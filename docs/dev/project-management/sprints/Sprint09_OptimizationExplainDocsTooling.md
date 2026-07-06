@@ -34,7 +34,7 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
 - Additional aggregate metrics and metric-local filters, with post-aggregate `having(...)` capability-gated.
 - Reusable window specs, explicit row/range frames, distribution/value windows, and window aggregate helpers.
 - Additional symbolic array and map higher-order helpers.
-- Full PySpark rowset join support: `join_rowset(...)` for right, full, cross, non-equi, and disjunctive joins.
+- Full PySpark rowset join support: `rowset_join(...)` for right, full, cross, non-equi, and disjunctive joins.
 - Cache and persistence directives at subtransform boundaries.
 - Repartition and coalesce directives.
 - Checkpoint hints where the configured backend supports them.
@@ -105,7 +105,7 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
     behind explicit capability diagnostics.
 12. Implement reusable window specs, explicit frames, broad window expressions, and backend diagnostics.
 13. Implement additional symbolic array and map higher-order helpers.
-14. Implement `join_rowset(...)` source capture, joined right relation scopes, IR, backend capabilities, diagnostics, and public
+14. Implement `rowset_join(...)` source capture, joined right relation scopes, IR, backend capabilities, diagnostics, and public
    docs.
 15. Render right, full, cross, non-equi, and disjunctive joins in online and generated PySpark through shared recipes.
 16. Add parity, capability, streaming-classification, and explain tests for full PySpark join support.
@@ -168,7 +168,7 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
   promotion.
 - [x] (2026-07-05) Added design, specification, public reference, deferred-feature reference, and execution plan for
   first-slice Spark streaming support scheduled into Sprint 09.
-- [x] (2026-07-05) Implemented the first full PySpark rowset join pass: `join_rowset(...)`, rowset shortcuts,
+- [x] (2026-07-05) Implemented the first full PySpark rowset join pass: `rowset_join(...)`, rowset shortcuts,
   right/full/cross lowering, broad predicate support, v2 fixture coverage, and checked-in generated example output.
 - [x] (2026-07-05) Implemented the admitted advanced analytical operations pass: rollup/cube grouping, grouping
   metadata, additional aggregate metrics, metric-local filters, reusable explicit windows, broad window expressions,
@@ -178,7 +178,7 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
   and `make integration BACKEND=spark-connect40`.
 - [x] (2026-07-06) Added Spark Connect release-blocking verification through the existing `make integration`
   backend lanes for Spark Connect 3.5 and 4.0.
-- [ ] Add hook and StructureTools Spark Connect boundary diagnostics.
+- [x] (2026-07-06) Added hook, generated execution, and StructureTools Spark Connect boundary diagnostics.
 - [ ] Implement Spark streaming first-slice support from
   [P07052604.Spark-streaming-first-slice.plan.md](../../planning/P07052604.Spark-streaming-first-slice.plan.md).
 - [ ] Add live Spark streaming online/generated runtime evidence or a release-blocking manual verification script.

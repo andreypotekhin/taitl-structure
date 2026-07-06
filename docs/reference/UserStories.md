@@ -185,7 +185,7 @@ narrower use cases and roadmap features.
 - + As a developer, I can call `where(...)` multiple times so that predicates are combined with logical AND.
 - + As a developer, I can use expression helper predicates with `where(...)` so that reusable filters are supported.
 - + As a developer, I can filter on joined fields so that post-join match requirements are expressible.
-- + As a developer, I can mix `where(...)` and `join_one(...)` in source order so that filters run at the point where I
+- + As a developer, I can mix `where(...)` and `lookup_join(...)` in source order so that filters run at the point where I
   write them.
 
 ## 14. Add and Drop Columns
@@ -208,10 +208,10 @@ narrower use cases and roadmap features.
 
 - + As a developer, I can declare multiple named inputs so that join sources are explicit.
 - + As a developer, I can express joins symbolically using input scopes so that join logic avoids string column paths.
-- + As a developer, I can use `join_one(...)` for many-to-one or one-to-one lookup joins so that cardinality intent is explicit.
-- + As a developer, I can call bare `join_one(on=...)` with a schema parameter so that simple lookup joins avoid
+- + As a developer, I can use `lookup_join(...)` for many-to-one or one-to-one lookup joins so that cardinality intent is explicit.
+- + As a developer, I can call bare `lookup_join(on=...)` with a schema parameter so that simple lookup joins avoid
   repeated relation names.
-- + As a developer, I can keep `join_one(...)` bare so that later reads from the same relation parameter use the joined
+- + As a developer, I can keep `lookup_join(...)` bare so that later reads from the same relation parameter use the joined
   scope.
 - + As a developer, I can perform serial joins across an arbitrary number of inputs so that enrichment pipelines are not limited to three inputs.
 - + As a developer, I can specify join type and hints using enum values so that free-form join strings are avoided in source code.
@@ -351,7 +351,7 @@ the first analytical join slice.
 ## 22C. Analytical Joins
 
 - + As a developer, I can use existence joins so that semi and anti filters stay compiler-visible.
-- + As a developer, I can use `join_many(...)` for cardinality-expanding joins so that row multiplication is explicit.
+- + As a developer, I can use `inner_join(...)` for cardinality-expanding joins so that row multiplication is explicit.
 - As a developer, I can use deterministic lookup dedupe policies so that selected right-side rows are reviewable.
 - + As a developer, I can use temporal validity-window lookups so that SCD-style joins have explicit interval semantics.
 - + As a developer, I can use backward as-of lookups so that time-relative enrichment stays compiler-visible.

@@ -191,7 +191,7 @@ where(to_decimal(order.total, precision=12, scale=2) >= 0)
 
 ### Join
 
-A join is a symbolic relationship between the current row and a declared input. In v1, `join_one(...)` is the
+A join is a symbolic relationship between the current row and a declared input. In v1, `lookup_join(...)` is the
 main form: a lookup-style join.
 
 A join creates a joined scope. Fields from that scope can be used in later filters or in the returned output
@@ -201,7 +201,7 @@ Example:
 
 ```python
 def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
-    join_one(
+    lookup_join(
         on=order.customer_id == customer.id,
         how=Join.LEFT,
         hint=JoinHint.BROADCAST,

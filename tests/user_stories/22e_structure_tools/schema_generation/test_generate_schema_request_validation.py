@@ -55,6 +55,22 @@ def test_path_sources_require_format_and_support_reader_options() -> None:
     assert spark.read.path == "orders.parquet"
 
 
+def test_spark_connect_table_metadata_failure_suggests_explicit_schema() -> None:
+    spark = FailingSpark(RuntimeError("SparkContext is not supported in Spark Connect"))
+    session = StructureSession(spark=spark, target_variant="spark-connect")
+
+    with pytest.raises(StructureToolError, match="schema=.*explicit StructType"):
+        StructureTools.schemas.generate(from_table="orders", session=session, to="OrderRaw")
+
+
+def test_spark_connect_path_reader_failure_suggests_explicit_schema() -> None:
+    spark = FailingSpark(RuntimeError("reader format uses _jvm"))
+    session = StructureSession(spark=spark, target_variant="spark-connect")
+
+    with pytest.raises(StructureToolError, match="Spark Connect metadata access"):
+        StructureTools.schemas.generate(from_path="orders.parquet", format="parquet", session=session, to="OrderRaw")
+
+
 def test_invalid_class_names_fail_and_non_identifier_fields_generate_aliases() -> None:
     with pytest.raises(StructureToolError, match="Invalid Structure class name"):
         StructureTools.schemas.generate(schema=StructType(()), to="order_raw")
@@ -103,3 +119,28 @@ class FakeDataFrame:
 
     def __init__(self, schema) -> None:
         self.schema = schema
+
+
+class FailingSpark:
+
+    def __init__(self, error: Exception) -> None:
+        self.error = error
+        self.read = FailingReader(error)
+
+    def table(self, table: str):
+        raise self.error
+
+
+class FailingReader:
+
+    def __init__(self, error: Exception) -> None:
+        self.error = error
+
+    def options(self, **kwargs):
+        return self
+
+    def format(self, format: str):
+        return self
+
+    def load(self, path: str):
+        raise self.error

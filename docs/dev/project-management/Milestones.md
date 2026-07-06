@@ -102,7 +102,7 @@ hook recipe parity are implemented and tested for v1.
 
 ## M5: Joins, Compiler Traceability, Build Integration
 
-Status: v1 external validation. `join_one(...)`, source-order join lowering, generated join rendering, uniqueness
+Status: v1 external validation. `lookup_join(...)`, source-order join lowering, generated join rendering, uniqueness
 warnings, stricter join-condition/key diagnostics, `compile --fail-on-diff`, compact `structure explain`, streaming
 compatibility reporting, compiler provenance, static dataflow traceability artifacts, compact explain traceability
 summaries, and online/generated join parity integration coverage are implemented and tested. Remaining exit criteria
@@ -110,7 +110,7 @@ are broader CI build-integration coverage and validating the live PySpark matrix
 
 ### Exit Criteria
 
-- `join_one(...)` compiles to PySpark joins.
+- `lookup_join(...)` compiles to PySpark joins.
 - N-step serial joins work across arbitrary named inputs.
 - Compiler provenance maps source nodes to IR nodes to generated PySpark nodes.
 - Static dataflow traceability shows transform, table, and column dependencies inferred from IR.
@@ -157,7 +157,7 @@ Exit Criteria:
 
 Progress:
 
-- Existence joins, `join_many(...)`, deterministic deduped `join_one(...)`, and temporal validity-window joins are
+- Existence joins, `inner_join(...)`, deterministic deduped `lookup_join(...)`, and temporal validity-window joins are
   implemented for the default PySpark profile.
 - Backward as-of joins, analytical join traceability, explain output, and streaming compatibility classification are
   implemented for the default PySpark profile.
@@ -166,7 +166,7 @@ Progress:
 Exit Criteria:
 
 - Existence joins cover semi and anti filter semantics without exposing right-side fields.
-- `join_many(...)` has clear row-multiplication semantics and online/generated parity tests.
+- `inner_join(...)` has clear row-multiplication semantics and online/generated parity tests.
 - Deterministic lookup dedupe policies never rely on arbitrary right-row selection.
 - Temporal validity-window joins support SCD-style lookups with explicit overlap policy.
 - Backward as-of joins support time-relative enrichment with optional tolerance.

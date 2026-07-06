@@ -16,9 +16,9 @@ cardinality, backend capabilities, diagnostics, traceability, and shared online/
 
 The first analytical join slice already covers:
 
-- `join_one(...)` lookup joins;
+- `lookup_join(...)` lookup joins;
 - `exists(...)` and `not_exists(...)` semi and anti filters;
-- `join_many(...)` row-multiplying left and inner joins;
+- `inner_join(...)` row-multiplying left and inner joins;
 - deterministic lookup dedupe;
 - temporal validity-window lookups;
 - backward as-of lookups.
@@ -38,13 +38,13 @@ preserves source-order logical operations unless a later optimizer design define
 
 ## Public DSL Direction
 
-Keep existing APIs unchanged. `join_one(...)` stays a select-one lookup. `join_many(...)` stays the ordinary row
+Keep existing APIs unchanged. `lookup_join(...)` stays a select-one lookup. `inner_join(...)` stays the ordinary row
 multiplying left or inner join for a current row. Existence predicates stay predicates.
 
 Add one explicit rowset join primitive for the PySpark shapes that no longer have a guaranteed current-row owner:
 
 ```python
-join_rowset(
+rowset_join(
     left=order,
     right=customer,
     on=order.customer_id == customer.id,
@@ -58,7 +58,7 @@ return OrderCustomerReconciliation.project()(
 )
 ```
 
-`join_rowset(...)` records a rowset join and returns the joined right relation scope, following the existing Structure
+`rowset_join(...)` records a rowset join and returns the joined right relation scope, following the existing Structure
 join pattern. The shortcut helpers `left_join(...)`, `inner_join(...)`, `right_join(...)`, `full_join(...)`, and
 `cross_join(...)` call the same primitive. They can be called without assignment when the right relation can be inferred
 from `on`.
@@ -78,7 +78,7 @@ cross_join(
 `allow_cartesian=True` is required so an accidentally missing `on` clause cannot create a Cartesian product. A cross
 join must not accept `on`.
 
-`join_rowset(...)` accepts a general symbolic boolean predicate for `on`. The predicate may include equality,
+`rowset_join(...)` accepts a general symbolic boolean predicate for `on`. The predicate may include equality,
 null-safe equality, inequalities, boolean `AND`, boolean `OR`, deterministic expression helpers, and literals. The
 predicate may reference only the left and right rowset scopes and earlier joined scopes explicitly passed through the
 current subtransform. It must not call arbitrary Python functions, inspect data, or use string SQL fragments.
@@ -86,7 +86,7 @@ current subtransform. It must not call arbitrary Python functions, inspect data,
 Optional same-name key shorthand can be added after predicate joins work:
 
 ```python
-joined = join_rowset(
+joined = rowset_join(
     left=order,
     right=shipment,
     using=(order.id, order.tenant_id),
@@ -100,7 +100,7 @@ coalescing behavior.
 
 ## Cardinality and Output Model
 
-`join_rowset(...)` is a rowset operation, not a lookup. It can preserve, filter, multiply, or admit rows depending on
+`rowset_join(...)` is a rowset operation, not a lookup. It can preserve, filter, multiply, or admit rows depending on
 `how`:
 
 - `Join.INNER`: keeps matching left/right pairs;
@@ -118,7 +118,7 @@ right-only rows. Diagnostics should point to this design and explain how to proj
 Extend `JoinOperation` or add a sibling `RowsetJoinOperation` only if the existing model becomes unclear. The required
 semantic fields are:
 
-- method: `join_rowset`;
+- method: `rowset_join`;
 - join type: inner, left, right, full, or cross;
 - cardinality: row-pairing, row-preserving-left, row-preserving-right, row-preserving-both, or Cartesian;
 - left scope and right scope;
@@ -146,7 +146,7 @@ Spark-free.
 Add capabilities before lowering:
 
 ```text
-join.join_rowset
+join.rowset_join
 join.right_join
 join.full_join
 join.cross_join
@@ -187,7 +187,7 @@ deferred until the streaming orchestration design defines state, watermark, outp
 
 ## Open Design Choices
 
-The first implementation favors `join_rowset(...)` as one broad primitive plus thin convenience aliases:
+The first implementation favors `rowset_join(...)` as one broad primitive plus thin convenience aliases:
 `left_join(...)`, `inner_join(...)`, `right_join(...)`, `full_join(...)`, and `cross_join(...)`.
 
 Same-name key shorthand should wait until the explicit predicate path is stable. It is useful for PySpark familiarity,

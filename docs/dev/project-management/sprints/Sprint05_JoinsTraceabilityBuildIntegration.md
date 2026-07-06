@@ -2,7 +2,7 @@
 
 ## Sprint Goal
 
-Add symbolic `join_one(...)`, support arbitrary N-step serial joins, add compiler provenance and static dataflow
+Add symbolic `lookup_join(...)`, support arbitrary N-step serial joins, add compiler provenance and static dataflow
 traceability, and make online/generated execution reliable in CI.
 
 ## Product Outcome
@@ -16,7 +16,7 @@ dependencies.
 ### In Scope
 
 - Named input scopes in symbolic execution.
-- `join_one(...)`.
+- `lookup_join(...)`.
 - Join type enum.
 - Join hint enum.
 - Predictable DataFrame aliasing.
@@ -31,14 +31,14 @@ dependencies.
 
 ### Out of Scope
 
-- `join_many(...)`; row-multiplying joins are v2 work.
+- `inner_join(...)`; row-multiplying joins are v2 work.
 - Aggregations and windowing.
 - Runtime LDJSON traceability.
 - Full streaming orchestration.
 
 ## Relevant Specification Items
 
-- As a developer, I can express symbolic `join_one(...)` joins.
+- As a developer, I can express symbolic `lookup_join(...)` joins.
 - As a developer, I can build serial joins across arbitrary numbers of named inputs.
 - As a developer, I can specify join type with enums.
 - As a developer, I can specify join hints with enums.
@@ -54,7 +54,7 @@ dependencies.
 
 ```python
 def add_customer(self, order: OrderNormalized) -> OrderWithCustomer:
-    customer = join_one(
+    customer = lookup_join(
         self.customers,
         on=self.customers.id == order.customer_id,
         how=Join.LEFT,
@@ -88,7 +88,7 @@ customers_df = F.broadcast(customers.alias("customers"))
 ## Engineering Tasks
 
 1. Implement named input symbolic scopes.
-2. Implement `join_one(...)` symbolic operation.
+2. Implement `lookup_join(...)` symbolic operation.
 3. Implement join enums.
 4. Implement join IR.
 5. Generate PySpark joins.
@@ -117,7 +117,7 @@ customers_df = F.broadcast(customers.alias("customers"))
 
 ## Progress
 
-- [x] (2026-06-21) `join_one(...)` lowering, generated join rendering, `structure compile --fail-on-diff`, and compact
+- [x] (2026-06-21) `lookup_join(...)` lowering, generated join rendering, `structure compile --fail-on-diff`, and compact
   `structure explain` are implemented.
 - [x] (2026-06-21) Streaming compatibility classification reports `compatible`, `unknown`, and `batch_only` from the
   shared PySpark recipe layer, and `structure explain` includes streaming status.

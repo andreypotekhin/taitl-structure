@@ -180,7 +180,7 @@ Required v1 negative cases:
 - ambiguous public methods
 - bad source order
 - unsupported Python methods
-- `join_one(...)` without uniqueness warning
+- `lookup_join(...)` without uniqueness warning
 - duplicate output fields
 - non-boolean filters
 - `@expr_fn` returning non-expression values

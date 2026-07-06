@@ -20,8 +20,8 @@ This reference covers:
 - PySpark v1 default capability profile;
 - Spark-free capability selection.
 
-Feature references still own the domain meaning of a feature. For example, `JoinSemantics.md` owns `join_one`
-cardinality rules. This document owns whether the selected backend profile says `join_one` can be lowered.
+Feature references still own the domain meaning of a feature. For example, `JoinSemantics.md` owns `lookup_join`
+cardinality rules. This document owns whether the selected backend profile says `lookup_join` can be lowered.
 
 ## Interface
 
@@ -93,7 +93,7 @@ Future alternative backends may add these groups:
 - `hook`;
 - `type`.
 
-`name` is the feature inside that group, such as `null_safe_equality`, `join_one`,
+`name` is the feature inside that group, such as `null_safe_equality`, `lookup_join`,
 `schema_only_validation`, `stream_static_left_join`, or `generated_pyspark_imports`.
 
 `source` is optional structured context such as transform, step, field, join, hook, or config setting.
@@ -142,10 +142,10 @@ expression.equality
 expression.null_safe_equality
 expression.cast
 expression.standard_helper_call
-join.join_one
+join.lookup_join
 join.exists
 join.not_exists
-join.join_many
+join.inner_join
 join.lookup_dedupe
 join.temporal_one
 join.as_of_one
@@ -154,7 +154,7 @@ join.inner_join
 join.left_semi_join
 join.left_anti_join
 join.composite_equi_join
-join.join_rowset
+join.rowset_join
 join.right_join
 join.full_join
 join.cross_join

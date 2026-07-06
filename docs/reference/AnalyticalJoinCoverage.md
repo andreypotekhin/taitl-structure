@@ -4,24 +4,24 @@ Analytical joins are join forms that go beyond one-row lookup enrichment. They l
 existence, intentionally multiply rows by matches, select deterministic lookup winners, and join against time-valid
 records.
 
-This reference describes Structure's analytical join family: semi and anti existence filters, `join_many(...)`,
+This reference describes Structure's analytical join family: semi and anti existence filters, `inner_join(...)`,
 deterministic lookup dedupe, temporal lookups, as-of lookups, and slowly changing dimension lookups.
 
-The `join_one(...)` contract remains unchanged. It is a narrow many-to-one or one-to-one lookup join. It warns when
+The `lookup_join(...)` contract remains unchanged. It is a narrow many-to-one or one-to-one lookup join. It warns when
 right-side uniqueness is not proven and never deduplicates by surprise.
 
 ## Scope
 
-This reference covers source semantics for analytical joins. Existence joins, `join_many(...)`, deterministic
-deduped `join_one(...)`, temporal validity-window `temporal_one(...)`, and backward `as_of_one(...)` are implemented in
+This reference covers source semantics for analytical joins. Existence joins, `inner_join(...)`, deterministic
+deduped `lookup_join(...)`, temporal validity-window `temporal_one(...)`, and backward `as_of_one(...)` are implemented in
 the default PySpark profile.
-[JoinSemantics.md](JoinSemantics.md) covers the strict `join_one(...)` contract.
+[JoinSemantics.md](JoinSemantics.md) covers the strict `lookup_join(...)` contract.
 
 In scope for the analytical join family:
 
 - existence predicates that lower to semi and anti joins;
-- row-multiplying `join_many(...)`;
-- deterministic right-side dedupe before `join_one(...)`;
+- row-multiplying `inner_join(...)`;
+- deterministic right-side dedupe before `lookup_join(...)`;
 - temporal validity-window lookup joins;
 - as-of lookup joins;
 - diagnostics, IR, backend capability requirements, and traceability for those forms.
@@ -46,11 +46,11 @@ A current row is the row flowing through the source-ordered transform chain.
 A right input is a named input referenced through an input scope, such as typed parameter `customer` or class input
 scope `self.customers`.
 
-A row-preserving join keeps every current row. A left `join_one(...)` is row-preserving.
+A row-preserving join keeps every current row. A left `lookup_join(...)` is row-preserving.
 
 A row-filtering join keeps or removes current rows based on match existence. Semi and anti joins are row-filtering.
 
-A row-multiplying join can produce more than one output row for one current row. `join_many(...)` is row-multiplying.
+A row-multiplying join can produce more than one output row for one current row. `inner_join(...)` is row-multiplying.
 
 A select-one join chooses at most one right row per current row by uniqueness, dedupe policy, temporal validity, or
 as-of ordering.
@@ -73,19 +73,19 @@ Rules:
 - The method returns a symbolic boolean predicate.
 - No right-side fields are exposed.
 - Right-side duplicates do not change the result.
-- The `on` condition follows the same equi-join condition rules as `join_one(...)`.
+- The `on` condition follows the same equi-join condition rules as `lookup_join(...)`.
 - Normal equality and null-safe equality keep the same meaning as in `JoinSemantics.md`.
 - The predicate may appear in `where(...)` or in boolean combinations when the expression remains compileable.
 
 Generated PySpark may lower these forms to left semi and left anti joins, or to an equivalent plan, as long as row
 order, row count, schema, null semantics, and diagnostics remain equivalent.
 
-## `join_many(...)`
+## `inner_join(...)`
 
-`join_many(...)` intentionally admits row multiplication:
+`inner_join(...)` intentionally admits row multiplication:
 
 ```python
-join_many(
+inner_join(
     on=order_item.order_id == order.id,
     how=Join.INNER,
 )
@@ -101,7 +101,7 @@ Rules:
 - Output schema construction controls final fields; Structure must not append right-side fields implicitly.
 - Right-side projection should carry only keys and referenced fields.
 
-`join_many(...)` should be used when the business output is one row per match, such as order-to-line-item expansion.
+`inner_join(...)` should be used when the business output is one row per match, such as order-to-line-item expansion.
 
 ## Deterministic Lookup Dedupe
 
@@ -109,7 +109,7 @@ Some lookup inputs contain multiple right rows per key, but the desired business
 That rule must be explicit:
 
 ```python
-join_one(
+lookup_join(
     on=self.customer_snapshots.id == order.customer_id,
     how=Join.LEFT,
     dedupe=JoinDedupe.latest_by(
@@ -125,7 +125,7 @@ Rules:
 - A dedupe policy must name the ordering or selection rule.
 - The default tie policy is `TiePolicy.ERROR`.
 - Structure must not lower dedupe to arbitrary `first(...)` or nondeterministic `dropDuplicates(...)`.
-- A deduped `join_one(...)` records both the original right input and the deduped lookup dependency in traceability.
+- A deduped `lookup_join(...)` records both the original right input and the deduped lookup dependency in traceability.
 - Runtime tie checks are explicit because they can add Spark work.
 - Current PySpark lowering uses `row_number()` over a window partitioned by the right-side join keys, ordered by the
   explicit policy expression, keeps rank `1`, drops the temporary rank column, and then applies the lookup join.
@@ -224,8 +224,8 @@ Allowed semantic method values begin with:
 
 - `exists`;
 - `not_exists`;
-- `join_many`;
-- `join_one` with a dedupe policy;
+- `inner_join`;
+- `lookup_join` with a dedupe policy;
 - `temporal_one`;
 - `as_of_one`.
 
@@ -239,15 +239,15 @@ Each analytical join form requires a backend capability before lowering:
 ```text
 join.exists
 join.not_exists
-join.join_many
+join.inner_join
 join.lookup_dedupe
 join.temporal_one
 join.as_of_one
-join.join_rowset
+join.rowset_join
 ```
 
-The default PySpark profile supports `join.exists`, `join.not_exists`, `join.join_many`, `join.lookup_dedupe`,
-`join.temporal_one`, `join.as_of_one`, and `join.join_rowset`.
+The default PySpark profile supports `join.exists`, `join.not_exists`, `join.inner_join`, `join.lookup_dedupe`,
+`join.temporal_one`, `join.as_of_one`, and `join.rowset_join`.
 Unsupported capability diagnostics use `BACKEND-E2402` and link to this reference. The diagnostic names the
 join form and suggest either a supported join, a hook escape hatch, or waiting for the planned feature.
 
@@ -256,7 +256,7 @@ Right, full, cross, non-equi, and disjunctive rowset joins are covered in
 
 ## Streaming Compatibility
 
-v2 may classify stream-static `exists(...)`, `not_exists(...)`, and `join_many(...)` as compatible when the current
+v2 may classify stream-static `exists(...)`, `not_exists(...)`, and `inner_join(...)` as compatible when the current
 pipeline input is streaming and the right input is static, if Spark supports the lowered plan for the configured
 target.
 
@@ -268,7 +268,7 @@ design specifies their state, watermark, and output-mode requirements.
 Example:
 
 ```text
-CompileError JOIN-E2701: join_many(...) cannot feed a one-row-only output assumption
+CompileError JOIN-E2701: inner_join(...) cannot feed a one-row-only output assumption
 
 Join:
   EnrichOrders.add_items -> order_items#1
@@ -277,10 +277,10 @@ Cardinality:
   row-multiplying
 
 Problem:
-  The downstream schema construction assumes one output row per current row, but join_many(...) may produce many rows.
+  The downstream schema construction assumes one output row per current row, but inner_join(...) may produce many rows.
 
 Use:
-  return a schema that represents one row per item, aggregate before this step, or use join_one(...) when the right key
+  return a schema that represents one row per item, aggregate before this step, or use lookup_join(...) when the right key
   is unique.
 
 See docs/reference/AnalyticalJoinCoverage.md

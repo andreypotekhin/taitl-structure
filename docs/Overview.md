@@ -98,7 +98,7 @@ class EnrichOrders(Transform):
         return orders.where(F.col("total") >= 0)
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        join_one(
+        lookup_join(
             on=order.customer_id == customer.id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
@@ -110,7 +110,7 @@ class EnrichOrders(Transform):
         )
 
     def add_product(self, order: OrderWithCustomer, product: Product) -> OrderEnriched:
-        join_one(
+        lookup_join(
             on=order.product_id == product.id,
             how=Join.LEFT,
         )
@@ -400,7 +400,7 @@ orchestration.
 - **Initial release:** online PySpark execution by default, optional generated PySpark classes, projection,
   filtering, joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow
   traceability, streaming-compatible transforms, diagnostic links, and setup checks.
-- **v2:** mainstream analytical features: existence joins, `join_many(...)`, broad rowset joins, deterministic lookup
+- **v2:** mainstream analytical features: existence joins, `inner_join(...)`, broad rowset joins, deterministic lookup
   dedupe, temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions
   ([Advanced analytical operations](reference/AdvancedAnalyticalOperations.md)),
   caching/persistence/repartition hints, richer explain output, generated docs, pytest helpers, and Spark Connect

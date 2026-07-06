@@ -54,10 +54,10 @@ expression.equality
 expression.null_safe_equality
 expression.cast
 expression.standard_helper_call
-join.join_one
+join.lookup_join
 join.exists
 join.not_exists
-join.join_many
+join.inner_join
 join.lookup_dedupe
 join.temporal_one
 join.as_of_one
@@ -66,7 +66,7 @@ join.inner_join
 join.left_semi_join
 join.left_anti_join
 join.composite_equi_join
-join.join_rowset
+join.rowset_join
 join.right_join
 join.full_join
 join.cross_join
@@ -144,7 +144,7 @@ validation.allow_extra_projection
 imports.generated_pyspark_imports
 ```
 
-The support claim also includes the implemented public shapes behind these capabilities: `join_rowset(...)`,
+The support claim also includes the implemented public shapes behind these capabilities: `rowset_join(...)`,
 `right_join(...)`, `full_join(...)`, `cross_join(..., allow_cartesian=True)`, non-equi and disjunctive predicates,
 `rollup(...)`, `cube(...)`, grouping metadata helpers, additional exact/statistical/approximate/collection aggregate
 metrics, metric-local filters, reusable explicit windows, distribution/value/window aggregate helpers, and the expanded
@@ -223,8 +223,8 @@ Rules:
   hook target is added;
 - a hook that declares an ordinary-only requirement is rejected for Spark Connect;
 - uninspectable hook internals may produce warnings in strict compatibility reports;
-- runtime hook failures caused by classic-only internals should be wrapped with a diagnostic when Structure can detect
-  the failure class or message reliably.
+- runtime hook failures caused by classic-only internals are wrapped with `CONNECT-E2601` when Structure can detect the
+  failure class or message reliably.
 
 The recommended fix for a Connect-incompatible hook is to move the logic into compiler-visible Structure DSL. If the
 logic must remain opaque, the user should rewrite it using public Connect-compatible PySpark APIs or scope it away from
@@ -236,8 +236,8 @@ StructureTools schema generation may accept a Spark Connect session for metadata
 such as reading a DataFrame-like `.schema` or `spark.table(...).schema`. It must not require SparkContext or JVM access.
 
 Path-based schema extraction with `spark.read` is supported only when the Connect session supports the requested reader
-format and options. Unsupported reader behavior must fail with a clear runtime diagnostic that names Spark Connect and
-suggests passing an explicit schema object when live metadata access is unavailable.
+format and options. Unsupported reader behavior must fail with a clear `StructureToolError` that names Spark Connect,
+preserves the original cause, and suggests passing an explicit schema object when live metadata access is unavailable.
 
 ## Diagnostics
 
@@ -250,7 +250,8 @@ Required diagnostic cases:
 - classic-only internal access detected statically;
 - live Connect session unavailable during explicit runtime verification;
 - Connect server/version mismatch in `structure doctor` or the manual verification script;
-- unsupported hook or StructureTools live metadata path.
+- unsupported hook or generated runtime boundary detected as `CONNECT-E2601`;
+- unsupported StructureTools live metadata path.
 
 Every diagnostic must include a user action: change `target_variant` to `ordinary`, remove the classic-only API, rewrite
 the operation in compiler-visible DSL, pass a Connect-compatible session, or use an explicit schema.

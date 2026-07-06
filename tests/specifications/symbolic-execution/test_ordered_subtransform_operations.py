@@ -17,14 +17,14 @@ from structure import (
     exists,
     field,
     full_join,
+    inner_join,
     input,
-    join_many,
-    join_one,
-    join_rowset,
+    lookup_join,
     not_exists,
     output,
     project,
     right_join,
+    rowset_join,
     temporal_one,
     transform,
     where,
@@ -67,7 +67,7 @@ def test_where_before_join_renders_before_join() -> None:
 
         def add_product(self, order: Order, product: Product) -> Enriched:
             where(cast(Any, order.status).is_not_null())
-            join_one(product, on=product.id == order.product_id, how=Join.LEFT)
+            lookup_join(product, on=product.id == order.product_id, how=Join.LEFT)
             return Enriched(id=order.id, product_name=product.name)
 
     step = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
@@ -84,7 +84,7 @@ def test_where_after_join_renders_after_join() -> None:
         enriched = output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            join_one(product, on=product.id == order.product_id, how=Join.LEFT)
+            lookup_join(product, on=product.id == order.product_id, how=Join.LEFT)
             where(cast(Any, product).name.is_not_null())
             return Enriched(id=order.id, product_name=product.name)
 
@@ -94,7 +94,7 @@ def test_where_after_join_renders_after_join() -> None:
     assert text.index("orders = orders.join(") < text.index("orders = orders.where(")
 
 
-def test_bare_join_one_makes_later_relation_reads_joined() -> None:
+def test_bare_lookup_join_makes_later_relation_reads_joined() -> None:
     @transform
     class AddProduct(Transform):
         orders = input(Order)
@@ -102,7 +102,7 @@ def test_bare_join_one_makes_later_relation_reads_joined() -> None:
         enriched = output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            join_one(product, on=product.id == order.product_id, how=Join.LEFT)
+            lookup_join(product, on=product.id == order.product_id, how=Join.LEFT)
             return Enriched(id=order.id, product_name=product.name)
 
     plan = compile_transform(AddProduct)
@@ -115,7 +115,7 @@ def test_bare_join_one_makes_later_relation_reads_joined() -> None:
     assert product_name.nullable
 
 
-def test_bare_inferred_join_one_makes_later_relation_reads_joined() -> None:
+def test_bare_inferred_lookup_join_makes_later_relation_reads_joined() -> None:
     @transform
     class AddProduct(Transform):
         orders = input(Order)
@@ -123,7 +123,7 @@ def test_bare_inferred_join_one_makes_later_relation_reads_joined() -> None:
         enriched = output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            join_one(on=product.id == order.product_id, how=Join.LEFT)
+            lookup_join(on=product.id == order.product_id, how=Join.LEFT)
             return Enriched(id=order.id, product_name=product.name)
 
     step = compile_transform(AddProduct).steps[0]
@@ -136,13 +136,13 @@ def test_bare_inferred_join_one_makes_later_relation_reads_joined() -> None:
     assert step.operations[0].join == step.joins[0]
     assert step.operations[0].capability is not None
     assert step.operations[0].capability.group == "join"
-    assert step.operations[0].capability.name == "join_one"
+    assert step.operations[0].capability.name == "lookup_join"
     assert step.operations[0].cardinality is OperationCardinality.SELECT_ONE
     assert product_name_data["scope"] == "product"
     assert product_name.nullable
 
 
-def test_inferred_join_one_preserves_filter_join_order() -> None:
+def test_inferred_lookup_join_preserves_filter_join_order() -> None:
     @transform
     class AddProduct(Transform):
         orders = input(Order)
@@ -151,7 +151,7 @@ def test_inferred_join_one_preserves_filter_join_order() -> None:
 
         def add_product(self, order: Order, product: Product) -> Enriched:
             where(cast(Any, order.status).is_not_null())
-            join_one(on=product.id == order.product_id, how=Join.LEFT)
+            lookup_join(on=product.id == order.product_id, how=Join.LEFT)
             where(cast(Any, product).name.is_not_null())
             return Enriched(id=order.id, product_name=product.name)
 
@@ -225,7 +225,7 @@ def test_not_exists_join_records_row_filtering_operation() -> None:
     assert '"left_anti"' in text
 
 
-def test_join_many_records_row_multiplying_operation() -> None:
+def test_inner_join_records_row_multiplying_operation() -> None:
     @transform
     class AddProduct(Transform):
         orders = input(Order)
@@ -233,9 +233,8 @@ def test_join_many_records_row_multiplying_operation() -> None:
         enriched = output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            join_many(
+            inner_join(
                 on=product.id == order.product_id,
-                how=Join.INNER,
                 strategy=JoinStrategy.SHUFFLE_HASH,
             )
             return Enriched(id=order.id, product_name=product.name)
@@ -253,16 +252,16 @@ def test_join_many_records_row_multiplying_operation() -> None:
     dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
 
     assert len(step.joins) == 1
-    assert step.joins[0].method is JoinMethod.MANY
+    assert step.joins[0].method is JoinMethod.ROWSET
     assert step.joins[0].strategy is JoinStrategy.SHUFFLE_HASH
     assert step.operations[0].kind == "join"
     assert step.operations[0].join == step.joins[0]
     assert step.operations[0].capability is not None
-    assert step.operations[0].capability.name == "join_many"
+    assert step.operations[0].capability.name == "rowset_join"
     assert step.operations[0].cardinality is OperationCardinality.ROW_MULTIPLYING
     assert '.hint("shuffle_hash").alias("products")' in text
     assert '"inner"' in text
-    assert dependencies["add_product.join[1].product"].operation == "join_many"
+    assert dependencies["add_product.join[1].product"].operation == "rowset_join"
     assert dependencies["add_product.join[1].product"].detail["cardinality"] == "row_multiplying"
 
 
@@ -292,14 +291,14 @@ def test_bare_right_join_records_rowset_operation() -> None:
     assert step.joins[0].method is JoinMethod.ROWSET
     assert step.joins[0].how is Join.RIGHT
     assert step.operations[0].capability is not None
-    assert step.operations[0].capability.name == "join_rowset"
+    assert step.operations[0].capability.name == "rowset_join"
     assert step.operations[0].cardinality is OperationCardinality.ROW_MULTIPLYING
     assert '"right"' in text
-    assert dependencies["add_product.join[1].product"].operation == "join_rowset"
+    assert dependencies["add_product.join[1].product"].operation == "rowset_join"
     assert dependencies["add_product.join[1].product"].detail["cardinality"] == "row_multiplying"
 
 
-def test_explicit_full_join_rowset_accepts_disjunctive_predicate() -> None:
+def test_explicit_full_rowset_join_accepts_disjunctive_predicate() -> None:
     @transform
     class AddProduct(Transform):
         orders = input(Order)
@@ -307,7 +306,7 @@ def test_explicit_full_join_rowset_accepts_disjunctive_predicate() -> None:
         enriched = output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            join_rowset(
+            rowset_join(
                 left=order,
                 right=product,
                 on=(product.id == order.product_id) | (product.name == order.status),
@@ -379,7 +378,7 @@ def test_cross_join_renders_cross_join_call() -> None:
     assert '".cross"' not in text
 
 
-def test_deduped_join_one_records_policy_and_renders_deterministic_lookup() -> None:
+def test_deduped_lookup_join_records_policy_and_renders_deterministic_lookup() -> None:
     @transform
     class AddProduct(Transform):
         orders = input(Order)
@@ -387,7 +386,7 @@ def test_deduped_join_one_records_policy_and_renders_deterministic_lookup() -> N
         enriched = output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            join_one(
+            lookup_join(
                 product,
                 on=product.id == order.product_id,
                 how=Join.LEFT,
@@ -413,7 +412,7 @@ def test_deduped_join_one_records_policy_and_renders_deterministic_lookup() -> N
     assert '.drop("__structure_products_rank").alias("products")' in text
 
 
-def test_deduped_join_one_rejects_left_side_ordering() -> None:
+def test_deduped_lookup_join_rejects_left_side_ordering() -> None:
     @transform
     class AddProduct(Transform):
         orders = input(Order)
@@ -421,7 +420,7 @@ def test_deduped_join_one_rejects_left_side_ordering() -> None:
         enriched = output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            join_one(
+            lookup_join(
                 product,
                 on=product.id == order.product_id,
                 how=Join.LEFT,
@@ -596,7 +595,7 @@ def test_pre_join_relation_filter_still_fails() -> None:
 
         def add_product(self, order: Order, product: Product) -> Enriched:
             where(cast(Any, product).name.is_not_null())
-            join_one(product, on=product.id == order.product_id, how=Join.LEFT)
+            lookup_join(product, on=product.id == order.product_id, how=Join.LEFT)
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(StructureCompileError) as raised:
@@ -629,7 +628,7 @@ def test_return_chain_join_where_project_uses_ordered_operations() -> None:
 
         def publish(self, order: Order, product: Product) -> Published:
             return (
-                cast(Any, join_one(product, on=product.id == order.product_id))
+                cast(Any, lookup_join(product, on=product.id == order.product_id))
                 .where(cast(Any, order).status.is_not_null())
                 .project(Published)
             )

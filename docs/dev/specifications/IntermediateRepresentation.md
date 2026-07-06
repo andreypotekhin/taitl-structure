@@ -498,7 +498,7 @@ Allowed cardinality values are:
 - `select_one`;
 - `unknown`.
 
-Current v1 filter operations record `row_filtering`. Current `join_one(...)` operations record `select_one` because
+Current v1 filter operations record `row_filtering`. Current `lookup_join(...)` operations record `select_one` because
 the operation expresses lookup intent: one matching right-side row is selected for each left-side row, even when the
 compiler emits a warning that uniqueness is not proven. `streaming` reuses the compileability vocabulary
 `compatible`, `batch_only`, and `unknown`.
@@ -559,7 +559,7 @@ JoinKeyPair
 
 Supported v1 values:
 
-- `method`: `join_one`;
+- `method`: `lookup_join`;
 - `join_type`: `left`, `inner`;
 - `hint`: none or `broadcast`;
 - `equality`: normal or null-safe.
@@ -571,7 +571,7 @@ Rules:
   available scope.
 - Composite keys must reference the same joined input for one join operation.
 - `joined_scope` records occurrence and alias metadata.
-- `cardinality` records whether `join_one(...)` uniqueness is proven, unproven, or explicitly unchecked.
+- `cardinality` records whether `lookup_join(...)` uniqueness is proven, unproven, or explicitly unchecked.
 - `right_fields` records right-side fields needed by downstream filters, projections, diagnostics, or traceability.
 - IR must not silently deduplicate right-side rows.
 
@@ -970,8 +970,8 @@ Rules:
 - Symbolic row proxies create scoped `FieldRef` expressions.
 - Expression helpers create expression IR.
 - `where(...)` records filter operations in the active step context.
-- `join_one(...)` records lookup join operations and creates a joined scope.
-- `join_many(...)` records row-multiplying join operations and creates a joined scope.
+- `lookup_join(...)` records lookup join operations and creates a joined scope.
+- `inner_join(...)` records row-multiplying join operations and creates a joined scope.
 - `exists(...)` and `not_exists(...)` record row-filtering join operations without exposing right-side fields.
 - Schema constructors create projection operations.
 - Hooks are collected from transform metadata, not executed.
@@ -998,7 +998,7 @@ Required IR validation checks:
 11. Every project covers the output schema exactly once and in schema order.
 12. Every project assignment is type-compatible and nullability-compatible.
 13. Every join condition satisfies `JoinSemantics.md`.
-14. Every plain `join_one(...)` records uniqueness proof, warning, or unchecked status; deduped `join_one(...)`
+14. Every plain `lookup_join(...)` records uniqueness proof, warning, or unchecked status; deduped `lookup_join(...)`
     records the deterministic policy that reduces the right side before lookup.
 14. Every hook target resolves to a step.
 15. Every hook call has valid timing, schema mode, and `pass_inputs` metadata.
@@ -1118,7 +1118,7 @@ Problem:
   The customer joined scope is not available before the join that creates it.
 
 Use:
-  Move the expression after the join_one(...) call or use a field from the current row scope.
+  Move the expression after the lookup_join(...) call or use a field from the current row scope.
 
 See docs/dev/specifications/IntermediateRepresentation.md
 ```
@@ -1235,7 +1235,7 @@ Rules:
 6. Build scoped expression IR from row proxies, expression helpers, comparisons, boolean operations, casts, literals,
    and `when(...)`.
 7. Build `FilterOperation` records from `where(...)`.
-8. Build `JoinOperation` records from `join_one(...)`.
+8. Build `JoinOperation` records from `lookup_join(...)`.
 9. Build `ProjectOperation` records from schema constructors and schema base overlays.
 10. Build `HookCall` records from `@before(...)` and `@after(...)` metadata without executing hooks.
 11. Resolve effective validation policy into explicit validation metadata.
@@ -1274,7 +1274,7 @@ The implementation is complete when tests prove:
 - ordered operations carry capability, cardinality, and streaming metadata;
 - schema construction produces a `ProjectOperation` covering the output schema exactly once;
 - `SchemaClass.base(row)(...)` produces explicit assignments for inherited carry-through fields;
-- `join_one(...)` produces a `JoinOperation` with joined scope, join type, hint, ordered key pairs, and cardinality
+- `lookup_join(...)` produces a `JoinOperation` with joined scope, join type, hint, ordered key pairs, and cardinality
   status;
 - repeated joins of the same input produce deterministic joined scope occurrence numbers;
 - hooks produce `HookCall` IR with timing, target step, `pass_inputs`, `schema_mode`, `project_output`, and
@@ -1288,7 +1288,7 @@ The implementation is complete when tests prove:
 - generic IR validation rejects incomplete or duplicate projection assignments;
 - type and nullability validation rejects incompatible output assignments;
 - join validation rejects unsupported join conditions and unsupported join types;
-- `join_one(...)` uniqueness status is recorded and warnings are deterministic;
+- `lookup_join(...)` uniqueness status is recorded and warnings are deterministic;
 - streaming classification can mark operations compatible, batch-only, or unknown;
 - provenance maps source anchors to IR ids;
 - static dataflow traceability records projection, filter, join, hook, and validation dependencies;

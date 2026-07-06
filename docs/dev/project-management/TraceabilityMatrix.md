@@ -9,9 +9,9 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 02 Schemas and Validation | Schema Validation, Generated Code, Configuration | `StructType` generation, `assert_schema`, intermediate validation defaults |
 | Sprint 03 Expressions/Filtering/Helpers | Symbolic Execution, Expression Helpers, Filtering, Error Reporting | expression IR, `where`, `@expr_fn`, diagnostic registry, structured unsupported-code errors |
 | Sprint 04 Hooks/Generated Classes | Hooks, Generated Code, Error Reporting | `@after(method, lane=lane)`, direct hook calls, no-hook cleanliness |
-| Sprint 05 Joins/Compiler Traceability/Build | Joins, Compiler Traceability, Build Integration, Streaming Compatibility | `join_one`, N-step joins, compiler provenance, static dataflow traceability, `--fail-on-diff`, `explain` |
+| Sprint 05 Joins/Compiler Traceability/Build | Joins, Compiler Traceability, Build Integration, Streaming Compatibility | `lookup_join`, N-step joins, compiler provenance, static dataflow traceability, `--fail-on-diff`, `explain` |
 | Sprint 06 v2 Scope/Analytical IR | v2 Foundations, Backend Capabilities, Traceability, Streaming Compatibility | v2 scope, non-goals, operation taxonomy, capability placeholders, fixture skeletons, diagnostic anchors |
-| Sprint 07 Analytical Join Coverage | Analytical Joins, Backend Capabilities, Traceability, Streaming Compatibility | existence joins, `join_many`, deterministic lookup dedupe, temporal joins, as-of joins |
+| Sprint 07 Analytical Join Coverage | Analytical Joins, Backend Capabilities, Traceability, Streaming Compatibility | existence joins, `inner_join`, deterministic lookup dedupe, temporal joins, as-of joins |
 | Sprint 08 Aggregations/Windows/HOFs | Aggregations, Windowing, Deduplication, Higher-Order Functions, Testing | typed `group_by`, aggregate helpers, window helpers, deterministic dedupe, array/map helpers, parity tests |
 | Sprint 09 Spark Connect/Optimization/Explain | Advanced Analytics, Spark Connect, Full PySpark Joins, Optimization Directives, Explain, Testing | full aggregation/window/HOF coverage, supported Spark Connect batch variant, right/full/cross rowset joins, non-equi/disjunctive predicates, cache/persist/repartition/coalesce/checkpoint hints, rich explain |
 
@@ -67,7 +67,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 
 ### Sprint 05
 
-- As a developer, I can perform symbolic `join_one(...)` joins.
+- As a developer, I can perform symbolic `lookup_join(...)` joins.
 - As a developer, I can build serial joins across arbitrary numbers of named inputs.
 - As a developer, I can inspect compiler provenance from source node to IR node to generated PySpark node.
 - As a developer, I can inspect static dataflow traceability for transform, table, and column dependencies inferred from IR.
@@ -86,7 +86,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 ### Sprint 07
 
 - As a developer, I can use existence joins so that semi and anti filters stay compiler-visible.
-- As a developer, I can use `join_many(...)` so that row multiplication is explicit.
+- As a developer, I can use `inner_join(...)` so that row multiplication is explicit.
 - As a developer, I can use deterministic lookup dedupe policies so that selected right rows are reviewable.
 - As a developer, I can use temporal validity-window lookups so that SCD-style joins have explicit interval semantics.
 - As a developer, I can use backward as-of lookups so that time-relative enrichment stays compiler-visible.

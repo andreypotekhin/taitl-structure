@@ -107,7 +107,7 @@ def test_v2_order_fixture_records_cache_as_transform_option(monkeypatch: pytest.
     assert operation.cardinality is OperationCardinality.ROW_PRESERVING
 
 
-def test_v2_order_fixture_records_join_many_shipments(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_v2_order_fixture_records_inner_join_shipments(monkeypatch: pytest.MonkeyPatch) -> None:
     _stub_pyspark(monkeypatch)
     module = importlib.import_module("testing.model.v2.orders.transforms.order")
     transform = cast(Any, module).EnrichOrders
@@ -116,11 +116,11 @@ def test_v2_order_fixture_records_join_many_shipments(monkeypatch: pytest.Monkey
     add_shipments = next(step for step in plan.steps if step.name == "add_shipments")
 
     assert len(add_shipments.joins) == 1
-    assert add_shipments.joins[0].method is JoinMethod.MANY
+    assert add_shipments.joins[0].method is JoinMethod.ROWSET
     assert add_shipments.joins[0].input_name == "shipment"
     assert add_shipments.joins[0].strategy is JoinStrategy.SHUFFLE_HASH
     assert add_shipments.operations[0].capability is not None
-    assert add_shipments.operations[0].capability.name == "join_many"
+    assert add_shipments.operations[0].capability.name == "rowset_join"
     assert add_shipments.operations[0].cardinality is OperationCardinality.ROW_MULTIPLYING
 
 
@@ -133,7 +133,7 @@ def test_v2_order_fixture_records_deduped_product_lookup(monkeypatch: pytest.Mon
     add_product = next(step for step in plan.steps if step.name == "add_product")
     lookup = add_product.joins[2]
 
-    assert lookup.method is JoinMethod.ONE
+    assert lookup.method is JoinMethod.LOOKUP
     assert lookup.dedupe is not None
     assert lookup.dedupe.direction == "latest"
     assert lookup.dedupe.ties is TiePolicy.ERROR
@@ -165,9 +165,9 @@ def test_v2_rowset_join_fixture_records_full_right_and_cross_joins(
     ]
     assert [step.joins[0].how for step in plan.steps[:3]] == [Join.FULL, Join.RIGHT, Join.CROSS]
     assert [step.operations[0].capability.name for step in plan.steps[:3] if step.operations[0].capability] == [
-        "join_rowset",
-        "join_rowset",
-        "join_rowset",
+        "rowset_join",
+        "rowset_join",
+        "rowset_join",
     ]
     assert [step.operations[0].cardinality for step in plan.steps[:3]] == [
         OperationCardinality.ROW_MULTIPLYING,

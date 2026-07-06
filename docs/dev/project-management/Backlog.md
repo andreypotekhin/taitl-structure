@@ -117,12 +117,12 @@
 ## Epic: Joins
 
 - Implement symbolic named input scopes.
-- Implement `join_one(...)`.
+- Implement `lookup_join(...)`.
 - Implement join type enum.
 - Implement join hint enum.
 - Generate aliases predictably.
 - Support arbitrary N-step serial joins.
-- Warn when `join_one(...)` lacks uniqueness metadata.
+- Warn when `lookup_join(...)` lacks uniqueness metadata.
 
 ## Epic: Compiler Traceability
 
@@ -195,7 +195,7 @@
 ### Epic: Analytical Joins
 
 - + Implement semi `exists(...)` and anti `not_exists(...)` predicates.
-- + Implement `join_many(...)` for row-multiplying joins.
+- + Implement `inner_join(...)` for row-multiplying joins.
 - + Implement deterministic `JoinDedupe.latest_by(...)` and `JoinDedupe.earliest_by(...)` policies.
 - + Implement temporal validity-window `temporal_one(...)` joins for SCD-style lookups.
 - + Implement backward `as_of_one(...)` joins with optional tolerance.
@@ -205,7 +205,7 @@
 
 ### Epic: Full PySpark Joins
 
-- Implement `join_rowset(...)` for broad rowset joins.
+- Implement `rowset_join(...)` for broad rowset joins.
 - Implement right and full outer joins with nullable-side type checks.
 - Implement explicit cross joins with `allow_cartesian=True`.
 - Implement non-equi join predicates.

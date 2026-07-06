@@ -2,17 +2,17 @@
 
 ## Purpose
 
-C27 is resolved by treating analytical joins as a staged feature family instead of stretching v1 `join_one(...)`.
+C27 is resolved by treating analytical joins as a staged feature family instead of stretching v1 `lookup_join(...)`.
 Structure v1 keeps lookup joins narrow and predictable. v2 adds compiler-visible syntax for the common analytical
 join shapes that otherwise force users into opaque hooks: existence filters, row-multiplying joins, deterministic lookup
 dedupe, temporal lookups, and slowly changing dimension lookups.
 
 ## Design Boundary
 
-`join_one(...)` remains the v1 lookup primitive. It means zero or one right-side row per current row, and it must not
+`lookup_join(...)` remains the v1 lookup primitive. It means zero or one right-side row per current row, and it must not
 silently deduplicate duplicate right rows. C27 does not change that contract.
 
-The analytical join family begins in v2. Existence joins, `join_many(...)`, deterministic deduped `join_one(...)`, and
+The analytical join family begins in v2. Existence joins, `inner_join(...)`, deterministic deduped `lookup_join(...)`, and
 temporal validity-window `temporal_one(...)` are admitted in the default PySpark profile. Hooks remain the honest escape
 hatch for join shapes that are not yet specified, represented in IR, checked by backend capabilities, lowered through
 shared PySpark recipes, and covered by online/generated parity tests.
@@ -22,8 +22,8 @@ shared PySpark recipes, and covered by online/generated parity tests.
 The v2 order should follow production frequency and semantic risk:
 
 1. Existence joins: semi and anti filters that keep or remove current rows based on right-side matches.
-2. `join_many(...)`: row multiplication is intentional and visible in traceability.
-3. Deterministic lookup dedupe: a `join_one(...)` policy that selects one right row before joining.
+2. `inner_join(...)`: row multiplication is intentional and visible in traceability.
+3. Deterministic lookup dedupe: a `lookup_join(...)` policy that selects one right row before joining.
 4. Temporal and as-of lookups: time-aware joins that select records relative to an event time.
 5. SCD-style lookups: validity-window joins with explicit overlap handling.
 
@@ -62,19 +62,19 @@ join semantics: keep current rows that have no right match. Both return symbolic
 Row-multiplying joins should use a distinct free function:
 
 ```python
-join_many(
+inner_join(
     on=order_item.order_id == order.id,
     how=Join.INNER,
 )
 ```
 
-`join_many(...)` updates the joined input scope like `join_one(...)`, but row multiplication is intended. Output schema
+`inner_join(...)` updates the joined input scope like `lookup_join(...)`, but row multiplication is intended. Output schema
 construction still decides which fields survive.
 
-Deterministic dedupe should be explicit on `join_one(...)`:
+Deterministic dedupe should be explicit on `lookup_join(...)`:
 
 ```python
-join_one(
+lookup_join(
     on=self.customer_snapshots.id == order.customer_id,
     how=Join.LEFT,
     dedupe=JoinDedupe.latest_by(
@@ -84,7 +84,7 @@ join_one(
 )
 ```
 
-The policy means "reduce the right side to one row per join key, then apply `join_one(...)`." Current PySpark lowering
+The policy means "reduce the right side to one row per join key, then apply `lookup_join(...)`." Current PySpark lowering
 uses `row_number()` over the right-side join keys and explicit order expression. `TiePolicy.ERROR` is recorded in IR
 and traceability; runtime tie checks are still explicit follow-up work because they add Spark work.
 
@@ -124,7 +124,7 @@ first backward implementation is stable.
 
 The IR should extend `JoinOperation` rather than create unrelated operation families. Required fields include:
 
-- method: `exists`, `not_exists`, `join_many`, `join_one` with dedupe, `temporal_one`, or `as_of_one`;
+- method: `exists`, `not_exists`, `inner_join`, `lookup_join` with dedupe, `temporal_one`, or `as_of_one`;
 - cardinality: preserves rows, filters rows, multiplies rows, or selects one right row;
 - right input scope and deterministic occurrence id;
 - ordered key pairs and equality kind;
@@ -134,8 +134,8 @@ The IR should extend `JoinOperation` rather than create unrelated operation fami
 - runtime check requirements, when a policy asks for data-dependent validation.
 
 The PySpark target plan stores analytical join metadata on shared `PySparkJoinRecipe` records. Existence joins map to
-left semi/anti join modes, `join_many(...)` maps to ordinary row-multiplying join modes plus optional strategy hints,
-and deduped `join_one(...)` carries a `PySparkJoinDedupeRecipe` with direction, order expression, and tie policy.
+left semi/anti join modes, `inner_join(...)` maps to ordinary row-multiplying join modes plus optional strategy hints,
+and deduped `lookup_join(...)` carries a `PySparkJoinDedupeRecipe` with direction, order expression, and tie policy.
 Temporal joins add dedicated policy records for the event-time expression, right-side validity bounds, and overlap
 policy. As-of joins may add a dedicated policy record when implemented.
 
@@ -146,13 +146,13 @@ Online execution and generated code must consume those recipes through the share
 Diagnostics should say which cardinality shape the join has and why a source form is unsupported. Join warnings must
 distinguish between unproven uniqueness, unproven dedupe ties, and unproven temporal-window overlap.
 
-Traceability should show existence joins as filters, `join_many(...)` as row-multiplying dependencies, dedupe policies as
+Traceability should show existence joins as filters, `inner_join(...)` as row-multiplying dependencies, dedupe policies as
 right-side prejoin reductions, and temporal joins as dependencies on both key fields and time-validity fields.
 
 ## Implementation Notes
 
 - Add backend capability requirements before lowering a new join form.
 - Add syntax only with semantic tests and online/generated parity tests.
-- Keep v2 existence joins, `join_many(...)`, and deterministic lookup dedupe independent of temporal joins.
+- Keep v2 existence joins, `inner_join(...)`, and deterministic lookup dedupe independent of temporal joins.
 - Keep temporal and as-of joins batch-only until streaming compatibility is specified.
 - Add examples showing when a hook is still the right escape hatch.

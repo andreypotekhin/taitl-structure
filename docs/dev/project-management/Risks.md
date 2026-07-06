@@ -134,7 +134,7 @@ would make generated code technically valid while producing misleading analytica
 
 ### Mitigation
 
-- Keep v1 `join_one(...)` narrow and never silently dedupe right rows.
+- Keep v1 `lookup_join(...)` narrow and never silently dedupe right rows.
 - Make every analytical join declare row-preserving, row-filtering, row-multiplying, or select-one cardinality.
 - Require deterministic tie and overlap policies for deduped, temporal, and as-of joins.
 - Surface join cardinality in diagnostics, static traceability, and `structure explain`.

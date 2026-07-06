@@ -20,7 +20,7 @@ This reference covers the compiler behavior for:
 - Python literal capture in expression positions;
 - expression helper calls and `@expr_fn` expansion;
 - `where(...)` operation capture;
-- `join_one(...)` operation capture;
+- `lookup_join(...)` operation capture;
 - schema constructor projection capture;
 - schema base overlay expansion;
 - active transform, subtransform, field, and source context tracking;
@@ -105,7 +105,7 @@ order.id
 lower(trim(order.customer_id))
 upper(trim(order.customer_id))
 where(order.id.is_not_null())
-join_one(on=order.customer_id == customer.id, how=Join.LEFT)
+lookup_join(on=order.customer_id == customer.id, how=Join.LEFT)
 OrderNormalized(id=order.id)
 OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
@@ -139,7 +139,7 @@ For each compiled subtransform, the engine:
 2. Creates one symbolic driving-row proxy and one symbolic relation proxy for each additional schema parameter.
 3. Creates symbolic input scopes for every declared transform input accessible through `self`.
 4. Calls the user method with all symbolic parameters in declaration order.
-5. Records `where(...)` and `join_one(...)` calls in source order as they occur.
+5. Records `where(...)` and `lookup_join(...)` calls in source order as they occur.
 6. Captures one returned schema construction as one projection, or a fixed tuple as ordered result projections.
 7. Builds one deterministic `StepPlan`.
 8. Discards the active context before moving to the next subtransform.
@@ -225,8 +225,8 @@ Rules:
 - Field access order is not itself an operation. Only expressions using the field in filters, joins, or projections are
   recorded in the final step.
 - The first proxy is the current row. Additional relation proxies become readable projection scopes only after
-  `join_one(...)` records their relational relationship.
-- `join_one(...)` returns or updates a relation proxy whose fields read from the joined right-side scope.
+  `lookup_join(...)` records their relational relationship.
+- `lookup_join(...)` returns or updates a relation proxy whose fields read from the joined right-side scope.
 - A constructed row proxy may be used for intermediate symbolic schema objects created inside a method, such as
   `flags = PublicationFlags(...)`.
 
@@ -359,21 +359,21 @@ source context
 
 ## Joins
 
-`join_one(...)` records a lookup join operation and returns a relation proxy with joined-field access.
+`lookup_join(...)` records a lookup join operation and returns a relation proxy with joined-field access.
 
 Rules:
 
-- `join_one(...)` is valid only during symbolic execution.
+- `lookup_join(...)` is valid only during symbolic execution.
 - The documented form stays bare when `on` references exactly one unjoined declared input scope or schema relation
   parameter.
 - Legacy explicit-selection overloads, when used, accept only declared input scopes or schema relation parameters in
   v1.
-- Member joins such as `self.customers.join_one(...)` are rejected with migration guidance.
+- Member joins such as `self.customers.lookup_join(...)` are rejected with migration guidance.
 - `on` and `how` are required.
 - `hint` is optional.
 - The `on` argument is captured as a symbolic expression.
 - The engine records the join in source order before returning the relation proxy.
-- For schema relation parameters and cached class input scopes, the symbolic proxy is updated after `join_one(...)` so
+- For schema relation parameters and cached class input scopes, the symbolic proxy is updated after `lookup_join(...)` so
   later field access reads the joined scope even when the return value is not assigned.
 - Inferred and explicit joins must append equivalent ordered join operations.
 - The joined scope occurrence id must be deterministic.
@@ -386,7 +386,7 @@ Minimum join operation metadata:
 ```text
 joined input name
 joined input schema
-join operation: join_one
+join operation: lookup_join
 join type
 optional hint
 condition expression

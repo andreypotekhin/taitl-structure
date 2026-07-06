@@ -232,7 +232,7 @@ Default hooks should remain minimal, but advanced hooks should have an opt-in pa
 Resolved by [JoinSemantics.md](../specifications/JoinSemantics.md) and decision
 [D06172607.Join-semantics.md](decisions/D06172607.Join-semantics.md).
 
-`join_one(...)` needs precise semantics before implementation.
+`lookup_join(...)` needs precise semantics before implementation.
 
 Define support for:
 
@@ -245,12 +245,12 @@ Define support for:
 - field name collisions;
 - join order;
 - broadcast hints;
-- v2 `join_many(...)` row multiplication.
+- v2 `inner_join(...)` row multiplication.
 
 Composite joins should be supported early:
 
 ```python
-join_one(
+lookup_join(
     on=(customer.country == order.country)
        & (customer.id == order.customer_id),
     how=Join.LEFT,
@@ -453,7 +453,7 @@ Add tests for:
 - ambiguous public methods;
 - bad source order;
 - unsupported Python methods;
-- `join_one(...)` without uniqueness warning;
+- `lookup_join(...)` without uniqueness warning;
 - duplicate output fields;
 - non-boolean filters;
 - `@expr_fn` returning non-expression values.
@@ -634,7 +634,7 @@ Resolved by [AnalyticalJoinCoverage.md](../specifications/AnalyticalJoinCoverage
 
 Remaining: implementation of AnalyticalJoinCoverage.md
 
-The v1 `join_one(...)` design is disciplined, but real analytical pipelines often need semi joins, anti joins,
+The v1 `lookup_join(...)` design is disciplined, but real analytical pipelines often need semi joins, anti joins,
 existence checks, temporal/as-of joins, slowly changing dimension lookups, deduped lookup policies, and row-multiplying
 joins.
 
@@ -643,11 +643,11 @@ would reduce optimizer visibility and make traceability less useful in exactly t
 
 Recommended direction:
 
-- Keep v1 `join_one(...)` narrow, but explicitly document the common join patterns it does not cover.
-- Prioritize v2 join forms by production frequency: semi/anti existence joins, `join_many(...)`, prejoin dedupe
+- Keep v1 `lookup_join(...)` narrow, but explicitly document the common join patterns it does not cover.
+- Prioritize v2 join forms by production frequency: semi/anti existence joins, `inner_join(...)`, prejoin dedupe
   policies, and temporal lookup joins.
 - Design temporal and SCD-style joins around explicit cardinality and validity-window semantics.
-- Add examples showing when to model a lookup as `join_one(...)`, when to wait for v2 syntax, and when a hook is the
+- Add examples showing when to model a lookup as `lookup_join(...)`, when to wait for v2 syntax, and when a hook is the
   honest escape hatch.
 
 ## C28. Operational Integration Recipes Are Missing

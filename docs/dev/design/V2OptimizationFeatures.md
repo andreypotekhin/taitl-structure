@@ -56,7 +56,7 @@ Caching must be explicit. Structure should not silently cache.
 Extend join hints beyond broadcast.
 
 ```python
-join_one(
+lookup_join(
     on=customer.id == order.customer_id,
     how=Join.LEFT,
     strategy=JoinStrategy.BROADCAST,

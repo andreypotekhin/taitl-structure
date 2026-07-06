@@ -1,4 +1,4 @@
-from structure import Join, String, Structure, Transform, field, input, join_one, output, transform
+from structure import Join, String, Structure, Transform, field, input, lookup_join, output, transform
 from structure.app.dsl.api import compile_transform
 
 
@@ -33,7 +33,7 @@ def test_multiple_schema_parameters_and_results_are_explicit() -> None:
             order: Order,
             product: Product,
         ) -> tuple[Enriched, Enriched]:
-            product = join_one(
+            product = lookup_join(
                 product,
                 on=product.id == order.product_id,
                 how=Join.LEFT,

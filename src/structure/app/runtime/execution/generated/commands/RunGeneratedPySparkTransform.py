@@ -4,6 +4,7 @@ import importlib
 from types import ModuleType
 
 from structure.app.dsl.model.transforms.Transform import Transform
+from structure.app.runtime.execution.logic.SparkConnectRuntimeDiagnostics import spark_connect_runtime_error
 from structure.app.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.app.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.app.runtime.session.model.TransformResult import TransformResult
@@ -31,7 +32,18 @@ class RunGeneratedPySparkTransform:
             ) from error
 
         runner = generated_class(spark=session.spark, ctx=session.ctx)
-        result = runner.run(**invocation._structure_bound_inputs)
+        try:
+            result = runner.run(**invocation._structure_bound_inputs)
+        except Exception as error:
+            boundary = spark_connect_runtime_error(
+                invocation,
+                session=session,
+                error=error,
+                surface="generated transform or hook code",
+            )
+            if boundary is not None:
+                raise boundary from error
+            raise
         if isinstance(result, TransformResult):
             return result
         if hasattr(result, "as_dict"):

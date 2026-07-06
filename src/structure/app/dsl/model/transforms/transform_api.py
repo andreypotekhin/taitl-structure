@@ -7,7 +7,7 @@ from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import current_context
 from structure.app.dsl.model.expr.expressions import literal
-from structure.app.dsl.model.expr.InputScope import InputScope, join_one
+from structure.app.dsl.model.expr.InputScope import InputScope, lookup_join
 from structure.app.dsl.model.schemas.Projection import Projection
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.BindingSelector import BindingSelector, SelectedDeclaration

@@ -22,7 +22,7 @@ class JoinPlan:
     how: Join
     hint: JoinHint | None = None
     strategy: JoinStrategy | None = None
-    method: JoinMethod = JoinMethod.ONE
+    method: JoinMethod = JoinMethod.LOOKUP
     dedupe: JoinDedupe | None = None
     temporal: JoinTemporal | None = None
     as_of: JoinAsOf | None = None

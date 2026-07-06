@@ -5,6 +5,7 @@ import pytest
 
 from structure import SchemaMode
 from structure.app.runtime.execution.online.logic.PySparkHookInvoker import HookInputs, PySparkHookInvoker
+from structure.app.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 
 
@@ -70,6 +71,33 @@ def test_online_hooks_can_return_multiple_output_lanes() -> None:
     assert frames["invalid"] == "invalid-orders-frame"
 
 
+def test_spark_connect_hook_classic_only_failure_reports_boundary_diagnostic() -> None:
+    """Spark Connect hook failures explain the unsupported API boundary."""
+
+    with pytest.raises(StructureRuntimeError) as raised:
+        PySparkHookInvoker().apply(
+            (_hook("inspect_spark_context", lanes=("orders",), outputs=("orders",)),),
+            frames={"orders": "orders-frame"},
+            inputs=None,
+            invocation=cast(Any, ClassicOnlyHook()),
+            session=SimpleNamespace(
+                spark="spark",
+                ctx=None,
+                execution_mode="online",
+                target_backend="pyspark",
+                target_profile=">=3.5,<4.1",
+                target_variant="spark-connect",
+            ),
+        )
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == "CONNECT-E2601"
+    assert diagnostic.target_variant == "spark-connect"
+    assert diagnostic.context["surface"] == "hook inspect_spark_context"
+    assert "Spark Connect cannot access SparkContext" in diagnostic.problem
+    assert 'target_variant = "ordinary"' in diagnostic.use
+
+
 def _hook(
     name: str,
     *,
@@ -106,3 +134,9 @@ class RecordingHook:
     def split_orders(self, *, orders, spark, ctx):
         self.calls.append({"orders": orders, "spark": spark, "ctx": ctx, "inputs": None})
         return f"valid-{orders}", f"invalid-{orders}"
+
+
+class ClassicOnlyHook:
+
+    def inspect_spark_context(self, *, orders, spark, ctx):
+        raise RuntimeError("SparkContext is not supported in Spark Connect")

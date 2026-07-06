@@ -41,13 +41,13 @@ from structure import (
     full_join,
     group_by,
     grouping_id,
+    inner_join,
     input,
     is_grouped,
-    join_many,
-    join_one,
     lag,
     last_value,
     lead,
+    lookup_join,
     lower,
     map_filter,
     map_keys,
@@ -433,7 +433,7 @@ class BatchJoinFeatures(Transform):
     joined = output(JoinedBatch)
 
     def add_customer(self, row: RawBatch, customer: Customer) -> CustomerBatch:
-        customer = join_one(customer, on=row.account_id == customer.id, how=Join.LEFT, hint=JoinHint.BROADCAST)
+        customer = lookup_join(customer, on=row.account_id == customer.id, how=Join.LEFT, hint=JoinHint.BROADCAST)
         return CustomerBatch(
             account_id=row.account_id,
             event_id=row.event_id,
@@ -445,7 +445,7 @@ class BatchJoinFeatures(Transform):
     def add_product(self, row: CustomerBatch, product: Product, blocked_product: BlockedProduct) -> ProductBatch:
         where(exists(on=row.event_id == product.id))
         where(not_exists(on=row.event_id == blocked_product.id))
-        product = join_one(
+        product = lookup_join(
             product,
             on=row.event_id == product.id,
             how=Join.LEFT,
@@ -478,10 +478,9 @@ class BatchJoinFeatures(Transform):
         )
 
     def add_shipments(self, row: PromotedBatch, shipment: Shipment) -> JoinedBatch:
-        shipment = join_many(
+        shipment = inner_join(
             shipment,
             on=row.event_id == shipment.event_id,
-            how=Join.INNER,
             strategy=JoinStrategy.SHUFFLE_HASH,
         )
         return JoinedBatch(
@@ -510,9 +509,8 @@ def test_completed_batch_feature_set_exercises_sprint08_feature_families_under_s
     assert _operation_kinds(plans) >= {"aggregate", "drop_duplicates", "join", "selected_rows"}
     assert _join_methods(plans) >= {
         "exists",
-        "join_many",
-        "join_one",
-        "join_rowset",
+        "lookup_join",
+        "rowset_join",
         "not_exists",
         "temporal_one",
     }

@@ -567,7 +567,7 @@ class CompileTransform:
                         f"{transform_class.__name__}.{member} reads relation parameter "
                         f"{parameter} before it is joined."
                     ),
-                    use=(f"Use join_one({parameter}, on=...) " f"before reading its fields."),
+                    use=(f"Use left_join({parameter}, on=...) or lookup_join({parameter}, on=...) before reading its fields."),
                     context={"input": parameter},
                 )
 
@@ -1921,23 +1921,14 @@ class CompileTransform:
     ) -> list[Diagnostic]:
         diagnostics: list[Diagnostic] = []
         for occurrence, join in enumerate(joins, start=1):
-            if join.method is JoinMethod.ONE and join.how not in {Join.LEFT, Join.INNER}:
+            if join.method is JoinMethod.LOOKUP and join.how not in {Join.LEFT, Join.INNER}:
                 raise self._join_error(
                     transform_class,
                     member,
                     join.input_name,
                     occurrence,
-                    f"v1 join_one(...) supports Join.LEFT and Join.INNER, not {join.how!r}.",
-                    "Use Join.LEFT or Join.INNER, or move non-v1 join semantics into an explicit hook.",
-                )
-            if join.method is JoinMethod.MANY and join.how not in {Join.LEFT, Join.INNER}:
-                raise self._join_error(
-                    transform_class,
-                    member,
-                    join.input_name,
-                    occurrence,
-                    f"join_many(...) supports Join.LEFT and Join.INNER, not {join.how!r}.",
-                    "Use join_rowset(...) or a right_join/full_join/cross_join shortcut for broad rowset joins.",
+                    f"lookup_join(...) supports Join.LEFT and Join.INNER, not {join.how!r}.",
+                    "Use Join.LEFT or Join.INNER, or use rowset_join(...) for broad rowset joins.",
                 )
             if join.method is JoinMethod.ROWSET and join.how not in {Join.LEFT, Join.INNER, Join.RIGHT, Join.FULL, Join.CROSS}:
                 raise self._join_error(
@@ -1945,7 +1936,7 @@ class CompileTransform:
                     member,
                     join.input_name,
                     occurrence,
-                    f"join_rowset(...) does not support join type {join.how!r}.",
+                    f"rowset_join(...) does not support join type {join.how!r}.",
                     "Use Join.LEFT, Join.INNER, Join.RIGHT, Join.FULL, or Join.CROSS.",
                 )
             if join.hint is not None and not isinstance(join.hint, JoinHint):
@@ -1984,15 +1975,15 @@ class CompileTransform:
                 self._validate_join_pair(transform_class, member, join.input_name, occurrence, left, right)
 
             if (
-                join.method is JoinMethod.ONE
+                join.method is JoinMethod.LOOKUP
                 and join.dedupe is None
                 and not self._unique_join(join.input_name, join.input_schema, conditions)
             ):
                 diagnostics.append(
                     Diagnostic(
                         entry=diagnostic_registry.get("JOIN-W0601"),
-                        problem=f"join_one(...) uniqueness is not proven for input {join.input_name}.",
-                        use="Mark the joined key field primary_key=True, declare a unique key, or use v2 join_many(...) when multiplication is intended.",
+                        problem=f"lookup_join(...) uniqueness is not proven for input {join.input_name}.",
+                        use="Mark the joined key field primary_key=True, declare a unique key, or use left_join(...) or inner_join(...) when multiplication is intended.",
                         context={"input": join.input_name, "occurrence": str(occurrence)},
                         source=f"{transform_class.__module__}.{transform_class.__name__}.{member}",
                     )
@@ -2129,7 +2120,7 @@ class CompileTransform:
                 member,
                 input_name,
                 occurrence,
-                f"join_one(dedupe=...) ties must be a TiePolicy value, not {type(dedupe.ties).__name__}.",
+                f"lookup_join(dedupe=...) ties must be a TiePolicy value, not {type(dedupe.ties).__name__}.",
                 "Use TiePolicy.ERROR or omit ties=.",
             )
         if dedupe.direction not in {"latest", "earliest"}:
@@ -2138,7 +2129,7 @@ class CompileTransform:
                 member,
                 input_name,
                 occurrence,
-                f"join_one(dedupe=...) direction {dedupe.direction!r} is not supported.",
+                f"lookup_join(dedupe=...) direction {dedupe.direction!r} is not supported.",
                 "Use JoinDedupe.latest_by(...) or JoinDedupe.earliest_by(...).",
             )
         scopes = self._scopes(dedupe.order_by)
@@ -2148,7 +2139,7 @@ class CompileTransform:
                 member,
                 input_name,
                 occurrence,
-                "join_one(dedupe=...) order_by must read only the joined input.",
+                "lookup_join(dedupe=...) order_by must read only the joined input.",
                 "Use a right-side field such as JoinDedupe.latest_by(customer.updated_at).",
             )
 
@@ -2194,7 +2185,7 @@ class CompileTransform:
                 member,
                 input_name,
                 occurrence,
-                "join_rowset(...) predicate must reference the joined input.",
+                "rowset_join(...) predicate must reference the joined input.",
                 "Compare the joined input with the current row or another joined scope.",
             )
         if not scopes - {input_name}:
@@ -2203,7 +2194,7 @@ class CompileTransform:
                 member,
                 input_name,
                 occurrence,
-                "join_rowset(...) predicate cannot reference only the joined input.",
+                "rowset_join(...) predicate cannot reference only the joined input.",
                 "Compare the joined input with the current row or another joined scope.",
             )
         return self._equality_conditions(predicate)

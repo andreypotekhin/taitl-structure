@@ -681,7 +681,7 @@
       "kind": "function",
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "inner_join",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None, strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
     },
     "input": {
       "dataclass_fields": [],
@@ -698,30 +698,6 @@
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "is_grouped",
       "signature": "(value: 'object') -> 'Expression'"
-    },
-    "join_many": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "function",
-      "module": "structure.app.dsl.model.expr.InputScope",
-      "qualname": "join_many",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', how: 'Join' = <Join.INNER: 'inner'>, strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
-    },
-    "join_one": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "function",
-      "module": "structure.app.dsl.model.expr.InputScope",
-      "qualname": "join_one",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', how: 'Join' = <Join.LEFT: 'left'>, hint: 'JoinHint | None' = None, dedupe: 'JoinDedupe | None' = None) -> 'Relation | InputScope'"
-    },
-    "join_rowset": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "function",
-      "module": "structure.app.dsl.model.expr.InputScope",
-      "qualname": "join_rowset",
-      "signature": "(relation: 'Relation | None' = None, *, left: 'object | None' = None, right: 'Relation | None' = None, on: 'object | None' = None, how: 'Join' = <Join.INNER: 'inner'>, strategy: 'JoinStrategy | None' = None, allow_cartesian: 'bool' = False) -> 'Relation | InputScope'"
     },
     "lag": {
       "dataclass_fields": [],
@@ -769,7 +745,15 @@
       "kind": "function",
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "left_join",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None, strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
+    },
+    "lookup_join": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.InputScope",
+      "qualname": "lookup_join",
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', how: 'Join' = <Join.LEFT: 'left'>, hint: 'JoinHint | None' = None, dedupe: 'JoinDedupe | None' = None) -> 'Relation | InputScope'"
     },
     "lower": {
       "dataclass_fields": [],
@@ -994,6 +978,14 @@
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "rows_between",
       "signature": "(start: \"'WindowBound'\", end: \"'WindowBound'\") -> \"'WindowFrame'\""
+    },
+    "rowset_join": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.InputScope",
+      "qualname": "rowset_join",
+      "signature": "(relation: 'Relation | None' = None, *, left: 'object | None' = None, right: 'Relation | None' = None, on: 'object | None' = None, how: 'Join' = <Join.INNER: 'inner'>, hint: 'JoinHint | None' = None, strategy: 'JoinStrategy | None' = None, allow_cartesian: 'bool' = False) -> 'Relation | InputScope'"
     },
     "stddev": {
       "dataclass_fields": [],

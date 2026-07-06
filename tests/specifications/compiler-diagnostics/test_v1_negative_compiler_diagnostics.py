@@ -15,7 +15,7 @@ from structure import (
     coalesce,
     field,
     input,
-    join_one,
+    lookup_join,
     output,
     to_decimal,
     transform,
@@ -258,7 +258,7 @@ def test_v1_left_joined_non_nullable_field_is_nullable_until_guarded() -> None:
         clean = output(LabelClean)
 
         def normalize(self, row: Raw) -> LabelClean:
-            item = join_one(self.lookup, on=self.lookup.id == row.id, how=Join.LEFT)
+            item = lookup_join(self.lookup, on=self.lookup.id == row.id, how=Join.LEFT)
             return LabelClean(label=item.label)
 
     with pytest.raises(StructureCompileError) as raised:
@@ -277,7 +277,7 @@ def test_v1_join_on_primary_key_compiles_without_uniqueness_warning() -> None:
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            join_one(self.lookup, on=self.lookup.id == row.id, how=Join.LEFT)
+            lookup_join(self.lookup, on=self.lookup.id == row.id, how=Join.LEFT)
             return Clean(id=row.id)
 
     plan = compile_transform(UniqueJoin)
@@ -293,7 +293,7 @@ def test_v1_join_on_primary_key_accepts_current_row_left_operand() -> None:
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            join_one(self.lookup, on=row.id == self.lookup.id, how=Join.LEFT)
+            lookup_join(self.lookup, on=row.id == self.lookup.id, how=Join.LEFT)
             return Clean(id=row.id)
 
     plan = compile_transform(UniqueJoin)
@@ -301,7 +301,7 @@ def test_v1_join_on_primary_key_accepts_current_row_left_operand() -> None:
     assert [diagnostic.code for diagnostic in plan.diagnostics] == []
 
 
-def test_v1_unproven_join_one_key_emits_uniqueness_warning() -> None:
+def test_v1_unproven_lookup_join_key_emits_uniqueness_warning() -> None:
     @transform
     class UnprovenJoin(Transform):
         rows = input(Raw)
@@ -309,7 +309,7 @@ def test_v1_unproven_join_one_key_emits_uniqueness_warning() -> None:
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            join_one(self.lookup, on=self.lookup.group == row.id, how=Join.LEFT)
+            lookup_join(self.lookup, on=self.lookup.group == row.id, how=Join.LEFT)
             return Clean(id=row.id)
 
     plan = compile_transform(UnprovenJoin)
@@ -327,7 +327,7 @@ def test_v1_or_join_condition_reports_join_diagnostic() -> None:
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            join_one(self.lookup, on=(self.lookup.id == row.id) | (self.lookup.group == row.id), how=Join.LEFT)
+            lookup_join(self.lookup, on=(self.lookup.id == row.id) | (self.lookup.group == row.id), how=Join.LEFT)
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
@@ -348,7 +348,7 @@ def test_v1_same_side_join_condition_reports_join_diagnostic() -> None:
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            join_one(self.lookup, on=self.lookup.id == self.lookup.group, how=Join.LEFT)
+            lookup_join(self.lookup, on=self.lookup.id == self.lookup.group, how=Join.LEFT)
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
@@ -366,7 +366,7 @@ def test_v1_incompatible_join_key_types_report_join_diagnostic() -> None:
         clean = output(MoneyClean)
 
         def normalize(self, row: NullableRaw) -> MoneyClean:
-            join_one(self.lookup, on=self.lookup.id == row.count, how=Join.LEFT)
+            lookup_join(self.lookup, on=self.lookup.id == row.count, how=Join.LEFT)
             return MoneyClean(amount=coalesce(to_decimal(row.amount, precision=12, scale=2), 0), count=row.count)
 
     with pytest.raises(StructureCompileError) as raised:
@@ -384,14 +384,14 @@ def test_v1_inferred_join_without_relation_candidate_reports_diagnostic() -> Non
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            join_one(on=row.id == row.id, how=Join.LEFT)
+            lookup_join(on=row.id == row.id, how=Join.LEFT)
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
         compile_transform(MissingRelation)
 
     diagnostic = raised.value.diagnostic
-    assert "Cannot infer joined relation for join_one(...)" in diagnostic.problem_text()
+    assert "Cannot infer joined relation for lookup_join(...)" in diagnostic.problem_text()
     assert "does not reference an unjoined relation" in diagnostic.problem_text()
 
 
@@ -404,17 +404,17 @@ def test_v1_inferred_join_with_multiple_relation_candidates_reports_diagnostic()
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            join_one(on=self.lookup.id == self.accounts.customer_id, how=Join.LEFT)
+            lookup_join(on=self.lookup.id == self.accounts.customer_id, how=Join.LEFT)
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
         compile_transform(MultipleRelations)
 
     diagnostic = raised.value.diagnostic
-    assert "Cannot infer joined relation for join_one(...)" in diagnostic.problem_text()
+    assert "Cannot infer joined relation for lookup_join(...)" in diagnostic.problem_text()
     assert "lookup" in diagnostic.problem_text()
     assert "accounts" in diagnostic.problem_text()
-    assert "join_one(relation=" in diagnostic.problem_text()
+    assert "lookup_join(relation=" in diagnostic.problem_text()
 
 
 def test_v1_inferred_join_with_mixed_composite_candidates_reports_diagnostic() -> None:
@@ -426,7 +426,7 @@ def test_v1_inferred_join_with_mixed_composite_candidates_reports_diagnostic() -
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            join_one(
+            lookup_join(
                 on=(row.id == self.lookup.id) & (row.id == self.accounts.customer_id),
                 how=Join.LEFT,
             )
@@ -436,7 +436,7 @@ def test_v1_inferred_join_with_mixed_composite_candidates_reports_diagnostic() -
         compile_transform(MixedCompositeRelations)
 
     diagnostic = raised.value.diagnostic
-    assert "Cannot infer joined relation for join_one(...)" in diagnostic.problem_text()
+    assert "Cannot infer joined relation for lookup_join(...)" in diagnostic.problem_text()
     assert "lookup" in diagnostic.problem_text()
     assert "accounts" in diagnostic.problem_text()
 
@@ -449,7 +449,7 @@ def test_v1_inferred_join_self_only_relation_reports_diagnostic() -> None:
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            join_one(on=self.lookup.id == self.lookup.group, how=Join.LEFT)
+            lookup_join(on=self.lookup.id == self.lookup.group, how=Join.LEFT)
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
@@ -459,7 +459,7 @@ def test_v1_inferred_join_self_only_relation_reports_diagnostic() -> None:
     assert "Each join key pair must compare the inferred joined relation" in diagnostic.problem_text()
 
 
-def test_v1_member_join_one_reports_migration_diagnostic() -> None:
+def test_v1_member_lookup_join_reports_migration_diagnostic() -> None:
     @transform
     class MemberJoin(Transform):
         rows = input(Raw)
@@ -467,7 +467,7 @@ def test_v1_member_join_one_reports_migration_diagnostic() -> None:
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            self.lookup.join_one(on=self.lookup.id == row.id, how=Join.LEFT)
+            self.lookup.lookup_join(on=self.lookup.id == row.id, how=Join.LEFT)
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
@@ -475,5 +475,5 @@ def test_v1_member_join_one_reports_migration_diagnostic() -> None:
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0401"
-    assert "self.customers.join_one(...) is no longer supported" in diagnostic.problem_text()
-    assert "join_one(self.customers, on=...)" in diagnostic.problem_text()
+    assert "self.customers.lookup_join(...) is not supported" in diagnostic.problem_text()
+    assert "lookup_join(self.customers, on=...)" in diagnostic.problem_text()

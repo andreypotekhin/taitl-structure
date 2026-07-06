@@ -30,7 +30,7 @@ FieldRef(scope="orders", path=["customer_id"], type=string)
 - literals
 - expression calls
 - filters from `where(...)`
-- joins from `join_one(...)`
+- joins from `lookup_join(...)`
 - schema object construction
 - schema base overlay construction
 - expression helper expansions

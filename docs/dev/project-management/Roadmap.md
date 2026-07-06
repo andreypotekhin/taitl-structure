@@ -109,7 +109,7 @@ validation, compiler provenance, static dataflow traceability, and build integra
 - `@expr_fn` helpers.
 - `@before(method, lane=lane)` and `@after(method, lane=lane)` hooks.
 - Clean generated code with no hook machinery for hook-free transforms.
-- `join_one(...)` symbolic joins.
+- `lookup_join(...)` symbolic joins.
 - N-step serial joins across arbitrary named inputs.
 - Compiler provenance from source node to IR node to generated PySpark node.
 - Static dataflow traceability inferred from IR for transform, table, and column dependencies.
@@ -136,7 +136,7 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
 - **Analytical transforms:** typed `group_by(...)`, first-slice aggregations, selected-row helpers, deduplication,
   ranking, lag/lead, rolling metrics, compiler-visible Spark higher-order functions for arrays and maps, and advanced
   analytical coverage from [AdvancedAnalyticalOperations.md](../specifications/AdvancedAnalyticalOperations.md).
-- **Analytical joins:** existence predicates, `join_many(...)`, deterministic lookup dedupe, temporal validity-window
+- **Analytical joins:** existence predicates, `inner_join(...)`, deterministic lookup dedupe, temporal validity-window
   joins, and backward as-of joins from [AnalyticalJoinCoverage.md](../specifications/AnalyticalJoinCoverage.md).
 - **Full PySpark rowset joins:** right joins, full joins, cross joins, non-equi predicates, and disjunctive predicates
   from [FullPySparkJoinSupport.md](../specifications/FullPySparkJoinSupport.md).

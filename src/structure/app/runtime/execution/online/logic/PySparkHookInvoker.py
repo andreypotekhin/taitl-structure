@@ -1,4 +1,5 @@
 from structure.app.dsl.model.transforms.Transform import Transform
+from structure.app.runtime.execution.logic.SparkConnectRuntimeDiagnostics import spark_connect_runtime_error
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 
 
@@ -33,7 +34,18 @@ class PySparkHookInvoker:
             kwargs.update({"spark": session.spark, "ctx": session.ctx})
             if hook.pass_inputs:
                 kwargs["inputs"] = inputs
-            result = getattr(invocation, hook.name)(**kwargs)
+            try:
+                result = getattr(invocation, hook.name)(**kwargs)
+            except Exception as error:
+                boundary = spark_connect_runtime_error(
+                    invocation,
+                    session=session,
+                    error=error,
+                    surface=f"hook {hook.name}",
+                )
+                if boundary is not None:
+                    raise boundary from error
+                raise
             if len(hook.outputs) == 1:
                 frames[hook.outputs[0]] = result
                 continue

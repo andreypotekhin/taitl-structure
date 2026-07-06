@@ -18,16 +18,16 @@ def test_default_pyspark_support_range_resolves_without_importing_pyspark() -> N
 def test_v1_backend_profile_accepts_supported_lookup_joins() -> None:
     """The v1 PySpark backend profile accepts supported lookup joins."""
 
-    decision = Capabilities.resolve()().require(CapabilityRequirement(group="join", name="join_one"))
+    decision = Capabilities.resolve()().require(CapabilityRequirement(group="join", name="lookup_join"))
 
     assert decision.supported
     assert decision.code == ""
 
 
-def test_v2_join_many_is_supported_by_the_default_pyspark_profile() -> None:
+def test_v2_inner_join_is_supported_by_the_default_pyspark_profile() -> None:
     """The PySpark backend profile supports v2 row-multiplying joins."""
 
-    decision = Capabilities.resolve()().require(CapabilityRequirement(group="join", name="join_many"))
+    decision = Capabilities.resolve()().require(CapabilityRequirement(group="join", name="inner_join"))
 
     assert decision.supported
     assert decision.code == ""

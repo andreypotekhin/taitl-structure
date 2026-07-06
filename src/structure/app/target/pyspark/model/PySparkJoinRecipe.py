@@ -24,7 +24,7 @@ class PySparkJoinRecipe:
     hint: JoinHint | None
     predicate: PySparkExpressionRecipe
     occurrence: int
-    method: JoinMethod = JoinMethod.ONE
+    method: JoinMethod = JoinMethod.LOOKUP
     strategy: JoinStrategy | None = None
     dedupe: PySparkJoinDedupeRecipe | None = None
     temporal: PySparkJoinTemporalRecipe | None = None

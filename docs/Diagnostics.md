@@ -15,7 +15,7 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | SCHEMA-E0302 | error | Explicit conversion required | Use an explicit conversion helper such as `to_decimal(...)`. |
 | SCHEMA-E0303 | error | Incompatible output field type | Use a compatible expression type or explicit conversion. |
 | JOIN-E0601 | error | Unsupported join condition | Use equality pairs with `==` or `null_safe_eq(...)` and combine them with `&`. |
-| JOIN-W0601 | warning | join_one uniqueness is not proven | Mark the joined key `primary_key=True`, use `join_many(...)`, or provide deterministic `JoinDedupe`. |
+| JOIN-W0601 | warning | lookup_join uniqueness is not proven | Mark the joined key `primary_key=True`, use `inner_join(...)`, or provide deterministic `JoinDedupe`. |
 | GEN-E0901 | error | Generated output is stale | Run `structure compile` and commit the generated changes. |
 | GEN-E0902 | error | Generated transform is not importable | Rebuild generated code or use `execution_mode = "online"`. |
 | ONLINE-E1201 | error | Transform input is missing | Pass every declared input DataFrame before `run(session)`. |
@@ -23,6 +23,7 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | ONLINE-E1203 | error | Execution mode is unsupported | Use `execution_mode = "online"` or `execution_mode = "generated"`. |
 | BACKEND-E2401 | error | Unsupported backend target | Set `target_backend = "pyspark"` for v1. |
 | BACKEND-E2402 | error | Unsupported backend capability | Choose a supported operation or use a hook. |
+| CONNECT-E2601 | error | Spark Connect boundary is unsupported | Use Spark Connect DataFrame APIs or `target_variant = "ordinary"`. |
 | CLI-X1101 | internal | Unexpected internal failure | Rerun with debug output and report the code with a reproduction. |
 | STREAM-E0801 | error | Transform is not streaming-compatible | Keep the transform batch-only or rewrite the unsupported shape. |
 | STREAM-W0801 | warning | Hook streaming compatibility is unknown | Mark the hook `streaming_safe=True` only after verifying it. |
@@ -76,6 +77,9 @@ See [Diagnostics.md](reference/Diagnostics.md#backend-e2401).
 
 ### BACKEND-E2402
 See [Diagnostics.md](reference/Diagnostics.md#backend-e2402).
+
+### CONNECT-E2601
+See [SparkConnect.md](reference/SparkConnect.md#runtime-boundaries).
 
 ### CLI-X1101
 See [Diagnostics.md](reference/Diagnostics.md#cli-x1101).

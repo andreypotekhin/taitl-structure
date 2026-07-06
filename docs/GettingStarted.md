@@ -99,7 +99,7 @@ from structure import (
     expr_fn,
     where,
     after,
-    join_one,
+    lookup_join,
     lower,
     trim,
     to_decimal,
@@ -139,7 +139,7 @@ class EnrichOrders(Transform):
         return orders.where(F.col("total") >= 0)
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        join_one(
+        lookup_join(
             on=order.customer_id == customer.id,
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,

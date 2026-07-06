@@ -1,5 +1,4 @@
 from structure import (
-    Join,
     JoinHint,
     SchemaMode,
     Transform,
@@ -8,7 +7,7 @@ from structure import (
     coalesce,
     expr_fn,
     input,
-    join_one,
+    left_join,
     lower,
     output,
     to_decimal,
@@ -82,11 +81,10 @@ class EnrichOrders(Transform):
         return orders.where(F.col("net_total") >= 0)
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        customer = join_one(
+        customer = left_join(
             customer,
             on=(customer.tenant.tenant_id == order.tenant.tenant_id)
             & (self.clean_id(customer.id) == order.customer_id),
-            how=Join.LEFT,
             hint=JoinHint.BROADCAST,
         )
 
@@ -97,9 +95,8 @@ class EnrichOrders(Transform):
         )
 
     def add_product(self, order: OrderWithCustomer, product: Product) -> OrderWithProduct:
-        join_one(
+        left_join(
             on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id),
-            how=Join.LEFT,
         )
 
         where(product.id.is_not_null())
@@ -112,11 +109,10 @@ class EnrichOrders(Transform):
         )
 
     def add_promotion(self, order: OrderWithProduct, promotion: Promotion) -> OrderWithPromotion:
-        promotion = join_one(
+        promotion = left_join(
             promotion,
             on=(promotion.tenant.tenant_id == order.tenant.tenant_id)
             & self.clean_id(promotion.code).null_safe_eq(order.promotion_code),
-            how=Join.LEFT,
         )
 
         return OrderWithPromotion.base(order)(

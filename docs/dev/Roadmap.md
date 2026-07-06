@@ -26,7 +26,7 @@ expansion and any non-batch Spark Connect hardening left outside the Sprint 09 s
 - Explicit data-quality constraint boundary: v1 validation is schema-first and schema-only by default.
 - Filtering with `where(...)`.
 - Add/drop columns via schema projection.
-- Symbolic `join_one(...)`.
+- Symbolic `lookup_join(...)`.
 - N-step serial joins.
 - `@expr_fn` helpers.
 - `@before(method, lane=lane)` and `@after(method, lane=lane)` hooks.
@@ -49,7 +49,7 @@ expansion and any non-batch Spark Connect hardening left outside the Sprint 09 s
 - Explicit caching/persistence annotations.
 - Repartition/coalesce annotations.
 - Join strategy annotations.
-- `join_many(...)` and other row-multiplying or existence-oriented join forms.
+- `inner_join(...)` and other row-multiplying or existence-oriented join forms.
 - Opt-in data-quality constraint model for accepted values, ranges, uniqueness, referential checks, freshness, and
   row-count policies.
 - Phase-bound data-quality constraints for input, intermediate, and output validation.

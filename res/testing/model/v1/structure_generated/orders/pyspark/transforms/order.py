@@ -3,6 +3,7 @@
 
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
+from pyspark.sql import types as T
 from testing.model.v1.orders.transforms.order import EnrichOrders
 from testing.model.v1.structure_generated.orders.runtime.schema_assert import TransformResult, assert_schema, project_schema, HookInputs
 from testing.model.v1.structure_generated.orders.pyspark.schemas.customer import CUSTOMER_SCHEMA
@@ -36,26 +37,30 @@ class EnrichOrdersGenerated:
             products=products,
             promotions=promotions,
         )
+        _input_orders = orders
+        _input_customers = customers
+        _input_products = products
+        _input_promotions = promotions
 
         # Subtransform: normalize
         orders = self._impl.use_current_orders(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
         orders = orders.alias("order_raw")
         orders = orders.where((F.col("order_raw.id").isNotNull()) & (F.col("order_raw.customer_id").isNotNull()) & (F.col("order_raw.product_id").isNotNull()))
         orders = orders.select(
-            F.col("order_raw.tenant").alias("tenant"),
-            F.col("order_raw.audit").alias("audit"),
-            F.col("order_raw.business").alias("business"),
+            F.col("order_raw.tenant"),
+            F.col("order_raw.audit"),
+            F.col("order_raw.business"),
             F.lower(F.trim(F.col("order_raw.id"))).alias("id"),
             F.lower(F.trim(F.col("order_raw.customer_id"))).alias("customer_id"),
             F.lower(F.trim(F.col("order_raw.product_id"))).alias("product_id"),
             F.lower(F.trim(F.col("order_raw.promo-code"))).alias("promotion_code"),
             F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0)).alias("total"),
             F.coalesce(F.col("order_raw.discount").cast("decimal(12,2)"), F.lit(0)).alias("discount"),
-            (F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0)) - F.coalesce(F.col("order_raw.discount").cast("decimal(12,2)"), F.lit(0))).alias("net_total"),
-            F.coalesce(F.col("order_raw.quantity"), F.lit(1)).alias("quantity"),
-            F.col("order_raw.tags").alias("tags"),
-            F.col("order_raw.attributes").alias("attributes"),
-            F.col("order_raw.shipping").alias("shipping"),
+            (F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0)) - F.coalesce(F.col("order_raw.discount").cast("decimal(12,2)"), F.lit(0))).cast(T.DecimalType(12, 2)).alias("net_total"),
+            F.coalesce(F.col("order_raw.quantity"), F.lit(1)).cast(T.LongType()).alias("quantity"),
+            F.col("order_raw.tags"),
+            F.col("order_raw.attributes"),
+            F.col("order_raw.shipping"),
             (F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0)) > F.lit(1000)).alias("is_large"),
         )
         orders = self._impl.remove_negative_totals(orders=orders, spark=self.spark, ctx=self.ctx)
@@ -71,21 +76,21 @@ class EnrichOrdersGenerated:
             "left",
         )
         orders = orders.select(
-            F.col("order_normalized.tenant").alias("tenant"),
-            F.col("order_normalized.audit").alias("audit"),
-            F.col("order_normalized.business").alias("business"),
-            F.col("order_normalized.id").alias("id"),
-            F.col("order_normalized.customer_id").alias("customer_id"),
-            F.col("order_normalized.product_id").alias("product_id"),
-            F.col("order_normalized.promotion_code").alias("promotion_code"),
-            F.col("order_normalized.total").alias("total"),
-            F.col("order_normalized.discount").alias("discount"),
-            F.col("order_normalized.net_total").alias("net_total"),
-            F.col("order_normalized.quantity").alias("quantity"),
-            F.col("order_normalized.tags").alias("tags"),
-            F.col("order_normalized.attributes").alias("attributes"),
-            F.col("order_normalized.shipping").alias("shipping"),
-            F.col("order_normalized.is_large").alias("is_large"),
+            F.col("order_normalized.tenant"),
+            F.col("order_normalized.audit"),
+            F.col("order_normalized.business"),
+            F.col("order_normalized.id"),
+            F.col("order_normalized.customer_id"),
+            F.col("order_normalized.product_id"),
+            F.col("order_normalized.promotion_code"),
+            F.col("order_normalized.total"),
+            F.col("order_normalized.discount"),
+            F.col("order_normalized.net_total"),
+            F.col("order_normalized.quantity"),
+            F.col("order_normalized.tags"),
+            F.col("order_normalized.attributes"),
+            F.col("order_normalized.shipping"),
+            F.col("order_normalized.is_large"),
             F.col("customers.name").alias("customer_name"),
             F.col("customers.tier").alias("customer_tier"),
             F.col("customers.region").alias("customer_region"),
@@ -102,24 +107,24 @@ class EnrichOrdersGenerated:
         )
         orders = orders.where((F.col("products.id").isNotNull()))
         orders = orders.select(
-            F.col("order_with_customer.tenant").alias("tenant"),
-            F.col("order_with_customer.audit").alias("audit"),
-            F.col("order_with_customer.business").alias("business"),
-            F.col("order_with_customer.id").alias("id"),
-            F.col("order_with_customer.customer_id").alias("customer_id"),
-            F.col("order_with_customer.product_id").alias("product_id"),
-            F.col("order_with_customer.promotion_code").alias("promotion_code"),
-            F.col("order_with_customer.total").alias("total"),
-            F.col("order_with_customer.discount").alias("discount"),
-            F.col("order_with_customer.net_total").alias("net_total"),
-            F.col("order_with_customer.quantity").alias("quantity"),
-            F.col("order_with_customer.tags").alias("tags"),
-            F.col("order_with_customer.attributes").alias("attributes"),
-            F.col("order_with_customer.shipping").alias("shipping"),
-            F.col("order_with_customer.is_large").alias("is_large"),
-            F.col("order_with_customer.customer_name").alias("customer_name"),
-            F.col("order_with_customer.customer_tier").alias("customer_tier"),
-            F.col("order_with_customer.customer_region").alias("customer_region"),
+            F.col("order_with_customer.tenant"),
+            F.col("order_with_customer.audit"),
+            F.col("order_with_customer.business"),
+            F.col("order_with_customer.id"),
+            F.col("order_with_customer.customer_id"),
+            F.col("order_with_customer.product_id"),
+            F.col("order_with_customer.promotion_code"),
+            F.col("order_with_customer.total"),
+            F.col("order_with_customer.discount"),
+            F.col("order_with_customer.net_total"),
+            F.col("order_with_customer.quantity"),
+            F.col("order_with_customer.tags"),
+            F.col("order_with_customer.attributes"),
+            F.col("order_with_customer.shipping"),
+            F.col("order_with_customer.is_large"),
+            F.col("order_with_customer.customer_name"),
+            F.col("order_with_customer.customer_tier"),
+            F.col("order_with_customer.customer_region"),
             F.col("products.name").alias("product_name"),
             F.col("products.category").alias("product_category"),
             F.col("products.active").alias("product_active"),
@@ -136,52 +141,54 @@ class EnrichOrdersGenerated:
             "left",
         )
         orders = orders.select(
-            F.col("order_with_product.tenant").alias("tenant"),
-            F.col("order_with_product.audit").alias("audit"),
-            F.col("order_with_product.business").alias("business"),
-            F.col("order_with_product.id").alias("id"),
-            F.col("order_with_product.customer_id").alias("customer_id"),
-            F.col("order_with_product.product_id").alias("product_id"),
-            F.col("order_with_product.promotion_code").alias("promotion_code"),
-            F.col("order_with_product.total").alias("total"),
-            F.col("order_with_product.discount").alias("discount"),
-            F.col("order_with_product.net_total").alias("net_total"),
-            F.col("order_with_product.quantity").alias("quantity"),
-            F.col("order_with_product.tags").alias("tags"),
-            F.col("order_with_product.attributes").alias("attributes"),
-            F.col("order_with_product.shipping").alias("shipping"),
-            F.col("order_with_product.is_large").alias("is_large"),
-            F.col("order_with_product.customer_name").alias("customer_name"),
-            F.col("order_with_product.customer_tier").alias("customer_tier"),
-            F.col("order_with_product.customer_region").alias("customer_region"),
-            F.col("order_with_product.product_name").alias("product_name"),
-            F.col("order_with_product.product_category").alias("product_category"),
-            F.col("order_with_product.product_active").alias("product_active"),
-            F.col("order_with_product.product_list_price").alias("product_list_price"),
+            F.col("order_with_product.tenant"),
+            F.col("order_with_product.audit"),
+            F.col("order_with_product.business"),
+            F.col("order_with_product.id"),
+            F.col("order_with_product.customer_id"),
+            F.col("order_with_product.product_id"),
+            F.col("order_with_product.promotion_code"),
+            F.col("order_with_product.total"),
+            F.col("order_with_product.discount"),
+            F.col("order_with_product.net_total"),
+            F.col("order_with_product.quantity"),
+            F.col("order_with_product.tags"),
+            F.col("order_with_product.attributes"),
+            F.col("order_with_product.shipping"),
+            F.col("order_with_product.is_large"),
+            F.col("order_with_product.customer_name"),
+            F.col("order_with_product.customer_tier"),
+            F.col("order_with_product.customer_region"),
+            F.col("order_with_product.product_name"),
+            F.col("order_with_product.product_category"),
+            F.col("order_with_product.product_active"),
+            F.col("order_with_product.product_list_price"),
             F.col("promotions.name").alias("promotion_name"),
             F.col("promotions.discount").alias("promotion_discount"),
         )
         orders = self._impl.note_lookup_inputs(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
         assert_schema(orders, ORDER_WITH_PROMOTION_SCHEMA, name="OrderWithPromotion", mode="allow_extra_columns")
+        orders = project_schema(orders, ORDER_WITH_PROMOTION_SCHEMA)
+        assert_schema(orders, ORDER_WITH_PROMOTION_SCHEMA, name="OrderWithPromotion", mode="strict")
         assert_schema(orders, ORDER_WITH_PROMOTION_SCHEMA, name="OrderWithPromotion", mode="strict")
 
         # Subtransform: publish
         published = orders.alias("order_with_promotion")
         published = published.select(
-            F.col("order_with_promotion.tenant").alias("tenant"),
-            F.col("order_with_promotion.business").alias("business"),
-            F.col("order_with_promotion.id").alias("id"),
-            F.col("order_with_promotion.customer_id").alias("customer_id"),
-            F.col("order_with_promotion.customer_name").alias("customer_name"),
-            F.col("order_with_promotion.customer_tier").alias("customer_tier"),
-            F.col("order_with_promotion.product_name").alias("product_name"),
-            F.col("order_with_promotion.product_category").alias("product_category"),
-            F.col("order_with_promotion.promotion_name").alias("promotion_name"),
-            F.col("order_with_promotion.total").alias("total"),
-            F.col("order_with_promotion.discount").alias("discount"),
-            F.col("order_with_promotion.net_total").alias("net_total"),
-            F.col("order_with_promotion.quantity").alias("quantity"),
-            F.col("order_with_promotion.is_large").alias("is_large"),
+            F.col("order_with_promotion.tenant"),
+            F.col("order_with_promotion.business"),
+            F.col("order_with_promotion.id"),
+            F.col("order_with_promotion.customer_id"),
+            F.col("order_with_promotion.customer_name"),
+            F.col("order_with_promotion.customer_tier"),
+            F.col("order_with_promotion.product_name"),
+            F.col("order_with_promotion.product_category"),
+            F.col("order_with_promotion.promotion_name"),
+            F.col("order_with_promotion.total"),
+            F.col("order_with_promotion.discount"),
+            F.col("order_with_promotion.net_total"),
+            F.col("order_with_promotion.quantity"),
+            F.col("order_with_promotion.is_large"),
             F.col("order_with_promotion.promotion_name").isNotNull().alias("has_promotion"),
         )
         published = self._impl.add_quality_columns(published=published, spark=self.spark, ctx=self.ctx)

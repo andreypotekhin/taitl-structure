@@ -2,7 +2,20 @@ from typing import Any
 
 import pytest
 
-from structure import Join, String, Structure, Transform, after, before, field, input, join_one, lane, output, transform
+from structure import (
+    Join,
+    String,
+    Structure,
+    Transform,
+    after,
+    before,
+    field,
+    input,
+    lane,
+    lookup_join,
+    output,
+    transform,
+)
 from structure.app.compiler.api import Compiler
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
@@ -41,7 +54,7 @@ def test_multiple_schema_parameters_and_results_compile_in_order() -> None:
             order: OrderRaw,
             product: Product,
         ) -> tuple[OrderWithProduct, OrderWithProduct]:
-            product = join_one(
+            product = lookup_join(
                 product,
                 on=product.id == order.product_id,
                 how=Join.LEFT,
@@ -73,7 +86,7 @@ def test_unique_schema_parameters_are_inferred() -> None:
         enriched = output(OrderWithProduct)
 
         def add_product(self, order: OrderRaw, product: Product) -> OrderWithProduct:
-            product = join_one(product, on=product.id == order.product_id)
+            product = lookup_join(product, on=product.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product.name)
 
     step = compile_transform(AddProduct).steps[0]
@@ -109,7 +122,7 @@ def test_plural_parameter_name_disambiguates_same_schema_relation_inputs() -> No
 
         @transform(output=enriched)
         def add_product(self, order: OrderRaw, product2: Product) -> OrderWithProduct:
-            product2 = join_one(product2, on=product2.id == order.product_id)
+            product2 = lookup_join(product2, on=product2.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product2.name)
 
     step = compile_transform(AddProduct).steps[0]
@@ -158,7 +171,7 @@ def test_partial_explicit_input_declaration_disables_plural_parameter_inference(
 
         @transform(input=orders, output=enriched)
         def add_product(self, order: OrderRaw, product2: Product) -> OrderWithProduct:
-            product2 = join_one(product2, on=product2.id == order.product_id)
+            product2 = lookup_join(product2, on=product2.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product2.name)
 
     with pytest.raises(Exception, match="@transform\\(input=\\.\\.\\.\\) binds 1 source"):
@@ -173,7 +186,7 @@ def test_join_relation_can_be_inferred_from_on_clause() -> None:
         enriched = output(OrderWithProduct)
 
         def add_product(self, order: OrderRaw, product: Product) -> OrderWithProduct:
-            join_one(on=product.id == order.product_id, how=Join.LEFT)
+            lookup_join(on=product.id == order.product_id, how=Join.LEFT)
             return OrderWithProduct(id=order.id, product_name=product.name)
 
     step = compile_transform(AddProduct).steps[0]
@@ -192,7 +205,7 @@ def test_join_relation_can_be_inferred_from_reversed_operands() -> None:
         enriched = output(OrderWithProduct)
 
         def add_product(self, order: OrderRaw, product: Product) -> OrderWithProduct:
-            join_one(on=order.product_id == product.id, how=Join.LEFT)
+            lookup_join(on=order.product_id == product.id, how=Join.LEFT)
             return OrderWithProduct(id=order.id, product_name=product.name)
 
     step = compile_transform(AddProduct).steps[0]
@@ -209,7 +222,7 @@ def test_join_relation_can_be_inferred_from_class_input_scope() -> None:
         enriched = output(OrderWithProduct)
 
         def add_product(self, order: OrderRaw) -> OrderWithProduct:
-            join_one(on=self.products.id == order.product_id, how=Join.LEFT)
+            lookup_join(on=self.products.id == order.product_id, how=Join.LEFT)
             return OrderWithProduct(id=order.id, product_name=self.products.name)
 
     step = compile_transform(AddProduct).steps[0]
@@ -245,8 +258,8 @@ def test_serial_join_relation_can_be_inferred_from_earlier_joined_scope() -> Non
             product: Product,
             alias: ProductAlias,
         ) -> OrderWithProductAlias:
-            join_one(on=product.id == order.product_id, how=Join.LEFT)
-            join_one(on=alias.id == product.id, how=Join.LEFT)
+            lookup_join(on=product.id == order.product_id, how=Join.LEFT)
+            lookup_join(on=alias.id == product.id, how=Join.LEFT)
             return OrderWithProductAlias(
                 id=order.id,
                 product_name=product.name,
@@ -278,7 +291,7 @@ def test_array_input_binds_lane_parameters_in_order() -> None:
 
         @transform(input=[order_lane, product_lane], output=enriched)
         def add_product(self, order: OrderRaw, product: Product) -> OrderWithProduct:
-            product = join_one(product, on=product.id == order.product_id)
+            product = lookup_join(product, on=product.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product.name)
 
     step = compile_transform(AddProduct).steps[2]
@@ -299,7 +312,7 @@ def test_repeated_schema_parameters_require_explicit_inputs() -> None:
         enriched = output(OrderWithProduct)
 
         def add_product(self, order: OrderRaw, product: Product) -> OrderWithProduct:
-            product = join_one(product, on=product.id == order.product_id)
+            product = lookup_join(product, on=product.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product.name)
 
     try:
@@ -327,7 +340,7 @@ def test_multi_result_after_hooks_select_their_dataframe() -> None:
             order: OrderRaw,
             product: Product,
         ) -> tuple[OrderWithProduct, OrderWithProduct]:
-            product = join_one(product, on=product.id == order.product_id)
+            product = lookup_join(product, on=product.id == order.product_id)
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 
@@ -355,7 +368,7 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
             order: OrderRaw,
             product: Product,
         ) -> tuple[OrderWithProduct, OrderWithProduct]:
-            product = join_one(product, on=product.id == order.product_id)
+            product = lookup_join(product, on=product.id == order.product_id)
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 
@@ -407,7 +420,7 @@ def test_generated_plural_lane_hook_replaces_outputs_in_order() -> None:
             order: OrderRaw,
             product: Product,
         ) -> tuple[OrderWithProduct, OrderWithProduct]:
-            product = join_one(product, on=product.id == order.product_id)
+            product = lookup_join(product, on=product.id == order.product_id)
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 
@@ -446,7 +459,7 @@ def test_multi_result_after_hook_rejects_unproduced_output_selection() -> None:
             order: OrderRaw,
             product: Product,
         ) -> tuple[OrderWithProduct, OrderWithProduct]:
-            product = join_one(product, on=product.id == order.product_id)
+            product = lookup_join(product, on=product.id == order.product_id)
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 

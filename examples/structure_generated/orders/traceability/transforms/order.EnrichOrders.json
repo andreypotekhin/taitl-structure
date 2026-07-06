@@ -1231,12 +1231,12 @@
       },
       {
         "detail": {
-          "cardinality": "select_one",
+          "cardinality": "row_multiplying",
           "hint": "broadcast",
           "how": "left",
           "right_alias": "customers"
         },
-        "operation": "join_one",
+        "operation": "rowset_join",
         "sources": [
           "customer.tenant.tenant_id",
           "order.tenant.tenant_id",
@@ -1511,7 +1511,7 @@
           "right_alias": "products_3",
           "ties": "error"
         },
-        "operation": "join_one",
+        "operation": "lookup_join",
         "sources": [
           "product.tenant.tenant_id",
           "order.tenant.tenant_id",
@@ -2080,7 +2080,7 @@
           "right_alias": "shipments",
           "strategy": "shuffle_hash"
         },
-        "operation": "join_many",
+        "operation": "rowset_join",
         "sources": [
           "shipment.tenant.tenant_id",
           "order.tenant.tenant_id",

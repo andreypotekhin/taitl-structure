@@ -34,14 +34,14 @@ def test_default_pyspark_capabilities_do_not_import_pyspark() -> None:
 def test_supported_v1_requirement_passes() -> None:
     resolved = Capabilities.resolve()()
 
-    decision = resolved.require(CapabilityRequirement(group="join", name="join_one"))
+    decision = resolved.require(CapabilityRequirement(group="join", name="lookup_join"))
 
     assert decision.supported
     assert decision.code == ""
 
 
 @pytest.mark.parametrize(
-    "name", ["exists", "not_exists", "join_many", "temporal_one", "as_of_one", "left_semi_join", "left_anti_join"]
+    "name", ["exists", "not_exists", "inner_join", "temporal_one", "as_of_one", "left_semi_join", "left_anti_join"]
 )
 def test_supported_v2_join_requirement_passes(name: str) -> None:
     resolved = Capabilities.resolve()()
@@ -227,7 +227,7 @@ def test_spark_connect_accepts_completed_aggregate_batch_capabilities(name: str)
     [
         ("join", "exists"),
         ("join", "not_exists"),
-        ("join", "join_many"),
+        ("join", "inner_join"),
         ("join", "lookup_dedupe"),
         ("join", "temporal_one"),
         ("dedupe", "drop_duplicates"),
@@ -304,7 +304,7 @@ def test_unknown_pyspark_variant_uses_capability_diagnostic() -> None:
 
 
 def test_static_fixtures_evaluate_same_requirement_without_runtime_spark() -> None:
-    requirement = CapabilityRequirement(group="join", name="join_one")
+    requirement = CapabilityRequirement(group="join", name="lookup_join")
     default = PySparkCapabilities()
     restricted = PySparkCapabilities(supported=frozenset({("expression", "literal")}))
 

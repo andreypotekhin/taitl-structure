@@ -11,7 +11,7 @@ from structure import (
     Transform,
     field,
     input,
-    join_one,
+    lookup_join,
     output,
     transform,
     trim,
@@ -195,7 +195,7 @@ def test_where_requires_boolean_expression() -> None:
     assert "where(...) requires a boolean Structure expression" in raised.value.diagnostic.problem_text()
 
 
-def test_join_one_requires_boolean_expression() -> None:
+def test_lookup_join_requires_boolean_expression() -> None:
     """Join predicates reject non-boolean expressions before target lowering."""
 
     class Raw(Structure):
@@ -215,14 +215,14 @@ def test_join_one_requires_boolean_expression() -> None:
         published = output(Published)
 
         def publish(self, row: Raw, lookup: Lookup) -> Published:
-            join_one(lookup, on=row.total)
+            lookup_join(lookup, on=row.total)
             return Published(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
         compile_transform(BadJoin)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
-    assert "join_one(on=...) requires a boolean Structure expression" in raised.value.diagnostic.problem_text()
+    assert "lookup_join(on=...) requires a boolean Structure expression" in raised.value.diagnostic.problem_text()
 
 
 def test_bare_when_requires_otherwise() -> None:

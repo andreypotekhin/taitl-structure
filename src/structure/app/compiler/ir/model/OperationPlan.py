@@ -40,10 +40,9 @@ class OperationPlan:
     @staticmethod
     def join_operation(join: JoinPlan) -> "OperationPlan":
         cardinality = {
-            JoinMethod.ONE: OperationCardinality.SELECT_ONE,
+            JoinMethod.LOOKUP: OperationCardinality.SELECT_ONE,
             JoinMethod.EXISTS: OperationCardinality.ROW_FILTERING,
             JoinMethod.NOT_EXISTS: OperationCardinality.ROW_FILTERING,
-            JoinMethod.MANY: OperationCardinality.ROW_MULTIPLYING,
             JoinMethod.ROWSET: OperationCardinality.ROW_MULTIPLYING,
             JoinMethod.TEMPORAL_ONE: OperationCardinality.SELECT_ONE,
             JoinMethod.AS_OF_ONE: OperationCardinality.SELECT_ONE,

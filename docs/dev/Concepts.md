@@ -220,8 +220,8 @@ helpers that know about checked-in model code, fixture data, pytest fixtures, or
     - joined scope
     - repeated joined scope
   - join method
-    - `join_one`
-    - `join_many`
+    - `lookup_join`
+    - `inner_join`
   - join type
     - left join
     - inner join

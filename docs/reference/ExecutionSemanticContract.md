@@ -191,8 +191,8 @@ multiple filters
 expression helpers
 class-local @expr_fn helpers
 schema base overlays
-left join_one
-inner join_one
+left lookup_join
+inner lookup_join
 composite join keys
 null-safe join keys
 broadcast hints

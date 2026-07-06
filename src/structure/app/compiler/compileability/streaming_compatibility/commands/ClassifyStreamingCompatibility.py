@@ -161,7 +161,7 @@ class ClassifyStreamingCompatibility:
                     use="Keep this transform batch-only or move the as-of lookup into explicit streaming code.",
                 ),
             )
-        if join.method is JoinMethod.ROWSET:
+        if join.method is JoinMethod.ROWSET and self._broad_rowset_join(join):
             return (
                 StreamingFinding(
                     code="STREAM-E0801",
@@ -192,6 +192,21 @@ class ClassifyStreamingCompatibility:
                 use="Keep this transform batch-only or rewrite the lookup as a left or inner stream-static join.",
             ),
         )
+
+    def _broad_rowset_join(self, join: PySparkJoinRecipe) -> bool:
+        return (
+            join.how not in {Join.LEFT, Join.INNER}
+            or self._has_disjunction(join.predicate)
+            or self._has_non_equi_condition(join.predicate)
+        )
+
+    def _has_disjunction(self, expression: PySparkExpressionRecipe) -> bool:
+        return expression.kind == "or" or any(self._has_disjunction(argument) for argument in expression.args)
+
+    def _has_non_equi_condition(self, expression: PySparkExpressionRecipe) -> bool:
+        if expression.kind in {"gt", "lt", "le", "ge", "ne"}:
+            return True
+        return any(self._has_non_equi_condition(argument) for argument in expression.args)
 
     def _hook(self, step: str, hook: PySparkHookRecipe) -> tuple[StreamingFinding, ...]:
         if hook.streaming_safe:

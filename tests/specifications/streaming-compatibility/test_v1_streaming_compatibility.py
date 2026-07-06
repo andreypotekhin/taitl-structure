@@ -14,9 +14,9 @@ from structure import (
     exists,
     field,
     group_by,
+    inner_join,
     input,
-    join_many,
-    join_one,
+    lookup_join,
     not_exists,
     output,
     temporal_one,
@@ -96,7 +96,7 @@ class StreamingJoinMany(Transform):
     enriched = output(StreamEnriched)
 
     def expand(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
-        join_many(on=lookup.id == row.id, how=Join.INNER)
+        inner_join(on=lookup.id == row.id)
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
@@ -107,7 +107,7 @@ class StreamingDedupedLookup(Transform):
     enriched = output(StreamEnriched)
 
     def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
-        join_one(lookup, on=lookup.id == row.id, how=Join.LEFT, dedupe=JoinDedupe.latest_by(lookup.valid_from))
+        lookup_join(lookup, on=lookup.id == row.id, how=Join.LEFT, dedupe=JoinDedupe.latest_by(lookup.valid_from))
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
@@ -266,8 +266,8 @@ def test_v2_analytical_join_explain_output_names_join_shapes() -> None:
 
     assert "operations: exists(row_filtering), not_exists(row_filtering)" in exists_report
     assert "joins: lookup exists row_filtering, lookup not_exists row_filtering" in exists_report
-    assert "operations: join_many(row_multiplying)" in many_report
-    assert "joins: lookup join_many row_multiplying" in many_report
+    assert "operations: rowset_join(row_multiplying)" in many_report
+    assert "joins: lookup rowset_join row_multiplying" in many_report
     assert "dedupe=latest/error" in dedupe_report
     assert "temporal=closed_open/error" in temporal_report
     assert "as_of=backward/error" in as_of_report

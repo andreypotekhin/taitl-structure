@@ -41,7 +41,7 @@
 - `@expr_fn` helpers.
 - `@after(method, lane=lane)` and `@before(method, lane=lane)` hooks.
 - Hook signature validation.
-- `join_one(...)`.
+- `lookup_join(...)`.
 - N-step serial joins.
 - Clean no-hook generated code.
 - Structured compiler errors.
@@ -64,7 +64,7 @@
 - Caching and persistence annotations.
 - Repartition/coalesce annotations.
 - Join strategy annotations.
-- `join_many(...)` and other row-multiplying or existence-oriented join forms.
+- `inner_join(...)` and other row-multiplying or existence-oriented join forms.
 - Opt-in data-quality constraint model.
 - Phase-bound data-quality constraint execution.
 - Richer static dataflow explain output.

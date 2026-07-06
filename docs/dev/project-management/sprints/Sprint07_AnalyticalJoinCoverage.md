@@ -2,7 +2,7 @@
 
 ## Sprint Goal
 
-Add compiler-visible v2 join forms for common analytical pipelines while preserving the strict v1 `join_one(...)`
+Add compiler-visible v2 join forms for common analytical pipelines while preserving the strict v1 `lookup_join(...)`
 contract.
 
 ## Product Outcome
@@ -16,7 +16,7 @@ joins in Structure source instead of hiding common join logic in hooks.
 
 - `exists(...)` predicate for semi join semantics.
 - `not_exists(...)` predicate for anti join semantics.
-- `join_many(...)` for intentional row multiplication.
+- `inner_join(...)` for intentional row multiplication.
 - Deterministic `JoinDedupe.latest_by(...)` and `JoinDedupe.earliest_by(...)` policies.
 - `temporal_one(...)` for SCD-style validity-window lookups.
 - Backward `as_of_one(...)` with optional tolerance.
@@ -39,7 +39,7 @@ joins in Structure source instead of hiding common join logic in hooks.
 ## Relevant Specification Items
 
 - As a developer, I can use existence joins so that semi and anti filters stay compiler-visible.
-- As a developer, I can use `join_many(...)` so that row multiplication is explicit.
+- As a developer, I can use `inner_join(...)` so that row multiplication is explicit.
 - As a developer, I can dedupe lookup inputs with deterministic policies so that selected right rows are reviewable.
 - As a developer, I can model SCD-style temporal lookups with validity-window semantics.
 - As a developer, I can model backward as-of lookups with optional tolerance.
@@ -52,7 +52,7 @@ joins in Structure source instead of hiding common join logic in hooks.
 def with_items(self, order: OrderNormalized) -> OrderItemFact:
     where(exists(on=self.customers.id == order.customer_id))
 
-    join_many(
+    inner_join(
         on=self.order_items.order_id == order.id,
         how=Join.INNER,
     )
@@ -70,11 +70,11 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
 2. + Implement `exists(...)` and `not_exists(...)` symbolic predicates.
 3. + Lower existence joins through shared PySpark recipes.
 4. + Add no-Spark online/generated semantic-contract tests for existence joins.
-5. + Implement `join_many(...)` symbolic scope and IR.
-6. + Lower `join_many(...)` through shared PySpark recipes.
+5. + Implement `inner_join(...)` symbolic scope and IR.
+6. + Lower `inner_join(...)` through shared PySpark recipes.
 7. + Add row multiplication parity tests.
 8. + Add deterministic dedupe policy objects and checks.
-9. + Add deduped `join_one(...)` recipe lowering and parity tests.
+9. + Add deduped `lookup_join(...)` recipe lowering and parity tests.
 10. + Implement `temporal_one(...)` closed-open validity-window lookups.
 11. + Implement backward `as_of_one(...)`.
 12. + Update traceability, explain output, diagnostics, and streaming classification.
@@ -88,10 +88,10 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
   capability support, and the no-right-field-read guardrail.
 - [x] (2026-07-01) Extended v2 model fixtures and examples with product-existence and blocked-product anti-existence
   filters.
-- [x] (2026-07-01) Implemented `join_many(...)` as a row-multiplying `JoinPlan`, lowered it through shared PySpark
+- [x] (2026-07-01) Implemented `inner_join(...)` as a row-multiplying `JoinPlan`, lowered it through shared PySpark
   recipes, rendered join strategy hints, and covered generated/online recipe parity without live Spark.
 - [x] (2026-07-01) Added `JoinDedupe.latest_by(...)` and `JoinDedupe.earliest_by(...)`, validated right-side ordering,
-  lowered deduped `join_one(...)` through deterministic PySpark `row_number()` window recipes, and covered generated
+  lowered deduped `lookup_join(...)` through deterministic PySpark `row_number()` window recipes, and covered generated
   rendering plus online recipe interpretation without live Spark.
 - [x] (2026-07-02) Implemented `temporal_one(...)` closed-open validity-window lookup capture, validation, PySpark
   recipe lowering, generated rendering, online recipe interpretation, capability support, and traceability detail.
@@ -99,14 +99,14 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
   generated rendering, online recipe interpretation, capability support, traceability detail, and batch-only streaming
   classification.
 - [x] (2026-07-02) Completed analytical join explain reporting and streaming classification: existence and
-  `join_many(...)` stream-static forms are compatible, while dedupe, temporal, and as-of lookups are batch-only with
+  `inner_join(...)` stream-static forms are compatible, while dedupe, temporal, and as-of lookups are batch-only with
   registered findings.
 
 ## Acceptance Criteria
 
 - Existence joins preserve current-row schema and filter rows correctly.
 - Right-side duplicates do not change existence output.
-- `join_many(...)` multiplies rows and records row-multiplying cardinality in traceability.
+- `inner_join(...)` multiplies rows and records row-multiplying cardinality in traceability.
 - Deduped lookup joins never use nondeterministic Spark row choice.
 - Temporal joins use closed-open interval semantics and handle null `valid_to` as open-ended.
 - Backward as-of joins select the latest right row at or before the left time.
@@ -122,5 +122,5 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
 
 ## Notes
 
-Ship existence joins and `join_many(...)` before temporal joins. They deliver high value with fewer runtime policy
+Ship existence joins and `inner_join(...)` before temporal joins. They deliver high value with fewer runtime policy
 questions, and they establish the cardinality model needed by the later time-aware forms.

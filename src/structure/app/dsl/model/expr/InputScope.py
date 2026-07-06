@@ -31,11 +31,11 @@ class InputScope(RowScope):
         self._structure_input_schema = schema
         self._structure_joined_scope: RowScope | None = None
 
-    def join_one(self, *, on: Expression, how: Join = Join.LEFT, hint: JoinHint | None = None) -> RowScope:
+    def lookup_join(self, *, on: Expression, how: Join = Join.LEFT, hint: JoinHint | None = None) -> RowScope:
         raise TypeError(
-            "self.customers.join_one(...) is no longer supported. "
-            "Use join_one(self.customers, on=...) or add a relation parameter "
-            "and use join_one(customer, on=...)."
+            "self.customers.lookup_join(...) is not supported. "
+            "Use lookup_join(self.customers, on=...) or add a relation parameter "
+            "and use lookup_join(customer, on=...)."
         )
 
     def exists(self, *, on: Expression, hint: JoinHint | None = None) -> Expression:
@@ -43,28 +43,6 @@ class InputScope(RowScope):
 
     def not_exists(self, *, on: Expression, hint: JoinHint | None = None) -> Expression:
         return not_exists(self, on=on, hint=hint)
-
-    def join_many(
-        self,
-        *,
-        on: Expression,
-        how: Join = Join.INNER,
-        strategy: JoinStrategy | None = None,
-    ) -> RowScope:
-        return cast(RowScope, join_many(self, on=on, how=how, strategy=strategy))
-
-    def join_rowset(
-        self,
-        *,
-        on: Expression | None = None,
-        how: Join = Join.INNER,
-        strategy: JoinStrategy | None = None,
-        allow_cartesian: bool = False,
-    ) -> RowScope:
-        return cast(
-            RowScope,
-            join_rowset(self, on=on, how=how, strategy=strategy, allow_cartesian=allow_cartesian),
-        )
 
     def temporal_one(
         self,
@@ -138,7 +116,7 @@ Relation = TypeVar("Relation", bound=Structure | InputScope)
 
 
 @overload
-def join_one(
+def lookup_join(
     relation: Relation,
     *,
     on: object,
@@ -149,7 +127,7 @@ def join_one(
 
 
 @overload
-def join_one(
+def lookup_join(
     *,
     on: object,
     how: Join = Join.LEFT,
@@ -158,7 +136,7 @@ def join_one(
 ) -> InputScope: ...
 
 
-def join_one(
+def lookup_join(
     relation: Relation | None = None,
     *,
     on: object,
@@ -168,16 +146,16 @@ def join_one(
 ) -> Relation | InputScope:
     context = current_context()
     if context is None:
-        raise RuntimeError("join_one(...) can only be used inside a compiled Structure subtransform")
-    on = _join_predicate("join_one", on)
+        raise RuntimeError("lookup_join(...) can only be used inside a compiled Structure subtransform")
+    on = _join_predicate("lookup_join", on)
     if relation is None:
-        relation = cast(Relation, _infer_relation("join_one", context, on))
+        relation = cast(Relation, _infer_relation("lookup_join", context, on))
     if not isinstance(relation, InputScope):
-        raise TypeError("join_one(relation, ...) requires a Structure relation parameter or transform input")
+        raise TypeError("lookup_join(relation, ...) requires a Structure relation parameter or transform input")
     if dedupe is not None and not isinstance(dedupe, JoinDedupe):
-        raise TypeError("join_one(dedupe=...) requires a JoinDedupe policy")
+        raise TypeError("lookup_join(dedupe=...) requires a JoinDedupe policy")
 
-    _record_join(context, relation, on, how, hint, dedupe)
+    _record_lookup_join(context, relation, on, how, hint, dedupe)
     return relation
 
 
@@ -234,121 +212,76 @@ def not_exists(
 
 
 @overload
-def join_many(
-    relation: Relation,
-    *,
-    on: object,
-    how: Join = Join.INNER,
-    strategy: JoinStrategy | None = None,
-) -> Relation: ...
-
-
-@overload
-def join_many(
-    *,
-    on: object,
-    how: Join = Join.INNER,
-    strategy: JoinStrategy | None = None,
-) -> InputScope: ...
-
-
-def join_many(
-    relation: Relation | None = None,
-    *,
-    on: object,
-    how: Join = Join.INNER,
-    strategy: JoinStrategy | None = None,
-) -> Relation | InputScope:
-    context = _join_context("join_many")
-    predicate = _join_predicate("join_many", on)
-    if relation is None:
-        relation = cast(Relation, _infer_relation("join_many", context, predicate))
-    if not isinstance(relation, InputScope):
-        raise TypeError("join_many(relation, ...) requires a Structure relation parameter or transform input")
-    if not isinstance(how, Join):
-        raise TypeError("join_many(how=...) requires a Join value")
-    if strategy is not None and not isinstance(strategy, JoinStrategy):
-        raise TypeError("join_many(strategy=...) requires a JoinStrategy value")
-
-    join = JoinPlan(
-        input_name=relation._structure_input_name,
-        source=relation._structure_source,
-        input_schema=relation._structure_input_schema,
-        predicate=predicate,
-        how=how,
-        strategy=strategy,
-        method=JoinMethod.MANY,
-    )
-    _record_scoped_join(context, relation, join)
-    return relation
-
-
-@overload
-def join_rowset(
+def rowset_join(
     relation: Relation,
     *,
     left: object | None = None,
     right: Relation | None = None,
     on: object | None = None,
     how: Join = Join.INNER,
+    hint: JoinHint | None = None,
     strategy: JoinStrategy | None = None,
     allow_cartesian: bool = False,
 ) -> Relation: ...
 
 
 @overload
-def join_rowset(
+def rowset_join(
     *,
     left: object | None = None,
     right: Relation | None = None,
     on: object | None = None,
     how: Join = Join.INNER,
+    hint: JoinHint | None = None,
     strategy: JoinStrategy | None = None,
     allow_cartesian: bool = False,
 ) -> InputScope: ...
 
 
-def join_rowset(
+def rowset_join(
     relation: Relation | None = None,
     *,
     left: object | None = None,
     right: Relation | None = None,
     on: object | None = None,
     how: Join = Join.INNER,
+    hint: JoinHint | None = None,
     strategy: JoinStrategy | None = None,
     allow_cartesian: bool = False,
 ) -> Relation | InputScope:
-    context = _join_context("join_rowset")
+    context = _join_context("rowset_join")
     if relation is not None and right is not None:
-        raise TypeError("join_rowset(...) accepts either a positional relation or right=, not both")
+        raise TypeError("rowset_join(...) accepts either a positional relation or right=, not both")
     relation = relation or right
     if not isinstance(how, Join):
-        raise TypeError("join_rowset(how=...) requires a Join value")
+        raise TypeError("rowset_join(how=...) requires a Join value")
+    if hint is not None and not isinstance(hint, JoinHint):
+        raise TypeError("rowset_join(hint=...) requires a JoinHint value")
     if strategy is not None and not isinstance(strategy, JoinStrategy):
-        raise TypeError("join_rowset(strategy=...) requires a JoinStrategy value")
+        raise TypeError("rowset_join(strategy=...) requires a JoinStrategy value")
     if not isinstance(allow_cartesian, bool):
-        raise TypeError("join_rowset(allow_cartesian=...) requires a bool")
+        raise TypeError("rowset_join(allow_cartesian=...) requires a bool")
     if left is not None and not isinstance(left, (Structure, RowScope)):
-        raise TypeError("join_rowset(left=...) requires the current row scope or a joined row scope")
+        raise TypeError("rowset_join(left=...) requires the current row scope or a joined row scope")
 
     predicate: Expression
     if how is Join.CROSS:
         if on is not None:
-            raise TypeError("join_rowset(..., how=Join.CROSS) does not accept on=; use allow_cartesian=True")
+            raise TypeError("rowset_join(..., how=Join.CROSS) does not accept on=; use allow_cartesian=True")
         if not allow_cartesian:
-            raise TypeError("join_rowset(..., how=Join.CROSS) requires allow_cartesian=True")
+            raise TypeError("rowset_join(..., how=Join.CROSS) requires allow_cartesian=True")
         predicate = literal(True)
         if relation is None:
-            raise TypeError("join_rowset(..., how=Join.CROSS) requires an explicit right relation")
+            raise TypeError("rowset_join(..., how=Join.CROSS) requires an explicit right relation")
     else:
         if on is None:
-            raise TypeError("join_rowset(on=...) is required unless how=Join.CROSS")
-        predicate = _join_predicate("join_rowset", on)
+            raise TypeError("rowset_join(on=...) is required unless how=Join.CROSS")
+        predicate = _join_predicate("rowset_join", on)
         if relation is None:
-            relation = cast(Relation, _infer_relation("join_rowset", context, predicate, validate_pairs=False))
+            relation = cast(Relation, _infer_relation("rowset_join", context, predicate, validate_pairs=False))
 
     if not isinstance(relation, InputScope):
-        raise TypeError("join_rowset(relation, ...) requires a Structure relation parameter or transform input")
+        raise TypeError("rowset_join(relation, ...) requires a Structure relation parameter or transform input")
 
     join = JoinPlan(
         input_name=relation._structure_input_name,
@@ -356,6 +289,7 @@ def join_rowset(
         input_schema=relation._structure_input_schema,
         predicate=predicate,
         how=how,
+        hint=hint,
         strategy=strategy,
         method=JoinMethod.ROWSET,
     )
@@ -363,26 +297,83 @@ def join_rowset(
     return relation
 
 
+@overload
+def left_join(
+    relation: Relation,
+    *,
+    on: object,
+    hint: JoinHint | None = None,
+    strategy: JoinStrategy | None = None,
+) -> Relation: ...
+
+
+@overload
+def left_join(
+    *,
+    on: object,
+    hint: JoinHint | None = None,
+    strategy: JoinStrategy | None = None,
+) -> InputScope: ...
+
+
 def left_join(
     relation: Relation | None = None,
     *,
     on: object,
+    hint: JoinHint | None = None,
     strategy: JoinStrategy | None = None,
 ) -> Relation | InputScope:
     if relation is None:
-        return join_rowset(on=on, how=Join.LEFT, strategy=strategy)
-    return join_rowset(relation, on=on, how=Join.LEFT, strategy=strategy)
+        return rowset_join(on=on, how=Join.LEFT, hint=hint, strategy=strategy)
+    return rowset_join(relation, on=on, how=Join.LEFT, hint=hint, strategy=strategy)
+
+
+@overload
+def inner_join(
+    relation: Relation,
+    *,
+    on: object,
+    hint: JoinHint | None = None,
+    strategy: JoinStrategy | None = None,
+) -> Relation: ...
+
+
+@overload
+def inner_join(
+    *,
+    on: object,
+    hint: JoinHint | None = None,
+    strategy: JoinStrategy | None = None,
+) -> InputScope: ...
 
 
 def inner_join(
     relation: Relation | None = None,
     *,
     on: object,
+    hint: JoinHint | None = None,
     strategy: JoinStrategy | None = None,
 ) -> Relation | InputScope:
     if relation is None:
-        return join_rowset(on=on, how=Join.INNER, strategy=strategy)
-    return join_rowset(relation, on=on, how=Join.INNER, strategy=strategy)
+        return rowset_join(on=on, how=Join.INNER, hint=hint, strategy=strategy)
+    return rowset_join(relation, on=on, how=Join.INNER, hint=hint, strategy=strategy)
+
+
+@overload
+def right_join(
+    relation: Relation,
+    *,
+    on: object,
+    strategy: JoinStrategy | None = None,
+) -> Relation: ...
+
+
+@overload
+def right_join(
+    *,
+    on: object,
+    strategy: JoinStrategy | None = None,
+) -> InputScope: ...
 
 
 def right_join(
@@ -392,8 +383,25 @@ def right_join(
     strategy: JoinStrategy | None = None,
 ) -> Relation | InputScope:
     if relation is None:
-        return join_rowset(on=on, how=Join.RIGHT, strategy=strategy)
-    return join_rowset(relation, on=on, how=Join.RIGHT, strategy=strategy)
+        return rowset_join(on=on, how=Join.RIGHT, strategy=strategy)
+    return rowset_join(relation, on=on, how=Join.RIGHT, strategy=strategy)
+
+
+@overload
+def full_join(
+    relation: Relation,
+    *,
+    on: object,
+    strategy: JoinStrategy | None = None,
+) -> Relation: ...
+
+
+@overload
+def full_join(
+    *,
+    on: object,
+    strategy: JoinStrategy | None = None,
+) -> InputScope: ...
 
 
 def full_join(
@@ -403,8 +411,8 @@ def full_join(
     strategy: JoinStrategy | None = None,
 ) -> Relation | InputScope:
     if relation is None:
-        return join_rowset(on=on, how=Join.FULL, strategy=strategy)
-    return join_rowset(relation, on=on, how=Join.FULL, strategy=strategy)
+        return rowset_join(on=on, how=Join.FULL, strategy=strategy)
+    return rowset_join(relation, on=on, how=Join.FULL, strategy=strategy)
 
 
 def cross_join(
@@ -415,8 +423,8 @@ def cross_join(
     strategy: JoinStrategy | None = None,
 ) -> Relation | InputScope:
     if relation is None:
-        return join_rowset(right=right, how=Join.CROSS, strategy=strategy, allow_cartesian=allow_cartesian)
-    return join_rowset(
+        return rowset_join(right=right, how=Join.CROSS, strategy=strategy, allow_cartesian=allow_cartesian)
+    return rowset_join(
         relation,
         right=right,
         how=Join.CROSS,
@@ -577,7 +585,7 @@ def as_of_one(
     return relation
 
 
-def _record_join(
+def _record_lookup_join(
     context,
     relation: InputScope,
     on: Expression,
@@ -592,7 +600,7 @@ def _record_join(
         predicate=on,
         how=how,
         hint=hint,
-        method=JoinMethod.ONE,
+        method=JoinMethod.LOOKUP,
         dedupe=dedupe,
     )
     _record_scoped_join(context, relation, join)

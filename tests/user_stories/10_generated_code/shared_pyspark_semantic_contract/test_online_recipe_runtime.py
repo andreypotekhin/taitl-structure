@@ -336,7 +336,7 @@ def test_online_runner_applies_existence_join_modes(monkeypatch) -> None:
     )
 
 
-def test_online_runner_applies_join_many_as_row_multiplying_join(monkeypatch) -> None:
+def test_online_runner_applies_inner_join_as_row_multiplying_join(monkeypatch) -> None:
     """I can rely on online and generated execution to share v2 row-multiplying join semantics."""
 
     _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
@@ -347,7 +347,7 @@ def test_online_runner_applies_join_many_as_row_multiplying_join(monkeypatch) ->
 
     result = RunOnlinePySparkTransform()(
         cast(Any, invocation),
-        _join_many_plan(),
+        _inner_join_plan(),
         session=SimpleNamespace(
             online_executor=None,
             spark="spark",
@@ -949,7 +949,7 @@ def _existence_join_plan() -> PySparkExecutionPlan:
     )
 
 
-def _join_many_plan() -> PySparkExecutionPlan:
+def _inner_join_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
     published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
@@ -1000,7 +1000,7 @@ def _join_many_plan() -> PySparkExecutionPlan:
                     strategy=JoinStrategy.SHUFFLE_HASH,
                     predicate=_binary("eq", _field(RawOrder, "id"), _field_scope("customers", Customer, "id")),
                     occurrence=0,
-                    method=JoinMethod.MANY,
+                    method=JoinMethod.ROWSET,
                 )
             ),
         ),

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from structure.app.compiler.api import Compiler
+from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.target.pyspark.api import PySpark
@@ -129,7 +130,7 @@ class RenderExplainReport:
     def _cardinality(self, join: PySparkJoinRecipe) -> str:
         if join.method.value in {"exists", "not_exists"}:
             return "row_filtering"
-        if join.method.value in {"join_many", "join_rowset"}:
+        if join.method is JoinMethod.ROWSET:
             return "row_multiplying"
         return "select_one"
 

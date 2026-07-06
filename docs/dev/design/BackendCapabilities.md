@@ -69,7 +69,7 @@ The default PySpark profile supports:
 
 - field references, literals, projection, filtering, boolean operations, equality, null-safe equality, casts, and
   standard expression helper calls;
-- `join_one`, left and inner lookup joins, composite equi-joins, broadcast hints, existence joins, `join_many(...)`, and
+- `lookup_join`, left and inner lookup joins, composite equi-joins, broadcast hints, existence joins, `inner_join(...)`, and
   deterministic lookup dedupe;
 - schema-only validation, strict projection, and allow-extra projection;
 - row-local projection and filtering for streaming-compatible transforms;

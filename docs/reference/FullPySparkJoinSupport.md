@@ -6,17 +6,17 @@ joined rowset rather than one current row enriched with one right-side scope.
 
 The narrower join helpers remain preferred for common cases:
 
-- use `join_one(...)` for zero-or-one lookup enrichment;
-- use `join_many(...)` for ordinary row multiplication from a left or inner join;
+- use `lookup_join(...)` for zero-or-one lookup enrichment;
+- use `inner_join(...)` for ordinary row multiplication from a left or inner join;
 - use `exists(...)` and `not_exists(...)` for semi and anti filters;
 - use temporal and as-of helpers for time-aware select-one lookups.
 
 ## Rowset Joins
 
-Broad joins use `join_rowset(...)` or a shortcut helper:
+Broad joins use `rowset_join(...)` or a shortcut helper:
 
 ```python
-join_rowset(
+rowset_join(
     left=order,
     right=customer,
     how=Join.FULL,
@@ -130,7 +130,7 @@ online execution.
 
 Diagnostics identify the join type, predicate, nullable sides, cardinality shape, and suggested source fix. Common
 fixes include adding `allow_cartesian=True`, using `Output.project()(...)` after full joins, or choosing a narrower
-helper such as `join_one(...)`, `join_many(...)`, `exists(...)`, or `not_exists(...)`.
+helper such as `lookup_join(...)`, `inner_join(...)`, `exists(...)`, or `not_exists(...)`.
 
 See also: [Join semantics](JoinSemantics.md), [Analytical join coverage](AnalyticalJoinCoverage.md),
 [Backend capabilities](BackendCapabilities.md), and [Quick reference](../QuickRef.md).

@@ -332,7 +332,7 @@
           "how": "full",
           "right_alias": "customers"
         },
-        "operation": "join_rowset",
+        "operation": "rowset_join",
         "sources": [
           "customer.tenant.tenant_id",
           "order.tenant.tenant_id",
@@ -429,7 +429,7 @@
           "how": "right",
           "right_alias": "customers"
         },
-        "operation": "join_rowset",
+        "operation": "rowset_join",
         "sources": [
           "customer.tenant.tenant_id",
           "row.tenant_id",
@@ -526,7 +526,7 @@
           "how": "cross",
           "right_alias": "products"
         },
-        "operation": "join_rowset",
+        "operation": "rowset_join",
         "sources": [],
         "step": "expand_product_candidates",
         "target": "expand_product_candidates.join[1].product"

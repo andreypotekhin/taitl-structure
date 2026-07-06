@@ -111,9 +111,8 @@ class EnrichOrders(Transform):
         )
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        join_one(
+        left_join(
             on=order.customer_id == customer.id,
-            how=Join.LEFT,
             hint=JoinHint.BROADCAST,
         )
 
@@ -274,9 +273,8 @@ not passed unless requested.
 Joins are symbolic and typed.
 
 ```python
-join_one(
+left_join(
     on=order.customer_id == customer.id,
-    how=Join.LEFT,
     hint=JoinHint.BROADCAST,
 )
 ```
@@ -431,7 +429,7 @@ transforms, diagnostic links, and setup checks.
 
 ### v2
 
-Existence joins, `join_many(...)`, deterministic lookup dedupe, temporal validity-window joins, backward as-of joins,
+Existence joins, `inner_join(...)`, deterministic lookup dedupe, temporal validity-window joins, backward as-of joins,
 windowing, aggregations, advanced grouping, Spark higher-order functions, caching/persistence and repartition hints,
 richer explain output, generated docs, pytest helpers, and production incremental compile.
 

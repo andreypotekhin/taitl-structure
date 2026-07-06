@@ -12,7 +12,7 @@ The checker ensures compiled subtransforms can generate efficient PySpark expres
 - source-order schema flow
 - `where(...)` predicates are boolean
 - join conditions are boolean
-- `join_one(...)` uniqueness warnings
+- `lookup_join(...)` uniqueness warnings
 - hook signature validation
 - streaming compatibility
 - performance guardrails

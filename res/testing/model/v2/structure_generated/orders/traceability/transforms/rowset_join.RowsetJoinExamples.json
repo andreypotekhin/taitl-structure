@@ -1,0 +1,684 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "RowsetJoinExamplesGenerated",
+  "inputs": [
+    {
+      "name": "orders",
+      "ordinal": 0,
+      "schema": "OrderRaw"
+    },
+    {
+      "name": "customers",
+      "ordinal": 1,
+      "schema": "Customer"
+    },
+    {
+      "name": "products",
+      "ordinal": 2,
+      "schema": "Product"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated",
+      "ir": "ir:RowsetJoinExamples",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.input.orders",
+      "ir": "ir:RowsetJoinExamples.input.0.orders",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.input.orders"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.input.customers",
+      "ir": "ir:RowsetJoinExamples.input.1.customers",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.input.customers"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.input.products",
+      "ir": "ir:RowsetJoinExamples.input.2.products",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.input.products"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders",
+      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.reconcile_orders"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.join.1.customer",
+      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.join.1.customer",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.join.1.customer"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.select.tenant_id",
+      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.project.tenant_id",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.field.tenant_id"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.select.order_id",
+      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.project.order_id",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.field.order_id"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.select.order_customer_id",
+      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.project.order_customer_id",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.field.order_customer_id"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.select.customer_id",
+      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.project.customer_id",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.field.customer_id"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.select.customer_name",
+      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.project.customer_name",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.field.customer_name"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.select.match_status",
+      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.project.match_status",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.field.match_status"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.0.reconcile_orders.validation.0.intermediate",
+      "ir": "ir:RowsetJoinExamples.step.0.reconcile_orders.validation.0.intermediate",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.reconcile_orders.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers",
+      "ir": "ir:RowsetJoinExamples.step.1.keep_customers",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.keep_customers"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.join.1.customer",
+      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.join.1.customer",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.keep_customers.join.1.customer"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.select.tenant_id",
+      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.project.tenant_id",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.keep_customers.field.tenant_id"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.select.order_id",
+      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.project.order_id",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.keep_customers.field.order_id"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.select.order_customer_id",
+      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.project.order_customer_id",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.keep_customers.field.order_customer_id"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.select.customer_id",
+      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.project.customer_id",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.keep_customers.field.customer_id"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.select.customer_name",
+      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.project.customer_name",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.keep_customers.field.customer_name"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.select.customer_region",
+      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.project.customer_region",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.keep_customers.field.customer_region"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.1.keep_customers.validation.0.intermediate",
+      "ir": "ir:RowsetJoinExamples.step.1.keep_customers.validation.0.intermediate",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.keep_customers.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates",
+      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates.join.1.product",
+      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates.join.1.product",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates.join.1.product"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates.select.tenant_id",
+      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates.project.tenant_id",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates.field.tenant_id"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates.select.order_id",
+      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates.project.order_id",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates.field.order_id"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates.select.customer_id",
+      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates.project.customer_id",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates.field.customer_id"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates.select.customer_name",
+      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates.project.customer_name",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates.field.customer_name"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates.select.product_id",
+      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates.project.product_id",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates.field.product_id"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.step.2.expand_product_candidates.select.product_name",
+      "ir": "ir:RowsetJoinExamples.step.2.expand_product_candidates.project.product_name",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.expand_product_candidates.field.product_name"
+    },
+    {
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join.RowsetJoinExamplesGenerated.run.output.0.candidates.validation.final",
+      "ir": "ir:RowsetJoinExamples.output.0.candidates.validation.final",
+      "source": "source:testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples.output.candidates"
+    }
+  ],
+  "schema_constants": {
+    "Address": {
+      "constant": "ADDRESS_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.common"
+    },
+    "AuditStamp": {
+      "constant": "AUDIT_STAMP_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.common"
+    },
+    "BlockedProduct": {
+      "constant": "BLOCKED_PRODUCT_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.product"
+    },
+    "BusinessDate": {
+      "constant": "BUSINESS_DATE_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.common"
+    },
+    "Customer": {
+      "constant": "CUSTOMER_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.customer"
+    },
+    "CustomerOrderBackfill": {
+      "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderCustomerReconciliation": {
+      "constant": "ORDER_CUSTOMER_RECONCILIATION_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderFulfillment": {
+      "constant": "ORDER_FULFILLMENT_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderNormalized": {
+      "constant": "ORDER_NORMALIZED_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderProductCandidate": {
+      "constant": "ORDER_PRODUCT_CANDIDATE_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderPublication": {
+      "constant": "ORDER_PUBLICATION_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderPublished": {
+      "constant": "ORDER_PUBLISHED_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderRaw": {
+      "constant": "ORDER_RAW_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderWithCustomer": {
+      "constant": "ORDER_WITH_CUSTOMER_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderWithProduct": {
+      "constant": "ORDER_WITH_PRODUCT_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderWithPromotion": {
+      "constant": "ORDER_WITH_PROMOTION_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+    },
+    "Product": {
+      "constant": "PRODUCT_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.product"
+    },
+    "ProductBase": {
+      "constant": "PRODUCT_BASE_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.product"
+    },
+    "Promotion": {
+      "constant": "PROMOTION_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.promotion"
+    },
+    "PublicationFlags": {
+      "constant": "PUBLICATION_FLAGS_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
+    },
+    "Shipment": {
+      "constant": "SHIPMENT_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.shipment"
+    },
+    "TenantKey": {
+      "constant": "TENANT_KEY_SCHEMA",
+      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.common"
+    }
+  },
+  "source_transform": "testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "orders",
+          "customers",
+          "products"
+        ],
+        "step": null,
+        "target": "RowsetJoinExamples"
+      },
+      {
+        "detail": {
+          "input_schema": "OrderRaw",
+          "output_schema": "OrderCustomerReconciliation"
+        },
+        "operation": "step",
+        "sources": [
+          "orders",
+          "customer"
+        ],
+        "step": "reconcile_orders",
+        "target": "reconcile_orders"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "full",
+          "right_alias": "customers"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "customer.tenant.tenant_id",
+          "order.tenant.tenant_id",
+          "customer.id",
+          "order.customer_id"
+        ],
+        "step": "reconcile_orders",
+        "target": "reconcile_orders.join[1].customer"
+      },
+      {
+        "detail": {
+          "field": "tenant_id"
+        },
+        "operation": "project",
+        "sources": [
+          "order.tenant.tenant_id",
+          "customer.tenant.tenant_id"
+        ],
+        "step": "reconcile_orders",
+        "target": "OrderCustomerReconciliation.tenant_id"
+      },
+      {
+        "detail": {
+          "field": "order_id"
+        },
+        "operation": "project",
+        "sources": [
+          "order.id"
+        ],
+        "step": "reconcile_orders",
+        "target": "OrderCustomerReconciliation.order_id"
+      },
+      {
+        "detail": {
+          "field": "order_customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "order.customer_id"
+        ],
+        "step": "reconcile_orders",
+        "target": "OrderCustomerReconciliation.order_customer_id"
+      },
+      {
+        "detail": {
+          "field": "customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "customer.id"
+        ],
+        "step": "reconcile_orders",
+        "target": "OrderCustomerReconciliation.customer_id"
+      },
+      {
+        "detail": {
+          "field": "customer_name"
+        },
+        "operation": "project",
+        "sources": [
+          "customer.name"
+        ],
+        "step": "reconcile_orders",
+        "target": "OrderCustomerReconciliation.customer_name"
+      },
+      {
+        "detail": {
+          "field": "match_status"
+        },
+        "operation": "project",
+        "sources": [
+          "customer.tier"
+        ],
+        "step": "reconcile_orders",
+        "target": "OrderCustomerReconciliation.match_status"
+      },
+      {
+        "detail": {
+          "input_schema": "OrderCustomerReconciliation",
+          "output_schema": "CustomerOrderBackfill"
+        },
+        "operation": "step",
+        "sources": [
+          "OrderCustomerReconciliation",
+          "customer"
+        ],
+        "step": "keep_customers",
+        "target": "keep_customers"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "right",
+          "right_alias": "customers"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "customer.tenant.tenant_id",
+          "row.tenant_id",
+          "customer.id",
+          "row.customer_id"
+        ],
+        "step": "keep_customers",
+        "target": "keep_customers.join[1].customer"
+      },
+      {
+        "detail": {
+          "field": "tenant_id"
+        },
+        "operation": "project",
+        "sources": [
+          "row.tenant_id",
+          "customer.tenant.tenant_id"
+        ],
+        "step": "keep_customers",
+        "target": "CustomerOrderBackfill.tenant_id"
+      },
+      {
+        "detail": {
+          "field": "order_id"
+        },
+        "operation": "project",
+        "sources": [
+          "row.order_id"
+        ],
+        "step": "keep_customers",
+        "target": "CustomerOrderBackfill.order_id"
+      },
+      {
+        "detail": {
+          "field": "order_customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "row.order_customer_id"
+        ],
+        "step": "keep_customers",
+        "target": "CustomerOrderBackfill.order_customer_id"
+      },
+      {
+        "detail": {
+          "field": "customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "customer.id"
+        ],
+        "step": "keep_customers",
+        "target": "CustomerOrderBackfill.customer_id"
+      },
+      {
+        "detail": {
+          "field": "customer_name"
+        },
+        "operation": "project",
+        "sources": [
+          "customer.name"
+        ],
+        "step": "keep_customers",
+        "target": "CustomerOrderBackfill.customer_name"
+      },
+      {
+        "detail": {
+          "field": "customer_region"
+        },
+        "operation": "project",
+        "sources": [
+          "customer.region"
+        ],
+        "step": "keep_customers",
+        "target": "CustomerOrderBackfill.customer_region"
+      },
+      {
+        "detail": {
+          "input_schema": "CustomerOrderBackfill",
+          "output_schema": "OrderProductCandidate"
+        },
+        "operation": "step",
+        "sources": [
+          "CustomerOrderBackfill",
+          "product"
+        ],
+        "step": "expand_product_candidates",
+        "target": "expand_product_candidates"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "cross",
+          "right_alias": "products"
+        },
+        "operation": "rowset_join",
+        "sources": [],
+        "step": "expand_product_candidates",
+        "target": "expand_product_candidates.join[1].product"
+      },
+      {
+        "detail": {
+          "field": "tenant_id"
+        },
+        "operation": "project",
+        "sources": [
+          "row.tenant_id"
+        ],
+        "step": "expand_product_candidates",
+        "target": "OrderProductCandidate.tenant_id"
+      },
+      {
+        "detail": {
+          "field": "order_id"
+        },
+        "operation": "project",
+        "sources": [
+          "row.order_id"
+        ],
+        "step": "expand_product_candidates",
+        "target": "OrderProductCandidate.order_id"
+      },
+      {
+        "detail": {
+          "field": "customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "row.customer_id"
+        ],
+        "step": "expand_product_candidates",
+        "target": "OrderProductCandidate.customer_id"
+      },
+      {
+        "detail": {
+          "field": "customer_name"
+        },
+        "operation": "project",
+        "sources": [
+          "row.customer_name"
+        ],
+        "step": "expand_product_candidates",
+        "target": "OrderProductCandidate.customer_name"
+      },
+      {
+        "detail": {
+          "field": "product_id"
+        },
+        "operation": "project",
+        "sources": [
+          "product.id"
+        ],
+        "step": "expand_product_candidates",
+        "target": "OrderProductCandidate.product_id"
+      },
+      {
+        "detail": {
+          "field": "product_name"
+        },
+        "operation": "project",
+        "sources": [
+          "product.name"
+        ],
+        "step": "expand_product_candidates",
+        "target": "OrderProductCandidate.product_name"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "OrderProductCandidate"
+        ],
+        "step": null,
+        "target": "OrderProductCandidate.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "order_raw",
+      "joins": [
+        {
+          "how": "full",
+          "input": "customer",
+          "right_alias": "customers"
+        }
+      ],
+      "name": "reconcile_orders",
+      "output_alias": "order_customer_reconciliation",
+      "output_schema": "OrderCustomerReconciliation",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "orders",
+          "lane": "orders",
+          "schema": "OrderCustomerReconciliation"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "OrderCustomerReconciliation"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "order_customer_reconciliation",
+      "joins": [
+        {
+          "how": "right",
+          "input": "customer",
+          "right_alias": "customers"
+        }
+      ],
+      "name": "keep_customers",
+      "output_alias": "customer_order_backfill",
+      "output_schema": "CustomerOrderBackfill",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "orders",
+          "lane": "orders",
+          "schema": "CustomerOrderBackfill"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "CustomerOrderBackfill"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "customer_order_backfill",
+      "joins": [
+        {
+          "how": "cross",
+          "input": "product",
+          "right_alias": "products"
+        }
+      ],
+      "name": "expand_product_candidates",
+      "output_alias": "order_product_candidate",
+      "output_schema": "OrderProductCandidate",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "candidates",
+          "lane": "candidates",
+          "schema": "OrderProductCandidate"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "testing.model.v2.structure_generated.orders.pyspark.transforms.rowset_join",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "candidates",
+        "schema": "OrderProductCandidate"
+      }
+    ]
+  }
+}

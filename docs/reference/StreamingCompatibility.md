@@ -147,7 +147,7 @@ is static.
 Accepted:
 
 ```python
-join_one(
+lookup_join(
     on=order.customer_id == customer.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
@@ -160,7 +160,7 @@ Rules:
 - The current pipeline side may be streaming.
 - The joined input side must be static.
 - Join conditions must satisfy `JoinSemantics.spec.md`.
-- `join_one(...)` uniqueness warnings still apply; streaming compatibility does not prove uniqueness.
+- `lookup_join(...)` uniqueness warnings still apply; streaming compatibility does not prove uniqueness.
 - `JoinHint.BROADCAST` is compatible only for the static joined side.
 - A side input that may be streaming must be rejected for v1 streaming compatibility.
 
@@ -172,7 +172,7 @@ Rejected in v1:
 - stateful deduplication before or after a join;
 - join hints that apply to the streaming side.
 
-`exists(...)`, `not_exists(...)`, and `join_many(...)` are compatible with static side inputs in principle because they
+`exists(...)`, `not_exists(...)`, and `inner_join(...)` are compatible with static side inputs in principle because they
 do not require streaming state by themselves. Deduped lookup joins remain batch-only until a streaming-specific design
 owns tie checking, watermark assumptions, and output-mode behavior.
 

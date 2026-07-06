@@ -67,14 +67,14 @@ The first iterations are intentionally arranged to build confidence in small com
 3. **Schemas and validation**: richer schema model, `StructType` generation, input/intermediate/output validation.
 4. **Symbolic expressions, filtering, helpers**: compiler-worthy expression model with strict unsupported-code diagnostics.
 5. **Hooks and generated classes**: source hooks, clean no-hook generated code, direct hook calls.
-6. **Joins, compiler traceability, build integration**: `join_one`, N-step serial joins, compiler provenance, static
+6. **Joins, compiler traceability, build integration**: `lookup_join`, N-step serial joins, compiler provenance, static
    dataflow traceability, `--fail-on-diff`.
 
 V2 starts after v1 stabilization evidence is release-ready. The v2 sprint sequence is:
 
 1. **Sprint 06: v2 scope and analytical IR foundations**: release boundary, user stories, epics, IR operation taxonomy,
    capability checks, fixture skeletons, and diagnostic anchors.
-2. **Sprint 07: analytical join coverage**: semi/anti existence joins, `join_many(...)`, deterministic lookup dedupe,
+2. **Sprint 07: analytical join coverage**: semi/anti existence joins, `inner_join(...)`, deterministic lookup dedupe,
    temporal validity-window joins, and backward as-of joins.
 3. **Sprint 08: aggregations, windows, and higher-order functions**: typed `group_by(...)`, aggregate helpers,
    windowing, dedupe helpers, and compiler-visible array/map helpers.

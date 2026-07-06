@@ -149,7 +149,7 @@ is static.
 Accepted:
 
 ```python
-join_one(
+lookup_join(
     on=order.customer_id == customer.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
@@ -162,7 +162,7 @@ Rules:
 - The current pipeline side may be streaming.
 - The joined input side must be static.
 - Join conditions must satisfy `JoinSemantics.spec.md`.
-- `join_one(...)` uniqueness warnings still apply; streaming compatibility does not prove uniqueness.
+- `lookup_join(...)` uniqueness warnings still apply; streaming compatibility does not prove uniqueness.
 - `JoinHint.BROADCAST` is compatible only for the static joined side.
 - A side input that may be streaming must be rejected for v1 streaming compatibility.
 
@@ -174,7 +174,7 @@ Rejected in v1:
 - stateful deduplication before or after a join;
 - join hints that apply to the streaming side.
 
-`exists(...)`, `not_exists(...)`, and `join_many(...)` are compatible with static side inputs in principle because they
+`exists(...)`, `not_exists(...)`, and `inner_join(...)` are compatible with static side inputs in principle because they
 do not require streaming state by themselves. Deduped lookup joins remain batch-only until a streaming-specific design
 owns tie checking, watermark assumptions, and output-mode behavior.
 
@@ -366,7 +366,7 @@ The implementation is complete when tests prove these scenarios:
 - Any validation phase using `schema_and_constraints` is batch-only when enabled constraints are not schema-only.
 - A stream-static `Join.LEFT` lookup join is compatible when the joined side is static.
 - A stream-static `Join.INNER` lookup join is compatible when the joined side is static.
-- `join_one(...)` uniqueness warnings still appear independently from streaming compatibility.
+- `lookup_join(...)` uniqueness warnings still appear independently from streaming compatibility.
 - A possible stream-stream join is rejected for explicit streaming-compatible transforms.
 - A hook without `streaming_safe=True` makes compatibility unknown or emits a warning.
 - A hook with `streaming_safe=True` is accepted as a trusted boundary after signature validation.

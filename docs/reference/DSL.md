@@ -199,9 +199,8 @@ class EnrichOrders(Transform):
         )
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        join_one(
+        left_join(
             on=order.customer_id == customer.id,
-            how=Join.LEFT,
             hint=JoinHint.BROADCAST,
         )
 
@@ -539,7 +538,7 @@ During symbolic execution:
 - Python literals in expression positions produce typed literal expressions;
 - expression helpers produce expression IR;
 - `where(...)` records filter operations in the active subtransform context;
-- `join_one(...)` records join operations in source order;
+- `lookup_join(...)` records join operations in source order;
 - schema constructors record projection operations;
 - hooks are not executed;
 - live Spark objects are not created.
@@ -704,14 +703,13 @@ Rules:
 
 ## Joins
 
-The v1 DSL exposes lookup joins through the free-standing `join_one(...)` function. When the `on` clause names exactly
-one unjoined relation, the call stays bare:
+The DSL exposes joins through free-standing `*_join(...)` functions. Ordinary left enrichment uses `left_join(...)`.
+When the `on` clause names exactly one unjoined relation, the call stays bare:
 
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-    join_one(
+    left_join(
         on=order.customer_id == customer.id,
-        how=Join.LEFT,
         hint=JoinHint.BROADCAST,
     )
 
@@ -721,9 +719,8 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
 Class input scopes may also be joined directly:
 
 ```python
-join_one(
+left_join(
     on=order.customer_id == self.customers.id,
-    how=Join.LEFT,
     hint=JoinHint.BROADCAST,
 )
 return OrderWithCustomer.base(order)(customer_name=self.customers.name)
@@ -741,36 +738,38 @@ JoinHint.BROADCAST
 
 Rules:
 
-- `join_one(*, on, how, hint=None, dedupe=None)` is the canonical concise lookup join function when the relation is
-  inferable.
+- `left_join(*, on, hint=None, strategy=None)` and `inner_join(*, on, hint=None, strategy=None)` are the canonical
+  ordinary rowset join shortcuts when the relation is inferable.
+- `lookup_join(*, on, how, hint=None, dedupe=None)` is the strict lookup join function when the right-side key must
+  match at most one row or when a deterministic `dedupe` policy is required.
 - Legacy explicit-selection overloads remain supported, but they are not the documented style.
 - `on` and `how` are required.
 - `hint` is optional.
 - `dedupe` is optional. When present, it must be a deterministic `JoinDedupe` policy and reduces the right side before
   the lookup join.
 - Join calls are valid only during symbolic execution of a compiled subtransform.
-- Member joins such as `self.customers.join_one(...)` are rejected with migration guidance.
-- `join_one(...)` records the same ordered join operation for inferred and legacy explicit-selection forms.
-- `join_one(...)` returns a relation proxy whose fields read from the joined symbolic scope.
-- For relation parameters and cached class input scopes, `join_one(...)` also makes later reads from that same proxy
+- Member joins such as `self.customers.lookup_join(...)` are rejected with migration guidance.
+- `lookup_join(...)` records the same ordered join operation for inferred and legacy explicit-selection forms.
+- `lookup_join(...)` returns a relation proxy whose fields read from the joined symbolic scope.
+- For relation parameters and cached class input scopes, `lookup_join(...)` also makes later reads from that same proxy
   read from the joined scope.
 - Inferred joins are valid only when `on` references exactly one unjoined relation.
 - Field access on the joined scope is scoped and must not rely on unqualified string column names.
 - Join calls execute in source order.
 - Repeated joins of the same input must produce deterministic aliases.
-- `join_many(...)` is the v2 row-multiplying join form. It is valid when the business output is one row per right-side
+- `inner_join(...)` is the v2 row-multiplying join form. It is valid when the business output is one row per right-side
   match.
-- `join_rowset(...)` is the broad v2 rowset join form for right, full, cross, non-equi, and disjunctive joins.
+- `rowset_join(...)` is the broad v2 rowset join form for right, full, cross, non-equi, and disjunctive joins.
 - `left_join(...)`, `inner_join(...)`, `right_join(...)`, `full_join(...)`, and `cross_join(...)` are shortcuts over
-  `join_rowset(...)`.
+  `rowset_join(...)`.
 - `cross_join(...)` requires `allow_cartesian=True` and does not accept `on`.
-- Rowset shortcuts compile to the canonical `join_rowset` operation with the specific join kind recorded on the join
+- Rowset shortcuts compile to the canonical `rowset_join` operation with the specific join kind recorded on the join
   plan.
 
-Documentation keeps the join bare and reads later fields from the joined relation proxy:
+Documentation keeps ordinary joins bare and reads later fields from the joined relation proxy:
 
 ```python
-join_one(on=order.customer_id == customer.id, how=Join.LEFT)
+left_join(on=order.customer_id == customer.id)
 return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
 
@@ -981,7 +980,7 @@ Required checks include:
 - output projection completeness;
 - output assignment type and nullability compatibility;
 - join condition support;
-- `join_one(...)` uniqueness warnings;
+- `lookup_join(...)` uniqueness warnings;
 - hook target and signature validity;
 - validation decorator validity;
 - streaming compatibility when enabled.
@@ -1087,7 +1086,7 @@ The following are outside v1 DSL scope:
 - Pandas UDF generation;
 - RDD operations;
 - automatic fallback from compiled expressions to hooks;
-- automatic deduplication for `join_one(...)`;
+- automatic deduplication for `lookup_join(...)`;
 - implicit or nondeterministic selected-row deduplication;
 - advanced grouping sets, rollups, cubes, and rolling window helpers beyond admitted projection and selected-row
   helpers;

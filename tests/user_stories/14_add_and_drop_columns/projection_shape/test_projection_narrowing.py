@@ -12,7 +12,7 @@ from structure import (
     Transform,
     field,
     input,
-    join_one,
+    lookup_join,
     output,
     project,
     to_decimal,
@@ -99,7 +99,7 @@ def test_project_source_argument_removes_multiple_parameter_ambiguity() -> None:
         published = output(Published)
 
         def publish(self, row: Raw, customer: Customer) -> Published:
-            join_one(customer, on=customer.id == row.id)
+            lookup_join(customer, on=customer.id == row.id)
             return project(row, Published)
 
     plan = compile_transform(Publish)

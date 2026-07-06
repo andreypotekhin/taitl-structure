@@ -164,9 +164,8 @@ def add_product(
     order: OrderRaw,
     product: Product,
 ) -> tuple[OrderWithProduct, OrderWithProduct]:
-    join_one(
+    left_join(
         on=order.product_id == product.id,
-        how=Join.LEFT,
     )
 
     accepted_order = OrderWithProduct.base(order)(product_name=product.name)
@@ -758,22 +757,21 @@ Implemented join forms in the default PySpark profile:
 
 | Form | Shape | Use |
 | --- | --- | --- |
-| `join_one(...)` | select one right row | Lookup enrichment. |
-| `join_one(..., dedupe=...)` | deterministic one-row lookup | Snapshot or versioned lookups. |
+| `lookup_join(...)` | select one right row | Lookup enrichment. |
+| `lookup_join(..., dedupe=...)` | deterministic one-row lookup | Snapshot or versioned lookups. |
 | `exists(...)` | filter current rows by a right-side match | Semi join semantics. |
 | `not_exists(...)` | filter current rows by no right-side match | Anti join semantics. |
-| `join_many(...)` | multiply current rows by right-side matches | One output row per match. |
-| `join_rowset(...)` | broad rowset join | Right, full, cross, non-equi, or disjunctive joins. |
+| `inner_join(...)` | multiply current rows by right-side matches | One output row per match. |
+| `rowset_join(...)` | broad rowset join | Right, full, cross, non-equi, or disjunctive joins. |
 | `temporal_one(...)` | select one right row by validity window | SCD-style or temporal lookup enrichment. |
 | `as_of_one(...)` | select latest right row at or before a left time | Backward time-relative enrichment. |
 
-Prefer inferred `join_one(...)` when the `on` clause names exactly one unjoined relation:
+Prefer inferred `left_join(...)` for ordinary enrichment when the `on` clause names exactly one unjoined relation:
 
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-    join_one(
+    left_join(
         on=order.customer_id == customer.id,
-        how=Join.LEFT,
         hint=JoinHint.BROADCAST,
     )
 
@@ -798,12 +796,11 @@ where(
 )
 ```
 
-Use `join_many(...)` when one current row should intentionally produce one output row per right-side match:
+Use `inner_join(...)` when one current row should intentionally produce one output row per right-side match:
 
 ```python
-join_many(
+inner_join(
     on=(shipment.order_id == order.id),
-    how=Join.INNER,
     strategy=JoinStrategy.SHUFFLE_HASH,
 )
 ```
@@ -817,7 +814,7 @@ cross_join(calendar_day, allow_cartesian=True)
 ```
 
 `left_join(...)`, `inner_join(...)`, `right_join(...)`, `full_join(...)`, and `cross_join(...)` are shortcuts over
-`join_rowset(...)`. Predicate shortcuts can be bare when the right relation is unambiguous.
+`rowset_join(...)`. Predicate shortcuts can be bare when the right relation is unambiguous.
 
 See `examples/orders/transforms/rowset_join.py` for a generated example covering `full_join(...)`, `right_join(...)`,
 and `cross_join(...)`.
@@ -841,7 +838,7 @@ rejected.
 Use deterministic lookup dedupe when duplicate right-side rows exist but the business rule still selects one row:
 
 ```python
-join_one(
+lookup_join(
     on=product.id == order.product_id,
     how=Join.LEFT,
     dedupe=JoinDedupe.latest_by(product.audit.ingested_at, ties=TiePolicy.ERROR),
@@ -891,9 +888,8 @@ When constructing a subclass schema object, use `.base(row)(...)` to copy inheri
 
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-    join_one(
+    left_join(
         on=order.customer_id == customer.id,
-        how=Join.LEFT,
         hint=JoinHint.BROADCAST,
     )
 
@@ -1170,7 +1166,7 @@ Reference: [CLI](reference/CLI.md) and
 
 ## Planned Features
 
-Implemented v2 analytical features include existence joins, `join_many(...)`, deterministic lookup dedupe,
+Implemented v2 analytical features include existence joins, `inner_join(...)`, deterministic lookup dedupe,
 temporal validity joins, backward as-of joins, aggregation/grouping, latest/earliest selected-row and keyed-dedupe
 helpers, exact duplicate-row removal, Spark higher-order array/map helpers, caching, and target capability checks.
 

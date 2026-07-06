@@ -188,7 +188,7 @@ where(to_decimal(order.total, precision=12, scale=2) >= 0)
 
 ### Join
 
-A join is a symbolic relationship between the current row and a declared input. In v1, the main supported form is `join_one(...)`, which represents a lookup-style join.
+A join is a symbolic relationship between the current row and a declared input. In v1, the main supported form is `lookup_join(...)`, which represents a lookup-style join.
 
 A join creates a joined scope. Fields from that scope can be used in later filters or in the returned output schema.
 
@@ -196,7 +196,7 @@ Example:
 
 ```python
 def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
-    join_one(
+    lookup_join(
         on=order.customer_id == customer.id,
         how=Join.LEFT,
         hint=JoinHint.BROADCAST,
@@ -282,7 +282,7 @@ order.id  # FieldRef(scope="order", field="id")
 
 ### Input Scope
 
-An input scope represents a declared transform input during symbolic execution. It is accessible through `self.<input>` and is the source for `join_one(...)` in v1.
+An input scope represents a declared transform input during symbolic execution. It is accessible through `self.<input>` and is the source for `lookup_join(...)` in v1.
 
 Input scopes are not DataFrames and do not expose a live DataFrame API.
 
@@ -295,7 +295,7 @@ Joined scopes are essential for deterministic aliasing, nullability adjustment, 
 Example:
 
 ```python
-join_one(on=order.customer_id == customer.id)
+lookup_join(on=order.customer_id == customer.id)
 customer.tier  # FieldRef(scope="customers#1", field="tier")
 ```
 
@@ -320,7 +320,7 @@ Field references are never raw string column paths in compiler-visible source.
 ### Operation Capture
 
 Operation capture is the act of recording source events as IR operations. `where(...)` records filters,
-`join_one(...)` records joins, and schema construction records projection assignments.
+`lookup_join(...)` records joins, and schema construction records projection assignments.
 
 Capture preserves source order. Later passes may combine or render operations only when the observable semantics stay
 the same.
@@ -591,12 +591,12 @@ OrderNormalized(id=order.id, customer_id=clean_id(order.customer_id))
 Join lowering turns symbolic join IR into PySpark joins with stable aliases, supported join type spelling, optional
 hints, ordered key pairs, and right-side field projection.
 
-`join_one(...)` lowering must not silently deduplicate right-side rows.
+`lookup_join(...)` lowering must not silently deduplicate right-side rows.
 
 Example:
 
 ```text
-join_one(on=order.customer_id == customer.id, how=Join.LEFT)
+lookup_join(on=order.customer_id == customer.id, how=Join.LEFT)
   -> orders.alias("order_normalized").join(customers.alias("customers"), ..., "left")
 ```
 

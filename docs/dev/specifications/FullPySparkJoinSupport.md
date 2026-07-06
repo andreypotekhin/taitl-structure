@@ -7,14 +7,14 @@ outer joins, explicit cross joins, arbitrary compileable boolean join predicates
 clear explain output for row-admitting joins.
 
 This specification builds on [JoinSemantics.md](JoinSemantics.md) and
-[AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md). It does not change `join_one(...)`, `exists(...)`,
-`not_exists(...)`, `join_many(...)`, deterministic lookup dedupe, temporal lookups, or as-of lookups.
+[AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md). It does not change `lookup_join(...)`, `exists(...)`,
+`not_exists(...)`, `inner_join(...)`, deterministic lookup dedupe, temporal lookups, or as-of lookups.
 
 ## Scope
 
 In scope:
 
-- `join_rowset(...)` for inner, left, right, full, and cross rowset joins;
+- `rowset_join(...)` for inner, left, right, full, and cross rowset joins;
 - non-equi predicates such as range overlap predicates;
 - boolean `OR` and mixed `AND`/`OR` predicates when all expression nodes are compileable;
 - explicit Cartesian-product acknowledgement;
@@ -53,7 +53,7 @@ strings.
 Canonical API:
 
 ```python
-join_rowset(relation=None, *, left=None, right=None, how, on=None, strategy=None, allow_cartesian=False)
+rowset_join(relation=None, *, left=None, right=None, how, on=None, strategy=None, allow_cartesian=False)
 ```
 
 Rules:
@@ -106,11 +106,11 @@ Right fields are null for left-only rows.
 
 `Join.CROSS` emits every left/right pair. It has no predicate and requires `allow_cartesian=True`.
 
-Semi and anti joins remain `exists(...)` and `not_exists(...)`, not `join_rowset(...)`.
+Semi and anti joins remain `exists(...)` and `not_exists(...)`, not `rowset_join(...)`.
 
 ## Predicates
 
-`join_rowset(..., on=...)` accepts compileable boolean expressions:
+`rowset_join(..., on=...)` accepts compileable boolean expressions:
 
 - equality;
 - null-safe equality;
@@ -139,7 +139,7 @@ and explain output.
 `using` may be admitted later after explicit predicate joins are stable:
 
 ```python
-joined = join_rowset(
+joined = rowset_join(
     left=order,
     right=shipment,
     using=(order.id, order.tenant_id),
@@ -180,7 +180,7 @@ Rules:
 
 The IR records:
 
-- operation method `join_rowset`;
+- operation method `rowset_join`;
 - join type;
 - left scope and right scope;
 - generated aliases for both sides;
@@ -207,7 +207,7 @@ Cardinality classes:
 Required capabilities:
 
 ```text
-join.join_rowset
+join.rowset_join
 join.right_join
 join.full_join
 join.cross_join
@@ -312,7 +312,7 @@ Explain must not imply data-size estimates unless a later cost model adds measur
 
 ## Streaming Compatibility
 
-`join_rowset(...)` is batch-only for `Join.RIGHT`, `Join.FULL`, `Join.CROSS`, non-equi predicates, and disjunctive
+`rowset_join(...)` is batch-only for `Join.RIGHT`, `Join.FULL`, `Join.CROSS`, non-equi predicates, and disjunctive
 predicates in the first implementation.
 
 Existing stream-static compatibility for left and inner lookup-style joins remains governed by

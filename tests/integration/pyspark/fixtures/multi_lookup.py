@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from structure import Join, String, Structure, Transform, after, field, input, join_one, output, transform
+from structure import Join, String, Structure, Transform, after, field, input, lookup_join, output, transform
 
 
 class LookupOrder(Structure):
@@ -31,7 +31,7 @@ class AddLookupProduct(Transform):
         order: LookupOrder,
         product: LookupProduct,
     ) -> tuple[LookupEnriched, LookupEnriched]:
-        product = join_one(
+        product = lookup_join(
             product,
             on=product.id == order.product_id,
             how=Join.LEFT,

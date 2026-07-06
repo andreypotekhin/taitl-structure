@@ -12,11 +12,11 @@ expectations.
 
 ## Public API Shape
 
-Joins are recorded through the free-standing `join_one(...)` function. In the ordinary case, keep the call bare and let
+Joins are recorded through the free-standing `lookup_join(...)` function. In the ordinary case, keep the call bare and let
 the compiler infer the joined relation from the `on` clause:
 
 ```python
-join_one(
+lookup_join(
     on=order.customer_id == customer.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
@@ -27,7 +27,7 @@ When a subtransform declares the relation as a schema parameter, the relation ca
 
 ```python
 def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
-    join_one(
+    lookup_join(
         on=order.customer_id == customer.id,
         how=Join.LEFT,
     )
@@ -38,15 +38,15 @@ Inference is valid only when the `on` condition references exactly one unjoined 
 references no unjoined relation or more than one, the inferred form is ambiguous and must be rewritten before the
 compiler can accept it.
 
-For relation parameters and transform input scopes, `join_one(on=...)` updates the symbolic relation proxy, so later
+For relation parameters and transform input scopes, `lookup_join(on=...)` updates the symbolic relation proxy, so later
 field reads use the joined scope. A relation parameter cannot be used in a filter or projection until it has been
 joined.
 
-The old member spelling `self.customers.join_one(...)` is rejected. Use the free-standing bare form instead.
+The old member spelling `self.customers.lookup_join(...)` is rejected. Use the free-standing bare form instead.
 
 Canonical function:
 
-- `join_one(*, on, how, hint=None)`: an inferred lookup join.
+- `lookup_join(*, on, how, hint=None)`: an inferred lookup join.
 - Legacy explicit-selection overloads remain supported, but they are not the documented style.
 
 Rules:
@@ -54,10 +54,10 @@ Rules:
 - `on` is required.
 - `how` is required. Source should show whether unmatched rows are kept or removed.
 - `hint` is optional and advisory.
-- `join_one(...)` records the same ordered join operation whether the relation is inferred or explicit.
-- `join_one(...)` returns a relation proxy whose fields read from the joined scope, such as `customer.name`.
+- `lookup_join(...)` records the same ordered join operation whether the relation is inferred or explicit.
+- `lookup_join(...)` returns a relation proxy whose fields read from the joined scope, such as `customer.name`.
 - For schema relation parameters and cached transform input scopes, later field reads from the same proxy use the joined
-  scope after `join_one(...)`, even when the return value is not assigned.
+  scope after `lookup_join(...)`, even when the return value is not assigned.
 
 ## Join Types
 
@@ -82,13 +82,13 @@ AND.
 Accepted:
 
 ```python
-join_one(on=order.customer_id == customer.id)
+lookup_join(on=order.customer_id == customer.id)
 
-join_one(on=(order.country == customer.country) & (order.customer_id == customer.id))
+lookup_join(on=(order.country == customer.country) & (order.customer_id == customer.id))
 
-join_one(on=lower(trim(order.email)) == lower(trim(customer.email)))
+lookup_join(on=lower(trim(order.email)) == lower(trim(customer.email)))
 
-join_one(on=order.customer_external_id.null_safe_eq(customer.external_id))
+lookup_join(on=order.customer_external_id.null_safe_eq(customer.external_id))
 ```
 
 Rejected in v1:
@@ -106,7 +106,7 @@ the other expression must reference the current row scope or a previously joined
 operand order. Public examples place the current-row expression on the left and the joined-input expression on the
 right because that reads naturally for `Join.LEFT` enrichment steps.
 
-In the bare form, all equality pairs in one `join_one(...)` call must point to the same unjoined relation. A predicate
+In the bare form, all equality pairs in one `lookup_join(...)` call must point to the same unjoined relation. A predicate
 that mentions two unjoined relations is ambiguous and must be split into separate joins.
 
 ## Composite Keys
@@ -114,7 +114,7 @@ that mentions two unjoined relations is ambiguous and must be split into separat
 Composite joins are expressed by combining equality pairs with `&`:
 
 ```python
-join_one(
+lookup_join(
     on=(order.country == customer.country) & (order.customer_id == customer.id),
     how=Join.LEFT,
 )
@@ -129,7 +129,7 @@ Composite key rules:
 - All key pairs must involve the same joined input scope for a single join call.
 - A key pair may compare expression helpers, not only bare fields, when the helpers are deterministic and row-local.
 - Type compatibility follows the nullability and type coercion reference.
-- A composite `join_one(...)` is uniqueness-proven only when the exact right-side key set is known unique.
+- A composite `lookup_join(...)` is uniqueness-proven only when the exact right-side key set is known unique.
 
 ## Null Semantics
 
@@ -157,7 +157,7 @@ Rules:
 Case normalization is expressed in the join condition with compileable expression helpers:
 
 ```python
-join_one(
+lookup_join(
     on=lower(trim(order.email)) == lower(trim(customer.email)),
     how=Join.LEFT,
 )
@@ -170,12 +170,12 @@ The v1 `lower(...)` helper follows Spark's backend behavior. It is not a promise
 locale-specific collation. If the project later adds richer collation semantics, that should be a separate expression
 helper or configuration contract.
 
-## `join_one(...)` Cardinality
+## `lookup_join(...)` Cardinality
 
-`join_one(...)` means that each current row should match zero or one right-side row. It is valid for many current rows
+`lookup_join(...)` means that each current row should match zero or one right-side row. It is valid for many current rows
 to match the same right row. In relational terms, it covers many-to-one and one-to-one lookup joins.
 
-Duplicate right-side rows for the chosen key are a contract violation for `join_one(...)` because Spark would multiply
+Duplicate right-side rows for the chosen key are a contract violation for `lookup_join(...)` because Spark would multiply
 the current row. Structure must not silently deduplicate or choose an arbitrary first row.
 
 Uniqueness proof sources:
@@ -187,7 +187,7 @@ Uniqueness proof sources:
 When no uniqueness proof exists, v1 should compile with a warning by default:
 
 ```text
-CompileWarning JOIN-W0601: join_one(...) uniqueness is not proven
+CompileWarning JOIN-W0601: lookup_join(...) uniqueness is not proven
 
 Joined input:
   customers
@@ -199,16 +199,16 @@ Why this matters:
   If customers has duplicate id values, this join can multiply rows.
 
 Use:
-  mark Customer.id as primary_key=True, declare a unique key, use join_many(...) if multiplication is intended,
+  mark Customer.id as primary_key=True, declare a unique key, use inner_join(...) if multiplication is intended,
   or add an explicit JoinDedupe policy when one selected right row is the business rule.
 ```
 
 Projects may later add a strict setting that turns this warning into an error. That setting is not required for the v1
 semantics, but diagnostics should be designed so the promotion is straightforward.
 
-## `join_many(...)` Cardinality
+## `inner_join(...)` Cardinality
 
-`join_many(...)` (v2) means row multiplication is intentional. If one current row matches three right rows, the
+`inner_join(...)` (v2) means row multiplication is intentional. If one current row matches three right rows, the
 downstream step sees three rows. Detailed v2+ behavior is owned by
 [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md).
 
@@ -220,7 +220,7 @@ Rules:
 - `Join.INNER` removes current rows with no right match.
 - Output schema construction still decides which fields survive; right-side columns are not implicitly appended.
 
-Developers should choose `join_many(...)` when the output is naturally one row per match, such as order-to-line-item
+Developers should choose `inner_join(...)` when the output is naturally one row per match, such as order-to-line-item
 expansion. The default PySpark profile now lowers this shape as an explicit row-multiplying join, so it no longer needs
 to hide in a hook.
 
@@ -238,8 +238,8 @@ code should avoid duplicate unqualified column names by aliasing and explicit `s
 
 ## Aliases and Joined Scopes
 
-A joined scope is the symbolic object returned by `join_one(...)`. It owns field references from the right side of that
-join. v2 extends the same idea to `join_many(...)`.
+A joined scope is the symbolic object returned by `lookup_join(...)`. It owns field references from the right side of that
+join. v2 extends the same idea to `inner_join(...)`.
 
 Alias rules:
 
@@ -289,7 +289,7 @@ because it is easier to review and debug.
 `hint=JoinHint.BROADCAST` applies to the joined right input in v1:
 
 ```python
-join_one(
+lookup_join(
     on=order.customer_id == customer.id,
     how=Join.LEFT,
     hint=JoinHint.BROADCAST,
@@ -313,7 +313,7 @@ The join IR should preserve:
 
 - joined input scope;
 - joined scope occurrence;
-- operation kind, including `join_one`, row-filtering existence joins, and row-multiplying `join_many`;
+- operation kind, including `lookup_join`, row-filtering existence joins, and row-multiplying `inner_join`;
 - join type;
 - optional hint;
 - optional strategy hint for row-multiplying joins;
@@ -325,7 +325,7 @@ The join IR should preserve:
 - whether right-side uniqueness is proven, unproven, or explicitly unchecked.
 
 The compileability checker consumes this IR to validate boolean conditions, supported join types, key compatibility,
-alias uniqueness, and `join_one(...)` uniqueness warnings.
+alias uniqueness, and `lookup_join(...)` uniqueness warnings.
 
 ## Diagnostics
 
@@ -350,7 +350,7 @@ See docs/reference/JoinSemantics.md
 ```
 
 ```text
-CompileWarning JOIN-W0601: join_one(...) uniqueness is not proven
+CompileWarning JOIN-W0601: lookup_join(...) uniqueness is not proven
 
 Join:
   EnrichOrders.add_customer -> customers#1
@@ -359,7 +359,7 @@ Key:
   customers.id == order.customer_id
 
 Use:
-  field(String(), primary_key=True) on Customer.id, declare a unique key, or wait for v2 join_many(...).
+  field(String(), primary_key=True) on Customer.id, declare a unique key, or wait for v2 inner_join(...).
 
 See docs/reference/JoinSemantics.md
 ```

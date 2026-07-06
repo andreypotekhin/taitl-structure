@@ -50,6 +50,19 @@ Spark Connect support does not include:
 Hooks remain user-owned PySpark code. Structure validates hook signatures and target scope, but arbitrary hook bodies are
 opaque. For Spark Connect, hook bodies must use public Connect-compatible PySpark APIs.
 
+## Runtime Boundaries
+
+If online or generated execution detects that runtime code touched classic-only Spark internals while
+`target_variant = "spark-connect"` is active, Structure raises `CONNECT-E2601`. This diagnostic covers detected
+SparkContext, RDD, JVM, Py4J, and private classic-field access from hook bodies or generated transform execution.
+
+The fix is to rewrite the code with public Spark Connect DataFrame APIs, move the logic into compiler-visible Structure
+DSL, or run the job with `target_variant = "ordinary"` when the code intentionally depends on classic PySpark internals.
+
+StructureTools schema generation can use Spark Connect metadata paths that the remote session supports. If table or
+path schema extraction fails through Spark Connect, the tool names Spark Connect in the error and suggests passing an
+explicit `schema=...` object.
+
 ## Runtime Use
 
 Create the Spark Connect session outside Structure and pass it in:

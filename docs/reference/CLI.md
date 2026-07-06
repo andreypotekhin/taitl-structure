@@ -271,14 +271,14 @@ EnrichOrders
 
     add_customer: OrderNormalized -> OrderWithCustomer
       joins:
-        customers#1: LEFT join_one on customers.id == order.customer_id
+        customers#1: LEFT lookup_join on customers.id == order.customer_id
       validates output: yes
 
   output:
     OrderEnriched
 ```
 
-The report should include warnings relevant to the transform, such as unproven `join_one(...)` uniqueness. It should
+The report should include warnings relevant to the transform, such as unproven `lookup_join(...)` uniqueness. It should
 identify opaque hook boundaries so a reader can distinguish compiled logic from arbitrary PySpark hooks.
 
 Future compatibility explain output should show the active target and any requested compatibility targets. Hook

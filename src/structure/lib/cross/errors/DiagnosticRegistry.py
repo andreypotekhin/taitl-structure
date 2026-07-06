@@ -13,6 +13,7 @@ class DiagnosticRegistry:
         "BACKEND",
         "CLI",
         "CONF",
+        "CONNECT",
         "CORE",
         "DISC",
         "DSL",

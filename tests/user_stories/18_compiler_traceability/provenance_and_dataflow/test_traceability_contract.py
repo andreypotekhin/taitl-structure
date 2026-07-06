@@ -37,7 +37,7 @@ def test_traceability_reports_static_dataflow_and_opaque_hook_boundaries(orders_
     }
 
     assert dependencies["EnrichOrders"].sources == ("orders", "customers", "products", "promotions")
-    assert dependencies["add_customer.join[1].customer"].operation == "join_one"
+    assert dependencies["add_customer.join[1].customer"].operation == "rowset_join"
     assert dependencies["OrderWithCustomer.customer_name"].sources
     assert ("add_promotion", "note_lookup_inputs", "after", "arbitrary PySpark hook body") in boundaries
     assert ("publish", "add_quality_columns", "after", "arbitrary PySpark hook body") in boundaries

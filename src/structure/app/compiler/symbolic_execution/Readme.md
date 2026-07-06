@@ -2,7 +2,7 @@
 
 ## Purpose
 The symbolic execution app captures side effects produced while Structure executes transform methods symbolically.
-It lets normal-looking DSL calls such as `where(...)` and `join_one(...)` describe a Spark-visible plan without running
+It lets normal-looking DSL calls such as `where(...)` and `lookup_join(...)` describe a Spark-visible plan without running
 Spark work.
 
 ## Dependency Exchanges

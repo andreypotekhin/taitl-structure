@@ -31,8 +31,9 @@ from structure import (
     exists,
     expr_fn,
     input,
-    join_many,
-    join_one,
+    inner_join,
+    left_join,
+    lookup_join,
     lower,
     map_filter,
     map_transform_values,
@@ -102,11 +103,10 @@ class EnrichOrders(Transform):
 
     @transform(cache=StorageLevel.MEMORY_AND_DISK)
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        customer = join_one(
+        customer = left_join(
             customer,
             on=(customer.tenant.tenant_id == order.tenant.tenant_id)
             & (self.clean_id(customer.id) == order.customer_id),
-            how=Join.LEFT,
             hint=JoinHint.BROADCAST,
         )
 
@@ -128,7 +128,7 @@ class EnrichOrders(Transform):
                 & (blocked_product.id == order.product_id)
             )
         )
-        join_one(
+        lookup_join(
             on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id),
             how=Join.LEFT,
             dedupe=JoinDedupe.latest_by(product.audit.ingested_at, ties=TiePolicy.ERROR),
@@ -160,10 +160,9 @@ class EnrichOrders(Transform):
         )
 
     def add_shipments(self, order: OrderWithPromotion, shipment: Shipment) -> OrderFulfillment:
-        join_many(
+        inner_join(
             shipment,
             on=(shipment.tenant.tenant_id == order.tenant.tenant_id) & (shipment.order_id == order.id),
-            how=Join.INNER,
             strategy=JoinStrategy.SHUFFLE_HASH,
         )
 

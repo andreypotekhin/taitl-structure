@@ -48,7 +48,7 @@ def test_v1_compiler_traceability_reports_static_dataflow_and_opaque_hooks() -> 
     dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
 
     assert dependencies["EnrichOrders"].sources == ("orders", "customers", "products", "promotions")
-    assert dependencies["add_customer.join[1].customer"].operation == "join_one"
+    assert dependencies["add_customer.join[1].customer"].operation == "rowset_join"
     assert dependencies["add_customer.join[1].customer"].detail["how"] == "left"
     assert dependencies["OrderNormalized.id"].sources
     assert dependencies["OrderWithCustomer.customer_name"].sources

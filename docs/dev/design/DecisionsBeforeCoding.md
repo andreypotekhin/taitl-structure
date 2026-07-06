@@ -23,7 +23,7 @@ The v1 implementation must follow these decisions:
 - default validation is schema-only, with value-level data-quality constraints requiring explicit opt-in;
 - hooks are explicit runtime escape hatches and are opaque to compile-time expression analysis;
 - `@expr_fn` is the public compiler-visible extension point for reusable expression logic;
-- v1 lookup joins use `join_one(...)`; row-multiplying and existence joins are v2+ features;
+- v1 lookup joins use `lookup_join(...)`; row-multiplying and existence joins are v2+ features;
 - diagnostics are registry-backed, stable, structured, and linked to documentation;
 - the first implementation checkpoint is first executable slice, a narrow executable vertical slice, before full v1 breadth.
 
@@ -181,7 +181,7 @@ as opaque.
 
 ### Join Boundary
 
-v1 supports `join_one(...)` lookup joins with explicit `Join.LEFT` or `Join.INNER`. It must not silently deduplicate
+v1 supports `lookup_join(...)` lookup joins with explicit `Join.LEFT` or `Join.INNER`. It must not silently deduplicate
 right-side rows. If right-side uniqueness is not proven, Structure emits a warning by default.
 
 ### Extension Boundary
@@ -219,7 +219,7 @@ CONF-E0101  unknown configuration key
 SCHEMA-E0301 invalid schema declaration
 DSL-E0401   unsupported symbolic expression
 HOOK-E0701  invalid hook declaration
-JOIN-W0601  join_one uniqueness is not proven
+JOIN-W0601  lookup_join uniqueness is not proven
 BACKEND-E2401 unsupported backend target
 ```
 

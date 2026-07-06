@@ -150,7 +150,7 @@ Concept tests are end-to-end tests proving correctness around a specific concept
 Directory structure:
 - /tests/concepts/ - tests for concepts in project vocabulary (Concepts.md)
 - /tests/concepts/[concept]/ tests for the concepts that have subcontcepts 
-(e.g. join with subconcepts left_join, join_one)
+(e.g. join with subconcepts left_join, lookup_join)
 
 While thorough coverage of concepts not required initially, we expect 100% coverage 
 towards the end of project.

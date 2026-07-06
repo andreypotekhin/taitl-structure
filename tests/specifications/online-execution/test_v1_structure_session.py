@@ -257,7 +257,43 @@ def test_v1_generated_session_reports_missing_generated_code() -> None:
     assert "missing_structure_generated.pyspark.transforms.order" in diagnostic.problem
 
 
-def _install_generated_module(name: str) -> list[str]:
+def test_v1_generated_spark_connect_classic_only_failure_reports_boundary() -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    module_name = "testing.model.v1.structure_generated.orders.pyspark.transforms.order"
+    installed = _install_generated_module(
+        module_name,
+        failure=RuntimeError("Generated hook touched _jvm through Py4J"),
+    )
+    try:
+        invocation = EnrichOrders(
+            orders="orders-df",
+            customers="customers-df",
+            products="products-df",
+            promotions="promotions-df",
+        )
+        session = StructureSession(
+            spark="spark",
+            execution_mode="generated",
+            generated_package="testing.model.v1.structure_generated.orders",
+            schema_types=FakeTypes,
+            target_variant="spark-connect",
+        )
+
+        with pytest.raises(StructureRuntimeError) as raised:
+            session.run(invocation)
+
+        diagnostic = raised.value.diagnostic
+        assert diagnostic.code == "CONNECT-E2601"
+        assert diagnostic.execution_mode == "generated"
+        assert diagnostic.context["surface"] == "generated transform or hook code"
+        assert "RDD APIs, or Py4J gateway objects" in diagnostic.problem
+    finally:
+        for name in installed:
+            sys.modules.pop(name, None)
+
+
+def _install_generated_module(name: str, *, failure: Exception | None = None) -> list[str]:
     installed: list[str] = []
     parts = name.split(".")
     for index in range(1, len(parts)):
@@ -280,6 +316,8 @@ def _install_generated_module(name: str) -> list[str]:
             self.ctx = ctx
 
         def run(self, *, orders, customers, products, promotions):
+            if failure is not None:
+                raise failure
             return {
                 "spark": self.spark,
                 "ctx": self.ctx,
