@@ -1,0 +1,4 @@
+id,tags,nested_tags,scores,attributes
+o-1,priority|new|gift,priority|new;gift,1|2|3,Channel=WEB;Campaign=SUMMER
+o-2,standard|repeat,standard;repeat|loyal,2|5,Channel=STORE;Campaign=LOYALTY
+o-3,priority|fragile,priority|fragile;warehouse,4|6,Channel=WEB;Campaign=EXPEDITE

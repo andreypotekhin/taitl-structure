@@ -17,6 +17,7 @@ def test_orders_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/orders/pyspark/transforms/__init__.py",
         "examples/structure_generated/orders/runtime/__init__.py",
         "examples/structure_generated/orders/runtime/schema_assert.py",
+        "examples/structure_generated/orders/pyspark/schemas/adv_analytics.py",
         "examples/structure_generated/orders/pyspark/schemas/analytics.py",
         "examples/structure_generated/orders/pyspark/schemas/common.py",
         "examples/structure_generated/orders/pyspark/schemas/customer.py",
@@ -30,6 +31,8 @@ def test_orders_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/orders/traceability/transforms/rowset_join.RowsetJoinExamples.json",
         "examples/structure_generated/orders/pyspark/transforms/analytics.py",
         "examples/structure_generated/orders/traceability/transforms/analytics.OrderAnalytics.json",
+        "examples/structure_generated/orders/pyspark/transforms/adv_analytics.py",
+        "examples/structure_generated/orders/traceability/transforms/adv_analytics.AdvancedOrderAnalytics.json",
         "examples/structure_generated/orders/traceability/__init__.py",
         "examples/structure_generated/orders/traceability/transforms/__init__.py",
     ]
@@ -77,3 +80,12 @@ def test_orders_example_generation_keeps_public_behavior_fragments_stable() -> N
     assert "class OrderAnalyticsGenerated:" in analytics
     assert 'product_summary = product_summary.groupBy(' in analytics
     assert 'F.avg(F.col("order_fulfillment.quantity")).cast(T.DoubleType()).alias("avg_units")' in analytics
+
+    advanced = render_orders_example()["examples/structure_generated/orders/pyspark/transforms/adv_analytics.py"]
+
+    assert "class AdvancedOrderAnalyticsGenerated:" in advanced
+    assert "revenue_rollups = revenue_rollups.rollup(" in advanced
+    assert "product_cubes = product_cubes.cube(" in advanced
+    assert "Window.partitionBy" in advanced
+    assert "F.exists(" in advanced
+    assert "F.map_from_entries(F.map_entries(" in advanced

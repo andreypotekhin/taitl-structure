@@ -33,6 +33,7 @@ def test_v2_source_fixtures_import_without_live_spark(monkeypatch: pytest.Monkey
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
     for module in (
+        "testing.model.v2.orders.schemas.adv_analytics",
         "testing.model.v2.orders.schemas.analytics",
         "testing.model.v2.orders.schemas.common",
         "testing.model.v2.orders.schemas.customer",
@@ -40,6 +41,7 @@ def test_v2_source_fixtures_import_without_live_spark(monkeypatch: pytest.Monkey
         "testing.model.v2.orders.schemas.product",
         "testing.model.v2.orders.schemas.promotion",
         "testing.model.v2.orders.schemas.shipment",
+        "testing.model.v2.orders.transforms.adv_analytics",
         "testing.model.v2.orders.transforms.analytics",
         "testing.model.v2.orders.transforms.order",
         "testing.model.v2.orders.transforms.rowset_join",
@@ -364,6 +366,78 @@ def test_v2_order_analytics_fixture_lowers_grouped_aggregates(monkeypatch: pytes
         ("rolling_avg_units", "window_rolling_avg"),
         ("rolling_min_units", "window_rolling_min"),
         ("rolling_max_units", "window_rolling_max"),
+    ]
+
+
+def test_v2_advanced_analytics_fixture_lowers_admitted_feature_families(monkeypatch: pytest.MonkeyPatch) -> None:
+    _stub_pyspark(monkeypatch)
+    module = importlib.import_module("testing.model.v2.orders.transforms.adv_analytics")
+
+    plan = PySpark.plan.lower()(compile_transform(module.AdvancedOrderAnalytics))
+
+    assert [step.name for step in plan.steps] == [
+        "revenue_rollup",
+        "product_cube",
+        "customer_window",
+        "collection_profile",
+    ]
+    revenue = plan.steps[0].operations[0].aggregate
+    product = plan.steps[1].operations[0].aggregate
+    assert revenue is not None
+    assert product is not None
+    assert revenue.grouping == "rollup"
+    assert product.grouping == "cube"
+    assert {assignment.function for assignment in revenue.assignments} >= {
+        "approx_count_distinct",
+        "approx_percentile",
+        "bool_and",
+        "bool_or",
+        "collect_list",
+        "collect_set",
+        "corr",
+        "covar",
+        "first_value",
+        "last_value",
+        "stddev",
+        "variance",
+    }
+    assert any(assignment.filter is not None for assignment in revenue.assignments)
+    windows = [
+        assignment.expression.data["function"]
+        for assignment in plan.steps[2].projection
+        if assignment.expression.data is not None and str(assignment.expression.data.get("function")).startswith("window_")
+    ]
+    assert windows == [
+        "window_percent_rank",
+        "window_cume_dist",
+        "window_ntile",
+        "window_first_value",
+        "window_last_value",
+        "window_nth_value",
+        "window_sum",
+        "window_avg",
+        "window_min",
+        "window_max",
+        "window_count",
+    ]
+    hofs = [
+        assignment.expression.data["function"]
+        for assignment in plan.steps[3].projection
+        if assignment.expression.data is not None and assignment.expression.kind == "reserved_v2"
+    ]
+    assert hofs == [
+        "array_distinct",
+        "array_sort_by",
+        "array_flatten",
+        "array_aggregate",
+        "array_position",
+        "array_exists",
+        "array_forall",
+        "map_filter",
+        "map_zip_with",
+        "map_keys",
+        "map_values",
+        "map_from_entries",
     ]
 
 

@@ -15,6 +15,13 @@ EXAMPLES = ROOT / "examples"
 
 def render_orders_example() -> dict[str, str]:
     with _example_imports():
+        from examples.orders.schemas.adv_analytics import (
+            OrderCollectionProfile,
+            OrderCollectionSource,
+            OrderCustomerWindow,
+            OrderProductCube,
+            OrderRevenueRollup,
+        )
         from examples.orders.schemas.analytics import CustomerDailyTotal, ProductDailySummary
         from examples.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
         from examples.orders.schemas.customer import Customer
@@ -35,11 +42,19 @@ def render_orders_example() -> dict[str, str]:
         from examples.orders.schemas.product import BlockedProduct, Product, ProductBase
         from examples.orders.schemas.promotion import Promotion
         from examples.orders.schemas.shipment import Shipment
+        from examples.orders.transforms.adv_analytics import AdvancedOrderAnalytics
         from examples.orders.transforms.analytics import OrderAnalytics
         from examples.orders.transforms.order import EnrichOrders
         from examples.orders.transforms.rowset_join import RowsetJoinExamples
 
         schema_modules: dict[str, Sequence[type[Structure]]] = {
+            "examples.orders.schemas.adv_analytics": [
+                OrderRevenueRollup,
+                OrderProductCube,
+                OrderCustomerWindow,
+                OrderCollectionSource,
+                OrderCollectionProfile,
+            ],
             "examples.orders.schemas.analytics": [CustomerDailyTotal, ProductDailySummary],
             "examples.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
             "examples.orders.schemas.customer": [Customer],
@@ -66,6 +81,7 @@ def render_orders_example() -> dict[str, str]:
             (EnrichOrders, "examples.orders.transforms.order.EnrichOrders"),
             (RowsetJoinExamples, "examples.orders.transforms.rowset_join.RowsetJoinExamples"),
             (OrderAnalytics, "examples.orders.transforms.analytics.OrderAnalytics"),
+            (AdvancedOrderAnalytics, "examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics"),
         ):
             files.update(
                 PySpark.render.project()(
