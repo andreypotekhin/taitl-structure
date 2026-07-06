@@ -180,7 +180,6 @@ Rules:
 The canonical v1 source shape is:
 
 ```python
-@transform
 class EnrichOrders(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)
@@ -233,12 +232,12 @@ result = EnrichOrders(
 
 ## Transform Classes
 
-`@transform` marks a class as a Structure transform. A transform class must inherit from `Transform`.
+Inheriting from `Transform` declares a Structure transform class. `@transform` is optional and records class-level
+options when those options are needed.
 
 Canonical forms:
 
 ```python
-@transform
 class NormalizeOrders(Transform):
     normalized = output(OrderNormalized)
     ...
@@ -259,6 +258,7 @@ class NormalizeOrders(Transform):
 
 Rules:
 
+- A concrete class inheriting `Transform` may be compiled without a class-level decorator.
 - `@transform` without parentheses and `@transform(...)` with keyword arguments are both valid.
 - Positional arguments to `@transform(...)` are rejected.
 - Unknown keyword arguments are rejected with allowed values.
@@ -269,10 +269,10 @@ Rules:
   static dataflow traceability.
 - Transform classes should be import-safe. They must not do Spark work in class bodies.
 - A class decorated with `@transform` but not inheriting `Transform` is invalid.
-- A class inheriting `Transform` but missing `@transform` is not discovered as a compiled transform unless a future
-  spec adds an explicit registration mode.
+- Project discovery compiles concrete `Transform` entrypoints: classes that declare final outputs or a class-field
+  pipeline. Reusable lane-only base classes remain support code.
 - A direct or indirect parent class inheriting `Transform` may contribute reusable inputs, lanes, outputs, hooks,
-  helpers, and subtransforms to a decorated child even when the parent is not decorated with `@transform`.
+  helpers, and subtransforms to a child even when the parent is not decorated with `@transform`.
 - Inherited parent subtransforms run before child subtransforms. Multiple direct parents run left to right in the
   Python class declaration, and shared diamond ancestors contribute once.
 - A child subtransform with the same method name overrides the inherited scheduled step. Sibling parents that define
@@ -296,6 +296,50 @@ Rules:
 - Custom transform construction parameters are out of scope for v1.
 - A transform invocation can be run through `transform.run(session)` or `session.run(transform)`.
 - `run` is reserved for runtime execution. A public schema-returning subtransform named `run` is invalid.
+- Transform invocations can be composed with `.to(...)` when complete transform outputs should feed later transform
+  inputs. Composition behavior is specified in [TransformComposition.md](TransformComposition.md).
+
+## Transform Composition
+
+Runtime composition chains transform invocations:
+
+```python
+result = (
+    NormalizeOrders(orders=orders_df)
+    .to(AddProduct(products=products_df))
+    .to(PublishOrders())
+    .run(session)
+)
+```
+
+Rules:
+
+- `.to(...)` accepts transform invocations, not transform classes.
+- `a.to(b, c)` and `a.to(b).to(c)` compile to the same flattened pipeline.
+- `Transform.to(a, b, c)` starts a pipeline without a receiver.
+- A downstream input is supplied by its constructor binding or by one matching upstream output.
+- Constructor binding plus upstream output match is ambiguous and must fail.
+- Matching uses exact schema identity, with same-name outputs preferred when several upstream outputs share a schema.
+- `lane(...)` declarations are internal and cannot be used as composition bindings.
+- The composed result exposes the final stage's declared outputs.
+- Hook-bearing stages are rejected until hook ownership for composed stages is specified.
+
+Generated-capable composition uses a wrapper transform with one pipeline field:
+
+```python
+@transform
+class OrderPipeline(Transform):
+    orders = input(OrderRaw)
+    products = input(Product)
+
+    pipeline = Transform.to(
+        NormalizeOrders(orders=orders),
+        AddProduct(products=products),
+        PublishOrders(),
+    )
+```
+
+See [TransformComposition.md](TransformComposition.md) for inheritance and composition examples.
 
 ## Inputs
 
@@ -538,7 +582,8 @@ Rules:
   online lowering, generated lowering, and diagnostics.
 - Backend-specific lowering belongs in target layers, not in public expression objects.
 
-Detailed type, literal, and nullability behavior is specified by [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md).
+Detailed type, literal, and nullability behavior is specified by
+[NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md).
 
 ## Expression Helpers
 
@@ -851,7 +896,7 @@ TransformDef
 
 Rules:
 
-- Discovery finds classes marked by `@transform` under configured source roots.
+- Discovery finds concrete `Transform` entrypoint classes under configured source roots.
 - Metadata should preserve source order for input declarations, subtransforms, hooks, fields, filters, joins, and
   projections.
 - Metadata should be immutable or treated as immutable after discovery.

@@ -24,7 +24,14 @@ def workspace_tmp():
         shutil.rmtree(root, ignore_errors=True)
 
 
+def drop_orders_modules() -> None:
+    for name in list(sys.modules):
+        if name == "orders" or name.startswith("orders."):
+            sys.modules.pop(name, None)
+
+
 def write_project(root: Path) -> None:
+    drop_orders_modules()
     package = root / "src" / "orders"
     package.mkdir(parents=True)
     (package / "__init__.py").write_text("", encoding="utf-8")
@@ -69,6 +76,62 @@ def write_project(root: Path) -> None:
     )
 
 
+def write_optional_transform_project(root: Path) -> None:
+    drop_orders_modules()
+    package = root / "src" / "orders"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text("", encoding="utf-8")
+    (package / "schemas.py").write_text(
+        "\n".join(
+            [
+                "from structure import Decimal, String, Structure, field",
+                "",
+                "class OrderRaw(Structure):",
+                "    id = field(String(), nullable=False)",
+                "    total = field(String(), nullable=True)",
+                "",
+                "class OrderNormalized(Structure):",
+                "    id = field(String(), nullable=False)",
+                "    total = field(Decimal(12, 2), nullable=False)",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (package / "transforms.py").write_text(
+        "\n".join(
+            [
+                "from structure import Transform, coalesce, input, lane, output, to_decimal, transform, where",
+                "from orders.schemas import OrderNormalized, OrderRaw",
+                "",
+                "class NormalizeBase(Transform):",
+                "    orders = input(OrderRaw)",
+                "    prepared = lane(OrderNormalized)",
+                "",
+                "    @transform(output=prepared)",
+                "    def prepare(self, order: OrderRaw) -> OrderNormalized:",
+                "        where(order.id.is_not_null())",
+                "        return OrderNormalized(",
+                "            id=order.id,",
+                "            total=coalesce(to_decimal(order.total, precision=12, scale=2), 0),",
+                "        )",
+                "",
+                "class NormalizeOrders(NormalizeBase):",
+                "    normalized = output(OrderNormalized)",
+                "",
+                "    def normalize(self, order: OrderNormalized) -> OrderNormalized:",
+                "        return OrderNormalized(id=order.id, total=order.total)",
+                "",
+                "class NormalizePipeline(Transform):",
+                "    orders = input(OrderRaw)",
+                "",
+                "    pipeline = Transform.to(NormalizeOrders(orders=orders))",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
 def test_v1_cli_help_lists_commands() -> None:
     result = CliRunner().invoke(cli, ["--help"])
 
@@ -102,6 +165,18 @@ def test_v1_cli_check_is_spark_free_and_does_not_write_generated_files() -> None
         assert "Structure check passed" in result.output
         assert "transforms: 1" in result.output
         assert after == before
+        assert not Path("generated").exists()
+
+
+def test_v1_cli_check_discovers_plain_concrete_transforms_only() -> None:
+    with workspace_tmp() as root:
+        write_optional_transform_project(root)
+
+        result = CliRunner().invoke(cli, ["check"])
+
+        assert result.exit_code == 0, result.output
+        assert "Structure check passed" in result.output
+        assert "transforms: 2" in result.output
         assert not Path("generated").exists()
 
 

@@ -245,22 +245,22 @@ def test_window_projection_helpers_render_spark_visible_windows() -> None:
     ) in text
 
 
-def test_advanced_window_helpers_render_explicit_frames() -> None:
+def test_advanced_window_helpers_render_valid_function_frames() -> None:
     plan = PySpark.plan.lower()(compile_transform(AdvancedRankedEventTransform))
 
     text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
 
     assert (
         'F.percent_rank().over(Window.partitionBy(F.col("raw_event.account_id")).'
-        'orderBy(F.col("raw_event.sequence").asc()).rowsBetween(-3, Window.currentRow))'
+        'orderBy(F.col("raw_event.sequence").asc()))'
     ) in text
     assert (
         'F.cume_dist().over(Window.partitionBy(F.col("raw_event.account_id")).'
-        'orderBy(F.col("raw_event.sequence").asc()).rowsBetween(-3, Window.currentRow))'
+        'orderBy(F.col("raw_event.sequence").asc()))'
     ) in text
     assert (
         'F.ntile(4).over(Window.partitionBy(F.col("raw_event.account_id")).'
-        'orderBy(F.col("raw_event.sequence").asc()).rowsBetween(-3, Window.currentRow))'
+        'orderBy(F.col("raw_event.sequence").asc()))'
     ) in text
     assert (
         'F.sum(F.col("raw_event.sequence")).over(Window.partitionBy(F.col("raw_event.account_id")).'

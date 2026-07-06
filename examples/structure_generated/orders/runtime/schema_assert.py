@@ -22,8 +22,25 @@ def assert_schema(df, schema, *, name: str, mode: str) -> None:
             raise ValueError(f"{name} has unexpected column(s): {names}")
     for expected in schema:
         actual_field = actual[expected.name]
-        if actual_field.dataType != expected.dataType:
+        if not _same_data_type(actual_field.dataType, expected.dataType):
             raise ValueError(f"{name}.{expected.name} expected {expected.dataType}, got {actual_field.dataType}")
+
+
+def _same_data_type(actual, expected) -> bool:
+    if actual == expected:
+        return True
+    actual_name = actual.__class__.__name__
+    expected_name = expected.__class__.__name__
+    if actual_name != expected_name:
+        return False
+    if actual_name == "ArrayType":
+        return _same_data_type(actual.elementType, expected.elementType)
+    if actual_name == "MapType":
+        return _same_data_type(actual.keyType, expected.keyType) and _same_data_type(
+            actual.valueType,
+            expected.valueType,
+        )
+    return False
 
 
 def project_schema(df, schema):

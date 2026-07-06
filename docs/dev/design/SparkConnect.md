@@ -47,9 +47,12 @@ That slice intentionally left out the evidence needed for a support claim:
 Sprint 09 promotion covers completed compiler-visible batch features only:
 
 - projections, filters, casts, literals, and standard expression helpers;
-- v1 joins and completed v2 analytical joins;
-- aggregations, selected-row helpers, ranking, lag/lead, rolling metrics, exact and subset dedupe;
-- compiler-visible array and map higher-order helpers;
+- v1 joins, completed v2 analytical joins, and the implemented full rowset join pass: right, full, cross, non-equi, and
+  disjunctive joins;
+- first-slice aggregations plus implemented advanced analytical operations: rollup, cube, grouping metadata helpers,
+  additional aggregate metrics, metric-local filters, reusable windows, distribution/value/window aggregate helpers,
+  selected-row helpers, ranking, lag/lead, rolling metrics, exact and subset dedupe;
+- the implemented compiler-visible array and map higher-order helper set;
 - schema materialization, schema-only validation, strict projection, and generated schema imports;
 - explicit optimization directives only when the PySpark DataFrame API supports the directive without classic internals;
 - online and generated execution through the same PySpark recipe layer.
@@ -60,6 +63,7 @@ The design deliberately excludes:
 - storage write orchestration and table lifecycle management;
 - RDD access, SparkContext access, direct JVM/Py4J calls, `_jdf`, and private classic PySpark fields;
 - automatic fallback to Python UDFs, local collection, row-wise loops, or SQL string rewrites;
+- deferred advanced analytical boundaries such as `grouping_sets(...)` and post-aggregate `having(...)`;
 - opaque hook bodies unless the hook is explicitly scoped and the user accepts responsibility for Connect-compatible
   PySpark code.
 
@@ -98,6 +102,8 @@ PySpark.
 Spark Connect moves from experimental to supported for batch features only after these facts are true:
 
 - the capability profile has explicit supported and unsupported decisions for every completed v1/v2 batch feature;
+- recently implemented full rowset joins and advanced analytical helpers are included in the Connect capability and
+  generated-source guardrail matrix;
 - online and generated parity tests pass against a real Spark Connect session;
 - generated source snapshots are identical in public API shape and do not emit classic-only internals;
 - `structure check`, `compile`, and `explain` remain Spark-free;

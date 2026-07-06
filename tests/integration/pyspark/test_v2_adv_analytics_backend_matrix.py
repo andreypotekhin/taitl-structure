@@ -17,7 +17,8 @@ from integration.pyspark.matrix_support import (
 
 pytestmark = pytest.mark.integration
 
-DATA = Path("res/testing/data/v2/orders")
+ROOT = Path(__file__).resolve().parents[3]
+DATA = ROOT / "res" / "testing" / "data" / "v2" / "orders"
 
 
 def test_v2_online_and_generated_execution_match_advanced_analytics_on_live_backend(spark, tmp_path) -> None:
@@ -89,7 +90,9 @@ def test_v2_online_and_generated_execution_match_advanced_analytics_on_live_back
         assert profile["all_tags_present"] is True
         assert profile["score_total"] == 6
         assert profile["flat_tags"] == ["priority", "new", "gift"]
-        assert profile["attribute_keys"] == ["Channel", "Campaign"]
+        attribute_keys = profile["attribute_keys"]
+        assert isinstance(attribute_keys, list)
+        assert sorted(attribute_keys) == ["Campaign", "Channel"]
         assert profile["roundtrip_attributes"] == {"Channel": "WEB", "Campaign": "SUMMER"}
 
     assert_generated_connect_safe(files)

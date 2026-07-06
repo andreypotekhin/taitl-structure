@@ -12,6 +12,9 @@ class Transform:
     _structure_lanes: dict[str, LaneDeclaration] = {}
     _structure_outputs: dict[str, OutputDeclaration] = {}
     _structure_pipeline: TransformPipeline | None = None
+    _structure_transform = False
+    _structure_transform_options: dict[str, object] = {}
+    _structure_subtransform_options: dict[str, object] = {}
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -39,6 +42,9 @@ class Transform:
         if len(pipelines) > 1:
             raise TypeError(f"{cls.__name__} declares more than one transform pipeline field")
         cls._structure_pipeline = pipelines[0] if pipelines else None
+        cls._structure_transform = False
+        cls._structure_transform_options = {}
+        cls._structure_subtransform_options = {}
 
     def __init__(self, **inputs: object) -> None:
         unknown = set(inputs) - set(self._structure_inputs)

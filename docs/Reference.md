@@ -24,6 +24,8 @@ behavior Structure aims to keep stable.
   and generated PySpark.
 - [Symbolic execution](reference/SymbolicExecution.md): how compiled subtransform methods become compiler-visible
   plans.
+- [Transform inheritance and composition](reference/TransformComposition.md): reusable parent transform fragments,
+  `.to(...)` pipelines, wrapper pipelines, and composition limits.
 - [Intermediate representation](reference/IntermediateRepresentation.md): backend-neutral transform plan model.
 
 ## Joins, Hooks, And Validation
@@ -33,9 +35,9 @@ behavior Structure aims to keep stable.
 - [Analytical join coverage](reference/AnalyticalJoinCoverage.md): existence joins, row-multiplying joins,
   deterministic dedupe, and temporal lookup joins.
 - [Full PySpark join support](reference/FullPySparkJoinSupport.md): right, full, cross, non-equi, and disjunctive
-  rowset joins.
+  rowset joins, plus explicit Cartesian acknowledgement and rowset projection rules.
 - [Advanced analytical operations](reference/AdvancedAnalyticalOperations.md): broader aggregation, window, and
-  higher-order collection helper behavior after the first analytical slice.
+  higher-order collection helpers, including rollups, cubes, filtered metrics, reusable windows, and symbolic HOFs.
 - [Hook semantics](reference/HookSemantics.md): explicit runtime escape hatches and target-scoped hook behavior.
 - [Validation semantics](reference/ValidationSemantics.md): schema validation phases, modes, strictness, hooks,
   and output projection.

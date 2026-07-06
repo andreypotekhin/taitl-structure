@@ -23,9 +23,12 @@ target_variant = "ordinary"
 Spark Connect support covers completed v1/v2 batch features that lower through public PySpark DataFrame and Column APIs:
 
 - projections, filters, casts, literals, and expression helpers;
-- v1 joins and completed analytical joins;
-- aggregations, selected-row helpers, ranking, lag/lead, rolling metrics, and dedupe helpers;
-- compiler-visible array and map helpers;
+- v1 joins, completed analytical joins, and implemented rowset joins such as right, full, explicit cross, non-equi, and
+  disjunctive joins;
+- first-slice aggregations plus implemented advanced analytical helpers such as rollup, cube, grouping metadata,
+  additional aggregate metrics, metric-local filters, reusable windows, distribution/value/window aggregate helpers,
+  selected-row helpers, ranking, lag/lead, rolling metrics, and dedupe helpers;
+- the implemented compiler-visible array and map helper set;
 - schema-only validation and strict projection;
 - online execution through `StructureSession`;
 - generated PySpark execution with the same constructor and `run(...)` signature as ordinary PySpark.
@@ -41,6 +44,8 @@ Spark Connect support does not include:
 - direct JVM/Py4J access;
 - `_jdf` or private classic PySpark fields;
 - hidden fallback to Python UDFs, local collection, row-wise loops, or SQL string rewrites.
+- deferred batch features such as explicit `grouping_sets(...)`, post-aggregate `having(...)`, and same-name join-key
+  shorthand until their owning specifications admit them.
 
 Hooks remain user-owned PySpark code. Structure validates hook signatures and target scope, but arbitrary hook bodies are
 opaque. For Spark Connect, hook bodies must use public Connect-compatible PySpark APIs.

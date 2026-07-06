@@ -64,12 +64,12 @@ class CompileTransform:
     def __call__(self, transform_class: type[Transform] | TransformPipeline) -> TransformPlan:
         if isinstance(transform_class, TransformPipeline):
             return self._compose_pipeline(transform_class, name="ComposedTransform")
-        if not getattr(transform_class, "_structure_transform", False):
+        if not isinstance(transform_class, type) or not issubclass(transform_class, Transform) or transform_class is Transform:
             raise self._error(
                 "DSL-E0402",
-                transform_class=transform_class,
-                problem=f"{transform_class.__name__} is not decorated with @transform.",
-                use="Add @transform to the class or compile a decorated Structure transform.",
+                transform_class=transform_class if isinstance(transform_class, type) else None,
+                problem=f"{getattr(transform_class, '__name__', transform_class)} is not a Transform subclass.",
+                use="Compile a class that inherits from structure.Transform or compile a Transform.to(...) pipeline.",
             )
         pipeline = getattr(transform_class, "_structure_pipeline", None)
         if pipeline is not None:
@@ -97,7 +97,7 @@ class CompileTransform:
             inputs=tuple(inputs),
             steps=tuple(steps),
             outputs=tuple(outputs),
-            options=dict(getattr(transform_class, "_structure_transform_options", {})),
+            options=dict(transform_class.__dict__.get("_structure_transform_options", {})),
             diagnostics=tuple(diagnostics),
         )
 

@@ -11,6 +11,7 @@ from structure.app.dsl.model.types.StructureType import StructureType
 from structure.app.target.pyspark.commands.RenderPySparkExpression import render_pyspark_expression
 from structure.app.target.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
 from structure.app.target.pyspark.model.PySparkAggregateAssignment import PySparkAggregateAssignment
+from structure.app.target.pyspark.model.PySparkAggregateKey import PySparkAggregateKey
 from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
 from structure.app.target.pyspark.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
@@ -174,22 +175,44 @@ class RenderPySparkStep:
         grouping = {"group_by": "groupBy", "rollup": "rollup", "cube": "cube"}.get(aggregate.grouping)
         if grouping is None:
             raise TypeError(f"Unsupported aggregate grouping: {aggregate.grouping}")
-        lines = [f"        {target} = {target}.{grouping}("]
+        key_columns = (
+            self._aggregate_key_columns(aggregate)
+            if aggregate.grouping in {"rollup", "cube"}
+            else ()
+        )
+        lines = []
+        if aggregate.grouping in {"rollup", "cube"}:
+            for key, column in key_columns:
+                expression = render_pyspark_expression(key.expression, scope_aliases=self._scope_aliases(step))
+                lines.append(f"        {target} = {target}.withColumn({self._literal(column)}, {expression})")
+        lines.append(f"        {target} = {target}.{grouping}(")
         for key in aggregate.keys:
-            expression = render_pyspark_expression(key.expression, scope_aliases=self._scope_aliases(step))
-            lines.append(f"            {expression}.alias({self._literal(key.name)}),")
+            if aggregate.grouping in {"rollup", "cube"}:
+                lines.append(f"            {self._literal(self._aggregate_key_column(key, key_columns))},")
+            else:
+                expression = render_pyspark_expression(key.expression, scope_aliases=self._scope_aliases(step))
+                lines.append(f"            {expression}.alias({self._literal(key.name)}),")
         lines.append("        ).agg(")
         for assignment in aggregate.assignments:
             if assignment.function == "key":
                 continue
-            lines.append(f"            {self._aggregate_assignment(assignment, step=step)},")
+            lines.append(
+                f"            {self._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns)},"
+            )
         lines.append("        ).select(")
         for assignment in aggregate.assignments:
-            lines.append(f"            {self._aggregate_select(assignment)},")
+            lines.append(f"            {self._aggregate_select(assignment, key_columns=key_columns)},")
         lines.append("        )")
         return lines
 
-    def _aggregate_assignment(self, assignment: PySparkAggregateAssignment, *, step) -> str:
+    def _aggregate_assignment(
+        self,
+        assignment: PySparkAggregateAssignment,
+        *,
+        step,
+        aggregate: PySparkAggregateRecipe,
+        key_columns: tuple[tuple[PySparkAggregateKey, str], ...],
+    ) -> str:
         alias = self._literal(assignment.field.column)
         if assignment.function == "count":
             expression = "F.lit(1)"
@@ -200,7 +223,12 @@ class RenderPySparkStep:
         if assignment.function == "grouping_id":
             return f"F.grouping_id().cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
         if assignment.function == "is_grouped" and assignment.expression is not None:
-            expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
+            expression = self._aggregate_grouping_expression(
+                assignment,
+                step=step,
+                aggregate=aggregate,
+                key_columns=key_columns,
+            )
             return f"F.grouping({expression}).cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
         arguments = assignment.arguments or (() if assignment.expression is None else (assignment.expression,))
         if assignment.function in self._aggregate_functions() and arguments:
@@ -234,6 +262,21 @@ class RenderPySparkStep:
             expression = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
             return f"F.first({expression}, ignorenulls=False).alias({alias})"
         raise TypeError(f"Unsupported aggregate assignment: {assignment.function}")
+
+    def _aggregate_grouping_expression(
+        self,
+        assignment: PySparkAggregateAssignment,
+        *,
+        step,
+        aggregate: PySparkAggregateRecipe,
+        key_columns: tuple[tuple[PySparkAggregateKey, str], ...],
+    ) -> str:
+        if assignment.expression is None:
+            raise TypeError("is_grouped(...) requires a grouping expression")
+        for key in aggregate.keys:
+            if assignment.expression == key.expression:
+                return self._literal(self._aggregate_key_column(key, key_columns))
+        return render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
 
     def _aggregate_functions(self) -> set[str]:
         return {
@@ -273,12 +316,50 @@ class RenderPySparkStep:
             "variance": "F.variance",
         }[function]
 
-    def _aggregate_select(self, assignment: PySparkAggregateAssignment) -> str:
-        source = assignment.key if assignment.function == "key" else assignment.field.column
+    def _aggregate_select(
+        self,
+        assignment: PySparkAggregateAssignment,
+        *,
+        key_columns: tuple[tuple[PySparkAggregateKey, str], ...],
+    ) -> str:
+        source = self._aggregate_select_source(assignment, key_columns=key_columns)
         expression = f"F.col({self._literal(str(source))})"
         if str(source) != assignment.field.column:
             expression = f"{expression}.alias({self._literal(assignment.field.column)})"
         return expression
+
+    def _aggregate_select_source(
+        self,
+        assignment: PySparkAggregateAssignment,
+        *,
+        key_columns: tuple[tuple[PySparkAggregateKey, str], ...],
+    ) -> str:
+        if assignment.function == "key":
+            for key, column in key_columns:
+                if key.name == assignment.key:
+                    return column
+            if assignment.key is not None:
+                return assignment.key
+        return assignment.field.column
+
+    def _aggregate_key_columns(
+        self,
+        aggregate: PySparkAggregateRecipe,
+    ) -> tuple[tuple[PySparkAggregateKey, str], ...]:
+        return tuple(
+            (key, f"__structure_group_{index}_{key.name}")
+            for index, key in enumerate(aggregate.keys)
+        )
+
+    def _aggregate_key_column(
+        self,
+        target: PySparkAggregateKey,
+        key_columns: tuple[tuple[PySparkAggregateKey, str], ...],
+    ) -> str:
+        for key, column in key_columns:
+            if key == target:
+                return column
+        raise TypeError(f"Missing aggregate key column for {target.name}")
 
     def _join(
         self,

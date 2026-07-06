@@ -64,6 +64,21 @@ The shortcut form is useful when the output schema mostly mirrors grouping keys 
 form is clearer when the output also includes parent structures, literals, or non-key fields that compile through
 Structure's implicit first-value aggregate for grouped parent fields.
 
+Cube form:
+
+```python
+return cube(
+    tenant_id=order.tenant.tenant_id,
+    product_category=order.product_category,
+    customer_tier=order.customer_tier,
+).agg(
+    grouping_id=grouping_id(),
+    order_count=count(),
+    distinct_customers=count_distinct(order.customer_id),
+    gross_total=sum(order.total),
+).as_schema(OrderProductCube)
+```
+
 ## Aggregates
 
 Supported exact aggregates:
@@ -101,6 +116,7 @@ Rules:
 - `collect_list(...)` and `collect_set(...)` produce Spark collection aggregates; element ordering is not guaranteed.
 - `element_type=...` is required when Structure cannot infer the collection aggregate element type.
 - Approximate metrics stay visibly approximate in generated PySpark.
+- `having(...)` is reserved and capability-gated until aggregate-output predicates have a stable scope contract.
 
 Metric-local filtering:
 
@@ -221,6 +237,24 @@ return OrderCustomerWindow(
 
 Broad window features remain batch-only until Structure has explicit streaming watermark and state semantics.
 
+Reusable windows can mix distribution, value, and aggregate window helpers in one projection:
+
+```python
+return OrderCustomerWindow(
+    percent_rank=percent_rank(over=customer_window),
+    cume_dist=cume_dist(over=customer_window),
+    quantity_tile=ntile(2, over=customer_window),
+    first_order_id=first_value(order.id, over=customer_window),
+    last_order_id=last_value(order.id, over=customer_window),
+    second_order_id=nth_value(order.id, 2, over=customer_window),
+    running_units=window_sum(order.quantity, over=customer_window),
+    running_avg_units=window_avg(order.quantity, over=customer_window),
+    running_min_units=window_min(order.quantity, over=customer_window),
+    running_max_units=window_max(order.quantity, over=customer_window),
+    running_order_count=window_count(over=customer_window),
+)
+```
+
 ## Higher-Order Helpers
 
 Supported array helpers:
@@ -312,6 +346,28 @@ Rules:
 - `map_transform_keys(...)` currently admits `duplicates="error"` only.
 - `arr_sort_by(...)` validates the symbolic callback and lowers to Spark-visible array sorting.
 - `map_entries(...)` and `map_from_entries(...)` are useful for round-tripping maps through Spark-visible entry arrays.
+
+Array and map helpers can be mixed in one projection:
+
+```python
+normalized_attributes = map_filter(
+    map_transform_keys(
+        map_transform_values(order.attributes, lambda key, value: lower(trim(value))),
+        lambda key, value: lower(trim(key)),
+    ),
+    lambda key, value: value.is_not_null(),
+)
+
+return OrderCollectionProfile(
+    normalized_tags=arr_distinct(arr_filter(order.tags, lambda tag: tag.is_not_null())),
+    has_priority=arr_exists(order.tags, lambda tag: lower(trim(tag)) == "priority"),
+    all_tags_present=arr_forall(order.tags, lambda tag: tag.is_not_null()),
+    normalized_attributes=normalized_attributes,
+    attribute_keys=map_keys(normalized_attributes),
+    attribute_values=map_values(normalized_attributes),
+    roundtrip_attributes=map_from_entries(map_entries(normalized_attributes)),
+)
+```
 
 ## Compatibility
 

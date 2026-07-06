@@ -52,6 +52,42 @@ class DirectNormalize(Transform):
         return Normalized(id=row.id, value=row.value)
 
 
+def test_plain_transform_subclass_compiles_without_class_decorator() -> None:
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(id=row.id, value=row.value, audit="plain")
+
+    plan = compile_transform(Publish)
+
+    assert plan.name == "Publish"
+    assert [item.name for item in plan.inputs] == ["rows"]
+    assert [item.name for item in plan.outputs] == ["published"]
+    assert [step.name for step in plan.steps] == ["publish"]
+    assert plan.options == {}
+
+
+def test_class_level_decorator_options_do_not_leak_to_undecorated_children() -> None:
+    @transform(streaming_compatible=True)
+    class StreamingBase(Transform):
+        rows = input(Raw)
+        normalized = lane(Normalized)
+
+        @transform(output=normalized)
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, value=row.value)
+
+    class Publish(StreamingBase):
+        published = output(Published)
+
+        def publish(self, row: Normalized) -> Published:
+            return Published(id=row.id, value=row.value, audit="plain")
+
+    assert compile_transform(Publish).options == {}
+
+
 def test_undecorated_direct_parent_contributes_steps() -> None:
     @transform
     class Publish(DirectNormalize):

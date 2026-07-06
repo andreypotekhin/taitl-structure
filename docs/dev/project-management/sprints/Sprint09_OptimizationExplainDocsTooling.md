@@ -30,8 +30,8 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
 - Streaming compatibility diagnostics, source scans, explain output, and public references for supported and deferred
   streaming features.
 - Full aggregation/window/HOF design and implementation beyond the Sprint 08 first slice.
-- Advanced grouping through rollup, cube, grouping sets, and subtotal metadata.
-- Additional aggregate metrics, filtered metrics, and post-aggregate `having(...)`.
+- Advanced grouping through rollup, cube, and subtotal metadata, with `grouping_sets(...)` capability-gated.
+- Additional aggregate metrics and metric-local filters, with post-aggregate `having(...)` capability-gated.
 - Reusable window specs, explicit row/range frames, distribution/value windows, and window aggregate helpers.
 - Additional symbolic array and map higher-order helpers.
 - Full PySpark rowset join support: `join_rowset(...)` for right, full, cross, non-equi, and disjunctive joins.
@@ -51,6 +51,7 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
 - Certifying arbitrary hook body internals as Connect-compatible.
 - Streaming source and sink generation.
 - Stream-stream joins and streaming support for right, full, cross, non-equi, or disjunctive rowset joins.
+- Explicit `grouping_sets(...)` lowering and post-aggregate `having(...)` predicates.
 - Lateral joins and table-valued-function joins.
 - Generated documentation artifacts.
 - Public pytest helper package.
@@ -60,10 +61,11 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
 ## Relevant Specification Items
 
 - As a developer, I can add caching and persistence hints at step boundaries.
-- As a developer, I can define advanced grouping patterns so that rollups, cubes, grouping sets, and multi-level
-  summaries are supported when practical.
+- As a developer, I can define advanced grouping patterns so that rollups, cubes, and multi-level summaries are
+  supported when practical.
 - As a developer, I can calculate Boolean, statistical, approximate, and collection aggregate metrics.
-- As a developer, I can filter individual aggregate metrics and aggregate output rows.
+- As a developer, I can filter individual aggregate metrics and receive capability diagnostics for deferred
+  post-aggregate output filters.
 - As a developer, I can reuse named window specifications with explicit row and range frames.
 - As a developer, I can define distribution, value, and aggregate window expressions.
 - As a developer, I can use additional symbolic array and map higher-order helpers.
@@ -99,7 +101,8 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
    operation families.
 10. Implement the advanced analytical operation plan
    [P07052601.Advanced-analytical-operations.plan.md](../../planning/P07052601.Advanced-analytical-operations.plan.md).
-11. Implement advanced grouping, aggregate metrics, filtered metrics, and `having(...)`.
+11. Implement advanced grouping, aggregate metrics, and filtered metrics; keep `grouping_sets(...)` and `having(...)`
+    behind explicit capability diagnostics.
 12. Implement reusable window specs, explicit frames, broad window expressions, and backend diagnostics.
 13. Implement additional symbolic array and map higher-order helpers.
 14. Implement `join_rowset(...)` source capture, joined right relation scopes, IR, backend capabilities, diagnostics, and public
@@ -117,7 +120,8 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
 ## Acceptance Criteria
 
 - Advanced aggregation, window, and HOF helpers compile through IR and shared PySpark recipes without hidden UDFs.
-- Unsupported advanced analytical helpers fail with backend capability diagnostics before runtime.
+- Unsupported advanced analytical helpers, including `grouping_sets(...)` and `having(...)`, fail with backend
+  capability diagnostics before runtime.
 - Full PySpark rowset joins are visible in source, IR, generated code, traceability, explain output, and parity tests.
 - Cross joins require explicit Cartesian acknowledgement.
 - Right and full joins enforce nullable-side output construction rules.
@@ -169,8 +173,11 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
 - [x] (2026-07-05) Implemented the admitted advanced analytical operations pass: rollup/cube grouping, grouping
   metadata, additional aggregate metrics, metric-local filters, reusable explicit windows, broad window expressions,
   additional array/map HOF helpers, capability gates, traceability, public exports, and focused tests.
-- [ ] Add live Spark Connect online/generated runtime evidence.
-- [ ] Add Spark Connect CI or manual verification script.
+- [x] (2026-07-06) Added live Spark Connect online/generated runtime evidence for v1/v2 completed batch fixtures,
+  including full rowset joins and advanced analytical operations. Verified with `make integration BACKEND=spark-connect35`
+  and `make integration BACKEND=spark-connect40`.
+- [x] (2026-07-06) Added Spark Connect release-blocking verification through the existing `make integration`
+  backend lanes for Spark Connect 3.5 and 4.0.
 - [ ] Add hook and StructureTools Spark Connect boundary diagnostics.
 - [ ] Implement Spark streaming first-slice support from
   [P07052604.Spark-streaming-first-slice.plan.md](../../planning/P07052604.Spark-streaming-first-slice.plan.md).

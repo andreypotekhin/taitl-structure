@@ -62,7 +62,6 @@ Transform class compiles into PySpark code operating on DataFrames (See 'Generat
 from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
 from orders.schemas.customer import Customer
 
-@transform
 class EnrichOrders(Transform):
 
     orders = input(OrderRaw)
@@ -260,19 +259,16 @@ Arbitrary PySpark is still supported, but only through explicit hooks. Hooks rec
 ## IDE Friendliness
 
 Python-first approach allows for IDE conveniences, such as:
-- Jumping to schema class definition from arbitrary line in code.
-- Navigating to the locations where a schema/transform class is used.
-- Showing and navigating inheritance hierarchy of schema classes.
+- Jumping to schema definitions from arbitrary locations in code.
+- Navigating to code locations where a schema or transform class is used.
+- Displaying inheritance hierarchy of schemas/transforms.
 
 ## Compatibility
 
 Structure targets Python 3.11+, PySpark 3.5.x and 4.0.x, Linux runtimes, and Linux/macOS/Windows development
 environments.
 
-Airflow can call online or generated transforms. It is not a Structure dependency.
-
-Ordinary PySpark is the default target. Spark Connect is a PySpark variant for completed v1/v2 batch features once
-Sprint 09 support evidence is in place.
+Airflow can call online (Python) or generated (PySpark) transforms. It is not a Structure dependency.
 
 See [Compatibility.md](docs/Compatibility.md) for the full versioning and compatibility policy.
 

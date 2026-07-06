@@ -182,7 +182,6 @@ def test_lane_declaration_cannot_be_constructor_binding() -> None:
 
 
 def test_class_field_pipeline_compiles_and_renders_generated_transform() -> None:
-    @transform
     class OrderPipeline(Transform):
         orders = input(Raw)
         products = input(Product)

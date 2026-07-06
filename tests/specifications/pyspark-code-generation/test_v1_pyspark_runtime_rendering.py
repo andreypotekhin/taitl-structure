@@ -28,6 +28,7 @@ def test_v1_runtime_module_renderer_contains_schema_helpers_and_hook_inputs() ->
 
     assert "def assert_schema(df, schema, *, name: str, mode: str) -> None:" in text
     assert 'raise ValueError(f"{name} is missing required column(s): {names}")' in text
+    assert "def _same_data_type(actual, expected) -> bool:" in text
     assert 'if mode == "strict":' in text
     assert "def project_schema(df, schema):" in text
     assert "return df.select(*(F.col(field.name) for field in schema))" in text

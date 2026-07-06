@@ -135,9 +135,15 @@ class PySparkExpressionEvaluator:
             return functions.array_distinct(self.evaluate(array, functions=functions, aliases=aliases, window=window))
         if function == "array_position":
             array, item = expression.args
+            needle = item.data["value"] if item.kind == "literal" else self.evaluate(
+                item,
+                functions=functions,
+                aliases=aliases,
+                window=window,
+            )
             return functions.array_position(
                 self.evaluate(array, functions=functions, aliases=aliases, window=window),
-                self.evaluate(item, functions=functions, aliases=aliases, window=window),
+                needle,
             )
         if function == "map_transform_values":
             mapping, _, _, body = expression.args
@@ -201,17 +207,41 @@ class PySparkExpressionEvaluator:
         if function in {"window_row_number", "window_rank", "window_dense_rank"}:
             order_by, *partition_by = expression.args
             return getattr(functions, function.removeprefix("window_"))().over(
-                self._window(order_by, partition_by, expression, functions=functions, aliases=aliases, window=window)
+                self._window(
+                    order_by,
+                    partition_by,
+                    expression,
+                    functions=functions,
+                    aliases=aliases,
+                    window=window,
+                    include_frame=False,
+                )
             )
         if function in {"window_percent_rank", "window_cume_dist"}:
             order_by, *partition_by = expression.args
             return getattr(functions, function.removeprefix("window_"))().over(
-                self._window(order_by, partition_by, expression, functions=functions, aliases=aliases, window=window)
+                self._window(
+                    order_by,
+                    partition_by,
+                    expression,
+                    functions=functions,
+                    aliases=aliases,
+                    window=window,
+                    include_frame=False,
+                )
             )
         if function == "window_ntile":
             order_by, *partition_by = expression.args
             return functions.ntile(expression.data["buckets"]).over(
-                self._window(order_by, partition_by, expression, functions=functions, aliases=aliases, window=window)
+                self._window(
+                    order_by,
+                    partition_by,
+                    expression,
+                    functions=functions,
+                    aliases=aliases,
+                    window=window,
+                    include_frame=False,
+                )
             )
         if function in {"window_lag", "window_lead"}:
             value, order_by, *partition_by = expression.args
@@ -266,7 +296,7 @@ class PySparkExpressionEvaluator:
             )
         raise TypeError(f"Unsupported PySpark reserved expression: {function}")
 
-    def _window(self, order_by, partition_by, expression, *, functions, aliases, window):
+    def _window(self, order_by, partition_by, expression, *, functions, aliases, window, include_frame=True):
         if window is None:
             raise TypeError("Window expression evaluation requires a PySpark Window module")
         partitions = [
@@ -276,6 +306,8 @@ class PySparkExpressionEvaluator:
         order = self.evaluate(order_by, functions=functions, aliases=aliases, window=window)
         ordering = order.desc() if expression.data.get("descending") else order.asc()
         spec = window.partitionBy(*partitions).orderBy(ordering)
+        if not include_frame:
+            return spec
         if "frame_kind" in expression.data:
             frame = spec.rowsBetween if expression.data["frame_kind"] == "rows" else spec.rangeBetween
             return frame(

@@ -261,26 +261,60 @@ class RunOnlinePySparkTransform:
             group = df.cube
         else:
             raise TypeError(f"Unsupported aggregate grouping: {aggregate.grouping}")
+        key_columns = (
+            self._aggregate_key_columns(aggregate)
+            if aggregate.grouping in {"rollup", "cube"}
+            else ()
+        )
+        if aggregate.grouping in {"rollup", "cube"}:
+            for key, column in key_columns:
+                df = df.withColumn(
+                    column,
+                    self._expressions.evaluate(
+                        key.expression,
+                        functions=functions,
+                        aliases=self._scope_aliases(step),
+                    ),
+                )
+            group = df.rollup if aggregate.grouping == "rollup" else df.cube
         grouped = group(
             *(
-                self._expressions.evaluate(
-                    key.expression, functions=functions, aliases=self._scope_aliases(step)
+                self._aggregate_key_column(key, key_columns)
+                if aggregate.grouping in {"rollup", "cube"}
+                else self._expressions.evaluate(
+                    key.expression,
+                    functions=functions,
+                    aliases=self._scope_aliases(step),
                 ).alias(key.name)
                 for key in aggregate.keys
             )
         )
         aggregated = grouped.agg(
             *(
-                self._aggregate_assignment(assignment, step=step, functions=functions, types=types)
+                self._aggregate_assignment(
+                    assignment,
+                    step=step,
+                    aggregate=aggregate,
+                    key_columns=key_columns,
+                    functions=functions,
+                    types=types,
+                )
                 for assignment in aggregate.assignments
                 if assignment.function != "key"
             )
         )
         return aggregated.select(
-            *(self._aggregate_select(assignment, functions=functions) for assignment in aggregate.assignments)
+            *(
+                self._aggregate_select(
+                    assignment,
+                    key_columns=key_columns,
+                    functions=functions,
+                )
+                for assignment in aggregate.assignments
+            )
         )
 
-    def _aggregate_assignment(self, assignment, *, step, functions, types):
+    def _aggregate_assignment(self, assignment, *, step, aggregate, key_columns, functions, types):
         if assignment.function == "count":
             column = functions.lit(1)
             if assignment.filter is not None:
@@ -298,7 +332,13 @@ class RunOnlinePySparkTransform:
         if assignment.function == "grouping_id":
             return functions.grouping_id().cast(self._spark_type(assignment.field.type, types)).alias(assignment.field.column)
         if assignment.function == "is_grouped" and assignment.expression is not None:
-            column = self._expressions.evaluate(assignment.expression, functions=functions, aliases=self._scope_aliases(step))
+            column = self._aggregate_grouping_column(
+                assignment,
+                step=step,
+                aggregate=aggregate,
+                key_columns=key_columns,
+                functions=functions,
+            )
             return functions.grouping(column).cast(self._spark_type(assignment.field.type, types)).alias(assignment.field.column)
         arguments = assignment.arguments or (() if assignment.expression is None else (assignment.expression,))
         if assignment.function in self._aggregate_functions() and arguments:
@@ -341,6 +381,30 @@ class RunOnlinePySparkTransform:
             return functions.first(column, ignorenulls=False).alias(assignment.field.column)
         raise TypeError(f"Unsupported aggregate assignment: {assignment.function}")
 
+    def _aggregate_grouping_column(self, assignment, *, step, aggregate, key_columns, functions):
+        if assignment.expression is None:
+            raise TypeError("is_grouped(...) requires a grouping expression")
+        for key in aggregate.keys:
+            if assignment.expression == key.expression:
+                return self._aggregate_key_column(key, key_columns)
+        return self._expressions.evaluate(
+            assignment.expression,
+            functions=functions,
+            aliases=self._scope_aliases(step),
+        )
+
+    def _aggregate_key_columns(self, aggregate):
+        return tuple(
+            (key, f"__structure_group_{index}_{key.name}")
+            for index, key in enumerate(aggregate.keys)
+        )
+
+    def _aggregate_key_column(self, target, key_columns):
+        for key, column in key_columns:
+            if key == target:
+                return column
+        raise TypeError(f"Missing aggregate key column for {target.name}")
+
     def _aggregate_functions(self) -> set[str]:
         return {
             "approx_count_distinct",
@@ -380,12 +444,21 @@ class RunOnlinePySparkTransform:
         }[function]
         return getattr(functions, name)
 
-    def _aggregate_select(self, assignment, *, functions):
-        source = assignment.key if assignment.function == "key" else assignment.field.column
+    def _aggregate_select(self, assignment, *, key_columns, functions):
+        source = self._aggregate_select_source(assignment, key_columns=key_columns)
         column = functions.col(str(source))
         if str(source) != assignment.field.column:
             return column.alias(assignment.field.column)
         return column
+
+    def _aggregate_select_source(self, assignment, *, key_columns):
+        if assignment.function == "key":
+            for key, column in key_columns:
+                if key.name == assignment.key:
+                    return column
+            if assignment.key is not None:
+                return assignment.key
+        return assignment.field.column
 
     def _spark_type(self, type, types):
         if types is None:

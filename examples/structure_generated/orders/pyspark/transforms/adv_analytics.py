@@ -29,13 +29,16 @@ class AdvancedOrderAnalyticsGenerated:
 
         # Subtransform: revenue_rollup
         revenue_rollups = fulfilled.alias("order_fulfillment")
+        revenue_rollups = revenue_rollups.withColumn("__structure_group_0_tenant_id", F.col("order_fulfillment.tenant.tenant_id"))
+        revenue_rollups = revenue_rollups.withColumn("__structure_group_1_product_category", F.col("order_fulfillment.product_category"))
+        revenue_rollups = revenue_rollups.withColumn("__structure_group_2_order_date", F.col("order_fulfillment.business.order_date"))
         revenue_rollups = revenue_rollups.rollup(
-            F.col("order_fulfillment.tenant.tenant_id").alias("tenant_id"),
-            F.col("order_fulfillment.product_category").alias("product_category"),
-            F.col("order_fulfillment.business.order_date").alias("order_date"),
+            "__structure_group_0_tenant_id",
+            "__structure_group_1_product_category",
+            "__structure_group_2_order_date",
         ).agg(
             F.grouping_id().cast(T.IntegerType()).alias("grouping_id"),
-            F.grouping(F.col("order_fulfillment.product_category")).cast(T.BooleanType()).alias("category_subtotal"),
+            F.grouping("__structure_group_1_product_category").cast(T.BooleanType()).alias("category_subtotal"),
             F.count(F.lit(1)).cast(T.LongType()).alias("order_count"),
             F.count(F.when(F.col("order_fulfillment.is_large"), F.lit(1))).cast(T.LongType()).alias("large_order_count"),
             F.sum(F.when(F.col("order_fulfillment.is_large"), F.col("order_fulfillment.quantity"))).cast(T.LongType()).alias("large_units"),
@@ -53,9 +56,9 @@ class AdvancedOrderAnalyticsGenerated:
             F.collect_set(F.col("order_fulfillment.customer_id")).cast(T.ArrayType(T.StringType(), containsNull=False)).alias("customer_ids"),
             F.collect_list(F.col("order_fulfillment.id")).cast(T.ArrayType(T.StringType(), containsNull=False)).alias("order_ids"),
         ).select(
-            F.col("tenant_id"),
-            F.col("product_category"),
-            F.col("order_date"),
+            F.col("__structure_group_0_tenant_id").alias("tenant_id"),
+            F.col("__structure_group_1_product_category").alias("product_category"),
+            F.col("__structure_group_2_order_date").alias("order_date"),
             F.col("grouping_id"),
             F.col("category_subtotal"),
             F.col("order_count"),
@@ -79,19 +82,22 @@ class AdvancedOrderAnalyticsGenerated:
 
         # Subtransform: product_cube
         product_cubes = fulfilled.alias("order_fulfillment")
+        product_cubes = product_cubes.withColumn("__structure_group_0_tenant_id", F.col("order_fulfillment.tenant.tenant_id"))
+        product_cubes = product_cubes.withColumn("__structure_group_1_product_category", F.col("order_fulfillment.product_category"))
+        product_cubes = product_cubes.withColumn("__structure_group_2_customer_tier", F.col("order_fulfillment.customer_tier"))
         product_cubes = product_cubes.cube(
-            F.col("order_fulfillment.tenant.tenant_id").alias("tenant_id"),
-            F.col("order_fulfillment.product_category").alias("product_category"),
-            F.col("order_fulfillment.customer_tier").alias("customer_tier"),
+            "__structure_group_0_tenant_id",
+            "__structure_group_1_product_category",
+            "__structure_group_2_customer_tier",
         ).agg(
             F.grouping_id().cast(T.IntegerType()).alias("grouping_id"),
             F.count(F.lit(1)).cast(T.LongType()).alias("order_count"),
             F.countDistinct(F.col("order_fulfillment.customer_id")).cast(T.LongType()).alias("distinct_customers"),
             F.sum(F.col("order_fulfillment.total")).cast(T.DecimalType(12, 2)).alias("gross_total"),
         ).select(
-            F.col("tenant_id"),
-            F.col("product_category"),
-            F.col("customer_tier"),
+            F.col("__structure_group_0_tenant_id").alias("tenant_id"),
+            F.col("__structure_group_1_product_category").alias("product_category"),
+            F.col("__structure_group_2_customer_tier").alias("customer_tier"),
             F.col("grouping_id"),
             F.col("order_count"),
             F.col("distinct_customers"),
@@ -106,9 +112,9 @@ class AdvancedOrderAnalyticsGenerated:
             F.col("order_fulfillment.customer_id"),
             F.col("order_fulfillment.id").alias("order_id"),
             F.col("order_fulfillment.quantity"),
-            F.percent_rank().over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc()).rowsBetween(-2, Window.currentRow)).alias("percent_rank"),
-            F.cume_dist().over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc()).rowsBetween(-2, Window.currentRow)).alias("cume_dist"),
-            F.ntile(2).over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc()).rowsBetween(-2, Window.currentRow)).alias("quantity_tile"),
+            F.percent_rank().over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc())).alias("percent_rank"),
+            F.cume_dist().over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc())).alias("cume_dist"),
+            F.ntile(2).over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc())).alias("quantity_tile"),
             F.first_value(F.col("order_fulfillment.id")).over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc()).rowsBetween(-2, Window.currentRow)).alias("first_order_id"),
             F.last_value(F.col("order_fulfillment.id")).over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc()).rowsBetween(-2, Window.currentRow)).alias("last_order_id"),
             F.nth_value(F.col("order_fulfillment.id"), 2).over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc()).rowsBetween(-2, Window.currentRow)).alias("second_order_id"),
@@ -128,7 +134,7 @@ class AdvancedOrderAnalyticsGenerated:
             F.sort_array(F.col("order_collection_source.tags"), asc=True).alias("sorted_tags"),
             F.flatten(F.col("order_collection_source.nested_tags")).alias("flat_tags"),
             F.aggregate(F.col("order_collection_source.scores"), F.lit(0), lambda acc, item: (acc + item)).alias("score_total"),
-            F.array_position(F.col("order_collection_source.tags"), F.lit('priority')).alias("tag_position"),
+            F.array_position(F.col("order_collection_source.tags"), 'priority').alias("tag_position"),
             F.exists(F.col("order_collection_source.tags"), lambda item: (F.lower(F.trim(item)) == F.lit('priority'))).alias("has_priority"),
             F.forall(F.col("order_collection_source.tags"), lambda item: item.isNotNull()).alias("all_tags_present"),
             F.map_filter(F.transform_keys(F.transform_values(F.col("order_collection_source.attributes"), lambda key, value: F.lower(F.trim(value))), lambda key, value: F.lower(F.trim(key))), lambda key, value: value.isNotNull()).alias("normalized_attributes"),

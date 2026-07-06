@@ -132,7 +132,6 @@ Rules:
 The canonical v1 source shape is:
 
 ```python
-@transform
 class EnrichOrders(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)
@@ -185,12 +184,12 @@ result = EnrichOrders(
 
 ## Transform Classes
 
-`@transform` marks a class as a Structure transform. A transform class must inherit from `Transform`.
+Inheriting from `Transform` declares a Structure transform class. `@transform` is optional and records class-level
+options when those options are needed.
 
 Canonical forms:
 
 ```python
-@transform
 class NormalizeOrders(Transform):
     normalized = output(OrderNormalized)
     ...
@@ -211,6 +210,7 @@ class NormalizeOrders(Transform):
 
 Rules:
 
+- A concrete class inheriting `Transform` may be compiled without a class-level decorator.
 - `@transform` without parentheses and `@transform(...)` with keyword arguments are both valid.
 - Positional arguments to `@transform(...)` are rejected.
 - Unknown keyword arguments are rejected with allowed values.
@@ -221,10 +221,10 @@ Rules:
   static dataflow traceability.
 - Transform classes should be import-safe. They must not do Spark work in class bodies.
 - A class decorated with `@transform` but not inheriting `Transform` is invalid.
-- A class inheriting `Transform` but missing `@transform` is not discovered as a compiled transform unless a future
-  spec adds an explicit registration mode.
+- Project discovery compiles concrete `Transform` entrypoints: classes that declare final outputs or a class-field
+  pipeline. Reusable lane-only base classes remain support code.
 - A direct or indirect parent class inheriting `Transform` may contribute reusable inputs, lanes, outputs, hooks,
-  helpers, and subtransforms to a decorated child even when the parent is not decorated with `@transform`.
+  helpers, and subtransforms to a child even when the parent is not decorated with `@transform`.
 - Inherited parent subtransforms run before child subtransforms. Multiple direct parents run left to right in the
   Python class declaration, and shared diamond ancestors contribute once.
 - A child subtransform with the same method name overrides the inherited scheduled step. Sibling parents that define
@@ -796,7 +796,7 @@ TransformDef
 
 Rules:
 
-- Discovery finds classes marked by `@transform` under configured source roots.
+- Discovery finds concrete `Transform` entrypoint classes under configured source roots.
 - Metadata should preserve source order for input declarations, subtransforms, hooks, fields, filters, joins, and
   projections.
 - Metadata should be immutable or treated as immutable after discovery.

@@ -66,23 +66,72 @@ join.inner_join
 join.left_semi_join
 join.left_anti_join
 join.composite_equi_join
+join.join_rowset
+join.right_join
+join.full_join
+join.cross_join
+join.non_equi_condition
+join.disjunctive_condition
 aggregate.group_by
+aggregate.rollup
+aggregate.cube
 aggregate.count
 aggregate.count_distinct
 aggregate.sum
 aggregate.min
 aggregate.max
 aggregate.avg
+aggregate.approx_count_distinct
+aggregate.approx_percentile
+aggregate.bool_and
+aggregate.bool_or
+aggregate.collect_list
+aggregate.collect_set
+aggregate.corr
+aggregate.covar
+aggregate.filtered_metric
+aggregate.first_value
+aggregate.grouping_id
+aggregate.is_grouped
+aggregate.last_value
+aggregate.stddev
+aggregate.variance
+higher_order.array_aggregate
+higher_order.array_distinct
+higher_order.array_exists
 higher_order.array_transform
 higher_order.array_filter
+higher_order.array_flatten
+higher_order.array_forall
+higher_order.array_position
+higher_order.array_sort_by
+higher_order.array_zip_with
+higher_order.map_entries
 higher_order.map_transform_values
 higher_order.map_filter
+higher_order.map_from_entries
+higher_order.map_keys
+higher_order.map_transform_keys
+higher_order.map_values
+higher_order.map_zip_with
 dedupe.drop_duplicates
+window.avg
+window.count
+window.count_distinct
 window.row_number
 window.rank
 window.dense_rank
+window.cume_dist
+window.first_value
 window.lag
+window.last_value
 window.lead
+window.max
+window.min
+window.nth_value
+window.ntile
+window.percent_rank
+window.sum
 window.rolling_sum
 window.rolling_avg
 window.rolling_min
@@ -95,10 +144,20 @@ validation.allow_extra_projection
 imports.generated_pyspark_imports
 ```
 
-Optimization capabilities must be admitted individually. `optimization.cache`, `optimization.persist`,
-`optimization.repartition`, `optimization.coalesce`, `optimization.checkpoint`, and join strategy hints are supported
-for Spark Connect only when the implementation uses public Connect-compatible DataFrame APIs and live tests prove that
-the directive does not change row or schema semantics.
+The support claim also includes the implemented public shapes behind these capabilities: `join_rowset(...)`,
+`right_join(...)`, `full_join(...)`, `cross_join(..., allow_cartesian=True)`, non-equi and disjunctive predicates,
+`rollup(...)`, `cube(...)`, grouping metadata helpers, additional exact/statistical/approximate/collection aggregate
+metrics, metric-local filters, reusable explicit windows, distribution/value/window aggregate helpers, and the expanded
+array/map higher-order helper set.
+
+Deferred capability boundaries remain explicit. `aggregate.grouping_sets`, `aggregate.having`,
+`join.using_keys`, broad join strategy capability names, `window.window_project`, `optimization.repartition`, generated
+documentation, and production incremental compile stay unsupported until their owning specifications admit them.
+
+Optimization capabilities must be admitted individually. `optimization.cache` is part of the current common PySpark
+profile. `optimization.persist`, `optimization.repartition`, `optimization.coalesce`, `optimization.checkpoint`, and
+join strategy hints are supported for Spark Connect only when the implementation uses public Connect-compatible
+DataFrame APIs and live tests prove that the directive does not change row or schema semantics.
 
 ## Ordinary-Only Requirements
 

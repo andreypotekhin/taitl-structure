@@ -116,7 +116,8 @@ class RenderPySparkExpression:
             return f"F.array_distinct({self._render(array, aliases)})"
         if function == "array_position":
             array, item = expression.args
-            return f"F.array_position({self._render(array, aliases)}, {self._render(item, aliases)})"
+            rendered_item = self._render_literal_value(item) if item.kind == "literal" else self._render(item, aliases)
+            return f"F.array_position({self._render(array, aliases)}, {rendered_item})"
         if function == "map_transform_values":
             mapping, key, value, body = expression.args
             key_name = self._lambda_name(key, "key")
@@ -165,14 +166,17 @@ class RenderPySparkExpression:
         if function in {"window_row_number", "window_rank", "window_dense_rank"}:
             order_by, *partition_by = expression.args
             call = function.removeprefix("window_")
-            return f"F.{call}().over({self._window(order_by, partition_by, expression, aliases)})"
+            return f"F.{call}().over({self._window(order_by, partition_by, expression, aliases, include_frame=False)})"
         if function in {"window_percent_rank", "window_cume_dist"}:
             order_by, *partition_by = expression.args
             call = function.removeprefix("window_")
-            return f"F.{call}().over({self._window(order_by, partition_by, expression, aliases)})"
+            return f"F.{call}().over({self._window(order_by, partition_by, expression, aliases, include_frame=False)})"
         if function == "window_ntile":
             order_by, *partition_by = expression.args
-            return f"F.ntile({expression.data['buckets']}).over({self._window(order_by, partition_by, expression, aliases)})"
+            return (
+                f"F.ntile({expression.data['buckets']}).over("
+                f"{self._window(order_by, partition_by, expression, aliases, include_frame=False)})"
+            )
         if function in {"window_lag", "window_lead"}:
             value, order_by, *partition_by = expression.args
             call = function.removeprefix("window_")
@@ -226,11 +230,15 @@ class RenderPySparkExpression:
         partition_by: list[PySparkExpressionRecipe],
         expression: PySparkExpressionRecipe,
         aliases: Mapping[str, str],
+        *,
+        include_frame: bool = True,
     ) -> str:
         partitions = ", ".join(self._render(partition, aliases) for partition in partition_by)
         order = self._render(order_by, aliases)
         direction = "desc" if expression.data.get("descending") else "asc"
         window = f"Window.partitionBy({partitions}).orderBy({order}.{direction}())"
+        if not include_frame:
+            return window
         if "frame_kind" in expression.data:
             frame = "rowsBetween" if expression.data["frame_kind"] == "rows" else "rangeBetween"
             return f"{window}.{frame}({expression.data['frame_start']}, {expression.data['frame_end']})"
@@ -274,6 +282,9 @@ class RenderPySparkExpression:
 
     def _literal(self, value: str) -> str:
         return json.dumps(value)
+
+    def _render_literal_value(self, expression: PySparkExpressionRecipe) -> str:
+        return repr(expression.data["value"])
 
 
 render_pyspark_expression = RenderPySparkExpression()

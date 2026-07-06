@@ -94,13 +94,14 @@ rule explicit.
 
 ## Discovery
 
-Discovery finds classes marked by `@transform` and schema classes that are reachable from those transforms or imported
-directly from source modules.
+Discovery finds concrete `Transform` entrypoint classes and schema classes that are reachable from those transforms or
+imported directly from source modules.
 
 Rules:
 
-- Only classes decorated with `@transform` are compiled as transform entrypoints.
-- A class inheriting `Transform` without `@transform` is not compiled unless a later explicit registration mode exists.
+- A concrete `Transform` subclass is compiled as an entrypoint when it declares final outputs or a class-field pipeline.
+- `@transform` is optional for class discovery and remains the way to record class-level transform options.
+- Reusable lane-only base classes are not compiled as transform entrypoints.
 - Schema classes may be discovered from transform inputs, subtransform annotations, nested schema types, and direct
   source scans when supported.
 - Private modules are not automatically excluded. A later config option may add include and exclude patterns.

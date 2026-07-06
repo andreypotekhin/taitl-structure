@@ -655,6 +655,32 @@ def test_online_schema_validation_projects_equivalent_spark_shapes() -> None:
     assert projected.operations == ("select:id=col(id),status=col(status)",)
 
 
+def test_online_schema_validation_accepts_spark_collection_nullability_metadata() -> None:
+    """Spark can report conservative collection nullability for equivalent physical schemas."""
+
+    validation = PySparkValidationRecipe(
+        target="tags",
+        schema=RawTagBatch,
+        mode=SchemaMode.STRICT,
+        project=False,
+        reason="output",
+    )
+    frame = FakeFrame(
+        "tags",
+        FakeSchema(
+            (
+                FakeField(
+                    "tags",
+                    FakeTypes.ArrayType(FakeTypes.StringType(), containsNull=True),
+                    True,
+                ),
+            )
+        ),
+    )
+
+    PySparkFrameValidator().validate(frame, validation, types=FakeTypes)
+
+
 def test_online_schema_validation_rejects_strict_shape_drift() -> None:
     """I can rely on online execution and generated execution to preserve the same transform semantics."""
 

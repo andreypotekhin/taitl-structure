@@ -82,7 +82,7 @@ parent implementation as a separate step with `super().normalize(order)`, `Base.
 `super(Base, self).normalize(order)`.
 
 Reference: [DSL](reference/DSL.md), [online execution](reference/OnlineExecution.md), and
-[PySpark code generation](reference/PySparkCodeGeneration.md).
+[transform inheritance and composition](reference/TransformComposition.md).
 
 ## Inputs
 
@@ -488,8 +488,8 @@ Reference: [DSL expression helpers](reference/DSL.md).
 
 ## Aggregations
 
-Use `group_by(...)` inside a subtransform that returns an aggregate schema. Aggregate assignments stay
-compiler-visible and lower to Spark `groupBy(...).agg(...)`.
+Use `group_by(...)` inside a subtransform that returns an aggregate schema. (Aggregate
+assignments stay compiler-visible and lower to Spark grouping operations.)
 
 ```python
 def product_daily_summary(self, order: OrderFulfillment) -> ProductDailySummary:
@@ -513,12 +513,58 @@ def product_daily_summary(self, order: OrderFulfillment) -> ProductDailySummary:
     )
 ```
 
-Supported aggregate helpers are `count()`, `count_distinct(...)`, `sum(...)`, `min(...)`, `max(...)`, and `avg(...)`.
-`sum(...)` and `avg(...)` require numeric expressions. Nullable aggregate outputs must feed nullable fields or be
-repaired explicitly.
+Core aggregate helpers are `count()`, `count_distinct(...)`, `sum(...)`, `min(...)`, `max(...)`, and `avg(...)`.
+Advanced helpers include `bool_and(...)`, `bool_or(...)`, `stddev(...)`, `variance(...)`, `corr(...)`, `covar(...)`,
+`approx_count_distinct(...)`, `approx_percentile(...)`, `collect_list(...)`, `collect_set(...)`, `first_value(...)`,
+and `last_value(...)`. Aggregate helpers accept `where=...` for metric-local filters. Post-aggregate `having(...)` and
+arbitrary `grouping_sets(...)` are reserved capability boundaries.
 
-Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md),
-[PySpark code generation](reference/PySparkCodeGeneration.md), and
+Use `rollup(...)` for hierarchical subtotals and `cube(...)` for all grouping-key combinations.
+(Subtotal rows may omit some grouping keys, so nullable subtotal fields or explicit labels are required.)
+
+```python
+def revenue_rollup(self, order: OrderFulfillment) -> OrderRevenueRollup:
+    rollup(
+        tenant_id=order.tenant.tenant_id,
+        product_category=order.product_category,
+        order_date=order.business.order_date,
+    )
+
+    return OrderRevenueRollup(
+        tenant_id=order.tenant.tenant_id,
+        product_category=order.product_category,
+        order_date=order.business.order_date,
+        grouping_id=grouping_id(),
+        category_subtotal=is_grouped(order.product_category),
+        order_count=count(),
+        large_order_count=count(where=order.is_large),
+        large_units=sum(order.quantity, where=order.is_large),
+        any_large_order=bool_or(order.is_large),
+        quantity_stddev=stddev(order.quantity),
+        quantity_median=approx_percentile(order.quantity, 0.5, accuracy=100),
+        estimated_customers=approx_count_distinct(order.customer_id),
+        first_customer_id=first_value(order.customer_id, order_by=order.quantity),
+        customer_ids=collect_set(order.customer_id),
+    )
+```
+
+Use `cube(...)` for all grouping-key combinations:
+
+```python
+return cube(
+    tenant_id=order.tenant.tenant_id,
+    product_category=order.product_category,
+    customer_tier=order.customer_tier,
+).agg(
+    grouping_id=grouping_id(),
+    order_count=count(),
+    distinct_customers=count_distinct(order.customer_id),
+    gross_total=sum(order.total),
+).as_schema(OrderProductCube)
+```
+
+Reference: [advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md),
+[IR](reference/IntermediateRepresentation.md), [PySpark code generation](reference/PySparkCodeGeneration.md), and
 [streaming compatibility](reference/StreamingCompatibility.md).
 
 ## Latest and Earliest Rows
@@ -573,14 +619,37 @@ pass `offset=...` and `default=...` when needed. `rolling_sum(...)`, `rolling_av
 `rolling_max(...)` require `preceding=...`, the number of prior rows included with the current row. These helpers render
 as PySpark window expressions in the projection, not Python UDFs.
 
-Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md),
-[PySpark code generation](reference/PySparkCodeGeneration.md), and
+Use reusable `window(...)` specs when several output fields share partition, ordering, and frame rules:
+
+```python
+def customer_window(self, order: OrderFulfillment) -> OrderCustomerWindow:
+    customer_window = window(
+        partition_by=order.customer_id,
+        order_by=order.quantity,
+        frame=rows_between(preceding(2), current_row()),
+    )
+
+    return OrderCustomerWindow(
+        order_id=order.id,
+        percent_rank=percent_rank(over=customer_window),
+        cume_dist=cume_dist(over=customer_window),
+        quantity_tile=ntile(2, over=customer_window),
+        second_order_id=nth_value(order.id, 2, over=customer_window),
+        running_units=window_sum(order.quantity, over=customer_window),
+        running_avg_units=window_avg(order.quantity, over=customer_window),
+    )
+```
+
+Reusable windows require explicit frames such as `rows_between(preceding(2), current_row())` or
+`range_between(preceding(10), current_row())`. Broad window helpers are batch-only in v2 streaming compatibility.
+
+Reference: [advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md),
+[IR](reference/IntermediateRepresentation.md), [PySpark code generation](reference/PySparkCodeGeneration.md), and
 [streaming compatibility](reference/StreamingCompatibility.md).
 
-## Exact Duplicate Rows
+## Removing Duplicate Rows
 
-Use `distinct()` when the current step frame may contain exact duplicate rows and duplicate cleanup should stay visible
-to Structure. `drop_duplicates()` is the explicit synonym.
+Use `distinct()`/`drop_duplicates()` without arguments to drop duplicate rows from current step frame.
 
 ```python
 def unique_events(self, event: RawEvent) -> RawEvent:
@@ -596,11 +665,18 @@ def unique_accounts(self, event: RawEvent) -> RawEvent:
     return RawEvent.project(event)
 ```
 
-These helpers lower to Spark `dropDuplicates()` on the current step frame. Subset dedupe renders
-`dropDuplicates(["column_name", ...])`; Spark chooses the representative row for non-subset columns. When the selected
-row must be deterministic, prefer `dedupe_latest_by(...)` or `dedupe_earliest_by(...)` with an explicit ordering and
-tie policy. If
-duplicate removal must apply after a narrowing projection, split the projection and `distinct()` into adjacent
+These helpers lower to Spark `dropDuplicates()` on the current step frame. 
+
+When the selected row must be deterministic, prefer `dedupe_latest_by(...)` or `dedupe_earliest_by(...)` 
+with an explicit ordering and tie policy. 
+
+```python
+def latest_events(self, event: RawEvent) -> RawEvent:
+    dedupe_latest_by(event.sequence, partition_by=event.account_id)
+    return RawEvent.project(event)
+```
+
+If duplicate removal must apply after a narrowing projection, split the projection and `distinct()` into adjacent
 subtransforms so the narrowed schema is the current step frame.
 
 Exact duplicate removal is batch-only in v2 streaming compatibility checks because streaming dedupe needs explicit
@@ -613,7 +689,7 @@ Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md
 ## Higher-Order Helpers
 
 Use `arr_transform(...)`, `arr_filter(...)`, `map_transform_values(...)`, and `map_filter(...)` for Spark-plan-visible
-collection callbacks.
+collection callbacks (lambdas).
 
 ```python
 def normalize(self, order: OrderRaw) -> OrderNormalized:
@@ -633,9 +709,47 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     return OrderNormalized.project(order)(attributes=attributes)
 ```
 
+Array and map helpers can be combined in one compiled projection:
+
+```python
+normalized_tags = arr_transform(row.tags, lambda tag: lower(trim(tag)))
+priority_tags = arr_filter(normalized_tags, lambda tag: tag == "priority")
+paired_tags = arr_zip_with(row.tags, normalized_tags, lambda raw, clean: clean)
+normalized_attributes = map_filter(
+    map_transform_keys(
+        map_transform_values(row.attributes, lambda key, value: lower(trim(value))),
+        lambda key, value: lower(trim(key)),
+    ),
+    lambda key, value: value.is_not_null(),
+)
+entries = map_entries(normalized_attributes)
+
+return OrderCollectionProfile(
+    normalized_tags=arr_distinct(priority_tags),
+    sorted_tags=arr_sort_by(paired_tags, lambda tag: tag),
+    flat_tags=arr_flatten(row.nested_tags),
+    score_total=arr_aggregate(row.scores, 0, lambda acc, item: acc + item),
+    tag_position=arr_position(row.tags, "priority"),
+    has_priority=arr_exists(normalized_tags, lambda tag: tag == "priority"),
+    all_tags_present=arr_forall(normalized_tags, lambda tag: tag.is_not_null()),
+    normalized_attributes=normalized_attributes,
+    zipped_attributes=map_zip_with(
+        row.attributes,
+        normalized_attributes,
+        lambda key, left, right: coalesce(right, left),
+    ),
+    attribute_keys=map_keys(normalized_attributes),
+    attribute_values=map_values(normalized_attributes),
+    roundtrip_attributes=map_from_entries(entries),
+)
+```
+
 Callbacks are symbolic: they are evaluated once against a Structure expression, not row-by-row in Python. Callback
 bodies must return typed Structure expressions or typed literals. Python boolean control flow such as `tag and ...`
 is rejected; combine symbolic predicates with `&`, `|`, and `~`.
+
+Reference: [advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md), and
+[backend capabilities](reference/BackendCapabilities.md).
 
 ## Joins
 
@@ -711,6 +825,22 @@ cross_join(calendar_day, allow_cartesian=True)
 See `examples/orders/transforms/rowset_join.py` for a generated example covering `full_join(...)`, `right_join(...)`,
 and `cross_join(...)`.
 
+Right and full joins can produce rows without a current left row. Build outputs with explicit projection or explicit
+constructors, and repair nullable sides with helpers such as `coalesce(...)` when the target field is required:
+
+```python
+return OrderCustomerReconciliation(
+    tenant_id=coalesce(order.tenant.tenant_id, customer.tenant.tenant_id),
+    order_id=order.id,
+    customer_id=customer.id,
+    match_status=coalesce(customer.tier, "unmatched"),
+)
+```
+
+Cross joins require `allow_cartesian=True` and do not accept `on`. Non-equi and disjunctive predicates are supported
+when every predicate part is a compileable symbolic expression. Raw SQL strings and raw column-name strings are
+rejected.
+
 Use deterministic lookup dedupe when duplicate right-side rows exist but the business rule still selects one row:
 
 ```python
@@ -755,8 +885,12 @@ orders = orders.join(
 
 ## Inheritance
 
-When the output schema inherits the current row schema, use `SchemaClass.base(row)(...)` to copy inherited
-fields and name only the joined fields.
+### Inheritance - Schemas
+
+Schema classes can subclass other schema classes.
+This can help to avoid duplicate field declarations, allow for 'declare once' style and establishing schema hierarchies.
+
+When constructing a subclass schema object, use `.base(row)(...)` to copy inherited fields from a base class instance. 
 
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
@@ -771,10 +905,42 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
     )
 ```
 
-Transform classes can also inherit reusable inputs, lanes, outputs, hooks, helpers, and subtransforms from an
-undecorated `Transform` parent. Parent subtransforms run before child subtransforms; a child method with the same name
-overrides the inherited scheduled step. Use this for shared pipelines that several concrete transforms publish
-differently.
+Multiple schema bases compose left to right. 
+The `.base()` method allows for multiple bases when constructing a derived class instance:
+
+```python
+class OrderPublished(OrderPublication, PublicationFlags):
+    pass
+
+
+flags = PublicationFlags(
+    has_customer=order.customer_name.is_not_null(),
+    has_product=order.product_name.is_not_null(),
+)
+
+return OrderPublished.base(order, flags)
+```
+
+To copy the fields from an unrelated/non-base class, use `.project()` method.
+The method copies same-named fields of compatible type.
+
+```python
+def normalize(self, order: OrderRaw) -> OrderNormalized:
+    return OrderNormalized.project(order)(
+        total=to_decimal(order.total, precision=12, scale=2),
+    )
+```
+
+Reference: [schema inheritance](reference/SchemaInheritance.md),
+[schema declaration syntax](reference/SchemaDeclarationSyntax.md), and
+[schema semantics](reference/SchemaSemantics.md).
+
+### Inheritance - Transforms
+
+Transform classes can subclass other Transforms. They inherit inputs, lanes, outputs, hooks, helpers, and subtransforms 
+from parent class. Parent transforms run before child transform; a child method with the same name overrides
+the inherited scheduled step. Multiple inheritance is allowed, in which case parents run left-to-right before
+children, and Python rules for resolving diamond inheritance shapes are observed.  
 
 ```python
 class NormalizeBase(Transform):
@@ -797,9 +963,72 @@ class PublishOrders(NormalizeBase):
         return OrderPublished.project(order)
 ```
 
-Reference: [schema inheritance](reference/SchemaInheritance.md) and
-[schema semantics](reference/SchemaSemantics.md). Transform inheritance is covered by
-[DSL](reference/DSL.md) and [execution semantics](reference/ExecutionSemanticContract.md).
+## Composition 
+
+The transforms can also be composed into pipelines using `.to(...)` method.
+
+This is an alternative to inheritance, providing more encapsulation (transforms are opaque to each other, 
+only connected through inputs/outputs) and allowing to combine independent transforms.
+
+```python
+result = (
+    NormalizeOrders(orders=orders_df)
+    .to(AddProduct(products=products_df))
+    .to(PublishOrders())
+    .run(session)
+)
+
+published_df = result.published
+```
+
+Composition hooks the inputs of downstream (following) transform to outputs of upstream transform, and to constructor arguments.
+
+For instance, in the above example, `AddProduct` initializes its 'products' input from constructor argument, and 
+other inputs, like 'orders' from the upstream `NormalizeOrders` transform outputs.
+
+If an input is specified in constructor that already exists amongh upstream transform outputs, Structure 
+interprets it as a conflict and fails with an error.
+
+The `.to(...)` method does not allow to bind to transform's lanes. Hook-bearing transforms are currently rejected.
+
+Alternative notations:
+
+```python
+result = (
+    Transform.to(NormalizeOrders(orders=orders_df))
+    .to(AddProduct(products=products_df))
+    .to(PublishOrders())
+    .run(session)
+)
+```
+
+```python
+result = (
+    Transform.to(
+        NormalizeOrders(orders=orders_df),
+        AddProduct(products=products_df),
+        PublishOrders())
+    .run(session)
+)
+```
+
+For generated PySpark, wrap the pipeline in one transform field:
+
+```python
+@transform
+class OrderPipeline(Transform):
+    orders = input(OrderRaw)
+    products = input(Product)
+
+    pipeline = Transform.to(
+        NormalizeOrders(orders=orders),
+        AddProduct(products=products),
+        PublishOrders(),
+    )
+```
+
+Reference: [transform inheritance and composition](reference/TransformComposition.md),
+[DSL](reference/DSL.md), and [execution semantics](reference/ExecutionSemanticContract.md).
 
 ## Hooks
 

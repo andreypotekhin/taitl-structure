@@ -16,8 +16,36 @@ The narrower join helpers remain preferred for common cases:
 Broad joins use `join_rowset(...)` or a shortcut helper:
 
 ```python
-full_join(on=order.customer_id == customer.id)
+join_rowset(
+    left=order,
+    right=customer,
+    how=Join.FULL,
+    on=(order.tenant.tenant_id == customer.tenant.tenant_id)
+    & (order.customer_id == customer.id),
+)
+```
 
+The shortcut form is usually shorter when the right relation can be inferred from `on`:
+
+```python
+left_join(on=order.customer_id == customer.id)
+inner_join(on=order.customer_id == customer.id)
+right_join(on=order.customer_id == customer.id)
+full_join(on=order.customer_id == customer.id)
+cross_join(calendar_day, allow_cartesian=True)
+```
+
+Shortcuts can use richer predicates:
+
+```python
+full_join(on=(order.tenant.tenant_id == customer.tenant.tenant_id) & (order.customer_id == customer.id))
+inner_join(on=(price.valid_from <= order.business.order_date) & (order.business.order_date < price.valid_to))
+full_join(on=(order.customer_id == customer.id) | (order.billing_customer_id == customer.id))
+```
+
+The result still projects explicitly:
+
+```python
 return OrderCustomerReconciliation.project()(
     order_id=order.id,
     customer_id=customer.id,
@@ -103,3 +131,6 @@ online execution.
 Diagnostics identify the join type, predicate, nullable sides, cardinality shape, and suggested source fix. Common
 fixes include adding `allow_cartesian=True`, using `Output.project()(...)` after full joins, or choosing a narrower
 helper such as `join_one(...)`, `join_many(...)`, `exists(...)`, or `not_exists(...)`.
+
+See also: [Join semantics](JoinSemantics.md), [Analytical join coverage](AnalyticalJoinCoverage.md),
+[Backend capabilities](BackendCapabilities.md), and [Quick reference](../QuickRef.md).

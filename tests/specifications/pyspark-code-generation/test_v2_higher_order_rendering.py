@@ -131,4 +131,5 @@ def test_advanced_array_higher_order_helpers_render_spark_visible_lambdas() -> N
         'F.array_distinct(F.zip_with(F.col("raw_tags.tags"), F.col("raw_tags.tags"), '
         "lambda left_item, right_item: F.lower(F.trim(left_item)))).alias(\"tags\")"
     ) in text
-    assert 'F.array_position(F.col("raw_tags.tags"), F.lit' in text
+    assert 'F.array_position(F.col("raw_tags.tags"), ' in text
+    assert "F.array_position(F.col(\"raw_tags.tags\"), 'priority')" in text

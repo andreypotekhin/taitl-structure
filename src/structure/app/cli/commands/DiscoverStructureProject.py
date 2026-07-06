@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import inspect
 import sys
 from pathlib import Path
 
@@ -48,8 +49,12 @@ class DiscoverStructureProject:
             and issubclass(value, Transform)
             and value is not Transform
             and value.__module__ == module_name
-            and bool(getattr(value, "_structure_transform", False))
+            and not inspect.isabstract(value)
+            and self._entrypoint(value)
         )
+
+    def _entrypoint(self, value: type[Transform]) -> bool:
+        return bool(value._structure_outputs) or value._structure_pipeline is not None
 
     def _schema(self, value: object, module_name: str) -> bool:
         return (
