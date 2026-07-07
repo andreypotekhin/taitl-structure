@@ -169,6 +169,10 @@ def test_parent_hooks_attach_to_parent_steps() -> None:
 
     assert step.name == "normalize"
     assert [hook.name for hook in step.after_hooks] == ["after_normalize"]
+    assert step.origin is not None
+    assert step.origin.class_name == "DirectNormalize"
+    assert step.after_hooks[0].origin is not None
+    assert step.after_hooks[0].origin.class_name == "NormalizeWithHook"
 
 
 def test_child_hooks_can_target_inherited_parent_steps() -> None:
@@ -227,6 +231,11 @@ def test_override_with_zero_arg_super_schedules_parent_before_child() -> None:
     assert [step.name for step in plan.steps] == ["DirectNormalize.normalize", "normalize", "publish"]
     assert not plan.steps[0].filters
     assert len(plan.steps[1].filters) == 1
+    assert [step.origin.class_name if step.origin else None for step in plan.steps] == [
+        "DirectNormalize",
+        "Publish",
+        "Publish",
+    ]
 
 
 def test_override_with_explicit_base_method_schedules_that_parent() -> None:
@@ -315,8 +324,116 @@ def test_generated_pyspark_renders_inherited_and_override_steps_in_order() -> No
         schema_modules={Raw: __name__, Normalized: __name__, Published: __name__},
     )
 
+    assert "class DirectNormalizeGenerated:" in text
+    assert "class PublishGenerated(DirectNormalizeGenerated):" in text
+    assert "    def _step_directnormalize_normalize_0(self, frames, inputs):" in text
     assert text.index("# Subtransform: DirectNormalize.normalize") < text.index("# Subtransform: normalize")
     assert text.index("# Subtransform: normalize") < text.index("# Subtransform: publish")
+
+
+def test_generated_pyspark_renders_owner_qualified_parent_hooks() -> None:
+    class NormalizeWithHook(DirectNormalize):
+        @after(DirectNormalize.normalize, lane=DirectNormalize.normalized)
+        def audit(self, *, normalized, spark, ctx):
+            return normalized
+
+    @transform
+    class Publish(NormalizeWithHook):
+        published = output(Published)
+
+        @transform(output=NormalizeWithHook.normalized)
+        def normalize(self, row: Raw) -> Normalized:
+            normalized = super().normalize(row)
+            return Normalized(id=normalized.id, value=normalized.value)
+
+        def audit(self, *, normalized, spark, ctx):
+            return normalized
+
+        def publish(self, row: Normalized) -> Published:
+            return Published(id=row.id, value=row.value, audit="published")
+
+    text = PySpark.render.transform()(
+        PySpark.plan.lower()(compile_transform(Publish)),
+        source_transform=f"{__name__}.Publish",
+        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        schema_modules={Raw: __name__, Normalized: __name__, Published: __name__},
+    )
+
+    assert f"from {__name__} import NormalizeWithHook, Publish" in text
+    assert "class DirectNormalizeGenerated:" in text
+    assert "class PublishGenerated(DirectNormalizeGenerated):" in text
+    assert (
+        "normalized = NormalizeWithHook.audit("
+        "self._impl, normalized=normalized, spark=self.spark, ctx=self.ctx)"
+    ) in text
+
+
+def test_lowered_recipes_record_step_and_hook_owners() -> None:
+    class NormalizeWithHook(DirectNormalize):
+        @after(DirectNormalize.normalize, lane=DirectNormalize.normalized)
+        def after_normalize(self, *, normalized, spark, ctx):
+            return normalized
+
+    @transform
+    class Publish(NormalizeWithHook):
+        published = output(Published)
+
+        def publish(self, row: Normalized) -> Published:
+            return Published(id=row.id, value=row.value, audit="published")
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    normalize = recipe.steps[0]
+
+    assert normalize.origin is not None
+    assert normalize.origin.class_name == "DirectNormalize"
+    assert normalize.after_hooks[0].origin is not None
+    assert normalize.after_hooks[0].origin.class_name == "NormalizeWithHook"
+
+
+def test_explicit_parent_step_runs_parent_hook_body_when_child_shadows_name() -> None:
+    calls = []
+
+    class NormalizeWithHook(DirectNormalize):
+        @after(DirectNormalize.normalize, lane=DirectNormalize.normalized)
+        def audit(self, *, normalized, spark, ctx):
+            calls.append(("parent", normalized))
+            return normalized
+
+    @transform
+    class Publish(NormalizeWithHook):
+        published = output(Published)
+
+        @transform(output=NormalizeWithHook.normalized)
+        def normalize(self, row: Raw) -> Normalized:
+            normalized = super().normalize(row)
+            return Normalized(id=normalized.id, value=normalized.value)
+
+        def audit(self, *, normalized, spark, ctx):
+            calls.append(("child", normalized))
+            return normalized
+
+        def publish(self, row: Normalized) -> Published:
+            return Published(id=row.id, value=row.value, audit="published")
+
+    class Frame:
+        pass
+
+    frame = Frame()
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    hook = recipe.steps[0].after_hooks[0]
+    invocation = Publish(rows=frame)
+
+    from structure.app.runtime.execution.online.logic.PySparkHookInvoker import PySparkHookInvoker
+
+    PySparkHookInvoker().apply(
+        (hook,),
+        frames={"normalized": frame},
+        inputs=None,
+        invocation=invocation,
+        session=type("Session", (), {"spark": None, "ctx": None})(),
+    )
+
+    assert calls == [("parent", frame)]
 
 
 def test_online_execution_receives_ordered_plan() -> None:

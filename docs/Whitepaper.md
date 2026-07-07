@@ -289,8 +289,8 @@ Serial joins are N-step enrichment chains. They are not limited to three inputs.
 
 ## Streaming Compatibility
 
-Structure does not generate streaming orchestration before v3. It generates DataFrame transforms that can operate on
-streaming DataFrames when the operations used are compatible with Spark Structured Streaming.
+Structure does not generate streaming lifecycle code. It generates DataFrame transforms that can operate on streaming
+DataFrames when the operations used are compatible with Spark Structured Streaming.
 
 The caller owns:
 
@@ -301,7 +301,8 @@ The caller owns:
 - checkpoint
 - lifecycle
 
-Full streaming orchestration belongs to v3.
+Lifecycle remains caller-owned permanently. Future streaming work expands transformation coverage, state diagnostics,
+and live streaming evidence.
 
 ## Compatibility Policy
 
@@ -417,9 +418,9 @@ Recommended implementation techniques:
 
 The roadmap follows an IR-first north star: the initial release proves that Structure can replace hand-maintained
 PySpark boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful
-for mainstream analytical pipelines and promotes Spark Connect for completed batch features. v3 takes ownership of
-streaming lifecycle concerns. v4 handles backend expansion and non-batch Spark Connect hardening left outside the
-Sprint 09 support claim.
+for mainstream analytical pipelines and promotes Spark Connect for completed batch features. v3 expands streaming
+transformation support without taking over lifecycle concerns. v4 handles backend expansion and non-batch Spark Connect
+hardening left outside the Sprint 09 support claim.
 
 ### Initial Release
 
@@ -430,13 +431,14 @@ transforms, diagnostic links, and setup checks.
 ### v2
 
 Existence joins, `inner_join(...)`, deterministic lookup dedupe, temporal validity-window joins, backward as-of joins,
-windowing, aggregations, advanced grouping, Spark higher-order functions, caching/persistence and repartition hints,
-richer explain output, generated docs, pytest helpers, and production incremental compile.
+full rowset joins, windowing, aggregations, advanced grouping, Spark higher-order functions, cache/persist first-slice
+directives, Spark Connect batch support, and static streaming compatibility diagnostics.
 
 ### v3
 
-Full streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, advanced stateful
-streaming policies, and output modes.
+Streaming transformation support: live streaming evidence, additional stateful operation families, richer
+watermark/state diagnostics, and caller-owned output-mode guidance. Structure keeps `readStream`, `writeStream`, triggers,
+checkpoints, query lifecycle, deployment, and recovery in caller code.
 
 ### v4
 

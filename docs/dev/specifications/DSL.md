@@ -232,6 +232,8 @@ Rules:
 - An overriding subtransform may explicitly schedule the overridden parent implementation with `super().method(row)`,
   `Base.method(self, row)`, or `super(Base, self).method(row)`. The parent implementation runs as a separate scheduled
   step before the child step and returns a symbolic row for the parent output.
+- Compiled subtransform and hook boundaries retain their declaring transform owner. Runtime hook execution calls the
+  hook body selected by the compiled boundary while passing the concrete transform invocation as `self`.
 
 ## Transform Invocation
 

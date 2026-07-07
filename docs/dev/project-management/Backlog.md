@@ -217,11 +217,11 @@
 
 ### Epic: Explicit Optimization Directives
 
-- Implement cache and persist directives at subtransform boundaries.
+- + Implement cache and persist directives at subtransform boundaries.
 - Implement repartition and coalesce directives.
 - Implement checkpoint hints where supported by the configured backend.
 - Implement join strategy directives for broadcast, shuffle hash, sort merge, and lookup projection where supported.
-- Keep directives explicit in source, IR, generated code, and explain output.
+- Keep supported directives explicit in source, IR, generated code, and explain output.
 - Add diagnostics when a directive is unsafe, unsupported, or likely ignored by the configured PySpark target.
 - Add tests proving directives do not change row or schema semantics.
 
@@ -260,16 +260,24 @@
 
 ## Sprint 09 Backlog
 
-- Promote Spark Connect from experimental parity to supported batch status for completed v1/v2 features.
-- Add live online and generated Spark Connect parity tests for the supported batch matrix.
-- Add generated-source scans and backend diagnostics that reject classic-only internals.
-- Add Spark Connect runtime verification through CI or a documented manual script.
-- Document hook, StructureTools, streaming, and storage-write exclusions.
-- Implement first-slice Spark streaming support for caller-owned streaming DataFrames.
-- Add online and generated streaming evidence for row-local projection, row-local filtering, schema-only validation,
-  and stream-static left/inner lookup joins.
-- Keep generated streaming sources, generated sinks, lifecycle ownership, watermarks, output modes, and state policy
-  deferred behind explicit public references.
+- + Promote Spark Connect from experimental parity to supported batch status for completed v1/v2 features.
+- + Add live online and generated Spark Connect parity tests for the supported batch matrix.
+- + Add generated-source scans and backend diagnostics that reject classic-only internals.
+- + Add Spark Connect runtime verification through CI or a documented manual script.
+- + Document hook, StructureTools, streaming, and storage-write exclusions.
+- + Implement static first-slice Spark streaming compatibility for caller-owned streaming DataFrames.
+- + Keep generated streaming sources, generated sinks, lifecycle ownership, and query policy deferred behind explicit
+  public references.
+
+## Post-Sprint 09 Follow-Up
+
+- Add live online and generated streaming evidence for row-local projection, row-local filtering, schema-only
+  validation, and stream-static left/inner lookup joins.
+- Implement repartition and coalesce directives.
+- Implement checkpoint hints where supported by the configured backend.
+- Implement broader join strategy directives for shuffle hash, sort merge, and lookup projection where supported.
+- Add rich `structure explain` field-level lineage through projections, filters, joins, aggregations, windows, hooks,
+  and optimization boundaries.
 
 ## v4 Backlog
 

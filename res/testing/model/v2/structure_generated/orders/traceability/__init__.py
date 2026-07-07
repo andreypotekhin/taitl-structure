@@ -1,1 +1,1 @@
-﻿# Generated traceability package marker.
+# Generated traceability package marker.

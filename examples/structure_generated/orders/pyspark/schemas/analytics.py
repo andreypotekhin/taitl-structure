@@ -26,3 +26,19 @@ PRODUCT_DAILY_SUMMARY_SCHEMA = T.StructType([
     T.StructField("avg_units", T.DoubleType(), False),
     T.StructField("gross_total", T.DecimalType(12, 2), False),
 ])
+
+CUSTOMER_EVENT_RANK_SCHEMA = T.StructType([
+    T.StructField("tenant", TENANT_KEY_SCHEMA, False),
+    T.StructField("customer_id", T.StringType(), False),
+    T.StructField("event_id", T.StringType(), False),
+    T.StructField("sequence", T.LongType(), False),
+    T.StructField("row_number", T.LongType(), False),
+    T.StructField("rank", T.LongType(), False),
+    T.StructField("dense_rank", T.LongType(), False),
+    T.StructField("previous_sequence", T.LongType(), True),
+    T.StructField("next_sequence", T.LongType(), True),
+    T.StructField("rolling_units", T.LongType(), False),
+    T.StructField("rolling_avg_units", T.DoubleType(), False),
+    T.StructField("rolling_min_units", T.LongType(), False),
+    T.StructField("rolling_max_units", T.LongType(), False),
+])

@@ -235,7 +235,9 @@ narrower use cases and roadmap features.
 
 - + As a developer, I can pass a streaming DataFrame to generated transforms when operations are Spark streaming-compatible.
 - + As a developer, I can enable streaming compatibility checks so that unsupported streaming operations are caught early.
-- + As a developer, I can keep streaming orchestration outside Structure in v1 and v2 so that callers own `readStream`, `writeStream`, triggers, and checkpoints.
+- + As a developer, I can keep streaming lifecycle outside Structure permanently so that callers own `readStream`, `writeStream`, triggers, checkpoints, and query execution.
+- + As a developer, I can declare streaming input modes and watermarks inside transform code so that stateful streaming
+  transformations can be checked without Structure owning lifecycle.
 
 ## 17A. Versioning and Compatibility
 
@@ -299,8 +301,8 @@ the first analytical join slice.
   row-multiplying, and select-one behavior is visible.
 - As a developer, I can rely on online and generated execution using the same v2 PySpark recipe layer so that supported
   analytical behavior cannot drift between runtime modes.
-- As a developer, I can keep caller-owned streaming orchestration in v2 so that existing v1 streaming compatibility
-  boundaries remain stable.
+- As a developer, I can keep caller-owned streaming lifecycle in v2 so that existing streaming compatibility boundaries
+  remain stable.
 
 ## 22B. Aggregations, Windows, and Higher-Order Functions
 
@@ -396,12 +398,14 @@ the first analytical join slice.
 - + As a developer, I can use `structure tools schemas generate` in a Spark-available CLI runtime so that terminal
   workflows can produce the same schema source.
 
-## 23. v3 Roadmap
+## 23. Streaming Transformation Roadmap
 
-- As a developer, I can define streaming sources so that Structure can generate `readStream` code.
-- As a developer, I can define streaming sinks so that Structure can generate `writeStream` code.
-- As a developer, I can define triggers and checkpoint locations so that streaming jobs are deployable from generated code.
-- As a developer, I can define watermarks and state policies so that full streaming orchestration is explicit.
+- As a developer, I can define additional state policies for streaming transformations so that supported Spark stateful
+  operations fail early when under-specified.
+- As a developer, I can use more stream-stream join shapes when Structure can prove Spark-required watermarks,
+  event-time constraints, and caller-owned output-mode requirements.
+- As a developer, I can see lifecycle non-goals clearly so that `readStream`, `writeStream`, triggers, checkpoints,
+  query lifecycle, deployment, and recovery remain in caller code.
 
 ## 24. Spark Connect Roadmap
 

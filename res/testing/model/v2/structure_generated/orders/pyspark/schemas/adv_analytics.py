@@ -4,6 +4,58 @@
 from pyspark.sql import types as T
 
 
+ORDER_COLLECTION_PROFILE_SCHEMA = T.StructType([
+    T.StructField("id", T.StringType(), False),
+    T.StructField("normalized_tags", T.ArrayType(T.StringType(), containsNull=True), True),
+    T.StructField("sorted_tags", T.ArrayType(T.StringType(), containsNull=False), True),
+    T.StructField("flat_tags", T.ArrayType(T.StringType(), containsNull=False), True),
+    T.StructField("score_total", T.IntegerType(), True),
+    T.StructField("tag_position", T.LongType(), True),
+    T.StructField("has_priority", T.BooleanType(), True),
+    T.StructField("all_tags_present", T.BooleanType(), True),
+    T.StructField("normalized_attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),
+    T.StructField("zipped_attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),
+    T.StructField("attribute_keys", T.ArrayType(T.StringType(), containsNull=False), True),
+    T.StructField("attribute_values", T.ArrayType(T.StringType(), containsNull=False), True),
+    T.StructField("roundtrip_attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),
+])
+
+ORDER_COLLECTION_SOURCE_SCHEMA = T.StructType([
+    T.StructField("id", T.StringType(), False),
+    T.StructField("tags", T.ArrayType(T.StringType(), containsNull=False), True),
+    T.StructField("nested_tags", T.ArrayType(T.ArrayType(T.StringType(), containsNull=False), containsNull=False), True),
+    T.StructField("scores", T.ArrayType(T.IntegerType(), containsNull=False), True),
+    T.StructField("attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),
+])
+
+ORDER_CUSTOMER_WINDOW_SCHEMA = T.StructType([
+    T.StructField("tenant_id", T.StringType(), False),
+    T.StructField("customer_id", T.StringType(), False),
+    T.StructField("order_id", T.StringType(), False),
+    T.StructField("quantity", T.LongType(), False),
+    T.StructField("percent_rank", T.DoubleType(), False),
+    T.StructField("cume_dist", T.DoubleType(), False),
+    T.StructField("quantity_tile", T.IntegerType(), False),
+    T.StructField("first_order_id", T.StringType(), True),
+    T.StructField("last_order_id", T.StringType(), True),
+    T.StructField("second_order_id", T.StringType(), True),
+    T.StructField("running_units", T.LongType(), False),
+    T.StructField("running_avg_units", T.DoubleType(), True),
+    T.StructField("running_min_units", T.LongType(), False),
+    T.StructField("running_max_units", T.LongType(), False),
+    T.StructField("running_order_count", T.LongType(), False),
+])
+
+ORDER_PRODUCT_CUBE_SCHEMA = T.StructType([
+    T.StructField("tenant_id", T.StringType(), True),
+    T.StructField("product_category", T.StringType(), True),
+    T.StructField("customer_tier", T.StringType(), True),
+    T.StructField("grouping_id", T.IntegerType(), False),
+    T.StructField("order_count", T.LongType(), False),
+    T.StructField("distinct_customers", T.LongType(), False),
+    T.StructField("gross_total", T.DecimalType(12, 2), False),
+])
+
 ORDER_REVENUE_ROLLUP_SCHEMA = T.StructType([
     T.StructField("tenant_id", T.StringType(), True),
     T.StructField("product_category", T.StringType(), True),
@@ -26,56 +78,4 @@ ORDER_REVENUE_ROLLUP_SCHEMA = T.StructType([
     T.StructField("last_customer_id", T.StringType(), True),
     T.StructField("customer_ids", T.ArrayType(T.StringType(), containsNull=False), True),
     T.StructField("order_ids", T.ArrayType(T.StringType(), containsNull=False), True),
-])
-
-ORDER_PRODUCT_CUBE_SCHEMA = T.StructType([
-    T.StructField("tenant_id", T.StringType(), True),
-    T.StructField("product_category", T.StringType(), True),
-    T.StructField("customer_tier", T.StringType(), True),
-    T.StructField("grouping_id", T.IntegerType(), False),
-    T.StructField("order_count", T.LongType(), False),
-    T.StructField("distinct_customers", T.LongType(), False),
-    T.StructField("gross_total", T.DecimalType(12, 2), False),
-])
-
-ORDER_CUSTOMER_WINDOW_SCHEMA = T.StructType([
-    T.StructField("tenant_id", T.StringType(), False),
-    T.StructField("customer_id", T.StringType(), False),
-    T.StructField("order_id", T.StringType(), False),
-    T.StructField("quantity", T.LongType(), False),
-    T.StructField("percent_rank", T.DoubleType(), False),
-    T.StructField("cume_dist", T.DoubleType(), False),
-    T.StructField("quantity_tile", T.IntegerType(), False),
-    T.StructField("first_order_id", T.StringType(), True),
-    T.StructField("last_order_id", T.StringType(), True),
-    T.StructField("second_order_id", T.StringType(), True),
-    T.StructField("running_units", T.LongType(), False),
-    T.StructField("running_avg_units", T.DoubleType(), True),
-    T.StructField("running_min_units", T.LongType(), False),
-    T.StructField("running_max_units", T.LongType(), False),
-    T.StructField("running_order_count", T.LongType(), False),
-])
-
-ORDER_COLLECTION_SOURCE_SCHEMA = T.StructType([
-    T.StructField("id", T.StringType(), False),
-    T.StructField("tags", T.ArrayType(T.StringType(), containsNull=False), True),
-    T.StructField("nested_tags", T.ArrayType(T.ArrayType(T.StringType(), containsNull=False), containsNull=False), True),
-    T.StructField("scores", T.ArrayType(T.IntegerType(), containsNull=False), True),
-    T.StructField("attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),
-])
-
-ORDER_COLLECTION_PROFILE_SCHEMA = T.StructType([
-    T.StructField("id", T.StringType(), False),
-    T.StructField("normalized_tags", T.ArrayType(T.StringType(), containsNull=True), True),
-    T.StructField("sorted_tags", T.ArrayType(T.StringType(), containsNull=False), True),
-    T.StructField("flat_tags", T.ArrayType(T.StringType(), containsNull=False), True),
-    T.StructField("score_total", T.IntegerType(), True),
-    T.StructField("tag_position", T.LongType(), True),
-    T.StructField("has_priority", T.BooleanType(), True),
-    T.StructField("all_tags_present", T.BooleanType(), True),
-    T.StructField("normalized_attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),
-    T.StructField("zipped_attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),
-    T.StructField("attribute_keys", T.ArrayType(T.StringType(), containsNull=False), True),
-    T.StructField("attribute_values", T.ArrayType(T.StringType(), containsNull=False), True),
-    T.StructField("roundtrip_attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),
 ])

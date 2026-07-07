@@ -1,6 +1,6 @@
 from structure.app.compiler.diagnostics.api import StructureCompileError
 from structure.app.compiler.frontend.commands.CompileTransform import compile_transform
-from structure.app.dsl.model.expr.expressions import coalesce, lower, to_decimal, trim, upper, when
+from structure.app.dsl.model.expr.expressions import coalesce, event_time_between, lower, to_decimal, trim, upper, when
 from structure.app.dsl.model.expr.InputScope import (
     as_of_one,
     cross_join,
@@ -114,6 +114,8 @@ from structure.app.dsl.model.transforms.reserved_v2 import (
     window_sum,
 )
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.app.dsl.model.transforms.StreamingMode import StreamingMode
+from structure.app.dsl.model.transforms.StreamingOutputMode import StreamingOutputMode
 from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.transforms.transform_api import (
@@ -126,6 +128,7 @@ from structure.app.dsl.model.transforms.transform_api import (
     project,
     transform,
     where,
+    watermark,
 )
 from structure.app.dsl.model.types.DecimalType import DecimalType
 
@@ -148,6 +151,8 @@ __all__ = [
     "OverlapPolicy",
     "SchemaMode",
     "String",
+    "StreamingMode",
+    "StreamingOutputMode",
     "Structure",
     "StructureCompileError",
     "Struct",
@@ -189,6 +194,7 @@ __all__ = [
     "distinct",
     "drop_duplicates",
     "earliest_by",
+    "event_time_between",
     "compile_transform",
     "expr_fn",
     "exists",
@@ -250,6 +256,7 @@ __all__ = [
     "variance",
     "when",
     "where",
+    "watermark",
     "window",
     "window_avg",
     "window_count",

@@ -22,7 +22,8 @@ and get fast feedback in large projects without recompiling unaffected transform
 
 ### Out of Scope
 
-- Optimization directives and rich explain work covered by Sprint 09.
+- Broader optimization directives and rich field-level explain work unless explicitly pulled in from the post-Sprint 09
+  follow-up backlog.
 - Spark Connect batch support promotion covered by Sprint 09.
 - Streaming source and sink generation.
 

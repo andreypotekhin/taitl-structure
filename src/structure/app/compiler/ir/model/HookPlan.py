@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from structure.app.compiler.ir.model.TransformMemberOrigin import TransformMemberOrigin
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
@@ -23,6 +24,7 @@ class HookPlan:
     streaming_safe: bool = False
     target_backend: tuple[str, ...] = ("pyspark",)
     target_defaulted: bool = True
+    origin: TransformMemberOrigin | None = None
 
     @property
     def lane(self) -> HookDeclaration:

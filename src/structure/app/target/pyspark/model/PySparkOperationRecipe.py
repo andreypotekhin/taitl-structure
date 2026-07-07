@@ -7,6 +7,7 @@ from structure.app.target.pyspark.model.PySparkDuplicateRowsRecipe import PySpar
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.app.target.pyspark.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
+from structure.app.target.pyspark.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,7 @@ class PySparkOperationRecipe:
     aggregate: PySparkAggregateRecipe | None = None
     selected_rows: PySparkSelectedRowsRecipe | None = None
     duplicate_rows: PySparkDuplicateRowsRecipe | None = None
+    watermark: PySparkWatermarkRecipe | None = None
 
     @staticmethod
     def filter_operation(predicate: PySparkExpressionRecipe) -> "PySparkOperationRecipe":
@@ -40,6 +42,10 @@ class PySparkOperationRecipe:
             kind="drop_duplicates",
             duplicate_rows=duplicate_rows or PySparkDuplicateRowsRecipe(),
         )
+
+    @staticmethod
+    def watermark_operation(watermark: PySparkWatermarkRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="watermark", watermark=watermark)
 
     @staticmethod
     def cache_operation() -> "PySparkOperationRecipe":

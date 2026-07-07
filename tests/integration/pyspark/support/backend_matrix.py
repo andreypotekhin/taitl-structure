@@ -134,11 +134,7 @@ def drop_generated_modules(package: str) -> None:
 
 
 def assert_generated_connect_safe(files: Mapping[str, str]) -> None:
-    checked = {
-        path: source
-        for path, source in files.items()
-        if "/pyspark/transforms/" in path or "/runtime/" in path
-    }
+    checked = {path: source for path, source in files.items() if "/pyspark/transforms/" in path or "/runtime/" in path}
     for path, source in checked.items():
         for token in CLASSIC_ONLY_TOKENS:
             assert token not in source, f"{path} contains Spark classic-only token {token!r}"

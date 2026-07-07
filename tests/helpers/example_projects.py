@@ -22,7 +22,7 @@ def render_orders_example() -> dict[str, str]:
             OrderProductCube,
             OrderRevenueRollup,
         )
-        from examples.orders.schemas.analytics import CustomerDailyTotal, ProductDailySummary
+        from examples.orders.schemas.analytics import CustomerDailyTotal, CustomerEventRank, ProductDailySummary
         from examples.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
         from examples.orders.schemas.customer import Customer
         from examples.orders.schemas.order import (
@@ -55,7 +55,7 @@ def render_orders_example() -> dict[str, str]:
                 OrderCollectionSource,
                 OrderCollectionProfile,
             ],
-            "examples.orders.schemas.analytics": [CustomerDailyTotal, ProductDailySummary],
+            "examples.orders.schemas.analytics": [CustomerDailyTotal, ProductDailySummary, CustomerEventRank],
             "examples.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
             "examples.orders.schemas.customer": [Customer],
             "examples.orders.schemas.order": [

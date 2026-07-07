@@ -350,5 +350,12 @@ PySpark inside fixtures or test functions so the default suite can collect tests
 Integration pytest options live in `tests/integration/pytest_plugin.py`, loaded from `pyproject.toml`. Keep
 integration-specific pytest machinery under `tests/integration` so the directory conveys the test context.
 
+Within `tests/integration/pyspark`, group live tests by backend family, fixture version, and scenario. Backend-wide
+smoke tests belong under `tests/integration/pyspark/backend`, shared live-backend helpers belong under
+`tests/integration/pyspark/support`, and scenario tests belong under versioned directories such as
+`tests/integration/pyspark/v2/analytics`. Keep fixture-specific builders in matching support modules such as
+`tests/integration/pyspark/v2/support/analytics.py`; do not create a second version hierarchy under the top-level
+`support` directory.
+
 Versioned integration fixture data belongs under `res/testing/data`. For example, the v1 orders integration scenario
 uses CSV files from `res/testing/data/v1/orders`.

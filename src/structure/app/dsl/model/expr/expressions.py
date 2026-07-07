@@ -84,6 +84,20 @@ def coalesce(*values: object) -> Expression:
     return Expression(kind="call", type=result_type, nullable=False, data={"function": "coalesce"}, args=arguments)
 
 
+def event_time_between(left: object, right: object, *, upper: str, lower: str = "0 seconds") -> Expression:
+    if not isinstance(lower, str) or not lower.strip():
+        raise TypeError("event_time_between(lower=...) requires a non-empty string")
+    if not isinstance(upper, str) or not upper.strip():
+        raise TypeError("event_time_between(upper=...) requires a non-empty string")
+    return Expression(
+        kind="event_time_between",
+        type=BooleanType(),
+        nullable=False,
+        data={"lower": lower, "upper": upper},
+        args=(literal(left), literal(right)),
+    )
+
+
 def when(condition: object, value: object) -> "WhenBuilder":
     predicate = literal(condition)
     if not isinstance(predicate.type, BooleanType):

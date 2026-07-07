@@ -21,6 +21,7 @@ from structure.app.target.pyspark.model.PySparkOutputRecipe import PySparkOutput
 from structure.app.target.pyspark.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkValidationRecipe
+from structure.app.target.pyspark.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
 
 
 class RenderPySparkStep:
@@ -31,34 +32,42 @@ class RenderPySparkStep:
         *,
         current: str,
         sources: dict[str, str] | None = None,
+        source_transform: str | None = None,
     ) -> str:
         if isinstance(step, PySparkStepRecipe) and len(step.results) > 1:
-            return self._multiple(step, current=current, sources=sources or {})
+            return self._multiple(step, current=current, sources=sources or {}, source_transform=source_transform)
         target = self._target(step)
         lines = [f"        # Subtransform: {step.name}"]
         active = current
         if step.before_hooks:
-            lines.extend(self._hooks(step.before_hooks))
+            lines.extend(self._hooks(step.before_hooks, source_transform=source_transform))
         lines.append(f'        {target} = {active}.alias("{step.input_alias}")')
         lines.extend(self._operations(step, sources=sources or {}, target=target))
         lines.extend(self._projection(step, target=target))
-        lines.extend(self._hooks(step.after_hooks))
+        lines.extend(self._hooks(step.after_hooks, source_transform=source_transform))
         lines.extend(self._validations(step.validations, target=target))
         lines.extend(self._post_operations(step, target=target))
         return "\n".join(lines)
 
-    def _multiple(self, step: PySparkStepRecipe, *, current: str, sources: dict[str, str]) -> str:
+    def _multiple(
+        self,
+        step: PySparkStepRecipe,
+        *,
+        current: str,
+        sources: dict[str, str],
+        source_transform: str | None,
+    ) -> str:
         lines = [f"        # Subtransform: {step.name}"]
         active = current
         if step.before_hooks:
-            lines.extend(self._hooks(step.before_hooks))
+            lines.extend(self._hooks(step.before_hooks, source_transform=source_transform))
         base = f"{step.name}_base"
         lines.append(f'        {base} = {active}.alias("{step.input_alias}")')
         lines.extend(self._operations(step, sources=sources, target=base))
         for result in step.results:
             lines.extend(self._result_projection(step, result, base=base))
         for result in step.results:
-            lines.extend(self._hooks(result.after_hooks))
+            lines.extend(self._hooks(result.after_hooks, source_transform=source_transform))
             lines.extend(self._validations(result.validations, target=result.frame))
             lines.extend(self._post_operations(step, target=result.frame))
         return "\n".join(lines)
@@ -73,6 +82,8 @@ class RenderPySparkStep:
     def _hooks(
         self,
         hooks: tuple[PySparkHookRecipe, ...],
+        *,
+        source_transform: str | None,
     ) -> list[str]:
         lines: list[str] = []
         for hook in hooks:
@@ -81,8 +92,16 @@ class RenderPySparkStep:
             if inputs:
                 arguments = f"{arguments}{inputs}"
             outputs = ", ".join(hook.outputs)
-            lines.append(f"        {outputs} = self._impl.{hook.name}({arguments}, spark=self.spark, ctx=self.ctx)")
+            callee, prefix = self._hook_call(hook, source_transform=source_transform)
+            arguments = f"{prefix}{arguments}" if prefix else arguments
+            lines.append(f"        {outputs} = {callee}({arguments}, spark=self.spark, ctx=self.ctx)")
         return lines
+
+    def _hook_call(self, hook: PySparkHookRecipe, *, source_transform: str | None) -> tuple[str, str]:
+        origin = hook.origin
+        if origin is None or source_transform is None or origin.import_name == source_transform:
+            return f"self._impl.{hook.name}", ""
+        return f"{origin.class_name}.{origin.member_name}", "self._impl, "
 
     def _joins(
         self,
@@ -127,6 +146,9 @@ class RenderPySparkStep:
             if operation.kind == "drop_duplicates":
                 duplicate_rows = operation.duplicate_rows or PySparkDuplicateRowsRecipe()
                 ordered_lines.append(f"        {target} = {target}.dropDuplicates({self._dedupe_subset(duplicate_rows)})")
+            if operation.kind == "watermark" and operation.watermark is not None:
+                if operation.watermark.scope == getattr(step, "source_scope", ""):
+                    ordered_lines.extend(self._watermark(operation.watermark, target=target))
         if pending_filters:
             ordered_lines.extend(self._filters(tuple(pending_filters), step=step, target=target))
         return ordered_lines
@@ -139,10 +161,26 @@ class RenderPySparkStep:
             return ""
         return json.dumps(tuple(self._field_column(expression) for expression in duplicate_rows.subset))
 
+    def _watermark(self, watermark: PySparkWatermarkRecipe, *, target: str) -> list[str]:
+        return [f"        {target} = {target}.withWatermark({self._literal(watermark.column)}, {watermark.delay!r})"]
+
     def _field_column(self, expression: PySparkExpressionRecipe) -> str:
         if expression.kind != "field":
             raise TypeError("drop_duplicates(...) subset can only render field expressions")
         return str(expression.data["field"])
+
+    def _right_watermarks(
+        self,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        join: PySparkJoinRecipe,
+    ) -> tuple[PySparkWatermarkRecipe, ...]:
+        return tuple(
+            operation.watermark
+            for operation in step.operations
+            if operation.kind == "watermark"
+            and operation.watermark is not None
+            and operation.watermark.scope == join.input_name
+        )
 
     def _selected_rows(
         self,
@@ -371,6 +409,8 @@ class RenderPySparkStep:
     ) -> list[str]:
         source = sources.get(join.source, join.source)
         right = source
+        for watermark in self._right_watermarks(step, join):
+            right = f"{right}.withWatermark({self._literal(watermark.column)}, {watermark.delay!r})"
         if join.strategy is not None:
             right = f'{right}.hint("{join.strategy.value}")'
         right = f'{right}.alias("{join.right_alias}")'

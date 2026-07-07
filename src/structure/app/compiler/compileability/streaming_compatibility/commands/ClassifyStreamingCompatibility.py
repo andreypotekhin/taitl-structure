@@ -5,6 +5,7 @@ from structure.app.compiler.compileability.streaming_compatibility.model.Streami
 from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.model.transforms.Join import Join
+from structure.app.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
@@ -15,22 +16,42 @@ class ClassifyStreamingCompatibility:
 
     def __call__(self, plan: PySparkExecutionPlan, *, required: bool = False) -> StreamingReport:
         findings: list[StreamingFinding] = []
+        input_modes = {input.name: input.streaming for input in plan.inputs}
         for step in plan.steps:
-            if step.aggregate is not None:
-                findings.extend(self._aggregate(step.name))
+            watermarks: set[str] = set()
             findings.extend(self._window_projection(step.name, tuple(assignment.expression for assignment in step.projection)))
             for result in step.results:
                 findings.extend(
                     self._window_projection(result.lane, tuple(assignment.expression for assignment in result.projection))
                 )
             for operation in step.operations:
+                if operation.watermark is not None:
+                    watermarks.add(operation.watermark.scope)
+                    continue
+                if operation.aggregate is not None:
+                    findings.extend(self._aggregate(step.name, watermarked=self._current_watermarked(step, watermarks)))
                 if operation.selected_rows is not None:
                     findings.extend(self._selected_rows(step.name, operation.selected_rows.direction))
                 if operation.kind == "drop_duplicates":
                     subset = 0 if operation.duplicate_rows is None else len(operation.duplicate_rows.subset)
-                    findings.extend(self._drop_duplicates(step.name, subset=subset))
-            for join in step.joins:
-                findings.extend(self._join(step.name, join))
+                    findings.extend(
+                        self._drop_duplicates(
+                            step.name,
+                            subset=subset,
+                            watermarked=self._current_watermarked(step, watermarks),
+                        )
+                    )
+                if operation.join is not None:
+                    findings.extend(
+                        self._join(
+                            step.name,
+                            operation.join,
+                            input_modes=input_modes,
+                            current_input=step.source,
+                            current_scope=step.source_scope,
+                            watermarks=watermarks,
+                        )
+                    )
             for hook in (
                 *step.before_hooks,
                 *step.after_hooks,
@@ -49,7 +70,12 @@ class ClassifyStreamingCompatibility:
             findings=tuple(findings),
         )
 
-    def _aggregate(self, step: str) -> tuple[StreamingFinding, ...]:
+    def _current_watermarked(self, step, watermarks: set[str]) -> bool:
+        return step.source_scope in watermarks
+
+    def _aggregate(self, step: str, *, watermarked: bool) -> tuple[StreamingFinding, ...]:
+        if watermarked:
+            return ()
         return (
             StreamingFinding(
                 code="STREAM-E0801",
@@ -57,10 +83,10 @@ class ClassifyStreamingCompatibility:
                 step=step,
                 operation="grouped aggregate",
                 problem=(
-                    "Grouped aggregations are batch-only until Structure defines streaming output modes, "
-                    "watermarks, and state semantics."
+                    "Grouped aggregations on streaming inputs require a compiler-visible watermark and explicit "
+                    "state/output-mode policy."
                 ),
-                use="Keep this transform batch-only or move streaming aggregation orchestration outside Structure.",
+                use="Call watermark(event_time_field, delay=...) before group_by(...) or keep this transform batch-only.",
             ),
         )
 
@@ -79,7 +105,9 @@ class ClassifyStreamingCompatibility:
             ),
         )
 
-    def _drop_duplicates(self, step: str, *, subset: int) -> tuple[StreamingFinding, ...]:
+    def _drop_duplicates(self, step: str, *, subset: int, watermarked: bool) -> tuple[StreamingFinding, ...]:
+        if watermarked:
+            return ()
         operation = "exact duplicate removal" if not subset else "subset duplicate removal"
         return (
             StreamingFinding(
@@ -88,10 +116,9 @@ class ClassifyStreamingCompatibility:
                 step=step,
                 operation=operation,
                 problem=(
-                    "Duplicate removal uses DataFrame dropDuplicates() and is batch-only until Structure "
-                    "defines streaming state, watermark, and output-mode semantics."
+                    "Streaming duplicate removal requires a compiler-visible watermark so Spark can bound state."
                 ),
-                use="Keep this transform batch-only or move streaming deduplication orchestration outside Structure.",
+                use="Call watermark(event_time_field, delay=...) before drop_duplicates(...) or keep this transform batch-only.",
             ),
         )
 
@@ -121,7 +148,16 @@ class ClassifyStreamingCompatibility:
             and function.startswith("window_")
         ) or any(self._has_window(argument) for argument in expression.args)
 
-    def _join(self, step: str, join: PySparkJoinRecipe) -> tuple[StreamingFinding, ...]:
+    def _join(
+        self,
+        step: str,
+        join: PySparkJoinRecipe,
+        *,
+        input_modes: dict[str, StreamingMode],
+        current_input: str,
+        current_scope: str,
+        watermarks: set[str],
+    ) -> tuple[StreamingFinding, ...]:
         if join.dedupe is not None:
             return (
                 StreamingFinding(
@@ -135,6 +171,15 @@ class ClassifyStreamingCompatibility:
                     ),
                     use="Keep this transform batch-only or move the deterministic lookup reduction outside Structure.",
                 ),
+            )
+        if input_modes.get(join.source) is StreamingMode.YES:
+            return self._stream_stream_join(
+                step,
+                join,
+                input_modes=input_modes,
+                current_input=current_input,
+                current_scope=current_scope,
+                watermarks=watermarks,
             )
         if join.temporal is not None:
             return (
@@ -191,6 +236,47 @@ class ClassifyStreamingCompatibility:
                 ),
                 use="Keep this transform batch-only or rewrite the lookup as a left or inner stream-static join.",
             ),
+        )
+
+    def _stream_stream_join(
+        self,
+        step: str,
+        join: PySparkJoinRecipe,
+        *,
+        input_modes: dict[str, StreamingMode],
+        current_input: str,
+        current_scope: str,
+        watermarks: set[str],
+    ) -> tuple[StreamingFinding, ...]:
+        if (
+            join.method is JoinMethod.ROWSET
+            and join.how is Join.INNER
+            and input_modes.get(current_input) is StreamingMode.YES
+            and current_scope in watermarks
+            and join.input_name in watermarks
+            and self._has_event_time_between(join.predicate)
+        ):
+            return ()
+        return (
+            StreamingFinding(
+                code="STREAM-E0801",
+                support=StreamingSupport.BATCH_ONLY,
+                step=step,
+                operation=f"stream-stream join {join.input_name}",
+                problem=(
+                    "Stream-stream joins require both inputs declared with StreamingMode.YES, an inner rowset join, "
+                    "watermarks on both streaming inputs, and an event_time_between(...) constraint."
+                ),
+                use=(
+                    "Declare both inputs with StreamingMode.YES, call watermark(...) for both event-time fields, "
+                    "and include event_time_between(left_time, right_time, upper=...) in the join predicate."
+                ),
+            ),
+        )
+
+    def _has_event_time_between(self, expression: PySparkExpressionRecipe) -> bool:
+        return expression.kind == "event_time_between" or any(
+            self._has_event_time_between(argument) for argument in expression.args
         )
 
     def _broad_rowset_join(self, join: PySparkJoinRecipe) -> bool:

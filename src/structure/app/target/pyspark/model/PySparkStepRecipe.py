@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from structure.app.compiler.ir.model.TransformMemberOrigin import TransformMemberOrigin
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
@@ -32,3 +33,4 @@ class PySparkStepRecipe:
     aggregate: PySparkAggregateRecipe | None = None
     results: tuple[PySparkStepResultRecipe, ...] = ()
     operations: tuple[PySparkOperationRecipe, ...] = ()
+    origin: TransformMemberOrigin | None = None

@@ -10,7 +10,9 @@ from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationCapability import OperationCapability
 from structure.app.compiler.ir.model.OperationCardinality import OperationCardinality
 from structure.app.compiler.ir.model.SelectedRowsPlan import SelectedRowsPlan
+from structure.app.compiler.ir.model.WatermarkPlan import WatermarkPlan
 from structure.app.dsl.model.expr.Expression import Expression
+from structure.app.dsl.model.transforms.StreamingOutputMode import StreamingOutputMode
 
 
 @dataclass(frozen=True)
@@ -21,10 +23,12 @@ class OperationPlan:
     aggregate: AggregatePlan | None = None
     selected_rows: SelectedRowsPlan | None = None
     duplicate_rows: DuplicateRowsPlan | None = None
+    watermark: WatermarkPlan | None = None
     family: str | None = None
     capability: OperationCapability | None = None
     cardinality: OperationCardinality = OperationCardinality.UNKNOWN
     streaming: StreamingSupport = StreamingSupport.UNKNOWN
+    streaming_output_modes: tuple[StreamingOutputMode, ...] = ()
 
     @staticmethod
     def filter_operation(predicate: Expression) -> "OperationPlan":
@@ -65,6 +69,7 @@ class OperationPlan:
             capability=OperationCapability(group="aggregate", name="group_by"),
             cardinality=OperationCardinality.AGGREGATE,
             streaming=StreamingSupport.BATCH_ONLY,
+            streaming_output_modes=(StreamingOutputMode.UPDATE, StreamingOutputMode.COMPLETE),
         )
 
     @staticmethod
@@ -87,6 +92,18 @@ class OperationPlan:
             capability=OperationCapability(group="dedupe", name="drop_duplicates"),
             cardinality=OperationCardinality.ROW_FILTERING,
             streaming=StreamingSupport.BATCH_ONLY,
+            streaming_output_modes=(StreamingOutputMode.APPEND,),
+        )
+
+    @staticmethod
+    def watermark_operation(watermark: WatermarkPlan) -> "OperationPlan":
+        return OperationPlan(
+            kind="watermark",
+            watermark=watermark,
+            family="streaming",
+            capability=OperationCapability(group="streaming", name="watermark"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.COMPATIBLE,
         )
 
     @staticmethod

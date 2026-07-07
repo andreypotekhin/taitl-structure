@@ -2,10 +2,11 @@
 # Source: examples.orders.transforms.analytics.OrderAnalytics
 
 from pyspark.sql import DataFrame, SparkSession
+from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.orders.runtime.schema_assert import TransformResult, assert_schema, project_schema
-from examples.structure_generated.orders.pyspark.schemas.analytics import CUSTOMER_DAILY_TOTAL_SCHEMA, PRODUCT_DAILY_SUMMARY_SCHEMA
+from examples.structure_generated.orders.pyspark.schemas.analytics import CUSTOMER_DAILY_TOTAL_SCHEMA, CUSTOMER_EVENT_RANK_SCHEMA, PRODUCT_DAILY_SUMMARY_SCHEMA
 from examples.structure_generated.orders.pyspark.schemas.order import ORDER_FULFILLMENT_SCHEMA
 
 
@@ -25,7 +26,6 @@ class OrderAnalyticsGenerated:
 
         # Subtransform: customer_daily_totals
         customer_totals = fulfilled.alias("order_fulfillment")
-        customer_totals = customer_totals.dropDuplicates()
         customer_totals = customer_totals.groupBy(
             F.col("order_fulfillment.tenant.tenant_id").alias("tenant_id"),
             F.col("order_fulfillment.customer_id").alias("customer_id"),
@@ -72,6 +72,28 @@ class OrderAnalyticsGenerated:
             F.col("avg_units"),
             F.col("gross_total"),
         )
+        assert_schema(product_summary, PRODUCT_DAILY_SUMMARY_SCHEMA, name="ProductDailySummary", mode="strict")
+
+        # Subtransform: customer_event_ranks
+        customer_event_rank = fulfilled.alias("order_fulfillment")
+        customer_event_rank = customer_event_rank.withColumn("__structure_customer_event_ranks_latest_rank", F.row_number().over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").desc())))
+        customer_event_rank = customer_event_rank.where(F.col("__structure_customer_event_ranks_latest_rank") == F.lit(1))
+        customer_event_rank = customer_event_rank.drop("__structure_customer_event_ranks_latest_rank")
+        customer_event_rank = customer_event_rank.select(
+            F.col("order_fulfillment.tenant"),
+            F.col("order_fulfillment.customer_id"),
+            F.col("order_fulfillment.id").alias("event_id"),
+            F.col("order_fulfillment.quantity").alias("sequence"),
+            F.row_number().over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc())).cast(T.LongType()).alias("row_number"),
+            F.rank().over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").desc())).cast(T.LongType()).alias("rank"),
+            F.dense_rank().over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc())).cast(T.LongType()).alias("dense_rank"),
+            F.lag(F.col("order_fulfillment.quantity"), 1).over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc())).alias("previous_sequence"),
+            F.lead(F.col("order_fulfillment.quantity"), 1).over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc())).alias("next_sequence"),
+            F.sum(F.col("order_fulfillment.quantity")).over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc()).rowsBetween(-2, 0)).alias("rolling_units"),
+            F.avg(F.col("order_fulfillment.quantity")).over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc()).rowsBetween(-2, 0)).alias("rolling_avg_units"),
+            F.min(F.col("order_fulfillment.quantity")).over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc()).rowsBetween(-2, 0)).alias("rolling_min_units"),
+            F.max(F.col("order_fulfillment.quantity")).over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc()).rowsBetween(-2, 0)).alias("rolling_max_units"),
+        )
 
         # Subtransform: customer_totals
         customer_totals = customer_totals.alias("customer_daily_total")
@@ -80,4 +102,8 @@ class OrderAnalyticsGenerated:
         # Subtransform: product_summary
         product_summary = product_summary.alias("product_daily_summary")
         assert_schema(product_summary, PRODUCT_DAILY_SUMMARY_SCHEMA, name="ProductDailySummary", mode="strict")
-        return TransformResult({"customer_totals": customer_totals, "product_summary": product_summary}, single=False, schema={"customer_totals": CUSTOMER_DAILY_TOTAL_SCHEMA, "product_summary": PRODUCT_DAILY_SUMMARY_SCHEMA})
+
+        # Subtransform: customer_event_rank
+        customer_event_rank = customer_event_rank.alias("customer_event_rank")
+        assert_schema(customer_event_rank, CUSTOMER_EVENT_RANK_SCHEMA, name="CustomerEventRank", mode="strict")
+        return TransformResult({"customer_totals": customer_totals, "product_summary": product_summary, "customer_event_rank": customer_event_rank}, single=False, schema={"customer_totals": CUSTOMER_DAILY_TOTAL_SCHEMA, "product_summary": PRODUCT_DAILY_SUMMARY_SCHEMA, "customer_event_rank": CUSTOMER_EVENT_RANK_SCHEMA})

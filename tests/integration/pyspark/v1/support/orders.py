@@ -2,22 +2,13 @@ from __future__ import annotations
 
 import csv
 import importlib
-import os
 from collections.abc import Callable
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
 from types import SimpleNamespace
 
-import pytest
-from integration.pyspark.fixtures.multi_lookup import AddLookupProduct, LookupEnriched, LookupOrder, LookupProduct
-from integration.pyspark.matrix_support import (
-    BACKENDS,
-    assert_generated_connect_safe,
-    generated_project,
-    render_generated_project,
-    session,
-)
+from integration.pyspark.support.backend_matrix import session
 from testing.model.v1.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
 from testing.model.v1.orders.schemas.customer import Customer
 from testing.model.v1.orders.schemas.order import (
@@ -34,113 +25,11 @@ from testing.model.v1.orders.schemas.product import Product
 from testing.model.v1.orders.schemas.promotion import Promotion
 from testing.model.v1.orders.transforms.order import EnrichOrders
 
-pytestmark = pytest.mark.integration
-
-ROOT = Path(__file__).resolve().parents[3]
+ROOT = Path(__file__).resolve().parents[5]
 DATA = ROOT / "res" / "testing" / "data" / "v1" / "orders"
-MULTI_LOOKUP_MODULE = "integration.pyspark.fixtures.multi_lookup"
 
 
-def test_v1_backend_runtime_versions(spark) -> None:
-    pyspark = pytest.importorskip("pyspark")
-    backend = os.environ.get("STRUCTURE_INTEGRATION_BACKEND")
-    expected_pyspark = os.environ.get("STRUCTURE_EXPECTED_PYSPARK")
-    expected_spark = os.environ.get("STRUCTURE_EXPECTED_SPARK")
-
-    assert backend in BACKENDS
-    assert expected_pyspark is not None
-    assert expected_spark is not None
-    assert pyspark.__version__.startswith(expected_pyspark)
-    assert spark.version.startswith(expected_spark)
-
-
-def test_v1_online_and_generated_execution_match_orders_contract_on_live_backend(spark, tmp_path) -> None:
-    generated_package = "integration_v1_generated"
-    files = render_generated_project(
-        EnrichOrders,
-        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
-        generated_package=generated_package,
-        source_schema_modules=_source_schema_modules(),
-    )
-
-    with generated_project(tmp_path, generated_package, files):
-        schemas = _generated_order_schemas(generated_package)
-        generated = _run_generated_orders_transform(spark, generated_package, schemas)
-        online = _run_online_orders_transform(spark, schemas)
-
-        assert generated.columns == schemas.ORDER_PUBLISHED_SCHEMA.fieldNames()
-        assert online.columns == schemas.ORDER_PUBLISHED_SCHEMA.fieldNames()
-        generated_rows = [row.asDict(recursive=True) for row in generated.orderBy("id").collect()]
-        online_rows = [row.asDict(recursive=True) for row in online.orderBy("id").collect()]
-        assert online_rows == generated_rows
-        assert generated_rows == [
-            {
-                "tenant": {"tenant_id": "t1"},
-                "business": {"order_date": date(2026, 1, 2)},
-                "id": "o-1",
-                "customer_id": "c-1",
-                "customer_name": "Ada Lovelace",
-                "customer_tier": "gold",
-                "product_name": "Analytical Engine",
-                "product_category": "compute",
-                "promotion_name": "Summer",
-                "total": Decimal("1250.50"),
-                "discount": Decimal("10.00"),
-                "net_total": Decimal("1240.50"),
-                "quantity": 2,
-                "is_large": True,
-                "has_promotion": True,
-            }
-        ]
-
-    assert_generated_connect_safe(files)
-
-
-def test_multiple_schema_parameters_and_results_match_online_and_generated(spark, tmp_path) -> None:
-    generated_package = "integration_multi_generated"
-    files = render_generated_project(
-        AddLookupProduct,
-        source_transform=f"{MULTI_LOOKUP_MODULE}.AddLookupProduct",
-        generated_package=generated_package,
-        source_schema_modules={
-            MULTI_LOOKUP_MODULE: [LookupOrder, LookupProduct, LookupEnriched],
-        },
-    )
-
-    with generated_project(tmp_path, generated_package, files):
-        schemas = importlib.import_module(f"{generated_package}.pyspark.schemas.multi_lookup")
-        frames = {
-            "orders": spark.createDataFrame(
-                [("o-1", "p-1"), ("o-2", "missing")],
-                schema=schemas.LOOKUP_ORDER_SCHEMA,
-            ),
-            "products": spark.createDataFrame(
-                [("p-1", "Engine")],
-                schema=schemas.LOOKUP_PRODUCT_SCHEMA,
-            ),
-        }
-
-        online = AddLookupProduct(**frames).run(session(spark, execution_mode="online"))
-        generated = AddLookupProduct(**frames).run(
-            session(spark, execution_mode="generated", generated_package=generated_package)
-        )
-
-        for name in ("accepted", "audited"):
-            online_rows = [row.asDict() for row in online[name].orderBy("id").collect()]
-            generated_rows = [row.asDict() for row in generated[name].orderBy("id").collect()]
-            assert (
-                online_rows
-                == generated_rows
-                == [
-                    {"id": "o-1", "product_name": "Engine"},
-                    {"id": "o-2", "product_name": None},
-                ]
-            )
-
-    assert_generated_connect_safe(files)
-
-
-def _source_schema_modules():
+def source_schema_modules():
     return {
         "testing.model.v1.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
         "testing.model.v1.orders.schemas.customer": [Customer],
@@ -159,7 +48,7 @@ def _source_schema_modules():
     }
 
 
-def _generated_order_schemas(package: str) -> SimpleNamespace:
+def generated_order_schemas(package: str) -> SimpleNamespace:
     order = importlib.import_module(f"{package}.pyspark.schemas.order")
     customer = importlib.import_module(f"{package}.pyspark.schemas.customer")
     product = importlib.import_module(f"{package}.pyspark.schemas.product")
@@ -173,23 +62,17 @@ def _generated_order_schemas(package: str) -> SimpleNamespace:
     )
 
 
-def _run_generated_orders_transform(spark, generated_package: str, schemas):
-    invocation = EnrichOrders(**_input_frames(spark, schemas))
+def run_generated_transform(spark, generated_package: str, schemas):
+    invocation = EnrichOrders(**input_frames(spark, schemas))
     return _published(invocation.run(session(spark, execution_mode="generated", generated_package=generated_package)))
 
 
-def _run_online_orders_transform(spark, schemas):
-    invocation = EnrichOrders(**_input_frames(spark, schemas))
+def run_online_transform(spark, schemas):
+    invocation = EnrichOrders(**input_frames(spark, schemas))
     return _published(invocation.run(session(spark, execution_mode="online")))
 
 
-def _published(result):
-    if hasattr(result, "as_dict"):
-        return result["published"]
-    return result
-
-
-def _input_frames(spark, schemas) -> dict[str, object]:
+def input_frames(spark, schemas) -> dict[str, object]:
     return {
         "orders": spark.createDataFrame(_rows("orders.csv", _order_converters()), schema=schemas.ORDER_RAW_SCHEMA),
         "customers": spark.createDataFrame(
@@ -202,6 +85,12 @@ def _input_frames(spark, schemas) -> dict[str, object]:
             schema=schemas.PROMOTION_SCHEMA,
         ),
     }
+
+
+def _published(result):
+    if hasattr(result, "as_dict"):
+        return result["published"]
+    return result
 
 
 def _rows(name: str, converters: dict[str, Callable[[str], object]]) -> list[dict[str, object]]:

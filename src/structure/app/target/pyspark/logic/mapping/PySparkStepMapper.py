@@ -23,6 +23,7 @@ from structure.app.target.pyspark.model.PySparkProjectionRecipe import PySparkPr
 from structure.app.target.pyspark.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.target.pyspark.model.PySparkStepResultRecipe import PySparkStepResultRecipe
+from structure.app.target.pyspark.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
 
 
 class PySparkStepMapper:
@@ -83,6 +84,7 @@ class PySparkStepMapper:
             aggregate=None if step.aggregate is None else self._aggregate(step.aggregate, capabilities=capabilities),
             results=results,
             operations=operations,
+            origin=step.origin,
         )
 
     def _operations(
@@ -140,6 +142,15 @@ class PySparkStepMapper:
                             subset=tuple(
                                 self._expressions.map(expression, capabilities=capabilities) for expression in subset
                             )
+                        )
+                    )
+                )
+            if operation.kind == "watermark" and operation.watermark is not None:
+                recipes.append(
+                    PySparkOperationRecipe.watermark_operation(
+                        PySparkWatermarkRecipe(
+                            expression=self._expressions.map(operation.watermark.expression, capabilities=capabilities),
+                            delay=operation.watermark.delay,
                         )
                     )
                 )

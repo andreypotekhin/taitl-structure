@@ -1,1 +1,1 @@
-﻿# Generated transform traceability package marker.
+# Generated transform traceability package marker.

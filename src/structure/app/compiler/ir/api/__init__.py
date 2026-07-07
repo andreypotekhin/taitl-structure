@@ -15,6 +15,7 @@ from structure.app.compiler.ir.model.StepInputPlan import StepInputPlan
 from structure.app.compiler.ir.model.StepPlan import StepPlan
 from structure.app.compiler.ir.model.StepResultPlan import StepResultPlan
 from structure.app.compiler.ir.model.TransformPlan import TransformPlan
+from structure.app.compiler.ir.model.WatermarkPlan import WatermarkPlan
 
 __all__ = [
     "AggregateAssignment",
@@ -34,4 +35,5 @@ __all__ = [
     "StepPlan",
     "StepResultPlan",
     "TransformPlan",
+    "WatermarkPlan",
 ]

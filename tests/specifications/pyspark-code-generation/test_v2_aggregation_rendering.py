@@ -132,7 +132,7 @@ def test_grouped_aggregate_explain_names_keys_and_metrics() -> None:
 
     assert (
         "operations: aggregate(aggregate keys=customer_id "
-        "metrics=count,count_distinct,sum,min,max,avg)"
+        "metrics=count,count_distinct,sum,min,max,avg streaming_modes=update|complete)"
     ) in report
 
 

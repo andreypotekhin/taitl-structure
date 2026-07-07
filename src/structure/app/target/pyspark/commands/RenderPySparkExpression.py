@@ -63,6 +63,16 @@ class RenderPySparkExpression:
         if expression.kind == "null_safe_eq":
             left, right = expression.args
             return f"{self._render(left, aliases)}.eqNullSafe({self._render(right, aliases)})"
+        if expression.kind == "event_time_between":
+            left, right = expression.args
+            lower = self._interval(str(expression.data["lower"]))
+            upper = self._interval(str(expression.data["upper"]))
+            rendered_left = self._render(left, aliases)
+            rendered_right = self._render(right, aliases)
+            return (
+                f"(({rendered_right} >= ({rendered_left} - {lower})) "
+                f"& ({rendered_right} <= ({rendered_left} + {upper})))"
+            )
         if expression.kind == "not":
             return f"~({self._render(expression.args[0], aliases)})"
         raise TypeError(f"Unsupported PySpark expression recipe: {expression.kind}")
@@ -282,6 +292,9 @@ class RenderPySparkExpression:
 
     def _literal(self, value: str) -> str:
         return json.dumps(value)
+
+    def _interval(self, value: str) -> str:
+        return f"F.expr({self._literal(f'INTERVAL {value}')})"
 
     def _render_literal_value(self, expression: PySparkExpressionRecipe) -> str:
         return repr(expression.data["value"])

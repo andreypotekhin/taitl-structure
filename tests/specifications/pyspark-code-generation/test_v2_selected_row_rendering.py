@@ -305,7 +305,7 @@ def test_drop_duplicates_renders_spark_visible_exact_duplicate_removal() -> None
 def test_drop_duplicates_explain_names_dedupe_operation_and_streaming_status() -> None:
     text = render_explain_report(UniqueEventTransform)
 
-    assert "operations: drop_duplicates(row_filtering)" in text
+    assert "operations: drop_duplicates(row_filtering streaming_modes=append)" in text
     assert "STREAM-E0801: batch_only in unique_events (exact duplicate removal)" in text
 
 
@@ -320,5 +320,5 @@ def test_drop_duplicates_renders_subset_columns_when_requested() -> None:
 def test_drop_duplicates_subset_explain_names_subset_and_streaming_status() -> None:
     text = render_explain_report(UniqueAccountEventTransform)
 
-    assert "operations: drop_duplicates(row_filtering subset=1)" in text
+    assert "operations: drop_duplicates(row_filtering subset=1 streaming_modes=append)" in text
     assert "STREAM-E0801: batch_only in unique_events (subset duplicate removal)" in text

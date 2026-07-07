@@ -155,7 +155,9 @@ The generator must not:
 
 ## Generated Public API
 
-Each source transform class maps to one generated class.
+Each concrete source transform entrypoint maps to one public generated class. When inherited parent transform classes
+contribute compiled steps, the generated module may also include compiler-owned generated parent classes that hold those
+step methods.
 
 Source:
 
@@ -195,10 +197,14 @@ Rules:
   `result["rejected"]`. There is no automatic `df` alias.
 - Generated transform bodies keep one local DataFrame variable per source-order lane producer, so a branch step reads
   the frame named by its input lane rather than the immediately preceding step.
+- Generated transform modules may render compiled steps as protected methods. The public `run(...)` method remains the
+  stable entrypoint and orchestrates those methods in compiler plan order.
 - Input parameter order follows source input declaration order.
 - A source transform instance is created only when at least one hook exists.
 - Hook-free generated classes must omit the source transform import and `_impl` field.
 - The generated class must not inherit from the source transform class.
+- Generated classes may inherit from other generated classes to preserve source transform ownership boundaries for
+  inherited parent steps. Users must still treat every generated class as compiler-owned.
 - Generated classes are owned by the compiler. Users must not subclass or edit generated classes.
 
 Generated execution through `GeneratedPySparkRunner` imports this class, instantiates it with
@@ -379,7 +385,8 @@ join, hook, or complex expression easier to review.
 
 ## Step Shape
 
-Each compiled subtransform renders as a contiguous generated code block.
+Each compiled subtransform renders as a contiguous generated code block. The block may appear directly in `run(...)` or
+inside a protected generated step method called by `run(...)`.
 
 Canonical order inside one step:
 
@@ -546,6 +553,13 @@ inputs = HookInputs(orders=orders, customers=customers)
 orders = self._impl.compare_to_raw(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
 ```
 
+When a hook belongs to an inherited parent boundary and owner-qualified dispatch is needed, generated code calls the
+declaring hook function with the concrete source transform instance as `self`:
+
+```python
+orders = NormalizeBase.remove_negative_totals(self._impl, orders=orders, spark=self.spark, ctx=self.ctx)
+```
+
 Rules:
 
 - Generate `_impl = SourceTransform()` only when at least one hook exists.
@@ -558,6 +572,8 @@ Rules:
 - The namespace contains original declared input DataFrames, not intermediate DataFrames.
 - Hook return values become the new selected lane DataFrame.
 - Hook output validation and optional projection follow the hook metadata.
+- Hook recipes retain their declaring transform owner. Generated and online execution use this owner to avoid accidental
+  late lookup of a child method when the compiled boundary selected a parent hook body.
 
 Generated code does not inspect hook internals. Hook behavior is opaque to compiler traceability except for the declared
 hook boundary.

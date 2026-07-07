@@ -9,6 +9,7 @@ from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.ir.model.ProjectAssignment import ProjectAssignment
 from structure.app.compiler.ir.model.StepInputPlan import StepInputPlan
 from structure.app.compiler.ir.model.StepResultPlan import StepResultPlan
+from structure.app.compiler.ir.model.TransformMemberOrigin import TransformMemberOrigin
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.schemas.Structure import Structure
 
@@ -33,3 +34,4 @@ class StepPlan:
     inputs: tuple[StepInputPlan, ...] = ()
     results: tuple[StepResultPlan, ...] = ()
     options: dict[str, object] | None = None
+    origin: TransformMemberOrigin | None = None

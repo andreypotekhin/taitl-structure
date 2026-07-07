@@ -1,7 +1,29 @@
 import sys
 
+from structure import String, Structure, Transform, field, input, output, transform
+from structure.app.cli.commands.RenderExplainReport import render_explain_report
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
+
+
+class CacheRaw(Structure):
+    id = field(String(), nullable=False)
+    status = field(String(), nullable=True)
+
+
+class CachePublished(Structure):
+    id = field(String(), nullable=False)
+    status = field(String(), nullable=True)
+
+
+@transform
+class CachePublishedOrders(Transform):
+    orders = input(CacheRaw)
+    published = output(CachePublished)
+
+    @transform(cache=True)
+    def publish(self, order: CacheRaw) -> CachePublished:
+        return CachePublished(id=order.id, status=order.status)
 
 
 def test_v1_transform_module_renderer_is_spark_free() -> None:
@@ -69,6 +91,29 @@ def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
         '        return TransformResult({"published": published}, single=True, '
         'schema={"published": ORDER_PUBLISHED_SCHEMA})'
     )
+
+
+def test_v2_cache_directive_renders_as_post_projection_persist() -> None:
+    text = PySpark.render.transform()(
+        PySpark.plan.lower()(compile_transform(CachePublishedOrders)),
+        source_transform="tests.CachePublishedOrders",
+        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        schema_modules={
+            CacheRaw: "testing.model.v1.structure_generated.cache.pyspark.schemas.order",
+            CachePublished: "testing.model.v1.structure_generated.cache.pyspark.schemas.order",
+        },
+    )
+
+    assert "        orders = orders.select(" in text
+    assert "        orders = orders.persist()" in text
+    assert text.index("        orders = orders.select(") < text.index("        orders = orders.persist()")
+    assert text.index("        orders = orders.persist()") < text.index("        # Subtransform: published")
+
+
+def test_v2_cache_directive_is_visible_in_explain_output() -> None:
+    text = render_explain_report(CachePublishedOrders)
+
+    assert "operations: cache(row_preserving)" in text
 
 
 def _schema_modules() -> dict[type, str]:

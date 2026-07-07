@@ -194,6 +194,29 @@
       "qualname": "String",
       "signature": "() -> 'None'"
     },
+    "StreamingMode": {
+      "dataclass_fields": [],
+      "enum_members": [
+        "YES",
+        "NO"
+      ],
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.StreamingMode",
+      "qualname": "StreamingMode",
+      "signature": "(*values)"
+    },
+    "StreamingOutputMode": {
+      "dataclass_fields": [],
+      "enum_members": [
+        "APPEND",
+        "UPDATE",
+        "COMPLETE"
+      ],
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.StreamingOutputMode",
+      "qualname": "StreamingOutputMode",
+      "signature": "(*values)"
+    },
     "Struct": {
       "dataclass_fields": [
         "name",
@@ -603,6 +626,14 @@
       "qualname": "earliest_by",
       "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'"
     },
+    "event_time_between": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "event_time_between",
+      "signature": "(left: 'object', right: 'object', *, upper: 'str', lower: 'str' = '0 seconds') -> 'Expression'"
+    },
     "exists": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -689,7 +720,7 @@
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "input",
-      "signature": "(value: 'type[Structure] | InputDeclaration') -> 'InputDeclaration | BindingSelector'"
+      "signature": "(value: 'type[Structure] | InputDeclaration', *, streaming: 'StreamingMode' = <StreamingMode.NO: 'no'>) -> 'InputDeclaration | BindingSelector'"
     },
     "is_grouped": {
       "dataclass_fields": [],
@@ -1082,6 +1113,14 @@
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "where",
       "signature": "(predicate: 'object') -> \"'WhereChain'\""
+    },
+    "watermark": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.transform_api",
+      "qualname": "watermark",
+      "signature": "(field: 'object', *, delay: 'str' = '10 minutes') -> 'None'"
     },
     "window": {
       "dataclass_fields": [],

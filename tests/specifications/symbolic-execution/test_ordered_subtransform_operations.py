@@ -637,3 +637,23 @@ def test_return_chain_join_where_project_uses_ordered_operations() -> None:
 
     assert [operation.kind for operation in step.operations] == ["join", "filter"]
     assert [assignment.field.name for assignment in step.projection] == ["id", "status"]
+
+
+def test_method_cache_option_records_optimization_operation() -> None:
+    @transform
+    class Publish(Transform):
+        orders = input(Order)
+        published = output(Published)
+
+        @transform(cache=True)
+        def publish(self, order: Order) -> Published:
+            return Published(id=order.id, status=order.status)
+
+    step = compile_transform(Publish).steps[0]
+
+    assert [operation.kind for operation in step.operations] == ["cache"]
+    assert step.operations[0].capability is not None
+    assert step.operations[0].capability.group == "optimization"
+    assert step.operations[0].capability.name == "cache"
+    assert step.operations[0].cardinality is OperationCardinality.ROW_PRESERVING
+    assert step.operations[0].streaming is StreamingSupport.BATCH_ONLY

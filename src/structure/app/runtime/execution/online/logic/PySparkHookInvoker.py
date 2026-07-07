@@ -35,7 +35,7 @@ class PySparkHookInvoker:
             if hook.pass_inputs:
                 kwargs["inputs"] = inputs
             try:
-                result = getattr(invocation, hook.name)(**kwargs)
+                result = self._call(hook, invocation, kwargs)
             except Exception as error:
                 boundary = spark_connect_runtime_error(
                     invocation,
@@ -56,3 +56,12 @@ class PySparkHookInvoker:
                 )
             for name, frame in zip(hook.outputs, result, strict=True):
                 frames[name] = frame
+
+    def _call(self, hook: PySparkHookRecipe, invocation: Transform, kwargs: dict[str, object]):
+        origin = hook.origin
+        if origin is None or origin.owner is None:
+            return getattr(invocation, hook.name)(**kwargs)
+        function = origin.owner.__dict__.get(origin.member_name)
+        if function is None:
+            return getattr(invocation, hook.name)(**kwargs)
+        return function(invocation, **kwargs)

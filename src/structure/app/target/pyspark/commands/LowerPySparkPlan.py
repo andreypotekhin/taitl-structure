@@ -21,7 +21,9 @@ class LowerPySparkPlan:
         capabilities: BackendCapabilities | None = None,
     ) -> PySparkExecutionPlan:
         target = capabilities or Capabilities.resolve()()
-        inputs = tuple(self._inputs.map(input.name, input.schema, input.ordinal) for input in plan.inputs)
+        inputs = tuple(
+            self._inputs.map(input.name, input.schema, input.ordinal, input.streaming) for input in plan.inputs
+        )
         steps = tuple(
             self._steps.map(step, last=index == len(plan.steps) - 1, capabilities=target)
             for index, step in enumerate(plan.steps)

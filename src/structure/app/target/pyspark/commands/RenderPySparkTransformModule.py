@@ -41,9 +41,7 @@ class RenderPySparkTransformModule:
         ]
         if self._has_window(plan):
             lines.insert(1, "from pyspark.sql import Window")
-        if self._has_hooks(plan):
-            module, name = source_transform.rsplit(".", 1)
-            lines.append(f"from {module} import {name}")
+        lines.extend(self._source_imports(plan, source_transform=source_transform))
 
         helpers = ["TransformResult", "assert_schema", "project_schema"]
         if plan.requires_hook_inputs:
@@ -55,6 +53,18 @@ class RenderPySparkTransformModule:
         return "\n".join(lines)
 
     def _class(self, plan: PySparkExecutionPlan, *, source_transform: str) -> str:
+        parent_classes = self._parent_classes(plan, source_transform=source_transform)
+        if not parent_classes:
+            return "\n".join(self._legacy_class(plan, source_transform=source_transform))
+        lines: list[str] = []
+        for parent in parent_classes:
+            lines.extend(self._owner_class(parent, plan, source_transform=source_transform))
+            lines.append("")
+            lines.append("")
+        lines.extend(self._concrete_class(plan, source_transform=source_transform, parent_classes=parent_classes))
+        return "\n".join(lines)
+
+    def _legacy_class(self, plan: PySparkExecutionPlan, *, source_transform: str) -> list[str]:
         class_name = f"{plan.transform}Generated"
         source_name = source_transform.rsplit(".", 1)[1]
         lines = [f"class {class_name}:", "", "    def __init__(self, *, spark: SparkSession, ctx=None):"]
@@ -95,7 +105,153 @@ class RenderPySparkTransformModule:
             f"single={single}, "
             f"schema={{{', '.join(schema_entries)}}})"
         )
-        return "\n".join(lines)
+        return lines
+
+    def _owner_class(
+        self,
+        owner: str,
+        plan: PySparkExecutionPlan,
+        *,
+        source_transform: str,
+    ) -> list[str]:
+        class_name = self._generated_class_name(owner)
+        lines = [f"class {class_name}:"]
+        lines.extend(self._step_methods(plan, owner=owner, source_transform=source_transform))
+        if len(lines) == 1:
+            lines.append("    pass")
+        return lines
+
+    def _concrete_class(
+        self,
+        plan: PySparkExecutionPlan,
+        *,
+        source_transform: str,
+        parent_classes: tuple[str, ...],
+    ) -> list[str]:
+        class_name = f"{plan.transform}Generated"
+        bases = f"({', '.join(self._generated_class_name(owner) for owner in parent_classes)})" if parent_classes else ""
+        source_name = source_transform.rsplit(".", 1)[1]
+        lines = [f"class {class_name}{bases}:"]
+        lines.extend(self._step_methods(plan, owner=source_transform, source_transform=source_transform))
+        lines.extend(["", "    def __init__(self, *, spark: SparkSession, ctx=None):"])
+        lines.append("        self.spark = spark")
+        lines.append("        self.ctx = ctx")
+        if self._has_hooks(plan):
+            lines.append(f"        self._impl = {source_name}()")
+        lines.extend(["", "    def run(", "        self,", "        *,"])
+        for input in plan.inputs:
+            lines.append(f"        {input.name}: DataFrame,")
+        lines.extend(["    ) -> TransformResult:"])
+        for input in plan.inputs:
+            lines.extend(self._validation(input.validation))
+        if plan.requires_hook_inputs:
+            lines.extend(self._hook_inputs(plan))
+        for input in plan.inputs:
+            lines.append(f"        {self._raw_input_name(input.name)} = {input.name}")
+        lines.extend(self._frames(plan))
+
+        for step in plan.steps:
+            hook_inputs = "inputs" if plan.requires_hook_inputs else "None"
+            lines.append(f"        frames.update(self.{self._step_method(step)}(frames, {hook_inputs}))")
+
+        sources = self._frame_sources(plan)
+        result_entries: list[str] = []
+        schema_entries: list[str] = []
+        for output in plan.outputs:
+            lines.append("")
+            lines.append(render_pyspark_step(output, current=sources[output.source], sources=sources))
+            result_entries.append(f'"{output.name}": {output.name}')
+            schema_entries.append(f'"{output.name}": {render_pyspark_schema.constant_name(output.output_schema)}')
+        single = "True" if len(plan.outputs) == 1 else "False"
+        lines.append(
+            f"        return TransformResult("
+            f"{{{', '.join(result_entries)}}}, "
+            f"single={single}, "
+            f"schema={{{', '.join(schema_entries)}}})"
+        )
+        return lines
+
+    def _step_methods(
+        self,
+        plan: PySparkExecutionPlan,
+        *,
+        owner: str,
+        source_transform: str,
+    ) -> list[str]:
+        methods: list[str] = []
+        sources = self._frame_sources(plan)
+        for step in plan.steps:
+            if self._step_owner(step, source_transform=source_transform) != owner:
+                continue
+            if methods:
+                methods.append("")
+            methods.append(f"    def {self._step_method(step)}(self, frames, inputs):")
+            methods.append(
+                render_pyspark_step(
+                    step,
+                    current=sources[step.source],
+                    sources=sources,
+                    source_transform=source_transform,
+                )
+            )
+            methods.append("        return {")
+            for result in step.results:
+                methods.append(f'            "{result.frame}": {result.frame},')
+            methods.append("        }")
+        return methods
+
+    def _frames(self, plan: PySparkExecutionPlan) -> list[str]:
+        lines = ["        frames = {"]
+        for input in plan.inputs:
+            lines.append(f'            "{input.name}": {input.name},')
+        for input in plan.inputs:
+            lines.append(f'            "input:{input.name}": {self._raw_input_name(input.name)},')
+        lines.append("        }")
+        return lines
+
+    def _frame_sources(self, plan: PySparkExecutionPlan) -> dict[str, str]:
+        sources = {input.name: f'frames["{input.name}"]' for input in plan.inputs}
+        sources.update({f"input:{input.name}": f'frames["input:{input.name}"]' for input in plan.inputs})
+        for step in plan.steps:
+            for result in step.results:
+                sources[result.frame] = f'frames["{result.frame}"]'
+        return sources
+
+    def _step_method(self, step) -> str:
+        name = "".join(character.lower() if character.isalnum() else "_" for character in step.name).strip("_")
+        return f"_step_{name}_{step.ordinal}"
+
+    def _parent_classes(self, plan: PySparkExecutionPlan, *, source_transform: str) -> tuple[str, ...]:
+        owners: list[str] = []
+        for step in plan.steps:
+            owner = self._step_owner(step, source_transform=source_transform)
+            if owner == source_transform or owner in owners:
+                continue
+            owners.append(owner)
+        return tuple(owners)
+
+    def _step_owner(self, step, *, source_transform: str) -> str:
+        if step.origin is None or step.origin.class_name == source_transform.rsplit(".", 1)[1]:
+            return source_transform
+        return step.origin.import_name
+
+    def _generated_class_name(self, owner: str) -> str:
+        return f"{owner.rsplit('.', 1)[1]}Generated"
+
+    def _source_imports(self, plan: PySparkExecutionPlan, *, source_transform: str) -> list[str]:
+        if not self._has_hooks(plan):
+            return []
+        imports: dict[str, set[str]] = defaultdict(set)
+        module, name = source_transform.rsplit(".", 1)
+        imports[module].add(name)
+        for hook in self._hooks(plan):
+            if hook.origin is None:
+                continue
+            imports[hook.origin.module].add(hook.origin.class_name)
+        return [
+            f"from {module} import {', '.join(sorted(names))}"
+            for module, names in sorted(imports.items())
+        ]
 
     def _last_step_validates_final(self, plan: PySparkExecutionPlan) -> bool:
         if not plan.steps:
@@ -147,9 +303,17 @@ class RenderPySparkTransformModule:
         return schemas
 
     def _has_hooks(self, plan: PySparkExecutionPlan) -> bool:
-        return any(
-            step.before_hooks or step.after_hooks or any(result.after_hooks for result in step.results)
+        return bool(self._hooks(plan))
+
+    def _hooks(self, plan: PySparkExecutionPlan):
+        return tuple(
+            hook
             for step in plan.steps
+            for hook in (
+                *step.before_hooks,
+                *step.after_hooks,
+                *(hook for result in step.results for hook in result.after_hooks),
+            )
         )
 
     def _has_window(self, plan: PySparkExecutionPlan) -> bool:

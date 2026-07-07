@@ -5,6 +5,7 @@ from typing import Any, Callable, Iterable, TypeVar, cast, overload
 
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
+from structure.app.compiler.ir.model.WatermarkPlan import WatermarkPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import current_context
 from structure.app.dsl.model.expr.expressions import literal
 from structure.app.dsl.model.expr.InputScope import InputScope, lookup_join
@@ -18,6 +19,7 @@ from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.app.dsl.model.transforms.reserved_v2 import cache_operation
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.app.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.types.BooleanType import BooleanType
 
@@ -30,19 +32,27 @@ _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
 
 
 @overload
-def input(value: type[Structure]) -> InputDeclaration: ...
+def input(value: type[Structure], *, streaming: StreamingMode = StreamingMode.NO) -> InputDeclaration: ...
 
 
 @overload
 def input(value: InputDeclaration) -> BindingSelector: ...
 
 
-def input(value: type[Structure] | InputDeclaration) -> InputDeclaration | BindingSelector:
+def input(
+    value: type[Structure] | InputDeclaration,
+    *,
+    streaming: StreamingMode = StreamingMode.NO,
+) -> InputDeclaration | BindingSelector:
     if isinstance(value, InputDeclaration):
+        if streaming is not StreamingMode.NO:
+            raise TypeError("input(existing_input, streaming=...) is invalid; set streaming on the declaration")
         return BindingSelector("input", value)
     if not isinstance(value, type) or not issubclass(value, Structure):
         raise TypeError("input(...) requires a Structure schema class")
-    return InputDeclaration(schema=value)
+    if not isinstance(streaming, StreamingMode):
+        raise TypeError("input(streaming=...) requires a StreamingMode value")
+    return InputDeclaration(schema=value, streaming=streaming)
 
 
 @overload
@@ -348,6 +358,18 @@ def where(predicate: object) -> "WhereChain":
     context.filters.append(expression)
     context.operations.append(OperationPlan.filter_operation(expression))
     return WhereChain()
+
+
+def watermark(field: object, *, delay: str = "10 minutes") -> None:
+    context = current_context()
+    if context is None:
+        raise RuntimeError("watermark(...) can only be used inside a compiled Structure subtransform")
+    expression = literal(field)
+    if expression.kind != "field":
+        raise TypeError("watermark(...) requires a Structure field expression")
+    if not isinstance(delay, str) or not delay.strip():
+        raise TypeError("watermark(delay=...) requires a non-empty string")
+    context.operations.append(OperationPlan.watermark_operation(WatermarkPlan(expression=expression, delay=delay)))
 
 
 @overload

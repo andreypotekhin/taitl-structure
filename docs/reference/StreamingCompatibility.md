@@ -5,9 +5,10 @@ transform is streaming-compatible when a caller can pass a streaming DataFrame a
 can analyze the resulting DataFrame plan without Structure adding unsupported streaming operations, actions, stateful
 streaming features, or streaming lifecycle code.
 
-The streaming-compatible contract is intentionally narrow: row-local projection, row-local filtering, schema-only
-validation, and stream-static lookup joins are in scope. Watermarks, output modes, triggers, checkpoints, streaming
-sources, streaming sinks, stream-stream joins, and stateful aggregations are outside the current contract.
+The streaming-compatible contract keeps lifecycle ownership with the caller. Row-local projection, row-local filtering,
+schema-only validation, stream-static joins, transform-scoped watermarks, watermarked grouped aggregations,
+watermarked dedupe, and bounded inner stream-stream joins are in scope. Triggers, checkpoints, streaming sources,
+streaming sinks, query start, query stop, deployment, and recovery are permanent non-goals.
 
 ## Definition
 
@@ -15,15 +16,15 @@ Streaming compatibility means all of these are true:
 
 - Generated code accepts ordinary PySpark `DataFrame` objects and does not require a batch-only DataFrame.
 - The current pipeline DataFrame may be streaming.
-- Side input DataFrames used for lookup joins are treated as static batch DataFrames.
+- Side input DataFrames used for joins are treated as static batch DataFrames unless declared
+  `StreamingMode.YES`.
 - Generated operations are supported by Spark Structured Streaming for that runtime shape.
 - Generated code does not call Spark actions such as `collect()`, `count()`, `toPandas()`, or `show()`.
 - Generated code does not create `readStream`, call `writeStream`, set triggers, set checkpoints, or start queries.
 - Opaque hooks are absent or explicitly marked streaming-safe.
 
-Streaming compatibility does not mean Structure guarantees every Spark expression is valid for every Spark version or
-every output mode. Structure checks the v1 operation contract at compile time and leaves query lifecycle choices to the
-caller.
+Streaming compatibility does not mean Structure starts a streaming query. Structure checks the transformation contract
+at compile time, reports required output modes where relevant, and leaves query lifecycle choices to the caller.
 
 ## Runtime Shape
 
@@ -49,10 +50,9 @@ query = result.writeStream \
 Rules:
 
 - The current pipeline DataFrame is the DataFrame flowing through the source-ordered subtransform chain.
-- Additional named inputs referenced only through joins are static side inputs in v1.
-- Passing a streaming DataFrame as a joined side input creates a stream-stream join and is outside v1.
-- Transforms with two independent streaming roots are outside v1 because Structure does not model streaming
-  synchronization, watermarks, or output modes.
+- Additional named inputs referenced through joins are static side inputs unless declared `StreamingMode.YES`.
+- Passing a streaming DataFrame as a joined side input requires explicit `StreamingMode.YES`, watermarks on both
+  sides, and an event-time bound for the admitted inner stream-stream join shape.
 - Generated code should not branch on `df.isStreaming`; the same transform body should work for batch and streaming
   inputs when the operation contract is satisfied.
 
@@ -117,27 +117,34 @@ It must not trigger Spark jobs.
 Compiler traceability generation is compatible when it records compile-time or generated-code metadata. Runtime traceability
 hooks are out of scope for v1 and must not be introduced by streaming-compatible generated code.
 
+Watermarks are compatible when declared with `watermark(field, delay=...)` before the stateful operation they support.
+Grouped aggregations and exact/subset dedupe are compatible when the current streaming frame has a prior
+compiler-visible watermark. Inner stream-stream rowset joins are compatible when both inputs are declared
+`StreamingMode.YES`, both joined frames have watermarks, and the predicate includes
+`event_time_between(left_time, right_time, upper=...)`.
+
 ## Deferred or Rejected Operations
 
 These operations are not streaming-compatible in v1:
 
 - global `orderBy(...)` or `sort(...)` on the streaming current DataFrame;
 - `limit(...)`, `offset(...)`, or global top-N operations;
-- `distinct(...)` or `dropDuplicates(...)`, including Structure `distinct()` and `drop_duplicates()`;
-- aggregations, including `groupBy(...).agg(...)`;
+- `distinct(...)` or `dropDuplicates(...)`, including Structure `distinct()` and `drop_duplicates()` without a
+  preceding watermark;
+- aggregations, including `groupBy(...).agg(...)` without a preceding watermark;
 - windowed aggregations;
 - ranking or analytic window functions, including Structure `row_number(...)`, `rank(...)`, `dense_rank(...)`,
   `lag(...)`, `lead(...)`, `rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and `rolling_max(...)`;
 - selected-row helpers, including Structure `latest_by(...)`, `earliest_by(...)`, `dedupe_latest_by(...)`, and
   `dedupe_earliest_by(...)`;
-- stream-stream joins;
+- stream-stream joins that lack declared streaming input modes, watermarks, or event-time bounds;
 - right, full, cross, semi, or anti joins involving the streaming current DataFrame;
 - Python UDFs, Pandas UDFs, RDD operations, `mapInPandas`, and `foreachPartition`;
 - local Spark actions such as `collect()`, `count()`, `toPandas()`, `show()`, and `take()`;
 - arbitrary hooks unless marked streaming-safe.
 
 Some of these operations are supported by Spark Structured Streaming under specific watermarks, output modes, or state
-policies. Structure defers them because v1 does not model those lifecycle and state contracts.
+policies. Structure admits only the shapes whose transformation policy is compiler-visible.
 
 ## Joins
 
@@ -164,10 +171,9 @@ Rules:
 - `JoinHint.BROADCAST` is compatible only for the static joined side.
 - A side input that may be streaming must be rejected for v1 streaming compatibility.
 
-Rejected in v1:
+Rejected:
 
-- stream-stream joins;
-- joins that require watermarks;
+- stream-stream joins without explicit streaming input modes, watermarks, or event-time bounds;
 - outer stream-stream joins;
 - stateful deduplication before or after a join;
 - join hints that apply to the streaming side.

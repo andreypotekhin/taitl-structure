@@ -1,43 +1,46 @@
-# Spark Streaming Deferred Features
+# Spark Streaming Non-Goals And Deferred Transform Features
 
-These Spark Structured Streaming features are intentionally outside Structure's first streaming slice. They may be
-valid Spark patterns, but Structure does not support them until they have explicit lifecycle policy, diagnostics, tests,
-and documentation.
+Structure supports streaming DataFrame transformations without owning streaming query lifecycle. Some Spark streaming
+features are permanent non-goals; others are transformation features admitted only with explicit state policy,
+diagnostics, tests, and documentation.
 
-## Deferred Features
+## Permanent Non-Goals
 
-Structure does not yet generate streaming sources:
+Structure does not generate streaming sources:
 
 ```python
 spark.readStream...
 ```
 
-Structure does not yet generate streaming sinks or start queries:
+Structure does not generate streaming sinks or start queries:
 
 ```python
 df.writeStream...
 query.start()
 ```
 
-Structure also does not yet own:
+Structure also does not own:
 
 - triggers;
 - checkpoint locations;
-- output modes;
 - query names and query lifecycle;
-- watermarks;
-- state retention policy;
-- stream-stream joins;
-- streaming aggregations and windowed aggregations;
-- stateful dedupe;
 - selected-row helpers such as latest or earliest on streaming inputs;
 - `foreachBatch`, `foreach`, custom sinks, and external side effects.
 
-## Why They Are Deferred
+## Transformation Features
 
-These features are operational contracts, not just transform syntax. A streaming aggregation, for example, may need an
-event-time field, a watermark delay, an output mode, a checkpoint, and a state-retention policy. Structure should not
-guess those values or hide them in generated code.
+Structure supports transform-scoped `watermark(...)`, watermarked aggregations, watermarked dedupe, and inner
+stream-stream joins with `event_time_between(...)` when the relevant inputs are declared streaming.
+
+More complex stateful transformation features remain deferred until their state semantics are compiler-visible:
+
+- windowed aggregations beyond the admitted aggregate shape;
+- outer and semi stream-stream joins;
+- selected-row helpers such as latest or earliest on streaming inputs;
+- ranking, lag/lead, and rolling windows;
+- arbitrary state APIs.
+
+Structure reports output-mode requirements, but the caller applies them in `writeStream` code.
 
 ## Future Support Bar
 
@@ -46,7 +49,7 @@ A deferred feature can become supported only when Structure defines:
 - public DSL or configuration;
 - backend capabilities;
 - compile-time diagnostics with clear fixes;
-- explain output showing lifecycle and state assumptions;
+- explain output showing state assumptions;
 - online and generated behavior where both apply;
 - live Spark Structured Streaming verification;
 - troubleshooting guidance for likely operational failures.

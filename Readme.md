@@ -291,8 +291,9 @@ See [License.md](License.md)
   streaming-compatible transforms, diagnostic links, and setup checks.
 - **v2:** mainstream analytical features: existence joins, `inner_join(...)`, broad rowset joins, deterministic lookup
   dedupe, temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions,
-  caching/persistence/repartition hints, richer explain output, generated docs, pytest helpers, and Spark Connect
-  support for completed v1/v2 batch features.
-- **v3:** streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, output
-  modes, and stateful policies.
+  cache/persist first-slice directives, Spark Connect support for completed batch features, and static streaming
+  compatibility diagnostics for caller-owned streaming DataFrames.
+- **v3:** deeper streaming transformation support: live streaming evidence, additional stateful operation families,
+  richer watermark/state diagnostics, and caller-owned output-mode guidance. Structure keeps `readStream`,
+  `writeStream`, triggers, checkpoints, query lifecycle, deployment, and recovery permanently caller-owned.
 - **v4:** backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support claim.

@@ -136,9 +136,9 @@ checks.
 
 ## M7: v2 Analytical Pipeline Features
 
-Status: in progress. v2 starts after v1 stabilization evidence is release-ready. The milestone is split into M7A-M7F so
-independent contributors can work on analytical transforms, analytical joins, composition maturity, and adoption tooling
-without stepping on one another.
+Status: Sprint 09 analytical and Spark Connect batch work is complete; adoption tooling and broader optimizer/explain
+work continue after Sprint 09. The milestone is split into M7A-M7F so independent contributors can work on analytical
+transforms, analytical joins, composition maturity, and adoption tooling without stepping on one another.
 
 ### M7A: v2 Scope and Analytical IR Foundations
 
@@ -200,13 +200,13 @@ Exit Criteria:
 
 Exit Criteria:
 
-- Manual optimization directives are explicit in source and obvious in generated code.
+- Cache/persist first-slice directives are explicit in source and obvious in generated code.
 - Right, full, cross, non-equi, and disjunctive rowset joins are represented in source, IR, backend capability checks,
   generated code, online recipes, traceability, and explain output.
-- Cache, persist, repartition, coalesce, checkpoint, and join strategy directives are represented in IR and backend
-  capability checks.
-- Richer static dataflow explain output can show field lineage through projections, filters, joins, aggregations,
-  windows, hooks, and optimization boundaries.
+- Repartition, coalesce, checkpoint, and broader join strategy directives are deferred until their physical-plan
+  contract is specified.
+- Compact explain output shows operation families, cardinality, streaming classification, traceability, and static
+  dataflow; richer field-level lineage remains follow-up work.
 - Generated documentation artifacts describe schemas, transforms, inputs, outputs, traceability, and generated targets
   in Markdown or JSON.
 - Pytest helpers cover `structure check`, generated-code freshness, generated-code snapshots, diagnostics, and

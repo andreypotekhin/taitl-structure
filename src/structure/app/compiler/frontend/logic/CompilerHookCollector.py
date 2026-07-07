@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from structure.app.compiler.ir.model.HookPlan import HookPlan
+from structure.app.compiler.ir.model.TransformMemberOrigin import TransformMemberOrigin
 from structure.app.dsl.model.transforms.Transform import Transform
 
 if TYPE_CHECKING:
@@ -18,7 +19,7 @@ class CompilerHookCollector:
     ) -> dict[tuple[str, tuple[type[Transform], str, int]], tuple[HookPlan, ...]]:
         grouped: dict[tuple[str, tuple[type[Transform], str, int]], list[HookPlan]] = {}
         targets = self._targets(members)
-        for item in members:
+        for item in self._hook_members(members):
             name = item.name
             member = item.member
             metadata = getattr(member, "_structure_hook", None)
@@ -42,9 +43,20 @@ class CompilerHookCollector:
                     streaming_safe=metadata["streaming_safe"],
                     target_backend=metadata["target_backend"],
                     target_defaulted=metadata["target_defaulted"],
+                    origin=TransformMemberOrigin.of(item.owner, name),
                 )
             )
         return {key: tuple(value) for key, value in grouped.items()}
+
+    def _hook_members(
+        self,
+        members: tuple[CompilerTransformMember, ...],
+    ) -> tuple[CompilerTransformMember, ...]:
+        items: list[CompilerTransformMember] = []
+        for member in members:
+            items.extend(member.overridden)
+            items.append(member)
+        return tuple(items)
 
     def _targets(
         self,

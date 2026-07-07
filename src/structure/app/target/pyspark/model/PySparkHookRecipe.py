@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from structure.app.compiler.ir.model.TransformMemberOrigin import TransformMemberOrigin
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
 
 
@@ -18,6 +19,7 @@ class PySparkHookRecipe:
     streaming_safe: bool
     target_backend: tuple[str, ...] = ("pyspark",)
     target_defaulted: bool = True
+    origin: TransformMemberOrigin | None = None
 
     @property
     def lane(self) -> str:

@@ -203,6 +203,10 @@
       "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
       "module": "examples.structure_generated.orders.pyspark.schemas.analytics"
     },
+    "CustomerEventRank": {
+      "constant": "CUSTOMER_EVENT_RANK_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.analytics"
+    },
     "CustomerOrderBackfill": {
       "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
       "module": "examples.structure_generated.orders.pyspark.schemas.order"

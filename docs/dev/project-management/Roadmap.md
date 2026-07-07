@@ -11,9 +11,9 @@ generated PySpark, then broadens into the contract that lets Structure replace h
 with a strict online runtime and optional generated-code workflow. v2 makes that workflow useful for mainstream
 analytical pipelines.
 v3 takes ownership of streaming lifecycle concerns only after the transform compiler has earned trust. Sprint 09 moves
-Spark Connect from experimental parity to supported status for completed batch features and proves the first
-caller-owned Spark streaming slice, while v4 remains available for non-batch Connect hardening and broader backend
-expansion.
+Spark Connect from experimental parity to supported status for completed batch features and completes the static
+caller-owned streaming compatibility contract; live streaming runtime evidence remains a v3 entry gate. v4 remains
+available for non-batch Connect hardening and broader backend expansion.
 
 The project should prioritize:
 
@@ -140,13 +140,14 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
   joins, and backward as-of joins from [AnalyticalJoinCoverage.md](../specifications/AnalyticalJoinCoverage.md).
 - **Full PySpark rowset joins:** right joins, full joins, cross joins, non-equi predicates, and disjunctive predicates
   from [FullPySparkJoinSupport.md](../specifications/FullPySparkJoinSupport.md).
-- **Explicit optimization controls:** cache, persist, repartition, coalesce, checkpoint, and join strategy directives
-  that are visible in source, generated code, traceability, and explain output.
+- **Explicit optimization controls:** cache/persist first-slice directives are admitted in Sprint 09. Repartition,
+  coalesce, checkpoint, and broader join strategy directives remain deferred until their physical-plan contract is
+  specified.
 - **Transform composition maturity:** hook-bearing stages, composed hook ownership and dispatch, traceability for
   composed hook boundaries, and explicit decisions on earlier-stage output exposure and mixed wrapper-local logic.
-- **Adoption and scale tooling:** richer static dataflow and generated-code explain reports, generated documentation
-  artifacts for schemas and transforms, pytest helpers, generated-code freshness checks, snapshots, and production
-  incremental compilation with cache diagnostics.
+- **Adoption and scale tooling:** generated documentation artifacts for schemas and transforms, pytest helpers,
+  generated-code freshness checks, snapshots, richer generated-code explain reports, and production incremental
+  compilation with cache diagnostics move to Sprint 10 and later adoption-tooling work.
 
 ### v2 non-goals
 

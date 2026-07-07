@@ -1,3 +1,3 @@
-from integration.pyspark.matrix_support import spark
+from integration.pyspark.support.backend_matrix import spark
 
 __all__ = ["spark"]

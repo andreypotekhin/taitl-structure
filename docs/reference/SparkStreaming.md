@@ -1,12 +1,12 @@
 # Spark Streaming
 
-Structure supports a narrow Spark Structured Streaming first slice: callers own the streaming source and sink, then pass
+Structure supports Spark Structured Streaming transformations: callers own the streaming source and sink, then pass
 streaming DataFrames into ordinary online or generated Structure transforms. Structure returns a DataFrame plan. It does
-not start streaming queries.
+not start or manage streaming queries.
 
 ## Supported Shape
 
-The supported shape is one streaming current input plus optional static lookup inputs:
+The basic shape is one streaming current input plus optional static lookup inputs:
 
 ```python
 orders = spark.readStream.table("orders")
@@ -31,6 +31,10 @@ The first slice supports:
 - row-local filters;
 - schema-only validation;
 - stream-static left and inner lookup joins;
+- `watermark(...)` as a DataFrame transformation;
+- watermarked grouped aggregations and dedupe;
+- inner stream-stream joins when both inputs are declared `StreamingMode.YES`, both sides have watermarks, and the
+  predicate includes `event_time_between(...)`;
 - static-side broadcast hints when supported by the PySpark target;
 - hooks marked `streaming_safe=True`;
 - compatibility and explain reports that classify transforms as `compatible`, `batch_only`, or `unknown`.
@@ -47,13 +51,15 @@ When the marker is present, unknown or incompatible operations are errors.
 
 ## Not Included
 
-The first slice does not include:
+Structure does not include:
 
 - generated `readStream` or `writeStream` code;
 - query start, stop, trigger, checkpoint, or output-mode ownership;
-- watermarks and state policies;
-- stream-stream joins;
-- streaming aggregations, windowed aggregations, or stateful dedupe;
+- generated lifecycle, deployment, or recovery code;
+- arbitrary state APIs;
+- selected-row, ranking, lag/lead, and rolling-window helpers on streaming inputs;
+- outer and semi stream-stream joins;
+- windowed aggregations beyond admitted watermarked aggregate shapes;
 - right, full, cross, non-equi, or disjunctive rowset joins involving streaming inputs;
 - Spark actions such as `collect()`, `count()`, `toPandas()`, and `show()`;
 - RDD conversion, Pandas conversion, Python UDF fallback, or local row loops.
@@ -82,4 +88,6 @@ Streaming diagnostics should name the operation and explain the fix. Typical fix
 - make a side input static;
 - replace an opaque hook with compiler-visible Structure DSL;
 - mark a hook `streaming_safe=True` only after checking its body;
-- wait for a later streaming orchestration feature when the transform needs state, watermarks, or generated sinks.
+- add explicit `StreamingMode.YES`, `watermark(...)`, or `event_time_between(...)` metadata where the transformation
+  requires state;
+- keep lifecycle, sinks, checkpoints, and query starts in caller-owned Spark code.

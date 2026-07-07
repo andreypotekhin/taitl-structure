@@ -22,6 +22,7 @@ from structure.app.compiler.ir.model.ProjectAssignment import ProjectAssignment
 from structure.app.compiler.ir.model.StepInputPlan import StepInputPlan
 from structure.app.compiler.ir.model.StepPlan import StepPlan
 from structure.app.compiler.ir.model.StepResultPlan import StepResultPlan
+from structure.app.compiler.ir.model.TransformMemberOrigin import TransformMemberOrigin
 from structure.app.compiler.ir.model.TransformPlan import TransformPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import CompileContext
 from structure.app.dsl.model.expr.Expression import Expression
@@ -364,6 +365,7 @@ class CompileTransform:
                 inputs=tuple(bindings),
                 results=tuple(result_plans),
                 options=options,
+                origin=TransformMemberOrigin.of(item.owner, name),
             )
         )
         for result in result_plans:

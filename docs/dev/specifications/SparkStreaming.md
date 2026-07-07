@@ -1,7 +1,7 @@
-# Spark Streaming First Slice
+# Spark Streaming Transformation Support
 
-This specification defines the first supported Spark Structured Streaming slice for Structure. It converts the existing
-streaming compatibility model into a Sprint 09 implementation target for caller-owned streaming DataFrames.
+This specification defines Spark Structured Streaming support for Structure transforms. Structure compiles DataFrame
+transformations that may run on streaming DataFrames, while the caller permanently owns streaming lifecycle code.
 
 ## Support Claim
 
@@ -16,8 +16,8 @@ Structure supports a transform with a streaming input when all of these are true
 - generated and online execution do not emit or call streaming lifecycle APIs, Spark actions, RDD conversion, Pandas
   conversion, Python UDFs, or local collection.
 
-The support claim covers returned DataFrame plans only. It does not cover source generation, sink generation, query
-start/stop behavior, output modes, triggers, checkpoints, watermarks, or state policies.
+The support claim covers returned DataFrame plans only. Structure never generates or manages streaming sources, sinks,
+query start/stop behavior, triggers, checkpoints, query names, deployment, or recovery.
 
 ## Configuration
 
@@ -72,6 +72,7 @@ The first slice supports these operation classes:
 streaming.row_local_projection
 streaming.row_local_filter
 streaming.schema_only_validation
+streaming.watermark
 streaming.stream_static_left_join
 streaming.stream_static_inner_join
 streaming.streaming_safe_hook_boundary
@@ -89,6 +90,22 @@ the joined side is static. Static-side broadcast hints are allowed when already 
 Hooks are compatible only when the hook is marked `streaming_safe=True`. The checker treats this as a trusted boundary,
 not as proof from body analysis.
 
+`input(..., streaming=StreamingMode.YES | NO)` records whether a transform input is explicitly streaming. The default
+`NO` treats joined side inputs as static unless the author declares them streaming.
+
+`watermark(field, delay="10 minutes")` records a compiler-visible event-time watermark and lowers to PySpark
+`DataFrame.withWatermark(...)`. Watermarks are transformation metadata, not lifecycle ownership.
+
+`event_time_between(left_time, right_time, upper=..., lower="0 seconds")` records the bounded event-time relationship
+required for supported stream-stream joins and lowers to a Spark-visible boolean predicate.
+
+Grouped aggregations and exact/subset dedupe are streaming-compatible when a watermark appears earlier in the same
+subtransform on the current streaming frame. Explain output reports the Spark output modes the caller must use, but
+Structure never calls `writeStream.outputMode(...)`.
+
+An inner `rowset_join(...)` between two inputs declared `StreamingMode.YES` is compatible when both sides have
+watermarks and the predicate includes `event_time_between(...)`.
+
 ## Rejected Operations
 
 These operation classes are rejected for the first slice:
@@ -98,21 +115,14 @@ streaming.source_generation
 streaming.sink_generation
 streaming.trigger_policy
 streaming.checkpoint_policy
-streaming.output_mode
-streaming.watermark
-streaming.state_policy
-streaming.stream_stream_join
-streaming.stateful_aggregation
-streaming.windowed_aggregation
-streaming.stateful_deduplication
 streaming.streaming_order_by
 streaming.streaming_limit
 streaming.streaming_action
 ```
 
-Analytical aggregations, selected-row helpers, ranking, lag/lead, rolling metrics, exact/subset dedupe, right/full/cross
-joins, non-equi rowset joins, and disjunctive rowset joins must remain batch-only in streaming compatibility reports
-until a later specification admits the required lifecycle and state policies.
+Selected-row helpers, ranking, lag/lead, rolling metrics, right/full/cross stream-stream joins, and arbitrary state APIs
+remain batch-only until Structure defines a compiler-visible transformation contract for their state semantics. Source
+generation, sink generation, triggers, checkpoints, and query lifecycle remain permanent non-goals.
 
 ## Diagnostics
 
@@ -130,7 +140,7 @@ Diagnostics must include:
 Required diagnostic cases:
 
 - unknown hook without `streaming_safe=True` in a transform that opts into streaming compatibility;
-- stream-stream join attempt or side input declared/modeled as streaming;
+- stream-stream join missing required input modes, watermarks, or event-time bounds;
 - stateful operation in a streaming-compatible transform;
 - Spark action, RDD conversion, Pandas conversion, Python UDF, or local collection in a compiler-visible path;
 - generated-source scan finding `readStream`, `writeStream`, `start()`, `awaitTermination()`, `collect()`, `count()`,

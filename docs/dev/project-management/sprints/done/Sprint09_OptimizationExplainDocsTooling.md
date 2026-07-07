@@ -179,14 +179,41 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
 - [x] (2026-07-06) Added Spark Connect release-blocking verification through the existing `make integration`
   backend lanes for Spark Connect 3.5 and 4.0.
 - [x] (2026-07-06) Added hook, generated execution, and StructureTools Spark Connect boundary diagnostics.
-- [ ] Implement Spark streaming first-slice support from
+- [x] (2026-07-07) Added static Spark streaming compatibility support for declared streaming inputs, watermarks,
+  watermarked aggregation, watermarked dedupe, bounded inner stream-stream joins, generated-source lifecycle/action
+  scans, and explain output. Verified in the default `make build` gate.
+- [x] (2026-07-07) Added explicit cache directive coverage across compiler IR, backend capabilities, generated PySpark
+  `.persist()` rendering, and explain output.
+- [x] (2026-07-07) Preserved stable ordinary generated PySpark output while containing generated parent-class rendering
+  to transforms that actually have inherited owner boundaries. Verified golden, differential, metamorphic, inheritance,
+  and full build gates.
+- [x] (2026-07-07) Refreshed public examples and the v2 testing generated model so checked-in source, generated
+  PySpark, and traceability artifacts cover the Sprint 09 v2 implemented feature surface.
+- [x] (2026-07-07) Closed Spark streaming first-slice work as a static compatibility contract from
   [P07052604.Spark-streaming-first-slice.plan.md](../../planning/P07052604.Spark-streaming-first-slice.plan.md).
-- [ ] Add live Spark streaming online/generated runtime evidence or a release-blocking manual verification script.
+  Live online/generated streaming runtime evidence is deferred to post-Sprint 09 follow-up.
 - [x] Implement advanced aggregation/window/HOF support from
   [P07052601.Advanced-analytical-operations.plan.md](../../planning/P07052601.Advanced-analytical-operations.plan.md).
 - [x] Implement full PySpark rowset join support.
-- [ ] Implement explicit optimization directives.
-- [ ] Implement rich explain output for completed batch operations.
+- [x] Implement cache/persist first-slice optimization directives. Broader repartition, coalesce, checkpoint, and join
+  strategy directives are deferred to post-Sprint 09 follow-up.
+- [x] Implement compact explain coverage for completed batch operations. Rich field-level lineage remains deferred to
+  post-Sprint 09 follow-up.
+
+## Closeout
+
+Sprint 09 is complete with explicit deferrals. Implemented v2 features now include advanced analytical operations,
+full PySpark rowset joins, Spark Connect batch support for completed v1/v2 batch features, static caller-owned
+streaming compatibility classification, cache/persist first-slice directives, generated parent-class boundaries for
+inherited transform owners, refreshed examples, and refreshed v2 testing generated artifacts.
+
+Deferred follow-up:
+
+- Live streaming online/generated runtime evidence for caller-owned streaming DataFrames.
+- Repartition, coalesce, checkpoint, and broader join strategy directives.
+- Rich field-level explain lineage through projections, filters, joins, aggregations, windows, hooks, and optimization
+  boundaries.
+- Generated docs, pytest helpers, and incremental compile remain Sprint 10 adoption-tooling work.
 
 ## Explain Performance Metric
 

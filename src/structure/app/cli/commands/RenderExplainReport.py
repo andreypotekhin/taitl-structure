@@ -100,7 +100,10 @@ class RenderExplainReport:
         if operation.kind == "drop_duplicates":
             subset = 0 if operation.duplicate_rows is None else len(operation.duplicate_rows.subset)
             suffix = "" if not subset else f" subset={subset}"
-            return f"drop_duplicates({operation.cardinality.value}{suffix})"
+            modes = self._streaming_modes(operation)
+            return f"drop_duplicates({operation.cardinality.value}{suffix}{modes})"
+        if operation.watermark is not None:
+            return f"watermark({operation.watermark.column} {operation.watermark.delay})"
         name = operation.join.method.value if operation.join is not None else operation.kind
         return f"{name}({operation.cardinality.value})"
 
@@ -111,7 +114,13 @@ class RenderExplainReport:
         metrics = ",".join(
             assignment.function for assignment in operation.aggregate.assignments if assignment.function != "key"
         )
-        return f"keys={keys} metrics={metrics}"
+        return f"keys={keys} metrics={metrics}{self._streaming_modes(operation)}"
+
+    def _streaming_modes(self, operation: OperationPlan) -> str:
+        if not operation.streaming_output_modes:
+            return ""
+        modes = "|".join(mode.value for mode in operation.streaming_output_modes)
+        return f" streaming_modes={modes}"
 
     def _join(self, join: PySparkJoinRecipe) -> str:
         parts = [f"{join.input_name} {join.method.value} {self._cardinality(join)}"]
