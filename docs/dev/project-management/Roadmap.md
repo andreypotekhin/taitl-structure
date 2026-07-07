@@ -160,21 +160,41 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
 
 ## v3 Scope
 
-v3 introduces streaming orchestration and advanced optimizer work.
-v1/v2 only support the first caller-owned streaming DataFrame slice and maintain streaming compatibility
-classification for broader streaming behavior.
+v3 closes the planned PySpark parity gaps tracked in [Gaps.md](../Gaps.md), then introduces streaming orchestration.
+v1/v2 support compiler-visible batch features, Spark Connect batch execution for completed features, and static
+caller-owned streaming compatibility. v3 starts by broadening the typed symbolic surface so streaming diagnostics and
+generated lifecycle code can rely on a complete enough PySpark-family contract.
 
-### v3 candidate features
+### v3 beginning-of-release sequence
 
-- Join reordering and cost-based join planning.
-- Lateral joins and table-valued-function joins if a later PySpark design admits them.
+- Sprint 11: DSL and SQL function PySpark parity.
+- Sprint 12: join PySpark parity hardening.
+- Sprint 13: aggregation PySpark parity.
+- Sprint 14: window PySpark parity.
+- Sprint 15: higher-order and collection helper PySpark parity.
+- Sprint 16: streaming orchestration.
+
+### v3 must include
+
+- Planned Column API and SQL function gaps from [Gaps.md](../Gaps.md).
+- Using-key joins, right/full diagnostics hardening, cross join safety, supported join strategy directives, and forward
+  as-of joins.
+- Explicit grouping sets and post-aggregate `having(...)`.
+- Null ordering in window order keys, normalized multiple order keys, and aggregate windows.
+- Collection size and membership, array construction/repeat/union, map lookup, and map concatenation.
+- Streaming source and sink declarations.
 - Generated `readStream` and `writeStream` code.
-- Streaming sinks/sources configuration.
-- Trigger configuration.
-- Checkpoint configuration.
-- Output mode configuration.
-- Watermarks and state policies.
-- Full streaming job generation.
+- Trigger, checkpoint, output mode, watermark, and admitted state policy configuration.
+- Full streaming job generation for the first admitted lifecycle slice.
+
+### v3 non-goals
+
+- Wholesale PySpark wrapper behavior.
+- Raw SQL expressions, raw PySpark `WindowSpec`, UDF/UDTF symbolic helpers, and arbitrary Python callbacks.
+- Cost-based join reordering, nearest as-of joins, and lateral or table-valued-function joins unless later design work
+  moves them from future to planned.
+- Row-expanding generator helpers unless a separate cardinality design admits them.
+- Custom streaming side-effect sinks such as `foreachBatch`.
 
 ## v4 Scope
 
@@ -201,5 +221,5 @@ the supported batch surface.
 | M5 | Joins, compiler traceability, build integration | Sprint 05 |
 | M6 | v1 stabilization and docs/examples | follow-up hardening sprint |
 | M7 | v2 analytical pipeline features, analytical join coverage, composition maturity, adoption tooling, and Spark Connect batch support | Sprints 06-09 |
-| M8 | v3 streaming orchestration | future v3 sprints |
+| M8 | v3 PySpark gap closure and streaming orchestration | Sprints 11-16 |
 | M9 | v4 backend expansion and non-batch Spark Connect hardening | future v4 sprints |

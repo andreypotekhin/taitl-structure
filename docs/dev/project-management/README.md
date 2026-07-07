@@ -20,6 +20,7 @@ project-management/
   Roadmap.md
   Milestones.md
   Backlog.md
+  V3.md
   DefinitionOfDone.md
   SprintPlanningGuide.md
   TraceabilityMatrix.md
@@ -35,6 +36,12 @@ project-management/
     Sprint07_AnalyticalJoinCoverage.md
     Sprint09_OptimizationExplainDocsTooling.md
     Sprint10_DocsTestingIncrementalCompile.md
+    Sprint11_V3DslAndSqlFunctionParity.md
+    Sprint12_V3JoinParityHardening.md
+    Sprint13_V3AggregationParity.md
+    Sprint14_V3WindowParity.md
+    Sprint15_V3CollectionHelperParity.md
+    Sprint16_V3StreamingOrchestration.md
     done/
       Sprint08_AggregationsWindowsHigherOrderFunctions.md
   templates/
@@ -84,5 +91,18 @@ V2 starts after v1 stabilization evidence is release-ready. The v2 sprint sequen
 5. **Sprint 10: docs, testing, and incremental compile**: generated documentation artifacts, pytest helpers, and
    production incremental compile.
 
-V3 is reserved for full streaming orchestration. V4 is reserved for backend expansion and any non-batch Spark Connect
-hardening left outside the Sprint 09 support claim.
+V3 starts with the planned PySpark parity gaps tracked in [Gaps.md](../Gaps.md), then takes ownership of full streaming
+orchestration. The v3 sprint sequence is:
+
+1. **Sprint 11: DSL and SQL function parity**: planned Column API and SQL function gaps.
+2. **Sprint 12: join parity hardening**: using-key joins, diagnostics, cross safety, strategy directives, and forward
+   as-of joins.
+3. **Sprint 13: aggregation parity**: grouping sets and `having(...)`.
+4. **Sprint 14: window parity**: null ordering, multiple order keys, and aggregate windows.
+5. **Sprint 15: collection helper parity**: collection size/membership, array construction/repeat/union, map lookup,
+   and map concatenation.
+6. **Sprint 16: streaming orchestration**: source/sink declarations, generated `readStream`/`writeStream`, triggers,
+   checkpoints, output modes, watermarks, and state policies.
+
+V4 is reserved for backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support
+claim.

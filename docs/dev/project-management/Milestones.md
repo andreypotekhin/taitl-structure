@@ -226,9 +226,59 @@ Exit Criteria:
 - `lane(...)` remains unavailable for composition matching unless a later accepted design changes the public transform
   boundary.
 
-## M8: v3 Streaming Orchestration
+## M8: v3 PySpark Gap Closure and Streaming Orchestration
 
-### Exit Criteria
+Status: planned. The milestone is split into M8A-M8F so each `docs/dev/Gaps.md` section can be implemented and verified
+independently at the beginning of v3.
+
+### M8A: DSL and SQL Function PySpark Parity
+
+Exit Criteria:
+
+- Membership, range, string, indexing, struct field, cast, and ordering Column helpers are compiler-visible.
+- Planned string, date/time, numeric, and predicate SQL functions are compiler-visible.
+- Online/generated parity, backend capabilities, diagnostics, docs, compatibility tables, explain, and traceability are
+  updated.
+
+### M8B: Join PySpark Parity Hardening
+
+Exit Criteria:
+
+- Using-key joins support one key and multiple keys.
+- Right/full diagnostics name nullable sides and invalid output fields.
+- Cross joins require explicit Cartesian acknowledgement.
+- Supported join strategy directives are capability checked.
+- Forward as-of joins have deterministic tolerance and tie behavior.
+
+### M8C: Aggregation PySpark Parity
+
+Exit Criteria:
+
+- Explicit grouping sets are implemented or capability-gated with diagnostics.
+- Post-aggregate `having(...)` has a typed aggregate-output predicate scope.
+- Docs and tests distinguish pre-aggregate `where(...)`, metric-local filters, and post-aggregate `having(...)`.
+
+### M8D: Window PySpark Parity
+
+Exit Criteria:
+
+- Window order keys support explicit null ordering.
+- Every window helper accepts multiple order keys consistently.
+- Aggregate windows mirror admitted aggregate helpers.
+- Raw PySpark `WindowSpec` remains unsupported with diagnostics.
+
+### M8E: Collection Helper PySpark Parity
+
+Exit Criteria:
+
+- Collection size and membership helpers are implemented.
+- Array construction, repeat, and union helpers validate element types.
+- Map lookup and concatenation helpers document missing-key nullability and duplicate-key behavior.
+- Row-expanding generator helpers remain deferred unless separately admitted.
+
+### M8F: Streaming Orchestration
+
+Exit Criteria:
 
 - Streaming sources and sinks are declared explicitly.
 - Generated `readStream` and `writeStream` code is reviewable.

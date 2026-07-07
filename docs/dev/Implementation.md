@@ -74,6 +74,20 @@
 
 ## Phase 4: v3
 
+- Planned Column API and SQL function PySpark parity gaps.
+- Using-key joins.
+- Right and full join diagnostics hardening.
+- Cross join safety.
+- Join strategy directives.
+- Forward as-of joins.
+- Explicit grouping sets.
+- Post-aggregate `having(...)`.
+- Window null ordering.
+- Multiple order keys across window helpers.
+- Aggregate windows.
+- Collection size and membership helpers.
+- Array construction, repeat, and union helpers.
+- Map lookup and concatenation helpers.
 - Generated stream reads/writes.
 - Watermarks.
 - Triggers.

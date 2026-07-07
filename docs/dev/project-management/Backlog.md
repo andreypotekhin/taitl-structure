@@ -248,15 +248,65 @@
 
 ## v3 Backlog
 
-- Streaming source declarations.
-- Streaming sink declarations.
-- Generated `readStream`.
-- Generated `writeStream`.
-- Triggers.
-- Checkpoints.
-- Output modes.
-- Watermarks.
-- Stateful streaming policies.
+### Epic: DSL and SQL Function PySpark Parity
+
+- Implement membership predicates.
+- Implement range predicates.
+- Implement string predicates.
+- Implement collection indexing and struct field helpers.
+- Implement rich casts.
+- Implement ordering modifiers and null ordering descriptors.
+- Implement planned string SQL helpers.
+- Implement planned date/time helpers.
+- Implement planned numeric/math helpers.
+- Implement planned predicate helper functions.
+- Keep raw SQL strings, raw aliases, raw `Column.over(...)`, UDF/UDTF helpers, and arbitrary Python behavior outside
+  the compiler-visible DSL.
+
+### Epic: Join PySpark Parity Hardening
+
+- Implement using-key joins for one key and multiple keys.
+- Harden right and full join nullable-side diagnostics.
+- Require explicit Cartesian acknowledgement for cross joins.
+- Implement supported join strategy directives beyond broadcast.
+- Implement forward as-of joins.
+- Keep automatic join reordering, nearest as-of joins, lateral joins, table-valued-function joins, stream-stream joins,
+  and raw SQL predicates deferred.
+
+### Epic: Aggregation PySpark Parity
+
+- Implement explicit grouping sets.
+- Implement post-aggregate `having(...)`.
+- Distinguish pre-aggregate filters, metric-local filters, and post-aggregate predicates in docs and diagnostics.
+- Keep PySpark dict/list aggregate syntax unsupported.
+
+### Epic: Window PySpark Parity
+
+- Implement null ordering in window order keys.
+- Normalize multiple order keys across all window helpers.
+- Implement aggregate windows for admitted aggregate helpers.
+- Keep raw PySpark `WindowSpec` unsupported.
+
+### Epic: Higher-Order and Collection Helper PySpark Parity
+
+- Implement collection size and membership helpers.
+- Implement array construction, repeat, and union helpers.
+- Implement map lookup and concatenation helpers.
+- Document missing-key nullability and duplicate-key behavior.
+- Keep row-expanding generator helpers and arbitrary Python callback control flow deferred.
+
+### Epic: Streaming Orchestration
+
+- Add streaming source declarations.
+- Add streaming sink declarations.
+- Generate `readStream`.
+- Generate `writeStream`.
+- Add trigger configuration.
+- Add checkpoint configuration.
+- Add output mode configuration.
+- Add watermarks.
+- Add admitted stateful streaming policies.
+- Add live streaming lifecycle integration evidence.
 
 ## Sprint 09 Backlog
 

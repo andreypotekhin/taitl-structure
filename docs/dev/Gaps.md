@@ -35,6 +35,20 @@ Consult the official Spark 4.0.1 docs when expanding this page:
 The latest Spark docs may be useful for discovery, but features introduced after PySpark 4.0.x should not be marked
 `planned` for the current target unless the target range changes.
 
+## Beginning of v3 Schedule
+
+The planned gaps on this page are scheduled into the beginning of v3 as focused ExecPlans. Each plan must update this
+page, public compatibility tables, generated examples, and project-management progress as implementation completes.
+
+| Gap Section | v3 Sprint | ExecPlan |
+| --- | --- | --- |
+| DSL | Sprint 11 | [P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md](planning/P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md) |
+| Joins | Sprint 12 | [P07072603.V3-join-pyspark-parity-hardening.plan.md](planning/P07072603.V3-join-pyspark-parity-hardening.plan.md) |
+| Aggregations | Sprint 13 | [P07072604.V3-aggregation-pyspark-parity.plan.md](planning/P07072604.V3-aggregation-pyspark-parity.plan.md) |
+| Windows | Sprint 14 | [P07072605.V3-window-pyspark-parity.plan.md](planning/P07072605.V3-window-pyspark-parity.plan.md) |
+| Higher-Order And Collection Helpers | Sprint 15 | [P07072606.V3-collection-helper-pyspark-parity.plan.md](planning/P07072606.V3-collection-helper-pyspark-parity.plan.md) |
+| Streaming | Sprint 16 | [P07072607.V3-streaming-orchestration.plan.md](planning/P07072607.V3-streaming-orchestration.plan.md) |
+
 ## DSL
 
 ### Column API

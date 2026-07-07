@@ -4,9 +4,9 @@ The roadmap is staged around an IR-first north star. v1 first proves one useful 
 online and as generated PySpark, then broadens into the contract that lets Structure replace hand-maintained PySpark
 boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful for
 mainstream analytical pipelines, promotes Spark Connect for completed batch features, and completes static
-caller-owned Spark streaming compatibility diagnostics. v3 adds live streaming evidence and owns full streaming
-lifecycle concerns. v4 handles backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09
-support claim.
+caller-owned Spark streaming compatibility diagnostics. v3 closes the planned PySpark parity gaps tracked in
+`docs/dev/Gaps.md`, then owns full streaming lifecycle concerns. v4 handles backend expansion and any non-batch Spark
+Connect hardening left outside the Sprint 09 support claim.
 
 ## v1
 
@@ -67,6 +67,12 @@ support claim.
 
 ## v3
 
+- Planned Column API and SQL function PySpark parity gaps.
+- Using-key joins, right/full diagnostics hardening, cross join safety, join strategy directives, and forward as-of
+  joins.
+- Explicit grouping sets and post-aggregate `having(...)`.
+- Window null ordering, multiple order keys, and aggregate windows.
+- Collection size/membership, array construction/repeat/union, map lookup, and map concatenation.
 - Full streaming orchestration.
 - Streaming source definitions.
 - Streaming sink definitions.
