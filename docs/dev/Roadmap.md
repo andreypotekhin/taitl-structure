@@ -3,9 +3,10 @@
 The roadmap is staged around an IR-first north star. v1 first proves one useful executable transform running both
 online and as generated PySpark, then broadens into the contract that lets Structure replace hand-maintained PySpark
 boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful for
-mainstream analytical pipelines, promotes Spark Connect for completed batch features, and proves the first
-caller-owned Spark streaming slice. v3 takes ownership of full streaming lifecycle concerns. v4 handles backend
-expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support claim.
+mainstream analytical pipelines, promotes Spark Connect for completed batch features, and completes static
+caller-owned Spark streaming compatibility diagnostics. v3 adds live streaming evidence and owns full streaming
+lifecycle concerns. v4 handles backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09
+support claim.
 
 ## v1
 
@@ -46,22 +47,23 @@ expansion and any non-batch Spark Connect hardening left outside the Sprint 09 s
 - Aggregations.
 - Advanced grouping.
 - Spark higher-order functions for arrays/maps.
-- Explicit caching/persistence annotations.
-- Repartition/coalesce annotations.
-- Join strategy annotations.
+- Explicit cache/persist first-slice annotations.
+- Repartition/coalesce annotations deferred until their physical-plan contract is specified.
+- Broader join strategy annotations deferred until their physical-plan contract is specified.
 - `inner_join(...)` and other row-multiplying or existence-oriented join forms.
 - Opt-in data-quality constraint model for accepted values, ranges, uniqueness, referential checks, freshness, and
   row-count policies.
 - Phase-bound data-quality constraints for input, intermediate, and output validation.
-- Richer static dataflow explain output.
+- Compact static dataflow explain output, with richer field-level lineage deferred.
 - More detailed performance diagnostics.
-- Production incremental compile and cache diagnostics.
-- Generated documentation artifacts for schemas and transforms.
-- Pytest helper or plugin.
+- Production incremental compile and cache diagnostics deferred to Sprint 10 adoption tooling.
+- Generated documentation artifacts for schemas and transforms deferred to Sprint 10 adoption tooling.
+- Pytest helper or plugin deferred to Sprint 10 adoption tooling.
 - Spark Connect support for completed v1/v2 batch features, using `target_backend = "pyspark"` and
   `target_variant = "spark-connect"`, backed by live online/generated runtime evidence.
-- First-slice Spark streaming support for caller-owned streaming DataFrames, static lookup side inputs, row-local
-  projection/filtering, schema-only validation, and live online/generated runtime evidence.
+- Static first-slice Spark streaming compatibility for caller-owned streaming DataFrames, static lookup side inputs,
+  row-local projection/filtering, schema-only validation, and explicit lifecycle/source/sink deferrals. Live
+  online/generated runtime evidence remains a v3 entry gate.
 
 ## v3
 

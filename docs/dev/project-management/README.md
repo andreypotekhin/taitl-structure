@@ -79,8 +79,8 @@ V2 starts after v1 stabilization evidence is release-ready. The v2 sprint sequen
 3. **Sprint 08: aggregations, windows, and higher-order functions**: typed `group_by(...)`, aggregate helpers,
    windowing, dedupe helpers, and compiler-visible array/map helpers.
 4. **Sprint 09: Spark Connect, Spark streaming, optimization, and explain**: supported Spark Connect batch execution,
-   first-slice caller-owned Spark streaming support, explicit optimization directives, and richer explain output for
-   completed analytical operations.
+   static caller-owned Spark streaming compatibility, full rowset joins, advanced analytical operations, cache/persist
+   first-slice directives, compact explain output, and explicit follow-up deferrals.
 5. **Sprint 10: docs, testing, and incremental compile**: generated documentation artifacts, pytest helpers, and
    production incremental compile.
 

@@ -13,7 +13,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 06 v2 Scope/Analytical IR | v2 Foundations, Backend Capabilities, Traceability, Streaming Compatibility | v2 scope, non-goals, operation taxonomy, capability placeholders, fixture skeletons, diagnostic anchors |
 | Sprint 07 Analytical Join Coverage | Analytical Joins, Backend Capabilities, Traceability, Streaming Compatibility | existence joins, `inner_join`, deterministic lookup dedupe, temporal joins, as-of joins |
 | Sprint 08 Aggregations/Windows/HOFs | Aggregations, Windowing, Deduplication, Higher-Order Functions, Testing | typed `group_by`, aggregate helpers, window helpers, deterministic dedupe, array/map helpers, parity tests |
-| Sprint 09 Spark Connect/Optimization/Explain | Advanced Analytics, Spark Connect, Full PySpark Joins, Optimization Directives, Explain, Testing | full aggregation/window/HOF coverage, supported Spark Connect batch variant, right/full/cross rowset joins, non-equi/disjunctive predicates, cache/persist/repartition/coalesce/checkpoint hints, rich explain |
+| Sprint 09 Spark Connect/Optimization/Explain | Advanced Analytics, Spark Connect, Full PySpark Joins, Optimization Directives, Explain, Testing | full aggregation/window/HOF coverage, supported Spark Connect batch variant, right/full/cross rowset joins, non-equi/disjunctive predicates, cache/persist first-slice directives, compact explain, static streaming compatibility |
 
 ## Relevant Specification Items by Sprint
 
@@ -111,9 +111,8 @@ This matrix maps early sprints to specification sections and major deliverables.
 - As a developer, I can define distribution, value, and aggregate window expressions.
 - As a developer, I can use additional symbolic array and map higher-order helpers.
 - As a developer, I can add caching and persistence hints at step boundaries.
-- As a developer, I can add repartition and coalesce hints.
-- As a developer, I can add checkpoint hints where supported.
-- As a developer, I can specify join strategies and hints.
+- As a developer, I receive explicit deferrals for repartition, coalesce, checkpoint, and broader join strategy hints
+  until their physical-plan contracts are specified.
 - As a developer, I can express right, full, and cross rowset joins.
 - As a developer, I can express non-equi and disjunctive join predicates when they remain compiler-visible.
 - As a developer, I can generate richer static dataflow explain output.

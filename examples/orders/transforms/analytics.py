@@ -15,11 +15,11 @@ from structure import (
     min,
     output,
     rank,
-    row_number,
     rolling_avg,
     rolling_max,
     rolling_min,
     rolling_sum,
+    row_number,
     sum,
     transform,
 )
