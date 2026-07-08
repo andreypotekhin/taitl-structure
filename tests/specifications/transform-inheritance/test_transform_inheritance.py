@@ -10,6 +10,7 @@ from structure import (
     StructureSession,
     Transform,
     after,
+    expr_fn,
     field,
     input,
     lane,
@@ -283,6 +284,120 @@ def test_override_with_two_arg_super_schedules_next_mro_parent() -> None:
 
     assert [step.name for step in plan.steps] == ["AuditNormalize.normalize", "normalize", "publish"]
     assert len(plan.steps[0].filters) == 1
+
+
+def test_calling_previous_subtransform_directly_fails() -> None:
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        normalized = lane(Normalized)
+        published = output(Published)
+
+        @transform(output=normalized)
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, value=row.value)
+
+        def publish(self, row: Normalized) -> Published:
+            normalized = self.normalize(row)
+            return Published(id=normalized.id, value=normalized.value, audit="published")
+
+    with pytest.raises(StructureCompileError, match="Subtransforms are pipeline steps"):
+        compile_transform(Publish)
+
+
+def test_recursive_subtransform_call_fails() -> None:
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return self.publish(row)
+
+    with pytest.raises(StructureCompileError, match="Publish.publish"):
+        compile_transform(Publish)
+
+
+def test_direct_base_method_call_fails_when_it_is_not_an_override_parent_call() -> None:
+    @transform
+    class Publish(DirectNormalize):
+        published = output(Published)
+
+        def publish(self, row: Normalized) -> Published:
+            normalized = DirectNormalize.normalize(self, row)
+            return Published(id=normalized.id, value=normalized.value, audit="published")
+
+    with pytest.raises(StructureCompileError, match="DirectNormalize.normalize"):
+        compile_transform(Publish)
+
+
+def test_direct_unrelated_transform_method_call_fails() -> None:
+    class NormalizeElsewhere(Transform):
+        rows = input(Raw)
+        normalized = output(Normalized)
+
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, value=row.value)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            normalized = NormalizeElsewhere.normalize(cast(Any, self), row)
+            return Published(id=normalized.id, value=normalized.value, audit="published")
+
+    with pytest.raises(StructureCompileError, match="NormalizeElsewhere.normalize"):
+        compile_transform(Publish)
+
+
+def test_public_schema_returning_helper_call_fails() -> None:
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            normalized = self.normalize(row)
+            return Published(id=normalized.id, value=normalized.value, audit="published")
+
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, value=row.value)
+
+    with pytest.raises(StructureCompileError, match="Use source order"):
+        compile_transform(Publish)
+
+
+def test_private_helper_method_remains_allowed() -> None:
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return self._publish(row, "published")
+
+        def _publish(self, row: Raw, audit: str) -> Published:
+            return Published(id=row.id, value=row.value, audit=audit)
+
+    assert [step.name for step in compile_transform(Publish).steps] == ["publish"]
+
+
+def test_expr_fn_helper_call_through_self_remains_allowed() -> None:
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        @expr_fn
+        def clean(value):
+            return value
+
+        def publish(self, row: Raw) -> Published:
+            return Published(id=self.clean(row.id), value=row.value, audit="published")
+
+    assert [step.name for step in compile_transform(Publish).steps] == ["publish"]
 
 
 def test_sibling_duplicate_names_fail_unless_resolved_by_override() -> None:

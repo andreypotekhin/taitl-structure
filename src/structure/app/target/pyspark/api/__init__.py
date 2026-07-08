@@ -13,9 +13,11 @@ from structure.app.target.pyspark.model.PySparkSelectedRowsRecipe import PySpark
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.target.pyspark.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkValidationRecipe
+from structure.app.target.pyspark.storage import DiskStorage, MemoryStorage, PackageImportStorage
 
 __all__ = [
     "PySparkExecutionPlan",
+    "DiskStorage",
     "PySparkDuplicateRowsRecipe",
     "PySparkExpressionRecipe",
     "PySparkHookRecipe",
@@ -29,5 +31,7 @@ __all__ = [
     "PySparkValidationRecipe",
     "GeneratedFileChange",
     "GeneratedFileSetResult",
+    "MemoryStorage",
+    "PackageImportStorage",
     "PySpark",
 ]

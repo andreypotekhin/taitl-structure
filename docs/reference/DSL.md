@@ -363,6 +363,9 @@ Rules:
 - Overriding an inherited subtransform without calling the parent replaces the inherited step position.
 - Calling an overridden parent subtransform from the override schedules the parent as its own DataFrame step immediately
   before the child override. Parent hooks, validation, lane writes, and traceability belong to the parent step.
+- Other direct calls from one compiled subtransform to another are invalid. Subtransforms are pipeline steps scheduled
+  by source order, lane binding, inheritance, or `Transform.to(...)`; reusable inline logic belongs in private helpers
+  or `@expr_fn` helpers.
 - Source-order lane flow must be valid. Undecorated methods consume and update the uniquely inferred lane.
   `@transform(output=target)` writes a named lane or output.
   `@transform(input=source, output=target)` selects both sides explicitly.

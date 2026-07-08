@@ -9,6 +9,8 @@ class StructureConfigDefaults:
             "source_roots": source_roots,
             "generated_dir": "generated",
             "generated_package": "structure_generated",
+            "generated_docs_dir": "docs",
+            "generated_docs_formats": ["markdown", "json"],
             "execution_mode": "online",
             "target_backend": "pyspark",
             "target_profile": ">=3.5,<4.1",

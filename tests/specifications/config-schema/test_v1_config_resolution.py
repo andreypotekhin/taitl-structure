@@ -27,6 +27,8 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
 
         assert [path.name for path in config.source_roots] == ["src"]
         assert config.generated_package == "structure_generated"
+        assert config.generated_docs_dir == root / "generated" / "docs"
+        assert config.generated_docs_formats == ("markdown", "json")
         assert config.execution_mode == "online"
         assert config.target_profile == ">=3.5,<4.1"
         assert config.target_variant == "ordinary"
@@ -35,6 +37,7 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert config.source_map["target_profile"] == "default"
         assert config.source_map["target_variant"] == "default"
         assert config.source_map["generated_package"] == "default"
+        assert config.source_map["generated_docs_dir"] == "default"
 
 
 def test_v1_config_precedence_is_cli_pyproject_structure_defaults() -> None:
@@ -153,6 +156,66 @@ def test_v1_config_accepts_target_profile_and_future_backend_fields() -> None:
         assert config.target_variant == "spark-connect"
         assert config.compat_targets == ("polars", "duckdb")
         assert config.hook_target_default == ("pyspark",)
+
+
+def test_v1_config_accepts_generated_docs_settings() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            "\n".join(
+                [
+                    "[tool.structure]",
+                    'generated_docs_dir = "reference"',
+                    'generated_docs_formats = ["json"]',
+                    "",
+                ]
+            ),
+            encoding="utf-8",
+        )
+
+        config = Configuration.resolve()(project_root=root)
+
+        assert config.generated_docs_dir == root / "generated" / "reference"
+        assert config.generated_docs_formats == ("json",)
+
+
+def test_v1_config_rejects_generated_docs_dir_escape() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            '[tool.structure]\ngenerated_docs_dir = "../docs"\n',
+            encoding="utf-8",
+        )
+
+        try:
+            Configuration.resolve()(project_root=root)
+        except ConfigError as error:
+            diagnostic = error.diagnostic
+        else:
+            raise AssertionError("generated docs dir should stay inside generated_dir")
+
+        assert diagnostic.code == "CONF-E0102"
+        assert diagnostic.setting == "generated_docs_dir"
+
+
+def test_v1_config_rejects_unknown_generated_docs_format() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            '[tool.structure]\ngenerated_docs_formats = ["html"]\n',
+            encoding="utf-8",
+        )
+
+        try:
+            Configuration.resolve()(project_root=root)
+        except ConfigError as error:
+            diagnostic = error.diagnostic
+        else:
+            raise AssertionError("unknown generated docs format should fail")
+
+        assert diagnostic.code == "CONF-E0102"
+        assert diagnostic.setting == "generated_docs_formats"
+        assert "markdown, json" in diagnostic.use
 
 
 def test_v1_config_rejects_unknown_target_variant() -> None:

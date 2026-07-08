@@ -32,9 +32,14 @@ class StructureConfigValidator:
         if not values["source_roots"]:
             self._fail_invalid("source_roots", "source_roots cannot be empty", 'Set source_roots = ["src"].')
 
-        for key in ("generated_dir", "generated_package", "target_profile"):
+        for key in ("generated_dir", "generated_package", "generated_docs_dir", "target_profile"):
             self._validate_type(values[key], key, str)
         self._validate_string_list(values["compat_targets"], "compat_targets", "Use compat_targets = [\"polars\"].")
+        self._validate_string_list(
+            values["generated_docs_formats"],
+            "generated_docs_formats",
+            'Use generated_docs_formats = ["markdown", "json"].',
+        )
         self._validate_hook_target_default(values["hook_target_default"])
         for key in self._bools:
             self._validate_type(values[key], key, bool)
@@ -54,6 +59,23 @@ class StructureConfigValidator:
         if generated_dir_value.is_absolute():
             self._fail_invalid("generated_dir", "generated_dir must be project-relative in v1", 'Use "generated".')
         generated_dir = root / generated_dir_value
+        generated_docs_dir = Path(str(values["generated_docs_dir"]))
+        if generated_docs_dir.is_absolute() or ".." in generated_docs_dir.parts:
+            self._fail_invalid(
+                "generated_docs_dir",
+                "generated_docs_dir must stay inside generated_dir",
+                'Use "docs".',
+            )
+
+        formats = cast(list[str], values["generated_docs_formats"])
+        allowed_formats = {"markdown", "json"}
+        invalid_formats = sorted(set(formats) - allowed_formats)
+        if invalid_formats:
+            self._fail_invalid(
+                "generated_docs_formats",
+                f"Unsupported docs format: {', '.join(invalid_formats)}",
+                "Use markdown, json, or both.",
+            )
 
         source_roots = cast(list[str], values["source_roots"])
         for item in source_roots:

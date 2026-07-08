@@ -129,6 +129,112 @@ def test_downstream_constructor_input_satisfies_missing_input() -> None:
     assert [output.name for output in plan.outputs] == ["enriched"]
 
 
+def test_output_alias_satisfies_downstream_input_name() -> None:
+    @transform
+    class NormalizeWithBoundaryAlias(Transform):
+        orders = input(Raw)
+        normalized = output(Normalized).alias("orders")
+
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, product_id=row.product_id)
+
+    @transform
+    class PublishNormalized(Transform):
+        orders = input(Normalized)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id, product_name=order.product_id)
+
+    plan = compile_transform(NormalizeWithBoundaryAlias(orders=object()).to(PublishNormalized()))
+
+    assert [input.name for input in plan.inputs] == ["orders"]
+    assert [step.name for step in plan.steps] == [
+        "normalize_with_boundary_alias.normalize",
+        "publish_normalized.publish",
+    ]
+
+
+def test_stage_rename_satisfies_downstream_input_name() -> None:
+    @transform
+    class PublishNormalized(Transform):
+        orders = input(Normalized)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id, product_name=order.product_id)
+
+    plan = compile_transform(NormalizeOrders(orders=object()).rename(normalized="orders").to(PublishNormalized()))
+
+    assert [input.name for input in plan.inputs] == ["orders"]
+    assert [output.name for output in plan.outputs] == ["published"]
+
+
+def test_input_alias_satisfies_upstream_output_name() -> None:
+    @transform
+    class PublishNormalized(Transform):
+        rows = input(Normalized).alias("normalized")
+        published = output(Published)
+
+        def publish(self, row: Normalized) -> Published:
+            return Published(id=row.id, product_name=row.product_id)
+
+    plan = compile_transform(NormalizeOrders(orders=object()).to(PublishNormalized()))
+
+    assert [input.name for input in plan.inputs] == ["orders"]
+
+
+def test_ambiguous_output_alias_match_fails() -> None:
+    with pytest.raises(TypeError, match="output alias orders is used by both accepted and rejected"):
+        @transform
+        class RouteMetrics(Transform):
+            rows = input(Metric)
+            accepted = output(Metric).alias("orders")
+            rejected = output(Metric).alias("orders")
+
+            @transform(output=[accepted, rejected])
+            def route(self, row: Metric) -> tuple[Metric, Metric]:
+                return (
+                    Metric(id=row.id, value=row.value),
+                    Metric(id=row.id, value=row.value),
+                )
+
+
+def test_input_alias_constructor_keyword_normalizes_to_canonical_input() -> None:
+    @transform
+    class NormalizeInputAlias(Transform):
+        rows = input(Raw).alias("orders")
+        normalized = output(Normalized)
+
+        def normalize(self, row: Raw) -> Normalized:
+            return Normalized(id=row.id, product_id=row.product_id)
+
+    frame = object()
+    invocation = NormalizeInputAlias(orders=frame)
+
+    assert invocation._structure_bound_inputs == {"rows": frame}
+    with pytest.raises(TypeError, match="more than once"):
+        NormalizeInputAlias(rows=frame, orders=frame)
+
+
+def test_result_aliases_are_lookup_synonyms_not_mapping_keys() -> None:
+    frame = object()
+    result = TransformResult(
+        {"normalized": frame},
+        single=True,
+        schema={"normalized": "schema"},
+        aliases={"normalized": ("orders",)},
+    )
+
+    assert result.normalized is frame
+    assert result.orders is frame
+    assert result["orders"] is frame
+    assert result.schema.orders == "schema"
+    assert result.schema["orders"] == "schema"
+    assert list(result) == ["normalized"]
+    assert result.as_dict() == {"normalized": frame}
+
+
 def test_downstream_constructor_conflicts_with_matching_upstream_output() -> None:
     pipeline = NormalizeOrders(orders=object()).to(AddProduct(normalized=object(), products=object()))
 
@@ -197,7 +303,13 @@ def test_class_field_pipeline_compiles_and_renders_generated_transform() -> None
         PySpark.plan.lower()(plan),
         source_transform=f"{__name__}.OrderPipeline",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
-        schema_modules={Raw: __name__, Normalized: __name__, Product: __name__, Enriched: __name__, Published: __name__},
+        schema_modules={
+            Raw: __name__,
+            Normalized: __name__,
+            Product: __name__,
+            Enriched: __name__,
+            Published: __name__,
+        },
     )
 
     assert [input.name for input in plan.inputs] == ["orders", "products"]
@@ -208,6 +320,26 @@ def test_class_field_pipeline_compiles_and_renders_generated_transform() -> None
     assert text.index("# Subtransform: add_product.add_product") < text.index(
         "# Subtransform: publish_orders.publish"
     )
+
+
+def test_generated_transform_renders_output_alias_metadata() -> None:
+    @transform
+    class NormalizeWithBoundaryAlias(Transform):
+        orders = input(Raw)
+        normalized = output(Normalized).alias("orders")
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id, product_id=order.product_id)
+
+    plan = compile_transform(NormalizeWithBoundaryAlias)
+    text = PySpark.render.transform()(
+        PySpark.plan.lower()(plan),
+        source_transform=f"{__name__}.NormalizeWithBoundaryAlias",
+        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        schema_modules={Raw: __name__, Normalized: __name__},
+    )
+
+    assert 'aliases={\'normalized\': (\'orders\',)}' in text
 
 
 def test_inherited_lane_remains_available_to_override() -> None:

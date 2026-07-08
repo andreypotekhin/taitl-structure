@@ -78,6 +78,9 @@ Parent steps run before child steps. Multiple parents run in the declared base-c
 parent implementation as a separate step with `super().normalize(order)`, `Base.normalize(self, order)`, or
 `super(Base, self).normalize(order)`.
 
+Subtransforms do not call other subtransforms directly. Use source order, lanes, `Transform.to(...)`, private helpers,
+or `@expr_fn` helpers instead.
+
 Reference: [DSL](reference/DSL.md), [online execution](reference/OnlineExecution.md), and
 [transform inheritance and composition](reference/TransformComposition.md).
 
@@ -972,10 +975,29 @@ result = (
 published_df = result.published
 ```
 
-Composition hooks the inputs of downstream (following) transform to outputs of upstream transform, and to constructor arguments.
+Composition hooks the inputs of downstream (following) transform to outputs of upstream transform, and to constructor
+arguments.
 
 For instance, in the above example, `AddProduct` initializes its 'products' input from constructor argument, and 
 other inputs, like 'orders' from the upstream `NormalizeOrders` transform outputs.
+
+Use output aliases when the upstream declaration name is implementation-oriented but downstream transforms should
+consume a stable name:
+
+```python
+class NormalizeOrders(Transform):
+    orders = input(OrderRaw)
+    normalized = output(OrderNormalized).alias("orders")
+```
+
+Use invocation rename when the transform class cannot be changed:
+
+```python
+NormalizeOrders(orders=orders_df).rename(normalized="orders").to(AddProduct(products=products_df))
+```
+
+Boundary aliases and renames affect Structure input/output matching and result lookup. They do not rename Spark
+columns; use schema field `alias=...` for column names and Spark DataFrame `.alias(...)` for relation names.
 
 If an input is specified in constructor that already exists amongh upstream transform outputs, Structure 
 interprets it as a conflict and fails with an error.

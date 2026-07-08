@@ -8,7 +8,7 @@ from uuid import uuid4
 
 import pytest
 
-from structure import StructureConfig, StructureRuntimeError, StructureSession
+from structure import CompilerOptions, MemoryStorage, StructureConfig, StructureRuntimeError, StructureSession
 
 
 @contextmanager
@@ -131,6 +131,20 @@ def test_v1_session_uses_supplied_config() -> None:
         assert session.execution_mode == "generated"
 
 
+def test_v1_session_compiler_options_match_project_config() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            '[tool.structure]\ntarget_profile = ">=3.5,<4.1"\ngenerated_package = "project_generated"\n',
+            encoding="utf-8",
+        )
+
+        options = CompilerOptions.resolve(project_root=root, schema_types=FakeTypes)
+        session = StructureSession(project_root=root, schema_types=FakeTypes)
+
+        assert session.compiler_options == options
+
+
 def test_v1_session_rejects_config_mixed_with_project_or_overrides() -> None:
     with workspace_tmp() as root:
         (root / "src").mkdir()
@@ -178,6 +192,35 @@ def test_v1_online_session_defers_to_runner_and_exposes_schemas_without_pyspark(
     assert list(result.schema) == ["published"]
     assert result.schema.published.name == "StructType"
     assert result.schema["published"].name == "StructType"
+
+
+def test_v1_online_session_reuses_class_compiled_artifact(monkeypatch) -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
+
+    EnrichOrders._structure_compiled.clear()
+    calls = 0
+    original = BuildCompiledTransform.__call__
+
+    def counted(self, *args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(self, *args, **kwargs)
+
+    monkeypatch.setattr(BuildCompiledTransform, "__call__", counted)
+    session = StructureSession(schema_types=FakeTypes, online_executor=lambda **kwargs: "online-result")
+    inputs = {
+        "orders": "orders-df",
+        "customers": "customers-df",
+        "products": "products-df",
+        "promotions": "promotions-df",
+    }
+
+    EnrichOrders(**inputs).run(session)
+    EnrichOrders(**inputs).run(session)
+
+    assert calls == 1
 
 
 def test_v1_online_session_reports_missing_declared_inputs() -> None:
@@ -230,6 +273,61 @@ def test_v1_generated_session_delegates_to_generated_class() -> None:
     finally:
         for name in installed:
             sys.modules.pop(name, None)
+
+
+def test_v1_generated_session_can_import_from_memory_storage() -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    storage = MemoryStorage()
+    storage.write(
+        {
+            "memory_generated/__init__.py": "",
+            "memory_generated/pyspark/__init__.py": "",
+            "memory_generated/pyspark/transforms/__init__.py": "",
+            "memory_generated/pyspark/transforms/order.py": """
+class EnrichOrdersGenerated:
+
+    def __init__(self, *, spark, ctx=None):
+        self.spark = spark
+        self.ctx = ctx
+
+    def run(self, *, orders, customers, products, promotions):
+        return {
+            "spark": self.spark,
+            "ctx": self.ctx,
+            "orders": orders,
+            "customers": customers,
+            "products": products,
+            "promotions": promotions,
+        }
+""",
+        }
+    )
+    invocation = EnrichOrders(
+        orders="orders-df",
+        customers="customers-df",
+        products="products-df",
+        promotions="promotions-df",
+    )
+    session = StructureSession(
+        spark="spark",
+        ctx="ctx",
+        execution_mode="generated",
+        generated_package="memory_generated",
+        schema_types=FakeTypes,
+        storage=storage,
+    )
+
+    result = session.run(invocation)
+
+    assert result.published == {
+        "spark": "spark",
+        "ctx": "ctx",
+        "orders": "orders-df",
+        "customers": "customers-df",
+        "products": "products-df",
+        "promotions": "promotions-df",
+    }
 
 
 def test_v1_generated_session_reports_missing_generated_code() -> None:

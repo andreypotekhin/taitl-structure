@@ -26,6 +26,7 @@ class PySparkOutputRecipe:
     projection: tuple[PySparkProjectionRecipe, ...]
     validation: PySparkValidationRecipe
     operations: tuple[PySparkOperationRecipe, ...] = ()
+    aliases: tuple[str, ...] = ()
 
     @property
     def before_hooks(self) -> tuple[PySparkHookRecipe, ...]:

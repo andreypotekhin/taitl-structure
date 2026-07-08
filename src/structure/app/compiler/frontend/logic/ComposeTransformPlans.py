@@ -74,7 +74,7 @@ class ComposeTransformPlans:
         wrapper_class: type[Transform] | None,
     ) -> tuple[list[InputPlan], dict[tuple[int, str], str]]:
         external: dict[tuple[int, str], str] = {}
-        inputs: dict[str, type[Structure]] = {}
+        inputs: dict[str, InputPlan] = {}
         current_outputs: tuple[OutputPlan, ...] = ()
 
         for index, (stage, plan) in enumerate(zip(stages, stage_plans, strict=True)):
@@ -97,13 +97,22 @@ class ComposeTransformPlans:
                         wrapper_class=wrapper_class,
                     )
                     existing = inputs.get(source)
-                    if existing is not None and existing is not input_plan.schema:
+                    if existing is not None and existing.schema is not input_plan.schema:
                         raise self._error(
                             pipeline_name,
                             f"External input {source} is used with incompatible schemas.",
                             "Use distinct input names for distinct schemas.",
                         )
-                    inputs[source] = input_plan.schema
+                    aliases = input_plan.aliases
+                    if existing is not None:
+                        aliases = self._aliases((*existing.aliases, *input_plan.aliases))
+                    inputs[source] = InputPlan(
+                        name=source,
+                        schema=input_plan.schema,
+                        ordinal=0,
+                        streaming=input_plan.streaming,
+                        aliases=aliases,
+                    )
                     external[(index, input_plan.name)] = source
                     continue
                 if candidates:
@@ -119,28 +128,34 @@ class ComposeTransformPlans:
                     f"{stage.transform_class.__name__} does not consume an upstream output.",
                     "Each .to(...) stage must consume at least one output from the incoming transform.",
                 )
-            current_outputs = plan.outputs
+            current_outputs = self._stage_outputs(pipeline_name, stage, plan)
 
         return [
-            InputPlan(name=name, schema=schema, ordinal=ordinal)
-            for ordinal, (name, schema) in enumerate(inputs.items())
+            replace(input, ordinal=ordinal)
+            for ordinal, input in enumerate(inputs.values())
         ], external
 
     def _matching_outputs(self, input_plan: InputPlan, outputs: tuple[OutputPlan, ...]) -> tuple[OutputPlan, ...]:
         matches = [output for output in outputs if output.schema is input_plan.schema]
-        named = [output for output in matches if output.name == input_plan.name]
-        if len(named) == 1:
-            return (named[0],)
-        if named:
-            return tuple(named)
+        for name in (*input_plan.aliases, input_plan.name):
+            aliased = [output for output in matches if name in output.aliases]
+            if len(aliased) == 1:
+                return (aliased[0],)
+            if aliased:
+                return tuple(aliased)
+            named = [output for output in matches if output.name == name]
+            if len(named) == 1:
+                return (named[0],)
+            if named:
+                return tuple(named)
         if len(matches) == 1:
             return (matches[0],)
         if matches:
-            names = ", ".join(output.name for output in matches)
+            names = ", ".join(self._output_label(output) for output in matches)
             raise self._error(
                 input_plan.name,
                 f"Cannot choose an upstream output for {input_plan.name}; matched outputs: {names}.",
-                "Bind the input explicitly in the transform constructor.",
+                "Bind the input explicitly in the transform constructor or add a unique output alias.",
             )
         return ()
 
@@ -201,7 +216,7 @@ class ComposeTransformPlans:
         current_outputs: dict[str, OutputPlan] = {}
         final_outputs: list[OutputPlan] = []
 
-        for index, (label, plan) in enumerate(zip(labels, stage_plans, strict=True)):
+        for index, (stage, label, plan) in enumerate(zip(stages, labels, stage_plans, strict=True)):
             final = index == len(stage_plans) - 1
             input_sources = self._stage_input_sources(pipeline_name, index, plan, external, current_outputs)
             frame_map = dict(input_sources)
@@ -218,7 +233,7 @@ class ComposeTransformPlans:
                     frame_map[original.lane] = result.frame
 
             current_outputs = {}
-            for output in plan.outputs:
+            for output in self._stage_outputs(pipeline_name, stage, plan):
                 rewritten_output = self._output(output, frame_map=frame_map, ordinal=len(final_outputs))
                 current_outputs[output.name] = rewritten_output
                 if final:
@@ -307,6 +322,38 @@ class ComposeTransformPlans:
             joins=tuple(self._join(join, frame_map=frame_map) for join in output.joins),
             operations=tuple(self._operation(operation, frame_map=frame_map) for operation in output.operations),
         )
+
+    def _stage_outputs(
+        self,
+        pipeline_name: str,
+        stage: TransformPipelineStage,
+        plan: TransformPlan,
+    ) -> tuple[OutputPlan, ...]:
+        renames = getattr(stage.invocation, "_structure_output_renames", {})
+        if not renames:
+            return plan.outputs
+        outputs = {output.name for output in plan.outputs}
+        unknown = set(renames) - outputs
+        if unknown:
+            raise self._error(
+                pipeline_name,
+                f"{stage.transform_class.__name__}.rename(...) references unknown output(s): {', '.join(sorted(unknown))}.",
+                "Rename outputs declared by that transform stage.",
+            )
+        return tuple(
+            replace(output, aliases=self._aliases((*output.aliases, renames[output.name])))
+            if output.name in renames
+            else output
+            for output in plan.outputs
+        )
+
+    def _aliases(self, aliases: tuple[str, ...]) -> tuple[str, ...]:
+        return tuple(dict.fromkeys(aliases))
+
+    def _output_label(self, output: OutputPlan) -> str:
+        if not output.aliases:
+            return output.name
+        return f"{output.name} alias {', '.join(output.aliases)}"
 
     def _operation(self, operation: OperationPlan, *, frame_map: dict[str, str]) -> OperationPlan:
         return replace(

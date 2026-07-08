@@ -35,5 +35,6 @@ def test_v1_runtime_module_renderer_contains_schema_helpers_and_hook_inputs() ->
     assert "class HookInputs:" in text
     assert 'raise AttributeError("HookInputs is read-only")' in text
     assert "class ResultSchemas(Mapping):" in text
-    assert "object.__setattr__(self, 'schema', ResultSchemas(schema))" in text
+    assert "object.__setattr__(self, 'schema', ResultSchemas(schema, aliases=output_aliases))" in text
     assert 'raise AttributeError("ResultSchemas is read-only")' in text
+    assert "def _alias_index(aliases):" in text

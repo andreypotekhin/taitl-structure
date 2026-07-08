@@ -39,7 +39,11 @@ class RunOnlinePySparkTransform:
             if isinstance(result, TransformResult):
                 return result
             if len(plan.outputs) == 1:
-                return TransformResult({plan.outputs[0].name: result}, single=True)
+                return TransformResult(
+                    {plan.outputs[0].name: result},
+                    single=True,
+                    aliases=self._output_aliases(plan),
+                )
             raise TypeError("Injected online executor must return TransformResult for multi-output transforms")
         if session.spark is None:
             raise self._missing_executor(invocation, session=session)
@@ -83,7 +87,10 @@ class RunOnlinePySparkTransform:
                 window=Window,
                 types=T,
             )
-        return TransformResult(outputs, single=len(plan.outputs) == 1)
+        return TransformResult(outputs, single=len(plan.outputs) == 1, aliases=self._output_aliases(plan))
+
+    def _output_aliases(self, plan: PySparkExecutionPlan) -> dict[str, tuple[str, ...]]:
+        return {output.name: output.aliases for output in plan.outputs if output.aliases}
 
     def _step(
         self,

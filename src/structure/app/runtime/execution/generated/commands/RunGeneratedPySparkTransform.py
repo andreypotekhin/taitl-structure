@@ -47,16 +47,33 @@ class RunGeneratedPySparkTransform:
         if isinstance(result, TransformResult):
             return result
         if hasattr(result, "as_dict"):
-            return TransformResult(result.as_dict(), single=len(plan.outputs) == 1)
+            return TransformResult(
+                result.as_dict(),
+                single=len(plan.outputs) == 1,
+                aliases=self._output_aliases(plan),
+            )
         return self._result(plan, result)
 
     def _result(self, plan: PySparkExecutionPlan, df) -> TransformResult:
         if len(plan.outputs) == 1:
-            return TransformResult({plan.outputs[0].name: df}, single=True)
+            return TransformResult({plan.outputs[0].name: df}, single=True, aliases=self._output_aliases(plan))
         raise TypeError("Generated multi-output transforms must return TransformResult")
+
+    def _output_aliases(self, plan: PySparkExecutionPlan) -> dict[str, tuple[str, ...]]:
+        return {output.name: output.aliases for output in plan.outputs if output.aliases}
 
     def _import_module(self, invocation: Transform, *, session) -> ModuleType:
         module_name = self._module_name(invocation, generated_package=session.generated_package)
+        storage = getattr(session, "storage", None)
+        if storage is not None and hasattr(storage, "import_module"):
+            try:
+                return storage.import_module(module_name)
+            except (ImportError, KeyError) as error:
+                raise self._error(
+                    invocation,
+                    session=session,
+                    problem=f"Structure could not import generated module {module_name} from configured storage.",
+                ) from error
         try:
             return importlib.import_module(module_name)
         except ImportError as error:

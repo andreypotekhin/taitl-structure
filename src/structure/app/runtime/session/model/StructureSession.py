@@ -3,17 +3,15 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
-from structure.app.compiler.api import Compiler
+from structure.app.compiler.artifacts.commands import BuildCompiledTransform
+from structure.app.compiler.artifacts.model import CompiledTransform, CompilerOptions
 from structure.app.configuration.model.StructureConfig import StructureConfig
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.app.runtime.execution.api import Execution
-from structure.app.runtime.schemas.api import Schemas
 from structure.app.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.app.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.app.runtime.session.model.TransformResult import TransformResult
-from structure.app.target.capabilities.api import Capabilities
-from structure.app.target.pyspark.api import PySpark
 
 
 class StructureSession:
@@ -32,6 +30,7 @@ class StructureSession:
         generated_package: str | None = None,
         schema_types=None,
         online_executor: Callable[..., object] | None = None,
+        storage=None,
     ) -> None:
         overrides = {
             "execution_mode": execution_mode,
@@ -57,29 +56,38 @@ class StructureSession:
         self.generated_package = resolved.generated_package
         self.schema_types = schema_types
         self.online_executor = online_executor
+        self.storage = storage
+        self.compiler_options = CompilerOptions.from_config(resolved, schema_types=schema_types)
+        self._pipeline_compiled: dict[object, CompiledTransform] = {}
 
     def run(self, invocation: Transform) -> TransformResult:
-        capabilities = Capabilities.resolve()(
-            target_backend=self.target_backend,
-            target_profile=self.target_profile,
-            target_variant=self.target_variant,
-        )
-        compile_target = invocation if isinstance(invocation, TransformPipeline) else type(invocation)
-        plan = PySpark.plan.lower()(Compiler.frontend.compile()(compile_target), capabilities=capabilities)
-        self._validate_inputs(invocation)
-        schemas = Schemas.build()(plan, types=self.schema_types)
+        artifact = self._compiled(invocation)
+        plan = artifact.pyspark_plan
+        self._validate_inputs(invocation, artifact)
+        schemas = artifact.schemas
 
         if self.execution_mode == "online":
             result = Execution.online.pyspark()(invocation, plan, session=self)
-            return result._structure_with_schema(schemas.outputs)
+            return result._structure_with_schema(schemas.outputs, aliases=schemas.output_aliases)
         if self.execution_mode == "generated":
             result = Execution.generated.pyspark()(invocation, plan, session=self)
-            return result._structure_with_schema(schemas.outputs)
+            return result._structure_with_schema(schemas.outputs, aliases=schemas.output_aliases)
         raise self._invalid_mode(invocation)
 
-    def _validate_inputs(self, invocation: Transform) -> None:
+    def _compiled(self, invocation: Transform) -> CompiledTransform:
         if isinstance(invocation, TransformPipeline):
-            declared = set(input.name for input in Compiler.frontend.compile()(invocation).inputs)
+            builder = BuildCompiledTransform()
+            key = builder.key(invocation, options=self.compiler_options)
+            artifact = self._pipeline_compiled.get(key)
+            if artifact is None:
+                artifact = builder(invocation, options=self.compiler_options, schema_types=self.schema_types)
+                self._pipeline_compiled[key] = artifact
+            return artifact
+        return type(invocation).compile(self.compiler_options, schema_types=self.schema_types)
+
+    def _validate_inputs(self, invocation: Transform, artifact: CompiledTransform) -> None:
+        if isinstance(invocation, TransformPipeline):
+            declared = set(input.name for input in artifact.transform_plan.inputs)
         else:
             declared = set(type(invocation)._structure_inputs)
         bound = set(invocation._structure_bound_inputs)

@@ -119,6 +119,8 @@ narrower use cases and roadmap features.
   pipeline flow is readable.
 - + As a developer, I can override an inherited subtransform and explicitly schedule the parent implementation so that
   parent and child logic remain separate execution boundaries.
+- + As a developer, I receive a compiler error when a subtransform calls another subtransform directly so that pipeline
+  flow remains controlled by source order, lanes, and composition.
 - + As a developer, I can chain subtransforms by return type and next input type so that schema flow is validated.
 - + As a developer, I can construct an output schema from inherited base schema rows plus explicit overrides so that
   enrichment transforms do not repeat every inherited field.
@@ -396,7 +398,7 @@ the first analytical join slice.
 - As a developer, I can generate richer static dataflow explain output so that complex field dependencies can be
   inspected when needed.
 - As a developer, I can explain generated-code sections so that long analytical generated classes remain reviewable.
-- As a developer, I can generate documentation artifacts for schemas and transforms so that the public contract is
+- + As a developer, I can generate documentation artifacts for schemas and transforms so that the public contract is
   readable without inspecting generated PySpark.
 - As a developer, I can use pytest helpers for compiler checks, generated-code freshness, generated-code snapshots,
   expected diagnostics, and online/generated parity.

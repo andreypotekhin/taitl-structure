@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.transforms.aliases import alias as declaration_alias
 from structure.app.dsl.model.transforms.InOutBinding import bind_inout
 
 
@@ -10,6 +11,7 @@ from structure.app.dsl.model.transforms.InOutBinding import bind_inout
 class OutputDeclaration:
     schema: type[Structure]
     name: str = ""
+    aliases: tuple[str, ...] = ()
 
     def __set_name__(self, owner: type, name: str) -> None:
         object.__setattr__(self, "name", name)
@@ -22,3 +24,6 @@ class OutputDeclaration:
 
     def __ror__(self, inputs: object):
         return bind_inout(inputs, self)
+
+    def alias(self, *names: str) -> OutputDeclaration:
+        return declaration_alias(self, names)

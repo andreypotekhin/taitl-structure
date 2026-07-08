@@ -52,9 +52,14 @@ and get fast feedback in large projects without recompiling unaffected transform
 
 ## Progress
 
-- [ ] Implement generated docs.
+- [x] Implement generated docs.
 - [ ] Implement pytest helpers.
 - [ ] Implement incremental compile and cache diagnostics.
+
+Generated docs first slice is implemented through `structure compile`. The compiler now writes Markdown and JSON
+schema/transform reference artifacts under `generated_docs_dir` inside `generated_dir`, with configurable
+`generated_docs_formats`. The artifacts summarize schema fields, transform inputs, outputs, subtransforms,
+dependencies, and target artifacts; freshness uses the existing generated-file compare/write path.
 
 ## Compile-Time Performance Metric
 

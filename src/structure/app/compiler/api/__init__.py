@@ -1,4 +1,5 @@
 from structure.app.compiler.api.Compiler import Compiler
+from structure.app.compiler.artifacts import CompileKey, CompiledTransform, CompilerOptions, GeneratedTransform
 from structure.app.compiler.compileability.streaming_compatibility.api import (
     ClassifyStreamingCompatibility,
     StreamingFinding,
@@ -33,11 +34,15 @@ from structure.app.compiler.traceability.api import (
 __all__ = [
     "BuildCompilerTraceability",
     "ClassifyStreamingCompatibility",
+    "CompileKey",
     "CompileContext",
     "CompileTransform",
+    "CompiledTransform",
+    "CompilerOptions",
     "CompilerProvenance",
     "CompilerTraceability",
     "DataflowDependency",
+    "GeneratedTransform",
     "HookPlan",
     "InputPlan",
     "JoinPlan",

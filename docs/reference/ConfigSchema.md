@@ -31,6 +31,8 @@ Seed defaults:
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
+generated_docs_dir = "docs"
+generated_docs_formats = ["markdown", "json"]
 execution_mode = "online"
 target_backend = "pyspark"
 target_profile = ">=3.5,<4.1"
@@ -89,6 +91,37 @@ Rules:
 - Must be a valid dotted Python package name.
 - Must not be `"structure"`.
 - Must not collide with a discovered source package.
+
+### generated_docs_dir
+
+Type: string.
+
+Default: `"docs"`.
+
+Rules:
+
+- Must be a relative path inside `generated_dir`.
+- Must not contain `..` path segments.
+- The compiler may create it during `structure compile`.
+
+### generated_docs_formats
+
+Type: list of strings.
+
+Default: `["markdown", "json"]`.
+
+Allowed:
+
+```text
+markdown
+json
+```
+
+Rules:
+
+- The list must not be empty.
+- `markdown` writes human-readable schema and transform reference pages.
+- `json` writes the same public contract as machine-readable artifacts for CI or publishing tools.
 
 ### execution_mode
 
@@ -359,6 +392,8 @@ StructureConfig
   source_roots
   generated_dir
   generated_package
+  generated_docs_dir
+  generated_docs_formats
   execution_mode
   target_backend
   target_profile

@@ -12,3 +12,4 @@ class InputPlan:
     schema: type[Structure]
     ordinal: int
     streaming: StreamingMode = StreamingMode.NO
+    aliases: tuple[str, ...] = ()

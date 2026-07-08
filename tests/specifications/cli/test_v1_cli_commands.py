@@ -1,4 +1,5 @@
-﻿import os
+﻿import json
+import os
 import shutil
 import sys
 from contextlib import contextmanager
@@ -62,6 +63,30 @@ def write_project(root: Path) -> None:
                 "class NormalizeOrders(Transform):",
                 "    orders = input(OrderRaw)",
                 "    normalized = output(OrderNormalized)",
+                "",
+                "    def normalize(self, order: OrderRaw) -> OrderNormalized:",
+                "        where(order.id.is_not_null())",
+                "        return OrderNormalized(",
+                "            id=order.id,",
+                "            total=coalesce(to_decimal(order.total, precision=12, scale=2), 0),",
+                "        )",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
+def append_second_transform(root: Path) -> None:
+    (root / "src" / "orders" / "transforms.py").write_text(
+        (root / "src" / "orders" / "transforms.py").read_text(encoding="utf-8")
+        + "\n".join(
+            [
+                "",
+                "@transform",
+                "class PublishOrders(Transform):",
+                "    orders = input(OrderRaw)",
+                "    published = output(OrderNormalized)",
                 "",
                 "    def normalize(self, order: OrderRaw) -> OrderNormalized:",
                 "        where(order.id.is_not_null())",
@@ -149,6 +174,8 @@ def test_v1_cli_init_writes_seed_config() -> None:
         assert Path("structure.toml").exists()
         text = Path("structure.toml").read_text(encoding="utf-8")
         assert 'generated_package = "structure_generated"' in text
+        assert 'generated_docs_dir = "docs"' in text
+        assert 'generated_docs_formats = ["markdown", "json"]' in text
         assert 'target_profile = ">=3.5,<4.1"' in text
         assert 'target_variant = "ordinary"' in text
 
@@ -212,7 +239,54 @@ def test_v1_cli_compile_writes_generated_files_and_fail_on_diff_passes() -> None
         assert compiled.exit_code == 0, compiled.output
         assert checked.exit_code == 0, checked.output
         assert Path("generated/structure_generated/pyspark/transforms/transforms.py").exists()
+        assert Path("generated/docs/index.md").exists()
+        assert Path("generated/docs/schemas/OrderRaw.md").exists()
+        assert Path("generated/docs/transforms/orders.transforms.NormalizeOrders.json").exists()
         assert "files written:" in compiled.output
+        assert "generated docs dir: generated/docs" in compiled.output
+
+
+def test_v1_cli_compile_writes_one_transform_module_per_source_unit() -> None:
+    with workspace_tmp() as root:
+        write_project(root)
+        append_second_transform(root)
+
+        result = CliRunner().invoke(cli, ["compile"])
+
+        text = Path("generated/structure_generated/pyspark/transforms/transforms.py").read_text(encoding="utf-8")
+        assert result.exit_code == 0, result.output
+        assert "class NormalizeOrdersGenerated" in text
+        assert "class PublishOrdersGenerated" in text
+
+
+def test_v1_cli_compile_writes_generated_docs_contract() -> None:
+    with workspace_tmp() as root:
+        write_project(root)
+
+        result = CliRunner().invoke(cli, ["compile"])
+
+        schema = Path("generated/docs/schemas/OrderRaw.md").read_text(encoding="utf-8")
+        transform = json.loads(Path("generated/docs/transforms/orders.transforms.NormalizeOrders.json").read_text())
+        assert result.exit_code == 0, result.output
+        assert "# OrderRaw" in schema
+        assert "| `id` | `id` | `string` | no | no |" in schema
+        assert transform["generated_by"] == "Structure"
+        assert transform["name"] == "NormalizeOrders"
+        assert transform["inputs"] == [{"name": "orders", "ordinal": 0, "schema": "OrderRaw"}]
+        assert transform["outputs"] == [{"name": "normalized", "ordinal": 0, "schema": "OrderNormalized"}]
+        assert transform["subtransforms"][0]["name"] == "normalize"
+        assert transform["target_artifacts"]["pyspark_transform"] == "pyspark/transforms/transforms.py"
+
+
+def test_v1_cli_compile_respects_generated_docs_format_override() -> None:
+    with workspace_tmp() as root:
+        write_project(root)
+
+        result = CliRunner().invoke(cli, ["compile", "--generated-docs-formats", "json"])
+
+        assert result.exit_code == 0, result.output
+        assert Path("generated/docs/index.json").exists()
+        assert not Path("generated/docs/index.md").exists()
 
 
 def test_v1_cli_fail_on_diff_reports_stale_generated_output_without_writing() -> None:

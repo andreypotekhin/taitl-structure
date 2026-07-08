@@ -7,6 +7,7 @@ import click
 from structure.app.cli.commands.DiscoverStructureProject import DiscoverStructureProject
 from structure.app.cli.commands.RenderConfiguredPySparkProject import RenderConfiguredPySparkProject
 from structure.app.configuration.model.StructureConfig import StructureConfig
+from structure.app.docs.commands.RenderStructureDocsProject import RenderStructureDocsProject
 from structure.app.target.pyspark.api import PySpark
 from structure.app.target.pyspark.model.GeneratedFileSetResult import GeneratedFileSetResult
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry, render_diagnostic
@@ -14,9 +15,13 @@ from structure.lib.cross.errors import Diagnostic, diagnostic_registry, render_d
 
 class CompileStructureProject:
 
+    def __init__(self) -> None:
+        self._docs = RenderStructureDocsProject()
+        self._pyspark = RenderConfiguredPySparkProject()
+
     def __call__(self, config: StructureConfig) -> tuple[str, ...]:
         project = DiscoverStructureProject()(config)
-        files = RenderConfiguredPySparkProject()(config, project)
+        files = self._pyspark(config, project) | self._docs(config, project)
         result = (
             self._compare(config, files)
             if config.fail_on_diff
@@ -25,6 +30,7 @@ class CompileStructureProject:
         return (
             "Structure compile passed",
             f"  generated dir: {self._relative(config, config.generated_dir)}",
+            f"  generated docs dir: {self._relative(config, config.generated_docs_dir)}",
             f"  transforms: {len(project.transforms)}",
             f"  files written: {result.count('added') + result.count('modified')}",
             f"  files unchanged: {result.count('unchanged')}",

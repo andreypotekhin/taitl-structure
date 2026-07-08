@@ -18,6 +18,8 @@ class ResolveStructureConfig:
         "source_roots",
         "generated_dir",
         "generated_package",
+        "generated_docs_dir",
+        "generated_docs_formats",
         "execution_mode",
         "target_backend",
         "target_profile",

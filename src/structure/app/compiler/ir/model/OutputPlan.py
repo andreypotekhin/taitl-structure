@@ -21,3 +21,4 @@ class OutputPlan:
     ordinal: int
     joins: tuple[JoinPlan, ...] = ()
     operations: tuple[OperationPlan, ...] = ()
+    aliases: tuple[str, ...] = ()

@@ -11,6 +11,8 @@ class StructureConfig:
     source_roots: tuple[Path, ...]
     generated_dir: Path
     generated_package: str
+    generated_docs_dir: Path
+    generated_docs_formats: tuple[str, ...]
     execution_mode: str
     target_backend: str
     target_profile: str

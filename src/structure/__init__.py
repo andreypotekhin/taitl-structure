@@ -1,3 +1,4 @@
+from structure.app.compiler.api import CompileKey, CompiledTransform, CompilerOptions, GeneratedTransform
 from structure.app.configuration.api import StructureConfig
 from structure.app.dsl.api import (
     Array,
@@ -137,14 +138,19 @@ from structure.app.runtime.api import (
     TransformResult,
     TransformSchemas,
 )
+from structure.app.target.pyspark.api import DiskStorage, MemoryStorage, PackageImportStorage
 from structure.app.tools.api import StructureTools
 
 __all__ = [
     "Array",
     "AsOf",
     "Boolean",
+    "CompileKey",
+    "CompiledTransform",
+    "CompilerOptions",
     "Date",
     "Decimal",
+    "DiskStorage",
     "Double",
     "Float",
     "Integer",
@@ -154,7 +160,9 @@ __all__ = [
     "JoinStrategy",
     "Long",
     "Map",
+    "MemoryStorage",
     "OverlapPolicy",
+    "PackageImportStorage",
     "ResultSchemas",
     "SchemaMode",
     "String",
@@ -169,6 +177,7 @@ __all__ = [
     "StructureTools",
     "Timestamp",
     "Transform",
+    "GeneratedTransform",
     "TiePolicy",
     "TransformResult",
     "TransformSchemas",

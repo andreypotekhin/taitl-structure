@@ -32,6 +32,55 @@
       "qualname": "Boolean",
       "signature": "() -> None"
     },
+    "CompileKey": {
+      "dataclass_fields": [
+        "subject",
+        "options",
+        "sources"
+      ],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.app.compiler.artifacts.model.CompileKey",
+      "qualname": "CompileKey",
+      "signature": "(subject: 'tuple[str, ...]', options: 'tuple[object, ...]', sources: 'tuple[tuple[str, int | None, int | None], ...]') -> None"
+    },
+    "CompiledTransform": {
+      "dataclass_fields": [
+        "key",
+        "transform_plan",
+        "pyspark_plan",
+        "schemas"
+      ],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.app.compiler.artifacts.model.CompiledTransform",
+      "qualname": "CompiledTransform",
+      "signature": "(key: 'CompileKey', transform_plan: 'TransformPlan', pyspark_plan: 'PySparkExecutionPlan', schemas: 'TransformSchemas') -> None"
+    },
+    "CompilerOptions": {
+      "dataclass_fields": [
+        "project_root",
+        "source_roots",
+        "generated_dir",
+        "generated_package",
+        "target_backend",
+        "target_profile",
+        "target_variant",
+        "validate_inputs",
+        "input_validation_mode",
+        "validate_intermediate",
+        "intermediate_validation_mode",
+        "validate_outputs",
+        "output_validation_mode",
+        "strict_performance",
+        "schema_types_key"
+      ],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.app.compiler.artifacts.model.CompilerOptions",
+      "qualname": "CompilerOptions",
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', target_backend: 'str', target_profile: 'str', target_variant: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', schema_types_key: 'str | None' = None) -> None"
+    },
     "Date": {
       "dataclass_fields": [
         "name"
@@ -54,6 +103,14 @@
       "qualname": "Decimal",
       "signature": "(precision: 'int', scale: 'int') -> 'None'"
     },
+    "DiskStorage": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.app.target.pyspark.storage.DiskStorage",
+      "qualname": "DiskStorage",
+      "signature": "(root: 'Path | str') -> 'None'"
+    },
     "Double": {
       "dataclass_fields": [
         "name"
@@ -73,6 +130,18 @@
       "module": "structure.app.dsl.model.types.Float",
       "qualname": "Float",
       "signature": "() -> None"
+    },
+    "GeneratedTransform": {
+      "dataclass_fields": [
+        "generated_package",
+        "files",
+        "storage"
+      ],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.app.compiler.artifacts.model.GeneratedTransform",
+      "qualname": "GeneratedTransform",
+      "signature": "(generated_package: 'str', files: 'Mapping[str, str]', storage: 'object') -> None"
     },
     "Integer": {
       "dataclass_fields": [
@@ -155,6 +224,14 @@
       "qualname": "Map",
       "signature": "(key: structure.app.dsl.model.types.StructureType.StructureType, value: structure.app.dsl.model.types.StructureType.StructureType, *, value_contains_null: bool = True) -> None"
     },
+    "MemoryStorage": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.app.target.pyspark.storage.MemoryStorage",
+      "qualname": "MemoryStorage",
+      "signature": "() -> 'None'"
+    },
     "OverlapPolicy": {
       "dataclass_fields": [],
       "enum_members": [
@@ -165,13 +242,21 @@
       "qualname": "OverlapPolicy",
       "signature": "(*values)"
     },
+    "PackageImportStorage": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.app.target.pyspark.storage.PackageImportStorage",
+      "qualname": "PackageImportStorage",
+      "signature": "(package: 'str') -> 'None'"
+    },
     "ResultSchemas": {
       "dataclass_fields": [],
       "enum_members": [],
       "kind": "class",
       "module": "structure.app.runtime.schemas.model.TransformSchemas",
       "qualname": "ResultSchemas",
-      "signature": "(schemas: 'Mapping[str, Any] | None' = None) -> 'None'"
+      "signature": "(schemas: 'Mapping[str, Any] | None' = None, *, aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> 'None'"
     },
     "SchemaMode": {
       "dataclass_fields": [],
@@ -183,16 +268,6 @@
       "module": "structure.app.dsl.model.transforms.SchemaMode",
       "qualname": "SchemaMode",
       "signature": "(*values)"
-    },
-    "String": {
-      "dataclass_fields": [
-        "name"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.types.String",
-      "qualname": "String",
-      "signature": "() -> 'None'"
     },
     "StreamingMode": {
       "dataclass_fields": [],
@@ -216,6 +291,16 @@
       "module": "structure.app.dsl.model.transforms.StreamingOutputMode",
       "qualname": "StreamingOutputMode",
       "signature": "(*values)"
+    },
+    "String": {
+      "dataclass_fields": [
+        "name"
+      ],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.app.dsl.model.types.String",
+      "qualname": "String",
+      "signature": "() -> 'None'"
     },
     "Struct": {
       "dataclass_fields": [
@@ -250,6 +335,8 @@
         "source_roots",
         "generated_dir",
         "generated_package",
+        "generated_docs_dir",
+        "generated_docs_formats",
         "execution_mode",
         "target_backend",
         "target_profile",
@@ -272,7 +359,7 @@
       "kind": "class",
       "module": "structure.app.configuration.model.StructureConfig",
       "qualname": "StructureConfig",
-      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', execution_mode: 'str', target_backend: 'str', target_profile: 'str', target_variant: 'str', compat_targets: 'tuple[str, ...]', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', source_map: 'Mapping[str, str]') -> None"
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_docs_dir: 'Path', generated_docs_formats: 'tuple[str, ...]', execution_mode: 'str', target_backend: 'str', target_profile: 'str', target_variant: 'str', compat_targets: 'tuple[str, ...]', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', source_map: 'Mapping[str, str]') -> None"
     },
     "StructureRuntimeError": {
       "dataclass_fields": [],
@@ -288,7 +375,7 @@
       "kind": "class",
       "module": "structure.app.runtime.session.model.StructureSession",
       "qualname": "StructureSession",
-      "signature": "(*, spark=None, ctx=None, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, execution_mode: 'str | None' = None, target_backend: 'str | None' = None, target_profile: 'str | None' = None, target_variant: 'str | None' = None, generated_package: 'str | None' = None, schema_types=None, online_executor: 'Callable[..., object] | None' = None) -> 'None'"
+      "signature": "(*, spark=None, ctx=None, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, execution_mode: 'str | None' = None, target_backend: 'str | None' = None, target_profile: 'str | None' = None, target_variant: 'str | None' = None, generated_package: 'str | None' = None, schema_types=None, online_executor: 'Callable[..., object] | None' = None, storage=None) -> 'None'"
     },
     "StructureTools": {
       "dataclass_fields": [],
@@ -332,19 +419,20 @@
       "kind": "class",
       "module": "structure.app.runtime.session.model.TransformResult",
       "qualname": "TransformResult",
-      "signature": "(outputs: 'Mapping[str, Any]', *, single: 'bool' = False, schema: 'Mapping[str, Any] | None' = None) -> 'None'"
+      "signature": "(outputs: 'Mapping[str, Any]', *, single: 'bool' = False, schema: 'Mapping[str, Any] | None' = None, aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> 'None'"
     },
     "TransformSchemas": {
       "dataclass_fields": [
         "inputs",
         "steps",
-        "outputs"
+        "outputs",
+        "output_aliases"
       ],
       "enum_members": [],
       "kind": "class",
       "module": "structure.app.runtime.schemas.model.TransformSchemas",
       "qualname": "TransformSchemas",
-      "signature": "(inputs: 'Mapping[str, Any]', steps: 'Mapping[str, Any]', outputs: 'Mapping[str, Any]') -> None"
+      "signature": "(inputs: 'Mapping[str, Any]', steps: 'Mapping[str, Any]', outputs: 'Mapping[str, Any]', output_aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> None"
     },
     "after": {
       "dataclass_fields": [],
@@ -1098,6 +1186,14 @@
       "qualname": "variance",
       "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'"
     },
+    "watermark": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.transform_api",
+      "qualname": "watermark",
+      "signature": "(field: 'object', *, delay: 'str' = '10 minutes') -> 'None'"
+    },
     "when": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -1113,14 +1209,6 @@
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "where",
       "signature": "(predicate: 'object') -> \"'WhereChain'\""
-    },
-    "watermark": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "function",
-      "module": "structure.app.dsl.model.transforms.transform_api",
-      "qualname": "watermark",
-      "signature": "(field: 'object', *, delay: 'str' = '10 minutes') -> 'None'"
     },
     "window": {
       "dataclass_fields": [],

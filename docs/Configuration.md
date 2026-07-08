@@ -18,6 +18,8 @@ Preferred:
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
+generated_docs_dir = "docs"
+generated_docs_formats = ["markdown", "json"]
 execution_mode = "online"
 ```
 
@@ -29,6 +31,8 @@ Alternative:
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
+generated_docs_dir = "docs"
+generated_docs_formats = ["markdown", "json"]
 execution_mode = "online"
 ```
 
@@ -73,12 +77,16 @@ when the settings need to be shared or inspected.
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
+generated_docs_dir = "docs"
+generated_docs_formats = ["markdown", "json"]
 ```
 
 `source_roots` is an ordered list of filesystem import roots. Each root contains importable Python packages or
 modules. `generated_dir` is the generated-code filesystem root.
 
 `generated_package` is the Python package below `generated_dir` that owns generated Structure artifacts.
+`generated_docs_dir` is the generated documentation directory inside `generated_dir`; `generated_docs_formats`
+controls whether `structure compile` writes Markdown, JSON, or both.
 
 Recommended layout:
 

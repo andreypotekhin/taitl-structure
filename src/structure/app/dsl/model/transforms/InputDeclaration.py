@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from structure.app.dsl.model.expr.InputScope import InputScope
 from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.transforms.aliases import alias as declaration_alias
 from structure.app.dsl.model.transforms.InOutBinding import bind_inout
 from structure.app.dsl.model.transforms.StreamingMode import StreamingMode
 
@@ -17,6 +18,7 @@ class InputDeclaration:
     schema: type[Structure]
     name: str = ""
     streaming: StreamingMode = StreamingMode.NO
+    aliases: tuple[str, ...] = ()
 
     def __set_name__(self, owner: type[Transform], name: str) -> None:
         object.__setattr__(self, "name", name)
@@ -37,3 +39,6 @@ class InputDeclaration:
 
     def __ror__(self, inputs: object):
         return bind_inout(inputs, self)
+
+    def alias(self, *names: str) -> InputDeclaration:
+        return declaration_alias(self, names)

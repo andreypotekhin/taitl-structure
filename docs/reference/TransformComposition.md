@@ -73,6 +73,9 @@ super(NormalizeBase, self).normalize(order)
 ```
 
 The parent step keeps its own hooks, validation boundary, lane writes, and traceability entry.
+No other compiled subtransform may call another subtransform directly. Use source order and lanes inside one transform,
+`Transform.to(...)` between complete transforms, private helpers for inline object construction, and `@expr_fn` for
+reusable compiler-visible expressions.
 
 ## Runtime Composition
 
@@ -105,9 +108,32 @@ Composition wires each downstream declared `input(...)` from exactly one source:
 - a constructor argument supplied on that downstream invocation; or
 - one output from the immediately preceding composed stage.
 
-Matching uses schema identity. If several upstream outputs have the same schema, a same-name output wins; if ambiguity
-remains, compilation fails. If a downstream input is both explicitly bound and produced upstream, compilation fails
-rather than choosing a hidden precedence rule.
+Matching uses schema identity. If several upstream outputs have the same schema, a matching output alias wins, then a
+same-name output wins; if ambiguity remains, compilation fails. If a downstream input is both explicitly bound and
+produced upstream, compilation fails rather than choosing a hidden precedence rule.
+
+Use a transform boundary alias when a reusable transform publishes an implementation-oriented output field name but
+downstream stages should consume a stable domain name:
+
+```python
+class NormalizeOrders(Transform):
+    orders = input(OrderRaw)
+    normalized = output(OrderNormalized).alias("orders")
+```
+
+Here `normalized` remains the declaration name, while `orders` is also accepted for composition and result lookup.
+Input declarations may also use `.alias(...)` so constructor calls can use either the canonical input name or the alias.
+
+When the transform class cannot be changed, use invocation-level `.rename(...)` to expose an output alias for that
+stage:
+
+```python
+pipeline = NormalizeOrders(orders=orders_df).rename(normalized="orders").to(AddProduct(products=products_df))
+```
+
+Transform boundary `.alias(...)` and `.rename(...)` are separate from schema field `alias=...` and Spark DataFrame
+`.alias(...)`. Field aliases name Spark columns; DataFrame aliases name Spark relations; transform boundary aliases
+name inputs and outputs for Structure composition and result access.
 
 The composed result exposes the final stage's declared outputs. Earlier-stage outputs are intermediate composition
 state and are not returned unless a later stage publishes them.

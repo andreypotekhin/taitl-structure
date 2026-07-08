@@ -119,6 +119,8 @@ narrower use cases and roadmap features.
   pipeline flow is readable.
 - + As a developer, I can override an inherited subtransform and explicitly schedule the parent implementation so that
   parent and child logic remain separate execution boundaries.
+- + As a developer, I receive a compiler error when a subtransform calls another subtransform directly so that pipeline
+  flow remains controlled by source order, lanes, and composition.
 - + As a developer, I can chain subtransforms by return type and next input type so that schema flow is validated.
 - + As a developer, I can construct an output schema from inherited base schema rows plus explicit overrides so that
   enrichment transforms do not repeat every inherited field.

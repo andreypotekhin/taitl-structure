@@ -26,6 +26,28 @@ class RenderPySparkTransformModule:
         body = self._class(plan, source_transform=source_transform)
         return f"{imports}\n\n\n{body}\n"
 
+    def source_unit(
+        self,
+        plans: Mapping[str, PySparkExecutionPlan],
+        *,
+        schema_modules: Mapping[type[Structure], str],
+        runtime_module: str,
+    ) -> str:
+        imports: list[str] = []
+        bodies: list[str] = []
+        for source_transform, plan in plans.items():
+            imports.extend(
+                self._imports(
+                    plan,
+                    source_transform=source_transform,
+                    schema_modules=schema_modules,
+                    runtime_module=runtime_module,
+                ).splitlines()
+            )
+            bodies.append(self._class(plan, source_transform=source_transform))
+        separator = "\n\n\n"
+        return f"{self._unique(imports)}\n\n\n{separator.join(bodies)}\n"
+
     def _imports(
         self,
         plan: PySparkExecutionPlan,
@@ -51,6 +73,16 @@ class RenderPySparkTransformModule:
         for module, constants in self._schema_imports(plan, schema_modules).items():
             lines.append(f"from {module} import {', '.join(constants)}")
         return "\n".join(lines)
+
+    def _unique(self, lines: list[str]) -> str:
+        unique: list[str] = []
+        seen: set[str] = set()
+        for line in lines:
+            if line in seen:
+                continue
+            seen.add(line)
+            unique.append(line)
+        return "\n".join(unique)
 
     def _class(self, plan: PySparkExecutionPlan, *, source_transform: str) -> str:
         parent_classes = self._parent_classes(plan, source_transform=source_transform)
@@ -99,11 +131,14 @@ class RenderPySparkTransformModule:
             result_entries.append(f'"{output.name}": {output.name}')
             schema_entries.append(f'"{output.name}": {render_pyspark_schema.constant_name(output.output_schema)}')
         single = "True" if len(plan.outputs) == 1 else "False"
+        aliases = self._output_aliases(plan)
+        alias_argument = f", aliases={aliases!r}" if aliases else ""
         lines.append(
             f"        return TransformResult("
             f"{{{', '.join(result_entries)}}}, "
             f"single={single}, "
-            f"schema={{{', '.join(schema_entries)}}})"
+            f"schema={{{', '.join(schema_entries)}}}"
+            f"{alias_argument})"
         )
         return lines
 
@@ -163,11 +198,14 @@ class RenderPySparkTransformModule:
             result_entries.append(f'"{output.name}": {output.name}')
             schema_entries.append(f'"{output.name}": {render_pyspark_schema.constant_name(output.output_schema)}')
         single = "True" if len(plan.outputs) == 1 else "False"
+        aliases = self._output_aliases(plan)
+        alias_argument = f", aliases={aliases!r}" if aliases else ""
         lines.append(
             f"        return TransformResult("
             f"{{{', '.join(result_entries)}}}, "
             f"single={single}, "
-            f"schema={{{', '.join(schema_entries)}}})"
+            f"schema={{{', '.join(schema_entries)}}}"
+            f"{alias_argument})"
         )
         return lines
 
@@ -301,6 +339,9 @@ class RenderPySparkTransformModule:
             schemas.add(step.output_schema)
             schemas.update(result.schema for result in step.results)
         return schemas
+
+    def _output_aliases(self, plan: PySparkExecutionPlan) -> dict[str, tuple[str, ...]]:
+        return {output.name: output.aliases for output in plan.outputs if output.aliases}
 
     def _has_hooks(self, plan: PySparkExecutionPlan) -> bool:
         return bool(self._hooks(plan))

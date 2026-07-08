@@ -22,7 +22,8 @@ class LowerPySparkPlan:
     ) -> PySparkExecutionPlan:
         target = capabilities or Capabilities.resolve()()
         inputs = tuple(
-            self._inputs.map(input.name, input.schema, input.ordinal, input.streaming) for input in plan.inputs
+            self._inputs.map(input.name, input.schema, input.ordinal, input.streaming, input.aliases)
+            for input in plan.inputs
         )
         steps = tuple(
             self._steps.map(step, last=index == len(plan.steps) - 1, capabilities=target)

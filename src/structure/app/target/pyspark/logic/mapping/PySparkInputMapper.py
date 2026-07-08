@@ -7,12 +7,20 @@ from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkVa
 
 class PySparkInputMapper:
 
-    def map(self, name: str, schema: type[Structure], ordinal: int, streaming: StreamingMode) -> PySparkInputRecipe:
+    def map(
+        self,
+        name: str,
+        schema: type[Structure],
+        ordinal: int,
+        streaming: StreamingMode,
+        aliases: tuple[str, ...] = (),
+    ) -> PySparkInputRecipe:
         return PySparkInputRecipe(
             name=name,
             schema=schema,
             ordinal=ordinal,
             streaming=streaming,
+            aliases=aliases,
             validation=PySparkValidationRecipe(
                 target=name,
                 schema=schema,

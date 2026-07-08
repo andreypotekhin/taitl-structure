@@ -58,6 +58,7 @@ class PySparkOutputMapper:
                 reason="final",
             ),
             operations=operations,
+            aliases=output.aliases,
         )
 
     def _operations(

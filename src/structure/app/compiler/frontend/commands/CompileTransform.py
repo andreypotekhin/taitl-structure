@@ -133,6 +133,7 @@ class CompileTransform:
             self._compile_step(
                 transform_class,
                 member,
+                members,
                 instance,
                 hooks,
                 steps,
@@ -155,6 +156,7 @@ class CompileTransform:
         self,
         transform_class: type[Transform],
         item: CompilerTransformMember,
+        members: tuple[CompilerTransformMember, ...],
         instance: Transform,
         hooks: dict[tuple[str, tuple[type[Transform], str, int]], tuple[HookPlan, ...]],
         steps: list[StepPlan],
@@ -224,20 +226,22 @@ class CompileTransform:
             context.register_relation_scope(binding.scope, argument)
 
         try:
-            with self._parent_call_patches(
-                transform_class,
-                item,
-                instance,
-                hooks,
-                steps,
-                lanes,
-                inputs,
-                explicit_outputs,
-                diagnostics,
-                parent_call,
-            ):
-                with context:
-                    result = member(instance, *arguments)
+            with self._subtransform_call_guards(transform_class, members, active=item):
+                with self._parent_call_patches(
+                    transform_class,
+                    item,
+                    members,
+                    instance,
+                    hooks,
+                    steps,
+                    lanes,
+                    inputs,
+                    explicit_outputs,
+                    diagnostics,
+                    parent_call,
+                ):
+                    with context:
+                        result = member(instance, *arguments)
         except StructureCompileError:
             raise
         except Exception as error:
@@ -404,6 +408,7 @@ class CompileTransform:
         self,
         transform_class: type[Transform],
         item: CompilerTransformMember,
+        members: tuple[CompilerTransformMember, ...],
         instance: Transform,
         hooks: dict[tuple[str, tuple[type[Transform], str, int]], tuple[HookPlan, ...]],
         steps: list[StepPlan],
@@ -425,6 +430,7 @@ class CompileTransform:
                     result = self._compile_step(
                         transform_class,
                         candidate,
+                        members,
                         instance,
                         hooks,
                         steps,
@@ -457,6 +463,100 @@ class CompileTransform:
         finally:
             for owner, name, original in reversed(originals):
                 setattr(owner, name, original)
+
+    @contextmanager
+    def _subtransform_call_guards(
+        self,
+        transform_class: type[Transform],
+        members: tuple[CompilerTransformMember, ...],
+        *,
+        active: CompilerTransformMember,
+    ):
+        originals: list[tuple[type[Transform], str, object]] = []
+        guarded: set[tuple[type[Transform], str]] = set()
+
+        def guard(owner: type[Transform], name: str):
+            def call(_self, *args, **kwargs):
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=active.name,
+                    problem=(
+                        f"{transform_class.__name__}.{active.name} calls compiled subtransform "
+                        f"{owner.__name__}.{name} directly."
+                    ),
+                    use=(
+                        "Subtransforms are pipeline steps. Use source order, lane bindings, Transform.to(...), "
+                        "a private helper, or an @expr_fn helper instead. Only an override may call its overridden "
+                        "parent subtransform."
+                    ),
+                    context={"called_subtransform": f"{owner.__name__}.{name}"},
+                )
+
+            return call
+
+        try:
+            for candidate in self._guarded_subtransforms(transform_class, members):
+                key = (candidate.owner, candidate.name)
+                if key in guarded:
+                    continue
+                originals.append((candidate.owner, candidate.name, candidate.owner.__dict__[candidate.name]))
+                setattr(candidate.owner, candidate.name, guard(candidate.owner, candidate.name))
+                guarded.add(key)
+            yield
+        finally:
+            for owner, name, original in reversed(originals):
+                setattr(owner, name, original)
+
+    def _guarded_subtransforms(
+        self,
+        transform_class: type[Transform],
+        members: tuple[CompilerTransformMember, ...],
+    ) -> tuple[CompilerTransformMember, ...]:
+        guarded: list[CompilerTransformMember] = []
+        seen: set[tuple[type[Transform], str]] = set()
+
+        def add(candidate: CompilerTransformMember) -> None:
+            key = (candidate.owner, candidate.name)
+            if key not in seen and self._compiled(candidate.member):
+                guarded.append(candidate)
+                seen.add(key)
+
+        for member in members:
+            add(member)
+            for candidate in member.overridden:
+                add(candidate)
+
+        for cls in transform_class.__mro__:
+            if cls is Transform:
+                break
+            if not isinstance(cls, type) or not issubclass(cls, Transform):
+                continue
+            for name, member in cls.__dict__.items():
+                if name.startswith("_") or name == "run" or not inspect.isfunction(member):
+                    continue
+                add(CompilerTransformMember(owner=cls, name=name, member=member, position=0))
+        for cls in self._loaded_transform_classes():
+            for name, member in cls.__dict__.items():
+                if name.startswith("_") or name == "run" or not inspect.isfunction(member):
+                    continue
+                add(CompilerTransformMember(owner=cls, name=name, member=member, position=0))
+
+        return tuple(guarded)
+
+    def _loaded_transform_classes(self) -> tuple[type[Transform], ...]:
+        classes: list[type[Transform]] = []
+
+        def visit(cls: type[Transform]) -> None:
+            for subclass in cls.__subclasses__():
+                classes.append(subclass)
+                visit(subclass)
+
+        visit(Transform)
+        return tuple(classes)
+
+    def _compiled(self, member) -> bool:
+        return bool(self._return_schemas(get_type_hints(member).get("return")))
 
     def _parent_call_result(self, results: tuple[StepResultPlan, ...]) -> RowScope | tuple[RowScope, ...]:
         scopes = tuple(RowScope(name=result.schema.__name__, schema=result.schema) for result in results)
@@ -1177,6 +1277,7 @@ class CompileTransform:
                     output_lanes,
                     ordinal=ordinal,
                     transform_class=transform_class,
+                    aliases=declaration.aliases,
                 )
             )
         return outputs
@@ -1210,6 +1311,7 @@ class CompileTransform:
         *,
         ordinal: int,
         transform_class: type[Transform],
+        aliases: tuple[str, ...] = (),
     ) -> OutputPlan:
         source = lanes.get(name)
         if source is None:
@@ -1238,6 +1340,7 @@ class CompileTransform:
             filters=(),
             projection=(),
             ordinal=ordinal,
+            aliases=aliases,
         )
 
     def _declared_output(

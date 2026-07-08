@@ -1,7 +1,7 @@
 import json
 from collections.abc import Mapping
 
-from structure.app.compiler.api import Compiler
+from structure.app.compiler.api.Compiler import Compiler
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.target.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan

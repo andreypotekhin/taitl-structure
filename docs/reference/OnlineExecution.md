@@ -34,6 +34,17 @@ transform = EnrichOrders(orders=orders_df, customers=customers_df)
 result = transform.run(session)
 ```
 
+Transforms may also be compiled before the first runtime invocation:
+
+```python
+EnrichOrders.compile(project_root=".")
+```
+
+`compile(...)` builds a reusable in-memory compiled artifact for the transform class and compatible compiler options.
+It performs Structure frontend compilation, target capability checks, PySpark recipe lowering, and schema
+materialization without binding runtime DataFrames. Later `run(session)` calls reuse the compatible compiled artifact
+and still validate each invocation's fresh input DataFrames.
+
 The session can also be used directly:
 
 ```python
@@ -57,6 +68,23 @@ the `enriched` output. The schema is available in online mode without requiring 
 declared output names such as `result.published`, `result.accepted`, and `result["rejected"]`. Output schemas expose
 the same names through `result.schema`, such as `result.schema.published` and `result.schema["rejected"]`. There is no
 automatic `df` alias; `df` is present only when a field-declared output is explicitly named `df`.
+
+If an output declaration has a transform boundary alias, the alias is an additional lookup name, not an extra mapping
+key:
+
+```python
+class NormalizeOrders(Transform):
+    orders = input(OrderRaw)
+    normalized = output(OrderNormalized).alias("orders")
+
+result = NormalizeOrders(orders=orders_df).run(session)
+
+same_df = result.orders
+same_schema = result.schema["orders"]
+canonical_keys = list(result)  # ["normalized"]
+```
+
+The canonical output name remains `normalized`; `orders` is a synonym for result and schema lookup.
 
 Online execution evaluates transform methods in source order while preserving independent lane frames. When schemas are
 unambiguous, methods consume and update inferred lanes without method-level selectors. Method-level `input=` selects
@@ -83,6 +111,11 @@ generated
 
 `online` runs transforms through a runtime runner that consumes compiler IR and live PySpark objects. `generated`
 delegates to checked-in generated PySpark classes.
+
+Generated execution may also use explicit in-memory generated artifacts. `MemoryStorage` lets applications call
+`Transform.generate(..., storage=MemoryStorage())` and then run generated mode with the same storage object, without
+writing generated Python files to disk. This preserves the default "no generated files required" workflow while keeping
+generated-code semantics available for no-disk environments.
 
 `target_backend` and `target_profile` remain backend selection inputs. In v1 the only supported backend is `pyspark`.
 Future backends should be selected by the session, not by changing transform constructors. Backend support is checked
@@ -153,8 +186,8 @@ projection shape, schema projection, result shape, and performance guardrails.
 For a multi-result step, joins and filters execute once. Each result projection starts from that shared DataFrame and is
 stored under its output lane name.
 
-Those shared semantics are owned by [ExecutionSemanticContract.md](ExecutionSemanticContract.md). Online execution owns live
-DataFrame binding and runtime hook invocation; it must not independently choose aliases, validation placement,
+Those shared semantics are owned by [ExecutionSemanticContract.md](ExecutionSemanticContract.md). Online execution owns
+live DataFrame binding and runtime hook invocation; it must not independently choose aliases, validation placement,
 expression mapping, or literal typing when a shared PySpark recipe already defines them.
 
 ## Transform Input Binding
