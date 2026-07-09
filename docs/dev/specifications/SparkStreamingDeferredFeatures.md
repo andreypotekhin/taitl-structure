@@ -1,11 +1,13 @@
-# Spark Streaming Non-Goals And Deferred Transform Features
+# Spark Streaming Deferred Features
 
-This specification records permanent lifecycle non-goals and transformation features that remain unsupported until they
-receive compiler-visible state semantics, diagnostics, tests, and public documentation.
+This specification records lifecycle and transformation features left outside the first caller-owned streaming
+compatibility slice. v3 promotes source, sink, and lifecycle policy into planned orchestration work; transformation
+features remain unsupported until they receive compiler-visible state semantics, diagnostics, tests, and public
+documentation.
 
-## Permanent Lifecycle Non-Goals
+## Planned v3 Lifecycle Features
 
-Structure does not generate or manage:
+The first compatibility slice does not generate or manage:
 
 - `spark.readStream`;
 - `df.writeStream`;
@@ -15,11 +17,13 @@ Structure does not generate or manage:
 - query names;
 - `start()`, `awaitTermination()`, stop behavior, deployment, or recovery.
 
-These are caller-owned operational concerns. Structure transform classes return DataFrames.
+These are caller-owned operational concerns for v1/v2 transform classes. v3 streaming orchestration owns a separate job
+contract for admitted source, sink, trigger, checkpoint, output-mode, and query lifecycle policies.
 
 ## Deferred Capability Names
 
-The backend capability model must reserve these lifecycle names as unsupported:
+The backend capability model must reserve these lifecycle names so the first slice can reject them and v3 can admit
+them deliberately:
 
 ```text
 streaming.source_generation

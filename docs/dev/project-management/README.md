@@ -99,8 +99,8 @@ orchestration. The v3 sprint sequence is:
    as-of joins.
 3. **Sprint 13: aggregation parity**: grouping sets and `having(...)`.
 4. **Sprint 14: window parity**: null ordering, multiple order keys, and aggregate windows.
-5. **Sprint 15: collection helper parity**: collection size/membership, array construction/repeat/union, map lookup,
-   and map concatenation.
+5. **Sprint 15: collection helper parity**: collection size/membership, map-key membership,
+   array construction/repeat/union/except, element lookup, safe element lookup, and map concatenation.
 6. **Sprint 16: streaming orchestration**: source/sink declarations, generated `readStream`/`writeStream`, triggers,
    checkpoints, output modes, watermarks, and state policies.
 

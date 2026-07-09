@@ -237,7 +237,8 @@ narrower use cases and roadmap features.
 
 - + As a developer, I can pass a streaming DataFrame to generated transforms when operations are Spark streaming-compatible.
 - + As a developer, I can enable streaming compatibility checks so that unsupported streaming operations are caught early.
-- + As a developer, I can keep streaming lifecycle outside Structure permanently so that callers own `readStream`, `writeStream`, triggers, checkpoints, and query execution.
+- + As a developer, I can keep streaming lifecycle outside v1/v2 transform compatibility so that callers own
+  `readStream`, `writeStream`, triggers, checkpoints, and query execution until the v3 orchestration contract is used.
 - + As a developer, I can declare streaming input modes and watermarks inside transform code so that stateful streaming
   transformations can be checked without Structure owning lifecycle.
 
@@ -400,7 +401,7 @@ the first analytical join slice.
 - As a developer, I can explain generated-code sections so that long analytical generated classes remain reviewable.
 - + As a developer, I can generate documentation artifacts for schemas and transforms so that the public contract is
   readable without inspecting generated PySpark.
-- As a developer, I can use pytest helpers for compiler checks, generated-code freshness, generated-code snapshots,
+- + As a developer, I can use pytest helpers for compiler checks, generated-code freshness, generated-code snapshots,
   expected diagnostics, and online/generated parity.
 - As a developer, I can use production incremental compilation so that large projects get fast local feedback.
 - As a developer, I can see cache invalidation diagnostics so that incremental compile never hides stale generated code.
@@ -420,8 +421,8 @@ the first analytical join slice.
   operations fail early when under-specified.
 - As a developer, I can use more stream-stream join shapes when Structure can prove Spark-required watermarks,
   event-time constraints, and caller-owned output-mode requirements.
-- As a developer, I can see lifecycle non-goals clearly so that `readStream`, `writeStream`, triggers, checkpoints,
-  query lifecycle, deployment, and recovery remain in caller code.
+- As a developer, I can use v3 lifecycle orchestration so that admitted `readStream`, `writeStream`, triggers,
+  checkpoints, query lifecycle, deployment, and recovery policy become explicit Structure job configuration.
 
 ## 24. Spark Connect Roadmap
 

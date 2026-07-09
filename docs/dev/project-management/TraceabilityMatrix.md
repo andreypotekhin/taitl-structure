@@ -19,7 +19,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 12 v3 Join Parity Hardening | Joins, Backend Capabilities, Traceability, Streaming Compatibility | using-key joins, right/full diagnostics, cross safety, strategy directives, forward as-of joins |
 | Sprint 13 v3 Aggregation Parity | Aggregations, Backend Capabilities, Traceability | grouping sets, `having(...)`, aggregate-output predicate diagnostics |
 | Sprint 14 v3 Window Parity | Windows, Backend Capabilities, Streaming Compatibility | null ordering, normalized multiple order keys, aggregate windows |
-| Sprint 15 v3 Collection Helper Parity | Higher-Order Functions, Arrays, Maps, Testing | collection size/membership, array construction/repeat/union, map lookup/concat |
+| Sprint 15 v3 Collection Helper Parity | Higher-Order Functions, Arrays, Maps, Testing | collection size/membership, map-key membership, array construction/repeat/union/except, element lookup/concat |
 | Sprint 16 v3 Streaming Orchestration | Spark Structured Streaming, Runtime, Generated Code, Integration Testing | source/sink declarations, generated `readStream`/`writeStream`, triggers, checkpoints, output modes, watermarks, state policies |
 
 ## Relevant Specification Items by Sprint
@@ -167,8 +167,9 @@ This matrix maps early sprints to specification sections and major deliverables.
 ### Sprint 15
 
 - As a developer, I can calculate collection sizes and test array membership.
-- As a developer, I can construct, repeat, and union arrays with type validation.
-- As a developer, I can look up map values and concatenate maps with documented nullability and duplicate-key behavior.
+- As a developer, I can construct, repeat, union, and subtract arrays with type validation.
+- As a developer, I can look up array and map elements, test map-key membership, and concatenate maps with documented
+  nullability, out-of-range, and duplicate-key behavior.
 - As a developer, row-expanding generator helpers remain explicitly deferred.
 
 ### Sprint 16

@@ -66,7 +66,7 @@ Generated code should be explicit and Spark-visible. It should:
 - validate outputs
 - call hooks only where hooks exist
 - pass original named inputs to hooks only when `pass_inputs=True`
-- avoid UDFs in compiled paths
+- avoid UDFs in compiled paths, unless user opt-in
 - avoid `collect`, `toPandas`, and `rdd` in compiled paths
 - include section comments for source subtransforms
 

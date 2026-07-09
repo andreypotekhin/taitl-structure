@@ -254,8 +254,6 @@
 - Implement range predicates.
 - Implement string predicates.
 - Implement collection indexing and struct field helpers.
-- Plan partial nested struct updates, such as Structure-native `withField` and `dropFields` equivalents, after nested
-  struct construction and whole-field copying are stable.
 - Implement rich casts.
 - Implement ordering modifiers and null ordering descriptors.
 - Implement planned string SQL helpers.
@@ -291,10 +289,10 @@
 
 ### Epic: Higher-Order and Collection Helper PySpark Parity
 
-- Implement collection size and membership helpers.
-- Implement array construction, repeat, and union helpers.
-- Implement map lookup and concatenation helpers.
-- Document missing-key nullability and duplicate-key behavior.
+- Implement collection size, array membership, and map-key membership helpers.
+- Implement array construction, repeat, union, and except helpers.
+- Implement element lookup, safe element lookup, and map concatenation helpers.
+- Document missing-key nullability, out-of-range array-index behavior, and duplicate-key behavior.
 - Keep row-expanding generator helpers and arbitrary Python callback control flow deferred.
 
 ### Epic: Streaming Orchestration
@@ -334,7 +332,14 @@
 ## v4 Backlog
 
 - Continue Spark Connect hardening only for non-batch or explicitly deferred Sprint 09 gaps.
-- Explore additional backend families after the PySpark-family batch contract is stable.
+- Explore additional backend families after the PySpark-family batch contract is stable, starting with postponed Polars
+  LazyFrame and DuckDB candidates.
+
+## Future Backlog
+
+- Plan partial nested struct updates, such as Structure-native `withField` and `dropFields` equivalents, after nested
+  struct construction and whole-field copying are stable.
+- Evaluate Ibis as a meta-backend after direct non-PySpark backend candidates clarify the adapter contract.
 
 ## Nice To Have Beyond v4
 

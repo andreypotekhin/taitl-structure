@@ -12,9 +12,9 @@ Developers can express common nested-data operations for arrays and maps without
 
 ### In Scope
 
-- Collection size and array membership helpers.
-- Array construction, repeat, and union helpers.
-- Map lookup and map concatenation helpers.
+- Collection size, array membership, and map-key membership helpers.
+- Array construction, repeat, union, and except helpers.
+- Element lookup, safe element lookup, and map concatenation helpers.
 - Type unification, missing-key nullability, duplicate-key behavior, backend capability checks, diagnostics, docs,
   compatibility tables, explain, traceability, generated examples, and parity tests.
 
@@ -30,9 +30,9 @@ Developers can express common nested-data operations for arrays and maps without
 
 ## Engineering Tasks
 
-1. Implement collection size and membership helpers.
-2. Implement array construction, repeat, and union helpers.
-3. Implement map lookup and concatenation helpers.
+1. Implement collection size, array membership, and map-key membership helpers.
+2. Implement array construction, repeat, union, and except helpers.
+3. Implement element lookup, safe element lookup, and map concatenation helpers.
 4. Update docs, compatibility tables, generated examples, explain, traceability, and tests.
 
 ## Acceptance Criteria

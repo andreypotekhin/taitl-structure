@@ -86,8 +86,8 @@
 - Multiple order keys across window helpers.
 - Aggregate windows.
 - Collection size and membership helpers.
-- Array construction, repeat, and union helpers.
-- Map lookup and concatenation helpers.
+- Array construction, repeat, union, and except helpers.
+- Element lookup, safe element lookup, map-key membership, and map concatenation helpers.
 - Generated stream reads/writes.
 - Watermarks.
 - Triggers.

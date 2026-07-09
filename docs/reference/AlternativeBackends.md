@@ -401,9 +401,9 @@ Experimental backend profiles may exist behind explicit config, but diagnostics 
 Backend roadmap priority:
 
 - v2: PySpark-family targets first, including Spark SQL exploration and typed Python DataFrame/Dataset patterns.
-- v3: Polars LazyFrame and DuckDB.
-- v4: Ibis.
-- Beyond v4: other targets only through Ibis when Ibis supports them.
+- v4+: Polars LazyFrame and DuckDB as the first non-PySpark target candidates.
+- v4+: Ibis as a later meta-backend candidate.
+- Beyond direct v4+ candidates: other targets only through Ibis when Ibis supports them.
 - Deferred: Dask DataFrame and Ray Dataset until after the relational core is stable.
 
 ## Non-Goals

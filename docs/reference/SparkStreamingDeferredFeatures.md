@@ -1,31 +1,36 @@
-# Spark Streaming Non-Goals And Deferred Transform Features
+# Spark Streaming Deferred Features
 
-Structure supports streaming DataFrame transformations without owning streaming query lifecycle. Some Spark streaming
-features are permanent non-goals; others are transformation features admitted only with explicit state policy,
-diagnostics, tests, and documentation.
+Structure supports streaming DataFrame transformations today without owning streaming query lifecycle. v3 promotes the
+source, sink, and lifecycle families into planned orchestration work; custom side-effect sinks and arbitrary opaque
+state remain non-goals.
 
-## Permanent Non-Goals
+## Planned v3 Lifecycle Ownership
 
-Structure does not generate streaming sources:
+Structure-owned streaming orchestration means generated streaming source declarations:
 
 ```python
 spark.readStream...
 ```
 
-Structure does not generate streaming sinks or start queries:
+It also means generated streaming sink and query setup:
 
 ```python
 df.writeStream...
 query.start()
 ```
 
-Structure also does not own:
+The v3 lifecycle contract must make these policies explicit:
 
 - triggers;
 - checkpoint locations;
 - query names and query lifecycle;
-- selected-row helpers such as latest or earliest on streaming inputs;
-- `foreachBatch`, `foreach`, custom sinks, and external side effects.
+- output modes;
+- deployment and recovery evidence.
+
+## Permanent Non-Goals
+
+Structure still does not own `foreachBatch`, `foreach`, custom side-effect sinks, external side effects, or arbitrary
+state APIs.
 
 ## Transformation Features
 
@@ -40,7 +45,8 @@ More complex stateful transformation features remain deferred until their state 
 - ranking, lag/lead, and rolling windows;
 - arbitrary state APIs.
 
-Structure reports output-mode requirements, but the caller applies them in `writeStream` code.
+The caller-owned compatibility slice reports output-mode requirements, but the caller applies them in `writeStream`
+code. v3 streaming orchestration moves admitted output-mode policy into generated lifecycle code.
 
 ## Future Support Bar
 

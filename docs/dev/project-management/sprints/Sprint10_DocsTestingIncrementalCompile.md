@@ -53,13 +53,17 @@ and get fast feedback in large projects without recompiling unaffected transform
 ## Progress
 
 - [x] Implement generated docs.
-- [ ] Implement pytest helpers.
+- [x] Implement pytest helpers.
 - [ ] Implement incremental compile and cache diagnostics.
 
 Generated docs first slice is implemented through `structure compile`. The compiler now writes Markdown and JSON
 schema/transform reference artifacts under `generated_docs_dir` inside `generated_dir`, with configurable
 `generated_docs_formats`. The artifacts summarize schema fields, transform inputs, outputs, subtransforms,
 dependencies, and target artifacts; freshness uses the existing generated-file compare/write path.
+
+Pytest helper slice is implemented through `structure.lib.testing`. Downstream projects can assert compiler success,
+generated-code freshness, generated snapshots, expected diagnostics, and online/generated parity without importing
+fixture-specific repository helpers or PySpark at test collection time.
 
 ## Compile-Time Performance Metric
 

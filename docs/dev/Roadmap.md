@@ -72,7 +72,8 @@ Connect hardening left outside the Sprint 09 support claim.
   joins.
 - Explicit grouping sets and post-aggregate `having(...)`.
 - Window null ordering, multiple order keys, and aggregate windows.
-- Collection size/membership, array construction/repeat/union, map lookup, and map concatenation.
+- Collection size/membership, map-key membership, array construction/repeat/union/except, element lookup, safe element
+  lookup, and map concatenation.
 - Full streaming orchestration.
 - Streaming source definitions.
 - Streaming sink definitions.

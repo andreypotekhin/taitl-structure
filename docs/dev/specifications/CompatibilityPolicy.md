@@ -64,8 +64,9 @@ applies to compiler-visible Structure source, not to hook bodies. Hooks are targ
 either declare `target_backend` or inherit a configured `hook_target_default`.
 
 Future backend work is Python-hosted: v2 prioritizes PySpark-family targets such as Spark SQL and typed PySpark
-DataFrame patterns, v3 adds Polars LazyFrame and DuckDB, and v4 adds Ibis. Other targets should come through Ibis when
-Ibis supports them. Dask DataFrame and Ray Dataset remain out of scope until after the relational core is stable.
+DataFrame patterns, while v4+ owns Polars LazyFrame, DuckDB, Ibis, and other non-PySpark backend expansion. Other
+targets should come through Ibis when Ibis supports them. Dask DataFrame and Ray Dataset remain out of scope until after
+the relational core is stable.
 Unsupported active-target requirements must fail before online execution or generation. Multi-target compatibility
 checks may report non-active target issues as unsupported, degraded, opaque, or unknown.
 

@@ -185,8 +185,9 @@ Exit Criteria:
 
 - Typed `group_by(...)` and aggregation support covers count, sum, min, max, avg, distinct count where practical,
   and schema-checked aggregate output construction.
-- Advanced grouping support covers rollup, cube, grouping sets, subtotal metadata, filtered metrics, `having(...)`,
-  and additional exact, statistical, approximate, and collection metrics admitted by the Sprint 09 specification.
+- Advanced grouping support covers rollup, cube, subtotal metadata, filtered metrics, and additional exact, statistical,
+  approximate, and collection metrics admitted by the Sprint 09 specification. Explicit grouping sets and
+  post-aggregate `having(...)` remain M8C work.
 - Windowing covers latest-row, ranking, lag/lead, rolling metrics, and duplicate-removal helpers.
 - Broad windowing covers reusable window specs, explicit row/range frames, distribution/value helpers, and aggregate
   window expressions admitted by the Sprint 09 specification.
@@ -271,9 +272,10 @@ Exit Criteria:
 
 Exit Criteria:
 
-- Collection size and membership helpers are implemented.
-- Array construction, repeat, and union helpers validate element types.
-- Map lookup and concatenation helpers document missing-key nullability and duplicate-key behavior.
+- Collection size, array membership, and map-key membership helpers are implemented.
+- Array construction, repeat, union, and except helpers validate element types.
+- Element lookup, safe element lookup, and map concatenation helpers document missing-key nullability, out-of-range
+  array-index behavior, and duplicate-key behavior.
 - Row-expanding generator helpers remain deferred unless separately admitted.
 
 ### M8F: Streaming Orchestration

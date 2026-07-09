@@ -49,6 +49,8 @@ behavior Structure aims to keep stable.
 - [Configuration schema](reference/ConfigSchema.md): configuration keys, defaults, resolution, and diagnostics.
 - [Generated documentation](reference/GeneratedDocs.md): generated Markdown and JSON schema/transform reference
   artifacts.
+- [Testing helpers](reference/TestingHelpers.md): reusable pytest helpers for compiler checks, generated snapshots,
+  diagnostics, and online/generated parity.
 - [CLI](reference/CLI.md): `structure init`, `check`, `compile`, `inspect`, `clean`, and schema tools.
 - [Source module rules](reference/SourceModuleRules.md): source roots, imports, discovery, and generated import
   mapping.
