@@ -238,13 +238,9 @@
 
 - Add rich `structure explain` mode for field-level lineage through projections, filters, joins, aggregations, windows,
   hooks, and optimization boundaries.
-- Add generated documentation artifacts for schemas and transforms in Markdown or JSON.
-- Add pytest helpers for `structure check`, generated-code freshness, generated-code snapshots, expected diagnostics,
+- + Add generated documentation artifacts for schemas and transforms in Markdown or JSON.
+- + Add pytest helpers for `structure check`, generated-code freshness, generated-code snapshots, expected diagnostics,
   and online/generated parity.
-- Add production incremental compilation with `compile --changed-only`.
-- Add cache invalidation policies and cache diagnostics for source, config, schema, dependency, and generated-target
-  changes.
-- Add performance tests for incremental compile on synthetic 10-transform and 100-transform projects.
 
 ## v3 Backlog
 
@@ -307,6 +303,13 @@
 - Add watermarks.
 - Add admitted stateful streaming policies.
 - Add live streaming lifecycle integration evidence.
+
+### Epic: End-of-v3 Incremental Compile and Cache Diagnostics
+
+- Implement production incremental compilation with `compile --changed-only`.
+- Add cache invalidation policies and cache diagnostics for source, config, schema, dependency, generated-target,
+  target-profile, and v3 lifecycle-policy changes.
+- Add performance tests for incremental compile on synthetic 10-transform and 100-transform projects.
 
 ## Sprint 09 Backlog
 

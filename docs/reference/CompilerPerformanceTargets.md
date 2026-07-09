@@ -54,7 +54,7 @@ Medium project:
   structure check under 10 seconds warm
   structure check under 30 seconds cold
 
-Single-file edit, v2 incremental compile:
+Single-file edit, end-of-v3 incremental compile:
   affected-transform feedback under 2 seconds
 
 Large project, future target:
@@ -120,7 +120,7 @@ Rules:
 - `structure check` may rebuild cache.
 - `structure compile --fail-on-diff` must not trust stale generated hashes without verifying source fingerprints.
 
-v1 may use full recomputation. v2 incremental compile should be possible without replacing public APIs.
+v1/v2 may use full recomputation. End-of-v3 incremental compile should be possible without replacing public APIs.
 
 ## Measurement
 

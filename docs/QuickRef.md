@@ -467,7 +467,7 @@ boolean `&`, `|`, `~`, null checks, `null_safe_eq(...)`, `lower(...)`, `upper(..
 Reference: [DSL expressions](reference/DSL.md) and
 [nullability and type coercion](reference/NullabilityAndTypeCoercion.md).
 
-## Expression Helpers
+## Expression Methods
 
 Use `@special(type="expr")` for reusable compileable expressions.
 
@@ -593,7 +593,7 @@ Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md
 [PySpark code generation](reference/PySparkCodeGeneration.md), and
 [streaming compatibility](reference/StreamingCompatibility.md).
 
-## Window Projection Helpers
+## Window Projection Functions
 
 Use `row_number(...)`, `rank(...)`, `dense_rank(...)`, `lag(...)`, `lead(...)`, and rolling metric helpers when a
 projected output field needs a Spark-visible analytical window value.
@@ -685,7 +685,7 @@ Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md
 [PySpark code generation](reference/PySparkCodeGeneration.md), and
 [streaming compatibility](reference/StreamingCompatibility.md).
 
-## Higher-Order Helpers
+## Higher-Order Functions
 
 Use `arr_transform(...)`, `arr_filter(...)`, `map_transform_values(...)`, and `map_filter(...)` for Spark-plan-visible
 collection callbacks (lambdas).
@@ -882,7 +882,7 @@ orders = orders.join(
 
 ## Inheritance
 
-### Inheritance - Schemas
+### Schema Inheritance
 
 Schema classes can subclass other schema classes.
 This can help to avoid duplicate field declarations, allow for 'declare once' style and establishing schema hierarchies.
@@ -931,7 +931,7 @@ Reference: [schema inheritance](reference/SchemaInheritance.md),
 [schema declaration syntax](reference/SchemaDeclarationSyntax.md), and
 [schema semantics](reference/SchemaSemantics.md).
 
-### Inheritance - Transforms
+### Transform Inheritance
 
 Transform classes can subclass other Transforms. They inherit inputs, lanes, outputs, hooks, helpers, and subtransforms 
 from parent class. Parent transforms run before child transform; a child method with the same name overrides
@@ -957,7 +957,7 @@ class PublishOrders(NormalizeBase):
         return OrderPublished.project(order)
 ```
 
-## Composition 
+## Transform Composition 
 
 The transforms can also be composed into pipelines using `.to(...)` method.
 

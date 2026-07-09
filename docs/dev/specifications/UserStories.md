@@ -172,6 +172,7 @@ narrower use cases and roadmap features.
 - + As a developer, I can write compiled subtransforms using schema objects so that the compiler can symbolically execute transformation logic.
 - + As a developer, I can have field access produce symbolic expressions so that field references compile to Spark columns.
 - + As a developer, I can have DSL functions produce symbolic expressions so that transforms compile to Spark expressions.
+- + As a developer, I can use inclusive range predicates so that common filters stay compiler-visible.
 - + As a developer, I can have unsupported Python operations rejected so that hidden UDF-like behavior is avoided.
 
 ## 12. Expression Helpers
@@ -403,8 +404,6 @@ the first analytical join slice.
   readable without inspecting generated PySpark.
 - + As a developer, I can use pytest helpers for compiler checks, generated-code freshness, generated-code snapshots,
   expected diagnostics, and online/generated parity.
-- As a developer, I can use production incremental compilation so that large projects get fast local feedback.
-- As a developer, I can see cache invalidation diagnostics so that incremental compile never hides stale generated code.
 
 ## 22E. StructureTools
 
@@ -423,6 +422,9 @@ the first analytical join slice.
   event-time constraints, and caller-owned output-mode requirements.
 - As a developer, I can use v3 lifecycle orchestration so that admitted `readStream`, `writeStream`, triggers,
   checkpoints, query lifecycle, deployment, and recovery policy become explicit Structure job configuration.
+- As a developer, I can use production incremental compilation so that large projects get fast local feedback after the
+  v3 feature surface stabilizes.
+- As a developer, I can see cache invalidation diagnostics so that incremental compile never hides stale generated code.
 
 ## 24. Spark Connect Roadmap
 

@@ -209,10 +209,10 @@ Add benchmark fixtures for:
 - many schema files
 - many expression helpers
 
-Test cold compile in v1. Add separate cold and warm incremental-compile tests when v2 production incremental compile is
-implemented.
+Test cold compile in v1. Add separate cold and warm incremental-compile tests when end-of-v3 production incremental
+compile is implemented.
 
-Warm incremental compile should avoid symbolic execution and regeneration for unchanged transforms once the v2 cache is
+Warm incremental compile should avoid symbolic execution and regeneration for unchanged transforms once the v3 cache is
 enabled.
 
 Compiler tests must prove the no-Spark compile contract: `structure check`, `structure compile`, and

@@ -80,7 +80,7 @@ The pre-coding documentation gaps from [Challenges.md](Challenges.md) are resolv
 | C11 | `StreamingCompatibility.md`; `D06182604.Streaming-compatibility-v1.md` |
 | C12 | `IntermediateRepresentation.md`; `PySparkCodeGeneration.md`; `CompatibilityPolicy.md` |
 | C13 | `CompilerPerformanceTargets.md` |
-| C14 | `CompilerPerformanceTargets.md`; production incremental compile remains v2 implementation work |
+| C14 | `CompilerPerformanceTargets.md`; production incremental compile remains end-of-v3 implementation work |
 | C15 | `D06182606.No-spark-compile-dependency.md` |
 | C16 | `Readme.md` generated-code comparison |
 | C17 | [Testing.md](../Testing.md); [Style.md](../Style.md); feature-spec acceptance criteria |

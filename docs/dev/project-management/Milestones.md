@@ -136,9 +136,9 @@ checks.
 
 ## M7: v2 Analytical Pipeline Features
 
-Status: Sprint 09 analytical and Spark Connect batch work is complete; adoption tooling and broader optimizer/explain
-work continue after Sprint 09. The milestone is split into M7A-M7F so independent contributors can work on analytical
-transforms, analytical joins, composition maturity, and adoption tooling without stepping on one another.
+Status: v2 wrapped. Sprints 06-10 delivered analytical foundations, analytical joins, aggregation/window/HOF coverage,
+Spark Connect batch support, static caller-owned streaming compatibility, generated docs, and pytest helpers. Production
+incremental compile and cache diagnostics moved to end-of-v3 M8G.
 
 ### M7A: v2 Scope and Analytical IR Foundations
 
@@ -178,8 +178,8 @@ Progress:
 
 - Sprint 08 completed the first analytical slice: grouped aggregates, selected-row helpers, exact/subset dedupe,
   projection windows, rolling row metrics, and basic array/map higher-order helpers.
-- Sprint 09 carries advanced analytical support from
-  [P07052601.Advanced-analytical-operations.plan.md](../planning/P07052601.Advanced-analytical-operations.plan.md).
+- Sprint 09 carried advanced analytical support from
+  [P07052601.Advanced-analytical-operations.plan.md](../planning/done/P07052601.Advanced-analytical-operations.plan.md).
 
 Exit Criteria:
 
@@ -212,7 +212,7 @@ Exit Criteria:
   in Markdown or JSON.
 - Pytest helpers cover `structure check`, generated-code freshness, generated-code snapshots, diagnostics, and
   online/generated parity fixtures.
-- Production incremental compile has cache invalidation tests and diagnostics.
+- Production incremental compile and cache diagnostics moved to M8G.
 
 ### M7F: Transform Composition Maturity
 
@@ -229,8 +229,8 @@ Exit Criteria:
 
 ## M8: v3 PySpark Gap Closure and Streaming Orchestration
 
-Status: planned. The milestone is split into M8A-M8F so each `docs/dev/Gaps.md` section can be implemented and verified
-independently at the beginning of v3.
+Status: started. Sprint 11 is the active v3 implementation slice. The milestone is split into M8A-M8G so each
+`docs/dev/Gaps.md` section can be implemented and verified independently before end-of-v3 incremental compile work.
 
 ### M8A: DSL and SQL Function PySpark Parity
 
@@ -286,6 +286,17 @@ Exit Criteria:
 - Generated `readStream` and `writeStream` code is reviewable.
 - Triggers, checkpoints, output modes, watermarks, and state policies are modeled and tested.
 - Existing v1/v2 streaming compatibility behavior remains valid for caller-owned streaming orchestration.
+
+### M8G: Incremental Compile and Cache Diagnostics
+
+Exit Criteria:
+
+- `compile --changed-only` recompiles changed transforms and affected dependents without hiding stale output.
+- Cache invalidation covers source, configuration, schema, dependency, generated-target, target-profile, and v3
+  lifecycle-policy changes.
+- Cache diagnostics explain why each transform was reused, recompiled, invalidated, skipped, or failed.
+- Synthetic 10-transform and 100-transform fixtures cover cold and warm compile behavior.
+- Compiler commands remain Spark-free.
 
 ## M7E: Spark Connect Batch Support
 

@@ -136,6 +136,7 @@ def test_plain_python_expression_extensions_are_symbolic() -> None:
         customer_id = field(String(), nullable=False)
         size_tier = field(String(), nullable=False)
         is_big = field(Boolean(), nullable=False)
+        is_medium = field(Boolean(), nullable=False)
         is_small = field(Boolean(), nullable=False)
         total_with_tax = field(Integer(), nullable=False)
         line_total = field(Integer(), nullable=False)
@@ -151,6 +152,7 @@ def test_plain_python_expression_extensions_are_symbolic() -> None:
                 customer_id=upper(trim(order.customer_id)),
                 size_tier=when(order.total >= 1000, "large").otherwise("standard"),
                 is_big=order.total >= 1000,
+                is_medium=order.total.between(100, 999),
                 is_small=order.total < 100,
                 total_with_tax=order.total + order.tax,
                 line_total=order.price * order.quantity,
@@ -165,6 +167,9 @@ def test_plain_python_expression_extensions_are_symbolic() -> None:
     assert projection["size_tier"].kind == "when"
     assert projection["size_tier"].args[0].kind == "ge"
     assert projection["is_big"].kind == "ge"
+    assert projection["is_medium"].kind == "and"
+    assert projection["is_medium"].args[0].kind == "ge"
+    assert projection["is_medium"].args[1].kind == "le"
     assert projection["is_small"].kind == "lt"
     assert projection["total_with_tax"].kind == "add"
     assert projection["line_total"].kind == "mul"

@@ -123,4 +123,5 @@ invocation construction, generated class construction, `run(...)` signatures, or
 Compile-time performance is a product metric.
 
 The compiler should avoid Spark dependencies during normal `check` and `compile`. v1 should preserve deterministic
-outputs and source fingerprints so production incremental compilation can arrive in v2 without reshaping the compiler.
+outputs and source fingerprints so production incremental compilation can arrive at the end of v3 without reshaping the
+compiler.

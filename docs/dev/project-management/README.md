@@ -34,16 +34,17 @@ project-management/
     Sprint05_JoinsTraceabilityBuildIntegration.md
     Sprint06_V2ScopeAndAnalyticalIR.md
     Sprint07_AnalyticalJoinCoverage.md
-    Sprint09_OptimizationExplainDocsTooling.md
-    Sprint10_DocsTestingIncrementalCompile.md
     Sprint11_V3DslAndSqlFunctionParity.md
     Sprint12_V3JoinParityHardening.md
     Sprint13_V3AggregationParity.md
     Sprint14_V3WindowParity.md
     Sprint15_V3CollectionHelperParity.md
     Sprint16_V3StreamingOrchestration.md
+    Sprint17_V3IncrementalCompileCacheDiagnostics.md
     done/
       Sprint08_AggregationsWindowsHigherOrderFunctions.md
+      Sprint09_OptimizationExplainDocsTooling.md
+      Sprint10_DocsTestingIncrementalCompile.md
   templates/
     SprintReview.md
     ADR.md
@@ -88,8 +89,7 @@ V2 starts after v1 stabilization evidence is release-ready. The v2 sprint sequen
 4. **Sprint 09: Spark Connect, Spark streaming, optimization, and explain**: supported Spark Connect batch execution,
    static caller-owned Spark streaming compatibility, full rowset joins, advanced analytical operations, cache/persist
    first-slice directives, compact explain output, and explicit follow-up deferrals.
-5. **Sprint 10: docs, testing, and incremental compile**: generated documentation artifacts, pytest helpers, and
-   production incremental compile.
+5. **Sprint 10: docs and testing**: generated documentation artifacts and pytest helpers.
 
 V3 starts with the planned PySpark parity gaps tracked in [Gaps.md](../Gaps.md), then takes ownership of full streaming
 orchestration. The v3 sprint sequence is:
@@ -103,6 +103,8 @@ orchestration. The v3 sprint sequence is:
    array construction/repeat/union/except, element lookup, safe element lookup, and map concatenation.
 6. **Sprint 16: streaming orchestration**: source/sink declarations, generated `readStream`/`writeStream`, triggers,
    checkpoints, output modes, watermarks, and state policies.
+7. **Sprint 17: incremental compile and cache diagnostics**: `compile --changed-only`, cache invalidation, cache
+   diagnostics, and warm compile performance fixtures.
 
 V4 is reserved for backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support
 claim.

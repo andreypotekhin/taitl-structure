@@ -60,14 +60,14 @@ Structure currently supports a small compiler-visible Column subset:
 - equality, null-safe equality, inequality, and ordering comparisons;
 - boolean composition with `&`, `|`, and `~`;
 - arithmetic `+`, `-`, and `*`;
-- `is_null()` and `is_not_null()`.
+- `is_null()` and `is_not_null()`;
+- inclusive `between(...)` range predicates.
 
 Gaps:
 
 | Gap | Status | Target PySpark Parity | Notes |
 | --- | --- | --- | --- |
 | Membership predicates | planned | `Column.isin` | Add typed literal and expression operands. |
-| Range predicates | planned | `Column.between` | Convenience over `>=` and `<=`. |
 | String predicates | planned | `contains`, `like`, `ilike`, `rlike` | Prefer named helpers over raw regex strings. |
 | Collection indexing | planned | `getItem`, `__getitem__` | Needs typed Array/Map result inference. |
 | Struct field helpers | planned | `getField` | Attribute access covers typed structs today. |

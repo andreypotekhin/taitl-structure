@@ -56,9 +56,8 @@ Connect hardening left outside the Sprint 09 support claim.
 - Phase-bound data-quality constraints for input, intermediate, and output validation.
 - Compact static dataflow explain output, with richer field-level lineage deferred.
 - More detailed performance diagnostics.
-- Production incremental compile and cache diagnostics deferred to Sprint 10 adoption tooling.
-- Generated documentation artifacts for schemas and transforms deferred to Sprint 10 adoption tooling.
-- Pytest helper or plugin deferred to Sprint 10 adoption tooling.
+- Generated documentation artifacts for schemas and transforms completed in Sprint 10 adoption tooling.
+- Pytest helper or plugin completed in Sprint 10 adoption tooling.
 - Spark Connect support for completed v1/v2 batch features, using `target_backend = "pyspark"` and
   `target_variant = "spark-connect"`, backed by live online/generated runtime evidence.
 - Static first-slice Spark streaming compatibility for caller-owned streaming DataFrames, static lookup side inputs,
@@ -83,6 +82,8 @@ Connect hardening left outside the Sprint 09 support claim.
 - Watermarks.
 - Output modes.
 - Stateful streaming policies.
+- Production incremental compile with `compile --changed-only`, cache invalidation, cache diagnostics, and warm compile
+  performance fixtures.
 
 ## v4
 

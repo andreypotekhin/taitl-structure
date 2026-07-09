@@ -68,7 +68,6 @@
 - Opt-in data-quality constraint model.
 - Phase-bound data-quality constraint execution.
 - Richer static dataflow explain output.
-- Production incremental compile.
 - Generated documentation artifacts for schemas and transforms.
 - Pytest helper or plugin.
 
@@ -94,6 +93,8 @@
 - Checkpoints.
 - Output modes.
 - Streaming lifecycle configuration.
+- Production incremental compile.
+- Cache diagnostics and warm compile performance fixtures.
 
 ## Phase 5: v4
 
@@ -111,7 +112,8 @@ structure compile
 structure compile --fail-on-diff
 ```
 
-Later, add optional pytest and build-tool integrations as v2 adoption tooling.
+Later, add optional pytest and build-tool integrations as v2 adoption tooling. Production incremental compile belongs to
+the end of v3 after the v3 feature surface stabilizes.
 
 Compiler build integration must stay Spark-free. `structure check`, `structure compile`, and
 `structure compile --fail-on-diff` must not require PySpark, Java, a SparkSession, or a Spark cluster. Online runtime,
@@ -135,5 +137,6 @@ Track:
 - cache hit ratio
 - total wall-clock time
 
-Add `structure compile --profile` to emit these measurements. Production incremental compilation belongs to v2; v1
-should preserve deterministic outputs and source fingerprints so the cache can be added without reshaping the compiler.
+Add `structure compile --profile` to emit these measurements. Production incremental compilation belongs to end-of-v3;
+v1/v2 should preserve deterministic outputs and source fingerprints so the cache can be added without reshaping the
+compiler.

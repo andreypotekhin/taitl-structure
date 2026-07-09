@@ -100,7 +100,7 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
 9. Add streaming generated-source scans, compatibility diagnostics, and explain output for supported and deferred
    operation families.
 10. Implement the advanced analytical operation plan
-   [P07052601.Advanced-analytical-operations.plan.md](../../../planning/P07052601.Advanced-analytical-operations.plan.md).
+   [P07052601.Advanced-analytical-operations.plan.md](../../../planning/done/P07052601.Advanced-analytical-operations.plan.md).
 11. Implement advanced grouping, aggregate metrics, and filtered metrics; keep `grouping_sets(...)` and `having(...)`
     behind explicit capability diagnostics.
 12. Implement reusable window specs, explicit frames, broad window expressions, and backend diagnostics.
@@ -190,10 +190,10 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
 - [x] (2026-07-07) Refreshed public examples and the v2 testing generated model so checked-in source, generated
   PySpark, and traceability artifacts cover the Sprint 09 v2 implemented feature surface.
 - [x] (2026-07-07) Closed Spark streaming first-slice work as a static compatibility contract from
-  [P07052604.Spark-streaming-first-slice.plan.md](../../../planning/P07052604.Spark-streaming-first-slice.plan.md).
+  [P07052604.Spark-streaming-first-slice.plan.md](../../../planning/done/P07052604.Spark-streaming-first-slice.plan.md).
   Live online/generated streaming runtime evidence is deferred to post-Sprint 09 follow-up.
 - [x] Implement advanced aggregation/window/HOF support from
-  [P07052601.Advanced-analytical-operations.plan.md](../../../planning/P07052601.Advanced-analytical-operations.plan.md).
+  [P07052601.Advanced-analytical-operations.plan.md](../../../planning/done/P07052601.Advanced-analytical-operations.plan.md).
 - [x] Implement full PySpark rowset join support.
 - [x] Implement cache/persist first-slice optimization directives. Broader repartition, coalesce, checkpoint, and join
   strategy directives are deferred to post-Sprint 09 follow-up.
@@ -213,7 +213,8 @@ Deferred follow-up:
 - Repartition, coalesce, checkpoint, and broader join strategy directives.
 - Rich field-level explain lineage through projections, filters, joins, aggregations, windows, hooks, and optimization
   boundaries.
-- Generated docs, pytest helpers, and incremental compile remain Sprint 10 adoption-tooling work.
+- Generated docs and pytest helpers are Sprint 10 adoption-tooling work. Incremental compile moved to end-of-v3
+  Sprint 17.
 
 ## Explain Performance Metric
 

@@ -146,8 +146,8 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
 - **Transform composition maturity:** hook-bearing stages, composed hook ownership and dispatch, traceability for
   composed hook boundaries, and explicit decisions on earlier-stage output exposure and mixed wrapper-local logic.
 - **Adoption and scale tooling:** generated documentation artifacts for schemas and transforms, pytest helpers,
-  generated-code freshness checks, snapshots, richer generated-code explain reports, and production incremental
-  compilation with cache diagnostics move to Sprint 10 and later adoption-tooling work.
+  generated-code freshness checks, snapshots, and richer generated-code explain reports move through Sprint 10.
+  Production incremental compilation with cache diagnostics moves to end-of-v3 after the v3 feature surface stabilizes.
 
 ### v2 non-goals
 
@@ -173,6 +173,7 @@ generated lifecycle code can rely on a complete enough PySpark-family contract.
 - Sprint 14: window PySpark parity.
 - Sprint 15: higher-order and collection helper PySpark parity.
 - Sprint 16: streaming orchestration.
+- Sprint 17: incremental compile and cache diagnostics.
 
 ### v3 must include
 
@@ -187,6 +188,8 @@ generated lifecycle code can rely on a complete enough PySpark-family contract.
 - Generated `readStream` and `writeStream` code.
 - Trigger, checkpoint, output mode, watermark, and admitted state policy configuration.
 - Full streaming job generation for the first admitted lifecycle slice.
+- Production incremental compile with `compile --changed-only`, cache invalidation, cache diagnostics, and warm compile
+  performance fixtures.
 
 ### v3 non-goals
 

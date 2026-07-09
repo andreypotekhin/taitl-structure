@@ -1,14 +1,13 @@
-# Sprint 10: Generated Docs, Test Tooling, and Incremental Compile
+# Sprint 10: Generated Docs and Test Tooling
 
 ## Sprint Goal
 
-Finish the adoption tooling deferred from Sprint 09: generated documentation artifacts, public pytest helpers, and
-production incremental compile with cache diagnostics.
+Finish the adoption tooling deferred from Sprint 09: generated documentation artifacts and public pytest helpers.
+Production incremental compile with cache diagnostics moved to the end of v3.
 
 ## Product Outcome
 
-Developers can keep generated artifacts fresh in CI, publish schema and transform reference material automatically,
-and get fast feedback in large projects without recompiling unaffected transforms.
+Developers can keep generated artifacts fresh in CI and publish schema and transform reference material automatically.
 
 ## Scope
 
@@ -17,8 +16,6 @@ and get fast feedback in large projects without recompiling unaffected transform
 - Generated Markdown or JSON documentation artifacts for schemas and transforms.
 - Pytest helpers for compiler checks, generated-code freshness, generated-code snapshots, expected diagnostics, and
   online/generated parity.
-- Production incremental compile with `compile --changed-only`, cache invalidation, and cache diagnostics.
-- Performance fixtures for incremental compile on synthetic 10-transform and 100-transform projects.
 
 ### Out of Scope
 
@@ -26,35 +23,32 @@ and get fast feedback in large projects without recompiling unaffected transform
   follow-up backlog.
 - Spark Connect batch support promotion covered by Sprint 09.
 - Streaming source and sink generation.
+- Production incremental compile with `compile --changed-only`, cache invalidation, cache diagnostics, and performance
+  fixtures. This moved to Sprint 17 at the end of v3.
 
 ## Relevant Specification Items
 
 - As a developer, I can generate documentation artifacts for schemas and transforms.
 - As a developer, I can use pytest helpers for compiler checks, freshness, snapshots, diagnostics, and parity.
-- As a developer, I can use production incremental compilation.
 
 ## Engineering Tasks
 
 1. Add generated documentation artifact emitter.
 2. Add docs configuration for Markdown and JSON output destinations.
 3. Add pytest helpers for compiler success, expected diagnostics, generated freshness, snapshots, and parity.
-4. Implement `compile --changed-only`.
-5. Add cache invalidation rules for source, config, schema, dependency, and generated-target changes.
-6. Add cache diagnostics and performance fixtures.
 
 ## Acceptance Criteria
 
 - Generated docs summarize schemas, transform inputs, outputs, subtransforms, dependencies, and target artifacts.
 - Pytest helpers let downstream projects assert compiler success, expected diagnostics, generated freshness, snapshots,
   and online/generated parity.
-- `compile --changed-only` recompiles changed transforms and affected dependents without hiding stale output.
-- Cache diagnostics explain why each transform was reused or recompiled.
+- Incremental compile and cache diagnostics are explicitly scheduled into Sprint 17.
 
 ## Progress
 
 - [x] Implement generated docs.
 - [x] Implement pytest helpers.
-- [ ] Implement incremental compile and cache diagnostics.
+- [x] Move incremental compile and cache diagnostics to end-of-v3 Sprint 17.
 
 Generated docs first slice is implemented through `structure compile`. The compiler now writes Markdown and JSON
 schema/transform reference artifacts under `generated_docs_dir` inside `generated_dir`, with configurable
@@ -65,19 +59,8 @@ Pytest helper slice is implemented through `structure.lib.testing`. Downstream p
 generated-code freshness, generated snapshots, expected diagnostics, and online/generated parity without importing
 fixture-specific repository helpers or PySpark at test collection time.
 
-## Compile-Time Performance Metric
-
-Track cold and warm incremental compile time.
-
-Targets:
-
-- A no-change `compile --changed-only` on a 100-transform synthetic project completes in under 2 seconds excluding
-  interpreter startup.
-- A one-transform change recompiles only the changed transform and affected dependents.
-
 ## Risks
 
-- Incremental compile can be worse than full compile if cache invalidation rules are vague.
 - Public pytest helpers can overfit to Structure internals instead of stable behavior.
 - Generated documentation can become noisy if it mirrors compiler internals instead of user contracts.
 

@@ -3,4 +3,4 @@
 Sprints: docs/dev/project-management/sprints/
 
 ### Current iteration
-Sprint: Sprint10_DocsTestingIncrementalCompile.md
+Sprint: Sprint11_V3DslAndSqlFunctionParity.md

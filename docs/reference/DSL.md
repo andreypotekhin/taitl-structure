@@ -441,6 +441,7 @@ The v1 expression surface includes:
 - field references such as `order.customer_id`;
 - Python literals described by `NullabilityAndTypeCoercion.md`;
 - comparisons such as `==`, `!=`, `<`, `<=`, `>`, and `>=` when supported by the expression type;
+- inclusive range predicates such as `expr.between(lower, upper)`;
 - boolean combination with `&`, `|`, and `~`;
 - null checks such as `expr.is_null()` and `expr.is_not_null()`;
 - null-safe equality when provided by expression objects;

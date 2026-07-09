@@ -14,13 +14,14 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 07 Analytical Join Coverage | Analytical Joins, Backend Capabilities, Traceability, Streaming Compatibility | existence joins, `inner_join`, deterministic lookup dedupe, temporal joins, as-of joins |
 | Sprint 08 Aggregations/Windows/HOFs | Aggregations, Windowing, Deduplication, Higher-Order Functions, Testing | typed `group_by`, aggregate helpers, window helpers, deterministic dedupe, array/map helpers, parity tests |
 | Sprint 09 Spark Connect/Optimization/Explain | Advanced Analytics, Spark Connect, Full PySpark Joins, Optimization Directives, Explain, Testing | full aggregation/window/HOF coverage, supported Spark Connect batch variant, right/full/cross rowset joins, non-equi/disjunctive predicates, cache/persist first-slice directives, compact explain, static streaming compatibility |
-| Sprint 10 Docs/Testing/Incremental Compile | Generated Docs, Test Tooling, Incremental Compile | generated schema/transform docs, pytest helpers, changed-only compile, cache diagnostics |
+| Sprint 10 Docs/Testing | Generated Docs, Test Tooling | generated schema/transform docs, pytest helpers |
 | Sprint 11 v3 DSL/SQL Function Parity | DSL, SQL Functions, Backend Capabilities, Testing | planned Column API helpers, planned SQL function helpers, generated examples, parity tests |
 | Sprint 12 v3 Join Parity Hardening | Joins, Backend Capabilities, Traceability, Streaming Compatibility | using-key joins, right/full diagnostics, cross safety, strategy directives, forward as-of joins |
 | Sprint 13 v3 Aggregation Parity | Aggregations, Backend Capabilities, Traceability | grouping sets, `having(...)`, aggregate-output predicate diagnostics |
 | Sprint 14 v3 Window Parity | Windows, Backend Capabilities, Streaming Compatibility | null ordering, normalized multiple order keys, aggregate windows |
 | Sprint 15 v3 Collection Helper Parity | Higher-Order Functions, Arrays, Maps, Testing | collection size/membership, map-key membership, array construction/repeat/union/except, element lookup/concat |
 | Sprint 16 v3 Streaming Orchestration | Spark Structured Streaming, Runtime, Generated Code, Integration Testing | source/sink declarations, generated `readStream`/`writeStream`, triggers, checkpoints, output modes, watermarks, state policies |
+| Sprint 17 v3 Incremental Compile | CLI, Compiler Performance, Generated Artifacts, Testing | `compile --changed-only`, cache invalidation, cache diagnostics, warm compile performance fixtures |
 
 ## Relevant Specification Items by Sprint
 
@@ -132,7 +133,6 @@ This matrix maps early sprints to specification sections and major deliverables.
 
 - As a developer, I can generate documentation artifacts for schemas and transforms.
 - As a developer, I can use pytest helpers for compiler checks, freshness, snapshots, diagnostics, and parity.
-- As a developer, I can use production incremental compilation with cache diagnostics.
 
 ### Sprint 11
 
@@ -180,3 +180,9 @@ This matrix maps early sprints to specification sections and major deliverables.
 - As a developer, missing lifecycle policy fails with diagnostic links before runtime.
 - As a maintainer, I can verify the first streaming lifecycle slice through live integration evidence or a documented
   release-blocking manual script.
+
+### Sprint 17
+
+- As a developer, I can run `compile --changed-only` so unchanged transforms are not recompiled.
+- As a developer, I can see cache diagnostics so stale generated output is never hidden.
+- As a maintainer, I can verify cold and warm compile behavior on synthetic 10-transform and 100-transform projects.

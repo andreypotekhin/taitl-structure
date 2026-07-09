@@ -137,7 +137,7 @@ Compiler commands may cache source fingerprints, discovered metadata, and IR. Ca
 - a dependency that participates in discovered symbols changes, when detectable.
 
 v1 may implement conservative full rediscovery instead of incremental caching. The implementation must not bake in a
-design that prevents v2 incremental compilation.
+design that prevents end-of-v3 incremental compilation.
 
 ## Diagnostics
 

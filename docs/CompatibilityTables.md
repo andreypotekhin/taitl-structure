@@ -38,7 +38,7 @@ parity names follow the official Spark 4.0.1 Python API docs for Column, SQL fun
 | Comparisons | check | `==`, `!=`, `<`, `<=`, `>`, `>=` | Used in filters and joins when capability permits. |
 | Arithmetic | check | `+`, `-`, `*` | Narrow initial arithmetic subset. |
 | Membership predicates | planned | `isin` | Tracked in [Gaps.md](dev/Gaps.md). |
-| Range predicates | planned | `between` | Convenience over comparisons. |
+| Range predicates | check | `between` | Exposed as inclusive `expr.between(lower, upper)`. |
 | String predicates | planned | `contains`, `like`, `ilike`, `rlike` | Useful for filters and data quality rules. |
 | Rich casts | planned | `cast`, `astype`, `try_cast` | Current public scalar cast is `to_decimal(...)`. |
 | Ordering modifiers | planned | `asc`, `desc`, null ordering | Needed for richer windows. |

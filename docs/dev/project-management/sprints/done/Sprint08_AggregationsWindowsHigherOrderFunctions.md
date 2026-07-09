@@ -118,7 +118,7 @@ def summarize(self, order: OrderEnriched) -> CustomerSummary:
   `dedupe_earliest_by(...)` as end-user aliases over selected-row IR, preserving Spark-visible `row_number()` lowering,
   batch-only streaming classification, public docs, fixture coverage, and generated rendering tests.
 - [x] (2026-07-04) Created the v2 completion execution plan
-  [P07042601.V2-completion-execution-plan.md](../../planning/P07042601.V2-completion-execution-plan.md) to cover the
+  [P07042601.V2-completion-execution-plan.md](../../planning/done/P07042601.V2-completion-execution-plan.md) to cover the
   remaining Sprint 08 keyed dedupe closeout, Sprint 09 Spark Connect/optimization/explain work, Sprint 10 adoption
   tooling, missing designs/specifications/user stories/examples, and public reference cleanup rules.
 - [x] Implement aggregation source capture, IR, recipes, generated snapshots, and parity tests.

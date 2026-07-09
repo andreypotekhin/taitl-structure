@@ -363,16 +363,16 @@ Medium project:
   structure check under 10 seconds warm / 30 seconds cold
 
 Single-file edit:
-  v2 incremental compile under 2 seconds for affected transform
+  end-of-v3 incremental compile under 2 seconds for affected transform
 ```
 
-These targets should influence architecture decisions such as caching, v2 incremental compilation, and avoiding Spark
-startup during compile.
+These targets should influence architecture decisions such as caching, end-of-v3 incremental compilation, and avoiding
+Spark startup during compile.
 
 ## +C14. Incremental Compile and Cache Are Missing
 
-Resolved for v1 architecture by [CompilerPerformanceTargets.md](../specifications/CompilerPerformanceTargets.md). Production incremental
-compilation remains v2 implementation work.
+Resolved for v1 architecture by [CompilerPerformanceTargets.md](../specifications/CompilerPerformanceTargets.md).
+Production incremental compilation remains end-of-v3 implementation work.
 
 Fast compilers need caching and change detection.
 
@@ -393,7 +393,7 @@ structure compile --changed-only
 structure clean
 ```
 
-At minimum, design the compiler so v2 production incremental compilation can be added without major rework.
+At minimum, design the compiler so end-of-v3 production incremental compilation can be added without major rework.
 
 ## +C15. Need a “No Spark Dependency During Compile” Rule
 

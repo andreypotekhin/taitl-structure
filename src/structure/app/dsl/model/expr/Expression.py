@@ -25,6 +25,9 @@ class Expression:
     def null_safe_eq(self, other: object) -> "Expression":
         return self._binary("null_safe_eq", other)
 
+    def between(self, lower: object, upper: object) -> "Expression":
+        return (self >= lower) & (self <= upper)
+
     def __getattr__(self, name: str) -> "Expression":
         if not isinstance(self.type, StructType):
             raise AttributeError(name)
