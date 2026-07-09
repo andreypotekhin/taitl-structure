@@ -143,7 +143,7 @@ parity names follow the official Spark 4.0.1 Python API docs for Column, SQL fun
 | Map key/value/entry helpers | check | Same PySpark names | Introspection and round-trip helpers. |
 | Collection size and contains | planned | `size`, `array_contains`, `map_contains_key` | Common predicate/count gap. |
 | Element lookup | planned | `element_at`, `try_element_at` | Needs missing-key nullability rules. |
-| Array construction/set operations | planned | `array`, `array_union`, `array_except` | Needs type unification. |
+| Array construction/set operations | planned | `array`, `array_repeat`, `array_union`, `array_except` | Needs type unification. |
 | Explode/generator helpers | future | `explode`, `posexplode`, `inline` | Row expansion needs a separate design. |
 | Arbitrary Python callbacks | unsupported | Python lambda execution per row | Callbacks must remain symbolic. |
 
@@ -155,10 +155,11 @@ parity names follow the official Spark 4.0.1 Python API docs for Column, SQL fun
 | Batch Spark Connect | check | Spark Connect DataFrame/Column API | For completed compiler-visible batch features. |
 | Row-local streaming projection/filter | check | Streaming DataFrame transforms | Conservative compatibility. |
 | Stream-static left/inner joins | check | Supported Structured Streaming pattern | Limited to documented shapes. |
-| Streaming sources | future | `readStream` | Caller-owned for now. |
-| Streaming sinks/query lifecycle | future | `writeStream`, `StreamingQuery` | Caller-owned for now. |
-| Watermarks/state policy | future | `withWatermark`, state retention | Required for stateful streaming. |
-| Streaming aggregations | future | Structured Streaming aggregations | Needs output-mode and state semantics. |
+| Streaming sources | planned | `readStream` | Structure-owned lifecycle declarations in v3. |
+| Streaming sinks/query lifecycle | planned | `writeStream`, `StreamingQuery` | Requires explicit checkpoint and query policy. |
+| Triggers and output modes | planned | `trigger`, `outputMode` | Required generated streaming job policy. |
+| Watermarks/state policy | planned | `withWatermark`, state retention | Required for admitted stateful streaming. |
+| Streaming aggregations | planned | Structured Streaming aggregations | Needs bounded output-mode and state semantics. |
 | Classic-only Spark Connect internals | unsupported | SparkContext, RDD, JVM, `_jdf` | Rejected by policy. |
 
 ## Sources

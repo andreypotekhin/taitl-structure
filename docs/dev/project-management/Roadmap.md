@@ -181,7 +181,8 @@ generated lifecycle code can rely on a complete enough PySpark-family contract.
   as-of joins.
 - Explicit grouping sets and post-aggregate `having(...)`.
 - Null ordering in window order keys, normalized multiple order keys, and aggregate windows.
-- Collection size and membership, array construction/repeat/union, map lookup, and map concatenation.
+- Collection size, array and map membership, array construction/repeat/union/except, element lookup, safe element
+  lookup, and map concatenation.
 - Streaming source and sink declarations.
 - Generated `readStream` and `writeStream` code.
 - Trigger, checkpoint, output mode, watermark, and admitted state policy configuration.

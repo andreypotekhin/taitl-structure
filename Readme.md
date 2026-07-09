@@ -296,7 +296,8 @@ See [License.md](License.md)
   dedupe, temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions,
   cache/persist first-slice directives, Spark Connect support for completed batch features, and static streaming
   compatibility diagnostics for caller-owned streaming DataFrames.
-- **v3:** deeper streaming transformation support: live streaming evidence, additional stateful operation families,
-  richer watermark/state diagnostics, and caller-owned output-mode guidance. Structure keeps `readStream`,
-  `writeStream`, triggers, checkpoints, query lifecycle, deployment, and recovery permanently caller-owned.
-- **v4:** backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support claim.
+- **v3:** planned PySpark parity gap closure followed by Structure-owned streaming orchestration: generated
+  `readStream` and `writeStream`, explicit triggers, checkpoints, output modes, watermarks, admitted state policies,
+  and live streaming lifecycle evidence.
+- **v4+:** backend expansion, including postponed Polars/DuckDB work and any non-batch Spark Connect hardening left
+  outside the Sprint 09 support claim.

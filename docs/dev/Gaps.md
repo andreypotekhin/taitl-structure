@@ -75,7 +75,7 @@ Gaps:
 | Ordering modifiers | planned | `asc`, `desc`, null ordering | Current helpers mostly use `descending=`. |
 | Null/NaN predicates | future | `isNaN` | Needs type checks and separate null-vs-NaN diagnostics. |
 | Bitwise column methods | future | `bitwiseAND`, `bitwiseOR`, `bitwiseXOR` | Needs bitwise helpers first. |
-| Struct mutation | planned | `withField`, `dropFields` | Planned after whole nested struct construction and copying. |
+| Struct mutation | future | `withField`, `dropFields` | Postponed until nested projection and whole-field copying are stable. |
 | Column alias/name methods | unsupported | `alias`, `name` | Schema constructors and field aliases own output names. |
 | Raw `over(...)` windows | unsupported | `Column.over` | Structure uses compiler-visible window helpers instead. |
 | Raw Python truthiness | unsupported | `Column.__bool__` | Use symbolic predicates. |
@@ -162,10 +162,10 @@ Gaps:
 
 | Gap | Status | Target PySpark Parity | Notes |
 | --- | --- | --- | --- |
-| Collection size and membership | planned | `size`, `array_contains` | Add common boolean/count helpers. |
-| Array construction and concatenation | planned | `array`, `array_repeat`, `array_union` | Needs type unification. |
+| Collection size and membership | planned | `size`, `array_contains`, `map_contains_key` | Add common boolean/count helpers. |
+| Array construction and set operations | planned | `array`, `array_repeat`, `array_union`, `array_except` | Needs type unification. |
 | Array slicing and sorting variants | future | `slice`, `sort_array`, `reverse` | Needs null ordering docs. |
-| Map lookup and concatenation | planned | `element_at`, `map_concat` | Needs missing-key nullability. |
+| Element lookup and map concatenation | planned | `element_at`, `try_element_at`, `map_concat` | Needs missing-key nullability. |
 | Explode/generator helpers | future | `explode`, `posexplode`, `inline` | Needs row-expansion design. |
 | Python control flow in callbacks | unsupported | Arbitrary Python lambdas | Return symbolic expressions only. |
 
@@ -178,11 +178,12 @@ Gaps:
 
 | Gap | Status | Target PySpark Parity | Notes |
 | --- | --- | --- | --- |
-| Generated streaming sources | future | `spark.readStream` | Deferred to streaming lifecycle design. |
-| Generated streaming sinks | future | `DataFrame.writeStream` | Needs checkpoint and query policy. |
-| Watermarks | future | `withWatermark` | Required before most stateful streaming features. |
-| Streaming aggregations | future | Structured Streaming aggregations | Needs state and output-mode semantics. |
-| Stateful streaming dedupe | future | `dropDuplicatesWithinWatermark` | Depends on watermark and state policy. |
+| Generated streaming sources | planned | `spark.readStream` | Sprint 16 lifecycle declaration work. |
+| Generated streaming sinks | planned | `DataFrame.writeStream` | Needs checkpoint and query policy. |
+| Triggers, checkpoints, and output modes | planned | `trigger`, `checkpointLocation`, `outputMode` | Required lifecycle policy for generated streaming jobs. |
+| Watermarks | planned | `withWatermark` | Required before most stateful streaming features. |
+| Streaming aggregations | planned | Structured Streaming aggregations | Admit only bounded, watermarked state semantics. |
+| Stateful streaming dedupe | planned | `dropDuplicatesWithinWatermark` | Depends on watermark and state policy. |
 | `foreachBatch` and custom sinks | unsupported | `foreachBatch`, `foreach` | Keep side effects outside the DSL. |
 
 ## Admission Checklist
