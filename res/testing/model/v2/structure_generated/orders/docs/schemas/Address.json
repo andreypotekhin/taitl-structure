@@ -1,0 +1,50 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "line1",
+      "name": "line1",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "line2",
+      "name": "line2",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "city",
+      "name": "city",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "state",
+      "name": "state",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "postal_code",
+      "name": "postal_code",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "country",
+      "name": "country",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "testing.model.v2.orders.schemas.common",
+  "name": "Address"
+}

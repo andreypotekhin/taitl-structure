@@ -18,7 +18,7 @@ This reference covers the compiler behavior for:
 - symbolic input scopes declared with `input(Structure)`;
 - field reference capture;
 - Python literal capture in expression positions;
-- expression helper calls and `@expr_fn` expansion;
+- expression helper calls and `@special(type="expr")` expansion;
 - `where(...)` operation capture;
 - `lookup_join(...)` operation capture;
 - schema constructor projection capture;
@@ -151,7 +151,7 @@ Rules:
 - The engine must clear the active context in a `finally`-style cleanup path after successful or failed execution.
 - Hooks are not executed.
 - Private helper methods are ordinary Python and are unsupported when they try to manipulate symbolic expressions in
-  ways the DSL cannot capture. Reusable expression logic should use `@expr_fn`.
+  ways the DSL cannot capture. Reusable expression logic should use `@special(type="expr")`.
 - If user code performs side effects during symbolic execution, Structure is not required to undo them. Diagnostics
   should still guide developers toward pure compiled subtransforms or explicit hooks.
 
@@ -190,7 +190,7 @@ Rules:
 The compiler invokes subtransform methods on a transform implementation object. During symbolic execution:
 
 - `self.<input_name>` returns a symbolic input scope for declared inputs.
-- `self.<expr_helper_name>(...)` calls a class-local `@expr_fn` helper symbolically.
+- `self.<expr_helper_name>(...)` calls a class-local `@special(type="expr")` helper symbolically.
 - Hook methods are ignored except for previously discovered metadata.
 - Constructor-bound live DataFrames are not used.
 
@@ -253,6 +253,8 @@ Rules:
 
 - `order.customer_id` becomes a scoped reference, not a string column name.
 - Nested struct field references should preserve path order when nested field access is supported.
+- Nested field references carry path segments separately from rendered Spark names so aliases containing dots remain one
+  field segment.
 - A field reference keeps the field's declared type and static nullability, adjusted by current narrowing facts.
 - A joined scope from a left join makes right-side fields nullable as described by `JoinSemantics.md`.
 - Generated aliases are target-layer concerns, but symbolic references must carry stable scope identity so target
@@ -311,13 +313,13 @@ Rules:
 - Helper calls with only non-symbolic arguments may return ordinary Python values only when the public DSL explicitly
   allows it. Compiled expression positions should normalize accepted values to literals.
 
-## `@expr_fn` Expansion
+## `@special(type="expr")` Expansion
 
-`@expr_fn` helpers are reusable compileable expression functions.
+`@special(type="expr")` helpers are reusable compileable expression functions.
 
 Rules:
 
-- Calling an `@expr_fn` with symbolic arguments executes the helper body under a helper source context.
+- Calling an `@special(type="expr")` with symbolic arguments executes the helper body under a helper source context.
 - The helper result must be a symbolic expression or a Python literal accepted in expression position.
 - The engine must record the outer helper call identity for diagnostics and provenance.
 - The engine may either inline the expanded expression into IR or preserve a `CallExpr` with expansion metadata, as long
@@ -410,6 +412,8 @@ Rules:
 - Assignments must be type- and nullability-checked later according to `NullabilityAndTypeCoercion.md`.
 - The final returned schema construction becomes the `Project` operation for the step.
 - Intermediate schema constructions may produce constructed row proxies if assigned to local variables and used later.
+- A schema construction assigned to a `Struct(...)` field becomes a nested struct expression, preserving the nested
+  schema identity and child assignments in nested schema field order.
 
 Minimum projection assignment metadata:
 
@@ -501,7 +505,7 @@ Unsupported behavior must fail with structured compile errors. Required unsuppor
 - Python truthiness on symbolic expressions;
 - Python `and`, `or`, and `not` for symbolic boolean logic;
 - Python string methods on symbolic string expressions, such as `.strip()` or `.lower()`;
-- arbitrary Python functions that are not public DSL helpers or `@expr_fn` helpers;
+- arbitrary Python functions that are not public DSL helpers or `@special(type="expr")` helpers;
 - source-level PySpark `Column` construction inside compiled subtransforms;
 - raw string column paths;
 - DataFrame methods inside compiled subtransforms;
@@ -516,7 +520,7 @@ Rules:
 
 - The engine should reject unsupported operations as close to the source operation as practical.
 - Diagnostics must prefer a direct DSL replacement when one exists.
-- Diagnostics should suggest `@expr_fn` for reusable expression logic.
+- Diagnostics should suggest `@special(type="expr")` for reusable expression logic.
 - Diagnostics should suggest hooks only when arbitrary PySpark is genuinely appropriate.
 - Configuration workarounds should be shown only when a safe setting exists. Unsupported compiled expressions do not
   have a configuration workaround.
@@ -550,7 +554,7 @@ Use:
   customer_id=lower(trim(order.customer_id))
 
 For reuse:
-  @expr_fn
+  @special(type="expr")
   def clean_id(value):
       return lower(trim(value))
 

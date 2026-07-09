@@ -10,5 +10,6 @@ class PackageImportStorage:
         self.package = package
 
     def import_module(self, module_name: str) -> ModuleType:
+        if module_name != self.package and not module_name.startswith(f"{self.package}."):
+            raise ImportError(f"Generated module {module_name} is outside package {self.package}")
         return importlib.import_module(module_name)
-

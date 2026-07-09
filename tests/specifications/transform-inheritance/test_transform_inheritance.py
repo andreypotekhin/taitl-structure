@@ -10,11 +10,11 @@ from structure import (
     StructureSession,
     Transform,
     after,
-    expr_fn,
     field,
     input,
     lane,
     output,
+    special,
     transform,
     where,
 )
@@ -384,13 +384,13 @@ def test_private_helper_method_remains_allowed() -> None:
     assert [step.name for step in compile_transform(Publish).steps] == ["publish"]
 
 
-def test_expr_fn_helper_call_through_self_remains_allowed() -> None:
+def test_special_expr_helper_call_through_self_remains_allowed() -> None:
     @transform
     class Publish(Transform):
         rows = input(Raw)
         published = output(Published)
 
-        @expr_fn
+        @special(type="expr")
         def clean(value):
             return value
 

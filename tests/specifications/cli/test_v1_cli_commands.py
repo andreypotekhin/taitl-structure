@@ -3,12 +3,14 @@ import os
 import shutil
 import sys
 from contextlib import contextmanager
+from dataclasses import dataclass
 from importlib import import_module
 from pathlib import Path
 from uuid import uuid4
 
 from click.testing import CliRunner
 
+from structure import DiskStorage
 from structure.app.cli.api import cli
 
 
@@ -23,6 +25,42 @@ def workspace_tmp():
     finally:
         os.chdir(old)
         shutil.rmtree(root, ignore_errors=True)
+
+
+@dataclass(frozen=True)
+class FakeType:
+    name: str
+    args: tuple = ()
+    options: tuple = ()
+
+
+class FakeTypes:
+
+    @staticmethod
+    def StructType(fields):
+        return FakeType("StructType", tuple(fields))
+
+    @staticmethod
+    def StructField(name, dataType, nullable):
+        return FakeType("StructField", (name, dataType, nullable))
+
+    @staticmethod
+    def StringType():
+        return FakeType("StringType")
+
+    @staticmethod
+    def DecimalType(precision, scale):
+        return FakeType("DecimalType", (precision, scale))
+
+
+class CaptureStorage:
+
+    def __init__(self) -> None:
+        self.files: dict[str, str] = {}
+
+    def write(self, files: dict[str, str]) -> str:
+        self.files = dict(files)
+        return "captured"
 
 
 def drop_orders_modules() -> None:
@@ -174,6 +212,7 @@ def test_v1_cli_init_writes_seed_config() -> None:
         assert Path("structure.toml").exists()
         text = Path("structure.toml").read_text(encoding="utf-8")
         assert 'generated_package = "structure_generated"' in text
+        assert "generated_docs = true" in text
         assert 'generated_docs_dir = "docs"' in text
         assert 'generated_docs_formats = ["markdown", "json"]' in text
         assert 'target_profile = ">=3.5,<4.1"' in text
@@ -259,6 +298,49 @@ def test_v1_cli_compile_writes_one_transform_module_per_source_unit() -> None:
         assert "class PublishOrdersGenerated" in text
 
 
+def test_v1_transform_generate_writes_one_transform_module_per_source_unit() -> None:
+    with workspace_tmp() as root:
+        write_project(root)
+        append_second_transform(root)
+        sys.path.insert(0, str(root / "src"))
+        try:
+            module = import_module("orders.transforms")
+            storage = CaptureStorage()
+
+            generated = module.NormalizeOrders.generate(
+                project_root=root,
+                storage=storage,
+                schema_types=FakeTypes,
+            )
+
+            text = storage.files["structure_generated/pyspark/transforms/transforms.py"]
+            assert generated.source_unit == "orders.transforms"
+            assert generated.module_name == "structure_generated.pyspark.transforms.transforms"
+            assert generated.classes == ("NormalizeOrdersGenerated", "PublishOrdersGenerated")
+            assert generated.result == "captured"
+            assert "class NormalizeOrdersGenerated" in text
+            assert "class PublishOrdersGenerated" in text
+        finally:
+            if str(root / "src") in sys.path:
+                sys.path.remove(str(root / "src"))
+            drop_orders_modules()
+
+
+def test_v1_disk_storage_imports_from_generated_root() -> None:
+    with workspace_tmp() as root:
+        storage = DiskStorage(root / "generated")
+        storage.write(
+            {
+                "pkg/__init__.py": "",
+                "pkg/mod.py": "VALUE = 42\n",
+            }
+        )
+
+        module = storage.import_module("pkg.mod")
+
+        assert module.VALUE == 42
+
+
 def test_v1_cli_compile_writes_generated_docs_contract() -> None:
     with workspace_tmp() as root:
         write_project(root)
@@ -287,6 +369,29 @@ def test_v1_cli_compile_respects_generated_docs_format_override() -> None:
         assert result.exit_code == 0, result.output
         assert Path("generated/docs/index.json").exists()
         assert not Path("generated/docs/index.md").exists()
+
+
+def test_v1_cli_compile_allows_generated_docs_opt_out() -> None:
+    with workspace_tmp() as root:
+        write_project(root)
+
+        result = CliRunner().invoke(cli, ["compile", "--no-generated-docs"])
+
+        assert result.exit_code == 0, result.output
+        assert Path("generated/structure_generated/pyspark/transforms/transforms.py").exists()
+        assert not Path("generated/docs").exists()
+        assert "generated docs: disabled" in result.output
+
+
+def test_v1_cli_fail_on_diff_ignores_existing_docs_when_docs_are_disabled() -> None:
+    with workspace_tmp() as root:
+        write_project(root)
+        CliRunner().invoke(cli, ["compile"])
+
+        result = CliRunner().invoke(cli, ["compile", "--fail-on-diff", "--no-generated-docs"])
+
+        assert result.exit_code == 0, result.output
+        assert Path("generated/docs/index.md").exists()
 
 
 def test_v1_cli_fail_on_diff_reports_stale_generated_output_without_writing() -> None:

@@ -75,7 +75,7 @@ Gaps:
 | Ordering modifiers | planned | `asc`, `desc`, null ordering | Current helpers mostly use `descending=`. |
 | Null/NaN predicates | future | `isNaN` | Needs type checks and separate null-vs-NaN diagnostics. |
 | Bitwise column methods | future | `bitwiseAND`, `bitwiseOR`, `bitwiseXOR` | Needs bitwise helpers first. |
-| Struct mutation | future | `withField`, `dropFields` | Needs a Structure-native nested projection story. |
+| Struct mutation | planned | `withField`, `dropFields` | Planned after whole nested struct construction and copying. |
 | Column alias/name methods | unsupported | `alias`, `name` | Schema constructors and field aliases own output names. |
 | Raw `over(...)` windows | unsupported | `Column.over` | Structure uses compiler-visible window helpers instead. |
 | Raw Python truthiness | unsupported | `Column.__bool__` | Use symbolic predicates. |

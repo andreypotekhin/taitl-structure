@@ -45,6 +45,7 @@ class Expression:
         path_strings = (*path_strings, field.column)
         name_path_strings = (*name_path_strings, name)
         data["field"] = ".".join(path_strings)
+        data["field_nullable"] = field.nullable
         data["name"] = ".".join(name_path_strings)
         data["path"] = path_strings
         data["name_path"] = name_path_strings

@@ -140,7 +140,7 @@ However, this needs an early implementation spike to prove:
 - source locations can be captured;
 - generated code can map hooks back to methods.
 
-## +C5. Class-Local `@expr_fn` Without `self` Needs a Spike
+## +C5. Class-Local `@special(type="expr")` Without `self` Needs a Spike
 
 Resolved for design/specification coverage by [DSL.md](../specifications/DSL.md) and
 [SymbolicExecution.md](../specifications/SymbolicExecution.md). The implementation proof remains a Sprint 0 coding spike.
@@ -148,7 +148,7 @@ Resolved for design/specification coverage by [DSL.md](../specifications/DSL.md)
 Desired syntax:
 
 ```python
-@expr_fn
+@special(type="expr")
 def clean_id(value):
     return lower(trim(value))
 
@@ -456,7 +456,7 @@ Add tests for:
 - `lookup_join(...)` without uniqueness warning;
 - duplicate output fields;
 - non-boolean filters;
-- `@expr_fn` returning non-expression values.
+- `@special(type="expr")` returning non-expression values.
 
 These tests protect developer experience and diagnostics.
 
@@ -544,7 +544,7 @@ hooks, compiler traceability, static dataflow, streaming compatibility reporting
 integration. That scope is coherent, but it is too broad to serve as the first adoption checkpoint.
 
 The first adoption checkpoint is now first executable slice, an internal dev/test planning label. first executable slice proves one executable contract before
-the larger v1 scope hardens: one transform with schema declaration, projection, filtering, one `@expr_fn` helper, input
+the larger v1 scope hardens: one transform with schema declaration, projection, filtering, one `@special(type="expr")` helper, input
 validation, online execution, generated execution, and parity tests.
 
 Deferred from Sprint 01 into later v1 work:
@@ -595,14 +595,14 @@ supported.
 Resolved by clarifying extension compatibility in `Readme.md`, [Compatibility.md](../../Compatibility.md), and the compileability checker
 design. Structure now keeps the initial extension surface deliberately small:
 
-- `@expr_fn` is the supported public extension point for reusable compiler-visible expression logic.
+- `@special(type="expr")` is the supported public extension point for reusable compiler-visible expression logic.
 - `@before(...)` and `@after(...)` hooks are supported public escape hatches for arbitrary PySpark DataFrame code.
 - Backend capability providers, diagnostic renderers, schema type adapters, validation policy plugins, and hook lint
   rule registries remain internal or deferred until their contracts are specified and tested.
 - Monkey-patching compiler registries or relying on hidden UDF-like fallback is unsupported.
 
 Hooks remain useful but intentionally opaque. Traceability and explain output should show hook boundaries, while diagnostics
-should prefer direct DSL or `@expr_fn` fixes when logic can stay compiler-visible.
+should prefer direct DSL or `@special(type="expr")` fixes when logic can stay compiler-visible.
 
 ## +C26. Data Quality Constraints Stop at Schema Shape
 
@@ -801,7 +801,7 @@ Add these to Sprint 0 before the first vertical slice:
 
 ```text
 SPIKE: Prove @after(method, lane=lane) inside class bodies.
-SPIKE: Prove @expr_fn class-local helper without self parameter.
+SPIKE: Prove @special(type="expr") class-local helper without self parameter.
 SPIKE: Prove source-order method discovery with line numbers.
 SPIKE: Prove source-root discovery and generated `structure_generated.<source package>` import paths.
 SPIKE: Prove compiler can run without PySpark, Java, SparkSession, Spark startup, or a Spark cluster.

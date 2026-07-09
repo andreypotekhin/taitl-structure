@@ -1,6 +1,21 @@
 from typing import Any, cast
 
-from structure import Boolean, Integer, String, Structure, Transform, field, input, output, transform, trim, upper, when
+from structure import (
+    Boolean,
+    Integer,
+    String,
+    Struct,
+    Structure,
+    Transform,
+    field,
+    input,
+    output,
+    transform,
+    trim,
+    upper,
+    when,
+    where,
+)
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
@@ -81,6 +96,69 @@ def test_v1_expression_renderer_passes_field_aliases_to_spark() -> None:
     expression = recipe.steps[0].projection[0].expression
 
     assert PySpark.render.expression()(expression, scope_aliases={"rows": "rows"}) == 'F.col("rows.promo-code")'
+
+
+def test_v1_expression_renderer_renders_nested_struct_construction() -> None:
+    class Address(Structure):
+        city = field(String(), nullable=False)
+        postal_code = field(String(), nullable=False)
+
+    class Raw(Structure):
+        id = field(String(), nullable=False)
+        shipping = field(Struct(Address), nullable=True)
+
+    class Published(Structure):
+        id = field(String(), nullable=False)
+        shipping = field(Struct(Address), nullable=False)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            where(row.shipping.is_not_null())  # type: ignore[attr-defined]
+            return Published(
+                id=row.id,
+                shipping=Address(
+                    city=trim(row.shipping.city),  # type: ignore[attr-defined]
+                    postal_code=row.shipping.postal_code,  # type: ignore[attr-defined]
+                ),
+            )
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+
+    assert PySpark.render.expression()(projection["shipping"], scope_aliases={"rows": "rows"}) == (
+        'F.struct(F.trim(F.col("rows.shipping.city")).alias("city"), '
+        'F.col("rows.shipping.postal_code").alias("postal_code"))'
+    )
+
+
+def test_v1_expression_renderer_escapes_dotted_nested_field_aliases() -> None:
+    class Address(Structure):
+        postal_code = field(String(), nullable=False, alias="postal.code")
+
+    class Raw(Structure):
+        shipping = field(Struct(Address), nullable=False)
+
+    class Published(Structure):
+        postal_code = field(String(), nullable=False)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(postal_code=row.shipping.postal_code)  # type: ignore[attr-defined]
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    expression = recipe.steps[0].projection[0].expression
+
+    assert PySpark.render.expression()(expression, scope_aliases={"rows": "rows"}) == (
+        'F.col("rows.shipping.`postal.code`")'
+    )
 
 
 def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> None:

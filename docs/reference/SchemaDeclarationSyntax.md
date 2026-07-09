@@ -191,6 +191,8 @@ Rules:
 - Self-recursive schemas are rejected in v1.
 - Recursive cycles across multiple schemas are rejected in v1.
 - Nested struct field order follows the referenced schema class.
+- Nested struct assignment is nominal: the target `Struct(Address)` requires an `Address` expression, not another
+  schema with the same fields.
 
 Generated PySpark mapping:
 
@@ -247,6 +249,22 @@ Rules:
 - Missing nullable fields are errors in v1. Developers should be explicit to keep generated projections reviewable.
 - Positional arguments are rejected.
 - Field keyword order may differ from declaration order; generated projection order follows schema declaration order.
+
+For nested `Struct(...)` fields, use the nested schema constructor as the assigned value:
+
+```python
+return OrderPublished(
+    id=order.id,
+    shipping=Address(
+        city=trim(order.shipping.city),
+        postal_code=order.shipping.postal_code,
+    ),
+)
+```
+
+The compiler lowers the nested constructor to Spark `struct(...)` in generated and online PySpark execution. It does
+not treat the nested object as a Python runtime value. To change one child field, construct the whole nested value for
+now; partial nested updates are tracked as planned follow-up work.
 
 For schemas that extend earlier schema rows, a schema class may also start from one or more base rows and then overlay
 explicit fields:

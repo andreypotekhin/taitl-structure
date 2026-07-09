@@ -81,9 +81,9 @@ online/generated expression parity integration coverage are in place.
 
 - Common expression functions compile.
 - `where(...)` filters compile.
-- `@expr_fn` helpers compile and inline.
+- `@special(type="expr")` helpers compile and inline.
 - Unsupported Python operations fail with structured diagnostics.
-- Error messages suggest DSL alternatives, `@expr_fn`, hooks, and config workarounds when applicable.
+- Error messages suggest DSL alternatives, `@special(type="expr")`, hooks, and config workarounds when applicable.
 
 ## +M4: Hooks and Generated Classes
 

@@ -19,10 +19,12 @@ class StructureConfigValidator:
         "spark.sql.storeAssignmentPolicy": ("ANSI", "LEGACY", "STRICT"),
     }
     _bools = {
+        "generated_docs",
         "validate_inputs",
         "validate_intermediate",
         "validate_outputs",
         "strict_performance",
+        "warn_on_udfs",
         "fail_on_diff",
         "spark.sql.ansi.enabled",
     }

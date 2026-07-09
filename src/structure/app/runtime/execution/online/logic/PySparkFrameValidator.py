@@ -59,6 +59,8 @@ class PySparkFrameValidator:
             return False
         if isinstance(actual, DecimalType) and isinstance(target, DecimalType):
             return actual.precision == target.precision and actual.scale == target.scale
+        if isinstance(actual, StructType) and isinstance(target, StructType):
+            return actual.schema is target.schema
         return actual == target or actual.__class__.__name__.removesuffix("Type") == target.__class__.__name__
 
     def _same_data_type(self, actual, expected) -> bool:
@@ -75,10 +77,24 @@ class PySparkFrameValidator:
                 self._same_data_type(self._map_key(actual), self._map_key(expected))
                 and self._same_data_type(self._map_value(actual), self._map_value(expected))
             )
+        if actual_name == "StructType":
+            actual_fields = self._struct_fields(actual)
+            expected_fields = self._struct_fields(expected)
+            if actual_fields.keys() != expected_fields.keys():
+                return False
+            return all(
+                self._same_data_type(actual_fields[name].dataType, expected_fields[name].dataType)
+                for name in expected_fields
+            )
         return False
 
     def _type_name(self, type) -> str:
+        if hasattr(type, "fieldNames"):
+            return "StructType"
         return getattr(type, "name", type.__class__.__name__)
+
+    def _struct_fields(self, type):
+        return {field.name: field for field in type}
 
     def _array_element(self, type):
         if hasattr(type, "elementType"):

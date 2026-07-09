@@ -96,7 +96,7 @@ from structure import (
     transform,
     input,
     output,
-    expr_fn,
+    special,
     where,
     after,
     lookup_join,
@@ -116,7 +116,7 @@ class EnrichOrders(Transform):
     customers = input(Customer)
     enriched = output(OrderWithCustomer)
 
-    @expr_fn
+    @special(type="expr")
     def clean_id(value):
         return lower(trim(value))
 

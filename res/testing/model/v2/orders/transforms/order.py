@@ -29,7 +29,6 @@ from structure import (
     before,
     coalesce,
     exists,
-    expr_fn,
     input,
     inner_join,
     left_join,
@@ -39,6 +38,7 @@ from structure import (
     map_transform_values,
     not_exists,
     output,
+    special,
     temporal_one,
     to_decimal,
     transform,
@@ -57,11 +57,11 @@ class EnrichOrders(Transform):
     shipments = input(Shipment)
     published = output(OrderPublished)
 
-    @expr_fn
+    @special(type="expr")
     def clean_id(value):
         return lower(trim(value))
 
-    @expr_fn
+    @special(type="expr")
     def money(value):
         return coalesce(to_decimal(value, precision=12, scale=2), 0)
 

@@ -27,8 +27,10 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
 
         assert [path.name for path in config.source_roots] == ["src"]
         assert config.generated_package == "structure_generated"
+        assert config.generated_docs is True
         assert config.generated_docs_dir == root / "generated" / "docs"
         assert config.generated_docs_formats == ("markdown", "json")
+        assert config.warn_on_udfs is True
         assert config.execution_mode == "online"
         assert config.target_profile == ">=3.5,<4.1"
         assert config.target_variant == "ordinary"
@@ -37,7 +39,9 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert config.source_map["target_profile"] == "default"
         assert config.source_map["target_variant"] == "default"
         assert config.source_map["generated_package"] == "default"
+        assert config.source_map["generated_docs"] == "default"
         assert config.source_map["generated_docs_dir"] == "default"
+        assert config.source_map["warn_on_udfs"] == "default"
 
 
 def test_v1_config_precedence_is_cli_pyproject_structure_defaults() -> None:
@@ -177,6 +181,32 @@ def test_v1_config_accepts_generated_docs_settings() -> None:
 
         assert config.generated_docs_dir == root / "generated" / "reference"
         assert config.generated_docs_formats == ("json",)
+
+
+def test_v1_config_accepts_generated_docs_opt_out() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            "[tool.structure]\ngenerated_docs = false\n",
+            encoding="utf-8",
+        )
+
+        config = Configuration.resolve()(project_root=root)
+
+        assert config.generated_docs is False
+
+
+def test_v1_config_accepts_udf_warning_opt_out() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            "[tool.structure]\nwarn_on_udfs = false\n",
+            encoding="utf-8",
+        )
+
+        config = Configuration.resolve()(project_root=root)
+
+        assert config.warn_on_udfs is False
 
 
 def test_v1_config_rejects_generated_docs_dir_escape() -> None:

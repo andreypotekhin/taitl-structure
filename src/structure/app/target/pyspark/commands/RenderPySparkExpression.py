@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import json
-from typing import Mapping
+import re
+from typing import Any, Mapping, cast
 
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 
@@ -20,12 +21,17 @@ class RenderPySparkExpression:
     def _render(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         if expression.kind == "field":
             return self._field(expression, aliases)
+        if expression.kind == "struct":
+            return self._struct(expression, aliases)
         if expression.kind == "literal":
             return f"F.lit({expression.data['value']!r})"
         if expression.kind == "lambda_arg":
             return str(expression.data["name"])
         if expression.kind == "call":
             return self._call(expression, aliases)
+        if expression.kind == "python_udf":
+            args = [self._render(argument, aliases) for argument in expression.args]
+            return f"self.{expression.data['udf_name']}({', '.join(args)})"
         if expression.kind == "reserved_v2":
             return self._reserved(expression, aliases)
         if expression.kind == "is_not_null":
@@ -261,9 +267,20 @@ class RenderPySparkExpression:
 
     def _field(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         scope = str(expression.data["scope"])
-        field = str(expression.data["field"])
+        field = ".".join(self._field_path(expression))
         alias = aliases.get(scope, scope)
         return f"F.col({self._literal(f'{alias}.{field}')})"
+
+    def _field_path(self, expression: PySparkExpressionRecipe) -> tuple[str, ...]:
+        path = expression.data.get("path")
+        if not isinstance(path, tuple):
+            return (str(expression.data["field"]),)
+        return tuple(self._field_segment(str(segment)) for segment in path)
+
+    def _field_segment(self, value: str) -> str:
+        if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_-]*", value):
+            return value
+        return f"`{value.replace('`', '``')}`"
 
     def _call(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         function = expression.data["function"]
@@ -281,6 +298,14 @@ class RenderPySparkExpression:
             scale = expression.data["scale"]
             return f'{args[0]}.cast("decimal({precision},{scale})")'
         raise TypeError(f"Unsupported PySpark helper call: {function}")
+
+    def _struct(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
+        fields = cast(tuple[Any, ...], expression.data["fields"])
+        columns = (
+            f"{self._render(argument, aliases)}.alias({self._literal(field.column)})"
+            for field, argument in zip(fields, expression.args, strict=True)
+        )
+        return f"F.struct({', '.join(columns)})"
 
     def _int_data(self, expression: PySparkExpressionRecipe, key: str, default: int) -> int:
         value = expression.data.get(key, default)

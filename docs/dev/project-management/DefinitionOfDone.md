@@ -30,7 +30,7 @@ A story or task is done when all relevant criteria are satisfied.
 - Compile-time regressions are avoided.
 - Unsupported Python operations fail with structured errors.
 - Error messages include specific location/context where feasible.
-- Error messages suggest direct DSL alternatives, `@expr_fn` helpers, hooks, and config workarounds when applicable.
+- Error messages suggest direct DSL alternatives, `@special(type="expr")` helpers, hooks, and config workarounds when applicable.
 
 ## Schema Criteria
 

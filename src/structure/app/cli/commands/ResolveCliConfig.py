@@ -10,7 +10,7 @@ from structure.app.configuration.api import ConfigError, Configuration, Structur
 class ResolveCliConfig:
 
     def __call__(self, overrides: dict[str, object]) -> StructureConfig:
-        values = {key: value for key, value in overrides.items() if value not in (None, (), False)}
+        values = {key: value for key, value in overrides.items() if value not in (None, ())}
         if "source_roots" in values:
             values["source_roots"] = list(cast(tuple[str, ...], values["source_roots"]))
         if "compat_targets" in values:

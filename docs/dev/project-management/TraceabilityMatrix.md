@@ -7,7 +7,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 00 Groundwork | Setup, Configuration, Compatibility, Source Layout, Build Integration, Testing, Spikes | repo skeleton, CLI skeleton, config loader, compatibility policy, CI, source-root discovery, spike notes |
 | Sprint 01 Vertical Slice 1 | Schemas, Transform Classes, Inputs, Online Execution, Generated Code, Testing | simple schema, one transform, online runner, generated class, Spark execution test |
 | Sprint 02 Schemas and Validation | Schema Validation, Generated Code, Configuration | `StructType` generation, `assert_schema`, intermediate validation defaults |
-| Sprint 03 Expressions/Filtering/Helpers | Symbolic Execution, Expression Helpers, Filtering, Error Reporting | expression IR, `where`, `@expr_fn`, diagnostic registry, structured unsupported-code errors |
+| Sprint 03 Expressions/Filtering/Helpers | Symbolic Execution, Expression Helpers, Filtering, Error Reporting | expression IR, `where`, `@special(type="expr")`, diagnostic registry, structured unsupported-code errors |
 | Sprint 04 Hooks/Generated Classes | Hooks, Generated Code, Error Reporting | `@after(method, lane=lane)`, direct hook calls, no-hook cleanliness |
 | Sprint 05 Joins/Compiler Traceability/Build | Joins, Compiler Traceability, Build Integration, Streaming Compatibility | `lookup_join`, N-step joins, compiler provenance, static dataflow traceability, `--fail-on-diff`, `explain` |
 | Sprint 06 v2 Scope/Analytical IR | v2 Foundations, Backend Capabilities, Traceability, Streaming Compatibility | v2 scope, non-goals, operation taxonomy, capability placeholders, fixture skeletons, diagnostic anchors |
@@ -59,10 +59,10 @@ This matrix maps early sprints to specification sections and major deliverables.
 
 - As a developer, I can compile field references to Spark Columns.
 - As a developer, I can use `where(...)` for filtering.
-- As a developer, I can use `@expr_fn` helpers.
+- As a developer, I can use `@special(type="expr")` helpers.
 - As a developer, diagnostic codes are registered with stable documentation links.
 - As a developer, I receive structured compiler errors for unsupported Python.
-- As a developer, I receive alternatives including DSL functions, `@expr_fn`, hooks, and config workarounds.
+- As a developer, I receive alternatives including DSL functions, `@special(type="expr")`, hooks, and config workarounds.
 
 ### Sprint 04
 

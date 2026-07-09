@@ -31,6 +31,7 @@ Seed defaults:
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
+generated_docs = true
 generated_docs_dir = "docs"
 generated_docs_formats = ["markdown", "json"]
 execution_mode = "online"
@@ -44,6 +45,7 @@ input_validation_mode = "schema_only"
 intermediate_validation_mode = "schema_only"
 output_validation_mode = "schema_only"
 strict_performance = true
+warn_on_udfs = true
 fail_on_diff = false
 
 spark.sql.ansi.enabled = true
@@ -91,6 +93,18 @@ Rules:
 - Must be a valid dotted Python package name.
 - Must not be `"structure"`.
 - Must not collide with a discovered source package.
+
+### generated_docs
+
+Type: boolean.
+
+Default: `true`.
+
+Rules:
+
+- `true` writes configured generated documentation artifacts during `structure compile`.
+- `false` skips generated documentation artifacts and makes `compile --fail-on-diff` ignore existing files under
+  `generated_docs_dir`.
 
 ### generated_docs_dir
 
@@ -301,6 +315,18 @@ Rules:
   operations, or opaque generated code.
 - v1 docs should keep this true in examples.
 
+### warn_on_udfs
+
+Type: boolean.
+
+Default: `true`.
+
+Rules:
+
+- When true, compiled transforms that use `@special(type="udf")` emit a warning because Python UDF bodies are opaque
+  to Spark optimization.
+- When false, UDFs still compile, but the optimizer-opacity warning is suppressed.
+
 ### fail_on_diff
 
 Type: boolean.
@@ -392,6 +418,7 @@ StructureConfig
   source_roots
   generated_dir
   generated_package
+  generated_docs
   generated_docs_dir
   generated_docs_formats
   execution_mode
@@ -403,6 +430,7 @@ StructureConfig
   traceability
   validation
   strict_performance
+  warn_on_udfs
   fail_on_diff
   spark_sql
   source_map

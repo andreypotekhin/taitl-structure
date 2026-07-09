@@ -24,7 +24,7 @@ class NormalizeOrders(Transform):
     orders = input(OrderRaw)
     normalized = output(OrderNormalized)
 
-    @expr_fn
+    @special(type="expr")
     def clean_id(value):
         return lower(trim(value))
 
@@ -84,7 +84,7 @@ class NormalizeOrdersGenerated:
 - One public schema-returning method.
 - Symbolic field references.
 - Simple expression functions: `lower`, `trim`, `coalesce`, and `to_decimal`.
-- One class-local `@expr_fn` helper.
+- One class-local `@special(type="expr")` helper.
 - `where(...)` filtering.
 - Projection IR.
 - Shared PySpark execution recipes for online/generated parity.
@@ -117,7 +117,7 @@ class NormalizeOrdersGenerated:
 - As a developer, I can construct a transform invocation with named input DataFrames.
 - As a developer, I can run the transform online through `StructureSession`.
 - As a developer, I can filter rows with `where(...)`.
-- As a developer, I can define one class-local `@expr_fn` helper.
+- As a developer, I can define one class-local `@special(type="expr")` helper.
 - As a developer, input schemas are validated before execution.
 - As a developer, I can generate one PySpark class per source transform class.
 - As a developer, generated code uses Spark Column expressions rather than UDFs.
@@ -149,7 +149,7 @@ class NormalizeOrdersGenerated:
 6. Implement schema construction capture.
 7. Implement `to_decimal` expression.
 8. Implement `lower`, `trim`, and `coalesce` expressions.
-9. Implement class-local `@expr_fn` helper support for one helper.
+9. Implement class-local `@special(type="expr")` helper support for one helper.
 10. Implement `where(...)` filtering.
 11. Implement projection IR.
 12. Implement shared PySpark execution recipes for projection and filtering IR.

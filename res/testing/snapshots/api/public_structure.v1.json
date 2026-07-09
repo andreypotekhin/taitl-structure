@@ -35,6 +35,7 @@
     "CompileKey": {
       "dataclass_fields": [
         "subject",
+        "structure_version",
         "options",
         "sources"
       ],
@@ -42,7 +43,7 @@
       "kind": "class",
       "module": "structure.app.compiler.artifacts.model.CompileKey",
       "qualname": "CompileKey",
-      "signature": "(subject: 'tuple[str, ...]', options: 'tuple[object, ...]', sources: 'tuple[tuple[str, int | None, int | None], ...]') -> None"
+      "signature": "(subject: 'tuple[str, ...]', structure_version: 'str', options: 'tuple[object, ...]', sources: 'tuple[tuple[str, int | None, int | None, str | None], ...]') -> None"
     },
     "CompiledTransform": {
       "dataclass_fields": [
@@ -73,13 +74,14 @@
         "validate_outputs",
         "output_validation_mode",
         "strict_performance",
+        "warn_on_udfs",
         "schema_types_key"
       ],
       "enum_members": [],
       "kind": "class",
       "module": "structure.app.compiler.artifacts.model.CompilerOptions",
       "qualname": "CompilerOptions",
-      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', target_backend: 'str', target_profile: 'str', target_variant: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', schema_types_key: 'str | None' = None) -> None"
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', target_backend: 'str', target_profile: 'str', target_variant: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', schema_types_key: 'str | None' = None) -> None"
     },
     "Date": {
       "dataclass_fields": [
@@ -133,15 +135,19 @@
     },
     "GeneratedTransform": {
       "dataclass_fields": [
+        "source_unit",
+        "module_name",
+        "classes",
         "generated_package",
         "files",
-        "storage"
+        "storage",
+        "result"
       ],
       "enum_members": [],
       "kind": "class",
       "module": "structure.app.compiler.artifacts.model.GeneratedTransform",
       "qualname": "GeneratedTransform",
-      "signature": "(generated_package: 'str', files: 'Mapping[str, str]', storage: 'object') -> None"
+      "signature": "(source_unit: 'str', module_name: 'str', classes: 'tuple[str, ...]', generated_package: 'str', files: 'Mapping[str, str]', storage: 'object', result: 'object' = None) -> None"
     },
     "Integer": {
       "dataclass_fields": [
@@ -335,6 +341,7 @@
         "source_roots",
         "generated_dir",
         "generated_package",
+        "generated_docs",
         "generated_docs_dir",
         "generated_docs_formats",
         "execution_mode",
@@ -351,6 +358,7 @@
         "validate_outputs",
         "output_validation_mode",
         "strict_performance",
+        "warn_on_udfs",
         "fail_on_diff",
         "spark_sql",
         "source_map"
@@ -359,7 +367,7 @@
       "kind": "class",
       "module": "structure.app.configuration.model.StructureConfig",
       "qualname": "StructureConfig",
-      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_docs_dir: 'Path', generated_docs_formats: 'tuple[str, ...]', execution_mode: 'str', target_backend: 'str', target_profile: 'str', target_variant: 'str', compat_targets: 'tuple[str, ...]', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', source_map: 'Mapping[str, str]') -> None"
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_docs: 'bool', generated_docs_dir: 'Path', generated_docs_formats: 'tuple[str, ...]', execution_mode: 'str', target_backend: 'str', target_profile: 'str', target_variant: 'str', compat_targets: 'tuple[str, ...]', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', source_map: 'Mapping[str, str]') -> None"
     },
     "StructureRuntimeError": {
       "dataclass_fields": [],
@@ -602,6 +610,14 @@
       "qualname": "collect_set",
       "signature": "(value: 'object', *, element_type: 'StructureType | None' = None, where: 'object | None' = None) -> 'Expression'"
     },
+    "compile_transform": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "CompileTransform",
+      "module": "structure.app.compiler.frontend.commands.CompileTransform",
+      "qualname": null,
+      "signature": "(transform_class: 'type[Transform] | TransformPipeline', *, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, overrides: 'Mapping[str, object] | None' = None, **settings: 'object') -> 'TransformPlan'"
+    },
     "corr": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -730,13 +746,13 @@
       "qualname": "exists",
       "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None) -> 'Expression'"
     },
-    "expr_fn": {
+    "special": {
       "dataclass_fields": [],
       "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
-      "qualname": "expr_fn",
-      "signature": "(function: 'Callable') -> 'ExprFunction'"
+      "qualname": "special",
+      "signature": "(function: 'Callable | None' = None, *, type: 'str', **kwargs)"
     },
     "field": {
       "dataclass_fields": [],
@@ -1105,6 +1121,14 @@
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "rowset_join",
       "signature": "(relation: 'Relation | None' = None, *, left: 'object | None' = None, right: 'Relation | None' = None, on: 'object | None' = None, how: 'Join' = <Join.INNER: 'inner'>, hint: 'JoinHint | None' = None, strategy: 'JoinStrategy | None' = None, allow_cartesian: 'bool' = False) -> 'Relation | InputScope'"
+    },
+    "special": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.transform_api",
+      "qualname": "special",
+      "signature": "(function: 'Callable | None' = None, *, type: 'str', **kwargs)"
     },
     "stddev": {
       "dataclass_fields": [],

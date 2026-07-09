@@ -3,7 +3,7 @@
 ## Epic: Pre-Coding Spikes and Decisions
 
 - SPIKE: Prove `@after(method, lane=lane)` works inside class bodies.
-- SPIKE: Prove class-local `@expr_fn` helpers work without a `self` parameter.
+- SPIKE: Prove class-local `@special(type="expr")` helpers work without a `self` parameter.
 - SPIKE: Prove source-order method discovery with stable line numbers.
 - SPIKE: Prove source-root discovery and generated `structure_generated.<source package>` import paths.
 - SPIKE: Prove `StructureSession` and deferred transform invocation API.
@@ -49,7 +49,7 @@
 - Preserve class member source order.
 - Detect `input(...)` declarations.
 - Identify public schema-returning methods.
-- Identify `@expr_fn` helpers.
+- Identify `@special(type="expr")` helpers.
 - Identify `@before(method, lane=lane)` and `@after(method, lane=lane)` hooks.
 - Report ambiguous public methods.
 
@@ -188,7 +188,7 @@
   supported by the configured PySpark target.
 - Implement compiler-visible map helper forms for key/value transform and map filter where supported.
 - Validate higher-order helper callbacks as symbolic expressions, not arbitrary Python callbacks.
-- Emit actionable diagnostics that suggest `@expr_fn` or hooks when a helper cannot remain compiler-visible.
+- Emit actionable diagnostics that suggest `@special(type="expr")` or hooks when a helper cannot remain compiler-visible.
 - Lower higher-order helper plans through shared PySpark recipes.
 - Add online/generated parity tests for arrays, maps, nullable elements, and unsupported callback diagnostics.
 
@@ -254,6 +254,8 @@
 - Implement range predicates.
 - Implement string predicates.
 - Implement collection indexing and struct field helpers.
+- Plan partial nested struct updates, such as Structure-native `withField` and `dropFields` equivalents, after nested
+  struct construction and whole-field copying are stable.
 - Implement rich casts.
 - Implement ordering modifiers and null ordering descriptors.
 - Implement planned string SQL helpers.

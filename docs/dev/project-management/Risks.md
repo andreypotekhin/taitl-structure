@@ -10,7 +10,7 @@ Developers may be confused when normal Python code is rejected.
 
 - Keep DSL functions explicit.
 - Provide structured errors.
-- Suggest direct DSL replacement, `@expr_fn`, hook, and config workaround where relevant.
+- Suggest direct DSL replacement, `@special(type="expr")`, hook, and config workaround where relevant.
 - Document performance rationale clearly.
 
 ## Risk: Generated code becomes bloated
@@ -73,7 +73,7 @@ storage-write responsibilities, before those contracts are ready.
 ### Impact
 
 Users may put inefficient PySpark or local Python operations into hooks, or use hooks for logic that should remain
-compiler-visible through the DSL or `@expr_fn`.
+compiler-visible through the DSL or `@special(type="expr")`.
 
 ### Mitigation
 
@@ -81,7 +81,7 @@ compiler-visible through the DSL or `@expr_fn`.
 - Add hook linting in strict-performance mode.
 - Document hooks as explicit escape hatches.
 - Show hooks as opaque in traceability.
-- Prefer direct DSL and `@expr_fn` fixes in diagnostics before showing a hook workaround.
+- Prefer direct DSL and `@special(type="expr")` fixes in diagnostics before showing a hook workaround.
 
 ## Risk: Decorator mechanics fail after design is committed
 
@@ -92,7 +92,7 @@ Class-body hook declarations or class-local expression helpers may require awkwa
 ### Mitigation
 
 - Spike `@after(method, lane=lane)` binding inside class bodies in Sprint 00.
-- Spike class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
+- Spike class-local `@special(type="expr")` helpers callable through `self` without a `self` parameter.
 - Capture source locations and source order in the same spike notes.
 
 ## Risk: Compiler accidentally depends on Spark during checks or compile

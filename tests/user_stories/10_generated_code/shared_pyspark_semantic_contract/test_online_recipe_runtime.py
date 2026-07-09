@@ -16,6 +16,7 @@ from structure import (
     Map,
     SchemaMode,
     String,
+    Struct,
     Structure,
     TiePolicy,
     field,
@@ -55,6 +56,21 @@ class RawOrder(Structure):
 class PublishedOrder(Structure):
     id = field(String(), nullable=False)
     status = field(String(), nullable=True)
+
+
+class Address(Structure):
+    city = field(String(), nullable=False)
+    postal_code = field(String(), nullable=False)
+
+
+class RawShippedOrder(Structure):
+    id = field(String(), nullable=False)
+    shipping = field(Struct(Address), nullable=True)
+
+
+class PublishedShippedOrder(Structure):
+    id = field(String(), nullable=False)
+    shipping = field(Struct(Address), nullable=False)
 
 
 class Customer(Structure):
@@ -158,6 +174,25 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
     assert [evaluator.evaluate(recipe, functions=functions, aliases=aliases).expression for recipe, _ in cases] == [
         expected for _, expected in cases
     ]
+
+
+def test_online_expression_evaluator_builds_nested_struct_columns() -> None:
+    evaluator = PySparkExpressionEvaluator()
+    functions = FakeFunctions("functions")
+    expression = PySparkExpressionRecipe(
+        kind="struct",
+        type=Struct(Address),
+        nullable=False,
+        data={"fields": tuple(Address._structure_fields.values())},
+        args=(
+            _field_path(RawShippedOrder, "shipping", "city"),
+            _field_path(RawShippedOrder, "shipping", "postal_code"),
+        ),
+    )
+
+    column = evaluator.evaluate(expression, functions=functions, aliases={RawShippedOrder.__name__: "orders"})
+
+    assert column.expression == "struct(city=col(orders.shipping.city),postal_code=col(orders.shipping.postal_code))"
 
 
 def test_online_expression_evaluator_preserves_window_projection_semantics() -> None:
@@ -679,6 +714,32 @@ def test_online_schema_validation_accepts_spark_collection_nullability_metadata(
     )
 
     PySparkFrameValidator().validate(frame, validation, types=FakeTypes)
+
+
+def test_online_schema_validation_rejects_nested_struct_shape_drift() -> None:
+    validation = PySparkValidationRecipe(
+        target="published",
+        schema=PublishedShippedOrder,
+        mode=SchemaMode.STRICT,
+        project=False,
+        reason="output",
+    )
+    frame = FakeFrame(
+        "published",
+        FakeSchema(
+            (
+                FakeField("id", FakeTypes.StringType(), False),
+                FakeField(
+                    "shipping",
+                    cast(FakeType, FakeSchema((FakeField("city", FakeTypes.StringType(), False),))),
+                    False,
+                ),
+            )
+        ),
+    )
+
+    with pytest.raises(ValueError, match="PublishedShippedOrder.shipping expected"):
+        PySparkFrameValidator().validate(frame, validation, types=FakeTypes)
 
 
 def test_online_schema_validation_rejects_strict_shape_drift() -> None:
@@ -1630,6 +1691,26 @@ def _field_scope(scope: str, schema: type[Structure], name: str) -> PySparkExpre
     )
 
 
+def _field_path(schema: type[Structure], *path: str) -> PySparkExpressionRecipe:
+    field = schema._structure_fields[path[0]]
+    type_ = field.type
+    nullable = field.nullable
+    for name in path[1:]:
+        nested = type_.schema._structure_fields[name]  # type: ignore[attr-defined]
+        type_ = nested.type
+        nullable = nullable or nested.nullable
+    return PySparkExpressionRecipe(
+        kind="field",
+        type=type_,
+        nullable=nullable,
+        data={
+            "scope": schema.__name__,
+            "field": ".".join(path),
+            "path": path,
+        },
+    )
+
+
 def _call(function: str, *args: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe("call", args[0].type, args[0].nullable, {"function": function}, args)
 
@@ -1848,6 +1929,10 @@ class FakeFunctions(ModuleType):
 
     def coalesce(self, *columns):
         return FakeColumn("coalesce(" + ",".join(column.expression for column in columns) + ")")
+
+    def struct(self, *columns):
+        fields = ",".join(f"{column.output_name or column.expression}={column.expression}" for column in columns)
+        return FakeColumn(f"struct({fields})")
 
     def transform(self, column, function):
         item = FakeColumn("item")
@@ -2151,7 +2236,7 @@ class FakeSchema:
 @dataclass(frozen=True)
 class FakeField:
     name: str
-    dataType: "FakeType"
+    dataType: "FakeType | FakeSchema"
     nullable: bool
 
 

@@ -11,6 +11,7 @@ class StructureConfig:
     source_roots: tuple[Path, ...]
     generated_dir: Path
     generated_package: str
+    generated_docs: bool
     generated_docs_dir: Path
     generated_docs_formats: tuple[str, ...]
     execution_mode: str
@@ -27,6 +28,7 @@ class StructureConfig:
     validate_outputs: bool
     output_validation_mode: str
     strict_performance: bool
+    warn_on_udfs: bool
     fail_on_diff: bool
     spark_sql: Mapping[str, object]
     source_map: Mapping[str, str]

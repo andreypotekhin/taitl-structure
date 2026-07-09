@@ -5,6 +5,9 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator, Sequence
 
+from structure.app.cli.model.DiscoveredStructureProject import DiscoveredStructureProject
+from structure.app.configuration.model.StructureConfig import StructureConfig
+from structure.app.docs.api import Docs
 from structure.app.dsl.api import compile_transform
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.target.pyspark.api import PySpark
@@ -77,12 +80,13 @@ def render_orders_example() -> dict[str, str]:
             "examples.orders.schemas.shipment": [Shipment],
         }
         files = {}
-        for transform_class, source_transform in (
+        transforms = (
             (EnrichOrders, "examples.orders.transforms.order.EnrichOrders"),
             (RowsetJoinExamples, "examples.orders.transforms.rowset_join.RowsetJoinExamples"),
             (OrderAnalytics, "examples.orders.transforms.analytics.OrderAnalytics"),
             (AdvancedOrderAnalytics, "examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics"),
-        ):
+        )
+        for transform_class, source_transform in transforms:
             files.update(
                 PySpark.render.project()(
                     PySpark.plan.lower()(compile_transform(transform_class)),
@@ -91,6 +95,19 @@ def render_orders_example() -> dict[str, str]:
                     source_schema_modules=schema_modules,
                 )
             )
+        docs = Docs.render.project()(
+            StructureConfig.resolve(
+                project_root=ROOT,
+                source_roots=["examples"],
+                generated_dir="examples/structure_generated/orders",
+                generated_package="examples.structure_generated.orders",
+            ),
+            DiscoveredStructureProject(
+                transforms=tuple(transform for transform, _ in transforms),
+                schema_modules={module: tuple(schemas) for module, schemas in schema_modules.items()},
+            ),
+        )
+        files.update({f"examples/structure_generated/orders/{path}": text for path, text in docs.items()})
         files["examples/structure_generated/orders/traceability/__init__.py"] = (
             "# Generated traceability package marker.\n"
         )
@@ -105,7 +122,7 @@ def expected_orders_generated() -> dict[str, str]:
     return {
         str(path.relative_to(root)).replace("\\", "/"): path.read_text(encoding="utf-8")
         for path in sorted((EXAMPLES / "structure_generated").rglob("*"))
-        if path.is_file()
+        if path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc"
     }
 
 

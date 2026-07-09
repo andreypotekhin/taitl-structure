@@ -183,7 +183,7 @@ Required v1 negative cases:
 - `lookup_join(...)` without uniqueness warning
 - duplicate output fields
 - non-boolean filters
-- `@expr_fn` returning non-expression values
+- `@special(type="expr")` returning non-expression values
 
 ## Performance Guardrails
 

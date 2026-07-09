@@ -1,3 +1,7 @@
+from typing import Any, cast
+
+from structure.app.dsl.model.types.StructureType import StructureType
+from structure.app.target.pyspark.commands.MaterializePySparkSchema import materialize_pyspark_schema
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 
 
@@ -6,15 +10,18 @@ class PySparkExpressionEvaluator:
     def evaluate(self, expression: PySparkExpressionRecipe, *, functions, aliases, window=None):
         if expression.kind == "field":
             scope = str(expression.data["scope"])
-            field = str(expression.data["field"])
             alias = aliases.get(scope, scope)
-            return functions.col(f"{alias}.{field}")
+            return functions.col(f"{alias}.{self._field_path(expression)}")
+        if expression.kind == "struct":
+            return self._struct(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "literal":
             return functions.lit(expression.data["value"])
         if expression.kind == "lambda_arg":
             return expression.data["column"]
         if expression.kind == "call":
             return self._call(expression, functions=functions, aliases=aliases, window=window)
+        if expression.kind == "python_udf":
+            return self._python_udf(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "reserved_v2":
             return self._reserved(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "is_not_null":
@@ -57,6 +64,25 @@ class PySparkExpressionEvaluator:
         if expression.kind == "not":
             return ~self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window)
         raise TypeError(f"Unsupported PySpark expression recipe: {expression.kind}")
+
+    def _struct(self, expression: PySparkExpressionRecipe, *, functions, aliases, window=None):
+        fields = cast(tuple[Any, ...], expression.data["fields"])
+        columns = (
+            self.evaluate(argument, functions=functions, aliases=aliases, window=window).alias(field.column)
+            for field, argument in zip(fields, expression.args, strict=True)
+        )
+        return functions.struct(*columns)
+
+    def _field_path(self, expression: PySparkExpressionRecipe) -> str:
+        path = expression.data.get("path")
+        if not isinstance(path, tuple):
+            return str(expression.data["field"])
+        return ".".join(self._field_segment(str(segment)) for segment in path)
+
+    def _field_segment(self, value: str) -> str:
+        if "." not in value and "`" not in value:
+            return value
+        return f"`{value.replace('`', '``')}`"
 
     def _reserved(self, expression: PySparkExpressionRecipe, *, functions, aliases, window):
         function = expression.data["function"]
@@ -366,6 +392,17 @@ class PySparkExpressionEvaluator:
             scale = expression.data["scale"]
             return args[0].cast(f"decimal({precision},{scale})")
         raise TypeError(f"Unsupported PySpark helper call: {function}")
+
+    def _python_udf(self, expression: PySparkExpressionRecipe, *, functions, aliases, window):
+        args = [
+            self.evaluate(argument, functions=functions, aliases=aliases, window=window)
+            for argument in expression.args
+        ]
+        return_type = expression.data["return_type"]
+        if not expression.data.get("pyspark_return_type"):
+            return_type = materialize_pyspark_schema.type(cast(StructureType, return_type))
+        udf = functions.udf(expression.data["function"], returnType=return_type)
+        return udf(*args)
 
     def _int_data(self, expression: PySparkExpressionRecipe, key: str, default: int) -> int:
         value = expression.data.get(key, default)

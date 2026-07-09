@@ -73,11 +73,11 @@ class EnrichOrders(Transform):
     products = input(Product)
     enriched = output(OrderEnriched)
 
-    @expr_fn
+    @special(type="expr")
     def clean_id(value):
         return lower(trim(value))
 
-    @expr_fn
+    @special(type="expr")
     def normalized_total(value):
         return to_decimal(value, precision=12, scale=2)
 
@@ -255,7 +255,7 @@ Structure is intentionally strict. Compiled subtransforms must lower to Spark-pl
 
 Unsupported Python operations are rejected at compile time. This is a performance feature: Spark can optimize transformations only when work remains visible in the DataFrame logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, and whole-stage code generation all depend on expressing work through Spark's relational expression model.
 
-For custom logic, create expression helpers with `@expr_fn`. This keeps expression logic compiler-visible and reusable.
+For custom logic, create expression helpers with `@special(type="expr")`. This keeps expression logic compiler-visible and reusable.
 
 Arbitrary PySpark is still supported, but only through explicit hooks. Hooks receive the underlying DataFrame(s) for arbitrary manipulation. Hooks are escape hatches: Structure calls them, records them as opaque boundaries, but does not treat their body as compiler-visible logic.
 

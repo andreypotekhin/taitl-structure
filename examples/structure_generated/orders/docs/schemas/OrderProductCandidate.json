@@ -1,0 +1,50 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant_id",
+      "name": "tenant_id",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "order_id",
+      "name": "order_id",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "customer_id",
+      "name": "customer_id",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "customer_name",
+      "name": "customer_name",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "product_name",
+      "name": "product_name",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.orders.schemas.order",
+  "name": "OrderProductCandidate"
+}

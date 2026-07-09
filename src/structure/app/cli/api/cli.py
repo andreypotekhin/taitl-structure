@@ -16,6 +16,7 @@ def _config_options(function):
         click.option("--source-root", "source_roots", multiple=True),
         click.option("--generated-dir"),
         click.option("--generated-package"),
+        click.option("--generated-docs/--no-generated-docs", default=None),
         click.option("--generated-docs-dir"),
         click.option("--generated-docs-formats"),
         click.option("--execution-mode", type=click.Choice(["online", "generated"])),

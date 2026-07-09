@@ -1,0 +1,22 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "source_system",
+      "name": "source_system",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "ingested_at",
+      "name": "ingested_at",
+      "nullable": false,
+      "primary_key": false,
+      "type": "timestamp"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.orders.schemas.common",
+  "name": "AuditStamp"
+}

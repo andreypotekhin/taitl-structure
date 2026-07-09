@@ -27,6 +27,7 @@ class WriteStructureConfig:
             'source_roots = ["src"]',
             'generated_dir = "generated"',
             'generated_package = "structure_generated"',
+            "generated_docs = true",
             'generated_docs_dir = "docs"',
             'generated_docs_formats = ["markdown", "json"]',
             'execution_mode = "online"',
@@ -46,6 +47,7 @@ class WriteStructureConfig:
                     "validate_outputs = true",
                     'output_validation_mode = "schema_only"',
                     "strict_performance = true",
+                    "warn_on_udfs = true",
                     "fail_on_diff = false",
                 ]
             )

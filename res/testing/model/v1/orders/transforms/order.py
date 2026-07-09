@@ -5,11 +5,11 @@ from structure import (
     after,
     before,
     coalesce,
-    expr_fn,
     input,
     left_join,
     lower,
     output,
+    special,
     to_decimal,
     transform,
     trim,
@@ -37,11 +37,11 @@ class EnrichOrders(Transform):
     promotions = input(Promotion)
     published = output(OrderPublished)
 
-    @expr_fn
+    @special(type="expr")
     def clean_id(value):
         return lower(trim(value))
 
-    @expr_fn
+    @special(type="expr")
     def money(value):
         return coalesce(to_decimal(value, precision=12, scale=2), 0)
 

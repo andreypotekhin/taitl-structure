@@ -79,7 +79,7 @@ parent implementation as a separate step with `super().normalize(order)`, `Base.
 `super(Base, self).normalize(order)`.
 
 Subtransforms do not call other subtransforms directly. Use source order, lanes, `Transform.to(...)`, private helpers,
-or `@expr_fn` helpers instead.
+or `@special(type="expr")` helpers instead.
 
 Reference: [DSL](reference/DSL.md), [online execution](reference/OnlineExecution.md), and
 [transform inheritance and composition](reference/TransformComposition.md).
@@ -469,10 +469,10 @@ Reference: [DSL expressions](reference/DSL.md) and
 
 ## Expression Helpers
 
-Use `@expr_fn` for reusable compileable expressions.
+Use `@special(type="expr")` for reusable compileable expressions.
 
 ```python
-@expr_fn
+@special(type="expr")
 def clean_id(value):
     return lower(trim(value))
 ```

@@ -11,6 +11,10 @@ inputs, outputs, subtransforms, dependencies, and generated targets without requ
 `structure compile` writes generated documentation under `generated_docs_dir`, which is relative to `generated_dir`.
 The default destination is `generated/docs`.
 
+Set `generated_docs = false` or pass `structure compile --no-generated-docs` to skip documentation artifacts. When
+docs are disabled, `compile --fail-on-diff` ignores existing files under `generated_docs_dir` so teams can opt out
+without removing old docs in the same change.
+
 `generated_docs_formats` controls formats:
 
 - `markdown` writes human-readable reference pages.
@@ -19,9 +23,16 @@ The default destination is `generated/docs`.
 Default:
 
 ```toml
+generated_docs = true
 generated_docs_dir = "docs"
 generated_docs_formats = ["markdown", "json"]
 ```
+
+## API
+
+Application code can render docs through `Docs.render.project()` from `structure.app.docs.api`. The endpoint returns a
+fresh `RenderStructureDocsProject` command instance and follows the same command-group style as other Structure app
+endpoints.
 
 ## Artifact Layout
 

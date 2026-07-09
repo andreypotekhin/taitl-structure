@@ -138,6 +138,7 @@ ORDINARY_ONLY_CAPABILITIES = frozenset(
         ("backend", "rdd_access"),
         ("backend", "jvm_access"),
         ("backend", "private_classic_fields"),
+        ("expression", "python_udf"),
     }
 )
 

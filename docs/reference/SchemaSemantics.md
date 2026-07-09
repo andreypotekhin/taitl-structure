@@ -107,6 +107,7 @@ Rules:
 - Type objects are immutable and structurally comparable.
 - Decimal precision and scale must be valid before a `SchemaDef` is emitted.
 - Nested struct cycles are rejected.
+- `Struct(Address)` and `Struct(BillingAddress)` are compatible only when they reference the same schema class.
 - Map keys are never nullable because Spark map keys cannot be null.
 - Higher-order array and map transformations are not implied by declaring array or map fields.
 
@@ -142,6 +143,27 @@ Rules:
 - Projection order follows the target schema, not source keyword order.
 - Assignment type and nullability are checked before generated or online runtime execution.
 
+Nested `Struct(...)` fields may be assigned by copying a whole compatible struct expression or by constructing the
+nested schema explicitly:
+
+```python
+return OrderPublished(
+    id=order.id,
+    shipping=Address(
+        city=trim(order.shipping.city),
+        postal_code=order.shipping.postal_code,
+    ),
+)
+```
+
+Rules:
+
+- Nested constructors lower to Spark `struct(...)` expressions, not Python objects or UDFs.
+- The nested constructor must assign every field declared by the nested schema.
+- The constructed schema must match the target `Struct(...)` schema identity.
+- Partial nested updates such as replacing only `shipping.city` are deferred planned work; construct or copy the whole
+  nested value in this slice.
+
 Base overlay syntax copies compatible inherited fields:
 
 ```python
@@ -166,6 +188,8 @@ Rules:
 
 - A nullable expression cannot feed a non-nullable target unless narrowed or repaired.
 - `where(expr.is_not_null())` narrows simple field references after the filter in the same subtransform.
+- `where(parent_struct.is_not_null())` narrows nested reads through that parent according to each nested field's own
+  declared nullability.
 - `Join.LEFT` makes joined right-side fields nullable after the join.
 - `Join.INNER` preserves right-side declared nullability unless later operations narrow it.
 - Hooks do not provide compile-time nullability facts unless a later hook postcondition contract exists.

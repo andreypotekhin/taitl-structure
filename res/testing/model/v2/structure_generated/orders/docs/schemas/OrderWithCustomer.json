@@ -1,0 +1,136 @@
+{
+  "bases": [
+    "OrderNormalized"
+  ],
+  "fields": [
+    {
+      "column": "tenant",
+      "name": "tenant",
+      "nullable": false,
+      "primary_key": false,
+      "type": "TenantKey"
+    },
+    {
+      "column": "audit",
+      "name": "audit",
+      "nullable": false,
+      "primary_key": false,
+      "type": "AuditStamp"
+    },
+    {
+      "column": "business",
+      "name": "business",
+      "nullable": false,
+      "primary_key": false,
+      "type": "BusinessDate"
+    },
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "primary_key": true,
+      "type": "string"
+    },
+    {
+      "column": "customer_id",
+      "name": "customer_id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "product_id",
+      "name": "product_id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "promotion_code",
+      "name": "promotion_code",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "total",
+      "name": "total",
+      "nullable": false,
+      "primary_key": false,
+      "type": "decimal(12,2)"
+    },
+    {
+      "column": "discount",
+      "name": "discount",
+      "nullable": false,
+      "primary_key": false,
+      "type": "decimal(12,2)"
+    },
+    {
+      "column": "net_total",
+      "name": "net_total",
+      "nullable": false,
+      "primary_key": false,
+      "type": "decimal(12,2)"
+    },
+    {
+      "column": "quantity",
+      "name": "quantity",
+      "nullable": false,
+      "primary_key": false,
+      "type": "long"
+    },
+    {
+      "column": "tags",
+      "name": "tags",
+      "nullable": true,
+      "primary_key": false,
+      "type": "array<string!>"
+    },
+    {
+      "column": "attributes",
+      "name": "attributes",
+      "nullable": true,
+      "primary_key": false,
+      "type": "map<string,string?>"
+    },
+    {
+      "column": "shipping",
+      "name": "shipping",
+      "nullable": true,
+      "primary_key": false,
+      "type": "Address"
+    },
+    {
+      "column": "is_large",
+      "name": "is_large",
+      "nullable": false,
+      "primary_key": false,
+      "type": "boolean"
+    },
+    {
+      "column": "customer_name",
+      "name": "customer_name",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "customer_tier",
+      "name": "customer_tier",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "customer_region",
+      "name": "customer_region",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "testing.model.v2.orders.schemas.order",
+  "name": "OrderWithCustomer"
+}

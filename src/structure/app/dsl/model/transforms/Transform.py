@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 from collections.abc import Mapping
 from threading import RLock
 
@@ -155,18 +156,32 @@ class Transform:
             target_variant=resolved.target_variant,
         )
         project = DiscoverStructureProject()(structure_config)
-        files = PySpark.render.project()(
-            artifact.pyspark_plan,
-            source_transform=f"{cls.__module__}.{cls.__name__}",
+        source_unit = cls.__module__
+        transforms = cls._source_unit_transforms(project.transforms)
+        plans = {}
+        for transform in transforms:
+            transform_artifact = (
+                artifact
+                if transform is cls
+                else transform.compile(resolved, schema_types=schema_types, force=force)
+            )
+            plans[f"{transform.__module__}.{transform.__name__}"] = transform_artifact.pyspark_plan
+        files = PySpark.render.project().source_unit(
+            plans,
+            source_module=source_unit,
             source_schema_modules=project.schema_modules,
             generated_package=resolved.generated_package,
         )
         target = storage or DiskStorage(resolved.generated_dir)
-        target.write(files)
+        result = target.write(files)
         return GeneratedTransform(
+            source_unit=source_unit,
+            module_name=f"{resolved.generated_package}.pyspark.transforms.{source_unit.rsplit('.', 1)[1]}",
+            classes=tuple(f"{plan.transform}Generated" for plan in plans.values()),
             generated_package=resolved.generated_package,
             files=files,
             storage=target,
+            result=result,
         )
 
     def to(self, *stages: "Transform") -> TransformPipeline:
@@ -208,6 +223,29 @@ class Transform:
                     )
                 aliases[alias] = name
         return aliases
+
+    @classmethod
+    def _source_unit_transforms(cls, discovered: tuple[type["Transform"], ...]) -> tuple[type["Transform"], ...]:
+        in_project = tuple(transform for transform in discovered if transform.__module__ == cls.__module__)
+        if in_project:
+            return in_project
+
+        module = inspect.getmodule(cls)
+        if module is None:
+            return (cls,)
+
+        transforms = []
+        for value in module.__dict__.values():
+            if (
+                isinstance(value, type)
+                and issubclass(value, Transform)
+                and value is not Transform
+                and value.__module__ == cls.__module__
+                and (value._structure_outputs or value._structure_pipeline is not None)
+                and not inspect.isabstract(value)
+            ):
+                transforms.append(value)
+        return tuple(dict.fromkeys(transforms)) or (cls,)
 
     def _validate_rename_aliases(self, renames: Mapping[str, str]) -> None:
         aliases: dict[str, str] = {}

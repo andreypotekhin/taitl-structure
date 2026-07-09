@@ -15,7 +15,7 @@ This reference covers the public DSL surface and cross-cutting rules for:
 - `Transform`;
 - `input(...)`;
 - public schema-returning subtransform methods;
-- `@expr_fn`;
+- `@special(type="expr")`;
 - `where(...)`;
 - `@before(...)` and `@after(...)`;
 - `@validate_output(...)`;
@@ -60,7 +60,7 @@ class EnrichOrders(Transform):
     customers = input(Customer)
     published = output(OrderPublished)
 
-    @expr_fn
+    @special(type="expr")
     def clean_id(value):
         return lower(trim(value))
 
@@ -365,7 +365,7 @@ Rules:
   before the child override. Parent hooks, validation, lane writes, and traceability belong to the parent step.
 - Other direct calls from one compiled subtransform to another are invalid. Subtransforms are pipeline steps scheduled
   by source order, lane binding, inheritance, or `Transform.to(...)`; reusable inline logic belongs in private helpers
-  or `@expr_fn` helpers.
+  or `@special(type="expr")` helpers.
 - Source-order lane flow must be valid. Undecorated methods consume and update the uniquely inferred lane.
   `@transform(output=target)` writes a named lane or output.
   `@transform(input=source, output=target)` selects both sides explicitly.
@@ -375,7 +375,7 @@ Rules:
   from that shared row set.
 - Private helper methods are allowed and are not compiled as subtransforms.
 - Public helper methods without a `Structure` return annotation are ignored by the subtransform collector, but should
-  not be used for compileable expression reuse. Use `@expr_fn` instead.
+  not be used for compileable expression reuse. Use `@special(type="expr")` instead.
 - Async subtransforms, generator subtransforms, classmethods, and staticmethods are out of scope for v1 compiled DSL.
 
 The body of a compiled subtransform is symbolically executed. It must return a symbolic schema construction expression:
@@ -462,12 +462,12 @@ Detailed type, literal, and nullability behavior is specified by
 
 ## Expression Helpers
 
-`@expr_fn` declares a reusable compileable expression helper.
+`@special(type="expr")` declares a reusable compileable expression helper.
 
 Module-level form:
 
 ```python
-@expr_fn
+@special(type="expr")
 def clean_id(value):
     return lower(trim(value))
 ```
@@ -475,7 +475,7 @@ def clean_id(value):
 Class-local form:
 
 ```python
-@expr_fn
+@special(type="expr")
 def clean_id(value):
     return lower(trim(value))
 
@@ -485,12 +485,12 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 
 Rules:
 
-- `@expr_fn` functions are ordinary Python callables at import time.
-- `@expr_fn` attaches metadata and wraps calls so symbolic arguments produce symbolic expressions.
+- `@special(type="expr")` functions are ordinary Python callables at import time.
+- `@special(type="expr")` attaches metadata and wraps calls so symbolic arguments produce symbolic expressions.
 - An expression helper must return a symbolic expression or a Python literal accepted as a source expression.
 - A helper returning `None`, a DataFrame, an RDD, a Python collection of rows, or another unsupported object is invalid
   when called from a compiled subtransform.
-- Class-local `@expr_fn` helpers do not take `self`, but may be called through `self` for IDE discoverability.
+- Class-local `@special(type="expr")` helpers do not take `self`, but may be called through `self` for IDE discoverability.
 - Module-level helpers and class-local helpers use the same expression semantics.
 - Helpers should be pure and deterministic. Non-deterministic helpers require an explicit future contract.
 - Helpers must not import or require PySpark during compiler phases.
@@ -899,7 +899,7 @@ Use:
   customer_id=lower(trim(order.customer_id))
 
 For reuse:
-  @expr_fn
+  @special(type="expr")
   def clean_id(value):
       return lower(trim(value))
 

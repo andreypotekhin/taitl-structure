@@ -176,8 +176,8 @@ narrower use cases and roadmap features.
 
 ## 12. Expression Helpers
 
-- As a developer, I can define module-level `@expr_fn` helpers so that expression logic is reusable across transforms.
-- + As a developer, I can define class-local `@expr_fn` helpers so that expression logic stays near the transform using it.
+- As a developer, I can define module-level `@special(type="expr")` helpers so that expression logic is reusable across transforms.
+- + As a developer, I can define class-local `@special(type="expr")` helpers so that expression logic stays near the transform using it.
 - + As a developer, I can define class-local expression helpers without a `self` parameter so that they behave like pure expression functions.
 - + As a developer, I can call class-local expression helpers through `self` so that the call site remains discoverable by IDEs.
 
@@ -282,7 +282,7 @@ narrower use cases and roadmap features.
   failures are handled consistently.
 - + As a developer, I can see the transform class name, subtransform method, output field, source expression, problem, and suggested fix in errors.
 - + As a developer, I can see an inline DSL alternative so that simple fixes are obvious.
-- + As a developer, I can see an `@expr_fn` helper alternative so that reusable fixes are encouraged.
+- + As a developer, I can see an `@special(type="expr")` helper alternative so that reusable fixes are encouraged.
 - + As a developer, I can see a hook alternative so that arbitrary PySpark migration is explicit.
 - + As a developer, I can see a configuration workaround when a safe config setting exists.
 
@@ -345,7 +345,7 @@ the first analytical join slice.
 - + As a developer, I can use higher-order function helpers so that array and map transformations remain
   Spark-plan-visible.
 - + As a developer, I can receive diagnostics when a higher-order helper callback would become arbitrary Python
-  so that I can move the logic to the DSL, `@expr_fn`, or a hook.
+  so that I can move the logic to the DSL, `@special(type="expr")`, or a hook.
 - As a developer, I can use array exists, forall, zip, aggregate, sort, flatten, distinct, and position helpers so that
   nested array logic remains Spark-plan-visible.
 - As a developer, I can use map key transformation, map zip, keys, values, entries, and from-entries helpers so that

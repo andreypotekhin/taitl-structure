@@ -28,7 +28,7 @@ from structure import (
     transform,
     input,
     output,
-    expr_fn,
+    special,
     where,
     before,
     after,
@@ -53,7 +53,7 @@ class EnrichOrders(Transform):
     customers = input(Customer)
     enriched = output(OrderWithCustomer)
 
-    @expr_fn
+    @special(type="expr")
     def clean_id(value):
         return lower(trim(value))
 
@@ -98,7 +98,7 @@ class EnrichOrders(Transform):
   overlaying explicit field expressions.
 - For multiple direct schema bases, `SchemaClass.base(...)` receives one row per direct base in declaration order.
 - `where(...)` records filter expressions in the current symbolic context.
-- `@expr_fn` functions execute symbolically and must return expressions.
+- `@special(type="expr")` functions execute symbolically and must return expressions.
 - `@after(method, lane=lane)` and `@before(method, lane=lane)` attach arbitrary PySpark hooks.
 - Hooks use a selected lane signature such as `def hook(self, *, orders, spark, ctx)`.
 - Hooks may opt into original named inputs with `pass_inputs=True` and signature

@@ -1,0 +1,155 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "tenant_id",
+      "name": "tenant_id",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "product_category",
+      "name": "product_category",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "order_date",
+      "name": "order_date",
+      "nullable": true,
+      "primary_key": false,
+      "type": "date"
+    },
+    {
+      "column": "grouping_id",
+      "name": "grouping_id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "integer"
+    },
+    {
+      "column": "category_subtotal",
+      "name": "category_subtotal",
+      "nullable": true,
+      "primary_key": false,
+      "type": "boolean"
+    },
+    {
+      "column": "order_count",
+      "name": "order_count",
+      "nullable": false,
+      "primary_key": false,
+      "type": "long"
+    },
+    {
+      "column": "large_order_count",
+      "name": "large_order_count",
+      "nullable": false,
+      "primary_key": false,
+      "type": "long"
+    },
+    {
+      "column": "large_units",
+      "name": "large_units",
+      "nullable": true,
+      "primary_key": false,
+      "type": "long"
+    },
+    {
+      "column": "any_large_order",
+      "name": "any_large_order",
+      "nullable": true,
+      "primary_key": false,
+      "type": "boolean"
+    },
+    {
+      "column": "all_large_orders",
+      "name": "all_large_orders",
+      "nullable": true,
+      "primary_key": false,
+      "type": "boolean"
+    },
+    {
+      "column": "quantity_stddev",
+      "name": "quantity_stddev",
+      "nullable": true,
+      "primary_key": false,
+      "type": "double"
+    },
+    {
+      "column": "quantity_variance",
+      "name": "quantity_variance",
+      "nullable": true,
+      "primary_key": false,
+      "type": "double"
+    },
+    {
+      "column": "quantity_median",
+      "name": "quantity_median",
+      "nullable": true,
+      "primary_key": false,
+      "type": "long"
+    },
+    {
+      "column": "quantity_total",
+      "name": "quantity_total",
+      "nullable": false,
+      "primary_key": false,
+      "type": "long"
+    },
+    {
+      "column": "quantity_price_corr",
+      "name": "quantity_price_corr",
+      "nullable": true,
+      "primary_key": false,
+      "type": "double"
+    },
+    {
+      "column": "quantity_price_covar",
+      "name": "quantity_price_covar",
+      "nullable": true,
+      "primary_key": false,
+      "type": "double"
+    },
+    {
+      "column": "estimated_customers",
+      "name": "estimated_customers",
+      "nullable": false,
+      "primary_key": false,
+      "type": "long"
+    },
+    {
+      "column": "first_customer_id",
+      "name": "first_customer_id",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "last_customer_id",
+      "name": "last_customer_id",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "customer_ids",
+      "name": "customer_ids",
+      "nullable": true,
+      "primary_key": false,
+      "type": "array<string!>"
+    },
+    {
+      "column": "order_ids",
+      "name": "order_ids",
+      "nullable": true,
+      "primary_key": false,
+      "type": "array<string!>"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.orders.schemas.adv_analytics",
+  "name": "OrderRevenueRollup"
+}

@@ -193,7 +193,7 @@ output validation
 filter before projection
 multiple filters
 expression helpers
-class-local @expr_fn helpers
+class-local @special(type="expr") helpers
 schema base overlays
 left lookup_join
 inner lookup_join

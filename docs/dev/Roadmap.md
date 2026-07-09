@@ -29,7 +29,7 @@ Connect hardening left outside the Sprint 09 support claim.
 - Add/drop columns via schema projection.
 - Symbolic `lookup_join(...)`.
 - N-step serial joins.
-- `@expr_fn` helpers.
+- `@special(type="expr")` helpers.
 - `@before(method, lane=lane)` and `@after(method, lane=lane)` hooks.
 - Compiler provenance from source node to IR node to generated PySpark node.
 - Static dataflow traceability inferred from IR.

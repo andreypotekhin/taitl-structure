@@ -9,8 +9,12 @@ def test_orders_example_generation_is_byte_identical_across_repeated_runs() -> N
 
 def test_orders_example_generated_file_order_is_deterministic() -> None:
     paths = list(render_orders_example())
+    non_docs = [path for path in paths if "/docs/" not in path]
+    docs = [path for path in paths if "/docs/" in path]
+    markdown_docs = sorted(path for path in docs if path.endswith(".md"))
+    json_docs = sorted(path for path in docs if path.endswith(".json"))
 
-    assert paths == [
+    assert non_docs == [
         "examples/structure_generated/orders/__init__.py",
         "examples/structure_generated/orders/pyspark/__init__.py",
         "examples/structure_generated/orders/pyspark/schemas/__init__.py",
@@ -36,6 +40,7 @@ def test_orders_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/orders/traceability/__init__.py",
         "examples/structure_generated/orders/traceability/transforms/__init__.py",
     ]
+    assert docs == markdown_docs + json_docs
 
 
 def test_orders_example_generation_keeps_public_behavior_fragments_stable() -> None:

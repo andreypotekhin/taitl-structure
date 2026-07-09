@@ -8,7 +8,14 @@ from uuid import uuid4
 
 import pytest
 
-from structure import CompilerOptions, MemoryStorage, StructureConfig, StructureRuntimeError, StructureSession
+from structure import (
+    CompilerOptions,
+    MemoryStorage,
+    PackageImportStorage,
+    StructureConfig,
+    StructureRuntimeError,
+    StructureSession,
+)
 
 
 @contextmanager
@@ -223,6 +230,108 @@ def test_v1_online_session_reuses_class_compiled_artifact(monkeypatch) -> None:
     assert calls == 1
 
 
+def test_v1_transform_compile_force_rebuilds_class_artifact(monkeypatch) -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
+
+    EnrichOrders._structure_compiled.clear()
+    calls = 0
+    original = BuildCompiledTransform.__call__
+
+    def counted(self, *args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(self, *args, **kwargs)
+
+    monkeypatch.setattr(BuildCompiledTransform, "__call__", counted)
+
+    EnrichOrders.compile(schema_types=FakeTypes)
+    EnrichOrders.compile(schema_types=FakeTypes)
+    EnrichOrders.compile(schema_types=FakeTypes, force=True)
+
+    assert calls == 2
+
+
+def test_v1_compile_key_includes_version_and_source_hash() -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
+
+    key = BuildCompiledTransform().key(
+        EnrichOrders,
+        options=CompilerOptions.resolve(schema_types=FakeTypes),
+    )
+
+    assert key.structure_version
+    assert key.sources[0][3] is not None
+    assert len(key.sources[0][3]) == 64
+
+
+def test_v1_compiled_artifact_does_not_capture_bound_inputs() -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    EnrichOrders._structure_compiled.clear()
+    artifact = EnrichOrders.compile(schema_types=FakeTypes)
+    invocation = EnrichOrders(
+        orders="orders-df-sentinel",
+        customers="customers-df-sentinel",
+        products="products-df-sentinel",
+        promotions="promotions-df-sentinel",
+    )
+
+    assert "orders-df-sentinel" in repr(invocation._structure_bound_inputs)
+    assert "orders-df-sentinel" not in repr(artifact)
+
+
+def test_v1_pipeline_reuses_shared_compiled_artifact(monkeypatch) -> None:
+    from structure import String, Structure, Transform, field, input, output, transform
+    from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
+    from structure.app.dsl.model.transforms.TransformPipeline import TransformPipeline
+
+    class Raw(Structure):
+        id = field(String(), nullable=False)
+
+    class Normalized(Structure):
+        id = field(String(), nullable=False)
+
+    class Published(Structure):
+        id = field(String(), nullable=False)
+
+    @transform
+    class NormalizeOrders(Transform):
+        orders = input(Raw)
+        normalized = output(Normalized)
+
+        def normalize(self, order: Raw) -> Normalized:
+            return Normalized(id=order.id)
+
+    @transform
+    class PublishOrders(Transform):
+        normalized = input(Normalized)
+        published = output(Published)
+
+        def publish(self, order: Normalized) -> Published:
+            return Published(id=order.id)
+
+    TransformPipeline._structure_compiled.clear()
+    calls = 0
+    original = BuildCompiledTransform.__call__
+
+    def counted(self, *args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(self, *args, **kwargs)
+
+    monkeypatch.setattr(BuildCompiledTransform, "__call__", counted)
+    options = CompilerOptions.resolve(schema_types=FakeTypes)
+
+    NormalizeOrders(orders=object()).to(PublishOrders()).compile(options, schema_types=FakeTypes)
+    NormalizeOrders(orders=object()).to(PublishOrders()).compile(options, schema_types=FakeTypes)
+
+    assert calls == 1
+
+
 def test_v1_online_session_reports_missing_declared_inputs() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
@@ -328,6 +437,23 @@ class EnrichOrdersGenerated:
         "products": "products-df",
         "promotions": "promotions-df",
     }
+
+
+def test_v1_memory_storage_does_not_import_unowned_modules() -> None:
+    module = ModuleType("memory_generated.pyspark.transforms.order")
+    sys.modules[module.__name__] = module
+    try:
+        with pytest.raises(ImportError):
+            MemoryStorage().import_module(module.__name__)
+    finally:
+        sys.modules.pop(module.__name__, None)
+
+
+def test_v1_package_import_storage_rejects_modules_outside_package() -> None:
+    storage = PackageImportStorage("structure_generated")
+
+    with pytest.raises(ImportError):
+        storage.import_module("other_generated.pyspark.transforms.order")
 
 
 def test_v1_generated_session_reports_missing_generated_code() -> None:

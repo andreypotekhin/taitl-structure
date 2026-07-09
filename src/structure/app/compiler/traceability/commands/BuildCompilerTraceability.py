@@ -54,6 +54,13 @@ class BuildCompilerTraceability:
             if len(step.results) <= 1:
                 provenance.extend(self._projection_provenance(plan, step, source_transform, transform_module))
                 dependencies.extend(self._projection_dependencies(step))
+                boundaries.extend(
+                    self._udf_boundaries(
+                        step=step.name,
+                        schema=step.output_schema.__name__,
+                        expressions=(assignment.expression for assignment in step.projection),
+                    )
+                )
             else:
                 for result in step.results:
                     provenance.extend(
@@ -79,6 +86,13 @@ class BuildCompilerTraceability:
                             detail={"field": assignment.field.name, "result": result.lane},
                         )
                         for assignment in result.projection
+                    )
+                    boundaries.extend(
+                        self._udf_boundaries(
+                            step=step.name,
+                            schema=result.schema.__name__,
+                            expressions=(assignment.expression for assignment in result.projection),
+                        )
                     )
                     for hook in result.after_hooks:
                         provenance.append(self._hook_provenance(plan, step, hook, source_transform, transform_module))
@@ -123,11 +137,47 @@ class BuildCompilerTraceability:
                 )
             )
             dependencies.append(self._final_validation_dependency(output.validation))
+            boundaries.extend(
+                self._udf_boundaries(
+                    step=f"output:{output.name}",
+                    schema=output.output_schema.__name__,
+                    expressions=(assignment.expression for assignment in output.projection),
+                )
+            )
         return CompilerTraceability(
             provenance=tuple(provenance),
             static_dataflow=tuple(dependencies),
             opaque_boundaries=tuple(boundaries),
         )
+
+    def _udf_boundaries(self, *, step: str, schema: str, expressions) -> tuple[OpaqueBoundary, ...]:
+        boundaries: list[OpaqueBoundary] = []
+        seen: set[str] = set()
+        for expression in expressions:
+            for udf in self._udf_expressions(expression):
+                data = udf.data or {}
+                name = str(data.get("function_name", "python_udf"))
+                key = f"{step}:{name}"
+                if key in seen:
+                    continue
+                seen.add(key)
+                boundaries.append(
+                    OpaqueBoundary(
+                        step=step,
+                        hook=name,
+                        phase="expression",
+                        target="python_udf",
+                        schema=schema,
+                        reason="python UDF body",
+                    )
+                )
+        return tuple(boundaries)
+
+    def _udf_expressions(self, expression) -> tuple:
+        found = [expression] if expression.kind == "python_udf" else []
+        for argument in expression.args:
+            found.extend(self._udf_expressions(argument))
+        return tuple(found)
 
     def _transform_provenance(
         self,

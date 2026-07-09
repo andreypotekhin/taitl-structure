@@ -18,7 +18,7 @@ This specification owns the public DSL surface and cross-cutting rules for:
 - `Transform`;
 - `input(...)`;
 - public schema-returning subtransform methods;
-- `@expr_fn`;
+- `@special(type="expr")`;
 - `where(...)`;
 - `@before(...)` and `@after(...)`;
 - `@validate_output(...)`;
@@ -67,7 +67,7 @@ from structure import (
     transform,
     input,
     output,
-    expr_fn,
+    special,
     where,
     group_by,
     count,
@@ -137,7 +137,7 @@ class EnrichOrders(Transform):
     customers = input(Customer)
     published = output(OrderPublished)
 
-    @expr_fn
+    @special(type="expr")
     def clean_id(value):
         return lower(trim(value))
 
@@ -409,7 +409,7 @@ Rules:
   from that shared row set.
 - Private helper methods are allowed and are not compiled as subtransforms.
 - Public helper methods without a `Structure` return annotation are ignored by the subtransform collector, but should
-  not be used for compileable expression reuse. Use `@expr_fn` instead.
+  not be used for compileable expression reuse. Use `@special(type="expr")` instead.
 - Async subtransforms, generator subtransforms, classmethods, and staticmethods are out of scope for v1 compiled DSL.
 
 The body of a compiled subtransform is symbolically executed. It must return a symbolic schema construction expression:
@@ -495,12 +495,12 @@ Detailed type, literal, and nullability behavior is specified by [NullabilityAnd
 
 ## Expression Helpers
 
-`@expr_fn` declares a reusable compileable expression helper.
+`@special(type="expr")` declares a reusable compileable expression helper.
 
 Module-level form:
 
 ```python
-@expr_fn
+@special(type="expr")
 def clean_id(value):
     return lower(trim(value))
 ```
@@ -508,7 +508,7 @@ def clean_id(value):
 Class-local form:
 
 ```python
-@expr_fn
+@special(type="expr")
 def clean_id(value):
     return lower(trim(value))
 
@@ -518,12 +518,12 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 
 Rules:
 
-- `@expr_fn` functions are ordinary Python callables at import time.
-- `@expr_fn` attaches metadata and wraps calls so symbolic arguments produce symbolic expressions.
+- `@special(type="expr")` functions are ordinary Python callables at import time.
+- `@special(type="expr")` attaches metadata and wraps calls so symbolic arguments produce symbolic expressions.
 - An expression helper must return a symbolic expression or a Python literal accepted as a source expression.
 - A helper returning `None`, a DataFrame, an RDD, a Python collection of rows, or another unsupported object is invalid
   when called from a compiled subtransform.
-- Class-local `@expr_fn` helpers do not take `self`, but may be called through `self` for IDE discoverability.
+- Class-local `@special(type="expr")` helpers do not take `self`, but may be called through `self` for IDE discoverability.
 - Module-level helpers and class-local helpers use the same expression semantics.
 - Helpers should be pure and deterministic. Non-deterministic helpers require an explicit future contract.
 - Helpers must not import or require PySpark during compiler phases.
@@ -909,7 +909,7 @@ DSL diagnostics must include:
 - problem;
 - why it matters when the issue is not obvious;
 - direct DSL fix when one exists;
-- `@expr_fn` helper fix when reuse is likely;
+- `@special(type="expr")` helper fix when reuse is likely;
 - hook workaround when arbitrary PySpark is appropriate;
 - configuration workaround only when safe and real;
 - link to the most specific specification or public docs page.
@@ -941,7 +941,7 @@ Use:
   customer_id=lower(trim(order.customer_id))
 
 For reuse:
-  @expr_fn
+  @special(type="expr")
   def clean_id(value):
       return lower(trim(value))
 
@@ -1026,7 +1026,7 @@ The following are outside v1 DSL scope:
 8. Implement symbolic row proxies and scoped field references.
 9. Implement expression objects with type, nullability, scope, and source metadata.
 10. Implement public expression helpers and helper metadata.
-11. Implement `@expr_fn` for module-level and class-local helpers without `self`.
+11. Implement `@special(type="expr")` for module-level and class-local helpers without `self`.
 12. Implement `where(...)` context capture and boolean predicate checking.
 13. Implement `lookup_join(...)` input-scope capture and enum validation.
 14. Implement `@before(...)` and `@after(...)` metadata, options, ordering, and signature checks.
@@ -1062,9 +1062,9 @@ The implementation is complete when tests prove:
 - Source-order schema flow is validated.
 - Symbolic field access produces scoped field references.
 - Schema constructors and `SchemaClass.base(...)` produce projection IR.
-- Module-level `@expr_fn` helpers compile.
-- Class-local `@expr_fn` helpers without `self` compile when called through `self`.
-- An `@expr_fn` returning a non-expression value fails with an actionable diagnostic.
+- Module-level `@special(type="expr")` helpers compile.
+- Class-local `@special(type="expr")` helpers without `self` compile when called through `self`.
+- An `@special(type="expr")` returning a non-expression value fails with an actionable diagnostic.
 - Direct DSL helpers such as `lower(trim(order.customer_id))` compile to expression IR.
 - Unsupported Python string methods fail with a direct DSL replacement suggestion.
 - Python boolean `and`, `or`, and `not` fail with suggestions for `&`, `|`, and `~`.

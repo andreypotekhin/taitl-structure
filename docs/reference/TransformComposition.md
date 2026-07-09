@@ -74,7 +74,7 @@ super(NormalizeBase, self).normalize(order)
 
 The parent step keeps its own hooks, validation boundary, lane writes, and traceability entry.
 No other compiled subtransform may call another subtransform directly. Use source order and lanes inside one transform,
-`Transform.to(...)` between complete transforms, private helpers for inline object construction, and `@expr_fn` for
+`Transform.to(...)` between complete transforms, private helpers for inline object construction, and `@special(type="expr")` for
 reusable compiler-visible expressions.
 
 ## Runtime Composition

@@ -25,6 +25,8 @@ class PySparkExpressionMapper:
             return "expression", "standard_helper_call"
         if expression.kind == "field":
             return "expression", "field_ref"
+        if expression.kind == "struct":
+            return "expression", "standard_helper_call"
         if expression.kind == "literal":
             return "expression", "literal"
         if expression.kind in {"and", "or", "not", "is_null", "is_not_null"}:
@@ -40,4 +42,6 @@ class PySparkExpressionMapper:
             if function == "to_decimal":
                 return "expression", "cast"
             return "expression", "standard_helper_call"
+        if expression.kind == "python_udf":
+            return "expression", "python_udf"
         return "expression", "standard_helper_call"

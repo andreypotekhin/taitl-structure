@@ -73,7 +73,7 @@ Allowed at module import:
 - imports of standard library and project modules;
 - schema class declarations;
 - transform class declarations;
-- `@expr_fn` declarations;
+- `@special(type="expr")` declarations;
 - constants that are cheap and deterministic;
 - type aliases and helper functions.
 

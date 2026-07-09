@@ -1,0 +1,15 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "order_date",
+      "name": "order_date",
+      "nullable": true,
+      "primary_key": false,
+      "type": "date"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "testing.model.v2.orders.schemas.common",
+  "name": "BusinessDate"
+}

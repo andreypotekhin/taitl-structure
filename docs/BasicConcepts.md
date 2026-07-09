@@ -160,7 +160,7 @@ The v1 expression surface supports field references, Python literals, `==`, `!=`
 
 ### Expression Helper
 
-An expression helper function is a reusable compiler-visible function marked with `@expr_fn`. When called with
+An expression helper function is a reusable compiler-visible function marked with `@special(type="expr")`. When called with
 symbolic arguments, the helper expands as expression IR.
 
 Expression helpers are Structure's preferred way to use reusable expression logic while keeping it visible to
@@ -169,7 +169,7 @@ compiler checks, traceability, online execution, and generated code.
 Example:
 
 ```python
-@expr_fn
+@special(type="expr")
 def clean_id(value):
     return lower(trim(value))
 ```

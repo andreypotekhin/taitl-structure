@@ -132,7 +132,7 @@ Rules:
 - Callback returns must be typed Structure expressions or typed literals.
 - Python `if`, `and`, `or`, loops, mutation, list/dict construction with symbolic values, and side effects are
   rejected inside callbacks unless a later symbolic form admits them explicitly.
-- Lambdas may close over literals, enum values, and `@expr_fn` helpers, but not live DataFrames, Spark columns,
+- Lambdas may close over literals, enum values, and `@special(type="expr")` helpers, but not live DataFrames, Spark columns,
   sessions, mutable containers, or runtime-only objects.
 - Nested HOFs are admitted only when the inner lambda does not capture an outer placeholder in a way the target cannot
   lower.

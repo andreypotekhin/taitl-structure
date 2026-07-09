@@ -2,7 +2,7 @@
 
 ## Sprint Goal
 
-Make the source DSL practically useful by adding common expressions, `where(...)` filtering, `@expr_fn` helpers, and structured unsupported-code errors.
+Make the source DSL practically useful by adding common expressions, `where(...)` filtering, `@special(type="expr")` helpers, and structured unsupported-code errors.
 
 ## Product Outcome
 
@@ -17,11 +17,11 @@ actionable diagnostics in online and generated execution.
 - Binary comparisons.
 - Boolean combinations.
 - `where(...)` filtering.
-- Class-local `@expr_fn` helpers without `self` parameter.
-- Module-level `@expr_fn` helpers.
+- Class-local `@special(type="expr")` helpers without `self` parameter.
+- Module-level `@special(type="expr")` helpers.
 - Schema base overlay construction with `SchemaClass.base(row)(...)`.
 - Structured unsupported-code errors.
-- Error suggestions: direct DSL, `@expr_fn`, hook, config workaround when applicable.
+- Error suggestions: direct DSL, `@special(type="expr")`, hook, config workaround when applicable.
 - Performance guardrail tests.
 - Shared PySpark recipes and online/generated parity checks for expressions and filtering.
 
@@ -36,18 +36,18 @@ actionable diagnostics in online and generated execution.
 
 - As a developer, I can compile field references to Spark Columns.
 - As a developer, I can use `where(...)` for filtering.
-- As a developer, I can define module-level `@expr_fn` helpers.
-- As a developer, I can define class-local `@expr_fn` helpers without a `self` parameter.
+- As a developer, I can define module-level `@special(type="expr")` helpers.
+- As a developer, I can define class-local `@special(type="expr")` helpers without a `self` parameter.
 - As a developer, I can construct an output schema from inherited base schema rows plus explicit overrides.
 - As a developer, I receive structured compiler errors for unsupported Python.
-- As a developer, I receive alternatives including DSL functions, `@expr_fn`, hooks, and config workarounds.
+- As a developer, I receive alternatives including DSL functions, `@special(type="expr")`, hooks, and config workarounds.
 - As a developer, compiled paths do not silently fall back to UDFs.
 - As a developer, online and generated execution lower expressions consistently.
 
 ## Example Source
 
 ```python
-@expr_fn
+@special(type="expr")
 def clean_id(value):
     return lower(trim(value))
 
@@ -82,7 +82,7 @@ df = orders.where(
 2. Implement binary comparison expressions.
 3. Implement boolean expression composition.
 4. Implement `where(...)` context capture.
-5. Implement `@expr_fn` decorator.
+5. Implement `@special(type="expr")` decorator.
 6. Support class-local helper invocation through `self`.
 7. Implement schema base overlay construction and lower it to projection IR.
 8. Implement unsupported operation traps.
@@ -100,7 +100,7 @@ df = orders.where(
 - Expression helpers and filters consume the shared PySpark recipe layer in both runtime modes.
 - Unsupported `.strip().lower()` fails with a detailed error.
 - Error suggests `lower(trim(...))`.
-- Error suggests creating `@expr_fn`.
+- Error suggests creating `@special(type="expr")`.
 - Error suggests a hook escape hatch.
 - `SchemaClass.base(row)(overrides...)` compiles to the same explicit projection as the equivalent full constructor.
 - Multiple-base overlays map source rows to direct schema bases in declaration order.
@@ -108,7 +108,7 @@ df = orders.where(
 
 ## Progress
 
-- [x] (2026-06-21) Common v1 expression recipes, filtering, `@expr_fn` helpers, schema base overlay projection, and
+- [x] (2026-06-21) Common v1 expression recipes, filtering, `@special(type="expr")` helpers, schema base overlay projection, and
   generated PySpark expression rendering are implemented for the v1 fixture.
 - [x] (2026-06-21) Shared diagnostic registry, renderer, docs anchors, and representative config/backend/runtime/CLI
   diagnostic routing are implemented under `structure.lib.cross.errors`.

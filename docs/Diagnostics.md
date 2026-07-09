@@ -9,8 +9,9 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | --- | --- | --- | --- |
 | CONF-E0101 | error | Unknown configuration key | Remove the key or correct its spelling. |
 | CONF-E0102 | error | Invalid configuration value | Set the value to one of the allowed values. |
-| DSL-E0401 | error | Unsupported symbolic expression | Use Structure DSL helpers, an `@expr_fn` helper, or a hook. |
+| DSL-E0401 | error | Unsupported symbolic expression | Use Structure DSL helpers, an `@special(type="expr")` helper, or a hook. |
 | DSL-E0402 | error | Invalid transform structure | Check decoration, annotations, schema flow, and output fields. |
+| DSL-W0403 | warning | Python UDF is optimizer-opaque | Keep intentional UDFs or set `warn_on_udfs = false`. |
 | SCHEMA-E0301 | error | Nullable expression assigned to non-nullable field | Guard the value or provide a non-null default. |
 | SCHEMA-E0302 | error | Explicit conversion required | Use an explicit conversion helper such as `to_decimal(...)`. |
 | SCHEMA-E0303 | error | Incompatible output field type | Use a compatible expression type or explicit conversion. |
@@ -41,6 +42,9 @@ See [Diagnostics.md](reference/Diagnostics.md#dsl-e0401).
 
 ### DSL-E0402
 See [Diagnostics.md](reference/Diagnostics.md#dsl-e0402).
+
+### DSL-W0403
+See [Diagnostics.md](reference/Diagnostics.md#dsl-w0403).
 
 ### SCHEMA-E0301
 See [Diagnostics.md](reference/Diagnostics.md#schema-e0301).

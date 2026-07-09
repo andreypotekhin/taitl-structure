@@ -12,13 +12,13 @@ from structure.app.dsl.model.expr.InputScope import InputScope, lookup_join
 from structure.app.dsl.model.schemas.Projection import Projection
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.BindingSelector import BindingSelector, SelectedDeclaration
-from structure.app.dsl.model.transforms.ExprFunction import ExprFunction
 from structure.app.dsl.model.transforms.InOutBinding import InOutBinding
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.app.dsl.model.transforms.reserved_v2 import cache_operation
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.app.dsl.model.transforms.SpecialFunction import SpecialFunction
 from structure.app.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.types.BooleanType import BooleanType
@@ -102,8 +102,32 @@ def transform(target=None, **kwargs):
     return decorate(target)
 
 
-def expr_fn(function: Callable) -> ExprFunction:
-    return ExprFunction(function)
+def special(function: Callable | None = None, *, type: str, **kwargs):
+    allowed = {"expr", "udf", "opaque"}
+    if type not in allowed:
+        raise TypeError(f"@special(type=...) must use one of: {', '.join(sorted(allowed))}")
+    if type == "expr" and kwargs:
+        unknown = ", ".join(sorted(kwargs))
+        raise TypeError(f"@special(type=\"expr\") got unknown option(s): {unknown}")
+    if type == "opaque" and kwargs:
+        unknown = ", ".join(sorted(kwargs))
+        raise TypeError(f"@special(type=\"opaque\") got unknown option(s): {unknown}")
+    if type == "udf":
+        unknown_options = set(kwargs) - {"return_type", "nullable"}
+        if unknown_options:
+            raise TypeError(f"@special(type=\"udf\") got unknown option(s): {', '.join(sorted(unknown_options))}")
+
+    def decorate(target: Callable) -> SpecialFunction:
+        return SpecialFunction(
+            target,
+            type=type,
+            return_type=kwargs.get("return_type"),
+            nullable=bool(kwargs.get("nullable", True)),
+        )
+
+    if function is None:
+        return decorate
+    return decorate(function)
 
 
 def _decorate_transform_class(cls, kwargs):

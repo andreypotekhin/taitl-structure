@@ -23,6 +23,7 @@ class StructureConfigBuilder:
             source_roots=tuple((root / item).resolve() for item in source_roots),
             generated_dir=generated_dir,
             generated_package=str(values["generated_package"]),
+            generated_docs=bool(values["generated_docs"]),
             generated_docs_dir=generated_dir / str(values["generated_docs_dir"]),
             generated_docs_formats=tuple(generated_docs_formats),
             execution_mode=str(values["execution_mode"]),
@@ -39,6 +40,7 @@ class StructureConfigBuilder:
             validate_outputs=bool(values["validate_outputs"]),
             output_validation_mode=str(values["output_validation_mode"]),
             strict_performance=bool(values["strict_performance"]),
+            warn_on_udfs=bool(values["warn_on_udfs"]),
             fail_on_diff=bool(values["fail_on_diff"]),
             spark_sql={
                 "spark.sql.ansi.enabled": values["spark.sql.ansi.enabled"],

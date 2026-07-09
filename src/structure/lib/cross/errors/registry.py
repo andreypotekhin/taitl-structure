@@ -34,7 +34,7 @@ diagnostic_registry = DiagnosticRegistry(
             docs="docs/Diagnostics.md#dsl-e0401",
             introduced="1.0.0",
             problem_template="Transform code uses Python behavior Structure cannot lower to Spark expressions.",
-            use_template="Use Structure DSL helpers, an @expr_fn helper, or an explicit hook.",
+            use_template='Use Structure DSL helpers, @special(type="expr"), @special(type="udf"), or an explicit hook.',
         ),
         DiagnosticEntry(
             code="DSL-E0402",
@@ -46,6 +46,17 @@ diagnostic_registry = DiagnosticRegistry(
             introduced="1.0.0",
             problem_template="Transform source does not match the Structure compiler contract.",
             use_template="Check transform decoration, method annotations, schema flow, and assigned output fields.",
+        ),
+        DiagnosticEntry(
+            code="DSL-W0403",
+            severity="warning",
+            title="Python UDF is optimizer-opaque",
+            owner="dsl",
+            status="active",
+            docs="docs/Diagnostics.md#dsl-w0403",
+            introduced="1.0.0",
+            problem_template="Transform code uses a Python UDF that Spark cannot inspect or optimize.",
+            use_template='Keep the UDF only when Python execution is intentional, or set warn_on_udfs = false.',
         ),
         DiagnosticEntry(
             code="SCHEMA-E0301",

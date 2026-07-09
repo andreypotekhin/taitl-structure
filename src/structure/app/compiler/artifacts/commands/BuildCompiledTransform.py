@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import hashlib
 import inspect
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 from structure.app.compiler.api import Compiler
@@ -28,7 +30,7 @@ class BuildCompiledTransform:
             target_profile=options.target_profile,
             target_variant=options.target_variant,
         )
-        transform_plan = Compiler.frontend.compile()(subject)
+        transform_plan = Compiler.frontend.compile()(subject, warn_on_udfs=options.warn_on_udfs)
         pyspark_plan = PySpark.plan.lower()(transform_plan, capabilities=capabilities)
         schemas = Schemas.build()(pyspark_plan, types=schema_types)
         return CompiledTransform(
@@ -42,6 +44,7 @@ class BuildCompiledTransform:
         classes = self._classes(subject)
         return CompileKey(
             subject=tuple(f"{cls.__module__}.{cls.__qualname__}" for cls in classes),
+            structure_version=self._structure_version(),
             options=options.fingerprint(),
             sources=tuple(self._source(cls) for cls in classes),
         )
@@ -51,16 +54,23 @@ class BuildCompiledTransform:
             return tuple(stage.transform_class for stage in subject.stages)
         return (subject,)
 
-    def _source(self, transform: type[Transform]) -> tuple[str, int | None, int | None]:
+    def _source(self, transform: type[Transform]) -> tuple[str, int | None, int | None, str | None]:
         source = inspect.getsourcefile(transform)
         if source is None:
-            return (f"{transform.__module__}.{transform.__qualname__}", None, None)
+            return (f"{transform.__module__}.{transform.__qualname__}", None, None, None)
         path = Path(source)
         try:
             stat = path.stat()
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
         except OSError:
-            return (path.as_posix(), None, None)
-        return (path.as_posix(), stat.st_mtime_ns, stat.st_size)
+            return (path.as_posix(), None, None, None)
+        return (path.as_posix(), stat.st_mtime_ns, stat.st_size, digest)
+
+    def _structure_version(self) -> str:
+        try:
+            return version("structure")
+        except PackageNotFoundError:
+            return "unknown"
 
 
 build_compiled_transform = BuildCompiledTransform()

@@ -18,6 +18,7 @@ Preferred:
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
+generated_docs = true
 generated_docs_dir = "docs"
 generated_docs_formats = ["markdown", "json"]
 execution_mode = "online"
@@ -31,6 +32,7 @@ Alternative:
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
+generated_docs = true
 generated_docs_dir = "docs"
 generated_docs_formats = ["markdown", "json"]
 execution_mode = "online"
@@ -77,6 +79,7 @@ when the settings need to be shared or inspected.
 source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
+generated_docs = true
 generated_docs_dir = "docs"
 generated_docs_formats = ["markdown", "json"]
 ```
@@ -85,8 +88,9 @@ generated_docs_formats = ["markdown", "json"]
 modules. `generated_dir` is the generated-code filesystem root.
 
 `generated_package` is the Python package below `generated_dir` that owns generated Structure artifacts.
+`generated_docs` controls whether `structure compile` writes generated documentation artifacts.
 `generated_docs_dir` is the generated documentation directory inside `generated_dir`; `generated_docs_formats`
-controls whether `structure compile` writes Markdown, JSON, or both.
+controls whether enabled docs are written as Markdown, JSON, or both.
 
 Recommended layout:
 
@@ -223,7 +227,7 @@ trees and source locations for troubleshooting.
 
 ```toml
 strict_performance = true
-allow_python_udf = false
+warn_on_udfs = true
 allow_pandas_udf = false
 allow_rdd = false
 allow_collect = false

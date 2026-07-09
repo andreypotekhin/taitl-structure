@@ -150,7 +150,7 @@ Rules:
 
 - The compiler does not inspect hook internals for expressions, joins, filters, traceability, or performance guardrails.
 - Traceability and explain output must show an opaque hook boundary.
-- Diagnostics should prefer direct DSL or `@expr_fn` fixes when logic can stay compiler-visible.
+- Diagnostics should prefer direct DSL or `@special(type="expr")` fixes when logic can stay compiler-visible.
 - Generated code calls hooks on the source transform implementation instance.
 - Online execution calls the same hook methods on the transform invocation.
 - Hook internals may import backend libraries because they run at runtime.

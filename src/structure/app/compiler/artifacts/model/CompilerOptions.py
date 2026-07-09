@@ -23,6 +23,7 @@ class CompilerOptions:
     validate_outputs: bool
     output_validation_mode: str
     strict_performance: bool
+    warn_on_udfs: bool
     schema_types_key: str | None = None
 
     @classmethod
@@ -41,7 +42,9 @@ class CompilerOptions:
         if isinstance(options, StructureConfig):
             config = options
         if config is not None and (project_root is not None or overrides or settings):
-            raise ValueError("Pass either config/options, or pass project_root/config override fields, not both.")
+            raise ValueError(
+                "Pass either config/options, or pass project_root/config override fields, not both."
+            )
         resolved = config or StructureConfig.resolve(project_root=project_root, overrides=overrides, **settings)
         return cls.from_config(resolved, schema_types=schema_types)
 
@@ -62,6 +65,7 @@ class CompilerOptions:
             validate_outputs=config.validate_outputs,
             output_validation_mode=config.output_validation_mode,
             strict_performance=config.strict_performance,
+            warn_on_udfs=config.warn_on_udfs,
             schema_types_key=cls._schema_types_key(schema_types),
         )
 
@@ -78,6 +82,7 @@ class CompilerOptions:
             self.validate_outputs,
             self.output_validation_mode,
             self.strict_performance,
+            self.warn_on_udfs,
             self.schema_types_key,
         )
 

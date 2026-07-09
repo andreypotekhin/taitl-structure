@@ -461,6 +461,10 @@ Rules:
 - Every selected expression is explicitly aliased to the output field's Spark column name.
 - Aliases are schema-local: an input alias is used to read that input schema, and the target schema decides the
   projected output column name.
+- Nested schema constructors assigned to `Struct(...)` fields render as `F.struct(...)` with child expressions aliased
+  to the nested schema's Spark field names.
+- Nested field references preserve path segments. Segments containing dots or backticks are escaped so aliases such as
+  `alias="postal.code"` are treated as one nested field name.
 - `SchemaClass.base(row)(...)` first maps inherited base fields from the base row, then applies explicit overrides and
   additions according to schema construction semantics.
 - Extra columns are not preserved through compiled projection unless a hook with `project_output=False` is allowed to

@@ -1,10 +1,14 @@
 import sys
+from typing import cast
+
+import pytest
 
 from structure.app.dsl.api import (
     Join,
     JoinHint,
     SchemaMode,
     String,
+    Struct,
     Structure,
     Transform,
     compile_transform,
@@ -12,7 +16,10 @@ from structure.app.dsl.api import (
     input,
     output,
     transform,
+    trim,
+    where,
 )
+from structure.app.dsl.model.types.StructType import StructType
 
 
 def test_v1_fixture_imports_without_pyspark() -> None:
@@ -95,6 +102,70 @@ def test_v1_symbolic_plan_records_expression_operators() -> None:
     promotion_join = plan.steps[3].joins[0]
     assert promotion_join.predicate.kind == "and"
     assert promotion_join.predicate.args[1].kind == "null_safe_eq"
+
+
+def test_v1_symbolic_plan_records_nested_struct_construction() -> None:
+    class Address(Structure):
+        city = field(String(), nullable=False)
+        postal_code = field(String(), nullable=False)
+
+    class Raw(Structure):
+        id = field(String(), nullable=False)
+        shipping = field(Struct(Address), nullable=True)
+
+    class Published(Structure):
+        id = field(String(), nullable=False)
+        shipping = field(Struct(Address), nullable=False)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            where(row.shipping.is_not_null())  # type: ignore[attr-defined]
+            return Published(
+                id=row.id,
+                shipping=Address(
+                    city=trim(row.shipping.city),  # type: ignore[attr-defined]
+                    postal_code=row.shipping.postal_code,  # type: ignore[attr-defined]
+                ),
+            )
+
+    plan = compile_transform(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in plan.steps[0].projection}
+    shipping = projection["shipping"]
+
+    assert shipping.kind == "struct"
+    assert cast(StructType, shipping.type).schema is Address
+    assert shipping.nullable is False
+    assert [argument.kind for argument in shipping.args] == ["call", "field"]
+
+
+def test_v1_symbolic_plan_rejects_incompatible_nested_struct_assignment() -> None:
+    class Address(Structure):
+        city = field(String(), nullable=False)
+        postal_code = field(String(), nullable=False)
+
+    class TenantKey(Structure):
+        tenant_id = field(String(), nullable=False)
+
+    class Raw(Structure):
+        id = field(String(), nullable=False)
+
+    class Published(Structure):
+        tenant = field(Struct(TenantKey), nullable=False)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(tenant=Address(city=row.id, postal_code=row.id))
+
+    with pytest.raises(Exception, match=r"expects Struct\(TenantKey\).*Struct\(Address\)"):
+        compile_transform(Publish)
 
 
 def test_transform_class_options_default_subtransform_options() -> None:

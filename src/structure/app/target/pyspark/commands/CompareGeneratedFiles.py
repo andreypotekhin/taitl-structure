@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 from structure.app.target.pyspark.model.GeneratedFileChange import GeneratedFileChange
@@ -9,10 +9,16 @@ from structure.app.target.pyspark.model.GeneratedFileSetResult import GeneratedF
 
 class CompareGeneratedFiles:
 
-    def __call__(self, files: Mapping[str, str], *, root: Path | str) -> GeneratedFileSetResult:
+    def __call__(
+        self,
+        files: Mapping[str, str],
+        *,
+        root: Path | str,
+        ignore_prefixes: Sequence[str] = (),
+    ) -> GeneratedFileSetResult:
         root_path = Path(root)
         changes = [self._change(path, text, root=root_path) for path, text in sorted(files.items())]
-        changes.extend(self._removed(files, root=root_path))
+        changes.extend(self._removed(files, root=root_path, ignore_prefixes=ignore_prefixes))
         return GeneratedFileSetResult(tuple(changes))
 
     def _change(self, path: str, text: str, *, root: Path) -> GeneratedFileChange:
@@ -23,7 +29,13 @@ class CompareGeneratedFiles:
             return GeneratedFileChange(path, "modified")
         return GeneratedFileChange(path, "unchanged")
 
-    def _removed(self, files: Mapping[str, str], *, root: Path) -> list[GeneratedFileChange]:
+    def _removed(
+        self,
+        files: Mapping[str, str],
+        *,
+        root: Path,
+        ignore_prefixes: Sequence[str],
+    ) -> list[GeneratedFileChange]:
         expected = {Path(path).as_posix() for path in files}
         removed: list[GeneratedFileChange] = []
         if not root.exists():
@@ -32,6 +44,8 @@ class CompareGeneratedFiles:
         for target in sorted(path for path in root.rglob("*") if path.is_file()):
             relative = target.relative_to(root).as_posix()
             if relative in expected:
+                continue
+            if any(relative.startswith(prefix) for prefix in ignore_prefixes):
                 continue
             if self._owned(target):
                 removed.append(GeneratedFileChange(relative, "removed"))
@@ -46,7 +60,11 @@ class CompareGeneratedFiles:
             return True
         if target.suffix != ".json":
             return False
-        return '"source_transform"' in text and '"generated_transform_class"' in text
+        return (
+            '"generated_by": "Structure"' in text
+            or '"source_transform"' in text
+            and '"generated_transform_class"' in text
+        )
 
 
 compare_generated_files = CompareGeneratedFiles()

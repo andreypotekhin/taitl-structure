@@ -32,7 +32,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 - Initial CI script.
 - Architecture and implementation docs linked from README.
 - Spike: `@after(method, lane=lane)` binding inside class bodies.
-- Spike: class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
+- Spike: class-local `@special(type="expr")` helpers callable through `self` without a `self` parameter.
 - Spike: source-order discovery with stable line numbers.
 - Spike: source-root discovery and generated `structure_generated.<source package>` import paths.
 - Spike: `StructureSession` and deferred transform invocation API.
@@ -96,7 +96,7 @@ The team can also review short spike notes for the high-risk Python mechanics be
 13. Add first CI command list.
 14. Add compile-time timing utility placeholder.
 15. Spike `@after(method, lane=lane)` inside class bodies.
-16. Spike class-local `@expr_fn` helper descriptor behavior.
+16. Spike class-local `@special(type="expr")` helper descriptor behavior.
 17. Spike source-order discovery with line numbers.
 18. Spike source-root discovery and generated `structure_generated.<source package>` import paths.
 19. Spike no-Spark compiler checks and compile.

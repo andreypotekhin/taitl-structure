@@ -29,7 +29,7 @@ Errors should include:
 - problem
 - rationale
 - suggested DSL fix
-- `@expr_fn` helper fix
+- `@special(type="expr")` helper fix
 - hook workaround
 - hook opacity note when a workaround moves logic out of the compiler-visible path
 - config workaround when one exists
@@ -61,7 +61,7 @@ Use:
   customer_id=lower(trim(order.customer_id))
 
 For reuse:
-  @expr_fn
+  @special(type="expr")
   def clean_id(value):
       return lower(trim(value))
 
@@ -72,7 +72,7 @@ Hook workaround:
 
 Hook note:
   Hooks are supported for arbitrary PySpark, but they are opaque to compileability checks and traceability. Prefer the DSL or
-  @expr_fn form when the expression can stay compiler-visible.
+  @special(type="expr") form when the expression can stay compiler-visible.
 
 Configuration workaround:
   None. Unsupported Python methods are not allowed in compiled transforms.
@@ -88,7 +88,7 @@ Only suggest config when it really applies. Examples:
 
 ## Extension Boundaries
 
-The checker should treat `@expr_fn` helpers as the preferred project extension point for reusable expression logic.
+The checker should treat `@special(type="expr")` helpers as the preferred project extension point for reusable expression logic.
 They stay inside symbolic execution and therefore remain visible to generated code, traceability, backend capability checks,
 and diagnostics.
 

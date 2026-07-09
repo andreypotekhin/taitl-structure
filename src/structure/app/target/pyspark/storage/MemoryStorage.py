@@ -31,7 +31,7 @@ class MemoryStorage:
         try:
             return self.modules[module_name]
         except KeyError:
-            return sys.modules[module_name]
+            raise ImportError(f"MemoryStorage does not contain generated module {module_name}")
 
     def _install_packages(self, files: Mapping[str, str]) -> None:
         packages = [path for path in files if path.endswith("/__init__.py")]
@@ -77,4 +77,3 @@ class MemoryStorage:
 
     def _module_name(self, path: str) -> str:
         return path.removesuffix(".py").replace("/", ".")
-

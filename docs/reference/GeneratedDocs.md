@@ -6,11 +6,16 @@ publishing schema and transform contracts in CI without asking readers to inspec
 Configure the destination and formats:
 
 ```toml
+generated_docs = true
 generated_docs_dir = "docs"
 generated_docs_formats = ["markdown", "json"]
 ```
 
 `generated_docs_dir` is inside `generated_dir`, so the default path is `generated/docs`.
+Set `generated_docs = false` in config or pass `structure compile --no-generated-docs` to opt out.
+When docs are disabled, `compile --fail-on-diff` ignores existing generated docs.
+
+Programmatic integrations can call `Docs.render.project()` from `structure.app.docs.api`.
 
 Generated documentation includes:
 

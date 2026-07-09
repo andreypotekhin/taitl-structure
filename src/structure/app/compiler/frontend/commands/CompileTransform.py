@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import inspect
+from collections.abc import Mapping
 from contextlib import contextmanager
+from pathlib import Path
 from typing import cast, get_args, get_origin, get_type_hints
 
 from structure.app.compiler.diagnostics.api import StructureCompileError
@@ -25,6 +27,7 @@ from structure.app.compiler.ir.model.StepResultPlan import StepResultPlan
 from structure.app.compiler.ir.model.TransformMemberOrigin import TransformMemberOrigin
 from structure.app.compiler.ir.model.TransformPlan import TransformPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import CompileContext
+from structure.app.configuration.model.StructureConfig import StructureConfig
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.expr.expressions import literal
 from structure.app.dsl.model.expr.InputScope import InputScope
@@ -47,6 +50,8 @@ from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.app.dsl.model.types.BooleanType import BooleanType
 from structure.app.dsl.model.types.DecimalType import DecimalType
+from structure.app.dsl.model.types.Struct import Struct
+from structure.app.dsl.model.types.StructType import StructType
 from structure.app.dsl.model.types.StructureType import StructureType
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 
@@ -62,9 +67,31 @@ class CompileTransform:
         self._input_collector = CompilerInputCollector()
         self._member_collector = CompilerTransformMemberCollector()
 
-    def __call__(self, transform_class: type[Transform] | TransformPipeline) -> TransformPlan:
+    def __call__(
+        self,
+        transform_class: type[Transform] | TransformPipeline,
+        *,
+        config: StructureConfig | None = None,
+        project_root: Path | str | None = None,
+        overrides: Mapping[str, object] | None = None,
+        **settings: object,
+    ) -> TransformPlan:
+        if config is not None and (project_root is not None or overrides or settings):
+            raise ValueError(
+                "Pass either config=StructureConfig.resolve(...), or pass project_root/config override fields, not both."
+            )
+        merged = dict(overrides or {})
+        duplicates = set(merged).intersection(settings)
+        if duplicates:
+            names = ", ".join(sorted(duplicates))
+            raise ValueError(f"Configuration override supplied twice: {names}.")
+        merged.update(settings)
+        resolved = config or StructureConfig.resolve(project_root=project_root, overrides=merged)
+        return self._compile(transform_class, config=resolved)
+
+    def _compile(self, transform_class: type[Transform] | TransformPipeline, *, config: StructureConfig) -> TransformPlan:
         if isinstance(transform_class, TransformPipeline):
-            return self._compose_pipeline(transform_class, name="ComposedTransform")
+            return self._compose_pipeline(transform_class, name="ComposedTransform", config=config)
         if not isinstance(transform_class, type) or not issubclass(transform_class, Transform) or transform_class is Transform:
             raise self._error(
                 "DSL-E0402",
@@ -74,7 +101,7 @@ class CompileTransform:
             )
         pipeline = getattr(transform_class, "_structure_pipeline", None)
         if pipeline is not None:
-            return self._compose_pipeline(pipeline, name=transform_class.__name__, wrapper_class=transform_class)
+            return self._compose_pipeline(pipeline, name=transform_class.__name__, config=config, wrapper_class=transform_class)
         if not transform_class._structure_outputs:
             raise self._error(
                 "DSL-E0402",
@@ -93,6 +120,7 @@ class CompileTransform:
             )
         steps, lanes, explicit_outputs, diagnostics = self._steps(transform_class, inputs)
         outputs = self._outputs(transform_class, lanes, explicit_outputs)
+        diagnostics.extend(self._udf_diagnostics(transform_class, steps, outputs, config=config))
         return TransformPlan(
             name=transform_class.__name__,
             inputs=tuple(inputs),
@@ -102,17 +130,76 @@ class CompileTransform:
             diagnostics=tuple(diagnostics),
         )
 
+    def _udf_diagnostics(
+        self,
+        transform_class: type[Transform],
+        steps: list[StepPlan],
+        outputs: list[OutputPlan],
+        *,
+        config: StructureConfig,
+    ) -> tuple[Diagnostic, ...]:
+        if not config.warn_on_udfs:
+            return ()
+        seen: set[str] = set()
+        diagnostics: list[Diagnostic] = []
+        expressions = [
+            expression
+            for step in steps
+            for expression in (
+                *step.filters,
+                *(assignment.expression for assignment in step.projection),
+                *(operation.filter for operation in step.operations if operation.filter is not None),
+                *(result_assignment.expression for result in step.results for result_assignment in result.projection),
+            )
+        ]
+        expressions.extend(
+            expression
+            for output in outputs
+            for expression in (
+                *output.filters,
+                *(assignment.expression for assignment in output.projection),
+                *(operation.filter for operation in output.operations if operation.filter is not None),
+            )
+        )
+        for expression in expressions:
+            for udf in self._udf_expressions(expression):
+                data = udf.data or {}
+                qualname = str(data.get("qualname", data.get("function_name", "python_udf")))
+                if qualname in seen:
+                    continue
+                seen.add(qualname)
+                diagnostics.append(
+                    Diagnostic(
+                        entry=diagnostic_registry.get("DSL-W0403"),
+                        problem=(
+                            f"{transform_class.__name__} uses Python UDF {qualname}; "
+                            "Spark cannot inspect or optimize the UDF body."
+                        ),
+                        use="Prefer Structure expression helpers when logic can stay compiler-visible, or set warn_on_udfs = false.",
+                        context={"udf": qualname},
+                        source=f"{transform_class.__module__}.{transform_class.__name__}",
+                    )
+                )
+        return tuple(diagnostics)
+
+    def _udf_expressions(self, expression: Expression) -> tuple[Expression, ...]:
+        found = [expression] if expression.kind == "python_udf" else []
+        for argument in expression.args:
+            found.extend(self._udf_expressions(argument))
+        return tuple(found)
+
     def _compose_pipeline(
         self,
         pipeline: TransformPipeline,
         *,
         name: str,
+        config: StructureConfig,
         wrapper_class: type[Transform] | None = None,
     ) -> TransformPlan:
         return self._composer(
             pipeline,
             name=name,
-            compile_stage=self.__call__,
+            compile_stage=lambda transform_class: self._compile(transform_class, config=config),
             wrapper_class=wrapper_class,
         )
 
@@ -487,7 +574,7 @@ class CompileTransform:
                     ),
                     use=(
                         "Subtransforms are pipeline steps. Use source order, lane bindings, Transform.to(...), "
-                        "a private helper, or an @expr_fn helper instead. Only an override may call its overridden "
+                        "a private helper, or @special(type=\"expr\") instead. Only an override may call its overridden "
                         "parent subtransform."
                     ),
                     context={"called_subtransform": f"{owner.__name__}.{name}"},
@@ -1690,7 +1777,13 @@ class CompileTransform:
                     use="Assign every declared output field, or return an inherited base schema with explicit overrides.",
                     context={"field": field.name, "schema": output_schema.__name__},
                 )
-            expression = literal(result._structure_values[field.name])
+            expression = self._value_expression(
+                transform_class,
+                member,
+                result._structure_values[field.name],
+                field.type,
+                path=f"{output_schema.__name__}.{field.name}",
+            )
             assignments.append(
                 self._assignment(transform_class, member, output_schema, field, expression, filters=filters)
             )
@@ -1728,7 +1821,13 @@ class CompileTransform:
                     use="Assign every aggregate output field.",
                     context={"field": field.name, "schema": output_schema.__name__},
                 )
-            expression = literal(result._structure_values[field.name])
+            expression = self._value_expression(
+                transform_class,
+                member,
+                result._structure_values[field.name],
+                field.type,
+                path=f"{output_schema.__name__}.{field.name}",
+            )
             key = self._aggregate_key_for(field.name, expression, aggregate_keys)
             if key is not None:
                 self._assignment(transform_class, member, output_schema, field, expression, filters=filters)
@@ -1946,6 +2045,14 @@ class CompileTransform:
                     use="Use a target schema whose fields exist on the source or provide explicit overrides.",
                     context={"field": field.name, "schema": source_schema.__name__},
                 )
+            if isinstance(result.source, Structure):
+                expression = self._value_expression(
+                    transform_class,
+                    member,
+                    result.source._structure_values[field.name],
+                    field.type,
+                    path=f"{output_schema.__name__}.{field.name}",
+                )
             assignments.append(
                 self._assignment(transform_class, member, output_schema, field, expression, filters=filters)
             )
@@ -2002,6 +2109,47 @@ class CompileTransform:
                 },
             )
         return ProjectAssignment(field=field, expression=expression)
+
+    def _value_expression(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        value: object,
+        target_type: StructureType,
+        *,
+        path: str,
+    ) -> Expression:
+        if isinstance(value, Structure):
+            expression_type = Struct(type(value))
+            fields = tuple(type(value)._structure_fields.values())
+            arguments: list[Expression] = []
+            for nested_field in fields:
+                if nested_field.name not in value._structure_values:
+                    raise self._error(
+                        "DSL-E0402",
+                        transform_class=transform_class,
+                        member=member,
+                        problem=f"{path}.{nested_field.name} is not assigned.",
+                        use="Assign every declared nested field when constructing a Struct(...) value.",
+                        context={"field": f"{path}.{nested_field.name}", "schema": type(value).__name__},
+                    )
+                arguments.append(
+                    self._value_expression(
+                        transform_class,
+                        member,
+                        value._structure_values[nested_field.name],
+                        nested_field.type,
+                        path=f"{path}.{nested_field.name}",
+                    )
+                )
+            return Expression(
+                kind="struct",
+                type=expression_type,
+                nullable=False,
+                data={"schema": type(value), "fields": fields},
+                args=tuple(arguments),
+            )
+        return literal(value)
 
     def _source_schema(self, source: object) -> type[Structure] | None:
         if isinstance(source, Structure):
@@ -2392,9 +2540,14 @@ class CompileTransform:
         if self._narrowed(expression, filters):
             return False
         if expression.kind == "field":
+            parent = self._parent_field(expression)
+            if parent is not None and self._narrowed(parent, filters):
+                return bool((expression.data or {}).get("field_nullable", expression.nullable))
             return expression.nullable
         if expression.kind == "literal":
             return expression.nullable
+        if expression.kind == "struct":
+            return False
         if expression.kind in {"is_null", "is_not_null", "null_safe_eq", "not"}:
             return False
         if expression.kind == "call":
@@ -2415,7 +2568,27 @@ class CompileTransform:
     def _same_field(self, left: Expression, right: Expression) -> bool:
         if left.kind != "field" or right.kind != "field":
             return False
-        return dict(left.data or {}) == dict(right.data or {})
+        left_data = dict(left.data or {})
+        right_data = dict(right.data or {})
+        if left_data.get("scope") != right_data.get("scope"):
+            return False
+        return left_data.get("path", left_data.get("field")) == right_data.get("path", right_data.get("field"))
+
+    def _parent_field(self, expression: Expression) -> Expression | None:
+        data = dict(expression.data or {})
+        path = data.get("path")
+        name_path = data.get("name_path")
+        if not isinstance(path, tuple) or len(path) < 2:
+            return None
+        parent_path = path[:-1]
+        parent_name_path = name_path[:-1] if isinstance(name_path, tuple) and len(name_path) == len(path) else parent_path
+        parent_data = dict(data)
+        parent_data["field"] = ".".join(str(item) for item in parent_path)
+        parent_data["name"] = ".".join(str(item) for item in parent_name_path)
+        parent_data["path"] = parent_path
+        parent_data["name_path"] = parent_name_path
+        parent_data.pop("field_nullable", None)
+        return Expression(kind="field", type=None, nullable=True, data=parent_data)
 
     def _assignable(
         self,
@@ -2447,6 +2620,8 @@ class CompileTransform:
             return False
         if isinstance(actual, DecimalType) and isinstance(target, DecimalType):
             return actual.precision == target.precision and actual.scale == target.scale
+        if isinstance(actual, StructType) and isinstance(target, StructType):
+            return actual.schema is target.schema
         return actual == target or actual.__class__.__name__.removesuffix("Type") == target.__class__.__name__
 
     def _assignable_decimal(self, actual: StructureType, target: DecimalType) -> bool:
@@ -2503,6 +2678,8 @@ class CompileTransform:
             return "untyped null"
         if isinstance(type, DecimalType):
             return f"Decimal({type.precision}, {type.scale})"
+        if isinstance(type, StructType):
+            return f"Struct({type.schema.__name__})"
         return f"{type.name}()"
 
     def _join_error(

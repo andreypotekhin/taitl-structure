@@ -34,7 +34,7 @@ Before the first vertical slice, Sprint 00 must retire the highest-risk unknowns
 Required spikes:
 
 - Prove `@after(method, lane=lane)` binding inside class bodies.
-- Prove class-local `@expr_fn` helpers callable through `self` without a `self` parameter.
+- Prove class-local `@special(type="expr")` helpers callable through `self` without a `self` parameter.
 - Prove source-order discovery with stable line numbers.
 - Prove source-root discovery and generated `structure_generated.<source package>` import paths.
 - Prove `StructureSession` and deferred transform invocation API.
@@ -67,7 +67,7 @@ hardens.
 - Symbolic field references.
 - Projection.
 - `where(...)` filtering.
-- One `@expr_fn` helper.
+- One `@special(type="expr")` helper.
 - Online/generated parity test.
 - Spark-free `structure check` for the fixture.
 
@@ -106,7 +106,7 @@ validation, compiler provenance, static dataflow traceability, and build integra
 - Intermediate schema validation by default.
 - Symbolic expression execution.
 - `where(...)` filtering.
-- `@expr_fn` helpers.
+- `@special(type="expr")` helpers.
 - `@before(method, lane=lane)` and `@after(method, lane=lane)` hooks.
 - Clean generated code with no hook machinery for hook-free transforms.
 - `lookup_join(...)` symbolic joins.

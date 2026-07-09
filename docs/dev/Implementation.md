@@ -7,7 +7,7 @@
 - `@transform` discovery.
 - Single schema-returning subtransform.
 - Symbolic field refs.
-- One `@expr_fn` helper.
+- One `@special(type="expr")` helper.
 - `where(...)` filtering.
 - Projection generation.
 - Backend capability interface for first-slice PySpark requirements.
@@ -38,7 +38,7 @@
 - Input, intermediate, and output validation modes.
 - Documented data-quality constraint boundary with schema-only validation as the default.
 - `where(...)` filtering.
-- `@expr_fn` helpers.
+- `@special(type="expr")` helpers.
 - `@after(method, lane=lane)` and `@before(method, lane=lane)` hooks.
 - Hook signature validation.
 - `lookup_join(...)`.

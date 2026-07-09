@@ -718,7 +718,7 @@ Rules:
 - Backend-specific function selection happens in the target layer.
 - Unsupported Python methods, arbitrary lambdas, and runtime callables are invalid in compiled expressions.
 
-Examples include `lower`, `upper`, `trim`, `to_decimal`, `coalesce`, and helper functions declared with `@expr_fn`.
+Examples include `lower`, `upper`, `trim`, `to_decimal`, `coalesce`, and helper functions declared with `@special(type="expr")`.
 
 ## BinaryExpr
 

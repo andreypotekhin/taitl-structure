@@ -175,8 +175,8 @@ helpers that know about checked-in model code, fixture data, pytest fixtures, or
     - coalesce
     - when otherwise
   - expression helper
-    - module-level `@expr_fn`
-    - class-local `@expr_fn`
+    - module-level `@special(type="expr")`
+    - class-local `@special(type="expr")`
     - helper call through `self`
     - helper purity
     - recursive helper rejection

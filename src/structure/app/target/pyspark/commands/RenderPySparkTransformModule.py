@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Mapping
+from typing import Mapping, cast
 
 from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.types.StructureType import StructureType
 from structure.app.target.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
 from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
@@ -102,8 +103,9 @@ class RenderPySparkTransformModule:
         lines = [f"class {class_name}:", "", "    def __init__(self, *, spark: SparkSession, ctx=None):"]
         lines.append("        self.spark = spark")
         lines.append("        self.ctx = ctx")
-        if self._has_hooks(plan):
+        if self._requires_impl(plan):
             lines.append(f"        self._impl = {source_name}()")
+        lines.extend(self._udf_initializers(plan, source_name=source_name))
         lines.extend(["", "    def run(", "        self,", "        *,"])
         for input in plan.inputs:
             lines.append(f"        {input.name}: DataFrame,")
@@ -171,8 +173,9 @@ class RenderPySparkTransformModule:
         lines.extend(["", "    def __init__(self, *, spark: SparkSession, ctx=None):"])
         lines.append("        self.spark = spark")
         lines.append("        self.ctx = ctx")
-        if self._has_hooks(plan):
+        if self._requires_impl(plan):
             lines.append(f"        self._impl = {source_name}()")
+        lines.extend(self._udf_initializers(plan, source_name=source_name))
         lines.extend(["", "    def run(", "        self,", "        *,"])
         for input in plan.inputs:
             lines.append(f"        {input.name}: DataFrame,")
@@ -277,7 +280,7 @@ class RenderPySparkTransformModule:
         return f"{owner.rsplit('.', 1)[1]}Generated"
 
     def _source_imports(self, plan: PySparkExecutionPlan, *, source_transform: str) -> list[str]:
-        if not self._has_hooks(plan):
+        if not self._requires_impl(plan):
             return []
         imports: dict[str, set[str]] = defaultdict(set)
         module, name = source_transform.rsplit(".", 1)
@@ -290,6 +293,55 @@ class RenderPySparkTransformModule:
             f"from {module} import {', '.join(sorted(names))}"
             for module, names in sorted(imports.items())
         ]
+
+    def _requires_impl(self, plan: PySparkExecutionPlan) -> bool:
+        return self._has_hooks(plan) or bool(self._udfs(plan))
+
+    def _udf_initializers(self, plan: PySparkExecutionPlan, *, source_name: str) -> list[str]:
+        lines: list[str] = []
+        for udf in self._udfs(plan):
+            function_name = udf["function_name"]
+            return_type = self._udf_return_type(udf, source_name=source_name)
+            lines.append(
+                f"        self.{udf['udf_name']} = F.udf(self._impl.{function_name}, returnType={return_type})"
+            )
+        return lines
+
+    def _udf_return_type(self, udf: dict[str, object], *, source_name: str) -> str:
+        if udf.get("pyspark_return_type"):
+            return f"{source_name}.{udf['function_name']}.return_type"
+        return render_pyspark_schema.type(cast(StructureType, udf["return_type"]))
+
+    def _udfs(self, plan: PySparkExecutionPlan) -> tuple[dict[str, object], ...]:
+        found: dict[str, dict[str, object]] = {}
+        for expression in self._expressions(plan):
+            for udf in self._expression_udfs(expression):
+                found[str(udf["udf_name"])] = udf
+        return tuple(found[name] for name in sorted(found))
+
+    def _expressions(self, plan: PySparkExecutionPlan):
+        for step in plan.steps:
+            yield from step.filters
+            yield from (assignment.expression for assignment in step.projection)
+            for result in step.results:
+                yield from (assignment.expression for assignment in result.projection)
+            for operation in step.operations:
+                if operation.filter is not None:
+                    yield operation.filter
+                if operation.watermark is not None:
+                    yield operation.watermark.expression
+        for output in plan.outputs:
+            yield from output.filters
+            yield from (assignment.expression for assignment in output.projection)
+            for operation in output.operations:
+                if operation.filter is not None:
+                    yield operation.filter
+
+    def _expression_udfs(self, expression) -> tuple[dict[str, object], ...]:
+        found = [dict(expression.data)] if expression.kind == "python_udf" else []
+        for argument in expression.args:
+            found.extend(self._expression_udfs(argument))
+        return tuple(found)
 
     def _last_step_validates_final(self, plan: PySparkExecutionPlan) -> bool:
         if not plan.steps:

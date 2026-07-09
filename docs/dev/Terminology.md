@@ -161,14 +161,14 @@ lower(trim(order.customer_id)) == "c-001"
 
 ### Expression Helper
 
-An expression helper function is a reusable compiler-visible function marked with `@expr_fn`. When called with symbolic arguments, the helper is expanded as expression IR.
+An expression helper function is a reusable compiler-visible function marked with `@special(type="expr")`. When called with symbolic arguments, the helper is expanded as expression IR.
 
 Expression helper functions are Structure's preferred way to use expression logic while keeping it visible to the compiler checks, traceability, online execution, and generated code.
 
 Example:
 
 ```python
-@expr_fn
+@special(type="expr")
 def clean_id(value):
     return lower(trim(value))
 ```

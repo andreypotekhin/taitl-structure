@@ -283,7 +283,7 @@ Rules:
 - Callback arity is fixed by helper and validated during symbolic compilation.
 - Callback placeholders are typed from collection element, key, value, or accumulator types.
 - Callback returns must be typed Structure expressions or typed literals.
-- Callback bodies may call public DSL helpers and `@expr_fn` helpers.
+- Callback bodies may call public DSL helpers and `@special(type="expr")` helpers.
 - Callback bodies may close over literals and immutable configuration values.
 - Callback bodies must not close over live Spark objects, DataFrames, sessions, mutable containers, or runtime-only
   objects.

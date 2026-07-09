@@ -45,7 +45,7 @@ If Structure accepted arbitrary Python logic inside compiled transforms, it woul
 - RDD operations.
 - opaque callback hooks.
 
-Those forms are sometimes useful, but they reduce optimizer visibility and can introduce serialization overhead or runtime surprises. Structure therefore rejects unsupported compiled-transform code and asks developers to either rewrite it using Structure's expression DSL, define an `@expr_fn` helper, or move arbitrary logic into an explicit hook.
+Those forms are sometimes useful, but they reduce optimizer visibility and can introduce serialization overhead or runtime surprises. Structure therefore rejects unsupported compiled-transform code and asks developers to either rewrite it using Structure's expression DSL, define an `@special(type="expr")` helper, or move arbitrary logic into an explicit hook.
 
 This principle can be summarized as:
 
@@ -94,7 +94,7 @@ class EnrichOrders(Transform):
     products = input(Product)
     published = output(OrderPublished)
 
-    @expr_fn
+    @special(type="expr")
     def clean_id(value):
         return lower(trim(value))
 
@@ -223,7 +223,7 @@ Multiple `where(...)` calls are combined with logical AND.
 Expression helpers are compileable reusable functions.
 
 ```python
-@expr_fn
+@special(type="expr")
 def clean_id(value):
     return lower(trim(value))
 ```
@@ -352,7 +352,7 @@ A structured error should include:
 - problem
 - performance rationale
 - direct DSL alternative
-- `@expr_fn` helper alternative
+- `@special(type="expr")` helper alternative
 - hook alternative
 - configuration workaround when one exists
 
@@ -363,7 +363,7 @@ Use direct DSL functions:
   customer_id=lower(trim(order.customer_id))
 
 For reuse:
-  @expr_fn
+  @special(type="expr")
   def clean_id(value):
       return lower(trim(value))
 

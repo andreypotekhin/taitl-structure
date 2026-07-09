@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
-from structure.app.compiler.artifacts.commands import BuildCompiledTransform
 from structure.app.compiler.artifacts.model import CompiledTransform, CompilerOptions
 from structure.app.configuration.model.StructureConfig import StructureConfig
 from structure.app.dsl.model.transforms.Transform import Transform
@@ -42,7 +41,8 @@ class StructureSession:
         supplied_overrides = {key: value for key, value in overrides.items() if value is not None}
         if config is not None and (project_root is not None or supplied_overrides):
             raise ValueError(
-                "Pass either config=StructureConfig.resolve(...), or pass project_root/config override fields, not both."
+                "Pass either config=StructureConfig.resolve(...), "
+                "or pass project_root/config override fields, not both."
             )
 
         resolved = config or StructureConfig.resolve(project_root=project_root, overrides=supplied_overrides)
@@ -58,7 +58,6 @@ class StructureSession:
         self.online_executor = online_executor
         self.storage = storage
         self.compiler_options = CompilerOptions.from_config(resolved, schema_types=schema_types)
-        self._pipeline_compiled: dict[object, CompiledTransform] = {}
 
     def run(self, invocation: Transform) -> TransformResult:
         artifact = self._compiled(invocation)
@@ -76,13 +75,7 @@ class StructureSession:
 
     def _compiled(self, invocation: Transform) -> CompiledTransform:
         if isinstance(invocation, TransformPipeline):
-            builder = BuildCompiledTransform()
-            key = builder.key(invocation, options=self.compiler_options)
-            artifact = self._pipeline_compiled.get(key)
-            if artifact is None:
-                artifact = builder(invocation, options=self.compiler_options, schema_types=self.schema_types)
-                self._pipeline_compiled[key] = artifact
-            return artifact
+            return invocation.compile(self.compiler_options, schema_types=self.schema_types)
         return type(invocation).compile(self.compiler_options, schema_types=self.schema_types)
 
     def _validate_inputs(self, invocation: Transform, artifact: CompiledTransform) -> None:
