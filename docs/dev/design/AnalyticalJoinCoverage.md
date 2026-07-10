@@ -2,14 +2,14 @@
 
 ## Purpose
 
-C27 is resolved by treating analytical joins as a staged feature family instead of stretching v1 `lookup_join(...)`.
-Structure v1 keeps lookup joins narrow and predictable. v2 adds compiler-visible syntax for the common analytical
+C27 is resolved by treating analytical joins as a staged feature family instead of stretching v.1 `lookup_join(...)`.
+Structure v.1 keeps lookup joins narrow and predictable. v.2 adds compiler-visible syntax for the common analytical
 join shapes that otherwise force users into opaque hooks: existence filters, row-multiplying joins, deterministic lookup
 dedupe, temporal lookups, and slowly changing dimension lookups.
 
 ## Design Boundary
 
-`lookup_join(...)` remains the v1 lookup primitive. It means zero or one right-side row per current row, and it must not
+`lookup_join(...)` remains the v.1 lookup primitive. It means zero or one right-side row per current row, and it must not
 silently deduplicate duplicate right rows. C27 does not change that contract.
 
 The analytical join family begins in v2. Existence joins, `inner_join(...)`, deterministic deduped `lookup_join(...)`, and
@@ -19,7 +19,7 @@ shared PySpark recipes, and covered by online/generated parity tests.
 
 ## Feature Ladder
 
-The v2 order should follow production frequency and semantic risk:
+The v.2 order should follow production frequency and semantic risk:
 
 1. Existence joins: semi and anti filters that keep or remove current rows based on right-side matches.
 2. `inner_join(...)`: row multiplication is intentional and visible in traceability.
@@ -153,6 +153,6 @@ right-side prejoin reductions, and temporal joins as dependencies on both key fi
 
 - Add backend capability requirements before lowering a new join form.
 - Add syntax only with semantic tests and online/generated parity tests.
-- Keep v2 existence joins, `inner_join(...)`, and deterministic lookup dedupe independent of temporal joins.
+- Keep v.2 existence joins, `inner_join(...)`, and deterministic lookup dedupe independent of temporal joins.
 - Keep temporal and as-of joins batch-only until streaming compatibility is specified.
 - Add examples showing when a hook is still the right escape hatch.

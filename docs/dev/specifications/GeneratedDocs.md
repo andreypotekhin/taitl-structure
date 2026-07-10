@@ -4,7 +4,7 @@
 
 Generated documentation artifacts let downstream projects publish Structure schema and transform reference material from
 the same source that produces generated PySpark. The artifacts are adoption-facing contracts: they describe schemas,
-inputs, outputs, subtransforms, dependencies, and generated targets without requiring readers to inspect generated code.
+inputs, outputs, step methods, dependencies, and generated targets without requiring readers to inspect generated code.
 
 ## Configuration
 
@@ -61,7 +61,7 @@ Transform artifacts include:
 
 - Transform name and source class.
 - Declared inputs and outputs.
-- Subtransform names, lane/schema transitions, bound input parameters, and result lanes.
+- Step method names, lane/schema transitions, bound input parameters, and result lanes.
 - Join dependencies where present.
 - Target artifact paths for generated PySpark and traceability JSON.
 

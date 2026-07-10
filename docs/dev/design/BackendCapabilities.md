@@ -17,7 +17,7 @@ Without one capability interface, target behavior drifts into many places:
 - streaming compatibility repeats backend support rules;
 - unsupported features produce inconsistent diagnostics.
 
-That drift would make v2 analytical features, Spark Connect, and future alternate backends expensive. It would also
+That drift would make v.2 analytical features, Spark Connect, and future alternate backends expensive. It would also
 weaken the no-Spark compiler contract because code might be tempted to probe an installed PySpark runtime.
 
 ## Design

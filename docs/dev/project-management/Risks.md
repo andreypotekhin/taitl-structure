@@ -54,7 +54,7 @@ Online or generated execution may become incompatible with newer Spark versions.
 - Run multi-version CI.
 - Snapshot generated code and run online parity tests per target version where necessary.
 
-## Risk: Spark Connect support distorts v2/v3/v4 scope
+## Risk: Spark Connect support distorts v.2/v.3/v4 scope
 
 ### Impact
 
@@ -134,7 +134,7 @@ would make generated code technically valid while producing misleading analytica
 
 ### Mitigation
 
-- Keep v1 `lookup_join(...)` narrow and never silently dedupe right rows.
+- Keep v.1 `lookup_join(...)` narrow and never silently dedupe right rows.
 - Make every analytical join declare row-preserving, row-filtering, row-multiplying, or select-one cardinality.
 - Require deterministic tie and overlap policies for deduped, temporal, and as-of joins.
 - Surface join cardinality in diagnostics, static traceability, and `structure explain`.

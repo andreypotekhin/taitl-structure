@@ -12,7 +12,7 @@ boundaries.
 ## Transform Inheritance
 
 A direct or indirect parent class inheriting from `Transform` may contribute inputs, lanes, outputs, expression
-helpers, hooks, and subtransforms to a decorated child. Parent classes do not need `@transform` when they are reusable
+helpers, hooks, and step methods to a decorated child. Parent classes do not need `@transform` when they are reusable
 fragments rather than standalone compiled transforms.
 
 ```python
@@ -43,12 +43,12 @@ publish
 
 Rules:
 
-- inherited parent subtransforms run before child subtransforms;
+- inherited parent step methods run before child step methods;
 - multiple direct parents run left to right in the Python class declaration;
 - shared diamond ancestors contribute once;
 - inherited declarations remain available to child methods and child overrides;
 - a child method with the same name overrides the inherited scheduled step;
-- sibling parents that define the same effective subtransform name are ambiguous unless the child overrides that name.
+- sibling parents that define the same effective step method name are ambiguous unless the child overrides that name.
 
 An override can call a parent implementation to schedule the parent as a separate step immediately before the child
 step:
@@ -73,7 +73,7 @@ super(NormalizeBase, self).normalize(order)
 ```
 
 The parent step keeps its own hooks, validation boundary, lane writes, and traceability entry.
-No other compiled subtransform may call another subtransform directly. Use source order and lanes inside one transform,
+No other compiled step method may call another step method directly. Use source order and lanes inside one transform,
 `Transform.to(...)` between complete transforms, private helpers for inline object construction, and `@special(type="expr")` for
 reusable compiler-visible expressions.
 
@@ -175,7 +175,7 @@ to a `lane(...)` declaration because lanes are internal implementation state.
 Hook-bearing stage transforms are not supported in `.to(...)` composition yet. Run hook-bearing transforms separately
 until composition hook ownership is specified for both online and generated execution.
 
-Composition also does not interleave wrapper-local subtransforms with a wrapper pipeline in the first slice. Keep a
+Composition also does not interleave wrapper-local step methods with a wrapper pipeline in the first slice. Keep a
 wrapper transform focused on the pipeline field.
 
 ## Choosing The Shape

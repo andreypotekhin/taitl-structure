@@ -51,6 +51,10 @@ TransformPlan
 The generated code emitter must not re-decide transform semantics while rendering source text. The online runner must
 not execute generated Python source text. Both consume the same PySpark execution recipes.
 
+A checked compiled artifact is the runtime unit that holds the plan and recipes. Online execution interprets that
+artifact; generation renders it. Generated modules carry the artifact semantic fingerprint and generated execution
+must reject a module whose fingerprint differs from the artifact selected by the session.
+
 ## Shared Target Plan
 
 The shared target plan is internal implementation detail, not a public end-user API. The required conceptual records
@@ -282,7 +286,7 @@ CompileError BACKEND-E0802: Operation is not supported by the PySpark target pla
 Transform:
   orders.transforms.order.EnrichOrders
 
-Subtransform:
+Step method:
   summarize
 
 Operation:
@@ -293,7 +297,7 @@ Problem:
 
 Use:
   Use latest_by(...) or earliest_by(...) for admitted selected-row windows, move broader logic into an explicit hook,
-  or wait for the broader v2 windowing specification.
+  or wait for the broader v.2 windowing specification.
 
 See docs/dev/specifications/ExecutionSemanticContract.md
 ```

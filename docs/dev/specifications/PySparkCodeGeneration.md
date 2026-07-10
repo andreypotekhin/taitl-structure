@@ -4,12 +4,16 @@
 
 PySpark code generation lowers Structure compiler IR into deterministic, readable Python modules that use PySpark
 DataFrame and Column APIs. The generated modules are optional for ordinary runtime execution, because online execution
-is the v1 default, but they remain first-class artifacts for provenance, code review, debugging, snapshot tests, and
+is the v.1 default, but they remain first-class artifacts for provenance, code review, debugging, snapshot tests, and
 projects that deliberately choose `execution_mode = "generated"`.
 
 The generator is a source-text emitter. It must not redefine transform semantics. Projection, filtering, expression
 lowering, join aliasing, hook order, validation placement, schema projection, and performance guardrails must agree
 with online PySpark execution.
+
+Generated transform modules contain deterministic per-transform semantic fingerprints from the compiled artifacts they
+render. Generated mode compares that metadata to the artifact selected by its session and rejects stale output rather
+than silently executing a different transform meaning.
 
 Shared semantics are owned by [ExecutionSemanticContract.md](ExecutionSemanticContract.md). The generator renders
 `PySparkExecutionPlan` recipes, or the local implementation equivalent, into source text. It owns imports, formatting,
@@ -375,7 +379,7 @@ Rules:
 - Hooks receive the selected lane keyword and must return the new selected lane DataFrame.
 - Joins may introduce temporary DataFrame variables named from stable aliases, such as `customers_df`.
 - Avoid reusing input parameter names for aliased or projected temporary DataFrames.
-- For a multi-result subtransform, emit one shared join/filter frame and use each output declaration name as the
+- For a multi-result step method, emit one shared join/filter frame and use each output declaration name as the
   projected DataFrame variable, such as `accepted` and `audited`.
 - Avoid hidden mutation. Each DataFrame operation should assign a resulting DataFrame to the current lane or a clearly named
   temporary.
@@ -385,7 +389,7 @@ join, hook, or complex expression easier to review.
 
 ## Step Shape
 
-Each compiled subtransform renders as a contiguous generated code block. The block may appear directly in `run(...)` or
+Each compiled step method renders as a contiguous generated code block. The block may appear directly in `run(...)` or
 inside a protected generated step method called by `run(...)`.
 
 Canonical order inside one step:
@@ -399,7 +403,7 @@ Canonical order inside one step:
 Example:
 
 ```python
-# Subtransform: normalize
+# Step method: normalize
 orders = orders.where(
     F.col("id").isNotNull()
 ).select(
@@ -413,7 +417,7 @@ assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="str
 
 Rules:
 
-- The step comment is stable and uses the source subtransform name.
+- The step comment is stable and uses the source step method name.
 - `where(...)` should be generated before projection when source semantics allow it.
 - Projection should use `select(...)`.
 - Output columns in `select(...)` follow the output schema field order.
@@ -609,7 +613,7 @@ Generated validation must match online execution.
 Rules:
 
 - Validate declared input DataFrames at the start of `run(...)`.
-- Validate subtransform outputs when validation policy says to validate them.
+- Validate step method outputs when validation policy says to validate them.
 - Validate after hooks according to the hook's `schema_mode`.
 - If `project_output=True`, validate with the hook schema mode, project to the declared output schema, then validate
   strictly.
@@ -759,7 +763,7 @@ Generation diagnostics must include:
 - diagnostic code;
 - generated path when available;
 - source transform or schema when relevant;
-- source subtransform, hook, join, field, or expression when relevant;
+- source step method, hook, join, field, or expression when relevant;
 - target backend and target PySpark range when relevant;
 - problem;
 - why it matters when not obvious;
@@ -791,7 +795,7 @@ CompileError GEN-E0902: Cannot render expression as PySpark
 Transform:
   orders.transforms.order.EnrichOrders
 
-Subtransform:
+Step method:
   normalize
 
 Expression:
@@ -840,7 +844,7 @@ The generator should make this easy by using stable, predictable module names an
 
 ## Non-Goals
 
-The following are outside v1 PySpark generation scope:
+The following are outside v.1 PySpark generation scope:
 
 - generating Python UDFs or Pandas UDFs from compiled expressions;
 - generating RDD-based implementations;

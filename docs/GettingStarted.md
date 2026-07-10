@@ -204,7 +204,7 @@ class EnrichOrdersGenerated:
         assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")
         assert_schema(customers, CUSTOMER_SCHEMA, name="Customer", mode="strict")
 
-        # Subtransform: normalize
+        # Step method: normalize
         orders = orders.where(
             F.col("id").isNotNull()
             & F.col("customer_id").isNotNull()
@@ -219,7 +219,7 @@ class EnrichOrdersGenerated:
         orders = self._impl.remove_negative_totals(orders=orders, spark=self.spark, ctx=self.ctx)
         assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
 
-        # Subtransform: add_customer
+        # Step method: add_customer
         orders = orders.alias("order_normalized")
         customers_df = F.broadcast(customers.alias("customers"))
         orders = orders.join(

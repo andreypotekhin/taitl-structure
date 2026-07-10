@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
-from threading import RLock
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -20,8 +19,6 @@ class TransformPipelineStage:
 
 class TransformPipeline:
     _structure_pipeline = True
-    _structure_compiled: dict[object, object] = {}
-    _structure_compile_lock = RLock()
 
     def __init__(self, stages: Iterable[Transform]) -> None:
         flattened = tuple(self._flatten(stages))
@@ -56,20 +53,7 @@ class TransformPipeline:
             schema_types=schema_types,
             overrides=settings,
         )
-        builder = BuildCompiledTransform()
-        key = builder.key(self, options=resolved)
-        with self._structure_compile_lock:
-            if not force and key in self._structure_compiled:
-                return self._structure_compiled[key]
-
-        artifact = builder(self, options=resolved, schema_types=schema_types)
-        with self._structure_compile_lock:
-            if not force:
-                existing = self._structure_compiled.get(key)
-                if existing is not None:
-                    return existing
-            self._structure_compiled[key] = artifact
-            return artifact
+        return BuildCompiledTransform()(self, options=resolved, schema_types=schema_types)
 
     @property
     def invocations(self) -> tuple[Transform, ...]:

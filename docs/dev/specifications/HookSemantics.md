@@ -3,7 +3,7 @@
 ## Purpose
 
 Hooks are Structure's explicit runtime escape hatch. They let a developer attach arbitrary backend DataFrame logic to a
-specific compiled subtransform without pretending the hook body is compiler-visible.
+specific compiled step method without pretending the hook body is compiler-visible.
 
 This specification owns hook decorator behavior, target binding, signatures, ordering, input access, schema handling,
 streaming-safety metadata, generated and online invocation, diagnostics, and tests.
@@ -30,14 +30,14 @@ def add_quality_columns(self, *, published, spark, ctx):
     return published.withColumn("_checked", F.lit(True))
 ```
 
-`@before(...)` runs before the compiled operations of the target subtransform. `@after(...)` runs after the compiled
-operations of the target subtransform.
+`@before(...)` runs before the compiled operations of the target step method. `@after(...)` runs after the compiled
+operations of the target step method.
 
 ## Decorator Arguments
 
 Required positional argument:
 
-- target subtransform method object.
+- target step method object.
 
 Keyword arguments:
 
@@ -54,7 +54,7 @@ Rules:
 
 - Unknown keyword arguments are errors.
 - More than one positional argument is an error.
-- The target must be a compiled subtransform on the same transform class.
+- The target must be a compiled step method on the same transform class.
 - `@before(...)` must select the target input lane with `lane=...`.
 - `@after(...)` must select the target output lane with `lane=...`.
 - The target may be referenced inside the class body because earlier methods are present in the class namespace.
@@ -72,7 +72,7 @@ def hook(self, *, selected_lane_name, spark, ctx):
     ...
 ```
 
-Every hook explicitly selects the lane it receives. A before hook selects the target subtransform input lane:
+Every hook explicitly selects the lane it receives. A before hook selects the target step-method input lane:
 
 ```python
 @before(normalize, lane=orders)
@@ -80,7 +80,7 @@ def prepare(self, *, orders, spark, ctx):
     ...
 ```
 
-An after hook selects the target subtransform output lane:
+An after hook selects the target step-method output lane:
 
 ```python
 @after(add_product, lane=audited)
@@ -135,9 +135,9 @@ Rules:
 
 Hook order is deterministic:
 
-1. Subtransforms execute in source order.
-2. For each subtransform, `@before` hooks run in source order.
-3. Compiled operations for the subtransform run.
+1. Step methods execute in source order.
+2. For each step method, `@before` hooks run in source order.
+3. Compiled operations for the step method run.
 4. `@after` hooks run in source order.
 5. Validation and hook projection follow the shared execution semantic contract.
 
@@ -176,7 +176,7 @@ Rules:
 - Use `target_backend="pyspark"` for a single backend.
 - Use `target_backend=["pyspark", "polars"]` only when one hook intentionally supports multiple Python-hosted backends.
 - Missing `target_backend` resolves from `hook_target_default` in configuration.
-- The v1 compatibility default is `hook_target_default = ["pyspark"]`.
+- The v.1 compatibility default is `hook_target_default = ["pyspark"]`.
 - A future strict mode may use `hook_target_default = "explicit"` to require every hook to declare target backends.
 - Runtime execution must not invoke a hook when the active target is outside the hook's effective target set.
 - Compatibility checks warn when an unmarked hook inherits a default while checking other targets.
@@ -186,7 +186,7 @@ Target scope prevents accidental runtime errors such as calling a PySpark hook w
 relation. It does not make hook internals compiler-visible.
 
 V1 accepts and carries `target_backend` metadata so documented PySpark hook examples are usable now. A hook whose
-effective target set excludes `pyspark` must fail during compilation in v1 because PySpark is the only executable hook
+effective target set excludes `pyspark` must fail during compilation in v.1 because PySpark is the only executable hook
 ABI.
 
 ## Schema Handling
@@ -253,7 +253,7 @@ Hook diagnostics must include:
 
 - transform class;
 - hook name;
-- target subtransform;
+- target step method;
 - timing;
 - source location when available;
 - decorator options;
@@ -285,7 +285,7 @@ See docs/dev/specifications/HookSemantics.md
 1. Implement `@before(...)` and `@after(...)` metadata capture.
 2. Prove decorator target references work inside class bodies.
 3. Preserve hook source order.
-4. Validate hook targets against compiled subtransforms on the same class.
+4. Validate hook targets against compiled step methods on the same class.
 5. Validate hook decorator keyword arguments.
 6. Validate signatures for default and `pass_inputs=True` modes.
 7. Record hook metadata in transform IR.
@@ -300,7 +300,7 @@ See docs/dev/specifications/HookSemantics.md
 
 - `@after(normalize, lane=orders)` binds to a method declared earlier in the same class body.
 - `@before(...)` and `@after(...)` preserve source order for the same target.
-- A hook targeting a non-subtransform fails.
+- A hook targeting a non-step method fails.
 - A hook targeting a method on another class fails.
 - Default hooks require `def hook(self, *, selected_lane_name, spark, ctx)`.
 - `pass_inputs=True` hooks require `def hook(self, *, selected_lane_name, inputs, spark, ctx)`.

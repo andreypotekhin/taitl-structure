@@ -29,7 +29,7 @@ artifacts.
 
 ## Canonical Declaration
 
-The canonical v1 declaration form is:
+The canonical v.1 declaration form is:
 
 ```python
 class OrderRaw(Structure):
@@ -87,7 +87,7 @@ Rules:
 
 ## Type Semantics
 
-v1 schema types:
+v.1 schema types:
 
 ```text
 String()
@@ -126,7 +126,7 @@ Rules:
 
 ## Output Construction
 
-Inside a compiled subtransform, calling a schema class creates a symbolic projection into that schema:
+Inside a compiled step method, calling a schema class creates a symbolic projection into that schema:
 
 ```python
 return OrderNormalized(
@@ -167,7 +167,7 @@ Nullability is part of every field and every expression.
 Rules:
 
 - A nullable expression cannot feed a non-nullable target unless narrowed or repaired.
-- `where(expr.is_not_null())` narrows simple field references after the filter in the same subtransform.
+- `where(expr.is_not_null())` narrows simple field references after the filter in the same step method.
 - `Join.LEFT` makes joined right-side fields nullable after the join.
 - `Join.INNER` preserves right-side declared nullability unless later operations narrow it.
 - Hooks do not provide compile-time nullability facts unless a later hook postcondition contract exists.

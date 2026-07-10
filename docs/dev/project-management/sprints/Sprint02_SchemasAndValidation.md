@@ -43,10 +43,10 @@ validation/projection.
 - As a developer, I can import generated schema constants in caller code.
 - As a developer, I can access the output Spark schema after online execution.
 - As a developer, I can validate input schemas at runtime.
-- As a developer, I can validate intermediate schemas after each subtransform by default.
+- As a developer, I can validate intermediate schemas after each step method by default.
 - As a developer, I can validate final output schemas.
 - As a developer, I can disable intermediate validation class-wide.
-- As a developer, I can override validation for an individual subtransform.
+- As a developer, I can override validation for an individual step method.
 - As a developer, validation errors can suggest relevant config settings when applicable.
 - As a developer, online and generated execution use the same schema validation policy.
 
@@ -99,7 +99,7 @@ validation/projection.
   `transform.schemas` after `run(session)`.
 - [x] (2026-06-23) Live `assert_schema(...)` execution is exercised by generated and online runtime paths in the
   PySpark integration matrix.
-- [ ] v1 closeout: add broader negative schema-validation coverage against Spark DataFrames.
+- [ ] v.1 closeout: add broader negative schema-validation coverage against Spark DataFrames.
 
 ## Demo Script
 

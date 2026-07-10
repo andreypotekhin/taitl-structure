@@ -127,8 +127,8 @@ validate_outputs = true
 output_validation_mode = "schema_only"
 ```
 
-Intermediate validation is enabled by default because subtransform return types define intermediate schemas.
-Set `validate_intermediate = false` to disable intermediate schema validation for generated subtransform
+Intermediate validation is enabled by default because step method return types define intermediate schemas.
+Set `validate_intermediate = false` to disable intermediate schema validation for generated step method
 boundaries.
 
 `input_validation_mode`, `intermediate_validation_mode`, and `output_validation_mode` control the cost and
@@ -198,7 +198,7 @@ targets fail with `BACKEND-E2401`. Backend capability behavior is specified in
 [BackendCapabilities.md](reference/BackendCapabilities.md).
 
 `target_variant` selects the runtime variant inside the PySpark target. `ordinary` is the default in-process PySpark
-contract. `spark-connect` is experimental for completed v1/v2 batch features and must not change DSL syntax,
+contract. `spark-connect` is experimental for completed v.1/v.2 batch features and must not change DSL syntax,
 generated class APIs, `run(...)` signatures, or streaming orchestration semantics. See
 [Compatibility.md](Compatibility.md).
 
@@ -234,7 +234,7 @@ allow_collect = false
 allow_to_pandas = false
 ```
 
-Compiled subtransforms never silently fall back to UDFs. These settings are primarily for hook linting and
+Compiled step methods never silently fall back to UDFs. These settings are primarily for hook linting and
 future advanced features.
 
 ## Compile-Time Performance

@@ -23,6 +23,7 @@ class RenderPySparkProject:
         source_transform: str,
         source_schema_modules: Mapping[str, Sequence[type[Structure]]],
         generated_package: str,
+        semantic_fingerprint: str | None = None,
     ) -> dict[str, str]:
         schema_modules = self._schema_modules(source_schema_modules, generated_package=generated_package)
         runtime_module = f"{generated_package}.runtime.schema_assert"
@@ -49,6 +50,7 @@ class RenderPySparkProject:
             source_transform=source_transform,
             schema_modules=schema_modules,
             runtime_module=runtime_module,
+            semantic_fingerprint=semantic_fingerprint,
         )
 
         files[self._traceability_path(generated_package, source_transform, plan)] = self._traceability.render(
@@ -66,6 +68,7 @@ class RenderPySparkProject:
         source_module: str,
         source_schema_modules: Mapping[str, Sequence[type[Structure]]],
         generated_package: str,
+        semantic_fingerprints: Mapping[str, str] | None = None,
     ) -> dict[str, str]:
         schema_modules = self._schema_modules(source_schema_modules, generated_package=generated_package)
         runtime_module = f"{generated_package}.runtime.schema_assert"
@@ -93,6 +96,7 @@ class RenderPySparkProject:
                 plans,
                 schema_modules=schema_modules,
                 runtime_module=runtime_module,
+                semantic_fingerprints=semantic_fingerprints,
             )
         )
 

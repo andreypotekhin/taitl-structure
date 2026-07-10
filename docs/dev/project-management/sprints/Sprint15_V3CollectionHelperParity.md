@@ -1,4 +1,4 @@
-# Sprint 15: v3 Higher-Order and Collection Helper PySpark Parity
+# Sprint 15: v.3 Higher-Order and Collection Helper PySpark Parity
 
 ## Sprint Goal
 
@@ -43,4 +43,4 @@ Developers can express common nested-data operations for arrays and maps without
 
 ## Progress
 
-- [ ] Implement v3 collection helper parity.
+- [ ] Implement v.3 collection helper parity.

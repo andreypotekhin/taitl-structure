@@ -1,4 +1,4 @@
-# Sprint 01: v1 First Executable Slice
+# Sprint 01: v.1 First Executable Slice
 
 ## Sprint Goal
 
@@ -113,7 +113,7 @@ class NormalizeOrdersGenerated:
 - As a developer, I can define schema classes.
 - As a developer, I can declare a transform class with `@transform`.
 - As a developer, I can declare named inputs using `input(Structure)`.
-- As a developer, I can define a public schema-returning method as a subtransform.
+- As a developer, I can define a public schema-returning method as a step method.
 - As a developer, I can construct a transform invocation with named input DataFrames.
 - As a developer, I can run the transform online through `StructureSession`.
 - As a developer, I can filter rows with `where(...)`.
@@ -121,7 +121,7 @@ class NormalizeOrdersGenerated:
 - As a developer, input schemas are validated before execution.
 - As a developer, I can generate one PySpark class per source transform class.
 - As a developer, generated code uses Spark Column expressions rather than UDFs.
-- As a developer, online and generated execution produce the same result for the first v1 fixture.
+- As a developer, online and generated execution produce the same result for the first v.1 fixture.
 
 ## Deliverables
 

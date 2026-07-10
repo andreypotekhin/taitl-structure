@@ -20,12 +20,14 @@ class RenderPySparkTransformModule:
         source_transform: str,
         schema_modules: Mapping[type[Structure], str],
         runtime_module: str,
+        semantic_fingerprint: str | None = None,
     ) -> str:
         imports = self._imports(
             plan, source_transform=source_transform, schema_modules=schema_modules, runtime_module=runtime_module
         )
         body = self._class(plan, source_transform=source_transform)
-        return f"{imports}\n\n\n{body}\n"
+        metadata = self._fingerprints({source_transform: semantic_fingerprint} if semantic_fingerprint else {})
+        return f"{imports}\n\n\n{metadata}{body}\n"
 
     def source_unit(
         self,
@@ -33,6 +35,7 @@ class RenderPySparkTransformModule:
         *,
         schema_modules: Mapping[type[Structure], str],
         runtime_module: str,
+        semantic_fingerprints: Mapping[str, str] | None = None,
     ) -> str:
         imports: list[str] = []
         bodies: list[str] = []
@@ -47,7 +50,13 @@ class RenderPySparkTransformModule:
             )
             bodies.append(self._class(plan, source_transform=source_transform))
         separator = "\n\n\n"
-        return f"{self._unique(imports)}\n\n\n{separator.join(bodies)}\n"
+        metadata = self._fingerprints(semantic_fingerprints or {})
+        return f"{self._unique(imports)}\n\n\n{metadata}{separator.join(bodies)}\n"
+
+    def _fingerprints(self, fingerprints: Mapping[str, str]) -> str:
+        if not fingerprints:
+            return ""
+        return f"STRUCTURE_ARTIFACT_FINGERPRINTS = {dict(sorted(fingerprints.items()))!r}\n\n\n"
 
     def _imports(
         self,

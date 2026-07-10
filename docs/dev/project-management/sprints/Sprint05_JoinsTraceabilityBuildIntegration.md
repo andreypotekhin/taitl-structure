@@ -7,7 +7,7 @@ traceability, and make online/generated execution reliable in CI.
 
 ## Product Outcome
 
-Developers can build practical enrichment pipelines with multiple inputs and source-ordered typed subtransforms, then
+Developers can build practical enrichment pipelines with multiple inputs and source-ordered typed step methods, then
 verify online/generated parity and explain how source code maps to IR, optional generated PySpark, and static data
 dependencies.
 
@@ -26,12 +26,12 @@ dependencies.
 - Static dataflow traceability inferred from IR.
 - `structure explain`.
 - `structure compile --fail-on-diff`.
-- Streaming compatibility static checks for supported v1 operations.
+- Streaming compatibility static checks for supported v.1 operations.
 - Online/generated parity checks for join fixtures.
 
 ### Out of Scope
 
-- `inner_join(...)`; row-multiplying joins are v2 work.
+- `inner_join(...)`; row-multiplying joins are v.2 work.
 - Aggregations and windowing.
 - Runtime LDJSON traceability.
 - Full streaming orchestration.
@@ -125,11 +125,11 @@ customers_df = F.broadcast(customers.alias("customers"))
   recipe layer and recorded in generated project traceability JSON.
 - [x] (2026-06-21) `structure explain` includes compact source-to-IR-to-generated traceability and static dataflow
   summaries.
-- [x] (2026-06-21) Online/generated parity checks for the live v1 join fixture are implemented in the PySpark
+- [x] (2026-06-21) Online/generated parity checks for the live v.1 join fixture are implemented in the PySpark
   integration matrix.
 - [x] (2026-06-23) `JOIN-W0601` uniqueness warnings, primary-key uniqueness proof, stricter unsupported-condition
   diagnostics, incompatible key diagnostics, and left-join output-nullability checks are implemented and tested.
-- [ ] v1 external validation: run the PySpark integration matrix in a workspace with PySpark installed.
+- [ ] v.1 external validation: run the PySpark integration matrix in a workspace with PySpark installed.
 
 ## Compile-Time Performance Metric
 
@@ -149,4 +149,4 @@ Targets:
 ## Notes
 
 Keep the default traceability explanation compact. Column-level details can be an opt-in `structure explain` view. Runtime
-LDJSON traceability is deferred beyond v4 in [NiceToHave.md](../NiceToHave.md).
+LDJSON traceability is deferred beyond v.4 in [NiceToHave.md](../NiceToHave.md).

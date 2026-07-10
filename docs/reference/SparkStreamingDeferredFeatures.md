@@ -1,10 +1,10 @@
 # Spark Streaming Deferred Features
 
-Structure supports streaming DataFrame transformations today without owning streaming query lifecycle. v3 promotes the
+Structure supports streaming DataFrame transformations today without owning streaming query lifecycle. v.3 promotes the
 source, sink, and lifecycle families into planned orchestration work; custom side-effect sinks and arbitrary opaque
 state remain non-goals.
 
-## Planned v3 Lifecycle Ownership
+## Planned v.3 Lifecycle Ownership
 
 Structure-owned streaming orchestration means generated streaming source declarations:
 
@@ -19,7 +19,7 @@ df.writeStream...
 query.start()
 ```
 
-The v3 lifecycle contract must make these policies explicit:
+The v.3 lifecycle contract must make these policies explicit:
 
 - triggers;
 - checkpoint locations;
@@ -46,7 +46,7 @@ More complex stateful transformation features remain deferred until their state 
 - arbitrary state APIs.
 
 The caller-owned compatibility slice reports output-mode requirements, but the caller applies them in `writeStream`
-code. v3 streaming orchestration moves admitted output-mode policy into generated lifecycle code.
+code. v.3 streaming orchestration moves admitted output-mode policy into generated lifecycle code.
 
 ## Future Support Bar
 

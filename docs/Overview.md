@@ -177,7 +177,7 @@ class EnrichOrdersGenerated:
         assert_schema(customers, CUSTOMER_SCHEMA, name="Customer", mode="strict")
         assert_schema(products, PRODUCT_SCHEMA, name="Product", mode="strict")
 
-        # Subtransform: normalize
+        # Step method: normalize
         orders = orders.where(
             F.col("id").isNotNull()
             & F.col("customer_id").isNotNull()
@@ -192,7 +192,7 @@ class EnrichOrdersGenerated:
         orders = self._impl.remove_negative_totals(orders=orders, spark=self.spark, ctx=self.ctx)
         assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
 
-        # Subtransform: add_customer
+        # Step method: add_customer
         orders = orders.alias("order_normalized")
         customers_df = F.broadcast(customers.alias("customers"))
         orders = orders.join(
@@ -209,7 +209,7 @@ class EnrichOrdersGenerated:
         )
         assert_schema(orders, ORDER_WITH_CUSTOMER_SCHEMA, name="OrderWithCustomer", mode="strict")
 
-        # Subtransform: add_product
+        # Step method: add_product
         orders = orders.alias("order_with_customer")
         products_df = products.alias("products")
         orders = orders.join(
@@ -238,7 +238,7 @@ class EnrichOrdersGenerated:
 
 ## Performance Focus
 
-Structure is intentionally strict. Compiled subtransforms must lower to Spark-plan-visible expressions.
+Structure is intentionally strict. Compiled step methods must lower to Spark-plan-visible expressions.
 
 Unsupported Python operations are rejected at compile time. This is a performance feature: Spark can optimize transformations only when work remains visible in the DataFrame logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, and whole-stage code generation all depend on expressing work through Spark's relational expression model.
 
@@ -307,7 +307,7 @@ environments.
 
 Airflow can call online or generated transforms. It is not a Structure dependency.
 
-Ordinary PySpark is the default target. Spark Connect is a PySpark variant for completed v1/v2 batch features once
+Ordinary PySpark is the default target. Spark Connect is a PySpark variant for completed v.1/v.2 batch features once
 Sprint 09 support evidence is in place.
 
 See [Compatibility.md](Compatibility.md) for the full versioning and compatibility policy.
@@ -387,11 +387,11 @@ orchestration.
 - **Initial release:** online PySpark execution by default, optional generated PySpark classes, projection,
   filtering, joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow
   traceability, streaming-compatible transforms, diagnostic links, and setup checks.
-- **v2:** mainstream analytical features: existence joins, `inner_join(...)`, broad rowset joins, deterministic lookup
+- **v.2:** mainstream analytical features: existence joins, `inner_join(...)`, broad rowset joins, deterministic lookup
   dedupe, temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions
   ([Advanced analytical operations](reference/AdvancedAnalyticalOperations.md)),
   caching/persistence/repartition hints, richer explain output, generated docs, pytest helpers, and Spark Connect
-  support for completed v1/v2 batch features.
-- **v3:** streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, output
+  support for completed v.1/v.2 batch features.
+- **v.3:** streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, output
   modes, and stateful policies.
-- **v4:** backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support claim.
+- **v.4:** backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support claim.

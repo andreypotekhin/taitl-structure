@@ -1,4 +1,4 @@
-# Sprint 13: v3 Aggregation PySpark Parity
+# Sprint 13: v.3 Aggregation PySpark Parity
 
 ## Sprint Goal
 
@@ -44,4 +44,4 @@ aggregate DSL.
 
 ## Progress
 
-- [ ] Implement v3 aggregation parity.
+- [ ] Implement v.3 aggregation parity.

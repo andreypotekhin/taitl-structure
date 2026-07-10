@@ -2,7 +2,7 @@
 
 The Structure DSL is the public Python API for declaring schemas, transforms, expressions, filters, joins, hooks,
 validation policy, and runtime invocation. It reads like ordinary typed Python while preserving one strict promise:
-compiled subtransforms stay visible to Structure and Spark.
+compiled step methods stay visible to Structure and Spark.
 
 The DSL is not a second PySpark wrapper layer. It is a small authoring surface that keeps checks, online execution,
 generated PySpark, explain output, traceability, and streaming compatibility aligned.
@@ -14,7 +14,7 @@ This reference covers the public DSL surface and cross-cutting rules for:
 - `@transform`;
 - `Transform`;
 - `input(...)`;
-- public schema-returning subtransform methods;
+- public schema-returning step methods;
 - `@special(type="expr")`;
 - `where(...)`;
 - `@before(...)` and `@after(...)`;
@@ -52,7 +52,7 @@ import structure
 
 ## Canonical Source Shape
 
-The canonical v1 source shape is:
+The canonical v.1 source shape is:
 
 ```python
 class EnrichOrders(Transform):
@@ -146,12 +146,12 @@ Rules:
 - Project discovery compiles concrete `Transform` entrypoints: classes that declare final outputs or a class-field
   pipeline. Reusable lane-only base classes remain support code.
 - A direct or indirect parent class inheriting `Transform` may contribute reusable inputs, lanes, outputs, hooks,
-  helpers, and subtransforms to a child even when the parent is not decorated with `@transform`.
-- Inherited parent subtransforms run before child subtransforms. Multiple direct parents run left to right in the
+  helpers, and step methods to a child even when the parent is not decorated with `@transform`.
+- Inherited parent step methods run before child step methods. Multiple direct parents run left to right in the
   Python class declaration, and shared diamond ancestors contribute once.
-- A child subtransform with the same method name overrides the inherited scheduled step. Sibling parents that define
-  the same subtransform name are ambiguous unless the child overrides that name.
-- An overriding subtransform may explicitly schedule the overridden parent implementation with `super().method(row)`,
+- A child step method with the same method name overrides the inherited scheduled step. Sibling parents that define
+  the same step method name are ambiguous unless the child overrides that name.
+- An overriding step method may explicitly schedule the overridden parent implementation with `super().method(row)`,
   `Base.method(self, row)`, or `super(Base, self).method(row)`. The parent implementation runs as a separate scheduled
   step before the child step and returns a symbolic row for the parent output.
 
@@ -169,7 +169,7 @@ Rules:
 - Runtime context belongs in `StructureSession(ctx=...)`, not in transform constructors.
 - Custom transform construction parameters are out of scope for v1.
 - A transform invocation can be run through `transform.run(session)` or `session.run(transform)`.
-- `run` is reserved for runtime execution. A public schema-returning subtransform named `run` is invalid.
+- `run` is reserved for runtime execution. A public schema-returning step method named `run` is invalid.
 - Transform invocations can be composed with `.to(...)` when complete transform outputs should feed later transform
   inputs. Composition behavior is specified in [TransformComposition.md](TransformComposition.md).
 
@@ -251,7 +251,7 @@ orders_with_product = lane(OrderWithProduct)
 ```
 
 Lane declarations are not constructor inputs and are not returned from `run(...)`. They name internal funnel streams
-that can be produced, consumed, and updated by subtransforms.
+that can be produced, consumed, and updated by step methods.
 
 `output(schema)` declares a named transform result on a transform class. Every transform must declare at least one:
 
@@ -277,11 +277,11 @@ Rules:
 - Method-level `input(...)`, `lane(...)`, and `output(...)` can also wrap declarations as role selectors:
   `input(orders)` forces the original runtime input, `lane(orders)` selects or writes the current working lane named
   `orders`, and `output(published)` selects the final output declaration.
-- Bare method-level declarations smart-resolve by the schema expected by the subtransform parameter or return. When an
+- Bare method-level declarations smart-resolve by the schema expected by the step-method parameter or return. When an
   original input and a latest same-named lane both match, the latest lane wins.
 - Method-level `input=[...]` and `output=[...]` bind multiple parameters or returned values in order.
 - Method-level `inout=source | target` is shorthand for one explicit source and target; one side may be a list.
-- Method-level `cache=...` records an explicit v2 cache directive for the subtransform. It is intentionally part of
+- Method-level `cache=...` records an explicit v.2 cache directive for the step method. It is intentionally part of
   `@transform(...)` rather than a separate public decorator so user projects can keep their own `@cache` helpers.
 - Method-level `inputs=`, `outputs=`, `lane=`, and `lanes=` are retired. Hook decorators still use `lane=` and
   `lanes=`.
@@ -320,9 +320,9 @@ unambiguous; decorators are needed when a method names a new lane or output, sta
 or resolves repeated schemas. Output-local `where(...)` filters affect only the lane written by that method, so
 `reject(...)` above still reads the normalized lane rather than the filtered `accepted` lane.
 
-## Subtransforms
+## Step methods
 
-A compiled subtransform is a public instance method whose return annotation is a `Structure` subclass.
+A compiled step method is a public instance method whose return annotation is a `Structure` subclass.
 
 Canonical form:
 
@@ -334,10 +334,10 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 Rules:
 
 - Public instance methods are methods whose names do not start with `_`.
-- A public method with a `Structure` return annotation is a compiled subtransform.
-- Public schema-returning methods inherited from `Transform` ancestors are compiled as parent subtransforms before
-  local child subtransforms.
-- A compiled subtransform has one or more parameters after `self`; every parameter annotation must be a `Structure`
+- A public method with a `Structure` return annotation is a compiled step method.
+- Public schema-returning methods inherited from `Transform` ancestors are compiled as parent step methods before
+  local child step methods.
+- A compiled step method has one or more parameters after `self`; every parameter annotation must be a `Structure`
   subclass.
 - The first parameter is the driving row. Later parameters are symbolic relations that must be joined before their
   fields are used in filters or projections.
@@ -352,33 +352,33 @@ Rules:
   the same schema, it prefers a source named after the parameter or its simple plural form. Plural inference adds a
   trailing `s` before any non-alpha suffix, so `order` matches `orders` and `order1` matches `orders1`; irregular
   English plurals are not inferred.
-- Once `input=` is present, it supplies all parameter bindings for that subtransform; parameter-name inference is not
+- Once `input=` is present, it supplies all parameter bindings for that step method; parameter-name inference is not
   mixed with partial explicit bindings.
-- Once `output=` is present on a tuple-returning subtransform, it supplies all result bindings for that subtransform.
+- Once `output=` is present on a tuple-returning step method, it supplies all result bindings for that step method.
 - The compiler infers bindings only when every schema has one unambiguous available declaration after the name rule is
   applied.
-- Subtransforms execute in source order.
-- Inherited subtransforms execute in effective source order: parent classes first, direct parents left to right, then
+- Step methods execute in source order.
+- Inherited step methods execute in effective source order: parent classes first, direct parents left to right, then
   child class methods. Diamond ancestors are visited once.
-- Overriding an inherited subtransform without calling the parent replaces the inherited step position.
-- Calling an overridden parent subtransform from the override schedules the parent as its own DataFrame step immediately
+- Overriding an inherited step method without calling the parent replaces the inherited step position.
+- Calling an overridden parent step method from the override schedules the parent as its own DataFrame step immediately
   before the child override. Parent hooks, validation, lane writes, and traceability belong to the parent step.
-- Other direct calls from one compiled subtransform to another are invalid. Subtransforms are pipeline steps scheduled
+- Other direct calls from one compiled step method to another are invalid. Step methods are pipeline steps scheduled
   by source order, lane binding, inheritance, or `Transform.to(...)`; reusable inline logic belongs in private helpers
   or `@special(type="expr")` helpers.
 - Source-order lane flow must be valid. Undecorated methods consume and update the uniquely inferred lane.
   `@transform(output=target)` writes a named lane or output.
   `@transform(input=source, output=target)` selects both sides explicitly.
-- If more than one declared input has the first subtransform's input schema, the compiler must require an unambiguous
+- If more than one declared input has the first step method's input schema, the compiler must require an unambiguous
   mapping such as `@transform(input=orders_external)` or emit a diagnostic.
-- A multi-result subtransform executes its joins and `where(...)` filters once, then projects every returned schema
+- A multi-result step method executes its joins and `where(...)` filters once, then projects every returned schema
   from that shared row set.
-- Private helper methods are allowed and are not compiled as subtransforms.
-- Public helper methods without a `Structure` return annotation are ignored by the subtransform collector, but should
+- Private helper methods are allowed and are not compiled as step methods.
+- Public helper methods without a `Structure` return annotation are ignored by the step method collector, but should
   not be used for compileable expression reuse. Use `@special(type="expr")` instead.
-- Async subtransforms, generator subtransforms, classmethods, and staticmethods are out of scope for v1 compiled DSL.
+- Async step methods, generator step methods, classmethods, and staticmethods are out of scope for v.1 compiled DSL.
 
-The body of a compiled subtransform is symbolically executed. It must return a symbolic schema construction expression:
+The body of a compiled step method is symbolically executed. It must return a symbolic schema construction expression:
 
 ```python
 return OrderNormalized(
@@ -402,20 +402,20 @@ return OrderPublished.project(order)
 ```
 
 `project(source, TargetSchema)` and source-less `project(TargetSchema)` remain supported compatibility forms inside
-compiled subtransforms. Prefer `TargetSchema.project(source)` in public examples because the source row remains visible.
+compiled step methods. Prefer `TargetSchema.project(source)` in public examples because the source row remains visible.
 
 Output construction details are owned by [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md).
 
 ## Symbolic Execution
 
-The compiler builds a `TransformPlan` by invoking compiled subtransforms with symbolic row proxies.
+The compiler builds a `TransformPlan` by invoking compiled step methods with symbolic row proxies.
 
 During symbolic execution:
 
 - field access produces `FieldRef` expressions;
 - Python literals in expression positions produce typed literal expressions;
 - expression helpers produce expression IR;
-- `where(...)` records filter operations in the active subtransform context;
+- `where(...)` records filter operations in the active step-method context;
 - `lookup_join(...)` records join operations in source order;
 - schema constructors record projection operations;
 - hooks are not executed;
@@ -424,19 +424,19 @@ During symbolic execution:
 Rules:
 
 - Symbolic execution must be deterministic for the same source and configuration.
-- User code outside compiled subtransform bodies must not be symbolically executed except expression helpers called
+- User code outside compiled step method bodies must not be symbolically executed except expression helpers called
   from those bodies.
 - Unsupported operations must fail with structured compile errors. Structure must not silently lower unsupported
   Python code to UDFs, RDD operations, Pandas conversion, row-wise callbacks, or opaque generated code.
 - Symbolic execution should avoid AST parsing except where needed for source spans, expression text, or diagnostics.
 - If symbolic execution invokes user code and that user code performs side effects, Structure is not required to undo
-  them. Diagnostics should still guide developers toward pure compiled subtransforms and explicit hooks.
+  them. Diagnostics should still guide developers toward pure compiled step methods and explicit hooks.
 
 ## Expressions
 
 Compiled expressions are symbolic objects with type, nullability, scope, source metadata, and lowering behavior.
 
-The v1 expression surface includes:
+The v.1 expression surface includes:
 
 - field references such as `order.customer_id`;
 - Python literals described by `NullabilityAndTypeCoercion.md`;
@@ -490,19 +490,19 @@ Rules:
 - `@special(type="expr")` attaches metadata and wraps calls so symbolic arguments produce symbolic expressions.
 - An expression helper must return a symbolic expression or a Python literal accepted as a source expression.
 - A helper returning `None`, a DataFrame, an RDD, a Python collection of rows, or another unsupported object is invalid
-  when called from a compiled subtransform.
+  when called from a compiled step method.
 - Class-local `@special(type="expr")` helpers do not take `self`, but may be called through `self` for IDE discoverability.
 - Module-level helpers and class-local helpers use the same expression semantics.
 - Helpers should be pure and deterministic. Non-deterministic helpers require an explicit future contract.
 - Helpers must not import or require PySpark during compiler phases.
-- Recursive expression helpers are invalid in v1 unless a future spec defines recursion limits and expansion behavior.
+- Recursive expression helpers are invalid in v.1 unless a future spec defines recursion limits and expansion behavior.
 
 When a helper call is unsupported, diagnostics should show the helper name and the call site, not only the expanded
 expression internals.
 
 ## Filtering
 
-`where(predicate)` records a filter in the active subtransform context:
+`where(predicate)` records a filter in the active step-method context:
 
 ```python
 def normalize(self, order: OrderRaw) -> OrderNormalized:
@@ -514,7 +514,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 
 Rules:
 
-- `where(...)` is valid only during symbolic execution of a compiled subtransform.
+- `where(...)` is valid only during symbolic execution of a compiled step method.
 - `predicate` must be a non-nullable or nullable boolean expression accepted by the expression checker.
 - Adjacent `where(...)` calls may be combined with logical AND while preserving source order.
 - A `where(...)` call before a join can reference only scopes available before that join.
@@ -523,8 +523,8 @@ Rules:
   the same.
 - `where(...)` narrows simple `is_not_null()` field references according to
   [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md).
-- Calling `where(...)` outside an active subtransform is invalid and should mention that filters belong inside
-  compiled subtransform methods.
+- Calling `where(...)` outside an active step method is invalid and should mention that filters belong inside
+  compiled step methods.
 
 ## Selected-Row Dedupe
 
@@ -607,7 +607,7 @@ return OrderWithCustomer.base(order)(customer_name=self.customers.name)
 
 Documentation uses inferred bare joins as the default style.
 
-Public enum values required for v1:
+Public enum values required for v.1:
 
 ```text
 Join.LEFT
@@ -626,7 +626,7 @@ Rules:
 - `hint` is optional.
 - `dedupe` is optional. When present, it must be a deterministic `JoinDedupe` policy and reduces the right side before
   the lookup join.
-- Join calls are valid only during symbolic execution of a compiled subtransform.
+- Join calls are valid only during symbolic execution of a compiled step method.
 - Member joins such as `self.customers.lookup_join(...)` are rejected with migration guidance.
 - `lookup_join(...)` records the same ordered join operation for inferred and legacy explicit-selection forms.
 - `lookup_join(...)` returns a relation proxy whose fields read from the joined symbolic scope.
@@ -636,9 +636,9 @@ Rules:
 - Field access on the joined scope is scoped and must not rely on unqualified string column names.
 - Join calls execute in source order.
 - Repeated joins of the same input must produce deterministic aliases.
-- `inner_join(...)` is the v2 row-multiplying join form. It is valid when the business output is one row per right-side
+- `inner_join(...)` is the v.2 row-multiplying join form. It is valid when the business output is one row per right-side
   match.
-- `rowset_join(...)` is the broad v2 rowset join form for right, full, cross, non-equi, and disjunctive joins.
+- `rowset_join(...)` is the broad v.2 rowset join form for right, full, cross, non-equi, and disjunctive joins.
 - `left_join(...)`, `inner_join(...)`, `right_join(...)`, `full_join(...)`, and `cross_join(...)` are shortcuts over
   `rowset_join(...)`.
 - `cross_join(...)` requires `allow_cartesian=True` and does not accept `on`.
@@ -658,7 +658,7 @@ Detailed lookup join condition, null, aliasing, cardinality, projection, and dia
 
 ## Hooks
 
-Hooks are explicit PySpark escape hatches attached to a concrete subtransform.
+Hooks are explicit PySpark escape hatches attached to a concrete step method.
 
 Canonical forms:
 
@@ -693,7 +693,7 @@ Rules:
 - `@after(method, lane=lane)` runs after the compiled operations for `method`.
 - `@before(method, lane=lane)` selects the lane consumed by the target method.
 - `@after(method, lane=lane)` selects the lane produced by the target method.
-- The target must be a compiled subtransform method on the same transform class.
+- The target must be a compiled step method on the same transform class.
 - Hook order for the same target and timing is source order.
 - Hooks are not symbolically executed and are opaque to the compiler except for metadata, signature, declared options,
   provenance, and streaming compatibility classification.
@@ -707,12 +707,12 @@ Rules:
 - Hook metadata must be present in IR so generated code can call hooks and traceability can mark opaque boundaries.
 
 `SchemaMode` must include at least the strict default mode and `SchemaMode.ALLOW_EXTRA_COLUMNS`. The exact enum names
-for the default strict mode may be implementation-defined in v1, but public documentation should use the default by
+for the default strict mode may be implementation-defined in v.1, but public documentation should use the default by
 omitting `schema_mode`.
 
 ## Validation Policy
 
-`@validate_output(enabled)` overrides validation for one subtransform output:
+`@validate_output(enabled)` overrides validation for one step-method output:
 
 ```python
 @validate_output(False)
@@ -723,7 +723,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 Rules:
 
 - `enabled` must be a boolean.
-- `@validate_output(...)` applies to the decorated compiled subtransform only.
+- `@validate_output(...)` applies to the decorated compiled step method only.
 - Method-level validation settings override class-level `@transform(validate_intermediate=...)`.
 - Class-level settings override project defaults.
 - Unknown validation decorator arguments are invalid.
@@ -762,7 +762,7 @@ The DSL must produce metadata sufficient for discovery and compilation:
 TransformDef
   source class
   declared inputs
-  subtransforms
+  step methods
   expression helpers
   hooks
   validation policy
@@ -773,7 +773,7 @@ TransformDef
 Rules:
 
 - Discovery finds concrete `Transform` entrypoint classes under configured source roots.
-- Metadata should preserve source order for input declarations, subtransforms, hooks, fields, filters, joins, and
+- Metadata should preserve source order for input declarations, step methods, hooks, fields, filters, joins, and
   projections.
 - Metadata should be immutable or treated as immutable after discovery.
 - Source locations should be captured when practical, but lack of source spans must not prevent compilation when the
@@ -851,7 +851,7 @@ Required checks include:
 - transform decorator usage;
 - transform base class;
 - input schema validity;
-- subtransform signature and source-order flow;
+- step-method signature and source-order flow;
 - reserved `run` method misuse;
 - expression helper return validity;
 - unsupported Python operators and methods;
@@ -881,7 +881,7 @@ CompileError DSL-E0401: Unsupported expression
 Transform:
   EnrichOrders
 
-Subtransform:
+Step method:
   normalize
 
 Output field:
@@ -955,12 +955,12 @@ See docs/reference/DSL.md
 
 ## Non-Goals
 
-The following are outside v1 DSL scope:
+The following are outside v.1 DSL scope:
 
 - arbitrary Python control flow as a source of multiple dynamic DataFrame branches;
-- subtransform branching and merging;
+- step method branching and merging;
 - custom transform constructor parameters;
-- async, generator, classmethod, or staticmethod subtransforms;
+- async, generator, classmethod, or staticmethod step methods;
 - implicit Python UDF generation;
 - Pandas UDF generation;
 - RDD operations;

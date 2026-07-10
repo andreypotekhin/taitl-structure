@@ -3,7 +3,7 @@
 ## Purpose
 
 Structure should eventually let the same compiler-visible Structure source lower to more than one execution backend.
-PySpark remains the v1 product target, but the architecture should not force PySpark assumptions into DSL discovery,
+PySpark remains the v.1 product target, but the architecture should not force PySpark assumptions into DSL discovery,
 symbolic execution, IR, diagnostics, or compatibility checks.
 
 This design describes how Structure can grow from a PySpark runtime/compiler into a backend-neutral Structure compiler
@@ -21,7 +21,7 @@ one Structure source module
   -> target-specific online execution or generated artifacts
 ```
 
-The promise applies to compiler-visible Structure code: schemas, compiled subtransforms, expression helpers, filters,
+The promise applies to compiler-visible Structure code: schemas, compiled step methods, expression helpers, filters,
 joins, validation policy, traceability, and target capability checks.
 
 Hooks are explicitly excluded from the same-source promise. They are target-specific escape hatches. Structure should
@@ -32,7 +32,7 @@ Polars, Pandas, DuckDB, or Spark SQL object.
 
 Initial candidates:
 
-- PySpark DataFrame: current v1 target, distributed, lazy, optimizer-visible, online and generated.
+- PySpark DataFrame: current v.1 target, distributed, lazy, optimizer-visible, online and generated.
 - Spark SQL: PySpark-family SQL/relation target through Python `SparkSession` APIs.
 - Type-safe Python Dataset/DataFrame patterns: an investigation area for Python apps that want stronger static typing
   over PySpark DataFrames without leaving Python.
@@ -47,18 +47,18 @@ Initial candidates:
 
 Roadmap priority:
 
-- v2: PySpark-family targets first, including Spark SQL exploration, typed Python DataFrame/Dataset patterns, and
-  Sprint 09 Spark Connect support for completed v1/v2 batch features.
-- v4+: Polars LazyFrame and DuckDB as the first non-PySpark target candidates.
-- v4+: Ibis as a meta-backend, plus non-batch Spark Connect hardening if Sprint 09 records deferred gaps.
-- Beyond direct v4+ candidates: other targets only through Ibis when Ibis supports them, unless a later design reopens
+- v.2: PySpark-family targets first, including Spark SQL exploration, typed Python DataFrame/Dataset patterns, and
+  Sprint 09 Spark Connect support for completed v.1/v.2 batch features.
+- v.4+: Polars LazyFrame and DuckDB as the first non-PySpark target candidates.
+- v.4+: Ibis as a meta-backend, plus non-batch Spark Connect hardening if Sprint 09 records deferred gaps.
+- Beyond direct v.4+ candidates: other targets only through Ibis when Ibis supports them, unless a later design reopens
   direct support.
 - Deferred: Dask DataFrame and Ray Dataset until after the relational core is stable.
 
 ## Target Families
 
 Backends should be grouped by semantic family rather than by library name alone. This is future diagnostic vocabulary,
-distinct from the current v1 implementation family `ordinary_pyspark`.
+distinct from the current v.1 implementation family `ordinary_pyspark`.
 
 ```text
 pyspark_dataframe

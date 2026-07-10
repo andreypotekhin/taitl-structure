@@ -121,7 +121,7 @@ helpers that know about checked-in model code, fixture data, pytest fixtures, or
     - input schema
     - input scope
     - hook input namespace
-  - subtransform
+  - step method
     - public schema-returning method
     - source-order execution
     - schema flow
@@ -129,7 +129,7 @@ helpers that know about checked-in model code, fixture data, pytest fixtures, or
     - return annotation
     - reserved `run` method
     - private helper exclusion
-    - invalid subtransform return
+    - invalid step method return
   - runtime session
     - `StructureSession`
     - session-owned Spark
@@ -203,7 +203,7 @@ helpers that know about checked-in model code, fixture data, pytest fixtures, or
   - post-join filter
   - non-boolean predicate
   - nullability narrowing
-  - `where(...)` outside subtransform
+  - `where(...)` outside step method
 
 - projection
   - explicit `select`

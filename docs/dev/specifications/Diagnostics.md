@@ -116,7 +116,7 @@ Required fields:
 Required when available:
 
 - `source`: source file, line, column, and expression display.
-- `context`: command, config setting, transform, subtransform, input, field, hook, join, target backend, generated path,
+- `context`: command, config setting, transform, step method, input, field, hook, join, target backend, generated path,
   or runtime argument.
 - `why`: why the problem matters when the risk is not obvious.
 

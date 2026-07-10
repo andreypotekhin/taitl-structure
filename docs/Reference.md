@@ -22,7 +22,7 @@ behavior Structure aims to keep stable.
   schema constants, and generated-file behavior.
 - [Execution semantic contract](reference/ExecutionSemanticContract.md): shared meaning between online execution
   and generated PySpark.
-- [Symbolic execution](reference/SymbolicExecution.md): how compiled subtransform methods become compiler-visible
+- [Symbolic execution](reference/SymbolicExecution.md): how compiled step methods become compiler-visible
   plans.
 - [Transform inheritance and composition](reference/TransformComposition.md): reusable parent transform fragments,
   `.to(...)` pipelines, wrapper pipelines, and composition limits.

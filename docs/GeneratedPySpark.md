@@ -68,7 +68,7 @@ Generated code should be explicit and Spark-visible. It should:
 - pass original named inputs to hooks only when `pass_inputs=True`
 - avoid UDFs in compiled paths, unless user opt-in
 - avoid `collect`, `toPandas`, and `rdd` in compiled paths
-- include section comments for source subtransforms
+- include section comments for source step methods
 
 ## Generated Schema Constants
 

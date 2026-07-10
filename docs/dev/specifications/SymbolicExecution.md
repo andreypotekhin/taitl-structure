@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Symbolic execution is the compiler phase that turns user-written compiled subtransform methods into backend-neutral
+Symbolic execution is the compiler phase that turns user-written compiled step methods into backend-neutral
 IR. It executes the method body with symbolic schema row proxies instead of real data, records filters, joins,
 expressions, and output projection, and then hands a deterministic `StepPlan` to compileability checks, online
 execution, generated PySpark emission, compiler provenance, and static dataflow traceability.
@@ -16,7 +16,7 @@ operations, or opaque generated code.
 
 This specification owns the compiler behavior for:
 
-- symbolic row proxies for subtransform input rows;
+- symbolic row proxies for step-method input rows;
 - symbolic input scopes declared with `input(Structure)`;
 - field reference capture;
 - Python literal capture in expression positions;
@@ -25,7 +25,7 @@ This specification owns the compiler behavior for:
 - `lookup_join(...)` operation capture;
 - schema constructor projection capture;
 - schema base overlay expansion;
-- active transform, subtransform, field, and source context tracking;
+- active transform, step method, field, and source context tracking;
 - unsupported-operation diagnostics;
 - deterministic `StepPlan` construction.
 
@@ -51,7 +51,7 @@ Symbolic execution runs after discovery and schema inspection, and before compil
 load config
 discover source modules
 inspect schemas and transforms
-symbolically execute subtransforms
+symbolically execute step methods
 build TransformPlan IR
 run compileability checks
 emit or execute target output
@@ -100,7 +100,7 @@ rows, call Spark, or inspect live DataFrames.
 
 ## Public Source Forms
 
-The v1 symbolic engine must support these source forms inside compiled subtransforms:
+The v.1 symbolic engine must support these source forms inside compiled step methods:
 
 ```python
 order.id
@@ -134,9 +134,9 @@ the body.
 
 ## Execution Model
 
-For each compiled subtransform, the engine:
+For each compiled step method, the engine:
 
-1. Creates a `SymbolicContext` for the transform class, subtransform method, input schema, output schema, configuration,
+1. Creates a `SymbolicContext` for the transform class, step method, input schema, output schema, configuration,
    metadata, and diagnostics.
 2. Creates one symbolic driving-row proxy and one symbolic relation proxy for each additional schema parameter.
 3. Creates symbolic input scopes for every declared transform input accessible through `self`.
@@ -144,28 +144,28 @@ For each compiled subtransform, the engine:
 5. Records `where(...)` and `lookup_join(...)` calls in source order as they occur.
 6. Captures one returned schema construction as one projection, or a fixed tuple as ordered result projections.
 7. Builds one deterministic `StepPlan`.
-8. Discards the active context before moving to the next subtransform.
+8. Discards the active context before moving to the next step method.
 
 Rules:
 
 - The active context must be thread-local or otherwise isolated so concurrent compilations cannot mix operations.
-- Only one active subtransform context may receive `where(...)` and join events at a time.
+- Only one active step-method context may receive `where(...)` and join events at a time.
 - The engine must clear the active context in a `finally`-style cleanup path after successful or failed execution.
 - Hooks are not executed.
 - Private helper methods are ordinary Python and are unsupported when they try to manipulate symbolic expressions in
   ways the DSL cannot capture. Reusable expression logic should use `@special(type="expr")`.
 - If user code performs side effects during symbolic execution, Structure is not required to undo them. Diagnostics
-  should still guide developers toward pure compiled subtransforms or explicit hooks.
+  should still guide developers toward pure compiled step methods or explicit hooks.
 
 ## Symbolic Context
 
-`SymbolicContext` is the per-subtransform capture state.
+`SymbolicContext` is the per-step-method capture state.
 
 It must contain at least:
 
 ```text
 transform definition
-subtransform definition
+step-method definition
 input schema definition
 output schema definition
 declared input scopes
@@ -183,13 +183,13 @@ Rules:
 - Operation order is append-only and follows source execution order.
 - Source context stack entries may include helper name, schema constructor, output field, filter call, join call, and
   base overlay call.
-- The context must preserve enough information to report transform, subtransform, output field, source expression, and
+- The context must preserve enough information to report transform, step method, output field, source expression, and
   suggested fix when available.
 - The context should be immutable after `StepPlan` construction or treated as consumed.
 
 ## Transform Instance During Symbolic Execution
 
-The compiler invokes subtransform methods on a transform implementation object. During symbolic execution:
+The compiler invokes step methods on a transform implementation object. During symbolic execution:
 
 - `self.<input_name>` returns a symbolic input scope for declared inputs.
 - `self.<expr_helper_name>(...)` calls a class-local `@special(type="expr")` helper symbolically.
@@ -273,7 +273,7 @@ referenced scopes
 source metadata when available
 ```
 
-The v1 symbolic expression kinds are:
+The v.1 symbolic expression kinds are:
 
 ```text
 FieldRef
@@ -325,7 +325,7 @@ Rules:
 - The engine may either inline the expanded expression into IR or preserve a `CallExpr` with expansion metadata, as long
   as online execution, generated code, traceability, and diagnostics agree.
 - Class-local helpers declared without `self` must be callable through `self`.
-- Recursive helpers are invalid in v1 unless a future spec defines recursion limits.
+- Recursive helpers are invalid in v.1 unless a future spec defines recursion limits.
 - Helper expansion should be cacheable when the helper identity, argument symbolic shapes, and keyword values are the
   same and caching cannot hide diagnostics or source context.
 
@@ -339,14 +339,14 @@ Diagnostic rule:
 
 Rules:
 
-- `where(...)` is valid only while symbolically executing a compiled subtransform.
+- `where(...)` is valid only while symbolically executing a compiled step method.
 - The predicate must be a symbolic boolean expression or a value accepted as one by the expression checker.
 - Multiple `where(...)` calls remain separate recorded filter events until IR construction; IR may combine them with
   logical AND while preserving source order.
 - A filter may reference only scopes available at the point where it is recorded.
 - A filter recorded before a join cannot reference that joined scope.
 - A filter recorded after a join may reference the joined scope.
-- A filter with simple `field.is_not_null()` narrows that field for later expressions in the same subtransform.
+- A filter with simple `field.is_not_null()` narrows that field for later expressions in the same step method.
 - Narrowing facts do not cross hook boundaries unless a future spec adds explicit hook postconditions.
 
 Minimum filter operation metadata:
@@ -399,7 +399,7 @@ source context
 
 ## Schema Construction
 
-Calling a schema class inside a compiled subtransform captures a symbolic output record.
+Calling a schema class inside a compiled step method captures a symbolic output record.
 
 Rules:
 
@@ -461,7 +461,7 @@ Project
 
 ## StepPlan Construction
 
-At the end of a successful subtransform, symbolic execution creates one `StepPlan`.
+At the end of a successful step method, symbolic execution creates one `StepPlan`.
 
 Minimum step IR:
 
@@ -489,9 +489,9 @@ validation metadata
 
 Rules:
 
-- The returned value must be a symbolic schema construction compatible with the subtransform return annotation.
-- Exactly one final projection is allowed per subtransform in v1.
-- A subtransform returning `None`, a DataFrame, a Python list, a dict, a generator, or an arbitrary object is invalid.
+- The returned value must be a symbolic schema construction compatible with the step method return annotation.
+- Exactly one final projection is allowed per step method in v1.
+- A step method returning `None`, a DataFrame, a Python list, a dict, a generator, or an arbitrary object is invalid.
 - A method may construct helper symbolic schema objects before the final return.
 - The step must contain enough source and provenance data for diagnostics, explain output, and static dataflow.
 - IR objects should be immutable or treated as immutable after construction.
@@ -504,14 +504,14 @@ Unsupported behavior must fail with structured compile errors. Required unsuppor
 - Python `and`, `or`, and `not` for symbolic boolean logic;
 - Python string methods on symbolic string expressions, such as `.strip()` or `.lower()`;
 - arbitrary Python functions that are not public DSL helpers or `@special(type="expr")` helpers;
-- source-level PySpark `Column` construction inside compiled subtransforms;
+- source-level PySpark `Column` construction inside compiled step methods;
 - raw string column paths;
-- DataFrame methods inside compiled subtransforms;
+- DataFrame methods inside compiled step methods;
 - iteration over symbolic rows or expressions;
 - indexing a symbolic row by string unless a future spec permits it;
 - mutation of symbolic rows or expressions;
-- async, generator, or coroutine subtransform behavior;
-- returning non-schema symbolic values from compiled subtransforms;
+- async, generator, or coroutine step method behavior;
+- returning non-schema symbolic values from compiled step methods;
 - implicit UDF, Pandas UDF, RDD, `collect`, or `toPandas` lowering.
 
 Rules:
@@ -530,7 +530,7 @@ Symbolic execution diagnostics must include:
 - diagnostic code;
 - severity;
 - transform class when available;
-- subtransform method when available;
+- step method when available;
 - output field when available;
 - helper, filter, join, or schema constructor context when relevant;
 - source expression or source operation when available;
@@ -549,7 +549,7 @@ CompileError DSL-E0401: Unsupported expression
 Transform:
   EnrichOrders
 
-Subtransform:
+Step method:
   normalize
 
 Output field:
@@ -583,16 +583,16 @@ See docs/dev/specifications/SymbolicExecution.md
 Invalid return example:
 
 ```text
-CompileError IR-E0503: Invalid subtransform return
+CompileError IR-E0503: Invalid step method return
 
 Transform:
   EnrichOrders
 
-Subtransform:
+Step method:
   normalize
 
 Problem:
-  Compiled subtransforms must return a Structure schema construction.
+  Compiled step methods must return a Structure schema construction.
 
 Use:
   return OrderNormalized(id=order.id, customer_id=order.customer_id)
@@ -608,7 +608,7 @@ Symbolic execution should capture source metadata when practical:
 - source file;
 - line and column;
 - transform class;
-- subtransform method;
+- step method;
 - output field;
 - helper call;
 - filter call;
@@ -659,12 +659,12 @@ Rules:
 - Avoid broad reflection after discovery has produced metadata.
 - Cache safe expression helper expansions when it materially improves compile time.
 - Do not cache results in a way that hides source context, warnings, or diagnostics.
-- Keep IR immutable or effectively immutable after construction to support v3 incremental compile fingerprints.
+- Keep IR immutable or effectively immutable after construction to support v.3 incremental compile fingerprints.
 
 Required compile metrics:
 
 - symbolic execution time per transform;
-- symbolic execution time per subtransform when detailed profiling is enabled;
+- symbolic execution time per step method when detailed profiling is enabled;
 - number of steps;
 - number of expression nodes;
 - number of recorded filters and joins;
@@ -672,15 +672,15 @@ Required compile metrics:
 
 ## Non-Goals
 
-The following are outside v1 symbolic execution scope:
+The following are outside v.1 symbolic execution scope:
 
 - arbitrary Python control-flow lowering into multiple dynamic DataFrame branches;
-- subtransform branching and merging;
+- step method branching and merging;
 - aggregations, broad windows, grouping sets, rollups, cubes, and general-purpose deduplication;
-- higher-order array and map transforms unless separately accepted by a v2 spec;
+- higher-order array and map transforms unless separately accepted by a v.2 spec;
 - automatic fallback to hooks;
 - implicit UDF or Pandas UDF generation;
-- source-level PySpark expressions inside compiled subtransforms;
+- source-level PySpark expressions inside compiled step methods;
 - automatic data scans for uniqueness or validation;
 - Spark Connect-specific symbolic behavior;
 - non-PySpark backend-specific capture rules.
@@ -705,7 +705,7 @@ The following are outside v1 symbolic execution scope:
 14. Implement schema constructor capture for output projection.
 15. Implement `SchemaClass.base(...)(...)` expansion using schema field origins.
 16. Build deterministic `StepPlan` objects from recorded operations and final projection.
-17. Preserve source metadata for transform, subtransform, helper, filter, join, constructor, and output field contexts.
+17. Preserve source metadata for transform, step method, helper, filter, join, constructor, and output field contexts.
 18. Add diagnostics linked to this specification and narrower specifications.
 19. Add compile metrics for symbolic execution time and expression counts.
 20. Ensure `structure check` and `structure compile` run symbolic execution without importing PySpark.
@@ -714,9 +714,9 @@ The following are outside v1 symbolic execution scope:
 
 The implementation is complete when tests prove:
 
-- A projection-only subtransform produces one `StepPlan` with a `Project` operation.
+- A projection-only step method produces one `StepPlan` with a `Project` operation.
 - Field access on the current row produces scoped `FieldRef` expressions.
-- Unknown field access fails with transform, subtransform, schema, field, and documentation link.
+- Unknown field access fails with transform, step method, schema, field, and documentation link.
 - Python literals in expression positions produce typed literal expressions.
 - Public expression helpers produce expression IR without importing PySpark.
 - Module-level `@special(type="expr")` helpers expand when called with symbolic arguments.
@@ -727,7 +727,7 @@ The implementation is complete when tests prove:
 - Symbolic expressions are not truthy or falsey in Python.
 - `where(...)` records filters in source order.
 - Multiple `where(...)` calls preserve source order and combine as logical AND in IR or target lowering.
-- `where(order.id.is_not_null())` narrows `order.id` for later projection in the same subtransform.
+- `where(order.id.is_not_null())` narrows `order.id` for later projection in the same step method.
 - `where(...)` outside active symbolic execution fails clearly.
 - `lookup_join(...)` records a join operation and returns a joined scope.
 - Repeated `lookup_join(...)` calls on the same input receive deterministic occurrence ids.
@@ -739,9 +739,9 @@ The implementation is complete when tests prove:
 - `SchemaClass.base(source_a, source_b)(...)` maps sources to multiple direct bases by declaration order and field
   origin.
 - Locally declared and locally overridden target fields in base overlays must be explicit.
-- Returning `None`, a DataFrame, a list, a dict, or an arbitrary object from a compiled subtransform fails clearly.
+- Returning `None`, a DataFrame, a list, a dict, or an arbitrary object from a compiled step method fails clearly.
 - Hooks are not executed during symbolic execution.
-- Symbolic execution diagnostics include transform, subtransform, output field when available, source expression, fix,
+- Symbolic execution diagnostics include transform, step method, output field when available, source expression, fix,
   and documentation link.
 - The same source and configuration produce stable `StepPlan` ids, operation order, expression order, and diagnostics.
 - `structure check` and `structure compile` can run symbolic execution without PySpark, Java, SparkSession, Spark

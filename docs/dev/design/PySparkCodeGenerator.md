@@ -43,7 +43,7 @@ class EnrichOrdersGenerated:
 - Prefer `select(...)` for projection.
 - Generate `where(...)` before projection when possible.
 - Generate joins explicitly.
-- Generate schema validation after subtransforms by default.
+- Generate schema validation after step methods by default.
 - Omit hook imports when no hooks exist.
 - Generate a read-only `HookInputs` namespace only when a hook declares `pass_inputs=True`.
 - Format generated code if configured.

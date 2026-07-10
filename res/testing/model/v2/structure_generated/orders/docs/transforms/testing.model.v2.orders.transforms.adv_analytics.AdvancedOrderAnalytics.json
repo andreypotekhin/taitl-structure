@@ -37,7 +37,7 @@
     }
   ],
   "source": "testing.model.v2.orders.transforms.adv_analytics.AdvancedOrderAnalytics",
-  "subtransforms": [
+  "step_methods": [
     {
       "input_lane": "fulfilled",
       "input_schema": "OrderFulfillment",

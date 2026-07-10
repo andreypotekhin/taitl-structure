@@ -1,4 +1,4 @@
-# Design: v2 Optimization Features
+# Design: v.2 Optimization Features
 
 ## Purpose
 
@@ -35,7 +35,7 @@ callbacks that would require row-wise Python execution or hidden UDF generation.
 
 ## Caching and Persistence
 
-Allow explicit annotations at subtransform boundaries.
+Allow explicit annotations at step-method boundaries.
 
 ```python
 @transform(cache=StorageLevel.MEMORY_AND_DISK)

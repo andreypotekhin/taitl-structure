@@ -53,7 +53,7 @@
     }
   ],
   "source": "testing.model.v2.orders.transforms.order.EnrichOrders",
-  "subtransforms": [
+  "step_methods": [
     {
       "after_hooks": [
         "remove_negative_totals"

@@ -6,9 +6,9 @@ Structure schemas declare the row contracts used by compiler checks, generated S
 validation, traceability, and IDE navigation. The syntax must be explicit, readable, and cheap to inspect without importing
 PySpark or creating a Spark session.
 
-## Canonical v1 Form
+## Canonical v.1 Form
 
-The v1 canonical schema declaration form is:
+The v.1 canonical schema declaration form is:
 
 ```python
 from structure import Structure, field, String, Decimal
@@ -32,7 +32,7 @@ The field declaration has three visible parts:
 2. A `field(...)` call, which marks the attribute as a Structure field.
 3. An explicit type object such as `String()` or `Decimal(12, 2)`.
 
-Lowercase type sentinels such as `string`, `decimal(12, 2)`, and `boolean` are not canonical v1 syntax.
+Lowercase type sentinels such as `string`, `decimal(12, 2)`, and `boolean` are not canonical v.1 syntax.
 
 ## Public Imports
 
@@ -57,11 +57,11 @@ from structure import (
 )
 ```
 
-`Map` is part of the v1 schema type surface.
+`Map` is part of the v.1 schema type surface.
 
 ## Grammar
 
-This is the accepted v1 schema declaration grammar in descriptive form:
+This is the accepted v.1 schema declaration grammar in descriptive form:
 
 ```text
 schema_class      := class NAME(Structure): field_decl+
@@ -81,7 +81,7 @@ when import-based discovery is used. Source text or AST inspection may still be 
 
 ## Field Rules
 
-`field(...)` has this v1 shape:
+`field(...)` has this v.1 shape:
 
 ```python
 field(
@@ -110,7 +110,7 @@ Rules:
   the field definition through schema inheritance.
 - Structure passes aliases through to Spark. It does not sanitize, normalize, or quote aliases for backend-specific
   identifier edge cases.
-- v1 must reject duplicate Python field names and duplicate effective Spark column names after inherited fields are
+- v.1 must reject duplicate Python field names and duplicate effective Spark column names after inherited fields are
   resolved.
 
 `primary_key=True` on a nullable field is invalid unless `nullable=False` is explicitly supplied or inferred by the
@@ -122,7 +122,7 @@ All schema type constructors return immutable value objects. Equality is structu
 
 ### Scalar Types
 
-The v1 scalar type constructors are:
+The v.1 scalar type constructors are:
 
 ```python
 String()
@@ -157,7 +157,7 @@ Rules:
 - `precision >= 1`
 - `scale >= 0`
 - `scale <= precision`
-- v1 should reject omitted precision and scale.
+- v.1 should reject omitted precision and scale.
 
 Generated PySpark mapping:
 
@@ -345,7 +345,7 @@ See docs/dev/specifications/SchemaDeclarationSyntax.md
 
 ## Non-Goals
 
-The following are not part of v1 canonical syntax:
+The following are not part of v.1 canonical syntax:
 
 - annotation-only field declarations such as `id: String`;
 - dataclass-style defaults;

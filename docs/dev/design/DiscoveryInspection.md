@@ -29,7 +29,7 @@ Discovery locates transform classes and schema definitions, preserving enough so
 6. Read class __dict__ order.
 7. Identify input declarations.
 8. Identify @special(type="expr") helpers.
-9. Identify public schema-returning subtransform methods.
+9. Identify public schema-returning step methods.
 10. Identify @before(method, lane=lane) and @after(method, lane=lane) hooks.
 11. Attach line numbers and source snippets when available.
 ```
@@ -46,11 +46,11 @@ itself is not part of the module path.
 
 ## Source Order
 
-Python class dictionaries preserve definition order. Structure should use this order as the default subtransform execution order.
+Python class dictionaries preserve definition order. Structure should use this order as the default step method execution order.
 
 ## Spark-Free Discovery
 
-Discovery must not import PySpark, start Java, create a SparkSession, or contact a Spark cluster. If v1 discovers by
+Discovery must not import PySpark, start Java, create a SparkSession, or contact a Spark cluster. If v.1 discovers by
 importing user source modules, those modules must be Structure-source import-safe and must not create Spark resources at
 module import time. Later AST/LibCST discovery can reduce import risk, but it must preserve the same Spark-free compiler
 contract.
@@ -66,4 +66,4 @@ contract.
 ## Compile-Time Performance
 
 Discovery is often the largest compile-time cost for large projects. Use source fingerprints, avoid repeated imports,
-and keep inspection results cache-friendly so end-of-v3 production incremental compile can reuse them safely.
+and keep inspection results cache-friendly so end-of-v.3 production incremental compile can reuse them safely.

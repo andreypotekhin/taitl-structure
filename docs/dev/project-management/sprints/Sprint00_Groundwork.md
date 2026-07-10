@@ -4,7 +4,7 @@
 
 Create the repository, package layout, configuration model, CLI skeleton, testing infrastructure, documentation
 scaffolding, and pre-coding proofs needed to implement Structure as an IR-first open-source library with online
-execution as the v1 default.
+execution as the v.1 default.
 
 ## Product Outcome
 
@@ -131,8 +131,8 @@ The team can also review short spike notes for the high-risk Python mechanics be
   `clean` are covered by `tests/specifications/cli`.
 - [x] (2026-06-21) `check`, `compile`, and `compile --fail-on-diff` are tested to stay Spark-free on the compiler path.
 - [x] (2026-06-23) Spike outcomes for `StructureSession`, expression helpers, source order, import paths, no-Spark
-  compile, and local Spark execution are incorporated into v1 plans and tests.
-- [ ] v1 closeout: record CI workflow evidence before moving the sprint to `docs/dev/project-management/sprints/done/`.
+  compile, and local Spark execution are incorporated into v.1 plans and tests.
+- [ ] v.1 closeout: record CI workflow evidence before moving the sprint to `docs/dev/project-management/sprints/done/`.
 
 ## Demo Script
 

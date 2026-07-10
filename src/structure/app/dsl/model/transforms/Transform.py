@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Mapping
-from threading import RLock
 
 from structure.app.dsl.model.transforms.aliases import require_alias
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
@@ -22,9 +21,7 @@ class Transform:
     _structure_pipeline: TransformPipeline | None = None
     _structure_transform = False
     _structure_transform_options: dict[str, object] = {}
-    _structure_subtransform_options: dict[str, object] = {}
-    _structure_compiled: dict[object, object] = {}
-    _structure_compile_lock = RLock()
+    _structure_step_method_options: dict[str, object] = {}
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -57,9 +54,7 @@ class Transform:
         cls._structure_pipeline = pipelines[0] if pipelines else None
         cls._structure_transform = False
         cls._structure_transform_options = {}
-        cls._structure_subtransform_options = {}
-        cls._structure_compiled = {}
-        cls._structure_compile_lock = RLock()
+        cls._structure_step_method_options = {}
 
     def __init__(self, **inputs: object) -> None:
         normalized: dict[str, object] = {}
@@ -107,20 +102,7 @@ class Transform:
             schema_types=schema_types,
             overrides=settings,
         )
-        builder = BuildCompiledTransform()
-        key = builder.key(cls, options=resolved)
-        with cls._structure_compile_lock:
-            if not force and key in cls._structure_compiled:
-                return cls._structure_compiled[key]
-
-        artifact = builder(cls, options=resolved, schema_types=schema_types)
-        with cls._structure_compile_lock:
-            if not force:
-                existing = cls._structure_compiled.get(key)
-                if existing is not None:
-                    return existing
-            cls._structure_compiled[key] = artifact
-            return artifact
+        return BuildCompiledTransform()(cls, options=resolved, schema_types=schema_types)
 
     @classmethod
     def generate(
@@ -159,6 +141,7 @@ class Transform:
         source_unit = cls.__module__
         transforms = cls._source_unit_transforms(project.transforms)
         plans = {}
+        fingerprints = {}
         for transform in transforms:
             transform_artifact = (
                 artifact
@@ -166,11 +149,13 @@ class Transform:
                 else transform.compile(resolved, schema_types=schema_types, force=force)
             )
             plans[f"{transform.__module__}.{transform.__name__}"] = transform_artifact.pyspark_plan
+            fingerprints[f"{transform.__module__}.{transform.__name__}"] = transform_artifact.semantic_fingerprint
         files = PySpark.render.project().source_unit(
             plans,
             source_module=source_unit,
             source_schema_modules=project.schema_modules,
             generated_package=resolved.generated_package,
+            semantic_fingerprints=fingerprints,
         )
         target = storage or DiskStorage(resolved.generated_dir)
         result = target.write(files)

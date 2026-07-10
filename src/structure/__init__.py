@@ -1,4 +1,11 @@
-from structure.app.compiler.api import CompileKey, CompiledTransform, CompilerOptions, GeneratedTransform
+from structure.app.compiler.api import (
+    ArtifactCacheReport,
+    CompileKey,
+    CompiledTransform,
+    CompilerOptions,
+    GeneratedTransform,
+)
+from structure.app.compiler.artifacts.commands import CompiledArtifactPool
 from structure.app.configuration.api import StructureConfig
 from structure.app.dsl.api import (
     Array,
@@ -144,9 +151,11 @@ from structure.app.tools.api import StructureTools
 
 __all__ = [
     "Array",
+    "ArtifactCacheReport",
     "AsOf",
     "Boolean",
     "CompileKey",
+    "CompiledArtifactPool",
     "CompiledTransform",
     "CompilerOptions",
     "Date",

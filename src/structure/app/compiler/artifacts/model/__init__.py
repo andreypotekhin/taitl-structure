@@ -5,7 +5,13 @@ from structure.app.compiler.artifacts.model.GeneratedTransform import GeneratedT
 
 __all__ = [
     "CompileKey",
+    "ArtifactCacheReport",
+    "ArtifactDependency",
+    "ArtifactManifest",
     "CompiledTransform",
     "CompilerOptions",
     "GeneratedTransform",
 ]
+from structure.app.compiler.artifacts.model.ArtifactCacheReport import ArtifactCacheReport
+from structure.app.compiler.artifacts.model.ArtifactDependency import ArtifactDependency
+from structure.app.compiler.artifacts.model.ArtifactManifest import ArtifactManifest

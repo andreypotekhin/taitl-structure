@@ -26,7 +26,7 @@ acceptance checks in this specification pass. The support claim is limited to:
 
 - online execution through `StructureSession`;
 - generated PySpark execution;
-- compiler-visible Structure DSL features completed in v1 and v2;
+- compiler-visible Structure DSL features completed in v.1 and v.2;
 - schema-only validation and strict projection;
 - capability diagnostics for unsupported ordinary-only behavior.
 
@@ -205,7 +205,7 @@ signature as ordinary generated PySpark. The header metadata must include the co
 Generated code must remain readable and reviewable. It must not branch on Spark Connect at runtime unless the public
 PySpark API requires a variant-specific call. It must not emit classic-only internals or hidden fallback code.
 
-Generated-code snapshots for representative v1/v2 fixtures must prove:
+Generated-code snapshots for representative v.1/v.2 fixtures must prove:
 
 - imports remain ordinary public PySpark imports;
 - no `_jdf`, `sparkContext`, `.rdd`, `_jvm`, or Py4J gateway access appears;
@@ -279,7 +279,7 @@ script and mark CI coverage as a release blocker before publishing a stable supp
 Spark Connect batch support is complete when:
 
 - `target_variant = "spark-connect"` resolves a supported backend capability profile;
-- completed v1/v2 batch fixtures pass online/generated parity against a real Spark Connect session;
+- completed v.1/v.2 batch fixtures pass online/generated parity against a real Spark Connect session;
 - compiler commands remain Spark-free;
 - generated source contains no classic-only internals;
 - unsupported ordinary-only features fail before runtime or generation;

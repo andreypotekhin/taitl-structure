@@ -7,11 +7,11 @@ It is a guardrail for the first coding passes: contributors should not rediscove
 schemas, discovery, validation, joins, hooks, configuration, generation, and runtime execution.
 
 This document does not replace narrower specifications. It points to the owning documents and states which decisions
-are mandatory for v1 implementation.
+are mandatory for v.1 implementation.
 
 ## Decision Set
 
-The v1 implementation must follow these decisions:
+The v.1 implementation must follow these decisions:
 
 - ordinary Python source roots are the input roots;
 - generated code lives below a distinct generated namespace;
@@ -23,9 +23,9 @@ The v1 implementation must follow these decisions:
 - default validation is schema-only, with value-level data-quality constraints requiring explicit opt-in;
 - hooks are explicit runtime escape hatches and are opaque to compile-time expression analysis;
 - `@special(type="expr")` is the public compiler-visible extension point for reusable expression logic;
-- v1 lookup joins use `lookup_join(...)`; row-multiplying and existence joins are v2+ features;
+- v.1 lookup joins use `lookup_join(...)`; row-multiplying and existence joins are v.2+ features;
 - diagnostics are registry-backed, stable, structured, and linked to documentation;
-- the first implementation checkpoint is first executable slice, a narrow executable vertical slice, before full v1 breadth.
+- the first implementation checkpoint is first executable slice, a narrow executable vertical slice, before full v.1 breadth.
 
 ## Owning Specifications
 
@@ -80,13 +80,13 @@ The pre-coding documentation gaps from [Challenges.md](Challenges.md) are resolv
 | C11 | `StreamingCompatibility.md`; `D06182604.Streaming-compatibility-v1.md` |
 | C12 | `IntermediateRepresentation.md`; `PySparkCodeGeneration.md`; `CompatibilityPolicy.md` |
 | C13 | `CompilerPerformanceTargets.md` |
-| C14 | `CompilerPerformanceTargets.md`; production incremental compile remains end-of-v3 implementation work |
+| C14 | `CompilerPerformanceTargets.md`; production incremental compile remains end-of-v.3 implementation work |
 | C15 | `D06182606.No-spark-compile-dependency.md` |
 | C16 | `Readme.md` generated-code comparison |
 | C17 | [Testing.md](../Testing.md); [Style.md](../Style.md); feature-spec acceptance criteria |
 | C18 | `ConfigSchema.md` |
 | C19 | [Compatibility.md](../../Compatibility.md); `CompatibilityPolicy.md`; `D06182605.Versioning-and-compatibility-policy.md` |
-| C22 | `P06202601.v1-first-executable-slice.plan.md`; first executable slice model fixture; Sprint 01 plan |
+| C22 | `P06202601.v.1-first-executable-slice.plan.md`; first executable slice model fixture; Sprint 01 plan |
 | C23 | `BackendCapabilities.md`; `BackendCapabilities` design; `D06202604.Backend-capability-interface.md` |
 | C24 | `ExecutionSemanticContract.md`; `ExecutionSemanticContract` design; `D06202601` |
 | C25 | `Readme.md`; [Compatibility.md](../../Compatibility.md); compileability checker design |
@@ -132,7 +132,7 @@ class OrderRaw(Structure):
 ```
 
 Lowercase sentinels such as `string` are not canonical. Annotation-only, dataclass, Pydantic, and Spark-string type
-syntax are outside v1 unless a later compatibility layer is explicitly specified.
+syntax are outside v.1 unless a later compatibility layer is explicitly specified.
 
 ### Spark-Free Compiler
 
@@ -175,13 +175,13 @@ work require explicit opt-in because they may trigger Spark actions or expensive
 
 ### Hook Boundary
 
-Hooks are intentional PySpark escape hatches. They are attached to a compiled subtransform with `@before(...)` or
+Hooks are intentional PySpark escape hatches. They are attached to a compiled step method with `@before(...)` or
 `@after(...)`, run at runtime, and must return a DataFrame. The compiler records hook metadata and treats the hook body
 as opaque.
 
 ### Join Boundary
 
-v1 supports `lookup_join(...)` lookup joins with explicit `Join.LEFT` or `Join.INNER`. It must not silently deduplicate
+v.1 supports `lookup_join(...)` lookup joins with explicit `Join.LEFT` or `Join.INNER`. It must not silently deduplicate
 right-side rows. If right-side uniqueness is not proven, Structure emits a warning by default.
 
 ### Extension Boundary
@@ -240,7 +240,7 @@ use provisional examples until the registry exists, but implementation tests mus
 
 - Every item from [Challenges.md](Challenges.md) under "Recommended Pre-Coding Docs to Add" has an owning
   implementation-ready specification.
-- A contributor can identify whether a feature belongs in Sprint 01, v1, v2, v3, or v4 without reading design discussion
+- A contributor can identify whether a feature belongs in Sprint 01, v.1, v.2, v.3, or v.4 without reading design discussion
   transcripts.
 - Source layout, schema syntax, validation, hooks, joins, configuration, compatibility, diagnostics, and compiler
   performance all have concrete acceptance criteria in specifications.

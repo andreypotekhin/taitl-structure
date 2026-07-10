@@ -1,16 +1,16 @@
 ﻿# Architecture
 
-Structure is an IR-first runtime/compiler toolkit for schema-driven data pipelines. PySpark is the v1 runtime and
+Structure is an IR-first runtime/compiler toolkit for schema-driven data pipelines. PySpark is the v.1 runtime and
 generation target, but the compiler core is designed to remain backend-neutral.
 
-It is not intended to be a heavy runtime framework. Source DSL files compile to backend-neutral IR. In v1, that IR can
+It is not intended to be a heavy runtime framework. Source DSL files compile to backend-neutral IR. In v.1, that IR can
 be consumed by the online PySpark runner at runtime or by the PySpark code generator to emit optional generated classes.
 
 ## Goals
 
 - Schema-first authoring.
 - IDE-friendly source code.
-- Spark optimizer-visible online and generated execution for the v1 target.
+- Spark optimizer-visible online and generated execution for the v.1 target.
 - Explicit arbitrary target-scoped hooks.
 - Clean hook-free generated code.
 - Lightweight runtime session.
@@ -97,14 +97,14 @@ windows, arrays, maps, and higher-order expressions. Each compiler-visible featu
 IR first, then lowered to PySpark target recipes. Rare, highly backend-specific, or arbitrary DataFrame logic remains
 an explicit hook boundary instead of becoming a thin Structure wrapper around every Spark function.
 
-The v1 default target is `target_profile = ">=3.5,<4.1"`, covering PySpark 3.5.x and 4.0.x. The PySpark target layer
+The v.1 default target is `target_profile = ">=3.5,<4.1"`, covering PySpark 3.5.x and 4.0.x. The PySpark target layer
 should prefer the oldest clear optimizer-visible API inside the configured range. Unsupported backend targets and
 unsupported feature requirements fail through `BACKEND-E2401` and `BACKEND-E2402`.
 
 Alternative backend support must follow the same boundary. The compiler-visible Structure source should lower to
 backend-neutral IR, then the selected target adapter checks capabilities and lowers that IR to a target execution plan
 or generated artifact. Candidate future targets are Python-hosted: Spark SQL and typed PySpark DataFrame patterns first,
-then v4+ Polars LazyFrame, DuckDB, and Ibis. Other targets should come through Ibis when practical. They must be
+then v.4+ Polars LazyFrame, DuckDB, and Ibis. Other targets should come through Ibis when practical. They must be
 admitted by capability profile, target adapter, diagnostics, and tests rather than by ad hoc source rewrites. The design
 is described in [AlternativeBackends.md](design/AlternativeBackends.md) and specified in
 [AlternativeBackends.md](specifications/AlternativeBackends.md).
@@ -114,7 +114,7 @@ DataFrame API. Future hook metadata must make that scope explicit through `targe
 `hook_target_default`, and runtime execution must never invoke a hook against a backend outside its effective target
 set.
 
-Spark Connect belongs inside this PySpark target boundary as `target_variant = "spark-connect"`. End-of-v2
+Spark Connect belongs inside this PySpark target boundary as `target_variant = "spark-connect"`. End-of-v.2
 experimental parity is acceptable for completed batch features only if it does not change public DSL syntax, online
 invocation construction, generated class construction, `run(...)` signatures, or streaming orchestration semantics.
 
@@ -122,6 +122,6 @@ invocation construction, generated class construction, `run(...)` signatures, or
 
 Compile-time performance is a product metric.
 
-The compiler should avoid Spark dependencies during normal `check` and `compile`. v1 should preserve deterministic
-outputs and source fingerprints so production incremental compilation can arrive at the end of v3 without reshaping the
+The compiler should avoid Spark dependencies during normal `check` and `compile`. v.1 should preserve deterministic
+outputs and source fingerprints so production incremental compilation can arrive at the end of v.3 without reshaping the
 compiler.

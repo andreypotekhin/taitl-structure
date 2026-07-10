@@ -12,6 +12,19 @@
       "qualname": "Array",
       "signature": "(element: structure.app.dsl.model.types.StructureType.StructureType, *, contains_null: bool = True) -> None"
     },
+    "ArtifactCacheReport": {
+      "dataclass_fields": [
+        "entries",
+        "hits",
+        "misses",
+        "loaded"
+      ],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.app.compiler.artifacts.model.ArtifactCacheReport",
+      "qualname": "ArtifactCacheReport",
+      "signature": "(entries: 'int', hits: 'int', misses: 'int', loaded: 'int') -> None"
+    },
     "AsOf": {
       "dataclass_fields": [],
       "enum_members": [
@@ -37,26 +50,36 @@
         "subject",
         "structure_version",
         "options",
-        "sources"
+        "sources",
+        "manifest"
       ],
       "enum_members": [],
       "kind": "class",
       "module": "structure.app.compiler.artifacts.model.CompileKey",
       "qualname": "CompileKey",
-      "signature": "(subject: 'tuple[str, ...]', structure_version: 'str', options: 'tuple[object, ...]', sources: 'tuple[tuple[str, int | None, int | None, str | None], ...]') -> None"
+      "signature": "(subject: 'tuple[str, ...]', structure_version: 'str', options: 'tuple[object, ...]', sources: 'tuple[tuple[str, int | None, int | None, str | None], ...]', manifest: 'str' = '') -> None"
+    },
+    "CompiledArtifactPool": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.app.compiler.artifacts.commands.CompiledArtifactPool",
+      "qualname": "CompiledArtifactPool",
+      "signature": "(*, max_entries: 'int | None' = None) -> 'None'"
     },
     "CompiledTransform": {
       "dataclass_fields": [
         "key",
         "transform_plan",
         "pyspark_plan",
-        "schemas"
+        "schemas",
+        "semantic_fingerprint"
       ],
       "enum_members": [],
       "kind": "class",
       "module": "structure.app.compiler.artifacts.model.CompiledTransform",
       "qualname": "CompiledTransform",
-      "signature": "(key: 'CompileKey', transform_plan: 'TransformPlan', pyspark_plan: 'PySparkExecutionPlan', schemas: 'TransformSchemas') -> None"
+      "signature": "(key: 'CompileKey', transform_plan: 'TransformPlan', pyspark_plan: 'PySparkExecutionPlan', schemas: 'TransformSchemas | None', semantic_fingerprint: 'str') -> None"
     },
     "CompilerOptions": {
       "dataclass_fields": [
@@ -383,7 +406,7 @@
       "kind": "class",
       "module": "structure.app.runtime.session.model.StructureSession",
       "qualname": "StructureSession",
-      "signature": "(*, spark=None, ctx=None, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, execution_mode: 'str | None' = None, target_backend: 'str | None' = None, target_profile: 'str | None' = None, target_variant: 'str | None' = None, generated_package: 'str | None' = None, schema_types=None, online_executor: 'Callable[..., object] | None' = None, storage=None) -> 'None'"
+      "signature": "(*, spark=None, ctx=None, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, execution_mode: 'str | None' = None, target_backend: 'str | None' = None, target_profile: 'str | None' = None, target_variant: 'str | None' = None, generated_package: 'str | None' = None, schema_types=None, online_executor: 'Callable[..., object] | None' = None, storage=None, artifacts: 'CompiledArtifactPool | None' = None) -> 'None'"
     },
     "StructureTools": {
       "dataclass_fields": [],
@@ -745,14 +768,6 @@
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "exists",
       "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None) -> 'Expression'"
-    },
-    "special": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "function",
-      "module": "structure.app.dsl.model.transforms.transform_api",
-      "qualname": "special",
-      "signature": "(function: 'Callable | None' = None, *, type: 'str', **kwargs)"
     },
     "field": {
       "dataclass_fields": [],

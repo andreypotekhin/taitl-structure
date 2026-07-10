@@ -7,8 +7,8 @@ logic symbolic, compileable, and visible to Spark's optimizer. The compiler must
 which keys define the match, how nulls behave, which aliases own each field, and when cardinality assumptions are only
 warnings rather than proven facts.
 
-The v1 goal is deliberately narrow: support explicit lookup joins without implicit deduplication, implicit string
-column references, or hidden data scans. Row-multiplying and existence-oriented joins are specified separately for v2+
+The v.1 goal is deliberately narrow: support explicit lookup joins without implicit deduplication, implicit string
+column references, or hidden data scans. Row-multiplying and existence-oriented joins are specified separately for v.2+
 in [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md) because they change validation, traceability, and output-row
 expectations.
 
@@ -25,7 +25,7 @@ lookup_join(
 )
 ```
 
-When a subtransform declares the relation as a schema parameter, the relation can also be inferred:
+When a step method declares the relation as a schema parameter, the relation can also be inferred:
 
 ```python
 def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer:
@@ -46,7 +46,7 @@ joined.
 
 The old member spelling `self.customers.lookup_join(...)` is rejected. Use the free-standing bare form instead.
 
-Canonical v1 function:
+Canonical v.1 function:
 
 - `lookup_join(*, on, how, hint=None)`: an inferred lookup join.
 - Legacy explicit-selection overloads remain supported, but they are not the documented style.
@@ -63,22 +63,22 @@ Rules:
 
 ## Join Types
 
-The v1 compiled DSL supports:
+The v.1 compiled DSL supports:
 
 - `Join.LEFT`: keep every current row; right fields are null when no match exists.
 - `Join.INNER`: keep only current rows that have at least one right match.
 
-`Join.RIGHT`, `Join.FULL`, `Join.CROSS`, and semi/anti joins are deferred. They do not fit the v1 row-centric schema
+`Join.RIGHT`, `Join.FULL`, `Join.CROSS`, and semi/anti joins are deferred. They do not fit the v.1 row-centric schema
 constructor cleanly because they can introduce rows that do not have a current-row source, or they return existence
-semantics rather than a joined right scope. The v2+ plan for semi/anti predicates lives in
+semantics rather than a joined right scope. The v.2+ plan for semi/anti predicates lives in
 [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md).
 
 If the public enum exposes deferred values for forward compatibility, the compileability checker must reject them in
-compiled subtransforms with a diagnostic that names the supported v1 values.
+compiled step methods with a diagnostic that names the supported v.1 values.
 
 ## Join Conditions
 
-The v1 join condition is an equi-join condition: a boolean expression made from equality comparisons joined by logical
+The v.1 join condition is an equi-join condition: a boolean expression made from equality comparisons joined by logical
 AND.
 
 Accepted:
@@ -93,7 +93,7 @@ lookup_join(on=lower(trim(order.email)) == lower(trim(customer.email)))
 lookup_join(on=order.customer_external_id.null_safe_eq(customer.external_id))
 ```
 
-Rejected in v1:
+Rejected in v.1:
 
 - `OR` conditions.
 - Inequality conditions such as `<`, `<=`, `>`, or `>=`.
@@ -165,10 +165,10 @@ lookup_join(
 )
 ```
 
-There is no v1 `case_insensitive=True` join option. Normalization belongs in the expression because it is part of the
+There is no v.1 `case_insensitive=True` join option. Normalization belongs in the expression because it is part of the
 business key. Keeping it visible makes generated PySpark and traceability reviewable.
 
-The v1 `lower(...)` helper follows Spark's backend behavior. It is not a promise of full Unicode case folding or
+The v.1 `lower(...)` helper follows Spark's backend behavior. It is not a promise of full Unicode case folding or
 locale-specific collation. If the project later adds richer collation semantics, that should be a separate expression
 helper or configuration contract.
 
@@ -186,7 +186,7 @@ Uniqueness proof sources:
 - A future unique-key metadata feature when the join key exactly matches one declared unique key.
 - A user-enabled runtime uniqueness check, if implemented later.
 
-When no uniqueness proof exists, v1 should compile with a warning by default:
+When no uniqueness proof exists, v.1 should compile with a warning by default:
 
 ```text
 CompileWarning JOIN-W0601: lookup_join(...) uniqueness is not proven
@@ -205,13 +205,13 @@ Use:
   or add an explicit JoinDedupe policy when one selected right row is the business rule.
 ```
 
-Projects may later add a strict setting that turns this warning into an error. That setting is not required for the v1
+Projects may later add a strict setting that turns this warning into an error. That setting is not required for the v.1
 semantics, but diagnostics should be designed so the promotion is straightforward.
 
 ## `inner_join(...)` Cardinality
 
-`inner_join(...)` (v2) means row multiplication is intentional. If one current row matches three right rows, the
-downstream step sees three rows. Detailed v2+ behavior is owned by
+`inner_join(...)` (v.2) means row multiplication is intentional. If one current row matches three right rows, the
+downstream step sees three rows. Detailed v.2+ behavior is owned by
 [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md).
 
 Rules:
@@ -241,13 +241,13 @@ code should avoid duplicate unqualified column names by aliasing and explicit `s
 ## Aliases and Joined Scopes
 
 A joined scope is the symbolic object returned by `lookup_join(...)`. It owns field references from the right side of that
-join. v2 extends the same idea to `inner_join(...)`.
+join. v.2 extends the same idea to `inner_join(...)`.
 
 Alias rules:
 
 - The current row scope keeps its existing alias.
 - The first join of an input may use the input name as the generated DataFrame alias, such as `customers`.
-- Repeated joins of the same input in one subtransform must receive deterministic suffixes, such as `customers_2`.
+- Repeated joins of the same input in one step method must receive deterministic suffixes, such as `customers_2`.
 - Diagnostics should refer to the source input name and join occurrence when needed, for example `customers#2`.
 - Generated aliases must be stable across runs for the same source.
 
@@ -274,21 +274,21 @@ Rules:
 
 ## Join Order
 
-Join calls inside one subtransform execute in source order. A later join can reference the current row scope and any
+Join calls inside one step method execute in source order. A later join can reference the current row scope and any
 previously joined scope that is still in scope.
 
 Filters obey source order:
 
 - A `where(...)` recorded before a join is applied before that join when it references only available scopes.
 - A `where(...)` recorded after a join may reference that joined scope and is applied after the join.
-- Projection into the returned output schema happens after recorded joins and filters for the subtransform.
+- Projection into the returned output schema happens after recorded joins and filters for the step method.
 
-The generator may perform safe Spark-plan optimizations later, but v1 should preserve source order in generated code
+The generator may perform safe Spark-plan optimizations later, but v.1 should preserve source order in generated code
 because it is easier to review and debug.
 
 ## Broadcast Hints
 
-`hint=JoinHint.BROADCAST` applies to the joined right input in v1:
+`hint=JoinHint.BROADCAST` applies to the joined right input in v.1:
 
 ```python
 lookup_join(
@@ -307,7 +307,7 @@ Rules:
 - Unsupported hints must be rejected or warned by backend capability checks.
 - Streaming compatibility checks must reject hints or join shapes that Spark cannot run for the configured streaming
   mode.
-- Future join strategy hints belong in the optimization roadmap, not in the v1 semantic core.
+- Future join strategy hints belong in the optimization roadmap, not in the v.1 semantic core.
 
 ## IR Contract
 
@@ -334,7 +334,7 @@ alias uniqueness, and `lookup_join(...)` uniqueness warnings.
 Join diagnostics should include:
 
 - transform class;
-- subtransform method;
+- step method;
 - joined input;
 - join occurrence or generated alias;
 - join method, join type, and hint;
@@ -356,10 +356,10 @@ Source condition:
   (customers.country == order.country) | (customers.id == order.customer_id)
 
 Problem:
-  v1 joins support equality key pairs combined with AND. OR conditions are not compileable.
+  v.1 joins support equality key pairs combined with AND. OR conditions are not compileable.
 
 Use:
-  split the logic into separate subtransforms or move custom join logic into an @after hook.
+  split the logic into separate step methods or move custom join logic into an @after hook.
 
 See docs/dev/specifications/JoinSemantics.md
 ```
@@ -374,7 +374,7 @@ Key:
   customers.id == order.customer_id
 
 Use:
-  field(String(), primary_key=True) on Customer.id, declare a unique key, or wait for v2 inner_join(...).
+  field(String(), primary_key=True) on Customer.id, declare a unique key, or wait for v.2 inner_join(...).
 
 See docs/dev/specifications/JoinSemantics.md
 ```

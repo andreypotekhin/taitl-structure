@@ -110,8 +110,8 @@ StructType(schema)
 MapType(key_type, value_type, value_contains_null)
 ```
 
-`MapType` is included in v1 for schema declaration, Spark schema generation, and runtime validation. Higher-order map
-transformations remain a v2 expression feature.
+`MapType` is included in v.1 for schema declaration, Spark schema generation, and runtime validation. Higher-order map
+transformations remain a v.2 expression feature.
 
 Type equality is structural:
 
@@ -122,7 +122,7 @@ Array(String()) == Array(String())
 Struct(Address) == Struct(Address)
 ```
 
-## Supported Types v1
+## Supported Types v.1
 
 - `String()`
 - `Integer()`

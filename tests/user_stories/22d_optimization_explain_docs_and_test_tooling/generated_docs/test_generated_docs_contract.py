@@ -40,8 +40,8 @@ def test_generated_docs_make_transform_contract_readable() -> None:
         assert "| `total` | `total` | `string` | yes | no |" in schema
         assert transform["inputs"] == [{"name": "orders", "ordinal": 0, "schema": "OrderRaw"}]
         assert transform["outputs"] == [{"name": "normalized", "ordinal": 0, "schema": "OrderNormalized"}]
-        assert transform["subtransforms"][0]["input_schema"] == "OrderRaw"
-        assert transform["subtransforms"][0]["output_schema"] == "OrderNormalized"
+        assert transform["step_methods"][0]["input_schema"] == "OrderRaw"
+        assert transform["step_methods"][0]["output_schema"] == "OrderNormalized"
 
 
 def _write_project(root: Path) -> None:

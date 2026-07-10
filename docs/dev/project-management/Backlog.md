@@ -143,21 +143,21 @@
 - Implement `structure compile --fail-on-diff`.
 - Add no-Spark guard tests for compiler commands.
 
-## v2 Backlog
+## v.2 Backlog
 
-### Epic: v2 Scope and Analytical IR Foundations
+### Epic: v.2 Scope and Analytical IR Foundations
 
-- Publish v2 release scope, non-goals, user stories, milestones, and sprint charters.
-- Add v2 fixture package for aggregation, window, dedupe, higher-order function, optimization hint, and analytical join
+- Publish v.2 release scope, non-goals, user stories, milestones, and sprint charters.
+- Add v.2 fixture package for aggregation, window, dedupe, higher-order function, optimization hint, and analytical join
   examples.
 - Extend IR operation taxonomy for aggregation, window, higher-order function, optimization directive, and analytical
   join operations.
 - Record source location, backend capability, cardinality, streaming compatibility, and traceability metadata on every
-  v2 operation.
+  v.2 operation.
 - Add backend capability names for aggregation, window, higher-order function, optimization directive, and analytical
   join forms.
-- Add diagnostic codes and public documentation anchors for unsupported v2 operation shapes.
-- Add online/generated parity harness fixtures for v2 operations before implementing the full lowering set.
+- Add diagnostic codes and public documentation anchors for unsupported v.2 operation shapes.
+- Add online/generated parity harness fixtures for v.2 operations before implementing the full lowering set.
 
 ### Epic: Aggregations and Grouping
 
@@ -217,7 +217,7 @@
 
 ### Epic: Explicit Optimization Directives
 
-- + Implement cache and persist directives at subtransform boundaries.
+- + Implement cache and persist directives at step-method boundaries.
 - Implement repartition and coalesce directives.
 - Implement checkpoint hints where supported by the configured backend.
 - Implement join strategy directives for broadcast, shuffle hash, sort merge, and lookup projection where supported.
@@ -231,7 +231,7 @@
 - Define hook method ownership and dispatch for composed runtime pipelines and generated wrapper classes.
 - Preserve online/generated parity for composed hooks, including source hook imports and traceability boundaries.
 - Decide whether composed transforms can expose selected earlier-stage outputs in addition to final-stage outputs.
-- Design whether class-field pipelines may be mixed with wrapper-local subtransforms, hooks, or lifecycle policy.
+- Design whether class-field pipelines may be mixed with wrapper-local step methods, hooks, or lifecycle policy.
 - Keep `lane(...)` unavailable for composition matching unless a later design explicitly changes the public boundary.
 
 ### Epic: Explain, Documentation, and Test Tooling
@@ -242,7 +242,7 @@
 - + Add pytest helpers for `structure check`, generated-code freshness, generated-code snapshots, expected diagnostics,
   and online/generated parity.
 
-## v3 Backlog
+## v.3 Backlog
 
 ### Epic: DSL and SQL Function PySpark Parity
 
@@ -304,16 +304,16 @@
 - Add admitted stateful streaming policies.
 - Add live streaming lifecycle integration evidence.
 
-### Epic: End-of-v3 Incremental Compile and Cache Diagnostics
+### Epic: End-of-v.3 Incremental Compile and Cache Diagnostics
 
 - Implement production incremental compilation with `compile --changed-only`.
 - Add cache invalidation policies and cache diagnostics for source, config, schema, dependency, generated-target,
-  target-profile, and v3 lifecycle-policy changes.
+  target-profile, and v.3 lifecycle-policy changes.
 - Add performance tests for incremental compile on synthetic 10-transform and 100-transform projects.
 
 ## Sprint 09 Backlog
 
-- + Promote Spark Connect from experimental parity to supported batch status for completed v1/v2 features.
+- + Promote Spark Connect from experimental parity to supported batch status for completed v.1/v.2 features.
 - + Add live online and generated Spark Connect parity tests for the supported batch matrix.
 - + Add generated-source scans and backend diagnostics that reject classic-only internals.
 - + Add Spark Connect runtime verification through CI or a documented manual script.
@@ -332,7 +332,7 @@
 - Add rich `structure explain` field-level lineage through projections, filters, joins, aggregations, windows, hooks,
   and optimization boundaries.
 
-## v4 Backlog
+## v.4 Backlog
 
 - Continue Spark Connect hardening only for non-batch or explicitly deferred Sprint 09 gaps.
 - Explore additional backend families after the PySpark-family batch contract is stable, starting with postponed Polars
@@ -344,6 +344,6 @@
   struct construction and whole-field copying are stable.
 - Evaluate Ibis as a meta-backend after direct non-PySpark backend candidates clarify the adapter contract.
 
-## Nice To Have Beyond v4
+## Nice To Have Beyond v.4
 
 - Runtime LDJSON traceability emitter. See [NiceToHave.md](NiceToHave.md).

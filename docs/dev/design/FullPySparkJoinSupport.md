@@ -81,7 +81,7 @@ join must not accept `on`.
 `rowset_join(...)` accepts a general symbolic boolean predicate for `on`. The predicate may include equality,
 null-safe equality, inequalities, boolean `AND`, boolean `OR`, deterministic expression helpers, and literals. The
 predicate may reference only the left and right rowset scopes and earlier joined scopes explicitly passed through the
-current subtransform. It must not call arbitrary Python functions, inspect data, or use string SQL fragments.
+current step method. It must not call arbitrary Python functions, inspect data, or use string SQL fragments.
 
 Optional same-name key shorthand can be added after predicate joins work:
 

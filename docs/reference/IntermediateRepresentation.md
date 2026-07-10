@@ -20,7 +20,7 @@ This reference covers the public meaning of:
 - source provenance anchors;
 - static dataflow dependency records;
 - IR construction, validation, determinism, and immutability rules;
-- extension points for v2, v3, and v4 roadmap features.
+- extension points for v.2, v.3, and v.4 roadmap features.
 
 Public authoring API and backend rendering details are covered by narrower references:
 
@@ -83,7 +83,7 @@ target-specific consumer input.
 
 ## Core Model
 
-Minimum v1 model:
+Minimum v.1 model:
 
 ```text
 TransformPlan
@@ -236,7 +236,7 @@ Fields:
 Rules:
 
 - `inputs` preserve class-body input declaration order.
-- `steps` preserve source-order compiled subtransform order.
+- `steps` preserve source-order compiled step method order.
 - Undecorated steps consume and update the uniquely inferred lane.
 - Method-level `@transform(output=target_lane)` writes a named lane or final output while the source is inferred.
 - Method-level `@transform(input=source, output=target_lane)` selects an original input or existing lane and writes the
@@ -281,7 +281,7 @@ pipeline input was selected or emit an ambiguity diagnostic before execution.
 
 ## StepPlan
 
-`StepPlan` represents one compiled subtransform method.
+`StepPlan` represents one compiled step method.
 
 Fields:
 
@@ -299,7 +299,7 @@ Fields:
 - `hooks_before`: ordered `HookCall` list for hooks before compiled operations.
 - `hooks_after`: ordered `HookCall` list for hooks after compiled operations.
 - `validate_output`: effective validation decision for this step.
-- `source`: source anchor for the subtransform method.
+- `source`: source anchor for the step method.
 - `inputs`: ordered parameter bindings; the first is marked as the driving relation.
 - `results`: ordered result projections with schema, destination lane, frame name, and result-specific after hooks.
 
@@ -460,8 +460,8 @@ Projection is the typed schema boundary between steps. It is also the primary so
 
 ## Operation Metadata
 
-Ordered `OperationPlan` records attach compiler-visible metadata to filters, joins, and reserved v2 operations before
-target lowering. This foundation metadata does not implement v2 behavior. It gives every later feature one shape for
+Ordered `OperationPlan` records attach compiler-visible metadata to filters, joins, and reserved v.2 operations before
+target lowering. This foundation metadata does not implement v.2 behavior. It gives every later feature one shape for
 capability checks, cardinality reporting, and streaming classification.
 
 ```text
@@ -482,8 +482,8 @@ OperationCapability
 ```
 
 `capability` is backend-neutral IR metadata. Target mappers translate it to the target layer's
-`CapabilityRequirement` before lowering. The v1 PySpark profile accepts current v1 operation capabilities and rejects
-reserved v2 capabilities with `BACKEND-E2402`.
+`CapabilityRequirement` before lowering. The v.1 PySpark profile accepts current v.1 operation capabilities and rejects
+reserved v.2 capabilities with `BACKEND-E2402`.
 
 Allowed cardinality values are:
 
@@ -494,7 +494,7 @@ Allowed cardinality values are:
 - `select_one`;
 - `unknown`.
 
-Current v1 filter operations record `row_filtering`. Current `lookup_join(...)` operations record `select_one` because
+Current v.1 filter operations record `row_filtering`. Current `lookup_join(...)` operations record `select_one` because
 the operation expresses lookup intent: one matching right-side row is selected for each left-side row, even when the
 compiler emits a warning that uniqueness is not proven. `streaming` reuses the compileability vocabulary
 `compatible`, `batch_only`, and `unknown`.
@@ -527,7 +527,7 @@ representative row. Deterministic selected-row dedupe remains modeled through se
 
 `structure explain` displays each step's ordered operations as `kind(cardinality)`. Aggregate explain output also names
 grouping keys and aggregate metric functions, and selected-row output names the helper direction and partition count.
-This is an anchor for future v2 explain output, not a full v2 lineage or optimizer report.
+This is an anchor for future v.2 explain output, not a full v.2 lineage or optimizer report.
 
 Higher-order helper expressions currently support `arr_transform(...)`, `arr_filter(...)`,
 `map_transform_values(...)`, and `map_filter(...)`. Their callbacks are captured once against symbolic collection
@@ -555,7 +555,7 @@ JoinKeyPair
   ordinal
 ```
 
-Supported v1 values:
+Supported v.1 values:
 
 - `method`: `lookup_join`;
 - `join_type`: `left`, `inner`;
@@ -661,7 +661,7 @@ Rules:
 - Expressions must not store Python call frames, live Spark objects, or backend-specific rendered code.
 - Unsupported expression kinds must fail before online execution or generation.
 
-Backends lower expression IR to their own expression model. In v1 the only backend is PySpark.
+Backends lower expression IR to their own expression model. In v.1 the only backend is PySpark.
 
 ## FieldRef Expression
 
@@ -731,7 +731,7 @@ BinaryExpr
   right
 ```
 
-Supported v1 operator families:
+Supported v.1 operator families:
 
 - equality and inequality comparisons;
 - ordering comparisons where the operand types support ordering;
@@ -764,7 +764,7 @@ Rules:
 - `and` and `or` operands preserve source order.
 - Boolean IR represents symbolic `&`, `|`, and `~`, not Python `and`, `or`, and `not`.
 - Python truthiness of symbolic expressions is invalid and should fail before IR construction completes.
-- Join conditions in v1 accept AND-combined equality pairs only. Other boolean shapes may still be valid for filters.
+- Join conditions in v.1 accept AND-combined equality pairs only. Other boolean shapes may still be valid for filters.
 
 ## CastExpr
 
@@ -898,7 +898,7 @@ Rules:
 - Provenance must not include runtime row counts, Spark application ids, cluster details, or wall-clock execution
   telemetry.
 
-Compiler provenance is compile-time metadata. Runtime LDJSON traceability is outside v1 through v4 scope unless a future
+Compiler provenance is compile-time metadata. Runtime LDJSON traceability is outside v.1 through v.4 scope unless a future
 reference changes that roadmap.
 
 ## Static Dataflow Traceability
@@ -935,7 +935,7 @@ Rules:
 - Traceability records must use source input names, schema names, field names, step names, and IR ids.
 - Traceability must be deterministic and compact by default.
 
-Traceability precision may improve over time, but v1 must at least expose transform, input, step, join, projection, hook,
+Traceability precision may improve over time, but v.1 must at least expose transform, input, step, join, projection, hook,
 and validation dependencies.
 
 ## Capability Metadata
@@ -957,7 +957,7 @@ Rules:
 - Unsupported backend operations must fail before online execution or generation.
 - Online and generated PySpark paths must use the same capability data.
 
-For v1, `backend` is `pyspark`. Future backends must not require changing public DSL source for existing v1 semantics.
+For v.1, `backend` is `pyspark`. Future backends must not require changing public DSL source for existing v.1 semantics.
 
 ## IR Construction
 
@@ -1038,7 +1038,7 @@ Rules:
 - Shared name registries, import collectors, and diagnostics accumulators must not be mutated from parallel workers
   without deterministic merge logic.
 
-Immutability enables caching, safe parallel rendering, and future v3 incremental compile fingerprints.
+Immutability enables caching, safe parallel rendering, and future v.3 incremental compile fingerprints.
 
 ## Serialization and Debug Output
 
@@ -1069,7 +1069,7 @@ CompileError IR-E0501: Projection does not assign every output field
 Transform:
   orders.transforms.order.EnrichOrders
 
-Subtransform:
+Step method:
   normalize
 
 Output schema:
@@ -1092,7 +1092,7 @@ CompileError IR-E0502: Field reference is outside scope
 Transform:
   orders.transforms.order.EnrichOrders
 
-Subtransform:
+Step method:
   normalize
 
 Expression:
@@ -1115,7 +1115,7 @@ CompileError BACKEND-E0802: Operation is not supported by the target backend
 Transform:
   orders.transforms.order.EnrichOrders
 
-Subtransform:
+Step method:
   normalize
 
 Operation:
@@ -1129,14 +1129,14 @@ Problem:
 
 Use:
   Use admitted projection window helpers or selected-row helpers, move broader logic into an explicit hook, or wait for
-  the broader v2 windowing reference.
+  the broader v.2 windowing reference.
 
 See docs/reference/IntermediateRepresentation.md
 ```
 
 ## Non-Goals
 
-The following are outside v1 IR scope:
+The following are outside v.1 IR scope:
 
 - representing arbitrary Python control flow as dynamic DataFrame branches;
 - representing implicit Python UDF fallback;
@@ -1148,9 +1148,9 @@ The following are outside v1 IR scope:
 - exposing raw IR classes as public user-facing DSL APIs;
 - treating serialized IR as a stable public interchange format.
 
-## v2 Extensions
+## v.2 Extensions
 
-Planned v2 IR variants:
+Planned v.2 IR variants:
 
 - `GroupingSets`;
 - `Rollup`;
@@ -1162,7 +1162,7 @@ Planned v2 IR variants:
 - `DocumentationModel`;
 - `IncrementalCompileFingerprint`.
 
-Rules for adding v2 variants:
+Rules for adding v.2 variants:
 
 - Add the semantic reference first or at the same time.
 - Add generic IR validation.
@@ -1175,9 +1175,9 @@ Rules for adding v2 variants:
 `IncrementalCompileFingerprint` should hash stable IR, resolved configuration, relevant source fingerprints, and target
 capabilities. It must not hash absolute workspace paths or wall-clock times.
 
-## v3 Extensions
+## v.3 Extensions
 
-Planned v3 IR variants:
+Planned v.3 IR variants:
 
 - `ReadStream`;
 - `WriteStream`;
@@ -1188,14 +1188,14 @@ Planned v3 IR variants:
 
 Rules:
 
-- v3 streaming lifecycle IR must distinguish transform semantics from query orchestration.
+- v.3 streaming lifecycle IR must distinguish transform semantics from query orchestration.
 - Checkpoints, triggers, watermarks, output modes, and state policies require explicit user-facing semantics before
   they enter IR.
 - Runtime telemetry remains separate from compiler traceability unless a future reference merges them deliberately.
 
-## v4 Extensions
+## v.4 Extensions
 
-Planned v4 IR variants:
+Planned v.4 IR variants:
 
 - `SparkConnectCapability`;
 - `BackendCompatibilityReport`.
@@ -1203,6 +1203,6 @@ Planned v4 IR variants:
 Rules:
 
 - Spark Connect support must remain behind the backend target boundary.
-- Existing v1 transform IR should not change public DSL syntax, generated class construction, `run(...)` signatures,
+- Existing v.1 transform IR should not change public DSL syntax, generated class construction, `run(...)` signatures,
   or streaming orchestration semantics.
 - Backend compatibility reports should explain which operations are supported, unsupported, or degraded for the target.

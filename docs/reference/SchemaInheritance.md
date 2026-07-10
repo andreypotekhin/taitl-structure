@@ -7,7 +7,7 @@ This reference completes the inheritance semantics referenced by
 Schema inheritance lets developers reuse common field definitions without repeating schema code. It is especially useful
 for shared identifiers, audit columns, partition columns, tenancy fields, and common source metadata.
 
-Structure supports schema-to-schema inheritance in v1 as a declarative field composition mechanism. The compiler treats
+Structure supports schema-to-schema inheritance in v.1 as a declarative field composition mechanism. The compiler treats
 the final schema as an ordered structural contract and keeps inheritance details available for diagnostics and traceability.
 
 ## Canonical Form
@@ -64,7 +64,7 @@ class Order(EntityKeys, AuditFields):
     total = field(Decimal(12, 2), nullable=True)
 ```
 
-Non-schema mixins are not supported in v1:
+Non-schema mixins are not supported in v.1:
 
 ```python
 class Order(EntityKeys, SomePlainMixin):  # rejected
@@ -272,7 +272,7 @@ See docs/reference/SchemaInheritance.md
 
 ## Non-Goals
 
-The following are not part of v1:
+The following are not part of v.1:
 
 - deleting inherited fields;
 - partial field overrides;

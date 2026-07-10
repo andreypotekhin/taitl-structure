@@ -39,7 +39,7 @@ traceability = "compiler"
 # v1/v2 do not generate readStream/writeStream orchestration.
 streaming_compatibility_checks = true
 
-# Performance policy. Compiled subtransforms never silently become UDFs.
+# Performance policy. Compiled step_methods never silently become UDFs.
 strict_performance = true
 allow_python_udf = false
 allow_pandas_udf = false

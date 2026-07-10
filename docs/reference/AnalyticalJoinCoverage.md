@@ -256,7 +256,7 @@ Right, full, cross, non-equi, and disjunctive rowset joins are covered in
 
 ## Streaming Compatibility
 
-v2 may classify stream-static `exists(...)`, `not_exists(...)`, and `inner_join(...)` as compatible when the current
+v.2 may classify stream-static `exists(...)`, `not_exists(...)`, and `inner_join(...)` as compatible when the current
 pipeline input is streaming and the right input is static, if Spark supports the lowered plan for the configured
 target.
 

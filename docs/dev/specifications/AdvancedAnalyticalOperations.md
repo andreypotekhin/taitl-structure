@@ -106,7 +106,7 @@ helper that fails through backend capability checks until an explicit grouping-s
 
 ## Advanced Grouping
 
-`rollup(...)` and `cube(...)` are subtransform-level operations like `group_by(...)`.
+`rollup(...)` and `cube(...)` are step-method-level operations like `group_by(...)`.
 
 Example:
 
@@ -129,7 +129,7 @@ def revenue_rollup(self, order: OrderFulfillment) -> RevenueRollup:
 
 Rules:
 
-- Only one grouping operation is allowed in a subtransform.
+- Only one grouping operation is allowed in a step method.
 - Grouping operations must appear before aggregate output construction.
 - Direct field grouping keys may be positional or named.
 - Expression grouping keys must be named so the output schema can refer to them.
@@ -344,7 +344,7 @@ configured backend and the missing capability.
 
 ## Streaming Compatibility
 
-All features in this specification are batch-only in v2 unless a narrower rule explicitly proves compatibility.
+All features in this specification are batch-only in v.2 unless a narrower rule explicitly proves compatibility.
 
 Reason:
 

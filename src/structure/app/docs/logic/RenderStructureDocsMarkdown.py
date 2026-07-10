@@ -60,7 +60,7 @@ class RenderStructureDocsMarkdown:
             "## Step methods",
             "",
         ]
-        for step in self._sequence(transform["subtransforms"]):
+        for step in self._sequence(transform["step_methods"]):
             lines.append(f"- `{step['name']}`: `{step['input_schema']}` -> `{step['output_schema']}`")
         lines.extend(["", "## Dependencies", ""])
         dependencies = self._sequence(transform["dependencies"])

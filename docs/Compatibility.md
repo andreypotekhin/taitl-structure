@@ -60,7 +60,7 @@ target_variant = "spark-connect"
 ```
 
 The initial release targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Sprint 09 promotes Spark
-Connect to supported status for completed v1/v2 compiler-visible batch features once runtime evidence, diagnostics, and
+Connect to supported status for completed v.1/v.2 compiler-visible batch features once runtime evidence, diagnostics, and
 CI or documented verification are in place. V3 adds streaming orchestration separately.
 
 Spark Connect must not change public DSL syntax, generated class APIs, transform `run(...)` signatures, generated-code
@@ -145,7 +145,7 @@ Traceability schema rules:
 - Structure should keep default compiler traceability compact and stable across patch releases.
 
 Runtime LDJSON traceability is not part of the initial compatibility contract. It is tracked as a nice-to-have
-beyond v4 in [NiceToHave.md](dev/project-management/NiceToHave.md).
+beyond v.4 in [NiceToHave.md](dev/project-management/NiceToHave.md).
 
 ## Config Schema Versioning
 
@@ -165,9 +165,9 @@ Config schema rules:
 
 ## Roadmap
 
-v2 expands online/generated PySpark features and adoption tooling while preserving the same basic compatibility
-contract. Sprint 09 supports completed v1/v2 batch features through the PySpark target variant `spark-connect`.
+v.2 expands online/generated PySpark features and adoption tooling while preserving the same basic compatibility
+contract. Sprint 09 supports completed v.1/v.2 batch features through the PySpark target variant `spark-connect`.
 
-v3 adds streaming orchestration once transform compilation is stable.
+v.3 adds streaming orchestration once transform compilation is stable.
 
-v4 handles backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support claim.
+v.4 handles backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support claim.

@@ -1,4 +1,7 @@
 from structure.app.compiler.artifacts.model import (
+    ArtifactCacheReport,
+    ArtifactDependency,
+    ArtifactManifest,
     CompileKey,
     CompiledTransform,
     CompilerOptions,
@@ -7,6 +10,9 @@ from structure.app.compiler.artifacts.model import (
 
 __all__ = [
     "CompileKey",
+    "ArtifactCacheReport",
+    "ArtifactDependency",
+    "ArtifactManifest",
     "CompiledTransform",
     "CompilerOptions",
     "GeneratedTransform",

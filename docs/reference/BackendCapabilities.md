@@ -17,7 +17,7 @@ This reference covers:
 - capability decision shape;
 - unsupported backend diagnostics;
 - generated import-name capability;
-- PySpark v1 default capability profile;
+- PySpark v.1 default capability profile;
 - Spark-free capability selection.
 
 Feature references still own the domain meaning of a feature. For example, `JoinSemantics.md` owns `lookup_join`
@@ -51,7 +51,7 @@ implementation `family = "ordinary_pyspark"`. For the Spark Connect variant, `na
 Future alternative-backend reports may add semantic-family vocabulary such as `pyspark_dataframe` or `sql_relation`;
 that vocabulary does not require renaming the current implementation family.
 
-`imports()` returns deterministic generated import metadata for the backend. For PySpark v1 this includes the aliases
+`imports()` returns deterministic generated import metadata for the backend. For PySpark v.1 this includes the aliases
 for `pyspark.sql.functions`, `pyspark.sql.types`, `DataFrame`, `SparkSession`, `Column`, and Structure generated
 runtime schema helpers.
 

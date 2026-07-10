@@ -201,12 +201,11 @@ def test_v1_online_session_defers_to_runner_and_exposes_schemas_without_pyspark(
     assert result.schema["published"].name == "StructType"
 
 
-def test_v1_online_session_reuses_class_compiled_artifact(monkeypatch) -> None:
+def test_v1_online_session_reuses_session_compiled_artifact(monkeypatch) -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
     from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
 
-    EnrichOrders._structure_compiled.clear()
     calls = 0
     original = BuildCompiledTransform.__call__
 
@@ -230,12 +229,69 @@ def test_v1_online_session_reuses_class_compiled_artifact(monkeypatch) -> None:
     assert calls == 1
 
 
-def test_v1_transform_compile_force_rebuilds_class_artifact(monkeypatch) -> None:
+def test_v1_sessions_share_explicit_artifact_pool(monkeypatch) -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    from structure.app.compiler.artifacts.commands import CompiledArtifactPool
+    from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
+
+    calls = 0
+    original = BuildCompiledTransform.__call__
+
+    def counted(self, *args, **kwargs):
+        nonlocal calls
+        calls += 1
+        return original(self, *args, **kwargs)
+
+    monkeypatch.setattr(BuildCompiledTransform, "__call__", counted)
+    pool = CompiledArtifactPool()
+    inputs = {
+        "orders": "orders-df",
+        "customers": "customers-df",
+        "products": "products-df",
+        "promotions": "promotions-df",
+    }
+
+    first = StructureSession(artifacts=pool, schema_types=FakeTypes, online_executor=lambda **_: None)
+    second = StructureSession(artifacts=pool, schema_types=FakeTypes, online_executor=lambda **_: None)
+
+    EnrichOrders(**inputs).run(first)
+    EnrichOrders(**inputs).run(second)
+
+    assert calls == 1
+    assert pool.status().hits == 1
+
+
+def test_v1_session_load_reuses_explicit_artifact(monkeypatch) -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
     from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
 
-    EnrichOrders._structure_compiled.clear()
+    artifact = EnrichOrders.compile(schema_types=FakeTypes)
+    session = StructureSession(schema_types=FakeTypes, online_executor=lambda **_: None)
+    session.load(artifact)
+
+    monkeypatch.setattr(
+        BuildCompiledTransform,
+        "__call__",
+        lambda *args, **kwargs: pytest.fail("loaded artifact must be reused"),
+    )
+    result = EnrichOrders(
+        orders="orders-df",
+        customers="customers-df",
+        products="products-df",
+        promotions="promotions-df",
+    ).run(session)
+
+    assert result.published is None
+    assert session.cache_status().loaded == 1
+
+
+def test_v1_transform_compile_builds_detached_artifacts(monkeypatch) -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
+
     calls = 0
     original = BuildCompiledTransform.__call__
 
@@ -250,7 +306,7 @@ def test_v1_transform_compile_force_rebuilds_class_artifact(monkeypatch) -> None
     EnrichOrders.compile(schema_types=FakeTypes)
     EnrichOrders.compile(schema_types=FakeTypes, force=True)
 
-    assert calls == 2
+    assert calls == 3
 
 
 def test_v1_compile_key_includes_version_and_source_hash() -> None:
@@ -271,7 +327,6 @@ def test_v1_compile_key_includes_version_and_source_hash() -> None:
 def test_v1_compiled_artifact_does_not_capture_bound_inputs() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    EnrichOrders._structure_compiled.clear()
     artifact = EnrichOrders.compile(schema_types=FakeTypes)
     invocation = EnrichOrders(
         orders="orders-df-sentinel",
@@ -314,7 +369,6 @@ def test_v1_pipeline_reuses_shared_compiled_artifact(monkeypatch) -> None:
         def publish(self, order: Normalized) -> Published:
             return Published(id=order.id)
 
-    TransformPipeline._structure_compiled.clear()
     calls = 0
     original = BuildCompiledTransform.__call__
 
@@ -324,10 +378,9 @@ def test_v1_pipeline_reuses_shared_compiled_artifact(monkeypatch) -> None:
         return original(self, *args, **kwargs)
 
     monkeypatch.setattr(BuildCompiledTransform, "__call__", counted)
-    options = CompilerOptions.resolve(schema_types=FakeTypes)
-
-    NormalizeOrders(orders=object()).to(PublishOrders()).compile(options, schema_types=FakeTypes)
-    NormalizeOrders(orders=object()).to(PublishOrders()).compile(options, schema_types=FakeTypes)
+    session = StructureSession(schema_types=FakeTypes, online_executor=lambda **kwargs: object())
+    NormalizeOrders(orders=object()).to(PublishOrders()).run(session)
+    NormalizeOrders(orders=object()).to(PublishOrders()).run(session)
 
     assert calls == 1
 
@@ -352,7 +405,10 @@ def test_v1_generated_session_delegates_to_generated_class() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
     module_name = "testing.model.v1.structure_generated.orders.pyspark.transforms.order"
-    installed = _install_generated_module(module_name)
+    installed = _install_generated_module(
+        module_name,
+        fingerprint=_fingerprint(EnrichOrders, generated_package="testing.model.v1.structure_generated.orders"),
+    )
     try:
         invocation = EnrichOrders(
             orders="orders-df",
@@ -388,13 +444,17 @@ def test_v1_generated_session_can_import_from_memory_storage() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
     storage = MemoryStorage()
+    fingerprint = _fingerprint(EnrichOrders, generated_package="memory_generated")
     storage.write(
         {
             "memory_generated/__init__.py": "",
             "memory_generated/pyspark/__init__.py": "",
             "memory_generated/pyspark/transforms/__init__.py": "",
-            "memory_generated/pyspark/transforms/order.py": """
-class EnrichOrdersGenerated:
+            "memory_generated/pyspark/transforms/order.py": (
+                "STRUCTURE_ARTIFACT_FINGERPRINTS = {\n"
+                f'    "testing.model.v1.orders.transforms.order.EnrichOrders": "{fingerprint}",\n'
+                "}\n\n"
+                """class EnrichOrdersGenerated:
 
     def __init__(self, *, spark, ctx=None):
         self.spark = spark
@@ -409,7 +469,8 @@ class EnrichOrdersGenerated:
             "products": products,
             "promotions": promotions,
         }
-""",
+"""
+            ),
         }
     )
     invocation = EnrichOrders(
@@ -437,6 +498,33 @@ class EnrichOrdersGenerated:
         "products": "products-df",
         "promotions": "promotions-df",
     }
+
+
+def test_v1_generated_session_rejects_stale_artifact() -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    module_name = "testing.model.v1.structure_generated.orders.pyspark.transforms.order"
+    installed = _install_generated_module(module_name, fingerprint="stale")
+    try:
+        session = StructureSession(
+            execution_mode="generated",
+            generated_package="testing.model.v1.structure_generated.orders",
+            schema_types=FakeTypes,
+        )
+        invocation = EnrichOrders(
+            orders="orders-df",
+            customers="customers-df",
+            products="products-df",
+            promotions="promotions-df",
+        )
+
+        with pytest.raises(StructureRuntimeError) as raised:
+            session.run(invocation)
+
+        assert raised.value.diagnostic.code == "GEN-E0901"
+    finally:
+        for name in installed:
+            sys.modules.pop(name, None)
 
 
 def test_v1_memory_storage_does_not_import_unowned_modules() -> None:
@@ -488,6 +576,11 @@ def test_v1_generated_spark_connect_classic_only_failure_reports_boundary() -> N
     installed = _install_generated_module(
         module_name,
         failure=RuntimeError("Generated hook touched _jvm through Py4J"),
+        fingerprint=_fingerprint(
+            EnrichOrders,
+            generated_package="testing.model.v1.structure_generated.orders",
+            target_variant="spark-connect",
+        ),
     )
     try:
         invocation = EnrichOrders(
@@ -517,7 +610,12 @@ def test_v1_generated_spark_connect_classic_only_failure_reports_boundary() -> N
             sys.modules.pop(name, None)
 
 
-def _install_generated_module(name: str, *, failure: Exception | None = None) -> list[str]:
+def _install_generated_module(
+    name: str,
+    *,
+    failure: Exception | None = None,
+    fingerprint: str | None = None,
+) -> list[str]:
     installed: list[str] = []
     parts = name.split(".")
     for index in range(1, len(parts)):
@@ -532,6 +630,11 @@ def _install_generated_module(name: str, *, failure: Exception | None = None) ->
             setattr(parent, parts[index - 1], sys.modules[package_name])
 
     module = ModuleType(name)
+    setattr(
+        module,
+        "STRUCTURE_ARTIFACT_FINGERPRINTS",
+        {"testing.model.v1.orders.transforms.order.EnrichOrders": fingerprint},
+    )
 
     class EnrichOrdersGenerated:
 
@@ -556,3 +659,7 @@ def _install_generated_module(name: str, *, failure: Exception | None = None) ->
     setattr(sys.modules[".".join(parts[:-1])], parts[-1], module)
     installed.append(name)
     return list(reversed(installed))
+
+
+def _fingerprint(transform, **settings) -> str:
+    return transform.compile(schema_types=FakeTypes, **settings).semantic_fingerprint

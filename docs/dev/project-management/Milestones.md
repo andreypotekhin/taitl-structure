@@ -2,7 +2,7 @@
 
 ## M0: Groundwork Ready
 
-Status: v1 closeout. Configuration resolution, CLI entrypoint, seed config generation, Spark-free `check`, Spark-free
+Status: v.1 closeout. Configuration resolution, CLI entrypoint, seed config generation, Spark-free `check`, Spark-free
 `compile`, generated-output diff checks, and spike outcomes are implemented and tested. Remaining closeout is CI
 workflow evidence before this milestone should be marked with `+`.
 
@@ -20,7 +20,7 @@ workflow evidence before this milestone should be marked with `+`.
 - Python and PySpark compatibility policy is documented and reflected in seed configuration.
 - Sprint 00 spike notes are captured for decorators, expression helpers, source order, import paths, no-Spark compile,
   and local Spark execution.
-- Any spike result that changes v1 scope is reflected in Sprint 01 before coding begins.
+- Any spike result that changes v.1 scope is reflected in Sprint 01 before coding begins.
 - Architecture docs are linked from project README.
 
 ### Demonstration
@@ -33,7 +33,7 @@ pytest
 
 ## M1: Vertical Slice 1
 
-Status: v1 external validation. The shared PySpark recipe layer, generated transform rendering, public `StructureSession`, deferred
+Status: v.1 external validation. The shared PySpark recipe layer, generated transform rendering, public `StructureSession`, deferred
 input binding, generated runner delegation, runtime input diagnostics, live online PySpark recipe interpretation, and
 online/generated row parity integration coverage are implemented. Remaining closeout is running the PySpark integration
 matrix in an environment with PySpark installed, because the local workspace skips those tests.
@@ -55,7 +55,7 @@ NormalizeOrders(orders=orders_df).run(session)
 
 ## M2: Schema Enforcement
 
-Status: v1 closeout. Spark schema source rendering, generated schema modules, generated runtime schema helpers,
+Status: v.1 closeout. Spark schema source rendering, generated schema modules, generated runtime schema helpers,
 runtime schema materialization, validation recipe placement, and online-materialized `result.schema[output_name]`
 exposure are implemented and tested. Live runtime schema assertion behavior is covered through the online/generated
 parity integration contract. Remaining closeout is broader negative schema-validation coverage against Spark
@@ -72,7 +72,7 @@ DataFrames.
 
 ## +M3: Expression DSL Usability
 
-Status: v1 local closeout complete. v1 fixture expressions, filters, expression helpers, generated expression
+Status: v.1 local closeout complete. v.1 fixture expressions, filters, expression helpers, generated expression
 rendering, literal typing, output assignment checks, nullability narrowing, explicit conversion diagnostics, and the
 shared diagnostic registry are implemented and tested. Unsupported Python operation diagnostics and live
 online/generated expression parity integration coverage are in place.
@@ -102,7 +102,7 @@ hook recipe parity are implemented and tested for v1.
 
 ## M5: Joins, Compiler Traceability, Build Integration
 
-Status: v1 external validation. `lookup_join(...)`, source-order join lowering, generated join rendering, uniqueness
+Status: v.1 external validation. `lookup_join(...)`, source-order join lowering, generated join rendering, uniqueness
 warnings, stricter join-condition/key diagnostics, `compile --fail-on-diff`, compact `structure explain`, streaming
 compatibility reporting, compiler provenance, static dataflow traceability artifacts, compact explain traceability
 summaries, and online/generated join parity integration coverage are implemented and tested. Remaining exit criteria
@@ -118,9 +118,9 @@ are broader CI build-integration coverage and validating the live PySpark matrix
 - `structure explain` summarizes inputs, steps, filters, joins, hooks, and validation.
 - Streaming compatibility reports whether transforms are compatible, batch-only, or unknown.
 
-## M6: v1 Stabilization
+## M6: v.1 Stabilization
 
-Status: v1 closeout. The first registry-backed diagnostic contract is implemented with public anchors, renderer,
+Status: v.1 closeout. The first registry-backed diagnostic contract is implemented with public anchors, renderer,
 registry validation tests, and representative routing for configuration, schema assignment, joins, target capability,
 generated-output drift, runtime, CLI internal errors, compiler errors, and streaming compatibility findings. Remaining
 stabilization work includes multi-version PySpark execution evidence, generated-code version headers, and setup/doctor
@@ -130,28 +130,28 @@ checks.
 
 - Compatibility docs, generated-code version headers, compiler traceability schema versioning, and config schema
   compatibility are checked against release artifacts.
-- Multi-version PySpark test strategy covers the documented v1 target range.
+- Multi-version PySpark test strategy covers the documented v.1 target range.
 - Diagnostic codes link to relevant documentation.
 - Setup/configuration doctor checks the common adoption failures.
 
-## M7: v2 Analytical Pipeline Features
+## M7: v.2 Analytical Pipeline Features
 
-Status: v2 wrapped. Sprints 06-10 delivered analytical foundations, analytical joins, aggregation/window/HOF coverage,
+Status: v.2 wrapped. Sprints 06-10 delivered analytical foundations, analytical joins, aggregation/window/HOF coverage,
 Spark Connect batch support, static caller-owned streaming compatibility, generated docs, and pytest helpers. Production
-incremental compile and cache diagnostics moved to end-of-v3 M8G.
+incremental compile and cache diagnostics moved to end-of-v.3 M8G.
 
-### M7A: v2 Scope and Analytical IR Foundations
+### M7A: v.2 Scope and Analytical IR Foundations
 
 Exit Criteria:
 
-- v2 user stories, backlog epics, milestone split, and sprint charters are published.
+- v.2 user stories, backlog epics, milestone split, and sprint charters are published.
 - Analytical operation IR records operation kind, input scope, output schema, source location, backend capability,
   cardinality, and streaming compatibility classification.
 - Shared PySpark recipe boundaries are ready for aggregation, window, higher-order function, optimization hint, and
   analytical join lowering.
-- v2 fixture packages cover small, readable orders-style examples for aggregation, windowing, arrays/maps, and
+- v.2 fixture packages cover small, readable orders-style examples for aggregation, windowing, arrays/maps, and
   analytical joins.
-- Diagnostics use stable codes and link to the relevant v2 specification or roadmap section.
+- Diagnostics use stable codes and link to the relevant v.2 specification or roadmap section.
 
 ### M7B: Analytical Join Coverage
 
@@ -223,14 +223,14 @@ Exit Criteria:
 - Composed hook traceability, source imports, lifecycle ordering, and validation boundaries have online/generated parity
   tests.
 - The project has an explicit decision on whether composed wrappers may expose earlier-stage outputs, mix local
-  subtransforms or hooks with class-field pipelines, or remain final-output-only composition shells.
+  step methods or hooks with class-field pipelines, or remain final-output-only composition shells.
 - `lane(...)` remains unavailable for composition matching unless a later accepted design changes the public transform
   boundary.
 
-## M8: v3 PySpark Gap Closure and Streaming Orchestration
+## M8: v.3 PySpark Gap Closure and Streaming Orchestration
 
-Status: started. Sprint 11 is the active v3 implementation slice. The milestone is split into M8A-M8G so each
-`docs/dev/Gaps.md` section can be implemented and verified independently before end-of-v3 incremental compile work.
+Status: started. Sprint 11 is the active v.3 implementation slice. The milestone is split into M8A-M8G so each
+`docs/dev/Gaps.md` section can be implemented and verified independently before end-of-v.3 incremental compile work.
 
 ### M8A: DSL and SQL Function PySpark Parity
 
@@ -285,14 +285,14 @@ Exit Criteria:
 - Streaming sources and sinks are declared explicitly.
 - Generated `readStream` and `writeStream` code is reviewable.
 - Triggers, checkpoints, output modes, watermarks, and state policies are modeled and tested.
-- Existing v1/v2 streaming compatibility behavior remains valid for caller-owned streaming orchestration.
+- Existing v.1/v.2 streaming compatibility behavior remains valid for caller-owned streaming orchestration.
 
 ### M8G: Incremental Compile and Cache Diagnostics
 
 Exit Criteria:
 
 - `compile --changed-only` recompiles changed transforms and affected dependents without hiding stale output.
-- Cache invalidation covers source, configuration, schema, dependency, generated-target, target-profile, and v3
+- Cache invalidation covers source, configuration, schema, dependency, generated-target, target-profile, and v.3
   lifecycle-policy changes.
 - Cache diagnostics explain why each transform was reused, recompiled, invalidated, skipped, or failed.
 - Synthetic 10-transform and 100-transform fixtures cover cold and warm compile behavior.
@@ -303,12 +303,12 @@ Exit Criteria:
 ### Exit Criteria
 
 - `target_backend = "pyspark"` plus `target_variant = "spark-connect"` is documented as the supported Connect batch shape.
-- Completed v1/v2 batch features have online and generated parity evidence for the Spark Connect variant.
+- Completed v.1/v.2 batch features have online and generated parity evidence for the Spark Connect variant.
 - Classic-only internals fail through backend capability diagnostics before execution or generation.
 - CI or a documented manual verification script proves Spark Connect execution against supported PySpark lines.
 - Public docs explain supported batch behavior and the remaining streaming, storage-write, and hook-body exclusions.
 
-## M9: v4 Backend Expansion and Connect Hardening
+## M9: v.4 Backend Expansion and Connect Hardening
 
 ### Exit Criteria
 

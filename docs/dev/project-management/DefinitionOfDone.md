@@ -19,7 +19,7 @@ A story or task is done when all relevant criteria are satisfied.
 - Generated code is formatted.
 - Generated code is readable enough for review.
 - Generated code uses Spark DataFrame/Column APIs for compiled paths.
-- Generated code does not use UDFs, `rdd`, `collect`, `toPandas`, or row-wise Python maps for compiled subtransforms.
+- Generated code does not use UDFs, `rdd`, `collect`, `toPandas`, or row-wise Python maps for compiled step methods.
 - Hook-free generated code contains no source transform import and no hook machinery.
 
 ## Compiler Criteria

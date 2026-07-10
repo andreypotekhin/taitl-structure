@@ -5,7 +5,7 @@
 This specification defines the future backend-extension contract for Structure. It allows the same compiler-visible
 Structure source code to be checked against, and eventually emitted for, multiple execution backends.
 
-PySpark remains the only v1 supported runtime target. Spark Connect is a PySpark target variant, not a peer alternative
+PySpark remains the only v.1 supported runtime target. Spark Connect is a PySpark target variant, not a peer alternative
 backend. This document specifies the architecture that future work must follow before adding Python-hosted Spark SQL,
 type-safe PySpark DataFrame patterns, Pandas, Polars, DuckDB, Ibis, or other targets through Ibis.
 
@@ -38,7 +38,7 @@ opaque runtime source
 Compiler-visible source includes:
 
 - schema declarations;
-- compiled subtransform methods;
+- compiled step methods;
 - expression helper functions that symbolic execution can inspect;
 - Structure expression, filter, join, validation, and projection DSL;
 - transform, input, output, validation, and streaming metadata.
@@ -78,7 +78,7 @@ ibis >=9.0 ordinary meta_relational_dsl
 ```
 
 `name` is the configured backend id. `target` is a version range or capability profile. `variant` selects a runtime
-variant inside a backend family. In v1, `family` is the current implementation family and remains `ordinary_pyspark`.
+variant inside a backend family. In v.1, `family` is the current implementation family and remains `ordinary_pyspark`.
 Spark Connect uses `name = "pyspark"` with `variant = "spark-connect"`, never `name = "spark_connect"`.
 Future compatibility reports may additionally use semantic families such as `pyspark_dataframe` or `sql_relation` to
 describe target shape.
@@ -116,7 +116,7 @@ hook_target_default = ["pyspark"]
 Compatibility notes:
 
 - V1 recognizes these keys as reserved metadata while keeping active execution limited to `target_backend = "pyspark"`.
-- Non-PySpark entries in `compat_targets` are reported as pending in v1; their compatibility checks do not run yet.
+- Non-PySpark entries in `compat_targets` are reported as pending in v.1; their compatibility checks do not run yet.
 - `target_profile` is the active target version/capability key, including for PySpark.
 - `target_variant` selects ordinary PySpark or Spark Connect inside the PySpark-family target.
 - Future backends should reuse `target_profile` instead of adding backend-specific version keys.
@@ -348,7 +348,7 @@ Target:
 Transform:
   orders.transforms.order.EnrichOrders
 
-Subtransform:
+Step method:
   add_customer
 
 Feature:
@@ -402,10 +402,10 @@ Experimental backend profiles may exist behind explicit config, but diagnostics 
 
 Backend roadmap priority:
 
-- v2: PySpark-family targets first, including Spark SQL exploration and typed Python DataFrame/Dataset patterns.
-- v4+: Polars LazyFrame and DuckDB as the first non-PySpark target candidates.
-- v4+: Ibis as a later meta-backend candidate.
-- Beyond direct v4+ candidates: other targets only through Ibis when Ibis supports them.
+- v.2: PySpark-family targets first, including Spark SQL exploration and typed Python DataFrame/Dataset patterns.
+- v.4+: Polars LazyFrame and DuckDB as the first non-PySpark target candidates.
+- v.4+: Ibis as a later meta-backend candidate.
+- Beyond direct v.4+ candidates: other targets only through Ibis when Ibis supports them.
 - Deferred: Dask DataFrame and Ray Dataset until after the relational core is stable.
 
 ## Acceptance Criteria
@@ -427,6 +427,6 @@ Alternative backend infrastructure is ready when tests prove:
 
 ## Non-Goals
 
-This specification does not require v1 to implement non-PySpark execution. It also does not require Structure to become
+This specification does not require v.1 to implement non-PySpark execution. It also does not require Structure to become
 a wrapper around every backend's native API. Backend support is admitted only for Structure semantics that can be
 represented in IR, checked, lowered, tested, and explained.

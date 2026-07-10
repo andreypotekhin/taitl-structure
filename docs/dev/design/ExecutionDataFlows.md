@@ -6,7 +6,7 @@
 1. Load config.
 2. Discover source modules.
 3. Inspect schemas and transforms.
-4. Symbolically execute subtransforms in source order.
+4. Symbolically execute step methods in source order.
 5. Build TransformPlan IR.
 6. Run compileability checks.
 7. Lower checked IR to shared PySpark execution recipes.
@@ -73,4 +73,4 @@ Input A
 ```
 
 The architecture does not special-case three inputs. Any number of named inputs can be declared, and source-ordered
-subtransforms can use them.
+step methods can use them.

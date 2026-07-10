@@ -4,7 +4,7 @@
 
 Sprint 08 admitted the first practical analytical slice: grouped aggregates, selected-row helpers, exact/subset
 dedupe, projection windows, rolling row metrics, and basic array/map higher-order helpers. This design defines the
-remaining aggregation, window, and higher-order function surface needed for full v2 analytical support.
+remaining aggregation, window, and higher-order function surface needed for full v.2 analytical support.
 
 The goal is not to mirror every PySpark function. The goal is to admit the analytical operations that are common,
 typed, reviewable, explainable, and reusable across online and generated execution without hidden UDFs.
@@ -99,7 +99,7 @@ Rules:
 - Offset and value helpers may opt into `ignore_nulls=True` only when the backend supports it.
 - Any helper that can choose among tied rows must expose the tie policy or require a complete deterministic order.
 
-Streaming support remains deferred. Broad windows are batch-only until v3 defines watermark, state, output-mode, and
+Streaming support remains deferred. Broad windows are batch-only until v.3 defines watermark, state, output-mode, and
 late-data semantics.
 
 ## Higher-Order Function Design

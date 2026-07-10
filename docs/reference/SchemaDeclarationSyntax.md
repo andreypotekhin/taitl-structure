@@ -79,7 +79,7 @@ when import-based discovery is used. Source text or AST inspection may still be 
 
 ## Field Rules
 
-`field(...)` has this v1 shape:
+`field(...)` has this v.1 shape:
 
 ```python
 field(
@@ -108,7 +108,7 @@ Rules:
   the field definition through schema inheritance.
 - Structure passes aliases through to Spark. It does not sanitize, normalize, or quote aliases for backend-specific
   identifier edge cases.
-- v1 must reject duplicate Python field names and duplicate effective Spark column names after inherited fields are
+- v.1 must reject duplicate Python field names and duplicate effective Spark column names after inherited fields are
   resolved.
 
 `primary_key=True` on a nullable field is invalid unless `nullable=False` is explicitly supplied or inferred by the
@@ -120,7 +120,7 @@ All schema type constructors return immutable value objects. Equality is structu
 
 ### Scalar Types
 
-The v1 scalar type constructors are:
+The v.1 scalar type constructors are:
 
 ```python
 String()
@@ -155,7 +155,7 @@ Rules:
 - `precision >= 1`
 - `scale >= 0`
 - `scale <= precision`
-- v1 should reject omitted precision and scale.
+- v.1 should reject omitted precision and scale.
 
 Generated PySpark mapping:
 
@@ -353,7 +353,7 @@ See docs/reference/SchemaDeclarationSyntax.md
 
 ## Non-Goals
 
-The following are not part of v1 canonical syntax:
+The following are not part of v.1 canonical syntax:
 
 - annotation-only field declarations such as `id: String`;
 - dataclass-style defaults;

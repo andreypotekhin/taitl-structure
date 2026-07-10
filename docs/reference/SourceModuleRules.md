@@ -63,7 +63,7 @@ The default generated package is `structure_generated`.
 
 ## Import-Safe Modules
 
-Structure v1 may import user source modules to discover `Structure` and `Transform` classes. Therefore user modules
+Structure v.1 may import user source modules to discover `Structure` and `Transform` classes. Therefore user modules
 must be import-safe.
 
 Import-safe means importing the module only declares Python objects and does not perform application work.
@@ -102,7 +102,7 @@ Rules:
 - A concrete `Transform` subclass is compiled as an entrypoint when it declares final outputs or a class-field pipeline.
 - `@transform` is optional for class discovery and remains the way to record class-level transform options.
 - Reusable lane-only base classes are not compiled as transform entrypoints.
-- Schema classes may be discovered from transform inputs, subtransform annotations, nested schema types, and direct
+- Schema classes may be discovered from transform inputs, step method annotations, nested schema types, and direct
   source scans when supported.
 - Private modules are not automatically excluded. A later config option may add include and exclude patterns.
 - Discovery order is deterministic by source root order, path sort order, then module import path.
@@ -115,9 +115,9 @@ Structure uses Python class-body order for:
 
 - schema fields;
 - transform inputs;
-- compiled subtransforms;
+- compiled step methods;
 - expression helpers;
-- hooks attached to the same subtransform and timing;
+- hooks attached to the same step method and timing;
 - validation decorators.
 
 Rules:
@@ -136,8 +136,8 @@ Compiler commands may cache source fingerprints, discovered metadata, and IR. Ca
 - generated package or backend target changes;
 - a dependency that participates in discovered symbols changes, when detectable.
 
-v1 may implement conservative full rediscovery instead of incremental caching. The implementation must not bake in a
-design that prevents end-of-v3 incremental compilation.
+v.1 may implement conservative full rediscovery instead of incremental caching. The implementation must not bake in a
+design that prevents end-of-v.3 incremental compilation.
 
 ## Diagnostics
 

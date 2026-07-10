@@ -250,7 +250,7 @@ checking or generating these joins.
 
 Diagnostics include:
 
-- transform and subtransform;
+- transform and step method;
 - join type and operation method;
 - left and right scopes;
 - source predicate;

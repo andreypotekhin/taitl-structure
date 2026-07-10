@@ -17,9 +17,9 @@ The compatibility policy must:
 - define compiler traceability schema versioning;
 - define config schema versioning.
 
-## v1 Runtime Baseline
+## v.1 Runtime Baseline
 
-Structure v1 supports Python 3.11 and newer.
+Structure v.1 supports Python 3.11 and newer.
 
 The default PySpark target is:
 
@@ -36,7 +36,7 @@ different target.
 Airflow is not a hard dependency. Online and generated transforms should be usable from Airflow, Spark jobs, notebooks,
 or other orchestrators without pulling in scheduler-specific runtime dependencies.
 
-Linux is the v1 runtime target. Linux and macOS are the v1 development targets. Windows development may work where the
+Linux is the v.1 runtime target. Linux and macOS are the v.1 development targets. Windows development may work where the
 toolchain allows it, but Spark jobs should be designed and tested primarily for Linux deployment.
 
 ## PySpark Version Targeting
@@ -63,8 +63,8 @@ Alternative backend support is specified in [AlternativeBackends.md](Alternative
 applies to compiler-visible Structure source, not to hook bodies. Hooks are target-specific opaque runtime code and must
 either declare `target_backend` or inherit a configured `hook_target_default`.
 
-Future backend work is Python-hosted: v2 prioritizes PySpark-family targets such as Spark SQL and typed PySpark
-DataFrame patterns, while v4+ owns Polars LazyFrame, DuckDB, Ibis, and other non-PySpark backend expansion. Other
+Future backend work is Python-hosted: v.2 prioritizes PySpark-family targets such as Spark SQL and typed PySpark
+DataFrame patterns, while v.4+ owns Polars LazyFrame, DuckDB, Ibis, and other non-PySpark backend expansion. Other
 targets should come through Ibis when Ibis supports them. Dask DataFrame and Ray Dataset remain out of scope until after
 the relational core is stable.
 Unsupported active-target requirements must fail before online execution or generation. Multi-target compatibility
@@ -135,11 +135,11 @@ Before 1.0, minor releases may change public contracts, but every breaking chang
 
 ## Online Runtime Compatibility
 
-Online execution is the default v1 runtime surface. Compatible online execution means:
+Online execution is the default v.1 runtime surface. Compatible online execution means:
 
 - transform invocations bind declared input DataFrames by name;
 - `StructureSession` accepts caller-owned Spark sessions and optional hook context;
-- online execution preserves the same transform semantics as generated PySpark for supported v1 features;
+- online execution preserves the same transform semantics as generated PySpark for supported v.1 features;
 - compiler commands remain Spark-free even though online runtime execution may import PySpark.
 
 Breaking changes to `StructureSession`, transform invocation binding, or online/generated semantic parity require a
@@ -174,7 +174,7 @@ structure compile --fail-on-diff
 
 ## Compiler Traceability Schema Versioning
 
-Compiler traceability has two v1 metadata models:
+Compiler traceability has two v.1 metadata models:
 
 - compiler provenance, which maps source nodes to IR nodes to generated PySpark nodes;
 - static dataflow traceability, which records transform, table, and column dependencies inferred from IR.
@@ -184,8 +184,8 @@ The traceability schema version follows `major.minor`.
 Breaking changes require a major traceability schema version bump. Additive fields require a minor version bump. Consumers
 should ignore unknown fields so minor additions remain compatible.
 
-Runtime LDJSON traceability is not part of the v1 compatibility contract. It remains future work beyond the published
-v4 scope.
+Runtime LDJSON traceability is not part of the v.1 compatibility contract. It remains future work beyond the published
+v.4 scope.
 
 ## Config Schema Versioning
 

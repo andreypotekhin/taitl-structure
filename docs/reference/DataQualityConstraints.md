@@ -5,7 +5,7 @@ structure. Data quality constraints describe facts about the data values inside 
 values, ranges, regex-like patterns, decimal domains, uniqueness, referential checks, freshness, and row-count
 expectations.
 
-This reference defines the boundary. v1 validation is schema-first and schema-only by default. Richer data quality
+This reference defines the boundary. v.1 validation is schema-first and schema-only by default. Richer data quality
 checks are deferred and must be explicit because many of them trigger Spark actions, scans, aggregations, or joins.
 
 ## Validation Layers
@@ -23,9 +23,9 @@ reliably, and nested shape. It must not scan rows.
 Data-quality runtime validation evaluates value-level or dataset-level facts. It may add filters, aggregations, joins,
 limits, counts, or other Spark work. Any check that can trigger Spark work must be explicit in source or configuration.
 
-## v1 Boundary
+## v.1 Boundary
 
-v1 validation is schema-first.
+v.1 validation is schema-first.
 
 Default intermediate validation uses:
 
@@ -56,7 +56,7 @@ to the current phase and that phase's validation mode is `schema_and_constraints
 
 ## Constraint Families
 
-Future constraint support should cover these families without making all of them v1 commitments.
+Future constraint support should cover these families without making all of them v.1 commitments.
 
 Field-local constraints:
 
@@ -105,7 +105,7 @@ ConstraintDef
   source_line
 ```
 
-`target` may be a field, schema, transform input, subtransform output, final output, or referenced input. `phases`
+`target` may be a field, schema, transform input, step-method output, final output, or referenced input. `phases`
 declares where the constraint may run. `cost` classifies whether validation is cheap schema metadata work or Spark data
 work.
 

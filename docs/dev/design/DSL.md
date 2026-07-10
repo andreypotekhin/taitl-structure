@@ -93,7 +93,7 @@ class EnrichOrders(Transform):
 - `Transform.run(session)` delegates execution to `StructureSession`.
 - `input(Structure)` declares named DataFrame inputs.
 - `output(Structure)` declares one or more named transform results.
-- Public instance methods returning `Structure` types are compiled subtransforms.
+- Public instance methods returning `Structure` types are compiled step methods.
 - `SchemaClass.base(row)(...)` constructs an output schema by copying inherited fields from symbolic base rows and
   overlaying explicit field expressions.
 - For multiple direct schema bases, `SchemaClass.base(...)` receives one row per direct base in declaration order.

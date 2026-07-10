@@ -62,7 +62,7 @@ class StructureDocsData:
                 {"name": item.name, "schema": item.schema.__name__, "ordinal": item.ordinal}
                 for item in plan.outputs
             ],
-            "subtransforms": [self.step(step) for step in plan.steps],
+            "step_methods": [self.step(step) for step in plan.steps],
             "dependencies": sorted(self._dependencies(plan)),
             "target_artifacts": {
                 "pyspark_transform": self._target_transform(source),

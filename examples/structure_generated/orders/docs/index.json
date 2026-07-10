@@ -2478,7 +2478,7 @@
         }
       ],
       "source": "examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics",
-      "subtransforms": [
+      "step_methods": [
         {
           "input_lane": "fulfilled",
           "input_schema": "OrderFulfillment",
@@ -2601,7 +2601,7 @@
         }
       ],
       "source": "examples.orders.transforms.analytics.OrderAnalytics",
-      "subtransforms": [
+      "step_methods": [
         {
           "input_lane": "fulfilled",
           "input_schema": "OrderFulfillment",
@@ -2728,7 +2728,7 @@
         }
       ],
       "source": "examples.orders.transforms.order.EnrichOrders",
-      "subtransforms": [
+      "step_methods": [
         {
           "after_hooks": [
             "remove_negative_totals"
@@ -2974,7 +2974,7 @@
         }
       ],
       "source": "examples.orders.transforms.rowset_join.RowsetJoinExamples",
-      "subtransforms": [
+      "step_methods": [
         {
           "input_lane": "orders",
           "input_schema": "OrderRaw",

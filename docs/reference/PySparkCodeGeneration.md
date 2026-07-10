@@ -9,6 +9,9 @@ The generator is a source-text emitter. It does not redefine transform semantics
 lowering, join aliasing, hook order, validation placement, schema projection, and performance guardrails agree with
 online PySpark execution.
 
+Generated transform modules carry a deterministic fingerprint of the compiled artifact they render. Generated mode
+checks it before execution and asks users to regenerate stale output rather than running it silently.
+
 Shared semantics are owned by [ExecutionSemanticContract.md](ExecutionSemanticContract.md). The generator renders
 `PySparkExecutionPlan` recipes, or the local implementation equivalent, into source text. It owns imports, formatting,
 file headers, generated paths, and readability. It must not make separate semantic choices that bypass the shared
@@ -368,7 +371,7 @@ Rules:
 - Hooks receive the selected lane keyword and must return the new selected lane DataFrame.
 - Joins may introduce temporary DataFrame variables named from stable aliases, such as `customers_df`.
 - Avoid reusing input parameter names for aliased or projected temporary DataFrames.
-- For a multi-result subtransform, emit one shared join/filter frame and use each output declaration name as the
+- For a multi-result step method, emit one shared join/filter frame and use each output declaration name as the
   projected DataFrame variable, such as `accepted` and `audited`.
 - Avoid hidden mutation. Each DataFrame operation should assign a resulting DataFrame to the current lane or a clearly named
   temporary.
@@ -378,7 +381,7 @@ join, hook, or complex expression easier to review.
 
 ## Step Shape
 
-Each compiled subtransform renders as a contiguous generated code block.
+Each compiled step method renders as a contiguous generated code block.
 
 Canonical order inside one step:
 
@@ -391,7 +394,7 @@ Canonical order inside one step:
 Example:
 
 ```python
-# Subtransform: normalize
+# Step method: normalize
 orders = orders.where(
     F.col("id").isNotNull()
 ).select(
@@ -405,7 +408,7 @@ assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="str
 
 Rules:
 
-- The step comment is stable and uses the source subtransform name.
+- The step comment is stable and uses the source step method name.
 - `where(...)` should be generated before projection when source semantics allow it.
 - Projection should use `select(...)`.
 - Output columns in `select(...)` follow the output schema field order.
@@ -596,7 +599,7 @@ Generated validation must match online execution.
 Rules:
 
 - Validate declared input DataFrames at the start of `run(...)`.
-- Validate subtransform outputs when validation policy says to validate them.
+- Validate step method outputs when validation policy says to validate them.
 - Validate after hooks according to the hook's `schema_mode`.
 - If `project_output=True`, validate with the hook schema mode, project to the declared output schema, then validate
   strictly.
@@ -766,7 +769,7 @@ CompileError GEN-E0902: Cannot render expression as PySpark
 Transform:
   orders.transforms.order.EnrichOrders
 
-Subtransform:
+Step method:
   normalize
 
 Expression:
@@ -815,7 +818,7 @@ The generator should make this easy by using stable, predictable module names an
 
 ## Non-Goals
 
-The following are outside v1 PySpark generation scope:
+The following are outside v.1 PySpark generation scope:
 
 - generating Python UDFs or Pandas UDFs from compiled expressions;
 - generating RDD-based implementations;

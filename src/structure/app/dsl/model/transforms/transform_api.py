@@ -26,7 +26,7 @@ from structure.app.dsl.model.types.BooleanType import BooleanType
 Projected = TypeVar("Projected", bound=Structure)
 
 _CLASS_OPTIONS = {"validate_intermediate", "streaming_compatible"}
-_SUBTRANSFORM_OPTIONS = {"target_backend", "target_platform", "target_profile"}
+_STEP_METHOD_OPTIONS = {"target_backend", "target_platform", "target_profile"}
 _METHOD_BINDING_OPTIONS = {"input", "output", "inout"}
 _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
 
@@ -131,7 +131,7 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
 
 
 def _decorate_transform_class(cls, kwargs):
-    allowed = _CLASS_OPTIONS | _SUBTRANSFORM_OPTIONS
+    allowed = _CLASS_OPTIONS | _STEP_METHOD_OPTIONS
     unknown = set(kwargs) - allowed
     if unknown:
         raise TypeError(f"@transform got unknown class option(s): {', '.join(sorted(unknown))}")
@@ -140,13 +140,13 @@ def _decorate_transform_class(cls, kwargs):
     options = _normalize_transform_options(kwargs)
     cls._structure_transform = True
     cls._structure_transform_options = options
-    cls._structure_subtransform_options = _subtransform_options(options)
+    cls._structure_step_method_options = _step_method_options(options)
     return cls
 
 
 def _decorate_transform_method(function, kwargs):
     kwargs = _normalize_method_options(kwargs)
-    allowed = _METHOD_BINDING_OPTIONS | _SUBTRANSFORM_OPTIONS | _METHOD_OPTIMIZATION_OPTIONS
+    allowed = _METHOD_BINDING_OPTIONS | _STEP_METHOD_OPTIONS | _METHOD_OPTIMIZATION_OPTIONS
     unknown = set(kwargs) - allowed
     if unknown:
         raise TypeError(f"@transform got unknown method option(s): {', '.join(sorted(unknown))}")
@@ -193,7 +193,7 @@ def _decorate_transform_method(function, kwargs):
         {
             "inputs": inputs,
             "outputs": outputs,
-            "options": _subtransform_options(kwargs),
+            "options": _step_method_options(kwargs),
             "reserved_operations": _reserved_operations(kwargs),
         },
     )
@@ -210,13 +210,13 @@ def _normalize_method_options(kwargs: dict[str, object]) -> dict[str, object]:
 
 def _normalize_transform_options(kwargs: dict[str, object]) -> dict[str, object]:
     options = dict(kwargs)
-    for name in _SUBTRANSFORM_OPTIONS & set(options):
-        options[name] = _subtransform_option(name, options[name])
+    for name in _STEP_METHOD_OPTIONS & set(options):
+        options[name] = _step_method_option(name, options[name])
     return options
 
 
-def _subtransform_options(kwargs: dict[str, object]) -> dict[str, object]:
-    return {name: kwargs[name] for name in _SUBTRANSFORM_OPTIONS if name in kwargs}
+def _step_method_options(kwargs: dict[str, object]) -> dict[str, object]:
+    return {name: kwargs[name] for name in _STEP_METHOD_OPTIONS if name in kwargs}
 
 
 def _reserved_operations(kwargs: dict[str, object]) -> tuple[OperationPlan, ...]:
@@ -225,7 +225,7 @@ def _reserved_operations(kwargs: dict[str, object]) -> tuple[OperationPlan, ...]
     return (cache_operation(kwargs["cache"]),)
 
 
-def _subtransform_option(name: str, value: object) -> object:
+def _step_method_option(name: str, value: object) -> object:
     if name in {"target_backend", "target_platform", "target_profile"}:
         if not isinstance(value, str) or not value:
             raise TypeError(f"{name} must be a non-empty string")

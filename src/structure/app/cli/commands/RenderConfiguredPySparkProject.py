@@ -3,10 +3,9 @@ from __future__ import annotations
 from collections import defaultdict
 
 from structure.app.cli.model.DiscoveredStructureProject import DiscoveredStructureProject
-from structure.app.compiler.api import Compiler
+from structure.app.compiler.api import Compiler, CompilerOptions
 from structure.app.configuration.model.StructureConfig import StructureConfig
 from structure.app.dsl.model.transforms.Transform import Transform
-from structure.app.target.capabilities.api import Capabilities
 from structure.app.target.pyspark.api import PySpark
 
 
@@ -20,25 +19,23 @@ class RenderConfiguredPySparkProject:
         transforms: tuple[type[Transform], ...] | None = None,
     ) -> dict[str, str]:
         files: dict[str, str] = {}
-        capabilities = Capabilities.resolve()(
-            target_backend=config.target_backend,
-            target_profile=config.target_profile,
-            target_variant=config.target_variant,
-        )
+        options = CompilerOptions.from_config(config)
+        builder = Compiler.artifacts.build()
         for source_module, group in self._source_units(transforms or project.transforms).items():
             plans = {}
+            fingerprints = {}
             for transform in group:
                 source_transform = f"{transform.__module__}.{transform.__name__}"
-                plans[source_transform] = PySpark.plan.lower()(
-                    Compiler.frontend.compile()(transform),
-                    capabilities=capabilities,
-                )
+                artifact = builder(transform, options=options, materialize_schemas=False)
+                plans[source_transform] = artifact.pyspark_plan
+                fingerprints[source_transform] = artifact.semantic_fingerprint
             files.update(
                 PySpark.render.project().source_unit(
                     plans,
                     source_module=source_module,
                     source_schema_modules=project.schema_modules,
                     generated_package=config.generated_package,
+                    semantic_fingerprints=fingerprints,
                 )
             )
         return files

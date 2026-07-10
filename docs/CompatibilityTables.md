@@ -20,7 +20,7 @@ parity names follow the official Spark 4.0.1 Python API docs for Column, SQL fun
 | Schema classes and fields | check | `StructType`, `StructField` | Structure owns typed schema declarations. |
 | Scalar types | check | Spark SQL scalar types | Common numeric, string, boolean, date, and timestamp types. |
 | Array, map, struct types | check | `ArrayType`, `MapType`, `StructType` | Nested type support is compiler-visible. |
-| Transform classes | check | DataFrame transform pipeline | Source-ordered subtransforms compile to PySpark. |
+| Transform classes | check | DataFrame transform pipeline | Source-ordered step methods compile to PySpark. |
 | Named inputs and outputs | check | DataFrame arguments/results | Generated and online invocation use declared names. |
 | Hooks | check | Arbitrary PySpark DataFrame code | Opaque boundary through `@before(...)` and `@after(...)`. |
 | Raw SQL expression strings | unsupported | `functions.expr`, SQL fragments | Use symbolic helpers or hooks. |

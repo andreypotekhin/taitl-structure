@@ -266,7 +266,7 @@ CompileError BACKEND-E0802: Operation is not supported by the PySpark target pla
 Transform:
   orders.transforms.order.EnrichOrders
 
-Subtransform:
+Step method:
   summarize
 
 Operation:
@@ -277,7 +277,7 @@ Problem:
 
 Use:
   Use latest_by(...) or earliest_by(...) for admitted selected-row windows, move broader logic into an explicit hook,
-  or wait for the broader v2 windowing reference.
+  or wait for the broader v.2 windowing reference.
 
 See docs/reference/ExecutionSemanticContract.md
 ```

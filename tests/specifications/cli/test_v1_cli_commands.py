@@ -356,7 +356,7 @@ def test_v1_cli_compile_writes_generated_docs_contract() -> None:
         assert transform["name"] == "NormalizeOrders"
         assert transform["inputs"] == [{"name": "orders", "ordinal": 0, "schema": "OrderRaw"}]
         assert transform["outputs"] == [{"name": "normalized", "ordinal": 0, "schema": "OrderNormalized"}]
-        assert transform["subtransforms"][0]["name"] == "normalize"
+        assert transform["step_methods"][0]["name"] == "normalize"
         assert transform["target_artifacts"]["pyspark_transform"] == "pyspark/transforms/transforms.py"
 
 

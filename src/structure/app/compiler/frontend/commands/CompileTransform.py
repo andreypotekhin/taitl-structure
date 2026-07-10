@@ -313,7 +313,7 @@ class CompileTransform:
             context.register_relation_scope(binding.scope, argument)
 
         try:
-            with self._subtransform_call_guards(transform_class, members, active=item):
+            with self._step_method_call_guards(transform_class, members, active=item):
                 with self._parent_call_patches(
                     transform_class,
                     item,
@@ -552,7 +552,7 @@ class CompileTransform:
                 setattr(owner, name, original)
 
     @contextmanager
-    def _subtransform_call_guards(
+    def _step_method_call_guards(
         self,
         transform_class: type[Transform],
         members: tuple[CompilerTransformMember, ...],
@@ -583,7 +583,7 @@ class CompileTransform:
             return call
 
         try:
-            for candidate in self._guarded_subtransforms(transform_class, members):
+            for candidate in self._guarded_step_methods(transform_class, members):
                 key = (candidate.owner, candidate.name)
                 if key in guarded:
                     continue
@@ -595,7 +595,7 @@ class CompileTransform:
             for owner, name, original in reversed(originals):
                 setattr(owner, name, original)
 
-    def _guarded_subtransforms(
+    def _guarded_step_methods(
         self,
         transform_class: type[Transform],
         members: tuple[CompilerTransformMember, ...],
@@ -656,7 +656,7 @@ class CompileTransform:
         transform_class: type[Transform],
         metadata: dict[str, object] | None,
     ) -> dict[str, object] | None:
-        options = dict(transform_class.__dict__.get("_structure_subtransform_options", {}))
+        options = dict(transform_class.__dict__.get("_structure_step_method_options", {}))
         if metadata:
             options.update(cast(dict[str, object], metadata.get("options", {})))
         return options or None

@@ -1,4 +1,4 @@
-# Sprint 11: v3 DSL and SQL Function PySpark Parity
+# Sprint 11: v.3 DSL and SQL Function PySpark Parity
 
 ## Sprint Goal
 
@@ -55,6 +55,6 @@ predicate helper functions in Structure source without dropping into hooks.
 
 ## Progress
 
-- [x] (2026-07-09) Started v3 implementation as the active iteration.
-- [x] (2026-07-09) Added the first v3 Column helper, inclusive `between(...)` range predicates.
-- [ ] Implement v3 DSL and SQL function parity.
+- [x] (2026-07-09) Started v.3 implementation as the active iteration.
+- [x] (2026-07-09) Added the first v.3 Column helper, inclusive `between(...)` range predicates.
+- [ ] Implement v.3 DSL and SQL function parity.

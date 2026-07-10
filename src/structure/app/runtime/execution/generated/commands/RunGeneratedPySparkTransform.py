@@ -19,9 +19,17 @@ class RunGeneratedPySparkTransform:
         plan: PySparkExecutionPlan,
         *,
         session,
+        semantic_fingerprint: str | None = None,
     ) -> TransformResult:
         module = self._import_module(invocation, session=session)
         class_name = f"{plan.transform}Generated"
+        self._verify_fingerprint(
+            module,
+            source_transform=f"{type(invocation).__module__}.{type(invocation).__name__}",
+            expected=semantic_fingerprint,
+            invocation=invocation,
+            session=session,
+        )
         try:
             generated_class = getattr(module, class_name)
         except AttributeError as error:
@@ -88,11 +96,35 @@ class RunGeneratedPySparkTransform:
         name = source.rsplit(".", 1)[1]
         return f"{generated_package}.pyspark.transforms.{name}"
 
-    def _error(self, invocation: Transform, *, session, problem: str) -> StructureRuntimeError:
+    def _verify_fingerprint(self, module, *, source_transform: str, expected: str | None, invocation, session) -> None:
+        if expected is None:
+            return
+        fingerprints = getattr(module, "STRUCTURE_ARTIFACT_FINGERPRINTS", {})
+        if fingerprints.get(source_transform) == expected:
+            return
+        raise self._error(
+            invocation,
+            session=session,
+            code="GEN-E0901",
+            title="Generated output is stale",
+            problem=(
+                f"Generated module {module.__name__} was not rendered from the current compiled transform artifact."
+            ),
+        )
+
+    def _error(
+        self,
+        invocation: Transform,
+        *,
+        session,
+        problem: str,
+        code: str = "GEN-E0902",
+        title: str = "Generated transform is not importable",
+    ) -> StructureRuntimeError:
         transform = f"{type(invocation).__module__}.{type(invocation).__name__}"
         diagnostic = RuntimeDiagnostic(
-            code="GEN-E0902",
-            title="Generated transform is not importable",
+            code=code,
+            title=title,
             transform=transform,
             execution_mode=session.execution_mode,
             target_backend=session.target_backend,

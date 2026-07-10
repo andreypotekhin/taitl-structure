@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Online execution is the default v1 way to run Structure transforms. A user depends on the Structure library, supplies an
+Online execution is the default v.1 way to run Structure transforms. A user depends on the Structure library, supplies an
 existing Spark session, constructs a transform invocation with input DataFrames, and runs it through a
 `StructureSession`. The user does not need to commit generated PySpark code to their repository.
 
@@ -86,7 +86,7 @@ generated
 `online` runs transforms through a runtime runner that consumes compiler IR and live PySpark objects. `generated`
 delegates to checked-in generated PySpark classes.
 
-`target_backend` and `target_profile` remain backend selection inputs. In v1 the only supported backend is `pyspark`.
+`target_backend` and `target_profile` remain backend selection inputs. In v.1 the only supported backend is `pyspark`.
 Future backends should be selected by the session, not by changing transform constructors. Backend support is checked
 against the session's resolved `StructureConfig` through [BackendCapabilities.md](BackendCapabilities.md), so online
 execution and generated PySpark share the same target capability decisions.
@@ -111,17 +111,22 @@ session = StructureSession(spark=spark, config=config)
 - selected target backend and PySpark target range;
 - runtime runner delegation;
 - materializing Spark `StructType` schemas for online execution;
-- optional in-memory compiled-plan cache.
+- a session-owned in-memory compiled-artifact pool.
 
 `StructureSession` must not start Spark, stop Spark, mutate Spark configuration silently, read or write streaming
 queries, or own orchestration concerns such as Airflow DAGs, triggers, checkpoints, or output sinks.
 
+The session compiles a transform lazily on its first compatible invocation and reuses the resulting artifact for later
+invocations. `Transform.compile(...)` remains available for early diagnostics; callers load its result with
+`session.load(artifact)`. Sessions are isolated by default, while applications may deliberately share a
+`CompiledArtifactPool` between sessions. Clearing a pool releases derived compiler state without affecting Spark or a
+currently executing invocation.
+
 ## Execution Modes
 
-In online mode, the session delegates to `OnlinePySparkRunner`. The runner compiles the transform class to
-`TransformPlan` IR on demand, lowers that IR through the shared PySpark execution semantic contract, then interprets
-the resulting recipes with PySpark DataFrame and Column APIs. It must not write generated files and must not execute
-generated Python source text.
+In online mode, the session delegates to `OnlinePySparkRunner`. The session obtains a checked compiled artifact from
+its pool, compiling it on a cache miss. The runner interprets the artifact's shared PySpark recipes with live PySpark
+DataFrame and Column APIs. It must not write generated files and must not execute generated Python source text.
 
 The online runner must also materialize the transform's Spark schemas from the checked schema model and expose them on
 the transform invocation. This gives caller code the same shape contract that generated schema modules provide in
@@ -140,7 +145,7 @@ Online execution must preserve generated-code semantics:
 
 1. Validate declared input DataFrames.
 2. Create a read-only hook input namespace only when at least one hook declares `pass_inputs=True`.
-3. Execute subtransforms in source order.
+3. Execute step methods in source order.
 4. Run `@before` hooks before the compiled operations for their target step.
 5. Lower shared filters and joins, then materialize every ordered result projection.
 6. Run each `@after` hook against its selected result DataFrame.
@@ -164,11 +169,11 @@ expression mapping, or literal typing when a shared PySpark recipe already defin
 `Transform.__init__(**inputs)` stores DataFrame inputs by declared Structure input name. Positional arguments are not
 allowed. Unknown input names are errors. Missing declared inputs must be reported no later than `run(session)`.
 
-For v1, custom transform construction parameters should not be mixed into the transform constructor. Runtime context
+For v.1, custom transform construction parameters should not be mixed into the transform constructor. Runtime context
 belongs in `StructureSession(ctx=...)`. Future explicit APIs may add richer parameter binding if a concrete use case
 requires it.
 
-`run` is reserved for online execution. A public schema-returning subtransform named `run` must fail with a structured
+`run` is reserved for online execution. A public schema-returning step method named `run` must fail with a structured
 diagnostic that asks the user to rename it.
 
 ## Compiler Boundary
@@ -181,9 +186,9 @@ Spark runtime.
 
 ## Streaming Compatibility
 
-Online execution does not change the v1/v2 streaming compatibility contract. A transform is streaming-compatible when
+Online execution does not change the v.1/v.2 streaming compatibility contract. A transform is streaming-compatible when
 its compiled operations are valid for the caller's streaming DataFrame shape. The caller still owns `readStream`,
-`writeStream`, triggers, checkpoints, output modes, and query lifecycle until a v3 streaming orchestration job contract
+`writeStream`, triggers, checkpoints, output modes, and query lifecycle until a v.3 streaming orchestration job contract
 is used.
 
 ## Diagnostics
@@ -194,7 +199,7 @@ Diagnostics must include:
 - transform class;
 - execution mode;
 - target backend;
-- input name, hook name, subtransform, or field when relevant;
+- input name, hook name, step method, or field when relevant;
 - problem;
 - suggested fix;
 - link to this specification or [Configuration.md](../../Configuration.md).
@@ -229,7 +234,7 @@ The implementation is complete when tests prove:
 - constructing a transform invocation performs no Spark action;
 - unknown constructor input names fail clearly;
 - missing declared inputs fail clearly no later than run time;
-- a public subtransform named `run` fails with a reserved-name diagnostic;
+- a public step method named `run` fails with a reserved-name diagnostic;
 - online and generated execution produce equivalent results for projection, filtering, expression helpers, joins,
   hooks, `pass_inputs=True`, validation, `schema_mode`, and `project_output`;
 - online execution consumes the shared PySpark execution recipes defined by

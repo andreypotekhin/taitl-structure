@@ -1,7 +1,7 @@
 # Advanced Analytical Operations
 
 Advanced analytical operations are the broader aggregation, window, and collection-helper features added after the
-first v2 analytical slice. They let Structure cover multi-level summaries, explicit window frames, and richer array/map
+first v.2 analytical slice. They let Structure cover multi-level summaries, explicit window frames, and richer array/map
 logic while keeping the work visible to Spark.
 
 The first slice already supports common grouped aggregates, ranking, lag/lead, rolling row metrics, deterministic

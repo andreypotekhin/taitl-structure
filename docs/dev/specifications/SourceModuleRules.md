@@ -65,7 +65,7 @@ The default generated package is `structure_generated`.
 
 ## Import-Safe Modules
 
-Structure v1 may import user source modules to discover `Structure` and `Transform` classes. Therefore user modules
+Structure v.1 may import user source modules to discover `Structure` and `Transform` classes. Therefore user modules
 must be import-safe.
 
 Import-safe means importing the module only declares Python objects and does not perform application work.
@@ -104,7 +104,7 @@ Rules:
 - A concrete `Transform` subclass is compiled as an entrypoint when it declares final outputs or a class-field pipeline.
 - `@transform` is optional for class discovery and remains the way to record class-level transform options.
 - Reusable lane-only base classes are not compiled as transform entrypoints.
-- Schema classes may be discovered from transform inputs, subtransform annotations, nested schema types, and direct
+- Schema classes may be discovered from transform inputs, step method annotations, nested schema types, and direct
   source scans when supported.
 - Private modules are not automatically excluded. A later config option may add include and exclude patterns.
 - Discovery order is deterministic by source root order, path sort order, then module import path.
@@ -117,9 +117,9 @@ Structure uses Python class-body order for:
 
 - schema fields;
 - transform inputs;
-- compiled subtransforms;
+- compiled step methods;
 - expression helpers;
-- hooks attached to the same subtransform and timing;
+- hooks attached to the same step method and timing;
 - validation decorators.
 
 Rules:
@@ -138,8 +138,8 @@ Compiler commands may cache source fingerprints, discovered metadata, and IR. Ca
 - generated package or backend target changes;
 - a dependency that participates in discovered symbols changes, when detectable.
 
-v1 may implement conservative full rediscovery instead of incremental caching. The implementation must not bake in a
-design that prevents end-of-v3 incremental compilation.
+v.1 may implement conservative full rediscovery instead of incremental caching. The implementation must not bake in a
+design that prevents end-of-v.3 incremental compilation.
 
 ## Diagnostics
 
@@ -210,7 +210,7 @@ See docs/dev/specifications/SourceModuleRules.md
 6. Detect duplicate import paths.
 7. Import source modules without importing PySpark through Structure internals.
 8. Record discovered schemas, transforms, source paths, and line numbers.
-9. Preserve class-body order for fields, inputs, subtransforms, helpers, and hooks.
+9. Preserve class-body order for fields, inputs, step methods, helpers, and hooks.
 10. Map source import paths to generated import paths.
 11. Add diagnostics with links to this specification.
 12. Add tests for `src` layout, root-package layout, duplicate paths, unsafe imports, and generated path mapping.
@@ -228,4 +228,4 @@ See docs/dev/specifications/SourceModuleRules.md
 - Generated output for that module maps below `generated/structure_generated/orders/pyspark/transforms/order.py`.
 - Importing user modules for discovery does not import PySpark through Structure internals.
 - Unsafe import failures point users to this specification.
-- Class-body source order is preserved for fields, inputs, subtransforms, hooks, and helpers.
+- Class-body source order is preserved for fields, inputs, step methods, hooks, and helpers.

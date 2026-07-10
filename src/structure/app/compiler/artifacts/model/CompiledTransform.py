@@ -13,5 +13,5 @@ class CompiledTransform:
     key: CompileKey
     transform_plan: TransformPlan
     pyspark_plan: PySparkExecutionPlan
-    schemas: TransformSchemas
-
+    schemas: TransformSchemas | None
+    semantic_fingerprint: str

@@ -22,7 +22,7 @@ The variant uses the same Structure DSL, checked IR, generated class constructor
 Spark Connect client session, but Structure does not create a remote server or hide connection management behind a
 new runtime abstraction.
 
-Full support in Sprint 09 means supported batch execution for completed v1/v2 compiler-visible features. It does not
+Full support in Sprint 09 means supported batch execution for completed v.1/v.2 compiler-visible features. It does not
 mean Structure owns streaming source and sink orchestration, storage writes, or every arbitrary PySpark hook body.
 
 ## First Slice Boundary
@@ -47,7 +47,7 @@ That slice intentionally left out the evidence needed for a support claim:
 Sprint 09 promotion covers completed compiler-visible batch features only:
 
 - projections, filters, casts, literals, and standard expression helpers;
-- v1 joins, completed v2 analytical joins, and the implemented full rowset join pass: right, full, cross, non-equi, and
+- v.1 joins, completed v.2 analytical joins, and the implemented full rowset join pass: right, full, cross, non-equi, and
   disjunctive joins;
 - first-slice aggregations plus implemented advanced analytical operations: rollup, cube, grouping metadata helpers,
   additional aggregate metrics, metric-local filters, reusable windows, distribution/value/window aggregate helpers,
@@ -101,7 +101,7 @@ PySpark.
 
 Spark Connect moves from experimental to supported for batch features only after these facts are true:
 
-- the capability profile has explicit supported and unsupported decisions for every completed v1/v2 batch feature;
+- the capability profile has explicit supported and unsupported decisions for every completed v.1/v.2 batch feature;
 - recently implemented full rowset joins and advanced analytical helpers are included in the Connect capability and
   generated-source guardrail matrix;
 - online and generated parity tests pass against a real Spark Connect session;

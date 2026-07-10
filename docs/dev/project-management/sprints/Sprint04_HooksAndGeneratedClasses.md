@@ -7,7 +7,7 @@ matching online hook behavior.
 
 ## Product Outcome
 
-Developers can attach arbitrary PySpark code to a concrete subtransform using `@after(method, lane=lane)` or
+Developers can attach arbitrary PySpark code to a concrete step method using `@after(method, lane=lane)` or
 `@before(method, lane=lane)`.
 Online execution and generated code call source hooks at the same lifecycle points.
 
@@ -94,7 +94,7 @@ class NormalizeOrdersGenerated:
 
 1. Implement `after(method)` metadata.
 2. Implement `before(method)` metadata.
-3. Validate hook references target known subtransform methods.
+3. Validate hook references target known step methods.
 4. Validate hook signature.
 5. Extend IR with `HookCall`.
 6. Generate source import only when needed.
@@ -112,7 +112,7 @@ class NormalizeOrdersGenerated:
 - Hooked transform runs online with the same hook order as generated code.
 - Hook-free transform generated code has no source import and no `_impl`.
 - Invalid hook signature fails with structured error.
-- Hook after a subtransform runs at the correct point.
+- Hook after a step method runs at the correct point.
 - Hook lifecycle points come from shared PySpark hook recipes in both runtime modes.
 - Hooks with `pass_inputs=True` receive an `inputs` namespace with original named inputs.
 - Hook-added columns can be projected away before strict validation.

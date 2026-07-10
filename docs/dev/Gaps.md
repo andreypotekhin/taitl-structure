@@ -35,12 +35,12 @@ Consult the official Spark 4.0.1 docs when expanding this page:
 The latest Spark docs may be useful for discovery, but features introduced after PySpark 4.0.x should not be marked
 `planned` for the current target unless the target range changes.
 
-## Beginning of v3 Schedule
+## Beginning of v.3 Schedule
 
-The planned gaps on this page are scheduled into the beginning of v3 as focused ExecPlans. Each plan must update this
+The planned gaps on this page are scheduled into the beginning of v.3 as focused ExecPlans. Each plan must update this
 page, public compatibility tables, generated examples, and project-management progress as implementation completes.
 
-| Gap Section | v3 Sprint | ExecPlan |
+| Gap Section | v.3 Sprint | ExecPlan |
 | --- | --- | --- |
 | DSL | Sprint 11 | [P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md](planning/P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md) |
 | Joins | Sprint 12 | [P07072603.V3-join-pyspark-parity-hardening.plan.md](planning/P07072603.V3-join-pyspark-parity-hardening.plan.md) |
@@ -104,7 +104,7 @@ Gaps:
 ## Joins
 
 Current rowset join support is described by [FullPySparkJoinSupport.md](../reference/FullPySparkJoinSupport.md). Older
-v1 lookup semantics remain in [JoinSemantics.md](../reference/JoinSemantics.md), and existence/temporal/as-of joins
+v.1 lookup semantics remain in [JoinSemantics.md](../reference/JoinSemantics.md), and existence/temporal/as-of joins
 are in [AnalyticalJoinCoverage.md](../reference/AnalyticalJoinCoverage.md).
 
 Gaps:

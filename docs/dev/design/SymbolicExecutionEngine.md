@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Symbolic execution turns user-written subtransform methods into compiler IR without executing real data processing.
+Symbolic execution turns user-written step methods into compiler IR without executing real data processing.
 
 ## Core Idea
 
@@ -37,7 +37,7 @@ FieldRef(scope="orders", path=["customer_id"], type=string)
 
 ## Unsupported Operations
 
-Unsupported operations raise structured compile errors. The engine should know the active transform, subtransform, and output field when possible.
+Unsupported operations raise structured compile errors. The engine should know the active transform, step method, and output field when possible.
 
 ## Flow
 

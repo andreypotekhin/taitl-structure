@@ -39,7 +39,7 @@ Developers can keep generated artifacts fresh in CI and publish schema and trans
 
 ## Acceptance Criteria
 
-- Generated docs summarize schemas, transform inputs, outputs, subtransforms, dependencies, and target artifacts.
+- Generated docs summarize schemas, transform inputs, outputs, step methods, dependencies, and target artifacts.
 - Pytest helpers let downstream projects assert compiler success, expected diagnostics, generated freshness, snapshots,
   and online/generated parity.
 - Incremental compile and cache diagnostics are explicitly scheduled into Sprint 17.
@@ -48,11 +48,11 @@ Developers can keep generated artifacts fresh in CI and publish schema and trans
 
 - [x] Implement generated docs.
 - [x] Implement pytest helpers.
-- [x] Move incremental compile and cache diagnostics to end-of-v3 Sprint 17.
+- [x] Move incremental compile and cache diagnostics to end-of-v.3 Sprint 17.
 
 Generated docs first slice is implemented through `structure compile`. The compiler now writes Markdown and JSON
 schema/transform reference artifacts under `generated_docs_dir` inside `generated_dir`, with configurable
-`generated_docs_formats`. The artifacts summarize schema fields, transform inputs, outputs, subtransforms,
+`generated_docs_formats`. The artifacts summarize schema fields, transform inputs, outputs, step methods,
 dependencies, and target artifacts; freshness uses the existing generated-file compare/write path.
 
 Pytest helper slice is implemented through `structure.lib.testing`. Downstream projects can assert compiler success,

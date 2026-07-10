@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The checker ensures compiled subtransforms can generate efficient PySpark expressions and that schema flow is valid.
+The checker ensures compiled step methods can generate efficient PySpark expressions and that schema flow is valid.
 
 ## Checks
 
@@ -23,7 +23,7 @@ Errors should include:
 
 - code
 - transform class
-- subtransform
+- step method
 - field
 - source expression
 - problem
@@ -42,7 +42,7 @@ CompileError DSL-E0401: Unsupported expression
 Transform:
   EnrichOrders
 
-Subtransform:
+Step method:
   normalize
 
 Output field:
@@ -84,7 +84,7 @@ Only suggest config when it really applies. Examples:
 
 - `validate_intermediate = false` for intermediate validation failures.
 - `traceability = "none"` for compiler provenance and static dataflow traceability performance.
-- `strict_performance = false` for hook lint warnings, not compiled subtransform fallback.
+- `strict_performance = false` for hook lint warnings, not compiled step method fallback.
 
 ## Extension Boundaries
 

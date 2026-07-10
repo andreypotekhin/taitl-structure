@@ -1,4 +1,4 @@
-# Sprint 12: v3 Join PySpark Parity Hardening
+# Sprint 12: v.3 Join PySpark Parity Hardening
 
 ## Sprint Goal
 
@@ -52,4 +52,4 @@ join strategy directives, and express forward as-of joins.
 
 ## Progress
 
-- [ ] Implement v3 join parity hardening.
+- [ ] Implement v.3 join parity hardening.

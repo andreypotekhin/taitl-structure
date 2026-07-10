@@ -176,7 +176,7 @@ def publish(self, order: OrderNormalized) -> OrderPublished:
 `input(orders)` means the original runtime input. `lane(orders)` means the current working lane named
 `orders`. `output(published)` means the final result declaration.
 
-Reference: [DSL subtransforms](reference/DSL.md),
+Reference: [DSL step methods](reference/DSL.md),
 [symbolic execution](reference/SymbolicExecution.md), and
 [execution semantics](reference/ExecutionSemanticContract.md).
 
@@ -324,7 +324,7 @@ def add_flags(self, order: OrderRaw) -> OrderWithFlags:
     )
 ```
 
-Supported v1 expression forms are field references, literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `*`,
+Supported v.1 expression forms are field references, literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `*`,
 boolean `&`, `|`, `~`, null checks, `null_safe_eq(...)`, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`,
 `coalesce(...)`, and `when(...).otherwise(...)`.
 
@@ -452,7 +452,7 @@ The PySpark target lowers these helpers to `row_number()` over
 required so the selection is reviewable, and the current public tie policy is `TiePolicy.ERROR`. 
 
 Streaming: Selected-row helpers
-are batch-only in v2 streaming compatibility checks, because streaming-safe ranking needs explicit watermark and state
+are batch-only in v.2 streaming compatibility checks, because streaming-safe ranking needs explicit watermark and state
 semantics (planned).
 
 Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md),
@@ -508,7 +508,7 @@ def customer_window(self, order: OrderFulfillment) -> OrderCustomerWindow:
 Reusable windows require explicit frames such as `rows_between(preceding(2), current_row())` or
 `range_between(preceding(10), current_row())`. 
 
-Streaming: broad window helpers are batch-only in v2 streaming compatibility.
+Streaming: broad window helpers are batch-only in v.2 streaming compatibility.
 
 Reference: [advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md),
 [IR](reference/IntermediateRepresentation.md), [PySpark code generation](reference/PySparkCodeGeneration.md), and
@@ -546,7 +546,7 @@ def latest_events(self, event: RawEvent) -> RawEvent:
     return RawEvent.project(event)
 ```
 
-Streaming: exact duplicate removal is batch-only in v2 streaming compatibility because streaming dedupe needs explicit
+Streaming: exact duplicate removal is batch-only in v.2 streaming compatibility because streaming dedupe needs explicit
 watermark, state, and output-mode semantics.
 
 Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md),
@@ -801,7 +801,7 @@ Reference: [schema inheritance](reference/SchemaInheritance.md),
 
 ### Transform Inheritance
 
-Transform classes can subclass other Transforms. They inherit inputs, lanes, outputs, hooks, helpers, and subtransforms 
+Transform classes can subclass other Transforms. They inherit inputs, lanes, outputs, hooks, helpers, and step methods 
 from parent class. Parent transforms run before child transform; a child method with the same name overrides
 the inherited scheduled step. Multiple inheritance is allowed, in which case parents run left-to-right before
 children, and Python rules for resolving diamond inheritance shapes are observed.  
@@ -1042,7 +1042,7 @@ Reference: [source module rules](reference/SourceModuleRules.md),
 Structure transforms operate on DataFrames. If the input DataFrame is streaming and every compiled operation
 is supported by Spark Structured Streaming, the transform can run in a streaming pipeline.
 
-Structure does not generate `readStream` or `writeStream` before v3; the caller owns streaming orchestration.
+Structure does not generate `readStream` or `writeStream` before v.3; the caller owns streaming orchestration.
 
 Reference: [streaming compatibility](reference/StreamingCompatibility.md).
 
@@ -1122,18 +1122,18 @@ Reference: [CLI](reference/CLI.md) and
 
 ## Planned Features
 
-Implemented v2 analytical features include existence joins, `inner_join(...)`, deterministic lookup dedupe,
+Implemented v.2 analytical features include existence joins, `inner_join(...)`, deterministic lookup dedupe,
 temporal validity joins, backward as-of joins, aggregation/grouping, latest/earliest selected-row and keyed-dedupe
 helpers, exact duplicate-row removal, Spark higher-order array/map helpers, caching, and target capability checks.
 
-Remaining planned v2 features include:
+Remaining planned v.2 features include:
 
 - Broader deduplication helpers.
 - Repartition and coalesce annotations.
 
 These features remain explicit because Structure should not hide performance-sensitive choices.
 
-Planned v2 adoption tooling also includes richer explain output, generated documentation artifacts for schemas
+Planned v.2 adoption tooling also includes richer explain output, generated documentation artifacts for schemas
 and transforms, production incremental compilation, and a pytest helper for compiler checks and generated-code
 freshness.
 

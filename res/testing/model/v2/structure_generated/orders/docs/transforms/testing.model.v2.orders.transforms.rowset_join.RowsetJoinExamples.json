@@ -32,7 +32,7 @@
     }
   ],
   "source": "testing.model.v2.orders.transforms.rowset_join.RowsetJoinExamples",
-  "subtransforms": [
+  "step_methods": [
     {
       "input_lane": "orders",
       "input_schema": "OrderRaw",

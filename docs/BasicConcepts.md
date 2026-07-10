@@ -52,7 +52,7 @@ and many diagnostics.
 ### Transform
 
 A transform is a `Transform` subclass marked with `@transform`. It declares the pipeline surface: input
-DataFrames, output results, lanes, subtransform methods, expression helpers, and hooks.
+DataFrames, output results, lanes, step methods, expression helpers, and hooks.
 
 A transform instance created with `EnrichOrders(orders=df)` is a deferred invocation that stores runtime
 inputs until `.run(session)` is called.
@@ -108,10 +108,10 @@ normalized = lane(OrderNormalized)
 with_customer = lane(OrderWithCustomer)
 ```
 
-### Subtransform
+### Step method
 
-A subtransform is a public instance method on a transform class that returns a `Structure` or schema tuple.
-The compiler symbolically executes subtransforms in source order.
+A step method is a public instance method on a transform class that returns a `Structure` or schema tuple.
+The compiler symbolically executes step methods in source order.
 
 The first schema parameter is the driving row. Additional schema parameters are symbolic relations that must
 be joined before their fields are used in filters or projections.
@@ -126,7 +126,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 ### Binding of Inputs and Outputs
 
 Method-level `@transform(input=...)`, `@transform(output=...)`, and `@transform(inout=...)` select which
-declared input, lane, or output a subtransform consumes or writes.
+declared input, lane, or output a step method consumes or writes.
 
 Binding is optional. Most single-lane transforms rely on inference. Explicit binding handles repeated schemas,
 branches, funnel lanes, and lane names that intentionally shadow original inputs.
@@ -154,7 +154,7 @@ lower(trim(order.customer_id)) == "c-001"
 when(order.total >= 1000, "large").otherwise("standard")
 ```
 
-The v1 expression surface supports field references, Python literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`,
+The v.1 expression surface supports field references, Python literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`,
 `-`, `*`, boolean `&`, `|`, `~`, `is_null()`, `is_not_null()`, `null_safe_eq(...)`, `lower(...)`, `upper(...)`,
 `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and `when(...).otherwise(...)`.
 
@@ -176,7 +176,7 @@ def clean_id(value):
 
 ### Filter
 
-A filter is recorded with `where(predicate)` inside a compiled subtransform. Multiple filters preserve source
+A filter is recorded with `where(predicate)` inside a compiled step method. Multiple filters preserve source
 order and combine with logical AND where legal.
 
 Filters are operations in IR, not immediate DataFrame calls. A filter can reference only scopes available at
@@ -191,7 +191,7 @@ where(to_decimal(order.total, precision=12, scale=2) >= 0)
 
 ### Join
 
-A join is a symbolic relationship between the current row and a declared input. In v1, `lookup_join(...)` is the
+A join is a symbolic relationship between the current row and a declared input. In v.1, `lookup_join(...)` is the
 main form: a lookup-style join.
 
 A join creates a joined scope. Fields from that scope can be used in later filters or in the returned output

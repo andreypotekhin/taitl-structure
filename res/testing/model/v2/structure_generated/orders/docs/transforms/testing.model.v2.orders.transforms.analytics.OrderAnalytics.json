@@ -27,7 +27,7 @@
     }
   ],
   "source": "testing.model.v2.orders.transforms.analytics.OrderAnalytics",
-  "subtransforms": [
+  "step_methods": [
     {
       "input_lane": "fulfilled",
       "input_schema": "OrderFulfillment",

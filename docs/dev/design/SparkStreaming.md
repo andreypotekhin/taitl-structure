@@ -39,7 +39,7 @@ storage write APIs in this slice.
 ## First Slice Surface
 
 The supported runtime shape is one streaming current pipeline input plus zero or more static side inputs. The current
-pipeline input is the DataFrame that flows through source-ordered subtransform methods. Static side inputs are named
+pipeline input is the DataFrame that flows through source-ordered step methods. Static side inputs are named
 inputs used for lookup joins.
 
 The first slice supports:

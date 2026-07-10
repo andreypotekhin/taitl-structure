@@ -9,3 +9,4 @@ class CompileKey:
     structure_version: str
     options: tuple[object, ...]
     sources: tuple[tuple[str, int | None, int | None, str | None], ...]
+    manifest: str = ""

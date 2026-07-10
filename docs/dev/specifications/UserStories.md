@@ -37,7 +37,7 @@ narrower use cases and roadmap features.
 - + As a developer, I can define schema classes so that input, intermediate, and output data structures are explicit.
 - + As a developer, I can declare a transform class with `@transform` so that the compiler knows which classes to generate.
 - + As a developer, I can declare named inputs using `input(Structure)` so that generated `run(...)` methods receive predictable named DataFrame parameters.
-- + As a developer, I can write public schema-returning methods so that each method becomes a compiled subtransform.
+- + As a developer, I can write public schema-returning methods so that each method becomes a compiled step method.
 - + As a developer, I can run a Structure transform online through `StructureSession` so that I do not need to commit
   generated PySpark code.
 - + As a developer, I can construct a transform invocation with named DataFrame inputs and run it later so that
@@ -51,7 +51,7 @@ narrower use cases and roadmap features.
 - + As a developer, I can place transforms under my normal source package so that transformation logic is easy to locate.
 - + As a developer, I can omit source-root configuration when `./src` contains importable packages so that conventional projects work with no setup.
 - + As a developer, I can omit source-root configuration in simple root-package projects so that small projects work with no setup.
-- + As a developer, I can rely on source file order inside transform classes so that subtransform execution order matches code reading order.
+- + As a developer, I can rely on source file order inside transform classes so that step method execution order matches code reading order.
 - + As a developer, I can avoid external configuration files for ordinary transform discovery so that project setup remains simple.
 - + As a developer, I can use Python imports for schema and helper references so that IDE jump-to-declaration works.
 
@@ -85,7 +85,7 @@ narrower use cases and roadmap features.
 - + As a developer, I can generate one PySpark class per source transform class so that generated code remains organized.
 - + As a developer, I can instantiate a generated transform class with `spark` and optional `ctx` so that runtime dependencies are explicit.
 - + As a developer, I can call `run(...)` on a generated transform class so that execution has a stable entrypoint.
-- + As a developer, I can inherit reusable subtransforms from undecorated `Transform` parent classes so that shared
+- + As a developer, I can inherit reusable step methods from undecorated `Transform` parent classes so that shared
   pipeline fragments do not need to be complete standalone transforms.
 
 ## 7. Inputs
@@ -95,12 +95,12 @@ narrower use cases and roadmap features.
 - + As a developer, I can refer to input scopes symbolically inside joins so that joins avoid string field paths.
 - + As a developer, I can validate input DataFrames against declared schemas so that schema errors are caught at pipeline boundaries.
 
-## 8. Subtransforms
+## 8. Step methods
 
 - + As a developer, I must declare at least one named `output(...)` field so that every transform has an explicit public
   result contract.
-- + As a developer, I can define a public instance method returning a schema type so that it becomes a compiled subtransform.
-- + As a developer, I can declare multiple schema parameters on a subtransform so that its driving row and joined
+- + As a developer, I can define a public instance method returning a schema type so that it becomes a compiled step method.
+- + As a developer, I can declare multiple schema parameters on a step method so that its driving row and joined
   relations are explicit in the method signature.
 - + As a developer, I can bind repeated input schemas with ordered `input=[...]` so that parameter mapping is
   unambiguous.
@@ -110,27 +110,27 @@ narrower use cases and roadmap features.
   shared relational step can materialize several typed result lanes.
 - + As a developer, I can declare intermediate `lane(...)` fields and consume them with `input=...` so that funnel
   stages are explicit without becoming public transform outputs.
-- + As a developer, I can use `inout=source | target` for compact subtransform source-to-target binding.
-- + As a developer, I can wrap subtransform bindings with `input(...)`, `lane(...)`, or `output(...)` role selectors so
+- + As a developer, I can use `inout=source | target` for compact step method source-to-target binding.
+- + As a developer, I can wrap step method bindings with `input(...)`, `lane(...)`, or `output(...)` role selectors so
   that I can distinguish original inputs, current lanes, and final results after names are shadowed.
 - + As a developer, I can use method return annotations to define intermediate schema transitions.
-- + As a developer, I can rely on source order for subtransform execution so that pipeline flow is readable.
-- + As a developer, I can rely on parent transform subtransforms running before child subtransforms so that inherited
+- + As a developer, I can rely on source order for step method execution so that pipeline flow is readable.
+- + As a developer, I can rely on parent transform step methods running before child step methods so that inherited
   pipeline flow is readable.
-- + As a developer, I can override an inherited subtransform and explicitly schedule the parent implementation so that
+- + As a developer, I can override an inherited step method and explicitly schedule the parent implementation so that
   parent and child logic remain separate execution boundaries.
-- + As a developer, I receive a compiler error when a subtransform calls another subtransform directly so that pipeline
+- + As a developer, I receive a compiler error when a step method calls another step method directly so that pipeline
   flow remains controlled by source order, lanes, and composition.
-- + As a developer, I can chain subtransforms by return type and next input type so that schema flow is validated.
+- + As a developer, I can chain step methods by return type and next input type so that schema flow is validated.
 - + As a developer, I can construct an output schema from inherited base schema rows plus explicit overrides so that
   enrichment transforms do not repeat every inherited field.
 - + As a developer, I can receive a structured compiler error when source order does not match type flow.
-- + As a developer, I can make ordinary helper methods private with a leading underscore so that they are not treated as subtransforms.
+- + As a developer, I can make ordinary helper methods private with a leading underscore so that they are not treated as step methods.
 
 ## 9. Schema Validation
 
 - + As a developer, I can have input schemas validated at runtime so that invalid source data is detected early.
-- + As a developer, I can have intermediate schemas validated after each subtransform by default so that multi-step
+- + As a developer, I can have intermediate schemas validated after each step method by default so that multi-step
   pipelines remain schema-safe.
 - + As a developer, I can use schema-only intermediate validation by default so that validation avoids unnecessary row scans.
 - As a developer, I can opt into fuller intermediate validation so that row-level constraints can be checked when needed.
@@ -142,7 +142,7 @@ narrower use cases and roadmap features.
   hidden Spark jobs.
 - As a developer, I can disable intermediate validation class-wide so that performance-sensitive pipelines can reduce
   validation overhead.
-- As a developer, I can override validation for an individual subtransform so that known temporary exceptions are possible.
+- As a developer, I can override validation for an individual step method so that known temporary exceptions are possible.
 - As a developer, I can disable intermediate schema validation project-wide so that large pipelines can remove the
   generated boundary checks.
 - + As a developer, I can have final output schema validation enabled by default so that generated outputs conform to their declared contract.
@@ -150,7 +150,7 @@ narrower use cases and roadmap features.
 ## 10. Generated Code
 
 - + As a developer, I can use generated PySpark as an optional provenance and generated-mode artifact rather than as the
-  only v1 runtime path.
+  only v.1 runtime path.
 - + As a developer, I can inspect generated PySpark code so that transformation behavior is reviewable.
 - + As a developer, I can generate a class named after the source transform class so that source-to-generated mapping is obvious.
 - + As a developer, I can expect generated code to use PySpark DataFrame and Column operations so that Spark can optimize execution.
@@ -169,7 +169,7 @@ narrower use cases and roadmap features.
 
 ## 11. Symbolic Execution
 
-- + As a developer, I can write compiled subtransforms using schema objects so that the compiler can symbolically execute transformation logic.
+- + As a developer, I can write compiled step methods using schema objects so that the compiler can symbolically execute transformation logic.
 - + As a developer, I can have field access produce symbolic expressions so that field references compile to Spark columns.
 - + As a developer, I can have DSL functions produce symbolic expressions so that transforms compile to Spark expressions.
 - + As a developer, I can use inclusive range predicates so that common filters stay compiler-visible.
@@ -184,7 +184,7 @@ narrower use cases and roadmap features.
 
 ## 13. Filtering
 
-- + As a developer, I can call `where(predicate)` inside a subtransform so that rows are filtered using compileable Spark expressions.
+- + As a developer, I can call `where(predicate)` inside a step method so that rows are filtered using compileable Spark expressions.
 - + As a developer, I can call `where(...)` multiple times so that predicates are combined with logical AND.
 - + As a developer, I can use expression helper predicates with `where(...)` so that reusable filters are supported.
 - + As a developer, I can filter on joined fields so that post-join match requirements are expressible.
@@ -196,7 +196,7 @@ narrower use cases and roadmap features.
 - + As a developer, I can add columns by returning an output schema with more fields than the input schema.
 - + As a developer, I can drop columns by returning an output schema with fewer fields than the input schema.
 - + As a developer, I can rely on generated projection rather than Spark `drop(...)` so that output schema is deterministic.
-- + As a developer, I can remove temporary intermediate fields in a later subtransform so that final output remains clean.
+- + As a developer, I can remove temporary intermediate fields in a later step method so that final output remains clean.
 - + As a developer, I can return `project(source, TargetSchema)` so that same-name compatible fields are copied without
   repeating every field.
 - + As a developer, I can return `SchemaClass.project(source)` so that same-name compatible fields are copied while the
@@ -221,11 +221,11 @@ narrower use cases and roadmap features.
 - + As a developer, I can perform serial joins across an arbitrary number of inputs so that enrichment pipelines are not limited to three inputs.
 - + As a developer, I can specify join type and hints using enum values so that free-form join strings are avoided in source code.
 - + As a developer, I can see that semi, anti, row-multiplying, deduped lookup, temporal, and as-of joins are staged as
-  v2 analytical join forms so that v1 lookup semantics stay predictable.
+  v.2 analytical join forms so that v.1 lookup semantics stay predictable.
 
 ## 16. Hooks
 
-- + As a developer, I can attach a hook to a subtransform using `@before(method, lane=lane)` or
+- + As a developer, I can attach a hook to a step method using `@before(method, lane=lane)` or
   `@after(method, lane=lane)` so that custom PySpark code is tied to a concrete method.
 - + As a developer, I can write hook methods with a selected lane parameter such as
   `def hook(self, *, orders, spark, ctx)` so that hook parameters are minimal and stable.
@@ -240,8 +240,8 @@ narrower use cases and roadmap features.
 
 - + As a developer, I can pass a streaming DataFrame to generated transforms when operations are Spark streaming-compatible.
 - + As a developer, I can enable streaming compatibility checks so that unsupported streaming operations are caught early.
-- + As a developer, I can keep streaming lifecycle outside v1/v2 transform compatibility so that callers own
-  `readStream`, `writeStream`, triggers, checkpoints, and query execution until the v3 orchestration contract is used.
+- + As a developer, I can keep streaming lifecycle outside v.1/v.2 transform compatibility so that callers own
+  `readStream`, `writeStream`, triggers, checkpoints, and query execution until the v.3 orchestration contract is used.
 - + As a developer, I can declare streaming input modes and watermarks inside transform code so that stateful streaming
   transformations can be checked without Structure owning lifecycle.
 
@@ -284,7 +284,7 @@ narrower use cases and roadmap features.
   fixes.
 - + As a developer, I can rely on diagnostic severities so that warnings, errors, info messages, and unexpected internal
   failures are handled consistently.
-- + As a developer, I can see the transform class name, subtransform method, output field, source expression, problem, and suggested fix in errors.
+- + As a developer, I can see the transform class name, step method, output field, source expression, problem, and suggested fix in errors.
 - + As a developer, I can see an inline DSL alternative so that simple fixes are obvious.
 - + As a developer, I can see an `@special(type="expr")` helper alternative so that reusable fixes are encouraged.
 - + As a developer, I can see a hook alternative so that arbitrary PySpark migration is explicit.
@@ -304,29 +304,29 @@ narrower use cases and roadmap features.
 - + As a developer, I can run intentionally broken transform tests so that compiler diagnostics stay actionable.
 - + As a developer, I can assert warning diagnostics so that risky but compileable code remains visible in tests.
 
-## 22. v2 Roadmap
+## 22. v.2 Roadmap
 
-v2 makes Structure useful for mainstream analytical batch pipelines. It extends the v1 transform model without taking
+v.2 makes Structure useful for mainstream analytical batch pipelines. It extends the v.1 transform model without taking
 over streaming orchestration, storage writes, automatic cost-based optimization, or hidden UDF execution. Sprint 09 adds
 Spark Connect support for completed compiler-visible batch features and the full PySpark rowset join forms left out of
 the first analytical join slice.
 
-## 22A. v2 Foundations
+## 22A. v.2 Foundations
 
-- As a developer, I can see a published v2 scope and non-goals so that I know which analytical features are safe to
+- As a developer, I can see a published v.2 scope and non-goals so that I know which analytical features are safe to
   plan around.
-- As a developer, I can receive backend capability diagnostics for every v2 operation so that unsupported PySpark target
+- As a developer, I can receive backend capability diagnostics for every v.2 operation so that unsupported PySpark target
   combinations fail before runtime.
-- As a developer, I can inspect v2 operation cardinality in explain output so that row-preserving, row-filtering,
+- As a developer, I can inspect v.2 operation cardinality in explain output so that row-preserving, row-filtering,
   row-multiplying, and select-one behavior is visible.
-- As a developer, I can rely on online and generated execution using the same v2 PySpark recipe layer so that supported
+- As a developer, I can rely on online and generated execution using the same v.2 PySpark recipe layer so that supported
   analytical behavior cannot drift between runtime modes.
-- As a developer, I can keep caller-owned streaming lifecycle in v2 so that existing streaming compatibility boundaries
+- As a developer, I can keep caller-owned streaming lifecycle in v.2 so that existing streaming compatibility boundaries
   remain stable.
 
 ## 22B. Aggregations, Windows, and Higher-Order Functions
 
-- + As a developer, I can define typed aggregation subtransforms so that rollups compile to Spark `groupBy` and `agg`.
+- + As a developer, I can define typed aggregation step methods so that rollups compile to Spark `groupBy` and `agg`.
 - + As a developer, I can group by one or more typed fields so that aggregate output schemas include explicit grouping
   keys.
 - + As a developer, I can calculate count, sum, min, max, avg, and supported distinct counts so that common analytical
@@ -340,7 +340,7 @@ the first analytical join slice.
 - As a developer, I can calculate Boolean, statistical, approximate, and collection aggregate metrics so that common
   analytical summaries remain compiler-visible.
 - As a developer, I can filter individual aggregate metrics so that conditional summaries do not require separate
-  subtransforms.
+  step methods.
 - As a developer, I can filter aggregate output with `having(...)` so that post-aggregate predicates are explicit.
 - + As a developer, I can define ranking window expressions so that row number, rank, and dense rank compile to Spark
   window operations.
@@ -422,15 +422,15 @@ the first analytical join slice.
   operations fail early when under-specified.
 - As a developer, I can use more stream-stream join shapes when Structure can prove Spark-required watermarks,
   event-time constraints, and caller-owned output-mode requirements.
-- As a developer, I can use v3 lifecycle orchestration so that admitted `readStream`, `writeStream`, triggers,
+- As a developer, I can use v.3 lifecycle orchestration so that admitted `readStream`, `writeStream`, triggers,
   checkpoints, query lifecycle, deployment, and recovery policy become explicit Structure job configuration.
 - As a developer, I can use production incremental compilation so that large projects get fast local feedback after the
-  v3 feature surface stabilizes.
+  v.3 feature surface stabilizes.
 - As a developer, I can see cache invalidation diagnostics so that incremental compile never hides stale generated code.
 
 ## 24. Spark Connect Roadmap
 
-- + As a developer, I can target Spark Connect for completed v1/v2 batch features when Structure defines and tests a
+- + As a developer, I can target Spark Connect for completed v.1/v.2 batch features when Structure defines and tests a
   compatible generated-code contract.
 - As a developer, I can run completed batch transforms online through Spark Connect so that remote Spark execution uses
   the same StructureSession contract.

@@ -19,7 +19,7 @@ This specification owns:
 - capability decision shape;
 - unsupported backend diagnostics;
 - generated import-name capability;
-- PySpark v1 default capability profile;
+- PySpark v.1 default capability profile;
 - Spark-free capability selection;
 - tests for capability decisions.
 
@@ -52,9 +52,9 @@ For the default PySpark profile, `name = "pyspark"`, `target = ">=3.5,<4.1"`, `v
 implementation `family = "ordinary_pyspark"`. For the Spark Connect variant, `name = "pyspark"`,
 `target = ">=3.5,<4.1"`, `variant = "spark-connect"`, and semantic `family = "spark_connect_dataframe"`.
 Future alternative-backend reports may add semantic-family vocabulary such as `pyspark_dataframe` or `sql_relation`;
-that vocabulary must not require renaming the current v1 implementation family.
+that vocabulary must not require renaming the current v.1 implementation family.
 
-`imports()` returns deterministic generated import metadata for the backend. For PySpark v1 this includes the aliases
+`imports()` returns deterministic generated import metadata for the backend. For PySpark v.1 this includes the aliases
 for `pyspark.sql.functions`, `pyspark.sql.types`, `DataFrame`, `SparkSession`, `Column`, and Structure generated
 runtime schema helpers.
 
@@ -364,6 +364,6 @@ Runtime PySpark execution tests may import PySpark. Capability tests and compile
 - Unknown `target_backend` fails with `BACKEND-E2401`.
 - Unsupported feature requirements fail with `BACKEND-E2402`.
 - Future backend profiles can report degraded, opaque, and unknown capabilities without importing backend runtimes.
-- Supported v1 feature requirements return supported decisions.
+- Supported v.1 feature requirements return supported decisions.
 - Generated import metadata is deterministic.
 - Tests prove capability selection and checks do not import PySpark.

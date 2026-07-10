@@ -6,7 +6,7 @@ The IR separates Structure source semantics from PySpark code generation.
 
 The compiler produces IR. Emitters consume IR.
 
-## Core v1 IR
+## Core v.1 IR
 
 ```text
 TransformPlan
@@ -63,7 +63,7 @@ Expr
   WhenExpr
 ```
 
-## v2 IR Extensions
+## v.2 IR Extensions
 
 - Aggregate
 - GroupingSets
@@ -77,7 +77,7 @@ Expr
 - DocumentationModel
 - IncrementalCompileFingerprint
 
-## v3 IR Extensions
+## v.3 IR Extensions
 
 - ReadStream
 - WriteStream
@@ -86,7 +86,7 @@ Expr
 - Checkpoint
 - StreamingStatePolicy
 
-## v4 IR Extensions
+## v.4 IR Extensions
 
 - SparkConnectCapability
 - BackendCompatibilityReport
@@ -105,5 +105,5 @@ Generated PySpark + compiler provenance + static dataflow traceability
 
 ## Compile-Time Performance
 
-IR objects should be immutable or treated as immutable after construction. This enables hashing and future v2
+IR objects should be immutable or treated as immutable after construction. This enables hashing and future v.2
 incremental compile comparisons.

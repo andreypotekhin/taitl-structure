@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
+from structure.app.compiler.artifacts.commands import CompiledArtifactPool
 from structure.app.compiler.artifacts.model import CompiledTransform, CompilerOptions
 from structure.app.configuration.model.StructureConfig import StructureConfig
 from structure.app.dsl.model.transforms.Transform import Transform
@@ -30,6 +31,7 @@ class StructureSession:
         schema_types=None,
         online_executor: Callable[..., object] | None = None,
         storage=None,
+        artifacts: CompiledArtifactPool | None = None,
     ) -> None:
         overrides = {
             "execution_mode": execution_mode,
@@ -58,25 +60,50 @@ class StructureSession:
         self.online_executor = online_executor
         self.storage = storage
         self.compiler_options = CompilerOptions.from_config(resolved, schema_types=schema_types)
+        self.artifacts = artifacts or CompiledArtifactPool()
 
     def run(self, invocation: Transform) -> TransformResult:
         artifact = self._compiled(invocation)
         plan = artifact.pyspark_plan
         self._validate_inputs(invocation, artifact)
         schemas = artifact.schemas
+        if schemas is None:
+            raise RuntimeError("Runtime execution requires materialized transform schemas")
 
         if self.execution_mode == "online":
             result = Execution.online.pyspark()(invocation, plan, session=self)
             return result._structure_with_schema(schemas.outputs, aliases=schemas.output_aliases)
         if self.execution_mode == "generated":
-            result = Execution.generated.pyspark()(invocation, plan, session=self)
+            result = Execution.generated.pyspark()(
+                invocation,
+                plan,
+                session=self,
+                semantic_fingerprint=artifact.semantic_fingerprint,
+            )
             return result._structure_with_schema(schemas.outputs, aliases=schemas.output_aliases)
         raise self._invalid_mode(invocation)
 
     def _compiled(self, invocation: Transform) -> CompiledTransform:
-        if isinstance(invocation, TransformPipeline):
-            return invocation.compile(self.compiler_options, schema_types=self.schema_types)
-        return type(invocation).compile(self.compiler_options, schema_types=self.schema_types)
+        return self.compile(invocation if isinstance(invocation, TransformPipeline) else type(invocation))
+
+    def compile(self, transform_or_pipeline: type[Transform] | TransformPipeline) -> CompiledTransform:
+        return self.artifacts.get_or_compile(
+            transform_or_pipeline,
+            options=self.compiler_options,
+            schema_types=self.schema_types,
+        )
+
+    def load(self, artifact: CompiledTransform) -> None:
+        self.artifacts.load(artifact)
+
+    def load_many(self, artifacts) -> object:
+        return self.artifacts.load_many(artifacts)
+
+    def clear_compiled(self) -> None:
+        self.artifacts.clear()
+
+    def cache_status(self):
+        return self.artifacts.status()
 
     def _validate_inputs(self, invocation: Transform, artifact: CompiledTransform) -> None:
         if isinstance(invocation, TransformPipeline):

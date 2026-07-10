@@ -19,7 +19,7 @@ output
 
 Input validation checks DataFrames supplied to the transform invocation.
 
-Intermediate validation checks the DataFrame after each compiled subtransform and its attached hooks, according to
+Intermediate validation checks the DataFrame after each compiled step method and its attached hooks, according to
 project, class, and method policy.
 
 Output validation checks the final returned DataFrame.
@@ -75,7 +75,7 @@ Validation policy is resolved from broadest to narrowest:
 6. `@validate_output(...)` method-level override.
 7. Hook-local `schema_mode` and `project_output` options for hook output shape.
 
-Method-level overrides apply only to the decorated subtransform output. Hook-local options apply only after that hook.
+Method-level overrides apply only to the decorated step-method output. Hook-local options apply only after that hook.
 
 ## Schema-Only Checks
 
@@ -124,16 +124,16 @@ Rules:
 
 ## Placement
 
-Execution order for one subtransform:
+Execution order for one step method:
 
 1. Run `@before` hooks.
-2. Execute compiled filters, joins, expressions, and projection for the subtransform.
+2. Execute compiled filters, joins, expressions, and projection for the step method.
 3. Run `@after` hooks.
-4. Validate the subtransform output when intermediate validation is enabled.
+4. Validate the step-method output when intermediate validation is enabled.
 5. Apply any hook-specific projection required by the hook recipe at the exact hook boundary defined by the shared
    execution semantic contract.
 
-Input validation happens before the first subtransform. Final output validation happens before returning the result.
+Input validation happens before the first step method. Final output validation happens before returning the result.
 
 Online and generated execution must use identical validation placement.
 
@@ -145,7 +145,7 @@ operations.
 
 Rules:
 
-- Default validation must be compatible with v1 streaming-compatible transforms.
+- Default validation must be compatible with v.1 streaming-compatible transforms.
 - Constraint modes must be rejected or warned for streaming when the constraint cost class is unsupported.
 - Validation must not own streaming query lifecycle.
 
