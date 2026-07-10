@@ -166,12 +166,11 @@ Directory structure:
 
 ## Documenting
 ### End-User documentation
-The end-user documentation consists of [Readme.md](../../Readme.md), [Troubleshooting.md](../../Troubleshooting.md),
-and the `/docs/` directory.
+The end-user documentation consists of [Readme.md](../../Readme.md), [Troubleshooting.md](../../Troubleshooting.md), and the `/docs/` directory.
 It is characterized as being concise and all-encompassing, clearly conveying the meaning, 
 being complete without overwhelming the reader.
 Content style:
-- [Readme.md](../../Readme.md) is the main entry point for end-users, a is more formal compared to other documents.
+- [Readme.md](../../Readme.md) is the main entry point for end-users, and is more formal compared to other documents.
 - [Troubleshooting.md](../../Troubleshooting.md) tracks common issues and remedies, prioritizes conciseness and clarity.
 - Other documents: prioritize focus and practicality. 
 - Public reference pages in `/docs/reference/` are end-user references, not implementation specifications. Do not keep
@@ -179,6 +178,15 @@ Content style:
   Refer to these pages as "reference" pages, not "specifications". Drop implementation details, acceptance criteria,
   test placement, internal checklists, and lowering explanations when the lowering is the same or similar to a PySpark
   concept.
+
+Help a new user to get familiar with the library by making it easy to absorb content. For instance, try not to refer
+to concepts which haven't been introduced, or include a link or a brief definition; prioritize content from more 
+general/common path to less general/less common use cases. 
+Typical reading order for new/unfamiliar user:
+- [Readme.md](../../Readme.md) is the main entry point for end-users
+- [QuickRef.md](../QuickRef.md)
+- Reference pages (`/docs/reference/`) 
+- Other docs in `/docs/`.
 
 ### Developer documentation
 The developer documentation is in the /docs/dev/ directory.

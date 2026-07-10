@@ -54,9 +54,6 @@ class Product(Structure):
     name = field(String(), nullable=False)    
 ```
 
-Nested schema fields use `Struct(SomeSchema)` and can be constructed inside transforms with the nested schema
-constructor. Structure lowers these to Spark `struct(...)` expressions, keeping nested data optimizer-visible.
-
 ### Example Transform
 
 Transform class compiles into PySpark code operating on DataFrames (See 'Generated code' section below.)
@@ -72,11 +69,9 @@ class EnrichOrders(Transform):
     products = input(Product)
     enriched = output(OrderEnriched)
 
-    @special(type="expr")
     def clean_id(value):
         return lower(trim(value))
 
-    @special(type="expr")
     def normalized_total(value):
         return to_decimal(value, precision=12, scale=2)
 
@@ -92,15 +87,8 @@ class EnrichOrders(Transform):
             total=self.normalized_total(order.total),
         )
 
-    @after(normalize, lane=orders)
-    def remove_negative_totals(self, *, orders, spark, ctx):
-        return orders.where(F.col("total") >= 0)
-
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        left_join(
-            on=order.customer_id == customer.id,
-            hint=JoinHint.BROADCAST,
-        )
+        left_join(on=order.customer_id == customer.id)
 
         return OrderWithCustomer.base(order)(
             customer_name=customer.name,
@@ -108,18 +96,14 @@ class EnrichOrders(Transform):
         )
 
     def add_product(self, order: OrderWithCustomer, product: Product) -> OrderEnriched:
-        left_join(
-            on=order.product_id == product.id,
-        )
-
-        where(product.id.is_not_null())
+        left_join(on=order.product_id == product.id)
 
         return OrderEnriched.base(order)(
             product_name=product.name,
             product_category=product.category,
         )
 
-    @after(add_product, lane=orders, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+    @after(add_product)
     def add_quality_columns(self, *, orders, spark, ctx):
         return (
             orders
@@ -151,8 +135,6 @@ enriched_df = result.enriched
 ### Generated PySpark Code
 
 Transforms' .run() method generates and runs PySpark code similar to the code below. 
-
-We can also generate PySpark source code into a file, if that's needed for your project.
 
 ```python
 from pyspark.sql import DataFrame, SparkSession
@@ -247,15 +229,15 @@ class EnrichOrdersGenerated:
         return orders
 ```
 
+We can also generate PySpark source code into a file, if that's needed for your project.
+
 ## Performance Focus
 
-Structure is intentionally strict. Compiled step methods must lower to Spark-plan-visible expressions.
+Structure is intentionally strict: compiled methods must lower to Spark-plan-visible expressions.
 
-Unsupported Python operations are rejected at compile time. This is a performance feature: Spark can optimize transformations only when work remains visible in the DataFrame logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, and whole-stage code generation all depend on expressing work through Spark's relational expression model.
+Unsupported Python operations are rejected. This is a performance feature: Spark can optimize transformations only when work remains visible in the DataFrame logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, and whole-stage code generation all depend on expressing work through Spark's relational expression model.
 
-For custom logic, create expression helpers with `@special(type="expr")`. This keeps expression logic compiler-visible and reusable.
-
-Arbitrary PySpark is still supported, but only through explicit hooks. Hooks receive the underlying DataFrame(s) for arbitrary manipulation. Hooks are escape hatches: Structure calls them, records them as opaque boundaries, but does not treat their body as compiler-visible logic.
+Arbitrary PySpark is still supported, but only through explicit @before/@after hooks around step method. Hooks receive the underlying DataFrame(s) for arbitrary manipulation. Hooks are escape hatches: Structure calls them, records them as opaque boundaries, but does not treat their body as compiler-visible logic.
 
 ## IDE Friendliness
 
@@ -269,9 +251,9 @@ Python-first approach allows for IDE conveniences, such as:
 Structure targets Python 3.11+, PySpark 3.5.x and 4.0.x, Linux runtimes, and Linux/macOS/Windows development
 environments.
 
-Airflow can call online (Python) or generated (PySpark) transforms. It is not a Structure dependency.
+Airflow can run transforms or call generated PySpark code. It is not a Structure dependency.
 
-See [Compatibility.md](docs/Compatibility.md) for the full versioning and compatibility policy.
+See [Compatibility.md](docs/Compatibility.md) for the versioning and compatibility policy.
 
 ## Next Steps
 

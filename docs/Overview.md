@@ -73,11 +73,9 @@ class EnrichOrders(Transform):
     products = input(Product)
     enriched = output(OrderEnriched)
 
-    @special(type="expr")
     def clean_id(value):
         return lower(trim(value))
 
-    @special(type="expr")
     def normalized_total(value):
         return to_decimal(value, precision=12, scale=2)
 
@@ -93,16 +91,8 @@ class EnrichOrders(Transform):
             total=self.normalized_total(order.total),
         )
 
-    @after(normalize, lane=orders)
-    def remove_negative_totals(self, *, orders, spark, ctx):
-        return orders.where(F.col("total") >= 0)
-
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        lookup_join(
-            on=order.customer_id == customer.id,
-            how=Join.LEFT,
-            hint=JoinHint.BROADCAST,
-        )
+        left_join(on=order.customer_id == customer.id)
 
         return OrderWithCustomer.base(order)(
             customer_name=customer.name,
@@ -110,10 +100,7 @@ class EnrichOrders(Transform):
         )
 
     def add_product(self, order: OrderWithCustomer, product: Product) -> OrderEnriched:
-        lookup_join(
-            on=order.product_id == product.id,
-            how=Join.LEFT,
-        )
+        left_join(on=order.product_id == product.id)
 
         where(product.id.is_not_null())
 
@@ -122,7 +109,7 @@ class EnrichOrders(Transform):
             product_category=product.category,
         )
 
-    @after(add_product, lane=orders, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+    @after(add_product)
     def add_quality_columns(self, *, orders, spark, ctx):
         return (
             orders

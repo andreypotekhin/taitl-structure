@@ -2,27 +2,26 @@
 
 ## Schema Classes
 
-A schema class defines a named row contract by inheriting from `Structure` and declaring `field(...)`
-attributes.
+A schema class defines a row contract and compiles into PySpark schema (`StructType`/`StructField`).
 
 ```python
 class OrderRaw(Structure):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
-    promotion_code = field(String(), nullable=True, alias="promo-code")
     total = field(String(), nullable=True)
 
+class OrderNormalized(OrderRaw):
+    pass
 
 class OrderWithCustomer(OrderRaw):
     customer_name = field(String(), nullable=True)
 ```
 
-Use schema classes for inputs, intermediate rows, and outputs. Inheritance keeps shared fields explicit
-without repeating declarations.
+Use schema classes for inputs, intermediate rows, and outputs. 
 
-Use `alias=` when the Spark DataFrame column is not a Python identifier. Python code uses the field name,
-while Spark schemas, validation, reads, and projection output use the alias. Aliases are schema-local unless
-inherited, and Structure passes alias strings through to Spark without sanitizing them.
+Inheritance allows to for schema reuse, while avoiding repeat declarations.
+
+Use `alias=` when the Spark DataFrame column is not a Python identifier.
 
 Reference: [schema declaration syntax](reference/SchemaDeclarationSyntax.md),
 [schema semantics](reference/SchemaSemantics.md), and
@@ -30,7 +29,7 @@ Reference: [schema declaration syntax](reference/SchemaDeclarationSyntax.md),
 
 ## Transform Classes
 
-A transform class is declared by inheriting `Transform`. Use `@transform(...)` only for class-level options.
+A transform class is declared by inheriting `Transform`.
 
 ```python
 class NormalizeOrders(Transform):
@@ -38,8 +37,12 @@ class NormalizeOrders(Transform):
     normalized = output(OrderNormalized)
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
-        ...
+        where(order.id.is_not_null())
+        return OrderNormalized.project(order)(
+          total=to_decimal(order.total, precision=12, scale=2))        
 ```
+
+A 'step method' is transform method that receives and returns a schema class(es), like the `normalize` method above. A transform may have multiple step methods, which are executed in the order of their declaration.
 
 Run the transform:
 
@@ -50,20 +53,18 @@ result = NormalizeOrders(
     orders=orders_df,
 ).run(session)
 
-normalized = result.normalized
+normalized_df = result.normalized
 ```
 
-Structure can also generate PySpark code from transform classes for projects that prefer generated PySpark
-code.
+Invocation of run() method compiles transform and invokes its steps methods. 
 
-Transform classes may inherit reusable steps from undecorated `Transform` parents:
+Transform classes may inherit from other Transform classes. In such case, parent transforms execute first:
 
 ```python
 class NormalizeBase(Transform):
     orders = input(OrderRaw)
     normalized = lane(OrderNormalized)
 
-    @transform(output=normalized)
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         ...
 
@@ -74,19 +75,17 @@ class PublishOrders(NormalizeBase):
         ...
 ```
 
-Parent steps run before child steps. Multiple parents run in the declared base-class order. An override can schedule a
-parent implementation as a separate step with `super().normalize(order)`, `Base.normalize(self, order)`, or
+Parent transform step methods run before child transform step methods. Multiple parents are allowed: their step methods run in the declared order, left to right. A step method override in child transform can call parent implementation: `super().normalize(order)`, `Base.normalize(self, order)`, or
 `super(Base, self).normalize(order)`.
 
-Subtransforms do not call other subtransforms directly. Use source order, lanes, `Transform.to(...)`, private helpers,
-or `@special(type="expr")` helpers instead.
+Step methods do not call other step methods directly; attempt to do so, except for the override case above, will result in error. 
 
 Reference: [DSL](reference/DSL.md), [online execution](reference/OnlineExecution.md), and
 [transform inheritance and composition](reference/TransformComposition.md).
 
 ## Inputs
 
-Inputs are named class attributes.
+Inputs are named class attributes that correspond to PySpark DataFrames
 
 ```python
 orders = input(OrderRaw)
@@ -94,14 +93,7 @@ customers = input(Customer)
 products = input(Product)
 ```
 
-Generated `run(...)` methods use the same names.
-
-```python
-def run(self, *, orders, customers, products):
-    ...
-```
-
-When more than one input has the same schema, select the intended source on the subtransform:
+When more than one input exists of same schema, the step method must disambiguate with @transform(input) decoration:
 
 ```python
 orders_external = input(OrderRaw)
@@ -115,76 +107,61 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 Reference: [DSL inputs](reference/DSL.md) and
 [source module rules](reference/SourceModuleRules.md).
 
-## Subtransforms
+## Lanes
 
-Public instance methods with schema return annotations are compiled as subtransforms.
+Intermediate lanes can be declared to for funnel
+stages and branching. Most transforms don't need lanes.
+
+```python
+orders_raw = input(OrderRaw)
+orders_normalized = lane(OrderNormalized)
+orders_rejected = lane(OrderRaw)
+published = output(OrderEnriched)
+```
+
+The compiler infers input and lane sources from parameter types. If that can't be done (as with `orders_raw`/`orders_rejected` above), disambiguate using @transform decoration:
+
+```python
+@transform(output=orders_rejected)
+def ignore_inactive_orders(self, order: OrderRaw) -> OrderRaw:
+    ...
+```
+
+## Step methods
+
+Public instance methods with schema returns are called step methods.
 
 ```python
 def normalize(self, order: OrderRaw) -> OrderNormalized:
     ...
 ```
 
-Subtransforms execute in source order.
+Step methods execute in the order of their declaration in the source.
 
 ```text
 OrderRaw -> OrderNormalized -> OrderWithCustomer -> OrderEnriched
 ```
 
-Most single-lane transforms need no method-level selectors. Declare intermediate lanes for named funnel
-stages, branches, or repeated schemas that need disambiguation:
+Step methods may take additional schemas as parameters, for instance, to join with another frame. They can also return multiple relations as a tuple:
 
 ```python
-orders_raw = input(OrderRaw)
-orders_normalized = lane(OrderNormalized)
-orders_with_product = lane(OrderWithProduct)
-published = output(OrderEnriched)
-
-@transform(output=orders_normalized)
-def normalize(self, order: OrderRaw) -> OrderNormalized:
-    ...
-
-@transform(output=orders_with_product)
-def add_product(self, order: OrderNormalized) -> OrderWithProduct:
-    ...
-
-def publish(self, order: OrderWithProduct) -> OrderEnriched:
-    ...
-```
-
-Here the compiler infers the input and lane sources from parameter types. The decorators name the intermediate
-lanes; the final single output can be inferred from `publish` returning `OrderEnriched`.
-
-Subtransforms may declare additional schema parameters for relations used by the step. Bind repeated schemas
-explicitly and return a fixed schema tuple when the shared join/filter work produces multiple results:
-
-```python
-@transform(
-    input=[orders_external, products],
-    output=[accepted, audited],
-)
+@transform(output=[orders_with_product, orders_audited])
 def add_product(
     self,
     order: OrderRaw,
     product: Product,
-) -> tuple[OrderWithProduct, OrderWithProduct]:
-    left_join(
-        on=order.product_id == product.id,
-    )
-
+) -> tuple[OrderWithProduct, OrderRaw]:
+    left_join(on=order.product_id == product.id)
     accepted_order = OrderWithProduct.base(order)(product_name=product.name)
-    audited_order = OrderWithProduct.base(order)(product_name=product.name)
+    audited_order = order
     return accepted_order, audited_order
 ```
 
-The first parameter is the driving DataFrame. Later parameters are relations and must be joined before their
-fields are used. Joins and `where(...)` filters run once; each returned value is then projected into its named
-output frame. Use `input=` for original input or intermediate lane declarations, and `output=` for
-intermediate lane or final output declarations. Both options accept either one declaration or an ordered list.
-The plural method options are retired.
+Here, the first relation parameter (`order`) is the driving lane. The second relation parameter (`product`) is an additional relation - it must be joined before use. 
 
-Bare declarations resolve from the current source-order state. If a same-named lane already exists and its
-current schema matches the method parameter, it wins over the original input. Use role selectors when the
-distinction matters:
+The returned values are mapped to transform's outputs/lanes, based on schema class. Use @transform decoration with `input=`/`output=` to disambiguate.
+
+In `input=`/`output=`  values, a same-named lane with matching schema wins over the original input. Role selectors like `lane()`, `input()`, `output()` can be used to further disambiguate, if that matters:
 
 ```python
 @transform(input=input(orders), output=lane(orders))
@@ -205,8 +182,10 @@ Reference: [DSL subtransforms](reference/DSL.md),
 
 ## Online Execution
 
-Constructing a transform binds inputs without starting Spark work. Running it through a session executes the
-configured runtime target.
+Structure does not own storage orchestration. Callers own `write`, `writeStream`, table creation,
+partitioning, checkpoints, output modes, and storage options.
+
+Construct a transform object specifying applicable inputs. Running it triggers in-memory compilation and executes the compiled code.
 
 ```python
 from structure import StructureConfig, StructureSession
@@ -220,33 +199,18 @@ result = EnrichOrders(
     products=products_df,
 ).run(session)
 
-enriched = result.enriched
-enriched_schema = result.schema.enriched
+enriched_df = result.enriched
 ```
 
-The session owns the caller-supplied Spark reference, optional hook context, resolved Structure configuration,
-execution mode, and target backend selection.
-
-Use `result.schema` when caller code needs an output Spark schema in online mode:
-
-```python
-result = EnrichOrders(
-    orders=orders_df,
-    customers=customers_df,
-    products=products_df,
-).run(session)
-
-enriched_schema = result.schema.enriched
-same_schema = result.schema["enriched"]
-result.enriched.write.mode("overwrite").parquet(target_path)
-```
+The session owns the caller-supplied Spark reference, Structure configuration,
+execution mode and compiled artifacts. It preserves the compiled code between transform and invocations. For instance, the subsequent construction of new insances `EnrichOrders` and repeat invocations of its .run() (on same session) do not trigger recompiling.
 
 Reference: [online execution](reference/OnlineExecution.md) and
 [execution semantic contract](reference/ExecutionSemanticContract.md).
 
-## Optional Generated PySpark
+## Generated PySpark Code
 
-A source subtransform like this:
+For a source step method like this:
 
 ```python
 def normalize(self, order: OrderRaw) -> OrderNormalized:
@@ -259,7 +223,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     )
 ```
 
-generates PySpark like this:
+the generated PySpark code looks like this:
 
 ```python
 orders = orders.where(
@@ -273,97 +237,9 @@ orders = orders.where(
 
 Reference: [PySpark code generation](reference/PySparkCodeGeneration.md).
 
-## Generated Schemas in Caller Code
-
-Generated schema constants are ordinary PySpark `StructType` values. Caller code may import them for reads and
-for pre-write validation/projection.
-
-```python
-from structure_generated.orders.pyspark.schemas.order import ORDER_ENRICHED_SCHEMA, ORDER_RAW_SCHEMA
-from structure_generated.runtime.schema_assert import assert_schema, project_schema
-
-orders = spark.read.schema(ORDER_RAW_SCHEMA).parquet(source_path)
-
-assert_schema(result, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="strict")
-result = project_schema(result, ORDER_ENRICHED_SCHEMA)
-result.write.mode("overwrite").parquet(target_path)
-```
-
-Structure does not own storage orchestration. Callers own `write`, `writeStream`, table creation,
-partitioning, checkpoints, output modes, and storage options.
-
-Reference: [PySpark code generation](reference/PySparkCodeGeneration.md) and
-[streaming compatibility](reference/StreamingCompatibility.md).
-
-## Intermediate Validation
-
-Structure validates intermediate schemas by default.
-
-Project-wide defaults:
-
-```toml
-validate_intermediate = true
-intermediate_validation_mode = "schema_only"
-```
-
-Full phase defaults:
-
-```toml
-validate_inputs = true
-input_validation_mode = "schema_only"
-validate_intermediate = true
-intermediate_validation_mode = "schema_only"
-validate_outputs = true
-output_validation_mode = "schema_only"
-```
-
-Disable intermediate schema validation project-wide:
-
-```toml
-validate_intermediate = false
-```
-
-Choose fuller validation only when the added Spark work is intentional:
-
-```toml
-intermediate_validation_mode = "schema_and_constraints"
-```
-
-`schema_and_constraints` is reserved for opt-in data-quality checks such as accepted values, ranges,
-uniqueness, referential checks, freshness, and row-count policies. These checks are separate from schema shape
-and may trigger Spark work when Structure supports them. Future constraints should bind to input,
-intermediate, or output phases; the matching phase mode controls whether those constraints run.
-
-```python
-@transform(validate_intermediate=True)
-class EnrichOrders(Transform):
-    enriched = output(OrderEnriched)
-    ...
-```
-
-Disable class-wide:
-
-```python
-@transform(validate_intermediate=False)
-class EnrichOrders(Transform):
-    enriched = output(OrderEnriched)
-    ...
-```
-
-Disable for one method:
-
-```python
-@validate_output(False)
-def normalize(self, order: OrderRaw) -> OrderNormalized:
-    ...
-```
-
-Reference: [validation semantics](reference/ValidationSemantics.md) and
-[data quality constraints](reference/DataQualityConstraints.md).
-
 ## Filtering
 
-Use `where(...)` inside subtransforms.
+Use `where(...)` to filter on relation.
 
 ```python
 def valid_orders(self, order: OrderRaw) -> OrderValid:
@@ -386,38 +262,32 @@ Reference: [DSL filtering](reference/DSL.md) and
 
 ## Add and Drop Columns
 
-Add columns by returning a schema with more fields.
+Add columns by returning a schema with more fields. Drop columns by returning a schema with fewer fields.
 
 ```python
-class OrderWithFlags(Structure):
-    id = field(String())
-    total = field(Decimal(12, 2))
+class OrderWithFlags(OrderWithCustomer):
     is_large = field(Boolean())
 
-
-def add_flags(self, order: OrderRaw) -> OrderWithFlags:
+def add_flags(self, order: OrderWithCustomer) -> OrderWithFlags:
     total = to_decimal(order.total, precision=12, scale=2)
-    return OrderWithFlags(
-        id=order.id,
-        total=total,
+    return OrderWithFlags.base(order)(
         is_large=total > 1000,
     )
 ```
 
-Drop columns by returning a schema with fewer fields.
-
-Use `SchemaClass.project(source)` when the output copies same-name compatible fields from a source row.
+Use `SchemaClass.project(source)` to copy same-name compatible fields from a source row:
 
 ```python
 def publish(self, order: OrderWithPromotion) -> OrderPublished:
     return OrderPublished.project(order)
+  
+# Same as above:
+def publish(self, order: OrderWithPromotion) -> OrderPublished:
+    project(order, OrderPublished)
+    return order
 ```
 
-`project(source, TargetSchema)` and source-less `project(TargetSchema)` remain supported compatibility forms inside
-compiled subtransforms. Prefer the schema method in new public examples because the source row remains visible.
-
-Use a field list when the output should copy only selected source fields. The list names source-row fields;
-the method return annotation still defines the output schema and field order.
+Use a field list when the output should copy only selected source fields.
 
 ```python
 def audit(self, order: OrderRaw) -> OrderAudit:
@@ -433,8 +303,6 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
         quantity=coalesce(order.quantity, 1),
     )
 ```
-
-Generated code prefers explicit projection over `drop(...)` so the output schema is deterministic.
 
 Reference: [schema semantics](reference/SchemaSemantics.md) and
 [PySpark code generation](reference/PySparkCodeGeneration.md).
@@ -465,7 +333,7 @@ Reference: [DSL expressions](reference/DSL.md) and
 
 ## Expression Methods
 
-Use `@special(type="expr")` for reusable compileable expressions.
+A Transform class can declare expression methods for reusable expressions. Expression methods are expected to have compileable code, and Structure will fail if it can't compile. Use optional decoration `@special(type="expr")` if demarcation is needed for clarity.
 
 ```python
 @special(type="expr")
@@ -473,7 +341,7 @@ def clean_id(value):
     return lower(trim(value))
 ```
 
-Class-local helpers do not take `self`, but can be called through `self`.
+Expression methods do not take `self`, but can be called through `self`.
 
 ```python
 customer_id=self.clean_id(order.customer_id)
@@ -483,8 +351,8 @@ Reference: [DSL expression helpers](reference/DSL.md).
 
 ## Aggregations
 
-Use `group_by(...)` inside a subtransform that returns an aggregate schema. (Aggregate
-assignments stay compiler-visible and lower to Spark grouping operations.)
+Use `group_by(...)` to return an aggregate schema. Aggregate
+assignments stay compiler-visible and lower to Spark grouping operations.
 
 ```python
 def product_daily_summary(self, order: OrderFulfillment) -> ProductDailySummary:
@@ -515,7 +383,7 @@ and `last_value(...)`. Aggregate helpers accept `where=...` for metric-local fil
 arbitrary `grouping_sets(...)` are reserved capability boundaries.
 
 Use `rollup(...)` for hierarchical subtotals and `cube(...)` for all grouping-key combinations.
-(Subtotal rows may omit some grouping keys, so nullable subtotal fields or explicit labels are required.)
+Subtotal rows may omit some grouping keys, so nullable subtotal fields or explicit labels are required.
 
 ```python
 def revenue_rollup(self, order: OrderFulfillment) -> OrderRevenueRollup:
@@ -581,9 +449,11 @@ def latest_events(self, event: RawEvent) -> LatestEvent:
 
 The PySpark target lowers these helpers to `row_number()` over
 `Window.partitionBy(...).orderBy(...)`, keeps rank `1`, then drops the temporary rank column. `partition_by` is
-required so the selection is reviewable, and the current public tie policy is `TiePolicy.ERROR`. Selected-row helpers
-are batch-only in v2 streaming compatibility checks because streaming-safe ranking needs explicit watermark and state
-semantics.
+required so the selection is reviewable, and the current public tie policy is `TiePolicy.ERROR`. 
+
+Streaming: Selected-row helpers
+are batch-only in v2 streaming compatibility checks, because streaming-safe ranking needs explicit watermark and state
+semantics (planned).
 
 Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md),
 [PySpark code generation](reference/PySparkCodeGeneration.md), and
@@ -614,7 +484,7 @@ pass `offset=...` and `default=...` when needed. `rolling_sum(...)`, `rolling_av
 `rolling_max(...)` require `preceding=...`, the number of prior rows included with the current row. These helpers render
 as PySpark window expressions in the projection, not Python UDFs.
 
-Use reusable `window(...)` specs when several output fields share partition, ordering, and frame rules:
+Use reusable `window(...)` specification when several output fields share partition, ordering, and frame rules:
 
 ```python
 def customer_window(self, order: OrderFulfillment) -> OrderCustomerWindow:
@@ -636,7 +506,9 @@ def customer_window(self, order: OrderFulfillment) -> OrderCustomerWindow:
 ```
 
 Reusable windows require explicit frames such as `rows_between(preceding(2), current_row())` or
-`range_between(preceding(10), current_row())`. Broad window helpers are batch-only in v2 streaming compatibility.
+`range_between(preceding(10), current_row())`. 
+
+Streaming: broad window helpers are batch-only in v2 streaming compatibility.
 
 Reference: [advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md),
 [IR](reference/IntermediateRepresentation.md), [PySpark code generation](reference/PySparkCodeGeneration.md), and
@@ -644,7 +516,7 @@ Reference: [advanced analytical operations](reference/AdvancedAnalyticalOperatio
 
 ## Removing Duplicate Rows
 
-Use `distinct(relation)` for exact duplicate removal over a relation. It is a readable synonym for
+Use `distinct(relation)` for exact duplicate removal over a relation. It is a synonym for
 `drop_duplicates(relation)`.
 
 ```python
@@ -653,7 +525,7 @@ def unique_events(self, event: RawEvent) -> RawEvent:
     return RawEvent.project(event)
 ```
 
-`drop_duplicates(...)` also accepts typed field expressions for PySpark-compatible subset dedupe. The relation is
+`drop_duplicates(...)` with accepts list of typed field expressions for PySpark-compatible subset dedupe. The relation is
 inferred when all fields come from the same relation:
 
 ```python
@@ -662,9 +534,8 @@ def unique_accounts(self, event: RawEvent) -> RawEvent:
     return RawEvent.project(event)
 ```
 
-No-arg `distinct()` and `drop_duplicates()` remain supported compatibility forms for exact duplicate removal on the
-current active frame. Dedupe operations run in source order: before a relation is joined they prepare that relation's
-source; after a join they apply to the active joined frame using the requested relation fields.
+Dedupe operations run in source order: before a relation is joined they prepare that relation's
+source; after a join they apply to the active joined frame using the specified relation fields.
 
 When the selected row must be deterministic, prefer `dedupe_latest_by(...)` or `dedupe_earliest_by(...)` 
 with an explicit ordering and tie policy. 
@@ -675,10 +546,7 @@ def latest_events(self, event: RawEvent) -> RawEvent:
     return RawEvent.project(event)
 ```
 
-If duplicate removal must apply after a narrowing projection, split the projection and `distinct(relation)` into
-adjacent subtransforms so the narrowed schema is the active frame.
-
-Exact duplicate removal is batch-only in v2 streaming compatibility checks because streaming dedupe needs explicit
+Streaming: exact duplicate removal is batch-only in v2 streaming compatibility because streaming dedupe needs explicit
 watermark, state, and output-mode semantics.
 
 Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md),
@@ -687,8 +555,8 @@ Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md
 
 ## Higher-Order Functions
 
-Use `arr_transform(...)`, `arr_filter(...)`, `map_transform_values(...)`, and `map_filter(...)` for Spark-plan-visible
-collection callbacks (lambdas).
+Use `arr_transform(...)`, `arr_filter(...)`, `map_transform_values(...)`, and `map_filter(...)` for Spark-optimizer-visible
+collection callbacks.
 
 ```python
 def normalize(self, order: OrderRaw) -> OrderNormalized:
@@ -708,7 +576,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     return OrderNormalized.project(order)(attributes=attributes)
 ```
 
-Array and map helpers can be combined in one compiled projection:
+Array and map helpers can be combined into one compiled projection:
 
 ```python
 normalized_tags = arr_transform(row.tags, lambda tag: lower(trim(tag)))
@@ -1086,6 +954,72 @@ Single-result hooks still name the selected lane explicitly.
 
 Reference: [hook semantics](reference/HookSemantics.md) and
 [validation semantics](reference/ValidationSemantics.md).
+
+## Schema Validation
+
+Structure validates intermediate schemas by default.
+
+Project-wide defaults:
+
+```toml
+validate_intermediate = true
+intermediate_validation_mode = "schema_only"
+```
+
+Full phase defaults:
+
+```toml
+validate_inputs = true
+input_validation_mode = "schema_only"
+validate_intermediate = true
+intermediate_validation_mode = "schema_only"
+validate_outputs = true
+output_validation_mode = "schema_only"
+```
+
+Disable intermediate schema validation project-wide:
+
+```toml
+validate_intermediate = false
+```
+
+Choose fuller validation only when the added Spark work is intentional:
+
+```toml
+intermediate_validation_mode = "schema_and_constraints"
+```
+
+`schema_and_constraints` is reserved for opt-in data-quality checks such as accepted values, ranges,
+uniqueness, referential checks, freshness, and row-count policies. These checks are separate from schema shape
+and may trigger Spark work when Structure supports them. Future constraints should bind to input,
+intermediate, or output phases; the matching phase mode controls whether those constraints run.
+
+```python
+@transform(validate_intermediate=True)
+class EnrichOrders(Transform):
+    enriched = output(OrderEnriched)
+    ...
+```
+
+Disable class-wide:
+
+```python
+@transform(validate_intermediate=False)
+class EnrichOrders(Transform):
+    enriched = output(OrderEnriched)
+    ...
+```
+
+Disable for one method:
+
+```python
+@validate_output(False)
+def normalize(self, order: OrderRaw) -> OrderNormalized:
+    ...
+```
+
+Reference: [validation semantics](reference/ValidationSemantics.md) and
+[data quality constraints](reference/DataQualityConstraints.md).
 
 ## Source and Generated Paths
 

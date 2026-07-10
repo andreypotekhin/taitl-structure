@@ -32,6 +32,7 @@ src/structure/
   app/
     cli/
     compiler/
+      api/
       frontend/
       ir/
       symbolic_execution/
@@ -39,6 +40,7 @@ src/structure/
     configuration/
     dsl/
     runtime/
+      api/
       execution/
         online/
         generated/
@@ -122,6 +124,10 @@ logic class.
 
 Logic classes are typically instantiated as a static instance, user classes thus can sharing that instance.
 The logic classes provide an entry point - __call__ method - with specific (preferably, named) arguments. 
+
+#### Inter-app invocations
+Invocations between top-level apps should go through their api endpoints. We have a number of cases
+when apps call other apps' commands directly, but we want to eliminate that pattern.
 
 #### Helper Library
 Any and all code that is general/not pertaining to immediate business use case must be placed/relocated 
