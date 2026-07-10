@@ -57,7 +57,7 @@ class RenderStructureDocsMarkdown:
             "",
             *self._named_schema_lines(transform["outputs"]),
             "",
-            "## Subtransforms",
+            "## Step methods",
             "",
         ]
         for step in self._sequence(transform["subtransforms"]):

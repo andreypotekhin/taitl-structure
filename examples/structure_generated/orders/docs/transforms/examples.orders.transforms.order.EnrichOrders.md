@@ -17,7 +17,7 @@ Source: `examples.orders.transforms.order.EnrichOrders`
 
 - `published`: `OrderPublished`
 
-## Subtransforms
+## Step methods
 
 - `normalize`: `OrderRaw` -> `OrderNormalized`
 - `add_customer`: `OrderNormalized` -> `OrderWithCustomer`

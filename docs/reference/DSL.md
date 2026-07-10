@@ -395,14 +395,14 @@ return OrderWithCustomer.base(order)(
 )
 ```
 
-When the output copies same-name fields from the driving row, the subtransform may return source-less projection:
+When the output copies same-name fields from a source row, prefer schema-method projection:
 
 ```python
-return project(OrderPublished)
+return OrderPublished.project(order)
 ```
 
-Use `project(source, TargetSchema)` when the intended source is not the driving row or when an explicit source makes a
-multi-relation method clearer.
+`project(source, TargetSchema)` and source-less `project(TargetSchema)` remain supported compatibility forms inside
+compiled subtransforms. Prefer `TargetSchema.project(source)` in public examples because the source row remains visible.
 
 Output construction details are owned by [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md).
 

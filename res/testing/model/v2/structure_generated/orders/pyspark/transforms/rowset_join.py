@@ -30,7 +30,7 @@ class RowsetJoinExamplesGenerated:
         _input_customers = customers
         _input_products = products
 
-        # Subtransform: reconcile_orders
+        # Step method: reconcile_orders
         orders = orders.alias("order_raw")
         customers_joined = customers.alias("customers")
         orders = orders.join(
@@ -48,7 +48,7 @@ class RowsetJoinExamplesGenerated:
         )
         assert_schema(orders, ORDER_CUSTOMER_RECONCILIATION_SCHEMA, name="OrderCustomerReconciliation", mode="strict")
 
-        # Subtransform: keep_customers
+        # Step method: keep_customers
         orders = orders.alias("order_customer_reconciliation")
         customers_joined = customers.alias("customers")
         orders = orders.join(
@@ -66,7 +66,7 @@ class RowsetJoinExamplesGenerated:
         )
         assert_schema(orders, CUSTOMER_ORDER_BACKFILL_SCHEMA, name="CustomerOrderBackfill", mode="strict")
 
-        # Subtransform: expand_product_candidates
+        # Step method: expand_product_candidates
         candidates = orders.alias("customer_order_backfill")
         products_joined = products.alias("products")
         candidates = candidates.crossJoin(products_joined)
@@ -79,7 +79,7 @@ class RowsetJoinExamplesGenerated:
             F.col("products.name").alias("product_name"),
         )
 
-        # Subtransform: candidates
+        # Step method: candidates
         candidates = candidates.alias("order_product_candidate")
         assert_schema(candidates, ORDER_PRODUCT_CANDIDATE_SCHEMA, name="OrderProductCandidate", mode="strict")
         return TransformResult({"candidates": candidates}, single=True, schema={"candidates": ORDER_PRODUCT_CANDIDATE_SCHEMA})

@@ -14,7 +14,7 @@ Source: `examples.orders.transforms.rowset_join.RowsetJoinExamples`
 
 - `candidates`: `OrderProductCandidate`
 
-## Subtransforms
+## Step methods
 
 - `reconcile_orders`: `OrderRaw` -> `OrderCustomerReconciliation`
 - `keep_customers`: `OrderCustomerReconciliation` -> `CustomerOrderBackfill`

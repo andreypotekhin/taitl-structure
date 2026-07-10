@@ -366,7 +366,7 @@ def test_v1_final_output_materializes_named_result_from_implicit_lane() -> None:
         },
     )
 
-    assert "        # Subtransform: published\n        published = rows.alias(\"published\")" in text
+    assert "        # Step method: published\n        published = rows.alias(\"published\")" in text
     assert '        assert_schema(published, PUBLISHED_SCHEMA, name="Published", mode="strict")' in text
     assert (
         'return TransformResult({"published": published}, single=True, schema={"published": PUBLISHED_SCHEMA})' in text
@@ -629,9 +629,9 @@ def test_v1_generated_pyspark_uses_per_lane_step_sources() -> None:
     )
 
     assert [step.source for step in recipe.steps] == ["rows", "rows", "accepted_lane", "rows"]
-    assert "        # Subtransform: accept\n        accepted_lane = rows.alias(\"normalized\")" in text
-    assert "        # Subtransform: keep_accepted\n        accepted = accepted_lane.alias(\"accepted\")" in text
-    assert "        # Subtransform: reject\n        rejected = rows.alias(\"normalized\")" in text
+    assert "        # Step method: accept\n        accepted_lane = rows.alias(\"normalized\")" in text
+    assert "        # Step method: keep_accepted\n        accepted = accepted_lane.alias(\"accepted\")" in text
+    assert "        # Step method: reject\n        rejected = rows.alias(\"normalized\")" in text
     assert (
         'return TransformResult({"accepted": accepted, "rejected": rejected}, single=False, '
         'schema={"accepted": ACCEPTED_SCHEMA, "rejected": REJECTED_SCHEMA})' in text

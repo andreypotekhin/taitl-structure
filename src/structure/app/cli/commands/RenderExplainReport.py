@@ -99,7 +99,10 @@ class RenderExplainReport:
             )
         if operation.kind == "drop_duplicates":
             subset = 0 if operation.duplicate_rows is None else len(operation.duplicate_rows.subset)
+            scope = None if operation.duplicate_rows is None else operation.duplicate_rows.scope
             suffix = "" if not subset else f" subset={subset}"
+            if scope is not None:
+                suffix = f"{suffix} scope={scope}"
             modes = self._streaming_modes(operation)
             return f"drop_duplicates({operation.cardinality.value}{suffix}{modes})"
         if operation.watermark is not None:

@@ -525,6 +525,70 @@ def test_online_runner_applies_subset_duplicate_removal_recipe(monkeypatch) -> N
     )
 
 
+def test_online_runner_applies_relation_duplicate_removal_before_join(monkeypatch) -> None:
+    """I can dedupe a relation source before a later join consumes it."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(
+        orders=_frame("orders", RawOrder),
+        customers=_frame("customers", Customer),
+    )
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _relation_drop_duplicates_join_plan(before_join=True),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target_backend="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:orders",
+        "dropDuplicates:id",
+        "join:customers:left:(col(orders.id) == col(customers.id))",
+        "select:id=col(orders.id),status=col(customers.segment)",
+        "alias:published",
+    )
+
+
+def test_online_runner_applies_relation_duplicate_removal_after_join(monkeypatch) -> None:
+    """I can place relation-scoped dedupe after a join and have source order preserved."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(
+        orders=_frame("orders", RawOrder),
+        customers=_frame("customers", Customer),
+    )
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _relation_drop_duplicates_join_plan(before_join=False),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target_backend="pyspark",
+        ),
+    )
+
+    published = cast(FakeFrame, result.published)
+
+    assert published.operations == (
+        "alias:orders",
+        "join:customers:left:(col(orders.id) == col(customers.id))",
+        "dropDuplicates:id",
+        "select:id=col(orders.id),status=col(customers.segment)",
+        "alias:published",
+    )
+
+
 def test_online_runner_dedupes_lookup_input_deterministically(monkeypatch) -> None:
     """I can rely on online and generated execution to share v2 deduped lookup semantics."""
 
@@ -1417,6 +1481,89 @@ def _deduped_join_plan() -> PySparkExecutionPlan:
     )
 
 
+def _relation_drop_duplicates_join_plan(*, before_join: bool) -> PySparkExecutionPlan:
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
+    projection = (
+        PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
+        PySparkProjectionRecipe(
+            PublishedOrder._structure_fields["status"],
+            _field_scope("customers", Customer, "segment"),
+        ),
+    )
+    join = PySparkJoinRecipe(
+        input_name="customers",
+        source="customers",
+        input_schema=Customer,
+        left_alias="orders",
+        right_alias="customers",
+        how=Join.LEFT,
+        hint=None,
+        predicate=_binary("eq", _field(RawOrder, "id"), _field_scope("customers", Customer, "id")),
+        occurrence=0,
+    )
+    join_operation = PySparkOperationRecipe.join_operation(join)
+    dedupe = PySparkOperationRecipe.drop_duplicates_operation(
+        PySparkDuplicateRowsRecipe(subset=(_field_scope("customers", Customer, "id"),), scope="customers")
+    )
+    step = PySparkStepRecipe(
+        name="publish",
+        ordinal=0,
+        source="orders",
+        source_scope="orders",
+        input_schema=RawOrder,
+        output_schema=PublishedOrder,
+        input_alias="orders",
+        output_alias="published",
+        before_hooks=(),
+        filters=(),
+        joins=(join,),
+        projection=projection,
+        after_hooks=(),
+        validations=(),
+        results=(
+            PySparkStepResultRecipe(
+                schema=PublishedOrder,
+                lane="published",
+                frame="published",
+                output_alias="published",
+                projection=projection,
+                ordinal=0,
+                after_hooks=(),
+                validations=(published_validation,),
+            ),
+        ),
+        operations=(dedupe, join_operation) if before_join else (join_operation, dedupe),
+    )
+    return PySparkExecutionPlan(
+        transform="PublishKnownCustomers",
+        backend=BackendId("PySpark", "3.5", "pyspark"),
+        inputs=(
+            PySparkInputRecipe("orders", RawOrder, 0, input_validation),
+            PySparkInputRecipe("customers", Customer, 1, customer_validation),
+        ),
+        steps=(step,),
+        outputs=(
+            PySparkOutputRecipe(
+                name="published",
+                ordinal=0,
+                source="published",
+                source_scope="published",
+                input_schema=PublishedOrder,
+                output_schema=PublishedOrder,
+                input_alias="published",
+                output_alias="published",
+                filters=(),
+                joins=(),
+                projection=(),
+                validation=published_validation,
+            ),
+        ),
+        requires_hook_inputs=False,
+    )
+
+
 def _temporal_join_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
@@ -2132,7 +2279,7 @@ class FakeFrame:
         dedupe = tuple(
             operation
             for operation in right.operations
-            if operation.startswith(("withColumn:", "drop:")) or "__structure_" in operation
+            if operation.startswith(("withColumn:", "drop:", "dropDuplicates")) or "__structure_" in operation
         )
         return FakeFrame(
             self.name,

@@ -24,7 +24,7 @@ Generated documentation includes:
 - `transforms/<module>.<Transform>.md` and/or `transforms/<module>.<Transform>.json`.
 
 Schema pages list field names, Spark columns, Structure types, nullability, and primary-key flags. Transform pages list
-inputs, outputs, subtransforms, dependencies, and target artifacts such as generated PySpark and traceability JSON.
+inputs, outputs, step methods, dependencies, and target artifacts such as generated PySpark and traceability JSON.
 
 JSON files are valid JSON and include `"generated_by": "Structure"`. Markdown files use the standard generated-file
 ownership header.

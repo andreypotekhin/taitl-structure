@@ -168,8 +168,8 @@ def test_v1_symbolic_plan_rejects_incompatible_nested_struct_assignment() -> Non
         compile_transform(Publish)
 
 
-def test_transform_class_options_default_subtransform_options() -> None:
-    """Class-level transform config options apply to every subtransform."""
+def test_transform_class_options_default_step_method_options() -> None:
+    """Class-level transform config options apply to every step method."""
 
     class Row(Structure):
         id = field(String(), nullable=False)

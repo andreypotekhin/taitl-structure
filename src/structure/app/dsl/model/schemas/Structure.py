@@ -58,12 +58,9 @@ class Structure:
 
     @classmethod
     def project(cls, source: object):
-        def build(**overrides: object) -> "Structure":
-            base = cls._base_values((source,))
-            base.update(overrides)
-            return cls(**base)
+        from structure.app.dsl.model.schemas.Projection import Projection
 
-        return build
+        return Projection(source=source, target=cls)
 
     @classmethod
     def _base_values(cls, sources: tuple[object, ...]) -> dict[str, object]:

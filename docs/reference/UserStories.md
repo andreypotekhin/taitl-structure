@@ -199,7 +199,9 @@ narrower use cases and roadmap features.
 - + As a developer, I can remove temporary intermediate fields in a later subtransform so that final output remains clean.
 - + As a developer, I can return `project(source, TargetSchema)` so that same-name compatible fields are copied without
   repeating every field.
-- + As a developer, I can return `project(TargetSchema)` so that the driving row can be projected concisely when it is
+- + As a developer, I can return `SchemaClass.project(source)` so that same-name compatible fields are copied while the
+  source relation remains explicit.
+- + As a developer, I can still return `project(TargetSchema)` as a compatibility shorthand when the driving row is
   unambiguous.
 - + As a developer, I can return `project(source, [fields])` so that projection can be narrowed by input field names.
 - + As a developer, I can use `where(predicate).project(source, target)` so that filtered projection can be written

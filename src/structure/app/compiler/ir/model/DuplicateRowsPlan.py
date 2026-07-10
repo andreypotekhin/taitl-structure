@@ -8,3 +8,4 @@ from structure.app.dsl.model.expr.Expression import Expression
 @dataclass(frozen=True)
 class DuplicateRowsPlan:
     subset: tuple[Expression, ...] = ()
+    scope: str | None = None

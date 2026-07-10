@@ -45,7 +45,7 @@ class SpecialFunction:
         if self.type == "opaque" and current_context() is not None:
             raise TypeError(
                 f"{self.function.__qualname__} is @special(type=\"opaque\") and cannot be called from a compiled "
-                "subtransform. Use @special(type=\"udf\") for scalar Python UDFs or a hook for DataFrame logic."
+                "step method. Use @special(type=\"udf\") for scalar Python UDFs or a hook for DataFrame logic."
             )
         return self.function(*args, **kwargs)
 

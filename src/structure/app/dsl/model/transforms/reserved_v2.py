@@ -503,14 +503,15 @@ def window_count_distinct(value: object, *, over: "WindowSpec") -> Expression:
 
 
 def drop_duplicates(*subset: object) -> None:
-    fields = _dedupe_subset(subset, call="drop_duplicates(...)")
+    duplicate_rows = _duplicate_rows(subset, call="drop_duplicates(...)")
     _context("drop_duplicates()").operations.append(
-        OperationPlan.drop_duplicates_operation(DuplicateRowsPlan(subset=fields))
+        OperationPlan.drop_duplicates_operation(duplicate_rows)
     )
 
 
-def distinct() -> None:
-    _context("distinct()").operations.append(OperationPlan.drop_duplicates_operation())
+def distinct(relation: object | None = None) -> None:
+    duplicate_rows = DuplicateRowsPlan() if relation is None else _duplicate_rows((relation,), call="distinct(...)")
+    _context("distinct()").operations.append(OperationPlan.drop_duplicates_operation(duplicate_rows))
 
 
 def _aggregate(
@@ -655,6 +656,27 @@ def _partition_by(partition_by: object, *, call: str) -> tuple[Expression, ...]:
     return partitions
 
 
+def _duplicate_rows(subset: tuple[object, ...], *, call: str) -> DuplicateRowsPlan:
+    if not subset:
+        return DuplicateRowsPlan()
+    relation = _relation_subset(subset[0]) if len(subset) == 1 else None
+    if relation is not None:
+        relation_scope, fields = relation
+        return DuplicateRowsPlan(subset=fields, scope=relation_scope)
+    fields = _dedupe_subset(subset, call=call)
+    scope = _dedupe_scope(fields, call=call)
+    return DuplicateRowsPlan(subset=fields, scope=scope)
+
+
+def _relation_subset(value: object) -> tuple[str, tuple[Expression, ...]] | None:
+    scope = getattr(value, "_structure_scope_name", None)
+    schema = getattr(value, "_structure_scope_schema", None)
+    fields = getattr(schema, "_structure_fields", None)
+    if not isinstance(scope, str) or not isinstance(fields, dict):
+        return None
+    return scope, tuple(getattr(value, name) for name in fields)
+
+
 def _dedupe_subset(subset: tuple[object, ...], *, call: str) -> tuple[Expression, ...]:
     values = subset[0] if len(subset) == 1 and isinstance(subset[0], (tuple, list)) else subset
     fields = tuple(literal(value) for value in values)
@@ -662,6 +684,13 @@ def _dedupe_subset(subset: tuple[object, ...], *, call: str) -> tuple[Expression
         if field.kind != "field":
             raise TypeError(f"{call} subset accepts field expressions such as row.id")
     return fields
+
+
+def _dedupe_scope(fields: tuple[Expression, ...], *, call: str) -> str | None:
+    scopes = {str(field.data["scope"]) for field in fields if field.data and "scope" in field.data}
+    if len(scopes) > 1:
+        raise TypeError(f"{call} accepts fields from one relation scope per call")
+    return next(iter(scopes), None)
 
 
 @dataclass(frozen=True)
@@ -1137,5 +1166,5 @@ def _key_name(expression: Expression) -> str:
 def _context(call: str) -> CompileContext:
     context = current_context()
     if context is None:
-        raise RuntimeError(f"{call} can only be used inside a compiled Structure subtransform")
+        raise RuntimeError(f"{call} can only be used inside a compiled Structure step method")
     return context

@@ -71,7 +71,7 @@ def test_streaming_unknown_hook_reports_a_registered_warning() -> None:
 
 
 def test_generated_streaming_compatible_code_avoids_lifecycle_and_actions() -> None:
-    """I can keep streaming orchestration outside Structure in v1 and v2."""
+    """I can keep streaming orchestration outside Structure in v.1 and v.2."""
 
     plan = PySpark.plan.lower()(compile_transform(StreamingProjection))
     files = PySpark.render.project()(

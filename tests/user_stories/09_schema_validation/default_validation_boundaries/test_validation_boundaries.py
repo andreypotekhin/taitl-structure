@@ -9,8 +9,8 @@ from testing.model.v1.orders.schemas.order import (
 from structure.app.dsl.api import SchemaMode
 
 
-def test_intermediate_schema_validation_is_placed_after_subtransforms(orders_recipe) -> None:
-    """I can have intermediate schemas validated after each subtransform by default."""
+def test_intermediate_schema_validation_is_placed_after_step_methods(orders_recipe) -> None:
+    """I can have intermediate schemas validated after each step method by default."""
 
     assert [
         (step.name, step.validations[-1].schema, step.validations[-1].mode, step.validations[-1].reason)

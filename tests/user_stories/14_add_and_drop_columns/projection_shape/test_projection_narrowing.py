@@ -90,7 +90,7 @@ def test_return_project_to_field_list_validates_source_fields() -> None:
 
 
 def test_project_source_argument_removes_multiple_parameter_ambiguity() -> None:
-    """I can choose the source row explicitly when a subtransform has multiple schema parameters."""
+    """I can choose the source row explicitly when a step method has multiple schema parameters."""
 
     @transform
     class Publish(Transform):
@@ -171,6 +171,24 @@ def test_schema_project_copies_fields_and_allows_overrides() -> None:
 
     assert projection["amount"].kind == "call"
     assert cast(Any, projection["count"].data)["field"] == "count"
+
+
+def test_schema_project_without_overrides_copies_fields() -> None:
+    """I can return schema projection directly when every copied field is unchanged."""
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published.project(row)
+
+    plan = compile_transform(Publish)
+    projection = {assignment.field.name: assignment.expression for assignment in plan.steps[0].projection}
+
+    assert cast(Any, projection["id"].data)["field"] == "id"
+    assert cast(Any, projection["status"].data)["field"] == "status"
 
 
 def test_projection_accepts_type_widening() -> None:

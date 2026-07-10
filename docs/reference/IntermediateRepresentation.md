@@ -517,11 +517,13 @@ with explicit partition and ordering expressions, and target recipes render them
 `Window.partitionBy(...).orderBy(...)` projections. Rolling metric helpers add a row frame from `-preceding` through
 the current row. Keyed duplicate-removal shortcuts remain separate features.
 
-Duplicate-removal operations, exposed as `distinct()` and `drop_duplicates(...)`, record `row_filtering` cardinality
-and an optional field subset. `distinct()` and empty `drop_duplicates()` lower to current-frame exact duplicate
-removal. Subset `drop_duplicates(field, ...)` lowers to PySpark-compatible subset dedupe; non-subset fields come from
-Spark's representative row. Deterministic selected-row dedupe remains modeled through selected-row operations produced
-by `latest_by(...)`, `earliest_by(...)`, `dedupe_latest_by(...)`, and `dedupe_earliest_by(...)`.
+Duplicate-removal operations, exposed as `distinct(...)` and `drop_duplicates(...)`, record `row_filtering`
+cardinality, an optional relation scope, and an optional field subset. `distinct(relation)` is a synonym for
+`drop_duplicates(relation)` and records all fields from that relation as the dedupe subset. `drop_duplicates(field, ...)`
+infers the relation scope when all fields come from one relation. Empty `distinct()` and `drop_duplicates()` remain
+current-frame exact duplicate compatibility forms. Operations apply in source order; non-subset fields come from Spark's
+representative row. Deterministic selected-row dedupe remains modeled through selected-row operations produced by
+`latest_by(...)`, `earliest_by(...)`, `dedupe_latest_by(...)`, and `dedupe_earliest_by(...)`.
 
 `structure explain` displays each step's ordered operations as `kind(cardinality)`. Aggregate explain output also names
 grouping keys and aggregate metric functions, and selected-row output names the helper direction and partition count.

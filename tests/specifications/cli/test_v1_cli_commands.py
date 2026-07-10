@@ -265,7 +265,7 @@ def test_v1_cli_check_accepts_reserved_compat_targets() -> None:
 
         assert result.exit_code == 0, result.output
         assert "compatibility targets: polars, duckdb" in result.output
-        assert "non-PySpark target checks are reserved for v2+" in result.output
+        assert "non-PySpark target checks are reserved for v.2+" in result.output
 
 
 def test_v1_cli_compile_writes_generated_files_and_fail_on_diff_passes() -> None:
@@ -441,7 +441,7 @@ def test_v1_cli_explain_accepts_reserved_compat_targets() -> None:
         assert result.exit_code == 0, result.output
         assert "NormalizeOrders" in result.output
         assert "compatibility targets: polars, duckdb" in result.output
-        assert "non-PySpark target checks are reserved for v2+" in result.output
+        assert "non-PySpark target checks are reserved for v.2+" in result.output
 
 
 def test_v1_cli_clean_removes_owned_generated_files_only() -> None:

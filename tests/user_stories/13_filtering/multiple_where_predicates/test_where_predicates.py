@@ -12,7 +12,7 @@ def test_multiple_where_calls_remain_ordered_filter_predicates(orders_recipe) ->
 
 
 def test_generated_filtering_uses_dataframe_where_with_optimizer_visible_columns(orders_transform_text) -> None:
-    """I can call where(predicate) inside a subtransform."""
+    """I can call where(predicate) inside a step method."""
 
     assert "        orders = orders.where(" in orders_transform_text
     assert 'F.col("order_raw.id").isNotNull()' in orders_transform_text

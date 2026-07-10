@@ -24,7 +24,7 @@ class OrderAnalyticsGenerated:
         assert_schema(fulfilled, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")
         _input_fulfilled = fulfilled
 
-        # Subtransform: customer_daily_totals
+        # Step method: customer_daily_totals
         customer_totals = fulfilled.alias("order_fulfillment")
         customer_totals = customer_totals.groupBy(
             F.col("order_fulfillment.tenant.tenant_id").alias("tenant_id"),
@@ -45,7 +45,7 @@ class OrderAnalyticsGenerated:
         )
         assert_schema(customer_totals, CUSTOMER_DAILY_TOTAL_SCHEMA, name="CustomerDailyTotal", mode="strict")
 
-        # Subtransform: product_daily_summary
+        # Step method: product_daily_summary
         product_summary = fulfilled.alias("order_fulfillment")
         product_summary = product_summary.groupBy(
             F.col("order_fulfillment.tenant.tenant_id").alias("tenant_id"),
@@ -74,7 +74,7 @@ class OrderAnalyticsGenerated:
         )
         assert_schema(product_summary, PRODUCT_DAILY_SUMMARY_SCHEMA, name="ProductDailySummary", mode="strict")
 
-        # Subtransform: customer_event_ranks
+        # Step method: customer_event_ranks
         customer_event_rank = fulfilled.alias("order_fulfillment")
         customer_event_rank = customer_event_rank.withColumn("__structure_customer_event_ranks_latest_rank", F.row_number().over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").desc())))
         customer_event_rank = customer_event_rank.where(F.col("__structure_customer_event_ranks_latest_rank") == F.lit(1))
@@ -95,15 +95,15 @@ class OrderAnalyticsGenerated:
             F.max(F.col("order_fulfillment.quantity")).over(Window.partitionBy(F.col("order_fulfillment.customer_id")).orderBy(F.col("order_fulfillment.quantity").asc()).rowsBetween(-2, 0)).alias("rolling_max_units"),
         )
 
-        # Subtransform: customer_totals
+        # Step method: customer_totals
         customer_totals = customer_totals.alias("customer_daily_total")
         assert_schema(customer_totals, CUSTOMER_DAILY_TOTAL_SCHEMA, name="CustomerDailyTotal", mode="strict")
 
-        # Subtransform: product_summary
+        # Step method: product_summary
         product_summary = product_summary.alias("product_daily_summary")
         assert_schema(product_summary, PRODUCT_DAILY_SUMMARY_SCHEMA, name="ProductDailySummary", mode="strict")
 
-        # Subtransform: customer_event_rank
+        # Step method: customer_event_rank
         customer_event_rank = customer_event_rank.alias("customer_event_rank")
         assert_schema(customer_event_rank, CUSTOMER_EVENT_RANK_SCHEMA, name="CustomerEventRank", mode="strict")
         return TransformResult({"customer_totals": customer_totals, "product_summary": product_summary, "customer_event_rank": customer_event_rank}, single=False, schema={"customer_totals": CUSTOMER_DAILY_TOTAL_SCHEMA, "product_summary": PRODUCT_DAILY_SUMMARY_SCHEMA, "customer_event_rank": CUSTOMER_EVENT_RANK_SCHEMA})

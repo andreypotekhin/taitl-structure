@@ -146,7 +146,7 @@ def lookup_join(
 ) -> Relation | InputScope:
     context = current_context()
     if context is None:
-        raise RuntimeError("lookup_join(...) can only be used inside a compiled Structure subtransform")
+        raise RuntimeError("lookup_join(...) can only be used inside a compiled Structure step method")
     on = _join_predicate("lookup_join", on)
     if relation is None:
         relation = cast(Relation, _infer_relation("lookup_join", context, on))
@@ -609,7 +609,7 @@ def _record_lookup_join(
 def _join_context(function: str):
     context = current_context()
     if context is None:
-        raise RuntimeError(f"{function}(...) can only be used inside a compiled Structure subtransform")
+        raise RuntimeError(f"{function}(...) can only be used inside a compiled Structure step method")
     return context
 
 

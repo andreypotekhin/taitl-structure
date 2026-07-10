@@ -76,11 +76,11 @@ def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
         schema_modules=_schema_modules(),
     )
 
-    assert "        # Subtransform: normalize" in text
-    assert "        # Subtransform: add_customer" in text
-    assert "        # Subtransform: add_product" in text
-    assert "        # Subtransform: add_promotion" in text
-    assert "        # Subtransform: publish" in text
+    assert "        # Step method: normalize" in text
+    assert "        # Step method: add_customer" in text
+    assert "        # Step method: add_product" in text
+    assert "        # Step method: add_promotion" in text
+    assert "        # Step method: publish" in text
     assert (
         "        orders = self._impl.use_current_orders(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)"
         in text
@@ -107,7 +107,7 @@ def test_v2_cache_directive_renders_as_post_projection_persist() -> None:
     assert "        orders = orders.select(" in text
     assert "        orders = orders.persist()" in text
     assert text.index("        orders = orders.select(") < text.index("        orders = orders.persist()")
-    assert text.index("        orders = orders.persist()") < text.index("        # Subtransform: published")
+    assert text.index("        orders = orders.persist()") < text.index("        # Step method: published")
 
 
 def test_v2_cache_directive_is_visible_in_explain_output() -> None:

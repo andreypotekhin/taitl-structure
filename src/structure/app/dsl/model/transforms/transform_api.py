@@ -370,7 +370,7 @@ def after(
 def where(predicate: object) -> "WhereChain":
     context = current_context()
     if context is None:
-        raise RuntimeError("where(...) can only be used inside a compiled Structure subtransform")
+        raise RuntimeError("where(...) can only be used inside a compiled Structure step method")
     expression = literal(predicate)
     if not isinstance(expression.type, BooleanType):
         raise TypeError("where(...) requires a boolean Structure expression")
@@ -387,7 +387,7 @@ def where(predicate: object) -> "WhereChain":
 def watermark(field: object, *, delay: str = "10 minutes") -> None:
     context = current_context()
     if context is None:
-        raise RuntimeError("watermark(...) can only be used inside a compiled Structure subtransform")
+        raise RuntimeError("watermark(...) can only be used inside a compiled Structure step method")
     expression = literal(field)
     if expression.kind != "field":
         raise TypeError("watermark(...) requires a Structure field expression")
@@ -493,7 +493,7 @@ def _hook(
     target_backend: str | Iterable[str] | None,
 ):
     if not callable(target):
-        raise TypeError(f"@{phase}(...) requires a subtransform method")
+        raise TypeError(f"@{phase}(...) requires a step method")
     kwargs = {"input": input, "inputs": inputs, "lane": lane, "lanes": lanes, "output": output, "outputs": outputs}
     sources = _hook_sources(phase, kwargs)
     targets = _hook_outputs(phase, kwargs, default=sources)

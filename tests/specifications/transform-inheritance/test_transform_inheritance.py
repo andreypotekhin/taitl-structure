@@ -286,7 +286,7 @@ def test_override_with_two_arg_super_schedules_next_mro_parent() -> None:
     assert len(plan.steps[0].filters) == 1
 
 
-def test_calling_previous_subtransform_directly_fails() -> None:
+def test_calling_previous_step_method_directly_fails() -> None:
     @transform
     class Publish(Transform):
         rows = input(Raw)
@@ -301,11 +301,11 @@ def test_calling_previous_subtransform_directly_fails() -> None:
             normalized = self.normalize(row)
             return Published(id=normalized.id, value=normalized.value, audit="published")
 
-    with pytest.raises(StructureCompileError, match="Subtransforms are pipeline steps"):
+    with pytest.raises(StructureCompileError, match="Step methods are pipeline steps"):
         compile_transform(Publish)
 
 
-def test_recursive_subtransform_call_fails() -> None:
+def test_recursive_step_method_call_fails() -> None:
     @transform
     class Publish(Transform):
         rows = input(Raw)
@@ -442,8 +442,8 @@ def test_generated_pyspark_renders_inherited_and_override_steps_in_order() -> No
     assert "class DirectNormalizeGenerated:" in text
     assert "class PublishGenerated(DirectNormalizeGenerated):" in text
     assert "    def _step_directnormalize_normalize_0(self, frames, inputs):" in text
-    assert text.index("# Subtransform: DirectNormalize.normalize") < text.index("# Subtransform: normalize")
-    assert text.index("# Subtransform: normalize") < text.index("# Subtransform: publish")
+    assert text.index("# Step method: DirectNormalize.normalize") < text.index("# Step method: normalize")
+    assert text.index("# Step method: normalize") < text.index("# Step method: publish")
 
 
 def test_generated_pyspark_renders_owner_qualified_parent_hooks() -> None:

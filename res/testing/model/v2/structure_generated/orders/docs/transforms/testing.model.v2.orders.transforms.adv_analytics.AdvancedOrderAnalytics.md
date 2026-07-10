@@ -16,7 +16,7 @@ Source: `testing.model.v2.orders.transforms.adv_analytics.AdvancedOrderAnalytics
 - `customer_windows`: `OrderCustomerWindow`
 - `collection_profiles`: `OrderCollectionProfile`
 
-## Subtransforms
+## Step methods
 
 - `revenue_rollup`: `OrderFulfillment` -> `OrderRevenueRollup`
 - `product_cube`: `OrderFulfillment` -> `OrderProductCube`

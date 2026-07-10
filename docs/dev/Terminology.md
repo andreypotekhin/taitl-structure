@@ -69,7 +69,7 @@ Field metadata is the source of type, nullability, field order, generated Spark 
 
 ### Transform
 
-A transform is a `Transform` subclass marked with `@transform`. It declares input DataFrames, output results, lanes, subtransform methods, expression helpers, and hooks.
+A transform is a `Transform` subclass marked with `@transform`. It declares input DataFrames, output results, lanes, step methods, expression helpers, and hooks.
 
 A transform instance created with `EnrichOrders(orders=df)` is a deferred invocation that stores runtime inputs until `.run(session)` is called.
 
@@ -120,9 +120,9 @@ normalized = lane(OrderNormalized)
 with_customer = lane(OrderWithCustomer)
 ```
 
-### Subtransform
+### Step Method
 
-A subtransform is a public instance **method** within Transform class, returning a `Structure` or schemas tuple. The compiler symbolically executes subtransforms in the order of their appearance in the source.
+A step method is a public instance **method** within a `Transform` class, returning a `Structure` or schemas tuple. The compiler symbolically executes step methods in the order of their appearance in the source.
 
 The first schema parameter is the driving row. Additional schema parameters are symbolic relations that must be joined before their fields are used in filters or projections.
 
@@ -135,7 +135,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 
 ### Binding of Inputs and Outputs
 
-Method-level `@transform(input=...)`, `@transform(output=...)`, and `@transform(inout=...)` select which declared input, lane, or output a subtransform consumes or writes.
+Method-level `@transform(input=...)`, `@transform(output=...)`, and `@transform(inout=...)` select which declared input, lane, or output a step method consumes or writes.
 
 Binding is optional: most single-lane transforms rely on inference. Explicit binding is used for repeated schemas, branching, funnel lanes, and cases where a lane intentionally shadows an original input name.
 
@@ -175,7 +175,7 @@ def clean_id(value):
 
 ### Filter
 
-A filter is recorded with `where(predicate)` inside a compiled subtransform method. Multiple filters preserve source order and are semantically combined with logical AND where legal.
+A filter is recorded with `where(predicate)` inside a compiled step method. Multiple filters preserve source order and are semantically combined with logical AND where legal.
 
 Filters are operations in IR, not immediate DataFrame calls. A filter can reference only scopes available at the point where it is recorded.
 
@@ -188,7 +188,7 @@ where(to_decimal(order.total, precision=12, scale=2) >= 0)
 
 ### Join
 
-A join is a symbolic relationship between the current row and a declared input. In v1, the main supported form is `lookup_join(...)`, which represents a lookup-style join.
+A join is a symbolic relationship between the current row and a declared input. In v.1, the main supported form is `lookup_join(...)`, which represents a lookup-style join.
 
 A join creates a joined scope. Fields from that scope can be used in later filters or in the returned output schema.
 
@@ -243,7 +243,7 @@ enriched_df = result.enriched
 
 ## Symbolic Execution
 
-Symbolic execution is the compiler phase that runs compiled subtransform methods with symbolic row objects instead of real rows or DataFrames.
+Symbolic execution is the compiler phase that runs compiled step methods with symbolic row objects instead of real rows or DataFrames.
 
 Its job is to capture source semantics: field references, expressions, filters, joins, and output projection. 
 
@@ -266,13 +266,13 @@ Captured:
 
 ### Symbolic Context
 
-A symbolic context is the active per-subtransform capture state. It records the transform, method, defined scopes, operations, source context, diagnostics, and configuration snapshot.
+A symbolic context is the active per-step-method capture state. It records the transform, method, defined scopes, operations, source context, diagnostics, and configuration snapshot.
 
 ### Row Proxy
 
 A row proxy represents a symbolic row with a schema and scope identity. Attribute access on a known field returns a field reference. Unknown fields produce error/warning diagnostics.
 
-The current-row proxy is the main subtransform parameter. Joined and constructed row proxies represent later symbolic scopes.
+The current-row proxy is the main step-method parameter. Joined and constructed row proxies represent later symbolic scopes.
 
 Example:
 
@@ -282,7 +282,7 @@ order.id  # FieldRef(scope="order", field="id")
 
 ### Input Scope
 
-An input scope represents a declared transform input during symbolic execution. It is accessible through `self.<input>` and is the source for `lookup_join(...)` in v1.
+An input scope represents a declared transform input during symbolic execution. It is accessible through `self.<input>` and is the source for `lookup_join(...)` in v.1.
 
 Input scopes are not DataFrames and do not expose a live DataFrame API.
 
@@ -301,7 +301,7 @@ customer.tier  # FieldRef(scope="customers#1", field="tier")
 
 ### Constructed Row
 
-A constructed row is the symbolic result of calling a schema constructor or schema base overlay inside a subtransform.
+A constructed row is the symbolic result of calling a schema constructor or schema base overlay inside a step method.
 The final constructed row returned by the method becomes the projection for that step.
 
 Example:
@@ -329,7 +329,7 @@ the same.
 
 An unsupported operation is source behavior that Structure cannot safely represent in IR. Examples include Python
 truthiness on symbolic expressions, Python string methods on symbolic fields, source-level PySpark `Column` objects,
-DataFrame methods inside compiled subtransforms, row-wise maps, and implicit UDFs.
+DataFrame methods inside compiled step methods, row-wise maps, and implicit UDFs.
 
 Unsupported operations fail with diagnostics instead of falling back to opaque Python execution.
 
@@ -377,10 +377,10 @@ InputPlan(name="orders", schema=OrderRaw, ordinal=0)
 
 ### StepPlan
 
-`StepPlan` represents one compiled subtransform method: source-order position, input and output lanes, schema
+`StepPlan` represents one compiled step method: source-order position, input and output lanes, schema
 boundaries, scopes, operations, hooks, validation policy, and source anchor.
 
-For multi-result subtransforms, one step can share joins and filters before producing ordered result projections.
+For multi-result step methods, one step can share joins and filters before producing ordered result projections.
 
 Example:
 
@@ -451,7 +451,7 @@ Hook boundaries are marked opaque.
 
 ### Capability Metadata
 
-Capability metadata records target backend and version information used by backend capability checks. For v1, the main
+Capability metadata records target backend and version information used by backend capability checks. For v.1, the main
 target is PySpark.
 
 Capability checks happen before online execution or code generation so unsupported operations fail early.

@@ -188,7 +188,7 @@ class EnrichOrdersGenerated:
         assert_schema(customers, CUSTOMER_SCHEMA, name="Customer", mode="strict")
         assert_schema(products, PRODUCT_SCHEMA, name="Product", mode="strict")
 
-        # Subtransform: normalize
+        # Step method: normalize
         orders = orders.where(
             F.col("id").isNotNull()
             & F.col("customer_id").isNotNull()
@@ -203,7 +203,7 @@ class EnrichOrdersGenerated:
         orders = self._impl.remove_negative_totals(orders=orders, spark=self.spark, ctx=self.ctx)
         assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
 
-        # Subtransform: add_customer
+        # Step method: add_customer
         orders = orders.alias("order_normalized")
         customers_df = F.broadcast(customers.alias("customers"))
         orders = orders.join(
@@ -220,7 +220,7 @@ class EnrichOrdersGenerated:
         )
         assert_schema(orders, ORDER_WITH_CUSTOMER_SCHEMA, name="OrderWithCustomer", mode="strict")
 
-        # Subtransform: add_product
+        # Step method: add_product
         orders = orders.alias("order_with_customer")
         products_df = products.alias("products")
         orders = orders.join(
@@ -249,7 +249,7 @@ class EnrichOrdersGenerated:
 
 ## Performance Focus
 
-Structure is intentionally strict. Compiled subtransforms must lower to Spark-plan-visible expressions.
+Structure is intentionally strict. Compiled step methods must lower to Spark-plan-visible expressions.
 
 Unsupported Python operations are rejected at compile time. This is a performance feature: Spark can optimize transformations only when work remains visible in the DataFrame logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, and whole-stage code generation all depend on expressing work through Spark's relational expression model.
 
@@ -289,15 +289,15 @@ See [License.md](License.md)
 
 ## Roadmap
 
-- **v1:** online PySpark execution by default, optional generated PySpark classes, projection, filtering,
+- **v.1:** online PySpark execution by default, optional generated PySpark classes, projection, filtering,
   joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow traceability,
   streaming-compatible transforms, diagnostic links, and setup checks.
-- **v2:** mainstream analytical features: existence joins, `inner_join(...)`, broad rowset joins, deterministic lookup
+- **v.2:** mainstream analytical features: existence joins, `inner_join(...)`, broad rowset joins, deterministic lookup
   dedupe, temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions,
   cache/persist first-slice directives, Spark Connect support for completed batch features, and static streaming
   compatibility diagnostics for caller-owned streaming DataFrames.
-- **v3:** planned PySpark parity gap closure followed by Structure-owned streaming orchestration and end-of-release
+- **v.3:** planned PySpark parity gap closure followed by Structure-owned streaming orchestration and end-of-release
   incremental compile: generated `readStream` and `writeStream`, explicit triggers, checkpoints, output modes,
   watermarks, admitted state policies, live streaming lifecycle evidence, and cache diagnostics.
-- **v4+:** backend expansion, including postponed Polars/DuckDB work and any non-batch Spark Connect hardening left
+- **v.4+:** backend expansion, including postponed Polars/DuckDB work and any non-batch Spark Connect hardening left
   outside the Sprint 09 support claim.

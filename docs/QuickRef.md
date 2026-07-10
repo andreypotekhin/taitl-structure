@@ -406,19 +406,15 @@ def add_flags(self, order: OrderRaw) -> OrderWithFlags:
 
 Drop columns by returning a schema with fewer fields.
 
-Use `project(...)` when the output copies same-name compatible fields from a source row.
+Use `SchemaClass.project(source)` when the output copies same-name compatible fields from a source row.
 
 ```python
 def publish(self, order: OrderWithPromotion) -> OrderPublished:
-    return project(order, OrderPublished)
+    return OrderPublished.project(order)
 ```
 
-Inside a compiled subtransform, the driving row can be omitted when it is the intended source:
-
-```python
-def publish(self, order: OrderWithPromotion) -> OrderPublished:
-    return project(OrderPublished)
-```
+`project(source, TargetSchema)` and source-less `project(TargetSchema)` remain supported compatibility forms inside
+compiled subtransforms. Prefer the schema method in new public examples because the source row remains visible.
 
 Use a field list when the output should copy only selected source fields. The list names source-row fields;
 the method return annotation still defines the output schema and field order.
@@ -648,15 +644,17 @@ Reference: [advanced analytical operations](reference/AdvancedAnalyticalOperatio
 
 ## Removing Duplicate Rows
 
-Use `distinct()`/`drop_duplicates()` without arguments to drop duplicate rows from current step frame.
+Use `distinct(relation)` for exact duplicate removal over a relation. It is a readable synonym for
+`drop_duplicates(relation)`.
 
 ```python
 def unique_events(self, event: RawEvent) -> RawEvent:
-    distinct()
+    distinct(event)
     return RawEvent.project(event)
 ```
 
-`drop_duplicates(...)` also accepts typed field expressions for PySpark-compatible subset dedupe:
+`drop_duplicates(...)` also accepts typed field expressions for PySpark-compatible subset dedupe. The relation is
+inferred when all fields come from the same relation:
 
 ```python
 def unique_accounts(self, event: RawEvent) -> RawEvent:
@@ -664,7 +662,9 @@ def unique_accounts(self, event: RawEvent) -> RawEvent:
     return RawEvent.project(event)
 ```
 
-These helpers lower to Spark `dropDuplicates()` on the current step frame. 
+No-arg `distinct()` and `drop_duplicates()` remain supported compatibility forms for exact duplicate removal on the
+current active frame. Dedupe operations run in source order: before a relation is joined they prepare that relation's
+source; after a join they apply to the active joined frame using the requested relation fields.
 
 When the selected row must be deterministic, prefer `dedupe_latest_by(...)` or `dedupe_earliest_by(...)` 
 with an explicit ordering and tie policy. 
@@ -675,8 +675,8 @@ def latest_events(self, event: RawEvent) -> RawEvent:
     return RawEvent.project(event)
 ```
 
-If duplicate removal must apply after a narrowing projection, split the projection and `distinct()` into adjacent
-subtransforms so the narrowed schema is the current step frame.
+If duplicate removal must apply after a narrowing projection, split the projection and `distinct(relation)` into
+adjacent subtransforms so the narrowed schema is the active frame.
 
 Exact duplicate removal is batch-only in v2 streaming compatibility checks because streaming dedupe needs explicit
 watermark, state, and output-mode semantics.

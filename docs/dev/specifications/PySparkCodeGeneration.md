@@ -531,9 +531,12 @@ Rolling metric helpers render as `F.sum(...)`, `F.avg(...)`, `F.min(...)`, or `F
 with `.rowsBetween(-preceding, 0)`.
 Generated modules import `Window` whenever a join, selected-row operation, or projection expression needs it.
 
-Exact duplicate cleanup from `distinct()` or empty `drop_duplicates()` renders `dropDuplicates()` on the current step
-frame. Subset `drop_duplicates(field, ...)` renders `dropDuplicates(["field", ...])` using Spark column names from the
-typed field expressions. Generated code must not use keyed `dropDuplicates(...)` as a replacement for deterministic
+Exact duplicate cleanup from `distinct(relation)` or `drop_duplicates(relation)` renders `dropDuplicates([...])` using
+all fields from that relation. Subset `drop_duplicates(field, ...)` renders `dropDuplicates(["field", ...])` using
+Spark column names from the typed field expressions and infers relation scope when all fields come from one relation.
+Empty `distinct()` and `drop_duplicates()` still render `dropDuplicates()` on the current active frame. Generated code
+preserves source order: relation dedupe before a join prepares that join source; relation dedupe after a join applies to
+the active joined frame. Generated code must not use keyed `dropDuplicates(...)` as a replacement for deterministic
 selected-row dedupe when a specific representative row matters.
 
 ## Hook Lowering
@@ -915,7 +918,8 @@ The implementation is complete when tests prove:
 - Repeated joins of the same input produce deterministic aliases.
 - Right-side join columns do not leak into output projection unless explicitly selected.
 - Selected-row helpers render a deterministic temporary rank column, filter rank `1`, and drop the temporary column.
-- Exact duplicate cleanup renders `dropDuplicates()` on the current step frame.
+- Exact duplicate cleanup renders `dropDuplicates()` on the current active frame or on the relation fields named by
+  `distinct(relation)` / `drop_duplicates(relation)`.
 - Generated code contains no UDFs, Pandas UDFs, RDD operations, `collect`, `toPandas`, or row-wise maps in compiled
   paths.
 - Generated output is byte-stable for identical source and configuration.

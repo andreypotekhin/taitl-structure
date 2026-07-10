@@ -37,7 +37,7 @@ class RenderPySparkStep:
         if isinstance(step, PySparkStepRecipe) and len(step.results) > 1:
             return self._multiple(step, current=current, sources=sources or {}, source_transform=source_transform)
         target = self._target(step)
-        lines = [f"        # Subtransform: {step.name}"]
+        lines = [f"        # Step method: {step.name}"]
         active = current
         if step.before_hooks:
             lines.extend(self._hooks(step.before_hooks, source_transform=source_transform))
@@ -57,7 +57,7 @@ class RenderPySparkStep:
         sources: dict[str, str],
         source_transform: str | None,
     ) -> str:
-        lines = [f"        # Subtransform: {step.name}"]
+        lines = [f"        # Step method: {step.name}"]
         active = current
         if step.before_hooks:
             lines.extend(self._hooks(step.before_hooks, source_transform=source_transform))
@@ -130,6 +130,9 @@ class RenderPySparkStep:
 
         ordered_lines: list[str] = []
         pending_filters: list[PySparkExpressionRecipe] = []
+        prepared_sources = dict(sources)
+        joined_scopes: set[str] = set()
+        dedupe_index = 0
         for operation in step.operations:
             if operation.kind == "filter" and operation.filter is not None:
                 pending_filters.append(operation.filter)
@@ -138,14 +141,27 @@ class RenderPySparkStep:
                 ordered_lines.extend(self._filters(tuple(pending_filters), step=step, target=target))
                 pending_filters = []
             if operation.kind == "join" and operation.join is not None:
-                ordered_lines.extend(self._join(step, operation.join, sources=sources, target=target))
+                ordered_lines.extend(self._join(step, operation.join, sources=prepared_sources, target=target))
+                joined_scopes.add(operation.join.input_name)
             if operation.kind == "aggregate" and operation.aggregate is not None:
                 ordered_lines.extend(self._aggregate(step, operation.aggregate, target=target))
             if operation.kind == "selected_rows" and operation.selected_rows is not None:
                 ordered_lines.extend(self._selected_rows(step, operation.selected_rows, target=target))
             if operation.kind == "drop_duplicates":
                 duplicate_rows = operation.duplicate_rows or PySparkDuplicateRowsRecipe()
-                ordered_lines.append(f"        {target} = {target}.dropDuplicates({self._dedupe_subset(duplicate_rows)})")
+                if self._prepares_relation(duplicate_rows, step=step, joined_scopes=joined_scopes):
+                    dedupe_index += 1
+                    scope = cast(str, duplicate_rows.scope)
+                    source_key = self._source_for_scope(step, scope)
+                    source = prepared_sources.get(source_key, prepared_sources.get(scope, source_key))
+                    prepared = f"{target}_{self._identifier(scope)}_deduped_{dedupe_index}"
+                    ordered_lines.append(f"        {prepared} = {source}.dropDuplicates({self._dedupe_subset(duplicate_rows)})")
+                    prepared_sources[source_key] = prepared
+                    prepared_sources[scope] = prepared
+                else:
+                    ordered_lines.append(
+                        f"        {target} = {target}.dropDuplicates({self._dedupe_subset(duplicate_rows)})"
+                    )
             if operation.kind == "watermark" and operation.watermark is not None:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     ordered_lines.extend(self._watermark(operation.watermark, target=target))
@@ -160,6 +176,30 @@ class RenderPySparkStep:
         if not duplicate_rows.subset:
             return ""
         return json.dumps(tuple(self._field_column(expression) for expression in duplicate_rows.subset))
+
+    def _prepares_relation(
+        self,
+        duplicate_rows: PySparkDuplicateRowsRecipe,
+        *,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        joined_scopes: set[str],
+    ) -> bool:
+        scope = duplicate_rows.scope
+        return bool(
+            scope
+            and scope != getattr(step, "source_scope", None)
+            and scope not in joined_scopes
+            and any(join.input_name == scope for join in step.joins)
+        )
+
+    def _identifier(self, value: str) -> str:
+        return "".join(character if character.isalnum() or character == "_" else "_" for character in value)
+
+    def _source_for_scope(self, step: PySparkStepRecipe | PySparkOutputRecipe, scope: str) -> str:
+        for join in step.joins:
+            if join.input_name == scope:
+                return join.source
+        return scope
 
     def _watermark(self, watermark: PySparkWatermarkRecipe, *, target: str) -> list[str]:
         return [f"        {target} = {target}.withWatermark({self._literal(watermark.column)}, {watermark.delay!r})"]

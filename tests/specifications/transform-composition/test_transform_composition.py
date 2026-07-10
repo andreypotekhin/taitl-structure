@@ -314,11 +314,11 @@ def test_class_field_pipeline_compiles_and_renders_generated_transform() -> None
 
     assert [input.name for input in plan.inputs] == ["orders", "products"]
     assert [output.name for output in plan.outputs] == ["published"]
-    assert text.index("# Subtransform: normalize_orders.normalize") < text.index(
-        "# Subtransform: add_product.add_product"
+    assert text.index("# Step method: normalize_orders.normalize") < text.index(
+        "# Step method: add_product.add_product"
     )
-    assert text.index("# Subtransform: add_product.add_product") < text.index(
-        "# Subtransform: publish_orders.publish"
+    assert text.index("# Step method: add_product.add_product") < text.index(
+        "# Step method: publish_orders.publish"
     )
 
 

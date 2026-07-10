@@ -27,7 +27,7 @@ class AdvancedOrderAnalyticsGenerated:
         _input_fulfilled = fulfilled
         _input_collections = collections
 
-        # Subtransform: revenue_rollup
+        # Step method: revenue_rollup
         revenue_rollups = fulfilled.alias("order_fulfillment")
         revenue_rollups = revenue_rollups.withColumn("__structure_group_0_tenant_id", F.col("order_fulfillment.tenant.tenant_id"))
         revenue_rollups = revenue_rollups.withColumn("__structure_group_1_product_category", F.col("order_fulfillment.product_category"))
@@ -80,7 +80,7 @@ class AdvancedOrderAnalyticsGenerated:
         )
         assert_schema(revenue_rollups, ORDER_REVENUE_ROLLUP_SCHEMA, name="OrderRevenueRollup", mode="strict")
 
-        # Subtransform: product_cube
+        # Step method: product_cube
         product_cubes = fulfilled.alias("order_fulfillment")
         product_cubes = product_cubes.withColumn("__structure_group_0_tenant_id", F.col("order_fulfillment.tenant.tenant_id"))
         product_cubes = product_cubes.withColumn("__structure_group_1_product_category", F.col("order_fulfillment.product_category"))
@@ -105,7 +105,7 @@ class AdvancedOrderAnalyticsGenerated:
         )
         assert_schema(product_cubes, ORDER_PRODUCT_CUBE_SCHEMA, name="OrderProductCube", mode="strict")
 
-        # Subtransform: customer_window
+        # Step method: customer_window
         customer_windows = fulfilled.alias("order_fulfillment")
         customer_windows = customer_windows.select(
             F.col("order_fulfillment.tenant.tenant_id").alias("tenant_id"),
@@ -126,7 +126,7 @@ class AdvancedOrderAnalyticsGenerated:
         )
         assert_schema(customer_windows, ORDER_CUSTOMER_WINDOW_SCHEMA, name="OrderCustomerWindow", mode="strict")
 
-        # Subtransform: collection_profile
+        # Step method: collection_profile
         collection_profiles = collections.alias("order_collection_source")
         collection_profiles = collection_profiles.select(
             F.col("order_collection_source.id"),
@@ -144,19 +144,19 @@ class AdvancedOrderAnalyticsGenerated:
             F.map_from_entries(F.map_entries(F.col("order_collection_source.attributes"))).alias("roundtrip_attributes"),
         )
 
-        # Subtransform: revenue_rollups
+        # Step method: revenue_rollups
         revenue_rollups = revenue_rollups.alias("order_revenue_rollup")
         assert_schema(revenue_rollups, ORDER_REVENUE_ROLLUP_SCHEMA, name="OrderRevenueRollup", mode="strict")
 
-        # Subtransform: product_cubes
+        # Step method: product_cubes
         product_cubes = product_cubes.alias("order_product_cube")
         assert_schema(product_cubes, ORDER_PRODUCT_CUBE_SCHEMA, name="OrderProductCube", mode="strict")
 
-        # Subtransform: customer_windows
+        # Step method: customer_windows
         customer_windows = customer_windows.alias("order_customer_window")
         assert_schema(customer_windows, ORDER_CUSTOMER_WINDOW_SCHEMA, name="OrderCustomerWindow", mode="strict")
 
-        # Subtransform: collection_profiles
+        # Step method: collection_profiles
         collection_profiles = collection_profiles.alias("order_collection_profile")
         assert_schema(collection_profiles, ORDER_COLLECTION_PROFILE_SCHEMA, name="OrderCollectionProfile", mode="strict")
         return TransformResult({"revenue_rollups": revenue_rollups, "product_cubes": product_cubes, "customer_windows": customer_windows, "collection_profiles": collection_profiles}, single=False, schema={"revenue_rollups": ORDER_REVENUE_ROLLUP_SCHEMA, "product_cubes": ORDER_PRODUCT_CUBE_SCHEMA, "customer_windows": ORDER_CUSTOMER_WINDOW_SCHEMA, "collection_profiles": ORDER_COLLECTION_PROFILE_SCHEMA})

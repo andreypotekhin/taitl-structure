@@ -210,9 +210,12 @@ class RunOnlinePySparkTransform:
                 )
             return df
 
+        prepared_frames = dict(frames)
+        joined_scopes: set[str] = set()
         for operation in step.operations:
             if operation.kind == "join" and operation.join is not None:
-                df = self._join(step, df, operation.join, frames=frames, functions=functions, window=window)
+                df = self._join(step, df, operation.join, frames=prepared_frames, functions=functions, window=window)
+                joined_scopes.add(operation.join.input_name)
             if operation.kind == "filter" and operation.filter is not None:
                 df = df.where(
                     self._expressions.evaluate(
@@ -227,9 +230,29 @@ class RunOnlinePySparkTransform:
             if operation.kind == "selected_rows" and operation.selected_rows is not None:
                 df = self._selected_rows(step, df, operation.selected_rows, functions=functions, window=window)
             if operation.kind == "drop_duplicates":
-                subset = () if operation.duplicate_rows is None else operation.duplicate_rows.subset
-                df = df.dropDuplicates(self._drop_duplicates_subset(subset))
+                duplicate_rows = operation.duplicate_rows
+                subset = () if duplicate_rows is None else duplicate_rows.subset
+                scope = None if duplicate_rows is None else duplicate_rows.scope
+                if (
+                    scope
+                    and scope != getattr(step, "source_scope", None)
+                    and scope not in joined_scopes
+                    and any(join.input_name == scope for join in step.joins)
+                ):
+                    source = self._source_for_scope(step, scope)
+                    frame = prepared_frames[source] if source in prepared_frames else prepared_frames[scope]
+                    prepared = frame.dropDuplicates(self._drop_duplicates_subset(subset))
+                    prepared_frames[source] = prepared
+                    prepared_frames[scope] = prepared
+                else:
+                    df = df.dropDuplicates(self._drop_duplicates_subset(subset))
         return df
+
+    def _source_for_scope(self, step: PySparkStepRecipe | PySparkOutputRecipe, scope: str) -> str:
+        for join in step.joins:
+            if join.input_name == scope:
+                return join.source
+        return scope
 
     def _post_operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df):
         for operation in step.operations:

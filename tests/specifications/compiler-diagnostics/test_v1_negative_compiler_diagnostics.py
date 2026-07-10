@@ -113,7 +113,7 @@ def test_v1_schema_flow_mismatch_reports_transform_structure_diagnostic() -> Non
     assert diagnostic.code == "DSL-E0402"
     assert diagnostic.context == {"expected": "Raw", "actual": "Clean"}
     assert diagnostic.source.endswith("BadFlow.publish")
-    assert "previous subtransform returns Clean" in diagnostic.problem_text()
+    assert "previous step method returns Clean" in diagnostic.problem_text()
 
 
 def test_v1_missing_output_field_reports_transform_structure_diagnostic() -> None:

@@ -42,7 +42,7 @@ class EnrichOrdersGenerated:
         _input_products = products
         _input_promotions = promotions
 
-        # Subtransform: normalize
+        # Step method: normalize
         orders = self._impl.use_current_orders(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
         orders = orders.alias("order_raw")
         orders = orders.where((F.col("order_raw.id").isNotNull()) & (F.col("order_raw.customer_id").isNotNull()) & (F.col("order_raw.product_id").isNotNull()))
@@ -67,7 +67,7 @@ class EnrichOrdersGenerated:
         assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
         assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
 
-        # Subtransform: add_customer
+        # Step method: add_customer
         orders = orders.alias("order_normalized")
         customers_joined = F.broadcast(customers.alias("customers"))
         orders = orders.join(
@@ -97,7 +97,7 @@ class EnrichOrdersGenerated:
         )
         assert_schema(orders, ORDER_WITH_CUSTOMER_SCHEMA, name="OrderWithCustomer", mode="strict")
 
-        # Subtransform: add_product
+        # Step method: add_product
         orders = orders.alias("order_with_customer")
         products_joined = products.alias("products")
         orders = orders.join(
@@ -132,7 +132,7 @@ class EnrichOrdersGenerated:
         )
         assert_schema(orders, ORDER_WITH_PRODUCT_SCHEMA, name="OrderWithProduct", mode="strict")
 
-        # Subtransform: add_promotion
+        # Step method: add_promotion
         orders = orders.alias("order_with_product")
         promotions_joined = promotions.alias("promotions")
         orders = orders.join(
@@ -172,7 +172,7 @@ class EnrichOrdersGenerated:
         assert_schema(orders, ORDER_WITH_PROMOTION_SCHEMA, name="OrderWithPromotion", mode="strict")
         assert_schema(orders, ORDER_WITH_PROMOTION_SCHEMA, name="OrderWithPromotion", mode="strict")
 
-        # Subtransform: publish
+        # Step method: publish
         published = orders.alias("order_with_promotion")
         published = published.select(
             F.col("order_with_promotion.tenant"),
@@ -196,7 +196,7 @@ class EnrichOrdersGenerated:
         published = project_schema(published, ORDER_PUBLISHED_SCHEMA)
         assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")
 
-        # Subtransform: published
+        # Step method: published
         published = published.alias("order_published")
         assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")
         return TransformResult({"published": published}, single=True, schema={"published": ORDER_PUBLISHED_SCHEMA})

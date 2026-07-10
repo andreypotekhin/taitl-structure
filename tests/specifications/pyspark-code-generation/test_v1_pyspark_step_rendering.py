@@ -22,7 +22,7 @@ def test_v1_step_renderer_renders_join_projection_and_validation() -> None:
     recipe = PySpark.plan.lower()(compile_transform(EnrichOrders))
     text = PySpark.render.step()(recipe.steps[1], current="orders")
 
-    assert '        # Subtransform: add_customer' in text
+    assert '        # Step method: add_customer' in text
     assert '        orders = orders.alias("order_normalized")' in text
     assert '        customers_joined = F.broadcast(customers.alias("customers"))' in text
     assert '            "left",' in text
@@ -37,7 +37,7 @@ def test_v1_step_renderer_renders_hooks_and_project_output_validation() -> None:
     recipe = PySpark.plan.lower()(compile_transform(EnrichOrders))
     text = PySpark.render.step()(recipe.steps[4], current="orders")
 
-    assert '        # Subtransform: publish' in text
+    assert '        # Step method: publish' in text
     assert (
         '        published = self._impl.add_quality_columns(published=published, spark=self.spark, ctx=self.ctx)'
         in text

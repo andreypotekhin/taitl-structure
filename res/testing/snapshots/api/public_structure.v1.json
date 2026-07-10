@@ -712,7 +712,7 @@
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "distinct",
-      "signature": "() -> 'None'"
+      "signature": "(relation: 'object | None' = None) -> 'None'"
     },
     "drop_duplicates": {
       "dataclass_fields": [],

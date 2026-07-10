@@ -15,8 +15,8 @@ from structure import (
 from structure.app.dsl.api import SchemaMode, compile_transform
 
 
-def test_hooks_attach_to_declared_subtransform_boundaries(orders_recipe) -> None:
-    """I can attach a hook to a subtransform using @before(method, lane=lane) or @after(method, lane=lane)."""
+def test_hooks_attach_to_declared_step_method_boundaries(orders_recipe) -> None:
+    """I can attach a hook to a step method using @before(method, lane=lane) or @after(method, lane=lane)."""
 
     assert [hook.name for hook in orders_recipe.steps[0].before_hooks] == ["use_current_orders"]
     assert [hook.name for hook in orders_recipe.steps[0].after_hooks] == ["remove_negative_totals"]
@@ -50,7 +50,7 @@ def test_hooks_record_input_access_and_projection_validation_contracts(orders_re
 
 
 def test_hooks_record_target_backend_metadata() -> None:
-    """Hooks carry v1 target_backend metadata through the PySpark recipe."""
+    """Hooks carry v.1 target_backend metadata through the PySpark recipe."""
 
     class Row(Structure):
         id = field(String(), nullable=False)

@@ -234,7 +234,7 @@ class CompileTransform:
             raise self._error(
                 "DSL-E0402",
                 transform_class=transform_class,
-                problem=f"{transform_class.__name__} has no public schema-returning subtransform.",
+                problem=f"{transform_class.__name__} has no public schema-returning step method.",
                 use="Add a public instance method with a Structure row parameter and Structure return annotation.",
             )
         return steps, lanes, explicit_outputs, diagnostics
@@ -272,7 +272,7 @@ class CompileTransform:
                     "DSL-E0402",
                     transform_class=transform_class,
                     member=name,
-                    problem=f"{transform_class.__name__}.{name} overrides an inherited subtransform but is not a subtransform.",
+                    problem=f"{transform_class.__name__}.{name} overrides an inherited step method but is not a step method.",
                     use="Keep the Structure return annotation or rename the helper method.",
                 )
             return None
@@ -355,7 +355,7 @@ class CompileTransform:
                 transform_class=transform_class,
                 member=name,
                 problem=f"{transform_class.__name__}.{name} uses group_by(...) with multiple returned schemas.",
-                use="Return one aggregate schema per grouped subtransform.",
+                use="Return one aggregate schema per grouped step method.",
             )
         result_plans: list[StepResultPlan] = []
         after_hooks = hooks.get(("after", item.key), ())
@@ -511,7 +511,7 @@ class CompileTransform:
         def stub(candidate: CompilerTransformMember):
             def call(_self, *args, **kwargs):
                 if kwargs:
-                    raise TypeError("Parent subtransform calls must use positional schema arguments")
+                    raise TypeError("Parent step method calls must use positional schema arguments")
                 result = scheduled.get(candidate)
                 if result is None:
                     result = self._compile_step(
@@ -528,7 +528,7 @@ class CompileTransform:
                         plan_name=f"{candidate.owner.__name__}.{candidate.name}",
                     )
                     if result is None:
-                        raise TypeError(f"{candidate.source} is not a compiled subtransform")
+                        raise TypeError(f"{candidate.source} is not a compiled step method")
                     scheduled[candidate] = result
                 value = self._parent_call_result(result)
                 first = result[0]
@@ -569,15 +569,15 @@ class CompileTransform:
                     transform_class=transform_class,
                     member=active.name,
                     problem=(
-                        f"{transform_class.__name__}.{active.name} calls compiled subtransform "
+                        f"{transform_class.__name__}.{active.name} calls compiled step method "
                         f"{owner.__name__}.{name} directly."
                     ),
                     use=(
-                        "Subtransforms are pipeline steps. Use source order, lane bindings, Transform.to(...), "
+                        "Step methods are pipeline steps. Use source order, lane bindings, Transform.to(...), "
                         "a private helper, or @special(type=\"expr\") instead. Only an override may call its overridden "
-                        "parent subtransform."
+                        "parent step method."
                     ),
-                    context={"called_subtransform": f"{owner.__name__}.{name}"},
+                    context={"called_step_method": f"{owner.__name__}.{name}"},
                 )
 
             return call
@@ -731,7 +731,9 @@ class CompileTransform:
                 self._validate_joined_relation_reads(transform_class, member, relation_scopes, joined, reads)
             if operation.kind == "drop_duplicates" and operation.duplicate_rows is not None:
                 reads = set().union(*(self._scopes(expression) for expression in operation.duplicate_rows.subset))
-                self._validate_joined_relation_reads(transform_class, member, relation_scopes, joined, reads)
+                scope = operation.duplicate_rows.scope
+                if not (scope is not None and reads <= {scope}):
+                    self._validate_joined_relation_reads(transform_class, member, relation_scopes, joined, reads)
 
         reads = set().union(
             *(self._scopes(assignment.expression) for result in results for assignment in result.projection)
@@ -799,7 +801,7 @@ class CompileTransform:
                 if lane == "df":
                     problem = (
                         f"{transform_class.__name__}.{member} expects {schema.__name__}, "
-                        f"but the previous subtransform returns {actual.__name__}."
+                        f"but the previous step method returns {actual.__name__}."
                     )
                 elif source.get("kind") == "input":
                     problem = (
@@ -816,7 +818,7 @@ class CompileTransform:
                     transform_class=transform_class,
                     member=member,
                     problem=problem,
-                    use="Reorder subtransforms or update the row parameter annotation to match the selected input lane.",
+                    use="Reorder step methods or update the row parameter annotation to match the selected input lane.",
                     context={"expected": schema.__name__, "actual": actual.__name__},
                 )
             return [
@@ -917,7 +919,7 @@ class CompileTransform:
                     member=member,
                     problem=(
                         f"{transform_class.__name__}.{member} expects {schema.__name__}, "
-                        f"but the previous subtransform returns {actual.__name__}."
+                        f"but the previous step method returns {actual.__name__}."
                     ),
                     use="Add @transform(input=that_input) to restart from an original input, or update the row parameter annotation.",
                     context={"expected": schema.__name__, "actual": actual.__name__},
@@ -1222,7 +1224,7 @@ class CompileTransform:
                 transform_class=transform_class,
                 member=member,
                 problem=f"{transform_class.__name__}.{member} uses project(...) in a multi-output return.",
-                use="Return explicit schema instances for tuple-returning subtransforms.",
+                use="Return explicit schema instances for tuple-returning step methods.",
             )
         return cast(tuple[Structure | Projection, ...], result)
 
@@ -1300,7 +1302,7 @@ class CompileTransform:
                 member=member,
                 problem=(
                     f"{transform_class.__name__}.{member} expects {input_schema.__name__}, "
-                    f"but the previous subtransform returns {actual.__name__}."
+                    f"but the previous step method returns {actual.__name__}."
                 ),
                 use="Add @transform(input=that_input) to select an original input or shadowing lane, or update the row parameter annotation.",
                 context={"expected": input_schema.__name__, "actual": actual.__name__},
@@ -1415,7 +1417,7 @@ class CompileTransform:
                 "DSL-E0402",
                 transform_class=transform_class,
                 problem=f"Output {name} declares {schema.__name__}, but lane {name} carries {actual_schema.__name__}.",
-                use="Update the final subtransform return annotation or the output contract schema.",
+                use="Update the final step method return annotation or the output contract schema.",
                 context={"expected": schema.__name__, "actual": actual_schema.__name__},
             )
         return OutputPlan(
@@ -1632,9 +1634,9 @@ class CompileTransform:
             member=hook.name,
             problem=(
                 f"{transform_class.__name__}.{hook.name} targets {targets}, "
-                "but v1 active hook execution is PySpark only."
+                "but v.1 active hook execution is PySpark only."
             ),
-            use='Use target_backend="pyspark" for v1, or keep non-PySpark hook declarations for a future backend.',
+            use='Use target_backend="pyspark" for v.1, or keep non-PySpark hook declarations for a future backend.',
             context={"hook": hook.name, "target_backend": targets},
         )
 
@@ -1677,7 +1679,7 @@ class CompileTransform:
                     transform_class=None,
                     member=method.__qualname__,
                     problem=f"{method.__qualname__}.{parameter.name} must be annotated with a Structure schema.",
-                    use="Annotate every subtransform parameter with a Structure schema class.",
+                    use="Annotate every step method parameter with a Structure schema class.",
                     context={"parameter": parameter.name},
                 )
             resolved.append(parameter.replace(annotation=annotation))
@@ -1701,7 +1703,7 @@ class CompileTransform:
                 "DSL-E0402",
                 transform_class=None,
                 problem=f"Cannot deduce input for schema {schema.__name__}; matched inputs: {names}.",
-                use="Add @transform(input=that_input) to the subtransform or declare exactly one matching input(...).",
+                use="Add @transform(input=that_input) to the step method or declare exactly one matching input(...).",
                 context={"schema": schema.__name__, "matches": str(len(matches))},
             )
         return matches[0]
@@ -1761,8 +1763,8 @@ class CompileTransform:
                 "DSL-E0402",
                 transform_class=transform_class,
                 member=member,
-                problem=f"Subtransform returned {type(result).__name__}, not {output_schema.__name__}.",
-                use="Return an instance of the schema declared in the subtransform return annotation.",
+                problem=f"Step method returned {type(result).__name__}, not {output_schema.__name__}.",
+                use="Return an instance of the schema declared in the step method return annotation.",
                 context={"expected": output_schema.__name__, "actual": type(result).__name__},
             )
 
@@ -2000,7 +2002,7 @@ class CompileTransform:
                     f"{transform_class.__name__}.{member} returns {output_schema.__name__}, "
                     f"but project(...) targets {result.target.__name__}."
                 ),
-                use="Make the project(...) target match the subtransform return annotation.",
+                use="Make the project(...) target match the step method return annotation.",
                 context={"expected": output_schema.__name__, "actual": result.target.__name__},
             )
         source_schema = self._source_schema(result.source)
@@ -2075,7 +2077,7 @@ class CompileTransform:
                 transform_class=transform_class,
                 member=member,
                 problem=f"{output_schema.__name__}.{field.name} uses an aggregate expression outside group_by(...).",
-                use="Call group_by(...) in the subtransform before returning count(), sum(...), or another aggregate.",
+                use="Call group_by(...) in the step method before returning count(), sum(...), or another aggregate.",
                 context={"field": field.name, "schema": output_schema.__name__},
             )
         nullable = self._nullable(expression, filters)
@@ -2417,7 +2419,7 @@ class CompileTransform:
             member,
             input_name,
             occurrence,
-            "v1 joins support equality key pairs combined with AND.",
+            "v.1 joins support equality key pairs combined with AND.",
             "Replace OR, inequality, or arbitrary predicates with equality pairs, or move custom join logic into a hook.",
         )
 

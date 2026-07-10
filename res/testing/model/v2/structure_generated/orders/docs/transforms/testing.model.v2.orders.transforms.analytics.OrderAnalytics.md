@@ -14,7 +14,7 @@ Source: `testing.model.v2.orders.transforms.analytics.OrderAnalytics`
 - `product_summary`: `ProductDailySummary`
 - `customer_event_rank`: `CustomerEventRank`
 
-## Subtransforms
+## Step methods
 
 - `customer_daily_totals`: `OrderFulfillment` -> `CustomerDailyTotal`
 - `product_daily_summary`: `OrderFulfillment` -> `ProductDailySummary`

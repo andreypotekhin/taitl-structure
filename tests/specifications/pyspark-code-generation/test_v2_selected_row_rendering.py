@@ -1,3 +1,5 @@
+import pytest
+
 from structure import (
     Double,
     Long,
@@ -16,6 +18,7 @@ from structure import (
     lag,
     latest_by,
     lead,
+    lookup_join,
     ntile,
     output,
     percent_rank,
@@ -48,6 +51,17 @@ class LatestEvent(Structure):
     account_id = field(String(), nullable=False)
     event_id = field(String(), nullable=False)
     sequence = field(Long(), nullable=False)
+
+
+class Account(Structure):
+    account_id = field(String(), nullable=False, primary_key=True)
+    tier = field(String(), nullable=False)
+
+
+class AccountEvent(Structure):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    tier = field(String(), nullable=True)
 
 
 class RankedEvent(Structure):
@@ -163,6 +177,52 @@ class UniqueAccountEventTransform(Transform):
     def unique_events(self, row: RawEvent) -> LatestEvent:
         drop_duplicates(row.account_id)
         return LatestEvent(account_id=row.account_id, event_id=row.event_id, sequence=row.sequence)
+
+
+@transform
+class UniqueRelationEventTransform(Transform):
+    events = input(RawEvent)
+    unique = output(LatestEvent)
+
+    def unique_events(self, row: RawEvent) -> LatestEvent:
+        distinct(row)
+        return LatestEvent(account_id=row.account_id, event_id=row.event_id, sequence=row.sequence)
+
+
+@transform
+class PreJoinUniqueAccountTransform(Transform):
+    events = input(RawEvent)
+    accounts = input(Account)
+    enriched = output(AccountEvent)
+
+    def enrich(self, event: RawEvent, account: Account) -> AccountEvent:
+        drop_duplicates(account.account_id)
+        lookup_join(account, on=account.account_id == event.account_id)
+        return AccountEvent(account_id=event.account_id, event_id=event.event_id, tier=account.tier)
+
+
+@transform
+class PostJoinUniqueAccountTransform(Transform):
+    events = input(RawEvent)
+    accounts = input(Account)
+    enriched = output(AccountEvent)
+
+    def enrich(self, event: RawEvent, account: Account) -> AccountEvent:
+        lookup_join(account, on=account.account_id == event.account_id)
+        drop_duplicates(account.account_id)
+        return AccountEvent(account_id=event.account_id, event_id=event.event_id, tier=account.tier)
+
+
+@transform
+class MixedScopeDropDuplicatesTransform(Transform):
+    events = input(RawEvent)
+    accounts = input(Account)
+    enriched = output(AccountEvent)
+
+    def enrich(self, event: RawEvent, account: Account) -> AccountEvent:
+        lookup_join(account, on=account.account_id == event.account_id)
+        drop_duplicates(event.account_id, account.account_id)
+        return AccountEvent(account_id=event.account_id, event_id=event.event_id, tier=account.tier)
 
 
 def test_latest_by_renders_spark_visible_row_number_window() -> None:
@@ -302,6 +362,14 @@ def test_drop_duplicates_renders_spark_visible_exact_duplicate_removal() -> None
     assert "events = events.dropDuplicates()" in text
 
 
+def test_distinct_relation_renders_exact_relation_duplicate_removal() -> None:
+    plan = PySpark.plan.lower()(compile_transform(UniqueRelationEventTransform))
+
+    text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
+
+    assert 'events = events.dropDuplicates(["account_id", "event_id", "sequence"])' in text
+
+
 def test_drop_duplicates_explain_names_dedupe_operation_and_streaming_status() -> None:
     text = render_explain_report(UniqueEventTransform)
 
@@ -320,5 +388,36 @@ def test_drop_duplicates_renders_subset_columns_when_requested() -> None:
 def test_drop_duplicates_subset_explain_names_subset_and_streaming_status() -> None:
     text = render_explain_report(UniqueAccountEventTransform)
 
-    assert "operations: drop_duplicates(row_filtering subset=1 streaming_modes=append)" in text
+    assert "operations: drop_duplicates(row_filtering subset=1 scope=events streaming_modes=append)" in text
     assert "STREAM-E0801: batch_only in unique_events (subset duplicate removal)" in text
+
+
+def test_relation_drop_duplicates_before_join_prepares_join_source() -> None:
+    plan = PySpark.plan.lower()(compile_transform(PreJoinUniqueAccountTransform))
+
+    text = render_pyspark_step(
+        plan.steps[0],
+        current="events",
+        sources={"events": "events", "accounts": "accounts"},
+    )
+
+    assert 'events_account_deduped_1 = accounts.dropDuplicates(["account_id"])' in text
+    assert text.index("events_account_deduped_1 =") < text.index("events = events.join(")
+
+
+def test_relation_drop_duplicates_after_join_applies_to_joined_frame() -> None:
+    plan = PySpark.plan.lower()(compile_transform(PostJoinUniqueAccountTransform))
+
+    text = render_pyspark_step(
+        plan.steps[0],
+        current="events",
+        sources={"events": "events", "accounts": "accounts"},
+    )
+
+    assert 'events = events.dropDuplicates(["account_id"])' in text
+    assert text.index("events = events.join(") < text.index('events = events.dropDuplicates(["account_id"])')
+
+
+def test_drop_duplicates_rejects_mixed_relation_scopes() -> None:
+    with pytest.raises(TypeError, match="one relation scope"):
+        compile_transform(MixedScopeDropDuplicatesTransform)

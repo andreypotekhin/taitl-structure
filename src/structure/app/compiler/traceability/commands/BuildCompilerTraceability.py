@@ -510,7 +510,10 @@ class BuildCompilerTraceability:
                 sources=self._drop_duplicates_sources(operation),
                 operation="drop_duplicates",
                 step=step.name,
-                detail={"scope": "current_step_frame", "subset": str(self._drop_duplicates_subset_count(operation))},
+                detail={
+                    "scope": self._drop_duplicates_scope(operation),
+                    "subset": str(self._drop_duplicates_subset_count(operation)),
+                },
             )
             for index, operation in enumerate(step.operations)
             if operation.kind == "drop_duplicates"
@@ -525,6 +528,12 @@ class BuildCompilerTraceability:
     def _drop_duplicates_subset_count(self, operation) -> int:
         duplicate_rows = operation.duplicate_rows
         return 0 if duplicate_rows is None else len(duplicate_rows.subset)
+
+    def _drop_duplicates_scope(self, operation) -> str:
+        duplicate_rows = operation.duplicate_rows
+        if duplicate_rows is None or duplicate_rows.scope is None:
+            return "current_step_frame"
+        return str(duplicate_rows.scope)
 
     def _selected_rows_sources(self, selected_rows) -> tuple[str, ...]:
         reads = self._dataflow.reads(selected_rows.order_by)

@@ -421,7 +421,10 @@ class ComposeTransformPlans:
         )
 
     def _duplicate_rows(self, duplicate_rows: DuplicateRowsPlan) -> DuplicateRowsPlan:
-        return DuplicateRowsPlan(subset=tuple(self._expression(expression) for expression in duplicate_rows.subset))
+        return DuplicateRowsPlan(
+            subset=tuple(self._expression(expression) for expression in duplicate_rows.subset),
+            scope=duplicate_rows.scope,
+        )
 
     def _projection(self, assignment: ProjectAssignment) -> ProjectAssignment:
         return ProjectAssignment(field=assignment.field, expression=self._expression(assignment.expression))
