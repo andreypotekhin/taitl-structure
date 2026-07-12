@@ -80,15 +80,15 @@ parity names follow the official Spark 4.0.1 Python API docs for Column, SQL fun
 | Deterministic lookup dedupe | check | Windowed `row_number` before join | Uses `JoinDedupe` helpers. |
 | Temporal validity lookup | check | Equi join plus validity predicates | Exposed as `temporal_one(...)`. |
 | Backward as-of lookup | check | Windowed nearest-prior match | Exposed as `as_of_one(..., direction=AsOf.BACKWARD)`. |
+| Forward as-of lookup | check | Windowed nearest-following match | Exposed as `as_of_one(..., direction=AsOf.FORWARD)`. |
 | Left rowset join | check | `how="left"` | Broader rowset API. |
 | Right rowset join | check | `how="right"` | Projection must handle nullable left side. |
 | Full rowset join | check | `how="full"` / `full_outer` | Projection must handle nullable sides. |
 | Cross join | check | `crossJoin`, `how="cross"` | Requires `allow_cartesian=True`. |
 | Non-equi predicates | check | Column join expressions | Batch rowset joins. |
 | Disjunctive predicates | check | Column join expressions with `OR` | Batch rowset joins. |
-| Using-key joins | planned | `on="key"`, `on=["k1", "k2"]` | Symbolic `on=` remains preferred. |
-| Join strategy directives | planned | Broadcast, merge, shuffle hints | Broadcast exists; others are gated. |
-| Forward as-of lookup | planned | Forward as-of matching | Needs deterministic tie/tolerance rules. |
+| Using-key joins | check | `on="key"`, `on=["k1", "k2"]` | Expands to typed same-name equality predicates. |
+| Join strategy directives | check | Broadcast, merge, shuffle hints | Capability-checked request rendered as a PySpark hint. |
 | Nearest as-of lookup | future | Nearest time matching | More subtle tie policy. |
 | Stream-stream joins | unsupported | Structured Streaming joins | Deferred until streaming lifecycle support. |
 
@@ -110,8 +110,8 @@ parity names follow the official Spark 4.0.1 Python API docs for Column, SQL fun
 | `collect_list`, `collect_set` | check | Collection aggregates | Ordering is Spark-dependent. |
 | Ordered first/last aggregate | check | `first_value`, `last_value` patterns | Requires explicit `order_by=`. |
 | `grouping_id`, `is_grouped` | check | `grouping_id`, grouping metadata | Used with rollup/cube subtotals. |
-| `grouping_sets` | planned | `groupingSets`, SQL `GROUPING SETS` | Public helper reserved; backend support deferred. |
-| `having` | planned | Post-aggregate filter | Needs aggregate-output predicate scope. |
+| `grouping_sets` | check | Custom grouping-set levels | Emits explicit grouped branches and `unionByName`. |
+| `having` | check | Post-aggregate filter | Uses typed aggregate-output predicate scope. |
 | More statistical aggregates | future | `skewness`, `kurtosis`, `mode` | No committed design slice yet. |
 | Dict aggregate syntax | unsupported | `GroupedData.agg({"x": "sum"})` | Use typed helper expressions. |
 

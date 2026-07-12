@@ -43,6 +43,14 @@ inner_join(on=(price.valid_from <= order.business.order_date) & (order.business.
 full_join(on=(order.customer_id == customer.id) | (order.billing_customer_id == customer.id))
 ```
 
+When both inputs use the same key names, use PySpark-style using-key shorthand. Structure captures it as typed equality
+predicates, so it remains visible to diagnostics, traceability, and generated code:
+
+```python
+inner_join(on="order_id")
+left_join(customer, on=["tenant_id", "customer_id"])
+```
+
 The result still projects explicitly:
 
 ```python
@@ -69,9 +77,16 @@ Available shortcuts are `left_join(...)`, `inner_join(...)`, `right_join(...)`, 
 
 `Join.CROSS` emits every left/right pair. It requires `allow_cartesian=True` and does not accept `on`.
 
+## Strategy Directives
+
+`strategy=` requests a physical Spark join strategy for the right relation. `JoinStrategy.BROADCAST_HASH`,
+`JoinStrategy.SHUFFLE_HASH`, `JoinStrategy.SORT_MERGE`, and `JoinStrategy.SHUFFLE_REPLICATE_NL` render Spark's
+`broadcast`, `shuffle_hash`, `merge`, and `shuffle_replicate_nl` hints respectively. The backend checks the request
+before lowering; Spark may still choose a different physical plan.
+
 ## Predicates
 
-`on` accepts compileable symbolic boolean expressions:
+`on` accepts a non-empty using-key string or list of strings, or a compileable symbolic boolean expression:
 
 - equality and null-safe equality;
 - inequalities;
@@ -79,8 +94,8 @@ Available shortcuts are `left_join(...)`, `inner_join(...)`, `right_join(...)`, 
 - boolean `AND` and `OR`;
 - mixed boolean expressions when every part is compileable.
 
-Structure rejects string SQL fragments, raw column-name strings, Python lambdas, arbitrary Python functions, and
-predicates that reference scopes outside the join.
+Structure rejects string SQL fragments, Python lambdas, arbitrary Python functions, and predicates that reference
+scopes outside the join. A string is accepted only as a declared using key, never as SQL.
 
 ## Output Rules
 
@@ -128,9 +143,11 @@ online execution.
 
 ## Diagnostics
 
-Diagnostics identify the join type, predicate, nullable sides, cardinality shape, and suggested source fix. Common
-fixes include adding `allow_cartesian=True`, using `Output.project()(...)` after full joins, or choosing a narrower
-helper such as `lookup_join(...)`, `inner_join(...)`, `exists(...)`, or `not_exists(...)`.
+Diagnostics identify the join type, predicate, nullable sides, cardinality shape, and suggested source fix. Right and
+full joins identify the nullable source side when a non-nullable output reads it. Common fixes include adding
+`allow_cartesian=True`, using a nullable output field or `coalesce(...)` after outer joins, using
+`Output.project()(...)` after full joins, or choosing a narrower helper such as `lookup_join(...)`, `inner_join(...)`,
+`exists(...)`, or `not_exists(...)`.
 
 See also: [Join semantics](JoinSemantics.md), [Analytical join coverage](AnalyticalJoinCoverage.md),
 [Backend capabilities](BackendCapabilities.md), and [Quick reference](../QuickRef.md).

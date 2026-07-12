@@ -3,4 +3,4 @@
 Sprints: docs/dev/project-management/sprints/
 
 ### Current iteration
-Sprint: none (Sprint 11 completed)
+Sprint: none (Sprint 13 completed)

@@ -342,7 +342,7 @@ the first analytical join slice.
   analytical summaries remain compiler-visible.
 - As a developer, I can filter individual aggregate metrics so that conditional summaries do not require separate
   step methods.
-- As a developer, I can filter aggregate output with `having(...)` so that post-aggregate predicates are explicit.
+- + As a developer, I can filter aggregate output with `having(...)` so that post-aggregate predicates are explicit.
 - + As a developer, I can define ranking window expressions so that row number, rank, and dense rank compile to Spark
   window operations.
 - + As a developer, I can define rolling window metrics so that moving analytical summaries remain compiler-visible.
@@ -388,7 +388,10 @@ the first analytical join slice.
   predicates fail early.
 - + As a developer, I can use non-equi and disjunctive join predicates when they remain compiler-visible so that range
   and alternative-key joins do not require string SQL or hooks.
-- As a developer, I can see nullable sides and rowset join cardinality in explain output so that broad joins are
+- + As a developer, I can use PySpark-style using-key joins for one key and multiple keys without losing typed
+  validation.
+- + As a developer, I can use forward as-of joins so that time-relative enrichment can select the next known value.
+- + As a developer, I can see nullable sides and rowset join cardinality in explain output so that broad joins are
   reviewable before runtime.
 
 ## 22D. Optimization, Explain, Docs, and Test Tooling
@@ -399,7 +402,7 @@ the first analytical join slice.
   choices.
 - As a developer, I can add checkpoint hints where supported so that long analytical plans can be cut at explicit
   boundaries.
-- As a developer, I can specify join strategies and hints so that manual optimization remains explicit and reviewable.
+- + As a developer, I can specify join strategies and hints so that manual optimization remains explicit and reviewable.
 - As a developer, I can generate richer static dataflow explain output so that complex field dependencies can be
   inspected when needed.
 - As a developer, I can explain generated-code sections so that long analytical generated classes remain reviewable.

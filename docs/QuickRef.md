@@ -387,11 +387,12 @@ def product_daily_summary(self, order: OrderFulfillment) -> ProductDailySummary:
 Core aggregate helpers are `count()`, `count_distinct(...)`, `sum(...)`, `min(...)`, `max(...)`, and `avg(...)`.
 Advanced helpers include `bool_and(...)`, `bool_or(...)`, `stddev(...)`, `variance(...)`, `corr(...)`, `covar(...)`,
 `approx_count_distinct(...)`, `approx_percentile(...)`, `collect_list(...)`, `collect_set(...)`, `first_value(...)`,
-and `last_value(...)`. Aggregate helpers accept `where=...` for metric-local filters. Post-aggregate `having(...)` and
-arbitrary `grouping_sets(...)` are reserved capability boundaries.
+and `last_value(...)`. Aggregate helpers accept `where=...` for metric-local filters. Use
+`having(lambda out: ...)` after `.agg(...)` to filter aggregate output rows.
 
-Use `rollup(...)` for hierarchical subtotals and `cube(...)` for all grouping-key combinations.
-Subtotal rows may omit some grouping keys, so nullable subtotal fields or explicit labels are required.
+Use `rollup(...)` for hierarchical subtotals, `cube(...)` for all grouping-key combinations, and
+`grouping_sets(...)` for exact subtotal layouts. Subtotal rows may omit some grouping keys, so nullable subtotal fields
+or explicit labels are required.
 
 ```python
 def revenue_rollup(self, order: OrderFulfillment) -> OrderRevenueRollup:
@@ -432,6 +433,33 @@ return cube(
     distinct_customers=count_distinct(order.customer_id),
     gross_total=sum(order.total),
 ).as_schema(OrderProductCube)
+```
+
+Use `grouping_sets(...)` when only specific subtotal levels are useful:
+
+```python
+return grouping_sets(
+    (order.region, order.customer_id),
+    (order.region,),
+    (),
+).agg(
+    grouping_id=grouping_id(),
+    region_grouped=is_grouped(order.region),
+    customer_grouped=is_grouped(order.customer_id),
+    order_count=count(),
+    gross_total=sum(order.total),
+).as_schema(OrderGroupingSetSummary)
+```
+
+Use `having(...)` for post-aggregate filters:
+
+```python
+return group_by(customer_id=order.customer_id).agg(
+    order_count=count(),
+    gross_total=sum(order.total),
+).having(
+    lambda total: total.order_count > 1
+).as_schema(CustomerOrderSummary)
 ```
 
 Reference: [advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md),
@@ -683,6 +711,9 @@ inner_join(
     strategy=JoinStrategy.SHUFFLE_HASH,
 )
 ```
+
+For same-named keys, write `inner_join(on="order_id")` or `left_join(on=["tenant_id", "order_id"])`; Structure
+expands the shorthand to typed equality conditions.
 
 Use rowset joins when the join can admit right-only rows, left-only rows, or a Cartesian product:
 

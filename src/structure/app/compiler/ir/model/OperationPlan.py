@@ -66,7 +66,7 @@ class OperationPlan:
             kind="aggregate",
             aggregate=aggregate,
             family="aggregate",
-            capability=OperationCapability(group="aggregate", name="group_by"),
+            capability=OperationCapability(group="aggregate", name=aggregate.grouping),
             cardinality=OperationCardinality.AGGREGATE,
             streaming=StreamingSupport.BATCH_ONLY,
             streaming_output_modes=(StreamingOutputMode.UPDATE, StreamingOutputMode.COMPLETE),

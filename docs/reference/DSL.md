@@ -681,6 +681,9 @@ Rules:
   match at most one row or when a deterministic `dedupe` policy is required.
 - Legacy explicit-selection overloads remain supported, but they are not the documented style.
 - `on` and `how` are required.
+- Rowset join helpers also accept `on="key"` or `on=["key1", "key2"]` when the current row and the joined
+  relation expose same-named keys. Structure expands this shorthand to typed equality predicates and rejects missing,
+  repeated, or incompatible keys before lowering.
 - `hint` is optional.
 - `dedupe` is optional. When present, it must be a deterministic `JoinDedupe` policy and reduces the right side before
   the lookup join.

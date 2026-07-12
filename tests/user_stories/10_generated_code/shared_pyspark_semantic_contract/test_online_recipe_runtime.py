@@ -99,6 +99,13 @@ class CustomerMetric(structure.Structure):
     avg_quantity = structure.field(structure.Double(), nullable=False)
 
 
+class GroupingSetMetric(structure.Structure):
+    customer_id = structure.field(structure.String(), nullable=True)
+    order_count = structure.field(structure.Long(), nullable=False)
+    grouping_id = structure.field(structure.Integer(), nullable=False)
+    customer_grouped = structure.field(structure.Boolean(), nullable=False)
+
+
 class PermissivePublishedOrder(PublishedOrder):
     pass
 
@@ -537,6 +544,45 @@ def test_online_runner_applies_grouped_aggregate_recipe(monkeypatch) -> None:
         "select:customer_id=col(customer_id),order_count=col(order_count),"
         "distinct_customers=col(distinct_customers),quantity=col(quantity),"
         "min_quantity=col(min_quantity),max_quantity=col(max_quantity),avg_quantity=col(avg_quantity)",
+        "alias:totals",
+    )
+
+
+def test_online_runner_applies_grouping_sets_and_having_recipe(monkeypatch) -> None:
+    """I can rely on online and generated execution to share v3 grouping-set and having semantics."""
+
+    _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
+    invocation = FakeInvocation(metrics=_frame("metrics", RawMetric))
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, invocation),
+        _grouping_sets_plan(),
+        session=SimpleNamespace(
+            online_executor=None,
+            spark="spark",
+            ctx=None,
+            execution_mode="online",
+            target_backend="pyspark",
+        ),
+    )
+
+    totals = cast(FakeFrame, result.totals)
+
+    assert totals.operations == (
+        "alias:metrics",
+        "withColumn:__structure_group_0_customer_id=col(metrics.customer_id)",
+        "groupBy:__structure_group_0_customer_id=col(__structure_group_0_customer_id)",
+        "agg:order_count=cast(count(lit(1)) as LongType())",
+        "select:customer_id=col(__structure_group_0_customer_id),order_count=col(order_count),"
+        "grouping_id=cast(lit(0) as IntegerType()),customer_grouped=cast(lit(False) as BooleanType())",
+        "alias:metrics",
+        "withColumn:__structure_group_0_customer_id=col(metrics.customer_id)",
+        "groupBy:",
+        "agg:order_count=cast(count(lit(1)) as LongType())",
+        "select:customer_id=cast(lit(None) as StringType()),order_count=col(order_count),"
+        "grouping_id=cast(lit(1) as IntegerType()),customer_grouped=cast(lit(True) as BooleanType())",
+        "unionByName:metrics",
+        "where:(col(order_count) > lit(0))",
         "alias:totals",
     )
 
@@ -1378,6 +1424,97 @@ def _aggregate_plan() -> PySparkExecutionPlan:
     )
 
 
+def _grouping_sets_plan() -> PySparkExecutionPlan:
+    input_validation = PySparkValidationRecipe("metrics", RawMetric, structure.SchemaMode.STRICT, False, "input")
+    total_validation = PySparkValidationRecipe("totals", GroupingSetMetric, structure.SchemaMode.STRICT, False, "output")
+    aggregate = PySparkAggregateRecipe(
+        keys=(
+            PySparkAggregateKey(
+                name="customer_id",
+                expression=_field(RawMetric, "customer_id"),
+            ),
+        ),
+        assignments=(
+            PySparkAggregateAssignment(
+                field=GroupingSetMetric._structure_fields["customer_id"],
+                function="key",
+                expression=_field(RawMetric, "customer_id"),
+                key="customer_id",
+            ),
+            PySparkAggregateAssignment(
+                field=GroupingSetMetric._structure_fields["order_count"],
+                function="count",
+            ),
+            PySparkAggregateAssignment(
+                field=GroupingSetMetric._structure_fields["grouping_id"],
+                function="grouping_id",
+            ),
+            PySparkAggregateAssignment(
+                field=GroupingSetMetric._structure_fields["customer_grouped"],
+                function="is_grouped",
+                expression=_field(RawMetric, "customer_id"),
+            ),
+        ),
+        grouping="grouping_sets",
+        levels=(("customer_id",), ()),
+        having=_binary("gt", _field(GroupingSetMetric, "order_count"), _literal(0)),
+    )
+    step = PySparkStepRecipe(
+        name="summarize",
+        ordinal=0,
+        source="metrics",
+        source_scope=RawMetric.__name__,
+        input_schema=RawMetric,
+        output_schema=GroupingSetMetric,
+        input_alias="metrics",
+        output_alias="grouping_set_metric",
+        before_hooks=(),
+        filters=(),
+        joins=(),
+        projection=(),
+        after_hooks=(),
+        validations=(),
+        aggregate=aggregate,
+        results=(
+            PySparkStepResultRecipe(
+                schema=GroupingSetMetric,
+                lane="totals",
+                frame="totals",
+                output_alias="grouping_set_metric",
+                projection=(),
+                ordinal=0,
+                after_hooks=(),
+                validations=(total_validation,),
+                aggregate=aggregate,
+            ),
+        ),
+        operations=(PySparkOperationRecipe.aggregate_operation(aggregate),),
+    )
+    return PySparkExecutionPlan(
+        transform="GroupingSets",
+        backend=BackendId(name="pyspark", target=">=3.5,<4.1", family="ordinary_pyspark"),
+        inputs=(PySparkInputRecipe("metrics", RawMetric, 0, input_validation),),
+        steps=(step,),
+        outputs=(
+            PySparkOutputRecipe(
+                name="totals",
+                ordinal=0,
+                source="totals",
+                source_scope="totals",
+                input_schema=GroupingSetMetric,
+                output_schema=GroupingSetMetric,
+                input_alias="totals",
+                output_alias="grouping_set_metric",
+                filters=(),
+                joins=(),
+                projection=(),
+                validation=total_validation,
+            ),
+        ),
+        requires_hook_inputs=False,
+    )
+
+
 def _selected_row_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, structure.SchemaMode.STRICT, False, "input")
     published_validation = PySparkValidationRecipe(
@@ -2168,8 +2305,12 @@ def _frame(name: str, schema: type[structure.Structure]) -> "FakeFrame":
 def _type(value):
     if value.__class__.__name__ == "String":
         return FakeTypes.StringType()
+    if value.__class__.__name__ == "Integer":
+        return FakeTypes.IntegerType()
     if value.__class__.__name__ == "Long":
         return FakeTypes.LongType()
+    if value.__class__.__name__ == "Boolean":
+        return FakeTypes.BooleanType()
     return FakeTypes.StringType()
 
 
@@ -2550,7 +2691,7 @@ class FakeFrame:
             source = fields_by_name.get(column.source_name or name)
             fields.append(
                 FakeField(
-                    name, source.dataType if source else FakeTypes.StringType(), source.nullable if source else True
+                    name, source.dataType if source else _fake_column_type(column), source.nullable if source else True
                 )
             )
             rendered.append(f"{name}={column.expression}")
@@ -2574,6 +2715,9 @@ class FakeFrame:
     def dropDuplicates(self, subset=None):
         suffix = "" if subset is None else ":" + ",".join(subset)
         return self.with_operation(f"dropDuplicates{suffix}")
+
+    def unionByName(self, right):
+        return FakeFrame(self.name, self.schema, self.operations + right.operations + (f"unionByName:{right.name}",))
 
 
 @dataclass(frozen=True)
@@ -2601,11 +2745,7 @@ class FakeGroupedFrame:
         )
 
     def _type(self, column: FakeColumn):
-        if "LongType()" in column.expression:
-            return FakeTypes.LongType()
-        if "DoubleType()" in column.expression:
-            return FakeTypes.DoubleType()
-        return FakeTypes.StringType()
+        return _fake_column_type(column)
 
     def _key_field(self, column: FakeColumn, fields_by_name: dict[str, "FakeField"]) -> "FakeField":
         name = column.output_name or column.source_name or column.expression
@@ -2615,6 +2755,18 @@ class FakeGroupedFrame:
             source.dataType if source else FakeTypes.StringType(),
             source.nullable if source else True,
         )
+
+
+def _fake_column_type(column: FakeColumn):
+    if "BooleanType()" in column.expression:
+        return FakeTypes.BooleanType()
+    if "IntegerType()" in column.expression:
+        return FakeTypes.IntegerType()
+    if "LongType()" in column.expression:
+        return FakeTypes.LongType()
+    if "DoubleType()" in column.expression:
+        return FakeTypes.DoubleType()
+    return FakeTypes.StringType()
 
 
 @dataclass(frozen=True)

@@ -276,7 +276,13 @@ def rowset_join(
     else:
         if on is None:
             raise TypeError("rowset_join(on=...) is required unless how=Join.CROSS")
-        predicate = _join_predicate("rowset_join", on)
+        using_keys = _using_keys("rowset_join", on)
+        if using_keys:
+            if relation is None:
+                relation = cast(Relation, _infer_using_relation("rowset_join", context, using_keys))
+            predicate = _using_predicate("rowset_join", context, left, relation, using_keys)
+        else:
+            predicate = _join_predicate("rowset_join", on)
         if relation is None:
             relation = cast(Relation, _infer_relation("rowset_join", context, predicate, validate_pairs=False))
 
@@ -633,7 +639,101 @@ def _record_scoped_join(context, relation: InputScope, join: JoinPlan) -> None:
         name=relation._structure_input_name,
         schema=relation._structure_input_schema,
         nullable=join.how in {Join.LEFT, Join.FULL},
+        nullable_reason=_right_nullable_reason(join.how),
     )
+    if join.how in {Join.RIGHT, Join.FULL}:
+        _mark_left_scopes_nullable(context, right=relation, how=join.how)
+
+
+def _using_keys(function: str, value: object) -> tuple[str, ...]:
+    if isinstance(value, str):
+        keys = (value,)
+    elif isinstance(value, list):
+        keys = tuple(value)
+    else:
+        return ()
+    if not keys or any(not isinstance(key, str) or not key for key in keys):
+        raise TypeError(f"{function}(on=...) using keys must be one non-empty string or a non-empty list of them")
+    if len(set(keys)) != len(keys):
+        raise TypeError(f"{function}(on=...) using keys must not repeat a field name")
+    return keys
+
+
+def _infer_using_relation(function: str, context, keys: tuple[str, ...]) -> InputScope:
+    candidates = tuple(
+        relation
+        for relation in context.relation_scopes.values()
+        if isinstance(relation, InputScope)
+        and relation._structure_joined_scope is None
+        and all(key in relation._structure_input_schema._structure_fields for key in keys)
+    )
+    if len(candidates) == 1:
+        return candidates[0]
+    if not candidates:
+        joined = ", ".join(keys)
+        raise TypeError(
+            f"Cannot infer joined relation for {function}(on=...): no unjoined relation has using key(s) {joined}. "
+            f"Use {function}(relation, on=...) to name the right relation."
+        )
+    names = ", ".join(sorted(relation._structure_input_name for relation in candidates))
+    raise TypeError(
+        f"Cannot infer joined relation for {function}(on=...): using key(s) match multiple relations: {names}. "
+        f"Use {function}(relation, on=...) to choose one."
+    )
+
+
+def _using_predicate(
+    function: str,
+    context,
+    left: object | None,
+    relation: Relation | None,
+    keys: tuple[str, ...],
+) -> Expression:
+    if not isinstance(relation, InputScope):
+        raise TypeError(f"{function}(relation, on=...) requires a Structure relation parameter or transform input")
+    left_scope = context.default_project_source if left is None else left
+    if not isinstance(left_scope, RowScope):
+        raise TypeError(f"{function}(left=..., on=...) requires the current row scope for using-key joins")
+    expressions: list[Expression] = []
+    for key in keys:
+        try:
+            left_key = getattr(left_scope, key)
+        except AttributeError as error:
+            raise TypeError(f"{function}(on=...) cannot find using key {key!r} on the left row scope") from error
+        try:
+            right_key = getattr(relation, key)
+        except AttributeError as error:
+            raise TypeError(f"{function}(on=...) cannot find using key {key!r} on relation {relation._structure_input_name}") from error
+        expressions.append(left_key == right_key)
+    predicate = expressions[0]
+    for expression in expressions[1:]:
+        predicate = predicate & expression
+    return predicate
+
+
+def _right_nullable_reason(how: Join) -> str | None:
+    if how is Join.LEFT:
+        return "the right relation may be absent after this left join"
+    if how is Join.FULL:
+        return "the right relation may be absent after this full join"
+    return None
+
+
+def _mark_left_scopes_nullable(context, *, right: InputScope, how: Join) -> None:
+    reason = "the current left row may be absent after this right join"
+    if how is Join.FULL:
+        reason = "the current left row may be absent after this full join"
+    scope = context.default_project_source
+    if isinstance(scope, RowScope):
+        scope._structure_scope_nullable = True
+        scope._structure_scope_nullable_reason = reason
+    for relation in context.relation_scopes.values():
+        if relation is right:
+            continue
+        joined = getattr(relation, "_structure_joined_scope", None)
+        if isinstance(joined, RowScope):
+            joined._structure_scope_nullable = True
+            joined._structure_scope_nullable_reason = reason
 
 
 def _existence_join(

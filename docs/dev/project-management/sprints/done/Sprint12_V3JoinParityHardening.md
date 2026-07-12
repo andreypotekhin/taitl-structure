@@ -31,7 +31,7 @@ join strategy directives, and express forward as-of joins.
 
 ## ExecPlan
 
-`docs/dev/planning/P07072603.V3-join-pyspark-parity-hardening.plan.md`
+`docs/dev/planning/done/P07072603.V3-join-pyspark-parity-hardening.plan.md`
 
 ## Engineering Tasks
 
@@ -52,4 +52,4 @@ join strategy directives, and express forward as-of joins.
 
 ## Progress
 
-- [ ] Implement v.3 join parity hardening.
+- [x] Implement v.3 join parity hardening (completed 2026-07-12).

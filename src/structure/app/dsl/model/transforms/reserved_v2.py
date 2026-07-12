@@ -39,14 +39,16 @@ def cube(*keys: object, **named_keys: object) -> "GroupedRows":
 
 def grouping_sets(*levels: object, **named_levels: object) -> "GroupedRows":
     context = _context("grouping_sets(...)")
-    named = _named_keys(named_levels)
-    positional = tuple((f"group_{index}", literal(level)) for index, level in enumerate(levels, start=1))
-    expressions = (*positional, *named)
-    if not expressions:
+    parsed_levels = tuple(_grouping_set_level(level) for level in (*levels, *named_levels.values()))
+    if not parsed_levels:
         raise TypeError("grouping_sets(...) requires at least one grouping level")
-    context.aggregate_keys = expressions
+    keys = _grouping_set_keys(parsed_levels)
+    if not keys:
+        raise TypeError("grouping_sets(...) requires at least one non-empty grouping level")
+    context.aggregate_keys = keys
+    context.aggregate_levels = tuple(tuple(name for name, _ in level) for level in parsed_levels)
     context.aggregate_grouping = "grouping_sets"
-    return GroupedRows(expressions)
+    return GroupedRows(keys)
 
 
 def grouping_id() -> Expression:
@@ -55,6 +57,13 @@ def grouping_id() -> Expression:
 
 def is_grouped(value: object) -> Expression:
     return _aggregate("is_grouped", literal(value), type=BooleanType(), nullable=False)
+
+
+def having(predicate: object) -> None:
+    context = _context("having(...)")
+    if context.aggregate_having is not None:
+        raise TypeError("having(...) can only be declared once per aggregate step")
+    context.aggregate_having = predicate
 
 
 def _grouping(kind: str, call: str, keys: tuple[object, ...], named_keys: dict[str, object]) -> "GroupedRows":
@@ -705,8 +714,19 @@ class GroupedRows:
 class GroupedAggregates:
     keys: tuple[tuple[str, Expression], ...]
     aggregates: tuple[tuple[str, Expression], ...]
+    having_predicate: object | None = None
+
+    def having(self, predicate: object) -> "GroupedAggregates":
+        if self.having_predicate is not None:
+            raise TypeError("having(...) can only be declared once per aggregate step")
+        return GroupedAggregates(self.keys, self.aggregates, predicate)
 
     def as_schema(self, schema):
+        if self.having_predicate is not None:
+            context = _context("having(...)")
+            if context.aggregate_having is not None:
+                raise TypeError("having(...) can only be declared once per aggregate step")
+            context.aggregate_having = self.having_predicate
         values = {name: expression for name, expression in self.keys}
         values.update({name: expression for name, expression in self.aggregates})
         return schema(**values)
@@ -1153,6 +1173,30 @@ def _positional_keys(keys: tuple[object, ...]) -> tuple[tuple[str, Expression], 
 
 def _named_keys(keys: dict[str, object]) -> tuple[tuple[str, Expression], ...]:
     return tuple((name, literal(key)) for name, key in keys.items())
+
+
+def _grouping_set_level(level: object) -> tuple[tuple[str, Expression], ...]:
+    values = level if isinstance(level, (tuple, list)) else (level,)
+    return _positional_keys(tuple(values))
+
+
+def _grouping_set_keys(
+    levels: tuple[tuple[tuple[str, Expression], ...], ...],
+) -> tuple[tuple[str, Expression], ...]:
+    keys: list[tuple[str, Expression]] = []
+    for level in levels:
+        for name, expression in level:
+            existing = next((key for key in keys if _same_expression(key[1], expression)), None)
+            if existing is not None:
+                continue
+            if any(key_name == name for key_name, _ in keys):
+                raise TypeError(f"grouping_sets(...) uses grouping key name {name!r} for multiple expressions")
+            keys.append((name, expression))
+    return tuple(keys)
+
+
+def _same_expression(left: Expression, right: Expression) -> bool:
+    return left.kind == right.kind and left.data == right.data and left.args == right.args
 
 
 def _key_name(expression: Expression) -> str:

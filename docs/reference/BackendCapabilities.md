@@ -161,7 +161,12 @@ join.cross_join
 join.non_equi_condition
 join.disjunctive_condition
 join.broadcast_hint
+join.strategy_broadcast
+join.strategy_shuffle_hash
+join.strategy_merge
+join.strategy_shuffle_replicate_nl
 aggregate.group_by
+aggregate.grouping_sets
 aggregate.rollup
 aggregate.cube
 aggregate.count
@@ -242,13 +247,6 @@ Deferred features must be represented as unsupported decisions. Examples:
 
 ```text
 window.window_project
-join.using_keys
-join.strategy_broadcast
-join.strategy_shuffle_hash
-join.strategy_shuffle_replicate_nl
-join.strategy_merge
-aggregate.grouping_sets
-aggregate.having
 optimization.repartition
 explain.field_lineage
 docs.generated_docs

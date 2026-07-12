@@ -28,7 +28,8 @@
     "AsOf": {
       "dataclass_fields": [],
       "enum_members": [
-        "BACKWARD"
+        "BACKWARD",
+        "FORWARD"
       ],
       "kind": "class",
       "module": "structure.app.dsl.model.transforms.AsOf",
@@ -223,7 +224,8 @@
       "enum_members": [
         "BROADCAST_HASH",
         "SHUFFLE_HASH",
-        "SORT_MERGE"
+        "SORT_MERGE",
+        "SHUFFLE_REPLICATE_NL"
       ],
       "kind": "class",
       "module": "structure.app.dsl.model.transforms.JoinStrategy",
@@ -609,14 +611,6 @@
       "qualname": "ceil",
       "signature": "(value: 'object') -> 'Expression'"
     },
-    "concat_ws": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "function",
-      "module": "structure.app.dsl.model.expr.expressions",
-      "qualname": "concat_ws",
-      "signature": "(separator: 'str', *values: 'object') -> 'Expression'"
-    },
     "coalesce": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -648,6 +642,14 @@
       "module": "structure.app.compiler.frontend.commands.CompileTransform",
       "qualname": null,
       "signature": "(transform_class: 'type[Transform] | TransformPipeline', *, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, overrides: 'Mapping[str, object] | None' = None, **settings: 'object') -> 'TransformPlan'"
+    },
+    "concat_ws": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "concat_ws",
+      "signature": "(separator: 'str', *values: 'object') -> 'Expression'"
     },
     "corr": {
       "dataclass_fields": [],
@@ -865,6 +867,14 @@
       "qualname": "grouping_sets",
       "signature": "(*levels: 'object', **named_levels: 'object') -> \"'GroupedRows'\""
     },
+    "having": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "having",
+      "signature": "(predicate: 'object') -> 'None'"
+    },
     "initcap": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -889,14 +899,6 @@
       "qualname": "input",
       "signature": "(value: 'type[Structure] | InputDeclaration', *, streaming: 'StreamingMode' = <StreamingMode.NO: 'no'>) -> 'InputDeclaration | BindingSelector'"
     },
-    "is_grouped": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "function",
-      "module": "structure.app.dsl.model.transforms.reserved_v2",
-      "qualname": "is_grouped",
-      "signature": "(value: 'object') -> 'Expression'"
-    },
     "instr": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -904,6 +906,14 @@
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "instr",
       "signature": "(value: 'object', *, substring: 'str') -> 'Expression'"
+    },
+    "is_grouped": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "is_grouped",
+      "signature": "(value: 'object') -> 'Expression'"
     },
     "isnan": {
       "dataclass_fields": [],
@@ -977,14 +987,6 @@
       "qualname": "left_join",
       "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None, strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
     },
-    "lookup_join": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "function",
-      "module": "structure.app.dsl.model.expr.InputScope",
-      "qualname": "lookup_join",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', how: 'Join' = <Join.LEFT: 'left'>, hint: 'JoinHint | None' = None, dedupe: 'JoinDedupe | None' = None) -> 'Relation | InputScope'"
-    },
     "length": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -1000,6 +1002,14 @@
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "levenshtein",
       "signature": "(left: 'object', right: 'object') -> 'Expression'"
+    },
+    "lookup_join": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.InputScope",
+      "qualname": "lookup_join",
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', how: 'Join' = <Join.LEFT: 'left'>, hint: 'JoinHint | None' = None, dedupe: 'JoinDedupe | None' = None) -> 'Relation | InputScope'"
     },
     "lower": {
       "dataclass_fields": [],

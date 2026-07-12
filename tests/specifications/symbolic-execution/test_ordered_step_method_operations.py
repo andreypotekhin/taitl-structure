@@ -34,6 +34,11 @@ class Enriched(structure.Structure):
     product_name = structure.field(structure.String(), nullable=True)
 
 
+class OuterEnriched(structure.Structure):
+    id = structure.field(structure.String(), nullable=True)
+    product_name = structure.field(structure.String(), nullable=True)
+
+
 def test_where_before_join_renders_before_join() -> None:
     @transform
     class AddProduct(structure.Transform):
@@ -241,7 +246,52 @@ def test_inner_join_records_row_multiplying_operation() -> None:
     assert dependencies["add_product.join[1].product"].detail["cardinality"] == "row_multiplying"
 
 
-def test_bare_right_join_records_rowset_operation() -> None:
+@pytest.mark.parametrize("using", ["id", ["id"]])
+def test_inner_join_accepts_using_key(using: object) -> None:
+    @transform
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            structure.inner_join(on=using)
+            return Enriched(id=order.id, product_name=product.name)
+
+    recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
+
+    assert 'F.col("order.id") == F.col("products.id")' in text
+
+
+def test_inner_join_accepts_multiple_using_keys() -> None:
+    class CompositeOrder(structure.Structure):
+        tenant_id = structure.field(structure.String(), nullable=False)
+        id = structure.field(structure.String(), nullable=False)
+
+    class CompositeProduct(structure.Structure):
+        tenant_id = structure.field(structure.String(), nullable=False)
+        id = structure.field(structure.String(), nullable=False)
+        name = structure.field(structure.String(), nullable=True)
+
+    @transform
+    class AddProduct(structure.Transform):
+        orders = structure.input(CompositeOrder)
+        products = structure.input(CompositeProduct)
+        enriched = structure.output(Enriched)
+
+        def add_product(self, order: CompositeOrder, product: CompositeProduct) -> Enriched:
+            structure.inner_join(product, on=["tenant_id", "id"])
+            return Enriched(id=order.id, product_name=product.name)
+
+    recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
+
+    assert 'F.col("composite_order.tenant_id") == F.col("products.tenant_id")' in text
+    assert 'F.col("composite_order.id") == F.col("products.id")' in text
+
+
+def test_right_join_explains_nullable_left_output() -> None:
     @transform
     class AddProduct(structure.Transform):
         orders = structure.input(Order)
@@ -251,6 +301,49 @@ def test_bare_right_join_records_rowset_operation() -> None:
         def add_product(self, order: Order, product: Product) -> Enriched:
             structure.right_join(on=product.id == order.product_id)
             return Enriched(id=order.id, product_name=product.name)
+
+    with pytest.raises(structure.StructureCompileError) as raised:
+        compile_transform(AddProduct)
+
+    assert raised.value.diagnostic.code == "SCHEMA-E0301"
+    assert "current left row may be absent after this right join" in raised.value.diagnostic.problem_text()
+
+
+@pytest.mark.parametrize(
+    ("strategy", "hint"),
+    [
+        (structure.JoinStrategy.BROADCAST_HASH, "broadcast"),
+        (structure.JoinStrategy.SORT_MERGE, "merge"),
+        (structure.JoinStrategy.SHUFFLE_REPLICATE_NL, "shuffle_replicate_nl"),
+    ],
+)
+def test_join_strategy_renders_supported_pyspark_hint(strategy: structure.JoinStrategy, hint: str) -> None:
+    @transform
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            structure.inner_join(on=product.id == order.product_id, strategy=strategy)
+            return Enriched(id=order.id, product_name=product.name)
+
+    recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
+
+    assert f'.hint("{hint}")' in text
+
+
+def test_bare_right_join_records_rowset_operation() -> None:
+    @transform
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(OuterEnriched)
+
+        def add_product(self, order: Order, product: Product) -> OuterEnriched:
+            structure.right_join(on=product.id == order.product_id)
+            return OuterEnriched(id=order.id, product_name=product.name)
 
     plan = compile_transform(AddProduct)
     step = plan.steps[0]
@@ -279,16 +372,16 @@ def test_explicit_full_rowset_join_accepts_disjunctive_predicate() -> None:
     class AddProduct(structure.Transform):
         orders = structure.input(Order)
         products = structure.input(Product)
-        enriched = structure.output(Enriched)
+        enriched = structure.output(OuterEnriched)
 
-        def add_product(self, order: Order, product: Product) -> Enriched:
+        def add_product(self, order: Order, product: Product) -> OuterEnriched:
             structure.rowset_join(
                 left=order,
                 right=product,
                 on=(product.id == order.product_id) | (product.name == order.status),
                 how=structure.Join.FULL,
             )
-            return Enriched(id=order.id, product_name=product.name)
+            return OuterEnriched(id=order.id, product_name=product.name)
 
     plan = compile_transform(AddProduct)
     recipe = PySpark.plan.lower()(plan).steps[0]
@@ -305,11 +398,11 @@ def test_full_join_shortcut_accepts_non_equi_predicate() -> None:
     class AddProduct(structure.Transform):
         orders = structure.input(Order)
         products = structure.input(Product)
-        enriched = structure.output(Enriched)
+        enriched = structure.output(OuterEnriched)
 
-        def add_product(self, order: Order, product: Product) -> Enriched:
+        def add_product(self, order: Order, product: Product) -> OuterEnriched:
             structure.full_join(on=cast(Any, product).valid_from <= cast(Any, order).status)
-            return Enriched(id=order.id, product_name=product.name)
+            return OuterEnriched(id=order.id, product_name=product.name)
 
     recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
@@ -519,6 +612,30 @@ def test_as_of_one_records_backward_lookup_and_renders_ranked_selection() -> Non
     assert ".orderBy(F.col(\"products.valid_from\").desc())" in text
     assert dependencies["add_product.join[1].product"].operation == "as_of_one"
     assert dependencies["add_product.join[1].product"].detail["as_of"] == "backward"
+
+
+def test_as_of_one_records_forward_lookup_and_renders_earliest_selection() -> None:
+    @transform
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            structure.as_of_one(
+                on=product.id == order.product_id,
+                left_time=order.status,
+                right_time=product.valid_from,
+                direction=structure.AsOf.FORWARD,
+                how=structure.Join.LEFT,
+            )
+            return Enriched(id=order.id, product_name=product.name)
+
+    recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
+
+    assert '(F.col("products.valid_from") >= F.col("order.status"))' in text
+    assert '.orderBy(F.col("products.valid_from").asc())' in text
 
 
 def test_as_of_one_rejects_left_side_right_time() -> None:

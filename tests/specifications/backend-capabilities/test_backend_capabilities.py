@@ -41,7 +41,20 @@ def test_supported_v1_requirement_passes() -> None:
 
 
 @pytest.mark.parametrize(
-    "name", ["exists", "not_exists", "inner_join", "temporal_one", "as_of_one", "left_semi_join", "left_anti_join"]
+    "name",
+    [
+        "exists",
+        "not_exists",
+        "inner_join",
+        "temporal_one",
+        "as_of_one",
+        "left_semi_join",
+        "left_anti_join",
+        "strategy_broadcast",
+        "strategy_shuffle_hash",
+        "strategy_merge",
+        "strategy_shuffle_replicate_nl",
+    ],
 )
 def test_supported_v2_join_requirement_passes(name: str) -> None:
     resolved = Capabilities.resolve()()
@@ -70,6 +83,8 @@ def test_supported_v2_join_requirement_passes(name: str) -> None:
         "first_value",
         "group_by",
         "grouping_id",
+        "grouping_sets",
+        "having",
         "is_grouped",
         "last_value",
         "max",
@@ -175,7 +190,6 @@ def test_supported_v2_cache_requirement_passes() -> None:
     ("group", "name"),
     [
         ("window", "window_project"),
-        ("aggregate", "grouping_sets"),
         ("optimization", "repartition"),
         ("explain", "field_lineage"),
         ("docs", "generated_docs"),
@@ -214,6 +228,8 @@ def test_spark_connect_resolves_as_pyspark_variant() -> None:
         "min",
         "max",
         "avg",
+        "grouping_sets",
+        "having",
     ],
 )
 def test_spark_connect_accepts_completed_aggregate_batch_capabilities(name: str) -> None:

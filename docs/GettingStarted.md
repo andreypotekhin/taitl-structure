@@ -12,7 +12,7 @@ QuickRef: [QuickRef.md](QuickRef.md)
 
 ```bash
 poetry build
-pip install dist/structure-0.0.2-py3-none-any.whl
+pip install dist/structure-[version]-py3-none-any.whl
 ```
 
 If you plan to execute transforms against Spark locally, install PySpark separately:

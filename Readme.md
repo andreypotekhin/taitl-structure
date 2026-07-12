@@ -131,13 +131,11 @@ result = EnrichOrders(
 enriched_df = result.enriched
 ```
 
-On invocation of run(), Structure creates in-memory code artifact in an intermediary format (IR) and executes it symbolicaly. The artifact can also be saved to disk as PySpark source (genenrated PySpark) , if that's suitable for your project. 
-
-The execution order follows the declared order of transform's 'step' methods - the methods that take schema object(s) and  return schema object(s).
+On invocation of run(), Structure compiles Transform class and its dependencies into an in-memory execution plan. It then executes the plan by translating ('lowering') it into PySpark statements. PySpark code can also be saved to disk if your project's preference is to have generated code. Execution order follows the declared order of transform's 'step' methods - the methods that take schema object(s) and  return schema object(s).
 
 ### Generated PySpark Code
 
-The generated  PySpark code is similar to this:
+The generated  PySpark code looks similar to this:
 
 ```python
 from pyspark.sql import DataFrame, SparkSession

@@ -13,8 +13,8 @@ right-side uniqueness is not proven and never deduplicates by surprise.
 ## Scope
 
 This reference covers source semantics for analytical joins. Existence joins, `inner_join(...)`, deterministic
-deduped `lookup_join(...)`, temporal validity-window `temporal_one(...)`, and backward `as_of_one(...)` are implemented in
-the default PySpark profile.
+deduped `lookup_join(...)`, temporal validity-window `temporal_one(...)`, and backward and forward `as_of_one(...)` are
+implemented in the default PySpark profile.
 [JoinSemantics.md](JoinSemantics.md) covers the strict `lookup_join(...)` contract.
 
 In scope for the analytical join family:
@@ -187,14 +187,15 @@ price = self.prices.as_of_one(
 )
 ```
 
-Initial rules:
+Rules:
 
 - `AsOf.BACKWARD` chooses the latest right row whose `right_time <= left_time`.
+- `AsOf.FORWARD` chooses the earliest right row whose `right_time >= left_time`.
 - `tolerance` is optional and rejects matches farther away than the supplied duration.
 - `Join.LEFT` keeps unmatched rows with null right fields.
 - `Join.INNER` removes unmatched rows.
 - Ties on `right_time` require an explicit tie policy.
-- Forward and nearest-direction as-of joins are deferred until backward joins are stable.
+- Nearest-direction as-of joins remain deferred because equal-distance ties need a separate contract.
 
 ## IR Contract
 

@@ -51,8 +51,8 @@ The following new symbols are candidates for export from `structure` when implem
 import structure
 ```
 
-Public export is part of implementation acceptance. `grouping_sets(...)` is intentionally exported as a reserved
-helper that fails through backend capability checks until an explicit grouping-set lowering is admitted.
+Public export is part of implementation acceptance. `grouping_sets(...)` is admitted for explicit grouping levels and
+lowers through the shared PySpark recipe layer.
 
 ## Advanced Grouping
 
@@ -85,12 +85,13 @@ Rules:
 - Expression grouping keys must be named so the output schema can refer to them.
 - `rollup(...)` preserves the declared key order from most detailed to broadest subtotal.
 - `cube(...)` creates subtotal combinations for all declared keys.
+- `grouping_sets(...)` accepts one tuple/list per grouping level; use `()` for a grand total level.
 - Output fields for grouping keys that may be absent in subtotal rows must be nullable unless the user assigns an
   explicit literal replacement.
 - `grouping_id()` returns a non-nullable integer-like expression.
 - `is_grouped(field)` returns a non-nullable Boolean expression indicating whether a grouping key is absent in the
   current subtotal level.
-- `grouping_sets(...)` is reserved for explicit subtotal levels and currently fails through backend capability checks.
+- `grouping_sets(...)` emits one grouped branch per level and unions the branches by name.
 
 ## Aggregate Metrics
 

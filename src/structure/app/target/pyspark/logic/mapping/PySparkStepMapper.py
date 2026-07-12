@@ -199,6 +199,8 @@ class PySparkStepMapper:
                     options=assignment.options,
                 )
             )
+        if aggregate.having is not None:
+            capabilities.require(CapabilityRequirement(group="aggregate", name="having"))
         return PySparkAggregateRecipe(
             keys=tuple(
                 PySparkAggregateKey(
@@ -209,6 +211,8 @@ class PySparkStepMapper:
             ),
             assignments=tuple(assignments),
             grouping=aggregate.grouping,
+            levels=aggregate.levels,
+            having=None if aggregate.having is None else self._expressions.map(aggregate.having, capabilities=capabilities),
         )
 
     def _require_operation_capability(
@@ -241,6 +245,8 @@ class PySparkStepMapper:
             self._require_rowset_predicate_capabilities(join, capabilities=capabilities)
         if join.hint is not None:
             capabilities.require(CapabilityRequirement(group="join", name=f"{join.hint.value}_hint"))
+        if join.strategy is not None:
+            capabilities.require(CapabilityRequirement(group="join", name=f"strategy_{join.strategy.hint()}"))
         dedupe = self._dedupe(join, capabilities=capabilities)
         temporal = self._temporal(join, capabilities=capabilities)
         as_of = self._as_of(join, capabilities=capabilities)

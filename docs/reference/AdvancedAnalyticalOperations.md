@@ -4,9 +4,9 @@ Advanced analytical operations are the broader aggregation, window, and collecti
 first v.2 analytical slice. They let Structure cover multi-level summaries, explicit window frames, and richer array/map
 logic while keeping the work visible to Spark.
 
-The first slice already supports common grouped aggregates, ranking, lag/lead, rolling row metrics, deterministic
-latest/earliest selection, exact/subset duplicate removal, and basic array/map callbacks. This page describes the
-Sprint 09 analytical surface and the boundaries still enforced by backend capability checks.
+The analytical surface supports common grouped aggregates, custom grouping sets, ranking, lag/lead, rolling row
+metrics, deterministic latest/earliest selection, exact/subset duplicate removal, and basic array/map callbacks. This
+page describes the admitted surface and the boundaries still enforced by backend capability checks.
 
 ## Grouping
 
@@ -15,14 +15,13 @@ Supported grouping entry points:
 - `group_by(*keys, **named_keys)` for ordinary grouped aggregates;
 - `rollup(*keys, **named_keys)` for hierarchical totals;
 - `cube(*keys, **named_keys)` for all combinations of grouping keys;
+- `grouping_sets(*levels)` for explicit grouping levels such as `(region, customer)` and `()`;
 - `grouping_id()` for the Spark grouping bit mask;
 - `is_grouped(field)` for whether a key is absent in the current subtotal row.
 
-`grouping_sets(...)` is reserved and capability-gated. It remains deferred until Structure admits a stable lowering
-contract for explicit grouping-set levels across generated and online PySpark execution.
-
 Grouping expression keys should be named. Subtotal rows may omit some grouping keys, so output fields for those keys
-must be nullable or explicitly filled with a literal label.
+must be nullable or explicitly filled with a literal label. `grouping_sets(...)` accepts one argument per level; use an
+empty tuple `()` for the grand total level.
 
 Canonical form:
 
@@ -79,6 +78,22 @@ return cube(
 ).as_schema(OrderProductCube)
 ```
 
+Grouping-set form:
+
+```python
+return grouping_sets(
+    (order.region, order.customer_id),
+    (order.region,),
+    (),
+).agg(
+    grouping_id=grouping_id(),
+    region_subtotal=is_grouped(order.region),
+    customer_subtotal=is_grouped(order.customer_id),
+    order_count=count(),
+    gross_total=sum(order.total),
+).as_schema(OrderGroupingSetSummary)
+```
+
 ## Aggregates
 
 Supported exact aggregates:
@@ -105,8 +120,8 @@ Supported advanced aggregates:
 - `first_value(value, order_by=..., where=None, ties=TiePolicy.ERROR)`;
 - `last_value(value, order_by=..., where=None, ties=TiePolicy.ERROR)`.
 
-Aggregate helpers support `where=...` for metric-local filters. Post-aggregate `having(...)` remains deferred because
-it needs a separate aggregate-output predicate scope rather than pre-aggregate row predicates.
+Aggregate helpers support `where=...` for metric-local filters. Use `having(lambda out: ...)` to filter aggregate
+output rows after all metrics and subtotal keys are computed.
 
 Rules:
 
@@ -116,7 +131,8 @@ Rules:
 - `collect_list(...)` and `collect_set(...)` produce Spark collection aggregates; element ordering is not guaranteed.
 - `element_type=...` is required when Structure cannot infer the collection aggregate element type.
 - Approximate metrics stay visibly approximate in generated PySpark.
-- `having(...)` is reserved and capability-gated until aggregate-output predicates have a stable scope contract.
+- `having(...)` predicates can reference grouped keys and aggregate output metrics through the callback argument; input
+  row fields are unavailable after aggregation.
 
 Metric-local filtering:
 
@@ -131,6 +147,17 @@ return OrderRevenueRollup(
     first_customer_id=first_value(order.customer_id, order_by=order.quantity),
     customer_ids=collect_set(order.customer_id),
 )
+```
+
+Post-aggregate filtering:
+
+```python
+return group_by(customer_id=order.customer_id).agg(
+    order_count=count(),
+    gross_total=sum(order.total),
+).having(
+    lambda total: total.order_count > 1
+).as_schema(CustomerOrderSummary)
 ```
 
 Statistical, approximate, and ordered metrics:
@@ -383,7 +410,7 @@ may become streaming-compatible only when target evidence and tests prove the sp
 Compact explain should summarize advanced operations without overwhelming routine output:
 
 ```text
-aggregate(grouping_sets, metrics=5, cardinality=aggregate)
+aggregate(aggregate keys=region,customer_id levels=region+customer_id|region|() metrics=count streaming_modes=update|complete)
 window(percent_rank, partitions=2, order=2, frame=rows)
 hof(arr_zip_with, callback=symbolic)
 ```

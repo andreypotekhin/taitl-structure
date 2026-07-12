@@ -43,8 +43,8 @@ page, public compatibility tables, generated examples, and project-management pr
 | Gap Section | v.3 Sprint | ExecPlan |
 | --- | --- | --- |
 | DSL | Sprint 11 | [P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md](planning/done/P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md) |
-| Joins | Sprint 12 | [P07072603.V3-join-pyspark-parity-hardening.plan.md](planning/P07072603.V3-join-pyspark-parity-hardening.plan.md) |
-| Aggregations | Sprint 13 | [P07072604.V3-aggregation-pyspark-parity.plan.md](planning/P07072604.V3-aggregation-pyspark-parity.plan.md) |
+| Joins | Sprint 12 | [P07072603.V3-join-pyspark-parity-hardening.plan.md](planning/done/P07072603.V3-join-pyspark-parity-hardening.plan.md) |
+| Aggregations | Sprint 13 | [P07072604.V3-aggregation-pyspark-parity.plan.md](planning/done/P07072604.V3-aggregation-pyspark-parity.plan.md) |
 | Windows | Sprint 14 | [P07072605.V3-window-pyspark-parity.plan.md](planning/P07072605.V3-window-pyspark-parity.plan.md) |
 | Higher-Order And Collection Helpers | Sprint 15 | [P07072606.V3-collection-helper-pyspark-parity.plan.md](planning/P07072606.V3-collection-helper-pyspark-parity.plan.md) |
 | Streaming | Sprint 16 | [P07072607.V3-streaming-orchestration.plan.md](planning/P07072607.V3-streaming-orchestration.plan.md) |
@@ -111,29 +111,29 @@ Gaps:
 
 | Gap | Status | Target PySpark Parity | Notes |
 | --- | --- | --- | --- |
-| Using-key joins | planned | `join(on="key")`, `on=["k1", "k2"]` | Symbolic `on=` remains preferred. |
-| Full join diagnostics hardening | planned | `how="full"` | Name nullable sides clearly. |
-| Right join diagnostics hardening | planned | `how="right"` | Rowset API exists; projection rules need to stay sharp. |
-| Cross join safety | planned | `crossJoin`, `how="cross"` | Requires `allow_cartesian=True`. |
-| Join strategy directives | planned | `broadcast`, `merge`, shuffle hints | Broadcast exists; others are gated. |
+| Using-key joins | implemented | `join(on="key")`, `on=["k1", "k2"]` | Symbolic `on=` remains preferred. |
+| Full join diagnostics hardening | implemented | `how="full"` | Name nullable sides clearly. |
+| Right join diagnostics hardening | implemented | `how="right"` | Rowset API exists; projection rules stay sharp. |
+| Cross join safety | implemented | `crossJoin`, `how="cross"` | Requires `allow_cartesian=True`. |
+| Join strategy directives | implemented | `broadcast`, `merge`, shuffle hints | Capability-checked PySpark hints. |
 | Join reordering | future | Cost-based join planning | Do not reorder source semantics casually. |
-| Forward as-of joins | planned | As-of nearest/forward patterns | Backward as-of is the initial supported direction. |
+| Forward as-of joins | implemented | As-of nearest/forward patterns | Selects the earliest qualifying right row. |
 | Nearest as-of joins | future | Nearest time matching | Needs tie and tolerance rules. |
 | Stream-stream joins | unsupported | Streaming stream-stream joins | Needs state and watermark policy. |
 | Raw SQL join predicates | unsupported | SQL strings in `on` | Use symbolic expressions or hooks. |
 
 ## Aggregations
 
-Current support includes ordinary grouping, rollup, cube, common exact aggregates, approximate count/percentile,
-boolean aggregates, statistical aggregates, filtered metrics, collection aggregates, and deterministic first/last
-helpers.
+Current support includes ordinary grouping, rollup, cube, explicit grouping sets, post-aggregate `having(...)`, common
+exact aggregates, approximate count/percentile, boolean aggregates, statistical aggregates, filtered metrics,
+collection aggregates, and deterministic first/last helpers.
 
 Gaps:
 
 | Gap | Status | Target PySpark Parity | Notes |
 | --- | --- | --- | --- |
-| Explicit grouping sets | planned | `groupingSets`, SQL `GROUPING SETS` | Helper is reserved; backend is deferred. |
-| Having predicates | planned | SQL/PySpark post-aggregate filters | Needs aggregate-output predicate scope. |
+| Explicit grouping sets | implemented | Custom grouping-set levels | Lowers as generated PySpark branch unions. |
+| Having predicates | implemented | SQL/PySpark post-aggregate filters | Uses aggregate-output predicate scope. |
 | Aggregate aliases | future | `GroupedData.agg` aliases | Schema constructors own output aliases. |
 | Exact percentile family | future | `percentile`, `percentile_approx` | Current helper is `approx_percentile(...)`. |
 | Additional stats | future | `skewness`, `kurtosis`, `mode` | Wait for analytical contracts to settle. |

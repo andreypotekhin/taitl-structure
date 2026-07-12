@@ -313,6 +313,8 @@ class RunOnlinePySparkTransform:
         return ranked.where(functions.col(rank) == functions.lit(1)).drop(rank)
 
     def _aggregate(self, step, df, aggregate, *, functions, types):
+        if aggregate.grouping == "grouping_sets":
+            return self._grouping_sets(step, df, aggregate, functions=functions, types=types)
         if aggregate.grouping == "group_by":
             group = df.groupBy
         elif aggregate.grouping == "rollup":
@@ -363,7 +365,7 @@ class RunOnlinePySparkTransform:
                 if assignment.function != "key"
             )
         )
-        return aggregated.select(
+        selected = aggregated.select(
             *(
                 self._aggregate_select(
                     assignment,
@@ -373,6 +375,115 @@ class RunOnlinePySparkTransform:
                 for assignment in aggregate.assignments
             )
         )
+        return self._aggregate_having(step, selected, aggregate, functions=functions)
+
+    def _grouping_sets(self, step, df, aggregate, *, functions, types):
+        key_columns = self._aggregate_key_columns(aggregate)
+        for key, column in key_columns:
+            df = df.withColumn(
+                column,
+                self._expressions.evaluate(
+                    key.expression,
+                    functions=functions,
+                    aliases=self._scope_aliases(step),
+                ),
+            )
+        branches = []
+        for level in aggregate.levels:
+            level_keys = set(level)
+            grouped = df.groupBy(
+                *(
+                    functions.col(self._aggregate_key_column(key, key_columns))
+                    for key in aggregate.keys
+                    if key.name in level_keys
+                )
+            )
+            aggregated = grouped.agg(
+                *(
+                    self._aggregate_assignment(
+                        assignment,
+                        step=step,
+                        aggregate=aggregate,
+                        key_columns=key_columns,
+                        functions=functions,
+                        types=types,
+                    )
+                    for assignment in aggregate.assignments
+                    if assignment.function not in {"key", "grouping_id", "is_grouped"}
+                )
+            )
+            branches.append(
+                aggregated.select(
+                    *(
+                        self._grouping_set_select(
+                            assignment,
+                            aggregate=aggregate,
+                            level=level_keys,
+                            key_columns=key_columns,
+                            functions=functions,
+                            types=types,
+                        )
+                        for assignment in aggregate.assignments
+                    )
+                )
+            )
+        if not branches:
+            raise TypeError("grouping_sets(...) requires at least one grouping level")
+        result = branches[0]
+        for branch in branches[1:]:
+            result = result.unionByName(branch)
+        return self._aggregate_having(step, result, aggregate, functions=functions)
+
+    def _aggregate_having(self, step, df, aggregate, *, functions):
+        if aggregate.having is None:
+            return df
+        aliases = {**self._scope_aliases(step), step.output_schema.__name__: ""}
+        predicate = self._expressions.evaluate(aggregate.having, functions=functions, aliases=aliases)
+        return df.where(predicate)
+
+    def _grouping_set_select(self, assignment, *, aggregate, level, key_columns, functions, types):
+        if assignment.function == "key":
+            if assignment.key in level:
+                return functions.col(self._grouping_set_key_column(assignment, key_columns=key_columns)).alias(
+                    assignment.field.column
+                )
+            return functions.lit(None).cast(self._spark_type(assignment.field.type, types)).alias(assignment.field.column)
+        if assignment.function == "grouping_id":
+            return (
+                functions.lit(self._grouping_id(aggregate, level=level))
+                .cast(self._spark_type(assignment.field.type, types))
+                .alias(assignment.field.column)
+            )
+        if assignment.function == "is_grouped":
+            key = self._grouping_set_expression_key(assignment, aggregate=aggregate)
+            return (
+                functions.lit(key not in level)
+                .cast(self._spark_type(assignment.field.type, types))
+                .alias(assignment.field.column)
+            )
+        return functions.col(assignment.field.column)
+
+    def _grouping_id(self, aggregate, *, level) -> int:
+        mask = 0
+        key_count = len(aggregate.keys)
+        for index, key in enumerate(aggregate.keys):
+            if key.name not in level:
+                mask |= 1 << (key_count - index - 1)
+        return mask
+
+    def _grouping_set_expression_key(self, assignment, *, aggregate) -> str:
+        if assignment.expression is None:
+            raise TypeError("is_grouped(...) requires a grouping expression")
+        for key in aggregate.keys:
+            if assignment.expression == key.expression:
+                return key.name
+        raise TypeError("is_grouped(...) expression must match a grouping_sets(...) key")
+
+    def _grouping_set_key_column(self, assignment, *, key_columns) -> str:
+        for key, column in key_columns:
+            if key.name == assignment.key:
+                return column
+        raise TypeError(f"Missing aggregate key column for {assignment.key}")
 
     def _aggregate_assignment(self, assignment, *, step, aggregate, key_columns, functions, types):
         if assignment.function == "count":
@@ -544,7 +655,7 @@ class RunOnlinePySparkTransform:
         for watermark in watermarks:
             right = self._watermark(watermark, right)
         if join.strategy is not None:
-            right = right.hint(join.strategy.value)
+            right = right.hint(join.strategy.hint())
         right = right.alias(join.right_alias)
         if join.dedupe is not None:
             right = self._dedupe(join, right, functions=functions, window=window)
@@ -570,10 +681,13 @@ class RunOnlinePySparkTransform:
         if join.as_of is not None:
             left_time = self._expressions.evaluate(join.as_of.left_time, functions=functions, aliases=aliases)
             right_time = self._expressions.evaluate(join.as_of.right_time, functions=functions, aliases=aliases)
-            as_of = right_time <= left_time
+            as_of = right_time <= left_time if join.as_of.direction.value == "backward" else right_time >= left_time
             if join.as_of.tolerance is not None:
                 tolerance = self._expressions.evaluate(join.as_of.tolerance, functions=functions, aliases=aliases)
-                as_of = as_of & (right_time >= left_time - tolerance)
+                bound = right_time >= left_time - tolerance
+                if join.as_of.direction.value == "forward":
+                    bound = right_time <= left_time + tolerance
+                as_of = as_of & bound
             predicate = predicate & as_of
         return predicate
 
@@ -586,7 +700,11 @@ class RunOnlinePySparkTransform:
         )
         ranked = df.withColumn(
             rank,
-            functions.row_number().over(window.partitionBy(functions.col(row_id)).orderBy(right_time.desc())),
+            functions.row_number().over(
+                window.partitionBy(functions.col(row_id)).orderBy(
+                    right_time.desc() if join.as_of.direction.value == "backward" else right_time.asc()
+                )
+            ),
         )
         return ranked.where(functions.col(rank) == functions.lit(1)).drop(rank).drop(row_id)
 

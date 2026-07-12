@@ -44,8 +44,7 @@ Spark Connect support does not include:
 - direct JVM/Py4J access;
 - `_jdf` or private classic PySpark fields;
 - hidden fallback to Python UDFs, local collection, row-wise loops, or SQL string rewrites.
-- deferred batch features such as explicit `grouping_sets(...)`, post-aggregate `having(...)`, and same-name join-key
-  shorthand until their owning specifications admit them.
+- deferred batch features such as same-name join-key shorthand until their owning specifications admit them.
 
 Hooks remain user-owned PySpark code. Structure validates hook signatures and target scope, but arbitrary hook bodies are
 opaque. For Spark Connect, hook bodies must use public Connect-compatible PySpark APIs.

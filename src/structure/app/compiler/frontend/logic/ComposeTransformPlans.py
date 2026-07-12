@@ -411,6 +411,8 @@ class ComposeTransformPlans:
                 for assignment in aggregate.assignments
             ),
             grouping=aggregate.grouping,
+            levels=aggregate.levels,
+            having=None if aggregate.having is None else self._expression(aggregate.having),
         )
 
     def _selected_rows(self, selected_rows: SelectedRowsPlan) -> SelectedRowsPlan:

@@ -1,3 +1,5 @@
+import pytest
+
 import structure
 from structure.app.cli.api import CliApp
 from structure.app.compiler.api import Compiler
@@ -31,6 +33,21 @@ class AdvancedCustomerTotal(structure.Structure):
     ordered_first_customer = structure.field(structure.String(), nullable=False)
     ordered_last_customer = structure.field(structure.String(), nullable=False)
     customers = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
+
+
+class RawSale(structure.Structure):
+    region = structure.field(structure.String(), nullable=False)
+    customer_id = structure.field(structure.String(), nullable=False)
+    quantity = structure.field(structure.Long(), nullable=False)
+
+
+class GroupingSetTotal(structure.Structure):
+    region = structure.field(structure.String(), nullable=True)
+    customer_id = structure.field(structure.String(), nullable=True)
+    order_count = structure.field(structure.Long(), nullable=False)
+    grouping_id = structure.field(structure.Integer(), nullable=False)
+    region_grouped = structure.field(structure.Boolean(), nullable=False)
+    customer_grouped = structure.field(structure.Boolean(), nullable=False)
 
 
 @structure.transform
@@ -71,6 +88,25 @@ class AdvancedCustomerTotals(structure.Transform):
                 customers=structure.collect_set(row.customer_id, element_type=structure.String()),
             )
             .as_schema(AdvancedCustomerTotal)
+        )
+
+
+@structure.transform
+class SaleGroupingSets(structure.Transform):
+    rows = structure.input(RawSale)
+    totals = structure.output(GroupingSetTotal)
+
+    def summarize(self, row: RawSale) -> GroupingSetTotal:
+        return (
+            structure.grouping_sets((row.region, row.customer_id), (row.region,), ())
+            .agg(
+                order_count=structure.count(),
+                grouping_id=structure.grouping_id(),
+                region_grouped=structure.is_grouped(row.region),
+                customer_grouped=structure.is_grouped(row.customer_id),
+            )
+            .having(lambda total: total.order_count > 0)
+            .as_schema(GroupingSetTotal)
         )
 
 
@@ -135,3 +171,122 @@ def test_advanced_aggregate_helpers_render_spark_visible_rollup_and_metrics() ->
         'F.max_by(F.col("raw_order.customer_id"), F.col("raw_order.quantity")).alias("ordered_last_customer")' in text
     )
     assert 'F.collect_set(F.col("raw_order.customer_id")).cast(T.ArrayType(T.StringType(), containsNull=False))' in text
+
+
+def test_grouping_sets_lower_to_explicit_levels_and_render_union_branches() -> None:
+    plan = PySpark.plan.lower()(compile_transform(SaleGroupingSets))
+
+    aggregate = plan.steps[0].aggregate
+    assert aggregate is not None
+    assert aggregate.grouping == "grouping_sets"
+    assert aggregate.levels == (("region", "customer_id"), ("region",), ())
+
+    text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
+
+    assert 'withColumn("__structure_group_0_region", F.col("raw_sale.region"))' in text
+    assert 'withColumn("__structure_group_1_customer_id", F.col("raw_sale.customer_id"))' in text
+    assert 'rows_grouping_set_1 = rows.groupBy(' in text
+    assert 'rows_grouping_set_2 = rows.groupBy(' in text
+    assert 'rows_grouping_set_3 = rows.groupBy(' in text
+    assert 'F.lit(None).cast(T.StringType()).alias("customer_id")' in text
+    assert 'F.lit(None).cast(T.StringType()).alias("region")' in text
+    assert 'F.lit(0).cast(T.IntegerType()).alias("grouping_id")' in text
+    assert 'F.lit(1).cast(T.IntegerType()).alias("grouping_id")' in text
+    assert 'F.lit(3).cast(T.IntegerType()).alias("grouping_id")' in text
+    assert "rows = rows.unionByName(rows_grouping_set_2)" in text
+    assert "rows = rows.unionByName(rows_grouping_set_3)" in text
+    assert 'rows = rows.where((F.col("order_count") > F.lit(0)))' in text
+
+
+def test_grouping_sets_traceability_and_explain_name_levels() -> None:
+    recipe = PySpark.plan.lower()(compile_transform(SaleGroupingSets))
+    traceability = Compiler.traceability.build()(
+        recipe,
+        source_transform="tests.SaleGroupingSets",
+        transform_module="tests.SaleGroupingSetsGenerated",
+    )
+    dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
+
+    assert dependencies["GroupingSetTotal.region"].detail["function"] == "key"
+    assert dependencies["GroupingSetTotal.order_count"].detail["function"] == "count"
+    assert dependencies["GroupingSetTotal.having"].operation == "having"
+    assert dependencies["GroupingSetTotal.having"].sources == ("GroupingSetTotal.order_count",)
+
+    report = CliApp.render_explain_report()(SaleGroupingSets)
+
+    assert "aggregate(aggregate keys=region,customer_id levels=region+customer_id|region|()" in report
+    assert "having=1" in report
+
+
+def test_grouping_sets_reject_non_nullable_omitted_key_fields() -> None:
+    class BadTotal(structure.Structure):
+        region = structure.field(structure.String(), nullable=False)
+        customer_id = structure.field(structure.String(), nullable=False)
+        order_count = structure.field(structure.Long(), nullable=False)
+
+    @structure.transform
+    class BadGroupingSets(structure.Transform):
+        rows = structure.input(RawSale)
+        totals = structure.output(BadTotal)
+
+        def summarize(self, row: RawSale) -> BadTotal:
+            return (
+                structure.grouping_sets((row.region, row.customer_id), (row.region,), ())
+                .agg(order_count=structure.count())
+                .as_schema(BadTotal)
+            )
+
+    with pytest.raises(structure.StructureCompileError) as raised:
+        compile_transform(BadGroupingSets)
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == "SCHEMA-E0301"
+    assert "grouping_sets(...)" in diagnostic.problem
+
+
+def test_having_rejects_pre_aggregate_input_field_reads() -> None:
+    class Total(structure.Structure):
+        customer_id = structure.field(structure.String(), nullable=False)
+        order_count = structure.field(structure.Long(), nullable=False)
+
+    @structure.transform
+    class BadHaving(structure.Transform):
+        rows = structure.input(RawSale)
+        totals = structure.output(Total)
+
+        def summarize(self, row: RawSale) -> Total:
+            return (
+                structure.group_by(customer_id=row.customer_id)
+                .agg(order_count=structure.count())
+                .having(lambda total: literal(row.quantity) > 0)
+                .as_schema(Total)
+            )
+
+    with pytest.raises(structure.StructureCompileError) as raised:
+        compile_transform(BadHaving)
+
+    diagnostic = raised.value.diagnostic
+    assert diagnostic.code == "DSL-E0402"
+    assert "having(...)" in diagnostic.problem
+    assert "rows" in diagnostic.problem
+
+
+def test_statement_having_binds_to_aggregate_output_scope() -> None:
+    class Total(structure.Structure):
+        customer_id = structure.field(structure.String(), nullable=False)
+        order_count = structure.field(structure.Long(), nullable=False)
+
+    @structure.transform
+    class StatementHaving(structure.Transform):
+        rows = structure.input(RawSale)
+        totals = structure.output(Total)
+
+        def summarize(self, row: RawSale) -> Total:
+            structure.group_by(customer_id=row.customer_id)
+            structure.having(lambda total: total.order_count > 0)
+            return Total(customer_id=row.customer_id, order_count=structure.count())
+
+    plan = PySpark.plan.lower()(compile_transform(StatementHaving))
+
+    assert plan.steps[0].aggregate is not None
+    assert plan.steps[0].aggregate.having is not None

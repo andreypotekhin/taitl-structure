@@ -47,6 +47,8 @@ class BuildCompilerTraceability:
             dependencies.extend(self._join_dependencies(step))
             provenance.extend(self._aggregate_provenance(plan, step, source_transform, transform_module))
             dependencies.extend(self._aggregate_dependencies(step))
+            provenance.extend(self._aggregate_having_provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._aggregate_having_dependencies(step))
             provenance.extend(self._selected_rows_provenance(plan, step, source_transform, transform_module))
             dependencies.extend(self._selected_rows_dependencies(step))
             provenance.extend(self._drop_duplicates_provenance(plan, step, source_transform, transform_module))
@@ -282,6 +284,26 @@ class BuildCompilerTraceability:
             for assignment in step.aggregate.assignments
         )
 
+    def _aggregate_having_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        step: PySparkStepRecipe,
+        source_transform: str,
+        transform_module: str,
+    ) -> tuple[CompilerProvenance, ...]:
+        if step.aggregate is None or step.aggregate.having is None:
+            return ()
+        return (
+            CompilerProvenance(
+                source=f"source:{source_transform}.{step.name}.aggregate.having",
+                ir=f"ir:{plan.transform}.step.{step.ordinal}.{step.name}.aggregate.having",
+                generated=(
+                    f"generated:{transform_module}.{plan.transform}Generated.run."
+                    f"step.{step.ordinal}.{step.name}.aggregate.having"
+                ),
+            ),
+        )
+
     def _selected_rows_provenance(
         self,
         plan: PySparkExecutionPlan,
@@ -450,6 +472,19 @@ class BuildCompilerTraceability:
                 },
             )
             for assignment in step.aggregate.assignments
+        )
+
+    def _aggregate_having_dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
+        if step.aggregate is None or step.aggregate.having is None:
+            return ()
+        return (
+            DataflowDependency(
+                target=f"{step.output_schema.__name__}.having",
+                sources=self._dataflow.reads(step.aggregate.having),
+                operation="having",
+                step=step.name,
+                detail={"predicate": "post_aggregate"},
+            ),
         )
 
     def _aggregate_sources(self, step: PySparkStepRecipe, assignment) -> tuple[str, ...]:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextvars import ContextVar, Token
 from types import TracebackType
+from typing import Any
 
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
@@ -18,7 +19,9 @@ class CompileContext:
         self.joins: list[JoinPlan] = []
         self.operations: list[OperationPlan] = []
         self.aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
+        self.aggregate_levels: tuple[tuple[str, ...], ...] = ()
         self.aggregate_grouping: str = "group_by"
+        self.aggregate_having: Any | None = None
         self.default_project_source: object | None = None
         self.current_scopes: set[str] = set()
         self.relation_scopes: dict[str, object] = {}

@@ -11,6 +11,8 @@ class PySparkExpressionEvaluator:
         if expression.kind == "field":
             scope = str(expression.data["scope"])
             alias = aliases.get(scope, scope)
+            if alias == "":
+                return functions.col(self._field_path(expression))
             return functions.col(f"{alias}.{self._field_path(expression)}")
         if expression.kind == "get_field":
             return self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window).getField(

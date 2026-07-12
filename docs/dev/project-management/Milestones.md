@@ -185,9 +185,9 @@ Exit Criteria:
 
 - Typed `group_by(...)` and aggregation support covers count, sum, min, max, avg, distinct count where practical,
   and schema-checked aggregate output construction.
-- Advanced grouping support covers rollup, cube, subtotal metadata, filtered metrics, and additional exact, statistical,
-  approximate, and collection metrics admitted by the Sprint 09 specification. Explicit grouping sets and
-  post-aggregate `having(...)` remain M8C work.
+- Advanced grouping support covers rollup, cube, explicit grouping sets, subtotal metadata, filtered metrics,
+  post-aggregate `having(...)`, and additional exact, statistical, approximate, and collection metrics admitted by the
+  Sprint 09 and Sprint 13 specifications.
 - Windowing covers latest-row, ranking, lag/lead, rolling metrics, and duplicate-removal helpers.
 - Broad windowing covers reusable window specs, explicit row/range frames, distribution/value helpers, and aggregate
   window expressions admitted by the Sprint 09 specification.
@@ -229,7 +229,7 @@ Exit Criteria:
 
 ## M8: v.3 PySpark Gap Closure and Streaming Orchestration
 
-Status: M8A complete. The milestone remains split into M8A-M8G so each `docs/dev/Gaps.md` section can be implemented
+Status: M8A and M8B complete. The milestone remains split into M8A-M8G so each `docs/dev/Gaps.md` section can be implemented
 and verified independently before end-of-v.3 incremental compile work.
 
 ### M8A: DSL and SQL Function PySpark Parity
@@ -243,6 +243,8 @@ Exit Criteria:
 
 ### M8B: Join PySpark Parity Hardening
 
+Status: complete.
+
 Exit Criteria:
 
 - Using-key joins support one key and multiple keys.
@@ -251,7 +253,7 @@ Exit Criteria:
 - Supported join strategy directives are capability checked.
 - Forward as-of joins have deterministic tolerance and tie behavior.
 
-### M8C: Aggregation PySpark Parity
+### + M8C: Aggregation PySpark Parity
 
 Exit Criteria:
 

@@ -27,7 +27,7 @@ aggregate DSL.
 
 ## ExecPlan
 
-`docs/dev/planning/P07072604.V3-aggregation-pyspark-parity.plan.md`
+`docs/dev/planning/done/P07072604.V3-aggregation-pyspark-parity.plan.md`
 
 ## Engineering Tasks
 
@@ -44,4 +44,6 @@ aggregate DSL.
 
 ## Progress
 
-- [ ] Implement v.3 aggregation parity.
+- [x] Implement explicit grouping sets.
+- [x] Implement post-aggregate `having(...)`.
+- [x] Complete v.3 aggregation parity.

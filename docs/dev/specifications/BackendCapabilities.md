@@ -250,8 +250,6 @@ join.strategy_broadcast
 join.strategy_shuffle_hash
 join.strategy_shuffle_replicate_nl
 join.strategy_merge
-aggregate.grouping_sets
-aggregate.having
 optimization.repartition
 explain.field_lineage
 docs.generated_docs

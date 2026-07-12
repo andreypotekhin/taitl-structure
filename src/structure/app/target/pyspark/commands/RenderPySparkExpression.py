@@ -289,6 +289,8 @@ class RenderPySparkExpression:
         scope = str(expression.data["scope"])
         field = ".".join(self._field_path(expression))
         alias = aliases.get(scope, scope)
+        if alias == "":
+            return f"F.col({self._literal(field)})"
         return f"F.col({self._literal(f'{alias}.{field}')})"
 
     def _field_path(self, expression: PySparkExpressionRecipe) -> tuple[str, ...]:

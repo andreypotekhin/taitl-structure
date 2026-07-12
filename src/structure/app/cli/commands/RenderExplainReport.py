@@ -114,10 +114,18 @@ class RenderExplainReport:
         if operation.aggregate is None:
             return ""
         keys = ",".join(key.name for key in operation.aggregate.keys)
+        levels = self._aggregate_levels(operation)
         metrics = ",".join(
             assignment.function for assignment in operation.aggregate.assignments if assignment.function != "key"
         )
-        return f"keys={keys} metrics={metrics}{self._streaming_modes(operation)}"
+        having = " having=1" if operation.aggregate.having is not None else ""
+        return f"keys={keys}{levels} metrics={metrics}{having}{self._streaming_modes(operation)}"
+
+    def _aggregate_levels(self, operation: OperationPlan) -> str:
+        if operation.aggregate is None or not operation.aggregate.levels:
+            return ""
+        levels = "|".join("+".join(level) if level else "()" for level in operation.aggregate.levels)
+        return f" levels={levels}"
 
     def _streaming_modes(self, operation: OperationPlan) -> str:
         if not operation.streaming_output_modes:

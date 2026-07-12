@@ -150,9 +150,9 @@ The support claim also includes the implemented public shapes behind these capab
 metrics, metric-local filters, reusable explicit windows, distribution/value/window aggregate helpers, and the expanded
 array/map higher-order helper set.
 
-Deferred capability boundaries remain explicit. `aggregate.grouping_sets`, `aggregate.having`,
-`join.using_keys`, broad join strategy capability names, `window.window_project`, `optimization.repartition`, generated
-documentation, and production incremental compile stay unsupported until their owning specifications admit them.
+Deferred capability boundaries remain explicit. `join.using_keys`, broad join strategy capability names,
+`window.window_project`, `optimization.repartition`, generated documentation, and production incremental compile stay
+unsupported until their owning specifications admit them.
 
 Optimization capabilities must be admitted individually. `optimization.cache` is part of the current common PySpark
 profile. `optimization.persist`, `optimization.repartition`, `optimization.coalesce`, `optimization.checkpoint`, and

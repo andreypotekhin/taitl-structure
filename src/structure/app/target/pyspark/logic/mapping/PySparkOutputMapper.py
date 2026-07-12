@@ -7,6 +7,7 @@ from structure.app.target.capabilities.model.CapabilityRequirement import Capabi
 from structure.app.target.pyspark.logic.mapping.PySparkExpressionMapper import PySparkExpressionMapper
 from structure.app.target.pyspark.logic.mapping.PySparkNameMapper import PySparkNameMapper
 from structure.app.target.pyspark.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
+from structure.app.target.pyspark.model.PySparkJoinAsOfRecipe import PySparkJoinAsOfRecipe
 from structure.app.target.pyspark.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.app.target.pyspark.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
@@ -139,8 +140,11 @@ class PySparkOutputMapper:
             self._require_rowset_predicate_capabilities(join, capabilities=capabilities)
         if join.hint is not None:
             capabilities.require(CapabilityRequirement(group="join", name=f"{join.hint.value}_hint"))
+        if join.strategy is not None:
+            capabilities.require(CapabilityRequirement(group="join", name=f"strategy_{join.strategy.hint()}"))
         dedupe = self._dedupe(join, capabilities=capabilities)
         temporal = self._temporal(join, capabilities=capabilities)
+        as_of = self._as_of(join, capabilities=capabilities)
         return PySparkJoinRecipe(
             input_name=join.input_name,
             source=join.source,
@@ -155,6 +159,7 @@ class PySparkOutputMapper:
             method=join.method,
             dedupe=dedupe,
             temporal=temporal,
+            as_of=as_of,
         )
 
     def _dedupe(self, join, *, capabilities: BackendCapabilities) -> PySparkJoinDedupeRecipe | None:
@@ -176,6 +181,22 @@ class PySparkOutputMapper:
             valid_from=self._expressions.map(join.temporal.valid_from, capabilities=capabilities),
             valid_to=self._expressions.map(join.temporal.valid_to, capabilities=capabilities),
             overlaps=join.temporal.overlaps,
+        )
+
+    def _as_of(self, join, *, capabilities: BackendCapabilities) -> PySparkJoinAsOfRecipe | None:
+        if join.as_of is None:
+            return None
+        capabilities.require(CapabilityRequirement(group="join", name="as_of_one"))
+        return PySparkJoinAsOfRecipe(
+            left_time=self._expressions.map(join.as_of.left_time, capabilities=capabilities),
+            right_time=self._expressions.map(join.as_of.right_time, capabilities=capabilities),
+            direction=join.as_of.direction,
+            tolerance=(
+                None
+                if join.as_of.tolerance is None
+                else self._expressions.map(join.as_of.tolerance, capabilities=capabilities)
+            ),
+            ties=join.as_of.ties,
         )
 
     def _join_mode_capability(self, join) -> str:

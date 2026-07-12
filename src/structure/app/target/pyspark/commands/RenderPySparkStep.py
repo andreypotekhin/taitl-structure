@@ -259,6 +259,8 @@ class RenderPySparkStep:
         *,
         target: str,
     ) -> list[str]:
+        if aggregate.grouping == "grouping_sets":
+            return self._grouping_sets(step, aggregate, target=target)
         grouping = {"group_by": "groupBy", "rollup": "rollup", "cube": "cube"}.get(aggregate.grouping)
         if grouping is None:
             raise TypeError(f"Unsupported aggregate grouping: {aggregate.grouping}")
@@ -290,7 +292,118 @@ class RenderPySparkStep:
         for assignment in aggregate.assignments:
             lines.append(f"            {self._aggregate_select(assignment, key_columns=key_columns)},")
         lines.append("        )")
+        lines.extend(self._aggregate_having(step, aggregate, target=target))
         return lines
+
+    def _grouping_sets(
+        self,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        aggregate: PySparkAggregateRecipe,
+        *,
+        target: str,
+    ) -> list[str]:
+        key_columns = self._aggregate_key_columns(aggregate)
+        lines: list[str] = []
+        for key, column in key_columns:
+            expression = render_pyspark_expression(key.expression, scope_aliases=self._scope_aliases(step))
+            lines.append(f"        {target} = {target}.withColumn({self._literal(column)}, {expression})")
+        branches: list[str] = []
+        for index, level in enumerate(aggregate.levels, start=1):
+            branch = f"{target}_grouping_set_{index}"
+            branches.append(branch)
+            level_keys = set(level)
+            lines.append(f"        {branch} = {target}.groupBy(")
+            for key in aggregate.keys:
+                if key.name in level_keys:
+                    lines.append(f"            {self._literal(self._aggregate_key_column(key, key_columns))},")
+            lines.append("        ).agg(")
+            for assignment in aggregate.assignments:
+                if assignment.function in {"key", "grouping_id", "is_grouped"}:
+                    continue
+                lines.append(
+                    f"            {self._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns)},"
+                )
+            lines.append("        ).select(")
+            for assignment in aggregate.assignments:
+                lines.append(
+                    f"            {self._grouping_set_select(assignment, aggregate=aggregate, level=level_keys, key_columns=key_columns)},"
+                )
+            lines.append("        )")
+        if not branches:
+            raise TypeError("grouping_sets(...) requires at least one grouping level")
+        lines.append(f"        {target} = {branches[0]}")
+        for branch in branches[1:]:
+            lines.append(f"        {target} = {target}.unionByName({branch})")
+        lines.extend(self._aggregate_having(step, aggregate, target=target))
+        return lines
+
+    def _aggregate_having(
+        self,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        aggregate: PySparkAggregateRecipe,
+        *,
+        target: str,
+    ) -> list[str]:
+        if aggregate.having is None:
+            return []
+        aliases = {**self._scope_aliases(step), step.output_schema.__name__: ""}
+        predicate = render_pyspark_expression(aggregate.having, scope_aliases=aliases)
+        return [f"        {target} = {target}.where({predicate})"]
+
+    def _grouping_set_select(
+        self,
+        assignment: PySparkAggregateAssignment,
+        *,
+        aggregate: PySparkAggregateRecipe,
+        level: set[str],
+        key_columns: tuple[tuple[PySparkAggregateKey, str], ...],
+    ) -> str:
+        alias = self._literal(assignment.field.column)
+        if assignment.function == "key":
+            if assignment.key in level:
+                column = self._grouping_set_key_column(assignment, key_columns=key_columns)
+                return f"F.col({self._literal(column)}).alias({alias})"
+            return f"F.lit(None).cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
+        if assignment.function == "grouping_id":
+            mask = self._grouping_id(aggregate, level=level)
+            return f"F.lit({mask}).cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
+        if assignment.function == "is_grouped":
+            key = self._grouping_set_expression_key(assignment, aggregate=aggregate)
+            grouped = "True" if key not in level else "False"
+            return f"F.lit({grouped}).cast({render_pyspark_schema.type(assignment.field.type)}).alias({alias})"
+        return f"F.col({alias})"
+
+    def _grouping_id(self, aggregate: PySparkAggregateRecipe, *, level: set[str]) -> int:
+        mask = 0
+        key_count = len(aggregate.keys)
+        for index, key in enumerate(aggregate.keys):
+            if key.name not in level:
+                mask |= 1 << (key_count - index - 1)
+        return mask
+
+    def _grouping_set_expression_key(
+        self,
+        assignment: PySparkAggregateAssignment,
+        *,
+        aggregate: PySparkAggregateRecipe,
+    ) -> str:
+        if assignment.expression is None:
+            raise TypeError("is_grouped(...) requires a grouping expression")
+        for key in aggregate.keys:
+            if assignment.expression == key.expression:
+                return key.name
+        raise TypeError("is_grouped(...) expression must match a grouping_sets(...) key")
+
+    def _grouping_set_key_column(
+        self,
+        assignment: PySparkAggregateAssignment,
+        *,
+        key_columns: tuple[tuple[PySparkAggregateKey, str], ...],
+    ) -> str:
+        for key, column in key_columns:
+            if key.name == assignment.key:
+                return column
+        raise TypeError(f"Missing aggregate key column for {assignment.key}")
 
     def _aggregate_assignment(
         self,
@@ -461,7 +574,7 @@ class RenderPySparkStep:
         for watermark in self._right_watermarks(step, join):
             right = f"{right}.withWatermark({self._literal(watermark.column)}, {watermark.delay!r})"
         if join.strategy is not None:
-            right = f'{right}.hint("{join.strategy.value}")'
+            right = f'{right}.hint("{join.strategy.hint()}")'
         right = f'{right}.alias("{join.right_alias}")'
         if join.dedupe is not None:
             right = self._dedupe(join, right=right)
@@ -505,10 +618,13 @@ class RenderPySparkStep:
         if join.as_of is not None:
             left_time = render_pyspark_expression(join.as_of.left_time, scope_aliases=aliases)
             right_time = render_pyspark_expression(join.as_of.right_time, scope_aliases=aliases)
-            as_of = f"({right_time} <= {left_time})"
+            comparator = "<=" if join.as_of.direction.value == "backward" else ">="
+            as_of = f"({right_time} {comparator} {left_time})"
             if join.as_of.tolerance is not None:
                 tolerance = render_pyspark_expression(join.as_of.tolerance, scope_aliases=aliases)
-                as_of = f"({as_of} & ({right_time} >= ({left_time} - {tolerance})))"
+                bound = ">=" if join.as_of.direction.value == "backward" else "<="
+                arithmetic = "-" if join.as_of.direction.value == "backward" else "+"
+                as_of = f"({as_of} & ({right_time} {bound} ({left_time} {arithmetic} {tolerance})))"
             predicate = f"({predicate} & {as_of})"
         return predicate
 
@@ -518,7 +634,8 @@ class RenderPySparkStep:
             raise TypeError("Cannot render as-of lookup without an as-of recipe")
         rank = f"__structure_{join.right_alias}_as_of_rank"
         right_time = render_pyspark_expression(as_of.right_time, scope_aliases={join.input_name: join.right_alias})
-        window = f'Window.partitionBy(F.col("{row_id}")).orderBy({right_time}.desc())'
+        order = "desc" if as_of.direction.value == "backward" else "asc"
+        window = f'Window.partitionBy(F.col("{row_id}")).orderBy({right_time}.{order}())'
         return [
             f'        {target} = {target}.withColumn("{rank}", F.row_number().over({window}))',
             f'        {target} = {target}.where(F.col("{rank}") == F.lit(1))',

@@ -591,6 +591,14 @@ class CompileTransform:
                 problem=f"{transform_class.__name__}.{name} uses group_by(...) with multiple returned schemas.",
                 use="Return one aggregate schema per grouped step method.",
             )
+        if context.aggregate_having is not None and context.aggregate_keys is None:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=name,
+                problem=f"{transform_class.__name__}.{name} uses having(...) outside grouped aggregation.",
+                use="Call group_by(...), rollup(...), cube(...), or grouping_sets(...) before having(...).",
+            )
         result_plans: list[StepResultPlan] = []
         for ordinal, (output_schema, output_lane, value) in enumerate(
             zip(output_schemas, output_lanes, values, strict=True)
@@ -606,6 +614,8 @@ class CompileTransform:
                     value,
                     keys=context.aggregate_keys,
                     grouping=context.aggregate_grouping,
+                    levels=context.aggregate_levels,
+                    having=context.aggregate_having,
                     filters=context.filters,
                 )
             )
@@ -1961,6 +1971,8 @@ class CompileTransform:
         *,
         keys: tuple[tuple[str, Expression], ...],
         grouping: str,
+        levels: tuple[tuple[str, ...], ...],
+        having: object | None,
         filters: tuple[Expression, ...] | list[Expression],
     ) -> AggregatePlan:
         if isinstance(result, Projection) or not isinstance(result, output_schema):
@@ -1994,6 +2006,16 @@ class CompileTransform:
             key = self._aggregate_key_for(field.name, expression, aggregate_keys)
             if key is not None:
                 self._assignment(transform_class, member, output_schema, field, expression, filters=filters)
+                self._validate_grouping_set_key_field(
+                    transform_class,
+                    member,
+                    output_schema,
+                    field.name,
+                    field.nullable,
+                    key.name,
+                    grouping=grouping,
+                    levels=levels,
+                )
                 assignments.append(
                     AggregateAssignment(field=field, function="key", expression=expression, key=key.name)
                 )
@@ -2054,7 +2076,81 @@ class CompileTransform:
                 use="Assign a group_by(...) key, count(), sum(...), or a grouped parent field.",
                 context={"field": field.name, "schema": output_schema.__name__},
             )
-        return AggregatePlan(keys=aggregate_keys, assignments=tuple(assignments), grouping=grouping)
+        having_expression = self._aggregate_having_expression(transform_class, member, output_schema, having)
+        return AggregatePlan(
+            keys=aggregate_keys,
+            assignments=tuple(assignments),
+            grouping=grouping,
+            levels=levels,
+            having=having_expression,
+        )
+
+    def _aggregate_having_expression(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        output_schema: type[Structure],
+        predicate: object | None,
+    ) -> Expression | None:
+        if predicate is None:
+            return None
+        scope = RowScope(name=output_schema.__name__, schema=output_schema)
+        value = predicate(scope) if callable(predicate) else predicate
+        expression = literal(value)
+        if not isinstance(expression.type, BooleanType):
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"{output_schema.__name__} having(...) predicate is not Boolean.",
+                use="Pass a predicate such as lambda out: out.order_count > 0.",
+                context={"schema": output_schema.__name__},
+            )
+        scopes = self._scopes(expression)
+        allowed = {output_schema.__name__}
+        if not scopes <= allowed:
+            names = ", ".join(sorted(scopes - allowed))
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=(
+                    f"{output_schema.__name__} having(...) reads pre-aggregate or unrelated field scope(s): {names}."
+                ),
+                use=(
+                    "having(...) is evaluated after aggregation; reference aggregate output fields "
+                    "through the callback argument, for example lambda out: out.order_count > 0."
+                ),
+                context={"schema": output_schema.__name__, "scopes": ", ".join(sorted(scopes))},
+            )
+        return expression
+
+    def _validate_grouping_set_key_field(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        output_schema: type[Structure],
+        field: str,
+        nullable: bool,
+        key: str,
+        *,
+        grouping: str,
+        levels: tuple[tuple[str, ...], ...],
+    ) -> None:
+        if grouping != "grouping_sets" or nullable:
+            return
+        if any(key not in level for level in levels):
+            raise self._error(
+                "SCHEMA-E0301",
+                transform_class=transform_class,
+                member=member,
+                problem=(
+                    f"{output_schema.__name__}.{field} is non-nullable, but grouping_sets(...) "
+                    f"omits {key} in at least one level."
+                ),
+                use="Make subtotal grouping-key fields nullable, or remove grouping levels that omit the key.",
+                context={"field": field, "schema": output_schema.__name__, "grouping_key": key},
+            )
 
     def _validate_aggregate_expression(
         self,
@@ -2243,15 +2339,25 @@ class CompileTransform:
             )
         nullable = self._nullable(expression, filters)
         if not field.nullable and nullable:
+            expression_data = expression.data or {}
+            nullable_reason = expression_data.get("nullable_reason")
+            outer_join_detail = ""
+            if isinstance(nullable_reason, str):
+                outer_join_detail = (
+                    f" The assigned {expression_data.get('scope')} value is nullable because {nullable_reason}."
+                )
             raise self._error(
                 "SCHEMA-E0301",
                 transform_class=transform_class,
                 member=member,
                 problem=(
                     f"{output_schema.__name__}.{field.name} is non-nullable, "
-                    "but the assigned expression may produce null."
+                    f"but the assigned expression may produce null.{outer_join_detail}"
                 ),
-                use="Guard the source value with where(value.is_not_null()) or provide a non-null default with coalesce(...).",
+                use=(
+                    "Use a nullable output field, guard the value with where(value.is_not_null()), "
+                    "or provide a non-null default with coalesce(...)."
+                ),
                 context={"field": field.name, "schema": output_schema.__name__},
             )
         if not self._assignable(expression.type, field.type, expression=expression):
@@ -2465,14 +2571,14 @@ class CompileTransform:
         occurrence: int,
         as_of,
     ) -> None:
-        if as_of.direction is not AsOf.BACKWARD:
+        if as_of.direction not in {AsOf.BACKWARD, AsOf.FORWARD}:
             raise self._join_error(
                 transform_class,
                 member,
                 input_name,
                 occurrence,
                 f"as_of_one(direction=...) policy {as_of.direction!r} is not supported.",
-                "Use AsOf.BACKWARD or omit direction=.",
+                "Use AsOf.BACKWARD, AsOf.FORWARD, or omit direction=.",
             )
         if as_of.ties is not TiePolicy.ERROR:
             raise self._join_error(
