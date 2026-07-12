@@ -5,6 +5,7 @@ from datetime import date, datetime
 
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.types.BooleanType import BooleanType
+from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.DateType import DateType
 from structure.app.dsl.model.types.DecimalType import DecimalType
 from structure.app.dsl.model.types.DoubleType import DoubleType
@@ -67,6 +68,48 @@ def upper(value: object) -> Expression:
     )
 
 
+def substring(value: object, *, start: int, length: int) -> Expression:
+    argument = _string_argument(value, "substring(...)")
+    if isinstance(start, bool) or not isinstance(start, int) or start < 1:
+        raise TypeError("substring(...) start must be a positive integer")
+    if isinstance(length, bool) or not isinstance(length, int) or length < 0:
+        raise TypeError("substring(...) length must be a non-negative integer")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "substring", "start": start, "length": length},
+        args=(argument,),
+    )
+
+
+def split(value: object, *, pattern: str, limit: int = -1) -> Expression:
+    argument = _string_argument(value, "split(...)")
+    _string_literal(pattern, "split(...)", "pattern")
+    if isinstance(limit, bool) or not isinstance(limit, int):
+        raise TypeError("split(...) limit must be an integer")
+    return Expression(
+        kind="call",
+        type=ArrayType(StringType(), contains_null=False),
+        nullable=argument.nullable,
+        data={"function": "split", "pattern": pattern, "limit": limit},
+        args=(argument,),
+    )
+
+
+def regexp_replace(value: object, *, pattern: str, replacement: str) -> Expression:
+    argument = _string_argument(value, "regexp_replace(...)")
+    _string_literal(pattern, "regexp_replace(...)", "pattern")
+    _string_literal(replacement, "regexp_replace(...)", "replacement")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "regexp_replace", "pattern": pattern, "replacement": replacement},
+        args=(argument,),
+    )
+
+
 def to_decimal(value: object, *, precision: int, scale: int) -> Expression:
     argument = literal(value)
     return Expression(
@@ -118,3 +161,15 @@ class WhenBuilder:
             nullable=self.value.nullable or alternative.nullable,
             args=(self.condition, self.value, alternative),
         )
+
+
+def _string_argument(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, StringType):
+        raise TypeError(f"{call} requires a String Structure expression")
+    return argument
+
+
+def _string_literal(value: object, call: str, parameter: str) -> None:
+    if not isinstance(value, str):
+        raise TypeError(f"{call} {parameter} must be a string literal")

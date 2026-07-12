@@ -79,6 +79,10 @@ class RenderPySparkExpression:
             collection, key = expression.args
             rendered_key = repr(key.data["value"]) if key.kind == "literal" else self._render(key, aliases)
             return f"{self._render(collection, aliases)}[{rendered_key}]"
+        if expression.kind == "cast":
+            return f"{self._render(expression.args[0], aliases)}.cast({expression.data['spark_type']!r})"
+        if expression.kind == "order":
+            return f"{self._render(expression.args[0], aliases)}.{expression.data['direction']}()"
         if expression.kind == "event_time_between":
             left, right = expression.args
             lower = self._interval(str(expression.data["lower"]))
@@ -261,8 +265,8 @@ class RenderPySparkExpression:
     ) -> str:
         partitions = ", ".join(self._render(partition, aliases) for partition in partition_by)
         order = self._render(order_by, aliases)
-        direction = "desc" if expression.data.get("descending") else "asc"
-        window = f"Window.partitionBy({partitions}).orderBy({order}.{direction}())"
+        ordering = order if order_by.kind == "order" else f"{order}.{'desc' if expression.data.get('descending') else 'asc'}()"
+        window = f"Window.partitionBy({partitions}).orderBy({ordering})"
         if not include_frame:
             return window
         if "frame_kind" in expression.data:
@@ -307,6 +311,12 @@ class RenderPySparkExpression:
             precision = expression.data["precision"]
             scale = expression.data["scale"]
             return f'{args[0]}.cast("decimal({precision},{scale})")'
+        if function == "substring":
+            return f"F.substring({args[0]}, {expression.data['start']}, {expression.data['length']})"
+        if function == "split":
+            return f"F.split({args[0]}, {expression.data['pattern']!r}, {expression.data['limit']})"
+        if function == "regexp_replace":
+            return f"F.regexp_replace({args[0]}, {expression.data['pattern']!r}, {expression.data['replacement']!r})"
         raise TypeError(f"Unsupported PySpark helper call: {function}")
 
     def _struct(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:

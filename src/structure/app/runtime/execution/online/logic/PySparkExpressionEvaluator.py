@@ -75,6 +75,15 @@ class PySparkExpressionEvaluator:
                 key, functions=functions, aliases=aliases, window=window
             )
             return self.evaluate(collection, functions=functions, aliases=aliases, window=window)[item]
+        if expression.kind == "cast":
+            return self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window).cast(
+                expression.data["spark_type"]
+            )
+        if expression.kind == "order":
+            return getattr(
+                self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window),
+                str(expression.data["direction"]),
+            )()
         if expression.kind == "not":
             return ~self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window)
         raise TypeError(f"Unsupported PySpark expression recipe: {expression.kind}")
@@ -344,7 +353,7 @@ class PySparkExpressionEvaluator:
             for partition in partition_by
         ]
         order = self.evaluate(order_by, functions=functions, aliases=aliases, window=window)
-        ordering = order.desc() if expression.data.get("descending") else order.asc()
+        ordering = order if order_by.kind == "order" else (order.desc() if expression.data.get("descending") else order.asc())
         spec = window.partitionBy(*partitions).orderBy(ordering)
         if not include_frame:
             return spec
@@ -405,6 +414,12 @@ class PySparkExpressionEvaluator:
             precision = expression.data["precision"]
             scale = expression.data["scale"]
             return args[0].cast(f"decimal({precision},{scale})")
+        if function == "substring":
+            return functions.substring(args[0], expression.data["start"], expression.data["length"])
+        if function == "split":
+            return functions.split(args[0], expression.data["pattern"], expression.data["limit"])
+        if function == "regexp_replace":
+            return functions.regexp_replace(args[0], expression.data["pattern"], expression.data["replacement"])
         raise TypeError(f"Unsupported PySpark helper call: {function}")
 
     def _python_udf(self, expression: PySparkExpressionRecipe, *, functions, aliases, window):

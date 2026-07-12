@@ -446,6 +446,7 @@ The v.1 expression surface includes:
 - string predicates such as `expr.contains(value)`, `expr.like(pattern)`, `expr.ilike(pattern)`, and
   `expr.rlike(pattern)`;
 - collection indexing such as `array_expr[index]` and `map_expr[key]`;
+- scalar casts such as `expr.cast(Integer())` and `expr.astype(String())`;
 - boolean combination with `&`, `|`, and `~`;
 - null checks such as `expr.is_null()` and `expr.is_not_null()`;
 - null-safe equality when provided by expression objects;
@@ -458,6 +459,15 @@ the source expression's nullability and render as visible PySpark `Column` calls
 Collection indexing requires an Array with an integral index or a Map with a key of the declared key type. It infers the
 array element or map value type. Lookup results are nullable because an array index can be absent and a map key may be
 missing.
+
+`cast(...)` and its `astype(...)` alias require a Structure scalar type such as `Integer()`, `String()`, `Date()`, or
+`Decimal(precision, scale)`. They preserve the source expression's nullability and render as a native PySpark
+`Column.cast(...)` call. `try_cast(...)` is not part of the default target range because PySpark introduced it in 4.0;
+use a hook when a target-specific permissive cast is required.
+
+Order descriptors are `expr.asc()`, `expr.desc()`, `expr.asc_nulls_first()`, `expr.asc_nulls_last()`,
+`expr.desc_nulls_first()`, and `expr.desc_nulls_last()`. Use them as a window `order_by=` value; they render as the
+corresponding visible PySpark `Column` ordering call.
 
 Rules:
 

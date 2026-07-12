@@ -35,6 +35,8 @@ class PySparkExpressionMapper:
             return "expression", "equality"
         if expression.kind == "null_safe_eq":
             return "expression", "null_safe_equality"
+        if expression.kind == "cast":
+            return "expression", "cast"
         if expression.kind in {"add", "sub", "mul", "when"}:
             return "expression", "standard_helper_call"
         if expression.kind == "call":

@@ -149,6 +149,7 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
         ),
         (_item(_field(RawTagBatch, "tags"), _literal(0)), "col(RawTagBatch.tags)[0]"),
         (_item(_field(RawMapBatch, "attributes"), _literal("region")), "col(RawMapBatch.attributes)['region']"),
+        (_cast(_field(RawOrder, "status"), "int"), "cast(col(orders.status) as int)"),
         (_not(_is_null(_field(RawOrder, "status"))), "~(col(orders.status).isNull())"),
         (_call("upper", _call("trim", _field(RawOrder, "status"))), "upper(trim(col(orders.status)))"),
         (
@@ -214,6 +215,10 @@ def test_online_expression_evaluator_preserves_window_projection_semantics() -> 
         (
             _window("rank", partition_by=customer_id, order_by=quantity, descending=True),
             "rank().over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).desc()))",
+        ),
+        (
+            _window("dense_rank", partition_by=customer_id, order_by=_order(quantity, "asc_nulls_last")),
+            "dense_rank().over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc_nulls_last()))",
         ),
         (
             _window("dense_rank", partition_by=customer_id, order_by=quantity),
@@ -1990,6 +1995,14 @@ def _item(collection: PySparkExpressionRecipe, key: PySparkExpressionRecipe) -> 
     return PySparkExpressionRecipe("item", structure.String(), True, {}, (collection, key))
 
 
+def _cast(value: PySparkExpressionRecipe, spark_type: str) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe("cast", structure.Integer(), value.nullable, {"spark_type": spark_type}, (value,))
+
+
+def _order(value: PySparkExpressionRecipe, direction: str) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe("order", value.type, value.nullable, {"direction": direction}, (value,))
+
+
 def _when(
     condition: PySparkExpressionRecipe,
     value: PySparkExpressionRecipe,
@@ -2293,6 +2306,9 @@ class FakeColumn:
 
     def rlike(self, pattern):
         return FakeColumn(f"{self.expression}.rlike({pattern!r})")
+
+    def asc_nulls_last(self):
+        return FakeColumn(f"{self.expression}.asc_nulls_last()")
 
     def __getitem__(self, key):
         return FakeColumn(f"{self.expression}[{key!r}]")

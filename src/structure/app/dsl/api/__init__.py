@@ -1,6 +1,17 @@
 from structure.app.compiler.diagnostics.api import StructureCompileError
 from structure.app.compiler.frontend.commands.CompileTransform import compile_transform
-from structure.app.dsl.model.expr.expressions import coalesce, event_time_between, lower, to_decimal, trim, upper, when
+from structure.app.dsl.model.expr.expressions import (
+    coalesce,
+    event_time_between,
+    lower,
+    regexp_replace,
+    split,
+    substring,
+    to_decimal,
+    trim,
+    upper,
+    when,
+)
 from structure.app.dsl.model.expr.InputScope import (
     as_of_one,
     cross_join,
@@ -233,6 +244,7 @@ __all__ = [
     "raw",
     "rank",
     "range_between",
+    "regexp_replace",
     "right_join",
     "rollup",
     "row_number",
@@ -245,7 +257,9 @@ __all__ = [
     "sum",
     "stddev",
     "special",
+    "split",
     "step",
+    "substring",
     "temporal_one",
     "to_decimal",
     "transform",

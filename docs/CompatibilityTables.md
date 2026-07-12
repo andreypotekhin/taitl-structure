@@ -41,8 +41,8 @@ parity names follow the official Spark 4.0.1 Python API docs for Column, SQL fun
 | Range predicates | check | `between` | Exposed as inclusive `expr.between(lower, upper)`. |
 | String predicates | check | `contains`, `like`, `ilike`, `rlike` | Typed `expr` methods; `rlike` explicitly accepts a Java regex. |
 | Collection indexing | check | `getItem`, `__getitem__` | Typed `array[index]` and `map[key]` expressions return nullable lookups. |
-| Rich casts | planned | `cast`, `astype`, `try_cast` | Current public scalar cast is `to_decimal(...)`. |
-| Ordering modifiers | planned | `asc`, `desc`, null ordering | Needed for richer windows. |
+| Rich casts | planned | `cast`, `astype`, `try_cast` | Scalar `cast`/`astype` are complete; `try_cast` needs a PySpark 4-only profile. |
+| Ordering modifiers | check | `asc`, `desc`, null ordering | Typed order descriptors for inline and reusable windows. |
 | Struct mutation | future | `withField`, `dropFields` | Needs a nested projection design. |
 | Column aliases | unsupported | `alias`, `name` | Schema fields own output names. |
 | Raw `Column.over` | unsupported | `over` | Structure uses window helpers instead. |

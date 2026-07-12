@@ -356,6 +356,69 @@ def test_collection_indexing_requires_a_matching_collection_and_key_type() -> No
     assert "Indexing requires an Array or Map Structure expression" in raised.value.diagnostic.problem_text()
 
 
+def test_scalar_casts_are_typed_symbolic_expressions() -> None:
+    """I can cast a value without hiding its target type in a raw hook."""
+
+    class Raw(structure.Structure):
+        raw_count = structure.field(structure.String(), nullable=True)
+        count = structure.field(structure.Integer(), nullable=False)
+
+    class Published(structure.Structure):
+        count = structure.field(structure.Integer(), nullable=True)
+        count_text = structure.field(structure.String(), nullable=False)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            source = cast(Any, row)
+            return Published(
+                count=source.raw_count.cast(structure.Integer()),
+                count_text=source.count.astype(structure.String()),
+            )
+
+    projection = {
+        assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
+    }
+
+    actual = [
+        (expression.kind, expression.type.name if expression.type else None, expression.nullable)
+        for expression in projection.values()
+    ]
+
+    assert actual == [
+        ("cast", "integer", True),
+        ("cast", "string", False),
+    ]
+    assert [expression.data for expression in projection.values()] == [{"spark_type": "int"}, {"spark_type": "string"}]
+
+
+def test_scalar_casts_require_structure_scalar_types() -> None:
+    """I get a compile diagnostic for an opaque cast target."""
+
+    class Raw(structure.Structure):
+        raw_count = structure.field(structure.String(), nullable=True)
+
+    class Published(structure.Structure):
+        count = structure.field(structure.Integer(), nullable=True)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(count=cast(Any, row).raw_count.cast("int"))
+
+    with pytest.raises(structure.StructureCompileError) as raised:
+        compile_transform(Publish)
+
+    assert raised.value.diagnostic.code == "DSL-E0401"
+    assert "cast(...) requires a scalar Structure type" in raised.value.diagnostic.problem_text()
+
+
 def test_lookup_join_requires_boolean_expression() -> None:
     """Join predicates reject non-boolean expressions before target lowering."""
 

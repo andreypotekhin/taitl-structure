@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 import pytest
 
 import structure
@@ -90,12 +92,13 @@ class RankedEventTransform(structure.Transform):
     ranked = structure.output(RankedEvent)
 
     def rank_events(self, row: RawEvent) -> RankedEvent:
+        event = cast(Any, row)
         return RankedEvent(
             account_id=row.account_id,
             event_id=row.event_id,
             sequence=row.sequence,
-            row_number=structure.row_number(partition_by=row.account_id, order_by=row.sequence),
-            rank=structure.rank(partition_by=row.account_id, order_by=row.sequence, descending=True),
+            row_number=structure.row_number(partition_by=row.account_id, order_by=event.sequence.asc()),
+            rank=structure.rank(partition_by=row.account_id, order_by=event.sequence.desc()),
             dense_rank=structure.dense_rank(partition_by=row.account_id, order_by=row.sequence),
             previous_sequence=structure.lag(row.sequence, partition_by=row.account_id, order_by=row.sequence),
             next_sequence=structure.lead(row.sequence, partition_by=row.account_id, order_by=row.sequence),
@@ -120,9 +123,10 @@ class AdvancedRankedEventTransform(structure.Transform):
     ranked = structure.output(AdvancedRankedEvent)
 
     def rank_events(self, row: RawEvent) -> AdvancedRankedEvent:
+        event = cast(Any, row)
         spec = structure.window(
             partition_by=row.account_id,
-            order_by=row.sequence,
+            order_by=event.sequence.asc_nulls_last(),
             frame=structure.rows_between(structure.preceding(3), structure.current_row()),
         )
         return AdvancedRankedEvent(
@@ -287,19 +291,19 @@ def test_advanced_window_helpers_render_valid_function_frames() -> None:
 
     assert (
         'F.percent_rank().over(Window.partitionBy(F.col("raw_event.account_id")).'
-        'orderBy(F.col("raw_event.sequence").asc()))'
+        'orderBy(F.col("raw_event.sequence").asc_nulls_last()))'
     ) in text
     assert (
         'F.cume_dist().over(Window.partitionBy(F.col("raw_event.account_id")).'
-        'orderBy(F.col("raw_event.sequence").asc()))'
+        'orderBy(F.col("raw_event.sequence").asc_nulls_last()))'
     ) in text
     assert (
         'F.ntile(4).over(Window.partitionBy(F.col("raw_event.account_id")).'
-        'orderBy(F.col("raw_event.sequence").asc()))'
+        'orderBy(F.col("raw_event.sequence").asc_nulls_last()))'
     ) in text
     assert (
         'F.sum(F.col("raw_event.sequence")).over(Window.partitionBy(F.col("raw_event.account_id")).'
-        'orderBy(F.col("raw_event.sequence").asc()).rowsBetween(-3, Window.currentRow))'
+        'orderBy(F.col("raw_event.sequence").asc_nulls_last()).rowsBetween(-3, Window.currentRow))'
     ) in text
 
 

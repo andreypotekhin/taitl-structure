@@ -1,6 +1,17 @@
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.expr.RowScope import RowScope
-from structure.app.dsl.model.expr.expressions import coalesce, literal, lower, to_decimal, trim, upper, when
+from structure.app.dsl.model.expr.expressions import (
+    coalesce,
+    literal,
+    lower,
+    regexp_replace,
+    split,
+    substring,
+    to_decimal,
+    trim,
+    upper,
+    when,
+)
 
 __all__ = [
     "Expression",
@@ -8,6 +19,9 @@ __all__ = [
     "coalesce",
     "literal",
     "lower",
+    "regexp_replace",
+    "split",
+    "substring",
     "to_decimal",
     "trim",
     "upper",

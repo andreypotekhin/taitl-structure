@@ -71,8 +71,8 @@ Gaps:
 | String predicates | implemented | `contains`, `like`, `ilike`, `rlike` | Typed methods keep plain and regex matching compiler-visible. |
 | Collection indexing | implemented | `getItem`, `__getitem__` | Typed Array/Map result inference with nullable lookup results. |
 | Struct field helpers | planned | `getField` | Attribute access covers typed structs today. |
-| Rich casts | planned | `cast`, `astype`, `try_cast` | Current public cast helper is `to_decimal(...)`. |
-| Ordering modifiers | planned | `asc`, `desc`, null ordering | Current helpers mostly use `descending=`. |
+| Rich casts | planned | `cast`, `astype`, `try_cast` | Scalar `cast`/`astype` are complete; `try_cast` needs a PySpark 4-only profile. |
+| Ordering modifiers | implemented | `asc`, `desc`, null ordering | Typed descriptors work in inline and reusable windows. |
 | Null/NaN predicates | future | `isNaN` | Needs type checks and separate null-vs-NaN diagnostics. |
 | Bitwise column methods | future | `bitwiseAND`, `bitwiseOR`, `bitwiseXOR` | Needs bitwise helpers first. |
 | Struct mutation | future | `withField`, `dropFields` | Postponed until nested projection and whole-field copying are stable. |

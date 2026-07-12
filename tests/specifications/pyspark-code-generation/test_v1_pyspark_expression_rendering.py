@@ -274,3 +274,34 @@ def test_v3_expression_renderer_renders_collection_indexing() -> None:
         'F.col("orders.tags")[0]',
         'F.col("orders.attributes")[\'region\']',
     ]
+
+
+def test_v3_expression_renderer_renders_scalar_casts() -> None:
+    class Raw(structure.Structure):
+        raw_count = structure.field(structure.String(), nullable=True)
+        count = structure.field(structure.Integer(), nullable=False)
+
+    class Published(structure.Structure):
+        count = structure.field(structure.Integer(), nullable=True)
+        count_text = structure.field(structure.String(), nullable=False)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            source = cast(Any, row)
+            return Published(
+                count=source.raw_count.cast(structure.Integer()),
+                count_text=source.count.astype(structure.String()),
+            )
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert [render(expression, scope_aliases={"rows": "orders"}) for expression in projection.values()] == [
+        'F.col("orders.raw_count").cast(\'int\')',
+        'F.col("orders.count").cast(\'string\')',
+    ]

@@ -55,6 +55,30 @@ class Expression:
     def rlike(self, pattern: str) -> "Expression":
         return self._string_predicate("rlike", pattern)
 
+    def cast(self, target: StructureType) -> "Expression":
+        return self._cast(target)
+
+    def astype(self, target: StructureType) -> "Expression":
+        return self._cast(target)
+
+    def asc(self) -> "Expression":
+        return self._order("asc")
+
+    def desc(self) -> "Expression":
+        return self._order("desc")
+
+    def asc_nulls_first(self) -> "Expression":
+        return self._order("asc_nulls_first")
+
+    def asc_nulls_last(self) -> "Expression":
+        return self._order("asc_nulls_last")
+
+    def desc_nulls_first(self) -> "Expression":
+        return self._order("desc_nulls_first")
+
+    def desc_nulls_last(self) -> "Expression":
+        return self._order("desc_nulls_last")
+
     def __getitem__(self, key: object) -> "Expression":
         from structure.app.dsl.model.expr.expressions import literal
 
@@ -173,3 +197,22 @@ class Expression:
         if not isinstance(pattern, str):
             raise TypeError(f"{name}(...) requires a string literal")
         return Expression(kind=name, type=BooleanType(), nullable=self.nullable, data={"pattern": pattern}, args=(self,))
+
+    def _cast(self, target: StructureType) -> "Expression":
+        if not isinstance(target, StructureType) or target.name in {"array", "map", "struct"}:
+            raise TypeError("cast(...) requires a scalar Structure type")
+        return Expression(kind="cast", type=target, nullable=self.nullable, data={"spark_type": self._spark_type(target)}, args=(self,))
+
+    def _order(self, direction: str) -> "Expression":
+        return Expression(kind="order", type=self.type, nullable=self.nullable, data={"direction": direction}, args=(self,))
+
+    def _spark_type(self, target: StructureType) -> str:
+        if target.name == "integer":
+            return "int"
+        if target.name == "long":
+            return "bigint"
+        if target.name == "decimal":
+            precision = getattr(target, "precision")
+            scale = getattr(target, "scale")
+            return f"decimal({precision},{scale})"
+        return target.name

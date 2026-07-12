@@ -327,14 +327,14 @@ def add_flags(self, order: OrderRaw) -> OrderWithFlags:
 Supported v.1 expression forms are field references, literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `*`,
 boolean `&`, `|`, `~`, null checks, `null_safe_eq(...)`, `contains(...)`, `like(...)`, `ilike(...)`, `rlike(...)`,
 array/map indexing, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and
-`when(...).otherwise(...)`.
+`cast(...)`, `astype(...)`, and `when(...).otherwise(...)`.
 
 Reference: [DSL expressions](reference/DSL.md) and
 [nullability and type coercion](reference/NullabilityAndTypeCoercion.md).
 
 ## Expression Methods
 
-A Transform class can declare expression methods for reusable expressions. Expression methods are expected to have compileable code, and Structure will fail if it can't compile. Use optional decoration `@special(type="expr")` if demarcation is needed for clarity.
+A Transform class can declare expression methods for reusable expressions. Expression methods are expected to have compileable code, and Structure will fail if it can't compile. Use optional decoration `@special(type="expr")` if demarcation is needed for clarity.
 
 ```python
 @special(type="expr")

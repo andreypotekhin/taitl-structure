@@ -158,7 +158,7 @@ The v.1 expression surface supports field references, Python literals, `==`, `!=
 `-`, `*`, boolean `&`, `|`, `~`, `is_null()`, `is_not_null()`, `null_safe_eq(...)`, string predicates
 `contains(...)`, `like(...)`, `ilike(...)`, and `rlike(...)`, `lower(...)`, `upper(...)`, `trim(...)`,
 collection indexing with `array[index]` and `map[key]`, `to_decimal(...)`, `coalesce(...)`, and
-`when(...).otherwise(...)`.
+`cast(...)`, `astype(...)`, and `when(...).otherwise(...)`.
 
 ### Expression Helper
 
