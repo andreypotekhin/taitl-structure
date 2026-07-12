@@ -77,12 +77,15 @@ After 1.0, Structure follows semantic versioning:
   support for newer Python or PySpark versions.
 - `PATCH` versions should contain bug fixes, documentation fixes, and compatible diagnostic improvements.
 
-Before 1.0, minor versions may still change public contracts, but each release should document migration
-steps.
+Before 1.0, minor versions may still change public contracts.
 
 Dropping a supported Python or PySpark line is normally a major-version change. A line that is already
 unsupported by its upstream project may be dropped in a minor release if the release notes include a clear
 migration note.
+
+Internal versions follow vN notation (v1 etc.). Decimal positions in N correspond to major, minor and patch
+position in semantic version. Example: v132 is same as semantic version 1.3.2. This also means that we only 
+plant for single digits in each semantic position.
 
 ## Online Runtime Compatibility
 
