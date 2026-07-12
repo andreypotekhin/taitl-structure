@@ -112,6 +112,91 @@ def regexp_replace(value: object, *, pattern: str, replacement: str) -> Expressi
     )
 
 
+def regexp_extract(value: object, *, pattern: str, group: int = 1) -> Expression:
+    argument = _string_argument(value, "regexp_extract(...)")
+    _string_literal(pattern, "regexp_extract(...)", "pattern")
+    if isinstance(group, bool) or not isinstance(group, int) or group < 0:
+        raise TypeError("regexp_extract(...) group must be a non-negative integer")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "regexp_extract", "pattern": pattern, "group": group},
+        args=(argument,),
+    )
+
+
+def length(value: object) -> Expression:
+    argument = _string_argument(value, "length(...)")
+    return Expression(
+        kind="call",
+        type=IntegerType(),
+        nullable=argument.nullable,
+        data={"function": "length"},
+        args=(argument,),
+    )
+
+
+def initcap(value: object) -> Expression:
+    return _string_call("initcap", value)
+
+
+def reverse(value: object) -> Expression:
+    return _string_call("reverse", value)
+
+
+def translate(value: object, *, matching: str, replacement: str) -> Expression:
+    argument = _string_argument(value, "translate(...)")
+    _string_literal(matching, "translate(...)", "matching")
+    _string_literal(replacement, "translate(...)", "replacement")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "translate", "matching": matching, "replacement": replacement},
+        args=(argument,),
+    )
+
+
+def instr(value: object, *, substring: str) -> Expression:
+    argument = _string_argument(value, "instr(...)")
+    _string_literal(substring, "instr(...)", "substring")
+    return Expression(
+        kind="call",
+        type=IntegerType(),
+        nullable=argument.nullable,
+        data={"function": "instr", "substring": substring},
+        args=(argument,),
+    )
+
+
+def levenshtein(left: object, right: object) -> Expression:
+    left_argument = _string_argument(left, "levenshtein(...)")
+    right_argument = _string_argument(right, "levenshtein(...)")
+    return Expression(
+        kind="call",
+        type=IntegerType(),
+        nullable=left_argument.nullable or right_argument.nullable,
+        data={"function": "levenshtein"},
+        args=(left_argument, right_argument),
+    )
+
+
+def concat_ws(separator: str, *values: object) -> Expression:
+    if not isinstance(separator, str):
+        raise TypeError("concat_ws(...) separator must be a string literal")
+    if not values:
+        raise TypeError("concat_ws(...) requires at least one String value")
+    arguments = tuple(_string_argument(value, "concat_ws(...)") for value in values)
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=False,
+        data={"function": "concat_ws", "separator": separator},
+        args=arguments,
+    )
+
+
 def date_add(value: object, *, days: int) -> Expression:
     argument = _date_or_timestamp_argument(value, "date_add(...)")
     if isinstance(days, bool) or not isinstance(days, int):
@@ -257,6 +342,17 @@ def _string_argument(value: object, call: str) -> Expression:
     if not isinstance(argument.type, StringType):
         raise TypeError(f"{call} requires a String Structure expression")
     return argument
+
+
+def _string_call(function: str, value: object) -> Expression:
+    argument = _string_argument(value, f"{function}(...)")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": function},
+        args=(argument,),
+    )
 
 
 def _string_literal(value: object, call: str, parameter: str) -> None:

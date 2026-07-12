@@ -448,7 +448,8 @@ The v.1 expression surface includes:
 - collection indexing such as `array_expr[index]` and `map_expr[key]`;
 - Struct field access with `struct_expr.get_field(name)`;
 - scalar casts such as `expr.cast(Integer())`, `expr.astype(String())`, and `expr.try_cast(Integer())`;
-- string helpers `substring(...)`, `split(...)`, and `regexp_replace(...)`;
+- string helpers `substring(...)`, `split(...)`, `regexp_replace(...)`, `regexp_extract(...)`, `length(...)`, and
+  `concat_ws(...)`, `initcap(...)`, `reverse(...)`, `translate(...)`, `instr(...)`, and `levenshtein(...)`;
 - temporal helpers `date_add(...)`, `datediff(...)`, and `date_trunc(...)`;
 - numeric helpers `abs(...)`, `round(...)`, `ceil(...)`, and `floor(...)`;
 - predicate helpers `isnull(...)`, `isnotnull(...)`, and `isnan(...)`;
@@ -481,6 +482,16 @@ corresponding visible PySpark `Column` ordering call.
 `substring(value, start=..., length=...)` uses a one-based positive start and non-negative length. `split(...)` and
 `regexp_replace(...)` require explicit Python string patterns, keeping Java regular-expression behavior visible rather
 than admitting raw SQL. `split(...)` returns an Array of non-null strings when its input is non-null.
+`regexp_extract(value, pattern=..., group=...)` returns the selected Java-regex capture group and requires a
+non-negative literal group index; a non-matching group produces an empty string.
+`length(value)` counts String characters, including trailing spaces, and returns a nullable Integer only when its
+source value is nullable.
+`initcap(value)` title-cases words and `reverse(value)` reverses the String. `translate(value, matching=...,
+replacement=...)` replaces individual matching characters. `instr(value, substring=...)` returns a one-based position,
+or zero when absent. `levenshtein(left, right)` returns the String edit distance. All preserve the nullability of their
+String inputs.
+`concat_ws(separator, *values)` requires a Python string separator and one or more String expressions or literals;
+it skips null values and produces a non-null String expression.
 
 `date_add(value, days=...)` returns a Date, `datediff(end, start)` returns an Integer number of days, and
 `date_trunc(value, unit=...)` returns a Timestamp. Each helper accepts typed Date or Timestamp expressions and keeps

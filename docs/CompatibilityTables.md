@@ -58,8 +58,7 @@ parity names follow the official Spark 4.0.1 Python API docs for Column, SQL fun
 | `to_decimal` | check | `Column.cast(DecimalType)` | Typed decimal conversion helper. |
 | `coalesce` | check | `functions.coalesce` | Null fallback expression. |
 | `when(...).otherwise(...)` | check | `functions.when`, `Column.otherwise` | Structured conditional expression. |
-| `substring`, `split`, `regexp_replace` | check | Same PySpark functions | Typed string helpers with explicit regex patterns. |
-| Additional string helpers | planned | `concat_ws` and related functions | Remaining high-value parity gap. |
+| `substring`, `split`, `regexp_replace`, `regexp_extract`, `length`, `concat_ws`, `initcap`, `reverse`, `translate`, `instr`, `levenshtein` | check | Same PySpark functions | Typed string helpers with explicit literal pattern, separator, and search contracts. |
 | `date_add`, `datediff`, `date_trunc` | check | Same PySpark functions | Typed Date/Timestamp helper set. |
 | Additional date/time helpers | planned | Additional SQL date/time functions | Remaining temporal parity gap. |
 | `abs`, `round`, `ceil`, `floor` | check | Same PySpark functions | Typed deterministic numeric helper set. |

@@ -325,6 +325,14 @@ def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
         prefix = structure.field(structure.String(), nullable=True)
         parts = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
         normalized = structure.field(structure.String(), nullable=True)
+        extracted = structure.field(structure.String(), nullable=True)
+        character_count = structure.field(structure.Integer(), nullable=True)
+        title = structure.field(structure.String(), nullable=True)
+        backward = structure.field(structure.String(), nullable=True)
+        normalized_letters = structure.field(structure.String(), nullable=True)
+        dash_position = structure.field(structure.Integer(), nullable=True)
+        distance = structure.field(structure.Integer(), nullable=True)
+        joined = structure.field(structure.String(), nullable=False)
 
     @structure.transform
     class Publish(structure.Transform):
@@ -336,6 +344,14 @@ def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
                 prefix=structure.substring(row.label, start=1, length=3),
                 parts=structure.split(row.label, pattern="-"),
                 normalized=structure.regexp_replace(row.label, pattern=r"\s+", replacement=" "),
+                extracted=structure.regexp_extract(row.label, pattern=r"^([^-]+)", group=1),
+                character_count=structure.length(row.label),
+                title=structure.initcap(row.label),
+                backward=structure.reverse(row.label),
+                normalized_letters=structure.translate(row.label, matching="-", replacement="_"),
+                dash_position=structure.instr(row.label, substring="-"),
+                distance=structure.levenshtein(row.label, "release"),
+                joined=structure.concat_ws(" / ", row.label, "release"),
             )
 
     recipe = PySpark.plan.lower()(compile_transform(Publish))
@@ -346,6 +362,14 @@ def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
         'F.substring(F.col("orders.label"), 1, 3)',
         'F.split(F.col("orders.label"), \'-\', -1)',
         "F.regexp_replace(F.col(\"orders.label\"), '\\\\s+', ' ')",
+        "F.regexp_extract(F.col(\"orders.label\"), '^([^-]+)', 1)",
+        'F.length(F.col("orders.label"))',
+        'F.initcap(F.col("orders.label"))',
+        'F.reverse(F.col("orders.label"))',
+        'F.translate(F.col("orders.label"), \'-\', \'_\')',
+        'F.instr(F.col("orders.label"), \'-\')',
+        'F.levenshtein(F.col("orders.label"), F.lit(\'release\'))',
+        'F.concat_ws(\' / \', F.col("orders.label"), F.lit(\'release\'))',
     ]
 
 

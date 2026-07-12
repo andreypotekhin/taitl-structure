@@ -42,7 +42,7 @@ page, public compatibility tables, generated examples, and project-management pr
 
 | Gap Section | v.3 Sprint | ExecPlan |
 | --- | --- | --- |
-| DSL | Sprint 11 | [P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md](planning/P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md) |
+| DSL | Sprint 11 | [P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md](planning/done/P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md) |
 | Joins | Sprint 12 | [P07072603.V3-join-pyspark-parity-hardening.plan.md](planning/P07072603.V3-join-pyspark-parity-hardening.plan.md) |
 | Aggregations | Sprint 13 | [P07072604.V3-aggregation-pyspark-parity.plan.md](planning/P07072604.V3-aggregation-pyspark-parity.plan.md) |
 | Windows | Sprint 14 | [P07072605.V3-window-pyspark-parity.plan.md](planning/P07072605.V3-window-pyspark-parity.plan.md) |
@@ -60,7 +60,7 @@ Structure currently supports a small compiler-visible Column subset:
 - equality, null-safe equality, inequality, and ordering comparisons;
 - boolean composition with `&`, `|`, and `~`;
 - arithmetic `+`, `-`, and `*`;
-- `is_null()` and `is_not_null()`;
+  - `is_null()` and `is_not_null()`;
 - `isin(...)` membership predicates;
 - inclusive `between(...)` range predicates.
 
@@ -73,7 +73,7 @@ Gaps:
 | Struct field helpers | implemented | `getField` | Alias-aware typed `get_field(name)` complements attributes. |
 | Rich casts | implemented | `cast`, `astype`, `try_cast` | Scalar casts work across targets; nullable `try_cast` requires profile `>=4.0,<4.1`. |
 | Ordering modifiers | implemented | `asc`, `desc`, null ordering | Typed descriptors work in inline and reusable windows. |
-| Null/NaN predicates | future | `isNaN` | Needs type checks and separate null-vs-NaN diagnostics. |
+| Null/NaN predicates | implemented | `isNaN` | Function-style `isnull`, `isnotnull`, and typed `isnan` keep null and NaN semantics distinct. |
 | Bitwise column methods | future | `bitwiseAND`, `bitwiseOR`, `bitwiseXOR` | Needs bitwise helpers first. |
 | Struct mutation | future | `withField`, `dropFields` | Postponed until nested projection and whole-field copying are stable. |
 | Column alias/name methods | unsupported | `alias`, `name` | Schema constructors and field aliases own output names. |
@@ -90,7 +90,7 @@ Gaps:
 
 | Gap | Status | Target PySpark Parity | Notes |
 | --- | --- | --- | --- |
-| Broader string helpers | planned | `substring`, `split`, `regexp_replace` | These three are complete; remaining string helpers need separate admission. |
+| Broader string helpers | implemented | `substring`, `split`, `regexp_replace`, `regexp_extract`, `length`, `concat_ws`, `initcap`, `reverse`, `translate`, `instr`, `levenshtein` | Typed cross-version String transformation, search, and comparison core. |
 | Date/time helpers | implemented | `date_add`, `datediff`, `date_trunc` | Typed Date/Timestamp temporal helper set. |
 | Numeric/math helpers | implemented | `abs`, `round`, `ceil`, `floor` | Typed deterministic scalar helper set. |
 | Predicate helpers | implemented | `isnull`, `isnotnull`, `isnan` | Function-style null checks and typed NaN predicate. |

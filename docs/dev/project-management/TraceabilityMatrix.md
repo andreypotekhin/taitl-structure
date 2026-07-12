@@ -15,7 +15,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 08 Aggregations/Windows/HOFs | Aggregations, Windowing, Deduplication, Higher-Order Functions, Testing | typed `group_by`, aggregate helpers, window helpers, deterministic dedupe, array/map helpers, parity tests |
 | Sprint 09 Spark Connect/Optimization/Explain | Advanced Analytics, Spark Connect, Full PySpark Joins, Optimization Directives, Explain, Testing | full aggregation/window/HOF coverage, supported Spark Connect batch variant, right/full/cross rowset joins, non-equi/disjunctive predicates, cache/persist first-slice directives, compact explain, static streaming compatibility |
 | Sprint 10 Docs/Testing | Generated Docs, Test Tooling | generated schema/transform docs, pytest helpers |
-| Sprint 11 v.3 DSL/SQL Function Parity | DSL, SQL Functions, Backend Capabilities, Testing | planned Column API helpers, planned SQL function helpers, generated examples, parity tests |
+| Sprint 11 v.3 DSL/SQL Function Parity | DSL, SQL Functions, Backend Capabilities, Testing | complete Column API helpers, SQL function helpers, generated examples, and parity tests |
 | Sprint 12 v.3 Join Parity Hardening | Joins, Backend Capabilities, Traceability, Streaming Compatibility | using-key joins, right/full diagnostics, cross safety, strategy directives, forward as-of joins |
 | Sprint 13 v.3 Aggregation Parity | Aggregations, Backend Capabilities, Traceability | grouping sets, `having(...)`, aggregate-output predicate diagnostics |
 | Sprint 14 v.3 Window Parity | Windows, Backend Capabilities, Streaming Compatibility | null ordering, normalized multiple order keys, aggregate windows |

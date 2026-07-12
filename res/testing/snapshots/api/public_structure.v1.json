@@ -609,6 +609,14 @@
       "qualname": "ceil",
       "signature": "(value: 'object') -> 'Expression'"
     },
+    "concat_ws": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "concat_ws",
+      "signature": "(separator: 'str', *values: 'object') -> 'Expression'"
+    },
     "coalesce": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -857,6 +865,14 @@
       "qualname": "grouping_sets",
       "signature": "(*levels: 'object', **named_levels: 'object') -> \"'GroupedRows'\""
     },
+    "initcap": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "initcap",
+      "signature": "(value: 'object') -> 'Expression'"
+    },
     "inner_join": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -880,6 +896,14 @@
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "is_grouped",
       "signature": "(value: 'object') -> 'Expression'"
+    },
+    "instr": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "instr",
+      "signature": "(value: 'object', *, substring: 'str') -> 'Expression'"
     },
     "isnan": {
       "dataclass_fields": [],
@@ -960,6 +984,22 @@
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "lookup_join",
       "signature": "(relation: 'Relation | None' = None, *, on: 'object', how: 'Join' = <Join.LEFT: 'left'>, hint: 'JoinHint | None' = None, dedupe: 'JoinDedupe | None' = None) -> 'Relation | InputScope'"
+    },
+    "length": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "length",
+      "signature": "(value: 'object') -> 'Expression'"
+    },
+    "levenshtein": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "levenshtein",
+      "signature": "(left: 'object', right: 'object') -> 'Expression'"
     },
     "lower": {
       "dataclass_fields": [],
@@ -1129,6 +1169,14 @@
       "qualname": "raw",
       "signature": "(function: 'Callable | None' = None, *, input: 'object | None' = None, output: 'object | None' = None, inout: 'object | None' = None, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming_safe: 'bool' = False, target_backend: 'str | Iterable[str] | None' = None, target_platform: 'str | None' = None)"
     },
+    "regexp_extract": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "regexp_extract",
+      "signature": "(value: 'object', *, pattern: 'str', group: 'int' = 1) -> 'Expression'"
+    },
     "regexp_replace": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -1136,6 +1184,14 @@
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "regexp_replace",
       "signature": "(value: 'object', *, pattern: 'str', replacement: 'str') -> 'Expression'"
+    },
+    "reverse": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "reverse",
+      "signature": "(value: 'object') -> 'Expression'"
     },
     "right_join": {
       "dataclass_fields": [],
@@ -1288,6 +1344,14 @@
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "transform",
       "signature": "(target=None, **kwargs)"
+    },
+    "translate": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "translate",
+      "signature": "(value: 'object', *, matching: 'str', replacement: 'str') -> 'Expression'"
     },
     "trim": {
       "dataclass_fields": [],

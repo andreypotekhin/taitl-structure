@@ -2717,6 +2717,8 @@ class CompileTransform:
             function = (expression.data or {}).get("function")
             if function == "coalesce":
                 return all(self._nullable(argument, filters) for argument in expression.args)
+            if function == "concat_ws":
+                return False
             return any(self._nullable(argument, filters) for argument in expression.args)
         if expression.args:
             return any(self._nullable(argument, filters) for argument in expression.args)

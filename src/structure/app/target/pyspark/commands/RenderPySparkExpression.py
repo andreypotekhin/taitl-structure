@@ -323,6 +323,20 @@ class RenderPySparkExpression:
             return f"F.split({args[0]}, {expression.data['pattern']!r}, {expression.data['limit']})"
         if function == "regexp_replace":
             return f"F.regexp_replace({args[0]}, {expression.data['pattern']!r}, {expression.data['replacement']!r})"
+        if function == "regexp_extract":
+            return f"F.regexp_extract({args[0]}, {expression.data['pattern']!r}, {expression.data['group']})"
+        if function == "length":
+            return f"F.length({args[0]})"
+        if function in {"initcap", "reverse"}:
+            return f"F.{function}({args[0]})"
+        if function == "translate":
+            return f"F.translate({args[0]}, {expression.data['matching']!r}, {expression.data['replacement']!r})"
+        if function == "instr":
+            return f"F.instr({args[0]}, {expression.data['substring']!r})"
+        if function == "levenshtein":
+            return f"F.levenshtein({args[0]}, {args[1]})"
+        if function == "concat_ws":
+            return f"F.concat_ws({expression.data['separator']!r}, {', '.join(args)})"
         if function == "date_add":
             return f"F.date_add({args[0]}, {expression.data['days']})"
         if function == "datediff":

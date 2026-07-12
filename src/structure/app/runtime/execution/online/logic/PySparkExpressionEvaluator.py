@@ -430,6 +430,20 @@ class PySparkExpressionEvaluator:
             return functions.split(args[0], expression.data["pattern"], expression.data["limit"])
         if function == "regexp_replace":
             return functions.regexp_replace(args[0], expression.data["pattern"], expression.data["replacement"])
+        if function == "regexp_extract":
+            return functions.regexp_extract(args[0], expression.data["pattern"], expression.data["group"])
+        if function == "length":
+            return functions.length(args[0])
+        if function in {"initcap", "reverse"}:
+            return getattr(functions, function)(args[0])
+        if function == "translate":
+            return functions.translate(args[0], expression.data["matching"], expression.data["replacement"])
+        if function == "instr":
+            return functions.instr(args[0], expression.data["substring"])
+        if function == "levenshtein":
+            return functions.levenshtein(args[0], args[1])
+        if function == "concat_ws":
+            return functions.concat_ws(expression.data["separator"], *args)
         if function == "date_add":
             return functions.date_add(args[0], expression.data["days"])
         if function == "datediff":

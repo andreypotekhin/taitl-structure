@@ -34,7 +34,6 @@ project-management/
     Sprint05_JoinsTraceabilityBuildIntegration.md
     Sprint06_V2ScopeAndAnalyticalIR.md
     Sprint07_AnalyticalJoinCoverage.md
-    Sprint11_V3DslAndSqlFunctionParity.md
     Sprint12_V3JoinParityHardening.md
     Sprint13_V3AggregationParity.md
     Sprint14_V3WindowParity.md
@@ -43,6 +42,7 @@ project-management/
     Sprint17_V3IncrementalCompileCacheDiagnostics.md
     done/
       Sprint08_AggregationsWindowsHigherOrderFunctions.md
+      Sprint11_V3DslAndSqlFunctionParity.md
       Sprint09_OptimizationExplainDocsTooling.md
       Sprint10_DocsTestingIncrementalCompile.md
   templates/

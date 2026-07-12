@@ -158,6 +158,26 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
             _call("regexp_replace", _field(RawOrder, "status"), pattern=r"\s+", replacement=" "),
             "regexp_replace(col(orders.status),'\\\\s+',' ')",
         ),
+        (
+            _call("regexp_extract", _field(RawOrder, "status"), pattern=r"^([^-]+)", group=1),
+            "regexp_extract(col(orders.status),'^([^-]+)',1)",
+        ),
+        (_call("length", _field(RawOrder, "status")), "length(col(orders.status))"),
+        (_call("initcap", _field(RawOrder, "status")), "initcap(col(orders.status))"),
+        (_call("reverse", _field(RawOrder, "status")), "reverse(col(orders.status))"),
+        (
+            _call("translate", _field(RawOrder, "status"), matching="-", replacement="_"),
+            "translate(col(orders.status),'-','_')",
+        ),
+        (_call("instr", _field(RawOrder, "status"), substring="-"), "instr(col(orders.status),'-')"),
+        (
+            _call("levenshtein", _field(RawOrder, "status"), _literal("release")),
+            "levenshtein(col(orders.status),lit('release'))",
+        ),
+        (
+            _call("concat_ws", _field(RawOrder, "status"), _literal("release"), separator=" / "),
+            "concat_ws(' / ',col(orders.status),lit('release'))",
+        ),
         (_call("date_add", _field(RawOrder, "status"), days=7), "date_add(col(orders.status),7)"),
         (
             _call("datediff", _field(RawOrder, "id"), _field(RawOrder, "status")),
@@ -2228,6 +2248,30 @@ class FakeFunctions(ModuleType):
 
     def regexp_replace(self, column, pattern, replacement):
         return FakeColumn(f"regexp_replace({column.expression},{pattern!r},{replacement!r})")
+
+    def regexp_extract(self, column, pattern, group):
+        return FakeColumn(f"regexp_extract({column.expression},{pattern!r},{group})")
+
+    def length(self, column):
+        return FakeColumn(f"length({column.expression})")
+
+    def initcap(self, column):
+        return FakeColumn(f"initcap({column.expression})")
+
+    def reverse(self, column):
+        return FakeColumn(f"reverse({column.expression})")
+
+    def translate(self, column, matching, replacement):
+        return FakeColumn(f"translate({column.expression},{matching!r},{replacement!r})")
+
+    def instr(self, column, substring):
+        return FakeColumn(f"instr({column.expression},{substring!r})")
+
+    def levenshtein(self, left, right):
+        return FakeColumn(f"levenshtein({left.expression},{right.expression})")
+
+    def concat_ws(self, separator, *columns):
+        return FakeColumn(f"concat_ws({separator!r},{','.join(column.expression for column in columns)})")
 
     def date_add(self, column, days):
         return FakeColumn(f"date_add({column.expression},{days})")

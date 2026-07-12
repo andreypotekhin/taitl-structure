@@ -159,7 +159,9 @@ The v.1 expression surface supports field references, Python literals, `==`, `!=
 `contains(...)`, `like(...)`, `ilike(...)`, and `rlike(...)`, `lower(...)`, `upper(...)`, `trim(...)`,
 collection indexing with `array[index]` and `map[key]`, `to_decimal(...)`, `coalesce(...)`, and
 `cast(...)`, `astype(...)`, `try_cast(...)` (PySpark 4 profile), `substring(...)`, `split(...)`,
-`regexp_replace(...)`, and `when(...).otherwise(...)`.
+`regexp_replace(...)`, `regexp_extract(...)`, `length(...)`, `concat_ws(...)`, and `when(...).otherwise(...)`.
+Additional String helpers include `initcap(...)`, `reverse(...)`, `translate(...)`, `instr(...)`, and
+`levenshtein(...)`.
 Struct fields may also be read with `struct_expr.get_field(name)`.
 Temporal helpers include `date_add(...)`, `datediff(...)`, and `date_trunc(...)`.
 Numeric helpers include `abs(...)`, `round(...)`, `ceil(...)`, and `floor(...)`.

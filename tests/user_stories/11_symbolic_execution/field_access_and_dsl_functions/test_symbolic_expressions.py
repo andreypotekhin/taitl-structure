@@ -436,6 +436,14 @@ def test_string_sql_helpers_are_typed_symbolic_expressions() -> None:
         prefix = structure.field(structure.String(), nullable=True)
         parts = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
         normalized = structure.field(structure.String(), nullable=True)
+        extracted = structure.field(structure.String(), nullable=True)
+        character_count = structure.field(structure.Integer(), nullable=True)
+        title = structure.field(structure.String(), nullable=True)
+        backward = structure.field(structure.String(), nullable=True)
+        normalized_letters = structure.field(structure.String(), nullable=True)
+        dash_position = structure.field(structure.Integer(), nullable=True)
+        distance = structure.field(structure.Integer(), nullable=True)
+        label = structure.field(structure.String(), nullable=False)
 
     @structure.transform
     class Publish(structure.Transform):
@@ -447,6 +455,14 @@ def test_string_sql_helpers_are_typed_symbolic_expressions() -> None:
                 prefix=structure.substring(row.label, start=1, length=3),
                 parts=structure.split(row.label, pattern="-"),
                 normalized=structure.regexp_replace(row.label, pattern=r"\s+", replacement=" "),
+                extracted=structure.regexp_extract(row.label, pattern=r"^([^-]+)", group=1),
+                character_count=structure.length(row.label),
+                title=structure.initcap(row.label),
+                backward=structure.reverse(row.label),
+                normalized_letters=structure.translate(row.label, matching="-", replacement="_"),
+                dash_position=structure.instr(row.label, substring="-"),
+                distance=structure.levenshtein(row.label, "release"),
+                label=structure.concat_ws(" / ", row.label, "release"),
             )
 
     projection = {
@@ -457,6 +473,14 @@ def test_string_sql_helpers_are_typed_symbolic_expressions() -> None:
         ({"function": "substring", "start": 1, "length": 3}, "string"),
         ({"function": "split", "pattern": "-", "limit": -1}, "array"),
         ({"function": "regexp_replace", "pattern": r"\s+", "replacement": " "}, "string"),
+        ({"function": "regexp_extract", "pattern": r"^([^-]+)", "group": 1}, "string"),
+        ({"function": "length"}, "integer"),
+        ({"function": "initcap"}, "string"),
+        ({"function": "reverse"}, "string"),
+        ({"function": "translate", "matching": "-", "replacement": "_"}, "string"),
+        ({"function": "instr", "substring": "-"}, "integer"),
+        ({"function": "levenshtein"}, "integer"),
+        ({"function": "concat_ws", "separator": " / "}, "string"),
     ]
 
 
@@ -482,6 +506,54 @@ def test_string_sql_helpers_reject_opaque_patterns_and_non_string_inputs() -> No
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "substring(...) requires a String Structure expression" in raised.value.diagnostic.problem_text()
+
+
+def test_concat_ws_requires_string_values() -> None:
+    """I get a compile diagnostic before invalid concatenation reaches Spark."""
+
+    class Raw(structure.Structure):
+        count = structure.field(structure.Integer(), nullable=False)
+
+    class Published(structure.Structure):
+        value = structure.field(structure.String(), nullable=False)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(value=structure.concat_ws("-", row.count))
+
+    with pytest.raises(structure.StructureCompileError) as raised:
+        compile_transform(Publish)
+
+    assert raised.value.diagnostic.code == "DSL-E0401"
+    assert "concat_ws(...) requires a String Structure expression" in raised.value.diagnostic.problem_text()
+
+
+def test_regexp_extract_requires_a_non_negative_group() -> None:
+    """I get a compile diagnostic for an invalid capture-group index."""
+
+    class Raw(structure.Structure):
+        label = structure.field(structure.String(), nullable=False)
+
+    class Published(structure.Structure):
+        value = structure.field(structure.String(), nullable=False)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(value=structure.regexp_extract(row.label, pattern=r"(.*)", group=-1))
+
+    with pytest.raises(structure.StructureCompileError) as raised:
+        compile_transform(Publish)
+
+    assert raised.value.diagnostic.code == "DSL-E0401"
+    assert "regexp_extract(...) group must be a non-negative integer" in raised.value.diagnostic.problem_text()
 
 
 def test_temporal_sql_helpers_are_typed_symbolic_expressions() -> None:

@@ -36,7 +36,7 @@ predicate helper functions in Structure source without dropping into hooks.
 
 ## ExecPlan
 
-`docs/dev/planning/P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md`
+`docs/dev/planning/done/P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md`
 
 ## Engineering Tasks
 
@@ -68,6 +68,16 @@ predicate helper functions in Structure source without dropping into hooks.
   expressions with shared generated/online-recipe parity coverage.
 - [x] (2026-07-12) Added `substring(...)`, `split(...)`, and `regexp_replace(...)` with explicit regex-pattern
   contracts, public API snapshot coverage, and shared generated/online-recipe parity coverage.
+- [x] (2026-07-12) Added non-null `concat_ws(...)` with literal separator validation, public API snapshot coverage,
+  and shared generated/online-recipe parity coverage.
+- [x] (2026-07-12) Added `regexp_extract(...)` with literal Java-regex and capture-group validation, public API
+  snapshot coverage, and shared generated/online-recipe parity coverage.
+- [x] (2026-07-12) Added typed `length(...)` with String-only validation, public API snapshot coverage, and shared
+  generated/online-recipe parity coverage.
+- [x] (2026-07-12) Finalized the Sprint 11 String API: `contains`, `like`, `ilike`, `rlike`, `substring`, `split`,
+  `regexp_replace`, `regexp_extract`, `length`, and `concat_ws`.
+- [x] (2026-07-12) Added typed String transformation, search, and comparison helpers: `initcap`, `reverse`,
+  `translate`, `instr`, and `levenshtein`.
 - [x] (2026-07-12) Added `date_add(...)`, `datediff(...)`, and `date_trunc(...)` with typed temporal contracts,
   public API snapshot coverage, and shared generated/online-recipe parity coverage.
 - [x] (2026-07-12) Added `abs(...)`, `round(...)`, `ceil(...)`, and `floor(...)` with typed numeric contracts,
@@ -75,4 +85,4 @@ predicate helper functions in Structure source without dropping into hooks.
 - [x] (2026-07-12) Added `isnull(...)`, `isnotnull(...)`, and typed `isnan(...)` with public API snapshot coverage
   and shared generated/online-recipe parity coverage.
 - [x] (2026-07-12) Added alias-aware Struct `get_field(name)` with shared generated/online-recipe parity coverage.
-- [ ] Implement v.3 DSL and SQL function parity.
+- [x] (2026-07-12) Implemented v.3 DSL and SQL function parity.

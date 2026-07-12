@@ -229,8 +229,8 @@ Exit Criteria:
 
 ## M8: v.3 PySpark Gap Closure and Streaming Orchestration
 
-Status: started. Sprint 11 is the active v.3 implementation slice. The milestone is split into M8A-M8G so each
-`docs/dev/Gaps.md` section can be implemented and verified independently before end-of-v.3 incremental compile work.
+Status: M8A complete. The milestone remains split into M8A-M8G so each `docs/dev/Gaps.md` section can be implemented
+and verified independently before end-of-v.3 incremental compile work.
 
 ### M8A: DSL and SQL Function PySpark Parity
 
