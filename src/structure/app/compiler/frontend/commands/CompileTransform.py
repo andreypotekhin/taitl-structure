@@ -2711,7 +2711,7 @@ class CompileTransform:
             return expression.nullable
         if expression.kind == "struct":
             return False
-        if expression.kind in {"is_null", "is_not_null", "null_safe_eq", "not"}:
+        if expression.kind in {"is_null", "is_not_null", "is_nan", "null_safe_eq", "not"}:
             return False
         if expression.kind == "call":
             function = (expression.data or {}).get("function")

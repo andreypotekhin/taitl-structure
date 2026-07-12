@@ -149,8 +149,27 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
         ),
         (_item(_field(RawTagBatch, "tags"), _literal(0)), "col(RawTagBatch.tags)[0]"),
         (_item(_field(RawMapBatch, "attributes"), _literal("region")), "col(RawMapBatch.attributes)['region']"),
+        (_get_field(_field(RawShippedOrder, "shipping"), "city"), "col(RawShippedOrder.shipping).getField('city')"),
         (_cast(_field(RawOrder, "status"), "int"), "cast(col(orders.status) as int)"),
+        (_try_cast(_field(RawOrder, "status"), "int"), "try_cast(col(orders.status) as int)"),
+        (_call("substring", _field(RawOrder, "status"), start=1, length=3), "substring(col(orders.status),1,3)"),
+        (_call("split", _field(RawOrder, "status"), pattern="-", limit=-1), "split(col(orders.status),'-',-1)"),
+        (
+            _call("regexp_replace", _field(RawOrder, "status"), pattern=r"\s+", replacement=" "),
+            "regexp_replace(col(orders.status),'\\\\s+',' ')",
+        ),
+        (_call("date_add", _field(RawOrder, "status"), days=7), "date_add(col(orders.status),7)"),
+        (
+            _call("datediff", _field(RawOrder, "id"), _field(RawOrder, "status")),
+            "datediff(col(orders.id),col(orders.status))",
+        ),
+        (_call("date_trunc", _field(RawOrder, "status"), unit="month"), "date_trunc('month',col(orders.status))"),
+        (_call("abs", _field(RawOrder, "status")), "abs(col(orders.status))"),
+        (_call("round", _field(RawOrder, "status"), scale=1), "round(col(orders.status),1)"),
+        (_call("ceil", _field(RawOrder, "status")), "ceil(col(orders.status))"),
+        (_call("floor", _field(RawOrder, "status")), "floor(col(orders.status))"),
         (_not(_is_null(_field(RawOrder, "status"))), "~(col(orders.status).isNull())"),
+        (_is_nan(_field(RawOrder, "status")), "isnan(col(orders.status))"),
         (_call("upper", _call("trim", _field(RawOrder, "status"))), "upper(trim(col(orders.status)))"),
         (
             _array_filter(
@@ -1949,8 +1968,8 @@ def _field_path(schema: type[structure.Structure], *path: str) -> PySparkExpress
     )
 
 
-def _call(function: str, *args: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("call", args[0].type, args[0].nullable, {"function": function}, args)
+def _call(function: str, *args: PySparkExpressionRecipe, **data: object) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe("call", args[0].type, args[0].nullable, {"function": function, **data}, args)
 
 
 def _to_decimal(expression: PySparkExpressionRecipe, *, precision: int, scale: int) -> PySparkExpressionRecipe:
@@ -1975,6 +1994,10 @@ def _is_null(expression: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe("is_null", None, False, {}, (expression,))
 
 
+def _is_nan(expression: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe("is_nan", structure.Boolean(), False, {}, (expression,))
+
+
 def _not(expression: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe("not", None, False, {}, (expression,))
 
@@ -1995,8 +2018,16 @@ def _item(collection: PySparkExpressionRecipe, key: PySparkExpressionRecipe) -> 
     return PySparkExpressionRecipe("item", structure.String(), True, {}, (collection, key))
 
 
+def _get_field(parent: PySparkExpressionRecipe, field: str) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe("get_field", structure.String(), parent.nullable, {"field": field}, (parent,))
+
+
 def _cast(value: PySparkExpressionRecipe, spark_type: str) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe("cast", structure.Integer(), value.nullable, {"spark_type": spark_type}, (value,))
+
+
+def _try_cast(value: PySparkExpressionRecipe, spark_type: str) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe("try_cast", structure.Integer(), True, {"spark_type": spark_type}, (value,))
 
 
 def _order(value: PySparkExpressionRecipe, direction: str) -> PySparkExpressionRecipe:
@@ -2189,6 +2220,39 @@ class FakeFunctions(ModuleType):
     def upper(self, column):
         return FakeColumn(f"upper({column.expression})", source_name=column.source_name)
 
+    def substring(self, column, start, length):
+        return FakeColumn(f"substring({column.expression},{start},{length})")
+
+    def split(self, column, pattern, limit):
+        return FakeColumn(f"split({column.expression},{pattern!r},{limit})")
+
+    def regexp_replace(self, column, pattern, replacement):
+        return FakeColumn(f"regexp_replace({column.expression},{pattern!r},{replacement!r})")
+
+    def date_add(self, column, days):
+        return FakeColumn(f"date_add({column.expression},{days})")
+
+    def datediff(self, end, start):
+        return FakeColumn(f"datediff({end.expression},{start.expression})")
+
+    def date_trunc(self, unit, column):
+        return FakeColumn(f"date_trunc({unit!r},{column.expression})")
+
+    def abs(self, column):
+        return FakeColumn(f"abs({column.expression})")
+
+    def round(self, column, scale):
+        return FakeColumn(f"round({column.expression},{scale})")
+
+    def ceil(self, column):
+        return FakeColumn(f"ceil({column.expression})")
+
+    def floor(self, column):
+        return FakeColumn(f"floor({column.expression})")
+
+    def isnan(self, column):
+        return FakeColumn(f"isnan({column.expression})")
+
     def coalesce(self, *columns):
         return FakeColumn("coalesce(" + ",".join(column.expression for column in columns) + ")")
 
@@ -2280,6 +2344,9 @@ class FakeColumn:
     def cast(self, target: str):
         return FakeColumn(f"cast({self.expression} as {target})", self.source_name)
 
+    def try_cast(self, target: str):
+        return FakeColumn(f"try_cast({self.expression} as {target})", self.source_name)
+
     def over(self, window):
         return FakeColumn(f"{self.expression}.over({window.expression})")
 
@@ -2312,6 +2379,9 @@ class FakeColumn:
 
     def __getitem__(self, key):
         return FakeColumn(f"{self.expression}[{key!r}]")
+
+    def getField(self, field):
+        return FakeColumn(f"{self.expression}.getField({field!r})")
 
     def __and__(self, other):
         return FakeColumn(f"({self.expression} AND {other.expression})")

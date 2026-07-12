@@ -62,8 +62,17 @@ predicate helper functions in Structure source without dropping into hooks.
   generated and online-recipe parity coverage.
 - [x] (2026-07-12) Added typed Array/Map `__getitem__` expressions with inferred result types and shared
   generated/online-recipe parity coverage.
-- [x] (2026-07-12) Added scalar `cast(...)` and `astype(...)` expressions with shared generated/online-recipe parity
-  coverage; deferred PySpark 4-only `try_cast(...)` behind a future profile capability.
+- [x] (2026-07-12) Added scalar `cast(...)`, `astype(...)`, and nullable `try_cast(...)` expressions with shared
+  generated/online-recipe parity coverage; `try_cast(...)` is capability-gated to the PySpark 4 profile.
 - [x] (2026-07-12) Added typed `asc`, `desc`, and explicit null-ordering descriptors for inline and reusable window
   expressions with shared generated/online-recipe parity coverage.
+- [x] (2026-07-12) Added `substring(...)`, `split(...)`, and `regexp_replace(...)` with explicit regex-pattern
+  contracts, public API snapshot coverage, and shared generated/online-recipe parity coverage.
+- [x] (2026-07-12) Added `date_add(...)`, `datediff(...)`, and `date_trunc(...)` with typed temporal contracts,
+  public API snapshot coverage, and shared generated/online-recipe parity coverage.
+- [x] (2026-07-12) Added `abs(...)`, `round(...)`, `ceil(...)`, and `floor(...)` with typed numeric contracts,
+  public API snapshot coverage, and shared generated/online-recipe parity coverage.
+- [x] (2026-07-12) Added `isnull(...)`, `isnotnull(...)`, and typed `isnan(...)` with public API snapshot coverage
+  and shared generated/online-recipe parity coverage.
+- [x] (2026-07-12) Added alias-aware Struct `get_field(name)` with shared generated/online-recipe parity coverage.
 - [ ] Implement v.3 DSL and SQL function parity.

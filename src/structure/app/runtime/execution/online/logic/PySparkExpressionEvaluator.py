@@ -12,6 +12,10 @@ class PySparkExpressionEvaluator:
             scope = str(expression.data["scope"])
             alias = aliases.get(scope, scope)
             return functions.col(f"{alias}.{self._field_path(expression)}")
+        if expression.kind == "get_field":
+            return self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window).getField(
+                expression.data["field"]
+            )
         if expression.kind == "struct":
             return self._struct(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "literal":
@@ -28,6 +32,8 @@ class PySparkExpressionEvaluator:
             return self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window).isNotNull()
         if expression.kind == "is_null":
             return self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window).isNull()
+        if expression.kind == "is_nan":
+            return functions.isnan(self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window))
         if expression.kind == "and":
             return self._binary(expression, functions=functions, aliases=aliases, window=window, operator="and")
         if expression.kind == "or":
@@ -77,6 +83,10 @@ class PySparkExpressionEvaluator:
             return self.evaluate(collection, functions=functions, aliases=aliases, window=window)[item]
         if expression.kind == "cast":
             return self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window).cast(
+                expression.data["spark_type"]
+            )
+        if expression.kind == "try_cast":
+            return self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window).try_cast(
                 expression.data["spark_type"]
             )
         if expression.kind == "order":
@@ -420,6 +430,18 @@ class PySparkExpressionEvaluator:
             return functions.split(args[0], expression.data["pattern"], expression.data["limit"])
         if function == "regexp_replace":
             return functions.regexp_replace(args[0], expression.data["pattern"], expression.data["replacement"])
+        if function == "date_add":
+            return functions.date_add(args[0], expression.data["days"])
+        if function == "datediff":
+            return functions.datediff(args[0], args[1])
+        if function == "date_trunc":
+            return functions.date_trunc(expression.data["unit"], args[0])
+        if function == "abs":
+            return functions.abs(args[0])
+        if function == "round":
+            return functions.round(args[0], expression.data["scale"])
+        if function in {"ceil", "floor"}:
+            return getattr(functions, function)(args[0])
         raise TypeError(f"Unsupported PySpark helper call: {function}")
 
     def _python_udf(self, expression: PySparkExpressionRecipe, *, functions, aliases, window):

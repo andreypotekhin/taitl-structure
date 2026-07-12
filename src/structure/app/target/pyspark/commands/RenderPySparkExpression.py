@@ -21,6 +21,8 @@ class RenderPySparkExpression:
     def _render(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         if expression.kind == "field":
             return self._field(expression, aliases)
+        if expression.kind == "get_field":
+            return f"{self._render(expression.args[0], aliases)}.getField({expression.data['field']!r})"
         if expression.kind == "struct":
             return self._struct(expression, aliases)
         if expression.kind == "literal":
@@ -38,6 +40,8 @@ class RenderPySparkExpression:
             return f"{self._render(expression.args[0], aliases)}.isNotNull()"
         if expression.kind == "is_null":
             return f"{self._render(expression.args[0], aliases)}.isNull()"
+        if expression.kind == "is_nan":
+            return f"F.isnan({self._render(expression.args[0], aliases)})"
         if expression.kind == "and":
             return self._binary(expression, aliases, "&")
         if expression.kind == "or":
@@ -81,6 +85,8 @@ class RenderPySparkExpression:
             return f"{self._render(collection, aliases)}[{rendered_key}]"
         if expression.kind == "cast":
             return f"{self._render(expression.args[0], aliases)}.cast({expression.data['spark_type']!r})"
+        if expression.kind == "try_cast":
+            return f"{self._render(expression.args[0], aliases)}.try_cast({expression.data['spark_type']!r})"
         if expression.kind == "order":
             return f"{self._render(expression.args[0], aliases)}.{expression.data['direction']}()"
         if expression.kind == "event_time_between":
@@ -317,6 +323,18 @@ class RenderPySparkExpression:
             return f"F.split({args[0]}, {expression.data['pattern']!r}, {expression.data['limit']})"
         if function == "regexp_replace":
             return f"F.regexp_replace({args[0]}, {expression.data['pattern']!r}, {expression.data['replacement']!r})"
+        if function == "date_add":
+            return f"F.date_add({args[0]}, {expression.data['days']})"
+        if function == "datediff":
+            return f"F.datediff({args[0]}, {args[1]})"
+        if function == "date_trunc":
+            return f"F.date_trunc({expression.data['unit']!r}, {args[0]})"
+        if function == "abs":
+            return f"F.abs({args[0]})"
+        if function == "round":
+            return f"F.round({args[0]}, {expression.data['scale']})"
+        if function in {"ceil", "floor"}:
+            return f"F.{function}({args[0]})"
         raise TypeError(f"Unsupported PySpark helper call: {function}")
 
     def _struct(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:

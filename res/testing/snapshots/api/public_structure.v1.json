@@ -465,6 +465,14 @@
       "qualname": "TransformSchemas",
       "signature": "(inputs: 'Mapping[str, Any]', steps: 'Mapping[str, Any]', outputs: 'Mapping[str, Any]', output_aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> None"
     },
+    "abs": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "abs",
+      "signature": "(value: 'object') -> 'Expression'"
+    },
     "approx_count_distinct": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -593,6 +601,14 @@
       "qualname": "bool_or",
       "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'"
     },
+    "ceil": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "ceil",
+      "signature": "(value: 'object') -> 'Expression'"
+    },
     "coalesce": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -689,6 +705,30 @@
       "qualname": "current_row",
       "signature": "() -> \"'WindowBound'\""
     },
+    "date_add": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "date_add",
+      "signature": "(value: 'object', *, days: 'int') -> 'Expression'"
+    },
+    "date_trunc": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "date_trunc",
+      "signature": "(value: 'object', *, unit: 'str') -> 'Expression'"
+    },
+    "datediff": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "datediff",
+      "signature": "(end: 'object', start: 'object') -> 'Expression'"
+    },
     "dedupe_earliest_by": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -769,6 +809,14 @@
       "qualname": "first_value",
       "signature": "(value: 'object', *, order_by: 'object | None' = None, over: \"'WindowSpec | None'\" = None, ignore_nulls: 'bool' = False, where: 'object | None' = None, ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'Expression'"
     },
+    "floor": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "floor",
+      "signature": "(value: 'object') -> 'Expression'"
+    },
     "following": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -831,6 +879,30 @@
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "is_grouped",
+      "signature": "(value: 'object') -> 'Expression'"
+    },
+    "isnan": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "isnan",
+      "signature": "(value: 'object') -> 'Expression'"
+    },
+    "isnotnull": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "isnotnull",
+      "signature": "(value: 'object') -> 'Expression'"
+    },
+    "isnull": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "isnull",
       "signature": "(value: 'object') -> 'Expression'"
     },
     "lag": {
@@ -1057,6 +1129,14 @@
       "qualname": "raw",
       "signature": "(function: 'Callable | None' = None, *, input: 'object | None' = None, output: 'object | None' = None, inout: 'object | None' = None, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming_safe: 'bool' = False, target_backend: 'str | Iterable[str] | None' = None, target_platform: 'str | None' = None)"
     },
+    "regexp_replace": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "regexp_replace",
+      "signature": "(value: 'object', *, pattern: 'str', replacement: 'str') -> 'Expression'"
+    },
     "right_join": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -1105,6 +1185,14 @@
       "qualname": "rollup",
       "signature": "(*keys: 'object', **named_keys: 'object') -> \"'GroupedRows'\""
     },
+    "round": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "round",
+      "signature": "(value: 'object', *, scale: 'int' = 0) -> 'Expression'"
+    },
     "row_number": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -1137,6 +1225,14 @@
       "qualname": "special",
       "signature": "(function: 'Callable | None' = None, *, type: 'str', **kwargs)"
     },
+    "split": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "split",
+      "signature": "(value: 'object', *, pattern: 'str', limit: 'int' = -1) -> 'Expression'"
+    },
     "stddev": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -1152,6 +1248,14 @@
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "step",
       "signature": "(target=None, **kwargs)"
+    },
+    "substring": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.expr.expressions",
+      "qualname": "substring",
+      "signature": "(value: 'object', *, start: 'int', length: 'int') -> 'Expression'"
     },
     "sum": {
       "dataclass_fields": [],

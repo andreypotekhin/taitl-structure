@@ -70,8 +70,8 @@ Gaps:
 | --- | --- | --- | --- |
 | String predicates | implemented | `contains`, `like`, `ilike`, `rlike` | Typed methods keep plain and regex matching compiler-visible. |
 | Collection indexing | implemented | `getItem`, `__getitem__` | Typed Array/Map result inference with nullable lookup results. |
-| Struct field helpers | planned | `getField` | Attribute access covers typed structs today. |
-| Rich casts | planned | `cast`, `astype`, `try_cast` | Scalar `cast`/`astype` are complete; `try_cast` needs a PySpark 4-only profile. |
+| Struct field helpers | implemented | `getField` | Alias-aware typed `get_field(name)` complements attributes. |
+| Rich casts | implemented | `cast`, `astype`, `try_cast` | Scalar casts work across targets; nullable `try_cast` requires profile `>=4.0,<4.1`. |
 | Ordering modifiers | implemented | `asc`, `desc`, null ordering | Typed descriptors work in inline and reusable windows. |
 | Null/NaN predicates | future | `isNaN` | Needs type checks and separate null-vs-NaN diagnostics. |
 | Bitwise column methods | future | `bitwiseAND`, `bitwiseOR`, `bitwiseXOR` | Needs bitwise helpers first. |
@@ -90,10 +90,10 @@ Gaps:
 
 | Gap | Status | Target PySpark Parity | Notes |
 | --- | --- | --- | --- |
-| Broader string helpers | planned | `substring`, `split`, `regexp_replace` | Keep regex behavior explicit. |
-| Date/time helpers | planned | `date_add`, `datediff`, `date_trunc` | Needed for temporal transforms. |
-| Numeric/math helpers | planned | `abs`, `round`, `ceil`, `floor` | Admit deterministic scalar helpers first. |
-| Predicate helpers | planned | `isnull`, `isnotnull`, `isnan` | Methods cover part of this. |
+| Broader string helpers | planned | `substring`, `split`, `regexp_replace` | These three are complete; remaining string helpers need separate admission. |
+| Date/time helpers | implemented | `date_add`, `datediff`, `date_trunc` | Typed Date/Timestamp temporal helper set. |
+| Numeric/math helpers | implemented | `abs`, `round`, `ceil`, `floor` | Typed deterministic scalar helper set. |
+| Predicate helpers | implemented | `isnull`, `isnotnull`, `isnan` | Function-style null checks and typed NaN predicate. |
 | Hash helpers | future | `hash`, `xxhash64`, `sha2`, `md5` | Needs stability notes. |
 | Encoding/binary helpers | future | `base64`, `unbase64`, `encode`, `decode` | Lower priority. |
 | JSON/XML/CSV helpers | future | Spark JSON, XML, CSV functions | Needs schema contracts. |

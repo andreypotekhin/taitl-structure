@@ -16,6 +16,7 @@ SUPPORTED_PROFILES = frozenset(
 )
 
 SUPPORTED_VARIANTS = frozenset({"ordinary", "spark-connect"})
+PYSPARK_4_CAPABILITIES = frozenset({("expression", "try_cast")})
 
 VARIANT_FAMILIES = {
     "ordinary": "ordinary_pyspark",
@@ -163,7 +164,14 @@ class PySparkCapabilities:
     ) -> None:
         family = VARIANT_FAMILIES.get(target_variant, "unknown")
         self.id = BackendId(name="pyspark", target=target_profile, family=family, variant=target_variant)
-        self.supported = supported or VARIANT_CAPABILITIES.get(target_variant, COMMON_CAPABILITIES)
+        base_capabilities = (
+            supported if supported is not None else VARIANT_CAPABILITIES.get(target_variant, COMMON_CAPABILITIES)
+        )
+        self.supported = (
+            base_capabilities | PYSPARK_4_CAPABILITIES
+            if supported is None and target_profile == ">=4.0,<4.1"
+            else base_capabilities
+        )
         self._imports = GeneratedImports()
 
     def imports(self) -> GeneratedImports:

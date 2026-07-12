@@ -313,6 +313,13 @@ def test_static_fixtures_evaluate_same_requirement_without_runtime_spark() -> No
     assert "pyspark" not in {name for name in sys.modules if name == "pyspark"}
 
 
+def test_try_cast_requires_the_pyspark_4_profile() -> None:
+    requirement = CapabilityRequirement(group="expression", name="try_cast")
+
+    assert not PySparkCapabilities().supports(requirement).supported
+    assert PySparkCapabilities(target_profile=">=4.0,<4.1").supports(requirement).supported
+
+
 def test_generated_import_names_are_deterministic_for_same_target() -> None:
     first = Capabilities.resolve()().imports().as_dict()
     second = Capabilities.resolve()().imports().as_dict()

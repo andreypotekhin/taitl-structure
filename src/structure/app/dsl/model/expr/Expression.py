@@ -61,6 +61,16 @@ class Expression:
     def astype(self, target: StructureType) -> "Expression":
         return self._cast(target)
 
+    def try_cast(self, target: StructureType) -> "Expression":
+        cast_expression = self._cast(target)
+        return Expression(
+            kind="try_cast",
+            type=target,
+            nullable=True,
+            data=cast_expression.data,
+            args=cast_expression.args,
+        )
+
     def asc(self) -> "Expression":
         return self._order("asc")
 
@@ -94,30 +104,49 @@ class Expression:
         raise TypeError("Indexing requires an Array or Map Structure expression")
 
     def __getattr__(self, name: str) -> "Expression":
-        if not isinstance(self.type, StructType):
-            raise AttributeError(name)
-        fields = self.type.schema._structure_fields
-        if name not in fields:
-            raise AttributeError(name)
+        return self._struct_field(name, attribute=True)
 
-        field = fields[name]
-        data = dict(self.data or {})
-        path_data = data.get("path")
-        path = cast(tuple[object, ...], path_data) if isinstance(path_data, tuple) else (data.get("field"),)
-        name_path_data = data.get("name_path")
-        name_path = (
-            cast(tuple[object, ...], name_path_data) if isinstance(name_path_data, tuple) else (data.get("name"),)
+    def get_field(self, name: str) -> "Expression":
+        if not isinstance(name, str) or not name:
+            raise TypeError("get_field(...) requires a non-empty field name")
+        return self._struct_field(name, attribute=False)
+
+    def _struct_field(self, name: str, *, attribute: bool) -> "Expression":
+        if not isinstance(self.type, StructType):
+            if attribute:
+                raise AttributeError(name)
+            raise TypeError("get_field(...) requires a Struct Structure expression")
+        fields = self.type.schema._structure_fields
+        field = fields.get(name) or next((item for item in fields.values() if item.column == name), None)
+        if field is None:
+            if attribute:
+                raise AttributeError(name)
+            raise TypeError(f"get_field(...) cannot find {name!r} in {self.type.schema.__name__}")
+
+        if attribute:
+            data = dict(self.data or {})
+            path_data = data.get("path")
+            path = cast(tuple[object, ...], path_data) if isinstance(path_data, tuple) else (data.get("field"),)
+            name_path_data = data.get("name_path")
+            name_path = (
+                cast(tuple[object, ...], name_path_data) if isinstance(name_path_data, tuple) else (data.get("name"),)
+            )
+            path_strings = tuple(str(item) for item in path if item)
+            name_path_strings = tuple(str(item) for item in name_path if item)
+            data["field"] = ".".join((*path_strings, field.column))
+            data["field_nullable"] = field.nullable
+            data["name"] = ".".join((*name_path_strings, field.name))
+            data["path"] = (*path_strings, field.column)
+            data["name_path"] = (*name_path_strings, field.name)
+            return Expression(kind="field", type=field.type, nullable=self.nullable or field.nullable, data=data)
+
+        return Expression(
+            kind="get_field",
+            type=field.type,
+            nullable=self.nullable or field.nullable,
+            data={"field": field.column, "name": field.name},
+            args=(self,),
         )
-        path_strings = tuple(str(item) for item in path if item)
-        name_path_strings = tuple(str(item) for item in name_path if item)
-        path_strings = (*path_strings, field.column)
-        name_path_strings = (*name_path_strings, name)
-        data["field"] = ".".join(path_strings)
-        data["field_nullable"] = field.nullable
-        data["name"] = ".".join(name_path_strings)
-        data["path"] = path_strings
-        data["name_path"] = name_path_strings
-        return Expression(kind="field", type=field.type, nullable=self.nullable or field.nullable, data=data)
 
     def __and__(self, other: object) -> "Expression":
         return self._binary("and", other, type=BooleanType())

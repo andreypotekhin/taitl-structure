@@ -31,7 +31,7 @@ parity names follow the official Spark 4.0.1 Python API docs for Column, SQL fun
 | Structure Feature | Implementation | Target PySpark Parity | Notes |
 | --- | --- | --- | --- |
 | Typed field reference | check | `Column`, `col` | Attribute access preserves schema and alias metadata. |
-| Nested struct field reference | check | `Column.getField` | Typed attributes cover the common case. |
+| Nested struct field reference | check | `Column.getField` | Typed attributes and explicit `expr.get_field(name)`. |
 | Null predicates | check | `isNull`, `isNotNull` | Exposed as `is_null()` and `is_not_null()`. |
 | Null-safe equality | check | `eqNullSafe` | Exposed as `null_safe_eq(...)`. |
 | Boolean operators | check | `&`, `|`, `~` | Python truthiness is rejected. |
@@ -41,7 +41,8 @@ parity names follow the official Spark 4.0.1 Python API docs for Column, SQL fun
 | Range predicates | check | `between` | Exposed as inclusive `expr.between(lower, upper)`. |
 | String predicates | check | `contains`, `like`, `ilike`, `rlike` | Typed `expr` methods; `rlike` explicitly accepts a Java regex. |
 | Collection indexing | check | `getItem`, `__getitem__` | Typed `array[index]` and `map[key]` expressions return nullable lookups. |
-| Rich casts | planned | `cast`, `astype`, `try_cast` | Scalar `cast`/`astype` are complete; `try_cast` needs a PySpark 4-only profile. |
+| Struct field helper | check | `getField` | Alias-aware `expr.get_field(name)` expression. |
+| Rich casts | check | `cast`, `astype`, `try_cast` | `try_cast` returns a nullable value and requires target profile `>=4.0,<4.1`. |
 | Ordering modifiers | check | `asc`, `desc`, null ordering | Typed order descriptors for inline and reusable windows. |
 | Struct mutation | future | `withField`, `dropFields` | Needs a nested projection design. |
 | Column aliases | unsupported | `alias`, `name` | Schema fields own output names. |
@@ -57,9 +58,13 @@ parity names follow the official Spark 4.0.1 Python API docs for Column, SQL fun
 | `to_decimal` | check | `Column.cast(DecimalType)` | Typed decimal conversion helper. |
 | `coalesce` | check | `functions.coalesce` | Null fallback expression. |
 | `when(...).otherwise(...)` | check | `functions.when`, `Column.otherwise` | Structured conditional expression. |
-| Broader string helpers | planned | `substring`, `split`, `regexp_replace`, `concat_ws` | High-value parity gap. |
-| Date/time helpers | planned | `date_add`, `datediff`, `date_trunc` | Needed for common ETL transforms. |
-| Math helpers | planned | `abs`, `round`, `ceil`, `floor` | Admit deterministic helpers first. |
+| `substring`, `split`, `regexp_replace` | check | Same PySpark functions | Typed string helpers with explicit regex patterns. |
+| Additional string helpers | planned | `concat_ws` and related functions | Remaining high-value parity gap. |
+| `date_add`, `datediff`, `date_trunc` | check | Same PySpark functions | Typed Date/Timestamp helper set. |
+| Additional date/time helpers | planned | Additional SQL date/time functions | Remaining temporal parity gap. |
+| `abs`, `round`, `ceil`, `floor` | check | Same PySpark functions | Typed deterministic numeric helper set. |
+| Additional math helpers | planned | Additional SQL math functions | Remaining numeric parity gap. |
+| `isnull`, `isnotnull`, `isnan` | check | Same PySpark functions | Function-style null/NaN predicates. |
 | Hash helpers | future | `hash`, `xxhash64`, `sha2`, `md5` | Needs stability notes. |
 | JSON/XML/CSV helpers | future | Spark JSON, XML, CSV functions | Needs schema and parse-error contracts. |
 | Variant/geospatial helpers | future | `VARIANT`, `ST_*` | Outside current type model. |

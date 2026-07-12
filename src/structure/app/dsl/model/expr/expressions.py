@@ -4,14 +4,16 @@ from dataclasses import dataclass
 from datetime import date, datetime
 
 from structure.app.dsl.model.expr.Expression import Expression
-from structure.app.dsl.model.types.BooleanType import BooleanType
 from structure.app.dsl.model.types.ArrayType import ArrayType
+from structure.app.dsl.model.types.BooleanType import BooleanType
 from structure.app.dsl.model.types.DateType import DateType
 from structure.app.dsl.model.types.DecimalType import DecimalType
 from structure.app.dsl.model.types.DoubleType import DoubleType
+from structure.app.dsl.model.types.FloatType import FloatType
 from structure.app.dsl.model.types.IntegerType import IntegerType
 from structure.app.dsl.model.types.LongType import LongType
 from structure.app.dsl.model.types.StringType import StringType
+from structure.app.dsl.model.types.StructureType import StructureType
 from structure.app.dsl.model.types.TimestampType import TimestampType
 
 
@@ -110,6 +112,93 @@ def regexp_replace(value: object, *, pattern: str, replacement: str) -> Expressi
     )
 
 
+def date_add(value: object, *, days: int) -> Expression:
+    argument = _date_or_timestamp_argument(value, "date_add(...)")
+    if isinstance(days, bool) or not isinstance(days, int):
+        raise TypeError("date_add(...) days must be an integer")
+    return Expression(
+        kind="call",
+        type=DateType(),
+        nullable=argument.nullable,
+        data={"function": "date_add", "days": days},
+        args=(argument,),
+    )
+
+
+def datediff(end: object, start: object) -> Expression:
+    end_argument = _date_or_timestamp_argument(end, "datediff(...)")
+    start_argument = _date_or_timestamp_argument(start, "datediff(...)")
+    return Expression(
+        kind="call",
+        type=IntegerType(),
+        nullable=end_argument.nullable or start_argument.nullable,
+        data={"function": "datediff"},
+        args=(end_argument, start_argument),
+    )
+
+
+def date_trunc(value: object, *, unit: str) -> Expression:
+    argument = _date_or_timestamp_argument(value, "date_trunc(...)")
+    if not isinstance(unit, str) or not unit.strip():
+        raise TypeError("date_trunc(...) unit must be a non-empty string literal")
+    return Expression(
+        kind="call",
+        type=TimestampType(),
+        nullable=argument.nullable,
+        data={"function": "date_trunc", "unit": unit},
+        args=(argument,),
+    )
+
+
+def abs(value: object) -> Expression:
+    argument = _numeric_argument(value, "abs(...)")
+    return Expression(
+        kind="call", type=argument.type, nullable=argument.nullable, data={"function": "abs"}, args=(argument,)
+    )
+
+
+def round(value: object, *, scale: int = 0) -> Expression:
+    argument = _numeric_argument(value, "round(...)")
+    if isinstance(scale, bool) or not isinstance(scale, int):
+        raise TypeError("round(...) scale must be an integer")
+    return Expression(
+        kind="call",
+        type=argument.type,
+        nullable=argument.nullable,
+        data={"function": "round", "scale": scale},
+        args=(argument,),
+    )
+
+
+def ceil(value: object) -> Expression:
+    argument = _numeric_argument(value, "ceil(...)")
+    return Expression(
+        kind="call", type=_ceiling_type(argument.type), nullable=argument.nullable, data={"function": "ceil"}, args=(argument,)
+    )
+
+
+def floor(value: object) -> Expression:
+    argument = _numeric_argument(value, "floor(...)")
+    return Expression(
+        kind="call", type=_ceiling_type(argument.type), nullable=argument.nullable, data={"function": "floor"}, args=(argument,)
+    )
+
+
+def isnull(value: object) -> Expression:
+    return literal(value).is_null()
+
+
+def isnotnull(value: object) -> Expression:
+    return literal(value).is_not_null()
+
+
+def isnan(value: object) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, (FloatType, DoubleType)):
+        raise TypeError("isnan(...) requires a Float or Double Structure expression")
+    return Expression(kind="is_nan", type=BooleanType(), nullable=False, args=(argument,))
+
+
 def to_decimal(value: object, *, precision: int, scale: int) -> Expression:
     argument = literal(value)
     return Expression(
@@ -173,3 +262,25 @@ def _string_argument(value: object, call: str) -> Expression:
 def _string_literal(value: object, call: str, parameter: str) -> None:
     if not isinstance(value, str):
         raise TypeError(f"{call} {parameter} must be a string literal")
+
+
+def _date_or_timestamp_argument(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, (DateType, TimestampType)):
+        raise TypeError(f"{call} requires a Date or Timestamp Structure expression")
+    return argument
+
+
+def _numeric_argument(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if argument.type is None or argument.type.name not in {"decimal", "double", "float", "integer", "long"}:
+        raise TypeError(f"{call} requires a numeric Structure expression")
+    return argument
+
+
+def _ceiling_type(type: object) -> StructureType:
+    if isinstance(type, DecimalType):
+        if type.scale == 0:
+            return type
+        return DecimalType(precision=type.precision - type.scale + 1, scale=0)
+    return LongType()

@@ -327,7 +327,12 @@ def add_flags(self, order: OrderRaw) -> OrderWithFlags:
 Supported v.1 expression forms are field references, literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `*`,
 boolean `&`, `|`, `~`, null checks, `null_safe_eq(...)`, `contains(...)`, `like(...)`, `ilike(...)`, `rlike(...)`,
 array/map indexing, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and
-`cast(...)`, `astype(...)`, and `when(...).otherwise(...)`.
+`cast(...)`, `astype(...)`, `try_cast(...)` (PySpark 4 profile), `substring(...)`, `split(...)`,
+`regexp_replace(...)`, and `when(...).otherwise(...)`.
+Struct fields may also be read with `struct_expr.get_field(name)`.
+Temporal helpers include `date_add(...)`, `datediff(...)`, and `date_trunc(...)`.
+Numeric helpers include `abs(...)`, `round(...)`, `ceil(...)`, and `floor(...)`.
+Predicate helpers include `isnull(...)`, `isnotnull(...)`, and `isnan(...)`.
 
 Reference: [DSL expressions](reference/DSL.md) and
 [nullability and type coercion](reference/NullabilityAndTypeCoercion.md).
@@ -760,10 +765,7 @@ When constructing a subclass schema object, use `.base(row)(...)` to copy inheri
 
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-    left_join(
-        on=order.customer_id == customer.id,
-        hint=JoinHint.BROADCAST,
-    )
+    left_join(on=order.customer_id == customer.id)
 
     return OrderWithCustomer.base(order)(
         customer_name=customer.name,
@@ -776,7 +778,6 @@ The `.base()` method allows for multiple bases when constructing a derived class
 ```python
 class OrderPublished(OrderPublication, PublicationFlags):
     pass
-
 
 flags = PublicationFlags(
     has_customer=order.customer_name.is_not_null(),

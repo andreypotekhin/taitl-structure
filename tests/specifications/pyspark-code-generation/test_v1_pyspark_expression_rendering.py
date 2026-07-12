@@ -1,7 +1,10 @@
 from typing import Any, cast
 
+import pytest
+
 import structure
 from structure.app.dsl.api import compile_transform
+from structure.app.target.capabilities.api import BackendCapabilityError, PySparkCapabilities
 from structure.app.target.pyspark.api import PySpark
 
 
@@ -284,6 +287,7 @@ def test_v3_expression_renderer_renders_scalar_casts() -> None:
     class Published(structure.Structure):
         count = structure.field(structure.Integer(), nullable=True)
         count_text = structure.field(structure.String(), nullable=False)
+        try_count = structure.field(structure.Integer(), nullable=True)
 
     @structure.transform
     class Publish(structure.Transform):
@@ -295,6 +299,43 @@ def test_v3_expression_renderer_renders_scalar_casts() -> None:
             return Published(
                 count=source.raw_count.cast(structure.Integer()),
                 count_text=source.count.astype(structure.String()),
+                try_count=source.raw_count.try_cast(structure.Integer()),
+            )
+
+    plan = compile_transform(Publish)
+    with pytest.raises(BackendCapabilityError):
+        PySpark.plan.lower()(plan)
+
+    recipe = PySpark.plan.lower()(plan, capabilities=PySparkCapabilities(target_profile=">=4.0,<4.1"))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert [render(expression, scope_aliases={"rows": "orders"}) for expression in projection.values()] == [
+        'F.col("orders.raw_count").cast(\'int\')',
+        'F.col("orders.count").cast(\'string\')',
+        'F.col("orders.raw_count").try_cast(\'int\')',
+    ]
+
+
+def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
+    class Raw(structure.Structure):
+        label = structure.field(structure.String(), nullable=True)
+
+    class Published(structure.Structure):
+        prefix = structure.field(structure.String(), nullable=True)
+        parts = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
+        normalized = structure.field(structure.String(), nullable=True)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                prefix=structure.substring(row.label, start=1, length=3),
+                parts=structure.split(row.label, pattern="-"),
+                normalized=structure.regexp_replace(row.label, pattern=r"\s+", replacement=" "),
             )
 
     recipe = PySpark.plan.lower()(compile_transform(Publish))
@@ -302,6 +343,135 @@ def test_v3_expression_renderer_renders_scalar_casts() -> None:
     render = PySpark.render.expression()
 
     assert [render(expression, scope_aliases={"rows": "orders"}) for expression in projection.values()] == [
-        'F.col("orders.raw_count").cast(\'int\')',
-        'F.col("orders.count").cast(\'string\')',
+        'F.substring(F.col("orders.label"), 1, 3)',
+        'F.split(F.col("orders.label"), \'-\', -1)',
+        "F.regexp_replace(F.col(\"orders.label\"), '\\\\s+', ' ')",
     ]
+
+
+def test_v3_expression_renderer_renders_temporal_sql_helpers() -> None:
+    class Raw(structure.Structure):
+        start_date = structure.field(structure.Date(), nullable=False)
+        end_date = structure.field(structure.Date(), nullable=True)
+        recorded_at = structure.field(structure.Timestamp(), nullable=True)
+
+    class Published(structure.Structure):
+        due_date = structure.field(structure.Date(), nullable=False)
+        elapsed_days = structure.field(structure.Integer(), nullable=True)
+        month = structure.field(structure.Timestamp(), nullable=True)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                due_date=structure.date_add(row.start_date, days=7),
+                elapsed_days=structure.datediff(row.end_date, row.start_date),
+                month=structure.date_trunc(row.recorded_at, unit="month"),
+            )
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert [render(expression, scope_aliases={"rows": "orders"}) for expression in projection.values()] == [
+        'F.date_add(F.col("orders.start_date"), 7)',
+        'F.datediff(F.col("orders.end_date"), F.col("orders.start_date"))',
+        'F.date_trunc(\'month\', F.col("orders.recorded_at"))',
+    ]
+
+
+def test_v3_expression_renderer_renders_numeric_sql_helpers() -> None:
+    class Raw(structure.Structure):
+        amount = structure.field(structure.Decimal(precision=12, scale=2), nullable=True)
+
+    class Published(structure.Structure):
+        absolute_amount = structure.field(structure.Decimal(precision=12, scale=2), nullable=True)
+        rounded_amount = structure.field(structure.Decimal(precision=12, scale=2), nullable=True)
+        ceiling = structure.field(structure.Decimal(precision=11, scale=0), nullable=True)
+        floor = structure.field(structure.Decimal(precision=11, scale=0), nullable=True)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                absolute_amount=structure.abs(row.amount),
+                rounded_amount=structure.round(row.amount, scale=1),
+                ceiling=structure.ceil(row.amount),
+                floor=structure.floor(row.amount),
+            )
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert [render(expression, scope_aliases={"rows": "orders"}) for expression in projection.values()] == [
+        'F.abs(F.col("orders.amount"))',
+        'F.round(F.col("orders.amount"), 1)',
+        'F.ceil(F.col("orders.amount"))',
+        'F.floor(F.col("orders.amount"))',
+    ]
+
+
+def test_v3_expression_renderer_renders_predicate_sql_helpers() -> None:
+    class Raw(structure.Structure):
+        label = structure.field(structure.String(), nullable=True)
+        score = structure.field(structure.Double(), nullable=True)
+
+    class Published(structure.Structure):
+        missing_label = structure.field(structure.Boolean(), nullable=False)
+        present_label = structure.field(structure.Boolean(), nullable=False)
+        invalid_score = structure.field(structure.Boolean(), nullable=False)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                missing_label=structure.isnull(row.label),
+                present_label=structure.isnotnull(row.label),
+                invalid_score=structure.isnan(row.score),
+            )
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert [render(expression, scope_aliases={"rows": "orders"}) for expression in projection.values()] == [
+        'F.col("orders.label").isNull()',
+        'F.col("orders.label").isNotNull()',
+        'F.isnan(F.col("orders.score"))',
+    ]
+
+
+def test_v3_expression_renderer_renders_struct_get_field() -> None:
+    class Address(structure.Structure):
+        city = structure.field(structure.String(), nullable=False, alias="city-name")
+
+    class Raw(structure.Structure):
+        address = structure.field(structure.Struct(Address), nullable=True)
+
+    class Published(structure.Structure):
+        city = structure.field(structure.String(), nullable=True)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(city=cast(Any, row).address.get_field("city"))
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    expression = recipe.steps[0].projection[0].expression
+
+    assert PySpark.render.expression()(expression, scope_aliases={"rows": "orders"}) == (
+        'F.col("orders.address").getField(\'city-name\')'
+    )

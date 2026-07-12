@@ -2,7 +2,7 @@
 
 **Structure** is a Python-to-PySpark runtime compiler which allows writing Spark data pipelines in Pythonic way, creating optimizer-friendly PySpark code behind the scenes. It can also be used as PySpark code generator: output the schemas and transformations as PySpark code. 
 
-## Less Code, More Spark!
+## Less Code, More Spark
 
 Structure can help replace hand-maintained PySpark boilerplate. 
 
@@ -56,7 +56,7 @@ class Product(Structure):
 
 ### Example Transform
 
-Transform class compiles into PySpark code operating on DataFrames (See 'Generated code' section below.)
+Transform class compiles into PySpark code operating on DataFrames. (See 'Generated code' section below.)
 
 ```python
 from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
@@ -131,11 +131,13 @@ result = EnrichOrders(
 enriched_df = result.enriched
 ```
 
-Transforms' .run() method generates and runs PySpark code similar to the code below. Execution order follows the declared order of transform's 'step' methods - the methods that take schema object(s) and  return schema object(s).
+On invocation of run(), Structure creates in-memory code artifact in an intermediary format (IR) and executes it symbolicaly. The artifact can also be saved to disk as PySpark source (genenrated PySpark) , if that's suitable for your project. 
+
+The execution order follows the declared order of transform's 'step' methods - the methods that take schema object(s) and  return schema object(s).
 
 ### Generated PySpark Code
 
-Transforms' .run() method generates and runs PySpark code similar to this:
+The generated  PySpark code is similar to this:
 
 ```python
 from pyspark.sql import DataFrame, SparkSession
@@ -230,13 +232,9 @@ class EnrichOrdersGenerated:
         return orders
 ```
 
-We can also generate PySpark source code into a file, if that's needed for your project.
-
 ## API Coverage
 
-Structure tries to cover most of PySpark APIs related to data transformation: projection, filtering, joins, aggregation, deduplication, windowing, higher order functions.
-
-Example of a less-trivial analytical transform:
+Structure tries to cover most of PySpark APIs related to data transformation, such as projection, filtering, joins, aggregation, deduplication, windowing, higher order functions. Example of a less-trivial analytical transform:
 
 ```python
 class OrderAnalytics(Transform):
@@ -369,8 +367,6 @@ class OrderAnalytics(Transform):
         )
 ```
 
-
-
 ## Performance Focus
 
 Structure is intentionally strict: compiled methods must lower to Spark Optimizer-visible expressions.
@@ -388,7 +384,7 @@ Python-first approach allows for such IDE conveniences, as:
 
 ## Out of scope
 
-Structure focus is on data transformation. Loading the data, writing to storage, orchestrating and other activities outside of data transformation is responsibility of end-user.
+Structure focuses on data transformation. Loading, writing to storage, orchestrating and other activities outside of data transformation is the responsibility of end-user.
 
 ## Compatibility
 

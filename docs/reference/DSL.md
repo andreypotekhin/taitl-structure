@@ -446,7 +446,12 @@ The v.1 expression surface includes:
 - string predicates such as `expr.contains(value)`, `expr.like(pattern)`, `expr.ilike(pattern)`, and
   `expr.rlike(pattern)`;
 - collection indexing such as `array_expr[index]` and `map_expr[key]`;
-- scalar casts such as `expr.cast(Integer())` and `expr.astype(String())`;
+- Struct field access with `struct_expr.get_field(name)`;
+- scalar casts such as `expr.cast(Integer())`, `expr.astype(String())`, and `expr.try_cast(Integer())`;
+- string helpers `substring(...)`, `split(...)`, and `regexp_replace(...)`;
+- temporal helpers `date_add(...)`, `datediff(...)`, and `date_trunc(...)`;
+- numeric helpers `abs(...)`, `round(...)`, `ceil(...)`, and `floor(...)`;
+- predicate helpers `isnull(...)`, `isnotnull(...)`, and `isnan(...)`;
 - boolean combination with `&`, `|`, and `~`;
 - null checks such as `expr.is_null()` and `expr.is_not_null()`;
 - null-safe equality when provided by expression objects;
@@ -460,14 +465,34 @@ Collection indexing requires an Array with an integral index or a Map with a key
 array element or map value type. Lookup results are nullable because an array index can be absent and a map key may be
 missing.
 
-`cast(...)` and its `astype(...)` alias require a Structure scalar type such as `Integer()`, `String()`, `Date()`, or
-`Decimal(precision, scale)`. They preserve the source expression's nullability and render as a native PySpark
-`Column.cast(...)` call. `try_cast(...)` is not part of the default target range because PySpark introduced it in 4.0;
-use a hook when a target-specific permissive cast is required.
+`get_field(name)` reads a declared Struct field by its Python name or physical column alias. It is useful when
+attribute access is inconvenient, preserves the field's type and nullability, and renders as a visible PySpark
+`Column.getField(...)` call.
+
+`cast(...)`, its `astype(...)` alias, and `try_cast(...)` require a Structure scalar type such as `Integer()`,
+`String()`, `Date()`, or `Decimal(precision, scale)`. Strict casts preserve source nullability and render as native
+PySpark `Column.cast(...)` calls. `try_cast(...)` also returns null when conversion fails, so its result is always
+nullable; it is available only with target profile `>=4.0,<4.1`, where it renders as `Column.try_cast(...)`.
 
 Order descriptors are `expr.asc()`, `expr.desc()`, `expr.asc_nulls_first()`, `expr.asc_nulls_last()`,
 `expr.desc_nulls_first()`, and `expr.desc_nulls_last()`. Use them as a window `order_by=` value; they render as the
 corresponding visible PySpark `Column` ordering call.
+
+`substring(value, start=..., length=...)` uses a one-based positive start and non-negative length. `split(...)` and
+`regexp_replace(...)` require explicit Python string patterns, keeping Java regular-expression behavior visible rather
+than admitting raw SQL. `split(...)` returns an Array of non-null strings when its input is non-null.
+
+`date_add(value, days=...)` returns a Date, `datediff(end, start)` returns an Integer number of days, and
+`date_trunc(value, unit=...)` returns a Timestamp. Each helper accepts typed Date or Timestamp expressions and keeps
+the source nullability visible; the truncation unit is an explicit non-empty string literal.
+
+`abs(...)` and `round(..., scale=...)` preserve their numeric input type. `ceil(...)` and `floor(...)` return Long
+for non-Decimal inputs; Decimal inputs yield a scale-zero Decimal. Every numeric helper requires a typed integer,
+long, float, double, or decimal expression and preserves input nullability.
+
+`isnull(...)` and `isnotnull(...)` are function-style equivalents of the corresponding expression methods.
+`isnan(...)` accepts only Float or Double expressions because NaN cannot occur in Structure's other scalar types. All
+three return a non-null Boolean.
 
 Rules:
 
