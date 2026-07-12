@@ -17,7 +17,7 @@ This reference covers the public DSL surface and cross-cutting rules for:
 - public schema-returning step methods;
 - `@special(type="expr")`;
 - `where(...)`;
-- `@before(...)` and `@after(...)`;
+- `@raw`;
 - `@validate_output(...)`;
 - `StructureSession`;
 - expression helper imports;
@@ -84,11 +84,11 @@ class EnrichOrders(Transform):
             customer_tier=customer.tier,
         )
 
-    @after(normalize, lane=orders)
+    @raw(lane=orders)
     def remove_negative_totals(self, *, orders, spark, ctx):
         return orders.where(F.col("total") >= 0)
 
-    @after(normalize, lane=orders, pass_inputs=True)
+    @raw(lane=orders, pass_inputs=True)
     def compare_to_raw(self, *, orders, inputs, spark, ctx):
         return orders
 ```
@@ -441,6 +441,7 @@ The v.1 expression surface includes:
 - field references such as `order.customer_id`;
 - Python literals described by `NullabilityAndTypeCoercion.md`;
 - comparisons such as `==`, `!=`, `<`, `<=`, `>`, and `>=` when supported by the expression type;
+- membership predicates such as `expr.isin(...)`;
 - inclusive range predicates such as `expr.between(lower, upper)`;
 - boolean combination with `&`, `|`, and `~`;
 - null checks such as `expr.is_null()` and `expr.is_not_null()`;
@@ -658,24 +659,25 @@ Detailed lookup join condition, null, aliasing, cardinality, projection, and dia
 
 ## Hooks
 
-Hooks are explicit PySpark escape hatches attached to a concrete step method.
+Hooks are explicit PySpark escape hatches. A hook is a method decorated with `@raw`, placed in the Transform class
+where it should execute.
 
 Canonical forms:
 
 ```python
-@before(normalize, lane=orders)
+@raw(lane=orders)
 def prepare(self, *, orders, spark, ctx):
     return orders
 ```
 
 ```python
-@after(normalize, lane=orders, pass_inputs=True)
+@raw(lane=orders, pass_inputs=True)
 def compare_to_raw(self, *, orders, inputs, spark, ctx):
     return orders
 ```
 
 ```python
-@after(publish, lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+@raw(lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
 def add_quality_columns(self, *, published, spark, ctx):
     return published
 ```
@@ -689,12 +691,12 @@ Hook decorator keyword arguments:
 
 Rules:
 
-- `@before(method, lane=lane)` runs before the compiled operations for `method`.
-- `@after(method, lane=lane)` runs after the compiled operations for `method`.
-- `@before(method, lane=lane)` selects the lane consumed by the target method.
-- `@after(method, lane=lane)` selects the lane produced by the target method.
-- The target must be a compiled step method on the same transform class.
-- Hook order for the same target and timing is source order.
+- `@raw` has no step-method argument.
+- Hook order is Transform class declaration order.
+- A raw method before a step can explicitly select and replace that step's source lane.
+- A raw method after a step can implicitly consume and replace the current lane, or explicitly select lanes.
+- `lane(s)=...`, `input(s)=...`, `output(s)=...`, `pass_inputs`, `schema_mode`, `project_output`,
+  `streaming_safe`, `target_backend`, and `target_platform` define the hook boundary.
 - Hooks are not symbolically executed and are opaque to the compiler except for metadata, signature, declared options,
   provenance, and streaming compatibility classification.
 - A hook without `pass_inputs=True` must have signature `def hook(self, *, selected_lane_name, spark, ctx)`.
@@ -905,7 +907,7 @@ For reuse:
       return lower(trim(value))
 
 Hook workaround:
-  @after(normalize, lane=orders)
+  @raw(lane=orders)
   def clean_customer_id(self, *, orders, spark, ctx):
       return orders.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 

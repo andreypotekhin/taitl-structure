@@ -91,7 +91,7 @@ Class-body hook declarations or class-local expression helpers may require awkwa
 
 ### Mitigation
 
-- Spike `@after(method, lane=lane)` binding inside class bodies in Sprint 00.
+- Spike `@raw(lane=lane)` binding inside class bodies in Sprint 00.
 - Spike class-local `@special(type="expr")` helpers callable through `self` without a `self` parameter.
 - Capture source locations and source order in the same spike notes.
 

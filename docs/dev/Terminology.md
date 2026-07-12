@@ -208,7 +208,7 @@ def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer
 
 A hook is an explicit PySpark escape hatch for adding arbitrary (PySpark) code
 
-Hooks are declared as `@before(...)` or `@after(...)`. 
+Hooks are declared as `@raw`.
 
 Hooks are opaque compiler boundaries. Structure validates hook metadata and signatures, preserves hook order, records the boundary in IR and traceability, and calls the hook in execution. It does not inspect the
 hook body as compiler-visible logic.
@@ -216,7 +216,7 @@ hook body as compiler-visible logic.
 Example:
 
 ```python
-@after(normalize, lane=orders, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+@raw(lane=orders, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
 def add_quality_columns(self, *, orders, spark, ctx):
     return published.withColumn("_checked", F.lit(True))
 ```

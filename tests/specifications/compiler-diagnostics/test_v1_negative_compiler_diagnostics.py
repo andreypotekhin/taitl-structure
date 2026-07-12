@@ -2,88 +2,70 @@ from typing import Any, cast
 
 import pytest
 
-from structure import (
-    Boolean,
-    Decimal,
-    Integer,
-    Join,
-    Long,
-    String,
-    Structure,
-    StructureCompileError,
-    Transform,
-    coalesce,
-    field,
-    input,
-    lookup_join,
-    output,
-    to_decimal,
-    transform,
-    where,
-)
+import structure
 from structure.app.dsl.api import compile_transform
 
 
-class Raw(Structure):
-    id = field(String(), nullable=False)
+class Raw(structure.Structure):
+    id = structure.field(structure.String(), nullable=False)
 
 
-class Clean(Structure):
-    id = field(String(), nullable=False)
+class Clean(structure.Structure):
+    id = structure.field(structure.String(), nullable=False)
 
 
-class Published(Structure):
-    id = field(String(), nullable=False)
-    status = field(String(), nullable=False)
+class Published(structure.Structure):
+    id = structure.field(structure.String(), nullable=False)
+    status = structure.field(structure.String(), nullable=False)
 
 
-class NullableRaw(Structure):
-    id = field(String(), nullable=False, primary_key=True)
-    optional_id = field(String(), nullable=True)
-    amount = field(String(), nullable=True)
-    count = field(Integer(), nullable=False)
+class NullableRaw(structure.Structure):
+    id = structure.field(structure.String(), nullable=False, primary_key=True)
+    optional_id = structure.field(structure.String(), nullable=True)
+    amount = structure.field(structure.String(), nullable=True)
+    count = structure.field(structure.Integer(), nullable=False)
 
 
-class Lookup(Structure):
-    id = field(String(), nullable=False, primary_key=True)
-    group = field(String(), nullable=False)
-    label = field(String(), nullable=False)
+class Lookup(structure.Structure):
+    id = structure.field(structure.String(), nullable=False, primary_key=True)
+    group = structure.field(structure.String(), nullable=False)
+    label = structure.field(structure.String(), nullable=False)
 
 
-class Account(Structure):
-    id = field(String(), nullable=False, primary_key=True)
-    customer_id = field(String(), nullable=False)
+class Account(structure.Structure):
+    id = structure.field(structure.String(), nullable=False, primary_key=True)
+    customer_id = structure.field(structure.String(), nullable=False)
 
 
-class OptionalClean(Structure):
-    optional_id = field(String(), nullable=False)
+class OptionalClean(structure.Structure):
+    optional_id = structure.field(structure.String(), nullable=False)
 
 
-class MoneyClean(Structure):
-    amount = field(Decimal(12, 2), nullable=False)
-    count = field(Long(), nullable=False)
+class MoneyClean(structure.Structure):
+    amount = structure.field(structure.Decimal(12, 2), nullable=False)
+    count = structure.field(structure.Long(), nullable=False)
 
 
-class FlagClean(Structure):
-    is_paid = field(Boolean(), nullable=False)
+class FlagClean(structure.Structure):
+    is_paid = structure.field(structure.Boolean(), nullable=False)
 
 
-class LabelClean(Structure):
-    label = field(String(), nullable=False)
+class LabelClean(structure.Structure):
+    label = structure.field(structure.String(), nullable=False)
 
 
 def test_v1_unsupported_python_boolean_expression_reports_dsl_diagnostic() -> None:
-    @transform
-    class BadBoolean(Transform):
-        rows = input(Raw)
-        clean = output(Clean)
+    @structure.transform
+    class BadBoolean(structure.Transform):
+        rows = structure.input(Raw)
+        clean = structure.output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
             if row.id:
                 return Clean(id=row.id)
             return Clean(id=row.id)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(BadBoolean)
 
     diagnostic = raised.value.diagnostic
@@ -95,10 +77,10 @@ def test_v1_unsupported_python_boolean_expression_reports_dsl_diagnostic() -> No
 
 
 def test_v1_schema_flow_mismatch_reports_transform_structure_diagnostic() -> None:
-    @transform
-    class BadFlow(Transform):
-        rows = input(Raw)
-        published = output(Published)
+    @structure.transform
+    class BadFlow(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
 
         def normalize(self, row: Raw) -> Clean:
             return Clean(id=row.id)
@@ -106,7 +88,7 @@ def test_v1_schema_flow_mismatch_reports_transform_structure_diagnostic() -> Non
         def publish(self, row: Raw) -> Published:
             return Published(id=row.id, status="ready")
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(BadFlow)
 
     diagnostic = raised.value.diagnostic
@@ -117,15 +99,15 @@ def test_v1_schema_flow_mismatch_reports_transform_structure_diagnostic() -> Non
 
 
 def test_v1_missing_output_field_reports_transform_structure_diagnostic() -> None:
-    @transform
-    class MissingOutput(Transform):
-        rows = input(Raw)
-        published = output(Published)
+    @structure.transform
+    class MissingOutput(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
 
         def publish(self, row: Raw) -> Published:
             return Published(id=row.id)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(MissingOutput)
 
     diagnostic = raised.value.diagnostic
@@ -136,15 +118,15 @@ def test_v1_missing_output_field_reports_transform_structure_diagnostic() -> Non
 
 
 def test_v1_nullable_assignment_to_non_nullable_field_reports_schema_diagnostic() -> None:
-    @transform
-    class BadNullability(Transform):
-        rows = input(NullableRaw)
-        clean = output(OptionalClean)
+    @structure.transform
+    class BadNullability(structure.Transform):
+        rows = structure.input(NullableRaw)
+        clean = structure.output(OptionalClean)
 
         def normalize(self, row: NullableRaw) -> OptionalClean:
             return OptionalClean(optional_id=row.optional_id)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(BadNullability)
 
     diagnostic = raised.value.diagnostic
@@ -156,13 +138,13 @@ def test_v1_nullable_assignment_to_non_nullable_field_reports_schema_diagnostic(
 
 
 def test_v1_where_is_not_null_guard_allows_non_nullable_assignment() -> None:
-    @transform
-    class GuardedNullability(Transform):
-        rows = input(NullableRaw)
-        clean = output(OptionalClean)
+    @structure.transform
+    class GuardedNullability(structure.Transform):
+        rows = structure.input(NullableRaw)
+        clean = structure.output(OptionalClean)
 
         def normalize(self, row: NullableRaw) -> OptionalClean:
-            where(cast(Any, row.optional_id).is_not_null())
+            structure.where(cast(Any, row.optional_id).is_not_null())
             return OptionalClean(optional_id=row.optional_id)
 
     plan = compile_transform(GuardedNullability)
@@ -171,15 +153,15 @@ def test_v1_where_is_not_null_guard_allows_non_nullable_assignment() -> None:
 
 
 def test_v1_string_to_decimal_assignment_requires_explicit_conversion() -> None:
-    @transform
-    class BadConversion(Transform):
-        rows = input(NullableRaw)
-        clean = output(MoneyClean)
+    @structure.transform
+    class BadConversion(structure.Transform):
+        rows = structure.input(NullableRaw)
+        clean = structure.output(MoneyClean)
 
         def normalize(self, row: NullableRaw) -> MoneyClean:
             return MoneyClean(amount=row.amount, count=row.count)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(BadConversion)
 
     diagnostic = raised.value.diagnostic
@@ -188,19 +170,19 @@ def test_v1_string_to_decimal_assignment_requires_explicit_conversion() -> None:
 
 
 def test_v1_non_nullable_string_to_decimal_assignment_reports_conversion_diagnostic() -> None:
-    class NonNullAmount(Structure):
-        amount = field(String(), nullable=False)
-        count = field(Integer(), nullable=False)
+    class NonNullAmount(structure.Structure):
+        amount = structure.field(structure.String(), nullable=False)
+        count = structure.field(structure.Integer(), nullable=False)
 
-    @transform
-    class BadConversion(Transform):
-        rows = input(NonNullAmount)
-        clean = output(MoneyClean)
+    @structure.transform
+    class BadConversion(structure.Transform):
+        rows = structure.input(NonNullAmount)
+        clean = structure.output(MoneyClean)
 
         def normalize(self, row: NonNullAmount) -> MoneyClean:
             return MoneyClean(amount=row.amount, count=row.count)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(BadConversion)
 
     diagnostic = raised.value.diagnostic
@@ -211,13 +193,13 @@ def test_v1_non_nullable_string_to_decimal_assignment_reports_conversion_diagnos
 
 
 def test_v1_accepted_coercions_compile_without_schema_diagnostics() -> None:
-    @transform
-    class GoodCoercions(Transform):
-        rows = input(NullableRaw)
-        clean = output(MoneyClean)
+    @structure.transform
+    class GoodCoercions(structure.Transform):
+        rows = structure.input(NullableRaw)
+        clean = structure.output(MoneyClean)
 
         def normalize(self, row: NullableRaw) -> MoneyClean:
-            amount = coalesce(to_decimal(row.amount, precision=12, scale=2), 0)
+            amount = structure.coalesce(structure.to_decimal(row.amount, precision=12, scale=2), 0)
             return MoneyClean(amount=amount, count=row.count)
 
     plan = compile_transform(GoodCoercions)
@@ -232,15 +214,15 @@ def test_v1_accepted_coercions_compile_without_schema_diagnostics() -> None:
 
 
 def test_v1_incompatible_assignment_reports_schema_diagnostic() -> None:
-    @transform
-    class BadBooleanAssignment(Transform):
-        rows = input(NullableRaw)
-        clean = output(FlagClean)
+    @structure.transform
+    class BadBooleanAssignment(structure.Transform):
+        rows = structure.input(NullableRaw)
+        clean = structure.output(FlagClean)
 
         def normalize(self, row: NullableRaw) -> FlagClean:
             return FlagClean(is_paid=row.count)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(BadBooleanAssignment)
 
     diagnostic = raised.value.diagnostic
@@ -251,17 +233,17 @@ def test_v1_incompatible_assignment_reports_schema_diagnostic() -> None:
 
 
 def test_v1_left_joined_non_nullable_field_is_nullable_until_guarded() -> None:
-    @transform
-    class BadLeftJoinNullability(Transform):
-        rows = input(Raw)
-        lookup = input(Lookup)
-        clean = output(LabelClean)
+    @structure.transform
+    class BadLeftJoinNullability(structure.Transform):
+        rows = structure.input(Raw)
+        lookup = structure.input(Lookup)
+        clean = structure.output(LabelClean)
 
         def normalize(self, row: Raw) -> LabelClean:
-            item = lookup_join(self.lookup, on=self.lookup.id == row.id, how=Join.LEFT)
+            item = structure.lookup_join(self.lookup, on=self.lookup.id == row.id, how=structure.Join.LEFT)
             return LabelClean(label=item.label)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(BadLeftJoinNullability)
 
     diagnostic = raised.value.diagnostic
@@ -270,14 +252,14 @@ def test_v1_left_joined_non_nullable_field_is_nullable_until_guarded() -> None:
 
 
 def test_v1_join_on_primary_key_compiles_without_uniqueness_warning() -> None:
-    @transform
-    class UniqueJoin(Transform):
-        rows = input(Raw)
-        lookup = input(Lookup)
-        clean = output(Clean)
+    @structure.transform
+    class UniqueJoin(structure.Transform):
+        rows = structure.input(Raw)
+        lookup = structure.input(Lookup)
+        clean = structure.output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            lookup_join(self.lookup, on=self.lookup.id == row.id, how=Join.LEFT)
+            structure.lookup_join(self.lookup, on=self.lookup.id == row.id, how=structure.Join.LEFT)
             return Clean(id=row.id)
 
     plan = compile_transform(UniqueJoin)
@@ -286,14 +268,14 @@ def test_v1_join_on_primary_key_compiles_without_uniqueness_warning() -> None:
 
 
 def test_v1_join_on_primary_key_accepts_current_row_left_operand() -> None:
-    @transform
-    class UniqueJoin(Transform):
-        rows = input(Raw)
-        lookup = input(Lookup)
-        clean = output(Clean)
+    @structure.transform
+    class UniqueJoin(structure.Transform):
+        rows = structure.input(Raw)
+        lookup = structure.input(Lookup)
+        clean = structure.output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            lookup_join(self.lookup, on=row.id == self.lookup.id, how=Join.LEFT)
+            structure.lookup_join(self.lookup, on=row.id == self.lookup.id, how=structure.Join.LEFT)
             return Clean(id=row.id)
 
     plan = compile_transform(UniqueJoin)
@@ -302,14 +284,14 @@ def test_v1_join_on_primary_key_accepts_current_row_left_operand() -> None:
 
 
 def test_v1_unproven_lookup_join_key_emits_uniqueness_warning() -> None:
-    @transform
-    class UnprovenJoin(Transform):
-        rows = input(Raw)
-        lookup = input(Lookup)
-        clean = output(Clean)
+    @structure.transform
+    class UnprovenJoin(structure.Transform):
+        rows = structure.input(Raw)
+        lookup = structure.input(Lookup)
+        clean = structure.output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            lookup_join(self.lookup, on=self.lookup.group == row.id, how=Join.LEFT)
+            structure.lookup_join(self.lookup, on=self.lookup.group == row.id, how=structure.Join.LEFT)
             return Clean(id=row.id)
 
     plan = compile_transform(UnprovenJoin)
@@ -320,17 +302,19 @@ def test_v1_unproven_lookup_join_key_emits_uniqueness_warning() -> None:
 
 
 def test_v1_or_join_condition_reports_join_diagnostic() -> None:
-    @transform
-    class BadJoinCondition(Transform):
-        rows = input(Raw)
-        lookup = input(Lookup)
-        clean = output(Clean)
+    @structure.transform
+    class BadJoinCondition(structure.Transform):
+        rows = structure.input(Raw)
+        lookup = structure.input(Lookup)
+        clean = structure.output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            lookup_join(self.lookup, on=(self.lookup.id == row.id) | (self.lookup.group == row.id), how=Join.LEFT)
+            structure.lookup_join(
+                self.lookup, on=(self.lookup.id == row.id) | (self.lookup.group == row.id), how=structure.Join.LEFT
+            )
             return Clean(id=row.id)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(BadJoinCondition)
 
     diagnostic = raised.value.diagnostic
@@ -341,17 +325,17 @@ def test_v1_or_join_condition_reports_join_diagnostic() -> None:
 
 
 def test_v1_same_side_join_condition_reports_join_diagnostic() -> None:
-    @transform
-    class SameSideJoin(Transform):
-        rows = input(Raw)
-        lookup = input(Lookup)
-        clean = output(Clean)
+    @structure.transform
+    class SameSideJoin(structure.Transform):
+        rows = structure.input(Raw)
+        lookup = structure.input(Lookup)
+        clean = structure.output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            lookup_join(self.lookup, on=self.lookup.id == self.lookup.group, how=Join.LEFT)
+            structure.lookup_join(self.lookup, on=self.lookup.id == self.lookup.group, how=structure.Join.LEFT)
             return Clean(id=row.id)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(SameSideJoin)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
@@ -359,17 +343,19 @@ def test_v1_same_side_join_condition_reports_join_diagnostic() -> None:
 
 
 def test_v1_incompatible_join_key_types_report_join_diagnostic() -> None:
-    @transform
-    class IncompatibleJoin(Transform):
-        rows = input(NullableRaw)
-        lookup = input(Lookup)
-        clean = output(MoneyClean)
+    @structure.transform
+    class IncompatibleJoin(structure.Transform):
+        rows = structure.input(NullableRaw)
+        lookup = structure.input(Lookup)
+        clean = structure.output(MoneyClean)
 
         def normalize(self, row: NullableRaw) -> MoneyClean:
-            lookup_join(self.lookup, on=self.lookup.id == row.count, how=Join.LEFT)
-            return MoneyClean(amount=coalesce(to_decimal(row.amount, precision=12, scale=2), 0), count=row.count)
+            structure.lookup_join(self.lookup, on=self.lookup.id == row.count, how=structure.Join.LEFT)
+            return MoneyClean(
+                amount=structure.coalesce(structure.to_decimal(row.amount, precision=12, scale=2), 0), count=row.count
+            )
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(IncompatibleJoin)
 
     diagnostic = raised.value.diagnostic
@@ -378,16 +364,16 @@ def test_v1_incompatible_join_key_types_report_join_diagnostic() -> None:
 
 
 def test_v1_inferred_join_without_relation_candidate_reports_diagnostic() -> None:
-    @transform
-    class MissingRelation(Transform):
-        rows = input(Raw)
-        clean = output(Clean)
+    @structure.transform
+    class MissingRelation(structure.Transform):
+        rows = structure.input(Raw)
+        clean = structure.output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            lookup_join(on=row.id == row.id, how=Join.LEFT)
+            structure.lookup_join(on=row.id == row.id, how=structure.Join.LEFT)
             return Clean(id=row.id)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(MissingRelation)
 
     diagnostic = raised.value.diagnostic
@@ -396,18 +382,18 @@ def test_v1_inferred_join_without_relation_candidate_reports_diagnostic() -> Non
 
 
 def test_v1_inferred_join_with_multiple_relation_candidates_reports_diagnostic() -> None:
-    @transform
-    class MultipleRelations(Transform):
-        rows = input(Raw)
-        lookup = input(Lookup)
-        accounts = input(Account)
-        clean = output(Clean)
+    @structure.transform
+    class MultipleRelations(structure.Transform):
+        rows = structure.input(Raw)
+        lookup = structure.input(Lookup)
+        accounts = structure.input(Account)
+        clean = structure.output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            lookup_join(on=self.lookup.id == self.accounts.customer_id, how=Join.LEFT)
+            structure.lookup_join(on=self.lookup.id == self.accounts.customer_id, how=structure.Join.LEFT)
             return Clean(id=row.id)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(MultipleRelations)
 
     diagnostic = raised.value.diagnostic
@@ -418,21 +404,21 @@ def test_v1_inferred_join_with_multiple_relation_candidates_reports_diagnostic()
 
 
 def test_v1_inferred_join_with_mixed_composite_candidates_reports_diagnostic() -> None:
-    @transform
-    class MixedCompositeRelations(Transform):
-        rows = input(Raw)
-        lookup = input(Lookup)
-        accounts = input(Account)
-        clean = output(Clean)
+    @structure.transform
+    class MixedCompositeRelations(structure.Transform):
+        rows = structure.input(Raw)
+        lookup = structure.input(Lookup)
+        accounts = structure.input(Account)
+        clean = structure.output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            lookup_join(
+            structure.lookup_join(
                 on=(row.id == self.lookup.id) & (row.id == self.accounts.customer_id),
-                how=Join.LEFT,
+                how=structure.Join.LEFT,
             )
             return Clean(id=row.id)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(MixedCompositeRelations)
 
     diagnostic = raised.value.diagnostic
@@ -442,17 +428,17 @@ def test_v1_inferred_join_with_mixed_composite_candidates_reports_diagnostic() -
 
 
 def test_v1_inferred_join_self_only_relation_reports_diagnostic() -> None:
-    @transform
-    class SelfOnlyRelation(Transform):
-        rows = input(Raw)
-        lookup = input(Lookup)
-        clean = output(Clean)
+    @structure.transform
+    class SelfOnlyRelation(structure.Transform):
+        rows = structure.input(Raw)
+        lookup = structure.input(Lookup)
+        clean = structure.output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            lookup_join(on=self.lookup.id == self.lookup.group, how=Join.LEFT)
+            structure.lookup_join(on=self.lookup.id == self.lookup.group, how=structure.Join.LEFT)
             return Clean(id=row.id)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(SelfOnlyRelation)
 
     diagnostic = raised.value.diagnostic
@@ -460,17 +446,17 @@ def test_v1_inferred_join_self_only_relation_reports_diagnostic() -> None:
 
 
 def test_v1_member_lookup_join_reports_migration_diagnostic() -> None:
-    @transform
-    class MemberJoin(Transform):
-        rows = input(Raw)
-        lookup = input(Lookup)
-        clean = output(Clean)
+    @structure.transform
+    class MemberJoin(structure.Transform):
+        rows = structure.input(Raw)
+        lookup = structure.input(Lookup)
+        clean = structure.output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            self.lookup.lookup_join(on=self.lookup.id == row.id, how=Join.LEFT)
+            self.lookup.lookup_join(on=self.lookup.id == row.id, how=structure.Join.LEFT)
             return Clean(id=row.id)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(MemberJoin)
 
     diagnostic = raised.value.diagnostic

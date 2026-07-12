@@ -11,10 +11,8 @@ from pathlib import Path
 import pytest
 
 from structure import StructureSession
-from structure.app.dsl.api import compile_transform
 from structure.app.dsl.model.schemas.Structure import Structure
 from structure.app.dsl.model.transforms.Transform import Transform
-from structure.app.target.capabilities.api import Capabilities
 from structure.app.target.pyspark.api import PySpark
 
 BACKENDS = ("pyspark35", "pyspark40", "spark-connect35", "spark-connect40")
@@ -99,12 +97,13 @@ def render_generated_project(
     generated_package: str,
     source_schema_modules: Mapping[str, Sequence[type[Structure]]],
 ) -> dict[str, str]:
-    capabilities = Capabilities.resolve()(target_backend="pyspark", target_variant=target_variant())
+    artifact = transform_type.compile(generated_package=generated_package, target_variant=target_variant())
     return PySpark.render.project()(
-        PySpark.plan.lower()(compile_transform(transform_type), capabilities=capabilities),
+        artifact.pyspark_plan,
         source_transform=source_transform,
         generated_package=generated_package,
         source_schema_modules=source_schema_modules,
+        semantic_fingerprint=artifact.semantic_fingerprint,
     )
 
 

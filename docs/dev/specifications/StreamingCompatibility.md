@@ -200,12 +200,12 @@ Hooks are opaque because Structure cannot inspect arbitrary PySpark code safely.
 
 Default rule:
 
-- Any `@before(...)` or `@after(...)` hook makes the transform streaming-unknown for v.1 compatibility.
+- Any `@raw` hook makes the transform streaming-unknown for v.1 compatibility.
 
 Opt-in rule:
 
 ```python
-@after(normalize, lane=orders, streaming_safe=True)
+@raw(lane=orders, streaming_safe=True)
 def remove_negative_totals(self, *, orders, spark, ctx):
     return orders.where(F.col("total") >= 0)
 ```
@@ -347,7 +347,7 @@ Problem:
   Hooks are arbitrary PySpark code. Structure cannot prove this hook is streaming-compatible.
 
 Use:
-  mark the hook as @after(normalize, streaming_safe=True) only if it avoids actions, RDD/Pandas conversion,
+  mark the hook as @raw(streaming_safe=True) only if it avoids actions, RDD/Pandas conversion,
   readStream/writeStream, and stateful streaming operations.
 
 See docs/dev/specifications/StreamingCompatibility.md

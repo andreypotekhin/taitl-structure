@@ -97,6 +97,8 @@ not as proof from body analysis.
 
 `watermark(field, delay="10 minutes")` records a compiler-visible event-time watermark and lowers to PySpark
 `DataFrame.withWatermark(...)`. Watermarks are transformation metadata, not lifecycle ownership.
+Online execution interprets that lowered recipe directly, and generated execution renders the same call. A watermark on
+a lookup relation is applied before that relation is joined.
 
 `event_time_between(left_time, right_time, upper=..., lower="0 seconds")` records the bounded event-time relationship
 required for supported stream-stream joins and lowers to a Spark-visible boolean predicate.

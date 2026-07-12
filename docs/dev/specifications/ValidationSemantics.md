@@ -126,14 +126,12 @@ Rules:
 
 ## Placement
 
-Execution order for one step method:
+Execution order follows the shared recipe stream:
 
-1. Run `@before` hooks.
-2. Execute compiled filters, joins, expressions, and projection for the step method.
-3. Run `@after` hooks.
-4. Validate the step-method output when intermediate validation is enabled.
-5. Apply any hook-specific projection required by the hook recipe at the exact hook boundary defined by the shared
-   execution semantic contract.
+1. Execute each compiled step and `@raw` hook in Transform class declaration order.
+2. Validate the step-method output when intermediate validation is enabled.
+3. Apply any hook-specific validation and projection at the exact raw hook boundary defined by the shared execution
+   semantic contract.
 
 Input validation happens before the first step method. Final output validation happens before returning the result.
 

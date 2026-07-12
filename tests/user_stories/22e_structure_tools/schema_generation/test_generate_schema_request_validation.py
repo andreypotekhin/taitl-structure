@@ -21,7 +21,7 @@ def test_live_sources_accept_spark_or_structure_session() -> None:
     by_spark = StructureTools.schemas.generate(from_table="orders", spark=spark, to="OrderRaw")
     by_session = StructureTools.schemas.generate(from_table="orders", session=session, to="OrderRaw")
 
-    assert "id = field(String(), nullable=False)" in by_spark
+    assert "id = structure.field(structure.String(), nullable=False)" in by_spark
     assert by_session == by_spark
 
 
@@ -49,7 +49,7 @@ def test_path_sources_require_format_and_support_reader_options() -> None:
         to="OrderRaw",
     )
 
-    assert "id = field(String(), nullable=False)" in text
+    assert "id = structure.field(structure.String(), nullable=False)" in text
     assert spark.read.options_value == {"mergeSchema": "true"}
     assert spark.read.format_value == "parquet"
     assert spark.read.path == "orders.parquet"
@@ -80,7 +80,7 @@ def test_invalid_class_names_fail_and_non_identifier_fields_generate_aliases() -
         to="OrderRaw",
     )
 
-    assert 'order_id = field(String(), nullable=False, alias="order-id")' in text
+    assert 'order_id = structure.field(structure.String(), nullable=False, alias="order-id")' in text
 
 
 class FakeSpark:

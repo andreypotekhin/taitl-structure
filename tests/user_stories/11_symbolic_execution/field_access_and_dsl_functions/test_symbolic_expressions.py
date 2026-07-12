@@ -2,23 +2,7 @@ from typing import Any, cast
 
 import pytest
 
-from structure import (
-    Boolean,
-    Integer,
-    String,
-    Structure,
-    StructureCompileError,
-    Transform,
-    field,
-    input,
-    lookup_join,
-    output,
-    transform,
-    trim,
-    upper,
-    when,
-    where,
-)
+import structure
 from structure.app.dsl.api import compile_transform
 
 
@@ -69,16 +53,16 @@ def test_dsl_functions_produce_nested_symbolic_expressions(orders_plan) -> None:
 def test_alias_field_access_uses_spark_column_and_preserves_python_name() -> None:
     """Aliased fields keep Python names while referencing Spark columns."""
 
-    class Raw(Structure):
-        promotion_code = field(String(), nullable=True, alias="promo-code")
+    class Raw(structure.Structure):
+        promotion_code = structure.field(structure.String(), nullable=True, alias="promo-code")
 
-    class Published(Structure):
-        promotion_code = field(String(), nullable=True)
+    class Published(structure.Structure):
+        promotion_code = structure.field(structure.String(), nullable=True)
 
-    @transform
-    class Publish(Transform):
-        rows = input(Raw)
-        published = output(Published)
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
 
         def publish(self, row: Raw) -> Published:
             return Published(promotion_code=row.promotion_code)
@@ -99,23 +83,23 @@ def test_alias_field_access_uses_spark_column_and_preserves_python_name() -> Non
 def test_unsupported_python_control_flow_is_rejected() -> None:
     """I can have unsupported Python operations rejected."""
 
-    class Raw(Structure):
-        id = field(String(), nullable=False)
+    class Raw(structure.Structure):
+        id = structure.field(structure.String(), nullable=False)
 
-    class Published(Structure):
-        id = field(String(), nullable=False)
+    class Published(structure.Structure):
+        id = structure.field(structure.String(), nullable=False)
 
-    @transform
-    class BadBoolean(Transform):
-        rows = input(Raw)
-        published = output(Published)
+    @structure.transform
+    class BadBoolean(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
 
         def publish(self, row: Raw) -> Published:
             if row.id:
                 return Published(id=row.id)
             return Published(id=row.id)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(BadBoolean)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
@@ -125,34 +109,37 @@ def test_unsupported_python_control_flow_is_rejected() -> None:
 def test_plain_python_expression_extensions_are_symbolic() -> None:
     """I can use common Python expression forms for compiler-visible derived fields."""
 
-    class Raw(Structure):
-        customer_id = field(String(), nullable=False)
-        total = field(Integer(), nullable=False)
-        tax = field(Integer(), nullable=False)
-        price = field(Integer(), nullable=False)
-        quantity = field(Integer(), nullable=False)
+    class Raw(structure.Structure):
+        customer_id = structure.field(structure.String(), nullable=False)
+        status = structure.field(structure.String(), nullable=True)
+        total = structure.field(structure.Integer(), nullable=False)
+        tax = structure.field(structure.Integer(), nullable=False)
+        price = structure.field(structure.Integer(), nullable=False)
+        quantity = structure.field(structure.Integer(), nullable=False)
 
-    class Published(Structure):
-        customer_id = field(String(), nullable=False)
-        size_tier = field(String(), nullable=False)
-        is_big = field(Boolean(), nullable=False)
-        is_medium = field(Boolean(), nullable=False)
-        is_small = field(Boolean(), nullable=False)
-        total_with_tax = field(Integer(), nullable=False)
-        line_total = field(Integer(), nullable=False)
+    class Published(structure.Structure):
+        customer_id = structure.field(structure.String(), nullable=False)
+        size_tier = structure.field(structure.String(), nullable=False)
+        is_big = structure.field(structure.Boolean(), nullable=False)
+        is_medium = structure.field(structure.Boolean(), nullable=False)
+        is_open = structure.field(structure.Boolean(), nullable=True)
+        is_small = structure.field(structure.Boolean(), nullable=False)
+        total_with_tax = structure.field(structure.Integer(), nullable=False)
+        line_total = structure.field(structure.Integer(), nullable=False)
 
-    @transform
-    class Publish(Transform):
-        rows = input(Raw)
-        published = output(Published)
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
 
         def publish(self, row: Raw) -> Published:
             order = cast(Any, row)
             return Published(
-                customer_id=upper(trim(order.customer_id)),
-                size_tier=when(order.total >= 1000, "large").otherwise("standard"),
+                customer_id=structure.upper(structure.trim(order.customer_id)),
+                size_tier=structure.when(order.total >= 1000, "large").otherwise("standard"),
                 is_big=order.total >= 1000,
                 is_medium=order.total.between(100, 999),
+                is_open=order.status.isin("new", "held"),
                 is_small=order.total < 100,
                 total_with_tax=order.total + order.tax,
                 line_total=order.price * order.quantity,
@@ -170,6 +157,8 @@ def test_plain_python_expression_extensions_are_symbolic() -> None:
     assert projection["is_medium"].kind == "and"
     assert projection["is_medium"].args[0].kind == "ge"
     assert projection["is_medium"].args[1].kind == "le"
+    assert projection["is_open"].kind == "isin"
+    assert [argument.kind for argument in projection["is_open"].args] == ["field", "literal", "literal"]
     assert projection["is_small"].kind == "lt"
     assert projection["total_with_tax"].kind == "add"
     assert projection["line_total"].kind == "mul"
@@ -178,52 +167,100 @@ def test_plain_python_expression_extensions_are_symbolic() -> None:
 def test_where_requires_boolean_expression() -> None:
     """Filters reject non-boolean expressions before target lowering."""
 
-    class Raw(Structure):
-        total = field(Integer(), nullable=False)
+    class Raw(structure.Structure):
+        total = structure.field(structure.Integer(), nullable=False)
 
-    class Published(Structure):
-        total = field(Integer(), nullable=False)
+    class Published(structure.Structure):
+        total = structure.field(structure.Integer(), nullable=False)
 
-    @transform
-    class BadFilter(Transform):
-        rows = input(Raw)
-        published = output(Published)
+    @structure.transform
+    class BadFilter(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
 
         def publish(self, row: Raw) -> Published:
-            where(row.total)
+            structure.where(row.total)
             return Published(total=row.total)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(BadFilter)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "where(...) requires a boolean Structure expression" in raised.value.diagnostic.problem_text()
 
 
+def test_variadic_where_records_the_same_order_as_serial_where_calls() -> None:
+    """I can pass serial filter predicates to one where(...) call."""
+
+    class Raw(structure.Structure):
+        id = structure.field(structure.String(), nullable=False)
+
+    class Published(structure.Structure):
+        id = structure.field(structure.String(), nullable=False)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            structure.where(row.id.is_not_null(), row.id == "accepted")  # type: ignore[attr-defined]
+            return Published(id=row.id)
+
+    operations = compile_transform(Publish).steps[0].operations
+
+    assert [operation.kind for operation in operations] == ["filter", "filter"]
+    assert [operation.filter.kind for operation in operations if operation.filter is not None] == ["is_not_null", "eq"]
+
+
+def test_membership_predicates_require_values() -> None:
+    """Membership predicates need at least one candidate value."""
+
+    class Raw(structure.Structure):
+        status = structure.field(structure.String(), nullable=False)
+
+    class Published(structure.Structure):
+        known = structure.field(structure.Boolean(), nullable=False)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(known=cast(Any, row).status.isin())
+
+    with pytest.raises(structure.StructureCompileError) as raised:
+        compile_transform(Publish)
+
+    assert raised.value.diagnostic.code == "DSL-E0401"
+    assert "isin(...) requires at least one value" in raised.value.diagnostic.problem_text()
+
+
 def test_lookup_join_requires_boolean_expression() -> None:
     """Join predicates reject non-boolean expressions before target lowering."""
 
-    class Raw(Structure):
-        id = field(String(), nullable=False)
-        total = field(Integer(), nullable=False)
+    class Raw(structure.Structure):
+        id = structure.field(structure.String(), nullable=False)
+        total = structure.field(structure.Integer(), nullable=False)
 
-    class Lookup(Structure):
-        id = field(String(), nullable=False)
+    class Lookup(structure.Structure):
+        id = structure.field(structure.String(), nullable=False)
 
-    class Published(Structure):
-        id = field(String(), nullable=False)
+    class Published(structure.Structure):
+        id = structure.field(structure.String(), nullable=False)
 
-    @transform
-    class BadJoin(Transform):
-        rows = input(Raw)
-        lookups = input(Lookup)
-        published = output(Published)
+    @structure.transform
+    class BadJoin(structure.Transform):
+        rows = structure.input(Raw)
+        lookups = structure.input(Lookup)
+        published = structure.output(Published)
 
         def publish(self, row: Raw, lookup: Lookup) -> Published:
-            lookup_join(lookup, on=row.total)
+            structure.lookup_join(lookup, on=row.total)
             return Published(id=row.id)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(BadJoin)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
@@ -233,20 +270,20 @@ def test_lookup_join_requires_boolean_expression() -> None:
 def test_bare_when_requires_otherwise() -> None:
     """A conditional expression is complete only after otherwise(...)."""
 
-    class Raw(Structure):
-        total = field(Integer(), nullable=False)
+    class Raw(structure.Structure):
+        total = structure.field(structure.Integer(), nullable=False)
 
-    class Published(Structure):
-        size_tier = field(String(), nullable=False)
+    class Published(structure.Structure):
+        size_tier = structure.field(structure.String(), nullable=False)
 
-    @transform
-    class BadWhen(Transform):
-        rows = input(Raw)
-        published = output(Published)
+    @structure.transform
+    class BadWhen(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
 
         def publish(self, row: Raw) -> Published:
             order = cast(Any, row)
-            return Published(size_tier=when(order.total >= 1000, "large"))
+            return Published(size_tier=structure.when(order.total >= 1000, "large"))
 
     with pytest.raises(TypeError, match=r"when\(\.\.\.\) must end with \.otherwise\(\.\.\.\)"):
         compile_transform(BadWhen)

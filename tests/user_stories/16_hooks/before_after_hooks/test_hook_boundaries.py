@@ -1,22 +1,13 @@
 import pytest
 
-from structure import (
-    String,
-    Structure,
-    StructureCompileError,
-    Transform,
-    after,
-    before,
-    field,
-    input,
-    output,
-    transform,
-)
+import structure
+from structure import String, Structure, StructureCompileError, Transform, field, input, output, raw, step, transform
 from structure.app.dsl.api import SchemaMode, compile_transform
+from structure.compat import v2
 
 
 def test_hooks_attach_to_declared_step_method_boundaries(orders_recipe) -> None:
-    """I can attach a hook to a step method using @before(method, lane=lane) or @after(method, lane=lane)."""
+    """I can attach a hook by placing @raw in source order among step methods."""
 
     assert [hook.name for hook in orders_recipe.steps[0].before_hooks] == ["use_current_orders"]
     assert [hook.name for hook in orders_recipe.steps[0].after_hooks] == ["remove_negative_totals"]
@@ -60,14 +51,14 @@ def test_hooks_record_target_backend_metadata() -> None:
         rows = input(Row)
         normalized = output(Row)
 
-        def normalize(self, row: Row) -> Row:
-            return Row(id=row.id)
-
-        @before(normalize, lane=rows, target_backend=["pyspark"])
+        @raw(lane=rows, target_backend=["pyspark"])
         def prepare(self, *, rows, spark, ctx):
             return rows
 
-        @after(normalize, lane=rows, target_backend="pyspark")
+        def normalize(self, row: Row) -> Row:
+            return Row(id=row.id)
+
+        @raw(target_backend="pyspark")
         def clean(self, *, rows, spark, ctx):
             return rows
 
@@ -93,7 +84,7 @@ def test_non_pyspark_only_hook_target_fails_before_runtime() -> None:
         def normalize(self, row: Row) -> Row:
             return Row(id=row.id)
 
-        @after(normalize, lane=rows, target_backend="polars")
+        @raw(target_backend="polars")
         def clean(self, *, rows, spark, ctx):
             return rows
 
@@ -112,3 +103,66 @@ def test_generated_code_calls_source_transform_hooks_directly(orders_transform_t
     assert "        orders = self._impl.remove_negative_totals(" in orders_transform_text
     assert "        orders = self._impl.note_lookup_inputs(" in orders_transform_text
     assert "        published = self._impl.add_quality_columns(" in orders_transform_text
+
+
+def test_raw_methods_attach_in_declaration_order_after_the_preceding_step() -> None:
+    """I can place a raw native-frame method between normal transform steps."""
+
+    class Row(Structure):
+        id = field(String(), nullable=False)
+
+    @transform
+    class NormalizeRows(Transform):
+        rows = input(Row)
+        normalized = output(Row)
+
+        @step(output=normalized)
+        def normalize(self, row: Row) -> Row:
+            return Row(id=row.id)
+
+        @raw(target_platform="spark-connect")
+        def clean(self, *, normalized, spark, ctx):
+            return normalized
+
+    plan = compile_transform(NormalizeRows)
+
+    hook = plan.steps[0].after_hooks[0]
+    assert hook.name == "clean"
+    assert hook.phase == "raw"
+    assert hook.lanes[0].name == "normalized"
+    assert hook.outputs[0].name == "normalized"
+    assert hook.target_platform == "spark-connect"
+
+
+def test_raw_before_the_first_step_replaces_its_source_lane() -> None:
+    """A leading raw method runs before the first source-ordered step."""
+
+    class Row(Structure):
+        id = field(String(), nullable=False)
+
+    @transform
+    class NormalizeRows(Transform):
+        rows = input(Row)
+        normalized = output(Row)
+
+        @raw(lane=rows)
+        def prepare(self, *, rows, spark, ctx):
+            return rows
+
+        @step(output=normalized)
+        def normalize(self, row: Row) -> Row:
+            return Row(id=row.id)
+
+    plan = compile_transform(NormalizeRows)
+
+    hook = plan.steps[0].before_hooks[0]
+    assert (hook.name, hook.phase, hook.lanes[0].name, hook.outputs[0].name) == ("prepare", "raw", "rows", "rows")
+
+
+def test_before_and_after_are_retired_from_public_namespaces() -> None:
+    """@raw is the only hook-defining decorator."""
+
+    assert not hasattr(structure, "before")
+    assert not hasattr(structure, "after")
+    assert not hasattr(v2, "before")
+    assert not hasattr(v2, "after")

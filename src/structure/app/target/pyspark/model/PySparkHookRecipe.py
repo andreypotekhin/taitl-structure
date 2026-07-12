@@ -19,6 +19,7 @@ class PySparkHookRecipe:
     streaming_safe: bool
     target_backend: tuple[str, ...] = ("pyspark",)
     target_defaulted: bool = True
+    target_platform: str | None = None
     origin: TransformMemberOrigin | None = None
 
     @property

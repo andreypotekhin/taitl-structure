@@ -117,7 +117,7 @@ compiler instead.
 Structure keeps the initial extension surface narrow:
 
 - `@special(type="expr")` helpers for reusable compiler-visible expression logic;
-- explicit `@before(...)` and `@after(...)` hooks for arbitrary PySpark DataFrame code at named step
+- explicit `@raw` hooks for arbitrary PySpark DataFrame code at named step
   boundaries.
 
 These paths have different guarantees. `@special(type="expr")` logic participates in compileability checks, generated code,

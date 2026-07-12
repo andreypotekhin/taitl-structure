@@ -11,13 +11,20 @@ QuickRef: [QuickRef.md](QuickRef.md)
 ## 1. Install
 
 ```bash
-pip install structure
+poetry build
+pip install dist/structure-0.0.2-py3-none-any.whl
+```
+
+If you plan to execute transforms against Spark locally, install PySpark separately:
+
+```bash
+pip install pyspark
 ```
 
 For local development with test dependencies:
 
 ```bash
-pip install structure[pyspark,dev]
+poetry install
 ```
 
 ## 2. Create Project Layout
@@ -91,58 +98,44 @@ class Customer(Structure):
 ```python
 # src/orders/transforms/order.py
 
-from structure import (
-    Transform,
-    transform,
-    input,
-    output,
-    special,
-    where,
-    after,
-    lookup_join,
-    lower,
-    trim,
-    to_decimal,
-    Join,
-    JoinHint,
-)
+import structure
 from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
 from orders.schemas.customer import Customer
 
 
-class EnrichOrders(Transform):
+class EnrichOrders(structure.Transform):
 
-    orders = input(OrderRaw)
-    customers = input(Customer)
-    enriched = output(OrderWithCustomer)
+    orders = structure.input(OrderRaw)
+    customers = structure.input(Customer)
+    enriched = structure.output(OrderWithCustomer)
 
-    @special(type="expr")
+    @structure.special(type="expr")
     def clean_id(value):
-        return lower(trim(value))
+        return structure.lower(structure.trim(value))
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
-        where(order.id.is_not_null())
-        where(order.customer_id.is_not_null())
-        where(order.product_id.is_not_null())
+        structure.where(order.id.is_not_null())
+        structure.where(order.customer_id.is_not_null())
+        structure.where(order.product_id.is_not_null())
 
         return OrderNormalized.project(order)(
             id=order.id,
             customer_id=self.clean_id(order.customer_id),
             product_id=self.clean_id(order.product_id),
-            total=to_decimal(order.total, precision=12, scale=2),
+            total=structure.to_decimal(order.total, precision=12, scale=2),
         )
 
-    @after(normalize, lane=orders)
+    @structure.raw(lane=orders)
     def remove_negative_totals(self, *, orders, spark, ctx):
         from pyspark.sql import functions as F
 
         return orders.where(F.col("total") >= 0)
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        lookup_join(
+        structure.lookup_join(
             on=order.customer_id == customer.id,
-            how=Join.LEFT,
-            hint=JoinHint.BROADCAST,
+            how=structure.Join.LEFT,
+            hint=structure.JoinHint.BROADCAST,
         )
 
         return OrderWithCustomer.base(order)(

@@ -64,16 +64,21 @@ class HookInputs:
 
 class TransformResult:
 
-    def __init__(self, outputs, *, single=False, schema=None):
+    def __init__(self, outputs, *, single=False, schema=None, aliases=None):
         values = dict(outputs)
+        output_aliases = dict(aliases or {})
         if single:
             if len(values) != 1:
                 raise ValueError("single-output TransformResult requires exactly one output")
         object.__setattr__(self, '_structure_outputs', MappingProxyType(values))
-        object.__setattr__(self, 'schema', ResultSchemas(schema))
+        object.__setattr__(self, '_structure_output_aliases', MappingProxyType(output_aliases))
+        object.__setattr__(self, '_structure_aliases', MappingProxyType(_alias_index(output_aliases)))
+        object.__setattr__(self, 'schema', ResultSchemas(schema, aliases=output_aliases))
 
     def __getitem__(self, name):
-        return self._structure_outputs[name]
+        if name in self._structure_outputs:
+            return self._structure_outputs[name]
+        return self._structure_outputs[self._structure_aliases.get(name, name)]
 
     def __iter__(self):
         return iter(self._structure_outputs)
@@ -84,6 +89,8 @@ class TransformResult:
     def __getattr__(self, name):
         if name in self._structure_outputs:
             return self._structure_outputs[name]
+        if name in self._structure_aliases:
+            return self._structure_outputs[self._structure_aliases[name]]
         raise AttributeError(name)
 
     def __setattr__(self, name, value):
@@ -95,11 +102,14 @@ class TransformResult:
 
 class ResultSchemas(Mapping):
 
-    def __init__(self, schemas=None):
+    def __init__(self, schemas=None, *, aliases=None):
         object.__setattr__(self, '_schemas', MappingProxyType(dict(schemas or {})))
+        object.__setattr__(self, '_aliases', MappingProxyType(_alias_index(aliases or {})))
 
     def __getitem__(self, name):
-        return self._schemas[name]
+        if name in self._schemas:
+            return self._schemas[name]
+        return self._schemas[self._aliases.get(name, name)]
 
     def __iter__(self):
         return iter(self._schemas)
@@ -110,6 +120,8 @@ class ResultSchemas(Mapping):
     def __getattr__(self, name):
         if name in self._schemas:
             return self._schemas[name]
+        if name in self._aliases:
+            return self._schemas[self._aliases[name]]
         raise AttributeError(name)
 
     def __setattr__(self, name, value):
@@ -117,3 +129,14 @@ class ResultSchemas(Mapping):
 
     def as_dict(self):
         return dict(self._schemas)
+
+
+def _alias_index(aliases):
+    indexed = {}
+    for name, names in aliases.items():
+        for alias in names:
+            existing = indexed.get(alias)
+            if existing is not None and existing != name:
+                raise ValueError(f"Result alias {alias} points to both {existing} and {name}")
+            indexed[alias] = name
+    return indexed

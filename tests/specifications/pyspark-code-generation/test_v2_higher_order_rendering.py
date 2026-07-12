@@ -1,100 +1,87 @@
-from structure import (
-    Array,
-    Boolean,
-    Long,
-    Map,
-    String,
-    Structure,
-    Transform,
-    arr_distinct,
-    arr_exists,
-    arr_filter,
-    arr_position,
-    arr_transform,
-    arr_zip_with,
-    field,
-    input,
-    lower,
-    map_filter,
-    map_keys,
-    map_transform_keys,
-    map_transform_values,
-    output,
-    transform,
-    trim,
-)
+import structure
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
 
 
-class RawTags(Structure):
-    id = field(String(), nullable=False)
-    tags = field(Array(String(), contains_null=False), nullable=True)
+class RawTags(structure.Structure):
+    id = structure.field(structure.String(), nullable=False)
+    tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
 
 
-class CleanTags(Structure):
-    id = field(String(), nullable=False)
-    tags = field(Array(String(), contains_null=False), nullable=True)
+class CleanTags(structure.Structure):
+    id = structure.field(structure.String(), nullable=False)
+    tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
 
 
-class TagSummary(Structure):
-    id = field(String(), nullable=False)
-    has_priority = field(Boolean(), nullable=True)
-    tags = field(Array(String(), contains_null=False), nullable=True)
-    position = field(Long(), nullable=True)
+class TagSummary(structure.Structure):
+    id = structure.field(structure.String(), nullable=False)
+    has_priority = structure.field(structure.Boolean(), nullable=True)
+    tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
+    position = structure.field(structure.Long(), nullable=True)
 
 
-class RawAttributes(Structure):
-    id = field(String(), nullable=False)
-    attributes = field(Map(String(), String(), value_contains_null=True), nullable=True)
+class RawAttributes(structure.Structure):
+    id = structure.field(structure.String(), nullable=False)
+    attributes = structure.field(
+        structure.Map(structure.String(), structure.String(), value_contains_null=True), nullable=True
+    )
 
 
-class CleanAttributes(Structure):
-    id = field(String(), nullable=False)
-    attributes = field(Map(String(), String(), value_contains_null=False), nullable=True)
-    keys = field(Array(String(), contains_null=False), nullable=True)
+class CleanAttributes(structure.Structure):
+    id = structure.field(structure.String(), nullable=False)
+    attributes = structure.field(
+        structure.Map(structure.String(), structure.String(), value_contains_null=False), nullable=True
+    )
+    keys = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
 
 
-@transform
-class CleanTagTransform(Transform):
-    rows = input(RawTags)
-    clean = output(CleanTags)
+@structure.transform
+class CleanTagTransform(structure.Transform):
+    rows = structure.input(RawTags)
+    clean = structure.output(CleanTags)
 
     def clean_tags(self, row: RawTags) -> CleanTags:
-        tags = arr_filter(arr_transform(row.tags, lambda tag: lower(trim(tag))), lambda tag: tag.is_not_null())
+        tags = structure.arr_filter(
+            structure.arr_transform(row.tags, lambda tag: structure.lower(structure.trim(tag))),
+            lambda tag: tag.is_not_null(),
+        )
         return CleanTags(id=row.id, tags=tags)
 
 
-@transform
-class TagSummaryTransform(Transform):
-    rows = input(RawTags)
-    summary = output(TagSummary)
+@structure.transform
+class TagSummaryTransform(structure.Transform):
+    rows = structure.input(RawTags)
+    summary = structure.output(TagSummary)
 
     def summarize_tags(self, row: RawTags) -> TagSummary:
-        tags = arr_distinct(arr_zip_with(row.tags, row.tags, lambda left, right: lower(trim(left))))
+        tags = structure.arr_distinct(
+            structure.arr_zip_with(row.tags, row.tags, lambda left, right: structure.lower(structure.trim(left)))
+        )
         return TagSummary(
             id=row.id,
-            has_priority=arr_exists(row.tags, lambda tag: lower(trim(tag)) == "priority"),
+            has_priority=structure.arr_exists(row.tags, lambda tag: structure.lower(structure.trim(tag)) == "priority"),
             tags=tags,
-            position=arr_position(row.tags, "priority"),
+            position=structure.arr_position(row.tags, "priority"),
         )
 
 
-@transform
-class CleanAttributeTransform(Transform):
-    rows = input(RawAttributes)
-    clean = output(CleanAttributes)
+@structure.transform
+class CleanAttributeTransform(structure.Transform):
+    rows = structure.input(RawAttributes)
+    clean = structure.output(CleanAttributes)
 
     def clean_attributes(self, row: RawAttributes) -> CleanAttributes:
-        attributes = map_filter(
-            map_transform_keys(
-                map_transform_values(row.attributes, lambda key, value: lower(trim(value))),
-                lambda key, value: lower(trim(key)),
+        attributes = structure.map_filter(
+            structure.map_transform_keys(
+                structure.map_transform_values(
+                    row.attributes, lambda key, value: structure.lower(structure.trim(value))
+                ),
+                lambda key, value: structure.lower(structure.trim(key)),
             ),
             lambda key, value: value.is_not_null(),
         )
-        return CleanAttributes(id=row.id, attributes=attributes, keys=map_keys(row.attributes))
+        return CleanAttributes(id=row.id, attributes=attributes, keys=structure.map_keys(row.attributes))
 
 
 def test_array_higher_order_helpers_render_spark_visible_lambdas() -> None:

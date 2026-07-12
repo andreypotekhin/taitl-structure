@@ -9,40 +9,7 @@ The DSL must be pleasant to write, IDE-friendly, and strict enough to compile in
 ## Public API Surface
 
 ```python
-from structure import (
-    Structure,
-    field,
-    String,
-    Integer,
-    Long,
-    Float,
-    Double,
-    Decimal,
-    Boolean,
-    Date,
-    Timestamp,
-    Array,
-    Struct,
-    Map,
-    Transform,
-    transform,
-    input,
-    output,
-    special,
-    where,
-    before,
-    after,
-    validate_output,
-    lower,
-    trim,
-    to_decimal,
-    when,
-    coalesce,
-    StructureSession,
-    Join,
-    JoinHint,
-    SchemaMode,
-)
+import structure
 ```
 
 ## Source Example
@@ -77,11 +44,11 @@ class EnrichOrders(Transform):
             customer_tier=customer.tier,
         )
 
-    @after(normalize, lane=orders)
+    @raw(lane=orders)
     def remove_negative_totals(self, *, orders, spark, ctx):
         return orders.where(F.col("total") >= 0)
 
-    @after(normalize, lane=orders, pass_inputs=True)
+    @raw(lane=orders, pass_inputs=True)
     def compare_to_raw(self, *, orders, inputs, spark, ctx):
         return orders
 ```
@@ -99,7 +66,7 @@ class EnrichOrders(Transform):
 - For multiple direct schema bases, `SchemaClass.base(...)` receives one row per direct base in declaration order.
 - `where(...)` records filter expressions in the current symbolic context.
 - `@special(type="expr")` functions execute symbolically and must return expressions.
-- `@after(method, lane=lane)` and `@before(method, lane=lane)` attach arbitrary PySpark hooks.
+- `@raw(lane=lane)` and `@raw(lane=lane)` attach arbitrary PySpark hooks.
 - Hooks use a selected lane signature such as `def hook(self, *, orders, spark, ctx)`.
 - Hooks may opt into original named inputs with `pass_inputs=True` and signature
   `def hook(self, *, orders, inputs, spark, ctx)`.

@@ -169,7 +169,7 @@ diagnostic.
 Hooks become target-scoped:
 
 ```python
-@after(normalize, lane=orders, target_backend="pyspark")
+@raw(lane=orders, target_backend="pyspark")
 def remove_negative_totals(self, *, orders, spark, ctx):
     return orders.where(F.col("total") >= 0)
 ```

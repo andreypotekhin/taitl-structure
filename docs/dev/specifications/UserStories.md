@@ -173,6 +173,7 @@ narrower use cases and roadmap features.
 - + As a developer, I can have field access produce symbolic expressions so that field references compile to Spark columns.
 - + As a developer, I can have DSL functions produce symbolic expressions so that transforms compile to Spark expressions.
 - + As a developer, I can use inclusive range predicates so that common filters stay compiler-visible.
+- + As a developer, I can use membership predicates so that common set filters stay compiler-visible.
 - + As a developer, I can have unsupported Python operations rejected so that hidden UDF-like behavior is avoided.
 
 ## 12. Expression Helpers
@@ -225,15 +226,15 @@ narrower use cases and roadmap features.
 
 ## 16. Hooks
 
-- + As a developer, I can attach a hook to a step method using `@before(method, lane=lane)` or
-  `@after(method, lane=lane)` so that custom PySpark code is tied to a concrete method.
+- + As a developer, I can attach a hook to a step method using `@raw(lane=lane)` or
+  `@raw(lane=lane)` so that custom PySpark code is tied to a concrete method.
 - + As a developer, I can write hook methods with a selected lane parameter such as
   `def hook(self, *, orders, spark, ctx)` so that hook parameters are minimal and stable.
 - + As a developer, I can opt a hook into original input access with `pass_inputs=True` so that unusual validation or
   lookup logic can use named source DataFrames.
 - + As a developer, I can use arbitrary PySpark DataFrame code inside hooks so that escape hatches are available.
 - + As a developer, I can expect generated code to call hooks directly on the source transform instance so that hook behavior is transparent.
-- + As a developer, I can bind hooks with `@before(method, lane=lane)` and `@after(method, lane=lane)` so that their
+- + As a developer, I can bind hooks with `@raw(lane=lane)` and `@raw(lane=lane)` so that their
   input DataFrame is unambiguous.
 
 ## 17. Streaming Compatibility

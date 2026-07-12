@@ -12,6 +12,7 @@ helpers, records symbolic effects through `CompileContext`, and emits `Transform
 diagnostics for invalid source.
 
 ## Inner Workings
-`CompileTransform` is the central action. It instantiates the transform class, scans public schema-returning methods in
-source order, runs each method inside a symbolic `CompileContext`, builds projection assignments from returned schema
-instances, attaches before/after hooks, and resolves final outputs from default or explicit lanes.
+`CompileTransform` is the central action. It instantiates the transform class, scans public methods in source order,
+runs schema-returning methods inside a symbolic `CompileContext`, builds projection assignments from returned schema
+instances, attaches `@raw` hooks at their declaration position, and resolves final outputs from default or explicit
+lanes.

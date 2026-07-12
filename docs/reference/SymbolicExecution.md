@@ -482,10 +482,10 @@ StepPlan
 Operation order:
 
 ```text
-before hooks metadata
+raw hooks metadata
 filters and joins in source order
 project from returned schema construction
-after hooks metadata
+raw hooks metadata
 validation metadata
 ```
 
@@ -559,7 +559,7 @@ For reuse:
       return lower(trim(value))
 
 Hook workaround:
-  @after(normalize, lane=orders)
+  @raw(lane=orders)
   def clean_customer_id(self, *, orders, spark, ctx):
       return orders.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 

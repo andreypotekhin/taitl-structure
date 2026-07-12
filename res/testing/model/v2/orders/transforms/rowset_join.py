@@ -7,7 +7,7 @@ from testing.model.v2.orders.schemas.order import (
 )
 from testing.model.v2.orders.schemas.product import Product
 
-from structure import Transform, coalesce, cross_join, full_join, input, output, right_join, transform
+from structure import Transform, coalesce, cross_join, full_join, input, output, right_join, step, transform
 
 
 class RowsetJoinExamples(Transform):
@@ -48,7 +48,7 @@ class RowsetJoinExamples(Transform):
             customer_region=customer.region,
         )
 
-    @transform(output=candidates)
+    @step(output=candidates)
     def expand_product_candidates(
         self, row: CustomerOrderBackfill, product: Product
     ) -> OrderProductCandidate:

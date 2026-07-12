@@ -301,7 +301,7 @@ Fields:
 - `validate_output`: effective validation decision for this step.
 - `source`: source anchor for the step method.
 - `inputs`: ordered parameter bindings; the first is marked as the driving relation.
-- `results`: ordered result projections with schema, destination lane, frame name, and result-specific after hooks.
+- `results`: ordered result projections with schema, destination lane, frame name, and result-specific raw hooks.
 
 Rules:
 
@@ -309,13 +309,13 @@ Rules:
 - A step may consume only a lane or declared input frame already available earlier in source order.
 - Every parameter annotation must match its ordered input binding.
 - Every returned schema must match its ordered result binding.
-- Joins and filters are shared by all results; projections and after hooks belong to individual results.
-- Before hooks run before compiled operations for the step.
-- After hooks run after compiled operations for the step.
+- Joins and filters are shared by all results; projections and raw hooks belong to individual results.
+- raw hooks run before compiled operations for the step.
+- raw hooks run after compiled operations for the step.
 - `operations` should contain compiled `HookCall` and `ValidateSchema` operations only when an implementation chooses
   a single stream of operations. If hooks are also stored in `hooks_before` and `hooks_after`, duplication must be
   avoided in execution.
-- The last compiled operation before after hooks should establish the step output schema, usually through `Project`.
+- The last compiled operation before raw hooks should establish the step output schema, usually through `Project`.
 - Step output validation is represented explicitly enough for online and generated execution to place validation
   identically.
 
@@ -331,7 +331,7 @@ or:
 operations containing HookCall and ValidateSchema in exact execution order
 ```
 
-If the second shape is used, convenience accessors should still expose before hooks, after hooks, and validation points
+If the second shape is used, convenience accessors should still expose raw hooks, raw hooks, and validation points
 for code generation and diagnostics.
 
 ## OutputPlan
@@ -580,8 +580,9 @@ Detailed join behavior is owned by [JoinSemantics.md](JoinSemantics.md).
 ```text
 HookCall
   name
-  timing
-  target_step
+  source_order
+  source_lanes
+  output_lanes
   pass_inputs
   schema_mode
   project_output
@@ -591,18 +592,17 @@ HookCall
 
 Values:
 
-- `timing`: `before` or `after`;
 - `schema_mode`: strict default or `allow_extra_columns` at minimum.
 
 Rules:
 
 - Hooks are opaque runtime boundaries.
-- Hook calls preserve source order for the same timing and target step.
-- `target_step` references a `StepPlan`.
+- Hook calls preserve Transform class declaration order.
+- Source and output lanes reference declared inputs, lanes, or outputs.
 - `pass_inputs` records whether online and generated execution must pass the original named inputs namespace.
 - Hook calls must not contain the runtime DataFrame returned by the hook.
 - Hook calls must not contain generated PySpark source text.
-- `schema_mode` and `project_output` must be present for after-hook validation and projection decisions.
+- `schema_mode` and `project_output` must be present for hook validation and projection decisions.
 - `streaming_safe` records the author promise used by streaming compatibility checks.
 
 If hooks are stored outside `operations`, the compiler must still expose them as IR nodes with stable ids and
@@ -630,7 +630,7 @@ Fields:
 Rules:
 
 - Input validation points occur before step execution.
-- Intermediate validation points occur after compiled step output and after after hooks when policy enables them.
+- Intermediate validation points occur after compiled step output and after raw hooks when policy enables them.
 - Hook validation points follow hook metadata.
 - When `project_output=True`, IR must represent validate, project, then strict validate.
 - Disabled validation should omit the validation point rather than represent it as a no-op mode.

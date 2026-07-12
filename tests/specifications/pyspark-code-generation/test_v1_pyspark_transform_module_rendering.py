@@ -1,6 +1,6 @@
 import sys
 
-from structure import String, Structure, Transform, field, input, output, transform
+from structure import String, Structure, Transform, field, input, output, step, transform
 from structure.app.cli.commands.RenderExplainReport import render_explain_report
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
@@ -21,7 +21,7 @@ class CachePublishedOrders(Transform):
     orders = input(CacheRaw)
     published = output(CachePublished)
 
-    @transform(cache=True)
+    @step(cache=True)
     def publish(self, order: CacheRaw) -> CachePublished:
         return CachePublished(id=order.id, status=order.status)
 

@@ -1,9 +1,10 @@
 # Hook Semantics
 
-Hooks are Structure's explicit runtime escape hatch. They let a developer attach arbitrary backend DataFrame logic to a
-specific compiled step method without pretending the hook body is compiler-visible.
+Hooks are Structure's explicit runtime escape hatch. A hook is a method decorated with `@raw`; it lets a developer run
+arbitrary backend DataFrame logic at a precise point in the transform class without pretending the hook body is
+compiler-visible.
 
-This reference covers hook decorator behavior, target binding, signatures, ordering, input access, schema handling,
+This reference covers hook decorator behavior, signatures, source ordering, input access, schema handling,
 streaming-safety metadata, generated and online invocation, diagnostics, and tests.
 
 ## Public API
@@ -11,55 +12,58 @@ streaming-safety metadata, generated and online invocation, diagnostics, and tes
 Canonical hook forms:
 
 ```python
-@before(normalize, lane=orders)
+@raw(lane=orders)
 def prepare(self, *, orders, spark, ctx):
     return orders
 ```
 
 ```python
-@after(normalize, lane=orders, pass_inputs=True)
+@raw(lane=orders, pass_inputs=True)
 def compare_to_raw(self, *, orders, inputs, spark, ctx):
     return orders
 ```
 
 ```python
-@after(publish, lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+@raw(lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
 def add_quality_columns(self, *, published, spark, ctx):
     return published.withColumn("_checked", F.lit(True))
 ```
 
-`@before(...)` runs before the compiled operations of the target step method. `@after(...)` runs after the compiled
-operations of the target step method.
+`@raw` has no step-method argument. The hook executes exactly where its method appears among the transform's other
+public methods.
 
 ## Decorator Arguments
-
-Required positional argument:
-
-- target step method object.
 
 Keyword arguments:
 
 ```text
+input=declaration
+inputs=[declaration, ...]
 lane=declaration
+lanes=[declaration, ...]
+output=declaration
+outputs=[declaration, ...]
 pass_inputs=False
-schema_mode=None
+schema_mode=SchemaMode.STRICT
 project_output=False
 streaming_safe=False
 target_backend=None
+target_platform=None
 ```
 
 Rules:
 
 - Unknown keyword arguments are errors.
-- More than one positional argument is an error.
-- The target must be a compiled step method on the same transform class.
-- `@before(...)` must select the target input lane with `lane=...`.
-- `@after(...)` must select the target output lane with `lane=...`.
-- The target may be referenced inside the class body because earlier methods are present in the class namespace.
-- `schema_mode=None` means strict default validation.
+- A positional step-method target is invalid.
+- If no source selector is supplied, the hook consumes and replaces the current source-ordered lane.
+- `input(s)=...` and `lane(s)=...` explicitly select one or more current declarations.
+- If no output selector is supplied, each selected source is replaced in place.
+- `output(s)=...` routes the returned frame or tuple to declared lanes or outputs.
+- `schema_mode=SchemaMode.STRICT` is the default validation mode.
 - `project_output=True` requires a schema mode and target schema that make projection meaningful.
 - `streaming_safe=True` is an author promise, not compiler inspection of the hook body.
 - `target_backend=None` means the hook inherits the configured `hook_target_default`.
+- `target_platform` narrows the hook to a platform variant of the backend when supported.
 
 ## Signatures
 
@@ -70,19 +74,19 @@ def hook(self, *, selected_lane_name, spark, ctx):
     ...
 ```
 
-Every hook explicitly selects the lane it receives. A before hook selects the target step-method input lane:
+An explicit hook source selects the lane it receives:
 
 ```python
-@before(normalize, lane=orders)
+@raw(lane=orders)
 def prepare(self, *, orders, spark, ctx):
     ...
 ```
 
-An after hook selects the target step-method output lane:
+An implicit hook source selects the current lane at its declaration position:
 
 ```python
-@after(add_product, lane=audited)
-def audit(self, *, audited, spark, ctx):
+@raw
+def audit(self, *, normalized, spark, ctx):
     ...
 ```
 
@@ -116,7 +120,7 @@ transform inputs.
 Example:
 
 ```python
-@after(normalize, lane=orders, pass_inputs=True)
+@raw(lane=orders, pass_inputs=True)
 def compare_to_raw(self, *, orders, inputs, spark, ctx):
     return orders.join(inputs.orders.select("id"), "id", "left")
 ```
@@ -133,14 +137,13 @@ Rules:
 
 Hook order is deterministic:
 
-1. Step methods execute in source order.
-2. For each step method, `@before` hooks run in source order.
-3. Compiled operations for the step method run.
-4. `@after` hooks run in source order.
-5. Validation and hook projection follow the shared execution semantic contract.
+1. Transform public methods are scanned in declaration order.
+2. A schema-returning method creates a compiled step.
+3. A raw method creates a hook at that exact source-order position.
+4. Generated and online execution invoke hooks in the same order.
+5. Validation and hook projection follow the shared execution semantic contract at the hook boundary.
 
-Multiple hooks of the same timing and target are allowed. A hook can rely on the DataFrame returned by the previous hook
-for the same timing and target.
+Multiple adjacent hooks are allowed. A hook can rely on the DataFrame returned by the previous hook for the same lane.
 
 ## Opaque Boundary
 
@@ -163,7 +166,7 @@ body can rely on one backend's DataFrame API.
 Optional hook target declaration:
 
 ```python
-@after(normalize, lane=orders, target_backend="pyspark")
+@raw(lane=orders, target_backend="pyspark")
 def remove_negative_totals(self, *, orders, spark, ctx):
     return orders.where(F.col("total") >= 0)
 ```
@@ -229,14 +232,15 @@ Hook metadata recorded in IR:
 ```text
 HookDef
   name
-  target_step
-  timing
   source_order
+  source_lanes
+  output_lanes
   pass_inputs
   schema_mode
   project_output
   streaming_safe
   target_backend
+  target_platform
   target_defaulted
   source_path
   source_line
@@ -253,7 +257,7 @@ Example:
 CompileError HOOK-E0701: Invalid hook signature
 
 Hook:
-  EnrichOrders.compare_to_raw after normalize
+  EnrichOrders.compare_to_raw
 
 Problem:
   Hooks with pass_inputs=True must declare keyword-only inputs.

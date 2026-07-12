@@ -1,20 +1,4 @@
-from structure import (
-    JoinHint,
-    SchemaMode,
-    Transform,
-    after,
-    before,
-    coalesce,
-    input,
-    left_join,
-    lower,
-    output,
-    special,
-    to_decimal,
-    transform,
-    trim,
-    where,
-)
+import structure
 from testing.model.v1.orders.schemas.customer import Customer
 from testing.model.v1.orders.schemas.order import (
     OrderNormalized,
@@ -29,26 +13,32 @@ from testing.model.v1.orders.schemas.product import Product
 from testing.model.v1.orders.schemas.promotion import Promotion
 
 
-@transform(streaming_compatible=True)
-class EnrichOrders(Transform):
-    orders = input(OrderRaw)
-    customers = input(Customer)
-    products = input(Product)
-    promotions = input(Promotion)
-    published = output(OrderPublished)
+@structure.transform(streaming_compatible=True)
+class EnrichOrders(structure.Transform):
+    orders = structure.input(OrderRaw)
+    customers = structure.input(Customer)
+    products = structure.input(Product)
+    promotions = structure.input(Promotion)
+    published = structure.output(OrderPublished)
 
-    @special(type="expr")
+    @structure.special(type="expr")
     def clean_id(value):
-        return lower(trim(value))
+        return structure.lower(structure.trim(value))
 
-    @special(type="expr")
+    @structure.special(type="expr")
     def money(value):
-        return coalesce(to_decimal(value, precision=12, scale=2), 0)
+        return structure.coalesce(structure.to_decimal(value, precision=12, scale=2), 0)
+
+    @structure.raw(lane=orders, pass_inputs=True, streaming_safe=True)
+    def use_current_orders(self, *, orders, inputs, spark, ctx):
+        if ctx is not None and getattr(ctx, "use_original_orders", False):
+            return inputs.orders
+        return orders
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
-        where(order.id.is_not_null())
-        where(order.customer_id.is_not_null())
-        where(order.product_id.is_not_null())
+        structure.where(order.id.is_not_null())
+        structure.where(order.customer_id.is_not_null())
+        structure.where(order.product_id.is_not_null())
 
         total = self.money(order.total)
         discount = self.money(order.discount)
@@ -61,31 +51,25 @@ class EnrichOrders(Transform):
             total=total,
             discount=discount,
             net_total=total - discount,
-            quantity=coalesce(order.quantity, 1),
+            quantity=structure.coalesce(order.quantity, 1),
             tags=order.tags,
             attributes=order.attributes,
             shipping=order.shipping,
             is_large=total > 1000,
         )
 
-    @before(normalize, lane=orders, pass_inputs=True, streaming_safe=True)
-    def use_current_orders(self, *, orders, inputs, spark, ctx):
-        if ctx is not None and getattr(ctx, "use_original_orders", False):
-            return inputs.orders
-        return orders
-
-    @after(normalize, lane=orders, streaming_safe=True)
+    @structure.raw(streaming_safe=True)
     def remove_negative_totals(self, *, orders, spark, ctx):
         from pyspark.sql import functions as F
 
         return orders.where(F.col("net_total") >= 0)
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        customer = left_join(
+        customer = structure.left_join(
             customer,
             on=(customer.tenant.tenant_id == order.tenant.tenant_id)
             & (self.clean_id(customer.id) == order.customer_id),
-            hint=JoinHint.BROADCAST,
+            hint=structure.JoinHint.BROADCAST,
         )
 
         return OrderWithCustomer.base(order)(
@@ -95,11 +79,11 @@ class EnrichOrders(Transform):
         )
 
     def add_product(self, order: OrderWithCustomer, product: Product) -> OrderWithProduct:
-        left_join(
+        structure.left_join(
             on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id),
         )
 
-        where(product.id.is_not_null())
+        structure.where(product.id.is_not_null())
 
         return OrderWithProduct.base(order)(
             product_name=product.name,
@@ -109,7 +93,7 @@ class EnrichOrders(Transform):
         )
 
     def add_promotion(self, order: OrderWithProduct, promotion: Promotion) -> OrderWithPromotion:
-        promotion = left_join(
+        promotion = structure.left_join(
             promotion,
             on=(promotion.tenant.tenant_id == order.tenant.tenant_id)
             & self.clean_id(promotion.code).null_safe_eq(order.promotion_code),
@@ -120,20 +104,21 @@ class EnrichOrders(Transform):
             promotion_discount=promotion.discount,
         )
 
-    @after(
-        add_promotion,
+    @structure.raw(
         lane=orders,
         pass_inputs=True,
-        schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS,
+        schema_mode=structure.SchemaMode.ALLOW_EXTRA_COLUMNS,
         project_output=True,
         streaming_safe=True,
     )
     def note_lookup_inputs(self, *, orders, inputs, spark, ctx):
         from pyspark.sql import functions as F
 
-        return orders.withColumn("_lookup_inputs_seen", F.lit(inputs.customers is not None and inputs.products is not None))
+        return orders.withColumn(
+            "_lookup_inputs_seen", F.lit(inputs.customers is not None and inputs.products is not None)
+        )
 
-    @transform(output=published)
+    @structure.step(output=published)
     def publish(self, order: OrderWithPromotion) -> OrderPublished:
         flags = PublicationFlags(
             has_promotion=order.promotion_name.is_not_null(),
@@ -141,7 +126,9 @@ class EnrichOrders(Transform):
 
         return OrderPublished.base(order, flags)
 
-    @after(publish, lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True, streaming_safe=True)
+    @structure.raw(
+        lane=published, schema_mode=structure.SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True, streaming_safe=True
+    )
     def add_quality_columns(self, *, published, spark, ctx):
         from pyspark.sql import functions as F
 

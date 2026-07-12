@@ -17,5 +17,6 @@ class PySparkHookMapper:
             streaming_safe=hook.streaming_safe,
             target_backend=hook.target_backend,
             target_defaulted=hook.target_defaulted,
+            target_platform=hook.target_platform,
             origin=hook.origin,
         )

@@ -204,11 +204,11 @@ selected-row latest/earliest helpers
 exact duplicate-row removal
 array higher-order helpers
 map higher-order helpers
-before hooks
-after hooks
+raw hooks
+raw hooks
 pass_inputs=True hook namespace
-schema_mode after hooks
-project_output after hooks
+schema_mode raw hooks
+project_output raw hooks
 intermediate validation
 final validation
 streaming-compatible supported operations

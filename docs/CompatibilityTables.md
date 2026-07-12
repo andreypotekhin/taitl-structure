@@ -22,7 +22,7 @@ parity names follow the official Spark 4.0.1 Python API docs for Column, SQL fun
 | Array, map, struct types | check | `ArrayType`, `MapType`, `StructType` | Nested type support is compiler-visible. |
 | Transform classes | check | DataFrame transform pipeline | Source-ordered step methods compile to PySpark. |
 | Named inputs and outputs | check | DataFrame arguments/results | Generated and online invocation use declared names. |
-| Hooks | check | Arbitrary PySpark DataFrame code | Opaque boundary through `@before(...)` and `@after(...)`. |
+| Hooks | check | Arbitrary PySpark DataFrame code | Opaque boundary through `@raw`. |
 | Raw SQL expression strings | unsupported | `functions.expr`, SQL fragments | Use symbolic helpers or hooks. |
 | Python UDFs in symbolic DSL | unsupported | `udf`, `udtf` | Hooks remain the honest escape hatch. |
 
@@ -37,7 +37,7 @@ parity names follow the official Spark 4.0.1 Python API docs for Column, SQL fun
 | Boolean operators | check | `&`, `|`, `~` | Python truthiness is rejected. |
 | Comparisons | check | `==`, `!=`, `<`, `<=`, `>`, `>=` | Used in filters and joins when capability permits. |
 | Arithmetic | check | `+`, `-`, `*` | Narrow initial arithmetic subset. |
-| Membership predicates | planned | `isin` | Tracked in [Gaps.md](dev/Gaps.md). |
+| Membership predicates | check | `isin` | Exposed as `expr.isin(...)`. |
 | Range predicates | check | `between` | Exposed as inclusive `expr.between(lower, upper)`. |
 | String predicates | planned | `contains`, `like`, `ilike`, `rlike` | Useful for filters and data quality rules. |
 | Rich casts | planned | `cast`, `astype`, `try_cast` | Current public scalar cast is `to_decimal(...)`. |

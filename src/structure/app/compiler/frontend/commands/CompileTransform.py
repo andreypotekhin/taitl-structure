@@ -3,11 +3,11 @@ from __future__ import annotations
 import inspect
 from collections.abc import Mapping
 from contextlib import contextmanager
+from dataclasses import replace
 from pathlib import Path
 from typing import cast, get_args, get_origin, get_type_hints
 
 from structure.app.compiler.diagnostics.api import StructureCompileError
-from structure.app.compiler.frontend.logic.CompilerHookCollector import CompilerHookCollector
 from structure.app.compiler.frontend.logic.CompilerInputCollector import CompilerInputCollector
 from structure.app.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
 from structure.app.compiler.frontend.logic.CompilerTransformMemberCollector import CompilerTransformMemberCollector
@@ -45,6 +45,7 @@ from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.app.dsl.model.transforms.OverlapPolicy import OverlapPolicy
 from structure.app.dsl.model.transforms.reserved_v2 import reserved_operations
+from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.transforms.TransformPipeline import TransformPipeline
@@ -63,7 +64,6 @@ class CompileTransform:
 
     def __init__(self) -> None:
         self._composer = ComposeTransformPlans()
-        self._hook_collector = CompilerHookCollector()
         self._input_collector = CompilerInputCollector()
         self._member_collector = CompilerTransformMemberCollector()
 
@@ -210,24 +210,42 @@ class CompileTransform:
     ) -> tuple[list[StepPlan], dict[str, dict[str, object]], set[str], list[Diagnostic]]:
         instance = transform_class()
         members = self._member_collector.collect(transform_class)
-        hooks = self._hook_collector.collect(transform_class, members)
         steps: list[StepPlan] = []
         lanes: dict[str, dict[str, object]] = {}
         explicit_outputs: set[str] = set()
         diagnostics: list[Diagnostic] = []
+        pending_raw: list[CompilerTransformMember] = []
 
         for member in members:
-            self._compile_step(
+            if getattr(member.member, "_structure_raw", None) is not None:
+                if steps:
+                    self._attach_raw(transform_class, member, steps, lanes)
+                else:
+                    pending_raw.append(member)
+                continue
+            result = self._compile_step(
                 transform_class,
                 member,
                 members,
                 instance,
-                hooks,
                 steps,
                 lanes,
                 inputs,
                 explicit_outputs,
                 diagnostics,
+            )
+            if result is not None and pending_raw:
+                for raw_member in pending_raw:
+                    steps[-1] = self._attach_raw_before(transform_class, raw_member, steps[-1])
+                pending_raw.clear()
+
+        if pending_raw:
+            names = ", ".join(member.name for member in pending_raw)
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                problem=f"{transform_class.__name__} declares @raw method(s) without a following step: {names}.",
+                use="Place @raw before or after a schema-returning step method.",
             )
 
         if not steps:
@@ -239,13 +257,154 @@ class CompileTransform:
             )
         return steps, lanes, explicit_outputs, diagnostics
 
+    def _attach_raw(
+        self,
+        transform_class: type[Transform],
+        item: CompilerTransformMember,
+        steps: list[StepPlan],
+        lanes: dict[str, dict[str, object]],
+    ) -> None:
+        if not steps:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=item.name,
+                problem=f"{transform_class.__name__}.{item.name} is @raw before any compiled step.",
+                use="Place @raw after a step method, or select an input/lane explicitly in a later V3 revision.",
+            )
+        metadata = cast(dict[str, object], getattr(item.member, "_structure_raw"))
+        target = steps[-1]
+        declarations = self._raw_declarations(transform_class, target, metadata, member=item.name)
+        sources, outputs = declarations
+        for declaration in sources:
+            self._declared_lane(transform_class, declaration, member=item.name, role="lane")
+        for declaration in outputs:
+            self._declared_lane(transform_class, declaration, member=item.name, role="output")
+        output_lanes = tuple(result.lane for result in target.results) or (target.output_lane,)
+        unknown = [declaration.name for declaration in outputs if declaration.name not in output_lanes]
+        if unknown:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=item.name,
+                problem=(
+                    f"@raw replaces lane(s) that {target.name} does not produce: {', '.join(unknown)}."
+                ),
+                use=f"Select one of: {', '.join(output_lanes)}.",
+            )
+        target_backend, target_defaulted = cast(tuple[tuple[str, ...], bool], metadata["target_backend"])
+        hook = HookPlan(
+            name=item.name,
+            phase="raw",
+            target=target.name,
+            lanes=sources,
+            outputs=outputs,
+            pass_inputs=bool(metadata["pass_inputs"]),
+            schema_mode=cast(SchemaMode, metadata["schema_mode"]),
+            project_output=bool(metadata["project_output"]),
+            streaming_safe=bool(metadata["streaming_safe"]),
+            target_backend=target_backend,
+            target_defaulted=target_defaulted,
+            target_platform=cast(str | None, metadata["target_platform"]),
+            origin=TransformMemberOrigin.of(item.owner, item.name),
+        )
+        self._validate_hook_signature(transform_class, hook)
+        self._attach_after_hook(steps, hook)
+
+    def _attach_raw_before(
+        self,
+        transform_class: type[Transform],
+        item: CompilerTransformMember,
+        target: StepPlan,
+    ) -> StepPlan:
+        metadata = cast(dict[str, object], getattr(item.member, "_structure_raw"))
+        sources = metadata["lanes"]
+        outputs = metadata["outputs"]
+        if sources is None or outputs is None:
+            declaration = self._raw_declaration(transform_class, target.input_lane)
+            sources = (declaration,)
+            outputs = (declaration,)
+        sources = cast(tuple, sources)
+        outputs = cast(tuple, outputs)
+        for declaration in sources:
+            self._declared_lane(transform_class, declaration, member=item.name, role="lane")
+        for declaration in outputs:
+            self._declared_lane(transform_class, declaration, member=item.name, role="output")
+        unknown = [declaration.name for declaration in outputs if declaration.name != target.input_lane]
+        if unknown:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=item.name,
+                problem=(
+                    f"@raw before {target.name} replaces lane(s) that {target.name} does not consume: "
+                    f"{', '.join(unknown)}."
+                ),
+                use=f"Select lane={target.input_lane}.",
+            )
+        target_backend, target_defaulted = cast(tuple[tuple[str, ...], bool], metadata["target_backend"])
+        hook = HookPlan(
+            name=item.name,
+            phase="raw",
+            target=target.name,
+            lanes=sources,
+            outputs=outputs,
+            pass_inputs=bool(metadata["pass_inputs"]),
+            schema_mode=cast(SchemaMode, metadata["schema_mode"]),
+            project_output=bool(metadata["project_output"]),
+            streaming_safe=bool(metadata["streaming_safe"]),
+            target_backend=target_backend,
+            target_defaulted=target_defaulted,
+            target_platform=cast(str | None, metadata["target_platform"]),
+            origin=TransformMemberOrigin.of(item.owner, item.name),
+        )
+        self._validate_hook_signature(transform_class, hook)
+        return replace(target, before_hooks=(*target.before_hooks, hook))
+
+    def _raw_declarations(self, transform_class, target: StepPlan, metadata: dict[str, object], *, member: str):
+        sources = metadata["lanes"]
+        outputs = metadata["outputs"]
+        if sources is not None and outputs is not None:
+            return cast(tuple, sources), cast(tuple, outputs)
+        output_lanes = tuple(result.lane for result in target.results) or (target.output_lane,)
+        if len(output_lanes) != 1:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"@raw after multi-output step {target.name} needs explicit lane(s)=... selection.",
+                use=f"Select one or more of: {', '.join(output_lanes)}.",
+            )
+        declaration = self._raw_declaration(transform_class, output_lanes[0])
+        return (declaration,), (declaration,)
+
+    @staticmethod
+    def _raw_declaration(transform_class: type[Transform], name: str):
+        return (
+            transform_class._structure_inputs.get(name)
+            or transform_class._structure_lanes.get(name)
+            or transform_class._structure_outputs.get(name)
+        )
+
+    @staticmethod
+    def _attach_after_hook(steps: list[StepPlan], hook: HookPlan) -> None:
+        target = steps[-1]
+        if len(target.results) == 1:
+            steps[-1] = replace(target, after_hooks=(*target.after_hooks, hook))
+            return
+        results = list(target.results)
+        for index, result in enumerate(results):
+            if result.lane == hook.outputs[0].name:
+                results[index] = replace(result, after_hooks=(*result.after_hooks, hook))
+                steps[-1] = replace(target, results=tuple(results))
+                return
+
     def _compile_step(
         self,
         transform_class: type[Transform],
         item: CompilerTransformMember,
         members: tuple[CompilerTransformMember, ...],
         instance: Transform,
-        hooks: dict[tuple[str, tuple[type[Transform], str, int]], tuple[HookPlan, ...]],
         steps: list[StepPlan],
         lanes: dict[str, dict[str, object]],
         inputs: list[InputPlan],
@@ -319,7 +478,6 @@ class CompileTransform:
                     item,
                     members,
                     instance,
-                    hooks,
                     steps,
                     lanes,
                     inputs,
@@ -358,31 +516,9 @@ class CompileTransform:
                 use="Return one aggregate schema per grouped step method.",
             )
         result_plans: list[StepResultPlan] = []
-        after_hooks = hooks.get(("after", item.key), ())
-        for hook in after_hooks:
-            for lane in hook.lanes:
-                self._declared_lane(transform_class, lane, member=hook.name, role="lane")
-            for output in hook.outputs:
-                self._declared_lane(transform_class, output, member=hook.name, role="output")
-            unknown = [output.name for output in hook.outputs if output.name not in output_lanes]
-            if unknown:
-                raise self._error(
-                    "DSL-E0402",
-                    transform_class=transform_class,
-                    member=hook.name,
-                    problem=f"@after({name}) replaces lane(s) that {name} does not produce: {', '.join(unknown)}.",
-                    use=f"Select one of: {', '.join(output_lanes)}.",
-                )
         for ordinal, (output_schema, output_lane, value) in enumerate(
             zip(output_schemas, output_lanes, values, strict=True)
         ):
-            selected_hooks = self._result_hooks(
-                transform_class,
-                name,
-                output_lane,
-                after_hooks,
-                multiple=len(output_schemas) > 1,
-            )
             frame = output_lane
             aggregate = (
                 None
@@ -415,7 +551,7 @@ class CompileTransform:
                     ),
                     ordinal=ordinal,
                     aggregate=aggregate,
-                    after_hooks=selected_hooks,
+                    after_hooks=(),
                 )
             )
         first = result_plans[0]
@@ -423,12 +559,6 @@ class CompileTransform:
             context.operations.append(OperationPlan.aggregate_operation(first.aggregate))
         bindings = self._parent_call_bindings(bindings, parent_call)
         driver = bindings[0]
-        before_hooks = self._before_hooks(
-            transform_class,
-            name,
-            driver.lane,
-            hooks.get(("before", item.key), ()),
-        )
         self._validate_relation_reads(
             transform_class,
             name,
@@ -451,7 +581,7 @@ class CompileTransform:
                 aggregate=first.aggregate,
                 joins=tuple(context.joins),
                 operations=tuple(context.operations),
-                before_hooks=before_hooks,
+                before_hooks=(),
                 after_hooks=first.after_hooks if len(result_plans) == 1 else (),
                 inputs=tuple(bindings),
                 results=tuple(result_plans),
@@ -497,7 +627,6 @@ class CompileTransform:
         item: CompilerTransformMember,
         members: tuple[CompilerTransformMember, ...],
         instance: Transform,
-        hooks: dict[tuple[str, tuple[type[Transform], str, int]], tuple[HookPlan, ...]],
         steps: list[StepPlan],
         lanes: dict[str, dict[str, object]],
         inputs: list[InputPlan],
@@ -519,7 +648,6 @@ class CompileTransform:
                         candidate,
                         members,
                         instance,
-                        hooks,
                         steps,
                         lanes,
                         inputs,
@@ -1227,46 +1355,6 @@ class CompileTransform:
                 use="Return explicit schema instances for tuple-returning step methods.",
             )
         return cast(tuple[Structure | Projection, ...], result)
-
-    def _result_hooks(
-        self,
-        transform_class: type[Transform],
-        member: str,
-        lane: str,
-        hooks: tuple[HookPlan, ...],
-        *,
-        multiple: bool,
-    ) -> tuple[HookPlan, ...]:
-        selected: list[HookPlan] = []
-        for hook in hooks:
-            if hook.outputs[0].name == lane:
-                self._validate_hook_signature(transform_class, hook)
-                selected.append(hook)
-        return tuple(selected)
-
-    def _before_hooks(
-        self,
-        transform_class: type[Transform],
-        member: str,
-        lane: str,
-        hooks: tuple[HookPlan, ...],
-    ) -> tuple[HookPlan, ...]:
-        for hook in hooks:
-            for source in hook.lanes:
-                self._declared_lane(transform_class, source, member=hook.name, role="lane")
-            for output in hook.outputs:
-                self._declared_lane(transform_class, output, member=hook.name, role="output")
-            unknown = [output.name for output in hook.outputs if output.name != lane]
-            if unknown:
-                raise self._error(
-                    "DSL-E0402",
-                    transform_class=transform_class,
-                    member=hook.name,
-                    problem=f"@before({member}) replaces lane(s) that {member} does not consume: {', '.join(unknown)}.",
-                    use=f"Select lane={lane}.",
-                )
-            self._validate_hook_signature(transform_class, hook)
-        return hooks
 
     def _input_lane(
         self,

@@ -164,14 +164,14 @@ def write_optional_transform_project(root: Path) -> None:
     (package / "transforms.py").write_text(
         "\n".join(
             [
-                "from structure import Transform, coalesce, input, lane, output, to_decimal, transform, where",
+                "from structure import Transform, coalesce, input, lane, output, step, to_decimal, transform, where",
                 "from orders.schemas import OrderNormalized, OrderRaw",
                 "",
                 "class NormalizeBase(Transform):",
                 "    orders = input(OrderRaw)",
                 "    prepared = lane(OrderNormalized)",
                 "",
-                "    @transform(output=prepared)",
+                "    @step(output=prepared)",
                 "    def prepare(self, order: OrderRaw) -> OrderNormalized:",
                 "        where(order.id.is_not_null())",
                 "        return OrderNormalized(",

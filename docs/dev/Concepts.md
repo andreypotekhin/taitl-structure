@@ -269,8 +269,8 @@ helpers that know about checked-in model code, fixture data, pytest fixtures, or
     - shuffle replicate nested loop
 
 - hook
-  - before hook
-  - after hook
+  - raw hook
+  - raw hook
   - hook target
   - hook source order
   - hook signature

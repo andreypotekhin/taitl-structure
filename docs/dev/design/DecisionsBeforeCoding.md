@@ -175,8 +175,7 @@ work require explicit opt-in because they may trigger Spark actions or expensive
 
 ### Hook Boundary
 
-Hooks are intentional PySpark escape hatches. They are attached to a compiled step method with `@before(...)` or
-`@after(...)`, run at runtime, and must return a DataFrame. The compiler records hook metadata and treats the hook body
+Hooks are intentional PySpark escape hatches. They are attached to a compiled step method with `@raw`, run at runtime, and must return a DataFrame. The compiler records hook metadata and treats the hook body
 as opaque.
 
 ### Join Boundary
@@ -189,7 +188,7 @@ right-side rows. If right-side uniqueness is not proven, Structure emits a warni
 The supported public extension surface is:
 
 - `@special(type="expr")` for compiler-visible reusable expression helpers;
-- `@before(...)` and `@after(...)` for runtime DataFrame escape hatches.
+- `@raw` for runtime DataFrame escape hatches.
 
 Compiler registries, backend capability providers, validation policy plugins, schema type adapters, and diagnostic
 renderers are internal or deferred until specified.

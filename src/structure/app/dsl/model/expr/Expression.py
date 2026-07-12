@@ -25,6 +25,18 @@ class Expression:
     def null_safe_eq(self, other: object) -> "Expression":
         return self._binary("null_safe_eq", other)
 
+    def isin(self, *values: object) -> "Expression":
+        from structure.app.dsl.model.expr.expressions import literal
+
+        if not values:
+            raise TypeError("isin(...) requires at least one value")
+        return Expression(
+            kind="isin",
+            type=BooleanType(),
+            nullable=True,
+            args=(self, *(literal(value) for value in values)),
+        )
+
     def between(self, lower: object, upper: object) -> "Expression":
         return (self >= lower) & (self <= upper)
 

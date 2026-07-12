@@ -465,14 +465,6 @@
       "qualname": "TransformSchemas",
       "signature": "(inputs: 'Mapping[str, Any]', steps: 'Mapping[str, Any]', outputs: 'Mapping[str, Any]', output_aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> None"
     },
-    "after": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "function",
-      "module": "structure.app.dsl.model.transforms.transform_api",
-      "qualname": "after",
-      "signature": "(target: 'Callable', *, input: 'InputDeclaration | None' = None, inputs: 'object | None' = None, lane: 'InputDeclaration | LaneDeclaration | OutputDeclaration | None' = None, lanes: 'object | None' = None, output: 'LaneDeclaration | OutputDeclaration | None' = None, outputs: 'object | None' = None, pass_inputs: 'bool' = False, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming_safe: 'bool' = False, target_backend: 'str | Iterable[str] | None' = None)"
-    },
     "approx_count_distinct": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -584,14 +576,6 @@
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "avg",
       "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'"
-    },
-    "before": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "function",
-      "module": "structure.app.dsl.model.transforms.transform_api",
-      "qualname": "before",
-      "signature": "(target: 'Callable', *, input: 'InputDeclaration | None' = None, inputs: 'object | None' = None, lane: 'InputDeclaration | LaneDeclaration | OutputDeclaration | None' = None, lanes: 'object | None' = None, output: 'InputDeclaration | LaneDeclaration | OutputDeclaration | None' = None, outputs: 'object | None' = None, pass_inputs: 'bool' = False, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming_safe: 'bool' = False, target_backend: 'str | Iterable[str] | None' = None)"
     },
     "bool_and": {
       "dataclass_fields": [],
@@ -1065,6 +1049,14 @@
       "qualname": "rank",
       "signature": "(*, partition_by: 'object', order_by: 'object', descending: 'bool' = False) -> 'Expression'"
     },
+    "raw": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.transform_api",
+      "qualname": "raw",
+      "signature": "(function: 'Callable | None' = None, *, input: 'InputDeclaration | None' = None, inputs: 'object | None' = None, lane: 'InputDeclaration | LaneDeclaration | OutputDeclaration | None' = None, lanes: 'object | None' = None, output: 'LaneDeclaration | OutputDeclaration | None' = None, outputs: 'object | None' = None, pass_inputs: 'bool' = False, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming_safe: 'bool' = False, target_backend: 'str | Iterable[str] | None' = None, target_platform: 'str | None' = None)"
+    },
     "right_join": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -1152,6 +1144,14 @@
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "stddev",
       "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'"
+    },
+    "step": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.transform_api",
+      "qualname": "step",
+      "signature": "(target=None, **kwargs)"
     },
     "sum": {
       "dataclass_fields": [],
@@ -1247,7 +1247,7 @@
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "where",
-      "signature": "(predicate: 'object') -> \"'WhereChain'\""
+      "signature": "(*predicates: 'object') -> \"'WhereChain'\""
     },
     "window": {
       "dataclass_fields": [],

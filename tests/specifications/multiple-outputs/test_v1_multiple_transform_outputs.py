@@ -2,7 +2,7 @@ from typing import Any, cast
 
 import pytest
 
-from structure import String, Structure, Transform, field, input, lane, output, transform
+from structure import String, Structure, Transform, field, input, lane, output, step, transform
 from structure.app.dsl.api import compile_transform
 from structure.app.runtime.api import StructureSession, TransformResult
 from structure.app.target.pyspark.api import PySpark
@@ -43,21 +43,21 @@ def test_v1_multi_output_methods_write_source_order_lanes() -> None:
         def normalize(self, row: Raw) -> Normalized:
             return Normalized(id=row.id, customer_id=row.customer_id)
 
-        @transform(output=accepted_lane)
+        @step(output=accepted_lane)
         def accept(self, row: Normalized) -> Accepted:
             from structure import where
 
             where(cast(Any, row.customer_id).is_not_null())
             return Accepted(id=row.id, status="accepted")
 
-        @transform(input=accepted_lane, output=accepted)
+        @step(input=accepted_lane, output=accepted)
         def keep_accepted(self, row: Accepted) -> Accepted:
             from structure import where
 
             where(cast(Any, row.status) == "accepted")
             return Accepted(id=row.id, status=row.status)
 
-        @transform(output=rejected)
+        @step(output=rejected)
         def reject(self, row: Normalized) -> Rejected:
             from structure import where
 
@@ -159,7 +159,7 @@ def test_v1_method_input_selects_declared_input_when_schema_is_ambiguous() -> No
         internal = input(Raw)
         normalized = output(Normalized)
 
-        @transform(input=external)
+        @step(input=external)
         def normalize(self, row: Raw) -> Normalized:
             return Normalized(id=row.id, customer_id=row.customer_id)
 
@@ -178,7 +178,7 @@ def test_v1_method_input_selects_declared_input_before_writing_output_lane() -> 
         internal = input(Raw)
         accepted = output(Accepted)
 
-        @transform(input=external, output=accepted)
+        @step(input=external, output=accepted)
         def accept(self, row: Raw) -> Accepted:
             return Accepted(id=row.id, status="accepted")
 
@@ -199,11 +199,11 @@ def test_v1_declared_lane_is_collected_and_written_from_input() -> None:
         normalized = lane(Normalized)
         published = output(Published)
 
-        @transform(input=rows, output=normalized)
+        @step(input=rows, output=normalized)
         def normalize(self, row: Raw) -> Normalized:
             return Normalized(id=row.id, customer_id=row.customer_id)
 
-        @transform(input=normalized, output=published)
+        @step(input=normalized, output=published)
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id)
 
@@ -226,15 +226,15 @@ def test_v1_declared_lane_can_update_itself() -> None:
         normalized = lane(Normalized)
         published = output(Published)
 
-        @transform(input=rows, output=normalized)
+        @step(input=rows, output=normalized)
         def normalize(self, row: Raw) -> Normalized:
             return Normalized(id=row.id, customer_id=row.customer_id)
 
-        @transform(input=normalized)
+        @step(input=normalized)
         def keep_normalized(self, row: Normalized) -> Normalized:
             return Normalized(id=row.id, customer_id=row.customer_id)
 
-        @transform(input=normalized, output=published)
+        @step(input=normalized, output=published)
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id)
 
@@ -256,7 +256,7 @@ def test_v1_method_input_declaration_is_shadowed_by_existing_lane() -> None:
         def normalize(self, row: Raw) -> Normalized:
             return Normalized(id=row.id, customer_id=row.customer_id)
 
-        @transform(input=rows)
+        @step(input=rows)
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id)
 
@@ -280,7 +280,7 @@ def test_v1_input_selector_reads_original_input_after_shadowing() -> None:
         def normalize(self, row: Raw) -> Normalized:
             return Normalized(id=row.id, customer_id=row.customer_id)
 
-        @transform(input=input(rows), output=output(published))
+        @step(input=input(rows), output=output(published))
         def publish_raw(self, row: Raw) -> Published:
             return Published(id=row.id)
 
@@ -312,7 +312,7 @@ def test_v1_lane_selector_requires_available_lane() -> None:
         rows = input(Raw)
         published = output(Published)
 
-        @transform(input=lane(rows), output=published)
+        @step(input=lane(rows), output=published)
         def publish(self, row: Raw) -> Published:
             return Published(id=row.id)
 
@@ -326,11 +326,11 @@ def test_v1_lane_and_output_selectors_bind_inout_roles() -> None:
         rows = input(Raw)
         published = output(Published)
 
-        @transform(inout=input(rows) | lane(rows))
+        @step(inout=input(rows) | lane(rows))
         def normalize(self, row: Raw) -> Normalized:
             return Normalized(id=row.id, customer_id=row.customer_id)
 
-        @transform(inout=lane(rows) | output(published))
+        @step(inout=lane(rows) | output(published))
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id)
 
@@ -380,11 +380,11 @@ def test_v1_inout_pipe_binds_source_and_output() -> None:
         normalized = lane(Normalized)
         published = output(Published)
 
-        @transform(inout=rows | normalized)
+        @step(inout=rows | normalized)
         def normalize(self, row: Raw) -> Normalized:
             return Normalized(id=row.id, customer_id=row.customer_id)
 
-        @transform(inout=normalized | published)
+        @step(inout=normalized | published)
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id)
 
@@ -401,7 +401,7 @@ def test_v1_inout_pipe_accepts_multiple_outputs() -> None:
         accepted = output(Accepted)
         rejected = output(Rejected)
 
-        @transform(inout=rows | [accepted, rejected])
+        @step(inout=rows | [accepted, rejected])
         def route(self, row: Raw) -> tuple[Accepted, Rejected]:
             return Accepted(id=row.id, status="accepted"), Rejected(id=row.id, reason="missing customer")
 
@@ -415,11 +415,11 @@ def test_v1_inout_pipe_accepts_multiple_inputs() -> None:
         normalized = lane(Normalized)
         published = output(Published)
 
-        @transform(input=rows, output=normalized)
+        @step(input=rows, output=normalized)
         def normalize(self, row: Raw) -> Normalized:
             return Normalized(id=row.id, customer_id=row.customer_id)
 
-        @transform(inout=[normalized, rows] | published)
+        @step(inout=[normalized, rows] | published)
         def publish(self, row: Normalized, raw: Raw) -> Published:
             return Published(id=row.id)
 
@@ -449,7 +449,7 @@ def test_v1_method_recycles_plural_and_lane_parameters() -> None:
             rows = input(Raw)
             accepted = output(Accepted)
 
-            @transform(inputs=[rows], outputs=[accepted])
+            @step(inputs=[rows], outputs=[accepted])
             def accept(self, row: Raw) -> Accepted:
                 return Accepted(id=row.id, status="accepted")
 
@@ -461,11 +461,11 @@ def test_v1_method_recycles_plural_and_lane_parameters() -> None:
             normalized = lane(Normalized)
             published = output(Published)
 
-            @transform(input=rows, output=normalized)
+            @step(input=rows, output=normalized)
             def normalize(self, row: Raw) -> Normalized:
                 return Normalized(id=row.id, customer_id=row.customer_id)
 
-            @transform(lane=normalized, output=published)
+            @step(lane=normalized, output=published)
             def publish(self, row: Normalized) -> Published:
                 return Published(id=row.id)
 
@@ -511,11 +511,11 @@ def test_v1_branch_input_must_be_available_earlier_in_source_order() -> None:
         accepted = output(Accepted)
         rejected = output(Rejected)
 
-        @transform(input=accepted_lane, output=rejected)
+        @step(input=accepted_lane, output=rejected)
         def reject_from_missing_lane(self, row: Accepted) -> Rejected:
             return Rejected(id=row.id, reason="missing customer")
 
-        @transform(output=accepted)
+        @step(output=accepted)
         def accept(self, row: Raw) -> Accepted:
             return Accepted(id=row.id, status="accepted")
 
@@ -532,11 +532,11 @@ def test_v1_branch_input_schema_must_match_current_lane_schema() -> None:
         accepted_lane = lane(Accepted)
         accepted = output(Accepted)
 
-        @transform(output=accepted_lane)
+        @step(output=accepted_lane)
         def accept(self, row: Raw) -> Accepted:
             return Accepted(id=row.id, status="accepted")
 
-        @transform(input=accepted_lane, output=accepted)
+        @step(input=accepted_lane, output=accepted)
         def wrong_schema(self, row: Rejected) -> Accepted:
             return Accepted(id=row.id, status="accepted")
 
@@ -552,7 +552,7 @@ def test_v1_output_method_return_schema_must_match_output_lane_schema() -> None:
         rows = input(Raw)
         accepted = output(Accepted)
 
-        @transform(output=accepted)
+        @step(output=accepted)
         def accept(self, row: Raw) -> Published:
             return Published(id=row.id)
 
@@ -570,11 +570,11 @@ def test_v1_output_lane_method_input_is_rejected() -> None:
             rows = input(Raw)
             accepted = output(Accepted)
 
-            @transform(input=accepted)
+            @step(input=accepted)
             def accept(self, row: Raw) -> Accepted:
                 return Accepted(id=row.id, status="accepted")
 
-    assert "@transform(input=...) requires input(...) or lane(...) declarations" in str(raised.value)
+    assert "@step(input=...) requires input(...) or lane(...) declarations" in str(raised.value)
 
 
 def test_v1_input_declaration_method_output_is_rejected() -> None:
@@ -585,11 +585,11 @@ def test_v1_input_declaration_method_output_is_rejected() -> None:
             rows = input(Raw)
             accepted = output(Accepted)
 
-            @transform(output=rows)
+            @step(output=rows)
             def accept(self, row: Raw) -> Accepted:
                 return Accepted(id=row.id, status="accepted")
 
-    assert "@transform(output=...) requires lane(...) or output(...) declarations" in str(raised.value)
+    assert "@step(output=...) requires lane(...) or output(...) declarations" in str(raised.value)
 
 
 def test_v1_generated_pyspark_uses_per_lane_step_sources() -> None:
@@ -603,15 +603,15 @@ def test_v1_generated_pyspark_uses_per_lane_step_sources() -> None:
         def normalize(self, row: Raw) -> Normalized:
             return Normalized(id=row.id, customer_id=row.customer_id)
 
-        @transform(output=accepted_lane)
+        @step(output=accepted_lane)
         def accept(self, row: Normalized) -> Accepted:
             return Accepted(id=row.id, status="accepted")
 
-        @transform(input=accepted_lane, output=accepted)
+        @step(input=accepted_lane, output=accepted)
         def keep_accepted(self, row: Accepted) -> Accepted:
             return Accepted(id=row.id, status=row.status)
 
-        @transform(output=rejected)
+        @step(output=rejected)
         def reject(self, row: Normalized) -> Rejected:
             return Rejected(id=row.id, reason="missing customer")
 

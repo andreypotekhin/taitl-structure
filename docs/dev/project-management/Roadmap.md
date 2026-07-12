@@ -33,7 +33,7 @@ Before the first vertical slice, Sprint 00 must retire the highest-risk unknowns
 
 Required spikes:
 
-- Prove `@after(method, lane=lane)` binding inside class bodies.
+- Prove `@raw(lane=lane)` binding inside class bodies.
 - Prove class-local `@special(type="expr")` helpers callable through `self` without a `self` parameter.
 - Prove source-order discovery with stable line numbers.
 - Prove source-root discovery and generated `structure_generated.<source package>` import paths.
@@ -107,7 +107,7 @@ validation, compiler provenance, static dataflow traceability, and build integra
 - Symbolic expression execution.
 - `where(...)` filtering.
 - `@special(type="expr")` helpers.
-- `@before(method, lane=lane)` and `@after(method, lane=lane)` hooks.
+- `@raw(lane=lane)` and `@raw(lane=lane)` hooks.
 - Clean generated code with no hook machinery for hook-free transforms.
 - `lookup_join(...)` symbolic joins.
 - N-step serial joins across arbitrary named inputs.

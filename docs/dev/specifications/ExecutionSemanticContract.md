@@ -153,6 +153,7 @@ The shared PySpark execution plan must decide these items once:
 - hook input namespace shape;
 - hook `schema_mode` and `project_output` behavior;
 - final schema projection and validation;
+- watermark placement on the current frame and on joined inputs before their join;
 - compiled-path performance guardrails.
 
 Online and generated execution may differ only in representation details that do not change observable DataFrame
@@ -212,11 +213,11 @@ selected-row latest/earliest helpers
 exact duplicate-row removal
 array higher-order helpers
 map higher-order helpers
-before hooks
-after hooks
+raw hooks
+raw hooks
 pass_inputs=True hook namespace
-schema_mode after hooks
-project_output after hooks
+schema_mode raw hooks
+project_output raw hooks
 intermediate validation
 final validation
 streaming-compatible supported operations

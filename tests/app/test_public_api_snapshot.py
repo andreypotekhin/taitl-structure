@@ -6,6 +6,8 @@ from dataclasses import fields, is_dataclass
 from pathlib import Path
 from typing import Any, cast
 
+import pytest
+
 import structure
 from structure.app.dsl.api import compile_transform
 
@@ -60,6 +62,11 @@ class Publish(Transform):
     assert [input.name for input in plan.inputs] == ["rows"]
     assert [output.name for output in plan.outputs] == ["published"]
     assert [step.name for step in plan.steps] == ["publish"]
+
+
+def test_method_level_transform_reports_the_step_migration() -> None:
+    with pytest.raises(TypeError, match=r"replace method-level @transform\(\.\.\.\) with @step"):
+        structure.transform(lambda: None, output=object())
 
 
 def _snapshot() -> dict[str, object]:

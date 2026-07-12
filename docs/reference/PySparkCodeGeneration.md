@@ -383,13 +383,13 @@ join, hook, or complex expression easier to review.
 
 Each compiled step method renders as a contiguous generated code block.
 
-Canonical order inside one step:
+Canonical order follows the shared source-order recipe:
 
-1. before hooks for the step;
+1. raw hooks placed before the step boundary;
 2. source-order filters and joins that must run before projection;
 3. projection into the step output schema;
-4. after hooks for the step;
-5. schema validation and optional projection after hooks.
+4. raw hooks placed after the step boundary;
+5. schema validation and optional projection at raw hook boundaries.
 
 Example:
 
@@ -558,9 +558,8 @@ orders = self._impl.compare_to_raw(orders=orders, inputs=inputs, spark=self.spar
 Rules:
 
 - Generate `_impl = SourceTransform()` only when at least one hook exists.
-- Before hooks render before compiled operations for the target step.
-- After hooks render after compiled operations for the target step.
-- Multiple hooks for the same target and timing follow source order.
+- Raw hooks render at their source-order boundary.
+- Adjacent raw hooks follow source order.
 - Hooks always receive keyword arguments.
 - Generate a read-only `HookInputs` namespace only when at least one hook declares `pass_inputs=True`.
 - Build the hook input namespace once near the start of `run(...)` when needed.
@@ -600,7 +599,7 @@ Rules:
 
 - Validate declared input DataFrames at the start of `run(...)`.
 - Validate step method outputs when validation policy says to validate them.
-- Validate after hooks according to the hook's `schema_mode`.
+- Validate raw hooks according to the hook's `schema_mode`.
 - If `project_output=True`, validate with the hook schema mode, project to the declared output schema, then validate
   strictly.
 - Validate the final returned DataFrame unless validation is disabled for that final step by policy.

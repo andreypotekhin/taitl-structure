@@ -69,6 +69,10 @@ class RenderPySparkExpression:
         if expression.kind == "null_safe_eq":
             left, right = expression.args
             return f"{self._render(left, aliases)}.eqNullSafe({self._render(right, aliases)})"
+        if expression.kind == "isin":
+            value, *items = expression.args
+            rendered_items = ", ".join(self._render(item, aliases) for item in items)
+            return f"{self._render(value, aliases)}.isin({rendered_items})"
         if expression.kind == "event_time_between":
             left, right = expression.args
             lower = self._interval(str(expression.data["lower"]))

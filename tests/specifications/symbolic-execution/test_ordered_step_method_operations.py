@@ -2,72 +2,48 @@ from typing import Any, cast
 
 import pytest
 
-from structure import (
-    AsOf,
-    Join,
-    JoinDedupe,
-    JoinStrategy,
-    String,
-    Structure,
-    StructureCompileError,
-    TiePolicy,
-    Transform,
-    as_of_one,
-    cross_join,
-    exists,
-    field,
-    full_join,
-    inner_join,
-    input,
-    lookup_join,
-    not_exists,
-    output,
-    project,
-    right_join,
-    rowset_join,
-    temporal_one,
-    transform,
-    where,
-)
+import structure
+from structure import step as dsl_step
+from structure import temporal_one, transform, where
 from structure.app.compiler.api import Compiler, OperationCardinality, StreamingSupport
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 
-class Order(Structure):
-    id = field(String(), nullable=False)
-    product_id = field(String(), nullable=False)
-    status = field(String(), nullable=True)
+class Order(structure.Structure):
+    id = structure.field(structure.String(), nullable=False)
+    product_id = structure.field(structure.String(), nullable=False)
+    status = structure.field(structure.String(), nullable=True)
 
 
-class Product(Structure):
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=False)
-    valid_from = field(String(), nullable=False)
-    valid_to = field(String(), nullable=True)
+class Product(structure.Structure):
+    id = structure.field(structure.String(), nullable=False, primary_key=True)
+    name = structure.field(structure.String(), nullable=False)
+    valid_from = structure.field(structure.String(), nullable=False)
+    valid_to = structure.field(structure.String(), nullable=True)
 
 
-class Published(Structure):
-    id = field(String(), nullable=False)
-    status = field(String(), nullable=True)
+class Published(structure.Structure):
+    id = structure.field(structure.String(), nullable=False)
+    status = structure.field(structure.String(), nullable=True)
 
 
-class Enriched(Structure):
-    id = field(String(), nullable=False)
-    product_name = field(String(), nullable=True)
+class Enriched(structure.Structure):
+    id = structure.field(structure.String(), nullable=False)
+    product_name = structure.field(structure.String(), nullable=True)
 
 
 def test_where_before_join_renders_before_join() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
             where(cast(Any, order.status).is_not_null())
-            lookup_join(product, on=product.id == order.product_id, how=Join.LEFT)
+            structure.lookup_join(product, on=product.id == order.product_id, how=structure.Join.LEFT)
             return Enriched(id=order.id, product_name=product.name)
 
     step = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
@@ -78,13 +54,13 @@ def test_where_before_join_renders_before_join() -> None:
 
 def test_where_after_join_renders_after_join() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            lookup_join(product, on=product.id == order.product_id, how=Join.LEFT)
+            structure.lookup_join(product, on=product.id == order.product_id, how=structure.Join.LEFT)
             where(cast(Any, product).name.is_not_null())
             return Enriched(id=order.id, product_name=product.name)
 
@@ -96,13 +72,13 @@ def test_where_after_join_renders_after_join() -> None:
 
 def test_bare_lookup_join_makes_later_relation_reads_joined() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            lookup_join(product, on=product.id == order.product_id, how=Join.LEFT)
+            structure.lookup_join(product, on=product.id == order.product_id, how=structure.Join.LEFT)
             return Enriched(id=order.id, product_name=product.name)
 
     plan = compile_transform(AddProduct)
@@ -117,13 +93,13 @@ def test_bare_lookup_join_makes_later_relation_reads_joined() -> None:
 
 def test_bare_inferred_lookup_join_makes_later_relation_reads_joined() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            lookup_join(on=product.id == order.product_id, how=Join.LEFT)
+            structure.lookup_join(on=product.id == order.product_id, how=structure.Join.LEFT)
             return Enriched(id=order.id, product_name=product.name)
 
     step = compile_transform(AddProduct).steps[0]
@@ -144,14 +120,14 @@ def test_bare_inferred_lookup_join_makes_later_relation_reads_joined() -> None:
 
 def test_inferred_lookup_join_preserves_filter_join_order() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
             where(cast(Any, order.status).is_not_null())
-            lookup_join(on=product.id == order.product_id, how=Join.LEFT)
+            structure.lookup_join(on=product.id == order.product_id, how=structure.Join.LEFT)
             where(cast(Any, product).name.is_not_null())
             return Enriched(id=order.id, product_name=product.name)
 
@@ -178,13 +154,13 @@ def test_inferred_lookup_join_preserves_filter_join_order() -> None:
 
 def test_exists_join_records_row_filtering_operation() -> None:
     @transform
-    class PublishKnownProducts(Transform):
-        orders = input(Order)
-        products = input(Product)
-        published = output(Published)
+    class PublishKnownProducts(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        published = structure.output(Published)
 
         def publish(self, order: Order, product: Product) -> Published:
-            where(exists(on=product.id == order.product_id))
+            where(structure.exists(on=product.id == order.product_id))
             return Published(id=order.id, status=order.status)
 
     step = compile_transform(PublishKnownProducts).steps[0]
@@ -205,13 +181,13 @@ def test_exists_join_records_row_filtering_operation() -> None:
 
 def test_not_exists_join_records_row_filtering_operation() -> None:
     @transform
-    class PublishUnknownProducts(Transform):
-        orders = input(Order)
-        products = input(Product)
-        published = output(Published)
+    class PublishUnknownProducts(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        published = structure.output(Published)
 
         def publish(self, order: Order, product: Product) -> Published:
-            where(not_exists(on=product.id == order.product_id))
+            where(structure.not_exists(on=product.id == order.product_id))
             return Published(id=order.id, status=order.status)
 
     step = compile_transform(PublishUnknownProducts).steps[0]
@@ -227,15 +203,15 @@ def test_not_exists_join_records_row_filtering_operation() -> None:
 
 def test_inner_join_records_row_multiplying_operation() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            inner_join(
+            structure.inner_join(
                 on=product.id == order.product_id,
-                strategy=JoinStrategy.SHUFFLE_HASH,
+                strategy=structure.JoinStrategy.SHUFFLE_HASH,
             )
             return Enriched(id=order.id, product_name=product.name)
 
@@ -253,7 +229,7 @@ def test_inner_join_records_row_multiplying_operation() -> None:
 
     assert len(step.joins) == 1
     assert step.joins[0].method is JoinMethod.ROWSET
-    assert step.joins[0].strategy is JoinStrategy.SHUFFLE_HASH
+    assert step.joins[0].strategy is structure.JoinStrategy.SHUFFLE_HASH
     assert step.operations[0].kind == "join"
     assert step.operations[0].join == step.joins[0]
     assert step.operations[0].capability is not None
@@ -267,13 +243,13 @@ def test_inner_join_records_row_multiplying_operation() -> None:
 
 def test_bare_right_join_records_rowset_operation() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            right_join(on=product.id == order.product_id)
+            structure.right_join(on=product.id == order.product_id)
             return Enriched(id=order.id, product_name=product.name)
 
     plan = compile_transform(AddProduct)
@@ -289,7 +265,7 @@ def test_bare_right_join_records_rowset_operation() -> None:
     dependencies = {dependency.target: dependency for dependency in traceability.static_dataflow}
 
     assert step.joins[0].method is JoinMethod.ROWSET
-    assert step.joins[0].how is Join.RIGHT
+    assert step.joins[0].how is structure.Join.RIGHT
     assert step.operations[0].capability is not None
     assert step.operations[0].capability.name == "rowset_join"
     assert step.operations[0].cardinality is OperationCardinality.ROW_MULTIPLYING
@@ -300,17 +276,17 @@ def test_bare_right_join_records_rowset_operation() -> None:
 
 def test_explicit_full_rowset_join_accepts_disjunctive_predicate() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            rowset_join(
+            structure.rowset_join(
                 left=order,
                 right=product,
                 on=(product.id == order.product_id) | (product.name == order.status),
-                how=Join.FULL,
+                how=structure.Join.FULL,
             )
             return Enriched(id=order.id, product_name=product.name)
 
@@ -319,39 +295,39 @@ def test_explicit_full_rowset_join_accepts_disjunctive_predicate() -> None:
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert plan.steps[0].joins[0].method is JoinMethod.ROWSET
-    assert plan.steps[0].joins[0].how is Join.FULL
+    assert plan.steps[0].joins[0].how is structure.Join.FULL
     assert '"full"' in text
     assert "|" in text
 
 
 def test_full_join_shortcut_accepts_non_equi_predicate() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            full_join(on=cast(Any, product).valid_from <= cast(Any, order).status)
+            structure.full_join(on=cast(Any, product).valid_from <= cast(Any, order).status)
             return Enriched(id=order.id, product_name=product.name)
 
     recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert recipe.joins[0].method is JoinMethod.ROWSET
-    assert recipe.joins[0].how is Join.FULL
+    assert recipe.joins[0].how is structure.Join.FULL
     assert "<=" in text
 
 
 def test_cross_join_requires_cartesian_acknowledgement() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            cross_join(product)
+            structure.cross_join(product)
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(TypeError, match="allow_cartesian=True"):
@@ -360,37 +336,37 @@ def test_cross_join_requires_cartesian_acknowledgement() -> None:
 
 def test_cross_join_renders_cross_join_call() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            cross_join(product, allow_cartesian=True)
+            structure.cross_join(product, allow_cartesian=True)
             return Enriched(id=order.id, product_name=product.name)
 
     recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert recipe.joins[0].method is JoinMethod.ROWSET
-    assert recipe.joins[0].how is Join.CROSS
+    assert recipe.joins[0].how is structure.Join.CROSS
     assert ".crossJoin(products_joined)" in text
     assert '".cross"' not in text
 
 
 def test_deduped_lookup_join_records_policy_and_renders_deterministic_lookup() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            lookup_join(
+            structure.lookup_join(
                 product,
                 on=product.id == order.product_id,
-                how=Join.LEFT,
-                dedupe=JoinDedupe.latest_by(product.name),
+                how=structure.Join.LEFT,
+                dedupe=structure.JoinDedupe.latest_by(product.name),
             )
             return Enriched(id=order.id, product_name=product.name)
 
@@ -402,7 +378,7 @@ def test_deduped_lookup_join_records_policy_and_renders_deterministic_lookup() -
     assert len(plan.diagnostics) == 0
     assert step.joins[0].dedupe is not None
     assert step.joins[0].dedupe.direction == "latest"
-    assert step.joins[0].dedupe.ties is TiePolicy.ERROR
+    assert step.joins[0].dedupe.ties is structure.TiePolicy.ERROR
     assert recipe.joins[0].dedupe is not None
     assert (
         "F.row_number().over(Window.partitionBy(F.col(\"products.id\")).orderBy(F.col(\"products.name\").desc()))"
@@ -414,21 +390,21 @@ def test_deduped_lookup_join_records_policy_and_renders_deterministic_lookup() -
 
 def test_deduped_lookup_join_rejects_left_side_ordering() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            lookup_join(
+            structure.lookup_join(
                 product,
                 on=product.id == order.product_id,
-                how=Join.LEFT,
-                dedupe=JoinDedupe.latest_by(order.id),
+                how=structure.Join.LEFT,
+                dedupe=structure.JoinDedupe.latest_by(order.id),
             )
             return Enriched(id=order.id, product_name=product.name)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(AddProduct)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
@@ -437,10 +413,10 @@ def test_deduped_lookup_join_rejects_left_side_ordering() -> None:
 
 def test_temporal_one_records_closed_open_validity_lookup() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
             temporal_one(
@@ -448,7 +424,7 @@ def test_temporal_one_records_closed_open_validity_lookup() -> None:
                 at=order.status,
                 valid_from=product.valid_from,
                 valid_to=product.valid_to,
-                how=Join.LEFT,
+                how=structure.Join.LEFT,
             )
             return Enriched(id=order.id, product_name=product.name)
 
@@ -479,10 +455,10 @@ def test_temporal_one_records_closed_open_validity_lookup() -> None:
 
 def test_temporal_one_rejects_left_side_validity_bound() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
             temporal_one(
@@ -490,11 +466,11 @@ def test_temporal_one_rejects_left_side_validity_bound() -> None:
                 at=order.status,
                 valid_from=order.status,
                 valid_to=product.valid_to,
-                how=Join.LEFT,
+                how=structure.Join.LEFT,
             )
             return Enriched(id=order.id, product_name=product.name)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(AddProduct)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
@@ -503,18 +479,18 @@ def test_temporal_one_rejects_left_side_validity_bound() -> None:
 
 def test_as_of_one_records_backward_lookup_and_renders_ranked_selection() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            as_of_one(
+            structure.as_of_one(
                 on=product.id == order.product_id,
                 left_time=order.status,
                 right_time=product.valid_from,
-                direction=AsOf.BACKWARD,
-                how=Join.LEFT,
+                direction=structure.AsOf.BACKWARD,
+                how=structure.Join.LEFT,
             )
             return Enriched(id=order.id, product_name=product.name)
 
@@ -547,21 +523,21 @@ def test_as_of_one_records_backward_lookup_and_renders_ranked_selection() -> Non
 
 def test_as_of_one_rejects_left_side_right_time() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
-            as_of_one(
+            structure.as_of_one(
                 on=product.id == order.product_id,
                 left_time=order.status,
                 right_time=order.status,
-                how=Join.LEFT,
+                how=structure.Join.LEFT,
             )
             return Enriched(id=order.id, product_name=product.name)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(AddProduct)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
@@ -570,16 +546,16 @@ def test_as_of_one_rejects_left_side_right_time() -> None:
 
 def test_exists_join_does_not_make_relation_fields_readable() -> None:
     @transform
-    class PublishKnownProducts(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class PublishKnownProducts(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def publish(self, order: Order, product: Product) -> Enriched:
-            where(exists(on=product.id == order.product_id))
+            where(structure.exists(on=product.id == order.product_id))
             return Enriched(id=order.id, product_name=product.name)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(PublishKnownProducts)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
@@ -588,17 +564,17 @@ def test_exists_join_does_not_make_relation_fields_readable() -> None:
 
 def test_pre_join_relation_filter_still_fails() -> None:
     @transform
-    class AddProduct(Transform):
-        orders = input(Order)
-        products = input(Product)
-        enriched = output(Enriched)
+    class AddProduct(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        enriched = structure.output(Enriched)
 
         def add_product(self, order: Order, product: Product) -> Enriched:
             where(cast(Any, product).name.is_not_null())
-            lookup_join(product, on=product.id == order.product_id, how=Join.LEFT)
+            structure.lookup_join(product, on=product.id == order.product_id, how=structure.Join.LEFT)
             return Enriched(id=order.id, product_name=product.name)
 
-    with pytest.raises(StructureCompileError) as raised:
+    with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(AddProduct)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
@@ -607,12 +583,12 @@ def test_pre_join_relation_filter_still_fails() -> None:
 
 def test_source_less_project_uses_driving_row() -> None:
     @transform
-    class Publish(Transform):
-        orders = input(Order)
-        published = output(Published)
+    class Publish(structure.Transform):
+        orders = structure.input(Order)
+        published = structure.output(Published)
 
         def publish(self, order: Order) -> Published:
-            return project(Published)
+            return structure.project(Published)
 
     plan = compile_transform(Publish)
 
@@ -621,14 +597,14 @@ def test_source_less_project_uses_driving_row() -> None:
 
 def test_return_chain_join_where_project_uses_ordered_operations() -> None:
     @transform
-    class Publish(Transform):
-        orders = input(Order)
-        products = input(Product)
-        published = output(Published)
+    class Publish(structure.Transform):
+        orders = structure.input(Order)
+        products = structure.input(Product)
+        published = structure.output(Published)
 
         def publish(self, order: Order, product: Product) -> Published:
             return (
-                cast(Any, lookup_join(product, on=product.id == order.product_id))
+                cast(Any, structure.lookup_join(product, on=product.id == order.product_id))
                 .where(cast(Any, order).status.is_not_null())
                 .project(Published)
             )
@@ -641,11 +617,11 @@ def test_return_chain_join_where_project_uses_ordered_operations() -> None:
 
 def test_method_cache_option_records_optimization_operation() -> None:
     @transform
-    class Publish(Transform):
-        orders = input(Order)
-        published = output(Published)
+    class Publish(structure.Transform):
+        orders = structure.input(Order)
+        published = structure.output(Published)
 
-        @transform(cache=True)
+        @dsl_step(cache=True)
         def publish(self, order: Order) -> Published:
             return Published(id=order.id, status=order.status)
 

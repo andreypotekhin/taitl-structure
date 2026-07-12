@@ -125,7 +125,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 
 ### Binding of Inputs and Outputs
 
-Method-level `@transform(input=...)`, `@transform(output=...)`, and `@transform(inout=...)` select which
+Method-level `@step(input=...)`, `@step(output=...)`, and `@step(inout=...)` select which
 declared input, lane, or output a step method consumes or writes.
 
 Binding is optional. Most single-lane transforms rely on inference. Explicit binding handles repeated schemas,
@@ -134,7 +134,7 @@ branches, funnel lanes, and lane names that intentionally shadow original inputs
 Example:
 
 ```python
-@transform(input=lane(normalized), output=enriched)
+@step(input=lane(normalized), output=enriched)
 def add_product(self, order: OrderNormalized) -> OrderEnriched:
     return OrderEnriched.base(order)(...)
 ```
@@ -185,8 +185,10 @@ the point where it is recorded.
 Example:
 
 ```python
-where(order.id.is_not_null())
-where(to_decimal(order.total, precision=12, scale=2) >= 0)
+where(
+    order.id.is_not_null(),
+    to_decimal(order.total, precision=12, scale=2) >= 0,
+)
 ```
 
 ### Join
@@ -213,7 +215,8 @@ def add_customer(self, order: OrderRaw, customer: Customer) -> OrderWithCustomer
 
 A hook is an explicit PySpark escape hatch for arbitrary DataFrame code.
 
-Hooks are declared as `@before(...)` or `@after(...)`.
+Use `@raw(...)` for an explicit PySpark escape hatch. A raw method runs exactly where it appears in the Transform
+class; it receives selected DataFrames as keyword-only parameters and returns the replacement frame or ordered tuple.
 
 Hooks are opaque compiler boundaries. Structure validates metadata and signatures, preserves order, records
 the boundary in IR and traceability, and calls the hook during execution. It does not inspect the hook body as
@@ -222,7 +225,7 @@ compiler-visible logic.
 Example:
 
 ```python
-@after(normalize, lane=orders, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+@raw(lane=orders, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
 def add_quality_columns(self, *, orders, spark, ctx):
     return published.withColumn("_checked", F.lit(True))
 ```

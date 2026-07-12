@@ -168,13 +168,13 @@
       "source": "source:testing.model.v2.orders.transforms.order.EnrichOrders.normalize.field.is_large"
     },
     {
-      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.0.normalize.hook.before.use_current_orders",
-      "ir": "ir:EnrichOrders.step.0.normalize.hook.before.use_current_orders",
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.0.normalize.hook.raw.use_current_orders",
+      "ir": "ir:EnrichOrders.step.0.normalize.hook.raw.use_current_orders",
       "source": "source:testing.model.v2.orders.transforms.order.EnrichOrders.use_current_orders"
     },
     {
-      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.0.normalize.hook.after.remove_negative_totals",
-      "ir": "ir:EnrichOrders.step.0.normalize.hook.after.remove_negative_totals",
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.0.normalize.hook.raw.remove_negative_totals",
+      "ir": "ir:EnrichOrders.step.0.normalize.hook.raw.remove_negative_totals",
       "source": "source:testing.model.v2.orders.transforms.order.EnrichOrders.remove_negative_totals"
     },
     {
@@ -718,8 +718,8 @@
       "source": "source:testing.model.v2.orders.transforms.order.EnrichOrders.add_shipments.field.shipped_at"
     },
     {
-      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.hook.after.note_lookup_inputs",
-      "ir": "ir:EnrichOrders.step.4.add_shipments.hook.after.note_lookup_inputs",
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.hook.raw.note_lookup_inputs",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.hook.raw.note_lookup_inputs",
       "source": "source:testing.model.v2.orders.transforms.order.EnrichOrders.note_lookup_inputs"
     },
     {
@@ -828,8 +828,8 @@
       "source": "source:testing.model.v2.orders.transforms.order.EnrichOrders.publish.field.has_promotion"
     },
     {
-      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.hook.after.add_quality_columns",
-      "ir": "ir:EnrichOrders.step.5.publish.hook.after.add_quality_columns",
+      "generated": "generated:testing.model.v2.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.hook.raw.add_quality_columns",
+      "ir": "ir:EnrichOrders.step.5.publish.hook.raw.add_quality_columns",
       "source": "source:testing.model.v2.orders.transforms.order.EnrichOrders.add_quality_columns"
     },
     {
@@ -869,34 +869,6 @@
       "constant": "CUSTOMER_SCHEMA",
       "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.customer"
     },
-    "CustomerDailyTotal": {
-      "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.analytics"
-    },
-    "CustomerEventRank": {
-      "constant": "CUSTOMER_EVENT_RANK_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.analytics"
-    },
-    "CustomerOrderBackfill": {
-      "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
-    },
-    "OrderCollectionProfile": {
-      "constant": "ORDER_COLLECTION_PROFILE_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.adv_analytics"
-    },
-    "OrderCollectionSource": {
-      "constant": "ORDER_COLLECTION_SOURCE_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.adv_analytics"
-    },
-    "OrderCustomerReconciliation": {
-      "constant": "ORDER_CUSTOMER_RECONCILIATION_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
-    },
-    "OrderCustomerWindow": {
-      "constant": "ORDER_CUSTOMER_WINDOW_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.adv_analytics"
-    },
     "OrderFulfillment": {
       "constant": "ORDER_FULFILLMENT_SCHEMA",
       "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
@@ -904,14 +876,6 @@
     "OrderNormalized": {
       "constant": "ORDER_NORMALIZED_SCHEMA",
       "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
-    },
-    "OrderProductCandidate": {
-      "constant": "ORDER_PRODUCT_CANDIDATE_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
-    },
-    "OrderProductCube": {
-      "constant": "ORDER_PRODUCT_CUBE_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.adv_analytics"
     },
     "OrderPublication": {
       "constant": "ORDER_PUBLICATION_SCHEMA",
@@ -924,10 +888,6 @@
     "OrderRaw": {
       "constant": "ORDER_RAW_SCHEMA",
       "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
-    },
-    "OrderRevenueRollup": {
-      "constant": "ORDER_REVENUE_ROLLUP_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.adv_analytics"
     },
     "OrderWithCustomer": {
       "constant": "ORDER_WITH_CUSTOMER_SCHEMA",
@@ -948,10 +908,6 @@
     "ProductBase": {
       "constant": "PRODUCT_BASE_SCHEMA",
       "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.product"
-    },
-    "ProductDailySummary": {
-      "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.analytics"
     },
     "Promotion": {
       "constant": "PROMOTION_SCHEMA",
@@ -1196,20 +1152,20 @@
       },
       {
         "detail": {
-          "phase": "before",
+          "phase": "raw",
           "project_output": false,
           "schema_mode": "strict"
         },
         "operation": "hook",
         "sources": [
-          "OrderRaw"
+          "OrderNormalized"
         ],
         "step": "normalize",
         "target": "normalize.hook.use_current_orders"
       },
       {
         "detail": {
-          "phase": "after",
+          "phase": "raw",
           "project_output": false,
           "schema_mode": "strict"
         },
@@ -2404,7 +2360,7 @@
       },
       {
         "detail": {
-          "phase": "after",
+          "phase": "raw",
           "project_output": false,
           "schema_mode": "allow_extra_columns"
         },
@@ -2627,7 +2583,7 @@
       },
       {
         "detail": {
-          "phase": "after",
+          "phase": "raw",
           "project_output": true,
           "schema_mode": "allow_extra_columns"
         },
@@ -2653,7 +2609,7 @@
     "opaque_boundaries": [
       {
         "hook": "use_current_orders",
-        "phase": "before",
+        "phase": "raw",
         "reason": "arbitrary PySpark hook body",
         "schema": "OrderNormalized",
         "step": "normalize",
@@ -2661,7 +2617,7 @@
       },
       {
         "hook": "remove_negative_totals",
-        "phase": "after",
+        "phase": "raw",
         "reason": "arbitrary PySpark hook body",
         "schema": "OrderNormalized",
         "step": "normalize",
@@ -2669,7 +2625,7 @@
       },
       {
         "hook": "note_lookup_inputs",
-        "phase": "after",
+        "phase": "raw",
         "reason": "arbitrary PySpark hook body",
         "schema": "OrderFulfillment",
         "step": "add_shipments",
@@ -2677,7 +2633,7 @@
       },
       {
         "hook": "add_quality_columns",
-        "phase": "after",
+        "phase": "raw",
         "reason": "arbitrary PySpark hook body",
         "schema": "OrderPublished",
         "step": "publish",
@@ -2700,9 +2656,7 @@
       "output_schema": "OrderNormalized",
       "results": [
         {
-          "after_hooks": [
-            "remove_negative_totals"
-          ],
+          "after_hooks": [],
           "frame": "orders",
           "lane": "orders",
           "schema": "OrderNormalized"
@@ -2847,9 +2801,7 @@
       "output_schema": "OrderFulfillment",
       "results": [
         {
-          "after_hooks": [
-            "note_lookup_inputs"
-          ],
+          "after_hooks": [],
           "frame": "orders",
           "lane": "orders",
           "schema": "OrderFulfillment"
@@ -2882,9 +2834,7 @@
       "output_schema": "OrderPublished",
       "results": [
         {
-          "after_hooks": [
-            "add_quality_columns"
-          ],
+          "after_hooks": [],
           "frame": "published",
           "lane": "published",
           "schema": "OrderPublished"

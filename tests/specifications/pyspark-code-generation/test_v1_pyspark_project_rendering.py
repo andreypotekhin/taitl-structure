@@ -94,7 +94,7 @@ def test_v1_project_renderer_emits_runtime_schemas_transform_and_traceability() 
     )
     assert {
         "hook": "add_quality_columns",
-        "phase": "after",
+        "phase": "raw",
         "reason": "arbitrary PySpark hook body",
         "schema": "OrderPublished",
         "step": "publish",

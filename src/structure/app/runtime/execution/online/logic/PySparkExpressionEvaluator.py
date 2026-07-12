@@ -61,6 +61,11 @@ class PySparkExpressionEvaluator:
             return self.evaluate(left, functions=functions, aliases=aliases, window=window).eqNullSafe(
                 self.evaluate(right, functions=functions, aliases=aliases, window=window)
             )
+        if expression.kind == "isin":
+            value, *items = expression.args
+            return self.evaluate(value, functions=functions, aliases=aliases, window=window).isin(
+                *(self.evaluate(item, functions=functions, aliases=aliases, window=window) for item in items)
+            )
         if expression.kind == "not":
             return ~self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window)
         raise TypeError(f"Unsupported PySpark expression recipe: {expression.kind}")

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from structure import Join, String, Structure, Transform, after, field, input, lookup_join, output, transform
+from structure import Join, String, Structure, Transform, field, input, lookup_join, output, raw, step, transform
 
 
 class LookupOrder(Structure):
@@ -25,7 +25,7 @@ class AddLookupProduct(Transform):
     accepted = output(LookupEnriched)
     audited = output(LookupEnriched)
 
-    @transform(input=[orders, products], output=[accepted, audited])
+    @step(input=[orders, products], output=[accepted, audited])
     def add_product(
         self,
         order: LookupOrder,
@@ -39,6 +39,6 @@ class AddLookupProduct(Transform):
         row = LookupEnriched(id=order.id, product_name=product.name)
         return row, row
 
-    @after(add_product, lane=audited)
+    @raw(lane=audited)
     def audit(self, *, audited, spark, ctx):
         return audited

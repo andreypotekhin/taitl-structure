@@ -63,7 +63,6 @@ from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
 from orders.schemas.customer import Customer
 
 class EnrichOrders(Transform):
-
     orders = input(OrderRaw)
     customers = input(Customer)
     products = input(Product)
@@ -103,7 +102,7 @@ class EnrichOrders(Transform):
             product_category=product.category,
         )
 
-    @after(add_product)
+    @raw(lane=orders)
     def add_quality_columns(self, *, orders, spark, ctx):
         return (
             orders
@@ -114,7 +113,7 @@ class EnrichOrders(Transform):
 
 ### Running a Transform
 
-For transform object, specify DataFrame inputs and call `.run(session)`:
+Create transform object, specify DataFrame inputs and call `.run(session)`:
 
 ```python
 from structure import StructureConfig, StructureSession
@@ -132,9 +131,11 @@ result = EnrichOrders(
 enriched_df = result.enriched
 ```
 
+Transforms' .run() method generates and runs PySpark code similar to the code below. Execution order follows the declared order of transform's 'step' methods - the methods that take schema object(s) and  return schema object(s).
+
 ### Generated PySpark Code
 
-Transforms' .run() method generates and runs PySpark code similar to the code below. 
+Transforms' .run() method generates and runs PySpark code similar to this:
 
 ```python
 from pyspark.sql import DataFrame, SparkSession
@@ -231,20 +232,163 @@ class EnrichOrdersGenerated:
 
 We can also generate PySpark source code into a file, if that's needed for your project.
 
+## API Coverage
+
+Structure tries to cover most of PySpark APIs related to data transformation: projection, filtering, joins, aggregation, deduplication, windowing, higher order functions.
+
+Example of a less-trivial analytical transform:
+
+```python
+class OrderAnalytics(Transform):
+    orders = input(OrderFulfillment)
+    collections = input(OrderCollectionSource)
+    product_summaries = output(ProductDailySummary)
+    revenue_rollups = output(OrderRevenueRollup)
+    product_cubes = output(OrderProductCube)
+    customer_windows = output(OrderCustomerWindow)
+    collection_profiles = output(OrderCollectionProfile)
+
+  def product_daily_summary(self, order: OrderFulfillment) -> ProductDailySummary:
+      group_by(
+          tenant_id=order.tenant.tenant_id,
+          product_id=order.product_id,
+          order_date=order.business.order_date,
+      )
+
+      return ProductDailySummary(
+          tenant=order.tenant,
+          product_id=order.product_id,
+          order_date=order.business.order_date,
+          order_count=count(),
+          distinct_customers=count_distinct(order.customer_id),
+          units=sum(order.quantity),
+          min_units=min(order.quantity),
+          max_units=max(order.quantity),
+          avg_units=avg(order.quantity),
+          gross_total=sum(order.total),
+      )
+
+    def revenue_rollup(self, order: OrderFulfillment) -> OrderRevenueRollup:
+        rollup(
+            tenant_id=order.tenant.tenant_id,
+            product_category=order.product_category,
+            order_date=order.business.order_date,
+        )
+
+        return OrderRevenueRollup(
+            tenant_id=order.tenant.tenant_id,
+            product_category=order.product_category,
+            order_date=order.business.order_date,
+            grouping_id=grouping_id(),
+            category_subtotal=is_grouped(order.product_category),
+            order_count=count(),
+            large_order_count=count(where=order.is_large),
+            large_units=sum(order.quantity, where=order.is_large),
+            any_large_order=bool_or(order.is_large),
+            all_large_orders=bool_and(order.is_large),
+            quantity_stddev=stddev(order.quantity),
+            quantity_variance=variance(order.quantity),
+            quantity_median=approx_percentile(order.quantity, 0.5, accuracy=100),
+            quantity_total=sum(order.quantity),
+            quantity_price_corr=corr(order.quantity, order.product_list_price),
+            quantity_price_covar=covar(order.quantity, order.product_list_price),
+            estimated_customers=approx_count_distinct(order.customer_id),
+            first_customer_id=first_value(order.customer_id, order_by=order.quantity),
+            last_customer_id=last_value(order.customer_id, order_by=order.quantity),
+            customer_ids=collect_set(order.customer_id),
+            order_ids=collect_list(order.id),
+        )
+
+    def product_cube(self, order: OrderFulfillment) -> OrderProductCube:
+        cube(
+            tenant_id=order.tenant.tenant_id,
+            product_category=order.product_category,
+            customer_tier=order.customer_tier,
+        )
+
+        return OrderProductCube(
+            tenant_id=order.tenant.tenant_id,
+            product_category=order.product_category,
+            customer_tier=order.customer_tier,
+            grouping_id=grouping_id(),
+            order_count=count(),
+            distinct_customers=count_distinct(order.customer_id),
+            gross_total=sum(order.total),
+        )
+
+    def customer_window(self, order: OrderFulfillment) -> OrderCustomerWindow:
+        customer_window = window(
+            partition_by=order.customer_id,
+            order_by=order.quantity,
+            frame=rows_between(preceding(2), current_row()),
+        )
+
+        return OrderCustomerWindow(
+            tenant_id=order.tenant.tenant_id,
+            customer_id=order.customer_id,
+            order_id=order.id,
+            quantity=order.quantity,
+            percent_rank=percent_rank(over=customer_window),
+            cume_dist=cume_dist(over=customer_window),
+            quantity_tile=ntile(2, over=customer_window),
+            first_order_id=first_value(order.id, over=customer_window),
+            last_order_id=last_value(order.id, over=customer_window),
+            second_order_id=nth_value(order.id, 2, over=customer_window),
+            running_units=window_sum(order.quantity, over=customer_window),
+            running_avg_units=window_avg(order.quantity, over=customer_window),
+            running_min_units=window_min(order.quantity, over=customer_window),
+            running_max_units=window_max(order.quantity, over=customer_window),
+            running_order_count=window_count(over=customer_window),
+        )
+
+    def collection_profile(self, row: OrderCollectionSource) -> OrderCollectionProfile:
+        normalized_attributes = map_filter(
+            map_transform_keys(
+                map_transform_values(row.attributes, lambda key, value: lower(trim(value))),
+                lambda key, value: lower(trim(key)),
+            ),
+            lambda key, value: value.is_not_null(),
+        )
+
+        return OrderCollectionProfile(
+            id=row.id,
+            normalized_tags=arr_distinct(
+              arr_zip_with(row.tags, row.tags, lambda left, right: lower(trim(left)))),
+            sorted_tags=arr_sort_by(row.tags, lambda tag: lower(trim(tag))),
+            flat_tags=arr_flatten(row.nested_tags),
+            score_total=arr_aggregate(row.scores, 0, lambda acc, item: acc + item),
+            tag_position=arr_position(row.tags, "priority"),
+            has_priority=arr_exists(row.tags, lambda tag: lower(trim(tag)) == "priority"),
+            all_tags_present=arr_forall(row.tags, lambda tag: tag.is_not_null()),
+            normalized_attributes=normalized_attributes,
+            zipped_attributes=map_zip_with(
+              row.attributes, row.attributes, lambda key, left, right: lower(trim(left))),
+            attribute_keys=map_keys(row.attributes),
+            attribute_values=map_values(row.attributes),
+            roundtrip_attributes=map_from_entries(map_entries(row.attributes)),
+        )
+```
+
+
+
 ## Performance Focus
 
-Structure is intentionally strict: compiled methods must lower to Spark-plan-visible expressions.
+Structure is intentionally strict: compiled methods must lower to Spark Optimizer-visible expressions.
 
 Unsupported Python operations are rejected. This is a performance feature: Spark can optimize transformations only when work remains visible in the DataFrame logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, and whole-stage code generation all depend on expressing work through Spark's relational expression model.
 
-Arbitrary PySpark is still supported, but only through explicit @before/@after hooks around step method. Hooks receive the underlying DataFrame(s) for arbitrary manipulation. Hooks are escape hatches: Structure calls them, records them as opaque boundaries, but does not treat their body as compiler-visible logic.
+Arbitrary PySpark is still supported, but only through explicit @raw hooks around step method. Hooks receive the underlying DataFrame(s) for arbitrary manipulation. Hooks are escape hatches: Structure calls them, records them as opaque boundaries, but does not treat their body as compiler-visible logic.
 
 ## IDE Friendliness
 
-Python-first approach allows for IDE conveniences, such as:
-- Jumping to schema definitions from arbitrary locations in code.
-- Navigating to code locations where a schema or transform class is used.
-- Displaying inheritance hierarchy of schemas/transforms.
+Python-first approach allows for such IDE conveniences, as:
+- Jumping to schema definitions from arbitrary location in code.
+- Navigating to the code where a schema or a transform class or method is used.
+- Displaying inheritance hierarchies of schemas/transforms.
+
+## Out of scope
+
+Structure focus is on data transformation. Loading the data, writing to storage, orchestrating and other activities outside of data transformation is responsibility of end-user.
 
 ## Compatibility
 

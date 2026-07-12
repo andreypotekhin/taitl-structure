@@ -1,4 +1,4 @@
-from structure import Join, String, Structure, Transform, field, input, lookup_join, output, transform
+from structure import Join, String, Structure, Transform, field, input, lookup_join, output, step, transform
 from structure.app.dsl.api import compile_transform
 
 
@@ -27,7 +27,7 @@ def test_multiple_schema_parameters_and_results_are_explicit() -> None:
         accepted = output(Enriched)
         audited = output(Enriched)
 
-        @transform(input=[external, products], output=[accepted, audited])
+        @step(input=[external, products], output=[accepted, audited])
         def add_product(
             self,
             order: Order,

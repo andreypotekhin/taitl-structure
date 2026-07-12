@@ -8,7 +8,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 01 Vertical Slice 1 | Schemas, Transform Classes, Inputs, Online Execution, Generated Code, Testing | simple schema, one transform, online runner, generated class, Spark execution test |
 | Sprint 02 Schemas and Validation | Schema Validation, Generated Code, Configuration | `StructType` generation, `assert_schema`, intermediate validation defaults |
 | Sprint 03 Expressions/Filtering/Helpers | Symbolic Execution, Expression Helpers, Filtering, Error Reporting | expression IR, `where`, `@special(type="expr")`, diagnostic registry, structured unsupported-code errors |
-| Sprint 04 Hooks/Generated Classes | Hooks, Generated Code, Error Reporting | `@after(method, lane=lane)`, direct hook calls, no-hook cleanliness |
+| Sprint 04 Hooks/Generated Classes | Hooks, Generated Code, Error Reporting | `@raw(lane=lane)`, direct hook calls, no-hook cleanliness |
 | Sprint 05 Joins/Compiler Traceability/Build | Joins, Compiler Traceability, Build Integration, Streaming Compatibility | `lookup_join`, N-step joins, compiler provenance, static dataflow traceability, `--fail-on-diff`, `explain` |
 | Sprint 06 v.2 Scope/Analytical IR | v.2 Foundations, Backend Capabilities, Traceability, Streaming Compatibility | v.2 scope, non-goals, operation taxonomy, capability placeholders, fixture skeletons, diagnostic anchors |
 | Sprint 07 Analytical Join Coverage | Analytical Joins, Backend Capabilities, Traceability, Streaming Compatibility | existence joins, `inner_join`, deterministic lookup dedupe, temporal joins, as-of joins |
@@ -67,7 +67,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 
 ### Sprint 04
 
-- As a developer, I can attach a hook with `@after(method, lane=lane)`.
+- As a developer, I can attach a hook with `@raw(lane=lane)`.
 - As a developer, I can write a selected lane hook signature such as `def hook(self, *, orders, spark, ctx)`.
 - As a developer, online execution directly calls hooks when hooks exist.
 - As a developer, generated code directly calls hooks when hooks exist.

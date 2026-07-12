@@ -174,14 +174,13 @@ Online execution must preserve generated-code semantics:
 
 1. Validate declared input DataFrames.
 2. Create a read-only hook input namespace only when at least one hook declares `pass_inputs=True`.
-3. Execute step methods in source order.
-4. Run `@before` hooks before the compiled operations for their target step.
-5. Lower shared filters and joins, then materialize every ordered result projection.
-6. Run each `@after` hook against its selected result DataFrame.
-7. Validate intermediate schemas according to project, class, and method policy.
-8. Apply hook `schema_mode` and `project_output` rules.
-9. Validate every output DataFrame.
-10. Return a read-only `TransformResult`.
+3. Execute step methods and `@raw` hooks in Transform class declaration order.
+4. For each step, lower shared filters and joins, then materialize every ordered result projection.
+5. Invoke each raw hook against its selected lane DataFrame at its source-order boundary.
+6. Validate intermediate schemas according to project, class, and method policy.
+7. Apply hook `schema_mode` and `project_output` rules at the hook boundary.
+8. Validate every output DataFrame.
+9. Return a read-only `TransformResult`.
 
 Online and generated execution must agree on hook order, validation placement, expression lowering, join aliasing,
 projection shape, schema projection, result shape, and performance guardrails.

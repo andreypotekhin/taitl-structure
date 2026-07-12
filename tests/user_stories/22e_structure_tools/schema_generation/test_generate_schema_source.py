@@ -32,14 +32,19 @@ def test_generate_structure_schema_from_pyspark_struct_type() -> None:
 
     text = StructureTools.schemas.generate(schema=schema, to="OrderRaw")
 
-    assert "class OrderRawShipping(Structure):" in text
-    assert "    street = field(String(), nullable=True)" in text
-    assert "class OrderRaw(Structure):" in text
-    assert "    id = field(String(), nullable=False)" in text
-    assert "    total = field(Decimal(12, 2), nullable=True)" in text
-    assert "    tags = field(Array(String(), contains_null=False), nullable=True)" in text
-    assert "    attributes = field(Map(String(), String(), value_contains_null=True), nullable=True)" in text
-    assert "    shipping = field(Struct(OrderRawShipping), nullable=True)" in text
+    assert "import structure" in text
+    assert "class OrderRawShipping(structure.Structure):" in text
+    assert "    street = structure.field(structure.String(), nullable=True)" in text
+    assert "class OrderRaw(structure.Structure):" in text
+    assert "    id = structure.field(structure.String(), nullable=False)" in text
+    assert "    total = structure.field(structure.Decimal(12, 2), nullable=True)" in text
+    assert "    tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)" in text
+    assert (
+        "    attributes = structure.field("
+        "structure.Map(structure.String(), structure.String(), value_contains_null=True), nullable=True)"
+        in text
+    )
+    assert "    shipping = structure.field(structure.Struct(OrderRawShipping), nullable=True)" in text
 
 
 def test_generate_structure_schema_from_dataframe_like_schema() -> None:
@@ -48,8 +53,8 @@ def test_generate_structure_schema_from_dataframe_like_schema() -> None:
 
     text = StructureTools.schemas.generate(schema=DataFrame(), to="OrderRaw")
 
-    assert "class OrderRaw(Structure):" in text
-    assert "    id = field(String(), nullable=False)" in text
+    assert "class OrderRaw(structure.Structure):" in text
+    assert "    id = structure.field(structure.String(), nullable=False)" in text
 
 
 def test_generate_structure_schema_uses_aliases_for_non_identifier_spark_fields() -> None:
@@ -64,7 +69,7 @@ def test_generate_structure_schema_uses_aliases_for_non_identifier_spark_fields(
 
     text = StructureTools.schemas.generate(schema=schema, to="OrderRaw")
 
-    assert '    promo_code = field(String(), nullable=True, alias="promo-code")' in text
-    assert '    customer_id = field(String(), nullable=True, alias="customer id")' in text
-    assert '    class_ = field(String(), nullable=True, alias="class")' in text
-    assert '    field_1st_code = field(String(), nullable=True, alias="1st code")' in text
+    assert '    promo_code = structure.field(structure.String(), nullable=True, alias="promo-code")' in text
+    assert '    customer_id = structure.field(structure.String(), nullable=True, alias="customer id")' in text
+    assert '    class_ = structure.field(structure.String(), nullable=True, alias="class")' in text
+    assert '    field_1st_code = structure.field(structure.String(), nullable=True, alias="1st code")' in text

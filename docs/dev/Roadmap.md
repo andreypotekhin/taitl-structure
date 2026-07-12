@@ -30,7 +30,7 @@ Connect hardening left outside the Sprint 09 support claim.
 - Symbolic `lookup_join(...)`.
 - N-step serial joins.
 - `@special(type="expr")` helpers.
-- `@before(method, lane=lane)` and `@after(method, lane=lane)` hooks.
+- `@raw(lane=lane)` and `@raw(lane=lane)` hooks.
 - Compiler provenance from source node to IR node to generated PySpark node.
 - Static dataflow traceability inferred from IR.
 - Streaming-compatible online and generated transforms.

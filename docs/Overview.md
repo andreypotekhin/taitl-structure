@@ -109,7 +109,7 @@ class EnrichOrders(Transform):
             product_category=product.category,
         )
 
-    @after(add_product)
+    @raw
     def add_quality_columns(self, *, orders, spark, ctx):
         return (
             orders

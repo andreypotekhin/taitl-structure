@@ -915,7 +915,7 @@ Reference: [transform inheritance and composition](reference/TransformCompositio
 Hooks are explicit PySpark escape hatches.
 
 ```python
-@after(normalize, lane=orders)
+@raw(lane=orders)
 def remove_negative_totals(self, *, orders, spark, ctx):
     return orders.where(F.col("total") >= 0)
 ```
@@ -933,7 +933,7 @@ to hooks by default.
 When a hook needs the original named inputs, opt in explicitly:
 
 ```python
-@after(normalize, lane=orders, pass_inputs=True)
+@raw(lane=orders, pass_inputs=True)
 def check_against_raw_orders(self, *, orders, inputs, spark, ctx):
     raw = inputs.orders
     return orders
@@ -945,7 +945,7 @@ def check_against_raw_orders(self, *, orders, inputs, spark, ctx):
 Select hook DataFrames explicitly with input, lane, or output declarations:
 
 ```python
-@after(add_product, lane=audited)
+@raw(lane=audited)
 def add_audit_columns(self, *, audited, spark, ctx):
     return audited.withColumn("_audited", F.lit(True))
 ```

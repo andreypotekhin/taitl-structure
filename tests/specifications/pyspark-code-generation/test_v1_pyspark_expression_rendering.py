@@ -1,21 +1,6 @@
 from typing import Any, cast
 
-from structure import (
-    Boolean,
-    Integer,
-    String,
-    Struct,
-    Structure,
-    Transform,
-    field,
-    input,
-    output,
-    transform,
-    trim,
-    upper,
-    when,
-    where,
-)
+import structure
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
@@ -78,16 +63,16 @@ def test_v1_expression_renderer_renders_join_predicates() -> None:
 
 
 def test_v1_expression_renderer_passes_field_aliases_to_spark() -> None:
-    class Raw(Structure):
-        promotion_code = field(String(), nullable=True, alias="promo-code")
+    class Raw(structure.Structure):
+        promotion_code = structure.field(structure.String(), nullable=True, alias="promo-code")
 
-    class Published(Structure):
-        promotion_code = field(String(), nullable=True)
+    class Published(structure.Structure):
+        promotion_code = structure.field(structure.String(), nullable=True)
 
-    @transform
-    class Publish(Transform):
-        rows = input(Raw)
-        published = output(Published)
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
 
         def publish(self, row: Raw) -> Published:
             return Published(promotion_code=row.promotion_code)
@@ -99,29 +84,29 @@ def test_v1_expression_renderer_passes_field_aliases_to_spark() -> None:
 
 
 def test_v1_expression_renderer_renders_nested_struct_construction() -> None:
-    class Address(Structure):
-        city = field(String(), nullable=False)
-        postal_code = field(String(), nullable=False)
+    class Address(structure.Structure):
+        city = structure.field(structure.String(), nullable=False)
+        postal_code = structure.field(structure.String(), nullable=False)
 
-    class Raw(Structure):
-        id = field(String(), nullable=False)
-        shipping = field(Struct(Address), nullable=True)
+    class Raw(structure.Structure):
+        id = structure.field(structure.String(), nullable=False)
+        shipping = structure.field(structure.Struct(Address), nullable=True)
 
-    class Published(Structure):
-        id = field(String(), nullable=False)
-        shipping = field(Struct(Address), nullable=False)
+    class Published(structure.Structure):
+        id = structure.field(structure.String(), nullable=False)
+        shipping = structure.field(structure.Struct(Address), nullable=False)
 
-    @transform
-    class Publish(Transform):
-        rows = input(Raw)
-        published = output(Published)
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
 
         def publish(self, row: Raw) -> Published:
-            where(row.shipping.is_not_null())  # type: ignore[attr-defined]
+            structure.where(row.shipping.is_not_null())  # type: ignore[attr-defined]
             return Published(
                 id=row.id,
                 shipping=Address(
-                    city=trim(row.shipping.city),  # type: ignore[attr-defined]
+                    city=structure.trim(row.shipping.city),  # type: ignore[attr-defined]
                     postal_code=row.shipping.postal_code,  # type: ignore[attr-defined]
                 ),
             )
@@ -136,19 +121,19 @@ def test_v1_expression_renderer_renders_nested_struct_construction() -> None:
 
 
 def test_v1_expression_renderer_escapes_dotted_nested_field_aliases() -> None:
-    class Address(Structure):
-        postal_code = field(String(), nullable=False, alias="postal.code")
+    class Address(structure.Structure):
+        postal_code = structure.field(structure.String(), nullable=False, alias="postal.code")
 
-    class Raw(Structure):
-        shipping = field(Struct(Address), nullable=False)
+    class Raw(structure.Structure):
+        shipping = structure.field(structure.Struct(Address), nullable=False)
 
-    class Published(Structure):
-        postal_code = field(String(), nullable=False)
+    class Published(structure.Structure):
+        postal_code = structure.field(structure.String(), nullable=False)
 
-    @transform
-    class Publish(Transform):
-        rows = input(Raw)
-        published = output(Published)
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
 
         def publish(self, row: Raw) -> Published:
             return Published(postal_code=row.shipping.postal_code)  # type: ignore[attr-defined]
@@ -162,33 +147,36 @@ def test_v1_expression_renderer_escapes_dotted_nested_field_aliases() -> None:
 
 
 def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> None:
-    class Raw(Structure):
-        customer_id = field(String(), nullable=False)
-        total = field(Integer(), nullable=False)
-        tax = field(Integer(), nullable=False)
-        price = field(Integer(), nullable=False)
-        quantity = field(Integer(), nullable=False)
+    class Raw(structure.Structure):
+        customer_id = structure.field(structure.String(), nullable=False)
+        status = structure.field(structure.String(), nullable=True)
+        total = structure.field(structure.Integer(), nullable=False)
+        tax = structure.field(structure.Integer(), nullable=False)
+        price = structure.field(structure.Integer(), nullable=False)
+        quantity = structure.field(structure.Integer(), nullable=False)
 
-    class Published(Structure):
-        customer_id = field(String(), nullable=False)
-        size_tier = field(String(), nullable=False)
-        is_big = field(Boolean(), nullable=False)
-        is_small = field(Boolean(), nullable=False)
-        is_at_most_sample = field(Boolean(), nullable=False)
-        total_with_tax = field(Integer(), nullable=False)
-        line_total = field(Integer(), nullable=False)
+    class Published(structure.Structure):
+        customer_id = structure.field(structure.String(), nullable=False)
+        size_tier = structure.field(structure.String(), nullable=False)
+        is_big = structure.field(structure.Boolean(), nullable=False)
+        is_open = structure.field(structure.Boolean(), nullable=True)
+        is_small = structure.field(structure.Boolean(), nullable=False)
+        is_at_most_sample = structure.field(structure.Boolean(), nullable=False)
+        total_with_tax = structure.field(structure.Integer(), nullable=False)
+        line_total = structure.field(structure.Integer(), nullable=False)
 
-    @transform
-    class Publish(Transform):
-        rows = input(Raw)
-        published = output(Published)
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
 
         def publish(self, row: Raw) -> Published:
             order = cast(Any, row)
             return Published(
-                customer_id=upper(trim(order.customer_id)),
-                size_tier=when(order.total >= 1000, "large").otherwise("standard"),
+                customer_id=structure.upper(structure.trim(order.customer_id)),
+                size_tier=structure.when(order.total >= 1000, "large").otherwise("standard"),
                 is_big=order.total >= 1000,
+                is_open=order.status.isin("new", "held"),
                 is_small=order.total < 100,
                 is_at_most_sample=order.total <= 100,
                 total_with_tax=order.total + order.tax,
@@ -207,6 +195,9 @@ def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> N
         'F.when((F.col("orders.total") >= F.lit(1000)), F.lit(\'large\')).otherwise(F.lit(\'standard\'))'
     )
     assert render(projection["is_big"], scope_aliases={"rows": "orders"}) == '(F.col("orders.total") >= F.lit(1000))'
+    assert render(projection["is_open"], scope_aliases={"rows": "orders"}) == (
+        'F.col("orders.status").isin(F.lit(\'new\'), F.lit(\'held\'))'
+    )
     assert render(projection["is_small"], scope_aliases={"rows": "orders"}) == '(F.col("orders.total") < F.lit(100))'
     assert render(projection["is_at_most_sample"], scope_aliases={"rows": "orders"}) == (
         '(F.col("orders.total") <= F.lit(100))'

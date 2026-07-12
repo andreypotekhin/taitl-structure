@@ -13,6 +13,7 @@ from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecu
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.app.target.pyspark.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
+from structure.app.target.pyspark.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
 
 
 class RunOnlinePySparkTransform:
@@ -203,7 +204,15 @@ class RunOnlinePySparkTransform:
     def _operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, *, frames, functions, window, types):
         if not step.operations:
             for join in step.joins:
-                df = self._join(step, df, join, frames=frames, functions=functions, window=window)
+                df = self._join(
+                    step,
+                    df,
+                    join,
+                    frames=frames,
+                    functions=functions,
+                    window=window,
+                    watermarks=(),
+                )
             for filter in step.filters:
                 df = df.where(
                     self._expressions.evaluate(filter, functions=functions, aliases=self._scope_aliases(step), window=window)
@@ -214,7 +223,15 @@ class RunOnlinePySparkTransform:
         joined_scopes: set[str] = set()
         for operation in step.operations:
             if operation.kind == "join" and operation.join is not None:
-                df = self._join(step, df, operation.join, frames=prepared_frames, functions=functions, window=window)
+                df = self._join(
+                    step,
+                    df,
+                    operation.join,
+                    frames=prepared_frames,
+                    functions=functions,
+                    window=window,
+                    watermarks=self._right_watermarks(step, operation.join),
+                )
                 joined_scopes.add(operation.join.input_name)
             if operation.kind == "filter" and operation.filter is not None:
                 df = df.where(
@@ -246,7 +263,26 @@ class RunOnlinePySparkTransform:
                     prepared_frames[scope] = prepared
                 else:
                     df = df.dropDuplicates(self._drop_duplicates_subset(subset))
+            if operation.kind == "watermark" and operation.watermark is not None:
+                if operation.watermark.scope == getattr(step, "source_scope", ""):
+                    df = self._watermark(operation.watermark, df)
         return df
+
+    def _watermark(self, watermark: PySparkWatermarkRecipe, frame):
+        return frame.withWatermark(watermark.column, watermark.delay)
+
+    def _right_watermarks(
+        self,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        join: PySparkJoinRecipe,
+    ) -> tuple[PySparkWatermarkRecipe, ...]:
+        return tuple(
+            operation.watermark
+            for operation in step.operations
+            if operation.kind == "watermark"
+            and operation.watermark is not None
+            and operation.watermark.scope == join.input_name
+        )
 
     def _source_for_scope(self, step: PySparkStepRecipe | PySparkOutputRecipe, scope: str) -> str:
         for join in step.joins:
@@ -495,12 +531,24 @@ class RunOnlinePySparkTransform:
             return type.name
         return materialize_pyspark_schema.type(type, types=types)
 
-    def _join(self, step: PySparkStepRecipe | PySparkOutputRecipe, df, join, *, frames, functions, window):
+    def _join(
+        self,
+        step: PySparkStepRecipe | PySparkOutputRecipe,
+        df,
+        join,
+        *,
+        frames,
+        functions,
+        window,
+        watermarks: tuple[PySparkWatermarkRecipe, ...],
+    ):
         row_id = None
         if join.as_of is not None:
             row_id = f"__structure_{join.left_alias}_{join.right_alias}_row"
             df = df.withColumn(row_id, functions.monotonically_increasing_id())
         right = frames[join.source]
+        for watermark in watermarks:
+            right = self._watermark(watermark, right)
         if join.strategy is not None:
             right = right.hint(join.strategy.value)
         right = right.alias(join.right_alias)

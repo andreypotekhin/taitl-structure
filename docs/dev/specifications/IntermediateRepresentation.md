@@ -305,7 +305,7 @@ Fields:
 - `validate_output`: effective validation decision for this step.
 - `source`: source anchor for the step method.
 - `inputs`: ordered parameter bindings; the first is marked as the driving relation.
-- `results`: ordered result projections with schema, destination lane, frame name, and result-specific after hooks.
+- `results`: ordered result projections with schema, destination lane, frame name, and result-specific raw hooks.
 
 Rules:
 
@@ -313,13 +313,13 @@ Rules:
 - A step may consume only a lane or declared input frame already available earlier in source order.
 - Every parameter annotation must match its ordered input binding.
 - Every returned schema must match its ordered result binding.
-- Joins and filters are shared by all results; projections and after hooks belong to individual results.
-- Before hooks run before compiled operations for the step.
-- After hooks run after compiled operations for the step.
+- Joins and filters are shared by all results; projections and raw hooks belong to individual results.
+- raw hooks run before compiled operations for the step.
+- raw hooks run after compiled operations for the step.
 - `operations` should contain compiled `HookCall` and `ValidateSchema` operations only when an implementation chooses
   a single stream of operations. If hooks are also stored in `hooks_before` and `hooks_after`, duplication must be
   avoided in execution.
-- The last compiled operation before after hooks should establish the step output schema, usually through `Project`.
+- The last compiled operation before raw hooks should establish the step output schema, usually through `Project`.
 - Step output validation is represented explicitly enough for online and generated execution to place validation
   identically.
 
@@ -335,7 +335,7 @@ or:
 operations containing HookCall and ValidateSchema in exact execution order
 ```
 
-If the second shape is used, convenience accessors should still expose before hooks, after hooks, and validation points
+If the second shape is used, convenience accessors should still expose raw hooks, raw hooks, and validation points
 for code generation and diagnostics.
 
 ## OutputPlan
@@ -595,14 +595,13 @@ HookCall
 
 Values:
 
-- `timing`: `before` or `after`;
 - `schema_mode`: strict default or `allow_extra_columns` at minimum.
 
 Rules:
 
 - Hooks are opaque runtime boundaries.
-- Hook calls preserve source order for the same timing and target step.
-- `target_step` references a `StepPlan`.
+- Hook calls preserve Transform class declaration order.
+- Source and output lanes reference declared inputs, lanes, or outputs.
 - `pass_inputs` records whether online and generated execution must pass the original named inputs namespace.
 - Hook calls must not contain the runtime DataFrame returned by the hook.
 - Hook calls must not contain generated PySpark source text.
@@ -634,7 +633,7 @@ Fields:
 Rules:
 
 - Input validation points occur before step execution.
-- Intermediate validation points occur after compiled step output and after after hooks when policy enables them.
+- Intermediate validation points occur after compiled step output and after raw hooks when policy enables them.
 - Hook validation points follow hook metadata.
 - When `project_output=True`, IR must represent validate, project, then strict validate.
 - Disabled validation should omit the validation point rather than represent it as a no-op mode.
@@ -1239,7 +1238,7 @@ Rules:
 7. Build `FilterOperation` records from `where(...)`.
 8. Build `JoinOperation` records from `lookup_join(...)`.
 9. Build `ProjectOperation` records from schema constructors and schema base overlays.
-10. Build `HookCall` records from `@before(...)` and `@after(...)` metadata without executing hooks.
+10. Build `HookCall` records from `@raw` metadata without executing hooks.
 11. Resolve effective validation policy into explicit validation metadata.
 12. Run generic IR validation before backend lowering.
 13. Run type and nullability checks using Structure type metadata.
@@ -1279,8 +1278,8 @@ The implementation is complete when tests prove:
 - `lookup_join(...)` produces a `JoinOperation` with joined scope, join type, hint, ordered key pairs, and cardinality
   status;
 - repeated joins of the same input produce deterministic joined scope occurrence numbers;
-- hooks produce `HookCall` IR with timing, target step, `pass_inputs`, `schema_mode`, `project_output`, and
-  `streaming_safe`;
+- hooks produce `HookCall` IR with source order, selected source lanes, selected output lanes, `pass_inputs`,
+  `schema_mode`, `project_output`, and `streaming_safe`;
 - hook functions are not executed during IR construction;
 - validation policy is represented so online and generated execution place validation identically;
 - `project_output=True` is represented as validate, project, then strict validate;

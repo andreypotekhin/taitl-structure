@@ -20,7 +20,7 @@ This specification owns the public DSL surface and cross-cutting rules for:
 - public schema-returning step methods;
 - `@special(type="expr")`;
 - `where(...)`;
-- `@before(...)` and `@after(...)`;
+- `@raw`;
 - `@validate_output(...)`;
 - `StructureSession`;
 - expression helper imports;
@@ -48,72 +48,7 @@ document owns how those features appear and compose in the public DSL.
 The v.1 public DSL must be importable from `structure`:
 
 ```python
-from structure import (
-    Structure,
-    field,
-    String,
-    Integer,
-    Long,
-    Float,
-    Double,
-    Decimal,
-    Boolean,
-    Date,
-    Timestamp,
-    Array,
-    Struct,
-    Map,
-    Transform,
-    transform,
-    input,
-    output,
-    special,
-    where,
-    group_by,
-    count,
-    count_distinct,
-    sum,
-    min,
-    max,
-    avg,
-    latest_by,
-    earliest_by,
-    dedupe_latest_by,
-    dedupe_earliest_by,
-    row_number,
-    rank,
-    dense_rank,
-    lag,
-    lead,
-    rolling_sum,
-    rolling_avg,
-    rolling_min,
-    rolling_max,
-    distinct,
-    drop_duplicates,
-    arr_transform,
-    arr_filter,
-    map_transform_values,
-    map_filter,
-    project,
-    before,
-    after,
-    validate_output,
-    lower,
-    upper,
-    trim,
-    to_decimal,
-    when,
-    coalesce,
-    StructureSession,
-    Join,
-    JoinDedupe,
-    JoinHint,
-    JoinStrategy,
-    TiePolicy,
-    OverlapPolicy,
-    SchemaMode,
-)
+import structure
 ```
 
 Rules:
@@ -162,11 +97,11 @@ class EnrichOrders(Transform):
             customer_tier=customer.tier,
         )
 
-    @after(normalize, lane=orders)
+    @raw(lane=orders)
     def remove_negative_totals(self, *, orders, spark, ctx):
         return orders.where(F.col("total") >= 0)
 
-    @after(normalize, lane=orders, pass_inputs=True)
+    @raw(lane=orders, pass_inputs=True)
     def compare_to_raw(self, *, orders, inputs, spark, ctx):
         return orders
 ```
@@ -475,6 +410,7 @@ The v.1 expression surface includes:
 - field references such as `order.customer_id`;
 - Python literals described by `NullabilityAndTypeCoercion.md`;
 - comparisons such as `==`, `!=`, `<`, `<=`, `>`, and `>=` when supported by the expression type;
+- membership predicates such as `expr.isin(...)`;
 - inclusive range predicates such as `expr.between(lower, upper)`;
 - boolean combination with `&`, `|`, and `~`;
 - null checks such as `expr.is_null()` and `expr.is_not_null()`;
@@ -684,24 +620,25 @@ Detailed join condition, null, aliasing, cardinality, projection, and diagnostic
 
 ## Hooks
 
-Hooks are explicit PySpark escape hatches attached to a concrete step method.
+Hooks are explicit PySpark escape hatches. A hook is a method decorated with `@raw`, placed in the Transform class
+where it should execute.
 
 Canonical forms:
 
 ```python
-@before(normalize, lane=orders)
+@raw(lane=orders)
 def prepare(self, *, orders, spark, ctx):
     return orders
 ```
 
 ```python
-@after(normalize, lane=orders, pass_inputs=True)
+@raw(lane=orders, pass_inputs=True)
 def compare_to_raw(self, *, orders, inputs, spark, ctx):
     return orders
 ```
 
 ```python
-@after(publish, lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+@raw(lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
 def add_quality_columns(self, *, published, spark, ctx):
     return published
 ```
@@ -715,12 +652,12 @@ Hook decorator keyword arguments:
 
 Rules:
 
-- `@before(method, lane=lane)` runs before the compiled operations for `method`.
-- `@after(method, lane=lane)` runs after the compiled operations for `method`.
-- `@before(method, lane=lane)` selects the lane consumed by the target method.
-- `@after(method, lane=lane)` selects the lane produced by the target method.
-- The target must be a compiled step method on the same transform class.
-- Hook order for the same target and timing is source order.
+- `@raw` has no step-method argument.
+- Hook order is Transform class declaration order.
+- A raw method before a step can explicitly select and replace that step's source lane.
+- A raw method after a step can implicitly consume and replace the current lane, or explicitly select lanes.
+- `lane(s)=...`, `input(s)=...`, `output(s)=...`, `pass_inputs`, `schema_mode`, `project_output`,
+  `streaming_safe`, `target_backend`, and `target_platform` define the hook boundary.
 - Hooks are not symbolically executed and are opaque to the compiler except for metadata, signature, declared options,
   provenance, and streaming compatibility classification.
 - A hook without `pass_inputs=True` must have signature `def hook(self, *, selected_lane_name, spark, ctx)`.
@@ -947,7 +884,7 @@ For reuse:
       return lower(trim(value))
 
 Hook workaround:
-  @after(normalize, lane=orders)
+  @raw(lane=orders)
   def clean_customer_id(self, *, orders, spark, ctx):
       return orders.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 
@@ -1030,7 +967,7 @@ The following are outside v.1 DSL scope:
 11. Implement `@special(type="expr")` for module-level and class-local helpers without `self`.
 12. Implement `where(...)` context capture and boolean predicate checking.
 13. Implement `lookup_join(...)` input-scope capture and enum validation.
-14. Implement `@before(...)` and `@after(...)` metadata, options, ordering, and signature checks.
+14. Implement `@raw` metadata, options, ordering, and signature checks.
 15. Implement `@validate_output(...)` method-level metadata.
 16. Build `TransformPlan` and `StepPlan` IR from symbolic execution.
 17. Run compileability checks against IR without PySpark imports.
@@ -1075,8 +1012,8 @@ The implementation is complete when tests prove:
 - `where(expr.is_not_null())` participates in nullability narrowing.
 - `lookup_join(..., how=Join.LEFT)` and `lookup_join(..., how=Join.INNER)` record join IR.
 - Unsupported join enum values fail or warn according to `JoinSemantics.md`.
-- `@before(...)` and `@after(...)` hooks bind to step methods declared in the same class.
-- Hook order for the same target and timing is source order.
+- `@raw` hooks run at their Transform class declaration position.
+- Adjacent hooks preserve source order.
 - Hook signatures are validated for both `pass_inputs=False` and `pass_inputs=True`.
 - Hook metadata records `schema_mode`, `project_output`, `pass_inputs`, and `streaming_safe`.
 - `@validate_output(False)` overrides validation for one step method.

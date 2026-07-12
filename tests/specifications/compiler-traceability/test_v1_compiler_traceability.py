@@ -56,5 +56,5 @@ def test_v1_compiler_traceability_reports_static_dataflow_and_opaque_hooks() -> 
     boundaries = {
         (boundary.step, boundary.hook, boundary.phase, boundary.reason) for boundary in traceability.opaque_boundaries
     }
-    assert ("add_promotion", "note_lookup_inputs", "after", "arbitrary PySpark hook body") in boundaries
-    assert ("publish", "add_quality_columns", "after", "arbitrary PySpark hook body") in boundaries
+    assert ("add_promotion", "note_lookup_inputs", "raw", "arbitrary PySpark hook body") in boundaries
+    assert ("publish", "add_quality_columns", "raw", "arbitrary PySpark hook body") in boundaries

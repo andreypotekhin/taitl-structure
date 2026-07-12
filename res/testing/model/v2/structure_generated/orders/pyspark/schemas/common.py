@@ -4,6 +4,15 @@
 from pyspark.sql import types as T
 
 
+TENANT_KEY_SCHEMA = T.StructType([
+    T.StructField("tenant_id", T.StringType(), False),
+])
+
+AUDIT_STAMP_SCHEMA = T.StructType([
+    T.StructField("source_system", T.StringType(), False),
+    T.StructField("ingested_at", T.TimestampType(), False),
+])
+
 ADDRESS_SCHEMA = T.StructType([
     T.StructField("line1", T.StringType(), False),
     T.StructField("line2", T.StringType(), True),
@@ -13,15 +22,6 @@ ADDRESS_SCHEMA = T.StructType([
     T.StructField("country", T.StringType(), False),
 ])
 
-AUDIT_STAMP_SCHEMA = T.StructType([
-    T.StructField("source_system", T.StringType(), False),
-    T.StructField("ingested_at", T.TimestampType(), False),
-])
-
 BUSINESS_DATE_SCHEMA = T.StructType([
     T.StructField("order_date", T.DateType(), True),
-])
-
-TENANT_KEY_SCHEMA = T.StructType([
-    T.StructField("tenant_id", T.StringType(), False),
 ])

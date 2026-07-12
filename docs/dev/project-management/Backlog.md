@@ -2,7 +2,7 @@
 
 ## Epic: Pre-Coding Spikes and Decisions
 
-- SPIKE: Prove `@after(method, lane=lane)` works inside class bodies.
+- SPIKE: Prove `@raw(lane=lane)` works inside class bodies.
 - SPIKE: Prove class-local `@special(type="expr")` helpers work without a `self` parameter.
 - SPIKE: Prove source-order method discovery with stable line numbers.
 - SPIKE: Prove source-root discovery and generated `structure_generated.<source package>` import paths.
@@ -50,7 +50,7 @@
 - Detect `input(...)` declarations.
 - Identify public schema-returning methods.
 - Identify `@special(type="expr")` helpers.
-- Identify `@before(method, lane=lane)` and `@after(method, lane=lane)` hooks.
+- Identify `@raw(lane=lane)` and `@raw(lane=lane)` hooks.
 - Report ambiguous public methods.
 
 ## Epic: Symbolic Execution
@@ -107,8 +107,8 @@
 
 ## Epic: Hooks
 
-- Implement `@before(method, lane=lane)` metadata.
-- Implement `@after(method, lane=lane)` metadata.
+- Implement `@raw(lane=lane)` metadata.
+- Implement `@raw(lane=lane)` metadata.
 - Validate selected lane signatures such as `def hook(self, *, orders, spark, ctx)`.
 - Generate direct source hook calls.
 - Support schema mode and project-output options.
@@ -243,6 +243,11 @@
   and online/generated parity.
 
 ## v.3 Backlog
+
+- Design a unified, minimal decorator parameter vocabulary for `@step` and `@raw`, including binding, output, target,
+  schema, and streaming options.
+- Defer multi-case `when`, conditional pipeline branches, pattern matching, and transition verbs to a dedicated DSL
+  design task.
 
 ### Epic: DSL and SQL Function PySpark Parity
 

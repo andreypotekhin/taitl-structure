@@ -168,13 +168,13 @@
       "source": "source:examples.orders.transforms.order.EnrichOrders.normalize.field.is_large"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.0.normalize.hook.before.use_current_orders",
-      "ir": "ir:EnrichOrders.step.0.normalize.hook.before.use_current_orders",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.0.normalize.hook.raw.use_current_orders",
+      "ir": "ir:EnrichOrders.step.0.normalize.hook.raw.use_current_orders",
       "source": "source:examples.orders.transforms.order.EnrichOrders.use_current_orders"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.0.normalize.hook.after.remove_negative_totals",
-      "ir": "ir:EnrichOrders.step.0.normalize.hook.after.remove_negative_totals",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.0.normalize.hook.raw.remove_negative_totals",
+      "ir": "ir:EnrichOrders.step.0.normalize.hook.raw.remove_negative_totals",
       "source": "source:examples.orders.transforms.order.EnrichOrders.remove_negative_totals"
     },
     {
@@ -718,8 +718,8 @@
       "source": "source:examples.orders.transforms.order.EnrichOrders.add_shipments.field.shipped_at"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.hook.after.note_lookup_inputs",
-      "ir": "ir:EnrichOrders.step.4.add_shipments.hook.after.note_lookup_inputs",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.4.add_shipments.hook.raw.note_lookup_inputs",
+      "ir": "ir:EnrichOrders.step.4.add_shipments.hook.raw.note_lookup_inputs",
       "source": "source:examples.orders.transforms.order.EnrichOrders.note_lookup_inputs"
     },
     {
@@ -828,8 +828,8 @@
       "source": "source:examples.orders.transforms.order.EnrichOrders.publish.field.has_promotion"
     },
     {
-      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.hook.after.add_quality_columns",
-      "ir": "ir:EnrichOrders.step.5.publish.hook.after.add_quality_columns",
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.order.EnrichOrdersGenerated.run.step.5.publish.hook.raw.add_quality_columns",
+      "ir": "ir:EnrichOrders.step.5.publish.hook.raw.add_quality_columns",
       "source": "source:examples.orders.transforms.order.EnrichOrders.add_quality_columns"
     },
     {
@@ -1196,20 +1196,20 @@
       },
       {
         "detail": {
-          "phase": "before",
+          "phase": "raw",
           "project_output": false,
           "schema_mode": "strict"
         },
         "operation": "hook",
         "sources": [
-          "OrderRaw"
+          "OrderNormalized"
         ],
         "step": "normalize",
         "target": "normalize.hook.use_current_orders"
       },
       {
         "detail": {
-          "phase": "after",
+          "phase": "raw",
           "project_output": false,
           "schema_mode": "strict"
         },
@@ -2404,7 +2404,7 @@
       },
       {
         "detail": {
-          "phase": "after",
+          "phase": "raw",
           "project_output": false,
           "schema_mode": "allow_extra_columns"
         },
@@ -2627,7 +2627,7 @@
       },
       {
         "detail": {
-          "phase": "after",
+          "phase": "raw",
           "project_output": true,
           "schema_mode": "allow_extra_columns"
         },
@@ -2653,7 +2653,7 @@
     "opaque_boundaries": [
       {
         "hook": "use_current_orders",
-        "phase": "before",
+        "phase": "raw",
         "reason": "arbitrary PySpark hook body",
         "schema": "OrderNormalized",
         "step": "normalize",
@@ -2661,7 +2661,7 @@
       },
       {
         "hook": "remove_negative_totals",
-        "phase": "after",
+        "phase": "raw",
         "reason": "arbitrary PySpark hook body",
         "schema": "OrderNormalized",
         "step": "normalize",
@@ -2669,7 +2669,7 @@
       },
       {
         "hook": "note_lookup_inputs",
-        "phase": "after",
+        "phase": "raw",
         "reason": "arbitrary PySpark hook body",
         "schema": "OrderFulfillment",
         "step": "add_shipments",
@@ -2677,7 +2677,7 @@
       },
       {
         "hook": "add_quality_columns",
-        "phase": "after",
+        "phase": "raw",
         "reason": "arbitrary PySpark hook body",
         "schema": "OrderPublished",
         "step": "publish",
@@ -2700,9 +2700,7 @@
       "output_schema": "OrderNormalized",
       "results": [
         {
-          "after_hooks": [
-            "remove_negative_totals"
-          ],
+          "after_hooks": [],
           "frame": "orders",
           "lane": "orders",
           "schema": "OrderNormalized"
@@ -2847,9 +2845,7 @@
       "output_schema": "OrderFulfillment",
       "results": [
         {
-          "after_hooks": [
-            "note_lookup_inputs"
-          ],
+          "after_hooks": [],
           "frame": "orders",
           "lane": "orders",
           "schema": "OrderFulfillment"
@@ -2882,9 +2878,7 @@
       "output_schema": "OrderPublished",
       "results": [
         {
-          "after_hooks": [
-            "add_quality_columns"
-          ],
+          "after_hooks": [],
           "frame": "published",
           "lane": "published",
           "schema": "OrderPublished"

@@ -377,29 +377,9 @@
       "constant": "AUDIT_STAMP_SCHEMA",
       "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.common"
     },
-    "BlockedProduct": {
-      "constant": "BLOCKED_PRODUCT_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.product"
-    },
     "BusinessDate": {
       "constant": "BUSINESS_DATE_SCHEMA",
       "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.common"
-    },
-    "Customer": {
-      "constant": "CUSTOMER_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.customer"
-    },
-    "CustomerDailyTotal": {
-      "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.analytics"
-    },
-    "CustomerEventRank": {
-      "constant": "CUSTOMER_EVENT_RANK_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.analytics"
-    },
-    "CustomerOrderBackfill": {
-      "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
     },
     "OrderCollectionProfile": {
       "constant": "ORDER_COLLECTION_PROFILE_SCHEMA",
@@ -408,10 +388,6 @@
     "OrderCollectionSource": {
       "constant": "ORDER_COLLECTION_SOURCE_SCHEMA",
       "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.adv_analytics"
-    },
-    "OrderCustomerReconciliation": {
-      "constant": "ORDER_CUSTOMER_RECONCILIATION_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
     },
     "OrderCustomerWindow": {
       "constant": "ORDER_CUSTOMER_WINDOW_SCHEMA",
@@ -425,25 +401,9 @@
       "constant": "ORDER_NORMALIZED_SCHEMA",
       "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
     },
-    "OrderProductCandidate": {
-      "constant": "ORDER_PRODUCT_CANDIDATE_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
-    },
     "OrderProductCube": {
       "constant": "ORDER_PRODUCT_CUBE_SCHEMA",
       "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.adv_analytics"
-    },
-    "OrderPublication": {
-      "constant": "ORDER_PUBLICATION_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
-    },
-    "OrderPublished": {
-      "constant": "ORDER_PUBLISHED_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
-    },
-    "OrderRaw": {
-      "constant": "ORDER_RAW_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
     },
     "OrderRevenueRollup": {
       "constant": "ORDER_REVENUE_ROLLUP_SCHEMA",
@@ -460,30 +420,6 @@
     "OrderWithPromotion": {
       "constant": "ORDER_WITH_PROMOTION_SCHEMA",
       "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
-    },
-    "Product": {
-      "constant": "PRODUCT_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.product"
-    },
-    "ProductBase": {
-      "constant": "PRODUCT_BASE_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.product"
-    },
-    "ProductDailySummary": {
-      "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.analytics"
-    },
-    "Promotion": {
-      "constant": "PROMOTION_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.promotion"
-    },
-    "PublicationFlags": {
-      "constant": "PUBLICATION_FLAGS_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.order"
-    },
-    "Shipment": {
-      "constant": "SHIPMENT_SCHEMA",
-      "module": "testing.model.v2.structure_generated.orders.pyspark.schemas.shipment"
     },
     "TenantKey": {
       "constant": "TENANT_KEY_SCHEMA",

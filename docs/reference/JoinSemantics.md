@@ -344,7 +344,7 @@ Problem:
   v.1 joins support equality key pairs combined with AND. OR conditions are not compileable.
 
 Use:
-  split the logic into separate step methods or move custom join logic into an @after hook.
+  split the logic into separate step methods or move custom join logic into an raw hook.
 
 See docs/reference/JoinSemantics.md
 ```

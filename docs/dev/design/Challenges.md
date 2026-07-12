@@ -125,7 +125,7 @@ Resolved for design/specification coverage by [DSL.md](../specifications/DSL.md)
 The preferred hook syntax is:
 
 ```python
-@after(normalize, lane=orders)
+@raw(lane=orders)
 def remove_bad_orders(self, *, orders, spark, ctx):
     ...
 ```
@@ -219,7 +219,7 @@ This is clean, but some hooks may need original input DataFrames for custom vali
 Recommended optional escape hatch:
 
 ```python
-@after(normalize, lane=orders, pass_inputs=True)
+@raw(lane=orders, pass_inputs=True)
 def custom_check(self, *, orders, inputs, spark, ctx):
     raw_orders = inputs.orders
     ...
@@ -596,7 +596,7 @@ Resolved by clarifying extension compatibility in `Readme.md`, [Compatibility.md
 design. Structure now keeps the initial extension surface deliberately small:
 
 - `@special(type="expr")` is the supported public extension point for reusable compiler-visible expression logic.
-- `@before(...)` and `@after(...)` hooks are supported public escape hatches for arbitrary PySpark DataFrame code.
+- `@raw` hooks are supported public escape hatches for arbitrary PySpark DataFrame code.
 - Backend capability providers, diagnostic renderers, schema type adapters, validation policy plugins, and hook lint
   rule registries remain internal or deferred until their contracts are specified and tested.
 - Monkey-patching compiler registries or relying on hidden UDF-like fallback is unsupported.
@@ -800,7 +800,7 @@ implementation, adoption, testing breadth, and governance gaps, not missing sema
 Add these to Sprint 0 before the first vertical slice:
 
 ```text
-SPIKE: Prove @after(method, lane=lane) inside class bodies.
+SPIKE: Prove @raw(lane=lane) inside class bodies.
 SPIKE: Prove @special(type="expr") class-local helper without self parameter.
 SPIKE: Prove source-order method discovery with line numbers.
 SPIKE: Prove source-root discovery and generated `structure_generated.<source package>` import paths.

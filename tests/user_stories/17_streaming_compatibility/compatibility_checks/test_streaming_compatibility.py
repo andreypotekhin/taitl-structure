@@ -1,6 +1,6 @@
 import sys
 
-from structure import String, Structure, Transform, after, field, input, output, transform, where
+from structure import String, Structure, Transform, field, input, output, raw, transform, where
 from structure.app.compiler.api import Compiler
 from structure.app.compiler.compileability.streaming_compatibility.api import StreamingSupport
 from structure.app.dsl.api import compile_transform
@@ -33,7 +33,7 @@ class StreamingUnknownHook(Transform):
     def normalize(self, row: StreamRaw) -> StreamClean:
         return StreamClean(id=row.id)
 
-    @after(normalize, lane=rows)
+    @raw
     def arbitrary_hook(self, *, rows, spark, ctx):
         return rows
 

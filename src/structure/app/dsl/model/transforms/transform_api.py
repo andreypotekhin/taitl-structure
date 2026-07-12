@@ -92,8 +92,23 @@ def transform(target=None, **kwargs):
         if inspect.isclass(item):
             return _decorate_transform_class(item, kwargs)
         if inspect.isfunction(item):
-            return _decorate_transform_method(item, kwargs)
-        raise TypeError("@transform can decorate a Transform class or transform method")
+            raise TypeError(
+                "@transform decorates Transform classes only; replace method-level @transform(...) with @step(...)."
+            )
+        raise TypeError("@transform can decorate a Transform class only")
+
+    if target is None:
+        return decorate
+    if kwargs:
+        return decorate(target)
+    return decorate(target)
+
+
+def step(target=None, **kwargs):
+    def decorate(item):
+        if not inspect.isfunction(item):
+            raise TypeError("@step can decorate Transform methods only")
+        return _decorate_transform_method(item, kwargs)
 
     if target is None:
         return decorate
@@ -149,11 +164,11 @@ def _decorate_transform_method(function, kwargs):
     allowed = _METHOD_BINDING_OPTIONS | _STEP_METHOD_OPTIONS | _METHOD_OPTIMIZATION_OPTIONS
     unknown = set(kwargs) - allowed
     if unknown:
-        raise TypeError(f"@transform got unknown method option(s): {', '.join(sorted(unknown))}")
+        raise TypeError(f"@step got unknown method option(s): {', '.join(sorted(unknown))}")
     if not kwargs:
-        raise TypeError("@transform on a method requires input=..., output=..., or inout=...")
+        raise TypeError("@step on a method requires input=..., output=..., or inout=...")
     if "inout" in kwargs and ("input" in kwargs or "output" in kwargs):
-        raise TypeError("@transform on a method cannot combine inout=... with input=... or output=...")
+        raise TypeError("@step on a method cannot combine inout=... with input=... or output=...")
 
     inputs = _method_declarations(
         kwargs,
@@ -170,23 +185,23 @@ def _decorate_transform_method(function, kwargs):
     if "inout" in kwargs:
         binding = kwargs["inout"]
         if not isinstance(binding, InOutBinding):
-            raise TypeError("@transform(inout=...) requires a pipe binding such as source | target")
+            raise TypeError("@step(inout=...) requires a pipe binding such as source | target")
         inputs = _method_declaration_values(
             binding.inputs,
-            option="@transform(inout=...) input side",
+            option="@step(inout=...) input side",
             bare=(InputDeclaration, LaneDeclaration),
             roles={"input", "lane"},
         )
         outputs = _method_declaration_values(
             binding.outputs,
-            option="@transform(inout=...) output side",
+            option="@step(inout=...) output side",
             bare=(LaneDeclaration, OutputDeclaration),
             roles={"lane", "output"},
         )
     if len(set(map(_binding_key, inputs))) != len(inputs):
-        raise TypeError("@transform(input=...) cannot repeat a declaration")
+        raise TypeError("@step(input=...) cannot repeat a declaration")
     if len(set(map(_binding_key, outputs))) != len(outputs):
-        raise TypeError("@transform(output=...) cannot repeat a declaration")
+        raise TypeError("@step(output=...) cannot repeat a declaration")
     setattr(
         function,
         "_structure_output_method",
@@ -204,7 +219,7 @@ def _normalize_method_options(kwargs: dict[str, object]) -> dict[str, object]:
     recycled = {"inputs", "outputs", "lane", "lanes", "in", "in_", "out"} & set(kwargs)
     if recycled:
         names = ", ".join(sorted(recycled))
-        raise TypeError(f"@transform method option(s) {names} were recycled; use input=..., output=..., or inout=...")
+        raise TypeError(f"@step method option(s) {names} were recycled; use input=..., output=..., or inout=...")
     return _normalize_transform_options(kwargs)
 
 
@@ -235,7 +250,7 @@ def _step_method_option(name: str, value: object) -> object:
 def _method_declarations(kwargs, *, name: str, bare: tuple[type, ...], roles: set[str]) -> tuple:
     if name not in kwargs or kwargs[name] is None:
         return ()
-    return _method_declaration_values(kwargs[name], option=f"@transform({name}=...)", bare=bare, roles=roles)
+    return _method_declaration_values(kwargs[name], option=f"@step({name}=...)", bare=bare, roles=roles)
 
 
 def _method_declaration_values(value: object, *, option: str, bare: tuple[type, ...], roles: set[str]) -> tuple:
@@ -253,11 +268,11 @@ def _declarations(kwargs, *, singular: str, plural: str, allowed: tuple[type, ..
     if singular in kwargs and kwargs[singular] is not None:
         values = (kwargs[singular],)
     elif plural in kwargs and kwargs[plural] is not None:
-        values = _declaration_sequence(kwargs[plural], option=f"@transform({plural}=...)")
+        values = _declaration_sequence(kwargs[plural], option=f"@raw({plural}=...)")
     else:
         return ()
     if not all(isinstance(value, allowed) for value in values):
-        raise TypeError(f"@transform({plural}=...) requires {_declaration_kinds(allowed)} declarations")
+        raise TypeError(f"@raw({plural}=...) requires {_declaration_kinds(allowed)} declarations")
     return values
 
 
@@ -303,40 +318,8 @@ def _declaration_kinds(allowed: tuple[type, ...], roles: set[str] | None = None)
     return "input(...), lane(...), or output(...)"
 
 
-def before(
-    target: Callable,
-    *,
-    input: InputDeclaration | None = None,
-    inputs: object | None = None,
-    lane: InputDeclaration | LaneDeclaration | OutputDeclaration | None = None,
-    lanes: object | None = None,
-    output: InputDeclaration | LaneDeclaration | OutputDeclaration | None = None,
-    outputs: object | None = None,
-    pass_inputs: bool = False,
-    schema_mode: SchemaMode = SchemaMode.STRICT,
-    project_output: bool = False,
-    streaming_safe: bool = False,
-    target_backend: str | Iterable[str] | None = None,
-):
-    return _hook(
-        "before",
-        target,
-        input=input,
-        inputs=inputs,
-        lane=lane,
-        lanes=lanes,
-        output=output,
-        outputs=outputs,
-        pass_inputs=pass_inputs,
-        schema_mode=schema_mode,
-        project_output=project_output,
-        streaming_safe=streaming_safe,
-        target_backend=target_backend,
-    )
-
-
-def after(
-    target: Callable,
+def raw(
+    function: Callable | None = None,
     *,
     input: InputDeclaration | None = None,
     inputs: object | None = None,
@@ -349,38 +332,56 @@ def after(
     project_output: bool = False,
     streaming_safe: bool = False,
     target_backend: str | Iterable[str] | None = None,
+    target_platform: str | None = None,
 ):
-    return _hook(
-        "after",
-        target,
-        input=input,
-        inputs=inputs,
-        lane=lane,
-        lanes=lanes,
-        output=output,
-        outputs=outputs,
-        pass_inputs=pass_inputs,
-        schema_mode=schema_mode,
-        project_output=project_output,
-        streaming_safe=streaming_safe,
-        target_backend=target_backend,
-    )
+    kwargs = {"input": input, "inputs": inputs, "lane": lane, "lanes": lanes, "output": output, "outputs": outputs}
+    has_source = any(kwargs[name] is not None for name in ("input", "inputs", "lane", "lanes"))
+    if not has_source and (output is not None or outputs is not None):
+        raise TypeError("@raw(output=...) requires input(s)=... or lane(s)=...")
+    sources = _hook_sources("raw", kwargs) if has_source else None
+    targets = _hook_outputs("raw", kwargs, default=sources or ()) if sources is not None else None
+    if target_platform is not None:
+        _step_method_option("target_platform", target_platform)
+
+    def decorate(target: Callable) -> Callable:
+        setattr(
+            target,
+            "_structure_raw",
+            {
+                "lanes": sources,
+                "outputs": targets,
+                "pass_inputs": pass_inputs,
+                "schema_mode": schema_mode,
+                "project_output": project_output,
+                "streaming_safe": streaming_safe,
+                "target_backend": _hook_target_backend(target_backend),
+                "target_platform": target_platform,
+            },
+        )
+        return target
+
+    if function is None:
+        return decorate
+    return decorate(function)
 
 
-def where(predicate: object) -> "WhereChain":
+def where(*predicates: object) -> "WhereChain":
     context = current_context()
     if context is None:
         raise RuntimeError("where(...) can only be used inside a compiled Structure step method")
-    expression = literal(predicate)
-    if not isinstance(expression.type, BooleanType):
-        raise TypeError("where(...) requires a boolean Structure expression")
-    if expression.kind == "existence_join" and expression.data is not None:
-        join = cast(JoinPlan, expression.data["join"])
-        context.joins.append(join)
-        context.operations.append(OperationPlan.join_operation(join))
-        return WhereChain()
-    context.filters.append(expression)
-    context.operations.append(OperationPlan.filter_operation(expression))
+    if not predicates:
+        raise TypeError("where(...) requires at least one boolean Structure expression")
+    for position, predicate in enumerate(predicates, start=1):
+        expression = literal(predicate)
+        if not isinstance(expression.type, BooleanType):
+            raise TypeError(f"where(...) requires a boolean Structure expression for predicate {position}")
+        if expression.kind == "existence_join" and expression.data is not None:
+            join = cast(JoinPlan, expression.data["join"])
+            context.joins.append(join)
+            context.operations.append(OperationPlan.join_operation(join))
+            continue
+        context.filters.append(expression)
+        context.operations.append(OperationPlan.filter_operation(expression))
     return WhereChain()
 
 
@@ -429,8 +430,8 @@ def project(source: object | None = None, target: type[Structure] | Iterable[str
 
 class WhereChain:
 
-    def where(self, predicate: object) -> "WhereChain":
-        return where(predicate)
+    def where(self, *predicates: object) -> "WhereChain":
+        return where(*predicates)
 
     @overload
     def project(self, source: type[Projected]) -> Projected: ...
@@ -474,54 +475,6 @@ def _project_fields(value: object) -> tuple[str, ...]:
     if len(set(fields)) != len(fields):
         raise TypeError("project(source, fields) cannot repeat field names")
     return cast(tuple[str, ...], fields)
-
-
-def _hook(
-    phase: str,
-    target: Callable,
-    *,
-    input: InputDeclaration | None,
-    inputs: object | None,
-    lane: InputDeclaration | LaneDeclaration | OutputDeclaration | None,
-    lanes: object | None,
-    output: InputDeclaration | LaneDeclaration | OutputDeclaration | None,
-    outputs: object | None,
-    pass_inputs: bool,
-    schema_mode: SchemaMode,
-    project_output: bool,
-    streaming_safe: bool,
-    target_backend: str | Iterable[str] | None,
-):
-    if not callable(target):
-        raise TypeError(f"@{phase}(...) requires a step method")
-    kwargs = {"input": input, "inputs": inputs, "lane": lane, "lanes": lanes, "output": output, "outputs": outputs}
-    sources = _hook_sources(phase, kwargs)
-    targets = _hook_outputs(phase, kwargs, default=sources)
-    hook_targets, target_defaulted = _hook_target_backend(target_backend)
-
-    def decorate(function: Callable) -> Callable:
-        setattr(
-            function,
-            "_structure_hook",
-            {
-                "phase": phase,
-                "target": target.__name__,
-                "target_object": target,
-                "lane": sources[0] if len(sources) == 1 else None,
-                "lanes": sources,
-                "output": targets[0] if len(targets) == 1 else None,
-                "outputs": targets,
-                "pass_inputs": pass_inputs,
-                "schema_mode": schema_mode,
-                "project_output": project_output,
-                "streaming_safe": streaming_safe,
-                "target_backend": hook_targets,
-                "target_defaulted": target_defaulted,
-            },
-        )
-        return function
-
-    return decorate
 
 
 def _hook_target_backend(value: str | Iterable[str] | None) -> tuple[tuple[str, ...], bool]:

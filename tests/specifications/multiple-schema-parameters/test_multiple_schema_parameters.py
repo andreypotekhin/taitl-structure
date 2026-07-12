@@ -1,21 +1,8 @@
-from typing import Any
-
 import pytest
 
-from structure import (
-    Join,
-    String,
-    Structure,
-    Transform,
-    after,
-    before,
-    field,
-    input,
-    lane,
-    lookup_join,
-    output,
-    transform,
-)
+from structure import Join, String, Structure, Transform, field, input, lane, lookup_join, output, raw
+from structure import step as dsl_step
+from structure import transform
 from structure.app.compiler.api import Compiler
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
@@ -45,7 +32,7 @@ def test_multiple_schema_parameters_and_results_compile_in_order() -> None:
         accepted = output(OrderWithProduct)
         audited = output(OrderWithProduct)
 
-        @transform(
+        @dsl_step(
             input=[orders_external, products],
             output=[accepted, audited],
         )
@@ -101,7 +88,7 @@ def test_plural_parameter_name_disambiguates_same_schema_driving_inputs() -> Non
         orders2 = input(OrderRaw)
         picked = output(OrderRaw)
 
-        @transform(output=picked)
+        @dsl_step(output=picked)
         def pick(self, order1: OrderRaw) -> OrderRaw:
             return OrderRaw(id=order1.id, product_id=order1.product_id)
 
@@ -120,7 +107,7 @@ def test_plural_parameter_name_disambiguates_same_schema_relation_inputs() -> No
         products2 = input(Product)
         enriched = output(OrderWithProduct)
 
-        @transform(output=enriched)
+        @dsl_step(output=enriched)
         def add_product(self, order: OrderRaw, product2: Product) -> OrderWithProduct:
             product2 = lookup_join(product2, on=product2.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product2.name)
@@ -142,15 +129,15 @@ def test_plural_parameter_name_disambiguates_same_schema_lanes() -> None:
         orders2 = lane(OrderRaw)
         picked = output(OrderRaw)
 
-        @transform(input=raw1, output=orders1)
+        @dsl_step(input=raw1, output=orders1)
         def seed1(self, order: OrderRaw) -> OrderRaw:
             return OrderRaw(id=order.id, product_id=order.product_id)
 
-        @transform(input=raw2, output=orders2)
+        @dsl_step(input=raw2, output=orders2)
         def seed2(self, order: OrderRaw) -> OrderRaw:
             return OrderRaw(id=order.id, product_id=order.product_id)
 
-        @transform(output=picked)
+        @dsl_step(output=picked)
         def pick(self, order2: OrderRaw) -> OrderRaw:
             return OrderRaw(id=order2.id, product_id=order2.product_id)
 
@@ -169,7 +156,7 @@ def test_partial_explicit_input_declaration_disables_plural_parameter_inference(
         products2 = input(Product)
         enriched = output(OrderWithProduct)
 
-        @transform(input=orders, output=enriched)
+        @dsl_step(input=orders, output=enriched)
         def add_product(self, order: OrderRaw, product2: Product) -> OrderWithProduct:
             product2 = lookup_join(product2, on=product2.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product2.name)
@@ -281,15 +268,15 @@ def test_array_input_binds_lane_parameters_in_order() -> None:
         product_lane = lane(Product)
         enriched = output(OrderWithProduct)
 
-        @transform(input=orders, output=order_lane)
+        @dsl_step(input=orders, output=order_lane)
         def seed_order(self, order: OrderRaw) -> OrderRaw:
             return OrderRaw(id=order.id, product_id=order.product_id)
 
-        @transform(input=products, output=product_lane)
+        @dsl_step(input=products, output=product_lane)
         def seed_product(self, product: Product) -> Product:
             return Product(id=product.id, name=product.name)
 
-        @transform(input=[order_lane, product_lane], output=enriched)
+        @dsl_step(input=[order_lane, product_lane], output=enriched)
         def add_product(self, order: OrderRaw, product: Product) -> OrderWithProduct:
             product = lookup_join(product, on=product.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product.name)
@@ -334,7 +321,7 @@ def test_multi_result_after_hooks_select_their_dataframe() -> None:
         accepted = output(OrderWithProduct)
         audited = output(OrderWithProduct)
 
-        @transform(input=[orders, products], output=[accepted, audited])
+        @dsl_step(input=[orders, products], output=[accepted, audited])
         def add_product(
             self,
             order: OrderRaw,
@@ -344,7 +331,7 @@ def test_multi_result_after_hooks_select_their_dataframe() -> None:
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 
-        @after(add_product, lane=audited)
+        @raw(lane=audited)
         def audit(self, *, audited, spark, ctx):
             return audited
 
@@ -362,7 +349,7 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
         accepted = output(OrderWithProduct)
         audited = output(OrderWithProduct)
 
-        @transform(input=[orders, products], output=[accepted, audited])
+        @dsl_step(input=[orders, products], output=[accepted, audited])
         def add_product(
             self,
             order: OrderRaw,
@@ -372,7 +359,7 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 
-        @after(add_product, lane=audited)
+        @raw(lane=audited)
         def audit(self, *, audited, spark, ctx):
             return audited
 
@@ -414,7 +401,7 @@ def test_generated_plural_lane_hook_replaces_outputs_in_order() -> None:
         accepted = output(OrderWithProduct)
         audited = output(OrderWithProduct)
 
-        @transform(input=[orders, products], output=[accepted, audited])
+        @dsl_step(input=[orders, products], output=[accepted, audited])
         def add_product(
             self,
             order: OrderRaw,
@@ -424,7 +411,7 @@ def test_generated_plural_lane_hook_replaces_outputs_in_order() -> None:
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 
-        @after(add_product, lanes=[accepted, audited], outputs=[accepted, audited])
+        @raw(lanes=[accepted, audited], outputs=[accepted, audited])
         def polish(self, *, accepted, audited, spark, ctx):
             return accepted, audited
 
@@ -445,7 +432,7 @@ def test_generated_plural_lane_hook_replaces_outputs_in_order() -> None:
     ) in text
 
 
-def test_multi_result_after_hook_rejects_unproduced_output_selection() -> None:
+def test_multi_result_raw_hook_rejects_unproduced_output_selection() -> None:
     @transform
     class AddProduct(Transform):
         orders = input(OrderRaw)
@@ -453,7 +440,7 @@ def test_multi_result_after_hook_rejects_unproduced_output_selection() -> None:
         accepted = output(OrderWithProduct)
         audited = output(OrderWithProduct)
 
-        @transform(input=[orders, products], output=[accepted, audited])
+        @dsl_step(input=[orders, products], output=[accepted, audited])
         def add_product(
             self,
             order: OrderRaw,
@@ -463,48 +450,12 @@ def test_multi_result_after_hook_rejects_unproduced_output_selection() -> None:
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 
-        @after(add_product, lane=orders)
+        @raw(lane=orders)
         def audit(self, *, orders, spark, ctx):
             return orders
 
     with pytest.raises(Exception, match="does not produce"):
         compile_transform(AddProduct)
-
-
-def test_before_hook_requires_explicit_lane_selector() -> None:
-    invalid_before: Any = before
-
-    with pytest.raises(TypeError, match="requires input\\(s\\)=... or lane\\(s\\)=..."):
-
-        @transform
-        class AddProduct(Transform):
-            orders = input(OrderRaw)
-            enriched = output(OrderWithProduct)
-
-            def add_product(self, order: OrderRaw) -> OrderWithProduct:
-                return OrderWithProduct(id=order.id, product_name=None)
-
-            @invalid_before(add_product)
-            def audit(self, *, orders, spark, ctx):
-                return orders
-
-
-def test_after_hook_requires_explicit_lane_selector() -> None:
-    invalid_after: Any = after
-
-    with pytest.raises(TypeError, match="requires input\\(s\\)=... or lane\\(s\\)=..."):
-
-        @transform
-        class AddProduct(Transform):
-            orders = input(OrderRaw)
-            enriched = output(OrderWithProduct)
-
-            def add_product(self, order: OrderRaw) -> OrderWithProduct:
-                return OrderWithProduct(id=order.id, product_name=None)
-
-            @invalid_after(add_product)
-            def audit(self, *, orders, spark, ctx):
-                return orders
 
 
 def test_hook_signature_must_match_selected_lane() -> None:
@@ -516,7 +467,7 @@ def test_hook_signature_must_match_selected_lane() -> None:
         def add_product(self, order: OrderRaw) -> OrderWithProduct:
             return OrderWithProduct(id=order.id, product_name=None)
 
-        @after(add_product, lane=orders)
+        @raw(lane=orders)
         def audit(self, *, df, spark, ctx):
             return df
 

@@ -30,7 +30,7 @@ Discovery locates transform classes and schema definitions, preserving enough so
 7. Identify input declarations.
 8. Identify @special(type="expr") helpers.
 9. Identify public schema-returning step methods.
-10. Identify @before(method, lane=lane) and @after(method, lane=lane) hooks.
+10. Identify @raw(lane=lane) and @raw(lane=lane) hooks.
 11. Attach line numbers and source snippets when available.
 ```
 

@@ -146,6 +146,14 @@ placement.
 Generated-code snapshots are still required for reviewability, but snapshots are secondary. The semantic authority is
 runtime parity through the shared contract in [ExecutionSemanticContract.md](specifications/ExecutionSemanticContract.md).
 
+Live PySpark parity tests are opt-in because they require the optional `pyspark` package and a usable local Spark
+runtime. Run them before release with:
+
+    poetry run pytest --run-integration tests/integration/pyspark -q
+
+If pytest reports that `pyspark` cannot be imported, install the project integration environment or run the same command
+in the repository's Spark integration lane. A skipped local live test is not release evidence.
+
 ## Concept Tests
 
 Concept tests live under `tests/concepts`. They are end-to-end, black-box tests for the project vocabulary in

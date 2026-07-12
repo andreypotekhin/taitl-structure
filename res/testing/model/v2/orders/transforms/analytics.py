@@ -1,40 +1,18 @@
-from structure import (
-    Transform,
-    avg,
-    count,
-    count_distinct,
-    dedupe_latest_by,
-    dense_rank,
-    group_by,
-    input,
-    lag,
-    lead,
-    max,
-    min,
-    output,
-    rank,
-    row_number,
-    rolling_avg,
-    rolling_max,
-    rolling_min,
-    rolling_sum,
-    sum,
-    transform,
-)
+import structure
 
 from testing.model.v2.orders.schemas.analytics import CustomerDailyTotal, CustomerEventRank, ProductDailySummary
 from testing.model.v2.orders.schemas.order import OrderFulfillment
 
 
-class OrderAnalytics(Transform):
-    fulfilled = input(OrderFulfillment)
-    customer_totals = output(CustomerDailyTotal)
-    product_summary = output(ProductDailySummary)
-    customer_event_rank = output(CustomerEventRank)
+class OrderAnalytics(structure.Transform):
+    fulfilled = structure.input(OrderFulfillment)
+    customer_totals = structure.output(CustomerDailyTotal)
+    product_summary = structure.output(ProductDailySummary)
+    customer_event_rank = structure.output(CustomerEventRank)
 
-    @transform(input=fulfilled, output=customer_totals)
+    @structure.step(input=fulfilled, output=customer_totals)
     def customer_daily_totals(self, order: OrderFulfillment) -> CustomerDailyTotal:
-        group_by(
+        structure.group_by(
             tenant_id=order.tenant.tenant_id,
             customer_id=order.customer_id,
             order_date=order.business.order_date,
@@ -44,14 +22,14 @@ class OrderAnalytics(Transform):
             tenant=order.tenant,
             customer_id=order.customer_id,
             order_date=order.business.order_date,
-            order_count=count(),
-            gross_total=sum(order.total),
-            net_total=sum(order.net_total),
+            order_count=structure.count(),
+            gross_total=structure.sum(order.total),
+            net_total=structure.sum(order.net_total),
         )
 
-    @transform(input=fulfilled, output=product_summary)
+    @structure.step(input=fulfilled, output=product_summary)
     def product_daily_summary(self, order: OrderFulfillment) -> ProductDailySummary:
-        group_by(
+        structure.group_by(
             tenant_id=order.tenant.tenant_id,
             product_id=order.product_id,
             order_date=order.business.order_date,
@@ -61,55 +39,55 @@ class OrderAnalytics(Transform):
             tenant=order.tenant,
             product_id=order.product_id,
             order_date=order.business.order_date,
-            order_count=count(),
-            distinct_customers=count_distinct(order.customer_id),
-            units=sum(order.quantity),
-            min_units=min(order.quantity),
-            max_units=max(order.quantity),
-            avg_units=avg(order.quantity),
-            gross_total=sum(order.total),
+            order_count=structure.count(),
+            distinct_customers=structure.count_distinct(order.customer_id),
+            units=structure.sum(order.quantity),
+            min_units=structure.min(order.quantity),
+            max_units=structure.max(order.quantity),
+            avg_units=structure.avg(order.quantity),
+            gross_total=structure.sum(order.total),
         )
 
-    @transform(input=fulfilled, output=customer_event_rank)
+    @structure.step(input=fulfilled, output=customer_event_rank)
     def customer_event_ranks(self, order: OrderFulfillment) -> CustomerEventRank:
-        dedupe_latest_by(order.quantity, partition_by=order.customer_id)
+        structure.dedupe_latest_by(order.quantity, partition_by=order.customer_id)
         return CustomerEventRank(
             tenant=order.tenant,
             customer_id=order.customer_id,
             event_id=order.id,
             sequence=order.quantity,
-            row_number=row_number(partition_by=order.customer_id, order_by=order.quantity),
-            rank=rank(partition_by=order.customer_id, order_by=order.quantity, descending=True),
-            dense_rank=dense_rank(partition_by=order.customer_id, order_by=order.quantity),
-            previous_sequence=lag(
+            row_number=structure.row_number(partition_by=order.customer_id, order_by=order.quantity),
+            rank=structure.rank(partition_by=order.customer_id, order_by=order.quantity, descending=True),
+            dense_rank=structure.dense_rank(partition_by=order.customer_id, order_by=order.quantity),
+            previous_sequence=structure.lag(
                 order.quantity,
                 partition_by=order.customer_id,
                 order_by=order.quantity,
             ),
-            next_sequence=lead(
+            next_sequence=structure.lead(
                 order.quantity,
                 partition_by=order.customer_id,
                 order_by=order.quantity,
             ),
-            rolling_units=rolling_sum(
-                order.quantity,
-                partition_by=order.customer_id,
-                order_by=order.quantity,
-                preceding=2,
-            ),
-            rolling_avg_units=rolling_avg(
+            rolling_units=structure.rolling_sum(
                 order.quantity,
                 partition_by=order.customer_id,
                 order_by=order.quantity,
                 preceding=2,
             ),
-            rolling_min_units=rolling_min(
+            rolling_avg_units=structure.rolling_avg(
                 order.quantity,
                 partition_by=order.customer_id,
                 order_by=order.quantity,
                 preceding=2,
             ),
-            rolling_max_units=rolling_max(
+            rolling_min_units=structure.rolling_min(
+                order.quantity,
+                partition_by=order.customer_id,
+                order_by=order.quantity,
+                preceding=2,
+            ),
+            rolling_max_units=structure.rolling_max(
                 order.quantity,
                 partition_by=order.customer_id,
                 order_by=order.quantity,

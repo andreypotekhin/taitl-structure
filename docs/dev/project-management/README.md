@@ -55,7 +55,7 @@ project-management/
 
 Sprint 00 includes a short spike gate before implementation of the first vertical slice. These spikes close the highest-risk design questions from [Challenges.md](../design/Challenges.md):
 
-- `@after(method, lane=lane)` binding inside class bodies.
+- `@raw(lane=lane)` binding inside class bodies.
 - Class-local `@special(type="expr")` helpers callable through `self` without a `self` parameter.
 - Source-order discovery with stable line numbers.
 - Source-root discovery and generated `structure_generated.<source package>` import paths.

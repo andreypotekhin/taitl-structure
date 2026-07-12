@@ -49,6 +49,10 @@ class EnrichOrders(Transform):
 
 When the marker is present, unknown or incompatible operations are errors.
 
+Online and generated execution both apply a declared watermark. Structure applies a current-input watermark at its
+declared transform step and applies a lookup-input watermark before the lookup join. This keeps state and late-data
+semantics independent of the selected execution mode.
+
 ## Not Included
 
 The caller-owned compatibility slice does not include:
@@ -72,7 +76,7 @@ Hooks are opaque. Mark a hook `streaming_safe=True` only when it returns a DataF
 RDD/Pandas conversion, streaming lifecycle APIs, external side effects, and stateful streaming operations.
 
 ```python
-@after(normalize, lane=orders, streaming_safe=True)
+@raw(lane=orders, streaming_safe=True)
 def keep_valid(self, *, orders, spark, ctx):
     return orders.where(F.col("id").isNotNull())
 ```

@@ -1,30 +1,4 @@
-from structure import (
-    Array,
-    Boolean,
-    Double,
-    Long,
-    String,
-    Structure,
-    Transform,
-    approx_count_distinct,
-    avg,
-    bool_or,
-    collect_set,
-    count,
-    count_distinct,
-    field,
-    first_value,
-    group_by,
-    input,
-    last_value,
-    max,
-    min,
-    output,
-    rollup,
-    stddev,
-    sum,
-    transform,
-)
+import structure
 from structure.app.cli.api import CliApp
 from structure.app.compiler.api import Compiler
 from structure.app.dsl.api import compile_transform
@@ -33,63 +7,71 @@ from structure.app.target.pyspark.api import PySpark
 from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
 
 
-class RawOrder(Structure):
-    customer_id = field(String(), nullable=False)
-    quantity = field(Long(), nullable=False)
+class RawOrder(structure.Structure):
+    customer_id = structure.field(structure.String(), nullable=False)
+    quantity = structure.field(structure.Long(), nullable=False)
 
 
-class CustomerTotal(Structure):
-    customer_id = field(String(), nullable=False)
-    order_count = field(Long(), nullable=False)
-    distinct_customers = field(Long(), nullable=False)
-    quantity = field(Long(), nullable=False)
-    min_quantity = field(Long(), nullable=False)
-    max_quantity = field(Long(), nullable=False)
-    avg_quantity = field(Double(), nullable=False)
+class CustomerTotal(structure.Structure):
+    customer_id = structure.field(structure.String(), nullable=False)
+    order_count = structure.field(structure.Long(), nullable=False)
+    distinct_customers = structure.field(structure.Long(), nullable=False)
+    quantity = structure.field(structure.Long(), nullable=False)
+    min_quantity = structure.field(structure.Long(), nullable=False)
+    max_quantity = structure.field(structure.Long(), nullable=False)
+    avg_quantity = structure.field(structure.Double(), nullable=False)
 
 
-class AdvancedCustomerTotal(Structure):
-    customer_id = field(String(), nullable=True)
-    paid_quantity = field(Long(), nullable=True)
-    any_large = field(Boolean(), nullable=True)
-    quantity_stddev = field(Double(), nullable=True)
-    approximate_customers = field(Long(), nullable=False)
-    ordered_first_customer = field(String(), nullable=False)
-    ordered_last_customer = field(String(), nullable=False)
-    customers = field(Array(String(), contains_null=False), nullable=True)
+class AdvancedCustomerTotal(structure.Structure):
+    customer_id = structure.field(structure.String(), nullable=True)
+    paid_quantity = structure.field(structure.Long(), nullable=True)
+    any_large = structure.field(structure.Boolean(), nullable=True)
+    quantity_stddev = structure.field(structure.Double(), nullable=True)
+    approximate_customers = structure.field(structure.Long(), nullable=False)
+    ordered_first_customer = structure.field(structure.String(), nullable=False)
+    ordered_last_customer = structure.field(structure.String(), nullable=False)
+    customers = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
 
 
-@transform
-class CustomerTotals(Transform):
-    rows = input(RawOrder)
-    totals = output(CustomerTotal)
+@structure.transform
+class CustomerTotals(structure.Transform):
+    rows = structure.input(RawOrder)
+    totals = structure.output(CustomerTotal)
 
     def summarize(self, row: RawOrder) -> CustomerTotal:
-        return group_by(row.customer_id).agg(
-            order_count=count(),
-            distinct_customers=count_distinct(row.customer_id),
-            quantity=sum(row.quantity),
-            min_quantity=min(row.quantity),
-            max_quantity=max(row.quantity),
-            avg_quantity=avg(row.quantity),
-        ).as_schema(CustomerTotal)
+        return (
+            structure.group_by(row.customer_id)
+            .agg(
+                order_count=structure.count(),
+                distinct_customers=structure.count_distinct(row.customer_id),
+                quantity=structure.sum(row.quantity),
+                min_quantity=structure.min(row.quantity),
+                max_quantity=structure.max(row.quantity),
+                avg_quantity=structure.avg(row.quantity),
+            )
+            .as_schema(CustomerTotal)
+        )
 
 
-@transform
-class AdvancedCustomerTotals(Transform):
-    rows = input(RawOrder)
-    totals = output(AdvancedCustomerTotal)
+@structure.transform
+class AdvancedCustomerTotals(structure.Transform):
+    rows = structure.input(RawOrder)
+    totals = structure.output(AdvancedCustomerTotal)
 
     def summarize(self, row: RawOrder) -> AdvancedCustomerTotal:
-        return rollup(customer_id=row.customer_id).agg(
-            paid_quantity=sum(row.quantity, where=literal(row.quantity) > 0),
-            any_large=bool_or(literal(row.quantity) > 10),
-            quantity_stddev=stddev(row.quantity),
-            approximate_customers=approx_count_distinct(row.customer_id),
-            ordered_first_customer=first_value(row.customer_id, order_by=row.quantity),
-            ordered_last_customer=last_value(row.customer_id, order_by=row.quantity),
-            customers=collect_set(row.customer_id, element_type=String()),
-        ).as_schema(AdvancedCustomerTotal)
+        return (
+            structure.rollup(customer_id=row.customer_id)
+            .agg(
+                paid_quantity=structure.sum(row.quantity, where=literal(row.quantity) > 0),
+                any_large=structure.bool_or(literal(row.quantity) > 10),
+                quantity_stddev=structure.stddev(row.quantity),
+                approximate_customers=structure.approx_count_distinct(row.customer_id),
+                ordered_first_customer=structure.first_value(row.customer_id, order_by=row.quantity),
+                ordered_last_customer=structure.last_value(row.customer_id, order_by=row.quantity),
+                customers=structure.collect_set(row.customer_id, element_type=structure.String()),
+            )
+            .as_schema(AdvancedCustomerTotal)
+        )
 
 
 def test_grouped_aggregate_step_renders_spark_visible_group_by() -> None:
@@ -146,6 +128,10 @@ def test_advanced_aggregate_helpers_render_spark_visible_rollup_and_metrics() ->
     assert 'F.bool_or((F.col("raw_order.quantity") > F.lit(10))).cast(T.BooleanType()).alias("any_large")' in text
     assert 'F.stddev(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_stddev")' in text
     assert 'F.approx_count_distinct(F.col("raw_order.customer_id")).cast(T.LongType())' in text
-    assert 'F.min_by(F.col("raw_order.customer_id"), F.col("raw_order.quantity")).alias("ordered_first_customer")' in text
-    assert 'F.max_by(F.col("raw_order.customer_id"), F.col("raw_order.quantity")).alias("ordered_last_customer")' in text
+    assert (
+        'F.min_by(F.col("raw_order.customer_id"), F.col("raw_order.quantity")).alias("ordered_first_customer")' in text
+    )
+    assert (
+        'F.max_by(F.col("raw_order.customer_id"), F.col("raw_order.quantity")).alias("ordered_last_customer")' in text
+    )
     assert 'F.collect_set(F.col("raw_order.customer_id")).cast(T.ArrayType(T.StringType(), containsNull=False))' in text

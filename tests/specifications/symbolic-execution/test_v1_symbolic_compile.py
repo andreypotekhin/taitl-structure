@@ -3,6 +3,7 @@ from typing import cast
 
 import pytest
 
+from structure import step
 from structure.app.dsl.api import (
     Join,
     JoinHint,
@@ -182,7 +183,7 @@ def test_transform_class_options_default_step_method_options() -> None:
         def normalize(self, row: Row) -> Row:
             return Row(id=row.id)
 
-        @transform(target_platform="polars")
+        @step(target_platform="polars")
         def publish(self, row: Row) -> Row:
             return Row(id=row.id)
 

@@ -241,7 +241,7 @@ Expression helpers are symbolically executed and lowered into online or generate
 Hooks are explicit escape hatches for arbitrary PySpark code.
 
 ```python
-@after(normalize, lane=orders)
+@raw(lane=orders)
 def remove_negative_totals(self, *, orders, spark, ctx):
     return orders.where(F.col("total") >= 0)
 ```
@@ -259,7 +259,7 @@ default. This keeps the hook ABI small and explicit.
 Hooks that need original named inputs opt in explicitly:
 
 ```python
-@after(normalize, lane=orders, pass_inputs=True)
+@raw(lane=orders, pass_inputs=True)
 def custom_check(self, *, orders, inputs, spark, ctx) -> DataFrame:
     raw_orders = inputs.orders
     return orders
@@ -368,7 +368,7 @@ For reuse:
       return lower(trim(value))
 
 For arbitrary PySpark:
-  @after(normalize, lane=orders)
+  @raw(lane=orders)
   def clean_id_column(self, *, orders, spark, ctx):
       return orders.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 

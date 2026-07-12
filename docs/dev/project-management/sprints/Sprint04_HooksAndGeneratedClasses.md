@@ -7,16 +7,16 @@ matching online hook behavior.
 
 ## Product Outcome
 
-Developers can attach arbitrary PySpark code to a concrete step method using `@after(method, lane=lane)` or
-`@before(method, lane=lane)`.
+Developers can attach arbitrary PySpark code to a concrete step method using `@raw(lane=lane)` or
+`@raw(lane=lane)`.
 Online execution and generated code call source hooks at the same lifecycle points.
 
 ## Scope
 
 ### In Scope
 
-- `@after(method, lane=lane)` hook decorator.
-- `@before(method, lane=lane)` hook decorator.
+- `@raw(lane=lane)` hook decorator.
+- `@raw(lane=lane)` hook decorator.
 - Hook metadata discovery.
 - Hook signature validation.
 - Direct source transform import when hooks exist.
@@ -24,7 +24,7 @@ Online execution and generated code call source hooks at the same lifecycle poin
 - Generated hook calls.
 - Opt-in original input access with `pass_inputs=True`.
 - Hook schema mode options.
-- Project output after hook when configured.
+- Project output raw hook when configured.
 - Clean no-hook generated code tests.
 - Shared PySpark hook recipes and online/generated parity tests for hook ordering and hook inputs.
 
@@ -36,8 +36,8 @@ Online execution and generated code call source hooks at the same lifecycle poin
 
 ## Relevant Specification Items
 
-- As a developer, I can attach a hook with `@after(method, lane=lane)`.
-- As a developer, I can attach a hook with `@before(method, lane=lane)`.
+- As a developer, I can attach a hook with `@raw(lane=lane)`.
+- As a developer, I can attach a hook with `@raw(lane=lane)`.
 - As a developer, I can write a selected lane hook signature such as `def hook(self, *, orders, spark, ctx)`.
 - As a developer, I can opt a hook into original input access with `pass_inputs=True`.
 - As a developer, generated code directly calls source hooks when hooks exist.
@@ -48,13 +48,13 @@ Online execution and generated code call source hooks at the same lifecycle poin
 ## Example Source
 
 ```python
-@after(normalize, lane=orders, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+@raw(lane=orders, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
 def add_quality_columns(self, *, orders, spark, ctx):
     return orders.withColumn("_has_total", F.col("total").isNotNull())
 ```
 
 ```python
-@after(normalize, lane=orders, pass_inputs=True)
+@raw(lane=orders, pass_inputs=True)
 def compare_to_raw(self, *, orders, inputs, spark, ctx):
     return orders
 ```
@@ -119,7 +119,7 @@ class NormalizeOrdersGenerated:
 
 ## Progress
 
-- [x] (2026-06-23) `@before(...)` and `@after(...)` hook metadata, hook recipe lowering, generated hook calls,
+- [x] (2026-06-23) `@raw` hook metadata, hook recipe lowering, generated hook calls,
   `HookInputs`, hook schema modes, project-output validation, streaming compatibility reporting, and opaque
   traceability boundaries are implemented and tested for v1.
 - [x] (2026-06-23) Hook-free generated transforms omit source transform imports and `_impl`; hooked transforms call
@@ -135,5 +135,5 @@ Target:
 
 ## Risks
 
-- `@after(method, lane=lane)` inside class body must work reliably.
+- `@raw(lane=lane)` inside class body must work reliably.
 - Hook lifecycle and validation ordering must be clear.

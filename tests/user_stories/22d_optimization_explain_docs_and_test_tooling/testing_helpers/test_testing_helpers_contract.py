@@ -9,18 +9,7 @@ from uuid import uuid4
 
 import pytest
 
-from structure import (
-    Decimal,
-    String,
-    Structure,
-    Transform,
-    compile_transform,
-    field,
-    input,
-    output,
-    to_decimal,
-    transform,
-)
+import structure
 from structure.lib.testing import (
     assert_check_success,
     assert_compile_success,
@@ -71,7 +60,7 @@ def test_pytest_helpers_cover_expected_diagnostics() -> None:
     """As a developer, I can use pytest helpers for expected diagnostics."""
 
     diagnostic = assert_expected_diagnostic(
-        lambda: compile_transform(BadTotal),
+        lambda: structure.compile_transform(BadTotal),
         "SCHEMA-E0301",
         problem_contains="may produce null",
         use_contains="coalesce",
@@ -150,23 +139,23 @@ def _write_project(root: Path) -> None:
     )
 
 
-class Raw(Structure):
-    id = field(String(), nullable=False)
-    total = field(String(), nullable=True)
+class Raw(structure.Structure):
+    id = structure.field(structure.String(), nullable=False)
+    total = structure.field(structure.String(), nullable=True)
 
 
-class Published(Structure):
-    id = field(String(), nullable=False)
-    total = field(Decimal(12, 2), nullable=False)
+class Published(structure.Structure):
+    id = structure.field(structure.String(), nullable=False)
+    total = structure.field(structure.Decimal(12, 2), nullable=False)
 
 
-@transform
-class BadTotal(Transform):
-    rows = input(Raw)
-    published = output(Published)
+@structure.transform
+class BadTotal(structure.Transform):
+    rows = structure.input(Raw)
+    published = structure.output(Published)
 
     def normalize(self, row: Raw) -> Published:
-        return Published(id=row.id, total=to_decimal(row.total, precision=12, scale=2))
+        return Published(id=row.id, total=structure.to_decimal(row.total, precision=12, scale=2))
 
 
 class TransformResultLike:

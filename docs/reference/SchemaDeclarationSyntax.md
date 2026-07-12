@@ -37,22 +37,7 @@ Lowercase type sentinels such as `string`, `decimal(12, 2)`, and `boolean` are n
 The public schema DSL is importable from `structure`:
 
 ```python
-from structure import (
-    Structure,
-    field,
-    String,
-    Integer,
-    Long,
-    Float,
-    Double,
-    Decimal,
-    Boolean,
-    Date,
-    Timestamp,
-    Array,
-    Struct,
-    Map,
-)
+import structure
 ```
 
 `Map` is part of the schema type surface.
