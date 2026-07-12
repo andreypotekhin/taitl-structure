@@ -8,10 +8,7 @@ def test_v1_step_renderer_renders_before_hook_against_current_input() -> None:
     recipe = PySpark.plan.lower()(compile_transform(EnrichOrders))
     text = PySpark.render.step()(recipe.steps[0], current="orders")
 
-    assert (
-        "        orders = self._impl.use_current_orders(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)"
-        in text
-    )
+    assert "        orders = self._impl.use_current_orders(orders=orders, spark=self.spark, ctx=self.ctx)" in text
     assert '        orders = orders.alias("order_raw")' in text
     assert "orders=orders" in text
 

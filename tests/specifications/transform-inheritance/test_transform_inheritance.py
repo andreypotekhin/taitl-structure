@@ -142,7 +142,7 @@ def test_diamond_ancestor_contributes_once() -> None:
 
 def test_parent_hooks_attach_to_parent_steps() -> None:
     class NormalizeWithHook(DirectNormalize):
-        @structure.raw(lane=DirectNormalize.normalized)
+        @structure.raw(inout=structure.lane(DirectNormalize.normalized) | structure.lane(DirectNormalize.normalized))
         def after_normalize(self, *, normalized, spark, ctx):
             return normalized
 
@@ -168,7 +168,7 @@ def test_child_hooks_can_target_inherited_parent_steps() -> None:
     class Publish(DirectNormalize):
         published = structure.output(Published)
 
-        @structure.raw(lane=DirectNormalize.normalized)
+        @structure.raw(inout=structure.lane(DirectNormalize.normalized) | structure.lane(DirectNormalize.normalized))
         def after_normalize(self, *, normalized, spark, ctx):
             return normalized
 
@@ -428,14 +428,14 @@ def test_generated_pyspark_renders_inherited_and_override_steps_in_order() -> No
 
     assert "class DirectNormalizeGenerated:" in text
     assert "class PublishGenerated(DirectNormalizeGenerated):" in text
-    assert "    def _step_directnormalize_normalize_0(self, frames, inputs):" in text
+    assert "    def _step_directnormalize_normalize_0(self, frames):" in text
     assert text.index("# Step method: DirectNormalize.normalize") < text.index("# Step method: normalize")
     assert text.index("# Step method: normalize") < text.index("# Step method: publish")
 
 
 def test_child_method_with_same_name_overrides_inherited_raw_hook() -> None:
     class NormalizeWithHook(DirectNormalize):
-        @structure.raw(lane=DirectNormalize.normalized)
+        @structure.raw(inout=structure.lane(DirectNormalize.normalized) | structure.lane(DirectNormalize.normalized))
         def audit(self, *, normalized, spark, ctx):
             return normalized
 
@@ -462,7 +462,7 @@ def test_child_method_with_same_name_overrides_inherited_raw_hook() -> None:
 
 def test_lowered_recipes_record_step_and_hook_owners() -> None:
     class NormalizeWithHook(DirectNormalize):
-        @structure.raw(lane=DirectNormalize.normalized)
+        @structure.raw(inout=structure.lane(DirectNormalize.normalized) | structure.lane(DirectNormalize.normalized))
         def after_normalize(self, *, normalized, spark, ctx):
             return normalized
 
@@ -484,7 +484,7 @@ def test_lowered_recipes_record_step_and_hook_owners() -> None:
 
 def test_explicit_parent_step_does_not_run_raw_hook_overridden_by_child_method() -> None:
     class NormalizeWithHook(DirectNormalize):
-        @structure.raw(lane=DirectNormalize.normalized)
+        @structure.raw(inout=structure.lane(DirectNormalize.normalized) | structure.lane(DirectNormalize.normalized))
         def audit(self, *, normalized, spark, ctx):
             return normalized
 

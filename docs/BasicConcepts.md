@@ -155,8 +155,10 @@ when(order.total >= 1000, "large").otherwise("standard")
 ```
 
 The v.1 expression surface supports field references, Python literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`,
-`-`, `*`, boolean `&`, `|`, `~`, `is_null()`, `is_not_null()`, `null_safe_eq(...)`, `lower(...)`, `upper(...)`,
-`trim(...)`, `to_decimal(...)`, `coalesce(...)`, and `when(...).otherwise(...)`.
+`-`, `*`, boolean `&`, `|`, `~`, `is_null()`, `is_not_null()`, `null_safe_eq(...)`, string predicates
+`contains(...)`, `like(...)`, `ilike(...)`, and `rlike(...)`, `lower(...)`, `upper(...)`, `trim(...)`,
+collection indexing with `array[index]` and `map[key]`, `to_decimal(...)`, `coalesce(...)`, and
+`when(...).otherwise(...)`.
 
 ### Expression Helper
 
@@ -225,7 +227,7 @@ compiler-visible logic.
 Example:
 
 ```python
-@raw(lane=orders, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+@raw(inout=lane(orders) | lane(orders), schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
 def add_quality_columns(self, *, orders, spark, ctx):
     return published.withColumn("_checked", F.lit(True))
 ```

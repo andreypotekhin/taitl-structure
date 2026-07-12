@@ -36,15 +36,7 @@ class LowerPySparkPlan:
             inputs=inputs,
             steps=steps,
             outputs=outputs,
-            requires_hook_inputs=any(
-                hook.pass_inputs
-                for step in steps
-                for hook in (
-                    *step.before_hooks,
-                    *step.after_hooks,
-                    *(hook for result in step.results for hook in result.after_hooks),
-                )
-            ),
+            requires_hook_inputs=False,
         )
 
 

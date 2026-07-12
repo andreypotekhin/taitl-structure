@@ -137,6 +137,18 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
             _isin(_field(RawOrder, "status"), _literal("new"), _literal("held")),
             "col(orders.status).isin(lit('new'),lit('held'))",
         ),
+        (_string_predicate("contains", _field(RawOrder, "status"), "new"), "col(orders.status).contains('new')"),
+        (_string_predicate("like", _field(RawOrder, "status"), "new%"), "col(orders.status).like('new%')"),
+        (
+            _string_predicate("ilike", _field(RawOrder, "status"), "NEW%"),
+            "col(orders.status).ilike('NEW%')",
+        ),
+        (
+            _string_predicate("rlike", _field(RawOrder, "status"), r"release-[0-9]+"),
+            "col(orders.status).rlike('release-[0-9]+')",
+        ),
+        (_item(_field(RawTagBatch, "tags"), _literal(0)), "col(RawTagBatch.tags)[0]"),
+        (_item(_field(RawMapBatch, "attributes"), _literal("region")), "col(RawMapBatch.attributes)['region']"),
         (_not(_is_null(_field(RawOrder, "status"))), "~(col(orders.status).isNull())"),
         (_call("upper", _call("trim", _field(RawOrder, "status"))), "upper(trim(col(orders.status)))"),
         (
@@ -1970,6 +1982,14 @@ def _isin(value: PySparkExpressionRecipe, *items: PySparkExpressionRecipe) -> Py
     return PySparkExpressionRecipe("isin", structure.Boolean(), True, {}, (value, *items))
 
 
+def _string_predicate(kind: str, value: PySparkExpressionRecipe, pattern: str) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe(kind, structure.Boolean(), value.nullable, {"pattern": pattern}, (value,))
+
+
+def _item(collection: PySparkExpressionRecipe, key: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe("item", structure.String(), True, {}, (collection, key))
+
+
 def _when(
     condition: PySparkExpressionRecipe,
     value: PySparkExpressionRecipe,
@@ -2062,7 +2082,7 @@ def _hook(
         target=lanes[0],
         lanes=lanes,
         outputs=outputs,
-        pass_inputs=False,
+        sources=lanes,
         schema_mode=structure.SchemaMode.STRICT,
         project_output=False,
         streaming_safe=True,
@@ -2261,6 +2281,21 @@ class FakeColumn:
 
     def isin(self, *items):
         return FakeColumn(f"{self.expression}.isin({','.join(item.expression for item in items)})")
+
+    def contains(self, value):
+        return FakeColumn(f"{self.expression}.contains({value!r})")
+
+    def like(self, pattern):
+        return FakeColumn(f"{self.expression}.like({pattern!r})")
+
+    def ilike(self, pattern):
+        return FakeColumn(f"{self.expression}.ilike({pattern!r})")
+
+    def rlike(self, pattern):
+        return FakeColumn(f"{self.expression}.rlike({pattern!r})")
+
+    def __getitem__(self, key):
+        return FakeColumn(f"{self.expression}[{key!r}]")
 
     def __and__(self, other):
         return FakeColumn(f"({self.expression} AND {other.expression})")

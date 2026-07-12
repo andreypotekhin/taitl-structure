@@ -58,4 +58,8 @@ predicate helper functions in Structure source without dropping into hooks.
 - [x] (2026-07-09) Started v.3 implementation as the active iteration.
 - [x] (2026-07-09) Added the first v.3 Column helper, inclusive `between(...)` range predicates.
 - [x] (2026-07-10) Added `isin(...)` membership predicates with online/generated parity coverage.
+- [x] (2026-07-12) Added typed `contains(...)`, `like(...)`, `ilike(...)`, and `rlike(...)` predicates with
+  generated and online-recipe parity coverage.
+- [x] (2026-07-12) Added typed Array/Map `__getitem__` expressions with inferred result types and shared
+  generated/online-recipe parity coverage.
 - [ ] Implement v.3 DSL and SQL function parity.

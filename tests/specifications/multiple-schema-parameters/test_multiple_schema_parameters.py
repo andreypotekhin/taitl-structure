@@ -331,7 +331,7 @@ def test_multi_result_after_hooks_select_their_dataframe() -> None:
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 
-        @raw(lane=audited)
+        @raw(inout=lane(audited) | output(audited))
         def audit(self, *, audited, spark, ctx):
             return audited
 
@@ -359,7 +359,7 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 
-        @raw(lane=audited)
+        @raw(inout=lane(audited) | output(audited))
         def audit(self, *, audited, spark, ctx):
             return audited
 
@@ -411,7 +411,7 @@ def test_generated_plural_lane_hook_replaces_outputs_in_order() -> None:
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 
-        @raw(lanes=[accepted, audited], outputs=[accepted, audited])
+        @raw(inout=lane(accepted) | [output(accepted), output(audited)])
         def polish(self, *, accepted, audited, spark, ctx):
             return accepted, audited
 
@@ -450,11 +450,11 @@ def test_multi_result_raw_hook_rejects_unproduced_output_selection() -> None:
             row = OrderWithProduct(id=order.id, product_name=product.name)
             return row, row
 
-        @raw(lane=orders)
+        @raw(inout=lane(orders) | lane(orders))
         def audit(self, *, orders, spark, ctx):
             return orders
 
-    with pytest.raises(Exception, match="does not produce"):
+    with pytest.raises(Exception, match="not available"):
         compile_transform(AddProduct)
 
 
@@ -464,14 +464,15 @@ def test_hook_signature_must_match_selected_lane() -> None:
         orders = input(OrderRaw)
         enriched = output(OrderWithProduct)
 
+        @dsl_step(output=enriched)
         def add_product(self, order: OrderRaw) -> OrderWithProduct:
             return OrderWithProduct(id=order.id, product_name=None)
 
-        @raw(lane=orders)
+        @raw(inout=lane(enriched) | output(enriched))
         def audit(self, *, df, spark, ctx):
             return df
 
-    with pytest.raises(Exception, match="orders, spark, ctx"):
+    with pytest.raises(Exception, match="enriched, spark, ctx"):
         compile_transform(AddProduct)
 
 

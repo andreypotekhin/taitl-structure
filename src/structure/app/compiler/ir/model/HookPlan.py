@@ -18,7 +18,7 @@ class HookPlan:
     target: str
     lanes: tuple[HookDeclaration, ...]
     outputs: tuple[HookDeclaration, ...]
-    pass_inputs: bool = False
+    sources: tuple[str, ...] = ()
     schema_mode: SchemaMode = SchemaMode.STRICT
     project_output: bool = False
     streaming_safe: bool = False

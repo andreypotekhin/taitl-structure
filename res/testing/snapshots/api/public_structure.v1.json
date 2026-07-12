@@ -1055,7 +1055,7 @@
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "raw",
-      "signature": "(function: 'Callable | None' = None, *, input: 'InputDeclaration | None' = None, inputs: 'object | None' = None, lane: 'InputDeclaration | LaneDeclaration | OutputDeclaration | None' = None, lanes: 'object | None' = None, output: 'LaneDeclaration | OutputDeclaration | None' = None, outputs: 'object | None' = None, pass_inputs: 'bool' = False, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming_safe: 'bool' = False, target_backend: 'str | Iterable[str] | None' = None, target_platform: 'str | None' = None)"
+      "signature": "(function: 'Callable | None' = None, *, input: 'object | None' = None, output: 'object | None' = None, inout: 'object | None' = None, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming_safe: 'bool' = False, target_backend: 'str | Iterable[str] | None' = None, target_platform: 'str | None' = None)"
     },
     "right_join": {
       "dataclass_fields": [],

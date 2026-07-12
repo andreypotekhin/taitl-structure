@@ -4,7 +4,7 @@ from typing import Any, cast
 import pytest
 
 from structure import SchemaMode
-from structure.app.runtime.execution.online.logic.PySparkHookInvoker import HookInputs, PySparkHookInvoker
+from structure.app.runtime.execution.online.logic.PySparkHookInvoker import PySparkHookInvoker
 from structure.app.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 
@@ -18,7 +18,6 @@ def test_online_hooks_receive_selected_lane_spark_and_context() -> None:
     PySparkHookInvoker().apply(
         (_hook("decorate_orders", lanes=("orders",), outputs=("orders",)),),
         frames=frames,
-        inputs=None,
         invocation=cast(Any, invocation),
         session=SimpleNamespace(spark="spark", ctx={"job": "nightly"}),
     )
@@ -29,29 +28,23 @@ def test_online_hooks_receive_selected_lane_spark_and_context() -> None:
             "orders": "orders-frame",
             "spark": "spark",
             "ctx": {"job": "nightly"},
-            "inputs": None,
         }
     ]
 
 
-def test_online_hooks_receive_read_only_named_inputs_when_requested() -> None:
-    """I can opt a hook into original input access."""
+def test_online_hooks_receive_explicit_original_input_sources() -> None:
+    """I can request an original input without a namespace object."""
 
-    inputs = HookInputs(orders="raw-orders", customers="customers")
     invocation = RecordingHook()
 
     PySparkHookInvoker().apply(
-        (_hook("validate_lookup", lanes=("orders",), outputs=("orders",), pass_inputs=True),),
-        frames={"orders": "orders-frame"},
-        inputs=inputs,
+        (_hook("validate_lookup", lanes=("orders",), sources=("input:orders",), outputs=("orders",)),),
+        frames={"orders": "orders-frame", "input:orders": "raw-orders"},
         invocation=cast(Any, invocation),
         session=SimpleNamespace(spark=None, ctx=None),
     )
 
-    hook_inputs = cast(HookInputs, invocation.calls[0]["inputs"])
-    assert getattr(hook_inputs, "customers") == "customers"
-    with pytest.raises(AttributeError, match="read-only"):
-        inputs.customers = "replacement"
+    assert invocation.calls[0]["orders"] == "raw-orders"
 
 
 def test_online_hooks_can_return_multiple_output_lanes() -> None:
@@ -62,7 +55,6 @@ def test_online_hooks_can_return_multiple_output_lanes() -> None:
     PySparkHookInvoker().apply(
         (_hook("split_orders", lanes=("orders",), outputs=("valid", "invalid")),),
         frames=frames,
-        inputs=None,
         invocation=cast(Any, RecordingHook()),
         session=SimpleNamespace(spark=None, ctx=None),
     )
@@ -78,7 +70,6 @@ def test_spark_connect_hook_classic_only_failure_reports_boundary_diagnostic() -
         PySparkHookInvoker().apply(
             (_hook("inspect_spark_context", lanes=("orders",), outputs=("orders",)),),
             frames={"orders": "orders-frame"},
-            inputs=None,
             invocation=cast(Any, ClassicOnlyHook()),
             session=SimpleNamespace(
                 spark="spark",
@@ -103,7 +94,7 @@ def _hook(
     *,
     lanes: tuple[str, ...],
     outputs: tuple[str, ...],
-    pass_inputs: bool = False,
+    sources: tuple[str, ...] | None = None,
 ) -> PySparkHookRecipe:
     return PySparkHookRecipe(
         name=name,
@@ -111,7 +102,7 @@ def _hook(
         target=lanes[0],
         lanes=lanes,
         outputs=outputs,
-        pass_inputs=pass_inputs,
+        sources=sources or lanes,
         schema_mode=SchemaMode.STRICT,
         project_output=False,
         streaming_safe=True,
@@ -124,15 +115,15 @@ class RecordingHook:
         self.calls: list[dict[str, object]] = []
 
     def decorate_orders(self, *, orders, spark, ctx):
-        self.calls.append({"orders": orders, "spark": spark, "ctx": ctx, "inputs": None})
+        self.calls.append({"orders": orders, "spark": spark, "ctx": ctx})
         return f"decorated-{orders}"
 
-    def validate_lookup(self, *, orders, spark, ctx, inputs):
-        self.calls.append({"orders": orders, "spark": spark, "ctx": ctx, "inputs": inputs})
+    def validate_lookup(self, *, orders, spark, ctx):
+        self.calls.append({"orders": orders, "spark": spark, "ctx": ctx})
         return orders
 
     def split_orders(self, *, orders, spark, ctx):
-        self.calls.append({"orders": orders, "spark": spark, "ctx": ctx, "inputs": None})
+        self.calls.append({"orders": orders, "spark": spark, "ctx": ctx})
         return f"valid-{orders}", f"invalid-{orders}"
 
 

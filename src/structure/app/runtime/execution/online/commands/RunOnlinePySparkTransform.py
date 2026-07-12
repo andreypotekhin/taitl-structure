@@ -4,7 +4,7 @@ from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.runtime.execution.online.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
 from structure.app.runtime.execution.online.logic.PySparkFrameValidator import PySparkFrameValidator
-from structure.app.runtime.execution.online.logic.PySparkHookInvoker import HookInputs, PySparkHookInvoker
+from structure.app.runtime.execution.online.logic.PySparkHookInvoker import PySparkHookInvoker
 from structure.app.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.app.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.app.runtime.session.model.TransformResult import TransformResult
@@ -60,7 +60,6 @@ class RunOnlinePySparkTransform:
         for input in plan.inputs:
             self._validator.validate(inputs[input.name], input.validation, types=T)
 
-        hook_inputs = HookInputs(**inputs) if plan.requires_hook_inputs else None
         frames = dict(inputs)
         frames.update({f"input:{name}": frame for name, frame in inputs.items()})
         for step in plan.steps:
@@ -69,7 +68,6 @@ class RunOnlinePySparkTransform:
                 current=frames[step.source],
                 frames=frames,
                 inputs=inputs,
-                hook_inputs=hook_inputs,
                 invocation=invocation,
                 session=session,
                 functions=F,
@@ -100,7 +98,6 @@ class RunOnlinePySparkTransform:
         current,
         frames,
         inputs,
-        hook_inputs,
         invocation: Transform,
         session,
         functions,
@@ -112,7 +109,6 @@ class RunOnlinePySparkTransform:
             self._hooks.apply(
                 step.before_hooks,
                 frames=frames,
-                inputs=hook_inputs,
                 invocation=invocation,
                 session=session,
             )
@@ -138,7 +134,6 @@ class RunOnlinePySparkTransform:
                     self._hooks.apply(
                         result.after_hooks,
                         frames=hook_frames,
-                        inputs=hook_inputs,
                         invocation=invocation,
                         session=session,
                     )
@@ -165,7 +160,6 @@ class RunOnlinePySparkTransform:
             self._hooks.apply(
                 step.after_hooks,
                 frames=step_frames,
-                inputs=hook_inputs,
                 invocation=invocation,
                 session=session,
             )

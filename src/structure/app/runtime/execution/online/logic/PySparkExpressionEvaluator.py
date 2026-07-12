@@ -66,6 +66,15 @@ class PySparkExpressionEvaluator:
             return self.evaluate(value, functions=functions, aliases=aliases, window=window).isin(
                 *(self.evaluate(item, functions=functions, aliases=aliases, window=window) for item in items)
             )
+        if expression.kind in {"contains", "like", "ilike", "rlike"}:
+            value = self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window)
+            return getattr(value, expression.kind)(expression.data["pattern"])
+        if expression.kind == "item":
+            collection, key = expression.args
+            item = key.data["value"] if key.kind == "literal" else self.evaluate(
+                key, functions=functions, aliases=aliases, window=window
+            )
+            return self.evaluate(collection, functions=functions, aliases=aliases, window=window)[item]
         if expression.kind == "not":
             return ~self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window)
         raise TypeError(f"Unsupported PySpark expression recipe: {expression.kind}")

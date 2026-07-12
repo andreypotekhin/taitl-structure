@@ -1,7 +1,19 @@
 import pytest
 
 import structure
-from structure import String, Structure, StructureCompileError, Transform, field, input, output, raw, step, transform
+from structure import (
+    String,
+    Structure,
+    StructureCompileError,
+    Transform,
+    field,
+    input,
+    lane,
+    output,
+    raw,
+    step,
+    transform,
+)
 from structure.app.dsl.api import SchemaMode, compile_transform
 from structure.compat import v2
 
@@ -15,13 +27,14 @@ def test_hooks_attach_to_declared_step_method_boundaries(orders_recipe) -> None:
     assert [hook.name for hook in orders_recipe.steps[4].after_hooks] == ["add_quality_columns"]
 
 
-def test_hooks_record_input_access_and_projection_validation_contracts(orders_recipe) -> None:
-    """I can opt a hook into original input access."""
+def test_hooks_record_explicit_input_access_and_projection_validation_contracts(orders_recipe) -> None:
+    """I can see each raw parameter's resolved frame source."""
 
     lookup = orders_recipe.steps[3].after_hooks[0]
     quality = orders_recipe.steps[4].after_hooks[0]
 
-    assert lookup.pass_inputs
+    assert lookup.lanes == ("orders", "customers", "products")
+    assert lookup.sources == ("orders", "input:customers", "input:products")
     assert lookup.schema_mode is SchemaMode.ALLOW_EXTRA_COLUMNS
     assert lookup.project_output
     assert quality.project_output
@@ -51,7 +64,7 @@ def test_hooks_record_target_backend_metadata() -> None:
         rows = input(Row)
         normalized = output(Row)
 
-        @raw(lane=rows, target_backend=["pyspark"])
+        @raw(inout=input(rows) | lane(rows), target_backend=["pyspark"])
         def prepare(self, *, rows, spark, ctx):
             return rows
 
@@ -145,7 +158,7 @@ def test_raw_before_the_first_step_replaces_its_source_lane() -> None:
         rows = input(Row)
         normalized = output(Row)
 
-        @raw(lane=rows)
+        @raw(inout=input(rows) | lane(rows))
         def prepare(self, *, rows, spark, ctx):
             return rows
 
@@ -157,6 +170,54 @@ def test_raw_before_the_first_step_replaces_its_source_lane() -> None:
 
     hook = plan.steps[0].before_hooks[0]
     assert (hook.name, hook.phase, hook.lanes[0].name, hook.outputs[0].name) == ("prepare", "raw", "rows", "rows")
+
+
+def test_raw_pipe_binds_original_input_and_materialized_output() -> None:
+    """I can select an original input and a current output without an inputs namespace."""
+
+    class Row(Structure):
+        id = field(String(), nullable=False)
+
+    @transform
+    class PublishRows(Transform):
+        rows = input(Row)
+        published = output(Row)
+
+        @step(output=published)
+        def publish(self, row: Row) -> Row:
+            return Row(id=row.id)
+
+        @raw(inout=input(rows) | output(published))
+        def restore(self, *, rows, published, spark, ctx):
+            return published
+
+    hook = compile_transform(PublishRows).steps[0].after_hooks[0]
+
+    assert tuple(lane.name for lane in hook.lanes) == ("rows", "published")
+    assert hook.sources == ("input:rows", "published")
+    assert tuple(output.name for output in hook.outputs) == ("published",)
+
+
+def test_raw_pipe_rejects_an_unmaterialized_output_parameter() -> None:
+    """I get a useful error when an output argument has not been produced yet."""
+
+    class Row(Structure):
+        id = field(String(), nullable=False)
+
+    @transform
+    class PublishRows(Transform):
+        rows = input(Row)
+        published = output(Row)
+
+        def normalize(self, row: Row) -> Row:
+            return Row(id=row.id)
+
+        @raw(inout=lane(rows) | output(published))
+        def publish(self, *, rows, published, spark, ctx):
+            return published
+
+    with pytest.raises(StructureCompileError, match="published is not available"):
+        compile_transform(PublishRows)
 
 
 def test_before_and_after_are_retired_from_public_namespaces() -> None:

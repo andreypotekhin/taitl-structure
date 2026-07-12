@@ -12,19 +12,19 @@ streaming-safety metadata, generated and online invocation, diagnostics, and tes
 Canonical hook forms:
 
 ```python
-@raw(lane=orders)
+@raw(inout=lane(orders) | lane(orders))
 def prepare(self, *, orders, spark, ctx):
     return orders
 ```
 
 ```python
-@raw(lane=orders, pass_inputs=True)
-def compare_to_raw(self, *, orders, inputs, spark, ctx):
+@raw(inout=input(orders) | lane(orders))
+def restore_raw(self, *, orders, spark, ctx):
     return orders
 ```
 
 ```python
-@raw(lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+@raw(inout=lane(published) | output(published), schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
 def add_quality_columns(self, *, published, spark, ctx):
     return published.withColumn("_checked", F.lit(True))
 ```
@@ -37,13 +37,9 @@ public methods.
 Keyword arguments:
 
 ```text
-input=declaration
-inputs=[declaration, ...]
-lane=declaration
-lanes=[declaration, ...]
-output=declaration
-outputs=[declaration, ...]
-pass_inputs=False
+input=declaration_or_sequence
+output=declaration_or_sequence
+inout=sources | targets
 schema_mode=SchemaMode.STRICT
 project_output=False
 streaming_safe=False
@@ -55,10 +51,13 @@ Rules:
 
 - Unknown keyword arguments are errors.
 - A positional step-method target is invalid.
-- If no source selector is supplied, the hook consumes and replaces the current source-ordered lane.
-- `input(s)=...` and `lane(s)=...` explicitly select one or more current declarations.
-- If no output selector is supplied, each selected source is replaced in place.
-- `output(s)=...` routes the returned frame or tuple to declared lanes or outputs.
+- If no binding is supplied, the hook consumes and replaces the current source-ordered lane.
+- `input=...` selects the DataFrame arguments and `output=...` selects returned-frame destinations.
+- `inout=sources | targets` is the concise form that supplies both sides together.
+- A hook receives the ordered, de-duplicated union of source and destination names as keyword-only arguments.
+- The hook returns one DataFrame per destination, in right-side order.
+- Bare declarations use normal resolution: a current lane shadows an input or output with the same name.
+- `input(x)`, `lane(x)`, and `output(x)` force the original input, current lane, or named output binding.
 - `schema_mode=SchemaMode.STRICT` is the default validation mode.
 - `project_output=True` requires a schema mode and target schema that make projection meaningful.
 - `streaming_safe=True` is an author promise, not compiler inspection of the hook body.
@@ -74,10 +73,10 @@ def hook(self, *, selected_lane_name, spark, ctx):
     ...
 ```
 
-An explicit hook source selects the lane it receives:
+An explicit hook binding selects the frames it receives and replaces:
 
 ```python
-@raw(lane=orders)
+@raw(inout=lane(orders) | lane(orders))
 def prepare(self, *, orders, spark, ctx):
     ...
 ```
@@ -93,10 +92,11 @@ def audit(self, *, normalized, spark, ctx):
 The selected lane is passed through a keyword parameter with the same name. The hook return value replaces only that
 lane.
 
-Input-access signature:
+Original-input signature:
 
 ```python
-def hook(self, *, selected_lane_name, inputs, spark, ctx):
+@raw(inout=input(orders) | lane(orders))
+def hook(self, *, orders, spark, ctx):
     ...
 ```
 
@@ -104,34 +104,31 @@ Rules:
 
 - `self` is required.
 - Hook runtime parameters must be keyword-only.
-- the selected lane parameter, `spark`, and `ctx` are required.
-- `inputs` is required only when `pass_inputs=True`.
-- `inputs` is invalid when `pass_inputs=False`.
+- every distinct binding name, `spark`, and `ctx` are required.
 - Extra parameters are invalid in v1.
 - Hooks must return a DataFrame at runtime.
 
 Signature validation should happen during compiler checks, not only when a hook is first invoked in production.
 
-## Hook Inputs
+## Original Inputs
 
-When at least one hook declares `pass_inputs=True`, runtime execution creates a read-only namespace of original
-transform inputs.
+Select an original transform input explicitly with `input(...)`; no read-only namespace object is created.
 
 Example:
 
 ```python
-@raw(lane=orders, pass_inputs=True)
-def compare_to_raw(self, *, orders, inputs, spark, ctx):
-    return orders.join(inputs.orders.select("id"), "id", "left")
+@raw(inout=[lane(orders), input(customers)] | lane(orders))
+def compare_to_raw(self, *, orders, customers, spark, ctx):
+    return orders.join(customers.select("id"), "id", "left")
 ```
 
 Rules:
 
-- `inputs.orders` refers to the original DataFrame bound to the declared `orders = input(...)`.
-- The namespace contains original declared inputs only.
-- It does not contain intermediate step DataFrames.
-- It is read-only; assigning `inputs.orders = ...` is invalid if the namespace can prevent it.
-- Missing original inputs are normal transform input binding errors, not hook-specific errors.
+- `input(customers)` refers to the original DataFrame bound to `customers = input(...)`, even when a current lane
+  has the same name.
+- `lane(customers)` instead selects the current working frame.
+- Every selected argument must exist at the hook's source-order position; otherwise compilation reports the missing
+  binding and recommends an explicit selector.
 
 ## Ordering
 

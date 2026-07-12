@@ -33,10 +33,8 @@ class EnrichOrders(structure.Transform):
     def money(value):
         return structure.coalesce(structure.to_decimal(value, precision=12, scale=2), 0)
 
-    @structure.raw(lane=orders, pass_inputs=True, streaming_safe=True)
-    def use_current_orders(self, *, orders, inputs, spark, ctx):
-        if ctx is not None and getattr(ctx, "use_original_orders", False):
-            return inputs.orders
+    @structure.raw(inout=structure.input(orders) | structure.lane(orders), streaming_safe=True)
+    def use_current_orders(self, *, orders, spark, ctx):
         return orders
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
@@ -148,13 +146,15 @@ class EnrichOrders(structure.Transform):
         )
 
     @structure.raw(
-        lane=orders, pass_inputs=True, schema_mode=structure.SchemaMode.ALLOW_EXTRA_COLUMNS, streaming_safe=True
+        inout=[structure.lane(orders), structure.input(customers), structure.input(products)] | structure.lane(orders),
+        schema_mode=structure.SchemaMode.ALLOW_EXTRA_COLUMNS,
+        streaming_safe=True,
     )
-    def note_lookup_inputs(self, *, orders, inputs, spark, ctx):
+    def note_lookup_inputs(self, *, orders, customers, products, spark, ctx):
         from pyspark.sql import functions as F
 
         return orders.withColumn(
-            "_lookup_inputs_seen", F.lit(inputs.customers is not None and inputs.products is not None)
+            "_lookup_inputs_seen", F.lit(customers is not None and products is not None)
         )
 
     @structure.step(output=published)
@@ -166,7 +166,10 @@ class EnrichOrders(structure.Transform):
         return OrderPublished.base(order, flags)
 
     @structure.raw(
-        lane=published, schema_mode=structure.SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True, streaming_safe=True
+        inout=structure.lane(published) | structure.output(published),
+        schema_mode=structure.SchemaMode.ALLOW_EXTRA_COLUMNS,
+        project_output=True,
+        streaming_safe=True,
     )
     def add_quality_columns(self, *, published, spark, ctx):
         from pyspark.sql import functions as F

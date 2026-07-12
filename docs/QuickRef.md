@@ -325,8 +325,9 @@ def add_flags(self, order: OrderRaw) -> OrderWithFlags:
 ```
 
 Supported v.1 expression forms are field references, literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `*`,
-boolean `&`, `|`, `~`, null checks, `null_safe_eq(...)`, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`,
-`coalesce(...)`, and `when(...).otherwise(...)`.
+boolean `&`, `|`, `~`, null checks, `null_safe_eq(...)`, `contains(...)`, `like(...)`, `ilike(...)`, `rlike(...)`,
+array/map indexing, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and
+`when(...).otherwise(...)`.
 
 Reference: [DSL expressions](reference/DSL.md) and
 [nullability and type coercion](reference/NullabilityAndTypeCoercion.md).
@@ -915,7 +916,7 @@ Reference: [transform inheritance and composition](reference/TransformCompositio
 Hooks are explicit PySpark escape hatches.
 
 ```python
-@raw(lane=orders)
+@raw(inout=lane(orders) | lane(orders))
 def remove_negative_totals(self, *, orders, spark, ctx):
     return orders.where(F.col("total") >= 0)
 ```
@@ -927,25 +928,23 @@ def hook_name(self, *, selected_lane_name, spark, ctx):
     ...
 ```
 
-Hooks receive `self`, the selected lane parameter, `spark`, and `ctx`. Named input DataFrames are not passed
-to hooks by default.
+Hooks receive `self`, their explicitly bound DataFrame parameters, `spark`, and `ctx`.
 
-When a hook needs the original named inputs, opt in explicitly:
+When a hook needs an original named input, select it explicitly:
 
 ```python
-@raw(lane=orders, pass_inputs=True)
-def check_against_raw_orders(self, *, orders, inputs, spark, ctx):
-    raw = inputs.orders
+@raw(inout=input(orders) | lane(orders))
+def check_against_raw_orders(self, *, orders, spark, ctx):
+    raw = orders
     return orders
 ```
 
-`inputs` is a read-only namespace matching the transform's declared input names. It contains the original
-`run(...)` input DataFrames, not the current intermediate lane.
+`input(orders)` selects the original `run(...)` input; `lane(orders)` selects the current intermediate lane.
 
 Select hook DataFrames explicitly with input, lane, or output declarations:
 
 ```python
-@raw(lane=audited)
+@raw(inout=lane(audited) | output(audited))
 def add_audit_columns(self, *, audited, spark, ctx):
     return audited.withColumn("_audited", F.lit(True))
 ```

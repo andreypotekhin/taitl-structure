@@ -48,10 +48,7 @@ def test_orders_example_generation_keeps_public_behavior_fragments_stable() -> N
 
     assert "class EnrichOrdersGenerated:" in transform
     assert "from examples.orders.transforms.order import EnrichOrders" in transform
-    assert (
-        "orders = self._impl.use_current_orders(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)"
-        in transform
-    )
+    assert "orders = self._impl.use_current_orders(orders=_input_orders, spark=self.spark, ctx=self.ctx)" in transform
     assert 'customers_joined = F.broadcast(customers.alias("customers"))' in transform
     assert 'promotions_joined = promotions.alias("promotions")' in transform
     assert (

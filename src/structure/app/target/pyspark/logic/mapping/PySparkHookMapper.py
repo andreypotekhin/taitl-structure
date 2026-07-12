@@ -11,7 +11,7 @@ class PySparkHookMapper:
             target=hook.target,
             lanes=tuple(lane.name for lane in hook.lanes),
             outputs=tuple(output.name for output in hook.outputs),
-            pass_inputs=hook.pass_inputs,
+            sources=hook.sources,
             schema_mode=hook.schema_mode,
             project_output=hook.project_output,
             streaming_safe=hook.streaming_safe,

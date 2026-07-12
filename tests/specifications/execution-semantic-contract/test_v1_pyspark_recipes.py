@@ -41,12 +41,12 @@ def test_v1_pyspark_recipe_preserves_inputs_and_steps() -> None:
     assert recipe.final_validation.reason == "final"
 
 
-def test_v1_pyspark_recipe_records_joins_hooks_and_hook_inputs() -> None:
+def test_v1_pyspark_recipe_records_joins_hooks_and_sources() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
     recipe = PySpark.plan.lower()(compile_transform(EnrichOrders))
 
-    assert recipe.requires_hook_inputs
+    assert not recipe.requires_hook_inputs
     assert [len(step.joins) for step in recipe.steps] == [0, 1, 1, 1, 0]
 
     customer_join = recipe.steps[1].joins[0]

@@ -102,7 +102,7 @@ class EnrichOrders(Transform):
             product_category=product.category,
         )
 
-    @raw(lane=orders)
+    @raw(inout=lane(orders) | lane(orders))
     def add_quality_columns(self, *, orders, spark, ctx):
         return (
             orders

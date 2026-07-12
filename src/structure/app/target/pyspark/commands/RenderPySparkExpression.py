@@ -73,6 +73,12 @@ class RenderPySparkExpression:
             value, *items = expression.args
             rendered_items = ", ".join(self._render(item, aliases) for item in items)
             return f"{self._render(value, aliases)}.isin({rendered_items})"
+        if expression.kind in {"contains", "like", "ilike", "rlike"}:
+            return f"{self._render(expression.args[0], aliases)}.{expression.kind}({expression.data['pattern']!r})"
+        if expression.kind == "item":
+            collection, key = expression.args
+            rendered_key = repr(key.data["value"]) if key.kind == "literal" else self._render(key, aliases)
+            return f"{self._render(collection, aliases)}[{rendered_key}]"
         if expression.kind == "event_time_between":
             left, right = expression.args
             lower = self._interval(str(expression.data["lower"]))

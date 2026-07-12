@@ -3,7 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Mapping, cast
 
+from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.BooleanType import BooleanType
+from structure.app.dsl.model.types.MapType import MapType
+from structure.app.dsl.model.types.StringType import StringType
 from structure.app.dsl.model.types.StructType import StructType
 from structure.app.dsl.model.types.StructureType import StructureType
 
@@ -39,6 +42,32 @@ class Expression:
 
     def between(self, lower: object, upper: object) -> "Expression":
         return (self >= lower) & (self <= upper)
+
+    def contains(self, value: str) -> "Expression":
+        return self._string_predicate("contains", value)
+
+    def like(self, pattern: str) -> "Expression":
+        return self._string_predicate("like", pattern)
+
+    def ilike(self, pattern: str) -> "Expression":
+        return self._string_predicate("ilike", pattern)
+
+    def rlike(self, pattern: str) -> "Expression":
+        return self._string_predicate("rlike", pattern)
+
+    def __getitem__(self, key: object) -> "Expression":
+        from structure.app.dsl.model.expr.expressions import literal
+
+        item = literal(key)
+        if isinstance(self.type, ArrayType):
+            if item.type is None or item.type.name not in {"integer", "long"}:
+                raise TypeError("Array indexing requires an integral Structure expression")
+            return Expression(kind="item", type=self.type.element, nullable=True, args=(self, item))
+        if isinstance(self.type, MapType):
+            if item.type is None or item.type.name != self.type.key.name:
+                raise TypeError("Map indexing requires a key with the map key type")
+            return Expression(kind="item", type=self.type.value, nullable=True, args=(self, item))
+        raise TypeError("Indexing requires an Array or Map Structure expression")
 
     def __getattr__(self, name: str) -> "Expression":
         if not isinstance(self.type, StructType):
@@ -137,3 +166,10 @@ class Expression:
         from structure.app.dsl.model.expr.expressions import literal
 
         return Expression(kind=kind, type=type, nullable=nullable, args=(literal(other), self))
+
+    def _string_predicate(self, name: str, pattern: str) -> "Expression":
+        if not isinstance(self.type, StringType):
+            raise TypeError(f"{name}(...) requires a String Structure expression")
+        if not isinstance(pattern, str):
+            raise TypeError(f"{name}(...) requires a string literal")
+        return Expression(kind=name, type=BooleanType(), nullable=self.nullable, data={"pattern": pattern}, args=(self,))

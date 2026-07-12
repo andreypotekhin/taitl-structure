@@ -321,25 +321,49 @@ def _declaration_kinds(allowed: tuple[type, ...], roles: set[str] | None = None)
 def raw(
     function: Callable | None = None,
     *,
-    input: InputDeclaration | None = None,
-    inputs: object | None = None,
-    lane: InputDeclaration | LaneDeclaration | OutputDeclaration | None = None,
-    lanes: object | None = None,
-    output: LaneDeclaration | OutputDeclaration | None = None,
-    outputs: object | None = None,
-    pass_inputs: bool = False,
+    input: object | None = None,
+    output: object | None = None,
+    inout: object | None = None,
     schema_mode: SchemaMode = SchemaMode.STRICT,
     project_output: bool = False,
     streaming_safe: bool = False,
     target_backend: str | Iterable[str] | None = None,
     target_platform: str | None = None,
 ):
-    kwargs = {"input": input, "inputs": inputs, "lane": lane, "lanes": lanes, "output": output, "outputs": outputs}
-    has_source = any(kwargs[name] is not None for name in ("input", "inputs", "lane", "lanes"))
-    if not has_source and (output is not None or outputs is not None):
-        raise TypeError("@raw(output=...) requires input(s)=... or lane(s)=...")
-    sources = _hook_sources("raw", kwargs) if has_source else None
-    targets = _hook_outputs("raw", kwargs, default=sources or ()) if sources is not None else None
+    if inout is not None and (input is not None or output is not None):
+        raise TypeError("@raw(inout=...) cannot combine with input=... or output=...")
+    inputs = _method_declarations(
+        {"input": input},
+        name="input",
+        bare=(InputDeclaration, LaneDeclaration),
+        roles={"input", "lane"},
+    )
+    outputs = _method_declarations(
+        {"output": output},
+        name="output",
+        bare=(LaneDeclaration, OutputDeclaration),
+        roles={"lane", "output"},
+    )
+    if inout is not None:
+        binding = inout
+        if not isinstance(binding, InOutBinding):
+            raise TypeError("@raw(inout=...) requires a pipe binding such as source | target")
+        inputs = _method_declaration_values(
+            binding.inputs,
+            option="@raw(inout=...) input side",
+            bare=(InputDeclaration, LaneDeclaration),
+            roles={"input", "lane"},
+        )
+        outputs = _method_declaration_values(
+            binding.outputs,
+            option="@raw(inout=...) output side",
+            bare=(LaneDeclaration, OutputDeclaration),
+            roles={"lane", "output"},
+        )
+    if len(set(map(_binding_key, inputs))) != len(inputs):
+        raise TypeError("@raw(input=...) cannot repeat a declaration")
+    if len(set(map(_binding_key, outputs))) != len(outputs):
+        raise TypeError("@raw(output=...) cannot repeat a declaration")
     if target_platform is not None:
         _step_method_option("target_platform", target_platform)
 
@@ -348,9 +372,8 @@ def raw(
             target,
             "_structure_raw",
             {
-                "lanes": sources,
-                "outputs": targets,
-                "pass_inputs": pass_inputs,
+                "inputs": inputs or None,
+                "outputs": outputs or None,
                 "schema_mode": schema_mode,
                 "project_output": project_output,
                 "streaming_safe": streaming_safe,

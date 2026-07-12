@@ -208,3 +208,69 @@ def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> N
     assert render(projection["line_total"], scope_aliases={"rows": "orders"}) == (
         '(F.col("orders.price") * F.col("orders.quantity"))'
     )
+
+
+def test_v3_expression_renderer_renders_string_predicates() -> None:
+    class Raw(structure.Structure):
+        status = structure.field(structure.String(), nullable=True)
+
+    class Published(structure.Structure):
+        contains_new = structure.field(structure.Boolean(), nullable=True)
+        matches_new = structure.field(structure.Boolean(), nullable=True)
+        matches_new_case_insensitive = structure.field(structure.Boolean(), nullable=True)
+        matches_release = structure.field(structure.Boolean(), nullable=True)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            status = cast(Any, row).status
+            return Published(
+                contains_new=status.contains("new"),
+                matches_new=status.like("new%"),
+                matches_new_case_insensitive=status.ilike("NEW%"),
+                matches_release=status.rlike(r"release-[0-9]+"),
+            )
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert [render(expression, scope_aliases={"rows": "orders"}) for expression in projection.values()] == [
+        'F.col("orders.status").contains(\'new\')',
+        'F.col("orders.status").like(\'new%\')',
+        'F.col("orders.status").ilike(\'NEW%\')',
+        "F.col(\"orders.status\").rlike('release-[0-9]+')",
+    ]
+
+
+def test_v3_expression_renderer_renders_collection_indexing() -> None:
+    class Raw(structure.Structure):
+        tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=False)
+        attributes = structure.field(
+            structure.Map(structure.String(), structure.String(), value_contains_null=False), nullable=False
+        )
+
+    class Published(structure.Structure):
+        first_tag = structure.field(structure.String(), nullable=True)
+        region = structure.field(structure.String(), nullable=True)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            source = cast(Any, row)
+            return Published(first_tag=source.tags[0], region=source.attributes["region"])
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert [render(expression, scope_aliases={"rows": "orders"}) for expression in projection.values()] == [
+        'F.col("orders.tags")[0]',
+        'F.col("orders.attributes")[\'region\']',
+    ]

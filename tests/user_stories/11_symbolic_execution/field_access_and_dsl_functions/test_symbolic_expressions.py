@@ -237,6 +237,125 @@ def test_membership_predicates_require_values() -> None:
     assert "isin(...) requires at least one value" in raised.value.diagnostic.problem_text()
 
 
+def test_string_predicates_are_typed_symbolic_expressions() -> None:
+    """I can express string matching without a raw SQL expression."""
+
+    class Raw(structure.Structure):
+        status = structure.field(structure.String(), nullable=True)
+
+    class Published(structure.Structure):
+        has_new = structure.field(structure.Boolean(), nullable=True)
+        is_new = structure.field(structure.Boolean(), nullable=True)
+        is_new_case_insensitive = structure.field(structure.Boolean(), nullable=True)
+        has_release_number = structure.field(structure.Boolean(), nullable=True)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            status = cast(Any, row).status
+            return Published(
+                has_new=status.contains("new"),
+                is_new=status.like("new%"),
+                is_new_case_insensitive=status.ilike("NEW%"),
+                has_release_number=status.rlike(r"release-[0-9]+"),
+            )
+
+    projection = {
+        assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
+    }
+
+    assert [(expression.kind, expression.data, expression.nullable) for expression in projection.values()] == [
+        ("contains", {"pattern": "new"}, True),
+        ("like", {"pattern": "new%"}, True),
+        ("ilike", {"pattern": "NEW%"}, True),
+        ("rlike", {"pattern": r"release-[0-9]+"}, True),
+    ]
+
+
+def test_string_predicates_require_string_expressions() -> None:
+    """I get a compile diagnostic instead of a Spark type error for invalid string matching."""
+
+    class Raw(structure.Structure):
+        count = structure.field(structure.Integer(), nullable=False)
+
+    class Published(structure.Structure):
+        matched = structure.field(structure.Boolean(), nullable=False)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(matched=cast(Any, row).count.contains("1"))
+
+    with pytest.raises(structure.StructureCompileError) as raised:
+        compile_transform(Publish)
+
+    assert raised.value.diagnostic.code == "DSL-E0401"
+    assert "contains(...) requires a String Structure expression" in raised.value.diagnostic.problem_text()
+
+
+def test_collection_indexing_is_typed_and_symbolic() -> None:
+    """I can read an array item or map value without dropping into a raw hook."""
+
+    class Raw(structure.Structure):
+        tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=False)
+        attributes = structure.field(
+            structure.Map(structure.String(), structure.String(), value_contains_null=False), nullable=False
+        )
+
+    class Published(structure.Structure):
+        first_tag = structure.field(structure.String(), nullable=True)
+        region = structure.field(structure.String(), nullable=True)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            source = cast(Any, row)
+            return Published(first_tag=source.tags[0], region=source.attributes["region"])
+
+    projection = {
+        assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
+    }
+
+    assert [(expression.kind, expression.type, expression.nullable) for expression in projection.values()] == [
+        ("item", structure.String(), True),
+        ("item", structure.String(), True),
+    ]
+    assert [expression.args[1].data for expression in projection.values()] == [{"value": 0}, {"value": "region"}]
+
+
+def test_collection_indexing_requires_a_matching_collection_and_key_type() -> None:
+    """I get compile diagnostics for invalid collection indexing instead of a Spark runtime error."""
+
+    class Raw(structure.Structure):
+        status = structure.field(structure.String(), nullable=False)
+
+    class Published(structure.Structure):
+        value = structure.field(structure.String(), nullable=True)
+
+    @structure.transform
+    class Publish(structure.Transform):
+        rows = structure.input(Raw)
+        published = structure.output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(value=cast(Any, row).status[0])
+
+    with pytest.raises(structure.StructureCompileError) as raised:
+        compile_transform(Publish)
+
+    assert raised.value.diagnostic.code == "DSL-E0401"
+    assert "Indexing requires an Array or Map Structure expression" in raised.value.diagnostic.problem_text()
+
+
 def test_lookup_join_requires_boolean_expression() -> None:
     """Join predicates reject non-boolean expressions before target lowering."""
 

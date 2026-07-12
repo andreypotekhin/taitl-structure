@@ -23,7 +23,7 @@ def test_v1_runtime_module_renderer_uses_packaged_resource() -> None:
     compile(text, RUNTIME_MODULE_RESOURCE, "exec")
 
 
-def test_v1_runtime_module_renderer_contains_schema_helpers_and_hook_inputs() -> None:
+def test_v1_runtime_module_renderer_contains_schema_helpers() -> None:
     text = PySpark.render.runtime()()
 
     assert "def assert_schema(df, schema, *, name: str, mode: str) -> None:" in text
@@ -32,8 +32,7 @@ def test_v1_runtime_module_renderer_contains_schema_helpers_and_hook_inputs() ->
     assert 'if mode == "strict":' in text
     assert "def project_schema(df, schema):" in text
     assert "return df.select(*(F.col(field.name) for field in schema))" in text
-    assert "class HookInputs:" in text
-    assert 'raise AttributeError("HookInputs is read-only")' in text
+    assert "HookInputs" not in text
     assert "class ResultSchemas(Mapping):" in text
     assert "object.__setattr__(self, 'schema', ResultSchemas(schema, aliases=output_aliases))" in text
     assert 'raise AttributeError("ResultSchemas is read-only")' in text

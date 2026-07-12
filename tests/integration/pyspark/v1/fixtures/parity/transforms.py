@@ -18,7 +18,7 @@ class NormalizeBase(Transform):
     def normalize(self, row: RawRow) -> NormalizedRow:
         return NormalizedRow(id=row.id, hook_owner="none")
 
-    @raw(lane=normalized)
+    @raw(inout=lane(normalized) | lane(normalized))
     def mark(self, *, normalized, spark, ctx):
         from pyspark.sql import functions as F
 

@@ -84,12 +84,12 @@ class EnrichOrders(Transform):
             customer_tier=customer.tier,
         )
 
-    @raw(lane=orders)
+    @raw(inout=lane(orders) | lane(orders))
     def remove_negative_totals(self, *, orders, spark, ctx):
         return orders.where(F.col("total") >= 0)
 
-    @raw(lane=orders, pass_inputs=True)
-    def compare_to_raw(self, *, orders, inputs, spark, ctx):
+    @raw(inout=input(orders) | lane(orders))
+    def compare_to_raw(self, *, orders, spark, ctx):
         return orders
 ```
 
@@ -443,10 +443,21 @@ The v.1 expression surface includes:
 - comparisons such as `==`, `!=`, `<`, `<=`, `>`, and `>=` when supported by the expression type;
 - membership predicates such as `expr.isin(...)`;
 - inclusive range predicates such as `expr.between(lower, upper)`;
+- string predicates such as `expr.contains(value)`, `expr.like(pattern)`, `expr.ilike(pattern)`, and
+  `expr.rlike(pattern)`;
+- collection indexing such as `array_expr[index]` and `map_expr[key]`;
 - boolean combination with `&`, `|`, and `~`;
 - null checks such as `expr.is_null()` and `expr.is_not_null()`;
 - null-safe equality when provided by expression objects;
 - helper calls such as `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and `when(...)`.
+
+String predicates require a typed String expression and a Python string literal. `like(...)` uses Spark SQL `%` and `_`
+wildcards, `ilike(...)` is case-insensitive, and `rlike(...)` accepts a Java regular-expression pattern. They preserve
+the source expression's nullability and render as visible PySpark `Column` calls.
+
+Collection indexing requires an Array with an integral index or a Map with a key of the declared key type. It infers the
+array element or map value type. Lookup results are nullable because an array index can be absent and a map key may be
+missing.
 
 Rules:
 
@@ -665,26 +676,26 @@ where it should execute.
 Canonical forms:
 
 ```python
-@raw(lane=orders)
+@raw(inout=lane(orders) | lane(orders))
 def prepare(self, *, orders, spark, ctx):
     return orders
 ```
 
 ```python
-@raw(lane=orders, pass_inputs=True)
-def compare_to_raw(self, *, orders, inputs, spark, ctx):
+@raw(inout=input(orders) | lane(orders))
+def compare_to_raw(self, *, orders, spark, ctx):
     return orders
 ```
 
 ```python
-@raw(lane=published, schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
+@raw(inout=lane(published) | output(published), schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS, project_output=True)
 def add_quality_columns(self, *, published, spark, ctx):
     return published
 ```
 
 Hook decorator keyword arguments:
 
-- `pass_inputs`: whether the hook receives a read-only namespace of original named input DataFrames.
+- `input=...`, `output=...`, and `inout=sources | targets`: hook DataFrame bindings.
 - `schema_mode`: output schema validation mode after the hook.
 - `project_output`: whether extra hook-produced columns should be projected away after validation.
 - `streaming_safe`: author promise used by streaming compatibility checks.
@@ -695,14 +706,12 @@ Rules:
 - Hook order is Transform class declaration order.
 - A raw method before a step can explicitly select and replace that step's source lane.
 - A raw method after a step can implicitly consume and replace the current lane, or explicitly select lanes.
-- `lane(s)=...`, `input(s)=...`, `output(s)=...`, `pass_inputs`, `schema_mode`, `project_output`,
+- `input=...`, `output=...`, `inout=...`, `schema_mode`, `project_output`,
   `streaming_safe`, `target_backend`, and `target_platform` define the hook boundary.
 - Hooks are not symbolically executed and are opaque to the compiler except for metadata, signature, declared options,
   provenance, and streaming compatibility classification.
-- A hook without `pass_inputs=True` must have signature `def hook(self, *, selected_lane_name, spark, ctx)`.
-- A hook with `pass_inputs=True` must have signature `def hook(self, *, selected_lane_name, inputs, spark, ctx)`.
-- `inputs` is a read-only namespace containing the original DataFrames bound to the transform invocation. It does not
-  contain intermediate DataFrames unless they were also declared original inputs.
+- Every hook DataFrame binding, `spark`, and `ctx` must be keyword-only parameters. `input(name)` selects an original
+  input, `lane(name)` selects the current lane, and `output(name)` selects a materialized output.
 - Hooks must return a DataFrame at runtime.
 - Generated code and online execution call hooks on the source transform instance so hook behavior remains transparent.
 - Hooks may import and use PySpark because they execute at runtime, not during compiler phases.

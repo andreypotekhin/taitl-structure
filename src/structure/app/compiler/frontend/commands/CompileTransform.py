@@ -274,12 +274,8 @@ class CompileTransform:
             )
         metadata = cast(dict[str, object], getattr(item.member, "_structure_raw"))
         target = steps[-1]
-        declarations = self._raw_declarations(transform_class, target, metadata, member=item.name)
-        sources, outputs = declarations
-        for declaration in sources:
-            self._declared_lane(transform_class, declaration, member=item.name, role="lane")
-        for declaration in outputs:
-            self._declared_lane(transform_class, declaration, member=item.name, role="output")
+        inputs, outputs = self._raw_bindings(transform_class, target, metadata, member=item.name)
+        hook_lanes, sources = self._raw_arguments(transform_class, inputs, outputs, lanes, member=item.name)
         output_lanes = tuple(result.lane for result in target.results) or (target.output_lane,)
         unknown = [declaration.name for declaration in outputs if declaration.name not in output_lanes]
         if unknown:
@@ -297,9 +293,9 @@ class CompileTransform:
             name=item.name,
             phase="raw",
             target=target.name,
-            lanes=sources,
+            lanes=hook_lanes,
             outputs=outputs,
-            pass_inputs=bool(metadata["pass_inputs"]),
+            sources=sources,
             schema_mode=cast(SchemaMode, metadata["schema_mode"]),
             project_output=bool(metadata["project_output"]),
             streaming_safe=bool(metadata["streaming_safe"]),
@@ -318,18 +314,9 @@ class CompileTransform:
         target: StepPlan,
     ) -> StepPlan:
         metadata = cast(dict[str, object], getattr(item.member, "_structure_raw"))
-        sources = metadata["lanes"]
-        outputs = metadata["outputs"]
-        if sources is None or outputs is None:
-            declaration = self._raw_declaration(transform_class, target.input_lane)
-            sources = (declaration,)
-            outputs = (declaration,)
-        sources = cast(tuple, sources)
-        outputs = cast(tuple, outputs)
-        for declaration in sources:
-            self._declared_lane(transform_class, declaration, member=item.name, role="lane")
-        for declaration in outputs:
-            self._declared_lane(transform_class, declaration, member=item.name, role="output")
+        inputs, outputs = self._raw_bindings(transform_class, target, metadata, member=item.name)
+        available: dict[str, dict[str, object]] = {target.input_lane: {"source": target.source}}
+        hook_lanes, sources = self._raw_arguments(transform_class, inputs, outputs, available, member=item.name)
         unknown = [declaration.name for declaration in outputs if declaration.name != target.input_lane]
         if unknown:
             raise self._error(
@@ -347,9 +334,9 @@ class CompileTransform:
             name=item.name,
             phase="raw",
             target=target.name,
-            lanes=sources,
+            lanes=hook_lanes,
             outputs=outputs,
-            pass_inputs=bool(metadata["pass_inputs"]),
+            sources=sources,
             schema_mode=cast(SchemaMode, metadata["schema_mode"]),
             project_output=bool(metadata["project_output"]),
             streaming_safe=bool(metadata["streaming_safe"]),
@@ -361,11 +348,21 @@ class CompileTransform:
         self._validate_hook_signature(transform_class, hook)
         return replace(target, before_hooks=(*target.before_hooks, hook))
 
-    def _raw_declarations(self, transform_class, target: StepPlan, metadata: dict[str, object], *, member: str):
-        sources = metadata["lanes"]
+    def _raw_bindings(self, transform_class, target: StepPlan, metadata: dict[str, object], *, member: str):
+        inputs = metadata["inputs"]
         outputs = metadata["outputs"]
-        if sources is not None and outputs is not None:
-            return cast(tuple, sources), cast(tuple, outputs)
+        if inputs is not None and outputs is not None:
+            return cast(tuple, inputs), self._raw_outputs(transform_class, cast(tuple, outputs), member=member)
+        if inputs is not None:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem="@raw(input=...) needs output=... or inout=... so returned DataFrames have destinations.",
+                use="Use @raw(inout=sources | outputs).",
+            )
+        if outputs is not None:
+            return (), self._raw_outputs(transform_class, cast(tuple, outputs), member=member)
         output_lanes = tuple(result.lane for result in target.results) or (target.output_lane,)
         if len(output_lanes) != 1:
             raise self._error(
@@ -373,10 +370,89 @@ class CompileTransform:
                 transform_class=transform_class,
                 member=member,
                 problem=f"@raw after multi-output step {target.name} needs explicit lane(s)=... selection.",
-                use=f"Select one or more of: {', '.join(output_lanes)}.",
+                use=f"Use @raw(inout=source | target) with one or more of: {', '.join(output_lanes)}.",
             )
         declaration = self._raw_declaration(transform_class, output_lanes[0])
         return (declaration,), (declaration,)
+
+    def _raw_outputs(self, transform_class, declarations: tuple, *, member: str) -> tuple:
+        outputs = []
+        for declaration in declarations:
+            self._declared_write(transform_class, declaration, member=member)
+            outputs.append(self._raw_declaration(transform_class, declaration.name))
+        return tuple(outputs)
+
+    def _raw_arguments(
+        self,
+        transform_class: type[Transform],
+        inputs: tuple,
+        outputs: tuple,
+        available: dict[str, dict[str, object]],
+        *,
+        member: str,
+    ) -> tuple[tuple, tuple[str, ...]]:
+        arguments: list[object] = []
+        sources: list[str] = []
+        by_name: dict[str, str] = {}
+        for declaration in inputs:
+            argument, source = self._raw_input(transform_class, declaration, available, member=member)
+            self._raw_argument(arguments, sources, by_name, argument, source, transform_class, member, output=False)
+        for declaration in outputs:
+            source = self._raw_output_source(transform_class, declaration, available, member=member)
+            self._raw_argument(arguments, sources, by_name, declaration, source, transform_class, member, output=True)
+        return tuple(arguments), tuple(sources)
+
+    def _raw_input(self, transform_class, declaration, available, *, member: str) -> tuple[object, str]:
+        if isinstance(declaration, BindingSelector):
+            if declaration.role == "input":
+                self._declared_selector(transform_class, declaration, member=member, role="input")
+                return declaration.declaration, f"input:{declaration.name}"
+            if declaration.role == "lane":
+                self._declared_selector(transform_class, declaration, member=member, role="input")
+                return declaration.declaration, self._raw_available(declaration.name, available, transform_class, member)
+        if isinstance(declaration, InputDeclaration):
+            self._declared_input(transform_class, declaration, member=member)
+            return declaration, str(available.get(declaration.name, {}).get("source", f"input:{declaration.name}"))
+        if isinstance(declaration, OutputDeclaration):
+            self._declared_output(transform_class, declaration, member=member, role="input")
+            return declaration, self._raw_available(declaration.name, available, transform_class, member)
+        self._declared_lane_declaration(transform_class, declaration, member=member, role="input")
+        return declaration, self._raw_available(declaration.name, available, transform_class, member)
+
+    def _raw_output_source(self, transform_class, declaration, available, *, member: str) -> str:
+        self._declared_lane(transform_class, declaration, member=member, role="output")
+        return self._raw_available(declaration.name, available, transform_class, member)
+
+    def _raw_available(self, name, available, transform_class, member: str) -> str:
+        source = available.get(name, {}).get("source")
+        if source is not None:
+            return str(source)
+        raise self._error(
+            "DSL-E0402",
+            transform_class=transform_class,
+            member=member,
+            problem=f"@raw parameter {name} is not available at this source-order position.",
+            use="Produce the selected lane or output in an earlier step, or select input(name) for an original input.",
+            context={"parameter": name},
+        )
+
+    def _raw_argument(self, arguments, sources, by_name, declaration, source, transform_class, member, *, output: bool) -> None:
+        name = declaration.name
+        previous = by_name.get(name)
+        if previous is None:
+            arguments.append(declaration)
+            sources.append(source)
+            by_name[name] = source
+            return
+        if previous != source and not output:
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=f"@raw binds parameter {name} to conflicting frames.",
+                use="Use distinct declarations or one explicit input(...), lane(...), or output(...) selector.",
+                context={"parameter": name},
+            )
 
     @staticmethod
     def _raw_declaration(transform_class: type[Transform], name: str):
@@ -1699,8 +1775,6 @@ class CompileTransform:
                 problem=f"{transform_class.__name__}.{hook.name} hook parameters must be keyword-only.",
             )
         expected = [lane.name for lane in hook.lanes] + ["spark", "ctx"]
-        if hook.pass_inputs:
-            expected.insert(len(hook.lanes), "inputs")
         names = [parameter.name for parameter in runtime]
         if names != expected:
             raise self._hook_signature_error(
@@ -1735,14 +1809,13 @@ class CompileTransform:
         *,
         problem: str,
     ) -> StructureCompileError:
-        inputs = ", inputs" if hook.pass_inputs else ""
         lane_names = ", ".join(lane.name for lane in hook.lanes)
         return self._error(
             "DSL-E0402",
             transform_class=transform_class,
             member=hook.name,
             problem=problem,
-            use=f"Use def {hook.name}(self, *, {lane_names}{inputs}, spark, ctx): ...",
+            use=f"Use def {hook.name}(self, *, {lane_names}, spark, ctx): ...",
             context={"hook": hook.name, "lane": lane_names},
         )
 

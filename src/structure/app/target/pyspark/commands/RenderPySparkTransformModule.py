@@ -76,8 +76,6 @@ class RenderPySparkTransformModule:
         lines.extend(self._source_imports(plan, source_transform=source_transform))
 
         helpers = ["TransformResult", "assert_schema", "project_schema"]
-        if plan.requires_hook_inputs:
-            helpers.append("HookInputs")
         lines.append(f"from {runtime_module} import {', '.join(helpers)}")
 
         for module, constants in self._schema_imports(plan, schema_modules).items():
@@ -121,8 +119,6 @@ class RenderPySparkTransformModule:
         lines.extend(["    ) -> TransformResult:"])
         for input in plan.inputs:
             lines.extend(self._validation(input.validation))
-        if plan.requires_hook_inputs:
-            lines.extend(self._hook_inputs(plan))
         for input in plan.inputs:
             lines.append(f"        {self._raw_input_name(input.name)} = {input.name}")
 
@@ -191,15 +187,12 @@ class RenderPySparkTransformModule:
         lines.extend(["    ) -> TransformResult:"])
         for input in plan.inputs:
             lines.extend(self._validation(input.validation))
-        if plan.requires_hook_inputs:
-            lines.extend(self._hook_inputs(plan))
         for input in plan.inputs:
             lines.append(f"        {self._raw_input_name(input.name)} = {input.name}")
         lines.extend(self._frames(plan))
 
         for step in plan.steps:
-            hook_inputs = "inputs" if plan.requires_hook_inputs else "None"
-            lines.append(f"        frames.update(self.{self._step_method(step)}(frames, {hook_inputs}))")
+            lines.append(f"        frames.update(self.{self._step_method(step)}(frames))")
 
         sources = self._frame_sources(plan)
         result_entries: list[str] = []
@@ -235,7 +228,7 @@ class RenderPySparkTransformModule:
                 continue
             if methods:
                 methods.append("")
-            methods.append(f"    def {self._step_method(step)}(self, frames, inputs):")
+            methods.append(f"    def {self._step_method(step)}(self, frames):")
             methods.append(
                 render_pyspark_step(
                     step,
@@ -360,13 +353,6 @@ class RenderPySparkTransformModule:
             validation.schema is final.schema and validation.mode is final.mode and validation.project == final.project
             for validation in plan.steps[-1].validations
         )
-
-    def _hook_inputs(self, plan: PySparkExecutionPlan) -> list[str]:
-        lines = ["        inputs = HookInputs("]
-        for input in plan.inputs:
-            lines.append(f"            {input.name}={input.name},")
-        lines.append("        )")
-        return lines
 
     def _raw_input_name(self, name: str) -> str:
         return f"_input_{name}"

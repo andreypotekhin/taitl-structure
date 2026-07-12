@@ -6,7 +6,7 @@ from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from testing.model.v2.orders.transforms.order import EnrichOrders
-from testing.model.v2.structure_generated.orders.runtime.schema_assert import TransformResult, assert_schema, project_schema, HookInputs
+from testing.model.v2.structure_generated.orders.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from testing.model.v2.structure_generated.orders.pyspark.schemas.customer import CUSTOMER_SCHEMA
 from testing.model.v2.structure_generated.orders.pyspark.schemas.order import ORDER_FULFILLMENT_SCHEMA, ORDER_NORMALIZED_SCHEMA, ORDER_PUBLISHED_SCHEMA, ORDER_RAW_SCHEMA, ORDER_WITH_CUSTOMER_SCHEMA, ORDER_WITH_PRODUCT_SCHEMA, ORDER_WITH_PROMOTION_SCHEMA
 from testing.model.v2.structure_generated.orders.pyspark.schemas.product import BLOCKED_PRODUCT_SCHEMA, PRODUCT_SCHEMA
@@ -37,14 +37,6 @@ class EnrichOrdersGenerated:
         assert_schema(blocked_products, BLOCKED_PRODUCT_SCHEMA, name="BlockedProduct", mode="strict")
         assert_schema(promotions, PROMOTION_SCHEMA, name="Promotion", mode="strict")
         assert_schema(shipments, SHIPMENT_SCHEMA, name="Shipment", mode="strict")
-        inputs = HookInputs(
-            orders=orders,
-            customers=customers,
-            products=products,
-            blocked_products=blocked_products,
-            promotions=promotions,
-            shipments=shipments,
-        )
         _input_orders = orders
         _input_customers = customers
         _input_products = products
@@ -53,7 +45,7 @@ class EnrichOrdersGenerated:
         _input_shipments = shipments
 
         # Step method: normalize
-        orders = self._impl.use_current_orders(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
+        orders = self._impl.use_current_orders(orders=_input_orders, spark=self.spark, ctx=self.ctx)
         orders = orders.alias("order_raw")
         orders = orders.where((F.col("order_raw.id").isNotNull()) & (F.col("order_raw.customer_id").isNotNull()) & (F.col("order_raw.product_id").isNotNull()))
         orders = orders.select(
@@ -229,7 +221,7 @@ class EnrichOrdersGenerated:
             F.col("shipments.tracking_number"),
             F.col("shipments.shipped_at"),
         )
-        orders = self._impl.note_lookup_inputs(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
+        orders = self._impl.note_lookup_inputs(orders=orders, customers=_input_customers, products=_input_products, spark=self.spark, ctx=self.ctx)
         assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="allow_extra_columns")
         assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="allow_extra_columns")
 

@@ -56,14 +56,13 @@ def test_v1_transform_module_renderer_renders_class_runtime_shape() -> None:
     assert "from testing.model.v1.orders.transforms.order import EnrichOrders" in text
     assert (
         "from testing.model.v1.structure_generated.runtime.schema_assert import "
-        "TransformResult, assert_schema, project_schema, HookInputs" in text
+        "TransformResult, assert_schema, project_schema" in text
     )
     assert "class EnrichOrdersGenerated:" in text
     assert "        self._impl = EnrichOrders()" in text
     assert "        orders: DataFrame," in text
     assert '        assert_schema(orders, ORDER_RAW_SCHEMA, name="OrderRaw", mode="strict")' in text
-    assert "        inputs = HookInputs(" in text
-    assert "            promotions=promotions," in text
+    assert "HookInputs" not in text
 
 
 def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
@@ -81,9 +80,10 @@ def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
     assert "        # Step method: add_product" in text
     assert "        # Step method: add_promotion" in text
     assert "        # Step method: publish" in text
+    assert "        orders = self._impl.use_current_orders(orders=_input_orders, spark=self.spark, ctx=self.ctx)" in text
     assert (
-        "        orders = self._impl.use_current_orders(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)"
-        in text
+        "        orders = self._impl.note_lookup_inputs(orders=orders, customers=_input_customers, "
+        "products=_input_products, spark=self.spark, ctx=self.ctx)" in text
     )
     assert "        published = project_schema(published, ORDER_PUBLISHED_SCHEMA)" in text
     assert text.count('assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")') == 2

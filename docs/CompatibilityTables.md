@@ -39,7 +39,8 @@ parity names follow the official Spark 4.0.1 Python API docs for Column, SQL fun
 | Arithmetic | check | `+`, `-`, `*` | Narrow initial arithmetic subset. |
 | Membership predicates | check | `isin` | Exposed as `expr.isin(...)`. |
 | Range predicates | check | `between` | Exposed as inclusive `expr.between(lower, upper)`. |
-| String predicates | planned | `contains`, `like`, `ilike`, `rlike` | Useful for filters and data quality rules. |
+| String predicates | check | `contains`, `like`, `ilike`, `rlike` | Typed `expr` methods; `rlike` explicitly accepts a Java regex. |
+| Collection indexing | check | `getItem`, `__getitem__` | Typed `array[index]` and `map[key]` expressions return nullable lookups. |
 | Rich casts | planned | `cast`, `astype`, `try_cast` | Current public scalar cast is `to_decimal(...)`. |
 | Ordering modifiers | planned | `asc`, `desc`, null ordering | Needed for richer windows. |
 | Struct mutation | future | `withField`, `dropFields` | Needs a nested projection design. |

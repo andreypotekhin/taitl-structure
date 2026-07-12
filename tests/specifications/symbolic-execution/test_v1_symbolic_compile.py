@@ -78,7 +78,7 @@ def test_v1_symbolic_plan_records_joins_and_hooks() -> None:
     assert [hook.name for hook in plan.steps[4].after_hooks] == ["add_quality_columns"]
 
     lookup_hook = plan.steps[3].after_hooks[0]
-    assert lookup_hook.pass_inputs
+    assert lookup_hook.sources == ("orders", "input:customers", "input:products")
     assert lookup_hook.schema_mode is SchemaMode.ALLOW_EXTRA_COLUMNS
     assert lookup_hook.project_output
     assert lookup_hook.streaming_safe

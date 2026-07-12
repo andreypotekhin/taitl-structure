@@ -68,8 +68,8 @@ Gaps:
 
 | Gap | Status | Target PySpark Parity | Notes |
 | --- | --- | --- | --- |
-| String predicates | planned | `contains`, `like`, `ilike`, `rlike` | Prefer named helpers over raw regex strings. |
-| Collection indexing | planned | `getItem`, `__getitem__` | Needs typed Array/Map result inference. |
+| String predicates | implemented | `contains`, `like`, `ilike`, `rlike` | Typed methods keep plain and regex matching compiler-visible. |
+| Collection indexing | implemented | `getItem`, `__getitem__` | Typed Array/Map result inference with nullable lookup results. |
 | Struct field helpers | planned | `getField` | Attribute access covers typed structs today. |
 | Rich casts | planned | `cast`, `astype`, `try_cast` | Current public cast helper is `to_decimal(...)`. |
 | Ordering modifiers | planned | `asc`, `desc`, null ordering | Current helpers mostly use `descending=`. |
