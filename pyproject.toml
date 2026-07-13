@@ -103,6 +103,8 @@ module = [
     "examples.structure_generated.*",
     "testing.model.v1.orders.*",
     "testing.model.v1.structure_generated.*",
+    "testing.model.v3.orders.*",
+    "testing.model.v3.structure_generated.*",
 ]
 follow_imports = "skip"
 

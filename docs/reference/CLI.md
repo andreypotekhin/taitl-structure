@@ -332,9 +332,8 @@ Metrics:
 - transforms compiled;
 - cache hits or cache hit ratio.
 
-v1 profiling measures cold compiler work. Production incremental compilation belongs to end-of-v3, but v1/v2 should
-preserve source fingerprints, deterministic outputs, and stable phase boundaries so the later cache can reuse this
-structure.
+v1-v3 profiling measures cold compiler work. Production incremental compilation begins v4, but prior releases preserve
+source fingerprints, deterministic outputs, and stable phase boundaries so the later cache can reuse this structure.
 
 Profile output should be compact and human-readable:
 

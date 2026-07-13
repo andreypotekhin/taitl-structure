@@ -61,7 +61,8 @@ target_variant = "spark-connect"
 
 The initial release targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Sprint 09 promotes Spark
 Connect to supported status for completed v1/v2 compiler-visible batch features once runtime evidence, diagnostics, and
-CI or documented verification are in place. V3 adds streaming orchestration separately.
+CI or documented verification are in place. V3 adds streaming transformation hardening while callers retain lifecycle
+ownership.
 
 Spark Connect must not change public DSL syntax, generated class APIs, transform `run(...)` signatures, generated-code
 review shape, or streaming orchestration semantics. It must also avoid classic-only internals such as SparkContext,
@@ -173,6 +174,7 @@ Config schema rules:
 v2 expands online/generated PySpark features and adoption tooling while preserving the same basic compatibility
 contract. Sprint 09 supports completed v1/v2 batch features through the PySpark target variant `spark-connect`.
 
-v3 adds streaming orchestration once transform compilation is stable.
+v3 hardens compiler-visible streaming transformations while callers retain streaming lifecycle ownership.
 
-v4 handles backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support claim.
+v4 expands predictable PySpark transformation API coverage. Loading, storage, orchestration, alternative backends,
+and non-batch Spark Connect work are outside the v4 objective unless a later decision explicitly changes that boundary.

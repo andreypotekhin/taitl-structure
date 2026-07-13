@@ -54,7 +54,7 @@ Medium project:
   structure check under 10 seconds warm
   structure check under 30 seconds cold
 
-Single-file edit, end-of-v3 incremental compile:
+Single-file edit, v4 incremental compile:
   affected-transform feedback under 2 seconds
 
 Large project, future target:

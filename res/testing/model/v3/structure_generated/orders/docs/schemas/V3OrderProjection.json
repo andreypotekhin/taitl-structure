@@ -1,0 +1,211 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "is_candidate",
+      "name": "is_candidate",
+      "nullable": true,
+      "primary_key": false,
+      "type": "boolean"
+    },
+    {
+      "column": "name_contains_order",
+      "name": "name_contains_order",
+      "nullable": true,
+      "primary_key": false,
+      "type": "boolean"
+    },
+    {
+      "column": "name_like_order",
+      "name": "name_like_order",
+      "nullable": true,
+      "primary_key": false,
+      "type": "boolean"
+    },
+    {
+      "column": "name_ilike_order",
+      "name": "name_ilike_order",
+      "nullable": true,
+      "primary_key": false,
+      "type": "boolean"
+    },
+    {
+      "column": "name_matches_order",
+      "name": "name_matches_order",
+      "nullable": true,
+      "primary_key": false,
+      "type": "boolean"
+    },
+    {
+      "column": "external_id",
+      "name": "external_id",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "quantity",
+      "name": "quantity",
+      "nullable": true,
+      "primary_key": false,
+      "type": "integer"
+    },
+    {
+      "column": "safe_quantity",
+      "name": "safe_quantity",
+      "nullable": true,
+      "primary_key": false,
+      "type": "integer"
+    },
+    {
+      "column": "name_prefix",
+      "name": "name_prefix",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "name_words",
+      "name": "name_words",
+      "nullable": true,
+      "primary_key": false,
+      "type": "array<string!>"
+    },
+    {
+      "column": "name_slug",
+      "name": "name_slug",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "name_digits",
+      "name": "name_digits",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "name_length",
+      "name": "name_length",
+      "nullable": true,
+      "primary_key": false,
+      "type": "integer"
+    },
+    {
+      "column": "name_title",
+      "name": "name_title",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "name_reversed",
+      "name": "name_reversed",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "name_translated",
+      "name": "name_translated",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "order_position",
+      "name": "order_position",
+      "nullable": true,
+      "primary_key": false,
+      "type": "integer"
+    },
+    {
+      "column": "name_distance",
+      "name": "name_distance",
+      "nullable": true,
+      "primary_key": false,
+      "type": "integer"
+    },
+    {
+      "column": "display_name",
+      "name": "display_name",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "next_day",
+      "name": "next_day",
+      "nullable": true,
+      "primary_key": false,
+      "type": "date"
+    },
+    {
+      "column": "days_since_booking",
+      "name": "days_since_booking",
+      "nullable": true,
+      "primary_key": false,
+      "type": "integer"
+    },
+    {
+      "column": "booking_month",
+      "name": "booking_month",
+      "nullable": true,
+      "primary_key": false,
+      "type": "timestamp"
+    },
+    {
+      "column": "absolute_amount",
+      "name": "absolute_amount",
+      "nullable": true,
+      "primary_key": false,
+      "type": "decimal(11,2)"
+    },
+    {
+      "column": "rounded_amount",
+      "name": "rounded_amount",
+      "nullable": true,
+      "primary_key": false,
+      "type": "decimal(11,2)"
+    },
+    {
+      "column": "ceiling_amount",
+      "name": "ceiling_amount",
+      "nullable": true,
+      "primary_key": false,
+      "type": "decimal(11,0)"
+    },
+    {
+      "column": "floor_amount",
+      "name": "floor_amount",
+      "nullable": true,
+      "primary_key": false,
+      "type": "decimal(11,0)"
+    },
+    {
+      "column": "score_is_nan",
+      "name": "score_is_nan",
+      "nullable": false,
+      "primary_key": false,
+      "type": "boolean"
+    },
+    {
+      "column": "recency_rank",
+      "name": "recency_rank",
+      "nullable": true,
+      "primary_key": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "testing.model.v3.orders.schemas.v3",
+  "name": "V3OrderProjection"
+}

@@ -1212,17 +1212,9 @@ Rules:
 
 ## v4 Extensions
 
-Planned v4 IR variants:
-
-- `SparkConnectCapability`;
-- `BackendCompatibilityReport`.
-
-Rules:
-
-- Spark Connect support must remain behind the backend target boundary.
-- Existing v1 transform IR should not change public DSL syntax, generated class construction, `run(...)` signatures,
-  or streaming orchestration semantics.
-- Backend compatibility reports should explain which operations are supported, unsupported, or degraded for the target.
+V4 adds IR variants only as the transformation coverage program admits a typed operation family. Each variant must
+record operand types, honest nullability or row cardinality, capability requirements, traceability, and shared
+online/generated lowering. The release does not reserve IR for backend expansion, loading, storage, or orchestration.
 
 ## Implementation Checklist
 

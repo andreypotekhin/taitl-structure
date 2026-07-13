@@ -1,0 +1,64 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "name",
+      "name": "name",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "raw_quantity",
+      "name": "raw_quantity",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "amount",
+      "name": "amount",
+      "nullable": true,
+      "primary_key": false,
+      "type": "decimal(11,2)"
+    },
+    {
+      "column": "score",
+      "name": "score",
+      "nullable": true,
+      "primary_key": false,
+      "type": "double"
+    },
+    {
+      "column": "booked_on",
+      "name": "booked_on",
+      "nullable": true,
+      "primary_key": false,
+      "type": "date"
+    },
+    {
+      "column": "recorded_at",
+      "name": "recorded_at",
+      "nullable": true,
+      "primary_key": false,
+      "type": "timestamp"
+    },
+    {
+      "column": "details",
+      "name": "details",
+      "nullable": true,
+      "primary_key": false,
+      "type": "V3OrderDetails"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "testing.model.v3.orders.schemas.v3",
+  "name": "V3OrderSource"
+}

@@ -104,7 +104,7 @@ unsupported feature requirements fail through `BACKEND-E2401` and `BACKEND-E2402
 Alternative backend support must follow the same boundary. The compiler-visible Structure source should lower to
 backend-neutral IR, then the selected target adapter checks capabilities and lowers that IR to a target execution plan
 or generated artifact. Candidate future targets are Python-hosted: Spark SQL and typed PySpark DataFrame patterns first,
-then v4+ Polars LazyFrame, DuckDB, and Ibis. Other targets should come through Ibis when practical. They must be
+then post-v4 Polars LazyFrame, DuckDB, and Ibis. Other targets should come through Ibis when practical. They must be
 admitted by capability profile, target adapter, diagnostics, and tests rather than by ad hoc source rewrites. The design
 is described in [AlternativeBackends.md](design/AlternativeBackends.md) and specified in
 [AlternativeBackends.md](specifications/AlternativeBackends.md).
@@ -122,6 +122,5 @@ invocation construction, generated class construction, `run(...)` signatures, or
 
 Compile-time performance is a product metric.
 
-The compiler should avoid Spark dependencies during normal `check` and `compile`. v1 should preserve deterministic
-outputs and source fingerprints so production incremental compilation can arrive at the end of v3 without reshaping the
-compiler.
+The compiler should avoid Spark dependencies during normal `check` and `compile`. It should preserve deterministic
+outputs and source fingerprints so a later incremental-compile feature can arrive without reshaping the compiler.

@@ -426,8 +426,8 @@ See [License.md](License.md)
   dedupe, temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions,
   cache/persist first-slice directives, Spark Connect support for completed batch features, and static streaming
   compatibility diagnostics for caller-owned streaming DataFrames.
-- **v3:** planned PySpark parity gap closure, additional compiler-visible streaming transformation hardening, and
-  end-of-release incremental compile. Sources, sinks, triggers, checkpoints, output modes, and query lifecycle remain
-  caller-owned.
-- **v4+:** backend expansion, including postponed Polars/DuckDB work and any non-batch Spark Connect hardening left
-  outside the Sprint 09 support claim.
+- **v3:** PySpark parity gap closure and compiler-visible streaming transformation hardening. Sources, sinks,
+  triggers, checkpoints, output modes, and query lifecycle remain caller-owned. See [v3 highlights](docs/V3.md).
+- **v4:** broader, predictable PySpark transformation API coverage across expressions, nested values, relational
+  transforms, joins, aggregations, windows, and collections. Loading, storage, and orchestration remain caller-owned.
+  See [v4 highlights](docs/V4.md).

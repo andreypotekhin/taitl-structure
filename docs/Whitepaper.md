@@ -419,8 +419,8 @@ Recommended implementation techniques:
 The roadmap follows an IR-first north star: the initial release proves that Structure can replace hand-maintained
 PySpark boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful
 for mainstream analytical pipelines and promotes Spark Connect for completed batch features. v3 expands streaming
-transformation support without taking over lifecycle concerns. v4 handles backend expansion and non-batch Spark Connect
-hardening left outside the Sprint 09 support claim.
+transformation support without taking over lifecycle concerns. v4 expands predictable PySpark transformation API
+coverage while loading, storage, and orchestration remain caller-owned.
 
 ### Initial Release
 
@@ -442,7 +442,10 @@ checkpoints, query lifecycle, deployment, and recovery in caller code.
 
 ### v4
 
-Spark Connect support and backend capability reporting.
+V4 extends typed, compiler-visible PySpark transformation coverage across expressions, nested values, rowset
+transformations, joins, aggregations, windows, and collections. It classifies every relevant supported-target
+transformation API so users can distinguish a Structure equivalent from a deliberate boundary. Loading, storage,
+orchestration, actions, and alternative-backend work are outside this release.
 
 ## Summary
 

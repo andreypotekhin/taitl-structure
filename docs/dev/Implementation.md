@@ -87,20 +87,15 @@
 - Collection size and membership helpers.
 - Array construction, repeat, union, and except helpers.
 - Element lookup, safe element lookup, map-key membership, and map concatenation helpers.
-- Generated stream reads/writes.
-- Watermarks.
-- Triggers.
-- Checkpoints.
-- Output modes.
-- Streaming lifecycle configuration.
-- Production incremental compile.
-- Cache diagnostics and warm compile performance fixtures.
+- Caller-owned streaming transformation evidence and lifecycle guidance.
 
 ## Phase 5: v4
 
-- Backend expansion after the PySpark-family batch contract is stable.
-- Non-batch Spark Connect hardening left outside Sprint 09.
-- Backend capability reporting for additional backend families.
+- Build a checked catalog for the PySpark 3.5.x/4.0.x transformation API baseline.
+- Extend typed expression, nested-value, relational, join, aggregation, window, and collection coverage in dependency
+  order.
+- Admit row generators only after their schema-and-cardinality contract is proven.
+- Keep loading, storage, actions, orchestration, alternative backends, and non-batch Spark Connect work out of v4.
 
 ## Build Integration
 
@@ -112,8 +107,8 @@ structure compile
 structure compile --fail-on-diff
 ```
 
-Later, add optional pytest and build-tool integrations as v2 adoption tooling. Production incremental compile belongs to
-the end of v3 after the v3 feature surface stabilizes.
+Later, add optional pytest and build-tool integrations as v2 adoption tooling. Production incremental compile is a
+separately planned v4 follow-up after the transformation coverage program.
 
 Compiler build integration must stay Spark-free. `structure check`, `structure compile`, and
 `structure compile --fail-on-diff` must not require PySpark, Java, a SparkSession, or a Spark cluster. Online runtime,

@@ -138,7 +138,7 @@ checks.
 
 Status: v2 wrapped. Sprints 06-10 delivered analytical foundations, analytical joins, aggregation/window/HOF coverage,
 Spark Connect batch support, static caller-owned streaming compatibility, generated docs, and pytest helpers. Production
-incremental compile and cache diagnostics moved to end-of-v3 M8G.
+incremental compile and cache diagnostics begin v4 as Sprint 17.
 
 ### M7A: v2 Scope and Analytical IR Foundations
 
@@ -212,7 +212,7 @@ Exit Criteria:
   in Markdown or JSON.
 - Pytest helpers cover `structure check`, generated-code freshness, generated-code snapshots, diagnostics, and
   online/generated parity fixtures.
-- Production incremental compile and cache diagnostics moved to M8G.
+- Production incremental compile and cache diagnostics begin M9.
 
 ### M7F: Transform Composition Maturity
 
@@ -227,10 +227,10 @@ Exit Criteria:
 - `lane(...)` remains unavailable for composition matching unless a later accepted design changes the public transform
   boundary.
 
-## M8: v3 PySpark Gap Closure and Streaming Orchestration
+## +M8: v3 PySpark Gap Closure and Streaming Transformation Hardening
 
-Status: M8A and M8B complete. The milestone remains split into M8A-M8G so each `docs/dev/Gaps.md` section can be implemented
-and verified independently before end-of-v3 incremental compile work.
+Status: complete. Sprints 11-16 delivered the completed v3 PySpark feature surface and caller-owned streaming
+transformation hardening.
 
 ### M8A: DSL and SQL Function PySpark Parity
 
@@ -280,25 +280,14 @@ Exit Criteria:
   array-index behavior, and duplicate-key behavior.
 - Row-expanding generator helpers remain deferred unless separately admitted.
 
-### M8F: Streaming Orchestration
+### M8F: Streaming Transformation Hardening
 
 Exit Criteria:
 
-- Streaming sources and sinks are declared explicitly.
-- Generated `readStream` and `writeStream` code is reviewable.
-- Triggers, checkpoints, output modes, watermarks, and state policies are modeled and tested.
-- Existing v1/v2 streaming compatibility behavior remains valid for caller-owned streaming orchestration.
-
-### M8G: Incremental Compile and Cache Diagnostics
-
-Exit Criteria:
-
-- `compile --changed-only` recompiles changed transforms and affected dependents without hiding stale output.
-- Cache invalidation covers source, configuration, schema, dependency, generated-target, target-profile, and v3
-  lifecycle-policy changes.
-- Cache diagnostics explain why each transform was reused, recompiled, invalidated, skipped, or failed.
-- Synthetic 10-transform and 100-transform fixtures cover cold and warm compile behavior.
-- Compiler commands remain Spark-free.
+- Watermarks, stateful dedupe, streaming aggregates, and admitted stream-stream shapes are compiler-visible and
+  capability checked.
+- Existing v1/v2 caller-owned streaming behavior remains valid, with documented source, sink, trigger, checkpoint,
+  output-mode, and lifecycle ownership boundaries.
 
 ## M7E: Spark Connect Batch Support
 
@@ -310,10 +299,15 @@ Exit Criteria:
 - CI or a documented manual verification script proves Spark Connect execution against supported PySpark lines.
 - Public docs explain supported batch behavior and the remaining streaming, storage-write, and hook-body exclusions.
 
-## M9: v4 Backend Expansion and Connect Hardening
+## M9: v4 PySpark Transformation API Coverage
 
 ### Exit Criteria
 
-- New backend-family work has an explicit capability profile and compatibility report.
-- Spark Connect follow-up work covers only non-batch, operational, or explicitly deferred gaps from Sprint 09.
-- Public docs explain the difference between supported batch Connect and any later streaming or storage-write coverage.
+- A checked catalog classifies every relevant PySpark 3.5.x/4.0.x transformation API as supported, scheduled, deferred,
+  or unsupported, with a Structure alternative and reason.
+- Supported APIs remain typed, symbolic, capability checked, explainable, readable when generated, and covered by
+  online/generated parity evidence.
+- Column, SQL-function, nested-value, relational, join, aggregate, window, and collection gaps are delivered in
+  dependency order.
+- Row generators are admitted only after an explicit schema-and-cardinality design proves their output shape safe.
+- Loading, storage, actions, orchestration, and alternative backends remain outside the milestone.

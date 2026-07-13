@@ -63,8 +63,8 @@ Alternative backend support is specified in [AlternativeBackends.md](Alternative
 applies to compiler-visible Structure source, not to hook bodies. Hooks are target-specific opaque runtime code and must
 either declare `target_backend` or inherit a configured `hook_target_default`.
 
-Future backend work is Python-hosted: v2 prioritizes PySpark-family targets such as Spark SQL and typed PySpark
-DataFrame patterns, while v4+ owns Polars LazyFrame, DuckDB, Ibis, and other non-PySpark backend expansion. Other
+Future backend work is Python-hosted: v2-v4 prioritize PySpark-family targets such as Spark SQL and typed PySpark
+DataFrame patterns. Polars LazyFrame, DuckDB, Ibis, and other non-PySpark backend expansion begin only after v4. Other
 targets should come through Ibis when Ibis supports them. Dask DataFrame and Ray Dataset remain out of scope until after
 the relational core is stable.
 Unsupported active-target requirements must fail before online execution or generation. Multi-target compatibility
@@ -82,8 +82,8 @@ target_variant = "spark-connect"
 
 Mainstream online/generated execution targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Sprint
 09 promotes Spark Connect from experimental parity to supported status for completed compiler-visible batch features
-only, after live runtime evidence, diagnostics, and CI or documented verification are in place. V3 owns streaming
-orchestration separately.
+only, after live runtime evidence, diagnostics, and CI or documented verification are in place. V3 hardens streaming
+transformations while callers retain lifecycle ownership.
 
 Spark Connect support is intentionally narrow:
 

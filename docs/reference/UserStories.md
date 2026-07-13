@@ -417,7 +417,7 @@ the first analytical join slice.
 - As a developer, I can receive precise caller-owned output-mode and state-policy guidance for admitted streaming
   transformations.
 - As a developer, I can use production incremental compilation so that large projects get fast local feedback after the
-  v3 feature surface stabilizes.
+  v3 feature surface stabilizes; this is v4 work.
 - As a developer, I can see cache invalidation diagnostics so that incremental compile never hides stale generated code.
 
 ## 24. Spark Connect Roadmap
@@ -434,3 +434,14 @@ the first analytical join slice.
   explicit.
 - As a developer, I can see clear exclusions for streaming orchestration, storage writes, and arbitrary hook internals so
   that the batch support boundary is not mistaken for general Spark ownership.
+
+## 25. PySpark Transformation API Coverage
+
+- As a developer, I can look up each relevant PySpark transformation API and see whether Structure supports it, plans
+  it, defers it with a reason, or deliberately excludes it so missing parity is not surprising.
+- As a developer, I can use new transformation helpers only when Structure preserves typed inputs, result type,
+  nullability, cardinality, and target compatibility.
+- As a developer, I can use a documented Structure alternative or `@raw` hook when a PySpark transformation cannot be
+  compiler-visible.
+- As a developer, I can keep loading, storing, actions, and orchestration in caller-owned PySpark code while Structure
+  focuses on the transformation itself.

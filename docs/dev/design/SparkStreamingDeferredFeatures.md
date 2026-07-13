@@ -88,6 +88,7 @@ conversion, or a hook-only path.
 
 ## Scheduling
 
-Sprint 09 owns the first slice and this deferred-feature reference. v3 remains the natural home for full streaming
-orchestration. Individual stateful operation families may be pulled forward only if they preserve the first-slice
-principle: explicit lifecycle policy, fail-early diagnostics, and live streaming evidence before support is claimed.
+Sprint 09 owns the first slice and this deferred-feature reference. V3 closed with streaming transformation hardening
+while callers retain lifecycle ownership; full streaming orchestration is not on the v4 roadmap. Individual stateful
+operation families may be considered only if they preserve the first-slice principle: explicit lifecycle policy,
+fail-early diagnostics, and live streaming evidence before support is claimed.

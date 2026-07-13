@@ -11,8 +11,8 @@ See the user-facing summary in [APIRef.md](../APIRef.md).
 
 ## Status
 
-- `planned`: accepted direction or reserved API; needs implementation, diagnostics, tests, or docs.
-- `future`: plausible parity work, but no admitted design slice yet.
+- `planned`: accepted direction or reserved API; needs implementation, diagnostics, tests, or docs. A plan may be
+  created later.
 - `unsupported`: intentionally outside the compiler-visible DSL, or incompatible with Structure's contract.
 
 ## Parity Sources
@@ -35,19 +35,15 @@ Consult the official Spark 4.0.1 docs when expanding this page:
 The latest Spark docs may be useful for discovery, but features introduced after PySpark 4.0.x should not be marked
 `planned` for the current target unless the target range changes.
 
-## Beginning of v3 Schedule
+## V4 Coverage Program
 
-The planned gaps on this page are scheduled into the beginning of v3 as focused ExecPlans. Each plan must update this
-page, public compatibility tables, generated examples, and project-management progress as implementation completes.
+V3's scheduled gaps are complete. V4 now treats this page as input to a checked transformation coverage catalog rather
+than as a list of isolated surprises. The catalog will classify every relevant PySpark 3.5.x/4.0.x transformation API
+as supported, scheduled, deferred, or unsupported and will link each supported entry to capability and parity evidence.
 
-| Gap Section | v3 Sprint | ExecPlan |
-| --- | --- | --- |
-| DSL | Sprint 11 | [P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md](planning/done/P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md) |
-| Joins | Sprint 12 | [P07072603.V3-join-pyspark-parity-hardening.plan.md](planning/done/P07072603.V3-join-pyspark-parity-hardening.plan.md) |
-| Aggregations | Sprint 13 | [P07072604.V3-aggregation-pyspark-parity.plan.md](planning/done/P07072604.V3-aggregation-pyspark-parity.plan.md) |
-| Windows | Sprint 14 | [P07072605.V3-window-pyspark-parity.plan.md](planning/done/P07072605.V3-window-pyspark-parity.plan.md) |
-| Higher-Order And Collection Helpers | Sprint 15 | [P07072606.V3-collection-helper-pyspark-parity.plan.md](planning/done/P07072606.V3-collection-helper-pyspark-parity.plan.md) |
-| Streaming | Sprint 16 | [P07122601.Streams-example-and-caller-owned-streaming.plan.md](planning/done/P07122601.Streams-example-and-caller-owned-streaming.plan.md) |
+The delivery design and first ExecPlan are [V4 Transformation API Coverage](design/V4TransformationApiCoverage.md) and
+[P07132601.V4-transformation-api-coverage.plan.md](planning/P07132601.V4-transformation-api-coverage.plan.md).
+Loading, storage, catalog/table management, actions, and streaming lifecycle ownership are excluded from this program.
 
 ## DSL
 
@@ -74,8 +70,8 @@ Gaps:
 | Rich casts | implemented | `cast`, `astype`, `try_cast` | Scalar casts work across targets; nullable `try_cast` requires profile `>=4.0,<4.1`. |
 | Ordering modifiers | implemented | `asc`, `desc`, null ordering | Typed descriptors work in inline and reusable windows. |
 | Null/NaN predicates | implemented | `isNaN` | Function-style `isnull`, `isnotnull`, and typed `isnan` keep null and NaN semantics distinct. |
-| Bitwise column methods | future | `bitwiseAND`, `bitwiseOR`, `bitwiseXOR` | Needs bitwise helpers first. |
-| Struct mutation | future | `withField`, `dropFields` | Postponed until nested projection and whole-field copying are stable. |
+| Bitwise column methods | planned | `bitwiseAND`, `bitwiseOR`, `bitwiseXOR` | Needs bitwise helpers first. |
+| Struct mutation | planned | `withField`, `dropFields` | Postponed until nested projection and whole-field copying are stable. |
 | Column alias/name methods | unsupported | `alias`, `name` | Schema constructors and field aliases own output names. |
 | Raw `over(...)` windows | unsupported | `Column.over` | Structure uses compiler-visible window helpers instead. |
 | Raw Python truthiness | unsupported | `Column.__bool__` | Use symbolic predicates. |
@@ -94,10 +90,10 @@ Gaps:
 | Date/time helpers | implemented | `date_add`, `datediff`, `date_trunc` | Typed Date/Timestamp temporal helper set. |
 | Numeric/math helpers | implemented | `abs`, `round`, `ceil`, `floor` | Typed deterministic scalar helper set. |
 | Predicate helpers | implemented | `isnull`, `isnotnull`, `isnan` | Function-style null checks and typed NaN predicate. |
-| Hash helpers | future | `hash`, `xxhash64`, `sha2`, `md5` | Needs stability notes. |
-| Encoding/binary helpers | future | `base64`, `unbase64`, `encode`, `decode` | Lower priority. |
-| JSON/XML/CSV helpers | future | Spark JSON, XML, CSV functions | Needs schema contracts. |
-| Variant/geospatial helpers | future | `VARIANT`, `ST_*` functions | Outside current type model. |
+| Hash helpers | planned | `hash`, `xxhash64`, `sha2`, `md5` | Needs stability notes. |
+| Encoding/binary helpers | planned | `base64`, `unbase64`, `encode`, `decode` | Lower priority. |
+| JSON/XML/CSV helpers | planned | Spark JSON, XML, CSV functions | Needs schema contracts. |
+| Variant/geospatial helpers | planned | `VARIANT`, `ST_*` functions | Outside current type model. |
 | UDF/UDTF symbolic helpers | unsupported | `udf`, `udtf`, UDT | Use hooks for opaque PySpark. |
 | Raw SQL string expressions | unsupported | `expr`, `call_function` | Keep compiler-visible expressions structured. |
 
@@ -116,9 +112,9 @@ Gaps:
 | Right join diagnostics hardening | implemented | `how="right"` | Rowset API exists; projection rules stay sharp. |
 | Cross join safety | implemented | `crossJoin`, `how="cross"` | Requires `allow_cartesian=True`. |
 | Join strategy directives | implemented | `broadcast`, `merge`, shuffle hints | Capability-checked PySpark hints. |
-| Join reordering | future | Cost-based join planning | Do not reorder source semantics casually. |
+| Join reordering | planned | Cost-based join planning | Do not reorder source semantics casually. |
 | Forward as-of joins | implemented | As-of nearest/forward patterns | Selects the earliest qualifying right row. |
-| Nearest as-of joins | future | Nearest time matching | Needs tie and tolerance rules. |
+| Nearest as-of joins | planned | Nearest time matching | Needs tie and tolerance rules. |
 | Stream-stream joins | unsupported | Streaming stream-stream joins | Needs state and watermark policy. |
 | Raw SQL join predicates | unsupported | SQL strings in `on` | Use symbolic expressions or hooks. |
 
@@ -134,9 +130,9 @@ Gaps:
 | --- | --- | --- | --- |
 | Explicit grouping sets | implemented | Custom grouping-set levels | Lowers as generated PySpark branch unions. |
 | Having predicates | implemented | SQL/PySpark post-aggregate filters | Uses aggregate-output predicate scope. |
-| Aggregate aliases | future | `GroupedData.agg` aliases | Schema constructors own output aliases. |
-| Exact percentile family | future | `percentile`, `percentile_approx` | Current helper is `approx_percentile(...)`. |
-| Additional stats | future | `skewness`, `kurtosis`, `mode` | Wait for analytical contracts to settle. |
+| Aggregate aliases | planned | `GroupedData.agg` aliases | Schema constructors own output aliases. |
+| Exact percentile family | planned | `percentile`, `percentile_approx` | Current helper is `approx_percentile(...)`. |
+| Additional stats | planned | `skewness`, `kurtosis`, `mode` | Wait for analytical contracts to settle. |
 | Dict/list aggregate syntax | unsupported | `GroupedData.agg({"x": "sum"})` | Use typed helpers. |
 
 ## Windows
@@ -164,9 +160,9 @@ Gaps:
 | --- | --- | --- | --- |
 | Collection size and membership | implemented | `size`, `array_contains`, `map_contains_key` | Typed count and membership helpers preserve Spark null semantics. |
 | Array construction and set operations | implemented | `array`, `array_repeat`, `array_union`, `array_except` | Compatible numerics widen; other element types must agree. |
-| Array slicing and sorting variants | future | `slice`, `sort_array`, `reverse` | Needs null ordering docs. |
+| Array slicing and sorting variants | planned | `slice`, `sort_array`, `reverse` | Needs null ordering docs. |
 | Element lookup and map concatenation | implemented | `element_at`, `try_element_at`, `map_concat` | Lookup results are nullable; safe lookup avoids out-of-range errors; map concat rejects duplicate-key policy overrides. |
-| Explode/generator helpers | future | `explode`, `posexplode`, `inline` | Needs row-expansion design. |
+| Explode/generator helpers | planned | `explode`, `posexplode`, `inline` | Needs row-expansion design. |
 | Python control flow in callbacks | unsupported | Arbitrary Python lambdas | Return symbolic expressions only. |
 
 ## Streaming

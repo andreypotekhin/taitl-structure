@@ -147,7 +147,7 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
   composed hook boundaries, and explicit decisions on earlier-stage output exposure and mixed wrapper-local logic.
 - **Adoption and scale tooling:** generated documentation artifacts for schemas and transforms, pytest helpers,
   generated-code freshness checks, snapshots, and richer generated-code explain reports move through Sprint 10.
-  Production incremental compilation with cache diagnostics moves to end-of-v3 after the v3 feature surface stabilizes.
+  Production incremental compilation with cache diagnostics begins v4 after the v3 feature surface stabilizes.
 
 ### v2 non-goals
 
@@ -160,8 +160,8 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
 
 ## v3 Scope
 
-v3 closes the planned PySpark parity gaps tracked in [Gaps.md](../Gaps.md), then hardens admitted streaming
-transformations while callers retain lifecycle ownership.
+v3 closes its scheduled PySpark parity gaps, then hardens admitted streaming transformations while callers retain
+lifecycle ownership.
 v1/v2 support compiler-visible batch features, Spark Connect batch execution for completed features, and static
 caller-owned streaming compatibility. v3 starts by broadening the typed symbolic surface so streaming diagnostics and
 generated lifecycle code can rely on a complete enough PySpark-family contract.
@@ -174,7 +174,6 @@ generated lifecycle code can rely on a complete enough PySpark-family contract.
 - Sprint 14: window PySpark parity.
 - Sprint 15: higher-order and collection helper PySpark parity.
 - Sprint 16: streaming transformation hardening.
-- Sprint 17: incremental compile and cache diagnostics.
 
 ### v3 must include
 
@@ -185,34 +184,42 @@ generated lifecycle code can rely on a complete enough PySpark-family contract.
 - Null ordering in window order keys, normalized multiple order keys, and aggregate windows.
 - Collection size, array and map membership, array construction/repeat/union/except, element lookup, safe element
   lookup, and map concatenation.
-- Streaming source and sink declarations.
-- Generated `readStream` and `writeStream` code.
-- Trigger, checkpoint, output mode, watermark, and admitted state policy configuration.
-- Full streaming job generation for the first admitted lifecycle slice.
-- Production incremental compile with `compile --changed-only`, cache invalidation, cache diagnostics, and warm compile
-  performance fixtures.
+- Compiler-visible watermarks, stateful streaming dedupe, streaming aggregations, and compatibility diagnostics.
+- Caller-owned file-stream evidence and guidance for sources, sinks, triggers, checkpoints, output modes, and query
+  lifecycle.
 
 ### v3 non-goals
 
 - Wholesale PySpark wrapper behavior.
 - Raw SQL expressions, raw PySpark `WindowSpec`, UDF/UDTF symbolic helpers, and arbitrary Python callbacks.
-- Cost-based join reordering, nearest as-of joins, and lateral or table-valued-function joins unless later design work
-  moves them from future to planned.
+- Cost-based join reordering, nearest as-of joins, and lateral or table-valued-function joins until a dedicated plan
+  admits their contracts.
 - Row-expanding generator helpers unless a separate cardinality design admits them.
 - Custom streaming side-effect sinks such as `foreachBatch`.
 
 ## v4 Scope
 
-v4 handles backend expansion after the completed PySpark-family batch contract is stable. Spark Connect may continue
-there only for non-batch coverage, expanded operational hardening, or gaps that Sprint 09 explicitly records as outside
-the supported batch surface.
+v4 expands predictable PySpark transformation API coverage. Its first delivery is a checked coverage catalog for the
+PySpark 3.5.x/4.0.x target intersection; later slices admit the highest-value remaining Column, SQL-function, nested,
+relational, join, aggregation, window, and collection operations. The release deliberately stays within transformations
+over caller-supplied DataFrames.
 
-### v4 candidate features
+### v4 sequence
 
-- Ibis or other meta-backend exploration.
-- Expanded Spark Connect streaming, storage-write, or operational hardening if needed.
-- Backend capability reporting for additional backend families.
-- Public migration notes for projects adopting new backend families.
+- Sprint 17: transformation API coverage foundation and catalog.
+- Scalar and conditional expression coverage.
+- Nested values and declared parsing coverage.
+- Relational transformations and advanced analytical coverage.
+- A gated row-generator design and implementation slice.
+- Release evidence and documentation closure.
+
+### v4 non-goals
+
+- Loading, storage, writes, catalog/table management, and DataFrame actions.
+- Streaming sources, sinks, triggers, checkpoints, output modes, and query lifecycle.
+- Raw SQL, raw `WindowSpec`, UDF/UDTF helpers, and arbitrary Python callback behavior.
+- Alternative backend expansion and non-batch Spark Connect work.
+- Cost-based join reordering without a separate optimizer design.
 
 ## Release Milestones
 
@@ -226,5 +233,5 @@ the supported batch surface.
 | M5 | Joins, compiler traceability, build integration | Sprint 05 |
 | M6 | v1 stabilization and docs/examples | follow-up hardening sprint |
 | M7 | v2 analytical pipeline features, analytical join coverage, composition maturity, adoption tooling, and Spark Connect batch support | Sprints 06-09 |
-| M8 | v3 PySpark gap closure and streaming orchestration | Sprints 11-16 |
-| M9 | v4 backend expansion and non-batch Spark Connect hardening | future v4 sprints |
+| M8 | v3 PySpark gap closure and streaming transformation hardening | Sprints 11-16 |
+| M9 | v4 PySpark transformation API coverage | Sprint 17 and later v4 sprints |

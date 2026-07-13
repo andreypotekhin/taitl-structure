@@ -1,0 +1,1621 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=4.0,<4.1"
+  },
+  "generated_transform_class": "AdvancedOrderAnalyticsGenerated",
+  "inputs": [
+    {
+      "name": "fulfilled",
+      "ordinal": 0,
+      "schema": "OrderFulfillment"
+    },
+    {
+      "name": "collections",
+      "ordinal": 1,
+      "schema": "OrderCollectionSource"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated",
+      "ir": "ir:AdvancedOrderAnalytics",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.input.fulfilled",
+      "ir": "ir:AdvancedOrderAnalytics.input.0.fulfilled",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.input.fulfilled"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.input.collections",
+      "ir": "ir:AdvancedOrderAnalytics.input.1.collections",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.input.collections"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.tenant_id",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.tenant_id",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.tenant_id"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.product_category",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.product_category",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.product_category"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.order_date",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.order_date",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.order_date"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.grouping_id",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.grouping_id",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.grouping_id"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.category_subtotal",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.category_subtotal",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.category_subtotal"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.order_count",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.order_count",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.order_count"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.large_order_count",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.large_order_count",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.large_order_count"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.large_units",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.large_units",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.large_units"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.any_large_order",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.any_large_order",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.any_large_order"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.all_large_orders",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.all_large_orders",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.all_large_orders"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.quantity_stddev",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.quantity_stddev",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.quantity_stddev"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.quantity_variance",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.quantity_variance",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.quantity_variance"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.quantity_median",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.quantity_median",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.quantity_median"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.quantity_total",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.quantity_total",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.quantity_total"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.quantity_price_corr",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.quantity_price_corr",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.quantity_price_corr"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.quantity_price_covar",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.quantity_price_covar",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.quantity_price_covar"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.estimated_customers",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.estimated_customers",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.estimated_customers"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.first_customer_id",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.first_customer_id",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.first_customer_id"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.last_customer_id",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.last_customer_id",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.last_customer_id"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.customer_ids",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.customer_ids",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.customer_ids"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.aggregate.order_ids",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.aggregate.order_ids",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.aggregate.order_ids"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.0.revenue_rollup.validation.0.intermediate",
+      "ir": "ir:AdvancedOrderAnalytics.step.0.revenue_rollup.validation.0.intermediate",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.revenue_rollup.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.1.product_cube",
+      "ir": "ir:AdvancedOrderAnalytics.step.1.product_cube",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.product_cube"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.1.product_cube.aggregate.tenant_id",
+      "ir": "ir:AdvancedOrderAnalytics.step.1.product_cube.aggregate.tenant_id",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.product_cube.aggregate.tenant_id"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.1.product_cube.aggregate.product_category",
+      "ir": "ir:AdvancedOrderAnalytics.step.1.product_cube.aggregate.product_category",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.product_cube.aggregate.product_category"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.1.product_cube.aggregate.customer_tier",
+      "ir": "ir:AdvancedOrderAnalytics.step.1.product_cube.aggregate.customer_tier",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.product_cube.aggregate.customer_tier"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.1.product_cube.aggregate.grouping_id",
+      "ir": "ir:AdvancedOrderAnalytics.step.1.product_cube.aggregate.grouping_id",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.product_cube.aggregate.grouping_id"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.1.product_cube.aggregate.order_count",
+      "ir": "ir:AdvancedOrderAnalytics.step.1.product_cube.aggregate.order_count",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.product_cube.aggregate.order_count"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.1.product_cube.aggregate.distinct_customers",
+      "ir": "ir:AdvancedOrderAnalytics.step.1.product_cube.aggregate.distinct_customers",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.product_cube.aggregate.distinct_customers"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.1.product_cube.aggregate.gross_total",
+      "ir": "ir:AdvancedOrderAnalytics.step.1.product_cube.aggregate.gross_total",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.product_cube.aggregate.gross_total"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.1.product_cube.validation.0.intermediate",
+      "ir": "ir:AdvancedOrderAnalytics.step.1.product_cube.validation.0.intermediate",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.product_cube.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.tenant_id",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.tenant_id",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.tenant_id"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.customer_id",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.customer_id",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.customer_id"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.order_id",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.order_id",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.order_id"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.quantity",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.quantity",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.quantity"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.percent_rank",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.percent_rank",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.percent_rank"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.cume_dist",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.cume_dist",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.cume_dist"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.quantity_tile",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.quantity_tile",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.quantity_tile"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.first_order_id",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.first_order_id",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.first_order_id"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.last_order_id",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.last_order_id",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.last_order_id"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.second_order_id",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.second_order_id",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.second_order_id"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.running_units",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.running_units",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.running_units"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.running_avg_units",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.running_avg_units",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.running_avg_units"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.running_min_units",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.running_min_units",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.running_min_units"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.running_max_units",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.running_max_units",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.running_max_units"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.select.running_order_count",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.project.running_order_count",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.field.running_order_count"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.2.customer_window.validation.0.intermediate",
+      "ir": "ir:AdvancedOrderAnalytics.step.2.customer_window.validation.0.intermediate",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.customer_window.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.id",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.id",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.id"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.tag_count",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.tag_count",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.tag_count"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.contains_priority",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.contains_priority",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.contains_priority"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.contains_region",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.contains_region",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.contains_region"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.default_tags",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.default_tags",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.default_tags"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.repeated_tags",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.repeated_tags",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.repeated_tags"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.all_tags",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.all_tags",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.all_tags"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.tags_without_extra",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.tags_without_extra",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.tags_without_extra"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.first_tag",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.first_tag",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.first_tag"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.safe_tag",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.safe_tag",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.safe_tag"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.region",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.region",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.region"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.safe_region",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.safe_region",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.safe_region"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.normalized_tags",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.normalized_tags",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.normalized_tags"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.sorted_tags",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.sorted_tags",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.sorted_tags"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.flat_tags",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.flat_tags",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.flat_tags"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.score_total",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.score_total",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.score_total"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.tag_position",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.tag_position",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.tag_position"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.has_priority",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.has_priority",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.has_priority"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.all_tags_present",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.all_tags_present",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.all_tags_present"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.normalized_attributes",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.normalized_attributes",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.normalized_attributes"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.zipped_attributes",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.zipped_attributes",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.zipped_attributes"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.attribute_keys",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.attribute_keys",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.attribute_keys"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.attribute_values",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.attribute_values",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.attribute_values"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.roundtrip_attributes",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.roundtrip_attributes",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.roundtrip_attributes"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.merged_attributes",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.merged_attributes",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.merged_attributes"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.output.0.revenue_rollups.validation.final",
+      "ir": "ir:AdvancedOrderAnalytics.output.0.revenue_rollups.validation.final",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.output.revenue_rollups"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.output.1.product_cubes.validation.final",
+      "ir": "ir:AdvancedOrderAnalytics.output.1.product_cubes.validation.final",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.output.product_cubes"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.output.2.customer_windows.validation.final",
+      "ir": "ir:AdvancedOrderAnalytics.output.2.customer_windows.validation.final",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.output.customer_windows"
+    },
+    {
+      "generated": "generated:testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.output.3.collection_profiles.validation.final",
+      "ir": "ir:AdvancedOrderAnalytics.output.3.collection_profiles.validation.final",
+      "source": "source:testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics.output.collection_profiles"
+    }
+  ],
+  "schema_constants": {
+    "Address": {
+      "constant": "ADDRESS_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.common"
+    },
+    "AuditStamp": {
+      "constant": "AUDIT_STAMP_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.common"
+    },
+    "BlockedProduct": {
+      "constant": "BLOCKED_PRODUCT_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.product"
+    },
+    "BusinessDate": {
+      "constant": "BUSINESS_DATE_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.common"
+    },
+    "Customer": {
+      "constant": "CUSTOMER_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.customer"
+    },
+    "CustomerDailyTotal": {
+      "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.analytics"
+    },
+    "CustomerEventRank": {
+      "constant": "CUSTOMER_EVENT_RANK_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.analytics"
+    },
+    "CustomerOrderBackfill": {
+      "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderCollectionProfile": {
+      "constant": "ORDER_COLLECTION_PROFILE_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.adv_analytics"
+    },
+    "OrderCollectionSource": {
+      "constant": "ORDER_COLLECTION_SOURCE_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.adv_analytics"
+    },
+    "OrderCustomerReconciliation": {
+      "constant": "ORDER_CUSTOMER_RECONCILIATION_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderCustomerWindow": {
+      "constant": "ORDER_CUSTOMER_WINDOW_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.adv_analytics"
+    },
+    "OrderFulfillment": {
+      "constant": "ORDER_FULFILLMENT_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderNormalized": {
+      "constant": "ORDER_NORMALIZED_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderProductCandidate": {
+      "constant": "ORDER_PRODUCT_CANDIDATE_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderProductCube": {
+      "constant": "ORDER_PRODUCT_CUBE_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.adv_analytics"
+    },
+    "OrderPublication": {
+      "constant": "ORDER_PUBLICATION_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderPublished": {
+      "constant": "ORDER_PUBLISHED_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderRaw": {
+      "constant": "ORDER_RAW_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderRevenueRollup": {
+      "constant": "ORDER_REVENUE_ROLLUP_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.adv_analytics"
+    },
+    "OrderWithCustomer": {
+      "constant": "ORDER_WITH_CUSTOMER_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderWithProduct": {
+      "constant": "ORDER_WITH_PRODUCT_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderWithPromotion": {
+      "constant": "ORDER_WITH_PROMOTION_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.order"
+    },
+    "Product": {
+      "constant": "PRODUCT_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.product"
+    },
+    "ProductBase": {
+      "constant": "PRODUCT_BASE_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.product"
+    },
+    "ProductDailySummary": {
+      "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.analytics"
+    },
+    "Promotion": {
+      "constant": "PROMOTION_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.promotion"
+    },
+    "PublicationFlags": {
+      "constant": "PUBLICATION_FLAGS_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.order"
+    },
+    "Shipment": {
+      "constant": "SHIPMENT_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.shipment"
+    },
+    "TenantKey": {
+      "constant": "TENANT_KEY_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.common"
+    },
+    "V3OrderDetails": {
+      "constant": "V3_ORDER_DETAILS_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.v3"
+    },
+    "V3OrderProjection": {
+      "constant": "V3_ORDER_PROJECTION_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.v3"
+    },
+    "V3OrderSource": {
+      "constant": "V3_ORDER_SOURCE_SCHEMA",
+      "module": "testing.model.v3.structure_generated.orders.pyspark.schemas.v3"
+    }
+  },
+  "source_transform": "testing.model.v3.orders.transforms.adv_analytics.AdvancedOrderAnalytics",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "fulfilled",
+          "collections"
+        ],
+        "step": null,
+        "target": "AdvancedOrderAnalytics"
+      },
+      {
+        "detail": {
+          "input_schema": "OrderFulfillment",
+          "output_schema": "OrderRevenueRollup"
+        },
+        "operation": "step",
+        "sources": [
+          "fulfilled"
+        ],
+        "step": "revenue_rollup",
+        "target": "revenue_rollup"
+      },
+      {
+        "detail": {
+          "field": "tenant_id",
+          "function": "key",
+          "key": "tenant_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.tenant.tenant_id"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.tenant_id"
+      },
+      {
+        "detail": {
+          "field": "product_category",
+          "function": "key",
+          "key": "product_category"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.product_category"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.product_category"
+      },
+      {
+        "detail": {
+          "field": "order_date",
+          "function": "key",
+          "key": "order_date"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.business.order_date"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.order_date"
+      },
+      {
+        "detail": {
+          "field": "grouping_id",
+          "function": "grouping_id",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.grouping_id"
+      },
+      {
+        "detail": {
+          "field": "category_subtotal",
+          "function": "is_grouped",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.product_category"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.category_subtotal"
+      },
+      {
+        "detail": {
+          "field": "order_count",
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.order_count"
+      },
+      {
+        "detail": {
+          "field": "large_order_count",
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.is_large"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.large_order_count"
+      },
+      {
+        "detail": {
+          "field": "large_units",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.is_large"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.large_units"
+      },
+      {
+        "detail": {
+          "field": "any_large_order",
+          "function": "bool_or",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.is_large"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.any_large_order"
+      },
+      {
+        "detail": {
+          "field": "all_large_orders",
+          "function": "bool_and",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.is_large"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.all_large_orders"
+      },
+      {
+        "detail": {
+          "field": "quantity_stddev",
+          "function": "stddev",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.quantity_stddev"
+      },
+      {
+        "detail": {
+          "field": "quantity_variance",
+          "function": "variance",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.quantity_variance"
+      },
+      {
+        "detail": {
+          "field": "quantity_median",
+          "function": "approx_percentile",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.quantity_median"
+      },
+      {
+        "detail": {
+          "field": "quantity_total",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.quantity_total"
+      },
+      {
+        "detail": {
+          "field": "quantity_price_corr",
+          "function": "corr",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.product_list_price"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.quantity_price_corr"
+      },
+      {
+        "detail": {
+          "field": "quantity_price_covar",
+          "function": "covar",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.product_list_price"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.quantity_price_covar"
+      },
+      {
+        "detail": {
+          "field": "estimated_customers",
+          "function": "approx_count_distinct",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.customer_id"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.estimated_customers"
+      },
+      {
+        "detail": {
+          "field": "first_customer_id",
+          "function": "first_value",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.customer_id",
+          "fulfilled.quantity"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.first_customer_id"
+      },
+      {
+        "detail": {
+          "field": "last_customer_id",
+          "function": "last_value",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.customer_id",
+          "fulfilled.quantity"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.last_customer_id"
+      },
+      {
+        "detail": {
+          "field": "customer_ids",
+          "function": "collect_set",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.customer_id"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.customer_ids"
+      },
+      {
+        "detail": {
+          "field": "order_ids",
+          "function": "collect_list",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.id"
+        ],
+        "step": "revenue_rollup",
+        "target": "OrderRevenueRollup.order_ids"
+      },
+      {
+        "detail": {
+          "input_schema": "OrderFulfillment",
+          "output_schema": "OrderProductCube"
+        },
+        "operation": "step",
+        "sources": [
+          "OrderRevenueRollup"
+        ],
+        "step": "product_cube",
+        "target": "product_cube"
+      },
+      {
+        "detail": {
+          "field": "tenant_id",
+          "function": "key",
+          "key": "tenant_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.tenant.tenant_id"
+        ],
+        "step": "product_cube",
+        "target": "OrderProductCube.tenant_id"
+      },
+      {
+        "detail": {
+          "field": "product_category",
+          "function": "key",
+          "key": "product_category"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.product_category"
+        ],
+        "step": "product_cube",
+        "target": "OrderProductCube.product_category"
+      },
+      {
+        "detail": {
+          "field": "customer_tier",
+          "function": "key",
+          "key": "customer_tier"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.customer_tier"
+        ],
+        "step": "product_cube",
+        "target": "OrderProductCube.customer_tier"
+      },
+      {
+        "detail": {
+          "field": "grouping_id",
+          "function": "grouping_id",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled"
+        ],
+        "step": "product_cube",
+        "target": "OrderProductCube.grouping_id"
+      },
+      {
+        "detail": {
+          "field": "order_count",
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled"
+        ],
+        "step": "product_cube",
+        "target": "OrderProductCube.order_count"
+      },
+      {
+        "detail": {
+          "field": "distinct_customers",
+          "function": "count_distinct",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.customer_id"
+        ],
+        "step": "product_cube",
+        "target": "OrderProductCube.distinct_customers"
+      },
+      {
+        "detail": {
+          "field": "gross_total",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.total"
+        ],
+        "step": "product_cube",
+        "target": "OrderProductCube.gross_total"
+      },
+      {
+        "detail": {
+          "input_schema": "OrderFulfillment",
+          "output_schema": "OrderCustomerWindow"
+        },
+        "operation": "step",
+        "sources": [
+          "OrderProductCube"
+        ],
+        "step": "customer_window",
+        "target": "customer_window"
+      },
+      {
+        "detail": {
+          "field": "tenant_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.tenant.tenant_id"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.tenant_id"
+      },
+      {
+        "detail": {
+          "field": "customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.customer_id"
+      },
+      {
+        "detail": {
+          "field": "order_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.id"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.order_id"
+      },
+      {
+        "detail": {
+          "field": "quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.quantity"
+      },
+      {
+        "detail": {
+          "field": "percent_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.percent_rank"
+      },
+      {
+        "detail": {
+          "field": "cume_dist"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.cume_dist"
+      },
+      {
+        "detail": {
+          "field": "quantity_tile"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.quantity_tile"
+      },
+      {
+        "detail": {
+          "field": "first_order_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.id",
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.first_order_id"
+      },
+      {
+        "detail": {
+          "field": "last_order_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.id",
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.last_order_id"
+      },
+      {
+        "detail": {
+          "field": "second_order_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.id",
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.second_order_id"
+      },
+      {
+        "detail": {
+          "field": "running_units"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.running_units"
+      },
+      {
+        "detail": {
+          "field": "running_avg_units"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.running_avg_units"
+      },
+      {
+        "detail": {
+          "field": "running_min_units"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.running_min_units"
+      },
+      {
+        "detail": {
+          "field": "running_max_units"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.running_max_units"
+      },
+      {
+        "detail": {
+          "field": "running_order_count"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_window",
+        "target": "OrderCustomerWindow.running_order_count"
+      },
+      {
+        "detail": {
+          "input_schema": "OrderCollectionSource",
+          "output_schema": "OrderCollectionProfile"
+        },
+        "operation": "step",
+        "sources": [
+          "OrderCustomerWindow"
+        ],
+        "step": "collection_profile",
+        "target": "collection_profile"
+      },
+      {
+        "detail": {
+          "field": "id"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.id"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.id"
+      },
+      {
+        "detail": {
+          "field": "tag_count"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.tag_count"
+      },
+      {
+        "detail": {
+          "field": "contains_priority"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.contains_priority"
+      },
+      {
+        "detail": {
+          "field": "contains_region"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.extra_attributes"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.contains_region"
+      },
+      {
+        "detail": {
+          "field": "default_tags"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.default_tags"
+      },
+      {
+        "detail": {
+          "field": "repeated_tags"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.repeated_tags"
+      },
+      {
+        "detail": {
+          "field": "all_tags"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags",
+          "collections.extra_tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.all_tags"
+      },
+      {
+        "detail": {
+          "field": "tags_without_extra"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags",
+          "collections.extra_tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.tags_without_extra"
+      },
+      {
+        "detail": {
+          "field": "first_tag"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.first_tag"
+      },
+      {
+        "detail": {
+          "field": "safe_tag"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.safe_tag"
+      },
+      {
+        "detail": {
+          "field": "region"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.extra_attributes"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.region"
+      },
+      {
+        "detail": {
+          "field": "safe_region"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.extra_attributes"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.safe_region"
+      },
+      {
+        "detail": {
+          "field": "normalized_tags"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.normalized_tags"
+      },
+      {
+        "detail": {
+          "field": "sorted_tags"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.sorted_tags"
+      },
+      {
+        "detail": {
+          "field": "flat_tags"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.nested_tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.flat_tags"
+      },
+      {
+        "detail": {
+          "field": "score_total"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.scores"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.score_total"
+      },
+      {
+        "detail": {
+          "field": "tag_position"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.tag_position"
+      },
+      {
+        "detail": {
+          "field": "has_priority"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.has_priority"
+      },
+      {
+        "detail": {
+          "field": "all_tags_present"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.all_tags_present"
+      },
+      {
+        "detail": {
+          "field": "normalized_attributes"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.attributes"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.normalized_attributes"
+      },
+      {
+        "detail": {
+          "field": "zipped_attributes"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.attributes"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.zipped_attributes"
+      },
+      {
+        "detail": {
+          "field": "attribute_keys"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.attributes"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.attribute_keys"
+      },
+      {
+        "detail": {
+          "field": "attribute_values"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.attributes"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.attribute_values"
+      },
+      {
+        "detail": {
+          "field": "roundtrip_attributes"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.attributes"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.roundtrip_attributes"
+      },
+      {
+        "detail": {
+          "field": "merged_attributes"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.attributes",
+          "collections.extra_attributes"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.merged_attributes"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "OrderRevenueRollup"
+        ],
+        "step": null,
+        "target": "OrderRevenueRollup.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "OrderProductCube"
+        ],
+        "step": null,
+        "target": "OrderProductCube.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "OrderCustomerWindow"
+        ],
+        "step": null,
+        "target": "OrderCustomerWindow.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "OrderCollectionProfile"
+        ],
+        "step": null,
+        "target": "OrderCollectionProfile.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "order_fulfillment",
+      "joins": [],
+      "name": "revenue_rollup",
+      "output_alias": "order_revenue_rollup",
+      "output_schema": "OrderRevenueRollup",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "revenue_rollups",
+          "lane": "revenue_rollups",
+          "schema": "OrderRevenueRollup"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "OrderRevenueRollup"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "order_fulfillment",
+      "joins": [],
+      "name": "product_cube",
+      "output_alias": "order_product_cube",
+      "output_schema": "OrderProductCube",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "product_cubes",
+          "lane": "product_cubes",
+          "schema": "OrderProductCube"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "OrderProductCube"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "order_fulfillment",
+      "joins": [],
+      "name": "customer_window",
+      "output_alias": "order_customer_window",
+      "output_schema": "OrderCustomerWindow",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "customer_windows",
+          "lane": "customer_windows",
+          "schema": "OrderCustomerWindow"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "OrderCustomerWindow"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "order_collection_source",
+      "joins": [],
+      "name": "collection_profile",
+      "output_alias": "order_collection_profile",
+      "output_schema": "OrderCollectionProfile",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "collection_profiles",
+          "lane": "collection_profiles",
+          "schema": "OrderCollectionProfile"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "testing.model.v3.structure_generated.orders.pyspark.transforms.adv_analytics",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "revenue_rollups",
+        "schema": "OrderRevenueRollup"
+      },
+      {
+        "mode": "strict",
+        "name": "product_cubes",
+        "schema": "OrderProductCube"
+      },
+      {
+        "mode": "strict",
+        "name": "customer_windows",
+        "schema": "OrderCustomerWindow"
+      },
+      {
+        "mode": "strict",
+        "name": "collection_profiles",
+        "schema": "OrderCollectionProfile"
+      }
+    ]
+  }
+}

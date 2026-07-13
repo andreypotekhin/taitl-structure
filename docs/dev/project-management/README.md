@@ -36,7 +36,7 @@ project-management/
     Sprint07_AnalyticalJoinCoverage.md
     Sprint15_V3CollectionHelperParity.md
     Sprint16_V3StreamingOrchestration.md
-    Sprint17_V3IncrementalCompileCacheDiagnostics.md
+    Sprint17_V4TransformationApiCoverage.md
     done/
       Sprint12_V3JoinParityHardening.md
       Sprint13_V3AggregationParity.md
@@ -91,8 +91,8 @@ V2 starts after v1 stabilization evidence is release-ready. The v2 sprint sequen
    first-slice directives, compact explain output, and explicit follow-up deferrals.
 5. **Sprint 10: docs and testing**: generated documentation artifacts and pytest helpers.
 
-V3 starts with the planned PySpark parity gaps tracked in [Gaps.md](../Gaps.md), then takes ownership of full streaming
-orchestration. The v3 sprint sequence is:
+V3 closed its scheduled PySpark parity gaps and hardened compiler-visible streaming transformations while keeping
+streaming lifecycle ownership with callers. The completed v3 sprint sequence is:
 
 1. **Sprint 11: DSL and SQL function parity**: planned Column API and SQL function gaps.
 2. **Sprint 12: join parity hardening**: using-key joins, diagnostics, cross safety, strategy directives, and forward
@@ -103,8 +103,6 @@ orchestration. The v3 sprint sequence is:
    array construction/repeat/union/except, element lookup, safe element lookup, and map concatenation.
 6. **Sprint 16: streaming transformation hardening**: watermarks, admitted state policies, diagnostics, public
    examples, and caller-owned file-stream evidence.
-7. **Sprint 17: incremental compile and cache diagnostics**: `compile --changed-only`, cache invalidation, cache
-   diagnostics, and warm compile performance fixtures.
-
-V4 is reserved for backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support
-claim.
+V4 begins with **Sprint 17: transformation API coverage foundation**, then expands predictable PySpark transformation
+coverage across expressions, nested values, relational operations, joins, aggregations, windows, and collections.
+Loading, storage, and orchestration remain caller-owned.

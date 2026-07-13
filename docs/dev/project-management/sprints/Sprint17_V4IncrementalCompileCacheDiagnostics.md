@@ -1,13 +1,19 @@
-# Sprint 17: v3 Incremental Compile and Cache Diagnostics
+# Follow-up v4: Incremental Compile and Cache Diagnostics
 
 ## Sprint Goal
 
-Add production incremental compile after v3's PySpark parity and streaming orchestration surfaces are stable.
+Add production incremental compile after the v4 transformation coverage program has established the supported
+transformation surface and its capability shapes.
 
 ## Product Outcome
 
 Developers get fast feedback in large projects without recompiling unaffected transforms, and cache diagnostics explain
 why each transform was reused or recompiled.
+
+## Placement
+
+This remains a valid v4 follow-up work package but is not Sprint 17 and does not set the v4 release direction. See
+`Sprint17_V4TransformationApiCoverage.md` for the opening v4 work.
 
 ## Scope
 
@@ -15,7 +21,7 @@ why each transform was reused or recompiled.
 
 - `compile --changed-only`.
 - Cache invalidation rules for source, configuration, schema, dependency, generated-target, target-profile, and
-  v3 lifecycle-policy changes.
+  completed v3 streaming-policy changes.
 - Cache diagnostics for reused, recompiled, invalidated, and skipped transforms.
 - Performance fixtures for synthetic 10-transform and 100-transform projects.
 - No-Spark compiler command preservation.
@@ -28,7 +34,7 @@ why each transform was reused or recompiled.
 
 ## ExecPlan
 
-`docs/dev/planning/P07092601.V3-incremental-compile-cache-diagnostics.plan.md`
+`docs/dev/planning/P07092601.V4-incremental-compile-cache-diagnostics.plan.md`
 
 ## Engineering Tasks
 
@@ -48,4 +54,4 @@ why each transform was reused or recompiled.
 
 ## Progress
 
-- [ ] Implement v3 incremental compile and cache diagnostics.
+- [ ] Implement v4 incremental compile and cache diagnostics.

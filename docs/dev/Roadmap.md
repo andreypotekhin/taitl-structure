@@ -4,9 +4,9 @@ The roadmap is staged around an IR-first north star. v1 first proves one useful 
 online and as generated PySpark, then broadens into the contract that lets Structure replace hand-maintained PySpark
 boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful for
 mainstream analytical pipelines, promotes Spark Connect for completed batch features, and completes static
-caller-owned Spark streaming compatibility diagnostics. v3 closes the planned PySpark parity gaps tracked in
-`docs/dev/Gaps.md`, then owns full streaming lifecycle concerns. v4 handles backend expansion and any non-batch Spark
-Connect hardening left outside the Sprint 09 support claim.
+caller-owned Spark streaming compatibility diagnostics. v3 closes its scheduled PySpark parity work and hardens
+compiler-visible streaming transformations while callers retain lifecycle ownership. v4 expands predictable PySpark
+transformation API coverage while loading, storage, and orchestration remain caller-owned.
 
 ## v1
 
@@ -73,20 +73,12 @@ Connect hardening left outside the Sprint 09 support claim.
 - Window null ordering, multiple order keys, and aggregate windows.
 - Collection size/membership, map-key membership, array construction/repeat/union/except, element lookup, safe element
   lookup, and map concatenation.
-- Full streaming orchestration.
-- Streaming source definitions.
-- Streaming sink definitions.
-- Generated `readStream` and `writeStream` code.
-- Triggers.
-- Checkpoints.
-- Watermarks.
-- Output modes.
-- Stateful streaming policies.
-- Production incremental compile with `compile --changed-only`, cache invalidation, cache diagnostics, and warm compile
-  performance fixtures.
+- Compiler-visible watermarks, stateful dedupe, streaming aggregates, and compatibility diagnostics.
+- Caller-owned source, sink, trigger, checkpoint, output-mode, and query-lifecycle guidance.
 
 ## v4
 
-- Backend expansion after the PySpark-family batch contract is stable.
-- Non-batch Spark Connect hardening left outside the Sprint 09 support claim.
-- Backend capability reporting for additional backend families.
+- A checked PySpark 3.5.x/4.0.x transformation coverage catalog.
+- Broader typed Column, SQL-function, nested-value, relational, join, aggregation, window, and collection coverage.
+- Row generators only after an explicit schema-and-cardinality design gate.
+- No loading, storage, actions, orchestration, alternative backends, or non-batch Spark Connect work.

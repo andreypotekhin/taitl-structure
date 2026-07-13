@@ -394,6 +394,7 @@ streaming transformations while callers retain orchestration.
   ([Advanced analytical operations](reference/AdvancedAnalyticalOperations.md)),
   caching/persistence/repartition hints, richer explain output, generated docs, pytest helpers, and Spark Connect
   support for completed v1/v2 batch features.
-- **v3:** PySpark parity, additional compiler-visible streaming transformations, and incremental compile diagnostics;
-  callers retain `readStream`, `writeStream`, triggers, checkpoints, output modes, and query lifecycle.
-- **v4:** backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support claim.
+- **v3:** PySpark parity and additional compiler-visible streaming transformations; callers retain `readStream`,
+  `writeStream`, triggers, checkpoints, output modes, and query lifecycle.
+- **v4:** broader, predictable PySpark transformation API coverage across expressions, nested values, relational
+  transforms, joins, aggregations, windows, and collections. Loading, storage, and orchestration remain caller-owned.

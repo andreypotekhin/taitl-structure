@@ -242,7 +242,10 @@
 - + Add pytest helpers for `structure check`, generated-code freshness, generated-code snapshots, expected diagnostics,
   and online/generated parity.
 
-## v3 Backlog
+## v3 Completed Scope
+
+All scheduled v3 implementation items below are complete. This retained pre-delivery checklist records the release
+boundary; unimplemented parity work is now marked `planned` in `docs/dev/Gaps.md` and will receive separate plans.
 
 - Design a unified, minimal decorator parameter vocabulary for `@step` and `@raw`, including binding, output, target,
   schema, and streaming options.
@@ -296,7 +299,7 @@
 - Document missing-key nullability, out-of-range array-index behavior, and duplicate-key behavior.
 - Keep row-expanding generator helpers and arbitrary Python callback control flow deferred.
 
-### Epic: Streaming Orchestration
+### Epic: Streaming Transformation Hardening
 
 - Add streaming source declarations.
 - Add streaming sink declarations.
@@ -309,12 +312,13 @@
 - Add admitted stateful streaming policies.
 - Add live streaming lifecycle integration evidence.
 
-### Epic: End-of-v3 Incremental Compile and Cache Diagnostics
+### Epic: V4 Transformation API Coverage
 
-- Implement production incremental compilation with `compile --changed-only`.
-- Add cache invalidation policies and cache diagnostics for source, config, schema, dependency, generated-target,
-  target-profile, and v3 lifecycle-policy changes.
-- Add performance tests for incremental compile on synthetic 10-transform and 100-transform projects.
+- Create a checked catalog for relevant PySpark 3.5.x/4.0.x transformation APIs.
+- Close high-value Column and SQL-function gaps with typed symbolic contracts.
+- Add nested struct/collection and declared-parser coverage without type erasure.
+- Add schema-aware relational transformations and planned analytical gaps.
+- Admit generators only after a schema-and-cardinality design gate.
 
 ## Sprint 09 Backlog
 
@@ -344,9 +348,11 @@
 
 ## v4 Backlog
 
-- Continue Spark Connect hardening only for non-batch or explicitly deferred Sprint 09 gaps.
-- Explore additional backend families after the PySpark-family batch contract is stable, starting with postponed Polars
-  LazyFrame and DuckDB candidates.
+- Maintain one classification for every PySpark transformation API in the supported target range so missing parity is
+  visible and actionable.
+- Keep loading, storage, actions, orchestration, and alternative backends out of v4.
+- Schedule incremental compile/cache diagnostics only after the transformation coverage program; its existing ExecPlan
+  remains valid but no longer sets v4's direction.
 
 ## Future Backlog
 
