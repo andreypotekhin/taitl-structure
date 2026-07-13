@@ -194,7 +194,7 @@ partitioning, checkpoints, output modes, and storage options.
 Construct a transform object specifying applicable inputs. Running it triggers in-memory compilation and executes the compiled code.
 
 ```python
-from structure import StructureConfig, StructureSession
+from structure import *
 
 config = StructureConfig.resolve(project_root=".")
 session = StructureSession(spark=spark, ctx=ctx, config=config)
@@ -1132,7 +1132,7 @@ Reference: [compatibility policy](reference/CompatibilityPolicy.md) and
 Generate starter Structure schema classes from live Spark schema metadata:
 
 ```python
-from structure import StructureSession, StructureTools
+from structure import *
 
 code = StructureTools.schemas.generate(schema=orders_df.schema, to="OrderRaw")
 code = StructureTools.schemas.generate(schema=orders_df, to="OrderRaw")

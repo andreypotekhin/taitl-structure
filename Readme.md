@@ -19,7 +19,7 @@ Define schemas. Define transforms. Run transforms.
 Schema classes (direct or indirect subclasses of Schema) compile to PySpark schemas (StructType, StructField).
 
 ```python
-from structure import Schema, field, String, Decimal
+from structure import *
 
 
 class OrderRaw(Schema):
@@ -116,7 +116,7 @@ class EnrichOrders(Transform):
 Create transform object, specify input data frames and call `.run(session)`:
 
 ```python
-from structure import StructureConfig, StructureSession
+from structure import *
 from orders.transforms.order import EnrichOrders
 
 config = StructureConfig.resolve(project_root=".")

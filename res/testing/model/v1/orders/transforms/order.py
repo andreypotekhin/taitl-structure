@@ -1,4 +1,4 @@
-import structure
+from structure import *
 from testing.model.v1.orders.schemas.customer import Customer
 from testing.model.v1.orders.schemas.order import (
     OrderNormalized,
@@ -13,30 +13,30 @@ from testing.model.v1.orders.schemas.product import Product
 from testing.model.v1.orders.schemas.promotion import Promotion
 
 
-@structure.transform(streaming_compatible=True)
-class EnrichOrders(structure.Transform):
-    orders = structure.input(OrderRaw)
-    customers = structure.input(Customer)
-    products = structure.input(Product)
-    promotions = structure.input(Promotion)
-    published = structure.output(OrderPublished)
+@transform(streaming_compatible=True)
+class EnrichOrders(Transform):
+    orders = input(OrderRaw)
+    customers = input(Customer)
+    products = input(Product)
+    promotions = input(Promotion)
+    published = output(OrderPublished)
 
-    @structure.special(type="expr")
+    @special(type="expr")
     def clean_id(value):
-        return structure.lower(structure.trim(value))
+        return lower(trim(value))
 
-    @structure.special(type="expr")
+    @special(type="expr")
     def money(value):
-        return structure.coalesce(structure.to_decimal(value, precision=12, scale=2), 0)
+        return coalesce(to_decimal(value, precision=12, scale=2), 0)
 
-    @structure.raw(inout=structure.input(orders) | structure.lane(orders), streaming_safe=True)
+    @raw(inout=input(orders) | lane(orders), streaming_safe=True)
     def use_current_orders(self, *, orders, spark, ctx):
         return orders
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
-        structure.where(order.id.is_not_null())
-        structure.where(order.customer_id.is_not_null())
-        structure.where(order.product_id.is_not_null())
+        where(order.id.is_not_null())
+        where(order.customer_id.is_not_null())
+        where(order.product_id.is_not_null())
 
         total = self.money(order.total)
         discount = self.money(order.discount)
@@ -49,25 +49,25 @@ class EnrichOrders(structure.Transform):
             total=total,
             discount=discount,
             net_total=total - discount,
-            quantity=structure.coalesce(order.quantity, 1),
+            quantity=coalesce(order.quantity, 1),
             tags=order.tags,
             attributes=order.attributes,
             shipping=order.shipping,
             is_large=total > 1000,
         )
 
-    @structure.raw(streaming_safe=True)
+    @raw(streaming_safe=True)
     def remove_negative_totals(self, *, orders, spark, ctx):
         from pyspark.sql import functions as F
 
         return orders.where(F.col("net_total") >= 0)
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        customer = structure.left_join(
+        customer = left_join(
             customer,
             on=(customer.tenant.tenant_id == order.tenant.tenant_id)
             & (self.clean_id(customer.id) == order.customer_id),
-            hint=structure.JoinHint.BROADCAST,
+            hint=JoinHint.BROADCAST,
         )
 
         return OrderWithCustomer.base(order)(
@@ -77,11 +77,11 @@ class EnrichOrders(structure.Transform):
         )
 
     def add_product(self, order: OrderWithCustomer, product: Product) -> OrderWithProduct:
-        structure.left_join(
+        left_join(
             on=(product.tenant.tenant_id == order.tenant.tenant_id) & (product.id == order.product_id),
         )
 
-        structure.where(product.id.is_not_null())
+        where(product.id.is_not_null())
 
         return OrderWithProduct.base(order)(
             product_name=product.name,
@@ -91,7 +91,7 @@ class EnrichOrders(structure.Transform):
         )
 
     def add_promotion(self, order: OrderWithProduct, promotion: Promotion) -> OrderWithPromotion:
-        promotion = structure.left_join(
+        promotion = left_join(
             promotion,
             on=(promotion.tenant.tenant_id == order.tenant.tenant_id)
             & self.clean_id(promotion.code).null_safe_eq(order.promotion_code),
@@ -102,9 +102,9 @@ class EnrichOrders(structure.Transform):
             promotion_discount=promotion.discount,
         )
 
-    @structure.raw(
-        inout=[structure.lane(orders), structure.input(customers), structure.input(products)] | structure.lane(orders),
-        schema_mode=structure.SchemaMode.ALLOW_EXTRA_COLUMNS,
+    @raw(
+        inout=[lane(orders), input(customers), input(products)] | lane(orders),
+        schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS,
         project_output=True,
         streaming_safe=True,
     )
@@ -115,7 +115,7 @@ class EnrichOrders(structure.Transform):
             "_lookup_inputs_seen", F.lit(customers is not None and products is not None)
         )
 
-    @structure.step(output=published)
+    @step(output=published)
     def publish(self, order: OrderWithPromotion) -> OrderPublished:
         flags = PublicationFlags(
             has_promotion=order.promotion_name.is_not_null(),
@@ -123,9 +123,9 @@ class EnrichOrders(structure.Transform):
 
         return OrderPublished.base(order, flags)
 
-    @structure.raw(
-        inout=structure.lane(published) | structure.output(published),
-        schema_mode=structure.SchemaMode.ALLOW_EXTRA_COLUMNS,
+    @raw(
+        inout=lane(published) | output(published),
+        schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS,
         project_output=True,
         streaming_safe=True,
     )

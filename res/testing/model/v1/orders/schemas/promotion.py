@@ -1,4 +1,4 @@
-from structure import Decimal, String, Struct, Schema, field
+from structure import *
 
 from testing.model.v1.orders.schemas.common import AuditStamp, TenantKey
 

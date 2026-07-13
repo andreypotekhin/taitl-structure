@@ -1,4 +1,4 @@
-from structure import Array, Boolean, Date, Decimal, Double, Integer, Long, Map, String, Schema, field
+from structure import *
 
 
 class OrderRevenueRollup(Schema):

@@ -43,7 +43,7 @@ execution_mode = "online"
 Runtime code can resolve the same effective configuration without editing TOML:
 
 ```python
-from structure import StructureConfig, StructureSession
+from structure import *
 
 config = StructureConfig.resolve(
     project_root=".",

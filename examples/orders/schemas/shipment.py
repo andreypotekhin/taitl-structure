@@ -1,5 +1,5 @@
 from examples.orders.schemas.common import AuditStamp, TenantKey
-from structure import Integer, Schema, String, Struct, Timestamp, field
+from structure import *
 
 
 class Shipment(Schema):

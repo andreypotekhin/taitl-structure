@@ -1,5 +1,5 @@
 from examples.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
-from structure import Array, Boolean, Decimal, Integer, Long, Map, Schema, String, Struct, Timestamp, field
+from structure import *
 
 
 class OrderRaw(Schema):

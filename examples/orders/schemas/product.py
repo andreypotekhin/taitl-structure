@@ -1,5 +1,5 @@
 from examples.orders.schemas.common import AuditStamp, TenantKey
-from structure import Boolean, Decimal, Double, Float, Schema, String, Struct, field
+from structure import *
 
 
 class ProductBase(Schema):

@@ -1,4 +1,4 @@
-from structure import Date, Decimal, Double, Long, String, Struct, Schema, field
+from structure import *
 
 from testing.model.v2.orders.schemas.common import TenantKey
 

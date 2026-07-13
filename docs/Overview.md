@@ -28,7 +28,7 @@ Define schemas. Define transforms. Run transforms.
 ### Example Schema
 
 ```python
-from structure import Schema, field, String, Decimal
+from structure import *
 
 
 class OrderRaw(Schema):
@@ -123,7 +123,7 @@ class EnrichOrders(Transform):
 Run a transform with `.run(session)`:
 
 ```python
-from structure import StructureSession
+from structure import *
 from orders.transforms.order import EnrichOrders
 
 session = StructureSession(spark=spark, ctx=ctx)
@@ -330,7 +330,7 @@ structure tools schemas generate --from-path data/orders.parquet --format parque
 `StructureTools` can generate starter Structure schema classes from existing Spark schemes/DataFrames.
 
 ```python
-from structure import StructureSession, StructureTools
+from structure import *
 
 code = StructureTools.schemas.generate(schema=orders_df.schema, to="OrderRaw")
 code = StructureTools.schemas.generate(schema=orders_df, to="OrderRaw")

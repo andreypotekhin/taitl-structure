@@ -1,29 +1,29 @@
-import structure
 from examples.streams.schemas.events import Passage, RawEvent
 from examples.streams.schemas.race import Gate, Paddler, Race
+from structure import StreamingMode, Transform, drop_duplicates, input, left_join, output, transform, watermark, where
 
 
-@structure.transform(streaming_compatible=True)
-class PreparePassages(structure.Transform):
-    events = structure.input(RawEvent, streaming=structure.StreamingMode.YES)
-    races = structure.input(Race)
-    paddlers = structure.input(Paddler)
-    gates = structure.input(Gate)
-    passages = structure.output(Passage)
+@transform(streaming_compatible=True)
+class PreparePassages(Transform):
+    events = input(RawEvent, streaming=StreamingMode.YES)
+    races = input(Race)
+    paddlers = input(Paddler)
+    gates = input(Gate)
+    passages = output(Passage)
 
     def prepare(self, event: RawEvent, race: Race, paddler: Paddler, gate: Gate) -> Passage:
-        structure.where(event.elapsed_millis >= 0)  # type: ignore[operator]
-        structure.watermark(event.at, delay="10 minutes")
-        structure.left_join(race, on=race.id == event.race_id)
-        structure.left_join(
+        where(event.elapsed_millis >= 0)  # type: ignore[operator]
+        watermark(event.at, delay="10 minutes")
+        left_join(race, on=race.id == event.race_id)
+        left_join(
             paddler,
             on=(paddler.race_id == event.race_id) & (paddler.id == event.paddler_id),
         )
-        structure.left_join(
+        left_join(
             gate,
             on=(gate.race_id == event.race_id) & (gate.number == event.gate_number),
         )
-        structure.drop_duplicates(event.id)
+        drop_duplicates(event.id)
         return Passage(
             id=event.id,
             race_id=event.race_id,

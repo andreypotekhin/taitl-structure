@@ -1,6 +1,6 @@
 from testing.model.v2.orders.schemas.common import AuditStamp, TenantKey
 
-from structure import Date, Decimal, String, Struct, Schema, field
+from structure import *
 
 
 class Promotion(Schema):

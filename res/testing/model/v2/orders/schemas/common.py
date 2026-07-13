@@ -1,4 +1,4 @@
-from structure import Date, String, Schema, Timestamp, field
+from structure import *
 
 
 class TenantKey(Schema):

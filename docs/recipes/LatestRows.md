@@ -26,21 +26,21 @@ Keep the input contract broad enough to represent the feed and make the output c
 consumers receive.
 
 ```python
-import structure
+from structure import *
 
 
-class AccountEvent(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    sequence = structure.field(structure.Long(), nullable=False)
-    status = structure.field(structure.String(), nullable=False)
+class AccountEvent(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    sequence = field(Long(), nullable=False)
+    status = field(String(), nullable=False)
 
 
-class CurrentAccountEvent(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    sequence = structure.field(structure.Long(), nullable=False)
-    status = structure.field(structure.String(), nullable=False)
+class CurrentAccountEvent(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    sequence = field(Long(), nullable=False)
+    status = field(String(), nullable=False)
 ```
 
 ## Select The Current Row
@@ -49,13 +49,13 @@ Declare the input and output, then select the latest row before projecting it. `
 with one another. `order_by` says which competing row is current.
 
 ```python
-@structure.transform
-class CurrentAccountEvents(structure.Transform):
-    events = structure.input(AccountEvent)
-    current = structure.output(CurrentAccountEvent)
+@transform
+class CurrentAccountEvents(Transform):
+    events = input(AccountEvent)
+    current = output(CurrentAccountEvent)
 
     def select_current(self, event: AccountEvent) -> CurrentAccountEvent:
-        structure.latest_by(event.sequence, partition_by=event.account_id)
+        latest_by(event.sequence, partition_by=event.account_id)
 
         return CurrentAccountEvent(
             account_id=event.account_id,
@@ -74,7 +74,7 @@ an unreviewable `dropDuplicates(...)` call.
 Pass a DataFrame matching `AccountEvent` to the transform and retrieve the named output.
 
 ```python
-from structure import StructureSession
+from structure import *
 
 
 session = StructureSession(spark=spark)
@@ -94,7 +94,7 @@ Use the smallest business key that identifies one current entity. For example, i
 tenants, partition by both values:
 
 ```python
-structure.latest_by(
+latest_by(
     event.sequence,
     partition_by=[event.tenant_id, event.account_id],
 )

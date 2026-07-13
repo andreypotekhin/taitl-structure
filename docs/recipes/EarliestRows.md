@@ -25,23 +25,23 @@ region.
 ## Define The Row Contracts
 
 ```python
-import structure
+from structure import *
 
 
-class Purchase(structure.Schema):
-    region = structure.field(structure.String(), nullable=False)
-    customer_id = structure.field(structure.String(), nullable=False)
-    order_id = structure.field(structure.String(), nullable=False)
-    sequence = structure.field(structure.Long(), nullable=False)
-    amount = structure.field(structure.Decimal(12, 2), nullable=False)
+class Purchase(Schema):
+    region = field(String(), nullable=False)
+    customer_id = field(String(), nullable=False)
+    order_id = field(String(), nullable=False)
+    sequence = field(Long(), nullable=False)
+    amount = field(Decimal(12, 2), nullable=False)
 
 
-class FirstPurchase(structure.Schema):
-    region = structure.field(structure.String(), nullable=False)
-    customer_id = structure.field(structure.String(), nullable=False)
-    order_id = structure.field(structure.String(), nullable=False)
-    sequence = structure.field(structure.Long(), nullable=False)
-    amount = structure.field(structure.Decimal(12, 2), nullable=False)
+class FirstPurchase(Schema):
+    region = field(String(), nullable=False)
+    customer_id = field(String(), nullable=False)
+    order_id = field(String(), nullable=False)
+    sequence = field(Long(), nullable=False)
+    amount = field(Decimal(12, 2), nullable=False)
 ```
 
 ## Keep The First Purchase
@@ -50,13 +50,13 @@ The selection belongs before the output projection. Passing a list to `partition
 visible at the point where the rule is defined.
 
 ```python
-@structure.transform
-class FirstPurchases(structure.Transform):
-    purchases = structure.input(Purchase)
-    first = structure.output(FirstPurchase)
+@transform
+class FirstPurchases(Transform):
+    purchases = input(Purchase)
+    first = output(FirstPurchase)
 
     def select_first(self, purchase: Purchase) -> FirstPurchase:
-        structure.dedupe_earliest_by(
+        dedupe_earliest_by(
             purchase.sequence,
             partition_by=[purchase.region, purchase.customer_id],
         )
@@ -77,7 +77,7 @@ all the fields from that winning row; it is not an aggregation, so it does not n
 ## Run It
 
 ```python
-from structure import StructureSession
+from structure import *
 
 
 session = StructureSession(spark=spark)

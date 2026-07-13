@@ -1,5 +1,5 @@
 from examples.orders.schemas.common import AuditStamp, TenantKey
-from structure import Date, Decimal, Schema, String, Struct, field
+from structure import *
 
 
 class Promotion(Schema):

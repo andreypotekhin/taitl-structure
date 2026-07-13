@@ -12,7 +12,7 @@ examples.
 The canonical schema declaration form is:
 
 ```python
-from structure import Schema, field, String, Decimal
+from structure import *
 
 
 class OrderRaw(Schema):
@@ -40,7 +40,7 @@ Lowercase type sentinels such as `string`, `decimal(12, 2)`, and `boolean` are n
 The public schema DSL is importable from `structure`:
 
 ```python
-import structure
+from structure import *
 ```
 
 `Map` is part of the schema type surface.

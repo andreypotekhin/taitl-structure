@@ -1,4 +1,4 @@
-from structure import Array, Boolean, Decimal, Integer, Long, Map, String, Struct, Schema, field
+from structure import *
 
 from testing.model.v1.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
 

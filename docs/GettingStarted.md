@@ -53,7 +53,7 @@ artifacts. Generated modules mirror source import paths under `structure_generat
 ```python
 # src/orders/schemas/order.py
 
-from structure import Schema, field, String, Decimal
+from structure import *
 
 
 class OrderRaw(Schema):
@@ -84,7 +84,7 @@ aliases are schema-local unless inherited.
 ```python
 # src/orders/schemas/customer.py
 
-from structure import Schema, field, String
+from structure import *
 
 
 class Customer(Schema):
@@ -98,44 +98,44 @@ class Customer(Schema):
 ```python
 # src/orders/transforms/order.py
 
-import structure
+from structure import *
 from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
 from orders.schemas.customer import Customer
 
 
-class EnrichOrders(structure.Transform):
+class EnrichOrders(Transform):
 
-    orders = structure.input(OrderRaw)
-    customers = structure.input(Customer)
-    enriched = structure.output(OrderWithCustomer)
+    orders = input(OrderRaw)
+    customers = input(Customer)
+    enriched = output(OrderWithCustomer)
 
-    @structure.special(type="expr")
+    @special(type="expr")
     def clean_id(value):
-        return structure.lower(structure.trim(value))
+        return lower(trim(value))
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
-        structure.where(order.id.is_not_null())
-        structure.where(order.customer_id.is_not_null())
-        structure.where(order.product_id.is_not_null())
+        where(order.id.is_not_null())
+        where(order.customer_id.is_not_null())
+        where(order.product_id.is_not_null())
 
         return OrderNormalized.project(order)(
             id=order.id,
             customer_id=self.clean_id(order.customer_id),
             product_id=self.clean_id(order.product_id),
-            total=structure.to_decimal(order.total, precision=12, scale=2),
+            total=to_decimal(order.total, precision=12, scale=2),
         )
 
-    @structure.raw(lane=orders)
+    @raw(lane=orders)
     def remove_negative_totals(self, *, orders, spark, ctx):
         from pyspark.sql import functions as F
 
         return orders.where(F.col("total") >= 0)
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        structure.lookup_join(
+        lookup_join(
             on=order.customer_id == customer.id,
-            how=structure.Join.LEFT,
-            hint=structure.JoinHint.BROADCAST,
+            how=Join.LEFT,
+            hint=JoinHint.BROADCAST,
         )
 
         return OrderWithCustomer.base(order)(
@@ -147,7 +147,7 @@ class EnrichOrders(structure.Transform):
 ## 5. Run Transform
 
 ```python
-from structure import StructureSession
+from structure import *
 from orders.transforms.order import EnrichOrders
 
 session = StructureSession(spark=spark)
@@ -250,7 +250,7 @@ enriched_df = result.enriched
 We can run a Transform as part of Airflow or other orchestrator - no code generation needed.
 
 ```python
-from structure import StructureSession
+from structure import *
 from orders.transforms.order import EnrichOrders
 
 

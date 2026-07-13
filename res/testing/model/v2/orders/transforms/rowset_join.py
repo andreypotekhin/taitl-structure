@@ -7,7 +7,7 @@ from testing.model.v2.orders.schemas.order import (
 )
 from testing.model.v2.orders.schemas.product import Product
 
-from structure import Transform, coalesce, cross_join, full_join, input, output, right_join, step, transform
+from structure import *
 
 
 class RowsetJoinExamples(Transform):

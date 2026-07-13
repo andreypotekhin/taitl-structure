@@ -54,7 +54,7 @@ document owns how those features appear and compose in the public DSL.
 The public DSL is importable from `structure`:
 
 ```python
-import structure
+from structure import *
 ```
 
 ## Canonical Source Shape

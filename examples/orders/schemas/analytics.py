@@ -1,5 +1,5 @@
 from examples.orders.schemas.common import TenantKey
-from structure import Date, Decimal, Double, Long, Schema, String, Struct, field
+from structure import *
 
 
 class CustomerDailyTotal(Schema):

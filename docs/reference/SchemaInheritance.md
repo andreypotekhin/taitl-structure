@@ -13,7 +13,7 @@ the final schema as an ordered structural contract and keeps inheritance details
 ## Canonical Form
 
 ```python
-from structure import Schema, field, String, Timestamp, Decimal
+from structure import *
 
 
 class EntityKeys(Schema):

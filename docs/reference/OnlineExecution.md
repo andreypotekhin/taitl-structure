@@ -12,7 +12,7 @@ choose generated execution.
 The default runtime shape is:
 
 ```python
-from structure import StructureSession
+from structure import *
 from orders.transforms.order import EnrichOrders
 
 session = StructureSession(spark=spark, ctx=ctx)
@@ -125,7 +125,7 @@ execution and generated PySpark share the same target capability decisions.
 Python users may pass a resolved config to the runtime session:
 
 ```python
-from structure import StructureConfig, StructureSession
+from structure import *
 
 config = StructureConfig.resolve(project_root=".", execution_mode="generated")
 session = StructureSession(spark=spark, config=config)

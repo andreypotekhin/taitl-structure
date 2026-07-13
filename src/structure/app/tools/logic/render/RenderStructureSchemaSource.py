@@ -18,10 +18,10 @@ class RenderStructureSchemaSource:
         return "\n".join(lines) + "\n"
 
     def _imports(self) -> tuple[str, ...]:
-        return ("import structure",)
+        return ("from structure import *",)
 
     def _class(self, schema: GeneratedSchemaClass) -> tuple[str, ...]:
-        lines = [f"class {schema.name}(structure.Schema):"]
+        lines = [f"class {schema.name}(Schema):"]
         if not schema.fields:
             lines.append("    pass")
             return tuple(lines)
@@ -32,7 +32,7 @@ class RenderStructureSchemaSource:
     def _field(self, field: GeneratedSchemaField) -> str:
         nullable = "True" if field.nullable else "False"
         alias = f", alias={json.dumps(field.alias)}" if field.alias is not None else ""
-        return f"    {field.name} = structure.field({self._type(field.type)}, nullable={nullable}{alias})"
+        return f"    {field.name} = field({self._type(field.type)}, nullable={nullable}{alias})"
 
     def _type(self, type: str) -> str:
-        return self._type_name.sub(r"structure.\1(", type)
+        return self._type_name.sub(r"\1(", type)
