@@ -4,23 +4,23 @@ import structure
 from structure.app.dsl.api import compile_transform
 
 
-class RawTags(structure.Structure):
+class RawTags(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
 
 
-class CleanTags(structure.Structure):
+class CleanTags(structure.Schema):
     tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
 
 
-class RawAttributes(structure.Structure):
+class RawAttributes(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     attributes = structure.field(
         structure.Map(structure.String(), structure.String(), value_contains_null=True), nullable=True
     )
 
 
-class CleanAttributes(structure.Structure):
+class CleanAttributes(structure.Schema):
     attributes = structure.field(
         structure.Map(structure.String(), structure.String(), value_contains_null=False), nullable=True
     )

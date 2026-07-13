@@ -1,4 +1,4 @@
-# Design: v.2 Optimization Features
+# Design: v2 Optimization Features
 
 ## Purpose
 

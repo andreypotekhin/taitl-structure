@@ -1,11 +1,16 @@
 # Quick Reference
 
+For exhaustive supported APIs, PySpark parity names, examples, and semantic differences, see the
+[API reference](APIRef.md): [schemas](api/Schemas.api.md), [transforms](api/Transforms.api.md),
+[expressions](api/Expressions.api.md), [joins](api/Joins.api.md), [aggregations](api/Aggregations.api.md),
+[windows](api/Windows.api.md), [collections](api/Collections.api.md), and [streaming](api/Streaming.api.md).
+
 ## Schema Classes
 
 A schema class defines a row contract and compiles into PySpark schema (`StructType`/`StructField`).
 
 ```python
-class OrderRaw(Structure):
+class OrderRaw(Schema):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     total = field(String(), nullable=True)
@@ -23,7 +28,7 @@ Inheritance allows to for schema reuse, while avoiding repeat declarations.
 
 Use `alias=` when the Spark DataFrame column is not a Python identifier.
 
-Reference: [schema declaration syntax](reference/SchemaDeclarationSyntax.md),
+Reference: [schemas API](api/Schemas.api.md), [schema declaration syntax](reference/SchemaDeclarationSyntax.md),
 [schema semantics](reference/SchemaSemantics.md), and
 [nullability and type coercion](reference/NullabilityAndTypeCoercion.md).
 
@@ -80,7 +85,8 @@ Parent transform step methods run before child transform step methods. Multiple 
 
 Step methods do not call other step methods directly; attempt to do so, except for the override case above, will result in error. 
 
-Reference: [DSL](reference/DSL.md), [online execution](reference/OnlineExecution.md), and
+Reference: [transforms API](api/Transforms.api.md), [DSL](reference/DSL.md),
+[online execution](reference/OnlineExecution.md), and
 [transform inheritance and composition](reference/TransformComposition.md).
 
 ## Inputs
@@ -104,7 +110,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     ...
 ```
 
-Reference: [DSL inputs](reference/DSL.md) and
+Reference: [transforms API](api/Transforms.api.md), [DSL inputs](reference/DSL.md), and
 [source module rules](reference/SourceModuleRules.md).
 
 ## Lanes
@@ -176,7 +182,7 @@ def publish(self, order: OrderNormalized) -> OrderPublished:
 `input(orders)` means the original runtime input. `lane(orders)` means the current working lane named
 `orders`. `output(published)` means the final result declaration.
 
-Reference: [DSL step methods](reference/DSL.md),
+Reference: [transforms API](api/Transforms.api.md), [DSL step methods](reference/DSL.md),
 [symbolic execution](reference/SymbolicExecution.md), and
 [execution semantics](reference/ExecutionSemanticContract.md).
 
@@ -205,7 +211,7 @@ enriched_df = result.enriched
 The session owns the caller-supplied Spark reference, Structure configuration,
 execution mode and compiled artifacts. It preserves the compiled code between transform and invocations. For instance, the subsequent construction of new insances `EnrichOrders` and repeat invocations of its .run() (on same session) do not trigger recompiling.
 
-Reference: [online execution](reference/OnlineExecution.md) and
+Reference: [transforms API](api/Transforms.api.md), [online execution](reference/OnlineExecution.md), and
 [execution semantic contract](reference/ExecutionSemanticContract.md).
 
 ## Generated PySpark Code
@@ -235,7 +241,8 @@ orders = orders.where(
 )
 ```
 
-Reference: [PySpark code generation](reference/PySparkCodeGeneration.md).
+Reference: [transforms API](api/Transforms.api.md) and
+[PySpark code generation](reference/PySparkCodeGeneration.md).
 
 ## Filtering
 
@@ -257,7 +264,7 @@ Multiple `where(...)` calls are combined with logical AND.
 When filters and joins are mixed, Structure preserves the source order. A filter written before a join runs
 before that join; a filter written after a join can reference the joined relation.
 
-Reference: [DSL filtering](reference/DSL.md) and
+Reference: [expressions API](api/Expressions.api.md), [DSL filtering](reference/DSL.md), and
 [symbolic execution](reference/SymbolicExecution.md).
 
 ## Add and Drop Columns
@@ -304,7 +311,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     )
 ```
 
-Reference: [schema semantics](reference/SchemaSemantics.md) and
+Reference: [transforms API](api/Transforms.api.md), [schema semantics](reference/SchemaSemantics.md), and
 [PySpark code generation](reference/PySparkCodeGeneration.md).
 
 ## Expressions
@@ -324,7 +331,7 @@ def add_flags(self, order: OrderRaw) -> OrderWithFlags:
     )
 ```
 
-Supported v.1 expression forms are field references, literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `*`,
+Supported v1 expression forms are field references, literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `*`,
 boolean `&`, `|`, `~`, null checks, `null_safe_eq(...)`, `contains(...)`, `like(...)`, `ilike(...)`, `rlike(...)`,
 array/map indexing, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and
 `cast(...)`, `astype(...)`, `try_cast(...)` (PySpark 4 profile), `substring(...)`, `split(...)`,
@@ -336,7 +343,7 @@ Temporal helpers include `date_add(...)`, `datediff(...)`, and `date_trunc(...)`
 Numeric helpers include `abs(...)`, `round(...)`, `ceil(...)`, and `floor(...)`.
 Predicate helpers include `isnull(...)`, `isnotnull(...)`, and `isnan(...)`.
 
-Reference: [DSL expressions](reference/DSL.md) and
+Reference: [expressions API](api/Expressions.api.md), [DSL expressions](reference/DSL.md), and
 [nullability and type coercion](reference/NullabilityAndTypeCoercion.md).
 
 ## Expression Methods
@@ -355,7 +362,7 @@ Expression methods do not take `self`, but can be called through `self`.
 customer_id=self.clean_id(order.customer_id)
 ```
 
-Reference: [DSL expression helpers](reference/DSL.md).
+Reference: [expressions API](api/Expressions.api.md) and [DSL expression helpers](reference/DSL.md).
 
 ## Aggregations
 
@@ -462,7 +469,8 @@ return group_by(customer_id=order.customer_id).agg(
 ).as_schema(CustomerOrderSummary)
 ```
 
-Reference: [advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md),
+Reference: [aggregations API](api/Aggregations.api.md),
+[advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md),
 [IR](reference/IntermediateRepresentation.md), [PySpark code generation](reference/PySparkCodeGeneration.md), and
 [streaming compatibility](reference/StreamingCompatibility.md).
 
@@ -488,10 +496,11 @@ The PySpark target lowers these helpers to `row_number()` over
 required so the selection is reviewable, and the current public tie policy is `TiePolicy.ERROR`. 
 
 Streaming: Selected-row helpers
-are batch-only in v.2 streaming compatibility checks, because streaming-safe ranking needs explicit watermark and state
+are batch-only in v2 streaming compatibility checks, because streaming-safe ranking needs explicit watermark and state
 semantics (planned).
 
-Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md),
+Reference: [aggregations API](api/Aggregations.api.md), [DSL](reference/DSL.md),
+[IR](reference/IntermediateRepresentation.md),
 [PySpark code generation](reference/PySparkCodeGeneration.md), and
 [streaming compatibility](reference/StreamingCompatibility.md).
 
@@ -544,9 +553,10 @@ def customer_window(self, order: OrderFulfillment) -> OrderCustomerWindow:
 Reusable windows require explicit frames such as `rows_between(preceding(2), current_row())` or
 `range_between(preceding(10), current_row())`. 
 
-Streaming: broad window helpers are batch-only in v.2 streaming compatibility.
+Streaming: broad window helpers are batch-only in v2 streaming compatibility.
 
-Reference: [advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md),
+Reference: [windows API](api/Windows.api.md),
+[advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md),
 [IR](reference/IntermediateRepresentation.md), [PySpark code generation](reference/PySparkCodeGeneration.md), and
 [streaming compatibility](reference/StreamingCompatibility.md).
 
@@ -582,10 +592,11 @@ def latest_events(self, event: RawEvent) -> RawEvent:
     return RawEvent.project(event)
 ```
 
-Streaming: exact duplicate removal is batch-only in v.2 streaming compatibility because streaming dedupe needs explicit
+Streaming: exact duplicate removal is batch-only in v2 streaming compatibility because streaming dedupe needs explicit
 watermark, state, and output-mode semantics.
 
-Reference: [DSL](reference/DSL.md), [IR](reference/IntermediateRepresentation.md),
+Reference: [aggregations API](api/Aggregations.api.md), [DSL](reference/DSL.md),
+[IR](reference/IntermediateRepresentation.md),
 [PySpark code generation](reference/PySparkCodeGeneration.md), and
 [streaming compatibility](reference/StreamingCompatibility.md).
 
@@ -651,12 +662,13 @@ Callbacks are symbolic: they are evaluated once against a Structure expression, 
 bodies must return typed Structure expressions or typed literals. Python boolean control flow such as `tag and ...`
 is rejected; combine symbolic predicates with `&`, `|`, and `~`.
 
-Reference: [advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md), and
+Reference: [collections API](api/Collections.api.md),
+[advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md), and
 [backend capabilities](reference/BackendCapabilities.md).
 
 ## Joins
 
-Use symbolic joins. Ref: [Join semantics](reference/JoinSemantics.md),
+Use symbolic joins. Ref: [joins API](api/Joins.api.md), [Join semantics](reference/JoinSemantics.md),
 [analytical join coverage](reference/AnalyticalJoinCoverage.md), and
 [full PySpark join support](reference/FullPySparkJoinSupport.md).
 
@@ -830,7 +842,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     )
 ```
 
-Reference: [schema inheritance](reference/SchemaInheritance.md),
+Reference: [schemas API](api/Schemas.api.md), [schema inheritance](reference/SchemaInheritance.md),
 [schema declaration syntax](reference/SchemaDeclarationSyntax.md), and
 [schema semantics](reference/SchemaSemantics.md).
 
@@ -942,7 +954,8 @@ class OrderPipeline(Transform):
     )
 ```
 
-Reference: [transform inheritance and composition](reference/TransformComposition.md),
+Reference: [transforms API](api/Transforms.api.md),
+[transform inheritance and composition](reference/TransformComposition.md),
 [DSL](reference/DSL.md), and [execution semantics](reference/ExecutionSemanticContract.md).
 
 ## Hooks
@@ -985,7 +998,7 @@ def add_audit_columns(self, *, audited, spark, ctx):
 
 Single-result hooks still name the selected lane explicitly.
 
-Reference: [hook semantics](reference/HookSemantics.md) and
+Reference: [transforms API](api/Transforms.api.md), [hook semantics](reference/HookSemantics.md), and
 [validation semantics](reference/ValidationSemantics.md).
 
 ## Schema Validation
@@ -1051,7 +1064,7 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     ...
 ```
 
-Reference: [validation semantics](reference/ValidationSemantics.md) and
+Reference: [schemas API](api/Schemas.api.md), [validation semantics](reference/ValidationSemantics.md), and
 [data quality constraints](reference/DataQualityConstraints.md).
 
 ## Source and Generated Paths
@@ -1075,9 +1088,10 @@ Reference: [source module rules](reference/SourceModuleRules.md),
 Structure transforms operate on DataFrames. If the input DataFrame is streaming and every compiled operation
 is supported by Spark Structured Streaming, the transform can run in a streaming pipeline.
 
-Structure does not generate `readStream` or `writeStream` before v.3; the caller owns streaming orchestration.
+Structure does not generate `readStream` or `writeStream` before v3; the caller owns streaming orchestration.
 
-Reference: [streaming compatibility](reference/StreamingCompatibility.md).
+Reference: [streaming API](api/Streaming.api.md) and
+[streaming compatibility](reference/StreamingCompatibility.md).
 
 ## Compatibility
 
@@ -1150,32 +1164,13 @@ decimals, and nested structs. It does not infer primary keys, descriptions, inhe
 constraints. When Spark field names are not Python identifiers, generated Structure fields use safe Python
 names with `alias=...`.
 
-Reference: [CLI](reference/CLI.md) and
+Reference: [schemas API](api/Schemas.api.md), [CLI](reference/CLI.md), and
 [schema declaration syntax](reference/SchemaDeclarationSyntax.md).
-
-## Planned Features
-
-Implemented v.2 analytical features include existence joins, `inner_join(...)`, deterministic lookup dedupe,
-temporal validity joins, backward as-of joins, aggregation/grouping, latest/earliest selected-row and keyed-dedupe
-helpers, exact duplicate-row removal, Spark higher-order array/map helpers, caching, and target capability checks.
-
-Remaining planned v.2 features include:
-
-- Broader deduplication helpers.
-- Repartition and coalesce annotations.
-
-These features remain explicit because Structure should not hide performance-sensitive choices.
-
-Planned v.2 adoption tooling also includes richer explain output, generated documentation artifacts for schemas
-and transforms, production incremental compilation, and a pytest helper for compiler checks and generated-code
-freshness.
-
-Reference: [analytical join coverage](reference/AnalyticalJoinCoverage.md),
-[backend capabilities](reference/BackendCapabilities.md), and
-[alternative backends](reference/AlternativeBackends.md).
 
 ## Next Steps
 
 Get started: [GettingStarted.md](GettingStarted.md)
 
-Browse deeper behavior definitions: [Reference.md](Reference.md)
+API reference: [APIRef.md](APIRef.md)
+
+Reference docs: [Reference.md](Reference.md)

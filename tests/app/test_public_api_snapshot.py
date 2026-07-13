@@ -36,11 +36,11 @@ def test_public_structure_star_import_compiles_end_user_source() -> None:
 from structure import *
 
 
-class Raw(Structure):
+class Raw(Schema):
     id = field(String(), nullable=False)
 
 
-class Published(Structure):
+class Published(Schema):
     id = field(String(), nullable=False)
 
 

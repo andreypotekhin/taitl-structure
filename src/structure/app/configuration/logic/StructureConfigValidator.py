@@ -59,7 +59,7 @@ class StructureConfigValidator:
 
         generated_dir_value = Path(str(values["generated_dir"]))
         if generated_dir_value.is_absolute():
-            self._fail_invalid("generated_dir", "generated_dir must be project-relative in v.1", 'Use "generated".')
+            self._fail_invalid("generated_dir", "generated_dir must be project-relative in v1", 'Use "generated".')
         generated_dir = root / generated_dir_value
         generated_docs_dir = Path(str(values["generated_docs_dir"]))
         if generated_docs_dir.is_absolute() or ".." in generated_docs_dir.parts:

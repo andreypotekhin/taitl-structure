@@ -298,7 +298,7 @@ Problem:
 
 Use:
   Use latest_by(...) or earliest_by(...) for admitted selected-row windows, move broader logic into an explicit hook,
-  or wait for the broader v.2 windowing specification.
+  or wait for the broader v2 windowing specification.
 
 See docs/dev/specifications/ExecutionSemanticContract.md
 ```

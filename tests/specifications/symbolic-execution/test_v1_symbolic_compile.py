@@ -7,10 +7,10 @@ from structure import step
 from structure.app.dsl.api import (
     Join,
     JoinHint,
+    Schema,
     SchemaMode,
     String,
     Struct,
-    Structure,
     Transform,
     compile_transform,
     field,
@@ -106,15 +106,15 @@ def test_v1_symbolic_plan_records_expression_operators() -> None:
 
 
 def test_v1_symbolic_plan_records_nested_struct_construction() -> None:
-    class Address(Structure):
+    class Address(Schema):
         city = field(String(), nullable=False)
         postal_code = field(String(), nullable=False)
 
-    class Raw(Structure):
+    class Raw(Schema):
         id = field(String(), nullable=False)
         shipping = field(Struct(Address), nullable=True)
 
-    class Published(Structure):
+    class Published(Schema):
         id = field(String(), nullable=False)
         shipping = field(Struct(Address), nullable=False)
 
@@ -144,17 +144,17 @@ def test_v1_symbolic_plan_records_nested_struct_construction() -> None:
 
 
 def test_v1_symbolic_plan_rejects_incompatible_nested_struct_assignment() -> None:
-    class Address(Structure):
+    class Address(Schema):
         city = field(String(), nullable=False)
         postal_code = field(String(), nullable=False)
 
-    class TenantKey(Structure):
+    class TenantKey(Schema):
         tenant_id = field(String(), nullable=False)
 
-    class Raw(Structure):
+    class Raw(Schema):
         id = field(String(), nullable=False)
 
-    class Published(Structure):
+    class Published(Schema):
         tenant = field(Struct(TenantKey), nullable=False)
 
     @transform
@@ -172,7 +172,7 @@ def test_v1_symbolic_plan_rejects_incompatible_nested_struct_assignment() -> Non
 def test_transform_class_options_default_step_method_options() -> None:
     """Class-level transform config options apply to every step method."""
 
-    class Row(Structure):
+    class Row(Schema):
         id = field(String(), nullable=False)
 
     @transform(target_backend="pyspark", target_platform="spark")

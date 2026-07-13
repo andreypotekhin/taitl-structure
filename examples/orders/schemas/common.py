@@ -1,16 +1,16 @@
-from structure import Date, String, Structure, Timestamp, field
+from structure import Date, Schema, String, Timestamp, field
 
 
-class TenantKey(Structure):
+class TenantKey(Schema):
     tenant_id = field(String(), nullable=False, primary_key=True)
 
 
-class AuditStamp(Structure):
+class AuditStamp(Schema):
     source_system = field(String(), nullable=False)
     ingested_at = field(Timestamp(), nullable=False)
 
 
-class Address(Structure):
+class Address(Schema):
     line1 = field(String(), nullable=False)
     line2 = field(String(), nullable=True)
     city = field(String(), nullable=False)
@@ -19,5 +19,5 @@ class Address(Structure):
     country = field(String(), nullable=False)
 
 
-class BusinessDate(Structure):
+class BusinessDate(Schema):
     order_date = field(Date(), nullable=True)

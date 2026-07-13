@@ -8,11 +8,11 @@ compiler understanding, and cleans generated files.
 
 The CLI is intentionally a compiler surface, not a Spark job runner. `structure check`, `structure compile`, and
 `structure compile --fail-on-diff` must run without PySpark, Java, Spark startup, a `SparkSession`, or a Spark cluster.
-Online runtime execution remains available through `StructureSession`, not through the v.1 CLI.
+Online runtime execution remains available through `StructureSession`, not through the v1 CLI.
 
 ## Command Surface
 
-The v.1 command set is:
+The v1 command set is:
 
 ```bash
 structure init
@@ -302,7 +302,7 @@ both of these safety markers:
 - file headers that identify Structure-generated files.
 
 If the configured `generated_dir` contains unknown files, `clean` should refuse to remove the directory wholesale and
-print the unknown paths. A future explicit force flag may remove unknown files, but v.1 should be conservative.
+print the unknown paths. A future explicit force flag may remove unknown files, but v1 should be conservative.
 
 Successful output:
 
@@ -334,7 +334,7 @@ Metrics:
 - transforms compiled;
 - cache hits or cache hit ratio.
 
-v.1 profiling measures cold compiler work. Production incremental compilation belongs to end-of-v.3, but v.1/v.2 should
+v1 profiling measures cold compiler work. Production incremental compilation belongs to end-of-v3, but v1/v2 should
 preserve source fingerprints, deterministic outputs, and stable phase boundaries so the later cache can reuse this
 structure.
 
@@ -372,7 +372,7 @@ Setting:
   target_profile = "<3.0"
 
 Problem:
-  Structure v.1 supports PySpark 3.5.x and 4.0.x by default.
+  Structure v1 supports PySpark 3.5.x and 4.0.x by default.
 
 Use:
   Set `target_profile = ">=3.5,<4.1"` or choose a supported range.
@@ -436,7 +436,7 @@ shell out for ordinary behavior. The shell command remains the public interface 
 
 The CLI implementation is complete when tests prove:
 
-- `structure --help` lists all v.1 commands;
+- `structure --help` lists all v1 commands;
 - `structure init` writes compact config without overwriting existing config;
 - `structure init --seed-config` writes all default settings;
 - CLI flags override `[tool.structure]`, `structure.toml`, and defaults;

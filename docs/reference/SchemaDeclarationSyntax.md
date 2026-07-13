@@ -4,21 +4,24 @@ Structure schemas declare the row contracts used by compiler checks, generated S
 validation, traceability, and IDE navigation. The syntax is explicit, readable, and cheap to inspect without importing
 PySpark or creating a Spark session.
 
+See the exhaustive [schemas API table](../api/Schemas.api.md) for public declaration names, PySpark parity, and
+examples.
+
 ## Canonical Form
 
 The canonical schema declaration form is:
 
 ```python
-from structure import Structure, field, String, Decimal
+from structure import Schema, field, String, Decimal
 
 
-class OrderRaw(Structure):
+class OrderRaw(Schema):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     total = field(String(), nullable=True)
 
 
-class OrderNormalized(Structure):
+class OrderNormalized(Schema):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     total = field(Decimal(12, 2), nullable=True)
@@ -47,7 +50,7 @@ import structure
 This is the accepted schema declaration grammar in descriptive form:
 
 ```text
-schema_class      := class NAME(Structure): field_decl+
+schema_class      := class NAME(Schema): field_decl+
 field_decl        := NAME = field(type_expr, field_kwarg*)
 type_expr         := scalar_type | decimal_type | array_type | struct_type | map_type
 scalar_type       := String() | Integer() | Long() | Float() | Double() | Boolean() | Date() | Timestamp()
@@ -56,15 +59,15 @@ array_type        := Array(type_expr, contains_null=BOOL?)
 struct_type       := Struct(schema_ref)
 map_type          := Map(key_type, value_type, value_contains_null=BOOL?)
 field_kwarg       := nullable=BOOL | primary_key=BOOL | alias=STRING | metadata=DICT | description=STRING
-schema_ref        := Structure subclass object
+schema_ref        := Schema class object
 ```
 
-The compiler should implement this grammar by inspecting actual runtime Structure objects, not by parsing source text
+The compiler should implement this grammar by inspecting actual runtime Schema objects, not by parsing source text
 when import-based discovery is used. Source text or AST inspection may still be used for diagnostics and source spans.
 
 ## Field Rules
 
-`field(...)` has this v.1 shape:
+`field(...)` has this v1 shape:
 
 ```python
 field(
@@ -93,7 +96,7 @@ Rules:
   the field definition through schema inheritance.
 - Structure passes aliases through to Spark. It does not sanitize, normalize, or quote aliases for backend-specific
   identifier edge cases.
-- v.1 must reject duplicate Python field names and duplicate effective Spark column names after inherited fields are
+- v1 must reject duplicate Python field names and duplicate effective Spark column names after inherited fields are
   resolved.
 
 `primary_key=True` on a nullable field is invalid unless `nullable=False` is explicitly supplied or inferred by the
@@ -105,7 +108,7 @@ All schema type constructors return immutable value objects. Equality is structu
 
 ### Scalar Types
 
-The v.1 scalar type constructors are:
+The v1 scalar type constructors are:
 
 ```python
 String()
@@ -140,7 +143,7 @@ Rules:
 - `precision >= 1`
 - `scale >= 0`
 - `scale <= precision`
-- v.1 should reject omitted precision and scale.
+- v1 should reject omitted precision and scale.
 
 Generated PySpark mapping:
 
@@ -172,7 +175,7 @@ Array(String(), contains_null=False)  -> T.ArrayType(T.StringType(), containsNul
 
 Rules:
 
-- `schema` must be a `Structure` subclass, not an instance.
+- `schema` must be a `Schema` class, not an instance.
 - Self-recursive schemas are rejected in v1.
 - Recursive cycles across multiple schemas are rejected in v1.
 - Nested struct field order follows the referenced schema class.
@@ -286,13 +289,13 @@ Base overlay rules:
 Example with multiple schema bases:
 
 ```python
-class OrderPublication(Structure):
+class OrderPublication(Schema):
     id = field(String(), nullable=False, primary_key=True)
     customer_name = field(String(), nullable=True)
     total = field(Decimal(12, 2), nullable=False)
 
 
-class PublicationFlags(Structure):
+class PublicationFlags(Schema):
     has_promotion = field(Boolean(), nullable=False)
 
 
@@ -338,7 +341,7 @@ See docs/reference/SchemaDeclarationSyntax.md
 
 ## Non-Goals
 
-The following are not part of v.1 canonical syntax:
+The following are not part of v1 canonical syntax:
 
 - annotation-only field declarations such as `id: String`;
 - dataclass-style defaults;

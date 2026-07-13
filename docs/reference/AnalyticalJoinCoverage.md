@@ -10,6 +10,8 @@ deterministic lookup dedupe, temporal lookups, as-of lookups, and slowly changin
 The `lookup_join(...)` contract remains unchanged. It is a narrow many-to-one or one-to-one lookup join. It warns when
 right-side uniqueness is not proven and never deduplicates by surprise.
 
+See the exhaustive [joins API table](../api/Joins.api.md) for supported function names, PySpark parity, and examples.
+
 ## Scope
 
 This reference covers source semantics for analytical joins. Existence joins, `inner_join(...)`, deterministic
@@ -257,7 +259,7 @@ Right, full, cross, non-equi, and disjunctive rowset joins are covered in
 
 ## Streaming Compatibility
 
-v.2 may classify stream-static `exists(...)`, `not_exists(...)`, and `inner_join(...)` as compatible when the current
+v2 may classify stream-static `exists(...)`, `not_exists(...)`, and `inner_join(...)` as compatible when the current
 pipeline input is streaming and the right input is static, if Spark supports the lowered plan for the configured
 target.
 

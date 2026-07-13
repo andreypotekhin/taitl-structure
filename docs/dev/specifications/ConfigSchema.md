@@ -156,7 +156,7 @@ Default: `"online"`.
 
 Type: string enum.
 
-Allowed in v.1:
+Allowed in v1:
 
 ```text
 pyspark
@@ -315,7 +315,7 @@ Rules:
 
 - When true, unsupported compiler-visible operations fail instead of silently becoming UDFs, row-wise callbacks, RDD
   operations, or opaque generated code.
-- v.1 docs should keep this true in examples.
+- v1 docs should keep this true in examples.
 
 ### warn_on_udfs
 
@@ -362,7 +362,7 @@ STRICT
 
 Default: `"ANSI"`.
 
-Detailed v.1 assignment rules are specified for `ANSI`.
+Detailed v1 assignment rules are specified for `ANSI`.
 
 ## Unknown Keys
 
@@ -442,7 +442,7 @@ StructureConfig
 
 ## Security
 
-Configuration diagnostics must not print secrets. v.1 Structure config should avoid secret-bearing fields. If future
+Configuration diagnostics must not print secrets. v1 Structure config should avoid secret-bearing fields. If future
 settings can include credentials or tokens, diagnostics must redact values by default.
 
 ## Implementation Checklist

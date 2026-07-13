@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from structure.app.dsl.model.expr.Expression import Expression
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 
 
 class RowScope:
@@ -10,7 +10,7 @@ class RowScope:
         self,
         *,
         name: str,
-        schema: type[Structure],
+        schema: type[Schema],
         nullable: bool = False,
         nullable_reason: str | None = None,
     ) -> None:

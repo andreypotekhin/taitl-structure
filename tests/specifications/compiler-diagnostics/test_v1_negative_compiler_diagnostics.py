@@ -6,51 +6,51 @@ import structure
 from structure.app.dsl.api import compile_transform
 
 
-class Raw(structure.Structure):
+class Raw(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
 
 
-class Clean(structure.Structure):
+class Clean(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
 
 
-class Published(structure.Structure):
+class Published(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     status = structure.field(structure.String(), nullable=False)
 
 
-class NullableRaw(structure.Structure):
+class NullableRaw(structure.Schema):
     id = structure.field(structure.String(), nullable=False, primary_key=True)
     optional_id = structure.field(structure.String(), nullable=True)
     amount = structure.field(structure.String(), nullable=True)
     count = structure.field(structure.Integer(), nullable=False)
 
 
-class Lookup(structure.Structure):
+class Lookup(structure.Schema):
     id = structure.field(structure.String(), nullable=False, primary_key=True)
     group = structure.field(structure.String(), nullable=False)
     label = structure.field(structure.String(), nullable=False)
 
 
-class Account(structure.Structure):
+class Account(structure.Schema):
     id = structure.field(structure.String(), nullable=False, primary_key=True)
     customer_id = structure.field(structure.String(), nullable=False)
 
 
-class OptionalClean(structure.Structure):
+class OptionalClean(structure.Schema):
     optional_id = structure.field(structure.String(), nullable=False)
 
 
-class MoneyClean(structure.Structure):
+class MoneyClean(structure.Schema):
     amount = structure.field(structure.Decimal(12, 2), nullable=False)
     count = structure.field(structure.Long(), nullable=False)
 
 
-class FlagClean(structure.Structure):
+class FlagClean(structure.Schema):
     is_paid = structure.field(structure.Boolean(), nullable=False)
 
 
-class LabelClean(structure.Structure):
+class LabelClean(structure.Schema):
     label = structure.field(structure.String(), nullable=False)
 
 
@@ -170,7 +170,7 @@ def test_v1_string_to_decimal_assignment_requires_explicit_conversion() -> None:
 
 
 def test_v1_non_nullable_string_to_decimal_assignment_reports_conversion_diagnostic() -> None:
-    class NonNullAmount(structure.Structure):
+    class NonNullAmount(structure.Schema):
         amount = structure.field(structure.String(), nullable=False)
         count = structure.field(structure.Integer(), nullable=False)
 

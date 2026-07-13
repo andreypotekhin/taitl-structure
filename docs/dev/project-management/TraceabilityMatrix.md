@@ -10,18 +10,18 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 03 Expressions/Filtering/Helpers | Symbolic Execution, Expression Helpers, Filtering, Error Reporting | expression IR, `where`, `@special(type="expr")`, diagnostic registry, structured unsupported-code errors |
 | Sprint 04 Hooks/Generated Classes | Hooks, Generated Code, Error Reporting | `@raw(lane=lane)`, direct hook calls, no-hook cleanliness |
 | Sprint 05 Joins/Compiler Traceability/Build | Joins, Compiler Traceability, Build Integration, Streaming Compatibility | `lookup_join`, N-step joins, compiler provenance, static dataflow traceability, `--fail-on-diff`, `explain` |
-| Sprint 06 v.2 Scope/Analytical IR | v.2 Foundations, Backend Capabilities, Traceability, Streaming Compatibility | v.2 scope, non-goals, operation taxonomy, capability placeholders, fixture skeletons, diagnostic anchors |
+| Sprint 06 v2 Scope/Analytical IR | v2 Foundations, Backend Capabilities, Traceability, Streaming Compatibility | v2 scope, non-goals, operation taxonomy, capability placeholders, fixture skeletons, diagnostic anchors |
 | Sprint 07 Analytical Join Coverage | Analytical Joins, Backend Capabilities, Traceability, Streaming Compatibility | existence joins, `inner_join`, deterministic lookup dedupe, temporal joins, as-of joins |
 | Sprint 08 Aggregations/Windows/HOFs | Aggregations, Windowing, Deduplication, Higher-Order Functions, Testing | typed `group_by`, aggregate helpers, window helpers, deterministic dedupe, array/map helpers, parity tests |
 | Sprint 09 Spark Connect/Optimization/Explain | Advanced Analytics, Spark Connect, Full PySpark Joins, Optimization Directives, Explain, Testing | full aggregation/window/HOF coverage, supported Spark Connect batch variant, right/full/cross rowset joins, non-equi/disjunctive predicates, cache/persist first-slice directives, compact explain, static streaming compatibility |
 | Sprint 10 Docs/Testing | Generated Docs, Test Tooling | generated schema/transform docs, pytest helpers |
-| Sprint 11 v.3 DSL/SQL Function Parity | DSL, SQL Functions, Backend Capabilities, Testing | complete Column API helpers, SQL function helpers, generated examples, and parity tests |
-| Sprint 12 v.3 Join Parity Hardening | Joins, Backend Capabilities, Traceability, Streaming Compatibility | using-key joins, right/full diagnostics, cross safety, strategy directives, forward as-of joins |
-| Sprint 13 v.3 Aggregation Parity | Aggregations, Backend Capabilities, Traceability | grouping sets, `having(...)`, aggregate-output predicate diagnostics |
-| Sprint 14 v.3 Window Parity | Windows, Backend Capabilities, Streaming Compatibility | null ordering, normalized multiple order keys, aggregate windows |
-| Sprint 15 v.3 Collection Helper Parity | Higher-Order Functions, Arrays, Maps, Testing | collection size/membership, map-key membership, array construction/repeat/union/except, element lookup/concat |
-| Sprint 16 v.3 Streaming Orchestration | Spark Structured Streaming, Runtime, Generated Code, Integration Testing | source/sink declarations, generated `readStream`/`writeStream`, triggers, checkpoints, output modes, watermarks, state policies |
-| Sprint 17 v.3 Incremental Compile | CLI, Compiler Performance, Generated Artifacts, Testing | `compile --changed-only`, cache invalidation, cache diagnostics, warm compile performance fixtures |
+| Sprint 11 v3 DSL/SQL Function Parity | DSL, SQL Functions, Backend Capabilities, Testing | complete Column API helpers, SQL function helpers, generated examples, and parity tests |
+| Sprint 12 v3 Join Parity Hardening | Joins, Backend Capabilities, Traceability, Streaming Compatibility | using-key joins, right/full diagnostics, cross safety, strategy directives, forward as-of joins |
+| Sprint 13 v3 Aggregation Parity | Aggregations, Backend Capabilities, Traceability | grouping sets, `having(...)`, aggregate-output predicate diagnostics |
+| Sprint 14 v3 Window Parity | Windows, Backend Capabilities, Streaming Compatibility | null ordering, normalized multiple order keys, aggregate windows |
+| Sprint 15 v3 Collection Helper Parity | Higher-Order Functions, Arrays, Maps, Testing | collection size/membership, map-key membership, array construction/repeat/union/except, element lookup/concat |
+| Sprint 16 v3 Streaming Orchestration | Spark Structured Streaming, Runtime, Generated Code, Integration Testing | source/sink declarations, generated `readStream`/`writeStream`, triggers, checkpoints, output modes, watermarks, state policies |
+| Sprint 17 v3 Incremental Compile | CLI, Compiler Performance, Generated Artifacts, Testing | `compile --changed-only`, cache invalidation, cache diagnostics, warm compile performance fixtures |
 
 ## Relevant Specification Items by Sprint
 
@@ -85,10 +85,10 @@ This matrix maps early sprints to specification sections and major deliverables.
 
 ### Sprint 06
 
-- As a developer, I can see a published v.2 scope and non-goals.
-- As a developer, I can receive backend capability diagnostics for every v.2 operation.
-- As a developer, I can inspect v.2 operation cardinality in explain output.
-- As a developer, I can rely on online and generated execution using the same v.2 PySpark recipe layer.
+- As a developer, I can see a published v2 scope and non-goals.
+- As a developer, I can receive backend capability diagnostics for every v2 operation.
+- As a developer, I can inspect v2 operation cardinality in explain output.
+- As a developer, I can rely on online and generated execution using the same v2 PySpark recipe layer.
 - As a developer, I can keep caller-owned streaming orchestration in v2.
 
 ### Sprint 07

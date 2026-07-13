@@ -7,7 +7,7 @@ from pathlib import Path
 
 from structure.app.cli.model.DiscoveredStructureProject import DiscoveredStructureProject
 from structure.app.configuration.model.StructureConfig import StructureConfig
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.Transform import Transform
 
 
@@ -15,7 +15,7 @@ class DiscoverStructureProject:
 
     def __call__(self, config: StructureConfig) -> DiscoveredStructureProject:
         transforms: list[type[Transform]] = []
-        schemas: dict[str, list[type[Structure]]] = {}
+        schemas: dict[str, list[type[Schema]]] = {}
         for root in config.source_roots:
             self._add_import_root(root)
             for module_name in self._modules(root):
@@ -59,8 +59,8 @@ class DiscoverStructureProject:
     def _schema(self, value: object, module_name: str) -> bool:
         return (
             isinstance(value, type)
-            and issubclass(value, Structure)
-            and value is not Structure
+            and issubclass(value, Schema)
+            and value is not Schema
             and value.__module__ == module_name
         )
 

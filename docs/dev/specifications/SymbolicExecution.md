@@ -100,7 +100,7 @@ rows, call Spark, or inspect live DataFrames.
 
 ## Public Source Forms
 
-The v.1 symbolic engine must support these source forms inside compiled step methods:
+The v1 symbolic engine must support these source forms inside compiled step methods:
 
 ```python
 order.id
@@ -273,7 +273,7 @@ referenced scopes
 source metadata when available
 ```
 
-The v.1 symbolic expression kinds are:
+The v1 symbolic expression kinds are:
 
 ```text
 FieldRef
@@ -325,7 +325,7 @@ Rules:
 - The engine may either inline the expanded expression into IR or preserve a `CallExpr` with expansion metadata, as long
   as online execution, generated code, traceability, and diagnostics agree.
 - Class-local helpers declared without `self` must be callable through `self`.
-- Recursive helpers are invalid in v.1 unless a future spec defines recursion limits.
+- Recursive helpers are invalid in v1 unless a future spec defines recursion limits.
 - Helper expansion should be cacheable when the helper identity, argument symbolic shapes, and keyword values are the
   same and caching cannot hide diagnostics or source context.
 
@@ -659,7 +659,7 @@ Rules:
 - Avoid broad reflection after discovery has produced metadata.
 - Cache safe expression helper expansions when it materially improves compile time.
 - Do not cache results in a way that hides source context, warnings, or diagnostics.
-- Keep IR immutable or effectively immutable after construction to support v.3 incremental compile fingerprints.
+- Keep IR immutable or effectively immutable after construction to support v3 incremental compile fingerprints.
 
 Required compile metrics:
 
@@ -672,12 +672,12 @@ Required compile metrics:
 
 ## Non-Goals
 
-The following are outside v.1 symbolic execution scope:
+The following are outside v1 symbolic execution scope:
 
 - arbitrary Python control-flow lowering into multiple dynamic DataFrame branches;
 - step method branching and merging;
 - aggregations, broad windows, grouping sets, rollups, cubes, and general-purpose deduplication;
-- higher-order array and map transforms unless separately accepted by a v.2 spec;
+- higher-order array and map transforms unless separately accepted by a v2 spec;
 - automatic fallback to hooks;
 - implicit UDF or Pandas UDF generation;
 - source-level PySpark expressions inside compiled step methods;

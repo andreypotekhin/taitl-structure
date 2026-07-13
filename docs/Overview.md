@@ -28,10 +28,10 @@ Define schemas. Define transforms. Run transforms.
 ### Example Schema
 
 ```python
-from structure import Structure, field, String, Decimal
+from structure import Schema, field, String, Decimal
 
 
-class OrderRaw(Structure):
+class OrderRaw(Schema):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
@@ -39,7 +39,7 @@ class OrderRaw(Structure):
     total = field(String(), nullable=True)
 
 
-class OrderNormalized(Structure):
+class OrderNormalized(Schema):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
@@ -52,13 +52,13 @@ class OrderWithCustomer(OrderNormalized):
     customer_tier = field(String(), nullable=True)
 
     
-class Customer(Structure):
+class Customer(Schema):
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=True)
     tier = field(String(), nullable=True)   
     
 
-class Product(Structure):
+class Product(Schema):
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=False)    
 ```
@@ -307,7 +307,7 @@ environments.
 
 Airflow can call online or generated transforms. It is not a Structure dependency.
 
-Ordinary PySpark is the default target. Spark Connect is a PySpark variant for completed v.1/v.2 batch features once
+Ordinary PySpark is the default target. Spark Connect is a PySpark variant for completed v1/v2 batch features once
 Sprint 09 support evidence is in place.
 
 See [Compatibility.md](Compatibility.md) for the full versioning and compatibility policy.
@@ -387,11 +387,11 @@ orchestration.
 - **Initial release:** online PySpark execution by default, optional generated PySpark classes, projection,
   filtering, joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow
   traceability, streaming-compatible transforms, diagnostic links, and setup checks.
-- **v.2:** mainstream analytical features: existence joins, `inner_join(...)`, broad rowset joins, deterministic lookup
+- **v2:** mainstream analytical features: existence joins, `inner_join(...)`, broad rowset joins, deterministic lookup
   dedupe, temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions
   ([Advanced analytical operations](reference/AdvancedAnalyticalOperations.md)),
   caching/persistence/repartition hints, richer explain output, generated docs, pytest helpers, and Spark Connect
-  support for completed v.1/v.2 batch features.
-- **v.3:** streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, output
+  support for completed v1/v2 batch features.
+- **v3:** streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, output
   modes, and stateful policies.
-- **v.4:** backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support claim.
+- **v4:** backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support claim.

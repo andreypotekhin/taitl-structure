@@ -150,7 +150,7 @@ narrower use cases and roadmap features.
 ## 10. Generated Code
 
 - + As a developer, I can use generated PySpark as an optional provenance and generated-mode artifact rather than as the
-  only v.1 runtime path.
+  only v1 runtime path.
 - + As a developer, I can inspect generated PySpark code so that transformation behavior is reviewable.
 - + As a developer, I can generate a class named after the source transform class so that source-to-generated mapping is obvious.
 - + As a developer, I can expect generated code to use PySpark DataFrame and Column operations so that Spark can optimize execution.
@@ -222,7 +222,7 @@ narrower use cases and roadmap features.
 - + As a developer, I can perform serial joins across an arbitrary number of inputs so that enrichment pipelines are not limited to three inputs.
 - + As a developer, I can specify join type and hints using enum values so that free-form join strings are avoided in source code.
 - + As a developer, I can see that semi, anti, row-multiplying, deduped lookup, temporal, and as-of joins are staged as
-  v.2 analytical join forms so that v.1 lookup semantics stay predictable.
+  v2 analytical join forms so that v1 lookup semantics stay predictable.
 
 ## 16. Hooks
 
@@ -241,8 +241,8 @@ narrower use cases and roadmap features.
 
 - + As a developer, I can pass a streaming DataFrame to generated transforms when operations are Spark streaming-compatible.
 - + As a developer, I can enable streaming compatibility checks so that unsupported streaming operations are caught early.
-- + As a developer, I can keep streaming lifecycle outside v.1/v.2 transform compatibility so that callers own
-  `readStream`, `writeStream`, triggers, checkpoints, and query execution until the v.3 orchestration contract is used.
+- + As a developer, I can keep streaming lifecycle outside v1/v2 transform compatibility so that callers own
+  `readStream`, `writeStream`, triggers, checkpoints, and query execution until the v3 orchestration contract is used.
 - + As a developer, I can declare streaming input modes and watermarks inside transform code so that stateful streaming
   transformations can be checked without Structure owning lifecycle.
 
@@ -305,24 +305,24 @@ narrower use cases and roadmap features.
 - + As a developer, I can run intentionally broken transform tests so that compiler diagnostics stay actionable.
 - + As a developer, I can assert warning diagnostics so that risky but compileable code remains visible in tests.
 
-## 22. v.2 Roadmap
+## 22. v2 Roadmap
 
-v.2 makes Structure useful for mainstream analytical batch pipelines. It extends the v.1 transform model without taking
+v2 makes Structure useful for mainstream analytical batch pipelines. It extends the v1 transform model without taking
 over streaming orchestration, storage writes, automatic cost-based optimization, or hidden UDF execution. Sprint 09 adds
 Spark Connect support for completed compiler-visible batch features and the full PySpark rowset join forms left out of
 the first analytical join slice.
 
-## 22A. v.2 Foundations
+## 22A. v2 Foundations
 
-- As a developer, I can see a published v.2 scope and non-goals so that I know which analytical features are safe to
+- As a developer, I can see a published v2 scope and non-goals so that I know which analytical features are safe to
   plan around.
-- As a developer, I can receive backend capability diagnostics for every v.2 operation so that unsupported PySpark target
+- As a developer, I can receive backend capability diagnostics for every v2 operation so that unsupported PySpark target
   combinations fail before runtime.
-- As a developer, I can inspect v.2 operation cardinality in explain output so that row-preserving, row-filtering,
+- As a developer, I can inspect v2 operation cardinality in explain output so that row-preserving, row-filtering,
   row-multiplying, and select-one behavior is visible.
-- As a developer, I can rely on online and generated execution using the same v.2 PySpark recipe layer so that supported
+- As a developer, I can rely on online and generated execution using the same v2 PySpark recipe layer so that supported
   analytical behavior cannot drift between runtime modes.
-- As a developer, I can keep caller-owned streaming lifecycle in v.2 so that existing streaming compatibility boundaries
+- As a developer, I can keep caller-owned streaming lifecycle in v2 so that existing streaming compatibility boundaries
   remain stable.
 
 ## 22B. Aggregations, Windows, and Higher-Order Functions
@@ -413,9 +413,9 @@ the first analytical join slice.
 
 ## 22E. StructureTools
 
-- + As a developer, I can generate Structure schema class source from a PySpark `StructType` or DataFrame schema so
+- + As a developer, I can generate Schema class source from a PySpark `StructType` or DataFrame schema so
   that existing Spark shapes can seed Structure schemas.
-- + As a developer, I can generate Structure schema class source from a parquet path, Delta path, or Spark table using
+- + As a developer, I can generate Schema class source from a parquet path, Delta path, or Spark table using
   a Spark session or existing `StructureSession` so that live data sources can seed Structure schemas.
 - + As a developer, I can use `structure tools schemas generate` in a Spark-available CLI runtime so that terminal
   workflows can produce the same schema source.
@@ -426,15 +426,15 @@ the first analytical join slice.
   operations fail early when under-specified.
 - As a developer, I can use more stream-stream join shapes when Structure can prove Spark-required watermarks,
   event-time constraints, and caller-owned output-mode requirements.
-- As a developer, I can use v.3 lifecycle orchestration so that admitted `readStream`, `writeStream`, triggers,
+- As a developer, I can use v3 lifecycle orchestration so that admitted `readStream`, `writeStream`, triggers,
   checkpoints, query lifecycle, deployment, and recovery policy become explicit Structure job configuration.
 - As a developer, I can use production incremental compilation so that large projects get fast local feedback after the
-  v.3 feature surface stabilizes.
+  v3 feature surface stabilizes.
 - As a developer, I can see cache invalidation diagnostics so that incremental compile never hides stale generated code.
 
 ## 24. Spark Connect Roadmap
 
-- + As a developer, I can target Spark Connect for completed v.1/v.2 batch features when Structure defines and tests a
+- + As a developer, I can target Spark Connect for completed v1/v2 batch features when Structure defines and tests a
   compatible generated-code contract.
 - As a developer, I can run completed batch transforms online through Spark Connect so that remote Spark execution uses
   the same StructureSession contract.

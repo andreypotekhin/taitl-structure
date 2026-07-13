@@ -34,5 +34,5 @@ class CheckStructureProject:
             return ()
         return (
             f"  compatibility targets: {', '.join(targets)}",
-            "  compatibility status: non-PySpark target checks are reserved for v.2+; active PySpark checks passed",
+            "  compatibility status: non-PySpark target checks are reserved for v2+; active PySpark checks passed",
         )

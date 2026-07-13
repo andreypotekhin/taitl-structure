@@ -342,14 +342,14 @@
       "kind": "class",
       "module": "structure.app.dsl.model.types.Struct",
       "qualname": "Struct",
-      "signature": "(schema: type[structure.app.dsl.model.schemas.Structure.Structure]) -> None"
+      "signature": "(schema: type[structure.app.dsl.model.schemas.Schema.Schema]) -> None"
     },
-    "Structure": {
+    "Schema": {
       "dataclass_fields": [],
       "enum_members": [],
       "kind": "class",
-      "module": "structure.app.dsl.model.schemas.Structure",
-      "qualname": "Structure",
+      "module": "structure.app.dsl.model.schemas.Schema",
+      "qualname": "Schema",
       "signature": "(**values: 'object') -> 'None'"
     },
     "StructureCompileError": {
@@ -807,7 +807,7 @@
       "dataclass_fields": [],
       "enum_members": [],
       "kind": "function",
-      "module": "structure.app.dsl.model.schemas.schema",
+      "module": "structure.app.dsl.model.schemas.schema_api",
       "qualname": "field",
       "signature": "(type: 'StructureType', *, nullable: 'bool' = True, primary_key: 'bool' = False, alias: 'str | None' = None, metadata: 'Mapping[str, object] | None' = None, description: 'str | None' = None) -> 'FieldDeclaration'"
     },
@@ -897,7 +897,7 @@
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "input",
-      "signature": "(value: 'type[Structure] | InputDeclaration', *, streaming: 'StreamingMode' = <StreamingMode.NO: 'no'>) -> 'InputDeclaration | BindingSelector'"
+      "signature": "(value: 'type[Schema] | InputDeclaration', *, streaming: 'StreamingMode' = <StreamingMode.NO: 'no'>) -> 'InputDeclaration | BindingSelector'"
     },
     "instr": {
       "dataclass_fields": [],
@@ -953,7 +953,7 @@
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "lane",
-      "signature": "(value: 'type[Structure] | SelectedDeclaration') -> 'LaneDeclaration | BindingSelector'"
+      "signature": "(value: 'type[Schema] | SelectedDeclaration') -> 'LaneDeclaration | BindingSelector'"
     },
     "last_value": {
       "dataclass_fields": [],
@@ -1129,7 +1129,7 @@
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "output",
-      "signature": "(value: 'type[Structure] | OutputDeclaration') -> 'OutputDeclaration | BindingSelector'"
+      "signature": "(value: 'type[Schema] | OutputDeclaration') -> 'OutputDeclaration | BindingSelector'"
     },
     "percent_rank": {
       "dataclass_fields": [],
@@ -1153,7 +1153,7 @@
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "project",
-      "signature": "(source: 'object | None' = None, target: 'type[Structure] | Iterable[str] | None' = None) -> 'object'"
+      "signature": "(source: 'object | None' = None, target: 'type[Schema] | Iterable[str] | None' = None) -> 'object'"
     },
     "range_between": {
       "dataclass_fields": [],

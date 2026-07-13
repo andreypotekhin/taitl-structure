@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 
 from structure import StructureSession
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.target.pyspark.api import PySpark
 
@@ -95,7 +95,7 @@ def render_generated_project(
     *,
     source_transform: str,
     generated_package: str,
-    source_schema_modules: Mapping[str, Sequence[type[Structure]]],
+    source_schema_modules: Mapping[str, Sequence[type[Schema]]],
 ) -> dict[str, str]:
     artifact = transform_type.compile(generated_package=generated_package, target_variant=target_variant())
     return PySpark.render.project()(

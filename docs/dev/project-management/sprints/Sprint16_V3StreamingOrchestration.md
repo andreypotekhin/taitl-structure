@@ -1,4 +1,4 @@
-# Sprint 16: v.3 Streaming Orchestration
+# Sprint 16: v3 Streaming Orchestration
 
 ## Sprint Goal
 
@@ -54,4 +54,4 @@ configure triggers, checkpoints, output modes, watermarks, and admitted state po
 
 ## Progress
 
-- [ ] Implement v.3 streaming orchestration.
+- [ ] Implement v3 streaming orchestration.

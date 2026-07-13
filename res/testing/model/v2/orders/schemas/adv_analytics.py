@@ -1,7 +1,7 @@
-from structure import Array, Boolean, Date, Decimal, Double, Integer, Long, Map, String, Structure, field
+from structure import Array, Boolean, Date, Decimal, Double, Integer, Long, Map, String, Schema, field
 
 
-class OrderRevenueRollup(Structure):
+class OrderRevenueRollup(Schema):
     tenant_id = field(String(), nullable=True)
     product_category = field(String(), nullable=True)
     order_date = field(Date(), nullable=True)
@@ -25,7 +25,7 @@ class OrderRevenueRollup(Structure):
     order_ids = field(Array(String(), contains_null=False), nullable=True)
 
 
-class OrderProductCube(Structure):
+class OrderProductCube(Schema):
     tenant_id = field(String(), nullable=True)
     product_category = field(String(), nullable=True)
     customer_tier = field(String(), nullable=True)
@@ -35,7 +35,7 @@ class OrderProductCube(Structure):
     gross_total = field(Decimal(12, 2), nullable=False)
 
 
-class OrderCustomerWindow(Structure):
+class OrderCustomerWindow(Schema):
     tenant_id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     order_id = field(String(), nullable=False)
@@ -53,7 +53,7 @@ class OrderCustomerWindow(Structure):
     running_order_count = field(Long(), nullable=False)
 
 
-class OrderCollectionSource(Structure):
+class OrderCollectionSource(Schema):
     id = field(String(), nullable=False)
     tags = field(Array(String(), contains_null=False), nullable=True)
     nested_tags = field(Array(Array(String(), contains_null=False), contains_null=False), nullable=True)
@@ -61,7 +61,7 @@ class OrderCollectionSource(Structure):
     attributes = field(Map(String(), String()), nullable=True)
 
 
-class OrderCollectionProfile(Structure):
+class OrderCollectionProfile(Schema):
     id = field(String(), nullable=False)
     normalized_tags = field(Array(String(), contains_null=True), nullable=True)
     sorted_tags = field(Array(String(), contains_null=False), nullable=True)

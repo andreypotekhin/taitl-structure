@@ -6,13 +6,13 @@ Structure is an IR-first data pipeline library. Developers write typed, schema-r
 Structure runs them online by default through `StructureSession`, and can also emit generated PySpark classes using
 DataFrame and Column operations so Spark can optimize execution.
 
-The north star is deliberately strict: v.1 first proves one useful executable transform running both online and as
+The north star is deliberately strict: v1 first proves one useful executable transform running both online and as
 generated PySpark, then broadens into the contract that lets Structure replace hand-maintained PySpark boilerplate
-with a strict online runtime and optional generated-code workflow. v.2 makes that workflow useful for mainstream
+with a strict online runtime and optional generated-code workflow. v2 makes that workflow useful for mainstream
 analytical pipelines.
-v.3 takes ownership of streaming lifecycle concerns only after the transform compiler has earned trust. Sprint 09 moves
+v3 takes ownership of streaming lifecycle concerns only after the transform compiler has earned trust. Sprint 09 moves
 Spark Connect from experimental parity to supported status for completed batch features and completes the static
-caller-owned streaming compatibility contract; live streaming runtime evidence remains a v.3 entry gate. v.4 remains
+caller-owned streaming compatibility contract; live streaming runtime evidence remains a v3 entry gate. v4 remains
 available for non-batch Connect hardening and broader backend expansion.
 
 The project should prioritize:
@@ -41,7 +41,7 @@ Required spikes:
 - Prove shared PySpark execution recipes for projection-only online/generated parity.
 - Prove compiler checks and compile can run without PySpark, Java, SparkSession, Spark startup, or a Spark cluster.
 - Prove a minimal generated PySpark execution test with local Spark.
-- Document and wire the v.1 compatibility policy before packaging decisions harden.
+- Document and wire the v1 compatibility policy before packaging decisions harden.
 
 By default, Structure should use `src` when it contains importable packages and otherwise use the project root.
 Generated code should live under `generated/structure_generated` and mirror source package paths below that
@@ -49,7 +49,7 @@ namespace. Other layouts remain configurable.
 
 ## Sprint 01 Scope
 
-Sprint 01 proves the first executable v.1 contract. It gives the team a narrow runnable path before the larger v.1 scope
+Sprint 01 proves the first executable v1 contract. It gives the team a narrow runnable path before the larger v1 scope
 hardens.
 
 ### Sprint 01 must include
@@ -58,11 +58,11 @@ hardens.
 - `input(Structure)` declaration for one named input.
 - `StructureSession`.
 - Builder-style transform invocation.
-- Online PySpark runner for the first v.1 fixture.
+- Online PySpark runner for the first v1 fixture.
 - Shared PySpark execution semantic contract for online/generated parity.
 - One public schema-returning method.
 - One generated PySpark class and convenience function.
-- Spark `StructType` generation for the first v.1 schemas.
+- Spark `StructType` generation for the first v1 schemas.
 - Runtime input `assert_schema(...)`.
 - Symbolic field references.
 - Projection.
@@ -81,12 +81,12 @@ hardens.
 - build integration such as `compile --fail-on-diff`;
 - production incremental compile hooks.
 
-## v.1 Scope
+## v1 Scope
 
-v.1 focuses on schema-driven online execution, projection, filtering, joins, hooks, optional generated PySpark classes,
+v1 focuses on schema-driven online execution, projection, filtering, joins, hooks, optional generated PySpark classes,
 validation, compiler provenance, static dataflow traceability, and build integration.
 
-### v.1 must include
+### v1 must include
 
 - `@transform` class discovery.
 - `input(Structure)` declarations.
@@ -124,14 +124,14 @@ validation, compiler provenance, static dataflow traceability, and build integra
   validation, and compileability issues.
 - A `structure doctor` command or equivalent setup/configuration check.
 
-## v.2 Scope
+## v2 Scope
 
-v.2 makes Structure useful for mainstream analytical batch pipelines after the v.1 compiler contract is stable. The
+v2 makes Structure useful for mainstream analytical batch pipelines after the v1 compiler contract is stable. The
 release broadens the IR, shared PySpark recipe layer, online runner, generated emitter, diagnostics, and tests without
 changing the core authoring model: developers still write schema-returning transform methods, Structure still keeps
 supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
 
-### v.2 release pillars
+### v2 release pillars
 
 - **Analytical transforms:** typed `group_by(...)`, first-slice aggregations, selected-row helpers, deduplication,
   ranking, lag/lead, rolling metrics, compiler-visible Spark higher-order functions for arrays and maps, and advanced
@@ -147,25 +147,25 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
   composed hook boundaries, and explicit decisions on earlier-stage output exposure and mixed wrapper-local logic.
 - **Adoption and scale tooling:** generated documentation artifacts for schemas and transforms, pytest helpers,
   generated-code freshness checks, snapshots, and richer generated-code explain reports move through Sprint 10.
-  Production incremental compilation with cache diagnostics moves to end-of-v.3 after the v.3 feature surface stabilizes.
+  Production incremental compilation with cache diagnostics moves to end-of-v3 after the v3 feature surface stabilizes.
 
-### v.2 non-goals
+### v2 non-goals
 
-- Full streaming orchestration. v.2 supports only caller-owned streaming DataFrames in the first streaming slice and
+- Full streaming orchestration. v2 supports only caller-owned streaming DataFrames in the first streaming slice and
   maintains compatibility classification for everything else.
 - Spark Connect streaming orchestration or storage write ownership. Sprint 09 owns batch support promotion only.
 - Automatic cost-based optimization, join reordering, or storage write planning.
 - Hidden UDF lowering or arbitrary Python execution in compiled paths.
 - Using `lane(...)` as a transform-composition matching boundary.
 
-## v.3 Scope
+## v3 Scope
 
-v.3 closes the planned PySpark parity gaps tracked in [Gaps.md](../Gaps.md), then introduces streaming orchestration.
-v.1/v.2 support compiler-visible batch features, Spark Connect batch execution for completed features, and static
-caller-owned streaming compatibility. v.3 starts by broadening the typed symbolic surface so streaming diagnostics and
+v3 closes the planned PySpark parity gaps tracked in [Gaps.md](../Gaps.md), then introduces streaming orchestration.
+v1/v2 support compiler-visible batch features, Spark Connect batch execution for completed features, and static
+caller-owned streaming compatibility. v3 starts by broadening the typed symbolic surface so streaming diagnostics and
 generated lifecycle code can rely on a complete enough PySpark-family contract.
 
-### v.3 beginning-of-release sequence
+### v3 beginning-of-release sequence
 
 - Sprint 11: DSL and SQL function PySpark parity.
 - Sprint 12: join PySpark parity hardening.
@@ -175,7 +175,7 @@ generated lifecycle code can rely on a complete enough PySpark-family contract.
 - Sprint 16: streaming orchestration.
 - Sprint 17: incremental compile and cache diagnostics.
 
-### v.3 must include
+### v3 must include
 
 - Planned Column API and SQL function gaps from [Gaps.md](../Gaps.md).
 - Using-key joins, right/full diagnostics hardening, cross join safety, supported join strategy directives, and forward
@@ -191,7 +191,7 @@ generated lifecycle code can rely on a complete enough PySpark-family contract.
 - Production incremental compile with `compile --changed-only`, cache invalidation, cache diagnostics, and warm compile
   performance fixtures.
 
-### v.3 non-goals
+### v3 non-goals
 
 - Wholesale PySpark wrapper behavior.
 - Raw SQL expressions, raw PySpark `WindowSpec`, UDF/UDTF symbolic helpers, and arbitrary Python callbacks.
@@ -200,13 +200,13 @@ generated lifecycle code can rely on a complete enough PySpark-family contract.
 - Row-expanding generator helpers unless a separate cardinality design admits them.
 - Custom streaming side-effect sinks such as `foreachBatch`.
 
-## v.4 Scope
+## v4 Scope
 
-v.4 handles backend expansion after the completed PySpark-family batch contract is stable. Spark Connect may continue
+v4 handles backend expansion after the completed PySpark-family batch contract is stable. Spark Connect may continue
 there only for non-batch coverage, expanded operational hardening, or gaps that Sprint 09 explicitly records as outside
 the supported batch surface.
 
-### v.4 candidate features
+### v4 candidate features
 
 - Ibis or other meta-backend exploration.
 - Expanded Spark Connect streaming, storage-write, or operational hardening if needed.
@@ -223,7 +223,7 @@ the supported batch surface.
 | M3 | Practical expression DSL and diagnostics | Sprint 03 |
 | M4 | Hook model and no-hook generated-code cleanliness | Sprint 04 |
 | M5 | Joins, compiler traceability, build integration | Sprint 05 |
-| M6 | v.1 stabilization and docs/examples | follow-up hardening sprint |
-| M7 | v.2 analytical pipeline features, analytical join coverage, composition maturity, adoption tooling, and Spark Connect batch support | Sprints 06-09 |
-| M8 | v.3 PySpark gap closure and streaming orchestration | Sprints 11-16 |
-| M9 | v.4 backend expansion and non-batch Spark Connect hardening | future v.4 sprints |
+| M6 | v1 stabilization and docs/examples | follow-up hardening sprint |
+| M7 | v2 analytical pipeline features, analytical join coverage, composition maturity, adoption tooling, and Spark Connect batch support | Sprints 06-09 |
+| M8 | v3 PySpark gap closure and streaming orchestration | Sprints 11-16 |
+| M9 | v4 backend expansion and non-batch Spark Connect hardening | future v4 sprints |

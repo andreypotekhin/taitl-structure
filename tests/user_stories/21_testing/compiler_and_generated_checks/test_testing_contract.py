@@ -2,7 +2,7 @@ import ast
 
 import pytest
 
-from structure import String, Structure, StructureCompileError, Transform, field, input, output, transform
+from structure import Schema, String, StructureCompileError, Transform, field, input, output, transform
 from structure.app.dsl.api import compile_transform
 
 
@@ -30,10 +30,10 @@ def test_generated_code_can_be_syntax_checked_without_spark_runtime(orders_trans
 def test_intentionally_broken_transform_tests_keep_diagnostics_actionable() -> None:
     """I can run intentionally broken transform tests so compiler diagnostics stay actionable."""
 
-    class Raw(Structure):
+    class Raw(Schema):
         id = field(String(), nullable=False)
 
-    class Published(Structure):
+    class Published(Schema):
         id = field(String(), nullable=False)
         status = field(String(), nullable=False)
 

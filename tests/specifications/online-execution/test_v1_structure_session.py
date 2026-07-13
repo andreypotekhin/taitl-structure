@@ -333,17 +333,17 @@ def test_v1_compiled_artifact_does_not_capture_bound_inputs() -> None:
 
 
 def test_v1_pipeline_reuses_shared_compiled_artifact(monkeypatch) -> None:
-    from structure import String, Structure, Transform, field, input, output, transform
+    from structure import Schema, String, Transform, field, input, output, transform
     from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
     from structure.app.dsl.model.transforms.TransformPipeline import TransformPipeline
 
-    class Raw(Structure):
+    class Raw(Schema):
         id = field(String(), nullable=False)
 
-    class Normalized(Structure):
+    class Normalized(Schema):
         id = field(String(), nullable=False)
 
-    class Published(Structure):
+    class Published(Schema):
         id = field(String(), nullable=False)
 
     @transform

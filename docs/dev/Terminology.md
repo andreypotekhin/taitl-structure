@@ -46,7 +46,7 @@ class EnrichOrders(Transform):
 
 ### Schema
 
-A schema is a `Structure` subclass that describes a row contract: field names, order, types, nullability, inheritance, and Structure metadata such as primary keys.
+A schema is a `Schema` class that describes a row contract: field names, order, types, nullability, inheritance, and Structure metadata such as primary keys.
 
 Schemas are used for input rows, intermediate rows, and output rows. 
 
@@ -55,7 +55,7 @@ A schema is not a Spark DataFrame and does not contain data.
 Example:
 
 ```python
-class OrderRaw(Structure):
+class OrderRaw(Schema):
     id = field(String(), nullable=False, primary_key=True)
     customer_id = field(String(), nullable=True)
     total = field(Decimal(12, 2), nullable=True)
@@ -188,7 +188,7 @@ where(to_decimal(order.total, precision=12, scale=2) >= 0)
 
 ### Join
 
-A join is a symbolic relationship between the current row and a declared input. In v.1, the main supported form is `lookup_join(...)`, which represents a lookup-style join.
+A join is a symbolic relationship between the current row and a declared input. In v1, the main supported form is `lookup_join(...)`, which represents a lookup-style join.
 
 A join creates a joined scope. Fields from that scope can be used in later filters or in the returned output schema.
 
@@ -282,7 +282,7 @@ order.id  # FieldRef(scope="order", field="id")
 
 ### Input Scope
 
-An input scope represents a declared transform input during symbolic execution. It is accessible through `self.<input>` and is the source for `lookup_join(...)` in v.1.
+An input scope represents a declared transform input during symbolic execution. It is accessible through `self.<input>` and is the source for `lookup_join(...)` in v1.
 
 Input scopes are not DataFrames and do not expose a live DataFrame API.
 
@@ -451,7 +451,7 @@ Hook boundaries are marked opaque.
 
 ### Capability Metadata
 
-Capability metadata records target backend and version information used by backend capability checks. For v.1, the main
+Capability metadata records target backend and version information used by backend capability checks. For v1, the main
 target is PySpark.
 
 Capability checks happen before online execution or code generation so unsupported operations fail early.

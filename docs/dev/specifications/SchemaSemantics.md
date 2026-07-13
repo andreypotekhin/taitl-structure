@@ -29,10 +29,10 @@ artifacts.
 
 ## Canonical Declaration
 
-The canonical v.1 declaration form is:
+The canonical v1 declaration form is:
 
 ```python
-class OrderRaw(Structure):
+class OrderRaw(Schema):
     id = field(String(), nullable=False, primary_key=True)
     customer_id = field(String(), nullable=False)
     total = field(String(), nullable=True)
@@ -87,7 +87,7 @@ Rules:
 
 ## Type Semantics
 
-v.1 schema types:
+v1 schema types:
 
 ```text
 String()

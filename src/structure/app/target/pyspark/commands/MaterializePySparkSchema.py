@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from structure.app.dsl.model.schemas.FieldDefinition import FieldDefinition
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.BooleanType import BooleanType
 from structure.app.dsl.model.types.DateType import DateType
@@ -19,7 +19,7 @@ from structure.app.dsl.model.types.TimestampType import TimestampType
 
 class MaterializePySparkSchema:
 
-    def __call__(self, schema: type[Structure], *, types=None):
+    def __call__(self, schema: type[Schema], *, types=None):
         spark_types = types or self._spark_types()
         return spark_types.StructType(
             [self.field(field, types=spark_types) for field in schema._structure_fields.values()]

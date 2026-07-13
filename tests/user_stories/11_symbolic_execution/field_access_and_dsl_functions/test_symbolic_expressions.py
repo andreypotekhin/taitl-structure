@@ -53,10 +53,10 @@ def test_dsl_functions_produce_nested_symbolic_expressions(orders_plan) -> None:
 def test_alias_field_access_uses_spark_column_and_preserves_python_name() -> None:
     """Aliased fields keep Python names while referencing Spark columns."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         promotion_code = structure.field(structure.String(), nullable=True, alias="promo-code")
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         promotion_code = structure.field(structure.String(), nullable=True)
 
     @structure.transform
@@ -83,10 +83,10 @@ def test_alias_field_access_uses_spark_column_and_preserves_python_name() -> Non
 def test_unsupported_python_control_flow_is_rejected() -> None:
     """I can have unsupported Python operations rejected."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         id = structure.field(structure.String(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         id = structure.field(structure.String(), nullable=False)
 
     @structure.transform
@@ -109,7 +109,7 @@ def test_unsupported_python_control_flow_is_rejected() -> None:
 def test_plain_python_expression_extensions_are_symbolic() -> None:
     """I can use common Python expression forms for compiler-visible derived fields."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         customer_id = structure.field(structure.String(), nullable=False)
         status = structure.field(structure.String(), nullable=True)
         total = structure.field(structure.Integer(), nullable=False)
@@ -117,7 +117,7 @@ def test_plain_python_expression_extensions_are_symbolic() -> None:
         price = structure.field(structure.Integer(), nullable=False)
         quantity = structure.field(structure.Integer(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         customer_id = structure.field(structure.String(), nullable=False)
         size_tier = structure.field(structure.String(), nullable=False)
         is_big = structure.field(structure.Boolean(), nullable=False)
@@ -167,10 +167,10 @@ def test_plain_python_expression_extensions_are_symbolic() -> None:
 def test_where_requires_boolean_expression() -> None:
     """Filters reject non-boolean expressions before target lowering."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         total = structure.field(structure.Integer(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         total = structure.field(structure.Integer(), nullable=False)
 
     @structure.transform
@@ -192,10 +192,10 @@ def test_where_requires_boolean_expression() -> None:
 def test_variadic_where_records_the_same_order_as_serial_where_calls() -> None:
     """I can pass serial filter predicates to one where(...) call."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         id = structure.field(structure.String(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         id = structure.field(structure.String(), nullable=False)
 
     @structure.transform
@@ -216,10 +216,10 @@ def test_variadic_where_records_the_same_order_as_serial_where_calls() -> None:
 def test_membership_predicates_require_values() -> None:
     """Membership predicates need at least one candidate value."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         status = structure.field(structure.String(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         known = structure.field(structure.Boolean(), nullable=False)
 
     @structure.transform
@@ -240,10 +240,10 @@ def test_membership_predicates_require_values() -> None:
 def test_string_predicates_are_typed_symbolic_expressions() -> None:
     """I can express string matching without a raw SQL expression."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         status = structure.field(structure.String(), nullable=True)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         has_new = structure.field(structure.Boolean(), nullable=True)
         is_new = structure.field(structure.Boolean(), nullable=True)
         is_new_case_insensitive = structure.field(structure.Boolean(), nullable=True)
@@ -278,10 +278,10 @@ def test_string_predicates_are_typed_symbolic_expressions() -> None:
 def test_string_predicates_require_string_expressions() -> None:
     """I get a compile diagnostic instead of a Spark type error for invalid string matching."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         count = structure.field(structure.Integer(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         matched = structure.field(structure.Boolean(), nullable=False)
 
     @structure.transform
@@ -302,13 +302,13 @@ def test_string_predicates_require_string_expressions() -> None:
 def test_collection_indexing_is_typed_and_symbolic() -> None:
     """I can read an array item or map value without dropping into a raw hook."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=False)
         attributes = structure.field(
             structure.Map(structure.String(), structure.String(), value_contains_null=False), nullable=False
         )
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         first_tag = structure.field(structure.String(), nullable=True)
         region = structure.field(structure.String(), nullable=True)
 
@@ -335,10 +335,10 @@ def test_collection_indexing_is_typed_and_symbolic() -> None:
 def test_collection_indexing_requires_a_matching_collection_and_key_type() -> None:
     """I get compile diagnostics for invalid collection indexing instead of a Spark runtime error."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         status = structure.field(structure.String(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         value = structure.field(structure.String(), nullable=True)
 
     @structure.transform
@@ -359,11 +359,11 @@ def test_collection_indexing_requires_a_matching_collection_and_key_type() -> No
 def test_scalar_casts_are_typed_symbolic_expressions() -> None:
     """I can cast a value without hiding its target type in a raw hook."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         raw_count = structure.field(structure.String(), nullable=True)
         count = structure.field(structure.Integer(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         count = structure.field(structure.Integer(), nullable=True)
         count_text = structure.field(structure.String(), nullable=False)
         try_count = structure.field(structure.Integer(), nullable=True)
@@ -405,10 +405,10 @@ def test_scalar_casts_are_typed_symbolic_expressions() -> None:
 def test_scalar_casts_require_structure_scalar_types() -> None:
     """I get a compile diagnostic for an opaque cast target."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         raw_count = structure.field(structure.String(), nullable=True)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         count = structure.field(structure.Integer(), nullable=True)
 
     @structure.transform
@@ -429,10 +429,10 @@ def test_scalar_casts_require_structure_scalar_types() -> None:
 def test_string_sql_helpers_are_typed_symbolic_expressions() -> None:
     """I can keep common string shaping and parsing visible to the compiler."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         label = structure.field(structure.String(), nullable=True)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         prefix = structure.field(structure.String(), nullable=True)
         parts = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
         normalized = structure.field(structure.String(), nullable=True)
@@ -487,10 +487,10 @@ def test_string_sql_helpers_are_typed_symbolic_expressions() -> None:
 def test_string_sql_helpers_reject_opaque_patterns_and_non_string_inputs() -> None:
     """I get compile diagnostics before an invalid SQL helper reaches Spark."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         count = structure.field(structure.Integer(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         value = structure.field(structure.String(), nullable=True)
 
     @structure.transform
@@ -511,10 +511,10 @@ def test_string_sql_helpers_reject_opaque_patterns_and_non_string_inputs() -> No
 def test_concat_ws_requires_string_values() -> None:
     """I get a compile diagnostic before invalid concatenation reaches Spark."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         count = structure.field(structure.Integer(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         value = structure.field(structure.String(), nullable=False)
 
     @structure.transform
@@ -535,10 +535,10 @@ def test_concat_ws_requires_string_values() -> None:
 def test_regexp_extract_requires_a_non_negative_group() -> None:
     """I get a compile diagnostic for an invalid capture-group index."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         label = structure.field(structure.String(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         value = structure.field(structure.String(), nullable=False)
 
     @structure.transform
@@ -559,12 +559,12 @@ def test_regexp_extract_requires_a_non_negative_group() -> None:
 def test_temporal_sql_helpers_are_typed_symbolic_expressions() -> None:
     """I can derive dates and time buckets without a raw PySpark hook."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         start_date = structure.field(structure.Date(), nullable=False)
         end_date = structure.field(structure.Date(), nullable=True)
         recorded_at = structure.field(structure.Timestamp(), nullable=True)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         due_date = structure.field(structure.Date(), nullable=False)
         elapsed_days = structure.field(structure.Integer(), nullable=True)
         month = structure.field(structure.Timestamp(), nullable=True)
@@ -595,10 +595,10 @@ def test_temporal_sql_helpers_are_typed_symbolic_expressions() -> None:
 def test_temporal_sql_helpers_require_date_or_timestamp_inputs() -> None:
     """I get a compile diagnostic before an invalid temporal helper reaches Spark."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         count = structure.field(structure.Integer(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         due_date = structure.field(structure.Date(), nullable=False)
 
     @structure.transform
@@ -619,10 +619,10 @@ def test_temporal_sql_helpers_require_date_or_timestamp_inputs() -> None:
 def test_numeric_sql_helpers_are_typed_symbolic_expressions() -> None:
     """I can apply deterministic numeric rounding without a raw PySpark hook."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         amount = structure.field(structure.Decimal(precision=12, scale=2), nullable=True)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         absolute_amount = structure.field(structure.Decimal(precision=12, scale=2), nullable=True)
         rounded_amount = structure.field(structure.Decimal(precision=12, scale=2), nullable=True)
         ceiling = structure.field(structure.Decimal(precision=11, scale=0), nullable=True)
@@ -656,10 +656,10 @@ def test_numeric_sql_helpers_are_typed_symbolic_expressions() -> None:
 def test_numeric_sql_helpers_require_numeric_inputs() -> None:
     """I get a compile diagnostic instead of a Spark type error for an invalid numeric helper."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         label = structure.field(structure.String(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         value = structure.field(structure.Decimal(precision=11, scale=0), nullable=False)
 
     @structure.transform
@@ -680,11 +680,11 @@ def test_numeric_sql_helpers_require_numeric_inputs() -> None:
 def test_predicate_sql_helpers_are_typed_symbolic_expressions() -> None:
     """I can use function-style null and NaN checks in compiler-visible predicates."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         label = structure.field(structure.String(), nullable=True)
         score = structure.field(structure.Double(), nullable=True)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         missing_label = structure.field(structure.Boolean(), nullable=False)
         present_label = structure.field(structure.Boolean(), nullable=False)
         invalid_score = structure.field(structure.Boolean(), nullable=False)
@@ -715,10 +715,10 @@ def test_predicate_sql_helpers_are_typed_symbolic_expressions() -> None:
 def test_isnan_requires_a_floating_point_expression() -> None:
     """I get a compile diagnostic when NaN cannot exist in the source type."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         count = structure.field(structure.Integer(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         invalid = structure.field(structure.Boolean(), nullable=False)
 
     @structure.transform
@@ -739,13 +739,13 @@ def test_isnan_requires_a_floating_point_expression() -> None:
 def test_struct_get_field_is_a_typed_symbolic_expression() -> None:
     """I can read a Struct field by its declared name without a raw Column escape hatch."""
 
-    class Address(structure.Structure):
+    class Address(structure.Schema):
         city = structure.field(structure.String(), nullable=False, alias="city-name")
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         address = structure.field(structure.Struct(Address), nullable=True)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         city = structure.field(structure.String(), nullable=True)
 
     @structure.transform
@@ -767,13 +767,13 @@ def test_struct_get_field_is_a_typed_symbolic_expression() -> None:
 def test_struct_get_field_rejects_unknown_fields() -> None:
     """I get a compiler diagnostic when a declared Struct does not contain the requested field."""
 
-    class Address(structure.Structure):
+    class Address(structure.Schema):
         city = structure.field(structure.String(), nullable=False)
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         address = structure.field(structure.Struct(Address), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         city = structure.field(structure.String(), nullable=True)
 
     @structure.transform
@@ -794,14 +794,14 @@ def test_struct_get_field_rejects_unknown_fields() -> None:
 def test_lookup_join_requires_boolean_expression() -> None:
     """Join predicates reject non-boolean expressions before target lowering."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         id = structure.field(structure.String(), nullable=False)
         total = structure.field(structure.Integer(), nullable=False)
 
-    class Lookup(structure.Structure):
+    class Lookup(structure.Schema):
         id = structure.field(structure.String(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         id = structure.field(structure.String(), nullable=False)
 
     @structure.transform
@@ -824,10 +824,10 @@ def test_lookup_join_requires_boolean_expression() -> None:
 def test_bare_when_requires_otherwise() -> None:
     """A conditional expression is complete only after otherwise(...)."""
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         total = structure.field(structure.Integer(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         size_tier = structure.field(structure.String(), nullable=False)
 
     @structure.transform

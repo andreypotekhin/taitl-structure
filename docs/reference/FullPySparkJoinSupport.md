@@ -4,6 +4,8 @@ Full PySpark join support covers joins beyond lookup enrichment: right outer joi
 joins, non-equi predicates, disjunctive predicates, and join strategy directives. Use it when the output is naturally a
 joined rowset rather than one current row enriched with one right-side scope.
 
+See the exhaustive [joins API table](../api/Joins.api.md) for supported function names, PySpark parity, and examples.
+
 The narrower join helpers remain preferred for common cases:
 
 - use `lookup_join(...)` for zero-or-one lookup enrichment;

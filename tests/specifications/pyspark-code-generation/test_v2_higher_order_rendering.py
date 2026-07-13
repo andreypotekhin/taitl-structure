@@ -4,31 +4,31 @@ from structure.app.target.pyspark.api import PySpark
 from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
 
 
-class RawTags(structure.Structure):
+class RawTags(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
 
 
-class CleanTags(structure.Structure):
+class CleanTags(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
 
 
-class TagSummary(structure.Structure):
+class TagSummary(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     has_priority = structure.field(structure.Boolean(), nullable=True)
     tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
     position = structure.field(structure.Long(), nullable=True)
 
 
-class RawAttributes(structure.Structure):
+class RawAttributes(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     attributes = structure.field(
         structure.Map(structure.String(), structure.String(), value_contains_null=True), nullable=True
     )
 
 
-class CleanAttributes(structure.Structure):
+class CleanAttributes(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     attributes = structure.field(
         structure.Map(structure.String(), structure.String(), value_contains_null=False), nullable=True

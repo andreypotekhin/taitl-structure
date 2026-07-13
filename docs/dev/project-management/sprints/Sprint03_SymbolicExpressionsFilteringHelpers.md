@@ -108,8 +108,8 @@ df = orders.where(
 
 ## Progress
 
-- [x] (2026-06-21) Common v.1 expression recipes, filtering, `@special(type="expr")` helpers, schema base overlay projection, and
-  generated PySpark expression rendering are implemented for the v.1 fixture.
+- [x] (2026-06-21) Common v1 expression recipes, filtering, `@special(type="expr")` helpers, schema base overlay projection, and
+  generated PySpark expression rendering are implemented for the v1 fixture.
 - [x] (2026-06-21) Shared diagnostic registry, renderer, docs anchors, and representative config/backend/runtime/CLI
   diagnostic routing are implemented under `structure.lib.cross.errors`.
 - [x] (2026-06-23) Unsupported Python operation traps and representative `DSL-E0401` compiler diagnostics are covered

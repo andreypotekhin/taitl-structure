@@ -8,7 +8,7 @@ from pathlib import Path
 from structure.app.compiler.artifacts.model.ArtifactDependency import ArtifactDependency
 from structure.app.compiler.artifacts.model.ArtifactManifest import ArtifactManifest
 from structure.app.compiler.artifacts.model.CompilerOptions import CompilerOptions
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.transforms.TransformPipeline import TransformPipeline
 
@@ -65,7 +65,7 @@ class BuildArtifactManifest:
         return {
             self._dependency("schema", schema, project_root=project_root)
             for schema in schemas
-            if isinstance(schema, type) and issubclass(schema, Structure)
+            if isinstance(schema, type) and issubclass(schema, Schema)
         }
 
     def _dependency(self, kind: str, value: type, *, project_root: Path) -> ArtifactDependency:

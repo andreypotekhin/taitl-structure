@@ -2,7 +2,7 @@
 
 ## Sprint Goal
 
-Add compiler-visible v.2 join forms for common analytical pipelines while preserving the strict v.1 `lookup_join(...)`
+Add compiler-visible v2 join forms for common analytical pipelines while preserving the strict v1 `lookup_join(...)`
 contract.
 
 ## Product Outcome
@@ -24,7 +24,7 @@ joins in Structure source instead of hiding common join logic in hooks.
 - Shared PySpark recipes consumed by online and generated execution.
 - Static traceability and `structure explain` output for analytical joins.
 - Online/generated parity tests for every supported form.
-- Streaming compatibility classification for v.2 stream-static forms.
+- Streaming compatibility classification for v2 stream-static forms.
 
 ### Out of Scope
 
@@ -86,7 +86,7 @@ def with_items(self, order: OrderNormalized) -> OrderItemFact:
   rendering and online execution.
 - [x] (2026-07-01) Added focused no-Spark coverage for IR metadata, generated rendering, online recipe execution,
   capability support, and the no-right-field-read guardrail.
-- [x] (2026-07-01) Extended v.2 model fixtures and examples with product-existence and blocked-product anti-existence
+- [x] (2026-07-01) Extended v2 model fixtures and examples with product-existence and blocked-product anti-existence
   filters.
 - [x] (2026-07-01) Implemented `inner_join(...)` as a row-multiplying `JoinPlan`, lowered it through shared PySpark
   recipes, rendered join strategy hints, and covered generated/online recipe parity without live Spark.

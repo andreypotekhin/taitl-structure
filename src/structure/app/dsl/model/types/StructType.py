@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 from structure.app.dsl.model.types.StructureType import StructureType
 
 if TYPE_CHECKING:
-    from structure.app.dsl.model.schemas.Structure import Structure
+    from structure.app.dsl.model.schemas.Schema import Schema
 
 
 @dataclass(frozen=True)
 class StructType(StructureType):
-    schema: type[Structure]
+    schema: type[Schema]
 
-    def __init__(self, schema: type[Structure]) -> None:
+    def __init__(self, schema: type[Schema]) -> None:
         object.__setattr__(self, "name", "struct")
         object.__setattr__(self, "schema", schema)

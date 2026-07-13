@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.dsl.model.expr.Expression import Expression
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.transforms.JoinAsOf import JoinAsOf
 from structure.app.dsl.model.transforms.JoinDedupe import JoinDedupe
@@ -17,7 +17,7 @@ from structure.app.dsl.model.transforms.JoinTemporal import JoinTemporal
 class JoinPlan:
     input_name: str
     source: str
-    input_schema: type[Structure]
+    input_schema: type[Schema]
     predicate: Expression
     how: Join
     hint: JoinHint | None = None

@@ -26,7 +26,7 @@ class EnrichOrders(Transform):
 
 ### Schema
 
-A schema is a `Structure` subclass that describes a row contract: field names, order, types, nullability,
+A schema is a `Schema` class that describes a row contract: field names, order, types, nullability,
 inheritance, and Structure metadata such as primary keys.
 
 Schemas define input rows, intermediate rows, and output rows.
@@ -36,7 +36,7 @@ A schema is not a Spark DataFrame and does not contain data.
 Example:
 
 ```python
-class OrderRaw(Structure):
+class OrderRaw(Schema):
     id = field(String(), nullable=False, primary_key=True)
     customer_id = field(String(), nullable=True)
     total = field(Decimal(12, 2), nullable=True)
@@ -154,7 +154,7 @@ lower(trim(order.customer_id)) == "c-001"
 when(order.total >= 1000, "large").otherwise("standard")
 ```
 
-The v.1 expression surface supports field references, Python literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`,
+The v1 expression surface supports field references, Python literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`,
 `-`, `*`, boolean `&`, `|`, `~`, `is_null()`, `is_not_null()`, `null_safe_eq(...)`, string predicates
 `contains(...)`, `like(...)`, `ilike(...)`, and `rlike(...)`, `lower(...)`, `upper(...)`, `trim(...)`,
 collection indexing with `array[index]` and `map[key]`, `to_decimal(...)`, `coalesce(...)`, and
@@ -202,7 +202,7 @@ where(
 
 ### Join
 
-A join is a symbolic relationship between the current row and a declared input. In v.1, `lookup_join(...)` is the
+A join is a symbolic relationship between the current row and a declared input. In v1, `lookup_join(...)` is the
 main form: a lookup-style join.
 
 A join creates a joined scope. Fields from that scope can be used in later filters or in the returned output

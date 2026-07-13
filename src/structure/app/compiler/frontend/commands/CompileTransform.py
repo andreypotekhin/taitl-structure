@@ -33,7 +33,7 @@ from structure.app.dsl.model.expr.expressions import literal
 from structure.app.dsl.model.expr.InputScope import InputScope
 from structure.app.dsl.model.expr.RowScope import RowScope
 from structure.app.dsl.model.schemas.Projection import Projection
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.AsOf import AsOf
 from structure.app.dsl.model.transforms.BindingSelector import BindingSelector
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
@@ -253,7 +253,7 @@ class CompileTransform:
                 "DSL-E0402",
                 transform_class=transform_class,
                 problem=f"{transform_class.__name__} has no public schema-returning step method.",
-                use="Add a public instance method with a Structure row parameter and Structure return annotation.",
+                use="Add a public instance method with a Schema row parameter and Schema return annotation.",
             )
         return steps, lanes, explicit_outputs, diagnostics
 
@@ -500,7 +500,7 @@ class CompileTransform:
                     transform_class=transform_class,
                     member=name,
                     problem=f"{transform_class.__name__}.{name} has an invalid tuple return annotation.",
-                    use="Use a fixed tuple of Structure schemas, such as tuple[Accepted, Audited].",
+                    use="Use a fixed tuple of Schema classes, such as tuple[Accepted, Audited].",
                 )
             if item.overridden and any(self._return_schemas(get_type_hints(parent.member).get("return")) for parent in item.overridden):
                 raise self._error(
@@ -508,7 +508,7 @@ class CompileTransform:
                     transform_class=transform_class,
                     member=name,
                     problem=f"{transform_class.__name__}.{name} overrides an inherited step method but is not a step method.",
-                    use="Keep the Structure return annotation or rename the helper method.",
+                    use="Keep the Schema return annotation or rename the helper method.",
                 )
             return None
         metadata = getattr(member, "_structure_output_method", None)
@@ -696,7 +696,7 @@ class CompileTransform:
         return [
             StepInputPlan(
                 parameter=driver.parameter,
-                schema=cast(type[Structure], source["schema"]),
+                schema=cast(type[Schema], source["schema"]),
                 source=str(source["source"]),
                 scope=str(source["scope"]),
                 lane=str(source["lane"]),
@@ -1000,7 +1000,7 @@ class CompileTransform:
             )
         if len(parameters) == 1:
             parameter = parameters[0]
-            schema = cast(type[Structure], parameter.annotation)
+            schema = cast(type[Schema], parameter.annotation)
             lane, source = self._driving_source(
                 transform_class,
                 declarations[0] if declarations else None,
@@ -1010,7 +1010,7 @@ class CompileTransform:
                 member=member,
                 parameter=parameter.name,
             )
-            actual = cast(type[Structure], source["schema"])
+            actual = cast(type[Schema], source["schema"])
             if schema is not actual:
                 if lane == "df":
                     problem = (
@@ -1050,7 +1050,7 @@ class CompileTransform:
         bindings: list[StepInputPlan] = []
         used: set[tuple[str, str]] = set()
         for ordinal, parameter in enumerate(parameters):
-            schema = cast(type[Structure], parameter.annotation)
+            schema = cast(type[Schema], parameter.annotation)
             declaration = declarations[ordinal] if declarations else None
             lane, source = self._parameter_source(
                 transform_class,
@@ -1063,7 +1063,7 @@ class CompileTransform:
                 parameter=parameter.name,
                 used=used,
             )
-            actual = cast(type[Structure], source["schema"])
+            actual = cast(type[Schema], source["schema"])
             if schema is not actual:
                 raise self._error(
                     "DSL-E0402",
@@ -1104,7 +1104,7 @@ class CompileTransform:
         declaration: SourceDeclaration | None,
         lanes: dict[str, dict[str, object]],
         inputs: list[InputPlan],
-        schema: type[Structure],
+        schema: type[Schema],
         *,
         member: str,
         driving: bool,
@@ -1126,7 +1126,7 @@ class CompileTransform:
                 return current[0]
             if not current and lanes:
                 lane, source = next(reversed(lanes.items()))
-                actual = cast(type[Structure], source["schema"])
+                actual = cast(type[Schema], source["schema"])
                 raise self._error(
                     "DSL-E0402",
                     transform_class=transform_class,
@@ -1175,7 +1175,7 @@ class CompileTransform:
         declaration: SourceDeclaration | None,
         lanes: dict[str, dict[str, object]],
         inputs: list[InputPlan],
-        input_schema: type[Structure],
+        input_schema: type[Schema],
         *,
         member: str,
         parameter: str,
@@ -1190,7 +1190,7 @@ class CompileTransform:
         declaration: SourceDeclaration,
         lanes: dict[str, dict[str, object]],
         inputs: list[InputPlan],
-        schema: type[Structure],
+        schema: type[Schema],
         *,
         member: str,
     ) -> tuple[str, dict[str, object]]:
@@ -1216,7 +1216,7 @@ class CompileTransform:
         declaration: object,
         lanes: dict[str, dict[str, object]],
         inputs: list[InputPlan],
-        schema: type[Structure],
+        schema: type[Schema],
         *,
         member: str,
     ) -> tuple[str, dict[str, object]]:
@@ -1329,7 +1329,7 @@ class CompileTransform:
         transform_class: type[Transform],
         metadata: dict[str, object] | None,
         lanes: dict[str, dict[str, object]],
-        output_schemas: tuple[type[Structure], ...],
+        output_schemas: tuple[type[Schema], ...],
         *,
         member: str,
         explicit_outputs: set[str],
@@ -1400,9 +1400,9 @@ class CompileTransform:
             explicit_outputs.add(matches[0].name)
         return tuple(selected)
 
-    def _return_schemas(self, annotation: object) -> tuple[type[Structure], ...]:
+    def _return_schemas(self, annotation: object) -> tuple[type[Schema], ...]:
         if self._is_schema(annotation):
-            return (cast(type[Structure], annotation),)
+            return (cast(type[Schema], annotation),)
         if get_origin(annotation) is not tuple:
             return ()
         arguments = get_args(annotation)
@@ -1410,17 +1410,17 @@ class CompileTransform:
             return ()
         if not all(self._is_schema(argument) for argument in arguments):
             return ()
-        return cast(tuple[type[Structure], ...], arguments)
+        return cast(tuple[type[Schema], ...], arguments)
 
     def _result_values(
         self,
         transform_class: type[Transform],
         member: str,
-        schemas: tuple[type[Structure], ...],
+        schemas: tuple[type[Schema], ...],
         result: object,
-    ) -> tuple[Structure | Projection, ...]:
+    ) -> tuple[Schema | Projection, ...]:
         if len(schemas) == 1:
-            return (cast(Structure | Projection, result),)
+            return (cast(Schema | Projection, result),)
         if not isinstance(result, tuple) or len(result) != len(schemas):
             actual = len(result) if isinstance(result, tuple) else type(result).__name__
             raise self._error(
@@ -1440,14 +1440,14 @@ class CompileTransform:
                 problem=f"{transform_class.__name__}.{member} uses project(...) in a multi-output return.",
                 use="Return explicit schema instances for tuple-returning step methods.",
             )
-        return cast(tuple[Structure | Projection, ...], result)
+        return cast(tuple[Schema | Projection, ...], result)
 
     def _input_lane(
         self,
         transform_class: type[Transform],
         lanes: dict[str, dict[str, object]],
         inputs: list[InputPlan],
-        input_schema: type[Structure],
+        input_schema: type[Schema],
         *,
         member: str,
         parameter: str,
@@ -1469,7 +1469,7 @@ class CompileTransform:
             )
         if lanes:
             lane, source = next(reversed(lanes.items()))
-            actual = cast(type[Structure], source["schema"])
+            actual = cast(type[Schema], source["schema"])
             raise self._error(
                 "DSL-E0402",
                 transform_class=transform_class,
@@ -1493,7 +1493,7 @@ class CompileTransform:
         self,
         transform_class: type[Transform],
         declaration: WriteDeclaration | None,
-        output_schema: type[Structure],
+        output_schema: type[Schema],
         *,
         lanes: dict[str, dict[str, object]],
         member: str,
@@ -1569,7 +1569,7 @@ class CompileTransform:
     def _lane_output(
         self,
         name: str,
-        schema: type[Structure],
+        schema: type[Schema],
         lanes: dict[str, dict[str, object]],
         *,
         ordinal: int,
@@ -1585,7 +1585,7 @@ class CompileTransform:
                 use="Produce the lane earlier in source order before exposing it as a result.",
                 context={"output": name},
             )
-        actual_schema = cast(type[Structure], source["schema"])
+        actual_schema = cast(type[Schema], source["schema"])
         if actual_schema is not schema:
             raise self._error(
                 "DSL-E0402",
@@ -1689,7 +1689,7 @@ class CompileTransform:
             use="Use lane(that_lane) to write a working lane or output(that_output) to write a final result.",
         )
 
-    def _write_compatible(self, schema: type[Structure], declaration: WriteDeclaration) -> bool:
+    def _write_compatible(self, schema: type[Schema], declaration: WriteDeclaration) -> bool:
         if isinstance(declaration, BindingSelector):
             if declaration.role == "lane":
                 if isinstance(declaration.declaration, LaneDeclaration):
@@ -1806,9 +1806,9 @@ class CompileTransform:
             member=hook.name,
             problem=(
                 f"{transform_class.__name__}.{hook.name} targets {targets}, "
-                "but v.1 active hook execution is PySpark only."
+                "but v1 active hook execution is PySpark only."
             ),
-            use='Use target_backend="pyspark" for v.1, or keep non-PySpark hook declarations for a future backend.',
+            use='Use target_backend="pyspark" for v1, or keep non-PySpark hook declarations for a future backend.',
             context={"hook": hook.name, "target_backend": targets},
         )
 
@@ -1849,8 +1849,8 @@ class CompileTransform:
                     "DSL-E0402",
                     transform_class=None,
                     member=method.__qualname__,
-                    problem=f"{method.__qualname__}.{parameter.name} must be annotated with a Structure schema.",
-                    use="Annotate every step method parameter with a Structure schema class.",
+                    problem=f"{method.__qualname__}.{parameter.name} must be annotated with a Schema.",
+                    use="Annotate every step method parameter with a Schema class.",
                     context={"parameter": parameter.name},
                 )
             resolved.append(parameter.replace(annotation=annotation))
@@ -1859,7 +1859,7 @@ class CompileTransform:
     def _input_for_schema(
         self,
         inputs: list[InputPlan],
-        schema: type[Structure],
+        schema: type[Schema],
         *,
         parameter: str | None = None,
     ) -> InputPlan:
@@ -1916,8 +1916,8 @@ class CompileTransform:
         self,
         transform_class: type[Transform],
         member: str,
-        output_schema: type[Structure],
-        result: Structure | Projection,
+        output_schema: type[Schema],
+        result: Schema | Projection,
         *,
         filters: tuple[Expression, ...] | list[Expression],
     ) -> list[ProjectAssignment]:
@@ -1966,8 +1966,8 @@ class CompileTransform:
         self,
         transform_class: type[Transform],
         member: str,
-        output_schema: type[Structure],
-        result: Structure | Projection,
+        output_schema: type[Schema],
+        result: Schema | Projection,
         *,
         keys: tuple[tuple[str, Expression], ...],
         grouping: str,
@@ -2089,7 +2089,7 @@ class CompileTransform:
         self,
         transform_class: type[Transform],
         member: str,
-        output_schema: type[Structure],
+        output_schema: type[Schema],
         predicate: object | None,
     ) -> Expression | None:
         if predicate is None:
@@ -2129,7 +2129,7 @@ class CompileTransform:
         self,
         transform_class: type[Transform],
         member: str,
-        output_schema: type[Structure],
+        output_schema: type[Schema],
         field: str,
         nullable: bool,
         key: str,
@@ -2156,7 +2156,7 @@ class CompileTransform:
         self,
         transform_class: type[Transform],
         member: str,
-        output_schema: type[Structure],
+        output_schema: type[Schema],
         field: str,
         expression: Expression,
     ) -> None:
@@ -2193,7 +2193,7 @@ class CompileTransform:
         self,
         transform_class: type[Transform],
         member: str,
-        output_schema: type[Structure],
+        output_schema: type[Schema],
         field: str,
         function: str,
         expected: str,
@@ -2245,7 +2245,7 @@ class CompileTransform:
         self,
         transform_class: type[Transform],
         member: str,
-        output_schema: type[Structure],
+        output_schema: type[Schema],
         result: Projection,
         *,
         filters: tuple[Expression, ...] | list[Expression],
@@ -2268,7 +2268,7 @@ class CompileTransform:
                 "DSL-E0402",
                 transform_class=transform_class,
                 member=member,
-                problem="project(...) source must be a Structure row or relation.",
+                problem="project(...) source must be a Schema row or relation.",
                 use="Call project(order, TargetSchema) or project(order, ['field']).",
             )
 
@@ -2304,7 +2304,7 @@ class CompileTransform:
                     use="Use a target schema whose fields exist on the source or provide explicit overrides.",
                     context={"field": field.name, "schema": source_schema.__name__},
                 )
-            if isinstance(result.source, Structure):
+            if isinstance(result.source, Schema):
                 expression = self._value_expression(
                     transform_class,
                     member,
@@ -2321,7 +2321,7 @@ class CompileTransform:
         self,
         transform_class: type[Transform],
         member: str,
-        output_schema: type[Structure],
+        output_schema: type[Schema],
         field,
         expression: Expression,
         *,
@@ -2388,7 +2388,7 @@ class CompileTransform:
         *,
         path: str,
     ) -> Expression:
-        if isinstance(value, Structure):
+        if isinstance(value, Schema):
             expression_type = Struct(type(value))
             fields = tuple(type(value)._structure_fields.values())
             arguments: list[Expression] = []
@@ -2420,13 +2420,13 @@ class CompileTransform:
             )
         return literal(value)
 
-    def _source_schema(self, source: object) -> type[Structure] | None:
-        if isinstance(source, Structure):
+    def _source_schema(self, source: object) -> type[Schema] | None:
+        if isinstance(source, Schema):
             return type(source)
-        return cast(type[Structure] | None, getattr(source, "_structure_scope_schema", None))
+        return cast(type[Schema] | None, getattr(source, "_structure_scope_schema", None))
 
     def _source_field(self, source: object, field: str) -> Expression | None:
-        if isinstance(source, Structure):
+        if isinstance(source, Schema):
             if field not in source._structure_values:
                 return None
             return literal(source._structure_values[field])
@@ -2686,7 +2686,7 @@ class CompileTransform:
             member,
             input_name,
             occurrence,
-            "v.1 joins support equality key pairs combined with AND.",
+            "v1 joins support equality key pairs combined with AND.",
             "Replace OR, inequality, or arbitrary predicates with equality pairs, or move custom join logic into a hook.",
         )
 
@@ -2773,7 +2773,7 @@ class CompileTransform:
     def _unique_join(
         self,
         input_name: str,
-        input_schema: type[Structure],
+        input_schema: type[Schema],
         conditions: list[Expression],
     ) -> bool:
         if len(conditions) != 1:
@@ -2789,7 +2789,7 @@ class CompileTransform:
         self,
         expression: Expression,
         scope: str,
-        schema: type[Structure],
+        schema: type[Schema],
     ) -> bool:
         if expression.kind != "field" or not expression.data or expression.data.get("scope") != scope:
             return False
@@ -2972,7 +2972,7 @@ class CompileTransform:
         )
 
     def _is_schema(self, value: object) -> bool:
-        return isinstance(value, type) and issubclass(value, Structure)
+        return isinstance(value, type) and issubclass(value, Schema)
 
     def _error(
         self,

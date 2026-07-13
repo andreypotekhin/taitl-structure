@@ -1,9 +1,9 @@
-from structure import Date, Decimal, Double, Long, String, Struct, Structure, field
+from structure import Date, Decimal, Double, Long, String, Struct, Schema, field
 
 from testing.model.v2.orders.schemas.common import TenantKey
 
 
-class CustomerDailyTotal(Structure):
+class CustomerDailyTotal(Schema):
     tenant = field(Struct(TenantKey), nullable=False)
     customer_id = field(String(), nullable=False)
     order_date = field(Date(), nullable=True)
@@ -12,7 +12,7 @@ class CustomerDailyTotal(Structure):
     net_total = field(Decimal(12, 2), nullable=False)
 
 
-class ProductDailySummary(Structure):
+class ProductDailySummary(Schema):
     tenant = field(Struct(TenantKey), nullable=False)
     product_id = field(String(), nullable=False)
     order_date = field(Date(), nullable=True)
@@ -25,7 +25,7 @@ class ProductDailySummary(Structure):
     gross_total = field(Decimal(12, 2), nullable=False)
 
 
-class CustomerEventRank(Structure):
+class CustomerEventRank(Schema):
     tenant = field(Struct(TenantKey), nullable=False)
     customer_id = field(String(), nullable=False)
     event_id = field(String(), nullable=False)

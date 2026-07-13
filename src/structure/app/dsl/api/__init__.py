@@ -43,7 +43,7 @@ from structure.app.dsl.model.expr.InputScope import (
     rowset_join,
     temporal_one,
 )
-from structure.app.dsl.model.schemas.schema import (
+from structure.app.dsl.model.schemas.schema_api import (
     Array,
     Boolean,
     Date,
@@ -58,7 +58,7 @@ from structure.app.dsl.model.schemas.schema import (
     Timestamp,
     field,
 )
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.AsOf import AsOf
 from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.transforms.JoinDedupe import JoinDedupe
@@ -183,7 +183,7 @@ __all__ = [
     "String",
     "StreamingMode",
     "StreamingOutputMode",
-    "Structure",
+    "Schema",
     "StructureCompileError",
     "Struct",
     "Timestamp",

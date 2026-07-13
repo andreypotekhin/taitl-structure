@@ -8,32 +8,32 @@ from structure.app.runtime.session.model.TransformResult import TransformResult
 from structure.app.target.pyspark.api import PySpark
 
 
-class Raw(structure.Structure):
+class Raw(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     product_id = structure.field(structure.String(), nullable=True)
 
 
-class Normalized(structure.Structure):
+class Normalized(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     product_id = structure.field(structure.String(), nullable=True)
 
 
-class Product(structure.Structure):
+class Product(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     name = structure.field(structure.String(), nullable=True)
 
 
-class Enriched(structure.Structure):
+class Enriched(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     product_name = structure.field(structure.String(), nullable=True)
 
 
-class Published(structure.Structure):
+class Published(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     product_name = structure.field(structure.String(), nullable=True)
 
 
-class Metric(structure.Structure):
+class Metric(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     value = structure.field(structure.Integer(), nullable=True)
 

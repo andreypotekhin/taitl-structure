@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.InOutBinding import bind_inout
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
@@ -23,7 +23,7 @@ class BindingSelector:
         return self.declaration.name
 
     @property
-    def schema(self) -> type[Structure]:
+    def schema(self) -> type[Schema]:
         return self.declaration.schema
 
     def __or__(self, outputs: object):

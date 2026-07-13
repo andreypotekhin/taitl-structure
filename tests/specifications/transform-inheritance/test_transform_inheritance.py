@@ -9,23 +9,23 @@ from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 
-class Raw(structure.Structure):
+class Raw(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     value = structure.field(structure.Integer(), nullable=True)
 
 
-class Normalized(structure.Structure):
+class Normalized(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     value = structure.field(structure.Integer(), nullable=True)
 
 
-class Audited(structure.Structure):
+class Audited(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     value = structure.field(structure.Integer(), nullable=True)
     audit = structure.field(structure.String(), nullable=True)
 
 
-class Published(structure.Structure):
+class Published(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     value = structure.field(structure.Integer(), nullable=True)
     audit = structure.field(structure.String(), nullable=True)

@@ -11,30 +11,30 @@ from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 
-class Order(structure.Structure):
+class Order(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     product_id = structure.field(structure.String(), nullable=False)
     status = structure.field(structure.String(), nullable=True)
 
 
-class Product(structure.Structure):
+class Product(structure.Schema):
     id = structure.field(structure.String(), nullable=False, primary_key=True)
     name = structure.field(structure.String(), nullable=False)
     valid_from = structure.field(structure.String(), nullable=False)
     valid_to = structure.field(structure.String(), nullable=True)
 
 
-class Published(structure.Structure):
+class Published(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     status = structure.field(structure.String(), nullable=True)
 
 
-class Enriched(structure.Structure):
+class Enriched(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     product_name = structure.field(structure.String(), nullable=True)
 
 
-class OuterEnriched(structure.Structure):
+class OuterEnriched(structure.Schema):
     id = structure.field(structure.String(), nullable=True)
     product_name = structure.field(structure.String(), nullable=True)
 
@@ -265,11 +265,11 @@ def test_inner_join_accepts_using_key(using: object) -> None:
 
 
 def test_inner_join_accepts_multiple_using_keys() -> None:
-    class CompositeOrder(structure.Structure):
+    class CompositeOrder(structure.Schema):
         tenant_id = structure.field(structure.String(), nullable=False)
         id = structure.field(structure.String(), nullable=False)
 
-    class CompositeProduct(structure.Structure):
+    class CompositeProduct(structure.Schema):
         tenant_id = structure.field(structure.String(), nullable=False)
         id = structure.field(structure.String(), nullable=False)
         name = structure.field(structure.String(), nullable=True)

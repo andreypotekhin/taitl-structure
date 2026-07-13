@@ -21,8 +21,8 @@ Fix: Stop the stalled formatter processes and rerun with a fresh cache directory
 When: Running `make integration` or `make build INTEGRATION=1`.
 Error: `docker` is not recognized, `docker: command not found`, or `docker compose` exits before reading the Compose
 file.
-Cause: Docker Desktop or Docker Compose v.2 is not installed or is not on `PATH`.
-Fix: Install Docker Desktop with Compose v.2, start Docker, open a new terminal, and run `docker compose version`.
+Cause: Docker Desktop or Docker Compose v2 is not installed or is not on `PATH`.
+Fix: Install Docker Desktop with Compose v2, start Docker, open a new terminal, and run `docker compose version`.
 
 ### Problem (integration): PySpark parity tests are skipped
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Mapping, cast
 
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.types.StructureType import StructureType
 from structure.app.target.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
 from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
@@ -18,7 +18,7 @@ class RenderPySparkTransformModule:
         plan: PySparkExecutionPlan,
         *,
         source_transform: str,
-        schema_modules: Mapping[type[Structure], str],
+        schema_modules: Mapping[type[Schema], str],
         runtime_module: str,
         semantic_fingerprint: str | None = None,
     ) -> str:
@@ -33,7 +33,7 @@ class RenderPySparkTransformModule:
         self,
         plans: Mapping[str, PySparkExecutionPlan],
         *,
-        schema_modules: Mapping[type[Structure], str],
+        schema_modules: Mapping[type[Schema], str],
         runtime_module: str,
         semantic_fingerprints: Mapping[str, str] | None = None,
     ) -> str:
@@ -63,7 +63,7 @@ class RenderPySparkTransformModule:
         plan: PySparkExecutionPlan,
         *,
         source_transform: str,
-        schema_modules: Mapping[type[Structure], str],
+        schema_modules: Mapping[type[Schema], str],
         runtime_module: str,
     ) -> str:
         lines = [
@@ -370,7 +370,7 @@ class RenderPySparkTransformModule:
     def _schema_imports(
         self,
         plan: PySparkExecutionPlan,
-        schema_modules: Mapping[type[Structure], str],
+        schema_modules: Mapping[type[Schema], str],
     ) -> dict[str, tuple[str, ...]]:
         modules: dict[str, set[str]] = defaultdict(set)
         for schema in self._schemas(plan):
@@ -378,8 +378,8 @@ class RenderPySparkTransformModule:
             modules[module].add(render_pyspark_schema.constant_name(schema))
         return {module: tuple(sorted(constants)) for module, constants in sorted(modules.items())}
 
-    def _schemas(self, plan: PySparkExecutionPlan) -> set[type[Structure]]:
-        schemas: set[type[Structure]] = {output.output_schema for output in plan.outputs}
+    def _schemas(self, plan: PySparkExecutionPlan) -> set[type[Schema]]:
+        schemas: set[type[Schema]] = {output.output_schema for output in plan.outputs}
         for input in plan.inputs:
             schemas.add(input.schema)
         for step in plan.steps:

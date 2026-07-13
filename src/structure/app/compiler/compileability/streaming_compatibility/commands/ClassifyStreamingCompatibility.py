@@ -231,7 +231,7 @@ class ClassifyStreamingCompatibility:
                 step=step,
                 operation=f"join {join.input_name}",
                 problem=(
-                    "v.1 streaming compatibility supports stream-static left and inner joins only; "
+                    "v1 streaming compatibility supports stream-static left and inner joins only; "
                     f"{join.how.value} joins are batch-only."
                 ),
                 use="Keep this transform batch-only or rewrite the lookup as a left or inner stream-static join.",

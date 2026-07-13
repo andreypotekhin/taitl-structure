@@ -1,17 +1,17 @@
 import sys
 
-from structure import String, Structure, Transform, field, input, output, step, transform
+from structure import Schema, String, Transform, field, input, output, step, transform
 from structure.app.cli.commands.RenderExplainReport import render_explain_report
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 
-class CacheRaw(Structure):
+class CacheRaw(Schema):
     id = field(String(), nullable=False)
     status = field(String(), nullable=True)
 
 
-class CachePublished(Structure):
+class CachePublished(Schema):
     id = field(String(), nullable=False)
     status = field(String(), nullable=True)
 

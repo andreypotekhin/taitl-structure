@@ -9,12 +9,12 @@ from structure.app.target.pyspark.api import PySpark
 from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
 
 
-class RawOrder(structure.Structure):
+class RawOrder(structure.Schema):
     customer_id = structure.field(structure.String(), nullable=False)
     quantity = structure.field(structure.Long(), nullable=False)
 
 
-class CustomerTotal(structure.Structure):
+class CustomerTotal(structure.Schema):
     customer_id = structure.field(structure.String(), nullable=False)
     order_count = structure.field(structure.Long(), nullable=False)
     distinct_customers = structure.field(structure.Long(), nullable=False)
@@ -24,7 +24,7 @@ class CustomerTotal(structure.Structure):
     avg_quantity = structure.field(structure.Double(), nullable=False)
 
 
-class AdvancedCustomerTotal(structure.Structure):
+class AdvancedCustomerTotal(structure.Schema):
     customer_id = structure.field(structure.String(), nullable=True)
     paid_quantity = structure.field(structure.Long(), nullable=True)
     any_large = structure.field(structure.Boolean(), nullable=True)
@@ -35,13 +35,13 @@ class AdvancedCustomerTotal(structure.Structure):
     customers = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
 
 
-class RawSale(structure.Structure):
+class RawSale(structure.Schema):
     region = structure.field(structure.String(), nullable=False)
     customer_id = structure.field(structure.String(), nullable=False)
     quantity = structure.field(structure.Long(), nullable=False)
 
 
-class GroupingSetTotal(structure.Structure):
+class GroupingSetTotal(structure.Schema):
     region = structure.field(structure.String(), nullable=True)
     customer_id = structure.field(structure.String(), nullable=True)
     order_count = structure.field(structure.Long(), nullable=False)
@@ -219,7 +219,7 @@ def test_grouping_sets_traceability_and_explain_name_levels() -> None:
 
 
 def test_grouping_sets_reject_non_nullable_omitted_key_fields() -> None:
-    class BadTotal(structure.Structure):
+    class BadTotal(structure.Schema):
         region = structure.field(structure.String(), nullable=False)
         customer_id = structure.field(structure.String(), nullable=False)
         order_count = structure.field(structure.Long(), nullable=False)
@@ -245,7 +245,7 @@ def test_grouping_sets_reject_non_nullable_omitted_key_fields() -> None:
 
 
 def test_having_rejects_pre_aggregate_input_field_reads() -> None:
-    class Total(structure.Structure):
+    class Total(structure.Schema):
         customer_id = structure.field(structure.String(), nullable=False)
         order_count = structure.field(structure.Long(), nullable=False)
 
@@ -272,7 +272,7 @@ def test_having_rejects_pre_aggregate_input_field_reads() -> None:
 
 
 def test_statement_having_binds_to_aggregate_output_scope() -> None:
-    class Total(structure.Structure):
+    class Total(structure.Schema):
         customer_id = structure.field(structure.String(), nullable=False)
         order_count = structure.field(structure.Long(), nullable=False)
 

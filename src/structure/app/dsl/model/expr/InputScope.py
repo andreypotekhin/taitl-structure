@@ -9,7 +9,7 @@ from structure.app.compiler.symbolic_execution.model.CompileContext import curre
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.expr.expressions import literal
 from structure.app.dsl.model.expr.RowScope import RowScope
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.AsOf import AsOf
 from structure.app.dsl.model.transforms.Join import Join
 from structure.app.dsl.model.transforms.JoinAsOf import JoinAsOf
@@ -24,7 +24,7 @@ from structure.app.dsl.model.types.BooleanType import BooleanType
 
 class InputScope(RowScope):
 
-    def __init__(self, *, name: str, schema: type[Structure], source: str | None = None) -> None:
+    def __init__(self, *, name: str, schema: type[Schema], source: str | None = None) -> None:
         super().__init__(name=name, schema=schema)
         self._structure_input_name = name
         self._structure_source = source or name
@@ -112,7 +112,7 @@ class InputScope(RowScope):
         return project(*args)
 
 
-Relation = TypeVar("Relation", bound=Structure | InputScope)
+Relation = TypeVar("Relation", bound=Schema | InputScope)
 
 
 @overload
@@ -261,7 +261,7 @@ def rowset_join(
         raise TypeError("rowset_join(strategy=...) requires a JoinStrategy value")
     if not isinstance(allow_cartesian, bool):
         raise TypeError("rowset_join(allow_cartesian=...) requires a bool")
-    if left is not None and not isinstance(left, (Structure, RowScope)):
+    if left is not None and not isinstance(left, (Schema, RowScope)):
         raise TypeError("rowset_join(left=...) requires the current row scope or a joined row scope")
 
     predicate: Expression

@@ -33,9 +33,9 @@ def test_generate_structure_schema_from_pyspark_struct_type() -> None:
     text = StructureTools.schemas.generate(schema=schema, to="OrderRaw")
 
     assert "import structure" in text
-    assert "class OrderRawShipping(structure.Structure):" in text
+    assert "class OrderRawShipping(structure.Schema):" in text
     assert "    street = structure.field(structure.String(), nullable=True)" in text
-    assert "class OrderRaw(structure.Structure):" in text
+    assert "class OrderRaw(structure.Schema):" in text
     assert "    id = structure.field(structure.String(), nullable=False)" in text
     assert "    total = structure.field(structure.Decimal(12, 2), nullable=True)" in text
     assert "    tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)" in text
@@ -53,7 +53,7 @@ def test_generate_structure_schema_from_dataframe_like_schema() -> None:
 
     text = StructureTools.schemas.generate(schema=DataFrame(), to="OrderRaw")
 
-    assert "class OrderRaw(structure.Structure):" in text
+    assert "class OrderRaw(structure.Schema):" in text
     assert "    id = structure.field(structure.String(), nullable=False)" in text
 
 

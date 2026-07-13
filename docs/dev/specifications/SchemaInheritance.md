@@ -8,21 +8,21 @@ This specification completes the inheritance semantics referenced by
 Schema inheritance lets developers reuse common field definitions without repeating schema code. It is especially useful
 for shared identifiers, audit columns, partition columns, tenancy fields, and common source metadata.
 
-Structure supports schema-to-schema inheritance in v.1 as a declarative field composition mechanism. The compiler treats
+Structure supports schema-to-schema inheritance in v1 as a declarative field composition mechanism. The compiler treats
 the final schema as an ordered structural contract and keeps inheritance details available for diagnostics and traceability.
 
 ## Canonical Form
 
 ```python
-from structure import Structure, field, String, Timestamp, Decimal
+from structure import Schema, field, String, Timestamp, Decimal
 
 
-class EntityKeys(Structure):
+class EntityKeys(Schema):
     id = field(String(), nullable=False, primary_key=True)
     tenant_id = field(String(), nullable=False)
 
 
-class AuditFields(Structure):
+class AuditFields(Schema):
     created_at = field(Timestamp(), nullable=False)
     updated_at = field(Timestamp(), nullable=True)
 
@@ -47,9 +47,9 @@ total
 
 Rules:
 
-- A schema class may inherit from `Structure` directly.
-- A schema class may inherit from one or more user-defined `Structure` subclasses.
-- All non-`object` bases of a schema class must be `Structure` subclasses.
+- A schema class may inherit from `Schema` directly.
+- A schema class may inherit from one or more user-defined `Schema` subclasses.
+- All non-`object` bases of a schema class must be `Schema` subclasses.
 - Python must be able to construct a valid C3 MRO for the class.
 - The compiler must reject base classes that are not import-safe.
 
@@ -65,7 +65,7 @@ class Order(EntityKeys, AuditFields):
     total = field(Decimal(12, 2), nullable=True)
 ```
 
-Non-schema mixins are not supported in v.1:
+Non-schema mixins are not supported in v1:
 
 ```python
 class Order(EntityKeys, SomePlainMixin):  # rejected
@@ -94,7 +94,7 @@ local fields appear last.
 A schema class may override an inherited field by redeclaring the same field name.
 
 ```python
-class SoftDeleteFields(Structure):
+class SoftDeleteFields(Schema):
     deleted_at = field(Timestamp(), nullable=True)
 
 
@@ -123,11 +123,11 @@ ambiguity.
 Rejected:
 
 ```python
-class SourceKeys(Structure):
+class SourceKeys(Schema):
     id = field(String(), nullable=False)
 
 
-class BusinessKeys(Structure):
+class BusinessKeys(Schema):
     id = field(String(), nullable=False, primary_key=True)
 
 
@@ -148,7 +148,7 @@ The resolved field keeps the first inherited position. In the accepted example, 
 Diamond inheritance through a shared base is not a duplicate:
 
 ```python
-class Keys(Structure):
+class Keys(Schema):
     id = field(String(), nullable=False)
 
 
@@ -231,7 +231,7 @@ visible at the construction site.
 `Struct(SchemaClass)` uses the effective inherited field set of `SchemaClass`.
 
 ```python
-class AddressBase(Structure):
+class AddressBase(Schema):
     city = field(String(), nullable=True)
 
 
@@ -239,7 +239,7 @@ class ShippingAddress(AddressBase):
     postal_code = field(String(), nullable=True)
 
 
-class Order(Structure):
+class Order(Schema):
     shipping = field(Struct(ShippingAddress), nullable=True)
 ```
 
@@ -272,16 +272,16 @@ Example:
 
 ```text
 Invalid schema base:
-  Order inherits from SomePlainMixin, which is not a Structure subclass.
+  Order inherits from SomePlainMixin, which is not a Schema class.
 
-Use only Structure subclasses in schema inheritance.
+Use only Schema class in schema inheritance.
 
 See docs/dev/specifications/SchemaInheritance.md
 ```
 
 ## Non-Goals
 
-The following are not part of v.1:
+The following are not part of v1:
 
 - deleting inherited fields;
 - partial field overrides;

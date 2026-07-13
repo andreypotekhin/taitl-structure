@@ -122,7 +122,7 @@ diagnostic_registry = DiagnosticRegistry(
             docs="docs/Diagnostics.md#backend-e2401",
             introduced="1.0.0",
             problem_template="Structure has no capability profile for the configured backend.",
-            use_template='Set target_backend = "pyspark" for v.1.',
+            use_template='Set target_backend = "pyspark" for v1.',
         ),
         DiagnosticEntry(
             code="BACKEND-E2402",
@@ -223,8 +223,8 @@ diagnostic_registry = DiagnosticRegistry(
             status="active",
             docs="docs/Diagnostics.md#stream-e0801",
             introduced="1.0.0",
-            problem_template="The transform contains an operation that is batch-only in v.1 streaming compatibility.",
-            use_template="Keep the transform batch-only or rewrite the operation using v.1 streaming-compatible shapes.",
+            problem_template="The transform contains an operation that is batch-only in v1 streaming compatibility.",
+            use_template="Keep the transform batch-only or rewrite the operation using v1 streaming-compatible shapes.",
         ),
         DiagnosticEntry(
             code="STREAM-W0801",

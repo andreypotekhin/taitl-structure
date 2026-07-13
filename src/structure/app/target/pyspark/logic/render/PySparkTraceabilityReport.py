@@ -2,7 +2,7 @@ import json
 from collections.abc import Mapping
 
 from structure.app.compiler.api.Compiler import Compiler
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.target.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
@@ -16,7 +16,7 @@ class PySparkTraceabilityReport:
         *,
         source_transform: str,
         transform_module: str,
-        schema_modules: Mapping[type[Structure], str],
+        schema_modules: Mapping[type[Schema], str],
     ) -> str:
         traceability = Compiler.traceability.build()(
             plan,
@@ -51,7 +51,7 @@ class PySparkTraceabilityReport:
         }
         return json.dumps(data, indent=2, sort_keys=True) + "\n"
 
-    def _schema_constants(self, schema_modules: Mapping[type[Structure], str]) -> dict[str, dict[str, str]]:
+    def _schema_constants(self, schema_modules: Mapping[type[Schema], str]) -> dict[str, dict[str, str]]:
         return {
             schema.__name__: {
                 "constant": render_pyspark_schema.constant_name(schema),

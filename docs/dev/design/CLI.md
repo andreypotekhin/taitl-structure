@@ -68,6 +68,6 @@ Reports compile-time performance metrics:
 
 ## Compile-Time Performance
 
-CLI should expose profiling and support incremental compile by default. Profiling is v.1; production incremental compile
-is end-of-v.3. v.1/v.2 should preserve source fingerprints and deterministic output so the later cache can be added
+CLI should expose profiling and support incremental compile by default. Profiling is v1; production incremental compile
+is end-of-v3. v1/v2 should preserve source fingerprints and deterministic output so the later cache can be added
 cleanly.

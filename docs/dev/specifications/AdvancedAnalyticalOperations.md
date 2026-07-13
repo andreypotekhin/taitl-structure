@@ -295,7 +295,7 @@ configured backend and the missing capability.
 
 ## Streaming Compatibility
 
-All features in this specification are batch-only in v.2 unless a narrower rule explicitly proves compatibility.
+All features in this specification are batch-only in v2 unless a narrower rule explicitly proves compatibility.
 
 Reason:
 

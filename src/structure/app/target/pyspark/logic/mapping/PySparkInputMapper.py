@@ -1,4 +1,4 @@
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.app.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.app.target.pyspark.model.PySparkInputRecipe import PySparkInputRecipe
@@ -10,7 +10,7 @@ class PySparkInputMapper:
     def map(
         self,
         name: str,
-        schema: type[Structure],
+        schema: type[Schema],
         ordinal: int,
         streaming: StreamingMode,
         aliases: tuple[str, ...] = (),

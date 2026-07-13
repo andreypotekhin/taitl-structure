@@ -16,13 +16,13 @@ Define schemas. Define transforms. Run transforms.
 
 ### Example Schema
 
-Schema classes (direct or indirect subclasses of Structure) compile to PySpark schemas (StructType, StructField).
+Schema classes (direct or indirect subclasses of Schema) compile to PySpark schemas (StructType, StructField).
 
 ```python
-from structure import Structure, field, String, Decimal
+from structure import Schema, field, String, Decimal
 
 
-class OrderRaw(Structure):
+class OrderRaw(Schema):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
@@ -30,7 +30,7 @@ class OrderRaw(Structure):
     total = field(String(), nullable=True)
 
 
-class OrderNormalized(Structure):
+class OrderNormalized(Schema):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
@@ -43,13 +43,13 @@ class OrderWithCustomer(OrderNormalized):
     customer_tier = field(String(), nullable=True)
 
     
-class Customer(Structure):
+class Customer(Schema):
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=True)
     tier = field(String(), nullable=True)   
     
 
-class Product(Structure):
+class Product(Schema):
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=False)    
 ```
@@ -113,7 +113,7 @@ class EnrichOrders(Transform):
 
 ### Running a Transform
 
-Create transform object, specify DataFrame inputs and call `.run(session)`:
+Create transform object, specify input data frames and call `.run(session)`:
 
 ```python
 from structure import StructureConfig, StructureSession
@@ -131,7 +131,7 @@ result = EnrichOrders(
 enriched_df = result.enriched
 ```
 
-On invocation of run(), Structure compiles Transform class and its dependencies into an in-memory execution plan. It then executes the plan by translating ('lowering') it into PySpark statements. PySpark code can also be saved to disk if your project's preference is to have generated code. Execution order follows the declared order of transform's 'step' methods - the methods that take schema object(s) and  return schema object(s).
+On invocation of run(), Structure compiles Transform and all its dependencies into an in-memory artifact for execution - the execution plan. It executes the plan by translating ('lowering') it into PySpark statements. PySpark code can also be saved to disk, if your project prefers to have generated code. Execution order follows the declared order of transform's 'step' methods - the methods that take schema object(s) and  return schema object(s).
 
 ### Generated PySpark Code
 
@@ -409,15 +409,15 @@ See [License.md](License.md)
 
 ## Roadmap
 
-- **v.1:** online PySpark execution by default, optional generated PySpark classes, projection, filtering,
+- **v1:** online PySpark execution by default, optional generated PySpark classes, projection, filtering,
   joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow traceability,
   streaming-compatible transforms, diagnostic links, and setup checks.
-- **v.2:** mainstream analytical features: existence joins, `inner_join(...)`, broad rowset joins, deterministic lookup
+- **v2:** mainstream analytical features: existence joins, `inner_join(...)`, broad rowset joins, deterministic lookup
   dedupe, temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions,
   cache/persist first-slice directives, Spark Connect support for completed batch features, and static streaming
   compatibility diagnostics for caller-owned streaming DataFrames.
-- **v.3:** planned PySpark parity gap closure followed by Structure-owned streaming orchestration and end-of-release
+- **v3:** planned PySpark parity gap closure followed by Structure-owned streaming orchestration and end-of-release
   incremental compile: generated `readStream` and `writeStream`, explicit triggers, checkpoints, output modes,
   watermarks, admitted state policies, live streaming lifecycle evidence, and cache diagnostics.
-- **v.4+:** backend expansion, including postponed Polars/DuckDB work and any non-batch Spark Connect hardening left
+- **v4+:** backend expansion, including postponed Polars/DuckDB work and any non-batch Spark Connect hardening left
   outside the Sprint 09 support claim.

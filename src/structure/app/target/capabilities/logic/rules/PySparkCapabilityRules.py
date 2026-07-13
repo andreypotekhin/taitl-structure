@@ -209,10 +209,10 @@ class PySparkCapabilities:
             backend=self.id,
             requirement=requirement,
             rationale=(
-                "The feature is not part of the v.1 PySpark capability profile. Keeping it unsupported prevents "
+                "The feature is not part of the v1 PySpark capability profile. Keeping it unsupported prevents "
                 "silent fallback to opaque Spark or Python behavior."
             ),
-            use="Use a supported v.1 Structure operation or an explicit hook, or wait for the feature's specification.",
+            use="Use a supported v1 Structure operation or an explicit hook, or wait for the feature's specification.",
         )
 
     def require(self, requirement: CapabilityRequirement) -> CapabilityDecision:

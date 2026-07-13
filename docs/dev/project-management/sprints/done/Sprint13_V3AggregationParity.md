@@ -1,4 +1,4 @@
-# Sprint 13: v.3 Aggregation PySpark Parity
+# Sprint 13: v3 Aggregation PySpark Parity
 
 ## Sprint Goal
 
@@ -46,4 +46,4 @@ aggregate DSL.
 
 - [x] Implement explicit grouping sets.
 - [x] Implement post-aggregate `having(...)`.
-- [x] Complete v.3 aggregation parity.
+- [x] Complete v3 aggregation parity.

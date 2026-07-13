@@ -4,7 +4,7 @@
 
 PySpark code generation lowers Structure compiler IR into deterministic, readable Python modules that use PySpark
 DataFrame and Column APIs. The generated modules are optional for ordinary runtime execution, because online execution
-is the v.1 default, but they remain first-class artifacts for provenance, code review, debugging, snapshot tests, and
+is the v1 default, but they remain first-class artifacts for provenance, code review, debugging, snapshot tests, and
 projects that deliberately choose `execution_mode = "generated"`.
 
 The generator is a source-text emitter. It must not redefine transform semantics. Projection, filtering, expression
@@ -843,7 +843,7 @@ The generator should make this easy by using stable, predictable module names an
 
 ## Non-Goals
 
-The following are outside v.1 PySpark generation scope:
+The following are outside v1 PySpark generation scope:
 
 - generating Python UDFs or Pandas UDFs from compiled expressions;
 - generating RDD-based implementations;

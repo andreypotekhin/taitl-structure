@@ -7,7 +7,7 @@ structure. Data quality constraints describe facts about the data values inside 
 values, ranges, regex-like patterns, decimal domains, uniqueness, referential checks, freshness, and row-count
 expectations.
 
-This specification defines the boundary. v.1 validation is schema-first and schema-only by default. Richer data quality
+This specification defines the boundary. v1 validation is schema-first and schema-only by default. Richer data quality
 checks are deferred and must be explicit because many of them trigger Spark actions, scans, aggregations, or joins.
 
 ## Validation Layers
@@ -25,9 +25,9 @@ reliably, and nested shape. It must not scan rows.
 Data-quality runtime validation evaluates value-level or dataset-level facts. It may add filters, aggregations, joins,
 limits, counts, or other Spark work. Any check that can trigger Spark work must be explicit in source or configuration.
 
-## v.1 Boundary
+## v1 Boundary
 
-v.1 validation is schema-first.
+v1 validation is schema-first.
 
 Default intermediate validation uses:
 
@@ -58,7 +58,7 @@ to the current phase and that phase's validation mode is `schema_and_constraints
 
 ## Constraint Families
 
-Future constraint support should cover these families without making all of them v.1 commitments.
+Future constraint support should cover these families without making all of them v1 commitments.
 
 Field-local constraints:
 
@@ -204,7 +204,7 @@ otherwise.
 
 ## Implementation Checklist
 
-1. Keep v.1 `schema_only` validation row-scan-free.
+1. Keep v1 `schema_only` validation row-scan-free.
 2. Add a constraint IR model only after the public behavior is specified.
 3. Classify every constraint by cost and streaming compatibility.
 4. Add validation recipes for supported constraints through the shared online/generated execution contract.
@@ -219,7 +219,7 @@ otherwise.
 
 ## Acceptance Criteria
 
-- v.1 docs state that default validation is schema-first and schema-only at intermediate boundaries.
+- v1 docs state that default validation is schema-first and schema-only at intermediate boundaries.
 - `schema_and_constraints` is documented as opt-in and potentially more expensive.
 - Generated schema constants are documented as caller-facing `StructType` artifacts.
 - Online execution exposes equivalent materialized Spark schemas after `run(session)`.

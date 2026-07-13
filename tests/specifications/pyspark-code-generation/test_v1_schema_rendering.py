@@ -1,6 +1,6 @@
 import sys
 
-from structure import String, Structure, field
+from structure import Schema, String, field
 from structure.app.target.pyspark.api import PySpark
 
 
@@ -59,7 +59,7 @@ def test_v1_schema_renderer_uses_base_schema_composition_for_inheritance() -> No
 
 
 def test_v1_schema_renderer_uses_field_alias_as_spark_column_name() -> None:
-    class Raw(Structure):
+    class Raw(Schema):
         promotion_code = field(String(), nullable=True, alias="promo-code")
 
     assert PySpark.schema.render().field(Raw._structure_fields["promotion_code"]) == (

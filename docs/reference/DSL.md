@@ -7,6 +7,13 @@ compiled step methods stay visible to Structure and Spark.
 The DSL is not a second PySpark wrapper layer. It is a small authoring surface that keeps checks, online execution,
 generated PySpark, explain output, traceability, and streaming compatibility aligned.
 
+For exhaustive supported API names, PySpark parity, examples, and differences, see the
+[API reference](../APIRef.md) for [schemas](../api/Schemas.api.md),
+[transforms](../api/Transforms.api.md), [expressions](../api/Expressions.api.md),
+[joins](../api/Joins.api.md), [aggregations](../api/Aggregations.api.md),
+[windows](../api/Windows.api.md), [collections](../api/Collections.api.md), and
+[streaming](../api/Streaming.api.md).
+
 ## Scope
 
 This reference covers the public DSL surface and cross-cutting rules for:
@@ -52,7 +59,7 @@ import structure
 
 ## Canonical Source Shape
 
-The canonical v.1 source shape is:
+The canonical v1 source shape is:
 
 ```python
 class EnrichOrders(Transform):
@@ -225,7 +232,7 @@ customers = input(Customer)
 
 Rules:
 
-- `schema` must be a `Structure` subclass.
+- `schema` must be a `Schema` class.
 - Input declaration names are the class attribute names.
 - Input declaration order is class body order.
 - Duplicate input names after inheritance resolution are invalid.
@@ -262,7 +269,7 @@ rejected = output(OrderRejected)
 
 Rules:
 
-- `schema` must be a `Structure` subclass.
+- `schema` must be a `Schema` class.
 - Output declaration names are the class attribute names.
 - Output declaration order is class body order.
 - A transform with no field-declared outputs is invalid.
@@ -281,7 +288,7 @@ Rules:
   original input and a latest same-named lane both match, the latest lane wins.
 - Method-level `input=[...]` and `output=[...]` bind multiple parameters or returned values in order.
 - Method-level `inout=source | target` is shorthand for one explicit source and target; one side may be a list.
-- Method-level `cache=...` records an explicit v.2 cache directive for the step method. It is intentionally part of
+- Method-level `cache=...` records an explicit v2 cache directive for the step method. It is intentionally part of
   `@transform(...)` rather than a separate public decorator so user projects can keep their own `@cache` helpers.
 - Method-level `inputs=`, `outputs=`, `lane=`, and `lanes=` are retired. Hook decorators still use `lane=` and
   `lanes=`.
@@ -322,7 +329,7 @@ or resolves repeated schemas. Output-local `where(...)` filters affect only the 
 
 ## Step methods
 
-A compiled step method is a public instance method whose return annotation is a `Structure` subclass.
+A compiled step method is a public instance method whose return annotation is a `Schema` class.
 
 Canonical form:
 
@@ -341,7 +348,7 @@ Rules:
   subclass.
 - The first parameter is the driving row. Later parameters are symbolic relations that must be joined before their
   fields are used in filters or projections.
-- The return annotation is either one `Structure` subclass or a fixed tuple such as `tuple[Accepted, Audited]`.
+- The return annotation is either one `Schema` class or a fixed tuple such as `tuple[Accepted, Audited]`.
 - `input=[...]` binds input or lane declarations to parameters in order when inference is ambiguous.
 - `output=[...]` binds lane or output declarations to returned values in order when tuple results cannot be inferred.
 - `input=` and `output=` also accept a single declaration.
@@ -376,7 +383,7 @@ Rules:
 - Private helper methods are allowed and are not compiled as step methods.
 - Public helper methods without a `Structure` return annotation are ignored by the step method collector, but should
   not be used for compileable expression reuse. Use `@special(type="expr")` instead.
-- Async step methods, generator step methods, classmethods, and staticmethods are out of scope for v.1 compiled DSL.
+- Async step methods, generator step methods, classmethods, and staticmethods are out of scope for v1 compiled DSL.
 
 The body of a compiled step method is symbolically executed. It must return a symbolic schema construction expression:
 
@@ -436,7 +443,7 @@ Rules:
 
 Compiled expressions are symbolic objects with type, nullability, scope, source metadata, and lowering behavior.
 
-The v.1 expression surface includes:
+The v1 expression surface includes:
 
 - field references such as `order.customer_id`;
 - Python literals described by `NullabilityAndTypeCoercion.md`;
@@ -553,7 +560,7 @@ Rules:
 - Module-level helpers and class-local helpers use the same expression semantics.
 - Helpers should be pure and deterministic. Non-deterministic helpers require an explicit future contract.
 - Helpers must not import or require PySpark during compiler phases.
-- Recursive expression helpers are invalid in v.1 unless a future spec defines recursion limits and expansion behavior.
+- Recursive expression helpers are invalid in v1 unless a future spec defines recursion limits and expansion behavior.
 
 When a helper call is unsupported, diagnostics should show the helper name and the call site, not only the expanded
 expression internals.
@@ -665,7 +672,7 @@ return OrderWithCustomer.base(order)(customer_name=self.customers.name)
 
 Documentation uses inferred bare joins as the default style.
 
-Public enum values required for v.1:
+Public enum values required for v1:
 
 ```text
 Join.LEFT
@@ -697,9 +704,9 @@ Rules:
 - Field access on the joined scope is scoped and must not rely on unqualified string column names.
 - Join calls execute in source order.
 - Repeated joins of the same input must produce deterministic aliases.
-- `inner_join(...)` is the v.2 row-multiplying join form. It is valid when the business output is one row per right-side
+- `inner_join(...)` is the v2 row-multiplying join form. It is valid when the business output is one row per right-side
   match.
-- `rowset_join(...)` is the broad v.2 rowset join form for right, full, cross, non-equi, and disjunctive joins.
+- `rowset_join(...)` is the broad v2 rowset join form for right, full, cross, non-equi, and disjunctive joins.
 - `left_join(...)`, `inner_join(...)`, `right_join(...)`, `full_join(...)`, and `cross_join(...)` are shortcuts over
   `rowset_join(...)`.
 - `cross_join(...)` requires `allow_cartesian=True` and does not accept `on`.
@@ -767,7 +774,7 @@ Rules:
 - Hook metadata must be present in IR so generated code can call hooks and traceability can mark opaque boundaries.
 
 `SchemaMode` must include at least the strict default mode and `SchemaMode.ALLOW_EXTRA_COLUMNS`. The exact enum names
-for the default strict mode may be implementation-defined in v.1, but public documentation should use the default by
+for the default strict mode may be implementation-defined in v1, but public documentation should use the default by
 omitting `schema_mode`.
 
 ## Validation Policy
@@ -1015,7 +1022,7 @@ See docs/reference/DSL.md
 
 ## Non-Goals
 
-The following are outside v.1 DSL scope:
+The following are outside v1 DSL scope:
 
 - arbitrary Python control flow as a source of multiple dynamic DataFrame branches;
 - step method branching and merging;

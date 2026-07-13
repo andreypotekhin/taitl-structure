@@ -72,7 +72,7 @@ def test_spark_connect_path_reader_failure_suggests_explicit_schema() -> None:
 
 
 def test_invalid_class_names_fail_and_non_identifier_fields_generate_aliases() -> None:
-    with pytest.raises(StructureToolError, match="Invalid Structure class name"):
+    with pytest.raises(StructureToolError, match="Invalid Schema class name"):
         StructureTools.schemas.generate(schema=StructType(()), to="order_raw")
 
     text = StructureTools.schemas.generate(

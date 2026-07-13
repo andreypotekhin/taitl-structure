@@ -29,7 +29,7 @@ generated/structure_generated/my_package/...
 ```
 
 Structure should use the project's real Python source roots as input roots instead of inventing a special
-source package directory. Transform discovery can identify Structure classes by `@transform`, so the default
+source package directory. Transform discovery can identify schema classes by `@transform`, so the default
 source layout should not force users to move code under a Structure-specific source package.
 
 Source-root resolution should be:
@@ -60,16 +60,16 @@ Resolved by [SchemaDeclarationSyntax.md](../specifications/SchemaDeclarationSynt
 Deprecated examples used:
 
 ```python
-class OrderRaw(Structure):
+class OrderRaw(Schema):
     id = field(string, nullable=False)
 ```
 
 Alternative styles considered included annotation-based or dataclass/Pydantic-inspired forms.
 
-Recommended v.1 canonical form:
+Recommended v1 canonical form:
 
 ```python
-class OrderRaw(Structure):
+class OrderRaw(Schema):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     total = field(String(), nullable=True)
@@ -104,7 +104,7 @@ spark.sql.ansi.enabled = true
 spark.sql.storeAssignmentPolicy = "ANSI"
 ```
 
-Recommended v.1 rules:
+Recommended v1 rules:
 
 - A nullable expression cannot feed a non-nullable field unless the developer narrows or repairs nullability explicitly.
 - Spark-ANSI-compatible widening and typed literals are accepted when they do not hide business intent.
@@ -183,7 +183,7 @@ Source modules should avoid top-level side effects such as:
 - running expensive computations;
 - calling external services.
 
-The compiler may later use AST/LibCST for lower-risk discovery, but v.1 can use imports if the rule is explicit.
+The compiler may later use AST/LibCST for lower-risk discovery, but v1 can use imports if the rule is explicit.
 
 ## +C7. Generated Code Ownership Rules Need to Be Explicit
 
@@ -245,7 +245,7 @@ Define support for:
 - field name collisions;
 - join order;
 - broadcast hints;
-- v.2 `inner_join(...)` row multiplication.
+- v2 `inner_join(...)` row multiplication.
 
 Composite joins should be supported early:
 
@@ -302,16 +302,16 @@ validate_intermediate = false
 
 This resolves the performance concern without weakening compile-time field and type checks.
 
-## +C11. Streaming Compatibility Needs a Precise v.1 Definition
+## +C11. Streaming Compatibility Needs a Precise v1 Definition
 
 Resolved by [StreamingCompatibility.md](../specifications/StreamingCompatibility.md) and decision
 [D06182604.Streaming-compatibility-v1.md](decisions/D06182604.Streaming-compatibility-v1.md).
 
-Structure v.1 streaming compatibility means generated DataFrame transforms can run inside a caller-owned Spark
+Structure v1 streaming compatibility means generated DataFrame transforms can run inside a caller-owned Spark
 Structured Streaming query when the current pipeline DataFrame is streaming, side lookup inputs are static, and every
 generated operation is compatible with that runtime shape.
 
-Included in v.1:
+Included in v1:
 
 - row-local projection;
 - row-local filtering;
@@ -320,7 +320,7 @@ Included in v.1:
 - stream-static `Join.LEFT` and `Join.INNER` lookup joins;
 - hooks explicitly marked `streaming_safe=True`.
 
-Deferred or rejected in v.1:
+Deferred or rejected in v1:
 
 - streaming source and sink orchestration;
 - stream-stream joins;
@@ -340,9 +340,9 @@ Traceability is split into three topics:
 
 1. compiler provenance, which maps source nodes to IR nodes to generated PySpark nodes;
 2. static dataflow traceability, which records transform, table, and column dependencies inferred from IR;
-3. runtime LDJSON traceability, which is optional transform-run telemetry deferred beyond v.4.
+3. runtime LDJSON traceability, which is optional transform-run telemetry deferred beyond v4.
 
-The v.1 traceability schema should version compiler provenance and static dataflow metadata. Runtime LDJSON can define its
+The v1 traceability schema should version compiler provenance and static dataflow metadata. Runtime LDJSON can define its
 own record format later if the nice-to-have becomes scheduled work.
 
 ## +C13. Compile-Time Performance Needs Concrete Targets
@@ -363,16 +363,16 @@ Medium project:
   structure check under 10 seconds warm / 30 seconds cold
 
 Single-file edit:
-  end-of-v.3 incremental compile under 2 seconds for affected transform
+  end-of-v3 incremental compile under 2 seconds for affected transform
 ```
 
-These targets should influence architecture decisions such as caching, end-of-v.3 incremental compilation, and avoiding
+These targets should influence architecture decisions such as caching, end-of-v3 incremental compilation, and avoiding
 Spark startup during compile.
 
 ## +C14. Incremental Compile and Cache Are Missing
 
-Resolved for v.1 architecture by [CompilerPerformanceTargets.md](../specifications/CompilerPerformanceTargets.md).
-Production incremental compilation remains end-of-v.3 implementation work.
+Resolved for v1 architecture by [CompilerPerformanceTargets.md](../specifications/CompilerPerformanceTargets.md).
+Production incremental compilation remains end-of-v3 implementation work.
 
 Fast compilers need caching and change detection.
 
@@ -393,7 +393,7 @@ structure compile --changed-only
 structure clean
 ```
 
-At minimum, design the compiler so end-of-v.3 production incremental compilation can be added without major rework.
+At minimum, design the compiler so end-of-v3 production incremental compilation can be added without major rework.
 
 ## +C15. Need a “No Spark Dependency During Compile” Rule
 
@@ -498,7 +498,7 @@ Resolved by public policy [Compatibility.md](../../Compatibility.md), specificat
 [CompatibilityPolicy.md](../specifications/CompatibilityPolicy.md), and decision
 [D06182605.Versioning-and-compatibility-policy.md](decisions/D06182605.Versioning-and-compatibility-policy.md).
 
-v.1 baseline:
+v1 baseline:
 
 - Python 3.11+.
 - PySpark 3.5.x and 4.0.x target, with `target_profile = ">=3.5,<4.1"` by default.
@@ -534,20 +534,20 @@ Recommended direction:
   supported.
 - Treat package-name, distribution-name, and generated-package naming as a release-blocking consistency check.
 
-## +C22. The v.1 Scope Is Large Enough to Hide the First Useful Release
+## +C22. The v1 Scope Is Large Enough to Hide the First Useful Release
 
-Resolved by [P06202601.v.1-first-executable-slice.plan.md](../planning/done/P06202601.v.1-first-executable-slice.plan.md), the first executable slice model fixture under
+Resolved by [P06202601.v1-first-executable-slice.plan.md](../planning/done/P06202601.v1-first-executable-slice.plan.md), the first executable slice model fixture under
 `res/testing/model/v1`, and the revised Sprint 01 plan.
 
-The roadmap's v.1 remains the broad north star: online execution, optional generated PySpark, schemas, validation, joins,
+The roadmap's v1 remains the broad north star: online execution, optional generated PySpark, schemas, validation, joins,
 hooks, compiler traceability, static dataflow, streaming compatibility reporting, diagnostics, doctor checks, and build
 integration. That scope is coherent, but it is too broad to serve as the first adoption checkpoint.
 
 The first adoption checkpoint is now first executable slice, an internal dev/test planning label. first executable slice proves one executable contract before
-the larger v.1 scope hardens: one transform with schema declaration, projection, filtering, one `@special(type="expr")` helper, input
+the larger v1 scope hardens: one transform with schema declaration, projection, filtering, one `@special(type="expr")` helper, input
 validation, online execution, generated execution, and parity tests.
 
-Deferred from Sprint 01 into later v.1 work:
+Deferred from Sprint 01 into later v1 work:
 
 - joins;
 - hooks;
@@ -564,7 +564,7 @@ Resolved by [BackendCapabilities.md](../specifications/BackendCapabilities.md), 
 
 Backend adaptability is now an explicit internal capability contract. Compiler checks, online execution, generated
 PySpark emission, streaming compatibility checks, and future explain output should ask a `BackendCapabilities` object
-whether a `CapabilityRequirement` is supported. The v.1 profile supports ordinary PySpark for
+whether a `CapabilityRequirement` is supported. The v1 profile supports ordinary PySpark for
 `target_profile = ">=3.5,<4.1"` without importing PySpark during compiler commands.
 
 Unsupported backend targets fail with `BACKEND-E2401`. Unsupported backend capabilities fail with `BACKEND-E2402`.
@@ -611,7 +611,7 @@ Resolved by [DataQualityConstraints.md](../specifications/DataQualityConstraints
 [D06202602.Data-quality-constraints-boundary.md](decisions/D06202602.Data-quality-constraints-boundary.md), and plan
 [P06202602.Data-quality-constraints.plan.md](../planning/P06202602.Data-quality-constraints.plan.md).
 
-Structure v.1 validation is schema-first. Default intermediate validation remains `schema_only`, which checks shape
+Structure v1 validation is schema-first. Default intermediate validation remains `schema_only`, which checks shape
 metadata and must not scan rows. Accepted values, ranges, regex-like constraints, decimal domain rules, freshness,
 uniqueness, referential checks, and row-count expectations belong to a future opt-in constraint model.
 
@@ -634,7 +634,7 @@ Resolved by [AnalyticalJoinCoverage.md](../specifications/AnalyticalJoinCoverage
 
 Remaining: implementation of AnalyticalJoinCoverage.md
 
-The v.1 `lookup_join(...)` design is disciplined, but real analytical pipelines often need semi joins, anti joins,
+The v1 `lookup_join(...)` design is disciplined, but real analytical pipelines often need semi joins, anti joins,
 existence checks, temporal/as-of joins, slowly changing dimension lookups, deduped lookup policies, and row-multiplying
 joins.
 
@@ -643,11 +643,11 @@ would reduce optimizer visibility and make traceability less useful in exactly t
 
 Recommended direction:
 
-- Keep v.1 `lookup_join(...)` narrow, but explicitly document the common join patterns it does not cover.
-- Prioritize v.2 join forms by production frequency: semi/anti existence joins, `inner_join(...)`, prejoin dedupe
+- Keep v1 `lookup_join(...)` narrow, but explicitly document the common join patterns it does not cover.
+- Prioritize v2 join forms by production frequency: semi/anti existence joins, `inner_join(...)`, prejoin dedupe
   policies, and temporal lookup joins.
 - Design temporal and SCD-style joins around explicit cardinality and validity-window semantics.
-- Add examples showing when to model a lookup as `lookup_join(...)`, when to wait for v.2 syntax, and when a hook is the
+- Add examples showing when to model a lookup as `lookup_join(...)`, when to wait for v2 syntax, and when a hook is the
   honest escape hatch.
 
 ## C28. Operational Integration Recipes Are Missing
@@ -719,7 +719,7 @@ Recommended direction:
 ## C32 Imported schema fields can conflict with Python keywords
 
 Field names in Structure schema classes are Python attribute names. If a Spark schema field name is not a valid Python
-identifier or is a Python keyword, Structure v.1 cannot preserve it because it does not have field aliases. Renaming the
+identifier or is a Python keyword, Structure v1 cannot preserve it because it does not have field aliases. Renaming the
 field during schema generation would create an incorrect schema.
 
 ## C33. Transform Composition Needs Hook Ownership Rules
@@ -792,7 +792,7 @@ HookSemantics.md
 CompilerPerformanceTargets.md
 ```
 
-No missing pre-coding design or specification document is known for the v.1 coding path. Remaining gaps are
+No missing pre-coding design or specification document is known for the v1 coding path. Remaining gaps are
 implementation, adoption, testing breadth, and governance gaps, not missing semantic specifications.
 
 ## Recommended Sprint 0 Spike Tasks

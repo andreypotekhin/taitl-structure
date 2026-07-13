@@ -4,7 +4,7 @@
 
 Build directly on Sprint 08 analytical operations by designing and implementing the advanced aggregation/window/HOF
 surface left out of the first slice, promoting Spark Connect from experimental parity to supported batch status for
-completed v.1/v.2 compiler-visible features, proving the first caller-owned Spark Structured Streaming slice, admitting
+completed v1/v2 compiler-visible features, proving the first caller-owned Spark Structured Streaming slice, admitting
 the PySpark join forms left out of the first analytical slice, adding explicit optimization directives, and making
 explain output rich enough to review analytical pipelines.
 
@@ -152,7 +152,7 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
 - Streaming compatibility remains conservative for selected-row windows, analytical windows, aggregation, and dedupe
   until watermark, state, and output-mode contracts are designed.
 - Advanced HOF helpers must stay symbolic even when user callback syntax looks like ordinary Python.
-- Transform composition and generated documentation/tooling remain adjacent v.2 work; Sprint 09 must preserve the
+- Transform composition and generated documentation/tooling remain adjacent v2 work; Sprint 09 must preserve the
   metadata Sprint 10 needs rather than hiding it inside target-specific renderers.
 
 ## Progress
@@ -169,11 +169,11 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
 - [x] (2026-07-05) Added design, specification, public reference, deferred-feature reference, and execution plan for
   first-slice Spark streaming support scheduled into Sprint 09.
 - [x] (2026-07-05) Implemented the first full PySpark rowset join pass: `rowset_join(...)`, rowset shortcuts,
-  right/full/cross lowering, broad predicate support, v.2 fixture coverage, and checked-in generated example output.
+  right/full/cross lowering, broad predicate support, v2 fixture coverage, and checked-in generated example output.
 - [x] (2026-07-05) Implemented the admitted advanced analytical operations pass: rollup/cube grouping, grouping
   metadata, additional aggregate metrics, metric-local filters, reusable explicit windows, broad window expressions,
   additional array/map HOF helpers, capability gates, traceability, public exports, and focused tests.
-- [x] (2026-07-06) Added live Spark Connect online/generated runtime evidence for v.1/v.2 completed batch fixtures,
+- [x] (2026-07-06) Added live Spark Connect online/generated runtime evidence for v1/v2 completed batch fixtures,
   including full rowset joins and advanced analytical operations. Verified with `make integration BACKEND=spark-connect35`
   and `make integration BACKEND=spark-connect40`.
 - [x] (2026-07-06) Added Spark Connect release-blocking verification through the existing `make integration`
@@ -187,8 +187,8 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
 - [x] (2026-07-07) Preserved stable ordinary generated PySpark output while containing generated parent-class rendering
   to transforms that actually have inherited owner boundaries. Verified golden, differential, metamorphic, inheritance,
   and full build gates.
-- [x] (2026-07-07) Refreshed public examples and the v.2 testing generated model so checked-in source, generated
-  PySpark, and traceability artifacts cover the Sprint 09 v.2 implemented feature surface.
+- [x] (2026-07-07) Refreshed public examples and the v2 testing generated model so checked-in source, generated
+  PySpark, and traceability artifacts cover the Sprint 09 v2 implemented feature surface.
 - [x] (2026-07-07) Closed Spark streaming first-slice work as a static compatibility contract from
   [P07052604.Spark-streaming-first-slice.plan.md](../../../planning/done/P07052604.Spark-streaming-first-slice.plan.md).
   Live online/generated streaming runtime evidence is deferred to post-Sprint 09 follow-up.
@@ -202,10 +202,10 @@ physical-plan hints explicitly, and inspect analytical dataflow without reading 
 
 ## Closeout
 
-Sprint 09 is complete with explicit deferrals. Implemented v.2 features now include advanced analytical operations,
-full PySpark rowset joins, Spark Connect batch support for completed v.1/v.2 batch features, static caller-owned
+Sprint 09 is complete with explicit deferrals. Implemented v2 features now include advanced analytical operations,
+full PySpark rowset joins, Spark Connect batch support for completed v1/v2 batch features, static caller-owned
 streaming compatibility classification, cache/persist first-slice directives, generated parent-class boundaries for
-inherited transform owners, refreshed examples, and refreshed v.2 testing generated artifacts.
+inherited transform owners, refreshed examples, and refreshed v2 testing generated artifacts.
 
 Deferred follow-up:
 
@@ -213,7 +213,7 @@ Deferred follow-up:
 - Repartition, coalesce, checkpoint, and broader join strategy directives.
 - Rich field-level explain lineage through projections, filters, joins, aggregations, windows, hooks, and optimization
   boundaries.
-- Generated docs and pytest helpers are Sprint 10 adoption-tooling work. Incremental compile moved to end-of-v.3
+- Generated docs and pytest helpers are Sprint 10 adoption-tooling work. Incremental compile moved to end-of-v3
   Sprint 17.
 
 ## Explain Performance Metric

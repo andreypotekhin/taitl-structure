@@ -34,62 +34,62 @@ from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkVa
 from structure.app.target.pyspark.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
 
 
-class RawOrder(structure.Structure):
+class RawOrder(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     status = structure.field(structure.String(), nullable=True)
 
 
-class PublishedOrder(structure.Structure):
+class PublishedOrder(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     status = structure.field(structure.String(), nullable=True)
 
 
-class Address(structure.Structure):
+class Address(structure.Schema):
     city = structure.field(structure.String(), nullable=False)
     postal_code = structure.field(structure.String(), nullable=False)
 
 
-class RawShippedOrder(structure.Structure):
+class RawShippedOrder(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     shipping = structure.field(structure.Struct(Address), nullable=True)
 
 
-class PublishedShippedOrder(structure.Structure):
+class PublishedShippedOrder(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     shipping = structure.field(structure.Struct(Address), nullable=False)
 
 
-class Customer(structure.Structure):
+class Customer(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     segment = structure.field(structure.String(), nullable=True)
     valid_from = structure.field(structure.String(), nullable=False)
     valid_to = structure.field(structure.String(), nullable=True)
 
 
-class PublishedOrderId(structure.Structure):
+class PublishedOrderId(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
 
 
-class PublishedOrderStatus(structure.Structure):
+class PublishedOrderStatus(structure.Schema):
     status = structure.field(structure.String(), nullable=True)
 
 
-class RawMetric(structure.Structure):
+class RawMetric(structure.Schema):
     customer_id = structure.field(structure.String(), nullable=False)
     quantity = structure.field(structure.Long(), nullable=False)
 
 
-class RawTagBatch(structure.Structure):
+class RawTagBatch(structure.Schema):
     tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
 
 
-class RawMapBatch(structure.Structure):
+class RawMapBatch(structure.Schema):
     attributes = structure.field(
         structure.Map(structure.String(), structure.String(), value_contains_null=True), nullable=True
     )
 
 
-class CustomerMetric(structure.Structure):
+class CustomerMetric(structure.Schema):
     customer_id = structure.field(structure.String(), nullable=False)
     order_count = structure.field(structure.Long(), nullable=False)
     distinct_customers = structure.field(structure.Long(), nullable=False)
@@ -99,7 +99,7 @@ class CustomerMetric(structure.Structure):
     avg_quantity = structure.field(structure.Double(), nullable=False)
 
 
-class GroupingSetMetric(structure.Structure):
+class GroupingSetMetric(structure.Schema):
     customer_id = structure.field(structure.String(), nullable=True)
     order_count = structure.field(structure.Long(), nullable=False)
     grouping_id = structure.field(structure.Integer(), nullable=False)
@@ -2092,11 +2092,11 @@ def _multi_result_plan() -> PySparkExecutionPlan:
     )
 
 
-def _field(schema: type[structure.Structure], name: str) -> PySparkExpressionRecipe:
+def _field(schema: type[structure.Schema], name: str) -> PySparkExpressionRecipe:
     return _field_scope(schema.__name__, schema, name)
 
 
-def _field_scope(scope: str, schema: type[structure.Structure], name: str) -> PySparkExpressionRecipe:
+def _field_scope(scope: str, schema: type[structure.Schema], name: str) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe(
         kind="field",
         type=schema._structure_fields[name].type,
@@ -2105,7 +2105,7 @@ def _field_scope(scope: str, schema: type[structure.Structure], name: str) -> Py
     )
 
 
-def _field_path(schema: type[structure.Structure], *path: str) -> PySparkExpressionRecipe:
+def _field_path(schema: type[structure.Schema], *path: str) -> PySparkExpressionRecipe:
     field = schema._structure_fields[path[0]]
     type_ = field.type
     nullable = field.nullable
@@ -2290,7 +2290,7 @@ def _hook(
     )
 
 
-def _frame(name: str, schema: type[structure.Structure]) -> "FakeFrame":
+def _frame(name: str, schema: type[structure.Schema]) -> "FakeFrame":
     return FakeFrame(
         name,
         FakeSchema(

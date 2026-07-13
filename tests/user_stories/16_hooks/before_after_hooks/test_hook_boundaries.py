@@ -1,19 +1,7 @@
 import pytest
 
 import structure
-from structure import (
-    String,
-    Structure,
-    StructureCompileError,
-    Transform,
-    field,
-    input,
-    lane,
-    output,
-    raw,
-    step,
-    transform,
-)
+from structure import Schema, String, StructureCompileError, Transform, field, input, lane, output, raw, step, transform
 from structure.app.dsl.api import SchemaMode, compile_transform
 from structure.compat import v2
 
@@ -54,9 +42,9 @@ def test_hooks_record_explicit_input_access_and_projection_validation_contracts(
 
 
 def test_hooks_record_target_backend_metadata() -> None:
-    """Hooks carry v.1 target_backend metadata through the PySpark recipe."""
+    """Hooks carry v1 target_backend metadata through the PySpark recipe."""
 
-    class Row(Structure):
+    class Row(Schema):
         id = field(String(), nullable=False)
 
     @transform
@@ -86,7 +74,7 @@ def test_hooks_record_target_backend_metadata() -> None:
 def test_non_pyspark_only_hook_target_fails_before_runtime() -> None:
     """V1 accepts hook target syntax, but active execution is still PySpark only."""
 
-    class Row(Structure):
+    class Row(Schema):
         id = field(String(), nullable=False)
 
     @transform
@@ -121,7 +109,7 @@ def test_generated_code_calls_source_transform_hooks_directly(orders_transform_t
 def test_raw_methods_attach_in_declaration_order_after_the_preceding_step() -> None:
     """I can place a raw native-frame method between normal transform steps."""
 
-    class Row(Structure):
+    class Row(Schema):
         id = field(String(), nullable=False)
 
     @transform
@@ -150,7 +138,7 @@ def test_raw_methods_attach_in_declaration_order_after_the_preceding_step() -> N
 def test_raw_before_the_first_step_replaces_its_source_lane() -> None:
     """A leading raw method runs before the first source-ordered step."""
 
-    class Row(Structure):
+    class Row(Schema):
         id = field(String(), nullable=False)
 
     @transform
@@ -175,7 +163,7 @@ def test_raw_before_the_first_step_replaces_its_source_lane() -> None:
 def test_raw_pipe_binds_original_input_and_materialized_output() -> None:
     """I can select an original input and a current output without an inputs namespace."""
 
-    class Row(Structure):
+    class Row(Schema):
         id = field(String(), nullable=False)
 
     @transform
@@ -201,7 +189,7 @@ def test_raw_pipe_binds_original_input_and_materialized_output() -> None:
 def test_raw_pipe_rejects_an_unmaterialized_output_parameter() -> None:
     """I get a useful error when an output argument has not been produced yet."""
 
-    class Row(Structure):
+    class Row(Schema):
         id = field(String(), nullable=False)
 
     @transform

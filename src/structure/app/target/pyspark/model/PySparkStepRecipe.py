@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.app.compiler.ir.model.TransformMemberOrigin import TransformMemberOrigin
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
@@ -20,8 +20,8 @@ class PySparkStepRecipe:
     ordinal: int
     source: str
     source_scope: str
-    input_schema: type[Structure]
-    output_schema: type[Structure]
+    input_schema: type[Schema]
+    output_schema: type[Schema]
     input_alias: str
     output_alias: str
     before_hooks: tuple[PySparkHookRecipe, ...]

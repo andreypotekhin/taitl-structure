@@ -84,10 +84,10 @@ def summarize(self, order: OrderEnriched) -> CustomerSummary:
 ## Progress
 
 - [x] (2026-07-02) Started the aggregation slice: implemented typed `group_by(...)` capture, aggregate IR, count/sum
-  builders, shared PySpark aggregate recipes, generated rendering coverage, online recipe coverage, and v.2 analytics
+  builders, shared PySpark aggregate recipes, generated rendering coverage, online recipe coverage, and v2 analytics
   fixture lowering.
 - [x] (2026-07-02) Extended aggregate builders and PySpark lowering to `min(...)`, `max(...)`, `avg(...)`, and
-  `count_distinct(...)`, with generated rendering, online recipe, capability, and v.2 fixture coverage.
+  `count_distinct(...)`, with generated rendering, online recipe, capability, and v2 fixture coverage.
 - [x] (2026-07-02) Added aggregate input type and nullable-output diagnostics for numeric aggregate expressions.
 - [x] (2026-07-02) Added aggregate static dataflow traceability and explain output for grouped keys and aggregate
   metrics.
@@ -117,7 +117,7 @@ def summarize(self, order: OrderEnriched) -> CustomerSummary:
 - [x] (2026-07-04) Implemented deterministic keyed dedupe shortcuts `dedupe_latest_by(...)` and
   `dedupe_earliest_by(...)` as end-user aliases over selected-row IR, preserving Spark-visible `row_number()` lowering,
   batch-only streaming classification, public docs, fixture coverage, and generated rendering tests.
-- [x] (2026-07-04) Created the v.2 completion execution plan
+- [x] (2026-07-04) Created the v2 completion execution plan
   [P07042601.V2-completion-execution-plan.md](../../planning/done/P07042601.V2-completion-execution-plan.md) to cover the
   remaining Sprint 08 keyed dedupe closeout, Sprint 09 Spark Connect/optimization/explain work, Sprint 10 adoption
   tooling, missing designs/specifications/user stories/examples, and public reference cleanup rules.
@@ -146,5 +146,5 @@ Targets:
 
 Simple grouped rollups, projection window helpers, rolling metrics, higher-order collection helpers, deterministic
 latest/earliest row selection, deterministic keyed dedupe shortcuts, and exact current-frame duplicate cleanup are the
-admitted v.2 analytical slice. Sprint 09 carries broader explain richness, optimization directives, Spark Connect
+admitted v2 analytical slice. Sprint 09 carries broader explain richness, optimization directives, Spark Connect
 experiments, and unresolved design challenges forward.

@@ -1,8 +1,8 @@
 from examples.orders.schemas.common import AuditStamp, TenantKey
-from structure import Boolean, Decimal, Double, Float, String, Struct, Structure, field
+from structure import Boolean, Decimal, Double, Float, Schema, String, Struct, field
 
 
-class ProductBase(Structure):
+class ProductBase(Schema):
     tenant = field(Struct(TenantKey), nullable=False)
     audit = field(Struct(AuditStamp), nullable=False)
 

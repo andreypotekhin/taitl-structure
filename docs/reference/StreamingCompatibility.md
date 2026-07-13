@@ -5,11 +5,13 @@ Structured Streaming jobs. A generated transform is streaming-compatible when a 
 the current pipeline input and Spark can analyze the resulting DataFrame plan without Structure adding unsupported
 streaming operations, actions, stateful streaming features, or streaming lifecycle code.
 
-The streaming-compatible contract keeps lifecycle ownership with the caller until v.3 streaming orchestration. Row-local
+The streaming-compatible contract keeps lifecycle ownership with the caller until v3 streaming orchestration. Row-local
 projection, row-local filtering, schema-only validation, stream-static joins, transform-scoped watermarks, watermarked
 grouped aggregations, watermarked dedupe, and bounded inner stream-stream joins are in scope. Triggers, checkpoints,
 streaming sources, streaming sinks, query start, query stop, deployment, and recovery are outside this compatibility
-contract and scheduled into the v.3 lifecycle contract.
+contract and scheduled into the v3 lifecycle contract.
+
+See the exhaustive [streaming API table](../api/Streaming.api.md) for supported declarations, parity, and examples.
 
 ## Definition
 
@@ -26,7 +28,7 @@ Streaming compatibility means all of these are true:
 
 Streaming compatibility does not mean Structure starts a streaming query. Structure checks the transformation contract
 at compile time, reports required output modes where relevant, and leaves query lifecycle choices to the caller-owned
-shape until the v.3 orchestration contract is used.
+shape until the v3 orchestration contract is used.
 
 ## Runtime Shape
 
@@ -91,7 +93,7 @@ Severity rules:
 This gives ordinary batch projects useful visibility without making every future batch-only operation fail, while still
 letting streaming-bound transforms enforce the contract in CI.
 
-## Supported v.1 Operations
+## Supported v1 Operations
 
 Projection is compatible when every projected value is a compileable, row-local Spark Column expression:
 
@@ -117,7 +119,7 @@ Schema-only validation is compatible. It may inspect `df.schema`, column names, 
 It must not trigger Spark jobs.
 
 Compiler traceability generation is compatible when it records compile-time or generated-code metadata. Runtime traceability
-hooks are out of scope for v.1 and must not be introduced by streaming-compatible generated code.
+hooks are out of scope for v1 and must not be introduced by streaming-compatible generated code.
 
 Watermarks are compatible when declared with `watermark(field, delay=...)` before the stateful operation they support.
 Grouped aggregations and exact/subset dedupe are compatible when the current streaming frame has a prior
@@ -127,7 +129,7 @@ compiler-visible watermark. Inner stream-stream rowset joins are compatible when
 
 ## Deferred or Rejected Operations
 
-These operations are not streaming-compatible in v.1:
+These operations are not streaming-compatible in v1:
 
 - global `orderBy(...)` or `sort(...)` on the streaming current DataFrame;
 - `limit(...)`, `offset(...)`, or global top-N operations;
@@ -150,7 +152,7 @@ policies. Structure admits only the shapes whose transformation policy is compil
 
 ## Joins
 
-Structure v.1 allows stream-static joins only when the current pipeline DataFrame may be streaming and the joined input
+Structure v1 allows stream-static joins only when the current pipeline DataFrame may be streaming and the joined input
 is static.
 
 Accepted:
@@ -171,7 +173,7 @@ Rules:
 - Join conditions must satisfy `JoinSemantics.spec.md`.
 - `lookup_join(...)` uniqueness warnings still apply; streaming compatibility does not prove uniqueness.
 - `JoinHint.BROADCAST` is compatible only for the static joined side.
-- A side input that may be streaming must be rejected for v.1 streaming compatibility.
+- A side input that may be streaming must be rejected for v1 streaming compatibility.
 
 Rejected:
 
@@ -193,7 +195,7 @@ Hooks are opaque because Structure cannot inspect arbitrary PySpark code safely.
 
 Default rule:
 
-- Any `@raw` hook makes the transform streaming-unknown for v.1 compatibility.
+- Any `@raw` hook makes the transform streaming-unknown for v1 compatibility.
 
 Opt-in rule:
 
@@ -227,7 +229,7 @@ Compatible checks:
 - nullable flags where Spark metadata is reliable;
 - nested struct, array, and map shape where available from schema metadata.
 
-Not compatible in v.1:
+Not compatible in v1:
 
 - validation that calls `count()`, `collect()`, `head()`, or equivalent actions;
 - row-level constraints that require scanning data;
@@ -304,7 +306,7 @@ Operation:
   join customers#1
 
 Problem:
-  v.1 streaming compatibility supports stream-static joins only. The joined input may be streaming, which would create
+  v1 streaming compatibility supports stream-static joins only. The joined input may be streaming, which would create
   a stream-stream join.
 
 Use:

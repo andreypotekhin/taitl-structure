@@ -817,7 +817,7 @@ The generator should make this easy by using stable, predictable module names an
 
 ## Non-Goals
 
-The following are outside v.1 PySpark generation scope:
+The following are outside v1 PySpark generation scope:
 
 - generating Python UDFs or Pandas UDFs from compiled expressions;
 - generating RDD-based implementations;

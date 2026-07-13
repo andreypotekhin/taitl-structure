@@ -1,14 +1,14 @@
 import pytest
 
-from structure import String, Structure, Transform, field, input, output, transform
+from structure import Schema, String, Transform, field, input, output, transform
 from structure.app.dsl.api import compile_transform
 
 
-class Raw(Structure):
+class Raw(Schema):
     id = field(String(), nullable=False)
 
 
-class Published(Structure):
+class Published(Schema):
     id = field(String(), nullable=False)
 
 

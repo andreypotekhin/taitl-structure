@@ -10,30 +10,30 @@ from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspa
 from structure.app.target.pyspark.commands.RenderPySparkTransformModule import render_pyspark_transform_module
 
 
-class RawEvent(structure.Structure):
+class RawEvent(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False)
     event_id = structure.field(structure.String(), nullable=False)
     sequence = structure.field(structure.Long(), nullable=False)
 
 
-class LatestEvent(structure.Structure):
+class LatestEvent(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False)
     event_id = structure.field(structure.String(), nullable=False)
     sequence = structure.field(structure.Long(), nullable=False)
 
 
-class Account(structure.Structure):
+class Account(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False, primary_key=True)
     tier = structure.field(structure.String(), nullable=False)
 
 
-class AccountEvent(structure.Structure):
+class AccountEvent(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False)
     event_id = structure.field(structure.String(), nullable=False)
     tier = structure.field(structure.String(), nullable=True)
 
 
-class RankedEvent(structure.Structure):
+class RankedEvent(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False)
     event_id = structure.field(structure.String(), nullable=False)
     sequence = structure.field(structure.Long(), nullable=False)
@@ -48,7 +48,7 @@ class RankedEvent(structure.Structure):
     rolling_max_units = structure.field(structure.Long(), nullable=False)
 
 
-class AdvancedRankedEvent(structure.Structure):
+class AdvancedRankedEvent(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False)
     percent_rank = structure.field(structure.Double(), nullable=False)
     cume_dist = structure.field(structure.Double(), nullable=False)

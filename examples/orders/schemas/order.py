@@ -1,8 +1,8 @@
 from examples.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
-from structure import Array, Boolean, Decimal, Integer, Long, Map, String, Struct, Structure, Timestamp, field
+from structure import Array, Boolean, Decimal, Integer, Long, Map, Schema, String, Struct, Timestamp, field
 
 
-class OrderRaw(Structure):
+class OrderRaw(Schema):
     tenant = field(Struct(TenantKey), nullable=False)
     audit = field(Struct(AuditStamp), nullable=False)
     business = field(Struct(BusinessDate), nullable=False)
@@ -18,7 +18,7 @@ class OrderRaw(Structure):
     shipping = field(Struct(Address), nullable=True)
 
 
-class OrderNormalized(Structure):
+class OrderNormalized(Schema):
     tenant = field(Struct(TenantKey), nullable=False)
     audit = field(Struct(AuditStamp), nullable=False)
     business = field(Struct(BusinessDate), nullable=False)
@@ -61,7 +61,7 @@ class OrderFulfillment(OrderWithPromotion):
     shipped_at = field(Timestamp(), nullable=True)
 
 
-class OrderPublication(Structure):
+class OrderPublication(Schema):
     tenant = field(Struct(TenantKey), nullable=False)
     business = field(Struct(BusinessDate), nullable=False)
     id = field(String(), nullable=False, primary_key=True)
@@ -81,7 +81,7 @@ class OrderPublication(Structure):
     is_large = field(Boolean(), nullable=False)
 
 
-class PublicationFlags(Structure):
+class PublicationFlags(Schema):
     has_promotion = field(Boolean(), nullable=False)
 
 
@@ -89,7 +89,7 @@ class OrderPublished(OrderPublication, PublicationFlags):
     pass
 
 
-class OrderCustomerReconciliation(Structure):
+class OrderCustomerReconciliation(Schema):
     tenant_id = field(String(), nullable=True)
     order_id = field(String(), nullable=True)
     order_customer_id = field(String(), nullable=True)
@@ -98,7 +98,7 @@ class OrderCustomerReconciliation(Structure):
     match_status = field(String(), nullable=True)
 
 
-class CustomerOrderBackfill(Structure):
+class CustomerOrderBackfill(Schema):
     tenant_id = field(String(), nullable=True)
     order_id = field(String(), nullable=True)
     order_customer_id = field(String(), nullable=True)
@@ -107,7 +107,7 @@ class CustomerOrderBackfill(Structure):
     customer_region = field(String(), nullable=True)
 
 
-class OrderProductCandidate(Structure):
+class OrderProductCandidate(Schema):
     tenant_id = field(String(), nullable=True)
     order_id = field(String(), nullable=True)
     customer_id = field(String(), nullable=True)

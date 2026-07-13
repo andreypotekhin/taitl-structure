@@ -1,17 +1,17 @@
 import sys
 
-from structure import String, Structure, Transform, field, input, output, raw, transform, where
+from structure import Schema, String, Transform, field, input, output, raw, transform, where
 from structure.app.compiler.api import Compiler
 from structure.app.compiler.compileability.streaming_compatibility.api import StreamingSupport
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 
-class StreamRaw(Structure):
+class StreamRaw(Schema):
     id = field(String(), nullable=False)
 
 
-class StreamClean(Structure):
+class StreamClean(Schema):
     id = field(String(), nullable=False)
 
 
@@ -71,7 +71,7 @@ def test_streaming_unknown_hook_reports_a_registered_warning() -> None:
 
 
 def test_generated_streaming_compatible_code_avoids_lifecycle_and_actions() -> None:
-    """I can keep streaming orchestration outside Structure in v.1 and v.2."""
+    """I can keep streaming orchestration outside Structure in v1 and v2."""
 
     plan = PySpark.plan.lower()(compile_transform(StreamingProjection))
     files = PySpark.render.project()(

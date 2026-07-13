@@ -134,7 +134,7 @@ Online execution should be tested by:
 - deferred construction without Spark work
 - `StructureSession.run(...)` delegation
 - online PySpark execution against small Spark DataFrames
-- parity with generated PySpark output for every supported v.1 operation
+- parity with generated PySpark output for every supported v1 operation
 
 ## Online/Generated Parity
 
@@ -179,7 +179,7 @@ Each supported DSL feature needs at least one intentionally broken transform tes
 These tests should assert the diagnostic code, location, problem summary, and suggested fix, not merely that compilation
 failed.
 
-Required v.1 negative cases:
+Required v1 negative cases:
 
 - missing fields
 - wrong types
@@ -217,10 +217,10 @@ Add benchmark fixtures for:
 - many schema files
 - many expression helpers
 
-Test cold compile in v1. Add separate cold and warm incremental-compile tests when end-of-v.3 production incremental
+Test cold compile in v1. Add separate cold and warm incremental-compile tests when end-of-v3 production incremental
 compile is implemented.
 
-Warm incremental compile should avoid symbolic execution and regeneration for unchanged transforms once the v.3 cache is
+Warm incremental compile should avoid symbolic execution and regeneration for unchanged transforms once the v3 cache is
 enabled.
 
 Compiler tests must prove the no-Spark compile contract: `structure check`, `structure compile`, and
@@ -365,5 +365,5 @@ smoke tests belong under `tests/integration/pyspark/backend`, shared live-backen
 `tests/integration/pyspark/v2/support/analytics.py`; do not create a second version hierarchy under the top-level
 `support` directory.
 
-Versioned integration fixture data belongs under `res/testing/data`. For example, the v.1 orders integration scenario
+Versioned integration fixture data belongs under `res/testing/data`. For example, the v1 orders integration scenario
 uses CSV files from `res/testing/data/v1/orders`.

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.app.target.pyspark.model.PySparkProjectionRecipe import PySparkProjectionRecipe
@@ -11,7 +11,7 @@ from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkVa
 
 @dataclass(frozen=True)
 class PySparkStepResultRecipe:
-    schema: type[Structure]
+    schema: type[Schema]
     lane: str
     frame: str
     output_alias: str

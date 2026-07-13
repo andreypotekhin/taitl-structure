@@ -1,14 +1,14 @@
 # Roadmap
 
-The roadmap is staged around an IR-first north star. v.1 first proves one useful executable transform running both
+The roadmap is staged around an IR-first north star. v1 first proves one useful executable transform running both
 online and as generated PySpark, then broadens into the contract that lets Structure replace hand-maintained PySpark
-boilerplate with strict online execution and optional generated-code workflow. v.2 makes that workflow useful for
+boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful for
 mainstream analytical pipelines, promotes Spark Connect for completed batch features, and completes static
-caller-owned Spark streaming compatibility diagnostics. v.3 closes the planned PySpark parity gaps tracked in
-`docs/dev/Gaps.md`, then owns full streaming lifecycle concerns. v.4 handles backend expansion and any non-batch Spark
+caller-owned Spark streaming compatibility diagnostics. v3 closes the planned PySpark parity gaps tracked in
+`docs/dev/Gaps.md`, then owns full streaming lifecycle concerns. v4 handles backend expansion and any non-batch Spark
 Connect hardening left outside the Sprint 09 support claim.
 
-## v.1
+## v1
 
 - Typed schema definitions.
 - Transform classes.
@@ -24,7 +24,7 @@ Connect hardening left outside the Sprint 09 support claim.
 - Generated schema constants usable by caller code for reads and pre-write validation/projection.
 - Online-materialized Spark schemas available after `.run(session)`.
 - Input, intermediate, and output validation modes.
-- Explicit data-quality constraint boundary: v.1 validation is schema-first and schema-only by default.
+- Explicit data-quality constraint boundary: v1 validation is schema-first and schema-only by default.
 - Filtering with `where(...)`.
 - Add/drop columns via schema projection.
 - Symbolic `lookup_join(...)`.
@@ -40,7 +40,7 @@ Connect hardening left outside the Sprint 09 support claim.
 - TOML configuration with explicit precedence and schema validation diagnostics.
 - Incremental-compile architecture hooks, without production cache semantics.
 
-## v.2
+## v2
 
 - Windowing.
 - Deduplication helpers.
@@ -58,13 +58,13 @@ Connect hardening left outside the Sprint 09 support claim.
 - More detailed performance diagnostics.
 - Generated documentation artifacts for schemas and transforms completed in Sprint 10 adoption tooling.
 - Pytest helper or plugin completed in Sprint 10 adoption tooling.
-- Spark Connect support for completed v.1/v.2 batch features, using `target_backend = "pyspark"` and
+- Spark Connect support for completed v1/v2 batch features, using `target_backend = "pyspark"` and
   `target_variant = "spark-connect"`, backed by live online/generated runtime evidence.
 - Static first-slice Spark streaming compatibility for caller-owned streaming DataFrames, static lookup side inputs,
   row-local projection/filtering, schema-only validation, and explicit lifecycle/source/sink deferrals. Live
-  online/generated runtime evidence remains a v.3 entry gate.
+  online/generated runtime evidence remains a v3 entry gate.
 
-## v.3
+## v3
 
 - Planned Column API and SQL function PySpark parity gaps.
 - Using-key joins, right/full diagnostics hardening, cross join safety, join strategy directives, and forward as-of
@@ -85,7 +85,7 @@ Connect hardening left outside the Sprint 09 support claim.
 - Production incremental compile with `compile --changed-only`, cache invalidation, cache diagnostics, and warm compile
   performance fixtures.
 
-## v.4
+## v4
 
 - Backend expansion after the PySpark-family batch contract is stable.
 - Non-batch Spark Connect hardening left outside the Sprint 09 support claim.

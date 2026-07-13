@@ -185,11 +185,11 @@ def test_v2_rowset_join_fixture_records_full_right_and_cross_joins(
 
 
 def test_group_by_lowers_to_aggregate_recipe() -> None:
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         customer_id = structure.field(structure.String(), nullable=False)
         quantity = structure.field(structure.Long(), nullable=False)
 
-    class Total(structure.Structure):
+    class Total(structure.Schema):
         customer_id = structure.field(structure.String(), nullable=False)
         quantity = structure.field(structure.Long(), nullable=False)
 
@@ -215,10 +215,10 @@ def test_group_by_lowers_to_aggregate_recipe() -> None:
 
 
 def test_aggregate_expression_without_group_by_fails_in_frontend() -> None:
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         customer_id = structure.field(structure.String(), nullable=False)
 
-    class Total(structure.Structure):
+    class Total(structure.Schema):
         customer_id = structure.field(structure.String(), nullable=False)
         quantity = structure.field(structure.Long(), nullable=False)
 
@@ -238,11 +238,11 @@ def test_aggregate_expression_without_group_by_fails_in_frontend() -> None:
 
 
 def test_numeric_aggregate_rejects_non_numeric_input_type() -> None:
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         customer_id = structure.field(structure.String(), nullable=False)
         label = structure.field(structure.String(), nullable=False)
 
-    class Total(structure.Structure):
+    class Total(structure.Schema):
         customer_id = structure.field(structure.String(), nullable=False)
         label_total = structure.field(structure.String(), nullable=False)
 
@@ -265,11 +265,11 @@ def test_numeric_aggregate_rejects_non_numeric_input_type() -> None:
 
 
 def test_nullable_aggregate_input_cannot_feed_non_nullable_output() -> None:
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         customer_id = structure.field(structure.String(), nullable=False)
         quantity = structure.field(structure.Long(), nullable=True)
 
-    class Total(structure.Structure):
+    class Total(structure.Schema):
         customer_id = structure.field(structure.String(), nullable=False)
         quantity = structure.field(structure.Long(), nullable=False)
 

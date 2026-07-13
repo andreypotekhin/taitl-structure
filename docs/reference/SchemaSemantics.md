@@ -13,6 +13,8 @@ Detailed syntax remains owned by:
 - [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md);
 - [DataQualityConstraints.md](DataQualityConstraints.md).
 
+See the exhaustive [schemas API table](../api/Schemas.api.md) for supported declaration names and examples.
+
 ## Semantic Layers
 
 Structure schema behavior has four layers:
@@ -27,10 +29,10 @@ artifacts.
 
 ## Canonical Declaration
 
-The canonical v.1 declaration form is:
+The canonical v1 declaration form is:
 
 ```python
-class OrderRaw(Structure):
+class OrderRaw(Schema):
     id = field(String(), nullable=False, primary_key=True)
     customer_id = field(String(), nullable=False)
     total = field(String(), nullable=True)
@@ -85,7 +87,7 @@ Rules:
 
 ## Type Semantics
 
-v.1 schema types:
+v1 schema types:
 
 ```text
 String()

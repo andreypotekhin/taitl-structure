@@ -1,18 +1,18 @@
-from structure import Join, String, Structure, Transform, field, input, lookup_join, output, step, transform
+from structure import Join, Schema, String, Transform, field, input, lookup_join, output, step, transform
 from structure.app.dsl.api import compile_transform
 
 
-class Order(Structure):
+class Order(Schema):
     id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
 
 
-class Product(Structure):
+class Product(Schema):
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=False)
 
 
-class Enriched(Structure):
+class Enriched(Schema):
     id = field(String(), nullable=False)
     product_name = field(String(), nullable=True)
 

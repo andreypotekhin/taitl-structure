@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The online execution runtime runs Structure transforms directly from source metadata and compiler IR. It lets v.1 users
+The online execution runtime runs Structure transforms directly from source metadata and compiler IR. It lets v1 users
 execute transforms without committing generated PySpark code while preserving the strict Spark-plan-visible behavior
 that generated PySpark exists to expose.
 
@@ -164,7 +164,7 @@ The online runtime does not:
 - generate streaming orchestration;
 - start or stop Spark;
 - manage Airflow, jobs, schedules, triggers, checkpoints, or sinks;
-- provide Spark Connect support in v.1;
+- provide Spark Connect support in v1;
 - make hooks inspectable;
 - weaken compiler performance guardrails.
 

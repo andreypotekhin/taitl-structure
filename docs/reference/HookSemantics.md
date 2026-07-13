@@ -174,7 +174,7 @@ Rules:
 - Use `target_backend="pyspark"` for a single backend.
 - Use `target_backend=["pyspark", "polars"]` only when one hook intentionally supports multiple Python-hosted backends.
 - Missing `target_backend` resolves from `hook_target_default` in configuration.
-- The v.1 compatibility default is `hook_target_default = ["pyspark"]`.
+- The v1 compatibility default is `hook_target_default = ["pyspark"]`.
 - A future strict mode may use `hook_target_default = "explicit"` to require every hook to declare target backends.
 - Runtime execution must not invoke a hook when the active target is outside the hook's effective target set.
 - Compatibility checks warn when an unmarked hook inherits a default while checking other targets.
@@ -184,7 +184,7 @@ Target scope prevents accidental runtime errors such as calling a PySpark hook w
 relation. It does not make hook internals compiler-visible.
 
 V1 accepts and carries `target_backend` metadata so documented PySpark hook examples are usable now. A hook whose
-effective target set excludes `pyspark` must fail during compilation in v.1 because PySpark is the only executable hook
+effective target set excludes `pyspark` must fail during compilation in v1 because PySpark is the only executable hook
 ABI.
 
 ## Schema Handling

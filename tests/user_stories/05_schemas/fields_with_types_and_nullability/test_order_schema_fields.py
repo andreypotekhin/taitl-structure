@@ -2,7 +2,7 @@ import pytest
 from testing.model.v1.orders.schemas.common import Address
 from testing.model.v1.orders.schemas.order import OrderNormalized, OrderRaw, OrderWithCustomer
 
-from structure import String, Structure, field
+from structure import Schema, String, field
 
 
 def test_fields_keep_types_nullability_and_collection_shape() -> None:
@@ -48,7 +48,7 @@ def test_intermediate_and_inherited_schemas_preserve_explicit_contracts() -> Non
 def test_field_aliases_define_spark_column_names_without_renaming_python_fields() -> None:
     """I can declare field aliases for non-identifier Spark column names."""
 
-    class Raw(Structure):
+    class Raw(Schema):
         promotion_code = field(String(), nullable=True, alias="promo-code")
 
     field_def = Raw._structure_fields["promotion_code"]
@@ -61,10 +61,10 @@ def test_field_aliases_define_spark_column_names_without_renaming_python_fields(
 def test_aliases_are_schema_local_but_inherited_with_field_contracts() -> None:
     """Aliases belong to the declaring schema unless inherited."""
 
-    class Raw(Structure):
+    class Raw(Schema):
         promotion_code = field(String(), nullable=True, alias="promo-code")
 
-    class Normalized(Structure):
+    class Normalized(Schema):
         promotion_code = field(String(), nullable=True)
 
     class StillRaw(Raw):
@@ -86,6 +86,6 @@ def test_invalid_and_duplicate_aliases_fail_early() -> None:
 
     with pytest.raises(ValueError, match="duplicate Spark column name 'promo-code'"):
 
-        class Duplicate(Structure):
+        class Duplicate(Schema):
             promotion_code = field(String(), alias="promo-code")
             alternate_code = field(String(), alias="promo-code")

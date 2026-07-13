@@ -3,6 +3,9 @@
 This page collects public reference material. These documents are more detailed than the quick guides and define the
 behavior Structure aims to keep stable.
 
+For function-by-function support, PySpark parity, examples, and discrepancies, start with
+[API Reference](APIRef.md).
+
 ## Core Authoring
 
 - [DSL](reference/DSL.md): public Python API for schemas, transforms, expressions, joins, hooks, and sessions.

@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Mapping, Sequence
 
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.MapType import MapType
 from structure.app.dsl.model.types.StructType import StructType
@@ -15,9 +15,9 @@ class RenderPySparkSchemaModule:
 
     def __call__(
         self,
-        schemas: Sequence[type[Structure]],
+        schemas: Sequence[type[Schema]],
         *,
-        dependency_modules: Mapping[type[Structure], str] | None = None,
+        dependency_modules: Mapping[type[Schema], str] | None = None,
     ) -> str:
         dependencies = self._dependencies(schemas, dependency_modules or {})
         imports = self._imports(dependencies)
@@ -37,8 +37,8 @@ class RenderPySparkSchemaModule:
 
     def _dependencies(
         self,
-        schemas: Sequence[type[Structure]],
-        dependency_modules: Mapping[type[Structure], str],
+        schemas: Sequence[type[Schema]],
+        dependency_modules: Mapping[type[Schema], str],
     ) -> Mapping[str, tuple[str, ...]]:
         local = set(schemas)
         modules: dict[str, set[str]] = defaultdict(set)
@@ -53,13 +53,13 @@ class RenderPySparkSchemaModule:
 
         return {module: tuple(sorted(constants)) for module, constants in modules.items()}
 
-    def _schema_dependencies(self, schema: type[Structure]) -> set[type[Structure]]:
-        dependencies: set[type[Structure]] = set(schema._structure_schema_bases)
+    def _schema_dependencies(self, schema: type[Schema]) -> set[type[Schema]]:
+        dependencies: set[type[Schema]] = set(schema._structure_schema_bases)
         for field in schema._structure_fields.values():
             dependencies.update(self._type_dependencies(field.type))
         return dependencies
 
-    def _type_dependencies(self, type: StructureType) -> set[type[Structure]]:
+    def _type_dependencies(self, type: StructureType) -> set[type[Schema]]:
         if isinstance(type, StructType):
             return {type.schema}
         if isinstance(type, ArrayType):

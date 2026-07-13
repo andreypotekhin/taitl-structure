@@ -9,7 +9,7 @@ records.
 This specification defines Structure's analytical join family: semi and anti existence filters, `inner_join(...)`,
 deterministic lookup dedupe, temporal lookups, as-of lookups, and slowly changing dimension lookups.
 
-The v.1 `lookup_join(...)` contract remains unchanged. It is a narrow many-to-one or one-to-one lookup join. It warns when
+The v1 `lookup_join(...)` contract remains unchanged. It is a narrow many-to-one or one-to-one lookup join. It warns when
 right-side uniqueness is not proven and never deduplicates by surprise.
 
 ## Scope
@@ -17,7 +17,7 @@ right-side uniqueness is not proven and never deduplicates by surprise.
 This specification owns source semantics for analytical joins. Existence joins, `inner_join(...)`, deterministic
 deduped `lookup_join(...)`, temporal validity-window `temporal_one(...)`, and backward `as_of_one(...)` are implemented in
 the default PySpark profile.
-[JoinSemantics.md](JoinSemantics.md) remains the authority for the strict v.1 `lookup_join(...)` contract.
+[JoinSemantics.md](JoinSemantics.md) remains the authority for the strict v1 `lookup_join(...)` contract.
 
 In scope for the analytical join family:
 
@@ -254,7 +254,7 @@ join form and suggest either a supported join, a hook escape hatch, or waiting f
 
 ## Streaming Compatibility
 
-v.2 may classify stream-static `exists(...)`, `not_exists(...)`, and `inner_join(...)` as compatible when the current
+v2 may classify stream-static `exists(...)`, `not_exists(...)`, and `inner_join(...)` as compatible when the current
 pipeline input is streaming and the right input is static, if Spark supports the lowered plan for the configured
 target.
 

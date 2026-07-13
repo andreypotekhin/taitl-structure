@@ -25,7 +25,7 @@ CLASSIC_ONLY_TOKENS = (
 )
 
 
-class RawBatch(structure.Structure):
+class RawBatch(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False)
     event_id = structure.field(structure.String(), nullable=False)
     promo_code = structure.field(structure.String(), nullable=True)
@@ -38,7 +38,7 @@ class RawBatch(structure.Structure):
     )
 
 
-class RankedBatch(structure.Structure):
+class RankedBatch(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False)
     event_id = structure.field(structure.String(), nullable=False)
     promo_code = structure.field(structure.String(), nullable=True)
@@ -60,7 +60,7 @@ class RankedBatch(structure.Structure):
     rolling_max_units = structure.field(structure.Long(), nullable=False)
 
 
-class AccountSummary(structure.Structure):
+class AccountSummary(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False)
     event_count = structure.field(structure.Long(), nullable=False)
     distinct_events = structure.field(structure.Long(), nullable=False)
@@ -70,34 +70,34 @@ class AccountSummary(structure.Structure):
     avg_amount = structure.field(structure.Double(), nullable=False)
 
 
-class Customer(structure.Structure):
+class Customer(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     name = structure.field(structure.String(), nullable=True)
 
 
-class Product(structure.Structure):
+class Product(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     name = structure.field(structure.String(), nullable=True)
     ingested_at = structure.field(structure.Long(), nullable=False)
 
 
-class BlockedProduct(structure.Structure):
+class BlockedProduct(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
 
 
-class Promotion(structure.Structure):
+class Promotion(structure.Schema):
     code = structure.field(structure.String(), nullable=False)
     name = structure.field(structure.String(), nullable=True)
     valid_from = structure.field(structure.Date(), nullable=False)
     valid_to = structure.field(structure.Date(), nullable=True)
 
 
-class Shipment(structure.Structure):
+class Shipment(structure.Schema):
     event_id = structure.field(structure.String(), nullable=False)
     line = structure.field(structure.Long(), nullable=False)
 
 
-class CustomerBatch(structure.Structure):
+class CustomerBatch(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False)
     event_id = structure.field(structure.String(), nullable=False)
     promo_code = structure.field(structure.String(), nullable=True)
@@ -105,7 +105,7 @@ class CustomerBatch(structure.Structure):
     customer_name = structure.field(structure.String(), nullable=True)
 
 
-class ProductBatch(structure.Structure):
+class ProductBatch(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False)
     event_id = structure.field(structure.String(), nullable=False)
     promo_code = structure.field(structure.String(), nullable=True)
@@ -114,7 +114,7 @@ class ProductBatch(structure.Structure):
     product_name = structure.field(structure.String(), nullable=True)
 
 
-class PromotedBatch(structure.Structure):
+class PromotedBatch(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False)
     event_id = structure.field(structure.String(), nullable=False)
     customer_name = structure.field(structure.String(), nullable=True)
@@ -122,7 +122,7 @@ class PromotedBatch(structure.Structure):
     promotion_name = structure.field(structure.String(), nullable=True)
 
 
-class JoinedBatch(structure.Structure):
+class JoinedBatch(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False)
     event_id = structure.field(structure.String(), nullable=False)
     customer_name = structure.field(structure.String(), nullable=True)
@@ -131,28 +131,28 @@ class JoinedBatch(structure.Structure):
     shipment_line = structure.field(structure.Long(), nullable=False)
 
 
-class RowsetMatchBatch(structure.Structure):
+class RowsetMatchBatch(structure.Schema):
     account_id = structure.field(structure.String(), nullable=True)
     event_id = structure.field(structure.String(), nullable=True)
     customer_id = structure.field(structure.String(), nullable=True)
     customer_name = structure.field(structure.String(), nullable=True)
 
 
-class RowsetBackfillBatch(structure.Structure):
+class RowsetBackfillBatch(structure.Schema):
     account_id = structure.field(structure.String(), nullable=True)
     event_id = structure.field(structure.String(), nullable=True)
     customer_id = structure.field(structure.String(), nullable=False)
     customer_name = structure.field(structure.String(), nullable=True)
 
 
-class RowsetCandidateBatch(structure.Structure):
+class RowsetCandidateBatch(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False)
     event_id = structure.field(structure.String(), nullable=False)
     product_id = structure.field(structure.String(), nullable=False)
     product_name = structure.field(structure.String(), nullable=True)
 
 
-class AdvancedSummaryBatch(structure.Structure):
+class AdvancedSummaryBatch(structure.Schema):
     account_id = structure.field(structure.String(), nullable=True)
     grouping_id = structure.field(structure.Long(), nullable=False)
     account_subtotal = structure.field(structure.Boolean(), nullable=False)
@@ -164,7 +164,7 @@ class AdvancedSummaryBatch(structure.Structure):
     event_ids = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
 
 
-class AdvancedWindowBatch(structure.Structure):
+class AdvancedWindowBatch(structure.Schema):
     account_id = structure.field(structure.String(), nullable=False)
     event_id = structure.field(structure.String(), nullable=False)
     percent_rank = structure.field(structure.Double(), nullable=False)
@@ -177,7 +177,7 @@ class AdvancedWindowBatch(structure.Structure):
     running_count = structure.field(structure.Long(), nullable=False)
 
 
-class AdvancedCollectionBatch(structure.Structure):
+class AdvancedCollectionBatch(structure.Schema):
     event_id = structure.field(structure.String(), nullable=False)
     has_priority = structure.field(structure.Boolean(), nullable=True)
     tags = structure.field(structure.Array(structure.String(), contains_null=True), nullable=True)
@@ -533,7 +533,7 @@ def _render(plan: Any) -> str:
     )
 
 
-def _schemas(plan: Any) -> set[type[structure.Structure]]:
+def _schemas(plan: Any) -> set[type[structure.Schema]]:
     schemas = {input.schema for input in plan.inputs}
     schemas.update(output.output_schema for output in plan.outputs)
     for step in plan.steps:

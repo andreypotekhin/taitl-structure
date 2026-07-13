@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.aliases import alias as declaration_alias
 from structure.app.dsl.model.transforms.InOutBinding import bind_inout
 
 
 @dataclass(frozen=True)
 class LaneDeclaration:
-    schema: type[Structure]
+    schema: type[Schema]
     name: str = ""
     aliases: tuple[str, ...] = ()
 

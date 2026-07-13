@@ -1,6 +1,6 @@
 import pytest
 
-from structure import Join, String, Structure, Transform, field, input, lane, lookup_join, output, raw
+from structure import Join, Schema, String, Transform, field, input, lane, lookup_join, output, raw
 from structure import step as dsl_step
 from structure import transform
 from structure.app.compiler.api import Compiler
@@ -8,17 +8,17 @@ from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 
-class OrderRaw(Structure):
+class OrderRaw(Schema):
     id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
 
 
-class Product(Structure):
+class Product(Schema):
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=False)
 
 
-class OrderWithProduct(Structure):
+class OrderWithProduct(Schema):
     id = field(String(), nullable=False)
     product_name = field(String(), nullable=True)
 
@@ -220,12 +220,12 @@ def test_join_relation_can_be_inferred_from_class_input_scope() -> None:
     assert projection["product_name"].nullable
 
 
-class ProductAlias(Structure):
+class ProductAlias(Schema):
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=False)
 
 
-class OrderWithProductAlias(Structure):
+class OrderWithProductAlias(Schema):
     id = field(String(), nullable=False)
     product_name = field(String(), nullable=True)
     alias_name = field(String(), nullable=True)

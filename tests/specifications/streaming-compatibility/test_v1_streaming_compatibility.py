@@ -8,28 +8,28 @@ from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 
-class StreamRaw(structure.Structure):
+class StreamRaw(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     event_time = structure.field(structure.Timestamp(), nullable=False)
 
 
-class StreamClean(structure.Structure):
+class StreamClean(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
 
 
-class StreamLookup(structure.Structure):
+class StreamLookup(structure.Schema):
     id = structure.field(structure.String(), nullable=False, primary_key=True)
     value = structure.field(structure.String(), nullable=True)
     valid_from = structure.field(structure.Timestamp(), nullable=False)
     valid_to = structure.field(structure.Timestamp(), nullable=True)
 
 
-class StreamEnriched(structure.Structure):
+class StreamEnriched(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     value = structure.field(structure.String(), nullable=True)
 
 
-class StreamSummary(structure.Structure):
+class StreamSummary(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     row_count = structure.field(structure.Long(), nullable=False)
 

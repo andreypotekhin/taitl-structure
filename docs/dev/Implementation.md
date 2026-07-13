@@ -1,6 +1,6 @@
 # Implementation
 
-## Phase 1: v.1 First Executable Slice
+## Phase 1: v1 First Executable Slice
 
 - Schema declarations.
 - `input(...)`.
@@ -21,18 +21,18 @@
 - Generated transform class.
 - Input validation.
 - Online/generated parity test.
-- CLI `check` for the first v.1 fixture.
+- CLI `check` for the first v1 fixture.
 
-## Phase 2: v.1 Complete
+## Phase 2: v1 Complete
 
 - Output validation.
 - CLI `compile`.
 - TOML config loading with explicit precedence and schema validation diagnostics.
 - Compatibility policy enforcement for Python and target PySpark configuration.
-- Backend capability checks for every supported v.1 operation.
-- Online PySpark runner for all v.1 transform operations.
+- Backend capability checks for every supported v1 operation.
+- Online PySpark runner for all v1 transform operations.
 - Runtime target registry for online and generated PySpark execution.
-- Shared PySpark semantic lowering for every supported v.1 operation.
+- Shared PySpark semantic lowering for every supported v1 operation.
 - Source-order multi-step method chains.
 - Intermediate validation.
 - Input, intermediate, and output validation modes.
@@ -54,7 +54,7 @@
 - Setup/configuration doctor.
 - Incremental-compile architecture hooks.
 
-## Phase 3: v.2
+## Phase 3: v2
 
 - Windowing.
 - Deduplication helpers.
@@ -71,7 +71,7 @@
 - Generated documentation artifacts for schemas and transforms.
 - Pytest helper or plugin.
 
-## Phase 4: v.3
+## Phase 4: v3
 
 - Planned Column API and SQL function PySpark parity gaps.
 - Using-key joins.
@@ -96,7 +96,7 @@
 - Production incremental compile.
 - Cache diagnostics and warm compile performance fixtures.
 
-## Phase 5: v.4
+## Phase 5: v4
 
 - Backend expansion after the PySpark-family batch contract is stable.
 - Non-batch Spark Connect hardening left outside Sprint 09.
@@ -112,8 +112,8 @@ structure compile
 structure compile --fail-on-diff
 ```
 
-Later, add optional pytest and build-tool integrations as v.2 adoption tooling. Production incremental compile belongs to
-the end of v.3 after the v.3 feature surface stabilizes.
+Later, add optional pytest and build-tool integrations as v2 adoption tooling. Production incremental compile belongs to
+the end of v3 after the v3 feature surface stabilizes.
 
 Compiler build integration must stay Spark-free. `structure check`, `structure compile`, and
 `structure compile --fail-on-diff` must not require PySpark, Java, a SparkSession, or a Spark cluster. Online runtime,
@@ -137,6 +137,6 @@ Track:
 - cache hit ratio
 - total wall-clock time
 
-Add `structure compile --profile` to emit these measurements. Production incremental compilation belongs to end-of-v.3;
-v.1/v.2 should preserve deterministic outputs and source fingerprints so the cache can be added without reshaping the
+Add `structure compile --profile` to emit these measurements. Production incremental compilation belongs to end-of-v3;
+v1/v2 should preserve deterministic outputs and source fingerprints so the cache can be added without reshaping the
 compiler.

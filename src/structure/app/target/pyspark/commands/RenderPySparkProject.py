@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import OrderedDict
 from collections.abc import Mapping, Sequence
 
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.target.pyspark.commands.RenderPySparkRuntimeModule import render_pyspark_runtime_module
 from structure.app.target.pyspark.commands.RenderPySparkSchemaModule import render_pyspark_schema_module
 from structure.app.target.pyspark.commands.RenderPySparkTransformModule import render_pyspark_transform_module
@@ -21,7 +21,7 @@ class RenderPySparkProject:
         plan: PySparkExecutionPlan,
         *,
         source_transform: str,
-        source_schema_modules: Mapping[str, Sequence[type[Structure]]],
+        source_schema_modules: Mapping[str, Sequence[type[Schema]]],
         generated_package: str,
         semantic_fingerprint: str | None = None,
     ) -> dict[str, str]:
@@ -66,7 +66,7 @@ class RenderPySparkProject:
         plans: Mapping[str, PySparkExecutionPlan],
         *,
         source_module: str,
-        source_schema_modules: Mapping[str, Sequence[type[Structure]]],
+        source_schema_modules: Mapping[str, Sequence[type[Schema]]],
         generated_package: str,
         semantic_fingerprints: Mapping[str, str] | None = None,
     ) -> dict[str, str]:
@@ -111,11 +111,11 @@ class RenderPySparkProject:
 
     def _schema_modules(
         self,
-        source_schema_modules: Mapping[str, Sequence[type[Structure]]],
+        source_schema_modules: Mapping[str, Sequence[type[Schema]]],
         *,
         generated_package: str,
-    ) -> dict[type[Structure], str]:
-        modules: dict[type[Structure], str] = {}
+    ) -> dict[type[Schema], str]:
+        modules: dict[type[Schema], str] = {}
         for source_module, schemas in source_schema_modules.items():
             module = self._schema_module(source_module, generated_package=generated_package)
             for schema in schemas:

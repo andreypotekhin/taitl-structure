@@ -5,6 +5,8 @@ logic symbolic, compileable, and visible to Spark's optimizer. Structure records
 which keys define the match, how nulls behave, which aliases own each field, and when cardinality assumptions are only
 warnings rather than proven facts.
 
+See the exhaustive [joins API table](../api/Joins.api.md) for supported function names, PySpark parity, and examples.
+
 The core join model supports explicit lookup joins without implicit deduplication, implicit string column references,
 or hidden data scans. Row-multiplying and existence-oriented joins are covered in
 [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md) because they change validation, traceability, and output-row
@@ -66,17 +68,17 @@ The compiled DSL supports:
 - `Join.LEFT`: keep every current row; right fields are null when no match exists.
 - `Join.INNER`: keep only current rows that have at least one right match.
 
-`Join.RIGHT`, `Join.FULL`, `Join.CROSS`, and semi/anti joins are deferred. They do not fit the v.1 row-centric schema
+`Join.RIGHT`, `Join.FULL`, `Join.CROSS`, and semi/anti joins are deferred. They do not fit the v1 row-centric schema
 constructor cleanly because they can introduce rows that do not have a current-row source, or they return existence
-semantics rather than a joined right scope. The v.2+ plan for semi/anti predicates lives in
+semantics rather than a joined right scope. The v2+ plan for semi/anti predicates lives in
 [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md).
 
 If the public enum exposes deferred values for forward compatibility, the compileability checker must reject them in
-compiled step methods with a diagnostic that names the supported v.1 values.
+compiled step methods with a diagnostic that names the supported v1 values.
 
 ## Join Conditions
 
-The v.1 join condition is an equi-join condition: a boolean expression made from equality comparisons joined by logical
+The v1 join condition is an equi-join condition: a boolean expression made from equality comparisons joined by logical
 AND.
 
 Accepted:
@@ -91,7 +93,7 @@ lookup_join(on=lower(trim(order.email)) == lower(trim(customer.email)))
 lookup_join(on=order.customer_external_id.null_safe_eq(customer.external_id))
 ```
 
-Rejected in v.1:
+Rejected in v1:
 
 - `OR` conditions.
 - Inequality conditions such as `<`, `<=`, `>`, or `>=`.
@@ -163,10 +165,10 @@ lookup_join(
 )
 ```
 
-There is no v.1 `case_insensitive=True` join option. Normalization belongs in the expression because it is part of the
+There is no v1 `case_insensitive=True` join option. Normalization belongs in the expression because it is part of the
 business key. Keeping it visible makes generated PySpark and traceability reviewable.
 
-The v.1 `lower(...)` helper follows Spark's backend behavior. It is not a promise of full Unicode case folding or
+The v1 `lower(...)` helper follows Spark's backend behavior. It is not a promise of full Unicode case folding or
 locale-specific collation. If the project later adds richer collation semantics, that should be a separate expression
 helper or configuration contract.
 
@@ -184,7 +186,7 @@ Uniqueness proof sources:
 - A future unique-key metadata feature when the join key exactly matches one declared unique key.
 - A user-enabled runtime uniqueness check, if implemented later.
 
-When no uniqueness proof exists, v.1 should compile with a warning by default:
+When no uniqueness proof exists, v1 should compile with a warning by default:
 
 ```text
 CompileWarning JOIN-W0601: lookup_join(...) uniqueness is not proven
@@ -203,13 +205,13 @@ Use:
   or add an explicit JoinDedupe policy when one selected right row is the business rule.
 ```
 
-Projects may later add a strict setting that turns this warning into an error. That setting is not required for the v.1
+Projects may later add a strict setting that turns this warning into an error. That setting is not required for the v1
 semantics, but diagnostics should be designed so the promotion is straightforward.
 
 ## `inner_join(...)` Cardinality
 
-`inner_join(...)` (v.2) means row multiplication is intentional. If one current row matches three right rows, the
-downstream step sees three rows. Detailed v.2+ behavior is owned by
+`inner_join(...)` (v2) means row multiplication is intentional. If one current row matches three right rows, the
+downstream step sees three rows. Detailed v2+ behavior is owned by
 [AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.md).
 
 Rules:
@@ -239,7 +241,7 @@ code should avoid duplicate unqualified column names by aliasing and explicit `s
 ## Aliases and Joined Scopes
 
 A joined scope is the symbolic object returned by `lookup_join(...)`. It owns field references from the right side of that
-join. v.2 extends the same idea to `inner_join(...)`.
+join. v2 extends the same idea to `inner_join(...)`.
 
 Alias rules:
 
@@ -281,12 +283,12 @@ Filters obey source order:
 - A `where(...)` recorded after a join may reference that joined scope and is applied after the join.
 - Projection into the returned output schema happens after recorded joins and filters for the step method.
 
-The generator may perform safe Spark-plan optimizations later, but v.1 should preserve source order in generated code
+The generator may perform safe Spark-plan optimizations later, but v1 should preserve source order in generated code
 because it is easier to review and debug.
 
 ## Broadcast Hints
 
-`hint=JoinHint.BROADCAST` applies to the joined right input in v.1:
+`hint=JoinHint.BROADCAST` applies to the joined right input in v1:
 
 ```python
 lookup_join(
@@ -305,7 +307,7 @@ Rules:
 - Unsupported hints must be rejected or warned by backend capability checks.
 - Streaming compatibility checks must reject hints or join shapes that Spark cannot run for the configured streaming
   mode.
-- Future join strategy hints belong in the optimization roadmap, not in the v.1 semantic core.
+- Future join strategy hints belong in the optimization roadmap, not in the v1 semantic core.
 
 ## IR Contract
 
@@ -341,7 +343,7 @@ Source condition:
   (customers.country == order.country) | (customers.id == order.customer_id)
 
 Problem:
-  v.1 joins support equality key pairs combined with AND. OR conditions are not compileable.
+  v1 joins support equality key pairs combined with AND. OR conditions are not compileable.
 
 Use:
   split the logic into separate step methods or move custom join logic into an raw hook.
@@ -359,7 +361,7 @@ Key:
   customers.id == order.customer_id
 
 Use:
-  field(String(), primary_key=True) on Customer.id, declare a unique key, or wait for v.2 inner_join(...).
+  field(String(), primary_key=True) on Customer.id, declare a unique key, or wait for v2 inner_join(...).
 
 See docs/reference/JoinSemantics.md
 ```

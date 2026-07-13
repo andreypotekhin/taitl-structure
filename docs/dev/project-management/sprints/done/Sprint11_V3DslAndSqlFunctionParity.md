@@ -1,4 +1,4 @@
-# Sprint 11: v.3 DSL and SQL Function PySpark Parity
+# Sprint 11: v3 DSL and SQL Function PySpark Parity
 
 ## Sprint Goal
 
@@ -55,8 +55,8 @@ predicate helper functions in Structure source without dropping into hooks.
 
 ## Progress
 
-- [x] (2026-07-09) Started v.3 implementation as the active iteration.
-- [x] (2026-07-09) Added the first v.3 Column helper, inclusive `between(...)` range predicates.
+- [x] (2026-07-09) Started v3 implementation as the active iteration.
+- [x] (2026-07-09) Added the first v3 Column helper, inclusive `between(...)` range predicates.
 - [x] (2026-07-10) Added `isin(...)` membership predicates with online/generated parity coverage.
 - [x] (2026-07-12) Added typed `contains(...)`, `like(...)`, `ilike(...)`, and `rlike(...)` predicates with
   generated and online-recipe parity coverage.
@@ -85,4 +85,4 @@ predicate helper functions in Structure source without dropping into hooks.
 - [x] (2026-07-12) Added `isnull(...)`, `isnotnull(...)`, and typed `isnan(...)` with public API snapshot coverage
   and shared generated/online-recipe parity coverage.
 - [x] (2026-07-12) Added alias-aware Struct `get_field(name)` with shared generated/online-recipe parity coverage.
-- [x] (2026-07-12) Implemented v.3 DSL and SQL function parity.
+- [x] (2026-07-12) Implemented v3 DSL and SQL function parity.

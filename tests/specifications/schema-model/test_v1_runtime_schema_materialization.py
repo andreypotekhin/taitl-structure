@@ -1,7 +1,7 @@
 import sys
 from dataclasses import dataclass
 
-from structure import String, Structure, field
+from structure import Schema, String, field
 from structure.app.target.pyspark.api import PySpark
 
 
@@ -134,7 +134,7 @@ def test_v1_runtime_schema_materializes_effective_inherited_fields() -> None:
 
 
 def test_v1_runtime_schema_materialization_uses_alias_column_name() -> None:
-    class Raw(Structure):
+    class Raw(Schema):
         promotion_code = field(String(), nullable=True, alias="promo-code")
 
     schema = PySpark.schema.materialize()(Raw, types=FakeTypes)

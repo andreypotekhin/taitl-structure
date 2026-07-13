@@ -8,6 +8,8 @@ Schema declarations are authored with the syntax specified in
 [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md). Inheritance behavior is specified in
 [SchemaInheritance.md](SchemaInheritance.md).
 
+See the exhaustive [schemas API table](../api/Schemas.api.md) for supported declaration names and examples.
+
 ## Core Model
 
 ```text
@@ -48,7 +50,7 @@ only fields declared directly on the schema class.
 
 ## SchemaDef Rules
 
-`SchemaDef` represents one discovered `Structure` subclass.
+`SchemaDef` represents one discovered `Schema` class.
 
 Rules:
 
@@ -108,8 +110,8 @@ StructType(schema)
 MapType(key_type, value_type, value_contains_null)
 ```
 
-`MapType` is included in v.1 for schema declaration, Spark schema generation, and runtime validation. Higher-order map
-transformations remain a v.2 expression feature.
+`MapType` is included in v1 for schema declaration, Spark schema generation, and runtime validation. Higher-order map
+transformations remain a v2 expression feature.
 
 Type equality is structural:
 
@@ -120,7 +122,7 @@ Array(String()) == Array(String())
 Struct(Address) == Struct(Address)
 ```
 
-## Supported Types v.1
+## Supported Types v1
 
 - `String()`
 - `Integer()`
@@ -164,7 +166,7 @@ Rules:
 Example:
 
 ```python
-class EntityKeys(Structure):
+class EntityKeys(Schema):
     id = field(String(), nullable=False, primary_key=True)
 
 
@@ -182,7 +184,7 @@ total  declaring_schema=Order       inherited=False
 ## Schema Declaration Example
 
 ```python
-class Customer(Structure):
+class Customer(Schema):
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=True)
     tier = field(String(), nullable=True)

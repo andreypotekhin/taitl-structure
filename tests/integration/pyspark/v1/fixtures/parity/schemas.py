@@ -1,30 +1,30 @@
-from structure import String, Structure, Timestamp, field
+from structure import Schema, String, Timestamp, field
 
 
-class RawRow(Structure):
+class RawRow(Schema):
     id = field(String(), nullable=True)
 
 
-class NormalizedRow(Structure):
-    id = field(String(), nullable=True)
-    hook_owner = field(String(), nullable=True)
-
-
-class PublishedRow(Structure):
+class NormalizedRow(Schema):
     id = field(String(), nullable=True)
     hook_owner = field(String(), nullable=True)
 
 
-class StreamEvent(Structure):
+class PublishedRow(Schema):
+    id = field(String(), nullable=True)
+    hook_owner = field(String(), nullable=True)
+
+
+class StreamEvent(Schema):
     id = field(String(), nullable=True)
     event_time = field(Timestamp(), nullable=True)
 
 
-class StreamCustomer(Structure):
+class StreamCustomer(Schema):
     id = field(String(), nullable=True, primary_key=True)
     value = field(String(), nullable=True)
 
 
-class StreamEnriched(Structure):
+class StreamEnriched(Schema):
     id = field(String(), nullable=True)
     value = field(String(), nullable=True)

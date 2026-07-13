@@ -1,9 +1,9 @@
 from testing.model.v2.orders.schemas.common import AuditStamp, TenantKey
 
-from structure import String, Struct, Structure, field
+from structure import String, Struct, Schema, field
 
 
-class Customer(Structure):
+class Customer(Schema):
     tenant = field(Struct(TenantKey), nullable=False)
     audit = field(Struct(AuditStamp), nullable=False)
     id = field(String(), nullable=False, primary_key=True)

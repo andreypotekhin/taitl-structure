@@ -40,7 +40,7 @@ helpers that know about checked-in model code, fixture data, pytest fixtures, or
 
 - schema
   - schema declaration
-    - `Structure` subclass
+    - `Schema` class
     - field declaration
       - field name
       - declaration order

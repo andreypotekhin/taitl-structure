@@ -1,8 +1,11 @@
 # Advanced Analytical Operations
 
 Advanced analytical operations are the broader aggregation, window, and collection-helper features added after the
-first v.2 analytical slice. They let Structure cover multi-level summaries, explicit window frames, and richer array/map
+first v2 analytical slice. They let Structure cover multi-level summaries, explicit window frames, and richer array/map
 logic while keeping the work visible to Spark.
+
+See the exhaustive [aggregations](../api/Aggregations.api.md), [windows](../api/Windows.api.md), and
+[collections](../api/Collections.api.md) API tables for supported names, parity, and examples.
 
 The analytical surface supports common grouped aggregates, custom grouping sets, ranking, lag/lead, rolling row
 metrics, deterministic latest/earliest selection, exact/subset duplicate removal, and basic array/map callbacks. This
@@ -17,7 +20,8 @@ Supported grouping entry points:
 - `cube(*keys, **named_keys)` for all combinations of grouping keys;
 - `grouping_sets(*levels)` for explicit grouping levels such as `(region, customer)` and `()`;
 - `grouping_id()` for the Spark grouping bit mask;
-- `is_grouped(field)` for whether a key is absent in the current subtotal row.
+
+`is_grouped(field)` for whether a key is absent in the current subtotal row.
 
 Grouping expression keys should be named. Subtotal rows may omit some grouping keys, so output fields for those keys
 must be nullable or explicitly filled with a literal label. `grouping_sets(...)` accepts one argument per level; use an

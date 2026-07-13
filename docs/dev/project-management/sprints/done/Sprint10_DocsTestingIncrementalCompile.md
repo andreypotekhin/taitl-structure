@@ -48,7 +48,7 @@ Developers can keep generated artifacts fresh in CI and publish schema and trans
 
 - [x] Implement generated docs.
 - [x] Implement pytest helpers.
-- [x] Move incremental compile and cache diagnostics to end-of-v.3 Sprint 17.
+- [x] Move incremental compile and cache diagnostics to end-of-v3 Sprint 17.
 
 Generated docs first slice is implemented through `structure compile`. The compiler now writes Markdown and JSON
 schema/transform reference artifacts under `generated_docs_dir` inside `generated_dir`, with configurable

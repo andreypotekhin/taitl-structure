@@ -28,8 +28,8 @@ Rules:
 
 - `spark.sql.ansi.enabled` must be a boolean.
 - `spark.sql.storeAssignmentPolicy` must be one of `ANSI`, `LEGACY`, or `STRICT`.
-- v.1 specifies detailed assignment rules for the default ANSI policy.
-- `LEGACY` and `STRICT` may be parsed in v.1, but diagnostics may say that detailed checking for those policies is
+- v1 specifies detailed assignment rules for the default ANSI policy.
+- `LEGACY` and `STRICT` may be parsed in v1, but diagnostics may say that detailed checking for those policies is
   deferred unless implemented.
 - These settings are compiler assumptions and generated-runtime expectations.
 - Structure does not start Spark sessions or mutate Spark session configuration in v1.
@@ -48,7 +48,7 @@ Fully implicit casting is also wrong for Structure. Assigning a string field to 
 parse data and choose runtime failure or null behavior based on Spark mode. That is a business rule and should be
 visible in source code.
 
-The v.1 policy is therefore balanced:
+The v1 policy is therefore balanced:
 
 - Accept Spark-ANSI-compatible assignment coercions for unsurprising type widening and typed literals.
 - Require explicit helper calls for semantic parsing conversions.
@@ -70,7 +70,7 @@ simple filter narrowing. It does not scan data and does not try to prove arbitra
 Field references inherit nullability from their declared schema field:
 
 ```python
-class OrderRaw(Structure):
+class OrderRaw(Schema):
     id = field(String(), nullable=False)
     total = field(String(), nullable=True)
 ```
@@ -116,7 +116,7 @@ Null-aware helpers have specific rules:
 Spark's SQL null semantics remain the inspiration for generated behavior. Normal comparisons involving null may produce
 null, while null-safe equality is a separate explicit operation if supported.
 
-Basic row-local arithmetic in v.1 supports `+`, `-`, and `*`. Result typing is intentionally conservative and follows
+Basic row-local arithmetic in v1 supports `+`, `-`, and `*`. Result typing is intentionally conservative and follows
 the left operand's Structure type until fuller numeric result formulas are specified.
 
 ## Filter Narrowing
@@ -178,7 +178,7 @@ configuration.
 
 Every expression has a Structure type. Assignment compatibility compares the expression type with the output field type.
 
-The v.1 scalar types are those from the schema syntax specification:
+The v1 scalar types are those from the schema syntax specification:
 
 - `String()`
 - `Integer()`
@@ -196,7 +196,7 @@ Arrays and structs follow the same assignment idea recursively when implemented 
 
 An expression can be assigned to an output field when both nullability and type compatibility pass.
 
-In the default Spark SQL ANSI policy, v.1 should accept:
+In the default Spark SQL ANSI policy, v1 should accept:
 
 - exact type matches;
 - untyped `None` for nullable fields;
@@ -209,7 +209,7 @@ In the default Spark SQL ANSI policy, v.1 should accept:
 - values assigned to `String()` only when the source type is already `String()` or the conversion is explicitly
   requested.
 
-v.1 should reject:
+v1 should reject:
 
 - nullable expression to non-nullable field;
 - `String()` to numeric, date, or timestamp fields without an explicit helper;
@@ -220,7 +220,7 @@ v.1 should reject:
 - array or struct assignment when element or field compatibility fails.
 
 If `spark.sql.storeAssignmentPolicy = "STRICT"`, the checker should reject any assignment that can lose precision or
-truncate data. If detailed strict checking is not implemented in v.1, reject non-exact assignments with a clear message.
+truncate data. If detailed strict checking is not implemented in v1, reject non-exact assignments with a clear message.
 
 If `spark.sql.storeAssignmentPolicy = "LEGACY"`, the checker may allow Spark-valid casts only when the implementation
 can explain the behavior. Until then, prefer a diagnostic that says legacy assignment checking is not yet implemented
@@ -241,7 +241,7 @@ This preserves both fractional and integer digits.
 `Integer()` to `Decimal(p, s)` is accepted when `p - s >= 10`, because a 32-bit integer may need ten integer digits
 including sign range. `Long()` to `Decimal(p, s)` is accepted when `p - s >= 19`.
 
-Decimal arithmetic result typing may follow Spark's formulas later. v.1 only needs assignment compatibility and helper
+Decimal arithmetic result typing may follow Spark's formulas later. v1 only needs assignment compatibility and helper
 result types used by current expression helpers.
 
 ## Explicit Conversion Helpers
@@ -268,7 +268,7 @@ that a parsing conversion is non-null just because the target field is non-null.
 
 Helpers that combine multiple values, especially `coalesce(...)`, need a result type.
 
-For v.1, use a small Structure type join rule:
+For v1, use a small Structure type join rule:
 
 - untyped `None` adopts the other argument type;
 - exact matches keep that type;

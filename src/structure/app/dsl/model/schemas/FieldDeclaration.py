@@ -7,7 +7,7 @@ from structure.app.dsl.model.schemas.FieldDefinition import FieldDefinition
 from structure.app.dsl.model.types.StructureType import StructureType
 
 if TYPE_CHECKING:
-    from structure.app.dsl.model.schemas.Structure import Structure
+    from structure.app.dsl.model.schemas.Schema import Schema
 
 
 class FieldDeclaration:
@@ -30,7 +30,7 @@ class FieldDeclaration:
         self.description = description
         self.name = ""
 
-    def __set_name__(self, owner: type[Structure], name: str) -> None:
+    def __set_name__(self, owner: type[Schema], name: str) -> None:
         self.name = name
 
     def definition(self) -> FieldDefinition:

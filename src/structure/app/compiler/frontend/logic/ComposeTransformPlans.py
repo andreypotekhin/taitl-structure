@@ -20,7 +20,7 @@ from structure.app.compiler.ir.model.StepPlan import StepPlan
 from structure.app.compiler.ir.model.StepResultPlan import StepResultPlan
 from structure.app.compiler.ir.model.TransformPlan import TransformPlan
 from structure.app.dsl.model.expr.Expression import Expression
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration

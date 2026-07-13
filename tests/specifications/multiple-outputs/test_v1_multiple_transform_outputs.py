@@ -2,33 +2,33 @@ from typing import Any, cast
 
 import pytest
 
-from structure import String, Structure, Transform, field, input, lane, output, step, transform
+from structure import Schema, String, Transform, field, input, lane, output, step, transform
 from structure.app.dsl.api import compile_transform
 from structure.app.runtime.api import StructureSession, TransformResult
 from structure.app.target.pyspark.api import PySpark
 
 
-class Raw(Structure):
+class Raw(Schema):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=True)
 
 
-class Normalized(Structure):
+class Normalized(Schema):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=True)
 
 
-class Accepted(Structure):
+class Accepted(Schema):
     id = field(String(), nullable=False)
     status = field(String(), nullable=False)
 
 
-class Rejected(Structure):
+class Rejected(Schema):
     id = field(String(), nullable=False)
     reason = field(String(), nullable=False)
 
 
-class Published(Structure):
+class Published(Schema):
     id = field(String(), nullable=False)
 
 

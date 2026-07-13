@@ -20,10 +20,10 @@ target_variant = "ordinary"
 
 ## What Is Supported
 
-Spark Connect support covers completed v.1/v.2 batch features that lower through public PySpark DataFrame and Column APIs:
+Spark Connect support covers completed v1/v2 batch features that lower through public PySpark DataFrame and Column APIs:
 
 - projections, filters, casts, literals, and expression helpers;
-- v.1 joins, completed analytical joins, and implemented rowset joins such as right, full, explicit cross, non-equi, and
+- v1 joins, completed analytical joins, and implemented rowset joins such as right, full, explicit cross, non-equi, and
   disjunctive joins;
 - first-slice aggregations plus implemented advanced analytical helpers such as rollup, cube, grouping metadata,
   additional aggregate metrics, metric-local filters, reusable windows, distribution/value/window aggregate helpers,

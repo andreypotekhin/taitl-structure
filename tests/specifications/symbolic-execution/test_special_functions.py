@@ -2,17 +2,17 @@ from typing import Any
 
 import pytest
 
-from structure import String, Structure, StructureCompileError, Transform, field, input, output, special
+from structure import Schema, String, StructureCompileError, Transform, field, input, output, special
 from structure.app.compiler.api import Compiler
 from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 
-class Raw(Structure):
+class Raw(Schema):
     id = field(String(), nullable=False)
 
 
-class Published(Structure):
+class Published(Schema):
     id = field(String(), nullable=False)
 
 

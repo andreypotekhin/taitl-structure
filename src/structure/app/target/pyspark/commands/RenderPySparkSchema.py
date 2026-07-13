@@ -4,7 +4,7 @@ import json
 import re
 
 from structure.app.dsl.model.schemas.FieldDefinition import FieldDefinition
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.BooleanType import BooleanType
 from structure.app.dsl.model.types.DateType import DateType
@@ -22,13 +22,13 @@ from structure.app.dsl.model.types.TimestampType import TimestampType
 
 class RenderPySparkSchema:
 
-    def constant_name(self, schema: type[Structure]) -> str:
+    def constant_name(self, schema: type[Schema]) -> str:
         return f"{self._upper_snake(schema.__name__)}_SCHEMA"
 
-    def __call__(self, schema: type[Structure]) -> str:
+    def __call__(self, schema: type[Schema]) -> str:
         return f"{self.constant_name(schema)} = {self.expression(schema)}"
 
-    def expression(self, schema: type[Structure]) -> str:
+    def expression(self, schema: type[Schema]) -> str:
         bases = schema._structure_schema_bases
         local = tuple(schema._structure_local_fields.values())
         if bases and local:

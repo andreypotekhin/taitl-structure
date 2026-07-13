@@ -7,32 +7,32 @@ from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 
-class Raw(structure.Structure):
+class Raw(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     status = structure.field(structure.String(), nullable=True)
     amount = structure.field(structure.String(), nullable=False)
     count = structure.field(structure.Integer(), nullable=False)
 
 
-class Published(structure.Structure):
+class Published(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     status = structure.field(structure.String(), nullable=True)
 
 
-class Identity(structure.Structure):
+class Identity(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
 
 
-class Counted(structure.Structure):
+class Counted(structure.Schema):
     count = structure.field(structure.Long(), nullable=False)
 
 
-class Money(structure.Structure):
+class Money(structure.Schema):
     amount = structure.field(structure.Decimal(12, 2), nullable=False)
     count = structure.field(structure.Long(), nullable=False)
 
 
-class Customer(structure.Structure):
+class Customer(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     name = structure.field(structure.String(), nullable=True)
 

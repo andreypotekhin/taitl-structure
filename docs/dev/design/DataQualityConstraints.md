@@ -2,7 +2,7 @@
 
 ## Purpose
 
-C26 is resolved by separating schema shape from data quality. Structure v.1 should be honest: it enforces declared
+C26 is resolved by separating schema shape from data quality. Structure v1 should be honest: it enforces declared
 DataFrame shape by default, while value-level and dataset-level quality checks are a future opt-in model because they
 can make Spark scan, join, aggregate, or count data.
 
@@ -64,7 +64,7 @@ PySparkConstraintValidationRecipe
   diagnostic
 ```
 
-Schema-only validation remains the default recipe for v.1 intermediate boundaries. Constraint recipes are emitted only
+Schema-only validation remains the default recipe for v1 intermediate boundaries. Constraint recipes are emitted only
 when the constraint is bound to the current validation phase and that phase is configured with
 `schema_and_constraints`.
 
@@ -107,7 +107,7 @@ schema = result.schema.enriched
 result.enriched.write.mode("overwrite").parquet(target_path)
 ```
 
-Structure should not add a v.1 write orchestration helper. Storage writes belong to the caller because partitioning,
+Structure should not add a v1 write orchestration helper. Storage writes belong to the caller because partitioning,
 mode, table format, checkpoints, and environment policy are deployment concerns.
 
 ## Implementation Notes

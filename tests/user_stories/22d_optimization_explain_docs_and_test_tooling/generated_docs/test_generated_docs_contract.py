@@ -52,13 +52,13 @@ def _write_project(root: Path) -> None:
     (package / "schemas.py").write_text(
         "\n".join(
             [
-                "from structure import Decimal, String, Structure, field",
+                "from structure import Decimal, String, Schema, field",
                 "",
-                "class OrderRaw(Structure):",
+                "class OrderRaw(Schema):",
                 "    id = field(String(), nullable=False)",
                 "    total = field(String(), nullable=True)",
                 "",
-                "class OrderNormalized(Structure):",
+                "class OrderNormalized(Schema):",
                 "    id = field(String(), nullable=False)",
                 "    total = field(Decimal(12, 2), nullable=False)",
                 "",

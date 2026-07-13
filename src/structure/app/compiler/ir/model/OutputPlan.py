@@ -6,16 +6,16 @@ from structure.app.compiler.ir.model.JoinPlan import JoinPlan
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.ir.model.ProjectAssignment import ProjectAssignment
 from structure.app.dsl.model.expr.Expression import Expression
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 
 
 @dataclass(frozen=True)
 class OutputPlan:
     name: str
-    schema: type[Structure]
+    schema: type[Schema]
     source: str
     source_scope: str
-    source_schema: type[Structure]
+    source_schema: type[Schema]
     filters: tuple[Expression, ...]
     projection: tuple[ProjectAssignment, ...]
     ordinal: int

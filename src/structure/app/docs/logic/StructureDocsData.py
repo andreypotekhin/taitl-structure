@@ -6,7 +6,7 @@ from structure.app.cli.model.DiscoveredStructureProject import DiscoveredStructu
 from structure.app.compiler.ir.model.StepPlan import StepPlan
 from structure.app.compiler.ir.model.TransformPlan import TransformPlan
 from structure.app.dsl.model.schemas.FieldDefinition import FieldDefinition
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.DecimalType import DecimalType
 from structure.app.dsl.model.types.MapType import MapType
@@ -28,7 +28,7 @@ class StructureDocsData:
             "transforms": transforms,
         }
 
-    def schema(self, schema: type[Structure], module: str) -> dict[str, object]:
+    def schema(self, schema: type[Schema], module: str) -> dict[str, object]:
         return {
             "name": schema.__name__,
             "module": module,

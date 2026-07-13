@@ -1,8 +1,8 @@
 from examples.orders.schemas.common import AuditStamp, TenantKey
-from structure import Date, Decimal, String, Struct, Structure, field
+from structure import Date, Decimal, Schema, String, Struct, field
 
 
-class Promotion(Structure):
+class Promotion(Schema):
     tenant = field(Struct(TenantKey), nullable=False)
     audit = field(Struct(AuditStamp), nullable=False)
     code = field(String(), nullable=False, primary_key=True)

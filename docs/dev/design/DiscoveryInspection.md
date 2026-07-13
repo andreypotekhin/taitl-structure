@@ -50,7 +50,7 @@ Python class dictionaries preserve definition order. Structure should use this o
 
 ## Spark-Free Discovery
 
-Discovery must not import PySpark, start Java, create a SparkSession, or contact a Spark cluster. If v.1 discovers by
+Discovery must not import PySpark, start Java, create a SparkSession, or contact a Spark cluster. If v1 discovers by
 importing user source modules, those modules must be Structure-source import-safe and must not create Spark resources at
 module import time. Later AST/LibCST discovery can reduce import risk, but it must preserve the same Spark-free compiler
 contract.
@@ -66,4 +66,4 @@ contract.
 ## Compile-Time Performance
 
 Discovery is often the largest compile-time cost for large projects. Use source fingerprints, avoid repeated imports,
-and keep inspection results cache-friendly so end-of-v.3 production incremental compile can reuse them safely.
+and keep inspection results cache-friendly so end-of-v3 production incremental compile can reuse them safely.

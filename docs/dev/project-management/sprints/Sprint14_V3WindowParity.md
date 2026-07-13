@@ -1,4 +1,4 @@
-# Sprint 14: v.3 Window PySpark Parity
+# Sprint 14: v3 Window PySpark Parity
 
 ## Sprint Goal
 
@@ -46,4 +46,4 @@ metrics over reusable window specs.
 
 ## Progress
 
-- [ ] Implement v.3 window parity.
+- [ ] Implement v3 window parity.

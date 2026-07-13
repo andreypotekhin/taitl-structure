@@ -9,7 +9,7 @@ from structure.app.cli.model.DiscoveredStructureProject import DiscoveredStructu
 from structure.app.configuration.model.StructureConfig import StructureConfig
 from structure.app.docs.api import Docs
 from structure.app.dsl.api import compile_transform
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.target.pyspark.api import PySpark
 
 ROOT = Path(".")
@@ -50,7 +50,7 @@ def render_orders_example() -> dict[str, str]:
         from examples.orders.transforms.order import EnrichOrders
         from examples.orders.transforms.rowset_join import RowsetJoinExamples
 
-        schema_modules: dict[str, Sequence[type[Structure]]] = {
+        schema_modules: dict[str, Sequence[type[Schema]]] = {
             "examples.orders.schemas.adv_analytics": [
                 OrderRevenueRollup,
                 OrderProductCube,

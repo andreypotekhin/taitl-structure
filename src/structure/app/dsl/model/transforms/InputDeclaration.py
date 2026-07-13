@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from structure.app.dsl.model.expr.InputScope import InputScope
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.aliases import alias as declaration_alias
 from structure.app.dsl.model.transforms.InOutBinding import bind_inout
 from structure.app.dsl.model.transforms.StreamingMode import StreamingMode
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class InputDeclaration:
-    schema: type[Structure]
+    schema: type[Schema]
     name: str = ""
     streaming: StreamingMode = StreamingMode.NO
     aliases: tuple[str, ...] = ()

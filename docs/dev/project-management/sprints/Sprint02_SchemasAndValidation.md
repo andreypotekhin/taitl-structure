@@ -99,7 +99,7 @@ validation/projection.
   `transform.schemas` after `run(session)`.
 - [x] (2026-06-23) Live `assert_schema(...)` execution is exercised by generated and online runtime paths in the
   PySpark integration matrix.
-- [ ] v.1 closeout: add broader negative schema-validation coverage against Spark DataFrames.
+- [ ] v1 closeout: add broader negative schema-validation coverage against Spark DataFrames.
 
 ## Demo Script
 

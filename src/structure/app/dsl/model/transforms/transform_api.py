@@ -10,7 +10,7 @@ from structure.app.compiler.symbolic_execution.model.CompileContext import curre
 from structure.app.dsl.model.expr.expressions import literal
 from structure.app.dsl.model.expr.InputScope import InputScope, lookup_join
 from structure.app.dsl.model.schemas.Projection import Projection
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.BindingSelector import BindingSelector, SelectedDeclaration
 from structure.app.dsl.model.transforms.InOutBinding import InOutBinding
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
@@ -23,7 +23,7 @@ from structure.app.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.types.BooleanType import BooleanType
 
-Projected = TypeVar("Projected", bound=Structure)
+Projected = TypeVar("Projected", bound=Schema)
 
 _CLASS_OPTIONS = {"validate_intermediate", "streaming_compatible"}
 _STEP_METHOD_OPTIONS = {"target_backend", "target_platform", "target_profile"}
@@ -32,7 +32,7 @@ _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
 
 
 @overload
-def input(value: type[Structure], *, streaming: StreamingMode = StreamingMode.NO) -> InputDeclaration: ...
+def input(value: type[Schema], *, streaming: StreamingMode = StreamingMode.NO) -> InputDeclaration: ...
 
 
 @overload
@@ -40,7 +40,7 @@ def input(value: InputDeclaration) -> BindingSelector: ...
 
 
 def input(
-    value: type[Structure] | InputDeclaration,
+    value: type[Schema] | InputDeclaration,
     *,
     streaming: StreamingMode = StreamingMode.NO,
 ) -> InputDeclaration | BindingSelector:
@@ -48,42 +48,42 @@ def input(
         if streaming is not StreamingMode.NO:
             raise TypeError("input(existing_input, streaming=...) is invalid; set streaming on the declaration")
         return BindingSelector("input", value)
-    if not isinstance(value, type) or not issubclass(value, Structure):
-        raise TypeError("input(...) requires a Structure schema class")
+    if not isinstance(value, type) or not issubclass(value, Schema):
+        raise TypeError("input(...) requires a Schema class")
     if not isinstance(streaming, StreamingMode):
         raise TypeError("input(streaming=...) requires a StreamingMode value")
     return InputDeclaration(schema=value, streaming=streaming)
 
 
 @overload
-def output(value: type[Structure]) -> OutputDeclaration: ...
+def output(value: type[Schema]) -> OutputDeclaration: ...
 
 
 @overload
 def output(value: OutputDeclaration) -> BindingSelector: ...
 
 
-def output(value: type[Structure] | OutputDeclaration) -> OutputDeclaration | BindingSelector:
+def output(value: type[Schema] | OutputDeclaration) -> OutputDeclaration | BindingSelector:
     if isinstance(value, OutputDeclaration):
         return BindingSelector("output", value)
-    if not isinstance(value, type) or not issubclass(value, Structure):
-        raise TypeError("output(...) requires a Structure schema class")
+    if not isinstance(value, type) or not issubclass(value, Schema):
+        raise TypeError("output(...) requires a Schema class")
     return OutputDeclaration(schema=value)
 
 
 @overload
-def lane(value: type[Structure]) -> LaneDeclaration: ...
+def lane(value: type[Schema]) -> LaneDeclaration: ...
 
 
 @overload
 def lane(value: SelectedDeclaration) -> BindingSelector: ...
 
 
-def lane(value: type[Structure] | SelectedDeclaration) -> LaneDeclaration | BindingSelector:
+def lane(value: type[Schema] | SelectedDeclaration) -> LaneDeclaration | BindingSelector:
     if isinstance(value, (InputDeclaration, LaneDeclaration, OutputDeclaration)):
         return BindingSelector("lane", value)
-    if not isinstance(value, type) or not issubclass(value, Structure):
-        raise TypeError("lane(...) requires a Structure schema class")
+    if not isinstance(value, type) or not issubclass(value, Schema):
+        raise TypeError("lane(...) requires a Schema class")
     return LaneDeclaration(schema=value)
 
 
@@ -432,21 +432,21 @@ def project(source: object, target: Iterable[str]) -> Any: ...
 def project(source: object) -> Any: ...
 
 
-def project(source: object | None = None, target: type[Structure] | Iterable[str] | None = None) -> object:
+def project(source: object | None = None, target: type[Schema] | Iterable[str] | None = None) -> object:
     if target is None:
         context = current_context()
-        if context is not None and isinstance(source, type) and issubclass(source, Structure):
+        if context is not None and isinstance(source, type) and issubclass(source, Schema):
             return Projection(source=_default_project_source(context), target=source)
         if context is not None and source is not None:
             return Projection(source=_default_project_source(context), fields=_project_fields(source))
         raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
-    if isinstance(source, type) and issubclass(source, Structure):
+    if isinstance(source, type) and issubclass(source, Schema):
         raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
     if source is None:
         raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
     if isinstance(target, type):
-        if not issubclass(target, Structure):
-            raise TypeError("project(source, target) requires a Structure schema class target")
+        if not issubclass(target, Schema):
+            raise TypeError("project(source, target) requires a Schema class target")
         return Projection(source=source, target=target)
     return Projection(source=source, fields=_project_fields(target))
 
@@ -471,7 +471,7 @@ class WhereChain:
     def project(
         self,
         source: object | None = None,
-        target: type[Structure] | Iterable[str] | None = None,
+        target: type[Schema] | Iterable[str] | None = None,
     ) -> object:
         if target is None:
             return project(source)

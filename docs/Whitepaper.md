@@ -310,7 +310,7 @@ Structure targets Python 3.11+ and online/generated PySpark for PySpark 3.5.x an
 settings are `execution_mode = "online"`, `target_profile = ">=3.5,<4.1"`, and `target_variant = "ordinary"`.
 
 Online and generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs by default.
-Sprint 09 promotes Spark Connect to supported status for completed v.1/v.2 batch features after live runtime evidence,
+Sprint 09 promotes Spark Connect to supported status for completed v1/v2 batch features after live runtime evidence,
 diagnostics, and CI or documented verification are in place. Spark Connect must not change Structure source syntax,
 online invocation construction, generated class construction, `run(...)` signatures, streaming orchestration semantics,
 or generated-code reviewability.
@@ -407,7 +407,7 @@ The compiler should avoid starting Spark during normal compile/check operations.
 
 Recommended implementation techniques:
 
-- source fingerprints that enable v.2 production incremental compilation
+- source fingerprints that enable v2 production incremental compilation
 - compiler cache directory
 - parallel code generation
 - lazy module inspection where possible
@@ -417,9 +417,9 @@ Recommended implementation techniques:
 ## Roadmap
 
 The roadmap follows an IR-first north star: the initial release proves that Structure can replace hand-maintained
-PySpark boilerplate with strict online execution and optional generated-code workflow. v.2 makes that workflow useful
-for mainstream analytical pipelines and promotes Spark Connect for completed batch features. v.3 expands streaming
-transformation support without taking over lifecycle concerns. v.4 handles backend expansion and non-batch Spark Connect
+PySpark boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful
+for mainstream analytical pipelines and promotes Spark Connect for completed batch features. v3 expands streaming
+transformation support without taking over lifecycle concerns. v4 handles backend expansion and non-batch Spark Connect
 hardening left outside the Sprint 09 support claim.
 
 ### Initial Release
@@ -428,19 +428,19 @@ Online PySpark execution by default, optional generated PySpark classes, project
 intermediate schemas, hooks, validation, compiler provenance, compact static dataflow traceability, streaming-compatible
 transforms, diagnostic links, and setup checks.
 
-### v.2
+### v2
 
 Existence joins, `inner_join(...)`, deterministic lookup dedupe, temporal validity-window joins, backward as-of joins,
 full rowset joins, windowing, aggregations, advanced grouping, Spark higher-order functions, cache/persist first-slice
 directives, Spark Connect batch support, and static streaming compatibility diagnostics.
 
-### v.3
+### v3
 
 Streaming transformation support: live streaming evidence, additional stateful operation families, richer
 watermark/state diagnostics, and caller-owned output-mode guidance. Structure keeps `readStream`, `writeStream`, triggers,
 checkpoints, query lifecycle, deployment, and recovery in caller code.
 
-### v.4
+### v4
 
 Spark Connect support and backend capability reporting.
 

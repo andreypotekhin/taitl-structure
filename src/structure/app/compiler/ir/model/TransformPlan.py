@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from structure.app.compiler.ir.model.InputPlan import InputPlan
 from structure.app.compiler.ir.model.OutputPlan import OutputPlan
 from structure.app.compiler.ir.model.StepPlan import StepPlan
-from structure.app.dsl.model.schemas.Structure import Structure
+from structure.app.dsl.model.schemas.Schema import Schema
 from structure.lib.cross.errors import Diagnostic
 
 
@@ -19,7 +19,7 @@ class TransformPlan:
     diagnostics: tuple[Diagnostic, ...] = ()
 
     @property
-    def output_schema(self) -> type[Structure]:
+    def output_schema(self) -> type[Schema]:
         if len(self.outputs) != 1:
             names = ", ".join(output.name for output in self.outputs)
             raise ValueError(f"Transform has multiple outputs: {names}. Use TransformPlan.outputs instead.")

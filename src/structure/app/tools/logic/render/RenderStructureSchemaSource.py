@@ -21,7 +21,7 @@ class RenderStructureSchemaSource:
         return ("import structure",)
 
     def _class(self, schema: GeneratedSchemaClass) -> tuple[str, ...]:
-        lines = [f"class {schema.name}(structure.Structure):"]
+        lines = [f"class {schema.name}(structure.Schema):"]
         if not schema.fields:
             lines.append("    pass")
             return tuple(lines)

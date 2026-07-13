@@ -53,10 +53,10 @@ artifacts. Generated modules mirror source import paths under `structure_generat
 ```python
 # src/orders/schemas/order.py
 
-from structure import Structure, field, String, Decimal
+from structure import Schema, field, String, Decimal
 
 
-class OrderRaw(Structure):
+class OrderRaw(Schema):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
@@ -64,7 +64,7 @@ class OrderRaw(Structure):
     total = field(String(), nullable=True)
 
 
-class OrderNormalized(Structure):
+class OrderNormalized(Schema):
     id = field(String(), nullable=False)
     customer_id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
@@ -84,10 +84,10 @@ aliases are schema-local unless inherited.
 ```python
 # src/orders/schemas/customer.py
 
-from structure import Structure, field, String
+from structure import Schema, field, String
 
 
-class Customer(Structure):
+class Customer(Schema):
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=True)
     tier = field(String(), nullable=True)

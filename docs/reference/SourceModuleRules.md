@@ -63,7 +63,7 @@ The default generated package is `structure_generated`.
 
 ## Import-Safe Modules
 
-Structure v.1 may import user source modules to discover `Structure` and `Transform` classes. Therefore user modules
+Structure v1 may import user source modules to discover `Structure` and `Transform` classes. Therefore user modules
 must be import-safe.
 
 Import-safe means importing the module only declares Python objects and does not perform application work.
@@ -136,8 +136,8 @@ Compiler commands may cache source fingerprints, discovered metadata, and IR. Ca
 - generated package or backend target changes;
 - a dependency that participates in discovered symbols changes, when detectable.
 
-v.1 may implement conservative full rediscovery instead of incremental caching. The implementation must not bake in a
-design that prevents end-of-v.3 incremental compilation.
+v1 may implement conservative full rediscovery instead of incremental caching. The implementation must not bake in a
+design that prevents end-of-v3 incremental compilation.
 
 ## Diagnostics
 

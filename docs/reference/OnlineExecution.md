@@ -1,6 +1,6 @@
 # Online Execution
 
-Online execution is the default v.1 way to run Structure transforms. A user depends on the Structure library, supplies an
+Online execution is the default v1 way to run Structure transforms. A user depends on the Structure library, supplies an
 existing Spark session, constructs a transform invocation with input DataFrames, and runs it through a
 `StructureSession`. The user does not need to commit generated PySpark code to their repository.
 
@@ -117,7 +117,7 @@ Generated execution may also use explicit in-memory generated artifacts. `Memory
 writing generated Python files to disk. This preserves the default "no generated files required" workflow while keeping
 generated-code semantics available for no-disk environments.
 
-`target_backend` and `target_profile` remain backend selection inputs. In v.1 the only supported backend is `pyspark`.
+`target_backend` and `target_profile` remain backend selection inputs. In v1 the only supported backend is `pyspark`.
 Future backends should be selected by the session, not by changing transform constructors. Backend support is checked
 against the session's resolved `StructureConfig` through [BackendCapabilities.md](BackendCapabilities.md), so online
 execution and generated PySpark share the same target capability decisions.
@@ -197,7 +197,7 @@ expression mapping, or literal typing when a shared PySpark recipe already defin
 `Transform.__init__(**inputs)` stores DataFrame inputs by declared Structure input name. Positional arguments are not
 allowed. Unknown input names are errors. Missing declared inputs must be reported no later than `run(session)`.
 
-For v.1, custom transform construction parameters should not be mixed into the transform constructor. Runtime context
+For v1, custom transform construction parameters should not be mixed into the transform constructor. Runtime context
 belongs in `StructureSession(ctx=...)`. Future explicit APIs may add richer parameter binding if a concrete use case
 requires it.
 
@@ -214,9 +214,9 @@ the caller.
 
 ## Streaming Compatibility
 
-Online execution does not change the v.1/v.2 streaming compatibility contract. A transform is streaming-compatible when
+Online execution does not change the v1/v2 streaming compatibility contract. A transform is streaming-compatible when
 its compiled operations are valid for the caller's streaming DataFrame shape. The caller still owns `readStream`,
-`writeStream`, triggers, checkpoints, output modes, and query lifecycle until a v.3 streaming orchestration job contract
+`writeStream`, triggers, checkpoints, output modes, and query lifecycle until a v3 streaming orchestration job contract
 is used.
 
 ## Diagnostics

@@ -66,10 +66,10 @@ def test_v1_expression_renderer_renders_join_predicates() -> None:
 
 
 def test_v1_expression_renderer_passes_field_aliases_to_spark() -> None:
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         promotion_code = structure.field(structure.String(), nullable=True, alias="promo-code")
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         promotion_code = structure.field(structure.String(), nullable=True)
 
     @structure.transform
@@ -87,15 +87,15 @@ def test_v1_expression_renderer_passes_field_aliases_to_spark() -> None:
 
 
 def test_v1_expression_renderer_renders_nested_struct_construction() -> None:
-    class Address(structure.Structure):
+    class Address(structure.Schema):
         city = structure.field(structure.String(), nullable=False)
         postal_code = structure.field(structure.String(), nullable=False)
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         id = structure.field(structure.String(), nullable=False)
         shipping = structure.field(structure.Struct(Address), nullable=True)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         id = structure.field(structure.String(), nullable=False)
         shipping = structure.field(structure.Struct(Address), nullable=False)
 
@@ -124,13 +124,13 @@ def test_v1_expression_renderer_renders_nested_struct_construction() -> None:
 
 
 def test_v1_expression_renderer_escapes_dotted_nested_field_aliases() -> None:
-    class Address(structure.Structure):
+    class Address(structure.Schema):
         postal_code = structure.field(structure.String(), nullable=False, alias="postal.code")
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         shipping = structure.field(structure.Struct(Address), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         postal_code = structure.field(structure.String(), nullable=False)
 
     @structure.transform
@@ -150,7 +150,7 @@ def test_v1_expression_renderer_escapes_dotted_nested_field_aliases() -> None:
 
 
 def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> None:
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         customer_id = structure.field(structure.String(), nullable=False)
         status = structure.field(structure.String(), nullable=True)
         total = structure.field(structure.Integer(), nullable=False)
@@ -158,7 +158,7 @@ def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> N
         price = structure.field(structure.Integer(), nullable=False)
         quantity = structure.field(structure.Integer(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         customer_id = structure.field(structure.String(), nullable=False)
         size_tier = structure.field(structure.String(), nullable=False)
         is_big = structure.field(structure.Boolean(), nullable=False)
@@ -214,10 +214,10 @@ def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> N
 
 
 def test_v3_expression_renderer_renders_string_predicates() -> None:
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         status = structure.field(structure.String(), nullable=True)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         contains_new = structure.field(structure.Boolean(), nullable=True)
         matches_new = structure.field(structure.Boolean(), nullable=True)
         matches_new_case_insensitive = structure.field(structure.Boolean(), nullable=True)
@@ -250,13 +250,13 @@ def test_v3_expression_renderer_renders_string_predicates() -> None:
 
 
 def test_v3_expression_renderer_renders_collection_indexing() -> None:
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=False)
         attributes = structure.field(
             structure.Map(structure.String(), structure.String(), value_contains_null=False), nullable=False
         )
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         first_tag = structure.field(structure.String(), nullable=True)
         region = structure.field(structure.String(), nullable=True)
 
@@ -280,11 +280,11 @@ def test_v3_expression_renderer_renders_collection_indexing() -> None:
 
 
 def test_v3_expression_renderer_renders_scalar_casts() -> None:
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         raw_count = structure.field(structure.String(), nullable=True)
         count = structure.field(structure.Integer(), nullable=False)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         count = structure.field(structure.Integer(), nullable=True)
         count_text = structure.field(structure.String(), nullable=False)
         try_count = structure.field(structure.Integer(), nullable=True)
@@ -318,10 +318,10 @@ def test_v3_expression_renderer_renders_scalar_casts() -> None:
 
 
 def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         label = structure.field(structure.String(), nullable=True)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         prefix = structure.field(structure.String(), nullable=True)
         parts = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
         normalized = structure.field(structure.String(), nullable=True)
@@ -374,12 +374,12 @@ def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
 
 
 def test_v3_expression_renderer_renders_temporal_sql_helpers() -> None:
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         start_date = structure.field(structure.Date(), nullable=False)
         end_date = structure.field(structure.Date(), nullable=True)
         recorded_at = structure.field(structure.Timestamp(), nullable=True)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         due_date = structure.field(structure.Date(), nullable=False)
         elapsed_days = structure.field(structure.Integer(), nullable=True)
         month = structure.field(structure.Timestamp(), nullable=True)
@@ -408,10 +408,10 @@ def test_v3_expression_renderer_renders_temporal_sql_helpers() -> None:
 
 
 def test_v3_expression_renderer_renders_numeric_sql_helpers() -> None:
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         amount = structure.field(structure.Decimal(precision=12, scale=2), nullable=True)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         absolute_amount = structure.field(structure.Decimal(precision=12, scale=2), nullable=True)
         rounded_amount = structure.field(structure.Decimal(precision=12, scale=2), nullable=True)
         ceiling = structure.field(structure.Decimal(precision=11, scale=0), nullable=True)
@@ -443,11 +443,11 @@ def test_v3_expression_renderer_renders_numeric_sql_helpers() -> None:
 
 
 def test_v3_expression_renderer_renders_predicate_sql_helpers() -> None:
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         label = structure.field(structure.String(), nullable=True)
         score = structure.field(structure.Double(), nullable=True)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         missing_label = structure.field(structure.Boolean(), nullable=False)
         present_label = structure.field(structure.Boolean(), nullable=False)
         invalid_score = structure.field(structure.Boolean(), nullable=False)
@@ -476,13 +476,13 @@ def test_v3_expression_renderer_renders_predicate_sql_helpers() -> None:
 
 
 def test_v3_expression_renderer_renders_struct_get_field() -> None:
-    class Address(structure.Structure):
+    class Address(structure.Schema):
         city = structure.field(structure.String(), nullable=False, alias="city-name")
 
-    class Raw(structure.Structure):
+    class Raw(structure.Schema):
         address = structure.field(structure.Struct(Address), nullable=True)
 
-    class Published(structure.Structure):
+    class Published(structure.Schema):
         city = structure.field(structure.String(), nullable=True)
 
     @structure.transform

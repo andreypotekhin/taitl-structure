@@ -1,8 +1,8 @@
 from examples.orders.schemas.common import AuditStamp, TenantKey
-from structure import Integer, String, Struct, Structure, Timestamp, field
+from structure import Integer, Schema, String, Struct, Timestamp, field
 
 
-class Shipment(Structure):
+class Shipment(Schema):
     tenant = field(Struct(TenantKey), nullable=False)
     audit = field(Struct(AuditStamp), nullable=False)
     order_id = field(String(), nullable=False)

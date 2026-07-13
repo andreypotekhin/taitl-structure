@@ -16,7 +16,7 @@ def test_default_pyspark_support_range_resolves_without_importing_pyspark() -> N
 
 
 def test_v1_backend_profile_accepts_supported_lookup_joins() -> None:
-    """The v.1 PySpark backend profile accepts supported lookup joins."""
+    """The v1 PySpark backend profile accepts supported lookup joins."""
 
     decision = Capabilities.resolve()().require(CapabilityRequirement(group="join", name="lookup_join"))
 

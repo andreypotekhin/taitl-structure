@@ -1,19 +1,19 @@
 from __future__ import annotations
 
-from structure import Join, String, Structure, Transform, field, input, lane, lookup_join, output, raw, step, transform
+from structure import Join, Schema, String, Transform, field, input, lane, lookup_join, output, raw, step, transform
 
 
-class LookupOrder(Structure):
+class LookupOrder(Schema):
     id = field(String(), nullable=False)
     product_id = field(String(), nullable=False)
 
 
-class LookupProduct(Structure):
+class LookupProduct(Schema):
     id = field(String(), nullable=False, primary_key=True)
     name = field(String(), nullable=False)
 
 
-class LookupEnriched(Structure):
+class LookupEnriched(Schema):
     id = field(String(), nullable=False)
     product_name = field(String(), nullable=True)
 

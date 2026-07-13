@@ -77,9 +77,9 @@ The first iterations are intentionally arranged to build confidence in small com
 6. **Joins, compiler traceability, build integration**: `lookup_join`, N-step serial joins, compiler provenance, static
    dataflow traceability, `--fail-on-diff`.
 
-V2 starts after v.1 stabilization evidence is release-ready. The v.2 sprint sequence is:
+V2 starts after v1 stabilization evidence is release-ready. The v2 sprint sequence is:
 
-1. **Sprint 06: v.2 scope and analytical IR foundations**: release boundary, user stories, epics, IR operation taxonomy,
+1. **Sprint 06: v2 scope and analytical IR foundations**: release boundary, user stories, epics, IR operation taxonomy,
    capability checks, fixture skeletons, and diagnostic anchors.
 2. **Sprint 07: analytical join coverage**: semi/anti existence joins, `inner_join(...)`, deterministic lookup dedupe,
    temporal validity-window joins, and backward as-of joins.
@@ -91,7 +91,7 @@ V2 starts after v.1 stabilization evidence is release-ready. The v.2 sprint sequ
 5. **Sprint 10: docs and testing**: generated documentation artifacts and pytest helpers.
 
 V3 starts with the planned PySpark parity gaps tracked in [Gaps.md](../Gaps.md), then takes ownership of full streaming
-orchestration. The v.3 sprint sequence is:
+orchestration. The v3 sprint sequence is:
 
 1. **Sprint 11: DSL and SQL function parity**: planned Column API and SQL function gaps.
 2. **Sprint 12: join parity hardening**: using-key joins, diagnostics, cross safety, strategy directives, and forward
