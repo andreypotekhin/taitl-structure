@@ -16,6 +16,13 @@
       "type": "array<string!>"
     },
     {
+      "column": "extra_tags",
+      "name": "extra_tags",
+      "nullable": true,
+      "primary_key": false,
+      "type": "array<string!>"
+    },
+    {
       "column": "nested_tags",
       "name": "nested_tags",
       "nullable": true,
@@ -32,6 +39,13 @@
     {
       "column": "attributes",
       "name": "attributes",
+      "nullable": true,
+      "primary_key": false,
+      "type": "map<string,string?>"
+    },
+    {
+      "column": "extra_attributes",
+      "name": "extra_attributes",
       "nullable": true,
       "primary_key": false,
       "type": "map<string,string?>"

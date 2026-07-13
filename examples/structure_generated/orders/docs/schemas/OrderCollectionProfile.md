@@ -7,6 +7,17 @@ Module: `examples.orders.schemas.adv_analytics`
 | Field | Column | Type | Nullable | Primary key |
 | --- | --- | --- | --- | --- |
 | `id` | `id` | `string` | no | no |
+| `tag_count` | `tag_count` | `integer` | yes | no |
+| `contains_priority` | `contains_priority` | `boolean` | yes | no |
+| `contains_region` | `contains_region` | `boolean` | yes | no |
+| `default_tags` | `default_tags` | `array<string!>` | no | no |
+| `repeated_tags` | `repeated_tags` | `array<string!>` | no | no |
+| `all_tags` | `all_tags` | `array<string!>` | yes | no |
+| `tags_without_extra` | `tags_without_extra` | `array<string!>` | yes | no |
+| `first_tag` | `first_tag` | `string` | yes | no |
+| `safe_tag` | `safe_tag` | `string` | yes | no |
+| `region` | `region` | `string` | yes | no |
+| `safe_region` | `safe_region` | `string` | yes | no |
 | `normalized_tags` | `normalized_tags` | `array<string?>` | yes | no |
 | `sorted_tags` | `sorted_tags` | `array<string!>` | yes | no |
 | `flat_tags` | `flat_tags` | `array<string!>` | yes | no |
@@ -19,3 +30,4 @@ Module: `examples.orders.schemas.adv_analytics`
 | `attribute_keys` | `attribute_keys` | `array<string!>` | yes | no |
 | `attribute_values` | `attribute_values` | `array<string!>` | yes | no |
 | `roundtrip_attributes` | `roundtrip_attributes` | `map<string,string?>` | yes | no |
+| `merged_attributes` | `merged_attributes` | `map<string,string?>` | yes | no |

@@ -3,4 +3,4 @@
 Sprints: docs/dev/project-management/sprints/
 
 ### Current iteration
-Sprint: none (Sprint 14 completed)
+Sprint: 17 (v3 incremental compile and cache diagnostics)

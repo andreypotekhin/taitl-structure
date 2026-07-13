@@ -106,8 +106,11 @@ def test_supported_v2_aggregate_requirement_passes(name: str) -> None:
 @pytest.mark.parametrize(
     "name",
     [
+        "array",
         "array_aggregate",
+        "array_contains",
         "array_distinct",
+        "array_except",
         "array_exists",
         "array_filter",
         "array_flatten",
@@ -115,7 +118,13 @@ def test_supported_v2_aggregate_requirement_passes(name: str) -> None:
         "array_position",
         "array_sort_by",
         "array_transform",
+        "array_repeat",
+        "array_union",
         "array_zip_with",
+        "collection_size",
+        "element_at",
+        "map_concat",
+        "map_contains_key",
         "map_entries",
         "map_filter",
         "map_from_entries",
@@ -124,6 +133,7 @@ def test_supported_v2_aggregate_requirement_passes(name: str) -> None:
         "map_transform_values",
         "map_values",
         "map_zip_with",
+        "try_element_at",
     ],
 )
 def test_supported_v2_higher_order_requirement_passes(name: str) -> None:

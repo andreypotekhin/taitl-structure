@@ -645,6 +645,15 @@ normalized_attributes = map_filter(
 entries = map_entries(normalized_attributes)
 
 return OrderCollectionProfile(
+    tag_count=size(row.tags),
+    contains_priority=array_contains(row.tags, "priority"),
+    contains_region=map_contains_key(row.extra_attributes, "Region"),
+    default_tags=array("priority", "standard"),
+    repeated_tags=array_repeat("priority", 2),
+    all_tags=array_union(row.tags, row.extra_tags),
+    tags_without_extra=array_except(row.tags, row.extra_tags),
+    first_tag=element_at(row.tags, 1),
+    safe_tag=try_element_at(row.tags, 2),
     normalized_tags=arr_distinct(priority_tags),
     sorted_tags=arr_sort_by(paired_tags, lambda tag: tag),
     flat_tags=arr_flatten(row.nested_tags),
@@ -661,6 +670,7 @@ return OrderCollectionProfile(
     attribute_keys=map_keys(normalized_attributes),
     attribute_values=map_values(normalized_attributes),
     roundtrip_attributes=map_from_entries(entries),
+    merged_attributes=map_concat(row.attributes, row.extra_attributes),
 )
 ```
 

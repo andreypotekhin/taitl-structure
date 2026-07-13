@@ -16,6 +16,7 @@ from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.BooleanType import BooleanType
 from structure.app.dsl.model.types.DoubleType import DoubleType
+from structure.app.dsl.model.types.FloatType import FloatType
 from structure.app.dsl.model.types.IntegerType import IntegerType
 from structure.app.dsl.model.types.LongType import LongType
 from structure.app.dsl.model.types.MapType import MapType
@@ -128,7 +129,9 @@ def covar(left: object, right: object, *, where: object | None = None) -> Expres
     return _aggregate("covar", literal(left), literal(right), type=DoubleType(), nullable=True, where=where)
 
 
-def approx_count_distinct(value: object, *, relative_sd: float | None = None, where: object | None = None) -> Expression:
+def approx_count_distinct(
+    value: object, *, relative_sd: float | None = None, where: object | None = None
+) -> Expression:
     return _aggregate(
         "approx_count_distinct",
         literal(value),
@@ -170,9 +173,7 @@ def collect_list(
     )
 
 
-def collect_set(
-    value: object, *, element_type: StructureType | None = None, where: object | None = None
-) -> Expression:
+def collect_set(value: object, *, element_type: StructureType | None = None, where: object | None = None) -> Expression:
     argument = literal(value)
     return _aggregate(
         "collect_set",
@@ -194,7 +195,9 @@ def first_value(
 ) -> Expression:
     argument = literal(value)
     if over is not None:
-        return _window_over_expression("first_value", argument, over=over, type=argument.type, nullable=True, ignore_nulls=ignore_nulls)
+        return _window_over_expression(
+            "first_value", argument, over=over, type=argument.type, nullable=True, ignore_nulls=ignore_nulls
+        )
     if order_by is None:
         raise TypeError("first_value(...) aggregate requires order_by=...")
     if ties is not TiePolicy.ERROR:
@@ -220,7 +223,9 @@ def last_value(
 ) -> Expression:
     argument = literal(value)
     if over is not None:
-        return _window_over_expression("last_value", argument, over=over, type=argument.type, nullable=True, ignore_nulls=ignore_nulls)
+        return _window_over_expression(
+            "last_value", argument, over=over, type=argument.type, nullable=True, ignore_nulls=ignore_nulls
+        )
     if order_by is None:
         raise TypeError("last_value(...) aggregate requires order_by=...")
     if ties is not TiePolicy.ERROR:
@@ -467,7 +472,9 @@ def cume_dist(*, over: "WindowSpec") -> Expression:
 def ntile(value: int, *, over: "WindowSpec") -> Expression:
     if value < 1:
         raise TypeError("ntile(...) value must be greater than or equal to 1")
-    return _window_over_expression("ntile", over=over, type=IntegerType(), nullable=False, options=(("buckets", value),))
+    return _window_over_expression(
+        "ntile", over=over, type=IntegerType(), nullable=False, options=(("buckets", value),)
+    )
 
 
 def nth_value(value: object, n: int, *, over: "WindowSpec", ignore_nulls: bool = False) -> Expression:
@@ -536,9 +543,7 @@ def window_variance(value: object, *, over: "WindowSpec") -> Expression:
     return _window_over_expression("variance", argument, over=over, type=DoubleType(), nullable=True)
 
 
-def window_collect_list(
-    value: object, *, over: "WindowSpec", element_type: StructureType | None = None
-) -> Expression:
+def window_collect_list(value: object, *, over: "WindowSpec", element_type: StructureType | None = None) -> Expression:
     argument = literal(value)
     return _window_over_expression(
         "collect_list",
@@ -549,9 +554,7 @@ def window_collect_list(
     )
 
 
-def window_collect_set(
-    value: object, *, over: "WindowSpec", element_type: StructureType | None = None
-) -> Expression:
+def window_collect_set(value: object, *, over: "WindowSpec", element_type: StructureType | None = None) -> Expression:
     argument = literal(value)
     return _window_over_expression(
         "collect_set",
@@ -564,9 +567,7 @@ def window_collect_set(
 
 def drop_duplicates(*subset: object) -> None:
     duplicate_rows = _duplicate_rows(subset, call="drop_duplicates(...)")
-    _context("drop_duplicates()").operations.append(
-        OperationPlan.drop_duplicates_operation(duplicate_rows)
-    )
+    _context("drop_duplicates()").operations.append(OperationPlan.drop_duplicates_operation(duplicate_rows))
 
 
 def distinct(relation: object | None = None) -> None:
@@ -1101,6 +1102,115 @@ def arr_position(value: object, item: object) -> Expression:
     )
 
 
+def size(value: object) -> Expression:
+    argument = literal(value)
+    _collection_type(argument, "size(...)")
+    return _reserved_expression(
+        "collection_size",
+        group="higher_order",
+        name="collection_size",
+        type=IntegerType(),
+        nullable=argument.nullable,
+        args=(argument,),
+    )
+
+
+def array_contains(value: object, item: object) -> Expression:
+    argument = literal(value)
+    array_type = _array_type(argument, "array_contains(...)")
+    needle = literal(item)
+    _unify_types("array_contains(...)", (array_type.element, _typed_type("array_contains(...)", needle)))
+    return _reserved_expression(
+        "array_contains",
+        group="higher_order",
+        name="array_contains",
+        type=BooleanType(),
+        nullable=argument.nullable or array_type.contains_null or needle.nullable,
+        args=(argument, needle),
+    )
+
+
+def map_contains_key(value: object, key: object) -> Expression:
+    argument = literal(value)
+    map_type = _map_type(argument, "map_contains_key(...)")
+    key_expression = literal(key)
+    _map_key_type("map_contains_key(...)", map_type, key_expression)
+    return _reserved_expression(
+        "map_contains_key",
+        group="higher_order",
+        name="map_contains_key",
+        type=BooleanType(),
+        nullable=argument.nullable,
+        args=(argument, key_expression),
+    )
+
+
+def array(*values: object) -> Expression:
+    if not values:
+        raise TypeError("array(...) requires at least one typed value")
+    arguments = tuple(literal(value) for value in values)
+    element_type = _unified_argument_type("array(...)", arguments)
+    return _reserved_expression(
+        "array",
+        group="higher_order",
+        name="array",
+        type=ArrayType(element_type, contains_null=any(argument.nullable for argument in arguments)),
+        nullable=False,
+        args=arguments,
+    )
+
+
+def array_repeat(value: object, count: object) -> Expression:
+    item = literal(value)
+    item_type = _typed_type("array_repeat(...)", item)
+    repeats = literal(count)
+    if not isinstance(repeats.type, (IntegerType, LongType)):
+        raise TypeError("array_repeat(...) count must be an integral Structure expression")
+    return _reserved_expression(
+        "array_repeat",
+        group="higher_order",
+        name="array_repeat",
+        type=ArrayType(item_type, contains_null=item.nullable),
+        nullable=repeats.nullable,
+        args=(item, repeats),
+    )
+
+
+def array_union(left: object, right: object) -> Expression:
+    return _array_set_operation("array_union", left, right)
+
+
+def array_except(left: object, right: object) -> Expression:
+    return _array_set_operation("array_except", left, right)
+
+
+def element_at(value: object, key: object) -> Expression:
+    return _element_lookup("element_at", value, key)
+
+
+def try_element_at(value: object, key: object) -> Expression:
+    return _element_lookup("try_element_at", value, key)
+
+
+def map_concat(*values: object, duplicates: str = "error") -> Expression:
+    if duplicates != "error":
+        raise TypeError('map_concat(...) currently supports duplicates="error" only')
+    if len(values) < 2:
+        raise TypeError("map_concat(...) requires at least two Map expressions")
+    arguments = tuple(literal(value) for value in values)
+    maps = tuple(_map_type(argument, "map_concat(...)") for argument in arguments)
+    key_type = _unified_types("map_concat(...) key", tuple(map_type.key for map_type in maps))
+    value_type = _unified_types("map_concat(...) value", tuple(map_type.value for map_type in maps))
+    return _reserved_expression(
+        "map_concat",
+        group="higher_order",
+        name="map_concat",
+        type=MapType(key_type, value_type, value_contains_null=any(map_type.value_contains_null for map_type in maps)),
+        nullable=any(argument.nullable for argument in arguments),
+        args=arguments,
+    )
+
+
 def map_transform_keys(
     value: object,
     function: Callable[[Expression, Expression], object],
@@ -1277,10 +1387,123 @@ def _array_type(expression: Expression, call: str) -> ArrayType:
     return expression.type
 
 
+def _collection_type(expression: Expression, call: str) -> ArrayType | MapType:
+    if not isinstance(expression.type, (ArrayType, MapType)):
+        raise TypeError(f"{call} requires an Array or Map expression")
+    return expression.type
+
+
 def _map_type(expression: Expression, call: str) -> MapType:
     if not isinstance(expression.type, MapType):
         raise TypeError(f"{call} requires a Map expression")
     return expression.type
+
+
+def _array_set_operation(function: str, left: object, right: object) -> Expression:
+    left_argument = literal(left)
+    right_argument = literal(right)
+    left_array = _array_type(left_argument, f"{function}(...)")
+    right_array = _array_type(right_argument, f"{function}(...)")
+    element_type = _unify_types(f"{function}(...)", (left_array.element, right_array.element))
+    return _reserved_expression(
+        function,
+        group="higher_order",
+        name=function,
+        type=ArrayType(element_type, contains_null=left_array.contains_null or right_array.contains_null),
+        nullable=left_argument.nullable or right_argument.nullable,
+        args=(left_argument, right_argument),
+    )
+
+
+def _element_lookup(function: str, value: object, key: object) -> Expression:
+    argument = literal(value)
+    lookup = literal(key)
+    if isinstance(argument.type, ArrayType):
+        if not isinstance(lookup.type, (IntegerType, LongType)):
+            raise TypeError(f"{function}(...) Array index must be an integral Structure expression")
+        if lookup.kind == "literal" and (lookup.data or {}).get("value") == 0:
+            raise TypeError(f"{function}(...) Array index is one-based and cannot be zero")
+        return _reserved_expression(
+            function,
+            group="higher_order",
+            name=function,
+            type=argument.type.element,
+            nullable=True,
+            args=(argument, lookup),
+        )
+    if isinstance(argument.type, MapType):
+        _map_key_type(f"{function}(...)", argument.type, lookup)
+        return _reserved_expression(
+            function,
+            group="higher_order",
+            name=function,
+            type=argument.type.value,
+            nullable=True,
+            args=(argument, lookup),
+        )
+    raise TypeError(f"{function}(...) requires an Array or Map expression")
+
+
+def _map_key_type(call: str, map_type: MapType, key: Expression) -> None:
+    if key.nullable or key.type is None:
+        raise TypeError(f"{call} requires a non-null key with the map key type")
+    try:
+        _unify_types(call, (map_type.key, key.type))
+    except TypeError as error:
+        raise TypeError(
+            f"{call} requires a non-null key with map key type {map_type.key.name}; received {key.type.name}"
+        ) from error
+
+
+def _unified_argument_type(call: str, arguments: tuple[Expression, ...]) -> StructureType:
+    types = tuple(argument.type for argument in arguments if argument.type is not None)
+    if not types:
+        raise TypeError(f"{call} requires at least one typed value; null-only arrays need an explicit typed value")
+    return _unified_types(call, types)
+
+
+def _typed_type(call: str, argument: Expression) -> StructureType:
+    if argument.type is None:
+        raise TypeError(f"{call} requires a typed value")
+    return argument.type
+
+
+def _unify_types(call: str, types: tuple[StructureType, ...]) -> StructureType:
+    first = types[0]
+    if all(_same_type(type, first) for type in types[1:]):
+        return first
+    if all(isinstance(type, (IntegerType, LongType, FloatType, DoubleType)) for type in types):
+        if any(isinstance(type, DoubleType) for type in types):
+            return DoubleType()
+        if any(isinstance(type, FloatType) for type in types):
+            return FloatType()
+        if any(isinstance(type, LongType) for type in types):
+            return LongType()
+        return IntegerType()
+    names = ", ".join(type.name for type in types)
+    raise TypeError(f"{call} requires compatible types; received {names}")
+
+
+def _same_type(left: StructureType, right: StructureType) -> bool:
+    if left.name != right.name:
+        return False
+    if isinstance(left, ArrayType) and isinstance(right, ArrayType):
+        return left.contains_null == right.contains_null and _same_type(left.element, right.element)
+    if isinstance(left, MapType) and isinstance(right, MapType):
+        return (
+            left.value_contains_null == right.value_contains_null
+            and _same_type(left.key, right.key)
+            and _same_type(left.value, right.value)
+        )
+    if left.name == "decimal":
+        return getattr(left, "precision") == getattr(right, "precision") and getattr(left, "scale") == getattr(
+            right, "scale"
+        )
+    return True
+
+
+def _unified_types(call: str, types: tuple[StructureType, ...]) -> StructureType:
+    return _unify_types(call, types)
 
 
 def _lambda_arg(type, *, nullable: bool, name: str) -> Expression:

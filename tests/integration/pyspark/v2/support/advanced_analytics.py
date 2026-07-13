@@ -116,9 +116,11 @@ def collection_rows() -> list[dict[str, object]]:
         {
             "id": row["id"],
             "tags": row["tags"].split("|"),
+            "extra_tags": ["priority", "seasonal"],
             "nested_tags": [item.split("|") for item in row["nested_tags"].split(";")],
             "scores": [int(item) for item in row["scores"].split("|")],
             "attributes": dict(item.split("=", 1) for item in row["attributes"].split(";")),
+            "extra_attributes": {"Region": "NA"},
         }
         for row in _csv("collections.csv")
     ]

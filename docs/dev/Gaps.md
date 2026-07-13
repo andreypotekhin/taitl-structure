@@ -46,8 +46,8 @@ page, public compatibility tables, generated examples, and project-management pr
 | Joins | Sprint 12 | [P07072603.V3-join-pyspark-parity-hardening.plan.md](planning/done/P07072603.V3-join-pyspark-parity-hardening.plan.md) |
 | Aggregations | Sprint 13 | [P07072604.V3-aggregation-pyspark-parity.plan.md](planning/done/P07072604.V3-aggregation-pyspark-parity.plan.md) |
 | Windows | Sprint 14 | [P07072605.V3-window-pyspark-parity.plan.md](planning/done/P07072605.V3-window-pyspark-parity.plan.md) |
-| Higher-Order And Collection Helpers | Sprint 15 | [P07072606.V3-collection-helper-pyspark-parity.plan.md](planning/P07072606.V3-collection-helper-pyspark-parity.plan.md) |
-| Streaming | Sprint 16 | [P07122601.Streams-example-and-caller-owned-streaming.plan.md](planning/P07122601.Streams-example-and-caller-owned-streaming.plan.md) |
+| Higher-Order And Collection Helpers | Sprint 15 | [P07072606.V3-collection-helper-pyspark-parity.plan.md](planning/done/P07072606.V3-collection-helper-pyspark-parity.plan.md) |
+| Streaming | Sprint 16 | [P07122601.Streams-example-and-caller-owned-streaming.plan.md](planning/done/P07122601.Streams-example-and-caller-owned-streaming.plan.md) |
 
 ## DSL
 
@@ -162,10 +162,10 @@ Gaps:
 
 | Gap | Status | Target PySpark Parity | Notes |
 | --- | --- | --- | --- |
-| Collection size and membership | planned | `size`, `array_contains`, `map_contains_key` | Add common boolean/count helpers. |
-| Array construction and set operations | planned | `array`, `array_repeat`, `array_union`, `array_except` | Needs type unification. |
+| Collection size and membership | implemented | `size`, `array_contains`, `map_contains_key` | Typed count and membership helpers preserve Spark null semantics. |
+| Array construction and set operations | implemented | `array`, `array_repeat`, `array_union`, `array_except` | Compatible numerics widen; other element types must agree. |
 | Array slicing and sorting variants | future | `slice`, `sort_array`, `reverse` | Needs null ordering docs. |
-| Element lookup and map concatenation | planned | `element_at`, `try_element_at`, `map_concat` | Needs missing-key nullability. |
+| Element lookup and map concatenation | implemented | `element_at`, `try_element_at`, `map_concat` | Lookup results are nullable; safe lookup avoids out-of-range errors; map concat rejects duplicate-key policy overrides. |
 | Explode/generator helpers | future | `explode`, `posexplode`, `inline` | Needs row-expansion design. |
 | Python control flow in callbacks | unsupported | Arbitrary Python lambdas | Return symbolic expressions only. |
 

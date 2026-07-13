@@ -56,13 +56,26 @@ class OrderCustomerWindow(Schema):
 class OrderCollectionSource(Schema):
     id = field(String(), nullable=False)
     tags = field(Array(String(), contains_null=False), nullable=True)
+    extra_tags = field(Array(String(), contains_null=False), nullable=True)
     nested_tags = field(Array(Array(String(), contains_null=False), contains_null=False), nullable=True)
     scores = field(Array(Integer(), contains_null=False), nullable=True)
     attributes = field(Map(String(), String()), nullable=True)
+    extra_attributes = field(Map(String(), String()), nullable=True)
 
 
 class OrderCollectionProfile(Schema):
     id = field(String(), nullable=False)
+    tag_count = field(Integer(), nullable=True)
+    contains_priority = field(Boolean(), nullable=True)
+    contains_region = field(Boolean(), nullable=True)
+    default_tags = field(Array(String(), contains_null=False), nullable=False)
+    repeated_tags = field(Array(String(), contains_null=False), nullable=False)
+    all_tags = field(Array(String(), contains_null=False), nullable=True)
+    tags_without_extra = field(Array(String(), contains_null=False), nullable=True)
+    first_tag = field(String(), nullable=True)
+    safe_tag = field(String(), nullable=True)
+    region = field(String(), nullable=True)
+    safe_region = field(String(), nullable=True)
     normalized_tags = field(Array(String(), contains_null=True), nullable=True)
     sorted_tags = field(Array(String(), contains_null=False), nullable=True)
     flat_tags = field(Array(String(), contains_null=False), nullable=True)
@@ -75,3 +88,4 @@ class OrderCollectionProfile(Schema):
     attribute_keys = field(Array(String(), contains_null=False), nullable=True)
     attribute_values = field(Array(String(), contains_null=False), nullable=True)
     roundtrip_attributes = field(Map(String(), String()), nullable=True)
+    merged_attributes = field(Map(String(), String()), nullable=True)

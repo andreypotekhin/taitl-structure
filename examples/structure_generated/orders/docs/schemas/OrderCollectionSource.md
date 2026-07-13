@@ -8,6 +8,8 @@ Module: `examples.orders.schemas.adv_analytics`
 | --- | --- | --- | --- | --- |
 | `id` | `id` | `string` | no | no |
 | `tags` | `tags` | `array<string!>` | yes | no |
+| `extra_tags` | `extra_tags` | `array<string!>` | yes | no |
 | `nested_tags` | `nested_tags` | `array<array<string!>!>` | yes | no |
 | `scores` | `scores` | `array<integer!>` | yes | no |
 | `attributes` | `attributes` | `map<string,string?>` | yes | no |
+| `extra_attributes` | `extra_attributes` | `map<string,string?>` | yes | no |

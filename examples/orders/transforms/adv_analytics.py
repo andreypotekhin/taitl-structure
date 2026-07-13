@@ -97,9 +97,7 @@ class AdvancedOrderAnalytics(Transform):
     def collection_profile(self, row: OrderCollectionSource) -> OrderCollectionProfile:
         normalized_attributes = map_filter(
             map_transform_keys(
-                map_transform_values(
-                    row.attributes, lambda key, value: lower(trim(value))
-                ),
+                map_transform_values(row.attributes, lambda key, value: lower(trim(value))),
                 lambda key, value: lower(trim(key)),
             ),
             lambda key, value: value.is_not_null(),
@@ -107,9 +105,18 @@ class AdvancedOrderAnalytics(Transform):
 
         return OrderCollectionProfile(
             id=row.id,
-            normalized_tags=arr_distinct(
-                arr_zip_with(row.tags, row.tags, lambda left, right: lower(trim(left)))
-            ),
+            tag_count=size(row.tags),
+            contains_priority=array_contains(row.tags, "priority"),
+            contains_region=map_contains_key(row.extra_attributes, "Region"),
+            default_tags=array("priority", "standard"),
+            repeated_tags=array_repeat("priority", 2),
+            all_tags=array_union(row.tags, row.extra_tags),
+            tags_without_extra=array_except(row.tags, row.extra_tags),
+            first_tag=element_at(row.tags, 1),
+            safe_tag=try_element_at(row.tags, 2),
+            region=element_at(row.extra_attributes, "Region"),
+            safe_region=try_element_at(row.extra_attributes, "Region"),
+            normalized_tags=arr_distinct(arr_zip_with(row.tags, row.tags, lambda left, right: lower(trim(left)))),
             sorted_tags=arr_sort_by(row.tags, lambda tag: lower(trim(tag))),
             flat_tags=arr_flatten(row.nested_tags),
             score_total=arr_aggregate(row.scores, 0, lambda acc, item: acc + item),
@@ -117,10 +124,9 @@ class AdvancedOrderAnalytics(Transform):
             has_priority=arr_exists(row.tags, lambda tag: lower(trim(tag)) == "priority"),
             all_tags_present=arr_forall(row.tags, lambda tag: tag.is_not_null()),
             normalized_attributes=normalized_attributes,
-            zipped_attributes=map_zip_with(
-                row.attributes, row.attributes, lambda key, left, right: lower(trim(left))
-            ),
+            zipped_attributes=map_zip_with(row.attributes, row.attributes, lambda key, left, right: lower(trim(left))),
             attribute_keys=map_keys(row.attributes),
             attribute_values=map_values(row.attributes),
             roundtrip_attributes=map_from_entries(map_entries(row.attributes)),
+            merged_attributes=map_concat(row.attributes, row.extra_attributes),
         )

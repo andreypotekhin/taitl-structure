@@ -308,6 +308,12 @@ Supported array helpers:
 - `arr_flatten(value)`;
 - `arr_distinct(value)`;
 - `arr_position(value, item)`.
+- `size(value)`;
+- `array_contains(value, item)`;
+- `array(*values)`;
+- `array_repeat(value, count)`;
+- `array_union(left, right)` and `array_except(left, right)`;
+- `element_at(value, key)` and `try_element_at(value, key)`.
 
 Supported map helpers:
 
@@ -319,6 +325,8 @@ Supported map helpers:
 - `map_values(value)`;
 - `map_entries(value)`;
 - `map_from_entries(value)`.
+- `map_contains_key(value, key)`;
+- `map_concat(*values, duplicates="error")`.
 
 Callbacks are symbolic. They run once during compilation against typed placeholder expressions and must return typed
 Structure expressions or typed literals. They do not run row by row in Python.
@@ -385,6 +393,14 @@ Rules:
 - `map_transform_keys(...)` currently admits `duplicates="error"` only.
 - `arr_sort_by(...)` validates the symbolic callback and lowers to Spark-visible array sorting.
 - `map_entries(...)` and `map_from_entries(...)` are useful for round-tripping maps through Spark-visible entry arrays.
+- `size(...)` accepts Arrays and Maps. `array_contains(...)` and `map_contains_key(...)` preserve Spark's nullable
+  collection semantics.
+- `array(...)` rejects empty and null-only construction. It widens compatible integral and floating values, but rejects
+  incompatible element types before Spark runs.
+- Array positions are one-based. Use `try_element_at(...)` where an out-of-range array position should produce null;
+  ordinary `element_at(...)` follows Spark's ANSI behavior. Map lookup results remain nullable for absent keys.
+- `map_concat(...)` admits only `duplicates="error"`. Keep Spark's `spark.sql.mapKeyDedupPolicy=EXCEPTION` default so
+  conflicting runtime keys fail instead of selecting an implementation-dependent value.
 
 Array and map helpers can be mixed in one projection:
 

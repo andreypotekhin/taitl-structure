@@ -130,6 +130,17 @@ class AdvancedOrderAnalyticsGenerated:
         collection_profiles = collections.alias("order_collection_source")
         collection_profiles = collection_profiles.select(
             F.col("order_collection_source.id"),
+            F.size(F.col("order_collection_source.tags")).alias("tag_count"),
+            F.array_contains(F.col("order_collection_source.tags"), 'priority').alias("contains_priority"),
+            F.map_contains_key(F.col("order_collection_source.extra_attributes"), 'Region').alias("contains_region"),
+            F.array(F.lit('priority'), F.lit('standard')).alias("default_tags"),
+            F.array_repeat(F.lit('priority'), 2).alias("repeated_tags"),
+            F.array_union(F.col("order_collection_source.tags"), F.col("order_collection_source.extra_tags")).alias("all_tags"),
+            F.array_except(F.col("order_collection_source.tags"), F.col("order_collection_source.extra_tags")).alias("tags_without_extra"),
+            F.element_at(F.col("order_collection_source.tags"), F.lit(1)).alias("first_tag"),
+            F.try_element_at(F.col("order_collection_source.tags"), F.lit(2)).alias("safe_tag"),
+            F.element_at(F.col("order_collection_source.extra_attributes"), F.lit('Region')).alias("region"),
+            F.try_element_at(F.col("order_collection_source.extra_attributes"), F.lit('Region')).alias("safe_region"),
             F.array_distinct(F.zip_with(F.col("order_collection_source.tags"), F.col("order_collection_source.tags"), lambda left_item, right_item: F.lower(F.trim(left_item)))).alias("normalized_tags"),
             F.sort_array(F.col("order_collection_source.tags"), asc=True).alias("sorted_tags"),
             F.flatten(F.col("order_collection_source.nested_tags")).alias("flat_tags"),
@@ -142,6 +153,7 @@ class AdvancedOrderAnalyticsGenerated:
             F.map_keys(F.col("order_collection_source.attributes")).alias("attribute_keys"),
             F.map_values(F.col("order_collection_source.attributes")).alias("attribute_values"),
             F.map_from_entries(F.map_entries(F.col("order_collection_source.attributes"))).alias("roundtrip_attributes"),
+            F.map_concat(F.col("order_collection_source.attributes"), F.col("order_collection_source.extra_attributes")).alias("merged_attributes"),
         )
 
         # Step method: revenue_rollups

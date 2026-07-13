@@ -72,6 +72,17 @@ def test_online_and_generated_execution_match_advanced_analytics_on_live_backend
 
         profile = single(generated.collection_profiles, lambda row: row["id"] == "o-1")
         assert profile["has_priority"] is True
+        assert profile["tag_count"] == 2
+        assert profile["contains_priority"] is True
+        assert profile["contains_region"] is True
+        assert profile["default_tags"] == ["priority", "standard"]
+        assert profile["repeated_tags"] == ["priority", "priority"]
+        assert profile["all_tags"] == ["priority", "new", "seasonal"]
+        assert profile["tags_without_extra"] == ["new"]
+        assert profile["first_tag"] == "priority"
+        assert profile["safe_tag"] == "new"
+        assert profile["region"] == "NA"
+        assert profile["safe_region"] == "NA"
         assert profile["all_tags_present"] is True
         assert profile["score_total"] == 6
         assert profile["flat_tags"] == ["priority", "new", "gift"]
@@ -79,5 +90,6 @@ def test_online_and_generated_execution_match_advanced_analytics_on_live_backend
         assert isinstance(attribute_keys, list)
         assert sorted(attribute_keys) == ["Campaign", "Channel"]
         assert profile["roundtrip_attributes"] == {"Channel": "WEB", "Campaign": "SUMMER"}
+        assert profile["merged_attributes"] == {"Channel": "WEB", "Campaign": "SUMMER", "Region": "NA"}
 
     assert_generated_connect_safe(files)

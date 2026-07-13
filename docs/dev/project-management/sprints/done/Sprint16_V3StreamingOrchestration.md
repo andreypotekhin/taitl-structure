@@ -27,7 +27,7 @@ requirements in explain output, and validate the same behavior with live file-st
 
 ## ExecPlan
 
-`docs/dev/planning/P07122601.Streams-example-and-caller-owned-streaming.plan.md`
+`docs/dev/planning/done/P07122601.Streams-example-and-caller-owned-streaming.plan.md`
 
 ## Engineering Tasks
 
@@ -44,4 +44,4 @@ requirements in explain output, and validate the same behavior with live file-st
 
 ## Progress
 
-- [ ] Implement streaming transformation hardening.
+- [x] (2026-07-12) Implemented and verified streaming transformation hardening.

@@ -154,6 +154,34 @@ class RenderPySparkExpression:
             array, item = expression.args
             rendered_item = self._render_literal_value(item) if item.kind == "literal" else self._render(item, aliases)
             return f"F.array_position({self._render(array, aliases)}, {rendered_item})"
+        if function == "collection_size":
+            [value] = expression.args
+            return f"F.size({self._render(value, aliases)})"
+        if function == "array_contains":
+            array, item = expression.args
+            rendered_item = self._render_literal_value(item) if item.kind == "literal" else self._render(item, aliases)
+            return f"F.array_contains({self._render(array, aliases)}, {rendered_item})"
+        if function == "map_contains_key":
+            mapping, key = expression.args
+            rendered_key = self._render_literal_value(key) if key.kind == "literal" else self._render(key, aliases)
+            return f"F.map_contains_key({self._render(mapping, aliases)}, {rendered_key})"
+        if function == "array":
+            return f"F.array({', '.join(self._render(value, aliases) for value in expression.args)})"
+        if function == "array_repeat":
+            value, count = expression.args
+            rendered_count = (
+                self._render_literal_value(count) if count.kind == "literal" else self._render(count, aliases)
+            )
+            return f"F.array_repeat({self._render(value, aliases)}, {rendered_count})"
+        if function in {"array_union", "array_except"}:
+            left, right = expression.args
+            return f"F.{function}({self._render(left, aliases)}, {self._render(right, aliases)})"
+        if function in {"element_at", "try_element_at"}:
+            collection, key = expression.args
+            rendered_key = self._render(key, aliases)
+            return f"F.{function}({self._render(collection, aliases)}, {rendered_key})"
+        if function == "map_concat":
+            return f"F.map_concat({', '.join(self._render(value, aliases) for value in expression.args)})"
         if function == "map_transform_values":
             mapping, key, value, body = expression.args
             key_name = self._lambda_name(key, "key")
@@ -296,7 +324,11 @@ class RenderPySparkExpression:
         self, order: PySparkExpressionRecipe, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]
     ) -> str:
         rendered = self._render(order, aliases)
-        return rendered if order.kind == "order" else f"{rendered}.{'desc' if expression.data.get('descending') else 'asc'}()"
+        return (
+            rendered
+            if order.kind == "order"
+            else f"{rendered}.{'desc' if expression.data.get('descending') else 'asc'}()"
+        )
 
     def _lambda_name(self, expression: PySparkExpressionRecipe, fallback: str) -> str:
         return str(expression.data.get("name", fallback)) if expression.kind == "lambda_arg" else fallback

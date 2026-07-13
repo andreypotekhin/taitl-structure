@@ -59,13 +59,26 @@ ORDER_CUSTOMER_WINDOW_SCHEMA = T.StructType([
 ORDER_COLLECTION_SOURCE_SCHEMA = T.StructType([
     T.StructField("id", T.StringType(), False),
     T.StructField("tags", T.ArrayType(T.StringType(), containsNull=False), True),
+    T.StructField("extra_tags", T.ArrayType(T.StringType(), containsNull=False), True),
     T.StructField("nested_tags", T.ArrayType(T.ArrayType(T.StringType(), containsNull=False), containsNull=False), True),
     T.StructField("scores", T.ArrayType(T.IntegerType(), containsNull=False), True),
     T.StructField("attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),
+    T.StructField("extra_attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),
 ])
 
 ORDER_COLLECTION_PROFILE_SCHEMA = T.StructType([
     T.StructField("id", T.StringType(), False),
+    T.StructField("tag_count", T.IntegerType(), True),
+    T.StructField("contains_priority", T.BooleanType(), True),
+    T.StructField("contains_region", T.BooleanType(), True),
+    T.StructField("default_tags", T.ArrayType(T.StringType(), containsNull=False), False),
+    T.StructField("repeated_tags", T.ArrayType(T.StringType(), containsNull=False), False),
+    T.StructField("all_tags", T.ArrayType(T.StringType(), containsNull=False), True),
+    T.StructField("tags_without_extra", T.ArrayType(T.StringType(), containsNull=False), True),
+    T.StructField("first_tag", T.StringType(), True),
+    T.StructField("safe_tag", T.StringType(), True),
+    T.StructField("region", T.StringType(), True),
+    T.StructField("safe_region", T.StringType(), True),
     T.StructField("normalized_tags", T.ArrayType(T.StringType(), containsNull=True), True),
     T.StructField("sorted_tags", T.ArrayType(T.StringType(), containsNull=False), True),
     T.StructField("flat_tags", T.ArrayType(T.StringType(), containsNull=False), True),
@@ -78,4 +91,5 @@ ORDER_COLLECTION_PROFILE_SCHEMA = T.StructType([
     T.StructField("attribute_keys", T.ArrayType(T.StringType(), containsNull=False), True),
     T.StructField("attribute_values", T.ArrayType(T.StringType(), containsNull=False), True),
     T.StructField("roundtrip_attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),
+    T.StructField("merged_attributes", T.MapType(T.StringType(), T.StringType(), valueContainsNull=True), True),
 ])

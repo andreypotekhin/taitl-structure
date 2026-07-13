@@ -26,7 +26,7 @@ Developers can express common nested-data operations for arrays and maps without
 
 ## ExecPlan
 
-`docs/dev/planning/P07072606.V3-collection-helper-pyspark-parity.plan.md`
+`docs/dev/planning/done/P07072606.V3-collection-helper-pyspark-parity.plan.md`
 
 ## Engineering Tasks
 
@@ -43,4 +43,4 @@ Developers can express common nested-data operations for arrays and maps without
 
 ## Progress
 
-- [ ] Implement v3 collection helper parity.
+- [x] (2026-07-12) Implemented and validated v3 collection helper parity with `make build`.

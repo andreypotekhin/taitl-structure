@@ -365,9 +365,11 @@ the first analytical join slice.
   Spark-plan-visible.
 - + As a developer, I can receive diagnostics when a higher-order helper callback would become arbitrary Python
   so that I can move the logic to the DSL, `@special(type="expr")`, or a hook.
-- As a developer, I can use array exists, forall, zip, aggregate, sort, flatten, distinct, and position helpers so that
+- + As a developer, I can use array exists, forall, zip, aggregate, sort, flatten, distinct, position, size, membership,
+  construction, repeat, union, except, and safe lookup helpers so that
   nested array logic remains Spark-plan-visible.
-- As a developer, I can use map key transformation, map zip, keys, values, entries, and from-entries helpers so that
+- + As a developer, I can use map key transformation, map zip, keys, values, entries, from-entries, key membership,
+  lookup, and strict concatenation helpers so that
   map logic remains Spark-plan-visible.
 - As a developer, I can receive duplicate-key diagnostics for map key transforms so that map results are deterministic.
 

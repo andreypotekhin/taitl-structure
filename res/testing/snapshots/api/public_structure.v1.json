@@ -289,6 +289,14 @@
       "qualname": "ResultSchemas",
       "signature": "(schemas: 'Mapping[str, Any] | None' = None, *, aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> 'None'"
     },
+    "Schema": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "class",
+      "module": "structure.app.dsl.model.schemas.Schema",
+      "qualname": "Schema",
+      "signature": "(**values: 'object') -> 'None'"
+    },
     "SchemaMode": {
       "dataclass_fields": [],
       "enum_members": [
@@ -343,14 +351,6 @@
       "module": "structure.app.dsl.model.types.Struct",
       "qualname": "Struct",
       "signature": "(schema: type[structure.app.dsl.model.schemas.Schema.Schema]) -> None"
-    },
-    "Schema": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.schemas.Schema",
-      "qualname": "Schema",
-      "signature": "(**values: 'object') -> 'None'"
     },
     "StructureCompileError": {
       "dataclass_fields": [],
@@ -571,6 +571,46 @@
       "qualname": "arr_zip_with",
       "signature": "(left: 'object', right: 'object', function: 'Callable[[Expression, Expression], object]') -> 'Expression'"
     },
+    "array": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "array",
+      "signature": "(*values: 'object') -> 'Expression'"
+    },
+    "array_contains": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "array_contains",
+      "signature": "(value: 'object', item: 'object') -> 'Expression'"
+    },
+    "array_except": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "array_except",
+      "signature": "(left: 'object', right: 'object') -> 'Expression'"
+    },
+    "array_repeat": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "array_repeat",
+      "signature": "(value: 'object', count: 'object') -> 'Expression'"
+    },
+    "array_union": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "array_union",
+      "signature": "(left: 'object', right: 'object') -> 'Expression'"
+    },
     "as_of_one": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -786,6 +826,14 @@
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "earliest_by",
       "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'"
+    },
+    "element_at": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "element_at",
+      "signature": "(value: 'object', key: 'object') -> 'Expression'"
     },
     "event_time_between": {
       "dataclass_fields": [],
@@ -1018,6 +1066,22 @@
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "lower",
       "signature": "(value: 'object') -> 'Expression'"
+    },
+    "map_concat": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "map_concat",
+      "signature": "(*values: 'object', duplicates: 'str' = 'error') -> 'Expression'"
+    },
+    "map_contains_key": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "map_contains_key",
+      "signature": "(value: 'object', key: 'object') -> 'Expression'"
     },
     "map_entries": {
       "dataclass_fields": [],
@@ -1283,6 +1347,14 @@
       "qualname": "rowset_join",
       "signature": "(relation: 'Relation | None' = None, *, left: 'object | None' = None, right: 'Relation | None' = None, on: 'object | None' = None, how: 'Join' = <Join.INNER: 'inner'>, hint: 'JoinHint | None' = None, strategy: 'JoinStrategy | None' = None, allow_cartesian: 'bool' = False) -> 'Relation | InputScope'"
     },
+    "size": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "size",
+      "signature": "(value: 'object') -> 'Expression'"
+    },
     "special": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -1370,6 +1442,14 @@
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "trim",
       "signature": "(value: 'object') -> 'Expression'"
+    },
+    "try_element_at": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "try_element_at",
+      "signature": "(value: 'object', key: 'object') -> 'Expression'"
     },
     "unbounded_following": {
       "dataclass_fields": [],
@@ -1507,20 +1587,20 @@
       "qualname": "window_min",
       "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
     },
-    "window_sum": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "function",
-      "module": "structure.app.dsl.model.transforms.reserved_v2",
-      "qualname": "window_sum",
-      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
-    },
     "window_stddev": {
       "dataclass_fields": [],
       "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "window_stddev",
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
+    },
+    "window_sum": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "window_sum",
       "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
     },
     "window_variance": {

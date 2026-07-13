@@ -407,6 +407,17 @@ def test_v2_advanced_analytics_fixture_lowers_admitted_feature_families(monkeypa
         if assignment.expression.data is not None and assignment.expression.kind == "reserved_v2"
     ]
     assert hofs == [
+        "collection_size",
+        "array_contains",
+        "map_contains_key",
+        "array",
+        "array_repeat",
+        "array_union",
+        "array_except",
+        "element_at",
+        "try_element_at",
+        "element_at",
+        "try_element_at",
         "array_distinct",
         "array_sort_by",
         "array_flatten",
@@ -419,6 +430,7 @@ def test_v2_advanced_analytics_fixture_lowers_admitted_feature_families(monkeypa
         "map_keys",
         "map_values",
         "map_from_entries",
+        "map_concat",
     ]
 
 

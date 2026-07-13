@@ -108,6 +108,17 @@ class AdvancedOrderAnalytics(Transform):
 
         return OrderCollectionProfile(
             id=row.id,
+            tag_count=size(row.tags),
+            contains_priority=array_contains(row.tags, "priority"),
+            contains_region=map_contains_key(row.extra_attributes, "Region"),
+            default_tags=array("priority", "standard"),
+            repeated_tags=array_repeat("priority", 2),
+            all_tags=array_union(row.tags, row.extra_tags),
+            tags_without_extra=array_except(row.tags, row.extra_tags),
+            first_tag=element_at(row.tags, 1),
+            safe_tag=try_element_at(row.tags, 2),
+            region=element_at(row.extra_attributes, "Region"),
+            safe_region=try_element_at(row.extra_attributes, "Region"),
             normalized_tags=arr_distinct(
                 arr_zip_with(row.tags, row.tags, lambda left, right: lower(trim(left)))
             ),
@@ -124,4 +135,5 @@ class AdvancedOrderAnalytics(Transform):
             attribute_keys=map_keys(row.attributes),
             attribute_values=map_values(row.attributes),
             roundtrip_attributes=map_from_entries(map_entries(row.attributes)),
+            merged_attributes=map_concat(row.attributes, row.extra_attributes),
         )

@@ -288,6 +288,61 @@
       "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.id"
     },
     {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.tag_count",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.tag_count",
+      "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.tag_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.contains_priority",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.contains_priority",
+      "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.contains_priority"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.contains_region",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.contains_region",
+      "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.contains_region"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.default_tags",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.default_tags",
+      "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.default_tags"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.repeated_tags",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.repeated_tags",
+      "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.repeated_tags"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.all_tags",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.all_tags",
+      "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.all_tags"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.tags_without_extra",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.tags_without_extra",
+      "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.tags_without_extra"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.first_tag",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.first_tag",
+      "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.first_tag"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.safe_tag",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.safe_tag",
+      "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.safe_tag"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.region",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.region",
+      "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.region"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.safe_region",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.safe_region",
+      "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.safe_region"
+    },
+    {
       "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.normalized_tags",
       "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.normalized_tags",
       "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.normalized_tags"
@@ -346,6 +401,11 @@
       "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.roundtrip_attributes",
       "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.roundtrip_attributes",
       "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.roundtrip_attributes"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.step.3.collection_profile.select.merged_attributes",
+      "ir": "ir:AdvancedOrderAnalytics.step.3.collection_profile.project.merged_attributes",
+      "source": "source:examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics.collection_profile.field.merged_attributes"
     },
     {
       "generated": "generated:examples.structure_generated.orders.pyspark.transforms.adv_analytics.AdvancedOrderAnalyticsGenerated.run.output.0.revenue_rollups.validation.final",
@@ -1114,6 +1174,129 @@
       },
       {
         "detail": {
+          "field": "tag_count"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.tag_count"
+      },
+      {
+        "detail": {
+          "field": "contains_priority"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.contains_priority"
+      },
+      {
+        "detail": {
+          "field": "contains_region"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.extra_attributes"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.contains_region"
+      },
+      {
+        "detail": {
+          "field": "default_tags"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.default_tags"
+      },
+      {
+        "detail": {
+          "field": "repeated_tags"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.repeated_tags"
+      },
+      {
+        "detail": {
+          "field": "all_tags"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags",
+          "collections.extra_tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.all_tags"
+      },
+      {
+        "detail": {
+          "field": "tags_without_extra"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags",
+          "collections.extra_tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.tags_without_extra"
+      },
+      {
+        "detail": {
+          "field": "first_tag"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.first_tag"
+      },
+      {
+        "detail": {
+          "field": "safe_tag"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.tags"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.safe_tag"
+      },
+      {
+        "detail": {
+          "field": "region"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.extra_attributes"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.region"
+      },
+      {
+        "detail": {
+          "field": "safe_region"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.extra_attributes"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.safe_region"
+      },
+      {
+        "detail": {
           "field": "normalized_tags"
         },
         "operation": "project",
@@ -1243,6 +1426,18 @@
         ],
         "step": "collection_profile",
         "target": "OrderCollectionProfile.roundtrip_attributes"
+      },
+      {
+        "detail": {
+          "field": "merged_attributes"
+        },
+        "operation": "project",
+        "sources": [
+          "collections.attributes",
+          "collections.extra_attributes"
+        ],
+        "step": "collection_profile",
+        "target": "OrderCollectionProfile.merged_attributes"
       },
       {
         "detail": {

@@ -60,6 +60,15 @@ class RenderExplainReport:
                 lines.append(f"      filters: {len(step.filters)}")
             if step.joins:
                 lines.append(f"      joins: {', '.join(self._join(join) for join in step.joins)}")
+            helpers = self._collection_helpers(
+                assignment.expression
+                for assignment in (
+                    *step.projection,
+                    *(assignment for result in step.results for assignment in result.projection),
+                )
+            )
+            if helpers:
+                lines.append(f"      collection helpers: {', '.join(helpers)}")
             hooks = [
                 hook.name
                 for hook in (
@@ -88,6 +97,36 @@ class RenderExplainReport:
             for output in recipe.outputs:
                 lines.append(f"    {output.name}: {output.output_schema.__name__}")
         return "\n".join(lines)
+
+    def _collection_helpers(self, expressions) -> tuple[str, ...]:
+        helpers: list[str] = []
+        for expression in expressions:
+            for helper in self._helper_expressions(expression):
+                data = helper.data or {}
+                if data.get("capability_group") != "higher_order":
+                    continue
+                name = str(data["function"])
+                fields = self._fields(helper)
+                detail = ",".join(fields[:2])
+                rendered = f"{name}({detail})" if detail else name
+                if rendered not in helpers:
+                    helpers.append(rendered)
+        return tuple(helpers)
+
+    def _helper_expressions(self, expression) -> tuple:
+        nested = [expression] if expression.kind == "reserved_v2" else []
+        for argument in expression.args:
+            nested.extend(self._helper_expressions(argument))
+        return tuple(nested)
+
+    def _fields(self, expression) -> tuple[str, ...]:
+        fields: list[str] = []
+        if expression.kind == "field":
+            data = expression.data or {}
+            fields.append(str(data.get("name", data.get("field", "field"))))
+        for argument in expression.args:
+            fields.extend(self._fields(argument))
+        return tuple(fields)
 
     def _operation(self, operation: OperationPlan) -> str:
         if operation.aggregate is not None:
