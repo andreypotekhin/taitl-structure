@@ -28,7 +28,7 @@ class PySparkExpressionEvaluator:
             return self._call(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "python_udf":
             return self._python_udf(expression, functions=functions, aliases=aliases, window=window)
-        if expression.kind == "reserved_v2":
+        if expression.kind == "transform_expression":
             return self._reserved(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "is_not_null":
             return self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window).isNotNull()
@@ -66,6 +66,14 @@ class PySparkExpressionEvaluator:
                 for argument in expression.args
             )
             return functions.when(condition, value).otherwise(fallback)
+        if expression.kind == "event_time_between":
+            left, right = (
+                self.evaluate(argument, functions=functions, aliases=aliases, window=window)
+                for argument in expression.args
+            )
+            lower = functions.expr(f"INTERVAL {expression.data['lower']}")
+            upper = functions.expr(f"INTERVAL {expression.data['upper']}")
+            return (right >= left - lower) & (right <= left + upper)
         if expression.kind == "null_safe_eq":
             left, right = expression.args
             return self.evaluate(left, functions=functions, aliases=aliases, window=window).eqNullSafe(
@@ -171,7 +179,7 @@ class PySparkExpressionEvaluator:
             )
         if function == "array_aggregate":
             array, initial, _, _, merged, finished = expression.args
-            aggregate = functions.aggregate(
+            aggregate_arguments = (
                 self.evaluate(array, functions=functions, aliases=aliases, window=window),
                 self.evaluate(initial, functions=functions, aliases=aliases, window=window),
                 lambda acc, item: self.evaluate(
@@ -182,18 +190,30 @@ class PySparkExpressionEvaluator:
                 ),
             )
             if finished == merged:
-                return aggregate
-            return functions.transform(
-                aggregate,
+                return functions.aggregate(*aggregate_arguments)
+            return functions.aggregate(
+                *aggregate_arguments,
                 lambda acc: self.evaluate(
-                    self._bind_lambdas(finished, {"acc": acc}), functions=functions, aliases=aliases, window=window
+                    self._bind_lambdas(finished, {"acc": acc}),
+                    functions=functions,
+                    aliases=aliases,
+                    window=window,
                 ),
             )
         if function == "array_sort_by":
-            [array] = expression.args
-            return functions.sort_array(
+            array, left_key, right_key = expression.args
+            return functions.array_sort(
                 self.evaluate(array, functions=functions, aliases=aliases, window=window),
-                asc=not expression.data.get("descending"),
+                lambda left, right: self._array_sort_comparator(
+                    left_key,
+                    right_key,
+                    left=left,
+                    right=right,
+                    descending=bool(expression.data.get("descending")),
+                    functions=functions,
+                    aliases=aliases,
+                    window=window,
+                ),
             )
         if function == "array_flatten":
             [array] = expression.args
@@ -441,6 +461,34 @@ class PySparkExpressionEvaluator:
         if "preceding" in expression.data:
             return spec.rowsBetween(-int(expression.data["preceding"]), 0)
         return spec
+
+    def _array_sort_comparator(
+        self,
+        left_key,
+        right_key,
+        *,
+        left,
+        right,
+        descending,
+        functions,
+        aliases,
+        window,
+    ):
+        left_value = self.evaluate(
+            self._bind_lambdas(left_key, {"left": left}), functions=functions, aliases=aliases, window=window
+        )
+        right_value = self.evaluate(
+            self._bind_lambdas(right_key, {"right": right}), functions=functions, aliases=aliases, window=window
+        )
+        null_order = 1 if descending else -1
+        value_order = 1 if descending else -1
+        return (
+            functions.when(left_value.isNull() & right_value.isNotNull(), functions.lit(null_order))
+            .when(left_value.isNotNull() & right_value.isNull(), functions.lit(-null_order))
+            .when(left_value < right_value, functions.lit(value_order))
+            .when(left_value > right_value, functions.lit(-value_order))
+            .otherwise(functions.lit(0))
+        )
 
     def _window_arguments(self, expression, value_count):
         order_count = self._int_data(expression, "order_count", 1)

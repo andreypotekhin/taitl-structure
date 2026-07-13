@@ -78,7 +78,6 @@ class EnrichOrders(Transform):
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         where(order.id.is_not_null())
-
         return OrderNormalized(
             id=order.id,
             customer_id=self.clean_id(order.customer_id),
@@ -91,7 +90,6 @@ class EnrichOrders(Transform):
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
         )
-
         return OrderWithCustomer.base(order)(
             customer_name=customer.name,
             customer_tier=customer.tier,
@@ -477,7 +475,6 @@ expression internals.
 def normalize(self, order: OrderRaw) -> OrderNormalized:
     where(order.id.is_not_null())
     where(to_decimal(order.total, precision=12, scale=2) >= 0)
-
     return OrderNormalized(...)
 ```
 
@@ -561,7 +558,6 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
         how=Join.LEFT,
         hint=JoinHint.BROADCAST,
     )
-
     return OrderWithCustomer.base(order)(customer_name=customer.name)
 ```
 

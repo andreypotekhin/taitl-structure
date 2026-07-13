@@ -302,6 +302,10 @@ def coalesce(*values: object) -> Expression:
 
 
 def event_time_between(left: object, right: object, *, upper: str, lower: str = "0 seconds") -> Expression:
+    left_argument = literal(left)
+    right_argument = literal(right)
+    if not isinstance(left_argument.type, TimestampType) or not isinstance(right_argument.type, TimestampType):
+        raise TypeError("event_time_between(...) requires Timestamp Structure expressions")
     if not isinstance(lower, str) or not lower.strip():
         raise TypeError("event_time_between(lower=...) requires a non-empty string")
     if not isinstance(upper, str) or not upper.strip():
@@ -311,7 +315,7 @@ def event_time_between(left: object, right: object, *, upper: str, lower: str = 
         type=BooleanType(),
         nullable=False,
         data={"lower": lower, "upper": upper},
-        args=(literal(left), literal(right)),
+        args=(left_argument, right_argument),
     )
 
 

@@ -56,7 +56,6 @@ class CurrentAccountEvents(Transform):
 
     def select_current(self, event: AccountEvent) -> CurrentAccountEvent:
         latest_by(event.sequence, partition_by=event.account_id)
-
         return CurrentAccountEvent(
             account_id=event.account_id,
             event_id=event.event_id,
@@ -104,4 +103,4 @@ Selected-row helpers are batch-only. A streaming current-state table needs expli
 use a batch input for this recipe.
 
 For the complete helper contract, see [Latest and Earliest Rows](../QuickRef.md#latest-and-earliest-rows) and the
-[DSL reference](../reference/DSL.md#selected-row-dedupe).
+[DSL reference](../background/DSL.back.md#selected-row-dedupe).

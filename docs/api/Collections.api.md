@@ -68,5 +68,5 @@ These helpers map to Spark array and map operations while keeping callback bodie
 - `map_concat(...)` accepts `duplicates="error"` only. Its inputs must not contain duplicate runtime keys; run Spark
   with `spark.sql.mapKeyDedupPolicy=EXCEPTION` (the default) so a conflicting merge fails instead of silently choosing
   a value.
-- Python callback control flow and row-expanding generators such as `explode(...)` are unsupported. See
-  [advanced analytical operations](../reference/AdvancedAnalyticalOperations.md).
+- Python callback control flow and row-expanding generators such as `explode(...)` are unsupported. See the
+  [Transforms reference](../background/DSL.back.md).

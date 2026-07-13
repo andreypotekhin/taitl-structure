@@ -88,7 +88,6 @@ class EnrichOrders(Transform):
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
         left_join(on=order.customer_id == customer.id)
-
         return OrderWithCustomer.base(order)(
             customer_name=customer.name,
             customer_tier=customer.tier,
@@ -96,7 +95,6 @@ class EnrichOrders(Transform):
 
     def add_product(self, order: OrderWithCustomer, product: Product) -> OrderEnriched:
         left_join(on=order.product_id == product.id)
-
         return OrderEnriched.base(order)(
             product_name=product.name,
             product_category=product.category,

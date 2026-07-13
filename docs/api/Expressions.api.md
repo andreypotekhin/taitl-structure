@@ -95,5 +95,5 @@ typed `order` row scope as `o`.
 
 - Pattern, replacement, separator, and search arguments are explicit compiler-visible values.
 - Null and NaN predicates remain distinct. `when(...)` must finish with `.otherwise(...)` before use.
-- Raw `expr(...)`, `call_function(...)`, and UDF/UDTF expressions are unsupported. See
-  [nullability and type coercion](../reference/NullabilityAndTypeCoercion.md).
+- Raw `expr(...)`, `call_function(...)`, and UDF/UDTF expressions are unsupported. See the
+  [Schemas reference](../reference/Schema.ref.md).

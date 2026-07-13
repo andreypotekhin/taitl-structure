@@ -30,13 +30,14 @@ the current `order` row scope as `o`.
 | `grouping_sets(...)` | Explicit grouping sets | `grouping_sets((order.region,), ())` |
 | `grouping_id()` | `grouping_id` | `grouping_id()` |
 | `is_grouped(...)` | Grouping metadata | `is_grouped(order.region)` |
-| `having(...)` | Post-aggregate filter | `group_by(order.id).agg(n=count()).having(lambda out: out.n > 1)` |
+| `having(...)` | Post-aggregate filter | `group_by(order.id).having(lambda out: out.n > 1)` |
 
 **Details And Differences**
 
 - `grouping_sets(...)` renders explicit grouped branches and `unionByName`.
 - `grouping_id()` and `is_grouped(...)` describe subtotal rows, whose grouping fields can be null.
-- `having(...)` reads aggregate-output scope rather than the input row.
+- `having(...)` reads aggregate-output scope rather than the input row. It can be a bare statement after grouping or
+  chained from `group_by(...)`, `rollup(...)`, `cube(...)`, or `grouping_sets(...)`.
 
 ## Advanced Metrics
 
@@ -76,4 +77,4 @@ the current `order` row scope as `o`.
 
 - Selected-row helpers need explicit partition and ordering expressions.
 - `drop_duplicates(...)` accepts a same-scope field subset; `distinct(...)` can use the whole relation.
-- Operations apply in source order. See [advanced analytical operations](../reference/AdvancedAnalyticalOperations.md).
+- Operations apply in source order. See [Transforms reference](../background/DSL.back.md).

@@ -72,7 +72,6 @@ Source:
 ```python
 def normalize(self, order: OrderRaw) -> OrderNormalized:
     where(order.id.is_not_null())
-
     return OrderNormalized(
         id=order.id,
         customer_id=lower(trim(order.customer_id)),

@@ -115,7 +115,6 @@ class EnrichOrders(Transform):
             on=order.customer_id == customer.id,
             hint=JoinHint.BROADCAST,
         )
-
         return OrderWithCustomer.base(order)(
             customer_name=customer.name,
         )

@@ -138,7 +138,7 @@ Diagnostics must include:
 - configured severity;
 - the runtime-shape assumption, especially that joined side inputs are static;
 - a user action;
-- a link to `docs/reference/SparkStreaming.md` or `docs/reference/SparkStreamingDeferredFeatures.md`.
+- a link to `docs/background/OnlineExecution.back.md` or `docs/background/OnlineExecution.back.md`.
 
 Required diagnostic cases:
 

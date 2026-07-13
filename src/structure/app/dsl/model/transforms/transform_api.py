@@ -15,8 +15,8 @@ from structure.app.dsl.model.transforms.BindingSelector import BindingSelector, 
 from structure.app.dsl.model.transforms.InOutBinding import InOutBinding
 from structure.app.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
+from structure.app.dsl.model.transforms.operations import cache_operation
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
-from structure.app.dsl.model.transforms.reserved_v2 import cache_operation
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.app.dsl.model.transforms.SpecialFunction import SpecialFunction
 from structure.app.dsl.model.transforms.StreamingMode import StreamingMode

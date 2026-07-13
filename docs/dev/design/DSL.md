@@ -38,7 +38,6 @@ class EnrichOrders(Transform):
             how=Join.LEFT,
             hint=JoinHint.BROADCAST,
         )
-
         return OrderWithCustomer.base(order)(
             customer_name=customer.name,
             customer_tier=customer.tier,

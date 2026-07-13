@@ -42,9 +42,9 @@ from structure.app.dsl.model.transforms.JoinDedupe import JoinDedupe
 from structure.app.dsl.model.transforms.JoinHint import JoinHint
 from structure.app.dsl.model.transforms.JoinStrategy import JoinStrategy
 from structure.app.dsl.model.transforms.LaneDeclaration import LaneDeclaration
+from structure.app.dsl.model.transforms.operations import reserved_operations
 from structure.app.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.app.dsl.model.transforms.OverlapPolicy import OverlapPolicy
-from structure.app.dsl.model.transforms.reserved_v2 import reserved_operations
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.transforms.Transform import Transform

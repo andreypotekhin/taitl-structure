@@ -64,7 +64,7 @@ def test_v3_orders_fixture_highlights_the_completed_release_surface(monkeypatch:
     functions = [
         assignment.expression.data["function"]
         for assignment in collection.projection
-        if assignment.expression.data is not None and assignment.expression.kind == "reserved_v2"
+        if assignment.expression.data is not None and assignment.expression.kind == "transform_expression"
     ]
     assert {
         "collection_size",

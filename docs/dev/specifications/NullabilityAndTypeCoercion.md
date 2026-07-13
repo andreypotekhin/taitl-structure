@@ -126,7 +126,6 @@ the left operand's Structure type until fuller numeric result formulas are speci
 ```python
 def normalize(self, order: OrderRaw) -> OrderNormalized:
     where(order.id.is_not_null())
-
     return OrderNormalized(id=order.id)
 ```
 

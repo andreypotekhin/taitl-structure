@@ -68,5 +68,4 @@ and `e` denote a temporal predicate, event time, valid-from, and valid-to expres
 
 - `Join`, `JoinHint`, and `JoinStrategy` replace unvalidated string options with capability-checked values.
 - Dedupe is only for lookup joins and must make the right-row selection rule explicit.
-- Raw SQL join predicates are unsupported. See [join semantics](../reference/JoinSemantics.md) and
-  [full PySpark join support](../reference/FullPySparkJoinSupport.md).
+- Raw SQL join predicates are unsupported. See the [Transforms reference](../background/DSL.back.md).

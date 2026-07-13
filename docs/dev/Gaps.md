@@ -7,7 +7,7 @@ Structure's rule is narrower: admit PySpark features when they can stay symbolic
 explainable, testable, and readable in generated code. Everything else should remain in explicit hooks or caller-owned
 PySpark until there is a real Structure contract.
 
-See the user-facing summary in [APIRef.md](../APIRef.md).
+See the user-facing summary in [API.ref.md](../reference/API.ref.md).
 
 ## Status
 
@@ -99,9 +99,9 @@ Gaps:
 
 ## Joins
 
-Current rowset join support is described by [FullPySparkJoinSupport.md](../reference/FullPySparkJoinSupport.md). Older
-v1 lookup semantics remain in [JoinSemantics.md](../reference/JoinSemantics.md), and existence/temporal/as-of joins
-are in [AnalyticalJoinCoverage.md](../reference/AnalyticalJoinCoverage.md).
+Current rowset join support is described by [FullPySparkJoinSupport.back.md](../background/FullPySparkJoinSupport.back.md).
+Older v1 lookup semantics remain in [JoinSemantics.back.md](../background/JoinSemantics.back.md), and
+existence/temporal/as-of joins are in [AnalyticalJoinCoverage.back.md](../background/AnalyticalJoinCoverage.back.md).
 
 Gaps:
 
@@ -193,4 +193,4 @@ Before moving a gap to implemented, add or update:
 - online execution tests when the feature runs online;
 - Spark Connect evidence when the feature is claimed for that variant;
 - streaming compatibility classification when the feature can receive streaming inputs;
-- API reference rows in [APIRef.md](../APIRef.md).
+- API reference rows in [API.ref.md](../reference/API.ref.md).

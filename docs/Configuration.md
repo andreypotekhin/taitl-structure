@@ -150,7 +150,7 @@ on pipelines where the additional Spark work is worth the stronger runtime contr
 Data-quality constraints are separate from schema shape. Accepted values, ranges, regex-like string checks,
 decimal domain rules, uniqueness, referential checks, freshness, and row-count policies belong to an opt-in
 constraint model. Any check that can trigger Spark actions must be explicit in source or configuration and
-should link diagnostics to [DataQualityConstraints.md](reference/DataQualityConstraints.md).
+should link diagnostics to [DataQualityConstraints.md](reference/Schema.ref.md).
 
 Future constraints should also bind to validation phases: input, intermediate, output, or a narrower named
 boundary. The phase mode is a project-level cost guard. A constraint runs only when it is bound to the current
@@ -195,7 +195,7 @@ generated
 PySpark 3.5.x and 4.0.x. If a DSL feature cannot be generated for the configured profile, `structure check` and
 `structure compile` should fail with `BACKEND-E2402` and name the unsupported capability. Unknown backend
 targets fail with `BACKEND-E2401`. Backend capability behavior is specified in
-[BackendCapabilities.md](reference/BackendCapabilities.md).
+[BackendCapabilities.md](background/OnlineExecution.back.md).
 
 `target_variant` selects the runtime variant inside the PySpark target. `ordinary` is the default in-process PySpark
 contract. `spark-connect` is experimental for completed v1/v2 batch features and must not change DSL syntax,

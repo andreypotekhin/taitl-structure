@@ -40,5 +40,4 @@ Schema declarations define Structure's typed row contract and materialize to Spa
 - `Struct(...)` enables typed nested attribute reads and `get_field(...)` expression access.
 - `DecimalType` is the underlying decimal type class; use `Decimal(...)` in ordinary schema declarations.
 
-See [schema declaration syntax](../reference/SchemaDeclarationSyntax.md) and
-[schema semantics](../reference/SchemaSemantics.md) for construction and nullability rules.
+See the [Schemas reference](../reference/Schema.ref.md) for construction and nullability rules.

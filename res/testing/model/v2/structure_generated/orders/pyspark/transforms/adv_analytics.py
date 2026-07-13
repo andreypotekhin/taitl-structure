@@ -131,7 +131,7 @@ class AdvancedOrderAnalyticsGenerated:
         collection_profiles = collection_profiles.select(
             F.col("order_collection_source.id"),
             F.array_distinct(F.zip_with(F.col("order_collection_source.tags"), F.col("order_collection_source.tags"), lambda left_item, right_item: F.lower(F.trim(left_item)))).alias("normalized_tags"),
-            F.sort_array(F.col("order_collection_source.tags"), asc=True).alias("sorted_tags"),
+            F.array_sort(F.col("order_collection_source.tags"), lambda left, right: F.when((F.lower(F.trim(left)).isNull() & F.lower(F.trim(right)).isNotNull()), F.lit(-1)).when((F.lower(F.trim(left)).isNotNull() & F.lower(F.trim(right)).isNull()), F.lit(1)).when(F.lower(F.trim(left)) < F.lower(F.trim(right)), F.lit(-1)).when(F.lower(F.trim(left)) > F.lower(F.trim(right)), F.lit(1)).otherwise(F.lit(0))).alias("sorted_tags"),
             F.flatten(F.col("order_collection_source.nested_tags")).alias("flat_tags"),
             F.aggregate(F.col("order_collection_source.scores"), F.lit(0), lambda acc, item: (acc + item)).alias("score_total"),
             F.array_position(F.col("order_collection_source.tags"), 'priority').alias("tag_position"),

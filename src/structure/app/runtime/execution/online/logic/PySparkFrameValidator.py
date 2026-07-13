@@ -50,7 +50,7 @@ class PySparkFrameValidator:
         return expression.kind == "sub" and isinstance(field_type, DecimalType)
 
     def _window_rank_expression(self, expression) -> bool:
-        if expression.kind != "reserved_v2":
+        if expression.kind != "transform_expression":
             return False
         return expression.data.get("function") in {"window_row_number", "window_rank", "window_dense_rank"}
 

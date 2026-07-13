@@ -442,7 +442,7 @@ class RenderPySparkTransformModule:
         data = expression.data or {}
         function = data.get("function")
         return (
-            expression.kind == "reserved_v2"
+            expression.kind == "transform_expression"
             and isinstance(function, str)
             and function.startswith("window_")
         ) or any(self._has_window_projection(argument) for argument in expression.args)

@@ -18,7 +18,7 @@ class PySparkExpressionMapper:
         )
 
     def _requirement(self, expression: Expression) -> tuple[str, str]:
-        if expression.kind == "reserved_v2":
+        if expression.kind == "transform_expression":
             data = expression.data or {}
             return str(data["capability_group"]), str(data["capability_name"])
         if expression.kind == "lambda_arg":

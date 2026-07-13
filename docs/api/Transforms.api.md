@@ -48,4 +48,5 @@ These declarations and operations define compiler-visible transform methods. Exa
 
 - `@raw(...)` is the explicit opaque boundary: Structure validates its binding declaration, not the hook body.
 - `SchemaMode.STRICT` is the default; `SchemaMode.ALLOW_EXTRA_COLUMNS` permits additional hook output columns.
-- `StructureCompileError` exposes a rendered diagnostic with remediation. See the [DSL reference](../reference/DSL.md).
+- `StructureCompileError` exposes a rendered diagnostic with remediation. See the
+  [Transforms reference](../background/DSL.back.md) and [Hooks reference](../background/HookSemantics.back.md).

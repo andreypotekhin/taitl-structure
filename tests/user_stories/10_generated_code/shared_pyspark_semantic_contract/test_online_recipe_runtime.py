@@ -219,6 +219,16 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
             _when(_binary("ge", _field(RawOrder, "id"), _literal("M")), _literal("large"), _literal("standard")),
             "when((col(orders.id) >= lit('M')), lit('large')).otherwise(lit('standard'))",
         ),
+        (
+            _event_time_between(
+                _field(RawOrder, "id"),
+                _field(RawOrder, "status"),
+                lower="2 minutes",
+                upper="5 minutes",
+            ),
+            "((col(orders.status) >= (col(orders.id) - expr('INTERVAL 2 minutes'))) "
+            "AND (col(orders.status) <= (col(orders.id) + expr('INTERVAL 5 minutes'))))",
+        ),
         (_to_decimal(_field(RawOrder, "status"), precision=12, scale=2), "cast(col(orders.status) as decimal(12,2))"),
     ]
 
@@ -244,6 +254,40 @@ def test_online_expression_evaluator_builds_nested_struct_columns() -> None:
     column = evaluator.evaluate(expression, functions=functions, aliases={RawShippedOrder.__name__: "orders"})
 
     assert column.expression == "struct(city=col(orders.shipping.city),postal_code=col(orders.shipping.postal_code))"
+
+
+def test_online_expression_evaluator_applies_array_aggregate_finish_to_the_accumulator() -> None:
+    evaluator = PySparkExpressionEvaluator()
+    functions = FakeFunctions("functions")
+
+    column = evaluator.evaluate(
+        _array_aggregate_with_finish(_field(RawTagBatch, "tags")),
+        functions=functions,
+        aliases={RawTagBatch.__name__: "tags"},
+    )
+
+    assert column.expression == (
+        "aggregate(col(tags.tags),lit(0), lambda acc, item: (acc + item), lambda acc: abs(acc))"
+    )
+
+
+def test_online_expression_evaluator_sorts_arrays_by_the_symbolic_key() -> None:
+    evaluator = PySparkExpressionEvaluator()
+    functions = FakeFunctions("functions")
+
+    column = evaluator.evaluate(
+        _array_sort_by(_field(RawTagBatch, "tags")),
+        functions=functions,
+        aliases={RawTagBatch.__name__: "tags"},
+    )
+
+    assert column.expression == (
+        "array_sort(col(tags.tags), lambda left, right: "
+        "when((lower(left).isNull() AND lower(right).isNotNull()), lit(-1))"
+        ".when((lower(left).isNotNull() AND lower(right).isNull()), lit(1))"
+        ".when((lower(left) < lower(right)), lit(-1))"
+        ".when((lower(left) > lower(right)), lit(1)).otherwise(lit(0)))"
+    )
 
 
 def test_online_expression_evaluator_preserves_window_projection_semantics() -> None:
@@ -2212,6 +2256,22 @@ def _when(
     )
 
 
+def _event_time_between(
+    left: PySparkExpressionRecipe,
+    right: PySparkExpressionRecipe,
+    *,
+    lower: str,
+    upper: str,
+) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe(
+        kind="event_time_between",
+        type=structure.Boolean(),
+        nullable=False,
+        data={"lower": lower, "upper": upper},
+        args=(left, right),
+    )
+
+
 def _lambda_item() -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe("lambda_arg", structure.String(), False, {"name": "item"})
 
@@ -2226,19 +2286,45 @@ def _lambda_value() -> PySparkExpressionRecipe:
 
 def _array_transform(array: PySparkExpressionRecipe, body: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe(
-        "reserved_v2", array.type, array.nullable, {"function": "array_transform"}, (array, body)
+        "transform_expression", array.type, array.nullable, {"function": "array_transform"}, (array, body)
     )
 
 
 def _array_filter(array: PySparkExpressionRecipe, body: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe(
-        "reserved_v2", array.type, array.nullable, {"function": "array_filter"}, (array, body)
+        "transform_expression", array.type, array.nullable, {"function": "array_filter"}, (array, body)
+    )
+
+
+def _array_aggregate_with_finish(array: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
+    accumulator = PySparkExpressionRecipe("lambda_arg", structure.Integer(), False, {"name": "acc"})
+    item = PySparkExpressionRecipe("lambda_arg", structure.String(), False, {"name": "item"})
+    merged = _binary("add", accumulator, item)
+    finished = _call("abs", accumulator)
+    return PySparkExpressionRecipe(
+        "transform_expression",
+        structure.Integer(),
+        False,
+        {"function": "array_aggregate"},
+        (array, _literal(0), accumulator, item, merged, finished),
+    )
+
+
+def _array_sort_by(array: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
+    left = PySparkExpressionRecipe("lambda_arg", structure.String(), True, {"name": "left"})
+    right = PySparkExpressionRecipe("lambda_arg", structure.String(), True, {"name": "right"})
+    return PySparkExpressionRecipe(
+        "transform_expression",
+        array.type,
+        array.nullable,
+        {"function": "array_sort_by"},
+        (array, _call("lower", left), _call("lower", right)),
     )
 
 
 def _map_transform_values(mapping: PySparkExpressionRecipe, body: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe(
-        "reserved_v2",
+        "transform_expression",
         mapping.type,
         mapping.nullable,
         {"function": "map_transform_values"},
@@ -2248,7 +2334,7 @@ def _map_transform_values(mapping: PySparkExpressionRecipe, body: PySparkExpress
 
 def _map_filter(mapping: PySparkExpressionRecipe, body: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe(
-        "reserved_v2",
+        "transform_expression",
         mapping.type,
         mapping.nullable,
         {"function": "map_filter"},
@@ -2276,7 +2362,7 @@ def _window(
     if preceding is not None:
         data["preceding"] = preceding
     return PySparkExpressionRecipe(
-        "reserved_v2",
+        "transform_expression",
         value.type if value is not None else structure.Long(),
         value.nullable if value is not None else False,
         data,
@@ -2385,6 +2471,9 @@ class FakeFunctions(ModuleType):
     def lit(self, value):
         return FakeColumn(f"lit({value!r})")
 
+    def expr(self, value):
+        return FakeColumn(f"expr({value!r})")
+
     def lower(self, column):
         return FakeColumn(f"lower({column.expression})", source_name=column.source_name)
 
@@ -2461,6 +2550,19 @@ class FakeFunctions(ModuleType):
     def transform(self, column, function):
         item = FakeColumn("item")
         return FakeColumn(f"transform({column.expression}, lambda item: {function(item).expression})")
+
+    def aggregate(self, column, initial, merge, finish=None):
+        merged = merge(FakeColumn("acc"), FakeColumn("item"))
+        rendered = f"aggregate({column.expression},{initial.expression}, lambda acc, item: {merged.expression}"
+        if finish is not None:
+            rendered += f", lambda acc: {finish(FakeColumn('acc')).expression}"
+        return FakeColumn(f"{rendered})")
+
+    def array_sort(self, column, comparator):
+        return FakeColumn(
+            f"array_sort({column.expression}, lambda left, right: "
+            f"{comparator(FakeColumn('left'), FakeColumn('right')).expression})"
+        )
 
     def filter(self, column, function):
         item = FakeColumn("item")
@@ -2660,10 +2762,27 @@ class FakeWhen:
     condition: FakeColumn
     value: FakeColumn
 
+    def when(self, condition: FakeColumn, value: FakeColumn):
+        return FakeChainedWhen(
+            f"when({self.condition.expression}, {self.value.expression})"
+            f".when({condition.expression}, {value.expression})"
+        )
+
     def otherwise(self, fallback: FakeColumn):
         return FakeColumn(
             f"when({self.condition.expression}, {self.value.expression}).otherwise({fallback.expression})"
         )
+
+
+@dataclass(frozen=True)
+class FakeChainedWhen:
+    expression: str
+
+    def when(self, condition: FakeColumn, value: FakeColumn):
+        return FakeChainedWhen(f"{self.expression}.when({condition.expression}, {value.expression})")
+
+    def otherwise(self, fallback: FakeColumn):
+        return FakeColumn(f"{self.expression}.otherwise({fallback.expression})")
 
 
 @dataclass(frozen=True)

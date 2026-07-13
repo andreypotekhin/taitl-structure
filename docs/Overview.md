@@ -93,7 +93,6 @@ class EnrichOrders(Transform):
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
         left_join(on=order.customer_id == customer.id)
-
         return OrderWithCustomer.base(order)(
             customer_name=customer.name,
             customer_tier=customer.tier,
@@ -391,7 +390,7 @@ streaming transformations while callers retain orchestration.
   traceability, streaming-compatible transforms, diagnostic links, and setup checks.
 - **v2:** mainstream analytical features: existence joins, `inner_join(...)`, broad rowset joins, deterministic lookup
   dedupe, temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions
-  ([Advanced analytical operations](reference/AdvancedAnalyticalOperations.md)),
+  ([Advanced analytical operations](background/DSL.back.md)),
   caching/persistence/repartition hints, richer explain output, generated docs, pytest helpers, and Spark Connect
   support for completed v1/v2 batch features.
 - **v3:** PySpark parity and additional compiler-visible streaming transformations; callers retain `readStream`,

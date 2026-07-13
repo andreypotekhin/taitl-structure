@@ -34,7 +34,7 @@ class RenderPySparkExpression:
         if expression.kind == "python_udf":
             args = [self._render(argument, aliases) for argument in expression.args]
             return f"self.{expression.data['udf_name']}({', '.join(args)})"
-        if expression.kind == "reserved_v2":
+        if expression.kind == "transform_expression":
             return self._reserved(expression, aliases)
         if expression.kind == "is_not_null":
             return f"{self._render(expression.args[0], aliases)}.isNotNull()"
@@ -141,9 +141,13 @@ class RenderPySparkExpression:
                 rendered += f", lambda {acc_name}: {self._render(finished, aliases)}"
             return f"{rendered})"
         if function == "array_sort_by":
-            [array] = expression.args
-            ascending = "False" if expression.data.get("descending") else "True"
-            return f"F.sort_array({self._render(array, aliases)}, asc={ascending})"
+            array, left_key, right_key = expression.args
+            comparator = self._array_sort_comparator(
+                self._render(left_key, aliases),
+                self._render(right_key, aliases),
+                descending=bool(expression.data.get("descending")),
+            )
+            return f"F.array_sort({self._render(array, aliases)}, lambda left, right: {comparator})"
         if function == "array_flatten":
             [array] = expression.args
             return f"F.flatten({self._render(array, aliases)})"
@@ -312,6 +316,17 @@ class RenderPySparkExpression:
         if "preceding" in expression.data:
             return f"{window}.rowsBetween(-{expression.data['preceding']}, 0)"
         return window
+
+    def _array_sort_comparator(self, left: str, right: str, *, descending: bool) -> str:
+        null_order = 1 if descending else -1
+        value_order = 1 if descending else -1
+        return (
+            f"F.when(({left}.isNull() & {right}.isNotNull()), F.lit({null_order}))"
+            f".when(({left}.isNotNull() & {right}.isNull()), F.lit({-null_order}))"
+            f".when({left} < {right}, F.lit({value_order}))"
+            f".when({left} > {right}, F.lit({-value_order}))"
+            ".otherwise(F.lit(0))"
+        )
 
     def _window_arguments(
         self, expression: PySparkExpressionRecipe, value_count: int

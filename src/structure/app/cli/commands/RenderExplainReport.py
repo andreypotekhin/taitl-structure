@@ -114,7 +114,7 @@ class RenderExplainReport:
         return tuple(helpers)
 
     def _helper_expressions(self, expression) -> tuple:
-        nested = [expression] if expression.kind == "reserved_v2" else []
+        nested = [expression] if expression.kind == "transform_expression" else []
         for argument in expression.args:
             nested.extend(self._helper_expressions(argument))
         return tuple(nested)

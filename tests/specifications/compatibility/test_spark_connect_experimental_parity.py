@@ -280,37 +280,33 @@ class BatchAdvancedAnalyticalFeatures(structure.Transform):
     @dsl_step(input=rows, output=summaries)
     def summarize(self, row: RawBatch) -> AdvancedSummaryBatch:
         amount = cast(Any, row.amount)
-        return (
-            structure.rollup(account_id=row.account_id)
-            .agg(
-                grouping_id=structure.grouping_id(),
-                account_subtotal=structure.is_grouped(row.account_id),
-                event_count=structure.count(),
-                paid_amount=sum(row.amount, where=amount > 0),
-                any_large=structure.bool_or(amount > 10),
-                amount_stddev=structure.stddev(row.amount),
-                estimated_events=structure.approx_count_distinct(row.event_id),
-                event_ids=structure.collect_set(row.event_id, element_type=structure.String()),
-            )
-            .as_schema(AdvancedSummaryBatch)
+        structure.rollup(account_id=row.account_id)
+        return AdvancedSummaryBatch(
+            account_id=row.account_id,
+            grouping_id=structure.grouping_id(),
+            account_subtotal=structure.is_grouped(row.account_id),
+            event_count=structure.count(),
+            paid_amount=sum(row.amount, where=amount > 0),
+            any_large=structure.bool_or(amount > 10),
+            amount_stddev=structure.stddev(row.amount),
+            estimated_events=structure.approx_count_distinct(row.event_id),
+            event_ids=structure.collect_set(row.event_id, element_type=structure.String()),
         )
 
     @dsl_step(input=rows, output=cubes)
     def summarize_cube(self, row: RawBatch) -> AdvancedSummaryBatch:
         amount = cast(Any, row.amount)
-        return (
-            structure.cube(account_id=row.account_id)
-            .agg(
-                grouping_id=structure.grouping_id(),
-                account_subtotal=structure.is_grouped(row.account_id),
-                event_count=structure.count(),
-                paid_amount=sum(row.amount, where=amount > 0),
-                any_large=structure.bool_or(amount > 10),
-                amount_stddev=structure.stddev(row.amount),
-                estimated_events=structure.approx_count_distinct(row.event_id),
-                event_ids=structure.collect_set(row.event_id, element_type=structure.String()),
-            )
-            .as_schema(AdvancedSummaryBatch)
+        structure.cube(account_id=row.account_id)
+        return AdvancedSummaryBatch(
+            account_id=row.account_id,
+            grouping_id=structure.grouping_id(),
+            account_subtotal=structure.is_grouped(row.account_id),
+            event_count=structure.count(),
+            paid_amount=sum(row.amount, where=amount > 0),
+            any_large=structure.bool_or(amount > 10),
+            amount_stddev=structure.stddev(row.amount),
+            estimated_events=structure.approx_count_distinct(row.event_id),
+            event_ids=structure.collect_set(row.event_id, element_type=structure.String()),
         )
 
     @dsl_step(input=rows, output=windows)
@@ -359,17 +355,15 @@ class BatchAggregateFeatures(structure.Transform):
     summary = structure.output(AccountSummary)
 
     def summarize(self, row: RawBatch) -> AccountSummary:
-        return (
-            structure.group_by(account_id=row.account_id)
-            .agg(
-                event_count=structure.count(),
-                distinct_events=structure.count_distinct(row.event_id),
-                total_amount=sum(row.amount),
-                min_amount=structure.min(row.amount),
-                max_amount=structure.max(row.amount),
-                avg_amount=structure.avg(row.amount),
-            )
-            .as_schema(AccountSummary)
+        structure.group_by(account_id=row.account_id)
+        return AccountSummary(
+            account_id=row.account_id,
+            event_count=structure.count(),
+            distinct_events=structure.count_distinct(row.event_id),
+            total_amount=sum(row.amount),
+            min_amount=structure.min(row.amount),
+            max_amount=structure.max(row.amount),
+            avg_amount=structure.avg(row.amount),
         )
 
 

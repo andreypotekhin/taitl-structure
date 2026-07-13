@@ -117,8 +117,8 @@ Examples:
 - "Hook `drop_bad_rows` is opaque. Mark it `streaming_safe=True` only if it returns a DataFrame and avoids Spark
   actions, RDD/Pandas conversion, streaming lifecycle APIs, and stateful operations."
 
-Diagnostics should link to `docs/reference/SparkStreaming.md` for the support boundary and to
-`docs/reference/SparkStreamingDeferredFeatures.md` for intentionally deferred features.
+Diagnostics should link to `docs/background/OnlineExecution.back.md` for the support boundary and to
+`docs/background/OnlineExecution.back.md` for intentionally deferred features.
 
 ## Testing And Evidence
 

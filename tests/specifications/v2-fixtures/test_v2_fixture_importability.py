@@ -404,7 +404,7 @@ def test_v2_advanced_analytics_fixture_lowers_admitted_feature_families(monkeypa
     hofs = [
         assignment.expression.data["function"]
         for assignment in plan.steps[3].projection
-        if assignment.expression.data is not None and assignment.expression.kind == "reserved_v2"
+        if assignment.expression.data is not None and assignment.expression.kind == "transform_expression"
     ]
     assert hofs == [
         "collection_size",

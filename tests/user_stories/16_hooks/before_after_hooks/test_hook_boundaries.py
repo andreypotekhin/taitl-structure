@@ -3,7 +3,7 @@ import pytest
 import structure
 from structure import Schema, String, StructureCompileError, Transform, field, input, lane, output, raw, step, transform
 from structure.app.dsl.api import SchemaMode, compile_transform
-from structure.compat import v2
+from structure.compat import legacy
 
 
 def test_hooks_attach_to_declared_step_method_boundaries(orders_recipe) -> None:
@@ -213,5 +213,5 @@ def test_before_and_after_are_retired_from_public_namespaces() -> None:
 
     assert not hasattr(structure, "before")
     assert not hasattr(structure, "after")
-    assert not hasattr(v2, "before")
-    assert not hasattr(v2, "after")
+    assert not hasattr(legacy, "before")
+    assert not hasattr(legacy, "after")

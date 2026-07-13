@@ -36,5 +36,5 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 
 Supported transform shapes include row-local projection/filter, stream-static joins, watermarked aggregation and dedupe,
 and bounded inner stream-stream joins. Callers own `readStream`, `writeStream`, checkpoints, triggers, output modes,
-and query lifecycle. `foreachBatch` and `foreach` remain unsupported. See [Spark streaming](../reference/SparkStreaming.md) and
-[streaming deferred features](../reference/SparkStreamingDeferredFeatures.md).
+and query lifecycle. `foreachBatch` and `foreach` remain unsupported. See the
+[Execution reference](../background/OnlineExecution.back.md).

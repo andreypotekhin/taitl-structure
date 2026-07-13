@@ -56,17 +56,15 @@ class CustomerTotals(structure.Transform):
     totals = structure.output(CustomerTotal)
 
     def summarize(self, row: RawOrder) -> CustomerTotal:
-        return (
-            structure.group_by(row.customer_id)
-            .agg(
-                order_count=structure.count(),
-                distinct_customers=structure.count_distinct(row.customer_id),
-                quantity=structure.sum(row.quantity),
-                min_quantity=structure.min(row.quantity),
-                max_quantity=structure.max(row.quantity),
-                avg_quantity=structure.avg(row.quantity),
-            )
-            .as_schema(CustomerTotal)
+        structure.group_by(row.customer_id)
+        return CustomerTotal(
+            customer_id=row.customer_id,
+            order_count=structure.count(),
+            distinct_customers=structure.count_distinct(row.customer_id),
+            quantity=structure.sum(row.quantity),
+            min_quantity=structure.min(row.quantity),
+            max_quantity=structure.max(row.quantity),
+            avg_quantity=structure.avg(row.quantity),
         )
 
 
@@ -76,18 +74,16 @@ class AdvancedCustomerTotals(structure.Transform):
     totals = structure.output(AdvancedCustomerTotal)
 
     def summarize(self, row: RawOrder) -> AdvancedCustomerTotal:
-        return (
-            structure.rollup(customer_id=row.customer_id)
-            .agg(
-                paid_quantity=structure.sum(row.quantity, where=literal(row.quantity) > 0),
-                any_large=structure.bool_or(literal(row.quantity) > 10),
-                quantity_stddev=structure.stddev(row.quantity),
-                approximate_customers=structure.approx_count_distinct(row.customer_id),
-                ordered_first_customer=structure.first_value(row.customer_id, order_by=row.quantity),
-                ordered_last_customer=structure.last_value(row.customer_id, order_by=row.quantity),
-                customers=structure.collect_set(row.customer_id, element_type=structure.String()),
-            )
-            .as_schema(AdvancedCustomerTotal)
+        structure.rollup(customer_id=row.customer_id)
+        return AdvancedCustomerTotal(
+            customer_id=row.customer_id,
+            paid_quantity=structure.sum(row.quantity, where=literal(row.quantity) > 0),
+            any_large=structure.bool_or(literal(row.quantity) > 10),
+            quantity_stddev=structure.stddev(row.quantity),
+            approximate_customers=structure.approx_count_distinct(row.customer_id),
+            ordered_first_customer=structure.first_value(row.customer_id, order_by=row.quantity),
+            ordered_last_customer=structure.last_value(row.customer_id, order_by=row.quantity),
+            customers=structure.collect_set(row.customer_id, element_type=structure.String()),
         )
 
 
@@ -97,16 +93,16 @@ class SaleGroupingSets(structure.Transform):
     totals = structure.output(GroupingSetTotal)
 
     def summarize(self, row: RawSale) -> GroupingSetTotal:
-        return (
-            structure.grouping_sets((row.region, row.customer_id), (row.region,), ())
-            .agg(
-                order_count=structure.count(),
-                grouping_id=structure.grouping_id(),
-                region_grouped=structure.is_grouped(row.region),
-                customer_grouped=structure.is_grouped(row.customer_id),
-            )
-            .having(lambda total: total.order_count > 0)
-            .as_schema(GroupingSetTotal)
+        structure.grouping_sets((row.region, row.customer_id), (row.region,), ()).having(
+            lambda total: total.order_count > 0
+        )
+        return GroupingSetTotal(
+            region=row.region,
+            customer_id=row.customer_id,
+            order_count=structure.count(),
+            grouping_id=structure.grouping_id(),
+            region_grouped=structure.is_grouped(row.region),
+            customer_grouped=structure.is_grouped(row.customer_id),
         )
 
 
@@ -230,11 +226,8 @@ def test_grouping_sets_reject_non_nullable_omitted_key_fields() -> None:
         totals = structure.output(BadTotal)
 
         def summarize(self, row: RawSale) -> BadTotal:
-            return (
-                structure.grouping_sets((row.region, row.customer_id), (row.region,), ())
-                .agg(order_count=structure.count())
-                .as_schema(BadTotal)
-            )
+            structure.grouping_sets((row.region, row.customer_id), (row.region,), ())
+            return BadTotal(region=row.region, customer_id=row.customer_id, order_count=structure.count())
 
     with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(BadGroupingSets)
@@ -255,12 +248,8 @@ def test_having_rejects_pre_aggregate_input_field_reads() -> None:
         totals = structure.output(Total)
 
         def summarize(self, row: RawSale) -> Total:
-            return (
-                structure.group_by(customer_id=row.customer_id)
-                .agg(order_count=structure.count())
-                .having(lambda total: literal(row.quantity) > 0)
-                .as_schema(Total)
-            )
+            structure.group_by(customer_id=row.customer_id).having(lambda total: literal(row.quantity) > 0)
+            return Total(customer_id=row.customer_id, order_count=structure.count())
 
     with pytest.raises(structure.StructureCompileError) as raised:
         compile_transform(BadHaving)
@@ -290,3 +279,62 @@ def test_statement_having_binds_to_aggregate_output_scope() -> None:
 
     assert plan.steps[0].aggregate is not None
     assert plan.steps[0].aggregate.having is not None
+
+
+@pytest.mark.parametrize("grouping", ("group_by", "rollup", "cube", "grouping_sets"))
+def test_each_grouping_form_accepts_chained_having(grouping: str) -> None:
+    class Total(structure.Schema):
+        customer_id = structure.field(structure.String(), nullable=True)
+        order_count = structure.field(structure.Long(), nullable=False)
+
+    @structure.transform
+    class ChainedHaving(structure.Transform):
+        rows = structure.input(RawSale)
+        totals = structure.output(Total)
+
+        def summarize(self, row: RawSale) -> Total:
+            if grouping == "group_by":
+                structure.group_by(customer_id=row.customer_id).having(lambda total: total.order_count > 0)
+            elif grouping == "rollup":
+                structure.rollup(customer_id=row.customer_id).having(lambda total: total.order_count > 0)
+            elif grouping == "cube":
+                structure.cube(customer_id=row.customer_id).having(lambda total: total.order_count > 0)
+            else:
+                structure.grouping_sets((row.customer_id,), ()).having(lambda total: total.order_count > 0)
+            return Total(customer_id=row.customer_id, order_count=structure.count())
+
+    plan = PySpark.plan.lower()(compile_transform(ChainedHaving))
+
+    assert plan.steps[0].aggregate is not None
+    assert plan.steps[0].aggregate.grouping == grouping
+    assert plan.steps[0].aggregate.having is not None
+
+
+def test_bare_and_chained_having_lower_identically() -> None:
+    class Total(structure.Schema):
+        customer_id = structure.field(structure.String(), nullable=False)
+        order_count = structure.field(structure.Long(), nullable=False)
+
+    @structure.transform
+    class BareHaving(structure.Transform):
+        rows = structure.input(RawSale)
+        totals = structure.output(Total)
+
+        def summarize(self, row: RawSale) -> Total:
+            structure.group_by(customer_id=row.customer_id)
+            structure.having(lambda total: total.order_count > 0)
+            return Total(customer_id=row.customer_id, order_count=structure.count())
+
+    @structure.transform
+    class ChainedHaving(structure.Transform):
+        rows = structure.input(RawSale)
+        totals = structure.output(Total)
+
+        def summarize(self, row: RawSale) -> Total:
+            structure.group_by(customer_id=row.customer_id).having(lambda total: total.order_count > 0)
+            return Total(customer_id=row.customer_id, order_count=structure.count())
+
+    bare = PySpark.plan.lower()(compile_transform(BareHaving)).steps[0].aggregate
+    chained = PySpark.plan.lower()(compile_transform(ChainedHaving)).steps[0].aggregate
+
+    assert bare == chained

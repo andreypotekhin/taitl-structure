@@ -1,7 +1,7 @@
 # Quick Reference
 
 For exhaustive supported APIs, PySpark parity names, examples, and semantic differences, see the
-[API reference](APIRef.md): [schemas](api/Schemas.api.md), [transforms](api/Transforms.api.md),
+[API reference](reference/API.ref.md): [schemas](api/Schemas.api.md), [transforms](api/Transforms.api.md),
 [expressions](api/Expressions.api.md), [joins](api/Joins.api.md), [aggregations](api/Aggregations.api.md),
 [windows](api/Windows.api.md), [collections](api/Collections.api.md), and [streaming](api/Streaming.api.md).
 
@@ -28,9 +28,9 @@ Inheritance allows to for schema reuse, while avoiding repeat declarations.
 
 Use `alias=` when the Spark DataFrame column is not a Python identifier.
 
-Reference: [schemas API](api/Schemas.api.md), [schema declaration syntax](reference/SchemaDeclarationSyntax.md),
-[schema semantics](reference/SchemaSemantics.md), and
-[nullability and type coercion](reference/NullabilityAndTypeCoercion.md).
+Reference: [schemas API](api/Schemas.api.md), [schema declaration syntax](reference/Schema.ref.md),
+[schema semantics](reference/Schema.ref.md), and
+[nullability and type coercion](reference/Schema.ref.md).
 
 ## Transform Classes
 
@@ -85,9 +85,9 @@ Parent transform step methods run before child transform step methods. Multiple 
 
 Step methods do not call other step methods directly; attempt to do so, except for the override case above, will result in error. 
 
-Reference: [transforms API](api/Transforms.api.md), [DSL](reference/DSL.md),
-[online execution](reference/OnlineExecution.md), and
-[transform inheritance and composition](reference/TransformComposition.md).
+Reference: [transforms API](api/Transforms.api.md), [DSL](background/DSL.back.md),
+[online execution](background/OnlineExecution.back.md), and
+[transform inheritance and composition](background/DSL.back.md).
 
 ## Inputs
 
@@ -110,8 +110,8 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     ...
 ```
 
-Reference: [transforms API](api/Transforms.api.md), [DSL inputs](reference/DSL.md), and
-[source module rules](reference/SourceModuleRules.md).
+Reference: [transforms API](api/Transforms.api.md), [DSL inputs](background/DSL.back.md), and
+[source module rules](background/PySparkCodeGeneration.back.md).
 
 ## Lanes
 
@@ -182,9 +182,9 @@ def publish(self, order: OrderNormalized) -> OrderPublished:
 `input(orders)` means the original runtime input. `lane(orders)` means the current working lane named
 `orders`. `output(published)` means the final result declaration.
 
-Reference: [transforms API](api/Transforms.api.md), [DSL step methods](reference/DSL.md),
-[symbolic execution](reference/SymbolicExecution.md), and
-[execution semantics](reference/ExecutionSemanticContract.md).
+Reference: [transforms API](api/Transforms.api.md), [DSL step methods](background/DSL.back.md),
+[symbolic execution](background/DSL.back.md), and
+[execution semantics](background/OnlineExecution.back.md).
 
 ## Online Execution
 
@@ -211,8 +211,8 @@ enriched_df = result.enriched
 The session owns the caller-supplied Spark reference, Structure configuration,
 execution mode and compiled artifacts. It preserves the compiled code between transform and invocations. For instance, the subsequent construction of new insances `EnrichOrders` and repeat invocations of its .run() (on same session) do not trigger recompiling.
 
-Reference: [transforms API](api/Transforms.api.md), [online execution](reference/OnlineExecution.md), and
-[execution semantic contract](reference/ExecutionSemanticContract.md).
+Reference: [transforms API](api/Transforms.api.md), [online execution](background/OnlineExecution.back.md), and
+[execution semantic contract](background/OnlineExecution.back.md).
 
 ## Generated PySpark Code
 
@@ -221,7 +221,6 @@ For a source step method like this:
 ```python
 def normalize(self, order: OrderRaw) -> OrderNormalized:
     where(order.id.is_not_null())
-
     return OrderNormalized(
         id=order.id,
         customer_id=lower(trim(order.customer_id)),
@@ -242,7 +241,7 @@ orders = orders.where(
 ```
 
 Reference: [transforms API](api/Transforms.api.md) and
-[PySpark code generation](reference/PySparkCodeGeneration.md).
+[PySpark code generation](background/PySparkCodeGeneration.back.md).
 
 ## Filtering
 
@@ -252,7 +251,6 @@ Use `where(...)` to filter on relation.
 def valid_orders(self, order: OrderRaw) -> OrderValid:
     where(order.id.is_not_null())
     where(order.total.is_not_null())
-
     return OrderValid(
         id=order.id,
         total=to_decimal(order.total, precision=12, scale=2),
@@ -264,8 +262,8 @@ Multiple `where(...)` calls are combined with logical AND.
 When filters and joins are mixed, Structure preserves the source order. A filter written before a join runs
 before that join; a filter written after a join can reference the joined relation.
 
-Reference: [expressions API](api/Expressions.api.md), [DSL filtering](reference/DSL.md), and
-[symbolic execution](reference/SymbolicExecution.md).
+Reference: [expressions API](api/Expressions.api.md), [DSL filtering](background/DSL.back.md), and
+[symbolic execution](background/DSL.back.md).
 
 ## Add and Drop Columns
 
@@ -311,8 +309,8 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     )
 ```
 
-Reference: [transforms API](api/Transforms.api.md), [schema semantics](reference/SchemaSemantics.md), and
-[PySpark code generation](reference/PySparkCodeGeneration.md).
+Reference: [transforms API](api/Transforms.api.md), [schema semantics](reference/Schema.ref.md), and
+[PySpark code generation](background/PySparkCodeGeneration.back.md).
 
 ## Expressions
 
@@ -343,8 +341,8 @@ Temporal helpers include `date_add(...)`, `datediff(...)`, and `date_trunc(...)`
 Numeric helpers include `abs(...)`, `round(...)`, `ceil(...)`, and `floor(...)`.
 Predicate helpers include `isnull(...)`, `isnotnull(...)`, and `isnan(...)`.
 
-Reference: [expressions API](api/Expressions.api.md), [DSL expressions](reference/DSL.md), and
-[nullability and type coercion](reference/NullabilityAndTypeCoercion.md).
+Reference: [expressions API](api/Expressions.api.md), [DSL expressions](background/DSL.back.md), and
+[nullability and type coercion](reference/Schema.ref.md).
 
 ## Expression Methods
 
@@ -362,7 +360,7 @@ Expression methods do not take `self`, but can be called through `self`.
 customer_id=self.clean_id(order.customer_id)
 ```
 
-Reference: [expressions API](api/Expressions.api.md) and [DSL expression helpers](reference/DSL.md).
+Reference: [expressions API](api/Expressions.api.md) and [DSL expression helpers](background/DSL.back.md).
 
 ## Aggregations
 
@@ -395,7 +393,7 @@ Core aggregate helpers are `count()`, `count_distinct(...)`, `sum(...)`, `min(..
 Advanced helpers include `bool_and(...)`, `bool_or(...)`, `stddev(...)`, `variance(...)`, `corr(...)`, `covar(...)`,
 `approx_count_distinct(...)`, `approx_percentile(...)`, `collect_list(...)`, `collect_set(...)`, `first_value(...)`,
 and `last_value(...)`. Aggregate helpers accept `where=...` for metric-local filters. Use
-`having(lambda out: ...)` after `.agg(...)` to filter aggregate output rows.
+bare `having(lambda out: ...)` or chained `group_by(...).having(lambda out: ...)` to filter aggregate output rows.
 
 Use `rollup(...)` for hierarchical subtotals, `cube(...)` for all grouping-key combinations, and
 `grouping_sets(...)` for exact subtotal layouts. Subtotal rows may omit some grouping keys, so nullable subtotal fields
@@ -430,49 +428,58 @@ def revenue_rollup(self, order: OrderFulfillment) -> OrderRevenueRollup:
 Use `cube(...)` for all grouping-key combinations:
 
 ```python
-return cube(
+cube(
     tenant_id=order.tenant.tenant_id,
     product_category=order.product_category,
     customer_tier=order.customer_tier,
-).agg(
+)
+return OrderProductCube(
+    tenant_id=order.tenant.tenant_id,
+    product_category=order.product_category,
+    customer_tier=order.customer_tier,
     grouping_id=grouping_id(),
     order_count=count(),
     distinct_customers=count_distinct(order.customer_id),
     gross_total=sum(order.total),
-).as_schema(OrderProductCube)
+)
 ```
 
 Use `grouping_sets(...)` when only specific subtotal levels are useful:
 
 ```python
-return grouping_sets(
+grouping_sets(
     (order.region, order.customer_id),
     (order.region,),
     (),
-).agg(
+)
+return OrderGroupingSetSummary(
+    region=order.region,
+    customer_id=order.customer_id,
     grouping_id=grouping_id(),
     region_grouped=is_grouped(order.region),
     customer_grouped=is_grouped(order.customer_id),
     order_count=count(),
     gross_total=sum(order.total),
-).as_schema(OrderGroupingSetSummary)
+)
 ```
 
 Use `having(...)` for post-aggregate filters:
 
 ```python
-return group_by(customer_id=order.customer_id).agg(
+group_by(customer_id=order.customer_id).having(
+    lambda total: total.order_count > 1
+)
+return CustomerOrderSummary(
+    customer_id=order.customer_id,
     order_count=count(),
     gross_total=sum(order.total),
-).having(
-    lambda total: total.order_count > 1
-).as_schema(CustomerOrderSummary)
+)
 ```
 
 Reference: [aggregations API](api/Aggregations.api.md),
-[advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md),
-[IR](reference/IntermediateRepresentation.md), [PySpark code generation](reference/PySparkCodeGeneration.md), and
-[streaming compatibility](reference/StreamingCompatibility.md).
+[advanced analytical operations](background/DSL.back.md), [DSL](background/DSL.back.md),
+[IR](background/PySparkCodeGeneration.back.md), [PySpark code generation](background/PySparkCodeGeneration.back.md), and
+[streaming compatibility](background/OnlineExecution.back.md).
 
 ## Latest and Earliest Rows
 
@@ -483,7 +490,6 @@ best described as keyed deduplication.
 ```python
 def latest_events(self, event: RawEvent) -> LatestEvent:
     dedupe_latest_by(event.sequence, partition_by=event.account_id)
-
     return LatestEvent(
         account_id=event.account_id,
         event_id=event.event_id,
@@ -502,10 +508,10 @@ semantics (planned).
 For complete, outcome-oriented examples, see the [Latest Rows recipe](recipes/LatestRows.md) and the
 [Earliest Rows recipe](recipes/EarliestRows.md).
 
-Reference: [aggregations API](api/Aggregations.api.md), [DSL](reference/DSL.md),
-[IR](reference/IntermediateRepresentation.md),
-[PySpark code generation](reference/PySparkCodeGeneration.md), and
-[streaming compatibility](reference/StreamingCompatibility.md).
+Reference: [aggregations API](api/Aggregations.api.md), [DSL](background/DSL.back.md),
+[IR](background/PySparkCodeGeneration.back.md),
+[PySpark code generation](background/PySparkCodeGeneration.back.md), and
+[streaming compatibility](background/OnlineExecution.back.md).
 
 ## Window Projection Functions
 
@@ -562,9 +568,9 @@ window aggregates; use grouped `count_distinct(...)` instead.
 Streaming: broad window helpers are batch-only in v2 streaming compatibility.
 
 Reference: [windows API](api/Windows.api.md),
-[advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md),
-[IR](reference/IntermediateRepresentation.md), [PySpark code generation](reference/PySparkCodeGeneration.md), and
-[streaming compatibility](reference/StreamingCompatibility.md).
+[advanced analytical operations](background/DSL.back.md), [DSL](background/DSL.back.md),
+[IR](background/PySparkCodeGeneration.back.md), [PySpark code generation](background/PySparkCodeGeneration.back.md), and
+[streaming compatibility](background/OnlineExecution.back.md).
 
 ## Removing Duplicate Rows
 
@@ -601,10 +607,10 @@ def latest_events(self, event: RawEvent) -> RawEvent:
 Streaming: exact duplicate removal is batch-only in v2 streaming compatibility because streaming dedupe needs explicit
 watermark, state, and output-mode semantics.
 
-Reference: [aggregations API](api/Aggregations.api.md), [DSL](reference/DSL.md),
-[IR](reference/IntermediateRepresentation.md),
-[PySpark code generation](reference/PySparkCodeGeneration.md), and
-[streaming compatibility](reference/StreamingCompatibility.md).
+Reference: [aggregations API](api/Aggregations.api.md), [DSL](background/DSL.back.md),
+[IR](background/PySparkCodeGeneration.back.md),
+[PySpark code generation](background/PySparkCodeGeneration.back.md), and
+[streaming compatibility](background/OnlineExecution.back.md).
 
 ## Higher-Order Functions
 
@@ -679,14 +685,14 @@ bodies must return typed Structure expressions or typed literals. Python boolean
 is rejected; combine symbolic predicates with `&`, `|`, and `~`.
 
 Reference: [collections API](api/Collections.api.md),
-[advanced analytical operations](reference/AdvancedAnalyticalOperations.md), [DSL](reference/DSL.md), and
-[backend capabilities](reference/BackendCapabilities.md).
+[advanced analytical operations](background/DSL.back.md), [DSL](background/DSL.back.md), and
+[backend capabilities](background/OnlineExecution.back.md).
 
 ## Joins
 
-Use symbolic joins. Ref: [joins API](api/Joins.api.md), [Join semantics](reference/JoinSemantics.md),
-[analytical join coverage](reference/AnalyticalJoinCoverage.md), and
-[full PySpark join support](reference/FullPySparkJoinSupport.md).
+Use symbolic joins. Ref: [joins API](api/Joins.api.md), [Join semantics](background/DSL.back.md),
+[analytical join coverage](background/DSL.back.md), and
+[full PySpark join support](background/DSL.back.md).
 
 Implemented join forms in the default PySpark profile:
 
@@ -709,7 +715,6 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
         on=order.customer_id == customer.id,
         hint=JoinHint.BROADCAST,
     )
-
     return OrderWithCustomer.base(order)(
         customer_name=customer.name,
     )
@@ -827,7 +832,6 @@ When constructing a subclass schema object, use `.base(row)(...)` to copy inheri
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
     left_join(on=order.customer_id == customer.id)
-
     return OrderWithCustomer.base(order)(
         customer_name=customer.name,
     )
@@ -858,9 +862,9 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     )
 ```
 
-Reference: [schemas API](api/Schemas.api.md), [schema inheritance](reference/SchemaInheritance.md),
-[schema declaration syntax](reference/SchemaDeclarationSyntax.md), and
-[schema semantics](reference/SchemaSemantics.md).
+Reference: [schemas API](api/Schemas.api.md), [schema inheritance](reference/Schema.ref.md),
+[schema declaration syntax](reference/Schema.ref.md), and
+[schema semantics](reference/Schema.ref.md).
 
 ### Transform Inheritance
 
@@ -971,8 +975,8 @@ class OrderPipeline(Transform):
 ```
 
 Reference: [transforms API](api/Transforms.api.md),
-[transform inheritance and composition](reference/TransformComposition.md),
-[DSL](reference/DSL.md), and [execution semantics](reference/ExecutionSemanticContract.md).
+[transform inheritance and composition](background/DSL.back.md),
+[DSL](background/DSL.back.md), and [execution semantics](background/OnlineExecution.back.md).
 
 ## Hooks
 
@@ -1014,8 +1018,8 @@ def add_audit_columns(self, *, audited, spark, ctx):
 
 Single-result hooks still name the selected lane explicitly.
 
-Reference: [transforms API](api/Transforms.api.md), [hook semantics](reference/HookSemantics.md), and
-[validation semantics](reference/ValidationSemantics.md).
+Reference: [transforms API](api/Transforms.api.md), [hook semantics](background/HookSemantics.back.md), and
+[validation semantics](reference/Schema.ref.md).
 
 ## Schema Validation
 
@@ -1080,8 +1084,8 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     ...
 ```
 
-Reference: [schemas API](api/Schemas.api.md), [validation semantics](reference/ValidationSemantics.md), and
-[data quality constraints](reference/DataQualityConstraints.md).
+Reference: [schemas API](api/Schemas.api.md), [validation semantics](reference/Schema.ref.md), and
+[data quality constraints](reference/Schema.ref.md).
 
 ## Source and Generated Paths
 
@@ -1095,9 +1099,9 @@ generated/structure_generated/orders/...
 Generated paths are used only when Structure is configured to emit PySpark code; online execution is the
 default. These paths are configurable. Mark `src` and `generated` as source roots in the IDE.
 
-Reference: [source module rules](reference/SourceModuleRules.md),
-[configuration schema](reference/ConfigSchema.md), and
-[PySpark code generation](reference/PySparkCodeGeneration.md).
+Reference: [source module rules](background/PySparkCodeGeneration.back.md),
+[configuration schema](background/CLI.back.md), and
+[PySpark code generation](background/PySparkCodeGeneration.back.md).
 
 ## Streaming Compatibility
 
@@ -1107,7 +1111,7 @@ is supported by Spark Structured Streaming, the transform can run in a streaming
 Structure does not generate `readStream` or `writeStream`; the caller owns streaming orchestration.
 
 Reference: [streaming API](api/Streaming.api.md) and
-[streaming compatibility](reference/StreamingCompatibility.md).
+[streaming compatibility](background/OnlineExecution.back.md).
 
 ## Compatibility
 
@@ -1134,8 +1138,8 @@ make integration BACKEND=spark-connect35
 make integration BACKEND=spark-connect40
 ```
 
-Reference: [compatibility policy](reference/CompatibilityPolicy.md) and
-[backend capabilities](reference/BackendCapabilities.md).
+Reference: [compatibility policy](background/OnlineExecution.back.md) and
+[backend capabilities](background/OnlineExecution.back.md).
 
 ## Schema Generation Tool
 
@@ -1180,13 +1184,13 @@ decimals, and nested structs. It does not infer primary keys, descriptions, inhe
 constraints. When Spark field names are not Python identifiers, generated Structure fields use safe Python
 names with `alias=...`.
 
-Reference: [schemas API](api/Schemas.api.md), [CLI](reference/CLI.md), and
-[schema declaration syntax](reference/SchemaDeclarationSyntax.md).
+Reference: [schemas API](api/Schemas.api.md), [CLI](background/CLI.back.md), and
+[schema declaration syntax](reference/Schema.ref.md).
 
 ## Next Steps
 
 Get started: [GettingStarted.md](GettingStarted.md)
 
-API reference: [APIRef.md](APIRef.md)
+API reference: [API.ref.md](reference/API.ref.md)
 
 Reference docs: [Reference.md](Reference.md)

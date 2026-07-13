@@ -85,7 +85,6 @@ Example:
 ```python
 def reconcile(self, order: OrderRaw, customer: Customer) -> OrderCustomerReconciliation:
     full_join(on=order.customer_id == customer.id)
-
     return OrderCustomerReconciliation.project()(
         order_id=order.id,
         customer_id=customer.id,

@@ -21,6 +21,16 @@ class TagSummary(structure.Schema):
     position = structure.field(structure.Long(), nullable=True)
 
 
+class TagTextSummary(structure.Schema):
+    id = structure.field(structure.String(), nullable=False)
+    text = structure.field(structure.String(), nullable=True)
+
+
+class SortedTags(structure.Schema):
+    id = structure.field(structure.String(), nullable=False)
+    tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
+
+
 class RawAttributes(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     attributes = structure.field(
@@ -64,6 +74,32 @@ class TagSummaryTransform(structure.Transform):
             tags=tags,
             position=structure.arr_position(row.tags, "priority"),
         )
+
+
+@structure.transform
+class TagTextSummaryTransform(structure.Transform):
+    rows = structure.input(RawTags)
+    summary = structure.output(TagTextSummary)
+
+    def summarize_tags(self, row: RawTags) -> TagTextSummary:
+        return TagTextSummary(
+            id=row.id,
+            text=structure.arr_aggregate(
+                row.tags,
+                "",
+                lambda accumulator, item: structure.concat_ws("", accumulator, item),
+                finish=lambda accumulator: structure.upper(accumulator),
+            ),
+        )
+
+
+@structure.transform
+class SortedTagsTransform(structure.Transform):
+    rows = structure.input(RawTags)
+    sorted_tags = structure.output(SortedTags)
+
+    def sort_tags(self, row: RawTags) -> SortedTags:
+        return SortedTags(id=row.id, tags=structure.arr_sort_by(row.tags, lambda tag: structure.lower(structure.trim(tag))))
 
 
 @structure.transform
@@ -120,3 +156,25 @@ def test_advanced_array_higher_order_helpers_render_spark_visible_lambdas() -> N
     ) in text
     assert 'F.array_position(F.col("raw_tags.tags"), ' in text
     assert "F.array_position(F.col(\"raw_tags.tags\"), 'priority')" in text
+
+
+def test_array_aggregate_renders_its_finish_callback_against_the_final_accumulator() -> None:
+    plan = PySpark.plan.lower()(compile_transform(TagTextSummaryTransform))
+
+    text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
+
+    assert (
+        'F.aggregate(F.col("raw_tags.tags"), F.lit(\'\'), '
+        "lambda acc, item: F.concat_ws('', acc, item), lambda acc: F.upper(acc)).alias(\"text\")"
+    ) in text
+
+
+def test_array_sort_by_renders_its_symbolic_key_as_a_spark_comparator() -> None:
+    plan = PySpark.plan.lower()(compile_transform(SortedTagsTransform))
+
+    text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
+
+    assert 'F.array_sort(F.col("raw_tags.tags"), lambda left, right:' in text
+    assert "F.lower(F.trim(left))" in text
+    assert "F.lower(F.trim(right))" in text
+    assert "F.sort_array" not in text

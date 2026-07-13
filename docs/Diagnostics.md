@@ -1,7 +1,7 @@
 # Diagnostics
 
 Below is an index for published diagnostic codes. For the full diagnostic contract, see
-[Diagnostics.md](reference/Diagnostics.md).
+[Diagnostics.md](background/Diagnostics.back.md).
 
 ## Active Codes
 
@@ -32,64 +32,64 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 ## Anchors
 
 ### CONF-E0101
-See [Diagnostics.md](reference/Diagnostics.md#conf-e0101).
+See [Diagnostics.md](background/Diagnostics.back.md#conf-e0101).
 
 ### CONF-E0102
-See [Diagnostics.md](reference/Diagnostics.md#conf-e0102).
+See [Diagnostics.md](background/Diagnostics.back.md#conf-e0102).
 
 ### DSL-E0401
-See [Diagnostics.md](reference/Diagnostics.md#dsl-e0401).
+See [Diagnostics.md](background/Diagnostics.back.md#dsl-e0401).
 
 ### DSL-E0402
-See [Diagnostics.md](reference/Diagnostics.md#dsl-e0402).
+See [Diagnostics.md](background/Diagnostics.back.md#dsl-e0402).
 
 ### DSL-W0403
-See [Diagnostics.md](reference/Diagnostics.md#dsl-w0403).
+See [Diagnostics.md](background/Diagnostics.back.md#dsl-w0403).
 
 ### SCHEMA-E0301
-See [Diagnostics.md](reference/Diagnostics.md#schema-e0301).
+See [Diagnostics.md](background/Diagnostics.back.md#schema-e0301).
 
 ### SCHEMA-E0302
-See [Diagnostics.md](reference/Diagnostics.md#schema-e0302).
+See [Diagnostics.md](background/Diagnostics.back.md#schema-e0302).
 
 ### SCHEMA-E0303
-See [Diagnostics.md](reference/Diagnostics.md#schema-e0303).
+See [Diagnostics.md](background/Diagnostics.back.md#schema-e0303).
 
 ### JOIN-E0601
-See [Diagnostics.md](reference/Diagnostics.md#join-e0601).
+See [Diagnostics.md](background/Diagnostics.back.md#join-e0601).
 
 ### JOIN-W0601
-See [Diagnostics.md](reference/Diagnostics.md#join-w0601).
+See [Diagnostics.md](background/Diagnostics.back.md#join-w0601).
 
 ### GEN-E0901
-See [Diagnostics.md](reference/Diagnostics.md#gen-e0901).
+See [Diagnostics.md](background/Diagnostics.back.md#gen-e0901).
 
 ### GEN-E0902
-See [Diagnostics.md](reference/Diagnostics.md#gen-e0902).
+See [Diagnostics.md](background/Diagnostics.back.md#gen-e0902).
 
 ### ONLINE-E1201
-See [Diagnostics.md](reference/Diagnostics.md#online-e1201).
+See [Diagnostics.md](background/Diagnostics.back.md#online-e1201).
 
 ### ONLINE-E1202
-See [Diagnostics.md](reference/Diagnostics.md#online-e1202).
+See [Diagnostics.md](background/Diagnostics.back.md#online-e1202).
 
 ### ONLINE-E1203
-See [Diagnostics.md](reference/Diagnostics.md#online-e1203).
+See [Diagnostics.md](background/Diagnostics.back.md#online-e1203).
 
 ### BACKEND-E2401
-See [Diagnostics.md](reference/Diagnostics.md#backend-e2401).
+See [Diagnostics.md](background/Diagnostics.back.md#backend-e2401).
 
 ### BACKEND-E2402
-See [Diagnostics.md](reference/Diagnostics.md#backend-e2402).
+See [Diagnostics.md](background/Diagnostics.back.md#backend-e2402).
 
 ### CONNECT-E2601
-See [SparkConnect.md](reference/SparkConnect.md#runtime-boundaries).
+See [SparkConnect.md](background/SparkConnect.back.md#runtime-boundaries).
 
 ### CLI-X1101
-See [Diagnostics.md](reference/Diagnostics.md#cli-x1101).
+See [Diagnostics.md](background/Diagnostics.back.md#cli-x1101).
 
 ### STREAM-E0801
-See [Diagnostics.md](reference/Diagnostics.md#stream-e0801).
+See [Diagnostics.md](background/Diagnostics.back.md#stream-e0801).
 
 ### STREAM-W0801
-See [Diagnostics.md](reference/Diagnostics.md#stream-w0801).
+See [Diagnostics.md](background/Diagnostics.back.md#stream-w0801).

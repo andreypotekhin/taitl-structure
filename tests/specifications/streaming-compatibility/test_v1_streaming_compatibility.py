@@ -1,6 +1,8 @@
 import sys
 from typing import Any, cast
 
+import pytest
+
 import structure
 from structure.app.compiler.api import Compiler
 from structure.app.compiler.compileability.streaming_compatibility.api import StreamingSupport
@@ -32,6 +34,11 @@ class StreamEnriched(structure.Schema):
 class StreamSummary(structure.Schema):
     id = structure.field(structure.String(), nullable=False)
     row_count = structure.field(structure.Long(), nullable=False)
+
+
+def test_event_time_between_rejects_non_timestamp_expressions() -> None:
+    with pytest.raises(TypeError, match="requires Timestamp Structure expressions"):
+        structure.event_time_between(structure.lower("left"), structure.lower("right"), upper="1 hour")
 
 
 @structure.transform(streaming_compatible=True)
@@ -136,7 +143,8 @@ class StreamingAggregate(structure.Transform):
     summary = structure.output(StreamSummary)
 
     def summarize(self, row: StreamRaw) -> StreamSummary:
-        return structure.group_by(row.id).agg(row_count=structure.count()).as_schema(StreamSummary)
+        structure.group_by(row.id)
+        return StreamSummary(id=row.id, row_count=structure.count())
 
 
 @structure.transform(streaming_compatible=True)
@@ -146,7 +154,8 @@ class StreamingWatermarkedAggregate(structure.Transform):
 
     def summarize(self, row: StreamRaw) -> StreamSummary:
         structure.watermark(row.event_time, delay="10 minutes")
-        return structure.group_by(row.id).agg(row_count=structure.count()).as_schema(StreamSummary)
+        structure.group_by(row.id)
+        return StreamSummary(id=row.id, row_count=structure.count())
 
 
 @structure.transform(streaming_compatible=True)

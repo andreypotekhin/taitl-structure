@@ -79,5 +79,5 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 - `first_value(...)`, `last_value(...)`, and `nth_value(...)` support `ignore_nulls=` in reusable-window form.
 - Aggregate window helpers require an explicit row or range frame. A range frame requires exactly one order key.
 - Spark does not permit distinct window aggregates, so `window_count_distinct(...)` rejects the combination early.
-- Raw `Column.over(...)` and raw PySpark `WindowSpec` objects are unsupported. See
-  [advanced analytical operations](../reference/AdvancedAnalyticalOperations.md).
+- Raw `Column.over(...)` and raw PySpark `WindowSpec` objects are unsupported. See the
+  [Transforms reference](../background/DSL.back.md).

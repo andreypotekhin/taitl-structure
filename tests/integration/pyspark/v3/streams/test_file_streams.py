@@ -77,6 +77,8 @@ def test_caller_owned_file_streams_run_online_and_generated_transforms(spark, tm
             progress_passages = spark.readStream.schema(schemas.PASSAGE_SCHEMA).json(str(passages_path))
             penalty_passages = spark.readStream.schema(schemas.PASSAGE_SCHEMA).json(str(passages_path))
             call_stream = spark.readStream.schema(schemas.JUDGE_CALL_SCHEMA).json(str(calls_path))
+            online_penalty_passages = spark.readStream.schema(schemas.PASSAGE_SCHEMA).json(str(passages_path))
+            online_call_stream = spark.readStream.schema(schemas.JUDGE_CALL_SCHEMA).json(str(calls_path))
 
             online_passages = (
                 PreparePassages(events=event_stream, races=races, paddlers=paddlers, gates=gates)
@@ -91,6 +93,11 @@ def test_caller_owned_file_streams_run_online_and_generated_transforms(spark, tm
             generated_penalties = (
                 CorrelatePenalties(passages=penalty_passages, calls=call_stream)
                 .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
+                .penalties
+            )
+            online_penalties = (
+                CorrelatePenalties(passages=online_penalty_passages, calls=online_call_stream)
+                .run(session(spark, execution_mode="online"))
                 .penalties
             )
 
@@ -109,6 +116,12 @@ def test_caller_owned_file_streams_run_online_and_generated_transforms(spark, tm
             penalties = _collect_stream(
                 generated_penalties,
                 tmp_path / "penalty-checkpoint",
+                output_mode="append",
+                order_by="call_id",
+            )
+            online_penalties = _collect_stream(
+                online_penalties,
+                tmp_path / "online-penalty-checkpoint",
                 output_mode="append",
                 order_by="call_id",
             )
@@ -143,6 +156,7 @@ def test_caller_owned_file_streams_run_online_and_generated_transforms(spark, tm
             "adjusted_millis": 3_000,
         }
     ]
+    assert online_penalties == penalties
 
 
 def _collect_stream(frame, checkpoint, *, output_mode: str, order_by: str) -> list[dict[str, object]]:

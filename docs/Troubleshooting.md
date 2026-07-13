@@ -7,7 +7,7 @@ Error: "Generated transform is not importable."
 Cause: Structure is configured to run checked-in generated PySpark, but the generated module is missing,
        stale, or not on the Python import path.
 Fix: Run `structure compile`, ensure the generated source root is importable, or set `execution_mode =
-     "online"`. See [OnlineExecution.md](reference/OnlineExecution.md).
+     "online"`. See [OnlineExecution.md](background/OnlineExecution.back.md).
 
 ### Problem (online execution): unknown transform constructor input
 
