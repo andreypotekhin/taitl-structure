@@ -376,13 +376,15 @@ QuickRef: [QuickRef.md](QuickRef.md)
 
 Get started: [GettingStarted.md](GettingStarted.md)
 
+Solve a focused pipeline outcome: [Recipes.md](Recipes.md)
+
 
 
 ## Roadmap
 
 The roadmap follows an IR-first path: prove strict online execution with optional generated code, grow into
-mainstream analytical pipelines, promote Spark Connect for completed batch features, then take ownership of streaming
-orchestration.
+mainstream analytical pipelines, promote Spark Connect for completed batch features, and deepen compiler-visible
+streaming transformations while callers retain orchestration.
 
 - **Initial release:** online PySpark execution by default, optional generated PySpark classes, projection,
   filtering, joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow
@@ -392,6 +394,6 @@ orchestration.
   ([Advanced analytical operations](reference/AdvancedAnalyticalOperations.md)),
   caching/persistence/repartition hints, richer explain output, generated docs, pytest helpers, and Spark Connect
   support for completed v1/v2 batch features.
-- **v3:** streaming orchestration: `readStream`, `writeStream`, triggers, checkpoints, watermarks, output
-  modes, and stateful policies.
+- **v3:** PySpark parity, additional compiler-visible streaming transformations, and incremental compile diagnostics;
+  callers retain `readStream`, `writeStream`, triggers, checkpoints, output modes, and query lifecycle.
 - **v4:** backend expansion and any non-batch Spark Connect hardening left outside the Sprint 09 support claim.

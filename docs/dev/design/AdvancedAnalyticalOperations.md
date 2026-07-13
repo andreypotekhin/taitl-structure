@@ -99,8 +99,8 @@ Rules:
 - Offset and value helpers may opt into `ignore_nulls=True` only when the backend supports it.
 - Any helper that can choose among tied rows must expose the tie policy or require a complete deterministic order.
 
-Streaming support remains deferred. Broad windows are batch-only until v3 defines watermark, state, output-mode, and
-late-data semantics.
+Streaming support remains deferred. Broad windows are batch-only until Structure defines watermark, state, output-mode,
+and late-data semantics.
 
 ## Higher-Order Function Design
 

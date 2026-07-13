@@ -1,0 +1,157 @@
+{
+  "bases": [
+    "RawEvent"
+  ],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "primary_key": true,
+      "type": "string"
+    },
+    {
+      "column": "race_id",
+      "name": "race_id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "run_id",
+      "name": "run_id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "paddler_id",
+      "name": "paddler_id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "gate_number",
+      "name": "gate_number",
+      "nullable": false,
+      "primary_key": false,
+      "type": "integer"
+    },
+    {
+      "column": "at",
+      "name": "at",
+      "nullable": false,
+      "primary_key": false,
+      "type": "timestamp"
+    },
+    {
+      "column": "sequence",
+      "name": "sequence",
+      "nullable": false,
+      "primary_key": false,
+      "type": "long"
+    },
+    {
+      "column": "elapsed_millis",
+      "name": "elapsed_millis",
+      "nullable": false,
+      "primary_key": false,
+      "type": "long"
+    },
+    {
+      "column": "source",
+      "name": "source",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "race_name",
+      "name": "race_name",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "race_date",
+      "name": "race_date",
+      "nullable": true,
+      "primary_key": false,
+      "type": "date"
+    },
+    {
+      "column": "river",
+      "name": "river",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "venue",
+      "name": "venue",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "city",
+      "name": "city",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "race_country",
+      "name": "race_country",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "paddler_name",
+      "name": "paddler_name",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "bib",
+      "name": "bib",
+      "nullable": true,
+      "primary_key": false,
+      "type": "integer"
+    },
+    {
+      "column": "division",
+      "name": "division",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "paddler_country",
+      "name": "paddler_country",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "gate_direction",
+      "name": "gate_direction",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "sector",
+      "name": "sector",
+      "nullable": true,
+      "primary_key": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.streams.schemas.events",
+  "name": "Passage"
+}

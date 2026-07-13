@@ -2,12 +2,25 @@ from __future__ import annotations
 
 import difflib
 
-from helpers.example_projects import expected_orders_generated, render_orders_example
+import pytest
+from helpers.example_projects import (
+    expected_orders_generated,
+    expected_streams_generated,
+    render_orders_example,
+    render_streams_example,
+)
 
 
-def test_orders_example_generated_output_matches_golden_files() -> None:
-    actual = render_orders_example()
-    expected = expected_orders_generated()
+@pytest.mark.parametrize(
+    ("actual", "expected"),
+    [
+        (render_orders_example, expected_orders_generated),
+        (render_streams_example, expected_streams_generated),
+    ],
+)
+def test_example_generated_output_matches_golden_files(actual, expected) -> None:
+    actual = actual()
+    expected = expected()
 
     assert set(actual) == set(expected), _paths_diff(actual, expected)
     for path in expected:

@@ -16,7 +16,7 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 **Details And Differences**
 
 - `StreamingMode` declares the nature of an input; strict transform compatibility rejects unknown or invalid shapes.
-- `StreamingOutputMode` is the typed output-mode vocabulary for lifecycle configuration; generated sinks are planned.
+- `StreamingOutputMode` is the typed vocabulary used when explain output reports a caller-required output mode.
 
 ## Streaming Operations
 
@@ -35,7 +35,6 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 ## Lifecycle Boundaries
 
 Supported transform shapes include row-local projection/filter, stream-static joins, watermarked aggregation and dedupe,
-and bounded inner stream-stream joins. Callers currently own `readStream`, `writeStream`, checkpoints, triggers,
-output modes, and query lifecycle. Generated sources and sinks are planned for Sprint 16; `foreachBatch` and `foreach`
-remain unsupported. See [Spark streaming](../reference/SparkStreaming.md) and
+and bounded inner stream-stream joins. Callers own `readStream`, `writeStream`, checkpoints, triggers, output modes,
+and query lifecycle. `foreachBatch` and `foreach` remain unsupported. See [Spark streaming](../reference/SparkStreaming.md) and
 [streaming deferred features](../reference/SparkStreamingDeferredFeatures.md).

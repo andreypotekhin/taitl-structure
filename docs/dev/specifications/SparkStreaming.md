@@ -1,8 +1,7 @@
 # Spark Streaming Transformation Support
 
 This specification defines Spark Structured Streaming support for Structure transforms. Structure compiles DataFrame
-transformations that may run on streaming DataFrames. In v1/v2 the caller owns streaming lifecycle code; v3 adds a
-separate Structure-owned lifecycle orchestration contract.
+transformations that may run on streaming DataFrames; callers own streaming lifecycle code in every release.
 
 ## Support Claim
 
@@ -17,9 +16,8 @@ Structure supports a transform with a streaming input when all of these are true
 - generated and online execution do not emit or call streaming lifecycle APIs, Spark actions, RDD conversion, Pandas
   conversion, Python UDFs, or local collection.
 
-The v1/v2 support claim covers returned DataFrame plans only. Structure-owned streaming sources, sinks, query
-start/stop behavior, triggers, checkpoints, query names, deployment, and recovery belong to the v3 orchestration
-contract.
+The support claim covers returned DataFrame plans only. Streaming sources, sinks, query start/stop behavior, triggers,
+checkpoints, query names, deployment, and recovery remain caller-owned.
 
 ## Configuration
 
@@ -126,8 +124,8 @@ streaming.streaming_action
 
 Selected-row helpers, ranking, lag/lead, rolling metrics, right/full/cross stream-stream joins, and arbitrary state APIs
 remain batch-only until Structure defines a compiler-visible transformation contract for their state semantics. Source
-generation, sink generation, triggers, checkpoints, and query lifecycle remain outside the v1/v2 transform
-compatibility contract and belong to v3 streaming orchestration.
+generation, sink generation, triggers, checkpoints, and query lifecycle remain outside the transform compatibility
+contract.
 
 ## Diagnostics
 

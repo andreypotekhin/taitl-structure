@@ -1,0 +1,36 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "race_id",
+      "name": "race_id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "number",
+      "name": "number",
+      "nullable": false,
+      "primary_key": false,
+      "type": "integer"
+    },
+    {
+      "column": "direction",
+      "name": "direction",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "sector",
+      "name": "sector",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.streams.schemas.race",
+  "name": "Gate"
+}

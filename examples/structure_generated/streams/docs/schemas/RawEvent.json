@@ -1,0 +1,71 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "primary_key": true,
+      "type": "string"
+    },
+    {
+      "column": "race_id",
+      "name": "race_id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "run_id",
+      "name": "run_id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "paddler_id",
+      "name": "paddler_id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "gate_number",
+      "name": "gate_number",
+      "nullable": false,
+      "primary_key": false,
+      "type": "integer"
+    },
+    {
+      "column": "at",
+      "name": "at",
+      "nullable": false,
+      "primary_key": false,
+      "type": "timestamp"
+    },
+    {
+      "column": "sequence",
+      "name": "sequence",
+      "nullable": false,
+      "primary_key": false,
+      "type": "long"
+    },
+    {
+      "column": "elapsed_millis",
+      "name": "elapsed_millis",
+      "nullable": false,
+      "primary_key": false,
+      "type": "long"
+    },
+    {
+      "column": "source",
+      "name": "source",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.streams.schemas.events",
+  "name": "RawEvent"
+}

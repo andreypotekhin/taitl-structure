@@ -324,8 +324,13 @@
 - + Add Spark Connect runtime verification through CI or a documented manual script.
 - + Document hook, StructureTools, streaming, and storage-write exclusions.
 - + Implement static first-slice Spark streaming compatibility for caller-owned streaming DataFrames.
-- + Keep generated streaming sources, generated sinks, lifecycle ownership, and query policy deferred behind explicit
-  public references.
+- + Keep generated streaming sources, generated sinks, lifecycle ownership, and query policy permanently caller-owned
+  behind explicit public references.
+
+## Future Example Apps
+
+- Add a batch-only telemetry/time-series example for custom windows, ranking, lag/lead, rolling metrics, and published
+  `RaceWinner` results. Keep it separate from the streaming `examples/streams` contract.
 
 ## Post-Sprint 09 Follow-Up
 

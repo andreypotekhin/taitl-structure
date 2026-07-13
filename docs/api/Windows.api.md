@@ -16,6 +16,7 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 **Details And Differences**
 
 - All inline helpers require `partition_by=` and `order_by=`.
+- `order_by=` accepts one expression or an ordered list/tuple. Order descriptors can set direction and null placement.
 - `lag(...)` and `lead(...)` default to `offset=1`; use `default=` for an explicit fallback.
 
 ## Rolling Windows
@@ -65,11 +66,18 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 | `window_min(...)` | `min` over window | `window_min(order.total, over=w)` |
 | `window_max(...)` | `max` over window | `window_max(order.total, over=w)` |
 | `window_count(...)` | `count` over window | `window_count(over=w)` |
-| `window_count_distinct(...)` | `count_distinct` over window | `window_count_distinct(order.customer_id, over=w)` |
+| `window_bool_and(...)` | `bool_and` over window | `window_bool_and(order.is_paid, over=w)` |
+| `window_bool_or(...)` | `bool_or` over window | `window_bool_or(order.is_overdue, over=w)` |
+| `window_stddev(...)` | `stddev` over window | `window_stddev(order.total, over=w)` |
+| `window_variance(...)` | `variance` over window | `window_variance(order.total, over=w)` |
+| `window_collect_list(...)` | `collect_list` over window | `window_collect_list(order.id, over=w)` |
+| `window_collect_set(...)` | `collect_set` over window | `window_collect_set(order.product_id, over=w)` |
 
 **Details And Differences**
 
 - `ntile(...)` needs a positive bucket count; `nth_value(...)` indexes from one.
 - `first_value(...)`, `last_value(...)`, and `nth_value(...)` support `ignore_nulls=` in reusable-window form.
-- Raw `Column.over(...)` and raw PySpark `WindowSpec` objects are unsupported. Null/multi-key ordering improvements are
-  planned for Sprint 14. See [advanced analytical operations](../reference/AdvancedAnalyticalOperations.md).
+- Aggregate window helpers require an explicit row or range frame. A range frame requires exactly one order key.
+- Spark does not permit distinct window aggregates, so `window_count_distinct(...)` rejects the combination early.
+- Raw `Column.over(...)` and raw PySpark `WindowSpec` objects are unsupported. See
+  [advanced analytical operations](../reference/AdvancedAnalyticalOperations.md).

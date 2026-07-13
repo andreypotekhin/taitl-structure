@@ -137,11 +137,17 @@ from structure.app.dsl.model.transforms.reserved_v2 import (
     variance,
     window,
     window_avg,
+    window_bool_and,
+    window_bool_or,
+    window_collect_list,
+    window_collect_set,
     window_count,
     window_count_distinct,
     window_max,
     window_min,
     window_sum,
+    window_stddev,
+    window_variance,
 )
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.app.dsl.model.transforms.StreamingMode import StreamingMode
@@ -311,9 +317,15 @@ __all__ = [
     "watermark",
     "window",
     "window_avg",
+    "window_bool_and",
+    "window_bool_or",
+    "window_collect_list",
+    "window_collect_set",
     "window_count",
     "window_count_distinct",
     "window_max",
     "window_min",
     "window_sum",
+    "window_stddev",
+    "window_variance",
 ]

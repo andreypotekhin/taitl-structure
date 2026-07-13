@@ -1,0 +1,102 @@
+{
+  "dependencies": [
+    "gate",
+    "gates",
+    "paddler",
+    "paddlers",
+    "race",
+    "races"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "events",
+      "ordinal": 0,
+      "schema": "RawEvent"
+    },
+    {
+      "name": "races",
+      "ordinal": 1,
+      "schema": "Race"
+    },
+    {
+      "name": "paddlers",
+      "ordinal": 2,
+      "schema": "Paddler"
+    },
+    {
+      "name": "gates",
+      "ordinal": 3,
+      "schema": "Gate"
+    }
+  ],
+  "name": "PreparePassages",
+  "outputs": [
+    {
+      "name": "passages",
+      "ordinal": 0,
+      "schema": "Passage"
+    }
+  ],
+  "source": "examples.streams.transforms.passages.PreparePassages",
+  "step_methods": [
+    {
+      "input_lane": "events",
+      "input_schema": "RawEvent",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "event",
+          "schema": "RawEvent",
+          "source": "events"
+        },
+        {
+          "driving": false,
+          "parameter": "race",
+          "schema": "Race",
+          "source": "races"
+        },
+        {
+          "driving": false,
+          "parameter": "paddler",
+          "schema": "Paddler",
+          "source": "paddlers"
+        },
+        {
+          "driving": false,
+          "parameter": "gate",
+          "schema": "Gate",
+          "source": "gates"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "race"
+        },
+        {
+          "how": "left",
+          "input": "paddler"
+        },
+        {
+          "how": "left",
+          "input": "gate"
+        }
+      ],
+      "name": "prepare",
+      "output_lane": "events",
+      "output_schema": "Passage",
+      "results": [
+        {
+          "frame": "events",
+          "lane": "events",
+          "schema": "Passage"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/passages.py",
+    "traceability": "traceability/transforms/passages.PreparePassages.json"
+  }
+}

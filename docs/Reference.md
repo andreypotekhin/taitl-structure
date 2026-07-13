@@ -61,12 +61,16 @@ For function-by-function support, PySpark parity, examples, and discrepancies, s
 - [Streaming compatibility](reference/StreamingCompatibility.md): when transforms can be used with streaming
   DataFrames.
 - [Spark streaming](reference/SparkStreaming.md): caller-owned Structured Streaming first-slice support.
-- [Spark streaming deferred features](reference/SparkStreamingDeferredFeatures.md): generated streaming source, sink,
-  lifecycle, watermark, and state-policy work left outside the first slice.
+- [Spark streaming deferred features](reference/SparkStreamingDeferredFeatures.md): caller-owned lifecycle boundary
+  and transformation features awaiting explicit state semantics.
 - [Spark Connect](reference/SparkConnect.md): PySpark Connect target variant, supported batch scope, diagnostics, and
   exclusions.
 - [Compatibility policy](reference/CompatibilityPolicy.md): Python, PySpark, backend, generated-code, and
   versioning compatibility.
+
+## Examples
+
+- [Streams](../examples/streams/Readme.md): caller-owned file streaming for white-water kayaking timing and judging.
 
 ## Extension Points
 

@@ -193,7 +193,9 @@ Window aggregate helpers:
 - `window_min(value, over=...)`;
 - `window_max(value, over=...)`;
 - `window_count(value=None, over=...)`;
-- `window_count_distinct(value, over=...)` where supported.
+- `window_bool_and(value, over=...)` and `window_bool_or(value, over=...)`;
+- `window_stddev(value, over=...)` and `window_variance(value, over=...)`;
+- `window_collect_list(value, over=...)` and `window_collect_set(value, over=...)`.
 
 Rules:
 
@@ -202,7 +204,7 @@ Rules:
 - Value and offset helpers return the value expression type and preserve or widen nullability according to defaults
   and `ignore_nulls`.
 - `ignore_nulls=True` requires backend support.
-- Window aggregate helpers require a frame.
+- Window aggregate helpers require a frame. Distinct window aggregates are rejected because Spark does not support them.
 - Window expressions are projection expressions. They do not change row count by themselves.
 - If a helper can choose among tied rows, the window order must be deterministic or the helper must expose a tie
   policy.

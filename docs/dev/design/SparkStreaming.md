@@ -97,15 +97,10 @@ streaming.sink_generation
 streaming.trigger_policy
 streaming.checkpoint_policy
 streaming.output_mode
-streaming.watermark
-streaming.state_policy
-streaming.stream_stream_join
-streaming.stateful_aggregation
-streaming.stateful_deduplication
 ```
 
-Unsupported does not mean impossible forever. It means the first slice must fail early instead of silently lowering a
-stateful streaming plan without an explicit lifecycle contract.
+Unsupported means these caller-owned lifecycle concerns must fail early instead of silently becoming generated
+orchestration. Stateful transformation support requires explicit compiler-visible state semantics.
 
 ## Diagnostics
 

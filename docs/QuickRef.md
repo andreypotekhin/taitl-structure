@@ -499,6 +499,9 @@ Streaming: Selected-row helpers
 are batch-only in v2 streaming compatibility checks, because streaming-safe ranking needs explicit watermark and state
 semantics (planned).
 
+For complete, outcome-oriented examples, see the [Latest Rows recipe](recipes/LatestRows.md) and the
+[Earliest Rows recipe](recipes/EarliestRows.md).
+
 Reference: [aggregations API](api/Aggregations.api.md), [DSL](reference/DSL.md),
 [IR](reference/IntermediateRepresentation.md),
 [PySpark code generation](reference/PySparkCodeGeneration.md), and
@@ -523,9 +526,10 @@ def rank_events(self, event: RawEvent) -> RankedEvent:
     )
 ```
 
-`partition_by` is required and accepts one expression or a list/tuple of expressions. `order_by` is required.
-Set `descending=True` when the window order should be descending. `lag(...)` and `lead(...)` default to offset `1`;
-pass `offset=...` and `default=...` when needed. `rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and
+`partition_by` and `order_by` each accept one expression or a list/tuple of expressions. Use `asc_nulls_first()`,
+`asc_nulls_last()`, `desc_nulls_first()`, or `desc_nulls_last()` on an order key when null placement matters. Set
+`descending=True` when every inline order key should descend. `lag(...)` and `lead(...)` default to offset `1`; pass
+`offset=...` and `default=...` when needed. `rolling_sum(...)`, `rolling_avg(...)`, `rolling_min(...)`, and
 `rolling_max(...)` require `preceding=...`, the number of prior rows included with the current row. These helpers render
 as PySpark window expressions in the projection, not Python UDFs.
 
@@ -551,7 +555,9 @@ def customer_window(self, order: OrderFulfillment) -> OrderCustomerWindow:
 ```
 
 Reusable windows require explicit frames such as `rows_between(preceding(2), current_row())` or
-`range_between(preceding(10), current_row())`. 
+`range_between(preceding(10), current_row())`. Aggregate helpers also include `window_bool_and`, `window_bool_or`,
+`window_stddev`, `window_variance`, `window_collect_list`, and `window_collect_set`. Spark does not permit distinct
+window aggregates; use grouped `count_distinct(...)` instead.
 
 Streaming: broad window helpers are batch-only in v2 streaming compatibility.
 
@@ -1088,7 +1094,7 @@ Reference: [source module rules](reference/SourceModuleRules.md),
 Structure transforms operate on DataFrames. If the input DataFrame is streaming and every compiled operation
 is supported by Spark Structured Streaming, the transform can run in a streaming pipeline.
 
-Structure does not generate `readStream` or `writeStream` before v3; the caller owns streaming orchestration.
+Structure does not generate `readStream` or `writeStream`; the caller owns streaming orchestration.
 
 Reference: [streaming API](api/Streaming.api.md) and
 [streaming compatibility](reference/StreamingCompatibility.md).

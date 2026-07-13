@@ -1443,6 +1443,38 @@
       "qualname": "window_avg",
       "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
     },
+    "window_bool_and": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "window_bool_and",
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
+    },
+    "window_bool_or": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "window_bool_or",
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
+    },
+    "window_collect_list": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "window_collect_list",
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\", element_type: 'StructureType | None' = None) -> 'Expression'"
+    },
+    "window_collect_set": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "window_collect_set",
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\", element_type: 'StructureType | None' = None) -> 'Expression'"
+    },
     "window_count": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -1481,6 +1513,22 @@
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.reserved_v2",
       "qualname": "window_sum",
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
+    },
+    "window_stddev": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "window_stddev",
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
+    },
+    "window_variance": {
+      "dataclass_fields": [],
+      "enum_members": [],
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.reserved_v2",
+      "qualname": "window_variance",
       "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
     }
   },

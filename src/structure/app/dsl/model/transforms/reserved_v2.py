@@ -415,19 +415,21 @@ def rolling_max(
 
 
 def window(*, partition_by: object, order_by: object, frame: "WindowFrame | None" = None) -> "WindowSpec":
-    return WindowSpec(
+    spec = WindowSpec(
         partition_by=_partition_by(partition_by, call="window(...)"),
-        order_by=literal(order_by),
+        order_by=_order_by(order_by, call="window(...)"),
         frame=frame,
     )
+    _validate_window_spec(spec)
+    return spec
 
 
 def rows_between(start: "WindowBound", end: "WindowBound") -> "WindowFrame":
-    return WindowFrame(kind="rows", start=start, end=end)
+    return _window_frame("rows", start, end)
 
 
 def range_between(start: "WindowBound", end: "WindowBound") -> "WindowFrame":
-    return WindowFrame(kind="range", start=start, end=end)
+    return _window_frame("range", start, end)
 
 
 def unbounded_preceding() -> "WindowBound":
@@ -508,7 +510,56 @@ def window_count(value: object | None = None, *, over: "WindowSpec") -> Expressi
 
 
 def window_count_distinct(value: object, *, over: "WindowSpec") -> Expression:
-    return _window_over_expression("count_distinct", literal(value), over=over, type=LongType(), nullable=False)
+    raise TypeError(
+        "window_count_distinct(...) is not supported because Spark does not permit distinct window aggregates; "
+        "use window_count(...) or aggregate with count_distinct(...) instead"
+    )
+
+
+def window_bool_and(value: object, *, over: "WindowSpec") -> Expression:
+    argument = _window_boolean(value, "window_bool_and(...)")
+    return _window_over_expression("bool_and", argument, over=over, type=BooleanType(), nullable=True)
+
+
+def window_bool_or(value: object, *, over: "WindowSpec") -> Expression:
+    argument = _window_boolean(value, "window_bool_or(...)")
+    return _window_over_expression("bool_or", argument, over=over, type=BooleanType(), nullable=True)
+
+
+def window_stddev(value: object, *, over: "WindowSpec") -> Expression:
+    argument = _window_numeric(value, "window_stddev(...)")
+    return _window_over_expression("stddev", argument, over=over, type=DoubleType(), nullable=True)
+
+
+def window_variance(value: object, *, over: "WindowSpec") -> Expression:
+    argument = _window_numeric(value, "window_variance(...)")
+    return _window_over_expression("variance", argument, over=over, type=DoubleType(), nullable=True)
+
+
+def window_collect_list(
+    value: object, *, over: "WindowSpec", element_type: StructureType | None = None
+) -> Expression:
+    argument = literal(value)
+    return _window_over_expression(
+        "collect_list",
+        argument,
+        over=over,
+        type=ArrayType(_collection_element_type(argument, element_type), contains_null=argument.nullable),
+        nullable=True,
+    )
+
+
+def window_collect_set(
+    value: object, *, over: "WindowSpec", element_type: StructureType | None = None
+) -> Expression:
+    argument = literal(value)
+    return _window_over_expression(
+        "collect_set",
+        argument,
+        over=over,
+        type=ArrayType(_collection_element_type(argument, element_type), contains_null=argument.nullable),
+        nullable=True,
+    )
 
 
 def drop_duplicates(*subset: object) -> None:
@@ -582,18 +633,19 @@ def _window_expression(
     if offset is not None and offset < 1:
         raise TypeError(f"{function}(...) offset must be greater than or equal to 1")
     partitions = _partition_by(partition_by, call=f"{function}(...)")
-    ordering = literal(order_by)
+    ordering = _order_by(order_by, call=f"{function}(...)")
     data = {
         "function": f"window_{function}",
         "capability_group": "window",
         "capability_name": function,
         "descending": descending,
+        "order_count": len(ordering),
     }
     if offset is not None:
         data["offset"] = offset
         data["default"] = default
         data["has_default"] = default is not None
-    args = (() if value is None else (value,)) + (ordering, *partitions)
+    args = (() if value is None else (value,)) + (*ordering, *partitions)
     return Expression(kind="reserved_v2", type=type, nullable=nullable, data=data, args=args)
 
 
@@ -611,7 +663,7 @@ def _rolling_expression(
     if preceding < 0:
         raise TypeError(f"rolling_{function}(...) preceding must be greater than or equal to 0")
     partitions = _partition_by(partition_by, call=f"rolling_{function}(...)")
-    ordering = literal(order_by)
+    ordering = _order_by(order_by, call=f"rolling_{function}(...)")
     return Expression(
         kind="reserved_v2",
         type=type,
@@ -622,8 +674,9 @@ def _rolling_expression(
             "capability_name": f"rolling_{function}",
             "descending": descending,
             "preceding": preceding,
+            "order_count": len(ordering),
         },
-        args=(value, ordering, *partitions),
+        args=(value, *ordering, *partitions),
     )
 
 
@@ -636,12 +689,18 @@ def _window_over_expression(
     ignore_nulls: bool = False,
     options: tuple[tuple[str, object], ...] = (),
 ) -> Expression:
+    _validate_window_spec(over)
+    if function in _WINDOW_AGGREGATES and over.frame is None:
+        raise TypeError(
+            f"window_{function}(...) requires an explicit frame such as rows_between(preceding(2), current_row())"
+        )
     data: dict[str, object] = {
         "function": f"window_{function}",
         "capability_group": "window",
         "capability_name": function,
         "value_count": len(values),
         "ignore_nulls": ignore_nulls,
+        "order_count": len(over.order_by),
     }
     if over.frame is not None:
         data["frame_kind"] = over.frame.kind
@@ -653,7 +712,7 @@ def _window_over_expression(
         type=type,
         nullable=nullable,
         data=data,
-        args=(*values, over.order_by, *over.partition_by),
+        args=(*values, *over.order_by, *over.partition_by),
     )
 
 
@@ -663,6 +722,72 @@ def _partition_by(partition_by: object, *, call: str) -> tuple[Expression, ...]:
     if not partitions:
         raise TypeError(f"{call} requires at least one partition_by expression")
     return partitions
+
+
+def _order_by(order_by: object, *, call: str) -> tuple[Expression, ...]:
+    values = order_by if isinstance(order_by, (tuple, list)) else (order_by,)
+    ordering = tuple(literal(value) for value in values)
+    if not ordering:
+        raise TypeError(f"{call} requires at least one order_by expression")
+    return ordering
+
+
+def _window_frame(kind: str, start: "WindowBound", end: "WindowBound") -> "WindowFrame":
+    if not isinstance(start, WindowBound) or not isinstance(end, WindowBound):
+        raise TypeError(f"{kind}_between(...) requires WindowBound values such as preceding(1) and current_row()")
+    if _window_bound_position(start) > _window_bound_position(end):
+        raise TypeError(f"{kind}_between(...) start must not be after end")
+    return WindowFrame(kind=kind, start=start, end=end)
+
+
+def _validate_window_spec(spec: "WindowSpec") -> None:
+    if spec.frame is not None and spec.frame.kind == "range" and len(spec.order_by) != 1:
+        raise TypeError("range_between(...) requires exactly one order_by expression")
+
+
+def _window_bound_position(bound: "WindowBound") -> float:
+    if bound.kind == "unbounded_preceding":
+        return float("-inf")
+    if bound.kind == "unbounded_following":
+        return float("inf")
+    if bound.kind == "current_row":
+        return 0
+    if bound.kind == "preceding":
+        return -float(bound.value or 0)
+    if bound.kind == "following":
+        return float(bound.value or 0)
+    raise TypeError(f"Unsupported window bound: {bound.kind}")
+
+
+def _window_boolean(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, BooleanType):
+        raise TypeError(f"{call} requires a Boolean expression")
+    return argument
+
+
+def _window_numeric(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if argument.type is None or argument.type.name not in {"integer", "long", "float", "double", "decimal"}:
+        raise TypeError(f"{call} requires a numeric expression")
+    return argument
+
+
+_WINDOW_AGGREGATES = frozenset(
+    {
+        "avg",
+        "bool_and",
+        "bool_or",
+        "collect_list",
+        "collect_set",
+        "count",
+        "max",
+        "min",
+        "stddev",
+        "sum",
+        "variance",
+    }
+)
 
 
 def _duplicate_rows(subset: tuple[object, ...], *, call: str) -> DuplicateRowsPlan:
@@ -735,7 +860,7 @@ class GroupedAggregates:
 @dataclass(frozen=True)
 class WindowSpec:
     partition_by: tuple[Expression, ...]
-    order_by: Expression
+    order_by: tuple[Expression, ...]
     frame: "WindowFrame | None" = None
 
 

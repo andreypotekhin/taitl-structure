@@ -288,6 +288,17 @@ def test_online_expression_evaluator_preserves_window_projection_semantics() -> 
             "avg(col(metrics.quantity)).over("
             "partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc()).rowsBetween(-2,0))",
         ),
+        (
+            _window(
+                "sum",
+                value=quantity,
+                partition_by=customer_id,
+                order_by=(_order(quantity, "asc_nulls_last"), _order(quantity, "desc_nulls_first")),
+                preceding=2,
+            ),
+            "sum(col(metrics.quantity)).over(partitionBy(col(metrics.customer_id)).orderBy("
+            "col(metrics.quantity).asc_nulls_last(),col(metrics.quantity).desc_nulls_first()).rowsBetween(-2,0))",
+        ),
     ]
 
     assert [
@@ -2249,16 +2260,18 @@ def _window(
     function: str,
     *,
     partition_by: PySparkExpressionRecipe,
-    order_by: PySparkExpressionRecipe,
+    order_by: PySparkExpressionRecipe | tuple[PySparkExpressionRecipe, ...],
     value: PySparkExpressionRecipe | None = None,
     descending: bool = False,
     preceding: int | None = None,
 ) -> PySparkExpressionRecipe:
-    args = (() if value is None else (value,)) + (order_by, partition_by)
+    orders = order_by if isinstance(order_by, tuple) else (order_by,)
+    args = (() if value is None else (value,)) + (*orders, partition_by)
     data = {
         "function": f"window_{function}",
         "descending": descending,
         "offset": 1,
+        "order_count": len(orders),
     }
     if preceding is not None:
         data["preceding"] = preceding
@@ -2562,6 +2575,9 @@ class FakeColumn:
     def asc_nulls_last(self):
         return FakeColumn(f"{self.expression}.asc_nulls_last()")
 
+    def desc_nulls_first(self):
+        return FakeColumn(f"{self.expression}.desc_nulls_first()")
+
     def __getitem__(self, key):
         return FakeColumn(f"{self.expression}[{key!r}]")
 
@@ -2632,8 +2648,8 @@ class FakeWindow:
 class FakeWindowSpec:
     expression: str
 
-    def orderBy(self, column):
-        return FakeWindowSpec(f"{self.expression}.orderBy({column.expression})")
+    def orderBy(self, *columns):
+        return FakeWindowSpec(f"{self.expression}.orderBy({','.join(column.expression for column in columns)})")
 
     def rowsBetween(self, start, end):
         return FakeWindowSpec(f"{self.expression}.rowsBetween({start},{end})")

@@ -20,7 +20,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 13 v3 Aggregation Parity | Aggregations, Backend Capabilities, Traceability | grouping sets, `having(...)`, aggregate-output predicate diagnostics |
 | Sprint 14 v3 Window Parity | Windows, Backend Capabilities, Streaming Compatibility | null ordering, normalized multiple order keys, aggregate windows |
 | Sprint 15 v3 Collection Helper Parity | Higher-Order Functions, Arrays, Maps, Testing | collection size/membership, map-key membership, array construction/repeat/union/except, element lookup/concat |
-| Sprint 16 v3 Streaming Orchestration | Spark Structured Streaming, Runtime, Generated Code, Integration Testing | source/sink declarations, generated `readStream`/`writeStream`, triggers, checkpoints, output modes, watermarks, state policies |
+| Sprint 16 v3 Streaming Transformation Hardening | Spark Structured Streaming, Generated Code, Integration Testing | watermarked enrichment, dedupe, aggregation, bounded stream-stream joins, caller-owned output-mode guidance, and file-stream evidence |
 | Sprint 17 v3 Incremental Compile | CLI, Compiler Performance, Generated Artifacts, Testing | `compile --changed-only`, cache invalidation, cache diagnostics, warm compile performance fixtures |
 
 ## Relevant Specification Items by Sprint

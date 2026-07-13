@@ -108,6 +108,7 @@ follow_imports = "skip"
 [[tool.mypy.overrides]]
 module = [
     "examples.orders.transforms.*",
+    "examples.streams.transforms.*",
 ]
 disable_error_code = ["attr-defined"]
 
@@ -130,6 +131,7 @@ markers = [
     "integration: live backend tests that require explicit --run-integration opt-in",
 ]
 pythonpath = [
+    ".",
     "src",
     "res",
     "tests",

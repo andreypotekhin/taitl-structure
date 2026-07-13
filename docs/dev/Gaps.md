@@ -45,9 +45,9 @@ page, public compatibility tables, generated examples, and project-management pr
 | DSL | Sprint 11 | [P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md](planning/done/P07072602.V3-dsl-and-sql-function-pyspark-parity.plan.md) |
 | Joins | Sprint 12 | [P07072603.V3-join-pyspark-parity-hardening.plan.md](planning/done/P07072603.V3-join-pyspark-parity-hardening.plan.md) |
 | Aggregations | Sprint 13 | [P07072604.V3-aggregation-pyspark-parity.plan.md](planning/done/P07072604.V3-aggregation-pyspark-parity.plan.md) |
-| Windows | Sprint 14 | [P07072605.V3-window-pyspark-parity.plan.md](planning/P07072605.V3-window-pyspark-parity.plan.md) |
+| Windows | Sprint 14 | [P07072605.V3-window-pyspark-parity.plan.md](planning/done/P07072605.V3-window-pyspark-parity.plan.md) |
 | Higher-Order And Collection Helpers | Sprint 15 | [P07072606.V3-collection-helper-pyspark-parity.plan.md](planning/P07072606.V3-collection-helper-pyspark-parity.plan.md) |
-| Streaming | Sprint 16 | [P07072607.V3-streaming-orchestration.plan.md](planning/P07072607.V3-streaming-orchestration.plan.md) |
+| Streaming | Sprint 16 | [P07122601.Streams-example-and-caller-owned-streaming.plan.md](planning/P07122601.Streams-example-and-caller-owned-streaming.plan.md) |
 
 ## DSL
 
@@ -147,9 +147,9 @@ Gaps:
 
 | Gap | Status | Target PySpark Parity | Notes |
 | --- | --- | --- | --- |
-| Null ordering in window order keys | planned | Null-ordering sort methods | Needs ordering wrappers. |
-| Multiple order keys in all helpers | planned | `Window.orderBy(*cols)` | Normalize order lists consistently. |
-| Additional aggregate windows | planned | Aggregates over `Window` | Mirror admitted aggregate helpers. |
+| Null ordering in window order keys | implemented | Null-ordering sort methods | Typed order descriptors render in inline and reusable windows. |
+| Multiple order keys in all helpers | implemented | `Window.orderBy(*cols)` | Inline and reusable helpers preserve ordered keys. |
+| Additional aggregate windows | implemented | Framed aggregates over `Window` | Boolean, statistical, and collection helpers are admitted; distinct windows stay unsupported by Spark. |
 | Raw `WindowSpec` escape hatch | unsupported | Direct PySpark `WindowSpec` | Use hooks for raw PySpark. |
 
 ## Higher-Order And Collection Helpers
@@ -171,19 +171,19 @@ Gaps:
 
 ## Streaming
 
-The first streaming slice accepts compatible streaming DataFrames as inputs for row-local and limited stream-static
-operations. Structure does not yet own streaming lifecycle or stateful streaming contracts.
+The streaming slice accepts compatible streaming DataFrames as inputs for row-local, watermarked stateful, and admitted
+stream-stream operations. Structure intentionally does not own streaming lifecycle.
 
 Gaps:
 
 | Gap | Status | Target PySpark Parity | Notes |
 | --- | --- | --- | --- |
-| Generated streaming sources | planned | `spark.readStream` | Sprint 16 lifecycle declaration work. |
-| Generated streaming sinks | planned | `DataFrame.writeStream` | Needs checkpoint and query policy. |
-| Triggers, checkpoints, and output modes | planned | `trigger`, `checkpointLocation`, `outputMode` | Required lifecycle policy for generated streaming jobs. |
-| Watermarks | planned | `withWatermark` | Required before most stateful streaming features. |
-| Streaming aggregations | planned | Structured Streaming aggregations | Admit only bounded, watermarked state semantics. |
-| Stateful streaming dedupe | planned | `dropDuplicatesWithinWatermark` | Depends on watermark and state policy. |
+| Generated streaming sources | unsupported | `spark.readStream` | Callers own source selection and configuration. |
+| Generated streaming sinks | unsupported | `DataFrame.writeStream` | Callers own sinks and side effects. |
+| Triggers, checkpoints, and output modes | unsupported | `trigger`, `checkpointLocation`, `outputMode` | Callers apply lifecycle policy; Structure may report required modes. |
+| Watermarks | implemented | `withWatermark` | Compiler-visible transform operation. |
+| Streaming aggregations | implemented | Structured Streaming aggregations | Admitted only with a prior compiler-visible watermark. |
+| Stateful streaming dedupe | implemented | `dropDuplicatesWithinWatermark` | Admitted only with a prior compiler-visible watermark. |
 | `foreachBatch` and custom sinks | unsupported | `foreachBatch`, `foreach` | Keep side effects outside the DSL. |
 
 ## Admission Checklist

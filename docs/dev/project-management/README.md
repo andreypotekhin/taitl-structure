@@ -34,12 +34,13 @@ project-management/
     Sprint05_JoinsTraceabilityBuildIntegration.md
     Sprint06_V2ScopeAndAnalyticalIR.md
     Sprint07_AnalyticalJoinCoverage.md
-    Sprint14_V3WindowParity.md
     Sprint15_V3CollectionHelperParity.md
     Sprint16_V3StreamingOrchestration.md
     Sprint17_V3IncrementalCompileCacheDiagnostics.md
     done/
       Sprint12_V3JoinParityHardening.md
+      Sprint13_V3AggregationParity.md
+      Sprint14_V3WindowParity.md
       Sprint08_AggregationsWindowsHigherOrderFunctions.md
       Sprint11_V3DslAndSqlFunctionParity.md
       Sprint09_OptimizationExplainDocsTooling.md
@@ -100,8 +101,8 @@ orchestration. The v3 sprint sequence is:
 4. **Sprint 14: window parity**: null ordering, multiple order keys, and aggregate windows.
 5. **Sprint 15: collection helper parity**: collection size/membership, map-key membership,
    array construction/repeat/union/except, element lookup, safe element lookup, and map concatenation.
-6. **Sprint 16: streaming orchestration**: source/sink declarations, generated `readStream`/`writeStream`, triggers,
-   checkpoints, output modes, watermarks, and state policies.
+6. **Sprint 16: streaming transformation hardening**: watermarks, admitted state policies, diagnostics, public
+   examples, and caller-owned file-stream evidence.
 7. **Sprint 17: incremental compile and cache diagnostics**: `compile --changed-only`, cache invalidation, cache
    diagnostics, and warm compile performance fixtures.
 

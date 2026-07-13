@@ -160,7 +160,8 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
 
 ## v3 Scope
 
-v3 closes the planned PySpark parity gaps tracked in [Gaps.md](../Gaps.md), then introduces streaming orchestration.
+v3 closes the planned PySpark parity gaps tracked in [Gaps.md](../Gaps.md), then hardens admitted streaming
+transformations while callers retain lifecycle ownership.
 v1/v2 support compiler-visible batch features, Spark Connect batch execution for completed features, and static
 caller-owned streaming compatibility. v3 starts by broadening the typed symbolic surface so streaming diagnostics and
 generated lifecycle code can rely on a complete enough PySpark-family contract.
@@ -172,7 +173,7 @@ generated lifecycle code can rely on a complete enough PySpark-family contract.
 - Sprint 13: aggregation PySpark parity.
 - Sprint 14: window PySpark parity.
 - Sprint 15: higher-order and collection helper PySpark parity.
-- Sprint 16: streaming orchestration.
+- Sprint 16: streaming transformation hardening.
 - Sprint 17: incremental compile and cache diagnostics.
 
 ### v3 must include

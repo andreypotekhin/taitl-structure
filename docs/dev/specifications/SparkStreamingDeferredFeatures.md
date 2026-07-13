@@ -1,11 +1,10 @@
 # Spark Streaming Deferred Features
 
-This specification records lifecycle and transformation features left outside the first caller-owned streaming
-compatibility slice. v3 promotes source, sink, and lifecycle policy into planned orchestration work; transformation
-features remain unsupported until they receive compiler-visible state semantics, diagnostics, tests, and public
-documentation.
+This specification records lifecycle and transformation features left outside the caller-owned streaming compatibility
+slice. Source, sink, and lifecycle policy remain caller-owned; transformation features remain unsupported until they
+receive compiler-visible state semantics, diagnostics, tests, and public documentation.
 
-## Planned v3 Lifecycle Features
+## Caller-Owned Lifecycle Features
 
 The first compatibility slice does not generate or manage:
 
@@ -17,8 +16,7 @@ The first compatibility slice does not generate or manage:
 - query names;
 - `start()`, `awaitTermination()`, stop behavior, deployment, or recovery.
 
-These are caller-owned operational concerns for v1/v2 transform classes. v3 streaming orchestration owns a separate job
-contract for admitted source, sink, trigger, checkpoint, output-mode, and query lifecycle policies.
+These are caller-owned operational concerns for all transform classes.
 
 ## Deferred Capability Names
 

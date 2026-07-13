@@ -118,10 +118,67 @@ def render_orders_example() -> dict[str, str]:
 
 
 def expected_orders_generated() -> dict[str, str]:
+    return _expected_generated("orders")
+
+
+def render_streams_example() -> dict[str, str]:
+    with _example_imports():
+        from examples.streams.schemas.events import GateProgress, JudgeCall, Passage, Penalty, RawEvent
+        from examples.streams.schemas.race import Gate, Paddler, Race, RaceWinner
+        from examples.streams.transforms.passages import PreparePassages
+        from examples.streams.transforms.penalties import CorrelatePenalties
+        from examples.streams.transforms.progress import BuildGateProgress
+
+        schema_modules: dict[str, Sequence[type[Schema]]] = {
+            "examples.streams.schemas.events": [RawEvent, Passage, JudgeCall, GateProgress, Penalty],
+            "examples.streams.schemas.race": [Race, Gate, Paddler, RaceWinner],
+        }
+        transforms = (
+            (PreparePassages, "examples.streams.transforms.passages.PreparePassages"),
+            (BuildGateProgress, "examples.streams.transforms.progress.BuildGateProgress"),
+            (CorrelatePenalties, "examples.streams.transforms.penalties.CorrelatePenalties"),
+        )
+        files = {}
+        for transform_class, source_transform in transforms:
+            files.update(
+                PySpark.render.project()(
+                    PySpark.plan.lower()(compile_transform(transform_class)),
+                    source_transform=source_transform,
+                    generated_package="examples.structure_generated.streams",
+                    source_schema_modules=schema_modules,
+                )
+            )
+        docs = Docs.render.project()(
+            StructureConfig.resolve(
+                project_root=ROOT,
+                source_roots=["examples"],
+                generated_dir="examples/structure_generated/streams",
+                generated_package="examples.structure_generated.streams",
+            ),
+            DiscoveredStructureProject(
+                transforms=tuple(transform for transform, _ in transforms),
+                schema_modules={module: tuple(schemas) for module, schemas in schema_modules.items()},
+            ),
+        )
+        files.update({f"examples/structure_generated/streams/{path}": text for path, text in docs.items()})
+        files["examples/structure_generated/streams/traceability/__init__.py"] = (
+            "# Generated traceability package marker.\n"
+        )
+        files["examples/structure_generated/streams/traceability/transforms/__init__.py"] = (
+            "# Generated transform traceability package marker.\n"
+        )
+        return files
+
+
+def expected_streams_generated() -> dict[str, str]:
+    return _expected_generated("streams")
+
+
+def _expected_generated(example: str) -> dict[str, str]:
     root = ROOT
     return {
         str(path.relative_to(root)).replace("\\", "/"): path.read_text(encoding="utf-8")
-        for path in sorted((EXAMPLES / "structure_generated").rglob("*"))
+        for path in sorted((EXAMPLES / "structure_generated" / example).rglob("*"))
         if path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc"
     }
 
@@ -135,6 +192,7 @@ def _example_imports() -> Iterator[None]:
     finally:
         sys.path.remove(path)
         _drop("examples.orders")
+        _drop("examples.streams")
         _drop("examples.structure_generated")
 
 

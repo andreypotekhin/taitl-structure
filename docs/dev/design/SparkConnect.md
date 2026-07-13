@@ -121,5 +121,5 @@ generated code should stay readable and should not fork into separate ordinary a
 or import genuinely differs. Capability checks decide whether a Structure operation is legal for the configured variant;
 renderers and online runners consume those decisions rather than rediscovering them.
 
-V3 streaming orchestration can later add Connect-specific streaming evidence, but Sprint 09 must not bundle that work
-into the batch support claim.
+Future caller-owned streaming transformation evidence may add Connect-specific coverage, but Sprint 09 must not bundle
+that work into the batch support claim.

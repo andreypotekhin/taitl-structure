@@ -200,21 +200,22 @@ class RenderPySparkExpression:
             [array] = expression.args
             return f"F.map_from_entries({self._render(array, aliases)})"
         if function in {"window_row_number", "window_rank", "window_dense_rank"}:
-            order_by, *partition_by = expression.args
+            order_by, partition_by = self._window_arguments(expression, 0)
             call = function.removeprefix("window_")
             return f"F.{call}().over({self._window(order_by, partition_by, expression, aliases, include_frame=False)})"
         if function in {"window_percent_rank", "window_cume_dist"}:
-            order_by, *partition_by = expression.args
+            order_by, partition_by = self._window_arguments(expression, 0)
             call = function.removeprefix("window_")
             return f"F.{call}().over({self._window(order_by, partition_by, expression, aliases, include_frame=False)})"
         if function == "window_ntile":
-            order_by, *partition_by = expression.args
+            order_by, partition_by = self._window_arguments(expression, 0)
             return (
                 f"F.ntile({expression.data['buckets']}).over("
                 f"{self._window(order_by, partition_by, expression, aliases, include_frame=False)})"
             )
         if function in {"window_lag", "window_lead"}:
-            value, order_by, *partition_by = expression.args
+            [value] = expression.args[:1]
+            order_by, partition_by = self._window_arguments(expression, 1)
             call = function.removeprefix("window_")
             offset = expression.data["offset"]
             default = f", {expression.data['default']!r}" if expression.data.get("has_default") else ""
@@ -225,8 +226,7 @@ class RenderPySparkExpression:
         if function in {"window_first_value", "window_last_value", "window_nth_value"}:
             value_count = self._int_data(expression, "value_count", 1)
             values = expression.args[:value_count]
-            order_by = expression.args[value_count]
-            partition_by = list(expression.args[value_count + 1:])
+            order_by, partition_by = self._window_arguments(expression, value_count)
             call = function.removeprefix("window_")
             if call == "nth_value":
                 arguments = f"{self._render(values[0], aliases)}, {expression.data['n']}"
@@ -241,18 +241,22 @@ class RenderPySparkExpression:
             "window_min",
             "window_max",
             "window_count",
-            "window_count_distinct",
+            "window_bool_and",
+            "window_bool_or",
+            "window_stddev",
+            "window_variance",
+            "window_collect_list",
+            "window_collect_set",
         }:
             value_count = self._int_data(expression, "value_count", 1)
             values = expression.args[:value_count]
-            order_by = expression.args[value_count]
-            partition_by = list(expression.args[value_count + 1:])
+            order_by, partition_by = self._window_arguments(expression, value_count)
             call = function.removeprefix("window_")
-            function_name = "countDistinct" if call == "count_distinct" else call
             argument = self._render(values[0], aliases) if values else "F.lit(1)"
-            return f"F.{function_name}({argument}).over({self._window(order_by, partition_by, expression, aliases)})"
+            return f"F.{call}({argument}).over({self._window(order_by, partition_by, expression, aliases)})"
         if function in {"window_rolling_sum", "window_rolling_avg", "window_rolling_min", "window_rolling_max"}:
-            value, order_by, *partition_by = expression.args
+            [value] = expression.args[:1]
+            order_by, partition_by = self._window_arguments(expression, 1)
             call = function.removeprefix("window_rolling_")
             return (
                 f"F.{call}({self._render(value, aliases)})"
@@ -262,7 +266,7 @@ class RenderPySparkExpression:
 
     def _window(
         self,
-        order_by: PySparkExpressionRecipe,
+        order_by: list[PySparkExpressionRecipe],
         partition_by: list[PySparkExpressionRecipe],
         expression: PySparkExpressionRecipe,
         aliases: Mapping[str, str],
@@ -270,8 +274,7 @@ class RenderPySparkExpression:
         include_frame: bool = True,
     ) -> str:
         partitions = ", ".join(self._render(partition, aliases) for partition in partition_by)
-        order = self._render(order_by, aliases)
-        ordering = order if order_by.kind == "order" else f"{order}.{'desc' if expression.data.get('descending') else 'asc'}()"
+        ordering = ", ".join(self._window_order(order, expression, aliases) for order in order_by)
         window = f"Window.partitionBy({partitions}).orderBy({ordering})"
         if not include_frame:
             return window
@@ -281,6 +284,19 @@ class RenderPySparkExpression:
         if "preceding" in expression.data:
             return f"{window}.rowsBetween(-{expression.data['preceding']}, 0)"
         return window
+
+    def _window_arguments(
+        self, expression: PySparkExpressionRecipe, value_count: int
+    ) -> tuple[list[PySparkExpressionRecipe], list[PySparkExpressionRecipe]]:
+        order_count = self._int_data(expression, "order_count", 1)
+        orders = list(expression.args[value_count:value_count + order_count])
+        return orders, list(expression.args[value_count + order_count:])
+
+    def _window_order(
+        self, order: PySparkExpressionRecipe, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]
+    ) -> str:
+        rendered = self._render(order, aliases)
+        return rendered if order.kind == "order" else f"{rendered}.{'desc' if expression.data.get('descending') else 'asc'}()"
 
     def _lambda_name(self, expression: PySparkExpressionRecipe, fallback: str) -> str:
         return str(expression.data.get("name", fallback)) if expression.kind == "lambda_arg" else fallback

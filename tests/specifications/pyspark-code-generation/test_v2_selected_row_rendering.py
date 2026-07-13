@@ -56,6 +56,23 @@ class AdvancedRankedEvent(structure.Schema):
     framed_total = structure.field(structure.Long(), nullable=False)
 
 
+class MultiOrderedEvent(structure.Schema):
+    account_id = structure.field(structure.String(), nullable=False)
+    event_id = structure.field(structure.String(), nullable=False)
+    sequence = structure.field(structure.Long(), nullable=False)
+    rank = structure.field(structure.Long(), nullable=False)
+    running_total = structure.field(structure.Long(), nullable=False)
+
+
+class AggregateWindowEvent(structure.Schema):
+    account_id = structure.field(structure.String(), nullable=False)
+    accepted = structure.field(structure.Boolean(), nullable=True)
+    sequence_stddev = structure.field(structure.Double(), nullable=True)
+    sequence_variance = structure.field(structure.Double(), nullable=True)
+    sequences = structure.field(structure.Array(structure.Long(), contains_null=False), nullable=True)
+    distinct_sequences = structure.field(structure.Array(structure.Long(), contains_null=False), nullable=True)
+
+
 @structure.transform
 class LatestEventTransform(structure.Transform):
     events = structure.input(RawEvent)
@@ -135,6 +152,52 @@ class AdvancedRankedEventTransform(structure.Transform):
             cume_dist=structure.cume_dist(over=spec),
             bucket=structure.ntile(4, over=spec),
             framed_total=structure.window_sum(row.sequence, over=spec),
+        )
+
+
+@structure.transform
+class MultiOrderedEventTransform(structure.Transform):
+    events = structure.input(RawEvent)
+    ranked = structure.output(MultiOrderedEvent)
+
+    def rank_events(self, row: RawEvent) -> MultiOrderedEvent:
+        event = cast(Any, row)
+        spec = structure.window(
+            partition_by=row.account_id,
+            order_by=(event.sequence.asc_nulls_last(), event.event_id.desc_nulls_first()),
+            frame=structure.rows_between(structure.preceding(2), structure.current_row()),
+        )
+        return MultiOrderedEvent(
+            account_id=row.account_id,
+            event_id=row.event_id,
+            sequence=row.sequence,
+            rank=structure.rank(
+                partition_by=row.account_id,
+                order_by=(event.sequence.asc_nulls_last(), event.event_id.desc_nulls_first()),
+            ),
+            running_total=structure.window_sum(row.sequence, over=spec),
+        )
+
+
+@structure.transform
+class AggregateWindowEventTransform(structure.Transform):
+    events = structure.input(RawEvent)
+    aggregated = structure.output(AggregateWindowEvent)
+
+    def aggregate_events(self, row: RawEvent) -> AggregateWindowEvent:
+        event = cast(Any, row)
+        spec = structure.window(
+            partition_by=row.account_id,
+            order_by=row.sequence,
+            frame=structure.rows_between(structure.unbounded_preceding(), structure.current_row()),
+        )
+        return AggregateWindowEvent(
+            account_id=row.account_id,
+            accepted=structure.window_bool_and(event.sequence > 0, over=spec),
+            sequence_stddev=structure.window_stddev(row.sequence, over=spec),
+            sequence_variance=structure.window_variance(row.sequence, over=spec),
+            sequences=structure.window_collect_list(row.sequence, over=spec),
+            distinct_sequences=structure.window_collect_set(row.sequence, over=spec),
         )
 
 
@@ -305,6 +368,54 @@ def test_advanced_window_helpers_render_valid_function_frames() -> None:
         'F.sum(F.col("raw_event.sequence")).over(Window.partitionBy(F.col("raw_event.account_id")).'
         'orderBy(F.col("raw_event.sequence").asc_nulls_last()).rowsBetween(-3, Window.currentRow))'
     ) in text
+
+
+def test_window_helpers_render_multiple_explicitly_ordered_keys() -> None:
+    plan = PySpark.plan.lower()(compile_transform(MultiOrderedEventTransform))
+
+    text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
+
+    order = 'orderBy(F.col("raw_event.sequence").asc_nulls_last(), F.col("raw_event.event_id").desc_nulls_first())'
+    assert f"F.rank().over(Window.partitionBy(F.col(\"raw_event.account_id\")).{order})" in text
+    assert f"F.sum(F.col(\"raw_event.sequence\")).over(Window.partitionBy(F.col(\"raw_event.account_id\")).{order}.rowsBetween(-2, Window.currentRow))" in text
+
+
+def test_window_requires_at_least_one_order_key() -> None:
+    with pytest.raises(TypeError, match="window\\(\\.\\.\\.\\) requires at least one order_by expression"):
+        structure.window(partition_by=RawEvent.account_id, order_by=())
+
+
+def test_window_aggregate_helpers_render_over_an_explicit_frame() -> None:
+    plan = PySpark.plan.lower()(compile_transform(AggregateWindowEventTransform))
+
+    text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
+
+    window = (
+        'Window.partitionBy(F.col("raw_event.account_id")).orderBy(F.col("raw_event.sequence").asc()).'
+        'rowsBetween(Window.unboundedPreceding, Window.currentRow)'
+    )
+    assert f"F.bool_and((F.col(\"raw_event.sequence\") > F.lit(0))).over({window})" in text
+    assert f"F.stddev(F.col(\"raw_event.sequence\")).over({window})" in text
+    assert f"F.variance(F.col(\"raw_event.sequence\")).over({window})" in text
+    assert f"F.collect_list(F.col(\"raw_event.sequence\")).over({window})" in text
+    assert f"F.collect_set(F.col(\"raw_event.sequence\")).over({window})" in text
+
+
+def test_window_aggregate_helpers_reject_invalid_inputs_and_combinations() -> None:
+    spec = structure.window(partition_by=RawEvent.account_id, order_by=RawEvent.sequence)
+
+    with pytest.raises(TypeError, match="window_bool_and\\(\\.\\.\\.\\) requires a Boolean expression"):
+        structure.window_bool_and(RawEvent.sequence, over=spec)
+    with pytest.raises(TypeError, match="window_stddev\\(\\.\\.\\.\\) requires a numeric expression"):
+        structure.window_stddev(RawEvent.event_id, over=spec)
+    with pytest.raises(TypeError, match="does not permit distinct window aggregates"):
+        structure.window_count_distinct(RawEvent.sequence, over=spec)
+    with pytest.raises(TypeError, match="range_between\\(\\.\\.\\.\\) requires exactly one order_by expression"):
+        structure.window(
+            partition_by=RawEvent.account_id,
+            order_by=(RawEvent.sequence, RawEvent.event_id),
+            frame=structure.range_between(structure.preceding(1), structure.current_row()),
+        )
 
 
 def test_window_projection_helpers_add_window_import_to_generated_module() -> None:

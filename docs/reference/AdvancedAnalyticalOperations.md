@@ -194,7 +194,9 @@ customer_window = window(
 ```
 
 Window frames are explicit. Row frames count physical rows. Range frames use values in the ordering column and require
-a compatible order type.
+a compatible order type. `order_by` accepts one expression or an ordered list/tuple. Use `asc_nulls_first()`,
+`asc_nulls_last()`, `desc_nulls_first()`, or `desc_nulls_last()` when null placement must be deterministic. A range
+frame accepts exactly one order key.
 
 Frame helpers:
 
@@ -219,7 +221,13 @@ Supported reusable-window expressions:
 - `window_min(value, over=...)`;
 - `window_max(value, over=...)`;
 - `window_count(value=None, over=...)`;
-- `window_count_distinct(value, over=...)`.
+- `window_bool_and(value, over=...)` and `window_bool_or(value, over=...)`;
+- `window_stddev(value, over=...)` and `window_variance(value, over=...)`;
+- `window_collect_list(value, over=...)` and `window_collect_set(value, over=...)`.
+
+Aggregate window helpers require an explicit `rows_between(...)` or `range_between(...)` frame. Spark does not support
+distinct window aggregates, so use grouped `count_distinct(...)` for one summary row per group rather than a
+row-preserving window result.
 
 First-slice inline window helpers remain supported when a reusable `window(...)` object is not needed:
 

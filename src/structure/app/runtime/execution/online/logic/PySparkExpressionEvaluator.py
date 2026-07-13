@@ -266,7 +266,7 @@ class PySparkExpressionEvaluator:
                 self.evaluate(value, functions=functions, aliases=aliases, window=window)
             )
         if function in {"window_row_number", "window_rank", "window_dense_rank"}:
-            order_by, *partition_by = expression.args
+            order_by, partition_by = self._window_arguments(expression, 0)
             return getattr(functions, function.removeprefix("window_"))().over(
                 self._window(
                     order_by,
@@ -279,7 +279,7 @@ class PySparkExpressionEvaluator:
                 )
             )
         if function in {"window_percent_rank", "window_cume_dist"}:
-            order_by, *partition_by = expression.args
+            order_by, partition_by = self._window_arguments(expression, 0)
             return getattr(functions, function.removeprefix("window_"))().over(
                 self._window(
                     order_by,
@@ -292,7 +292,7 @@ class PySparkExpressionEvaluator:
                 )
             )
         if function == "window_ntile":
-            order_by, *partition_by = expression.args
+            order_by, partition_by = self._window_arguments(expression, 0)
             return functions.ntile(expression.data["buckets"]).over(
                 self._window(
                     order_by,
@@ -305,7 +305,8 @@ class PySparkExpressionEvaluator:
                 )
             )
         if function in {"window_lag", "window_lead"}:
-            value, order_by, *partition_by = expression.args
+            [value] = expression.args[:1]
+            order_by, partition_by = self._window_arguments(expression, 1)
             arguments = [
                 self.evaluate(value, functions=functions, aliases=aliases, window=window),
                 expression.data["offset"],
@@ -316,7 +317,8 @@ class PySparkExpressionEvaluator:
                 self._window(order_by, partition_by, expression, functions=functions, aliases=aliases, window=window)
             )
         if function in {"window_rolling_sum", "window_rolling_avg", "window_rolling_min", "window_rolling_max"}:
-            value, order_by, *partition_by = expression.args
+            [value] = expression.args[:1]
+            order_by, partition_by = self._window_arguments(expression, 1)
             column = self.evaluate(value, functions=functions, aliases=aliases, window=window)
             return getattr(functions, function.removeprefix("window_rolling_"))(column).over(
                 self._window(order_by, partition_by, expression, functions=functions, aliases=aliases, window=window)
@@ -324,8 +326,7 @@ class PySparkExpressionEvaluator:
         if function in {"window_first_value", "window_last_value", "window_nth_value"}:
             count = self._int_data(expression, "value_count", 1)
             values = expression.args[:count]
-            order_by = expression.args[count]
-            partition_by = list(expression.args[count + 1:])
+            order_by, partition_by = self._window_arguments(expression, count)
             arguments = [self.evaluate(values[0], functions=functions, aliases=aliases, window=window)]
             if function == "window_nth_value":
                 arguments.append(expression.data["n"])
@@ -340,19 +341,22 @@ class PySparkExpressionEvaluator:
             "window_min",
             "window_max",
             "window_count",
-            "window_count_distinct",
+            "window_bool_and",
+            "window_bool_or",
+            "window_stddev",
+            "window_variance",
+            "window_collect_list",
+            "window_collect_set",
         }:
             count = self._int_data(expression, "value_count", 1)
             values = expression.args[:count]
-            order_by = expression.args[count]
-            partition_by = list(expression.args[count + 1:])
-            name = "countDistinct" if function == "window_count_distinct" else function.removeprefix("window_")
+            order_by, partition_by = self._window_arguments(expression, count)
             argument = (
                 self.evaluate(values[0], functions=functions, aliases=aliases, window=window)
                 if values
                 else functions.lit(1)
             )
-            return getattr(functions, name)(argument).over(
+            return getattr(functions, function.removeprefix("window_"))(argument).over(
                 self._window(order_by, partition_by, expression, functions=functions, aliases=aliases, window=window)
             )
         raise TypeError(f"Unsupported PySpark reserved expression: {function}")
@@ -364,9 +368,8 @@ class PySparkExpressionEvaluator:
             self.evaluate(partition, functions=functions, aliases=aliases, window=window)
             for partition in partition_by
         ]
-        order = self.evaluate(order_by, functions=functions, aliases=aliases, window=window)
-        ordering = order if order_by.kind == "order" else (order.desc() if expression.data.get("descending") else order.asc())
-        spec = window.partitionBy(*partitions).orderBy(ordering)
+        ordering = [self._window_order(order, expression, functions=functions, aliases=aliases, window=window) for order in order_by]
+        spec = window.partitionBy(*partitions).orderBy(*ordering)
         if not include_frame:
             return spec
         if "frame_kind" in expression.data:
@@ -378,6 +381,15 @@ class PySparkExpressionEvaluator:
         if "preceding" in expression.data:
             return spec.rowsBetween(-int(expression.data["preceding"]), 0)
         return spec
+
+    def _window_arguments(self, expression, value_count):
+        order_count = self._int_data(expression, "order_count", 1)
+        orders = list(expression.args[value_count:value_count + order_count])
+        return orders, list(expression.args[value_count + order_count:])
+
+    def _window_order(self, order, expression, *, functions, aliases, window):
+        column = self.evaluate(order, functions=functions, aliases=aliases, window=window)
+        return column if order.kind == "order" else (column.desc() if expression.data.get("descending") else column.asc())
 
     def _window_bound(self, value, window):
         if value == "Window.currentRow":

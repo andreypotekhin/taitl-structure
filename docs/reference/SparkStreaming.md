@@ -1,8 +1,7 @@
 # Spark Streaming
 
-Structure supports Spark Structured Streaming transformations today: callers own the streaming source and sink, then
-pass streaming DataFrames into ordinary online or generated Structure transforms. Structure returns a DataFrame plan.
-v3 adds a separate Structure-owned streaming orchestration contract for generated sources, sinks, and lifecycle policy.
+Structure supports Spark Structured Streaming transformations: callers own the streaming source and sink, then pass
+streaming DataFrames into ordinary online or generated Structure transforms. Structure returns a DataFrame plan.
 
 See the exhaustive [streaming API table](../api/Streaming.api.md) for supported declarations, parity, and examples.
 
@@ -59,9 +58,9 @@ semantics independent of the selected execution mode.
 
 The caller-owned compatibility slice does not include:
 
-- generated `readStream` or `writeStream` code outside the v3 orchestration contract;
-- query start, stop, trigger, checkpoint, or output-mode ownership outside the v3 orchestration contract;
-- generated lifecycle, deployment, or recovery code outside the v3 orchestration contract;
+- generated `readStream` or `writeStream` code;
+- query start, stop, trigger, checkpoint, or output-mode ownership;
+- generated lifecycle, deployment, or recovery code;
 - arbitrary state APIs;
 - selected-row, ranking, lag/lead, and rolling-window helpers on streaming inputs;
 - outer and semi stream-stream joins;

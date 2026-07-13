@@ -1,0 +1,50 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "race_id",
+      "name": "race_id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "run_id",
+      "name": "run_id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "gate_number",
+      "name": "gate_number",
+      "nullable": false,
+      "primary_key": false,
+      "type": "integer"
+    },
+    {
+      "column": "passage_count",
+      "name": "passage_count",
+      "nullable": false,
+      "primary_key": false,
+      "type": "long"
+    },
+    {
+      "column": "fastest_millis",
+      "name": "fastest_millis",
+      "nullable": true,
+      "primary_key": false,
+      "type": "long"
+    },
+    {
+      "column": "slowest_millis",
+      "name": "slowest_millis",
+      "nullable": true,
+      "primary_key": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.streams.schemas.events",
+  "name": "GateProgress"
+}

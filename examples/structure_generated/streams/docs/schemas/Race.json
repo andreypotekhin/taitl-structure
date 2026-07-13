@@ -1,0 +1,57 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "primary_key": true,
+      "type": "string"
+    },
+    {
+      "column": "name",
+      "name": "name",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "date",
+      "name": "date",
+      "nullable": false,
+      "primary_key": false,
+      "type": "date"
+    },
+    {
+      "column": "river",
+      "name": "river",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "venue",
+      "name": "venue",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "city",
+      "name": "city",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "country",
+      "name": "country",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.streams.schemas.race",
+  "name": "Race"
+}

@@ -46,4 +46,4 @@ metrics over reusable window specs.
 
 ## Progress
 
-- [ ] Implement v3 window parity.
+- [x] Implement v3 window parity.

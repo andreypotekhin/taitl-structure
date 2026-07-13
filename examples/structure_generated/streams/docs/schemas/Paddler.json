@@ -1,0 +1,50 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "race_id",
+      "name": "race_id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "bib",
+      "name": "bib",
+      "nullable": false,
+      "primary_key": false,
+      "type": "integer"
+    },
+    {
+      "column": "name",
+      "name": "name",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "country",
+      "name": "country",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    },
+    {
+      "column": "division",
+      "name": "division",
+      "nullable": false,
+      "primary_key": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.streams.schemas.race",
+  "name": "Paddler"
+}

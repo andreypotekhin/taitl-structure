@@ -62,7 +62,7 @@ developer backlog.
 | Bitwise; struct mutation | future | `bitwise*`, `withField`, `dropFields` | Need typed projection design. |
 | Nearest as-of, reordering, extra stats | future | Advanced joins and analytics | Need admitted contracts. |
 | Array variants; generators | future | `slice`, `sort_array`, `explode` | Need a row-expansion contract. |
-| Window order; more aggregates | planned | Null/multi-key order, aggregate windows | Sprint 14. |
+| Window order; more aggregates | supported | Null/multi-key order and framed aggregate windows | Sprint 14. |
 | Collection basics | planned | Size, membership, construction, lookup, map concat | Scheduled for Sprint 15. |
 | Raw SQL, windows, UDFs, sinks | unsupported | `expr`, `WindowSpec`, `udf`, `foreachBatch` | Use APIs or hooks. |
 

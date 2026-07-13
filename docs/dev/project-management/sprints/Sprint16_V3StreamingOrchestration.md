@@ -1,57 +1,47 @@
-# Sprint 16: v3 Streaming Orchestration
+# Sprint 16: v3 Streaming Transformation Hardening
 
 ## Sprint Goal
 
-Move beyond caller-owned streaming DataFrames by adding Structure-owned streaming source, sink, and lifecycle policy
-contracts.
+Make admitted streaming transformations demonstrably usable while preserving caller ownership of Spark source, sink,
+and lifecycle policy.
 
 ## Product Outcome
 
-Developers can declare a streaming job in Structure, generate reviewable `readStream` and `writeStream` PySpark, and
-configure triggers, checkpoints, output modes, watermarks, and admitted state policies.
+Developers can use generated and online transforms over caller-created streaming DataFrames, see state and output-mode
+requirements in explain output, and validate the same behavior with live file-stream evidence.
 
 ## Scope
 
 ### In Scope
 
-- Streaming source declarations.
-- Streaming sink declarations.
-- Generated `readStream`.
-- Generated `writeStream`.
-- Trigger configuration.
-- Checkpoint configuration.
-- Output mode configuration.
-- Watermarks.
-- Admitted state policies.
-- Lifecycle diagnostics, docs, compatibility tables, explain, generated examples, and live streaming evidence.
+- Watermarked enrichment, dedupe, aggregation, and bounded stream-stream correlation evidence.
+- Caller-required output-mode and state-policy diagnostics.
+- Generated examples, documentation, compatibility tables, and live file-stream evidence.
 
 ### Out of Scope
 
+- All source, sink, trigger, checkpoint, query, deployment, and recovery ownership.
 - Custom side-effect sinks such as `foreachBatch` and `foreach`.
 - Arbitrary hook-managed streaming lifecycle.
-- Broad stream-stream joins unless bounded, watermarked semantics are specified in the ExecPlan first.
-- Hidden streaming lifecycle behavior in ordinary batch transforms.
+- Broad stream-stream joins unless bounded, watermarked semantics are specified first.
 
 ## ExecPlan
 
-`docs/dev/planning/P07072607.V3-streaming-orchestration.plan.md`
+`docs/dev/planning/P07122601.Streams-example-and-caller-owned-streaming.plan.md`
 
 ## Engineering Tasks
 
-1. Add lifecycle declaration model.
-2. Add generated source and sink rendering.
-3. Add trigger, checkpoint, output mode, watermark, and state policy validation.
-4. Add online lifecycle runner or query-builder decision and implementation.
-5. Add integration evidence and public docs.
+1. Add the streams example and generated contract.
+2. Add caller-owned file-stream integration evidence.
+3. Update streaming diagnostics, docs, compatibility tables, and project plans.
 
 ## Acceptance Criteria
 
-- A minimal declared streaming job generates reviewable `readStream` and `writeStream` PySpark.
-- Missing checkpoint, invalid output mode, missing watermark for stateful behavior, and unsupported custom sinks fail
-  with diagnostics.
+- The streams example demonstrates every admitted transformation shape without generating lifecycle code.
+- Missing watermarks and invalid stream-stream bounds fail with diagnostics; required output modes are reported.
 - Existing caller-owned streaming compatibility behavior remains valid.
 - Default `make build` passes, and opt-in streaming integration evidence is recorded.
 
 ## Progress
 
-- [ ] Implement v3 streaming orchestration.
+- [ ] Implement streaming transformation hardening.

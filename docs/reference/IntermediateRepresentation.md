@@ -1177,21 +1177,10 @@ capabilities. It must not hash absolute workspace paths or wall-clock times.
 
 ## v3 Extensions
 
-Planned v3 IR variants:
-
-- `ReadStream`;
-- `WriteStream`;
-- `Watermark`;
-- `Trigger`;
-- `Checkpoint`;
-- `StreamingStatePolicy`.
-
-Rules:
-
-- v3 streaming lifecycle IR must distinguish transform semantics from query orchestration.
-- Checkpoints, triggers, watermarks, output modes, and state policies require explicit user-facing semantics before
-  they enter IR.
-- Runtime telemetry remains separate from compiler traceability unless a future reference merges them deliberately.
+v3 does not add lifecycle IR. `ReadStream`, `WriteStream`, triggers, checkpoints, output-mode application, and query
+control remain caller-owned. Streaming IR additions are limited to compiler-visible transformation semantics with
+explicit state, late-data, diagnostics, and backend-capability contracts. Runtime telemetry remains separate from
+compiler traceability unless a future reference merges them deliberately.
 
 ## v4 Extensions
 

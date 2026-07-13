@@ -11,6 +11,10 @@ services:
     ports:
       - "${SPARK35_MASTER_PORT}:7077"
       - "${SPARK35_MASTER_UI_PORT}:8080"
+    volumes:
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
+        target: /workspace/.pytest-workspace-tmp/integration
 
   spark35-worker:
     image: structure-integration-pyspark35
@@ -25,6 +29,10 @@ services:
       - spark35-master
     ports:
       - "${SPARK35_WORKER_UI_PORT}:8081"
+    volumes:
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
+        target: /workspace/.pytest-workspace-tmp/integration
 
   spark40-master:
     image: structure-integration-pyspark40
@@ -38,6 +46,10 @@ services:
     ports:
       - "${SPARK40_MASTER_PORT}:7077"
       - "${SPARK40_MASTER_UI_PORT}:8080"
+    volumes:
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
+        target: /workspace/.pytest-workspace-tmp/integration
 
   spark40-worker:
     image: structure-integration-pyspark40
@@ -52,6 +64,10 @@ services:
       - spark40-master
     ports:
       - "${SPARK40_WORKER_UI_PORT}:8081"
+    volumes:
+      - type: bind
+        source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
+        target: /workspace/.pytest-workspace-tmp/integration
 
   structure-integration-pyspark35:
     image: structure-integration-pyspark35

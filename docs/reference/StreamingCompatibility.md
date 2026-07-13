@@ -5,11 +5,11 @@ Structured Streaming jobs. A generated transform is streaming-compatible when a 
 the current pipeline input and Spark can analyze the resulting DataFrame plan without Structure adding unsupported
 streaming operations, actions, stateful streaming features, or streaming lifecycle code.
 
-The streaming-compatible contract keeps lifecycle ownership with the caller until v3 streaming orchestration. Row-local
+The streaming-compatible contract keeps lifecycle ownership with the caller. Row-local
 projection, row-local filtering, schema-only validation, stream-static joins, transform-scoped watermarks, watermarked
 grouped aggregations, watermarked dedupe, and bounded inner stream-stream joins are in scope. Triggers, checkpoints,
 streaming sources, streaming sinks, query start, query stop, deployment, and recovery are outside this compatibility
-contract and scheduled into the v3 lifecycle contract.
+contract and remain caller-owned.
 
 See the exhaustive [streaming API table](../api/Streaming.api.md) for supported declarations, parity, and examples.
 
@@ -28,7 +28,7 @@ Streaming compatibility means all of these are true:
 
 Streaming compatibility does not mean Structure starts a streaming query. Structure checks the transformation contract
 at compile time, reports required output modes where relevant, and leaves query lifecycle choices to the caller-owned
-shape until the v3 orchestration contract is used.
+shape.
 
 ## Runtime Shape
 
