@@ -35,75 +35,73 @@ from structure.app.target.pyspark.model.PySparkWatermarkRecipe import PySparkWat
 
 
 class RawOrder(Schema):
-    id = field(String(), nullable=False)
-    status = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    status = field.string(nullable=True)
 
 
 class PublishedOrder(Schema):
-    id = field(String(), nullable=False)
-    status = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    status = field.string(nullable=True)
 
 
 class Address(Schema):
-    city = field(String(), nullable=False)
-    postal_code = field(String(), nullable=False)
+    city = field.string(nullable=False)
+    postal_code = field.string(nullable=False)
 
 
 class RawShippedOrder(Schema):
-    id = field(String(), nullable=False)
-    shipping = field(Struct(Address), nullable=True)
+    id = field.string(nullable=False)
+    shipping = field.struct(Address, nullable=True)
 
 
 class PublishedShippedOrder(Schema):
-    id = field(String(), nullable=False)
-    shipping = field(Struct(Address), nullable=False)
+    id = field.string(nullable=False)
+    shipping = field.struct(Address, nullable=False)
 
 
 class Customer(Schema):
-    id = field(String(), nullable=False)
-    segment = field(String(), nullable=True)
-    valid_from = field(String(), nullable=False)
-    valid_to = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    segment = field.string(nullable=True)
+    valid_from = field.string(nullable=False)
+    valid_to = field.string(nullable=True)
 
 
 class PublishedOrderId(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 class PublishedOrderStatus(Schema):
-    status = field(String(), nullable=True)
+    status = field.string(nullable=True)
 
 
 class RawMetric(Schema):
-    customer_id = field(String(), nullable=False)
-    quantity = field(Long(), nullable=False)
+    customer_id = field.string(nullable=False)
+    quantity = field.long(nullable=False)
 
 
 class RawTagBatch(Schema):
-    tags = field(Array(String(), contains_null=False), nullable=True)
+    tags = field.array(field.string(), contains_null=False, nullable=True)
 
 
 class RawMapBatch(Schema):
-    attributes = field(
-        Map(String(), String(), value_contains_null=True), nullable=True
-    )
+    attributes = field.map(field.string(), field.string(), value_contains_null=True, nullable=True)
 
 
 class CustomerMetric(Schema):
-    customer_id = field(String(), nullable=False)
-    order_count = field(Long(), nullable=False)
-    distinct_customers = field(Long(), nullable=False)
-    quantity = field(Long(), nullable=False)
-    min_quantity = field(Long(), nullable=False)
-    max_quantity = field(Long(), nullable=False)
-    avg_quantity = field(Double(), nullable=False)
+    customer_id = field.string(nullable=False)
+    order_count = field.long(nullable=False)
+    distinct_customers = field.long(nullable=False)
+    quantity = field.long(nullable=False)
+    min_quantity = field.long(nullable=False)
+    max_quantity = field.long(nullable=False)
+    avg_quantity = field.double(nullable=False)
 
 
 class GroupingSetMetric(Schema):
-    customer_id = field(String(), nullable=True)
-    order_count = field(Long(), nullable=False)
-    grouping_id = field(Integer(), nullable=False)
-    customer_grouped = field(Boolean(), nullable=False)
+    customer_id = field.string(nullable=True)
+    order_count = field.long(nullable=False)
+    grouping_id = field.integer(nullable=False)
+    customer_grouped = field.boolean(nullable=False)
 
 
 class PermissivePublishedOrder(PublishedOrder):
@@ -242,7 +240,7 @@ def test_online_expression_evaluator_builds_nested_struct_columns() -> None:
     functions = FakeFunctions("functions")
     expression = PySparkExpressionRecipe(
         kind="struct",
-        type=Struct(Address),
+        type=types.struct(Address),
         nullable=False,
         data={"fields": tuple(Address._structure_fields.values())},
         args=(
@@ -2207,7 +2205,7 @@ def _is_null(expression: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
 
 
 def _is_nan(expression: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("is_nan", Boolean(), False, {}, (expression,))
+    return PySparkExpressionRecipe("is_nan", types.boolean(), False, {}, (expression,))
 
 
 def _not(expression: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
@@ -2219,27 +2217,27 @@ def _binary(kind: str, left: PySparkExpressionRecipe, right: PySparkExpressionRe
 
 
 def _isin(value: PySparkExpressionRecipe, *items: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("isin", Boolean(), True, {}, (value, *items))
+    return PySparkExpressionRecipe("isin", types.boolean(), True, {}, (value, *items))
 
 
 def _string_predicate(kind: str, value: PySparkExpressionRecipe, pattern: str) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe(kind, Boolean(), value.nullable, {"pattern": pattern}, (value,))
+    return PySparkExpressionRecipe(kind, types.boolean(), value.nullable, {"pattern": pattern}, (value,))
 
 
 def _item(collection: PySparkExpressionRecipe, key: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("item", String(), True, {}, (collection, key))
+    return PySparkExpressionRecipe("item", types.string(), True, {}, (collection, key))
 
 
 def _get_field(parent: PySparkExpressionRecipe, field: str) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("get_field", String(), parent.nullable, {"field": field}, (parent,))
+    return PySparkExpressionRecipe("get_field", types.string(), parent.nullable, {"field": field}, (parent,))
 
 
 def _cast(value: PySparkExpressionRecipe, spark_type: str) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("cast", Integer(), value.nullable, {"spark_type": spark_type}, (value,))
+    return PySparkExpressionRecipe("cast", types.integer(), value.nullable, {"spark_type": spark_type}, (value,))
 
 
 def _try_cast(value: PySparkExpressionRecipe, spark_type: str) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("try_cast", Integer(), True, {"spark_type": spark_type}, (value,))
+    return PySparkExpressionRecipe("try_cast", types.integer(), True, {"spark_type": spark_type}, (value,))
 
 
 def _order(value: PySparkExpressionRecipe, direction: str) -> PySparkExpressionRecipe:
@@ -2265,7 +2263,7 @@ def _event_time_between(
 ) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe(
         kind="event_time_between",
-        type=Boolean(),
+        type=types.boolean(),
         nullable=False,
         data={"lower": lower, "upper": upper},
         args=(left, right),
@@ -2273,15 +2271,15 @@ def _event_time_between(
 
 
 def _lambda_item() -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("lambda_arg", String(), False, {"name": "item"})
+    return PySparkExpressionRecipe("lambda_arg", types.string(), False, {"name": "item"})
 
 
 def _lambda_key() -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("lambda_arg", String(), False, {"name": "key"})
+    return PySparkExpressionRecipe("lambda_arg", types.string(), False, {"name": "key"})
 
 
 def _lambda_value() -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("lambda_arg", String(), True, {"name": "value"})
+    return PySparkExpressionRecipe("lambda_arg", types.string(), True, {"name": "value"})
 
 
 def _array_transform(array: PySparkExpressionRecipe, body: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
@@ -2297,13 +2295,13 @@ def _array_filter(array: PySparkExpressionRecipe, body: PySparkExpressionRecipe)
 
 
 def _array_aggregate_with_finish(array: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
-    accumulator = PySparkExpressionRecipe("lambda_arg", Integer(), False, {"name": "acc"})
-    item = PySparkExpressionRecipe("lambda_arg", String(), False, {"name": "item"})
+    accumulator = PySparkExpressionRecipe("lambda_arg", types.integer(), False, {"name": "acc"})
+    item = PySparkExpressionRecipe("lambda_arg", types.string(), False, {"name": "item"})
     merged = _binary("add", accumulator, item)
     finished = _call("abs", accumulator)
     return PySparkExpressionRecipe(
         "transform_expression",
-        Integer(),
+        types.integer(),
         False,
         {"function": "array_aggregate"},
         (array, _literal(0), accumulator, item, merged, finished),
@@ -2311,8 +2309,8 @@ def _array_aggregate_with_finish(array: PySparkExpressionRecipe) -> PySparkExpre
 
 
 def _array_sort_by(array: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
-    left = PySparkExpressionRecipe("lambda_arg", String(), True, {"name": "left"})
-    right = PySparkExpressionRecipe("lambda_arg", String(), True, {"name": "right"})
+    left = PySparkExpressionRecipe("lambda_arg", types.string(), True, {"name": "left"})
+    right = PySparkExpressionRecipe("lambda_arg", types.string(), True, {"name": "right"})
     return PySparkExpressionRecipe(
         "transform_expression",
         array.type,
@@ -2363,7 +2361,7 @@ def _window(
         data["preceding"] = preceding
     return PySparkExpressionRecipe(
         "transform_expression",
-        value.type if value is not None else Long(),
+        value.type if value is not None else types.long(),
         value.nullable if value is not None else False,
         data,
         args,

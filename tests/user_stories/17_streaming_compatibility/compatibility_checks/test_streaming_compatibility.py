@@ -7,11 +7,11 @@ from structure.app.target.pyspark.api import PySpark
 
 
 class StreamRaw(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 class StreamClean(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 @transform(streaming_compatible=True)

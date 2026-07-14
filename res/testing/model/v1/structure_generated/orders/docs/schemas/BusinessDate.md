@@ -4,6 +4,6 @@
 
 Module: `testing.model.v1.orders.schemas.common`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `order_date` | `order_date` | `date` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `order_date` | `order_date` | `date` | yes |

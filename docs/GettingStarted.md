@@ -53,28 +53,29 @@ artifacts. Generated modules mirror source import paths under `structure_generat
 ```python
 # src/orders/schemas/order.py
 
-from structure import *
+from structure import Schema
+from structure.field import *
 
 
 class OrderRaw(Schema):
-    id = field(String(), nullable=False)
-    customer_id = field(String(), nullable=False)
-    product_id = field(String(), nullable=False)
-    promotion_code = field(String(), nullable=True, alias="promo-code")
-    total = field(String(), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    product_id = string(nullable=False)
+    promotion_code = string(alias="promo-code")
+    total = string()
 
 
 class OrderNormalized(Schema):
-    id = field(String(), nullable=False)
-    customer_id = field(String(), nullable=False)
-    product_id = field(String(), nullable=False)
-    promotion_code = field(String(), nullable=True)
-    total = field(Decimal(12, 2), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    product_id = string(nullable=False)
+    promotion_code = string()
+    total = decimal(12, 2)
 
 
 class OrderWithCustomer(OrderNormalized):
-    customer_name = field(String(), nullable=True)
-    customer_tier = field(String(), nullable=True)
+    customer_name = string()
+    customer_tier = string()
 ```
 
 `alias=` names the Spark DataFrame column when it differs from the Python field name. In this example,
@@ -84,13 +85,14 @@ aliases are schema-local unless inherited.
 ```python
 # src/orders/schemas/customer.py
 
-from structure import *
+from structure import Schema
+from structure.field import *
 
 
 class Customer(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=True)
-    tier = field(String(), nullable=True)
+    id = string(nullable=False)
+    name = string()
+    tier = string()
 ```
 
 ## 4. Define a Transform

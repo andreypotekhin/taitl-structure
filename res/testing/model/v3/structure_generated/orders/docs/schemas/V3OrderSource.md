@@ -4,13 +4,13 @@
 
 Module: `testing.model.v3.orders.schemas.v3`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `id` | `id` | `string` | no | no |
-| `name` | `name` | `string` | yes | no |
-| `raw_quantity` | `raw_quantity` | `string` | yes | no |
-| `amount` | `amount` | `decimal(11,2)` | yes | no |
-| `score` | `score` | `double` | yes | no |
-| `booked_on` | `booked_on` | `date` | yes | no |
-| `recorded_at` | `recorded_at` | `timestamp` | yes | no |
-| `details` | `details` | `V3OrderDetails` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `id` | `id` | `string` | no |
+| `name` | `name` | `string` | yes |
+| `raw_quantity` | `raw_quantity` | `string` | yes |
+| `amount` | `amount` | `decimal(11,2)` | yes |
+| `score` | `score` | `double` | yes |
+| `booked_on` | `booked_on` | `date` | yes |
+| `recorded_at` | `recorded_at` | `timestamp` | yes |
+| `details` | `details` | `V3OrderDetails` | yes |

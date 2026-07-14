@@ -27,20 +27,21 @@ consumers receive.
 
 ```python
 from structure import *
+from structure.field import long, string
 
 
 class AccountEvent(Schema):
-    account_id = field(String(), nullable=False)
-    event_id = field(String(), nullable=False)
-    sequence = field(Long(), nullable=False)
-    status = field(String(), nullable=False)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    sequence = long(nullable=False)
+    status = string(nullable=False)
 
 
 class CurrentAccountEvent(Schema):
-    account_id = field(String(), nullable=False)
-    event_id = field(String(), nullable=False)
-    sequence = field(Long(), nullable=False)
-    status = field(String(), nullable=False)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    sequence = long(nullable=False)
+    status = string(nullable=False)
 ```
 
 ## Select The Current Row

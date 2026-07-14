@@ -8,27 +8,27 @@ from structure.app.target.pyspark.api import PySpark
 
 
 class Raw(Schema):
-    id = field(String(), nullable=False)
-    customer_id = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    customer_id = field.string(nullable=True)
 
 
 class Normalized(Schema):
-    id = field(String(), nullable=False)
-    customer_id = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    customer_id = field.string(nullable=True)
 
 
 class Accepted(Schema):
-    id = field(String(), nullable=False)
-    status = field(String(), nullable=False)
+    id = field.string(nullable=False)
+    status = field.string(nullable=False)
 
 
 class Rejected(Schema):
-    id = field(String(), nullable=False)
-    reason = field(String(), nullable=False)
+    id = field.string(nullable=False)
+    reason = field.string(nullable=False)
 
 
 class Published(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 def test_v1_multi_output_methods_write_source_order_lanes() -> None:

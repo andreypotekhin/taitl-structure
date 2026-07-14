@@ -5,35 +5,30 @@
       "column": "race_id",
       "name": "race_id",
       "nullable": false,
-      "primary_key": false,
       "type": "string"
     },
     {
       "column": "run_id",
       "name": "run_id",
       "nullable": false,
-      "primary_key": false,
       "type": "string"
     },
     {
       "column": "paddler_id",
       "name": "paddler_id",
       "nullable": false,
-      "primary_key": false,
       "type": "string"
     },
     {
       "column": "rank",
       "name": "rank",
       "nullable": false,
-      "primary_key": false,
       "type": "integer"
     },
     {
       "column": "adjusted_millis",
       "name": "adjusted_millis",
       "nullable": false,
-      "primary_key": false,
       "type": "long"
     }
   ],

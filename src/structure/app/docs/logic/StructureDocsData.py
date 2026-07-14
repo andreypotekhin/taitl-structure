@@ -42,7 +42,6 @@ class StructureDocsData:
             "column": field.column,
             "type": self.type(field.type),
             "nullable": field.nullable,
-            "primary_key": field.primary_key,
         }
         if field.description:
             data["description"] = field.description

@@ -4,12 +4,12 @@
 
 Module: `examples.orders.schemas.adv_analytics`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant_id` | `tenant_id` | `string` | yes | no |
-| `product_category` | `product_category` | `string` | yes | no |
-| `customer_tier` | `customer_tier` | `string` | yes | no |
-| `grouping_id` | `grouping_id` | `integer` | no | no |
-| `order_count` | `order_count` | `long` | no | no |
-| `distinct_customers` | `distinct_customers` | `long` | no | no |
-| `gross_total` | `gross_total` | `decimal(12,2)` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant_id` | `tenant_id` | `string` | yes |
+| `product_category` | `product_category` | `string` | yes |
+| `customer_tier` | `customer_tier` | `string` | yes |
+| `grouping_id` | `grouping_id` | `integer` | no |
+| `order_count` | `order_count` | `long` | no |
+| `distinct_customers` | `distinct_customers` | `long` | no |
+| `gross_total` | `gross_total` | `decimal(12,2)` | no |

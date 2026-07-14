@@ -14,22 +14,23 @@ the final schema as an ordered structural contract and keeps inheritance details
 ## Canonical Form
 
 ```python
-from structure import Schema, field, String, Timestamp, Decimal
+from structure import Schema
+from structure.field import *
 
 
 class EntityKeys(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    tenant_id = field(String(), nullable=False)
+    id = string(nullable=False)
+    tenant_id = string(nullable=False)
 
 
 class AuditFields(Schema):
-    created_at = field(Timestamp(), nullable=False)
-    updated_at = field(Timestamp(), nullable=True)
+    created_at = timestamp(nullable=False)
+    updated_at = timestamp(nullable=True)
 
 
 class Order(EntityKeys, AuditFields):
-    customer_id = field(String(), nullable=False)
-    total = field(Decimal(12, 2), nullable=True)
+    customer_id = string(nullable=False)
+    total = decimal(12, 2, nullable=True)
 ```
 
 Effective field order for `Order` is:
@@ -57,19 +58,19 @@ Examples:
 
 ```python
 class Customer(EntityKeys):
-    name = field(String(), nullable=True)
+    name = string(nullable=True)
 ```
 
 ```python
 class Order(EntityKeys, AuditFields):
-    total = field(Decimal(12, 2), nullable=True)
+    total = decimal(12, 2, nullable=True)
 ```
 
 Non-schema mixins are not supported in v1:
 
 ```python
 class Order(EntityKeys, SomePlainMixin):  # rejected
-    total = field(Decimal(12, 2), nullable=True)
+    total = decimal(12, 2, nullable=True)
 ```
 
 ## Field Collection Algorithm
@@ -95,11 +96,11 @@ A schema class may override an inherited field by redeclaring the same field nam
 
 ```python
 class SoftDeleteFields(Schema):
-    deleted_at = field(Timestamp(), nullable=True)
+    deleted_at = timestamp(nullable=True)
 
 
 class RequiredDeleteMarker(SoftDeleteFields):
-    deleted_at = field(Timestamp(), nullable=False)
+    deleted_at = timestamp(nullable=False)
 ```
 
 Override rules:
@@ -124,23 +125,23 @@ Rejected:
 
 ```python
 class SourceKeys(Schema):
-    id = field(String(), nullable=False)
+    id = string(nullable=False)
 
 
 class BusinessKeys(Schema):
-    id = field(String(), nullable=False, primary_key=True)
+    id = string(nullable=False)
 
 
 class Order(SourceKeys, BusinessKeys):
-    total = field(Decimal(12, 2), nullable=True)
+    total = decimal(12, 2, nullable=True)
 ```
 
 Accepted:
 
 ```python
 class Order(SourceKeys, BusinessKeys):
-    id = field(String(), nullable=False, primary_key=True)
-    total = field(Decimal(12, 2), nullable=True)
+    id = string(nullable=False)
+    total = decimal(12, 2, nullable=True)
 ```
 
 The resolved field keeps the first inherited position. In the accepted example, `id` remains before `total`.
@@ -149,19 +150,19 @@ Diamond inheritance through a shared base is not a duplicate:
 
 ```python
 class Keys(Schema):
-    id = field(String(), nullable=False)
+    id = string(nullable=False)
 
 
 class CustomerKeys(Keys):
-    customer_id = field(String(), nullable=False)
+    customer_id = string(nullable=False)
 
 
 class ProductKeys(Keys):
-    product_id = field(String(), nullable=False)
+    product_id = string(nullable=False)
 
 
 class CustomerProduct(CustomerKeys, ProductKeys):
-    score = field(Decimal(8, 4), nullable=True)
+    score = decimal(8, 4, nullable=True)
 ```
 
 `id` is collected once because `Keys` is a shared ancestor.
@@ -228,19 +229,19 @@ visible at the construction site.
 
 ## Nested Structs
 
-`Struct(SchemaClass)` uses the effective inherited field set of `SchemaClass`.
+`struct(SchemaClass)` uses the effective inherited field set of `SchemaClass`.
 
 ```python
 class AddressBase(Schema):
-    city = field(String(), nullable=True)
+    city = string(nullable=True)
 
 
 class ShippingAddress(AddressBase):
-    postal_code = field(String(), nullable=True)
+    postal_code = string(nullable=True)
 
 
 class Order(Schema):
-    shipping = field(Struct(ShippingAddress), nullable=True)
+    shipping = struct(ShippingAddress, nullable=True)
 ```
 
 Generated Spark schema for `shipping` includes both `city` and `postal_code`.
@@ -263,7 +264,7 @@ Ambiguous inherited field:
 
 Resolve the field in Order:
   class Order(SourceKeys, BusinessKeys):
-      id = field(String(), nullable=False, primary_key=True)
+      id = string(nullable=False)
 
 See docs/dev/specifications/SchemaInheritance.md
 ```

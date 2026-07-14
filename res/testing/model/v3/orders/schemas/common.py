@@ -1,24 +1,25 @@
-from structure import *
+from structure import Schema
+from structure.field import *
 
 
 class TenantKey(Schema):
-    tenant_id = field(String(), nullable=False, primary_key=True)
+    tenant_id = string(nullable=False)
 
 
 class AuditStamp(Schema):
-    source_system = field(String(), nullable=False)
-    ingested_at = field(Timestamp(), nullable=False)
+    source_system = string(nullable=False)
+    ingested_at = timestamp(nullable=False)
 
 
 class Address(Schema):
-    line1 = field(String(), nullable=False)
-    line2 = field(String(), nullable=True)
-    city = field(String(), nullable=False)
-    state = field(String(), nullable=True)
-    postal_code = field(String(), nullable=False)
-    country = field(String(), nullable=False)
+    line1 = string(nullable=False)
+    line2 = string(nullable=True)
+    city = string(nullable=False)
+    state = string(nullable=True)
+    postal_code = string(nullable=False)
+    country = string(nullable=False)
 
 
 class BusinessDate(Schema):
-    order_date = field(Date(), nullable=True)
+    order_date = date(nullable=True)
 

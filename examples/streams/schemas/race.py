@@ -1,35 +1,36 @@
-from structure import Date, Integer, Long, Schema, String, field
+from structure import Schema
+from structure.field import *
 
 
 class Race(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=False)
-    date = field(Date(), nullable=False)
-    river = field(String(), nullable=False)
-    venue = field(String(), nullable=False)
-    city = field(String(), nullable=False)
-    country = field(String(), nullable=False)
+    id = string(nullable=False)
+    name = string(nullable=False)
+    date = date(nullable=False)
+    river = string(nullable=False)
+    venue = string(nullable=False)
+    city = string(nullable=False)
+    country = string(nullable=False)
 
 
 class Gate(Schema):
-    race_id = field(String(), nullable=False)
-    number = field(Integer(), nullable=False)
-    direction = field(String(), nullable=False)
-    sector = field(String(), nullable=False)
+    race_id = string(nullable=False)
+    number = integer(nullable=False)
+    direction = string(nullable=False)
+    sector = string(nullable=False)
 
 
 class Paddler(Schema):
-    race_id = field(String(), nullable=False)
-    id = field(String(), nullable=False)
-    bib = field(Integer(), nullable=False)
-    name = field(String(), nullable=False)
-    country = field(String(), nullable=False)
-    division = field(String(), nullable=False)
+    race_id = string(nullable=False)
+    id = string(nullable=False)
+    bib = integer(nullable=False)
+    name = string(nullable=False)
+    country = string(nullable=False)
+    division = string(nullable=False)
 
 
 class RaceWinner(Schema):
-    race_id = field(String(), nullable=False)
-    run_id = field(String(), nullable=False)
-    paddler_id = field(String(), nullable=False)
-    rank = field(Integer(), nullable=False)
-    adjusted_millis = field(Long(), nullable=False)
+    race_id = string(nullable=False)
+    run_id = string(nullable=False)
+    paddler_id = string(nullable=False)
+    rank = integer(nullable=False)
+    adjusted_millis = long(nullable=False)

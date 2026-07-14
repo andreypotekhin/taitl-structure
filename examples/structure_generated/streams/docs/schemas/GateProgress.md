@@ -4,11 +4,11 @@
 
 Module: `examples.streams.schemas.events`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `race_id` | `race_id` | `string` | no | no |
-| `run_id` | `run_id` | `string` | no | no |
-| `gate_number` | `gate_number` | `integer` | no | no |
-| `passage_count` | `passage_count` | `long` | no | no |
-| `fastest_millis` | `fastest_millis` | `long` | yes | no |
-| `slowest_millis` | `slowest_millis` | `long` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `race_id` | `race_id` | `string` | no |
+| `run_id` | `run_id` | `string` | no |
+| `gate_number` | `gate_number` | `integer` | no |
+| `passage_count` | `passage_count` | `long` | no |
+| `fastest_millis` | `fastest_millis` | `long` | yes |
+| `slowest_millis` | `slowest_millis` | `long` | yes |

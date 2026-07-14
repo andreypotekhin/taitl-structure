@@ -4,12 +4,12 @@
 
 Module: `testing.model.v3.orders.schemas.adv_analytics`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `id` | `id` | `string` | no | no |
-| `tags` | `tags` | `array<string!>` | yes | no |
-| `extra_tags` | `extra_tags` | `array<string!>` | yes | no |
-| `nested_tags` | `nested_tags` | `array<array<string!>!>` | yes | no |
-| `scores` | `scores` | `array<integer!>` | yes | no |
-| `attributes` | `attributes` | `map<string,string?>` | yes | no |
-| `extra_attributes` | `extra_attributes` | `map<string,string?>` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `id` | `id` | `string` | no |
+| `tags` | `tags` | `array<string!>` | yes |
+| `extra_tags` | `extra_tags` | `array<string!>` | yes |
+| `nested_tags` | `nested_tags` | `array<array<string!>!>` | yes |
+| `scores` | `scores` | `array<integer!>` | yes |
+| `attributes` | `attributes` | `map<string,string?>` | yes |
+| `extra_attributes` | `extra_attributes` | `map<string,string?>` | yes |

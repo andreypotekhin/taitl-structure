@@ -15,7 +15,7 @@ The v1 implementation must follow these decisions:
 
 - ordinary Python source roots are the input roots;
 - generated code lives below a distinct generated namespace;
-- schema declarations use explicit immutable type objects;
+- schema declarations use immutable `structure.field` factories;
 - compiler commands do not import PySpark or require Spark, Java, a SparkSession, or a cluster;
 - execution is the default runtime mode;
 - generated PySpark remains an optional, committed, reviewable artifact;
@@ -127,12 +127,12 @@ The canonical schema form is:
 
 ```python
 class OrderRaw(Schema):
-    id = field(String(), nullable=False)
-    total = field(Decimal(12, 2), nullable=True)
+    id = string(nullable=False)
+    total = decimal(12, 2)
 ```
 
-Lowercase sentinels such as `string` are not canonical. Annotation-only, dataclass, Pydantic, and Spark-string type
-syntax are outside v1 unless a later compatibility layer is explicitly specified.
+Dedicated schema modules import factories with `from structure.field import *`; mixed modules use `field.string()` and
+related namespaced factories. Annotation-only, dataclass, Pydantic, and Spark-string type syntax are outside v1.
 
 ### Spark-Free Compiler
 

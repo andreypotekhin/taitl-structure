@@ -12,7 +12,6 @@ class FieldDefinition:
     name: str
     type: StructureType
     nullable: bool = True
-    primary_key: bool = False
     alias: str | None = None
     metadata: Mapping[str, object] = dataclass_field(default_factory=dict)
     description: str | None = None

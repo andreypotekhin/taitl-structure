@@ -4,26 +4,26 @@
 
 Module: `examples.streams.schemas.events`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `id` | `id` | `string` | no | yes |
-| `race_id` | `race_id` | `string` | no | no |
-| `run_id` | `run_id` | `string` | no | no |
-| `paddler_id` | `paddler_id` | `string` | no | no |
-| `gate_number` | `gate_number` | `integer` | no | no |
-| `at` | `at` | `timestamp` | no | no |
-| `sequence` | `sequence` | `long` | no | no |
-| `elapsed_millis` | `elapsed_millis` | `long` | no | no |
-| `source` | `source` | `string` | no | no |
-| `race_name` | `race_name` | `string` | yes | no |
-| `race_date` | `race_date` | `date` | yes | no |
-| `river` | `river` | `string` | yes | no |
-| `venue` | `venue` | `string` | yes | no |
-| `city` | `city` | `string` | yes | no |
-| `race_country` | `race_country` | `string` | yes | no |
-| `paddler_name` | `paddler_name` | `string` | yes | no |
-| `bib` | `bib` | `integer` | yes | no |
-| `division` | `division` | `string` | yes | no |
-| `paddler_country` | `paddler_country` | `string` | yes | no |
-| `gate_direction` | `gate_direction` | `string` | yes | no |
-| `sector` | `sector` | `string` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `id` | `id` | `string` | no |
+| `race_id` | `race_id` | `string` | no |
+| `run_id` | `run_id` | `string` | no |
+| `paddler_id` | `paddler_id` | `string` | no |
+| `gate_number` | `gate_number` | `integer` | no |
+| `at` | `at` | `timestamp` | no |
+| `sequence` | `sequence` | `long` | no |
+| `elapsed_millis` | `elapsed_millis` | `long` | no |
+| `source` | `source` | `string` | no |
+| `race_name` | `race_name` | `string` | yes |
+| `race_date` | `race_date` | `date` | yes |
+| `river` | `river` | `string` | yes |
+| `venue` | `venue` | `string` | yes |
+| `city` | `city` | `string` | yes |
+| `race_country` | `race_country` | `string` | yes |
+| `paddler_name` | `paddler_name` | `string` | yes |
+| `bib` | `bib` | `integer` | yes |
+| `division` | `division` | `string` | yes |
+| `paddler_country` | `paddler_country` | `string` | yes |
+| `gate_direction` | `gate_direction` | `string` | yes |
+| `sector` | `sector` | `string` | yes |

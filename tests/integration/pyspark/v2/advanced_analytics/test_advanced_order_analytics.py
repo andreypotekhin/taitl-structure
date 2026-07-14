@@ -72,13 +72,13 @@ def test_online_and_generated_execution_match_advanced_analytics_on_live_backend
 
         profile = single(generated.collection_profiles, lambda row: row["id"] == "o-1")
         assert profile["has_priority"] is True
-        assert profile["tag_count"] == 2
+        assert profile["tag_count"] == 3
         assert profile["contains_priority"] is True
         assert profile["contains_region"] is True
         assert profile["default_tags"] == ["priority", "standard"]
         assert profile["repeated_tags"] == ["priority", "priority"]
-        assert profile["all_tags"] == ["priority", "new", "seasonal"]
-        assert profile["tags_without_extra"] == ["new"]
+        assert profile["all_tags"] == ["priority", "new", "gift", "seasonal"]
+        assert profile["tags_without_extra"] == ["new", "gift"]
         assert profile["first_tag"] == "priority"
         assert profile["safe_tag"] == "new"
         assert profile["region"] == "NA"

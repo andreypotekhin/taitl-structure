@@ -4,14 +4,14 @@
 
 Module: `testing.model.v3.orders.schemas.product`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant` | `tenant` | `TenantKey` | no | no |
-| `audit` | `audit` | `AuditStamp` | no | no |
-| `id` | `id` | `string` | no | yes |
-| `name` | `name` | `string` | yes | no |
-| `category` | `category` | `string` | yes | no |
-| `active` | `active` | `boolean` | no | no |
-| `list_price` | `list_price` | `decimal(12,2)` | yes | no |
-| `weight` | `weight` | `float` | yes | no |
-| `rating` | `rating` | `double` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant` | `tenant` | `TenantKey` | no |
+| `audit` | `audit` | `AuditStamp` | no |
+| `id` | `id` | `string` | no |
+| `name` | `name` | `string` | yes |
+| `category` | `category` | `string` | yes |
+| `active` | `active` | `boolean` | no |
+| `list_price` | `list_price` | `decimal(12,2)` | yes |
+| `weight` | `weight` | `float` | yes |
+| `rating` | `rating` | `double` | yes |

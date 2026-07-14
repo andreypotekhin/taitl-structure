@@ -37,11 +37,11 @@ from structure import *
 
 
 class Raw(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 class Published(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 @transform

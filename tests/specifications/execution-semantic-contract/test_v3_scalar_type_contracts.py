@@ -15,20 +15,20 @@ def _expression(type, *, nullable: bool) -> Expression:
 
 
 class CoalesceSource(Schema):
-    amount = field(String(), nullable=True)
+    amount = field.string(nullable=True)
 
 
 class CoalesceTarget(Schema):
-    amount = field(Decimal(12, 2), nullable=False)
+    amount = field.decimal(12, 2, nullable=False)
 
 
 class NullablePredicateSource(Schema):
-    enabled = field(Boolean(), nullable=True)
-    label = field(String(), nullable=True)
+    enabled = field.boolean(nullable=True)
+    label = field.string(nullable=True)
 
 
 class RequiredPredicateTarget(Schema):
-    accepted = field(Boolean(), nullable=False)
+    accepted = field.boolean(nullable=False)
 
 
 @transform
@@ -41,17 +41,17 @@ class DecimalFallback(Transform):
 
 
 class TemporalSource(Schema):
-    tenant = field(String(), nullable=False)
-    sequence = field(Long(), nullable=False)
-    observed_on = field(Date(), nullable=True)
-    observed_at = field(Timestamp(), nullable=True)
+    tenant = field.string(nullable=False)
+    sequence = field.long(nullable=False)
+    observed_on = field.date(nullable=True)
+    observed_at = field.timestamp(nullable=True)
 
 
 class TemporalTarget(Schema):
-    observed_on = field(Date(), nullable=False)
-    observed_at = field(Timestamp(), nullable=False)
-    previous_observed_on = field(Date(), nullable=True)
-    next_observed_at = field(Timestamp(), nullable=True)
+    observed_on = field.date(nullable=False)
+    observed_at = field.timestamp(nullable=False)
+    previous_observed_on = field.date(nullable=True)
+    next_observed_at = field.timestamp(nullable=True)
 
 
 @transform
@@ -88,7 +88,7 @@ class NullableNegation(Transform):
 
 
 def test_coalesce_uses_the_common_decimal_type_regardless_of_argument_order() -> None:
-    decimal_value = _expression(Decimal(12, 2), nullable=True)
+    decimal_value = _expression(types.decimal(12, 2), nullable=True)
 
     expression = coalesce(0, decimal_value)
 
@@ -120,7 +120,7 @@ def test_generated_module_imports_datetime_for_temporal_literals() -> None:
 
 
 def test_when_uses_the_common_type_regardless_of_branch_order() -> None:
-    expression = when(True, 0).otherwise(_expression(Decimal(12, 2), nullable=True))
+    expression = when(True, 0).otherwise(_expression(types.decimal(12, 2), nullable=True))
 
     assert isinstance(expression.type, DecimalType)
     assert expression.type.precision == 12
@@ -130,8 +130,8 @@ def test_when_uses_the_common_type_regardless_of_branch_order() -> None:
 
 def test_coalesce_remains_nullable_when_all_arguments_can_be_null() -> None:
     expression = coalesce(
-        _expression(String(), nullable=True),
-        _expression(String(), nullable=True),
+        _expression(types.string(), nullable=True),
+        _expression(types.string(), nullable=True),
     )
 
     assert expression.nullable is True
@@ -142,7 +142,7 @@ def test_coalesce_remains_nullable_when_all_arguments_can_be_null() -> None:
     [
         (),
         ("text", 1),
-        (_expression(Decimal(38, 38), nullable=True), 2**31),
+        (_expression(types.decimal(38, 38), nullable=True), 2**31),
     ],
 )
 def test_coalesce_rejects_unknown_or_incompatible_type_combinations(values) -> None:
@@ -166,7 +166,7 @@ def test_when_rejects_incompatible_branch_types() -> None:
 )
 def test_decimal_type_rejects_values_outside_spark_domain(precision: int, scale: int, message: str) -> None:
     with pytest.raises(ValueError, match=message):
-        Decimal(precision, scale)
+        types.decimal(precision, scale)
 
 
 def test_to_decimal_rejects_precision_larger_than_spark_supports() -> None:
@@ -175,8 +175,8 @@ def test_to_decimal_rejects_precision_larger_than_spark_supports() -> None:
 
 
 def test_arithmetic_widens_numeric_types_and_propagates_nullability() -> None:
-    integer = _expression(Integer(), nullable=False)
-    nullable_long = _expression(Long(), nullable=True)
+    integer = _expression(types.integer(), nullable=False)
+    nullable_long = _expression(types.long(), nullable=True)
 
     widened = integer + 0.5
     nullable = integer + nullable_long
@@ -189,14 +189,14 @@ def test_arithmetic_widens_numeric_types_and_propagates_nullability() -> None:
 
 def test_arithmetic_rejects_non_numeric_operands() -> None:
     with pytest.raises(TypeError, match="Arithmetic requires numeric Structure expressions"):
-        _expression(Integer(), nullable=False) + "one"
+        _expression(types.integer(), nullable=False) + "one"
 
 
 def test_predicates_propagate_nullable_sql_three_valued_logic() -> None:
-    nullable_boolean = _expression(Boolean(), nullable=True)
-    nullable_string = _expression(String(), nullable=True)
-    non_null_string = _expression(String(), nullable=False)
-    nullable_timestamp = _expression(Timestamp(), nullable=True)
+    nullable_boolean = _expression(types.boolean(), nullable=True)
+    nullable_string = _expression(types.string(), nullable=True)
+    non_null_string = _expression(types.string(), nullable=False)
+    nullable_timestamp = _expression(types.timestamp(), nullable=True)
     null_safe = nullable_string.null_safe_eq(None)
 
     assert (nullable_string == "active").nullable is True
@@ -215,9 +215,9 @@ def test_predicates_propagate_nullable_sql_three_valued_logic() -> None:
 @pytest.mark.parametrize(
     "expression",
     [
-        lambda: _expression(String(), nullable=False) & True,
-        lambda: _expression(Boolean(), nullable=False) | 1,
-        lambda: ~_expression(String(), nullable=False),
+        lambda: _expression(types.string(), nullable=False) & True,
+        lambda: _expression(types.boolean(), nullable=False) | 1,
+        lambda: ~_expression(types.string(), nullable=False),
     ],
 )
 def test_logical_operators_require_boolean_operands(expression) -> None:

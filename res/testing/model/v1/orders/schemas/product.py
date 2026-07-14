@@ -1,15 +1,16 @@
-from structure import *
+from structure import Schema
+from structure.field import *
 
 from testing.model.v1.orders.schemas.common import AuditStamp, TenantKey
 
 
 class Product(Schema):
-    tenant = field(Struct(TenantKey), nullable=False)
-    audit = field(Struct(AuditStamp), nullable=False)
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=True)
-    category = field(String(), nullable=True)
-    active = field(Boolean(), nullable=False)
-    list_price = field(Decimal(12, 2), nullable=True)
-    weight = field(Float(), nullable=True)
-    rating = field(Double(), nullable=True)
+    tenant = struct(TenantKey, nullable=False)
+    audit = struct(AuditStamp, nullable=False)
+    id = string(nullable=False)
+    name = string(nullable=True)
+    category = string(nullable=True)
+    active = boolean(nullable=False)
+    list_price = decimal(12, 2, nullable=True)
+    weight = float(nullable=True)
+    rating = double(nullable=True)

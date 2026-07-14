@@ -4,6 +4,6 @@
 
 Module: `testing.model.v1.orders.schemas.common`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant_id` | `tenant_id` | `string` | no | yes |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant_id` | `tenant_id` | `string` | no |

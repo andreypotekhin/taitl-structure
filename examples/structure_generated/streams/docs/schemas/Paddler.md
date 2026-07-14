@@ -4,11 +4,11 @@
 
 Module: `examples.streams.schemas.race`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `race_id` | `race_id` | `string` | no | no |
-| `id` | `id` | `string` | no | no |
-| `bib` | `bib` | `integer` | no | no |
-| `name` | `name` | `string` | no | no |
-| `country` | `country` | `string` | no | no |
-| `division` | `division` | `string` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `race_id` | `race_id` | `string` | no |
+| `id` | `id` | `string` | no |
+| `bib` | `bib` | `integer` | no |
+| `name` | `name` | `string` | no |
+| `country` | `country` | `string` | no |
+| `division` | `division` | `string` | no |

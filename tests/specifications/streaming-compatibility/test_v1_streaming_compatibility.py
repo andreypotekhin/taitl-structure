@@ -10,29 +10,29 @@ from structure.app.target.pyspark.api import PySpark
 
 
 class StreamRaw(Schema):
-    id = field(String(), nullable=False)
-    event_time = field(Timestamp(), nullable=False)
+    id = field.string(nullable=False)
+    event_time = field.timestamp(nullable=False)
 
 
 class StreamClean(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 class StreamLookup(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    value = field(String(), nullable=True)
-    valid_from = field(Timestamp(), nullable=False)
-    valid_to = field(Timestamp(), nullable=True)
+    id = field.string(nullable=False)
+    value = field.string(nullable=True)
+    valid_from = field.timestamp(nullable=False)
+    valid_to = field.timestamp(nullable=True)
 
 
 class StreamEnriched(Schema):
-    id = field(String(), nullable=False)
-    value = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    value = field.string(nullable=True)
 
 
 class StreamSummary(Schema):
-    id = field(String(), nullable=False)
-    row_count = field(Long(), nullable=False)
+    id = field.string(nullable=False)
+    row_count = field.long(nullable=False)
 
 
 def test_event_time_between_rejects_non_timestamp_expressions() -> None:

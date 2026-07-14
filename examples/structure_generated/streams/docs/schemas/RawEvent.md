@@ -4,14 +4,14 @@
 
 Module: `examples.streams.schemas.events`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `id` | `id` | `string` | no | yes |
-| `race_id` | `race_id` | `string` | no | no |
-| `run_id` | `run_id` | `string` | no | no |
-| `paddler_id` | `paddler_id` | `string` | no | no |
-| `gate_number` | `gate_number` | `integer` | no | no |
-| `at` | `at` | `timestamp` | no | no |
-| `sequence` | `sequence` | `long` | no | no |
-| `elapsed_millis` | `elapsed_millis` | `long` | no | no |
-| `source` | `source` | `string` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `id` | `id` | `string` | no |
+| `race_id` | `race_id` | `string` | no |
+| `run_id` | `run_id` | `string` | no |
+| `paddler_id` | `paddler_id` | `string` | no |
+| `gate_number` | `gate_number` | `integer` | no |
+| `at` | `at` | `timestamp` | no |
+| `sequence` | `sequence` | `long` | no |
+| `elapsed_millis` | `elapsed_millis` | `long` | no |
+| `source` | `source` | `string` | no |

@@ -5,49 +5,42 @@
       "column": "id",
       "name": "id",
       "nullable": false,
-      "primary_key": false,
       "type": "string"
     },
     {
       "column": "tags",
       "name": "tags",
       "nullable": true,
-      "primary_key": false,
       "type": "array<string!>"
     },
     {
       "column": "extra_tags",
       "name": "extra_tags",
       "nullable": true,
-      "primary_key": false,
       "type": "array<string!>"
     },
     {
       "column": "nested_tags",
       "name": "nested_tags",
       "nullable": true,
-      "primary_key": false,
       "type": "array<array<string!>!>"
     },
     {
       "column": "scores",
       "name": "scores",
       "nullable": true,
-      "primary_key": false,
       "type": "array<integer!>"
     },
     {
       "column": "attributes",
       "name": "attributes",
       "nullable": true,
-      "primary_key": false,
       "type": "map<string,string?>"
     },
     {
       "column": "extra_attributes",
       "name": "extra_attributes",
       "nullable": true,
-      "primary_key": false,
       "type": "map<string,string?>"
     }
   ],

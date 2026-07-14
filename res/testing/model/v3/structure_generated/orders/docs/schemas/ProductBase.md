@@ -4,7 +4,7 @@
 
 Module: `testing.model.v3.orders.schemas.product`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant` | `tenant` | `TenantKey` | no | no |
-| `audit` | `audit` | `AuditStamp` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant` | `tenant` | `TenantKey` | no |
+| `audit` | `audit` | `AuditStamp` | no |

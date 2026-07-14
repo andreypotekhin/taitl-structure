@@ -4,45 +4,41 @@ from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspa
 
 
 class RawTags(Schema):
-    id = field(String(), nullable=False)
-    tags = field(Array(String(), contains_null=False), nullable=True)
+    id = field.string(nullable=False)
+    tags = field.array(field.string(), contains_null=False, nullable=True)
 
 
 class CleanTags(Schema):
-    id = field(String(), nullable=False)
-    tags = field(Array(String(), contains_null=False), nullable=True)
+    id = field.string(nullable=False)
+    tags = field.array(field.string(), contains_null=False, nullable=True)
 
 
 class TagSummary(Schema):
-    id = field(String(), nullable=False)
-    has_priority = field(Boolean(), nullable=True)
-    tags = field(Array(String(), contains_null=False), nullable=True)
-    position = field(Long(), nullable=True)
+    id = field.string(nullable=False)
+    has_priority = field.boolean(nullable=True)
+    tags = field.array(field.string(), contains_null=False, nullable=True)
+    position = field.long(nullable=True)
 
 
 class TagTextSummary(Schema):
-    id = field(String(), nullable=False)
-    text = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    text = field.string(nullable=True)
 
 
 class SortedTags(Schema):
-    id = field(String(), nullable=False)
-    tags = field(Array(String(), contains_null=False), nullable=True)
+    id = field.string(nullable=False)
+    tags = field.array(field.string(), contains_null=False, nullable=True)
 
 
 class RawAttributes(Schema):
-    id = field(String(), nullable=False)
-    attributes = field(
-        Map(String(), String(), value_contains_null=True), nullable=True
-    )
+    id = field.string(nullable=False)
+    attributes = field.map(field.string(), field.string(), value_contains_null=True, nullable=True)
 
 
 class CleanAttributes(Schema):
-    id = field(String(), nullable=False)
-    attributes = field(
-        Map(String(), String(), value_contains_null=False), nullable=True
-    )
-    keys = field(Array(String(), contains_null=False), nullable=True)
+    id = field.string(nullable=False)
+    attributes = field.map(field.string(), field.string(), value_contains_null=False, nullable=True)
+    keys = field.array(field.string(), contains_null=False, nullable=True)
 
 
 @transform

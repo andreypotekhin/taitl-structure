@@ -91,16 +91,16 @@ def test_v1_symbolic_plan_records_expression_operators() -> None:
 
 def test_v1_symbolic_plan_records_nested_struct_construction() -> None:
     class Address(Schema):
-        city = field(String(), nullable=False)
-        postal_code = field(String(), nullable=False)
+        city = field.string(nullable=False)
+        postal_code = field.string(nullable=False)
 
     class Raw(Schema):
-        id = field(String(), nullable=False)
-        shipping = field(Struct(Address), nullable=True)
+        id = field.string(nullable=False)
+        shipping = field.struct(Address, nullable=True)
 
     class Published(Schema):
-        id = field(String(), nullable=False)
-        shipping = field(Struct(Address), nullable=False)
+        id = field.string(nullable=False)
+        shipping = field.struct(Address, nullable=False)
 
     @transform
     class Publish(Transform):
@@ -129,17 +129,17 @@ def test_v1_symbolic_plan_records_nested_struct_construction() -> None:
 
 def test_v1_symbolic_plan_rejects_incompatible_nested_struct_assignment() -> None:
     class Address(Schema):
-        city = field(String(), nullable=False)
-        postal_code = field(String(), nullable=False)
+        city = field.string(nullable=False)
+        postal_code = field.string(nullable=False)
 
     class TenantKey(Schema):
-        tenant_id = field(String(), nullable=False)
+        tenant_id = field.string(nullable=False)
 
     class Raw(Schema):
-        id = field(String(), nullable=False)
+        id = field.string(nullable=False)
 
     class Published(Schema):
-        tenant = field(Struct(TenantKey), nullable=False)
+        tenant = field.struct(TenantKey, nullable=False)
 
     @transform
     class Publish(Transform):
@@ -157,7 +157,7 @@ def test_transform_class_options_default_step_method_options() -> None:
     """Class-level transform config options apply to every step method."""
 
     class Row(Schema):
-        id = field(String(), nullable=False)
+        id = field.string(nullable=False)
 
     @transform(target_backend="pyspark", target_platform="spark")
     class NormalizeRows(Transform):

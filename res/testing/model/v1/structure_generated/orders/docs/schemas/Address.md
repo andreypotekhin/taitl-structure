@@ -4,11 +4,11 @@
 
 Module: `testing.model.v1.orders.schemas.common`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `line1` | `line1` | `string` | no | no |
-| `line2` | `line2` | `string` | yes | no |
-| `city` | `city` | `string` | no | no |
-| `state` | `state` | `string` | yes | no |
-| `postal_code` | `postal_code` | `string` | no | no |
-| `country` | `country` | `string` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `line1` | `line1` | `string` | no |
+| `line2` | `line2` | `string` | yes |
+| `city` | `city` | `string` | no |
+| `state` | `state` | `string` | yes |
+| `postal_code` | `postal_code` | `string` | no |
+| `country` | `country` | `string` | no |

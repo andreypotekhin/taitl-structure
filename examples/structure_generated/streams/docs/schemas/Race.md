@@ -4,12 +4,12 @@
 
 Module: `examples.streams.schemas.race`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `id` | `id` | `string` | no | yes |
-| `name` | `name` | `string` | no | no |
-| `date` | `date` | `date` | no | no |
-| `river` | `river` | `string` | no | no |
-| `venue` | `venue` | `string` | no | no |
-| `city` | `city` | `string` | no | no |
-| `country` | `country` | `string` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `id` | `id` | `string` | no |
+| `name` | `name` | `string` | no |
+| `date` | `date` | `date` | no |
+| `river` | `river` | `string` | no |
+| `venue` | `venue` | `string` | no |
+| `city` | `city` | `string` | no |
+| `country` | `country` | `string` | no |

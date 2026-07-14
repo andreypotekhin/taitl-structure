@@ -28,39 +28,40 @@ Define schemas. Define transforms. Run transforms.
 ### Example Schema
 
 ```python
-from structure import *
+from structure import Schema
+from structure.field import *
 
 
 class OrderRaw(Schema):
-    id = field(String(), nullable=False)
-    customer_id = field(String(), nullable=False)
-    product_id = field(String(), nullable=False)
-    promotion_code = field(String(), nullable=True, alias="promo-code")
-    total = field(String(), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    product_id = string(nullable=False)
+    promotion_code = string(alias="promo-code")
+    total = string()
 
 
 class OrderNormalized(Schema):
-    id = field(String(), nullable=False)
-    customer_id = field(String(), nullable=False)
-    product_id = field(String(), nullable=False)
-    promotion_code = field(String(), nullable=True)
-    total = field(Decimal(12, 2), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    product_id = string(nullable=False)
+    promotion_code = string()
+    total = decimal(12, 2)
 
 
 class OrderWithCustomer(OrderNormalized):
-    customer_name = field(String(), nullable=True)
-    customer_tier = field(String(), nullable=True)
+    customer_name = string()
+    customer_tier = string()
 
     
 class Customer(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=True)
-    tier = field(String(), nullable=True)   
+    id = string(nullable=False)
+    name = string()
+    tier = string()
     
 
 class Product(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=False)    
+    id = string(nullable=False)
+    name = string(nullable=False)
 ```
 
 ### Example Transform
@@ -360,7 +361,7 @@ decimals, and nested structs. They do not infer primary keys, descriptions, inhe
 constraints. Spark fields that are not Python identifiers get safe Python names with `alias=...`:
 
 ```python
-promotion_code = field(String(), nullable=True, alias="promo-code")
+promotion_code = string(nullable=True, alias='promo-code')
 ```
 
 Python code uses `promotion_code`; Spark schemas, validation, and projections use `promo-code`.

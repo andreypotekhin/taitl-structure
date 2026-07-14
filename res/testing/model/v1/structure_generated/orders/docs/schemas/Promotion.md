@@ -4,10 +4,10 @@
 
 Module: `testing.model.v1.orders.schemas.promotion`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant` | `tenant` | `TenantKey` | no | no |
-| `audit` | `audit` | `AuditStamp` | no | no |
-| `code` | `code` | `string` | no | yes |
-| `name` | `name` | `string` | yes | no |
-| `discount` | `discount` | `decimal(12,2)` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant` | `tenant` | `TenantKey` | no |
+| `audit` | `audit` | `AuditStamp` | no |
+| `code` | `code` | `string` | no |
+| `name` | `name` | `string` | yes |
+| `discount` | `discount` | `decimal(12,2)` | yes |

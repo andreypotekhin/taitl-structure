@@ -37,7 +37,7 @@ def test_generated_docs_make_transform_contract_readable() -> None:
         assert result.exit_code == 0, result.output
         assert "[OrderRaw](schemas/OrderRaw.md)" in index
         assert "[NormalizeOrders](transforms/orders.transforms.NormalizeOrders.md)" in index
-        assert "| `total` | `total` | `string` | yes | no |" in schema
+        assert "| `total` | `total` | `string` | yes |" in schema
         assert transform["inputs"] == [{"name": "orders", "ordinal": 0, "schema": "OrderRaw"}]
         assert transform["outputs"] == [{"name": "normalized", "ordinal": 0, "schema": "OrderNormalized"}]
         assert transform["step_methods"][0]["input_schema"] == "OrderRaw"
@@ -52,15 +52,16 @@ def _write_project(root: Path) -> None:
     (package / "schemas.py").write_text(
         "\n".join(
             [
-                "from structure import Decimal, String, Schema, field",
+                "from structure import Schema",
+                "from structure.field import *",
                 "",
                 "class OrderRaw(Schema):",
-                "    id = field(String(), nullable=False)",
-                "    total = field(String(), nullable=True)",
+                "    id = string(nullable=False)",
+                "    total = string(nullable=True)",
                 "",
                 "class OrderNormalized(Schema):",
-                "    id = field(String(), nullable=False)",
-                "    total = field(Decimal(12, 2), nullable=False)",
+                "    id = string(nullable=False)",
+                "    total = decimal(12, 2, nullable=False)",
                 "",
             ]
         ),

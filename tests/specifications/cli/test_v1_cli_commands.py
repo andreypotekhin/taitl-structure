@@ -77,15 +77,16 @@ def write_project(root: Path) -> None:
     (package / "schemas.py").write_text(
         "\n".join(
             [
-                "from structure import Decimal, String, Schema, field",
+                "from structure import Schema",
+                "from structure.field import *",
                 "",
                 "class OrderRaw(Schema):",
-                "    id = field(String(), nullable=False)",
-                "    total = field(String(), nullable=True)",
+                "    id = string(nullable=False)",
+                "    total = string(nullable=True)",
                 "",
                 "class OrderNormalized(Schema):",
-                "    id = field(String(), nullable=False)",
-                "    total = field(Decimal(12, 2), nullable=False)",
+                "    id = string(nullable=False)",
+                "    total = decimal(12, 2, nullable=False)",
                 "",
             ]
         ),
@@ -147,15 +148,16 @@ def write_optional_transform_project(root: Path) -> None:
     (package / "schemas.py").write_text(
         "\n".join(
             [
-                "from structure import Decimal, String, Schema, field",
+                "from structure import Schema",
+                "from structure.field import *",
                 "",
                 "class OrderRaw(Schema):",
-                "    id = field(String(), nullable=False)",
-                "    total = field(String(), nullable=True)",
+                "    id = string(nullable=False)",
+                "    total = string(nullable=True)",
                 "",
                 "class OrderNormalized(Schema):",
-                "    id = field(String(), nullable=False)",
-                "    total = field(Decimal(12, 2), nullable=False)",
+                "    id = string(nullable=False)",
+                "    total = decimal(12, 2, nullable=False)",
                 "",
             ]
         ),
@@ -351,7 +353,7 @@ def test_v1_cli_compile_writes_generated_docs_contract() -> None:
         transform = json.loads(Path("generated/docs/transforms/orders.transforms.NormalizeOrders.json").read_text())
         assert result.exit_code == 0, result.output
         assert "# OrderRaw" in schema
-        assert "| `id` | `id` | `string` | no | no |" in schema
+        assert "| `id` | `id` | `string` | no |" in schema
         assert transform["generated_by"] == "Structure"
         assert transform["name"] == "NormalizeOrders"
         assert transform["inputs"] == [{"name": "orders", "ordinal": 0, "schema": "OrderRaw"}]

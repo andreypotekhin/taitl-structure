@@ -1,11 +1,12 @@
-from structure import *
+from structure import Schema
+from structure.field import *
 
 from testing.model.v1.orders.schemas.common import AuditStamp, TenantKey
 
 
 class Promotion(Schema):
-    tenant = field(Struct(TenantKey), nullable=False)
-    audit = field(Struct(AuditStamp), nullable=False)
-    code = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=True)
-    discount = field(Decimal(12, 2), nullable=True)
+    tenant = struct(TenantKey, nullable=False)
+    audit = struct(AuditStamp, nullable=False)
+    code = string(nullable=False)
+    name = string(nullable=True)
+    discount = decimal(12, 2, nullable=True)

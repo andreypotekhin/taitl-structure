@@ -26,22 +26,23 @@ region.
 
 ```python
 from structure import *
+from structure.field import decimal, long, string
 
 
 class Purchase(Schema):
-    region = field(String(), nullable=False)
-    customer_id = field(String(), nullable=False)
-    order_id = field(String(), nullable=False)
-    sequence = field(Long(), nullable=False)
-    amount = field(Decimal(12, 2), nullable=False)
+    region = string(nullable=False)
+    customer_id = string(nullable=False)
+    order_id = string(nullable=False)
+    sequence = long(nullable=False)
+    amount = decimal(12, 2, nullable=False)
 
 
 class FirstPurchase(Schema):
-    region = field(String(), nullable=False)
-    customer_id = field(String(), nullable=False)
-    order_id = field(String(), nullable=False)
-    sequence = field(Long(), nullable=False)
-    amount = field(Decimal(12, 2), nullable=False)
+    region = string(nullable=False)
+    customer_id = string(nullable=False)
+    order_id = string(nullable=False)
+    sequence = long(nullable=False)
+    amount = decimal(12, 2, nullable=False)
 ```
 
 ## Keep The First Purchase

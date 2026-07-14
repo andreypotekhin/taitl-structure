@@ -4,20 +4,20 @@
 
 Module: `testing.model.v2.orders.schemas.adv_analytics`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant_id` | `tenant_id` | `string` | no | no |
-| `customer_id` | `customer_id` | `string` | no | no |
-| `order_id` | `order_id` | `string` | no | no |
-| `quantity` | `quantity` | `long` | no | no |
-| `percent_rank` | `percent_rank` | `double` | no | no |
-| `cume_dist` | `cume_dist` | `double` | no | no |
-| `quantity_tile` | `quantity_tile` | `integer` | no | no |
-| `first_order_id` | `first_order_id` | `string` | yes | no |
-| `last_order_id` | `last_order_id` | `string` | yes | no |
-| `second_order_id` | `second_order_id` | `string` | yes | no |
-| `running_units` | `running_units` | `long` | no | no |
-| `running_avg_units` | `running_avg_units` | `double` | yes | no |
-| `running_min_units` | `running_min_units` | `long` | no | no |
-| `running_max_units` | `running_max_units` | `long` | no | no |
-| `running_order_count` | `running_order_count` | `long` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant_id` | `tenant_id` | `string` | no |
+| `customer_id` | `customer_id` | `string` | no |
+| `order_id` | `order_id` | `string` | no |
+| `quantity` | `quantity` | `long` | no |
+| `percent_rank` | `percent_rank` | `double` | no |
+| `cume_dist` | `cume_dist` | `double` | no |
+| `quantity_tile` | `quantity_tile` | `integer` | no |
+| `first_order_id` | `first_order_id` | `string` | yes |
+| `last_order_id` | `last_order_id` | `string` | yes |
+| `second_order_id` | `second_order_id` | `string` | yes |
+| `running_units` | `running_units` | `long` | no |
+| `running_avg_units` | `running_avg_units` | `double` | yes |
+| `running_min_units` | `running_min_units` | `long` | no |
+| `running_max_units` | `running_max_units` | `long` | no |
+| `running_order_count` | `running_order_count` | `long` | no |

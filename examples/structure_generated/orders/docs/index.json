@@ -8,42 +8,36 @@
           "column": "line1",
           "name": "line1",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "line2",
           "name": "line2",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "city",
           "name": "city",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "state",
           "name": "state",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "postal_code",
           "name": "postal_code",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "country",
           "name": "country",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         }
       ],
@@ -57,14 +51,12 @@
           "column": "source_system",
           "name": "source_system",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "ingested_at",
           "name": "ingested_at",
           "nullable": false,
-          "primary_key": false,
           "type": "timestamp"
         }
       ],
@@ -80,70 +72,60 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "audit",
           "name": "audit",
           "nullable": false,
-          "primary_key": false,
           "type": "AuditStamp"
         },
         {
           "column": "id",
           "name": "id",
           "nullable": false,
-          "primary_key": true,
           "type": "string"
         },
         {
           "column": "name",
           "name": "name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "category",
           "name": "category",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "active",
           "name": "active",
           "nullable": false,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "list_price",
           "name": "list_price",
           "nullable": true,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "weight",
           "name": "weight",
           "nullable": true,
-          "primary_key": false,
           "type": "float"
         },
         {
           "column": "rating",
           "name": "rating",
           "nullable": true,
-          "primary_key": false,
           "type": "double"
         },
         {
           "column": "reason",
           "name": "reason",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         }
       ],
@@ -157,7 +139,6 @@
           "column": "order_date",
           "name": "order_date",
           "nullable": true,
-          "primary_key": false,
           "type": "date"
         }
       ],
@@ -171,49 +152,42 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "audit",
           "name": "audit",
           "nullable": false,
-          "primary_key": false,
           "type": "AuditStamp"
         },
         {
           "column": "id",
           "name": "id",
           "nullable": false,
-          "primary_key": true,
           "type": "string"
         },
         {
           "column": "name",
           "name": "name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "tier",
           "name": "tier",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "region",
           "name": "region",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "email",
           "name": "email",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         }
       ],
@@ -227,42 +201,36 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "customer_id",
           "name": "customer_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "order_date",
           "name": "order_date",
           "nullable": true,
-          "primary_key": false,
           "type": "date"
         },
         {
           "column": "order_count",
           "name": "order_count",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "gross_total",
           "name": "gross_total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "net_total",
           "name": "net_total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         }
       ],
@@ -276,91 +244,78 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "customer_id",
           "name": "customer_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "event_id",
           "name": "event_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "sequence",
           "name": "sequence",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "row_number",
           "name": "row_number",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "rank",
           "name": "rank",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "dense_rank",
           "name": "dense_rank",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "previous_sequence",
           "name": "previous_sequence",
           "nullable": true,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "next_sequence",
           "name": "next_sequence",
           "nullable": true,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "rolling_units",
           "name": "rolling_units",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "rolling_avg_units",
           "name": "rolling_avg_units",
           "nullable": false,
-          "primary_key": false,
           "type": "double"
         },
         {
           "column": "rolling_min_units",
           "name": "rolling_min_units",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "rolling_max_units",
           "name": "rolling_max_units",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         }
       ],
@@ -374,42 +329,36 @@
           "column": "tenant_id",
           "name": "tenant_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "order_id",
           "name": "order_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "order_customer_id",
           "name": "order_customer_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_id",
           "name": "customer_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_name",
           "name": "customer_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_region",
           "name": "customer_region",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         }
       ],
@@ -423,175 +372,150 @@
           "column": "id",
           "name": "id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "tag_count",
           "name": "tag_count",
           "nullable": true,
-          "primary_key": false,
           "type": "integer"
         },
         {
           "column": "contains_priority",
           "name": "contains_priority",
           "nullable": true,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "contains_region",
           "name": "contains_region",
           "nullable": true,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "default_tags",
           "name": "default_tags",
           "nullable": false,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "repeated_tags",
           "name": "repeated_tags",
           "nullable": false,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "all_tags",
           "name": "all_tags",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "tags_without_extra",
           "name": "tags_without_extra",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "first_tag",
           "name": "first_tag",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "safe_tag",
           "name": "safe_tag",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "region",
           "name": "region",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "safe_region",
           "name": "safe_region",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "normalized_tags",
           "name": "normalized_tags",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string?>"
         },
         {
           "column": "sorted_tags",
           "name": "sorted_tags",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "flat_tags",
           "name": "flat_tags",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "score_total",
           "name": "score_total",
           "nullable": true,
-          "primary_key": false,
           "type": "integer"
         },
         {
           "column": "tag_position",
           "name": "tag_position",
           "nullable": true,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "has_priority",
           "name": "has_priority",
           "nullable": true,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "all_tags_present",
           "name": "all_tags_present",
           "nullable": true,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "normalized_attributes",
           "name": "normalized_attributes",
           "nullable": true,
-          "primary_key": false,
           "type": "map<string,string?>"
         },
         {
           "column": "zipped_attributes",
           "name": "zipped_attributes",
           "nullable": true,
-          "primary_key": false,
           "type": "map<string,string?>"
         },
         {
           "column": "attribute_keys",
           "name": "attribute_keys",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "attribute_values",
           "name": "attribute_values",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "roundtrip_attributes",
           "name": "roundtrip_attributes",
           "nullable": true,
-          "primary_key": false,
           "type": "map<string,string?>"
         },
         {
           "column": "merged_attributes",
           "name": "merged_attributes",
           "nullable": true,
-          "primary_key": false,
           "type": "map<string,string?>"
         }
       ],
@@ -605,49 +529,42 @@
           "column": "id",
           "name": "id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "tags",
           "name": "tags",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "extra_tags",
           "name": "extra_tags",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "nested_tags",
           "name": "nested_tags",
           "nullable": true,
-          "primary_key": false,
           "type": "array<array<string!>!>"
         },
         {
           "column": "scores",
           "name": "scores",
           "nullable": true,
-          "primary_key": false,
           "type": "array<integer!>"
         },
         {
           "column": "attributes",
           "name": "attributes",
           "nullable": true,
-          "primary_key": false,
           "type": "map<string,string?>"
         },
         {
           "column": "extra_attributes",
           "name": "extra_attributes",
           "nullable": true,
-          "primary_key": false,
           "type": "map<string,string?>"
         }
       ],
@@ -661,42 +578,36 @@
           "column": "tenant_id",
           "name": "tenant_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "order_id",
           "name": "order_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "order_customer_id",
           "name": "order_customer_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_id",
           "name": "customer_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_name",
           "name": "customer_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "match_status",
           "name": "match_status",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         }
       ],
@@ -710,105 +621,90 @@
           "column": "tenant_id",
           "name": "tenant_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_id",
           "name": "customer_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "order_id",
           "name": "order_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "quantity",
           "name": "quantity",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "percent_rank",
           "name": "percent_rank",
           "nullable": false,
-          "primary_key": false,
           "type": "double"
         },
         {
           "column": "cume_dist",
           "name": "cume_dist",
           "nullable": false,
-          "primary_key": false,
           "type": "double"
         },
         {
           "column": "quantity_tile",
           "name": "quantity_tile",
           "nullable": false,
-          "primary_key": false,
           "type": "integer"
         },
         {
           "column": "first_order_id",
           "name": "first_order_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "last_order_id",
           "name": "last_order_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "second_order_id",
           "name": "second_order_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "running_units",
           "name": "running_units",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "running_avg_units",
           "name": "running_avg_units",
           "nullable": true,
-          "primary_key": false,
           "type": "double"
         },
         {
           "column": "running_min_units",
           "name": "running_min_units",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "running_max_units",
           "name": "running_max_units",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "running_order_count",
           "name": "running_order_count",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         }
       ],
@@ -824,196 +720,168 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "audit",
           "name": "audit",
           "nullable": false,
-          "primary_key": false,
           "type": "AuditStamp"
         },
         {
           "column": "business",
           "name": "business",
           "nullable": false,
-          "primary_key": false,
           "type": "BusinessDate"
         },
         {
           "column": "id",
           "name": "id",
           "nullable": false,
-          "primary_key": true,
           "type": "string"
         },
         {
           "column": "customer_id",
           "name": "customer_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_id",
           "name": "product_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "promotion_code",
           "name": "promotion_code",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "total",
           "name": "total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "discount",
           "name": "discount",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "net_total",
           "name": "net_total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "quantity",
           "name": "quantity",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "tags",
           "name": "tags",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "attributes",
           "name": "attributes",
           "nullable": true,
-          "primary_key": false,
           "type": "map<string,string?>"
         },
         {
           "column": "shipping",
           "name": "shipping",
           "nullable": true,
-          "primary_key": false,
           "type": "Address"
         },
         {
           "column": "is_large",
           "name": "is_large",
           "nullable": false,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "customer_name",
           "name": "customer_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_tier",
           "name": "customer_tier",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_region",
           "name": "customer_region",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_name",
           "name": "product_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_category",
           "name": "product_category",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_active",
           "name": "product_active",
           "nullable": true,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "product_list_price",
           "name": "product_list_price",
           "nullable": true,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "promotion_name",
           "name": "promotion_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "promotion_discount",
           "name": "promotion_discount",
           "nullable": true,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "shipment_line",
           "name": "shipment_line",
           "nullable": false,
-          "primary_key": false,
           "type": "integer"
         },
         {
           "column": "carrier",
           "name": "carrier",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "tracking_number",
           "name": "tracking_number",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "shipped_at",
           "name": "shipped_at",
           "nullable": true,
-          "primary_key": false,
           "type": "timestamp"
         }
       ],
@@ -1027,105 +895,90 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "audit",
           "name": "audit",
           "nullable": false,
-          "primary_key": false,
           "type": "AuditStamp"
         },
         {
           "column": "business",
           "name": "business",
           "nullable": false,
-          "primary_key": false,
           "type": "BusinessDate"
         },
         {
           "column": "id",
           "name": "id",
           "nullable": false,
-          "primary_key": true,
           "type": "string"
         },
         {
           "column": "customer_id",
           "name": "customer_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_id",
           "name": "product_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "promotion_code",
           "name": "promotion_code",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "total",
           "name": "total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "discount",
           "name": "discount",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "net_total",
           "name": "net_total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "quantity",
           "name": "quantity",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "tags",
           "name": "tags",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "attributes",
           "name": "attributes",
           "nullable": true,
-          "primary_key": false,
           "type": "map<string,string?>"
         },
         {
           "column": "shipping",
           "name": "shipping",
           "nullable": true,
-          "primary_key": false,
           "type": "Address"
         },
         {
           "column": "is_large",
           "name": "is_large",
           "nullable": false,
-          "primary_key": false,
           "type": "boolean"
         }
       ],
@@ -1139,42 +992,36 @@
           "column": "tenant_id",
           "name": "tenant_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "order_id",
           "name": "order_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_id",
           "name": "customer_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_name",
           "name": "customer_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_id",
           "name": "product_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_name",
           "name": "product_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         }
       ],
@@ -1188,49 +1035,42 @@
           "column": "tenant_id",
           "name": "tenant_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_category",
           "name": "product_category",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_tier",
           "name": "customer_tier",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "grouping_id",
           "name": "grouping_id",
           "nullable": false,
-          "primary_key": false,
           "type": "integer"
         },
         {
           "column": "order_count",
           "name": "order_count",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "distinct_customers",
           "name": "distinct_customers",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "gross_total",
           "name": "gross_total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         }
       ],
@@ -1244,119 +1084,102 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "business",
           "name": "business",
           "nullable": false,
-          "primary_key": false,
           "type": "BusinessDate"
         },
         {
           "column": "id",
           "name": "id",
           "nullable": false,
-          "primary_key": true,
           "type": "string"
         },
         {
           "column": "customer_id",
           "name": "customer_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_name",
           "name": "customer_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_tier",
           "name": "customer_tier",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_name",
           "name": "product_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_category",
           "name": "product_category",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "promotion_name",
           "name": "promotion_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "total",
           "name": "total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "discount",
           "name": "discount",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "net_total",
           "name": "net_total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "quantity",
           "name": "quantity",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "carrier",
           "name": "carrier",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "tracking_number",
           "name": "tracking_number",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "shipped_at",
           "name": "shipped_at",
           "nullable": true,
-          "primary_key": false,
           "type": "timestamp"
         },
         {
           "column": "is_large",
           "name": "is_large",
           "nullable": false,
-          "primary_key": false,
           "type": "boolean"
         }
       ],
@@ -1373,126 +1196,108 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "business",
           "name": "business",
           "nullable": false,
-          "primary_key": false,
           "type": "BusinessDate"
         },
         {
           "column": "id",
           "name": "id",
           "nullable": false,
-          "primary_key": true,
           "type": "string"
         },
         {
           "column": "customer_id",
           "name": "customer_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_name",
           "name": "customer_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_tier",
           "name": "customer_tier",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_name",
           "name": "product_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_category",
           "name": "product_category",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "promotion_name",
           "name": "promotion_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "total",
           "name": "total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "discount",
           "name": "discount",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "net_total",
           "name": "net_total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "quantity",
           "name": "quantity",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "carrier",
           "name": "carrier",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "tracking_number",
           "name": "tracking_number",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "shipped_at",
           "name": "shipped_at",
           "nullable": true,
-          "primary_key": false,
           "type": "timestamp"
         },
         {
           "column": "is_large",
           "name": "is_large",
           "nullable": false,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "has_promotion",
           "name": "has_promotion",
           "nullable": false,
-          "primary_key": false,
           "type": "boolean"
         }
       ],
@@ -1506,91 +1311,78 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "audit",
           "name": "audit",
           "nullable": false,
-          "primary_key": false,
           "type": "AuditStamp"
         },
         {
           "column": "business",
           "name": "business",
           "nullable": false,
-          "primary_key": false,
           "type": "BusinessDate"
         },
         {
           "column": "id",
           "name": "id",
           "nullable": false,
-          "primary_key": true,
           "type": "string"
         },
         {
           "column": "customer_id",
           "name": "customer_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_id",
           "name": "product_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "promo-code",
           "name": "promotion_code",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "total",
           "name": "total",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "discount",
           "name": "discount",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "quantity",
           "name": "quantity",
           "nullable": true,
-          "primary_key": false,
           "type": "integer"
         },
         {
           "column": "tags",
           "name": "tags",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "attributes",
           "name": "attributes",
           "nullable": true,
-          "primary_key": false,
           "type": "map<string,string?>"
         },
         {
           "column": "shipping",
           "name": "shipping",
           "nullable": true,
-          "primary_key": false,
           "type": "Address"
         }
       ],
@@ -1604,147 +1396,126 @@
           "column": "tenant_id",
           "name": "tenant_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_category",
           "name": "product_category",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "order_date",
           "name": "order_date",
           "nullable": true,
-          "primary_key": false,
           "type": "date"
         },
         {
           "column": "grouping_id",
           "name": "grouping_id",
           "nullable": false,
-          "primary_key": false,
           "type": "integer"
         },
         {
           "column": "category_subtotal",
           "name": "category_subtotal",
           "nullable": true,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "order_count",
           "name": "order_count",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "large_order_count",
           "name": "large_order_count",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "large_units",
           "name": "large_units",
           "nullable": true,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "any_large_order",
           "name": "any_large_order",
           "nullable": true,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "all_large_orders",
           "name": "all_large_orders",
           "nullable": true,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "quantity_stddev",
           "name": "quantity_stddev",
           "nullable": true,
-          "primary_key": false,
           "type": "double"
         },
         {
           "column": "quantity_variance",
           "name": "quantity_variance",
           "nullable": true,
-          "primary_key": false,
           "type": "double"
         },
         {
           "column": "quantity_median",
           "name": "quantity_median",
           "nullable": true,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "quantity_total",
           "name": "quantity_total",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "quantity_price_corr",
           "name": "quantity_price_corr",
           "nullable": true,
-          "primary_key": false,
           "type": "double"
         },
         {
           "column": "quantity_price_covar",
           "name": "quantity_price_covar",
           "nullable": true,
-          "primary_key": false,
           "type": "double"
         },
         {
           "column": "estimated_customers",
           "name": "estimated_customers",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "first_customer_id",
           "name": "first_customer_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "last_customer_id",
           "name": "last_customer_id",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_ids",
           "name": "customer_ids",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "order_ids",
           "name": "order_ids",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         }
       ],
@@ -1760,126 +1531,108 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "audit",
           "name": "audit",
           "nullable": false,
-          "primary_key": false,
           "type": "AuditStamp"
         },
         {
           "column": "business",
           "name": "business",
           "nullable": false,
-          "primary_key": false,
           "type": "BusinessDate"
         },
         {
           "column": "id",
           "name": "id",
           "nullable": false,
-          "primary_key": true,
           "type": "string"
         },
         {
           "column": "customer_id",
           "name": "customer_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_id",
           "name": "product_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "promotion_code",
           "name": "promotion_code",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "total",
           "name": "total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "discount",
           "name": "discount",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "net_total",
           "name": "net_total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "quantity",
           "name": "quantity",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "tags",
           "name": "tags",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "attributes",
           "name": "attributes",
           "nullable": true,
-          "primary_key": false,
           "type": "map<string,string?>"
         },
         {
           "column": "shipping",
           "name": "shipping",
           "nullable": true,
-          "primary_key": false,
           "type": "Address"
         },
         {
           "column": "is_large",
           "name": "is_large",
           "nullable": false,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "customer_name",
           "name": "customer_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_tier",
           "name": "customer_tier",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_region",
           "name": "customer_region",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         }
       ],
@@ -1895,154 +1648,132 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "audit",
           "name": "audit",
           "nullable": false,
-          "primary_key": false,
           "type": "AuditStamp"
         },
         {
           "column": "business",
           "name": "business",
           "nullable": false,
-          "primary_key": false,
           "type": "BusinessDate"
         },
         {
           "column": "id",
           "name": "id",
           "nullable": false,
-          "primary_key": true,
           "type": "string"
         },
         {
           "column": "customer_id",
           "name": "customer_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_id",
           "name": "product_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "promotion_code",
           "name": "promotion_code",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "total",
           "name": "total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "discount",
           "name": "discount",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "net_total",
           "name": "net_total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "quantity",
           "name": "quantity",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "tags",
           "name": "tags",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "attributes",
           "name": "attributes",
           "nullable": true,
-          "primary_key": false,
           "type": "map<string,string?>"
         },
         {
           "column": "shipping",
           "name": "shipping",
           "nullable": true,
-          "primary_key": false,
           "type": "Address"
         },
         {
           "column": "is_large",
           "name": "is_large",
           "nullable": false,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "customer_name",
           "name": "customer_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_tier",
           "name": "customer_tier",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_region",
           "name": "customer_region",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_name",
           "name": "product_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_category",
           "name": "product_category",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_active",
           "name": "product_active",
           "nullable": true,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "product_list_price",
           "name": "product_list_price",
           "nullable": true,
-          "primary_key": false,
           "type": "decimal(12,2)"
         }
       ],
@@ -2058,168 +1789,144 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "audit",
           "name": "audit",
           "nullable": false,
-          "primary_key": false,
           "type": "AuditStamp"
         },
         {
           "column": "business",
           "name": "business",
           "nullable": false,
-          "primary_key": false,
           "type": "BusinessDate"
         },
         {
           "column": "id",
           "name": "id",
           "nullable": false,
-          "primary_key": true,
           "type": "string"
         },
         {
           "column": "customer_id",
           "name": "customer_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_id",
           "name": "product_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "promotion_code",
           "name": "promotion_code",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "total",
           "name": "total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "discount",
           "name": "discount",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "net_total",
           "name": "net_total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "quantity",
           "name": "quantity",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "tags",
           "name": "tags",
           "nullable": true,
-          "primary_key": false,
           "type": "array<string!>"
         },
         {
           "column": "attributes",
           "name": "attributes",
           "nullable": true,
-          "primary_key": false,
           "type": "map<string,string?>"
         },
         {
           "column": "shipping",
           "name": "shipping",
           "nullable": true,
-          "primary_key": false,
           "type": "Address"
         },
         {
           "column": "is_large",
           "name": "is_large",
           "nullable": false,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "customer_name",
           "name": "customer_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_tier",
           "name": "customer_tier",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "customer_region",
           "name": "customer_region",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_name",
           "name": "product_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_category",
           "name": "product_category",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "product_active",
           "name": "product_active",
           "nullable": true,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "product_list_price",
           "name": "product_list_price",
           "nullable": true,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "promotion_name",
           "name": "promotion_name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "promotion_discount",
           "name": "promotion_discount",
           "nullable": true,
-          "primary_key": false,
           "type": "decimal(12,2)"
         }
       ],
@@ -2235,63 +1942,54 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "audit",
           "name": "audit",
           "nullable": false,
-          "primary_key": false,
           "type": "AuditStamp"
         },
         {
           "column": "id",
           "name": "id",
           "nullable": false,
-          "primary_key": true,
           "type": "string"
         },
         {
           "column": "name",
           "name": "name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "category",
           "name": "category",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "active",
           "name": "active",
           "nullable": false,
-          "primary_key": false,
           "type": "boolean"
         },
         {
           "column": "list_price",
           "name": "list_price",
           "nullable": true,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "weight",
           "name": "weight",
           "nullable": true,
-          "primary_key": false,
           "type": "float"
         },
         {
           "column": "rating",
           "name": "rating",
           "nullable": true,
-          "primary_key": false,
           "type": "double"
         }
       ],
@@ -2305,14 +2003,12 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "audit",
           "name": "audit",
           "nullable": false,
-          "primary_key": false,
           "type": "AuditStamp"
         }
       ],
@@ -2326,70 +2022,60 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "product_id",
           "name": "product_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "order_date",
           "name": "order_date",
           "nullable": true,
-          "primary_key": false,
           "type": "date"
         },
         {
           "column": "order_count",
           "name": "order_count",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "distinct_customers",
           "name": "distinct_customers",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "units",
           "name": "units",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "min_units",
           "name": "min_units",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "max_units",
           "name": "max_units",
           "nullable": false,
-          "primary_key": false,
           "type": "long"
         },
         {
           "column": "avg_units",
           "name": "avg_units",
           "nullable": false,
-          "primary_key": false,
           "type": "double"
         },
         {
           "column": "gross_total",
           "name": "gross_total",
           "nullable": false,
-          "primary_key": false,
           "type": "decimal(12,2)"
         }
       ],
@@ -2403,49 +2089,42 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "audit",
           "name": "audit",
           "nullable": false,
-          "primary_key": false,
           "type": "AuditStamp"
         },
         {
           "column": "code",
           "name": "code",
           "nullable": false,
-          "primary_key": true,
           "type": "string"
         },
         {
           "column": "name",
           "name": "name",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "discount",
           "name": "discount",
           "nullable": true,
-          "primary_key": false,
           "type": "decimal(12,2)"
         },
         {
           "column": "valid_from",
           "name": "valid_from",
           "nullable": false,
-          "primary_key": false,
           "type": "date"
         },
         {
           "column": "valid_to",
           "name": "valid_to",
           "nullable": true,
-          "primary_key": false,
           "type": "date"
         }
       ],
@@ -2459,7 +2138,6 @@
           "column": "has_promotion",
           "name": "has_promotion",
           "nullable": false,
-          "primary_key": false,
           "type": "boolean"
         }
       ],
@@ -2473,49 +2151,42 @@
           "column": "tenant",
           "name": "tenant",
           "nullable": false,
-          "primary_key": false,
           "type": "TenantKey"
         },
         {
           "column": "audit",
           "name": "audit",
           "nullable": false,
-          "primary_key": false,
           "type": "AuditStamp"
         },
         {
           "column": "order_id",
           "name": "order_id",
           "nullable": false,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "line_number",
           "name": "line_number",
           "nullable": false,
-          "primary_key": false,
           "type": "integer"
         },
         {
           "column": "carrier",
           "name": "carrier",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "tracking_number",
           "name": "tracking_number",
           "nullable": true,
-          "primary_key": false,
           "type": "string"
         },
         {
           "column": "shipped_at",
           "name": "shipped_at",
           "nullable": true,
-          "primary_key": false,
           "type": "timestamp"
         }
       ],
@@ -2529,7 +2200,6 @@
           "column": "tenant_id",
           "name": "tenant_id",
           "nullable": false,
-          "primary_key": true,
           "type": "string"
         }
       ],

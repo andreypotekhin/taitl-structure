@@ -4,18 +4,18 @@ from structure import *
 
 
 class LookupOrder(Schema):
-    id = field(String(), nullable=False)
-    product_id = field(String(), nullable=False)
+    id = field.string(nullable=False)
+    product_id = field.string(nullable=False)
 
 
 class LookupProduct(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=False)
+    id = field.string(nullable=False)
+    name = field.string(nullable=False)
 
 
 class LookupEnriched(Schema):
-    id = field(String(), nullable=False)
-    product_name = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    product_name = field.string(nullable=True)
 
 
 @transform

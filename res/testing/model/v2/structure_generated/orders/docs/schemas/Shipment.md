@@ -4,12 +4,12 @@
 
 Module: `testing.model.v2.orders.schemas.shipment`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant` | `tenant` | `TenantKey` | no | no |
-| `audit` | `audit` | `AuditStamp` | no | no |
-| `order_id` | `order_id` | `string` | no | no |
-| `line_number` | `line_number` | `integer` | no | no |
-| `carrier` | `carrier` | `string` | yes | no |
-| `tracking_number` | `tracking_number` | `string` | yes | no |
-| `shipped_at` | `shipped_at` | `timestamp` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant` | `tenant` | `TenantKey` | no |
+| `audit` | `audit` | `AuditStamp` | no |
+| `order_id` | `order_id` | `string` | no |
+| `line_number` | `line_number` | `integer` | no |
+| `carrier` | `carrier` | `string` | yes |
+| `tracking_number` | `tracking_number` | `string` | yes |
+| `shipped_at` | `shipped_at` | `timestamp` | yes |

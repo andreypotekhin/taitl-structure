@@ -4,20 +4,20 @@
 
 Module: `testing.model.v2.orders.schemas.order`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant` | `tenant` | `TenantKey` | no | no |
-| `audit` | `audit` | `AuditStamp` | no | no |
-| `business` | `business` | `BusinessDate` | no | no |
-| `id` | `id` | `string` | no | yes |
-| `customer_id` | `customer_id` | `string` | no | no |
-| `product_id` | `product_id` | `string` | no | no |
-| `promotion_code` | `promotion_code` | `string` | yes | no |
-| `total` | `total` | `decimal(12,2)` | no | no |
-| `discount` | `discount` | `decimal(12,2)` | no | no |
-| `net_total` | `net_total` | `decimal(12,2)` | no | no |
-| `quantity` | `quantity` | `long` | no | no |
-| `tags` | `tags` | `array<string!>` | yes | no |
-| `attributes` | `attributes` | `map<string,string?>` | yes | no |
-| `shipping` | `shipping` | `Address` | yes | no |
-| `is_large` | `is_large` | `boolean` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant` | `tenant` | `TenantKey` | no |
+| `audit` | `audit` | `AuditStamp` | no |
+| `business` | `business` | `BusinessDate` | no |
+| `id` | `id` | `string` | no |
+| `customer_id` | `customer_id` | `string` | no |
+| `product_id` | `product_id` | `string` | no |
+| `promotion_code` | `promotion_code` | `string` | yes |
+| `total` | `total` | `decimal(12,2)` | no |
+| `discount` | `discount` | `decimal(12,2)` | no |
+| `net_total` | `net_total` | `decimal(12,2)` | no |
+| `quantity` | `quantity` | `long` | no |
+| `tags` | `tags` | `array<string!>` | yes |
+| `attributes` | `attributes` | `map<string,string?>` | yes |
+| `shipping` | `shipping` | `Address` | yes |
+| `is_large` | `is_large` | `boolean` | no |

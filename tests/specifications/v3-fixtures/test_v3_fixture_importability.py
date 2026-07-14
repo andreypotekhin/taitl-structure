@@ -1,6 +1,6 @@
 import importlib
 import sys
-import types
+import types as python_types
 from ast import parse
 from pathlib import Path
 from typing import Any, cast
@@ -104,9 +104,9 @@ def test_v3_orders_fixture_includes_generated_method_layout_matrix() -> None:
 
 
 def _stub_pyspark(monkeypatch: pytest.MonkeyPatch) -> None:
-    pyspark = types.ModuleType("pyspark")
-    sql = types.ModuleType("pyspark.sql")
-    functions = types.ModuleType("pyspark.sql.functions")
+    pyspark = python_types.ModuleType("pyspark")
+    sql = python_types.ModuleType("pyspark.sql")
+    functions = python_types.ModuleType("pyspark.sql.functions")
 
     class StorageLevel:
         MEMORY_AND_DISK = object()

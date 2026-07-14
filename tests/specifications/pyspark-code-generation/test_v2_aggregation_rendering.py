@@ -9,44 +9,44 @@ from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspa
 
 
 class RawOrder(Schema):
-    customer_id = field(String(), nullable=False)
-    quantity = field(Long(), nullable=False)
+    customer_id = field.string(nullable=False)
+    quantity = field.long(nullable=False)
 
 
 class CustomerTotal(Schema):
-    customer_id = field(String(), nullable=False)
-    order_count = field(Long(), nullable=False)
-    distinct_customers = field(Long(), nullable=False)
-    quantity = field(Long(), nullable=False)
-    min_quantity = field(Long(), nullable=False)
-    max_quantity = field(Long(), nullable=False)
-    avg_quantity = field(Double(), nullable=False)
+    customer_id = field.string(nullable=False)
+    order_count = field.long(nullable=False)
+    distinct_customers = field.long(nullable=False)
+    quantity = field.long(nullable=False)
+    min_quantity = field.long(nullable=False)
+    max_quantity = field.long(nullable=False)
+    avg_quantity = field.double(nullable=False)
 
 
 class AdvancedCustomerTotal(Schema):
-    customer_id = field(String(), nullable=True)
-    paid_quantity = field(Long(), nullable=True)
-    any_large = field(Boolean(), nullable=True)
-    quantity_stddev = field(Double(), nullable=True)
-    approximate_customers = field(Long(), nullable=False)
-    ordered_first_customer = field(String(), nullable=False)
-    ordered_last_customer = field(String(), nullable=False)
-    customers = field(Array(String(), contains_null=False), nullable=True)
+    customer_id = field.string(nullable=True)
+    paid_quantity = field.long(nullable=True)
+    any_large = field.boolean(nullable=True)
+    quantity_stddev = field.double(nullable=True)
+    approximate_customers = field.long(nullable=False)
+    ordered_first_customer = field.string(nullable=False)
+    ordered_last_customer = field.string(nullable=False)
+    customers = field.array(field.string(), contains_null=False, nullable=True)
 
 
 class RawSale(Schema):
-    region = field(String(), nullable=False)
-    customer_id = field(String(), nullable=False)
-    quantity = field(Long(), nullable=False)
+    region = field.string(nullable=False)
+    customer_id = field.string(nullable=False)
+    quantity = field.long(nullable=False)
 
 
 class GroupingSetTotal(Schema):
-    region = field(String(), nullable=True)
-    customer_id = field(String(), nullable=True)
-    order_count = field(Long(), nullable=False)
-    grouping_id = field(Integer(), nullable=False)
-    region_grouped = field(Boolean(), nullable=False)
-    customer_grouped = field(Boolean(), nullable=False)
+    region = field.string(nullable=True)
+    customer_id = field.string(nullable=True)
+    order_count = field.long(nullable=False)
+    grouping_id = field.integer(nullable=False)
+    region_grouped = field.boolean(nullable=False)
+    customer_grouped = field.boolean(nullable=False)
 
 
 @transform
@@ -82,7 +82,7 @@ class AdvancedCustomerTotals(Transform):
             approximate_customers=approx_count_distinct(row.customer_id),
             ordered_first_customer=first_value(row.customer_id, order_by=row.quantity),
             ordered_last_customer=last_value(row.customer_id, order_by=row.quantity),
-            customers=collect_set(row.customer_id, element_type=String()),
+            customers=collect_set(row.customer_id, element_type=types.string()),
         )
 
 
@@ -215,9 +215,9 @@ def test_grouping_sets_traceability_and_explain_name_levels() -> None:
 
 def test_grouping_sets_reject_non_nullable_omitted_key_fields() -> None:
     class BadTotal(Schema):
-        region = field(String(), nullable=False)
-        customer_id = field(String(), nullable=False)
-        order_count = field(Long(), nullable=False)
+        region = field.string(nullable=False)
+        customer_id = field.string(nullable=False)
+        order_count = field.long(nullable=False)
 
     @transform
     class BadGroupingSets(Transform):
@@ -238,8 +238,8 @@ def test_grouping_sets_reject_non_nullable_omitted_key_fields() -> None:
 
 def test_having_rejects_pre_aggregate_input_field_reads() -> None:
     class Total(Schema):
-        customer_id = field(String(), nullable=False)
-        order_count = field(Long(), nullable=False)
+        customer_id = field.string(nullable=False)
+        order_count = field.long(nullable=False)
 
     @transform
     class BadHaving(Transform):
@@ -261,8 +261,8 @@ def test_having_rejects_pre_aggregate_input_field_reads() -> None:
 
 def test_statement_having_binds_to_aggregate_output_scope() -> None:
     class Total(Schema):
-        customer_id = field(String(), nullable=False)
-        order_count = field(Long(), nullable=False)
+        customer_id = field.string(nullable=False)
+        order_count = field.long(nullable=False)
 
     @transform
     class StatementHaving(Transform):
@@ -283,8 +283,8 @@ def test_statement_having_binds_to_aggregate_output_scope() -> None:
 @pytest.mark.parametrize("grouping", ("group_by", "rollup", "cube", "grouping_sets"))
 def test_each_grouping_form_accepts_chained_having(grouping: str) -> None:
     class Total(Schema):
-        customer_id = field(String(), nullable=True)
-        order_count = field(Long(), nullable=False)
+        customer_id = field.string(nullable=True)
+        order_count = field.long(nullable=False)
 
     @transform
     class ChainedHaving(Transform):
@@ -311,8 +311,8 @@ def test_each_grouping_form_accepts_chained_having(grouping: str) -> None:
 
 def test_bare_and_chained_having_lower_identically() -> None:
     class Total(Schema):
-        customer_id = field(String(), nullable=False)
-        order_count = field(Long(), nullable=False)
+        customer_id = field.string(nullable=False)
+        order_count = field.long(nullable=False)
 
     @transform
     class BareHaving(Transform):

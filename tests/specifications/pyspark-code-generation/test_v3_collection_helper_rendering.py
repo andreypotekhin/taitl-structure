@@ -13,27 +13,27 @@ from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspa
 
 
 class CollectionSource(Schema):
-    id = field(String(), nullable=False)
-    tags = field(Array(String(), contains_null=False), nullable=True)
-    extra_tags = field(Array(String(), contains_null=False), nullable=True)
-    attributes = field(Map(String(), String()), nullable=True)
-    extra_attributes = field(Map(String(), String()), nullable=True)
+    id = field.string(nullable=False)
+    tags = field.array(field.string(), contains_null=False, nullable=True)
+    extra_tags = field.array(field.string(), contains_null=False, nullable=True)
+    attributes = field.map(field.string(), field.string(), nullable=True)
+    extra_attributes = field.map(field.string(), field.string(), nullable=True)
 
 
 class CollectionSummary(Schema):
-    id = field(String(), nullable=False)
-    tag_count = field(Integer(), nullable=True)
-    has_priority = field(Boolean(), nullable=True)
-    has_region = field(Boolean(), nullable=True)
-    defaults = field(Array(String(), contains_null=False), nullable=False)
-    repeated = field(Array(String(), contains_null=False), nullable=False)
-    unioned = field(Array(String(), contains_null=False), nullable=True)
-    excluded = field(Array(String(), contains_null=False), nullable=True)
-    first_tag = field(String(), nullable=True)
-    safe_tag = field(String(), nullable=True)
-    region = field(String(), nullable=True)
-    safe_region = field(String(), nullable=True)
-    merged = field(Map(String(), String()), nullable=True)
+    id = field.string(nullable=False)
+    tag_count = field.integer(nullable=True)
+    has_priority = field.boolean(nullable=True)
+    has_region = field.boolean(nullable=True)
+    defaults = field.array(field.string(), contains_null=False, nullable=False)
+    repeated = field.array(field.string(), contains_null=False, nullable=False)
+    unioned = field.array(field.string(), contains_null=False, nullable=True)
+    excluded = field.array(field.string(), contains_null=False, nullable=True)
+    first_tag = field.string(nullable=True)
+    safe_tag = field.string(nullable=True)
+    region = field.string(nullable=True)
+    safe_region = field.string(nullable=True)
+    merged = field.map(field.string(), field.string(), nullable=True)
 
 
 @transform

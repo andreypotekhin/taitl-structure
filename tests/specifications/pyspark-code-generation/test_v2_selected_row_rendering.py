@@ -10,66 +10,66 @@ from structure.app.target.pyspark.commands.RenderPySparkTransformModule import r
 
 
 class RawEvent(Schema):
-    account_id = field(String(), nullable=False)
-    event_id = field(String(), nullable=False)
-    sequence = field(Long(), nullable=False)
+    account_id = field.string(nullable=False)
+    event_id = field.string(nullable=False)
+    sequence = field.long(nullable=False)
 
 
 class LatestEvent(Schema):
-    account_id = field(String(), nullable=False)
-    event_id = field(String(), nullable=False)
-    sequence = field(Long(), nullable=False)
+    account_id = field.string(nullable=False)
+    event_id = field.string(nullable=False)
+    sequence = field.long(nullable=False)
 
 
 class Account(Schema):
-    account_id = field(String(), nullable=False, primary_key=True)
-    tier = field(String(), nullable=False)
+    account_id = field.string(nullable=False)
+    tier = field.string(nullable=False)
 
 
 class AccountEvent(Schema):
-    account_id = field(String(), nullable=False)
-    event_id = field(String(), nullable=False)
-    tier = field(String(), nullable=True)
+    account_id = field.string(nullable=False)
+    event_id = field.string(nullable=False)
+    tier = field.string(nullable=True)
 
 
 class RankedEvent(Schema):
-    account_id = field(String(), nullable=False)
-    event_id = field(String(), nullable=False)
-    sequence = field(Long(), nullable=False)
-    row_number = field(Long(), nullable=False)
-    rank = field(Long(), nullable=False)
-    dense_rank = field(Long(), nullable=False)
-    previous_sequence = field(Long(), nullable=True)
-    next_sequence = field(Long(), nullable=True)
-    rolling_units = field(Long(), nullable=False)
-    rolling_avg_units = field(Double(), nullable=False)
-    rolling_min_units = field(Long(), nullable=False)
-    rolling_max_units = field(Long(), nullable=False)
+    account_id = field.string(nullable=False)
+    event_id = field.string(nullable=False)
+    sequence = field.long(nullable=False)
+    row_number = field.long(nullable=False)
+    rank = field.long(nullable=False)
+    dense_rank = field.long(nullable=False)
+    previous_sequence = field.long(nullable=True)
+    next_sequence = field.long(nullable=True)
+    rolling_units = field.long(nullable=False)
+    rolling_avg_units = field.double(nullable=False)
+    rolling_min_units = field.long(nullable=False)
+    rolling_max_units = field.long(nullable=False)
 
 
 class AdvancedRankedEvent(Schema):
-    account_id = field(String(), nullable=False)
-    percent_rank = field(Double(), nullable=False)
-    cume_dist = field(Double(), nullable=False)
-    bucket = field(Long(), nullable=False)
-    framed_total = field(Long(), nullable=False)
+    account_id = field.string(nullable=False)
+    percent_rank = field.double(nullable=False)
+    cume_dist = field.double(nullable=False)
+    bucket = field.long(nullable=False)
+    framed_total = field.long(nullable=False)
 
 
 class MultiOrderedEvent(Schema):
-    account_id = field(String(), nullable=False)
-    event_id = field(String(), nullable=False)
-    sequence = field(Long(), nullable=False)
-    rank = field(Long(), nullable=False)
-    running_total = field(Long(), nullable=False)
+    account_id = field.string(nullable=False)
+    event_id = field.string(nullable=False)
+    sequence = field.long(nullable=False)
+    rank = field.long(nullable=False)
+    running_total = field.long(nullable=False)
 
 
 class AggregateWindowEvent(Schema):
-    account_id = field(String(), nullable=False)
-    accepted = field(Boolean(), nullable=True)
-    sequence_stddev = field(Double(), nullable=True)
-    sequence_variance = field(Double(), nullable=True)
-    sequences = field(Array(Long(), contains_null=False), nullable=True)
-    distinct_sequences = field(Array(Long(), contains_null=False), nullable=True)
+    account_id = field.string(nullable=False)
+    accepted = field.boolean(nullable=True)
+    sequence_stddev = field.double(nullable=True)
+    sequence_variance = field.double(nullable=True)
+    sequences = field.array(field.long(), contains_null=False, nullable=True)
+    distinct_sequences = field.array(field.long(), contains_null=False, nullable=True)
 
 
 @transform

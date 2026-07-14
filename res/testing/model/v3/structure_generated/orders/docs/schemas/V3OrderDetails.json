@@ -5,14 +5,12 @@
       "column": "external_id",
       "name": "external_id",
       "nullable": true,
-      "primary_key": false,
       "type": "string"
     },
     {
       "column": "region",
       "name": "region",
       "nullable": true,
-      "primary_key": false,
       "type": "string"
     }
   ],

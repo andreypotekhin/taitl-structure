@@ -5,7 +5,6 @@
       "column": "tenant_id",
       "name": "tenant_id",
       "nullable": false,
-      "primary_key": true,
       "type": "string"
     }
   ],

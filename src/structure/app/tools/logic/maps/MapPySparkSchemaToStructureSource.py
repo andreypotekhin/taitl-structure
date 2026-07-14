@@ -44,31 +44,31 @@ class MapPySparkSchemaToStructureSource:
     def _type(self, type, *, root: str, path: tuple[str, ...]) -> str:
         name = type.__class__.__name__
         scalar = {
-            "StringType": "String()",
-            "IntegerType": "Integer()",
-            "LongType": "Long()",
-            "FloatType": "Float()",
-            "DoubleType": "Double()",
-            "BooleanType": "Boolean()",
-            "DateType": "Date()",
-            "TimestampType": "Timestamp()",
+            "StringType": "string()",
+            "IntegerType": "integer()",
+            "LongType": "long()",
+            "FloatType": "float()",
+            "DoubleType": "double()",
+            "BooleanType": "boolean()",
+            "DateType": "date()",
+            "TimestampType": "timestamp()",
         }.get(name)
         if scalar:
             return scalar
         if name == "DecimalType":
-            return f"Decimal({type.precision}, {type.scale})"
+            return f"decimal({type.precision}, {type.scale})"
         if name == "ArrayType":
             contains_null = "True" if bool(type.containsNull) else "False"
             element = self._type(type.elementType, root=root, path=(*path, "item"))
-            return f"Array({element}, contains_null={contains_null})"
+            return f"array({element}, contains_null={contains_null})"
         if name == "MapType":
             value_contains_null = "True" if bool(type.valueContainsNull) else "False"
             key = self._type(type.keyType, root=root, path=(*path, "key"))
             value = self._type(type.valueType, root=root, path=(*path, "value"))
-            return f"Map({key}, {value}, value_contains_null={value_contains_null})"
+            return f"map({key}, {value}, value_contains_null={value_contains_null})"
         if name == "StructType":
             nested = self._struct(type, class_name=self._nested_name(root, path), root=root, path=path)
-            return f"Struct({nested})"
+            return f"struct({nested})"
         raise StructureToolError(f"Unsupported Spark type at {'.'.join(path)}: {name}.")
 
     def _fields(self, schema) -> tuple:

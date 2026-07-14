@@ -8,11 +8,11 @@ from structure.app.target.pyspark.api import PySpark
 
 
 class Raw(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 class Published(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 def test_special_expr_helper_call_through_self_compiles_transparently() -> None:
@@ -37,7 +37,7 @@ def test_special_udf_records_optimizer_warning_by_default() -> None:
         rows = input(Raw)
         published = output(Published)
 
-        @special(type="udf", return_type=String)
+        @special(type="udf", return_type=types.string())
         def clean(value: Any):
             return value.strip()
 
@@ -55,7 +55,7 @@ def test_special_udf_warning_can_be_disabled_by_compiler_config() -> None:
         rows = input(Raw)
         published = output(Published)
 
-        @special(type="udf", return_type=String)
+        @special(type="udf", return_type=types.string())
         def clean(value: Any):
             return value.strip()
 
@@ -91,7 +91,7 @@ def test_special_udf_renders_generated_pyspark_udf_call() -> None:
         rows = input(Raw)
         published = output(Published)
 
-        @special(type="udf", return_type=String)
+        @special(type="udf", return_type=types.string())
         def clean(value: Any):
             return value.strip()
 
@@ -111,7 +111,7 @@ def test_special_udf_traceability_marks_python_body_opaque() -> None:
         rows = input(Raw)
         published = output(Published)
 
-        @special(type="udf", return_type=String)
+        @special(type="udf", return_type=types.string())
         def clean(value: Any):
             return value.strip()
 

@@ -4,15 +4,15 @@
 
 Module: `examples.streams.schemas.events`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `event_id` | `event_id` | `string` | no | no |
-| `call_id` | `call_id` | `string` | no | no |
-| `race_id` | `race_id` | `string` | no | no |
-| `run_id` | `run_id` | `string` | no | no |
-| `paddler_id` | `paddler_id` | `string` | no | no |
-| `gate_number` | `gate_number` | `integer` | no | no |
-| `elapsed_millis` | `elapsed_millis` | `long` | no | no |
-| `penalty_code` | `penalty_code` | `string` | no | no |
-| `penalty_seconds` | `penalty_seconds` | `integer` | no | no |
-| `adjusted_millis` | `adjusted_millis` | `long` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `event_id` | `event_id` | `string` | no |
+| `call_id` | `call_id` | `string` | no |
+| `race_id` | `race_id` | `string` | no |
+| `run_id` | `run_id` | `string` | no |
+| `paddler_id` | `paddler_id` | `string` | no |
+| `gate_number` | `gate_number` | `integer` | no |
+| `elapsed_millis` | `elapsed_millis` | `long` | no |
+| `penalty_code` | `penalty_code` | `string` | no |
+| `penalty_seconds` | `penalty_seconds` | `integer` | no |
+| `adjusted_millis` | `adjusted_millis` | `long` | no |

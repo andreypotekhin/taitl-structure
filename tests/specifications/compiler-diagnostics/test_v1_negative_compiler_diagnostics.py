@@ -6,51 +6,51 @@ from structure import *
 
 
 class Raw(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 class Clean(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 class Published(Schema):
-    id = field(String(), nullable=False)
-    status = field(String(), nullable=False)
+    id = field.string(nullable=False)
+    status = field.string(nullable=False)
 
 
 class NullableRaw(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    optional_id = field(String(), nullable=True)
-    amount = field(String(), nullable=True)
-    count = field(Integer(), nullable=False)
+    id = field.string(nullable=False)
+    optional_id = field.string(nullable=True)
+    amount = field.string(nullable=True)
+    count = field.integer(nullable=False)
 
 
 class Lookup(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    group = field(String(), nullable=False)
-    label = field(String(), nullable=False)
+    id = field.string(nullable=False)
+    group = field.string(nullable=False)
+    label = field.string(nullable=False)
 
 
 class Account(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    customer_id = field(String(), nullable=False)
+    id = field.string(nullable=False)
+    customer_id = field.string(nullable=False)
 
 
 class OptionalClean(Schema):
-    optional_id = field(String(), nullable=False)
+    optional_id = field.string(nullable=False)
 
 
 class MoneyClean(Schema):
-    amount = field(Decimal(12, 2), nullable=False)
-    count = field(Long(), nullable=False)
+    amount = field.decimal(12, 2, nullable=False)
+    count = field.long(nullable=False)
 
 
 class FlagClean(Schema):
-    is_paid = field(Boolean(), nullable=False)
+    is_paid = field.boolean(nullable=False)
 
 
 class LabelClean(Schema):
-    label = field(String(), nullable=False)
+    label = field.string(nullable=False)
 
 
 def test_v1_unsupported_python_boolean_expression_reports_dsl_diagnostic() -> None:
@@ -170,8 +170,8 @@ def test_v1_string_to_decimal_assignment_requires_explicit_conversion() -> None:
 
 def test_v1_non_nullable_string_to_decimal_assignment_reports_conversion_diagnostic() -> None:
     class NonNullAmount(Schema):
-        amount = field(String(), nullable=False)
-        count = field(Integer(), nullable=False)
+        amount = field.string(nullable=False)
+        count = field.integer(nullable=False)
 
     @transform
     class BadConversion(Transform):
@@ -250,7 +250,7 @@ def test_v1_left_joined_non_nullable_field_is_nullable_until_guarded() -> None:
     assert diagnostic.context == {"field": "label", "schema": "LabelClean"}
 
 
-def test_v1_join_on_primary_key_compiles_without_uniqueness_warning() -> None:
+def test_v1_lookup_join_without_deduplication_reports_uniqueness_warning() -> None:
     @transform
     class UniqueJoin(Transform):
         rows = input(Raw)
@@ -263,10 +263,10 @@ def test_v1_join_on_primary_key_compiles_without_uniqueness_warning() -> None:
 
     plan = compile_transform(UniqueJoin)
 
-    assert [diagnostic.code for diagnostic in plan.diagnostics] == []
+    assert [diagnostic.code for diagnostic in plan.diagnostics] == ["JOIN-W0601"]
 
 
-def test_v1_join_on_primary_key_accepts_current_row_left_operand() -> None:
+def test_v1_lookup_join_warns_regardless_of_key_operand_order() -> None:
     @transform
     class UniqueJoin(Transform):
         rows = input(Raw)
@@ -279,7 +279,7 @@ def test_v1_join_on_primary_key_accepts_current_row_left_operand() -> None:
 
     plan = compile_transform(UniqueJoin)
 
-    assert [diagnostic.code for diagnostic in plan.diagnostics] == []
+    assert [diagnostic.code for diagnostic in plan.diagnostics] == ["JOIN-W0601"]
 
 
 def test_v1_unproven_lookup_join_key_emits_uniqueness_warning() -> None:

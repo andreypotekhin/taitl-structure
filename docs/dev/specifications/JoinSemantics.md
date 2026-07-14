@@ -180,13 +180,8 @@ to match the same right row. In relational terms, it covers many-to-one and one-
 Duplicate right-side rows for the chosen key are a contract violation for `lookup_join(...)` because Spark would multiply
 the current row. Structure must not silently deduplicate or choose an arbitrary first row.
 
-Uniqueness proof sources:
-
-- A right-side schema field marked `primary_key=True` when the join key is exactly that field.
-- A future unique-key metadata feature when the join key exactly matches one declared unique key.
-- A user-enabled runtime uniqueness check, if implemented later.
-
-When no uniqueness proof exists, v1 should compile with a warning by default:
+Structure does not model primary keys or infer uniqueness from field declarations. A lookup join without explicit
+deduplication therefore compiles with a warning by default:
 
 ```text
 CompileWarning JOIN-W0601: lookup_join(...) uniqueness is not proven
@@ -201,8 +196,8 @@ Why this matters:
   If customers has duplicate id values, this join can multiply rows.
 
 Use:
-  mark Customer.id as primary_key=True, declare a unique key, use inner_join(...) if multiplication is intended,
-  or add an explicit JoinDedupe policy when one selected right row is the business rule.
+  add an explicit JoinDedupe policy when one selected right row is the business rule, or use inner_join(...) when
+  multiplication is intended.
 ```
 
 Projects may later add a strict setting that turns this warning into an error. That setting is not required for the v1
@@ -374,7 +369,7 @@ Key:
   customers.id == order.customer_id
 
 Use:
-  field(String(), primary_key=True) on Customer.id, declare a unique key, or wait for v2 inner_join(...).
+  string() on Customer.id, declare a unique key, or wait for v2 inner_join(...).
 
 See docs/dev/specifications/JoinSemantics.md
 ```

@@ -10,16 +10,20 @@ For exhaustive supported APIs, PySpark parity names, examples, and semantic diff
 A schema class defines a row contract and compiles into PySpark schema (`StructType`/`StructField`).
 
 ```python
+from structure import Schema
+from structure.field import *
+
+
 class OrderRaw(Schema):
-    id = field(String(), nullable=False)
-    customer_id = field(String(), nullable=False)
-    total = field(String(), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    total = string(nullable=True)
 
 class OrderNormalized(OrderRaw):
     pass
 
 class OrderWithCustomer(OrderRaw):
-    customer_name = field(String(), nullable=True)
+    customer_name = string(nullable=True)
 ```
 
 Use schema classes for inputs, intermediate rows, and outputs. 
@@ -271,7 +275,7 @@ Add columns by returning a schema with more fields. Drop columns by returning a 
 
 ```python
 class OrderWithFlags(OrderWithCustomer):
-    is_large = field(Boolean())
+    is_large = boolean()
 
 def add_flags(self, order: OrderWithCustomer) -> OrderWithFlags:
     total = to_decimal(order.total, precision=12, scale=2)
@@ -314,8 +318,7 @@ Reference: [transforms API](api/Transforms.api.md), [schema semantics](reference
 
 ## Expressions
 
-Structure expressions are compiler-visible and lower to Spark Column expressions. Use Python literals and the supported
-operators directly:
+Structure supports expressions that lower to Spark Column expressions, and allows to use Python literals directly:
 
 ```python
 def add_flags(self, order: OrderRaw) -> OrderWithFlags:
@@ -389,11 +392,11 @@ def product_daily_summary(self, order: OrderFulfillment) -> ProductDailySummary:
     )
 ```
 
-Core aggregate helpers are `count()`, `count_distinct(...)`, `sum(...)`, `min(...)`, `max(...)`, and `avg(...)`.
-Advanced helpers include `bool_and(...)`, `bool_or(...)`, `stddev(...)`, `variance(...)`, `corr(...)`, `covar(...)`,
+Aggregate helpers include `count()`, `count_distinct(...)`, `sum(...)`, `min(...)`, `max(...)`,  `avg(...)`.
+ and more: `bool_and(...)`, `bool_or(...)`, `stddev(...)`, `variance(...)`, `corr(...)`, `covar(...)`,
 `approx_count_distinct(...)`, `approx_percentile(...)`, `collect_list(...)`, `collect_set(...)`, `first_value(...)`,
-and `last_value(...)`. Aggregate helpers accept `where=...` for metric-local filters. Use
-bare `having(lambda out: ...)` or chained `group_by(...).having(lambda out: ...)` to filter aggregate output rows.
+and `last_value(...)`. Aggregate helpers accept `where=...` for metric-local filters. Use trailing
+`having(lambda out: ...)` or chained `group_by(...).having(lambda out: ...)` to filter aggregate output rows.
 
 Use `rollup(...)` for hierarchical subtotals, `cube(...)` for all grouping-key combinations, and
 `grouping_sets(...)` for exact subtotal layouts. Subtotal rows may omit some grouping keys, so nullable subtotal fields

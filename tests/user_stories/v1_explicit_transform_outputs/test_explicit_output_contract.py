@@ -4,11 +4,11 @@ from structure import *
 
 
 class Raw(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 class Published(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 def test_transform_declares_named_output_contract() -> None:

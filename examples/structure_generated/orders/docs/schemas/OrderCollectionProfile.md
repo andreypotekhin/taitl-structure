@@ -4,30 +4,30 @@
 
 Module: `examples.orders.schemas.adv_analytics`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `id` | `id` | `string` | no | no |
-| `tag_count` | `tag_count` | `integer` | yes | no |
-| `contains_priority` | `contains_priority` | `boolean` | yes | no |
-| `contains_region` | `contains_region` | `boolean` | yes | no |
-| `default_tags` | `default_tags` | `array<string!>` | no | no |
-| `repeated_tags` | `repeated_tags` | `array<string!>` | no | no |
-| `all_tags` | `all_tags` | `array<string!>` | yes | no |
-| `tags_without_extra` | `tags_without_extra` | `array<string!>` | yes | no |
-| `first_tag` | `first_tag` | `string` | yes | no |
-| `safe_tag` | `safe_tag` | `string` | yes | no |
-| `region` | `region` | `string` | yes | no |
-| `safe_region` | `safe_region` | `string` | yes | no |
-| `normalized_tags` | `normalized_tags` | `array<string?>` | yes | no |
-| `sorted_tags` | `sorted_tags` | `array<string!>` | yes | no |
-| `flat_tags` | `flat_tags` | `array<string!>` | yes | no |
-| `score_total` | `score_total` | `integer` | yes | no |
-| `tag_position` | `tag_position` | `long` | yes | no |
-| `has_priority` | `has_priority` | `boolean` | yes | no |
-| `all_tags_present` | `all_tags_present` | `boolean` | yes | no |
-| `normalized_attributes` | `normalized_attributes` | `map<string,string?>` | yes | no |
-| `zipped_attributes` | `zipped_attributes` | `map<string,string?>` | yes | no |
-| `attribute_keys` | `attribute_keys` | `array<string!>` | yes | no |
-| `attribute_values` | `attribute_values` | `array<string!>` | yes | no |
-| `roundtrip_attributes` | `roundtrip_attributes` | `map<string,string?>` | yes | no |
-| `merged_attributes` | `merged_attributes` | `map<string,string?>` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `id` | `id` | `string` | no |
+| `tag_count` | `tag_count` | `integer` | yes |
+| `contains_priority` | `contains_priority` | `boolean` | yes |
+| `contains_region` | `contains_region` | `boolean` | yes |
+| `default_tags` | `default_tags` | `array<string!>` | no |
+| `repeated_tags` | `repeated_tags` | `array<string!>` | no |
+| `all_tags` | `all_tags` | `array<string!>` | yes |
+| `tags_without_extra` | `tags_without_extra` | `array<string!>` | yes |
+| `first_tag` | `first_tag` | `string` | yes |
+| `safe_tag` | `safe_tag` | `string` | yes |
+| `region` | `region` | `string` | yes |
+| `safe_region` | `safe_region` | `string` | yes |
+| `normalized_tags` | `normalized_tags` | `array<string?>` | yes |
+| `sorted_tags` | `sorted_tags` | `array<string!>` | yes |
+| `flat_tags` | `flat_tags` | `array<string!>` | yes |
+| `score_total` | `score_total` | `integer` | yes |
+| `tag_position` | `tag_position` | `long` | yes |
+| `has_priority` | `has_priority` | `boolean` | yes |
+| `all_tags_present` | `all_tags_present` | `boolean` | yes |
+| `normalized_attributes` | `normalized_attributes` | `map<string,string?>` | yes |
+| `zipped_attributes` | `zipped_attributes` | `map<string,string?>` | yes |
+| `attribute_keys` | `attribute_keys` | `array<string!>` | yes |
+| `attribute_values` | `attribute_values` | `array<string!>` | yes |
+| `roundtrip_attributes` | `roundtrip_attributes` | `map<string,string?>` | yes |
+| `merged_attributes` | `merged_attributes` | `map<string,string?>` | yes |

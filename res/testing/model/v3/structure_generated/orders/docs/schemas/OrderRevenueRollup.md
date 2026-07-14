@@ -4,26 +4,26 @@
 
 Module: `testing.model.v3.orders.schemas.adv_analytics`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant_id` | `tenant_id` | `string` | yes | no |
-| `product_category` | `product_category` | `string` | yes | no |
-| `order_date` | `order_date` | `date` | yes | no |
-| `grouping_id` | `grouping_id` | `integer` | no | no |
-| `category_subtotal` | `category_subtotal` | `boolean` | yes | no |
-| `order_count` | `order_count` | `long` | no | no |
-| `large_order_count` | `large_order_count` | `long` | no | no |
-| `large_units` | `large_units` | `long` | yes | no |
-| `any_large_order` | `any_large_order` | `boolean` | yes | no |
-| `all_large_orders` | `all_large_orders` | `boolean` | yes | no |
-| `quantity_stddev` | `quantity_stddev` | `double` | yes | no |
-| `quantity_variance` | `quantity_variance` | `double` | yes | no |
-| `quantity_median` | `quantity_median` | `long` | yes | no |
-| `quantity_total` | `quantity_total` | `long` | no | no |
-| `quantity_price_corr` | `quantity_price_corr` | `double` | yes | no |
-| `quantity_price_covar` | `quantity_price_covar` | `double` | yes | no |
-| `estimated_customers` | `estimated_customers` | `long` | no | no |
-| `first_customer_id` | `first_customer_id` | `string` | yes | no |
-| `last_customer_id` | `last_customer_id` | `string` | yes | no |
-| `customer_ids` | `customer_ids` | `array<string!>` | yes | no |
-| `order_ids` | `order_ids` | `array<string!>` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant_id` | `tenant_id` | `string` | yes |
+| `product_category` | `product_category` | `string` | yes |
+| `order_date` | `order_date` | `date` | yes |
+| `grouping_id` | `grouping_id` | `integer` | no |
+| `category_subtotal` | `category_subtotal` | `boolean` | yes |
+| `order_count` | `order_count` | `long` | no |
+| `large_order_count` | `large_order_count` | `long` | no |
+| `large_units` | `large_units` | `long` | yes |
+| `any_large_order` | `any_large_order` | `boolean` | yes |
+| `all_large_orders` | `all_large_orders` | `boolean` | yes |
+| `quantity_stddev` | `quantity_stddev` | `double` | yes |
+| `quantity_variance` | `quantity_variance` | `double` | yes |
+| `quantity_median` | `quantity_median` | `long` | yes |
+| `quantity_total` | `quantity_total` | `long` | no |
+| `quantity_price_corr` | `quantity_price_corr` | `double` | yes |
+| `quantity_price_covar` | `quantity_price_covar` | `double` | yes |
+| `estimated_customers` | `estimated_customers` | `long` | no |
+| `first_customer_id` | `first_customer_id` | `string` | yes |
+| `last_customer_id` | `last_customer_id` | `string` | yes |
+| `customer_ids` | `customer_ids` | `array<string!>` | yes |
+| `order_ids` | `order_ids` | `array<string!>` | yes |

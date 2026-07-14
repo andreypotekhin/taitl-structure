@@ -4,19 +4,19 @@
 
 Module: `testing.model.v1.orders.schemas.order`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant` | `tenant` | `TenantKey` | no | no |
-| `business` | `business` | `BusinessDate` | no | no |
-| `id` | `id` | `string` | no | yes |
-| `customer_id` | `customer_id` | `string` | no | no |
-| `customer_name` | `customer_name` | `string` | yes | no |
-| `customer_tier` | `customer_tier` | `string` | yes | no |
-| `product_name` | `product_name` | `string` | yes | no |
-| `product_category` | `product_category` | `string` | yes | no |
-| `promotion_name` | `promotion_name` | `string` | yes | no |
-| `total` | `total` | `decimal(12,2)` | no | no |
-| `discount` | `discount` | `decimal(12,2)` | no | no |
-| `net_total` | `net_total` | `decimal(12,2)` | no | no |
-| `quantity` | `quantity` | `long` | no | no |
-| `is_large` | `is_large` | `boolean` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant` | `tenant` | `TenantKey` | no |
+| `business` | `business` | `BusinessDate` | no |
+| `id` | `id` | `string` | no |
+| `customer_id` | `customer_id` | `string` | no |
+| `customer_name` | `customer_name` | `string` | yes |
+| `customer_tier` | `customer_tier` | `string` | yes |
+| `product_name` | `product_name` | `string` | yes |
+| `product_category` | `product_category` | `string` | yes |
+| `promotion_name` | `promotion_name` | `string` | yes |
+| `total` | `total` | `decimal(12,2)` | no |
+| `discount` | `discount` | `decimal(12,2)` | no |
+| `net_total` | `net_total` | `decimal(12,2)` | no |
+| `quantity` | `quantity` | `long` | no |
+| `is_large` | `is_large` | `boolean` | no |

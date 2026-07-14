@@ -4,7 +4,7 @@
 
 Module: `testing.model.v2.orders.schemas.common`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `source_system` | `source_system` | `string` | no | no |
-| `ingested_at` | `ingested_at` | `timestamp` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `source_system` | `source_system` | `string` | no |
+| `ingested_at` | `ingested_at` | `timestamp` | no |

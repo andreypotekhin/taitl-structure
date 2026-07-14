@@ -71,8 +71,8 @@ Field references inherit nullability from their declared schema field:
 
 ```python
 class OrderRaw(Schema):
-    id = field(String(), nullable=False)
-    total = field(String(), nullable=True)
+    id = string(nullable=False)
+    total = string(nullable=True)
 ```
 
 `order.id` is non-null. `order.total` is nullable.
@@ -87,12 +87,12 @@ coalesce(to_decimal(order.total, precision=12, scale=2), 0)
 Literal rules:
 
 - `None` is a nullable untyped null literal.
-- `str` is non-null `String()`.
-- `bool` is non-null `Boolean()`.
-- `int` is non-null `Integer()` unless the value is outside 32-bit range, in which case it is `Long()`.
-- `float` is non-null `Double()` by default because Python `float` is double precision.
-- `datetime.date` is non-null `Date()`.
-- `datetime.datetime` is non-null `Timestamp()`.
+- `str` is non-null `string()`.
+- `bool` is non-null `boolean()`.
+- `int` is non-null `integer()` unless the value is outside 32-bit range, in which case it is `long()`.
+- `float` is non-null `double()` by default because Python `float` is double precision.
+- `datetime.date` is non-null `date()`.
+- `datetime.datetime` is non-null `timestamp()`.
 
 Generated PySpark may lower literals to `F.lit(...)`. Users should not need to write `lit(...)` in Structure source.
 
@@ -107,8 +107,8 @@ Most expression helpers are null-intolerant: if any required input is nullable, 
 
 Null-aware helpers have specific rules:
 
-- `is_null(value)` returns non-null `Boolean()`.
-- `is_not_null(value)` returns non-null `Boolean()`.
+- `is_null(value)` returns non-null `boolean()`.
+- `is_not_null(value)` returns non-null `boolean()`.
 - `coalesce(a, b, ...)` returns the first non-null runtime value. It is statically non-null when at least one
   argument is statically non-null. It is nullable only when all arguments are nullable.
 - `when(condition, value).otherwise(fallback)` is non-null only when all result branches are statically non-null.
@@ -179,15 +179,15 @@ Every expression has a Structure type. Assignment compatibility compares the exp
 
 The v1 scalar types are those from the schema syntax specification:
 
-- `String()`
-- `Integer()`
-- `Long()`
-- `Float()`
-- `Double()`
-- `Boolean()`
-- `Date()`
-- `Timestamp()`
-- `Decimal(precision, scale)`
+- `string()`
+- `integer()`
+- `long()`
+- `float()`
+- `double()`
+- `boolean()`
+- `date()`
+- `timestamp()`
+- `decimal(precision, scale)`
 
 Arrays and structs follow the same assignment idea recursively when implemented in v1.
 
@@ -199,21 +199,21 @@ In the default Spark SQL ANSI policy, v1 should accept:
 
 - exact type matches;
 - untyped `None` for nullable fields;
-- integer literals assignable to `Integer()`, `Long()`, or compatible `Decimal(...)` fields;
-- floating literals assignable to `Double()` fields, or to `Float()` fields when target context is explicit;
-- `Integer()` expressions assigned to `Long()` fields;
-- `Float()` expressions assigned to `Double()` fields;
-- integer expressions assigned to compatible `Decimal(...)` fields;
+- integer literals assignable to `integer()`, `long()`, or compatible `decimal(...)` fields;
+- floating literals assignable to `double()` fields, or to `float()` fields when target context is explicit;
+- `integer()` expressions assigned to `long()` fields;
+- `float()` expressions assigned to `double()` fields;
+- integer expressions assigned to compatible `decimal(...)` fields;
 - decimal expressions assigned to a decimal field with enough integer digits and scale;
-- values assigned to `String()` only when the source type is already `String()` or the conversion is explicitly
+- values assigned to `string()` only when the source type is already `string()` or the conversion is explicitly
   requested.
 
 v1 should reject:
 
 - nullable expression to non-nullable field;
-- `String()` to numeric, date, or timestamp fields without an explicit helper;
-- numeric, date, timestamp, or boolean values to `String()` without an explicit helper;
-- `Double()` expressions assigned to `Float()` fields without an explicit helper;
+- `string()` to numeric, date, or timestamp fields without an explicit helper;
+- numeric, date, timestamp, or boolean values to `string()` without an explicit helper;
+- `double()` expressions assigned to `float()` fields without an explicit helper;
 - decimal narrowing that can lose integer digits or scale;
 - boolean-to-numeric and numeric-to-boolean assignment;
 - array or struct assignment when element or field compatibility fails.
@@ -227,18 +227,18 @@ and asks for an explicit helper.
 
 ## Decimal Rules
 
-`Decimal(precision, scale)` means a number can have at most `precision` total digits, with `scale` digits after the
+`decimal(precision, scale)` means a number can have at most `precision` total digits, with `scale` digits after the
 decimal point.
 
-Assignment from `Decimal(p1, s1)` to `Decimal(p2, s2)` is accepted when:
+Assignment from `decimal(p1, s1)` to `decimal(p2, s2)` is accepted when:
 
 - `s2 >= s1`; and
 - `p2 - s2 >= p1 - s1`.
 
 This preserves both fractional and integer digits.
 
-`Integer()` to `Decimal(p, s)` is accepted when `p - s >= 10`, because a 32-bit integer may need ten integer digits
-including sign range. `Long()` to `Decimal(p, s)` is accepted when `p - s >= 19`.
+`integer()` to `decimal(p, s)` is accepted when `p - s >= 10`, because a 32-bit integer may need ten integer digits
+including sign range. `long()` to `decimal(p, s)` is accepted when `p - s >= 19`.
 
 Decimal arithmetic result typing may follow Spark's formulas later. v1 only needs assignment compatibility and helper
 result types used by current expression helpers.
@@ -255,8 +255,8 @@ to_timestamp(order.event_time, format="yyyy-MM-dd HH:mm:ss")
 
 Rules:
 
-- `to_decimal(value, precision=P, scale=S)` returns `Decimal(P, S)`.
-- Date and timestamp parsing helpers return `Date()` and `Timestamp()` respectively when implemented.
+- `to_decimal(value, precision=P, scale=S)` returns `decimal(P, S)`.
+- Date and timestamp parsing helpers return `date()` and `timestamp()` respectively when implemented.
 - Parsing helpers preserve input nullability unless their own semantics guarantee otherwise.
 - Tolerant helpers may be added later, such as `try_to_timestamp(...)`, and should return nullable results.
 
@@ -271,9 +271,9 @@ For v1, use a small Structure type join rule:
 
 - untyped `None` adopts the other argument type;
 - exact matches keep that type;
-- `Integer()` and `Long()` produce `Long()`;
-- `Float()` and `Double()` produce `Double()`;
-- integral values combined with `Float()` or `Double()` produce the floating type;
+- `integer()` and `long()` produce `long()`;
+- `float()` and `double()` produce `double()`;
+- integral values combined with `float()` or `double()` produce the floating type;
 - integer values and compatible decimal values produce the compatible decimal type;
 - decimal values use the smallest decimal that preserves integer digits and scale;
 - incompatible types are rejected with a diagnostic.
@@ -284,7 +284,7 @@ When a helper appears in an output assignment, the target field may provide cont
 total=coalesce(to_decimal(order.total, precision=12, scale=2), 0)
 ```
 
-The literal `0` may be typed as `Decimal(12, 2)` because the other argument and target field agree on that decimal type.
+The literal `0` may be typed as `decimal(12, 2)` because the other argument and target field agree on that decimal type.
 
 ## Diagnostics
 
@@ -306,7 +306,7 @@ Nullable-to-non-nullable example:
 CompileError SCHEMA-E0301: Nullable expression assigned to non-nullable field
 
 Output field:
-  OrderNormalized.total: Decimal(12, 2), nullable=False
+  OrderNormalized.total: decimal(12, 2), nullable=False
 
 Source expression:
   to_decimal(order.total, precision=12, scale=2)
@@ -326,10 +326,10 @@ Parsing conversion example:
 CompileError SCHEMA-E0302: Explicit conversion required
 
 Output field:
-  OrderNormalized.total: Decimal(12, 2), nullable=True
+  OrderNormalized.total: decimal(12, 2), nullable=True
 
 Source expression:
-  order.total: String(), nullable=True
+  order.total: string(), nullable=True
 
 Problem:
   String-to-decimal parsing is data-quality logic and must be visible in Structure source.
@@ -346,10 +346,10 @@ Type mismatch example:
 CompileError SCHEMA-E0303: Incompatible output field type
 
 Output field:
-  OrderNormalized.is_paid: Boolean(), nullable=False
+  OrderNormalized.is_paid: boolean(), nullable=False
 
 Source expression:
-  order.payment_count: Integer(), nullable=False
+  order.payment_count: integer(), nullable=False
 
 Problem:
   Integer values do not assign to Boolean fields under the configured Spark SQL assignment policy.
@@ -383,10 +383,10 @@ See docs/dev/specifications/NullabilityAndTypeCoercion.md
 - The same expression is accepted when guarded by `where(expr.is_not_null())`.
 - `coalesce(to_decimal(order.total, precision=12, scale=2), 0)` is accepted for a non-nullable decimal output.
 - Users can write Python literals in Structure source; generated PySpark uses `F.lit(...)` where Spark requires it.
-- `Integer()` assigned to `Long()` is accepted under the default ANSI assignment policy.
-- `Float()` assigned to `Double()` is accepted under the default ANSI assignment policy.
-- Python `float` literals infer `Double()` unless a `Float()` target supplies explicit context.
+- `integer()` assigned to `long()` is accepted under the default ANSI assignment policy.
+- `float()` assigned to `double()` is accepted under the default ANSI assignment policy.
+- Python `float` literals infer `double()` unless a `float()` target supplies explicit context.
 - Compatible decimal widening is accepted.
 - Decimal narrowing is rejected.
-- `String()` assigned directly to `Decimal(...)` is rejected with a `to_decimal(...)` suggestion.
+- `string()` assigned directly to `decimal(...)` is rejected with a `to_decimal(...)` suggestion.
 - Unsupported assignment policies produce clear diagnostics rather than silent miscompilation.

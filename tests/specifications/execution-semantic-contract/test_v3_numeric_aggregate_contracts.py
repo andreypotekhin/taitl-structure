@@ -108,7 +108,7 @@ def test_ordering_and_null_handling_options_require_booleans(call) -> None:
                 1,
                 partition_by="tenant",
                 order_by="ordered",
-                default=Expression(kind="test_default", type=Long(), nullable=False),
+                default=Expression(kind="test_default", type=types.long(), nullable=False),
             ),
             "default must be a Python scalar literal",
         ),

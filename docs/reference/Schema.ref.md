@@ -24,19 +24,20 @@ PySpark, start Java, create a `SparkSession`, or inspect live data.
 The canonical v1 declaration form is explicit:
 
 ```python
-from structure import *
+from structure import Schema
+from structure.field import *
 
 
 class OrderRaw(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    customer_id = field(String(), nullable=False)
-    total = field(String(), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    total = string(nullable=True)
 
 
 class OrderNormalized(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    customer_id = field(String(), nullable=False)
-    total = field(Decimal(12, 2), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    total = decimal(12, 2, nullable=True)
 ```
 
 Rules:
@@ -45,7 +46,6 @@ Rules:
 - Every type is an explicit immutable Structure type object.
 - Field order is class-body order after inheritance is resolved.
 - Field names are Python attribute names.
-- `primary_key=True` implies `nullable=False`.
 - Public examples must use this form.
 
 ### Schema Identity
@@ -81,13 +81,14 @@ for compiler checks, generated Spark `StructType` code, runtime validation, trac
 
 ### Public Imports
 
-The public schema DSL is importable from `structure`:
+The schema declaration DSL is imported from `structure.field`:
 
 ```python
-from structure import *
+from structure import Schema
+from structure.field import *
 ```
 
-`Map` is part of the schema type surface.
+Standalone type values for casts and UDF contracts are available through `structure.types`.
 
 ### Grammar
 
@@ -95,26 +96,26 @@ In descriptive form, the accepted schema declaration grammar is:
 
 ```text
 schema_class      := class NAME(Schema): field_decl*
-field_decl        := NAME = field(type_expr, field_kwarg*)
-type_expr         := scalar_type | decimal_type | array_type | struct_type | map_type
-scalar_type       := String() | Integer() | Long() | Float() | Double() | Boolean() | Date() | Timestamp()
-decimal_type      := Decimal(precision, scale)
-array_type        := Array(type_expr, contains_null=BOOL?)
-struct_type       := Struct(schema_ref)
-map_type          := Map(key_type, value_type, value_contains_null=BOOL?)
-field_kwarg       := nullable=BOOL | primary_key=BOOL | alias=STRING | metadata=DICT | description=STRING
+field_decl        := NAME = field_factory(field_kwarg*)
+field_factory     := scalar_type | decimal_type | array_type | struct_type | map_type
+scalar_type       := string() | integer() | long() | float() | double() | boolean() | date() | timestamp()
+decimal_type      := decimal(precision, scale)
+array_type        := array(type_expr, contains_null=BOOL?)
+struct_type       := struct(schema_ref)
+map_type          := map(key_type, value_type, value_contains_null=BOOL?)
+field_kwarg       := nullable=BOOL | alias=STRING | metadata=DICT | description=STRING
 schema_ref        := Schema class object
 ```
 
 The compiler should implement this grammar by inspecting runtime schema objects when import-based discovery is used.
 Source text or AST inspection may still be used for diagnostics and source spans.
 
-Lowercase type sentinels, annotation-only declarations, dataclass-style defaults, raw PySpark fields, implicit Spark
-type strings, and non-schema mixins are outside the canonical form.
+Annotations and comments are documentation only; raw PySpark fields, implicit Spark type strings, and non-schema
+mixins are outside the canonical form.
 
 ### Schema Classes
 
-A schema class is a class inheriting from `Schema` with `field(...)` attributes.
+A schema class is a class inheriting from `Schema` with field-factory attributes.
 
 Rules:
 
@@ -136,15 +137,14 @@ field(
     type_,
     *,
     nullable=True,
-    primary_key=False,
     alias=None,
     metadata=None,
     description=None,
 )
 ```
 
-`type_` is required and must be a Structure type. `nullable` defaults to `True`. `primary_key` defaults to `False` and
-implies `nullable=False`. `alias` is the Spark column name; otherwise the Python attribute name is also the Spark name.
+`nullable` defaults to `True`. `alias` is the Spark column name; otherwise the Python attribute name is also the Spark
+name.
 `metadata` is an immutable mapping. `description` feeds generated documentation, diagnostics, and traceability.
 
 Each effective field records:
@@ -153,7 +153,6 @@ Each effective field records:
 name
 type
 nullable
-primary_key
 alias
 metadata
 description
@@ -174,33 +173,18 @@ Rules:
 - Unknown field constructor keywords are declaration errors.
 - Field metadata and descriptions do not change Spark shape semantics unless a narrower spec says so.
 
-`primary_key=True` on a nullable field is invalid unless `nullable=False` is explicitly supplied or inferred by the
-implementation. Preferred compiler behavior is to normalize it to non-nullable and emit no warning.
-
 ### Field Options In Use
 
 This declaration uses every field option in its ordinary role:
 
 ```python
 class CustomerSource(Schema):
-    customer_id = field(
-        String(),
-        nullable=False,
-        primary_key=True,
-        alias="customer-id",
-        metadata={"source": "crm", "pii": "indirect"},
-        description="Stable customer identifier supplied by the CRM.",
-    )
-    display_name = field(
-        String(),
-        nullable=True,
-        description="Name displayed to account users.",
-    )
+    customer_id = string(nullable=False, alias='customer-id', metadata={'source': 'crm', 'pii': 'indirect'}, description='Stable customer identifier supplied by the CRM.')
+    display_name = string(nullable=True, description='Name displayed to account users.')
 ```
 
 `customer_id` is the Python name used in Structure code; `customer-id` is the column that Spark reads and writes.
-`primary_key=True` makes the field non-nullable, but it does not scan for or enforce uniqueness. Uniqueness is a
-data-quality constraint, not a schema-shape property. `metadata` and `description` travel with the compiler model for
+Structure does not declare primary keys or uniqueness. `metadata` and `description` travel with the compiler model for
 generated documentation, diagnostics, and traceability; neither changes the Spark type or validates data values.
 
 ### Field Aliases
@@ -210,11 +194,11 @@ with spaces, hyphens, reserved words, leading digits, or legacy names that shoul
 
 ```python
 class OrderRaw(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    promotion_code = field(String(), nullable=True, alias="promo-code")
-    customer_id = field(String(), nullable=True, alias="customer id")
-    class_ = field(String(), nullable=True, alias="class")
-    field_1st_code = field(String(), nullable=True, alias="1st code")
+    id = string(nullable=False)
+    promotion_code = string(nullable=True, alias='promo-code')
+    customer_id = string(nullable=True, alias='customer id')
+    class_ = string(nullable=True, alias='class')
+    field_1st_code = string(nullable=True, alias='1st code')
 ```
 
 The Python name remains the Structure field name:
@@ -244,11 +228,11 @@ the field definition:
 
 ```python
 class RawPromotion(Schema):
-    promotion_code = field(String(), nullable=True, alias="promo-code")
+    promotion_code = string(nullable=True, alias='promo-code')
 
 
 class NormalizedPromotion(Schema):
-    promotion_code = field(String(), nullable=True)
+    promotion_code = string(nullable=True)
 
 
 class StillRawPromotion(RawPromotion):
@@ -266,16 +250,16 @@ StillRawPromotion.promotion_code    -> "promo-code"
 Invalid aliases fail early:
 
 ```python
-field(String(), alias="")    # rejected: empty alias
-field(String(), alias=123)   # rejected: alias is not a string
+string(alias='')    # rejected: empty alias
+string(alias=123)   # rejected: alias is not a string
 ```
 
 Duplicate effective Spark column names are rejected after aliases and inheritance are resolved:
 
 ```python
 class Duplicate(Schema):
-    promotion_code = field(String(), alias="promo-code")
-    alternate_code = field(String(), alias="promo-code")  # rejected
+    promotion_code = string(alias='promo-code')
+    alternate_code = string(alias='promo-code')  # rejected
 ```
 
 Schema field `alias=...` is separate from APIs named `.alias(...)`:
@@ -312,13 +296,13 @@ The following are not part of v1 canonical syntax:
 Existing examples using lowercase tokens should be migrated mechanically:
 
 ```text
-field(string)          -> field(String())
-field(decimal(12, 2))  -> field(Decimal(12, 2))
-field(boolean)         -> field(Boolean())
-field(integer)         -> field(Integer())
-field(long)            -> field(Long())
-field(float)           -> field(Float())
-field(double)          -> field(Double())
+field(string)          -> string()
+field(decimal(12, 2))  -> decimal(12, 2)
+field(boolean)         -> boolean()
+field(integer)         -> integer()
+field(long)            -> long()
+field(float)           -> float()
+field(double)          -> double()
 ```
 
 The compiler may include a temporary compatibility mode for lowercase aliases during early implementation, but docs,
@@ -329,10 +313,10 @@ fixtures, and generated examples must use only the canonical explicit type-objec
 All schema type constructors return immutable value objects. Equality is structural.
 
 ```text
-String() == String()
-Decimal(12, 2) == Decimal(12, 2)
-Array(String()) == Array(String())
-Struct(Address) == Struct(Address)
+string() == string()
+decimal(12, 2) == decimal(12, 2)
+array(string()) == array(string())
+struct(Address) == struct(Address)
 ```
 
 The v1 type model is:
@@ -357,27 +341,27 @@ MapType(key_type, value_type, value_contains_null)
 The v1 scalar type constructors are:
 
 ```python
-String()
-Integer()
-Long()
-Float()
-Double()
-Boolean()
-Date()
-Timestamp()
+string()
+integer()
+long()
+float()
+double()
+boolean()
+date()
+timestamp()
 ```
 
 Generated PySpark mapping:
 
 ```text
-String()     -> T.StringType()
-Integer()    -> T.IntegerType()
-Long()       -> T.LongType()
-Float()      -> T.FloatType()
-Double()     -> T.DoubleType()
-Boolean()    -> T.BooleanType()
-Date()       -> T.DateType()
-Timestamp()  -> T.TimestampType()
+string()     -> T.StringType()
+integer()    -> T.IntegerType()
+long()       -> T.LongType()
+float()      -> T.FloatType()
+double()     -> T.DoubleType()
+boolean()    -> T.BooleanType()
+date()       -> T.DateType()
+timestamp()  -> T.TimestampType()
 ```
 
 One schema can use all scalar types. The choice is part of the contract; Structure does not infer a field type from
@@ -385,19 +369,19 @@ live data:
 
 ```python
 class ScalarSample(Schema):
-    label = field(String(), nullable=False)
-    item_count = field(Integer(), nullable=False)
-    event_sequence = field(Long(), nullable=False)
-    confidence = field(Float(), nullable=True)
-    score = field(Double(), nullable=True)
-    active = field(Boolean(), nullable=False)
-    business_date = field(Date(), nullable=False)
-    recorded_at = field(Timestamp(), nullable=False)
+    label = string(nullable=False)
+    item_count = integer(nullable=False)
+    event_sequence = long(nullable=False)
+    confidence = float(nullable=True)
+    score = double(nullable=True)
+    active = boolean(nullable=False)
+    business_date = date(nullable=False)
+    recorded_at = timestamp(nullable=False)
 ```
 
 ### Decimal
 
-`Decimal(precision, scale)` requires an integer precision of at least one and a scale from zero through that precision.
+`decimal(precision, scale)` requires an integer precision of at least one and a scale from zero through that precision.
 
 Rules:
 
@@ -409,52 +393,52 @@ Rules:
 Generated PySpark mapping:
 
 ```text
-Decimal(12, 2) -> T.DecimalType(12, 2)
+decimal(12, 2) -> T.DecimalType(12, 2)
 ```
 
 For example, a currency field with up to ten digits before the decimal point and two after it is declared as:
 
 ```python
 class Payment(Schema):
-    total = field(Decimal(12, 2), nullable=False)
+    total = decimal(12, 2, nullable=False)
 ```
 
 ### Array
 
-`Array(item_type, contains_null=True)` declares arrays.
+`array(item_type, contains_null=True)` declares arrays.
 
 Rules:
 
 - `item_type` must be a Structure type object.
 - `contains_null` defaults to `True`.
 - Nested arrays are allowed.
-- Arrays of structs are allowed with `Array(Struct(Address))`.
+- Arrays of structs are allowed with `array(struct(Address))`.
 
 Generated PySpark mapping:
 
 ```text
-Array(String())                       -> T.ArrayType(T.StringType(), containsNull=True)
-Array(String(), contains_null=False)  -> T.ArrayType(T.StringType(), containsNull=False)
+array(string())                       -> T.ArrayType(T.StringType(), containsNull=True)
+array(string(), contains_null=False)  -> T.ArrayType(T.StringType(), containsNull=False)
 ```
 
 For example, `tags` may be absent as a whole, while a present tag list may not contain null elements:
 
 ```python
 class TaggedOrder(Schema):
-    tags = field(Array(String(), contains_null=False), nullable=True)
+    tags = array(string(), contains_null=False, nullable=True)
 ```
 
 ### Struct
 
-`Struct(schema)` declares a nested schema.
+`struct(schema)` declares a nested schema.
 
 Rules:
 
 - `schema` must be a `Schema` class, not an instance.
-- `Struct(Address)` identifies a particular schema class.
-- `Struct(Address)` and `Struct(BillingAddress)` are compatible only when they reference the same schema class.
+- `struct(Address)` identifies a particular schema class.
+- `struct(Address)` and `struct(BillingAddress)` are compatible only when they reference the same schema class.
 - Nested struct field order follows the referenced schema class.
-- `Struct(SchemaClass)` uses the effective inherited field set of `SchemaClass`.
+- `struct(SchemaClass)` uses the effective inherited field set of `SchemaClass`.
 - Self-recursive schemas are rejected in v1.
 - Recursive cycles across multiple schemas are rejected in v1.
 
@@ -462,16 +446,16 @@ Example:
 
 ```python
 class AddressBase(Schema):
-    city = field(String(), nullable=True)
+    city = string(nullable=True)
 
 
 class ShippingAddress(AddressBase):
-    postal_code = field(String(), nullable=True)
+    postal_code = string(nullable=True)
 
 
 class Order(Schema):
-    shipping = field(Struct(ShippingAddress), nullable=True)
-    previous_addresses = field(Array(Struct(ShippingAddress)), nullable=True)
+    shipping = struct(ShippingAddress, nullable=True)
+    previous_addresses = array(struct(ShippingAddress), nullable=True)
 ```
 
 Generated Spark schema for both fields includes `city` and `postal_code`; `previous_addresses` is an array whose
@@ -480,12 +464,12 @@ elements use that same nested shape.
 Generated PySpark mapping:
 
 ```text
-Struct(Address) -> T.StructType([...Address fields...])
+struct(Address) -> T.StructType([...Address fields...])
 ```
 
 ### Map
 
-`Map(key_type, value_type, value_contains_null=True)` declares maps.
+`map(key_type, value_type, value_contains_null=True)` declares maps.
 
 Rules:
 
@@ -494,28 +478,25 @@ Rules:
 - `value_contains_null` defaults to `True`.
 - Map keys are never nullable because Spark map keys cannot be null.
 - Nested map values are allowed.
-- Map values may be structs with `Map(String(), Struct(Attribute))`.
+- Map values may be structs with `map(string(), struct(Attribute))`.
 - Higher-order map transformations remain a v2 expression feature.
 
 Generated PySpark mapping:
 
 ```text
-Map(String(), String())  -> T.MapType(T.StringType(), T.StringType(), valueContainsNull=True)
+map(string(), string())  -> T.MapType(T.StringType(), T.StringType(), valueContainsNull=True)
 ```
 
 For example, a sparse set of typed attributes can use struct values and require every present value to be non-null:
 
 ```python
 class Attribute(Schema):
-    value = field(String(), nullable=False)
-    captured_at = field(Timestamp(), nullable=False)
+    value = string(nullable=False)
+    captured_at = timestamp(nullable=False)
 
 
 class Product(Schema):
-    attributes = field(
-        Map(String(), Struct(Attribute), value_contains_null=False),
-        nullable=True,
-    )
+    attributes = map(string(), struct(Attribute), value_contains_null=False, nullable=True)
 ```
 
 ### Spark Type Mapping
@@ -523,18 +504,18 @@ class Product(Schema):
 Full v1 mapping:
 
 ```text
-String()              -> T.StringType()
-Integer()             -> T.IntegerType()
-Long()                -> T.LongType()
-Float()               -> T.FloatType()
-Double()              -> T.DoubleType()
-Decimal(12, 2)        -> T.DecimalType(12, 2)
-Boolean()             -> T.BooleanType()
-Date()                -> T.DateType()
-Timestamp()           -> T.TimestampType()
-Array(String())       -> T.ArrayType(T.StringType(), containsNull=True)
-Struct(Address)       -> T.StructType([...])
-Map(String(), Long()) -> T.MapType(T.StringType(), T.LongType(), valueContainsNull=True)
+string()              -> T.StringType()
+integer()             -> T.IntegerType()
+long()                -> T.LongType()
+float()               -> T.FloatType()
+double()              -> T.DoubleType()
+decimal(12, 2)        -> T.DecimalType(12, 2)
+boolean()             -> T.BooleanType()
+date()                -> T.DateType()
+timestamp()           -> T.TimestampType()
+array(string())       -> T.ArrayType(T.StringType(), containsNull=True)
+struct(Address)       -> T.StructType([...])
+map(string(), long()) -> T.MapType(T.StringType(), T.LongType(), valueContainsNull=True)
 ```
 
 Spark schema generation must be deterministic and formatted consistently. When a field has an alias, Spark schema
@@ -548,22 +529,23 @@ columns, partition columns, tenancy fields, and common source metadata. It is no
 ### Canonical Form
 
 ```python
-from structure import *
+from structure import Schema
+from structure.field import *
 
 
 class EntityKeys(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    tenant_id = field(String(), nullable=False)
+    id = string(nullable=False)
+    tenant_id = string(nullable=False)
 
 
 class AuditFields(Schema):
-    created_at = field(Timestamp(), nullable=False)
-    updated_at = field(Timestamp(), nullable=True)
+    created_at = timestamp(nullable=False)
+    updated_at = timestamp(nullable=True)
 
 
 class Order(EntityKeys, AuditFields):
-    customer_id = field(String(), nullable=False)
-    total = field(Decimal(12, 2), nullable=True)
+    customer_id = string(nullable=False)
+    total = decimal(12, 2, nullable=True)
 ```
 
 Effective field order for `Order` is:
@@ -585,19 +567,19 @@ Examples:
 
 ```python
 class Customer(EntityKeys):
-    name = field(String(), nullable=True)
+    name = string(nullable=True)
 ```
 
 ```python
 class Order(EntityKeys, AuditFields):
-    total = field(Decimal(12, 2), nullable=True)
+    total = decimal(12, 2, nullable=True)
 ```
 
 Non-schema mixins are not supported in v1:
 
 ```python
 class Order(EntityKeys, SomePlainMixin):  # rejected
-    total = field(Decimal(12, 2), nullable=True)
+    total = decimal(12, 2, nullable=True)
 ```
 
 ### Field Collection Algorithm
@@ -623,11 +605,11 @@ A schema class may override an inherited field by redeclaring the same field nam
 
 ```python
 class SoftDeleteFields(Schema):
-    deleted_at = field(Timestamp(), nullable=True)
+    deleted_at = timestamp(nullable=True)
 
 
 class RequiredDeleteMarker(SoftDeleteFields):
-    deleted_at = field(Timestamp(), nullable=False)
+    deleted_at = timestamp(nullable=False)
 ```
 
 Override rules:
@@ -652,23 +634,23 @@ Rejected:
 
 ```python
 class SourceKeys(Schema):
-    id = field(String(), nullable=False)
+    id = string(nullable=False)
 
 
 class BusinessKeys(Schema):
-    id = field(String(), nullable=False, primary_key=True)
+    id = string(nullable=False)
 
 
 class Order(SourceKeys, BusinessKeys):
-    total = field(Decimal(12, 2), nullable=True)
+    total = decimal(12, 2, nullable=True)
 ```
 
 Accepted:
 
 ```python
 class Order(SourceKeys, BusinessKeys):
-    id = field(String(), nullable=False, primary_key=True)
-    total = field(Decimal(12, 2), nullable=True)
+    id = string(nullable=False)
+    total = decimal(12, 2, nullable=True)
 ```
 
 The resolved `id` keeps the first inherited position. In the accepted example, `id` remains before `total`.
@@ -677,19 +659,19 @@ Diamond inheritance through a shared base is not a duplicate:
 
 ```python
 class Keys(Schema):
-    id = field(String(), nullable=False)
+    id = string(nullable=False)
 
 
 class CustomerKeys(Keys):
-    customer_id = field(String(), nullable=False)
+    customer_id = string(nullable=False)
 
 
 class ProductKeys(Keys):
-    product_id = field(String(), nullable=False)
+    product_id = string(nullable=False)
 
 
 class CustomerProduct(CustomerKeys, ProductKeys):
-    score = field(Decimal(8, 4), nullable=True)
+    score = decimal(8, 4, nullable=True)
 ```
 
 `id` is collected once because `Keys` is a shared ancestor.
@@ -745,7 +727,6 @@ FieldDef
   name
   type
   nullable
-  primary_key
   alias
   metadata
   description
@@ -789,8 +770,6 @@ Rules:
 - `name` is the Python class attribute name.
 - `type` is a Structure `TypeDef`.
 - `nullable` defaults to `True`.
-- `primary_key` defaults to `False`.
-- `primary_key=True` implies `nullable=False`.
 - `alias` is an optional Spark column name. If absent, the Spark column name is `name`.
 - `metadata` is immutable and defaults to empty.
 - `description` is optional.
@@ -866,7 +845,7 @@ Rules:
 
 ### Nested Struct Construction
 
-For nested `Struct(...)` fields, use the nested schema constructor as the assigned value:
+For nested `struct(...)` fields, use the nested schema constructor as the assigned value:
 
 ```python
 return OrderPublished(
@@ -882,7 +861,7 @@ Rules:
 
 - Nested constructors lower to Spark `struct(...)` expressions, not Python objects or UDFs.
 - The nested constructor must assign every field declared by the nested schema.
-- The constructed schema must match the target `Struct(...)` schema identity.
+- The constructed schema must match the target `struct(...)` schema identity.
 - To change one child field, construct the whole nested value for now.
 - Partial nested updates such as replacing only `shipping.city` are deferred planned work.
 
@@ -925,13 +904,13 @@ Example with multiple schema bases:
 
 ```python
 class OrderPublication(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    customer_name = field(String(), nullable=True)
-    total = field(Decimal(12, 2), nullable=False)
+    id = string(nullable=False)
+    customer_name = string(nullable=True)
+    total = decimal(12, 2, nullable=False)
 
 
 class PublicationFlags(Schema):
-    has_promotion = field(Boolean(), nullable=False)
+    has_promotion = boolean(nullable=False)
 
 
 class OrderPublished(OrderPublication, PublicationFlags):
@@ -989,9 +968,9 @@ and decimal widening that preserves both integer digits and scale. It rejects nu
 implicit string parsing, numeric/string conversion, double-to-float, lossy decimal narrowing, boolean/numeric
 conversion, and incompatible nested values.
 
-`Decimal(p1, s1)` assigns to `Decimal(p2, s2)` only if `s2 >= s1` and `p2 - s2 >= p1 - s1`. A 32-bit integer needs at
+`decimal(p1, s1)` assigns to `decimal(p2, s2)` only if `s2 >= s1` and `p2 - s2 >= p1 - s1`. A 32-bit integer needs at
 least ten integral decimal digits; a long needs nineteen. `coalesce` computes a least common type, so an untyped `0`
-can become `Decimal(12, 2)` when its other argument and output target establish that context.
+can become `decimal(12, 2)` when its other argument and output target establish that context.
 
 Use explicit semantic parsing conversions for string data:
 
@@ -1003,19 +982,19 @@ return OrderNormalized(
 )
 ```
 
-Ordinary compatible assignments stay compact. Here an integer field widens to `Long()`, `None` supplies a nullable
+Ordinary compatible assignments stay compact. Here an integer field widens to `long()`, `None` supplies a nullable
 field, and parsing remains explicit where the source and target have different meaning:
 
 ```python
 class OrderRaw(Schema):
-    item_count = field(Integer(), nullable=False)
-    total = field(String(), nullable=True)
+    item_count = integer(nullable=False)
+    total = string(nullable=True)
 
 
 class OrderNormalized(Schema):
-    item_count = field(Long(), nullable=False)
-    total = field(Decimal(12, 2), nullable=True)
-    rejection_reason = field(String(), nullable=True)
+    item_count = long(nullable=False)
+    total = decimal(12, 2, nullable=True)
+    rejection_reason = string(nullable=True)
 
 
 def normalize(self, order: OrderRaw) -> OrderNormalized:
@@ -1035,9 +1014,9 @@ Example:
 
 ```python
 class Customer(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=True)
-    tier = field(String(), nullable=True)
+    id = string(nullable=False)
+    name = string(nullable=True)
+    tier = string(nullable=True)
 ```
 
 Generated PySpark schema:
@@ -1176,10 +1155,10 @@ Example:
 CompileError SCHEMA-E0302: Explicit conversion required
 
 Output field:
-  OrderNormalized.total: Decimal(12, 2), nullable=True
+  OrderNormalized.total: decimal(12, 2), nullable=True
 
 Source expression:
-  order.total: String(), nullable=True
+  order.total: string(), nullable=True
 
 Use:
   total=to_decimal(order.total, precision=12, scale=2)
@@ -1194,7 +1173,7 @@ Invalid schema field type:
   OrderRaw.id uses string
 
 Use an explicit Structure type object:
-  id = field(String(), nullable=False)
+  id = string(nullable=False)
 
 See docs/reference/Schema.ref.md
 ```
@@ -1203,10 +1182,10 @@ Example:
 
 ```text
 Invalid decimal type:
-  OrderNormalized.total uses Decimal(2, 12)
+  OrderNormalized.total uses decimal(2, 12)
 
 Decimal scale must be less than or equal to precision:
-  total = field(Decimal(12, 2), nullable=True)
+  total = decimal(12, 2, nullable=True)
 
 See docs/reference/Schema.ref.md
 ```
@@ -1219,7 +1198,7 @@ Ambiguous inherited field:
 
 Resolve the field in Order:
   class Order(SourceKeys, BusinessKeys):
-      id = field(String(), nullable=False, primary_key=True)
+      id = string(nullable=False)
 
 See docs/reference/Schema.ref.md
 ```

@@ -4,6 +4,6 @@
 
 Module: `examples.orders.schemas.order`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `has_promotion` | `has_promotion` | `boolean` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `has_promotion` | `has_promotion` | `boolean` | no |

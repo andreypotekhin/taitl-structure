@@ -8,33 +8,33 @@ from structure.app.target.pyspark.api import PySpark
 
 
 class Raw(Schema):
-    id = field(String(), nullable=False)
-    product_id = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    product_id = field.string(nullable=True)
 
 
 class Normalized(Schema):
-    id = field(String(), nullable=False)
-    product_id = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    product_id = field.string(nullable=True)
 
 
 class Product(Schema):
-    id = field(String(), nullable=False)
-    name = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    name = field.string(nullable=True)
 
 
 class Enriched(Schema):
-    id = field(String(), nullable=False)
-    product_name = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    product_name = field.string(nullable=True)
 
 
 class Published(Schema):
-    id = field(String(), nullable=False)
-    product_name = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    product_name = field.string(nullable=True)
 
 
 class Metric(Schema):
-    id = field(String(), nullable=False)
-    value = field(Integer(), nullable=True)
+    id = field.string(nullable=False)
+    value = field.integer(nullable=True)
 
 
 @transform

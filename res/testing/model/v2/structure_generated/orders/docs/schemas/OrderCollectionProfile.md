@@ -4,18 +4,18 @@
 
 Module: `testing.model.v2.orders.schemas.adv_analytics`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `id` | `id` | `string` | no | no |
-| `normalized_tags` | `normalized_tags` | `array<string?>` | yes | no |
-| `sorted_tags` | `sorted_tags` | `array<string!>` | yes | no |
-| `flat_tags` | `flat_tags` | `array<string!>` | yes | no |
-| `score_total` | `score_total` | `integer` | yes | no |
-| `tag_position` | `tag_position` | `long` | yes | no |
-| `has_priority` | `has_priority` | `boolean` | yes | no |
-| `all_tags_present` | `all_tags_present` | `boolean` | yes | no |
-| `normalized_attributes` | `normalized_attributes` | `map<string,string?>` | yes | no |
-| `zipped_attributes` | `zipped_attributes` | `map<string,string?>` | yes | no |
-| `attribute_keys` | `attribute_keys` | `array<string!>` | yes | no |
-| `attribute_values` | `attribute_values` | `array<string!>` | yes | no |
-| `roundtrip_attributes` | `roundtrip_attributes` | `map<string,string?>` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `id` | `id` | `string` | no |
+| `normalized_tags` | `normalized_tags` | `array<string?>` | yes |
+| `sorted_tags` | `sorted_tags` | `array<string!>` | yes |
+| `flat_tags` | `flat_tags` | `array<string!>` | yes |
+| `score_total` | `score_total` | `integer` | yes |
+| `tag_position` | `tag_position` | `long` | yes |
+| `has_priority` | `has_priority` | `boolean` | yes |
+| `all_tags_present` | `all_tags_present` | `boolean` | yes |
+| `normalized_attributes` | `normalized_attributes` | `map<string,string?>` | yes |
+| `zipped_attributes` | `zipped_attributes` | `map<string,string?>` | yes |
+| `attribute_keys` | `attribute_keys` | `array<string!>` | yes |
+| `attribute_values` | `attribute_values` | `array<string!>` | yes |
+| `roundtrip_attributes` | `roundtrip_attributes` | `map<string,string?>` | yes |

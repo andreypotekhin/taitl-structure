@@ -6,43 +6,45 @@ Structure schemas declare the row contracts used by compiler checks, generated S
 validation, traceability, and IDE navigation. The syntax must be explicit, readable, and cheap to inspect without importing
 PySpark or creating a Spark session.
 
-## Canonical v1 Form
+## Canonical Form
 
-The v1 canonical schema declaration form is:
+The canonical schema-module declaration form is:
 
 ```python
-from structure import Schema, field, String, Decimal
+from structure import Schema
+from structure.field import *
 
 
 class OrderRaw(Schema):
-    id = field(String(), nullable=False)
-    customer_id = field(String(), nullable=False)
-    total = field(String(), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    total = string()
 
 
 class OrderNormalized(Schema):
-    id = field(String(), nullable=False)
-    customer_id = field(String(), nullable=False)
-    total = field(Decimal(12, 2), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    total = decimal(12, 2)
 ```
 
-The field declaration has three visible parts:
+The field declaration has two visible parts:
 
 1. A Python class attribute name, which becomes the Structure field name.
-2. A `field(...)` call, which marks the attribute as a Structure field.
-3. An explicit type object such as `String()` or `Decimal(12, 2)`.
+2. A field factory such as `string()` or `decimal(12, 2)`.
 
-Lowercase type sentinels such as `string`, `decimal(12, 2)`, and `boolean` are not canonical v1 syntax.
+`from structure.field import *` is intentionally limited to schema modules. Transform modules that need the root
+expression `array(...)` helper must use explicit `field.array(...)` declarations instead of combining wildcard imports.
 
 ## Public Imports
 
-The public schema DSL must be importable from `structure`:
+The public schema-field DSL is importable from `structure.field`:
 
 ```python
-import structure
+from structure import Schema
+from structure.field import *
 ```
 
-`Map` is part of the v1 schema type surface.
+Standalone types for casts and special-function contracts are available through `structure.types`.
 
 ## Grammar
 
@@ -50,14 +52,11 @@ This is the accepted v1 schema declaration grammar in descriptive form:
 
 ```text
 schema_class      := class NAME(Schema): field_decl+
-field_decl        := NAME = field(type_expr, field_kwarg*)
-type_expr         := scalar_type | decimal_type | array_type | struct_type | map_type
-scalar_type       := String() | Integer() | Long() | Float() | Double() | Boolean() | Date() | Timestamp()
-decimal_type      := Decimal(precision, scale)
-array_type        := Array(type_expr, contains_null=BOOL?)
-struct_type       := Struct(schema_ref)
-map_type          := Map(key_type, value_type, value_contains_null=BOOL?)
-field_kwarg       := nullable=BOOL | primary_key=BOOL | alias=STRING | metadata=DICT | description=STRING
+field_decl        := NAME = field_factory(field_kwarg*)
+field_factory     := string() | integer() | long() | float() | double() | boolean() | date() | timestamp()
+                   | decimal(PRECISION, SCALE) | array(field_factory, contains_null=BOOL?)
+                   | struct(schema_ref) | map(field_factory, field_factory, value_contains_null=BOOL?)
+field_kwarg       := nullable=BOOL | alias=STRING | metadata=DICT | description=STRING
 schema_ref        := Schema class object
 ```
 
@@ -66,14 +65,12 @@ when import-based discovery is used. Source text or AST inspection may still be 
 
 ## Field Rules
 
-`field(...)` has this v1 shape:
+Every field factory accepts this common shape:
 
 ```python
-field(
-    type_,
+string(
     *,
     nullable=True,
-    primary_key=False,
     alias=None,
     metadata=None,
     description=None,
@@ -82,9 +79,7 @@ field(
 
 Rules:
 
-- `type_` is required and must be a Structure type object.
 - `nullable` defaults to `True`.
-- `primary_key` defaults to `False` and implies `nullable=False`.
 - `alias` is an optional Spark column name for the field.
 - `metadata` defaults to an empty immutable mapping.
 - `description` is optional end-user documentation for generated docs, diagnostics, and traceability.
@@ -98,8 +93,7 @@ Rules:
 - v1 must reject duplicate Python field names and duplicate effective Spark column names after inherited fields are
   resolved.
 
-`primary_key=True` on a nullable field is invalid unless `nullable=False` is explicitly supplied or inferred by the
-implementation. Preferred compiler behavior is to normalize it to non-nullable and emit no warning.
+Structure does not declare primary keys or uniqueness. A required field is expressed only with `nullable=False`.
 
 ## Type Rules
 
@@ -110,32 +104,32 @@ All schema type constructors return immutable value objects. Equality is structu
 The v1 scalar type constructors are:
 
 ```python
-String()
-Integer()
-Long()
-Float()
-Double()
-Boolean()
-Date()
-Timestamp()
+string()
+integer()
+long()
+float()
+double()
+boolean()
+date()
+timestamp()
 ```
 
 Generated PySpark mapping:
 
 ```text
-String()     -> T.StringType()
-Integer()    -> T.IntegerType()
-Long()       -> T.LongType()
-Float()      -> T.FloatType()
-Double()     -> T.DoubleType()
-Boolean()    -> T.BooleanType()
-Date()       -> T.DateType()
-Timestamp()  -> T.TimestampType()
+string()     -> T.StringType()
+integer()    -> T.IntegerType()
+long()       -> T.LongType()
+float()      -> T.FloatType()
+double()     -> T.DoubleType()
+boolean()    -> T.BooleanType()
+date()       -> T.DateType()
+timestamp()  -> T.TimestampType()
 ```
 
 ### Decimal
 
-`Decimal(precision, scale)` requires positive integer `precision` and non-negative integer `scale`.
+`decimal(precision, scale)` requires positive integer `precision` and non-negative integer `scale`.
 
 Rules:
 
@@ -147,30 +141,30 @@ Rules:
 Generated PySpark mapping:
 
 ```text
-Decimal(12, 2) -> T.DecimalType(12, 2)
+decimal(12, 2) -> T.DecimalType(12, 2)
 ```
 
 ### Array
 
-`Array(item_type, contains_null=True)` declares arrays.
+`array(item_type, contains_null=True)` declares arrays.
 
 Rules:
 
 - `item_type` must be a Structure type object.
 - `contains_null` defaults to `True`.
 - Nested arrays are allowed.
-- Arrays of structs are allowed with `Array(Struct(Address))`.
+- Arrays of structs are allowed with `array(struct(Address))`.
 
 Generated PySpark mapping:
 
 ```text
-Array(String())                       -> T.ArrayType(T.StringType(), containsNull=True)
-Array(String(), contains_null=False)  -> T.ArrayType(T.StringType(), containsNull=False)
+array(string())                       -> T.ArrayType(T.StringType(), containsNull=True)
+array(string(), contains_null=False)  -> T.ArrayType(T.StringType(), containsNull=False)
 ```
 
 ### Struct
 
-`Struct(schema)` declares a nested schema.
+`struct(schema)` declares a nested schema.
 
 Rules:
 
@@ -182,12 +176,12 @@ Rules:
 Generated PySpark mapping:
 
 ```text
-Struct(Address) -> T.StructType([...Address fields...])
+struct(Address) -> T.StructType([...Address fields...])
 ```
 
 ### Map
 
-`Map(key_type, value_type, value_contains_null=True)` declares maps.
+`map(key_type, value_type, value_contains_null=True)` declares maps.
 
 Rules:
 
@@ -196,12 +190,12 @@ Rules:
 - `value_contains_null` defaults to `True`.
 - Map keys are never nullable because Spark map keys cannot be null.
 - Nested map values are allowed.
-- Map values may be structs with `Map(String(), Struct(Attribute))`.
+- Map values may be structs with `map(string(), struct(Attribute))`.
 
 Generated PySpark mapping:
 
 ```text
-Map(String(), String())  -> T.MapType(T.StringType(), T.StringType(), valueContainsNull=True)
+map(string(), string())  -> T.MapType(T.StringType(), T.StringType(), valueContainsNull=True)
 ```
 
 ## Schema Class Rules
@@ -271,13 +265,13 @@ Example with multiple schema bases:
 
 ```python
 class OrderPublication(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    customer_name = field(String(), nullable=True)
-    total = field(Decimal(12, 2), nullable=False)
+    id = string(nullable=False)
+    customer_name = string(nullable=True)
+    total = decimal(12, 2, nullable=False)
 
 
 class PublicationFlags(Schema):
-    has_promotion = field(Boolean(), nullable=False)
+    has_promotion = boolean(nullable=False)
 
 
 class OrderPublished(OrderPublication, PublicationFlags):
@@ -313,17 +307,17 @@ Invalid schema field type:
   OrderRaw.id uses string
 
 Use an explicit Structure type object:
-  id = field(String(), nullable=False)
+  id = string(nullable=False)
 
 See docs/dev/specifications/SchemaDeclarationSyntax.md
 ```
 
 ```text
 Invalid decimal type:
-  OrderNormalized.total uses Decimal(2, 12)
+  OrderNormalized.total uses decimal(2, 12)
 
 Decimal scale must be less than or equal to precision:
-  total = field(Decimal(12, 2), nullable=True)
+  total = decimal(12, 2, nullable=True)
 
 See docs/dev/specifications/SchemaDeclarationSyntax.md
 ```
@@ -344,13 +338,13 @@ The following are not part of v1 canonical syntax:
 Existing examples using lowercase tokens should be migrated mechanically:
 
 ```text
-field(string)          -> field(String())
-field(decimal(12, 2))  -> field(Decimal(12, 2))
-field(boolean)         -> field(Boolean())
-field(integer)         -> field(Integer())
-field(long)            -> field(Long())
-field(float)           -> field(Float())
-field(double)          -> field(Double())
+field(string)          -> string()
+field(decimal(12, 2))  -> decimal(12, 2)
+field(boolean)         -> boolean()
+field(integer)         -> integer()
+field(long)            -> long()
+field(float)           -> float()
+field(double)          -> double()
 ```
 
 The compiler may include a temporary compatibility mode for lowercase aliases during early implementation, but docs,
@@ -374,16 +368,16 @@ fixtures, and generated examples must use only the canonical explicit type-objec
 
 ## Acceptance Criteria
 
-- `id = field(String(), nullable=False)` is accepted.
-- `total = field(Decimal(12, 2), nullable=True)` is accepted.
-- `ratio = field(Float(), nullable=True)` is accepted.
-- `score = field(Double(), nullable=True)` is accepted.
-- `items = field(Array(String()), nullable=True)` is accepted.
-- `address = field(Struct(Address), nullable=True)` is accepted.
-- `tags = field(Map(String(), String()), nullable=True)` is accepted.
-- `promotion_code = field(String(), nullable=True, alias="promo-code")` is accepted.
+- `id = string(nullable=False)` is accepted.
+- `total = decimal(12, 2, nullable=True)` is accepted.
+- `ratio = float(nullable=True)` is accepted.
+- `score = double(nullable=True)` is accepted.
+- `items = array(string(), nullable=True)` is accepted.
+- `address = struct(Address, nullable=True)` is accepted.
+- `tags = map(string(), string(), nullable=True)` is accepted.
+- `promotion_code = string(nullable=True, alias='promo-code')` is accepted.
 - `id = field(string, nullable=False)` is rejected with a migration hint.
-- `total = field(Decimal(2, 12))` is rejected with a precision/scale diagnostic.
+- `total = decimal(2, 12)` is rejected with a precision/scale diagnostic.
 - Generated Spark schema code matches the declared field order.
 - Generated Spark schema code uses field aliases as Spark column names.
 - Aliases are schema-local except when a field definition is inherited.

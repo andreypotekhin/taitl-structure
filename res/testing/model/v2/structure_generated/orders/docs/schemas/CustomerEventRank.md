@@ -4,18 +4,18 @@
 
 Module: `testing.model.v2.orders.schemas.analytics`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant` | `tenant` | `TenantKey` | no | no |
-| `customer_id` | `customer_id` | `string` | no | no |
-| `event_id` | `event_id` | `string` | no | no |
-| `sequence` | `sequence` | `long` | no | no |
-| `row_number` | `row_number` | `long` | no | no |
-| `rank` | `rank` | `long` | no | no |
-| `dense_rank` | `dense_rank` | `long` | no | no |
-| `previous_sequence` | `previous_sequence` | `long` | yes | no |
-| `next_sequence` | `next_sequence` | `long` | yes | no |
-| `rolling_units` | `rolling_units` | `long` | no | no |
-| `rolling_avg_units` | `rolling_avg_units` | `double` | no | no |
-| `rolling_min_units` | `rolling_min_units` | `long` | no | no |
-| `rolling_max_units` | `rolling_max_units` | `long` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant` | `tenant` | `TenantKey` | no |
+| `customer_id` | `customer_id` | `string` | no |
+| `event_id` | `event_id` | `string` | no |
+| `sequence` | `sequence` | `long` | no |
+| `row_number` | `row_number` | `long` | no |
+| `rank` | `rank` | `long` | no |
+| `dense_rank` | `dense_rank` | `long` | no |
+| `previous_sequence` | `previous_sequence` | `long` | yes |
+| `next_sequence` | `next_sequence` | `long` | yes |
+| `rolling_units` | `rolling_units` | `long` | no |
+| `rolling_avg_units` | `rolling_avg_units` | `double` | no |
+| `rolling_min_units` | `rolling_min_units` | `long` | no |
+| `rolling_max_units` | `rolling_max_units` | `long` | no |

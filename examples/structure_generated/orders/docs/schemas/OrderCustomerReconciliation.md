@@ -4,11 +4,11 @@
 
 Module: `examples.orders.schemas.order`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant_id` | `tenant_id` | `string` | yes | no |
-| `order_id` | `order_id` | `string` | yes | no |
-| `order_customer_id` | `order_customer_id` | `string` | yes | no |
-| `customer_id` | `customer_id` | `string` | yes | no |
-| `customer_name` | `customer_name` | `string` | yes | no |
-| `match_status` | `match_status` | `string` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant_id` | `tenant_id` | `string` | yes |
+| `order_id` | `order_id` | `string` | yes |
+| `order_customer_id` | `order_customer_id` | `string` | yes |
+| `customer_id` | `customer_id` | `string` | yes |
+| `customer_name` | `customer_name` | `string` | yes |
+| `match_status` | `match_status` | `string` | yes |

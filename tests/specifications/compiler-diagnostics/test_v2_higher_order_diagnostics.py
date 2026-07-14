@@ -4,25 +4,21 @@ from structure import *
 
 
 class RawTags(Schema):
-    id = field(String(), nullable=False)
-    tags = field(Array(String(), contains_null=False), nullable=True)
+    id = field.string(nullable=False)
+    tags = field.array(field.string(), contains_null=False, nullable=True)
 
 
 class CleanTags(Schema):
-    tags = field(Array(String(), contains_null=False), nullable=True)
+    tags = field.array(field.string(), contains_null=False, nullable=True)
 
 
 class RawAttributes(Schema):
-    id = field(String(), nullable=False)
-    attributes = field(
-        Map(String(), String(), value_contains_null=True), nullable=True
-    )
+    id = field.string(nullable=False)
+    attributes = field.map(field.string(), field.string(), value_contains_null=True, nullable=True)
 
 
 class CleanAttributes(Schema):
-    attributes = field(
-        Map(String(), String(), value_contains_null=False), nullable=True
-    )
+    attributes = field.map(field.string(), field.string(), value_contains_null=False, nullable=True)
 
 
 def test_v2_array_transform_non_array_input_reports_actionable_diagnostic() -> None:

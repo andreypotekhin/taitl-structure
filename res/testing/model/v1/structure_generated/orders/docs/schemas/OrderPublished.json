@@ -8,105 +8,90 @@
       "column": "tenant",
       "name": "tenant",
       "nullable": false,
-      "primary_key": false,
       "type": "TenantKey"
     },
     {
       "column": "business",
       "name": "business",
       "nullable": false,
-      "primary_key": false,
       "type": "BusinessDate"
     },
     {
       "column": "id",
       "name": "id",
       "nullable": false,
-      "primary_key": true,
       "type": "string"
     },
     {
       "column": "customer_id",
       "name": "customer_id",
       "nullable": false,
-      "primary_key": false,
       "type": "string"
     },
     {
       "column": "customer_name",
       "name": "customer_name",
       "nullable": true,
-      "primary_key": false,
       "type": "string"
     },
     {
       "column": "customer_tier",
       "name": "customer_tier",
       "nullable": true,
-      "primary_key": false,
       "type": "string"
     },
     {
       "column": "product_name",
       "name": "product_name",
       "nullable": true,
-      "primary_key": false,
       "type": "string"
     },
     {
       "column": "product_category",
       "name": "product_category",
       "nullable": true,
-      "primary_key": false,
       "type": "string"
     },
     {
       "column": "promotion_name",
       "name": "promotion_name",
       "nullable": true,
-      "primary_key": false,
       "type": "string"
     },
     {
       "column": "total",
       "name": "total",
       "nullable": false,
-      "primary_key": false,
       "type": "decimal(12,2)"
     },
     {
       "column": "discount",
       "name": "discount",
       "nullable": false,
-      "primary_key": false,
       "type": "decimal(12,2)"
     },
     {
       "column": "net_total",
       "name": "net_total",
       "nullable": false,
-      "primary_key": false,
       "type": "decimal(12,2)"
     },
     {
       "column": "quantity",
       "name": "quantity",
       "nullable": false,
-      "primary_key": false,
       "type": "long"
     },
     {
       "column": "is_large",
       "name": "is_large",
       "nullable": false,
-      "primary_key": false,
       "type": "boolean"
     },
     {
       "column": "has_promotion",
       "name": "has_promotion",
       "nullable": false,
-      "primary_key": false,
       "type": "boolean"
     }
   ],

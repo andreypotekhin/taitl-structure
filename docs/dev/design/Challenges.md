@@ -61,7 +61,7 @@ Deprecated examples used:
 
 ```python
 class OrderRaw(Schema):
-    id = field(string, nullable=False)
+    id = string(nullable=False)
 ```
 
 Alternative styles considered included annotation-based or dataclass/Pydantic-inspired forms.
@@ -70,20 +70,20 @@ Recommended v1 canonical form:
 
 ```python
 class OrderRaw(Schema):
-    id = field(String(), nullable=False)
-    customer_id = field(String(), nullable=False)
-    total = field(String(), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    total = string()
 ```
 
-Use explicit type objects such as:
+Use explicit field factories such as:
 
 ```python
-String()
-Decimal(12, 2)
-Float()
-Double()
-Array(String())
-Map(String(), String())
+string()
+decimal(12, 2)
+float()
+double()
+array(string())
+map(string(), string())
 Struct(Address)
 Timestamp()
 Date()

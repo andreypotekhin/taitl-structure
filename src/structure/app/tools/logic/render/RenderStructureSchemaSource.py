@@ -1,5 +1,4 @@
 import json
-import re
 
 from structure.app.tools.logic.model.GeneratedSchemaClass import GeneratedSchemaClass
 from structure.app.tools.logic.model.GeneratedSchemaField import GeneratedSchemaField
@@ -7,8 +6,6 @@ from structure.app.tools.logic.model.GeneratedSchemaSource import GeneratedSchem
 
 
 class RenderStructureSchemaSource:
-    _type_name = re.compile(r"\b(Array|Boolean|Date|Decimal|Double|Float|Integer|Long|Map|String|Struct|Timestamp)\(")
-
     def __call__(self, source: GeneratedSchemaSource) -> str:
         lines = [*self._imports(), ""]
         for index, schema in enumerate(source.classes):
@@ -18,7 +15,7 @@ class RenderStructureSchemaSource:
         return "\n".join(lines) + "\n"
 
     def _imports(self) -> tuple[str, ...]:
-        return ("from structure import *",)
+        return ("from structure import Schema", "from structure.field import *")
 
     def _class(self, schema: GeneratedSchemaClass) -> tuple[str, ...]:
         lines = [f"class {schema.name}(Schema):"]
@@ -30,9 +27,14 @@ class RenderStructureSchemaSource:
         return tuple(lines)
 
     def _field(self, field: GeneratedSchemaField) -> str:
-        nullable = "True" if field.nullable else "False"
-        alias = f", alias={json.dumps(field.alias)}" if field.alias is not None else ""
-        return f"    {field.name} = field({self._type(field.type)}, nullable={nullable}{alias})"
-
-    def _type(self, type: str) -> str:
-        return self._type_name.sub(r"\1(", type)
+        options = []
+        if not field.nullable:
+            options.append("nullable=False")
+        if field.alias is not None:
+            options.append(f"alias={json.dumps(field.alias)}")
+        declaration = field.type
+        if options:
+            prefix = declaration[:-1]
+            separator = "" if prefix.endswith("(") else ", "
+            declaration = f"{prefix}{separator}{', '.join(options)})"
+        return f"    {field.name} = {declaration}"

@@ -19,7 +19,7 @@ Detailed syntax remains owned by:
 
 Structure schema behavior has four layers:
 
-1. Source declarations: Python classes that inherit `Structure` and declare fields with `field(...)`.
+1. Source declarations: Python classes that inherit `Schema` and declare fields with `structure.field` factories.
 2. Compiler model: backend-neutral `SchemaDef`, `FieldDef`, and type values.
 3. Runtime shape: generated or materialized Spark `StructType` values.
 4. Value constraints: future explicit data-quality checks outside the base shape model.
@@ -33,18 +33,17 @@ The canonical v1 declaration form is:
 
 ```python
 class OrderRaw(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    customer_id = field(String(), nullable=False)
-    total = field(String(), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    total = string(nullable=True)
 ```
 
 Rules:
 
-- Every field uses `field(type_, ...)`.
-- Every type is an explicit immutable Structure type object.
+- Every field uses a lowercase factory such as `string()` or `decimal(12, 2)`.
+- Every factory produces an immutable Structure type value and its field declaration.
 - Field order is class-body order after inheritance is resolved.
 - Field names are Python attribute names.
-- `primary_key=True` implies `nullable=False`.
 - Public examples must use this form.
 
 ## Schema Identity
@@ -67,7 +66,6 @@ Each field has:
 name
 type
 nullable
-primary_key
 metadata
 description
 declaring_schema
@@ -90,18 +88,18 @@ Rules:
 v1 schema types:
 
 ```text
-String()
-Integer()
-Long()
-Float()
-Double()
-Decimal(precision, scale)
-Boolean()
-Date()
-Timestamp()
-Array(type_, contains_null=True)
-Struct(SchemaClass)
-Map(key_type, value_type, value_contains_null=True)
+string()
+integer()
+long()
+float()
+double()
+decimal(precision, scale)
+boolean()
+date()
+timestamp()
+array(field_factory, contains_null=True)
+struct(SchemaClass)
+map(field_factory, field_factory, value_contains_null=True)
 ```
 
 Rules:

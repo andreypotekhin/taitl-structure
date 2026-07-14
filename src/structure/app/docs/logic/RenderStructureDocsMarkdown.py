@@ -31,12 +31,11 @@ class RenderStructureDocsMarkdown:
             "",
             f"Module: `{schema['module']}`",
             "",
-            "| Field | Column | Type | Nullable | Primary key |",
-            "| --- | --- | --- | --- | --- |",
+            "| Field | Column | Type | Nullable |",
+            "| --- | --- | --- | --- |",
         ]
         lines.extend(
-            f"| `{field['name']}` | `{field['column']}` | `{field['type']}` | "
-            f"{self._yes(field['nullable'])} | {self._yes(field['primary_key'])} |"
+            f"| `{field['name']}` | `{field['column']}` | `{field['type']}` | {self._yes(field['nullable'])} |"
             for field in fields
         )
         lines.append("")

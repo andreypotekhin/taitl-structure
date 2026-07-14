@@ -4,12 +4,12 @@
 
 Module: `testing.model.v3.orders.schemas.customer`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant` | `tenant` | `TenantKey` | no | no |
-| `audit` | `audit` | `AuditStamp` | no | no |
-| `id` | `id` | `string` | no | yes |
-| `name` | `name` | `string` | yes | no |
-| `tier` | `tier` | `string` | yes | no |
-| `region` | `region` | `string` | yes | no |
-| `email` | `email` | `string` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant` | `tenant` | `TenantKey` | no |
+| `audit` | `audit` | `AuditStamp` | no |
+| `id` | `id` | `string` | no |
+| `name` | `name` | `string` | yes |
+| `tier` | `tier` | `string` | yes |
+| `region` | `region` | `string` | yes |
+| `email` | `email` | `string` | yes |

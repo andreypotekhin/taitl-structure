@@ -4,9 +4,9 @@
 
 Module: `examples.streams.schemas.race`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `race_id` | `race_id` | `string` | no | no |
-| `number` | `number` | `integer` | no | no |
-| `direction` | `direction` | `string` | no | no |
-| `sector` | `sector` | `string` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `race_id` | `race_id` | `string` | no |
+| `number` | `number` | `integer` | no |
+| `direction` | `direction` | `string` | no |
+| `sector` | `sector` | `string` | no |

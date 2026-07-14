@@ -101,15 +101,16 @@ def _write_project(root: Path) -> None:
     (package / "schemas.py").write_text(
         "\n".join(
             [
-                "from structure import Decimal, String, Schema, field",
+                "from structure import Schema",
+                "from structure.field import *",
                 "",
                 "class OrderRaw(Schema):",
-                "    id = field(String(), nullable=False)",
-                "    total = field(String(), nullable=True)",
+                "    id = string(nullable=False)",
+                "    total = string(nullable=True)",
                 "",
                 "class OrderNormalized(Schema):",
-                "    id = field(String(), nullable=False)",
-                "    total = field(Decimal(12, 2), nullable=False)",
+                "    id = string(nullable=False)",
+                "    total = decimal(12, 2, nullable=False)",
                 "",
             ]
         ),
@@ -140,13 +141,13 @@ def _write_project(root: Path) -> None:
 
 
 class Raw(Schema):
-    id = field(String(), nullable=False)
-    total = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    total = field.string(nullable=True)
 
 
 class Published(Schema):
-    id = field(String(), nullable=False)
-    total = field(Decimal(12, 2), nullable=False)
+    id = field.string(nullable=False)
+    total = field.decimal(12, 2, nullable=False)
 
 
 @transform

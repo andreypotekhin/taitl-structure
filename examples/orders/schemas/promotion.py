@@ -1,12 +1,13 @@
 from examples.orders.schemas.common import AuditStamp, TenantKey
-from structure import *
+from structure import Schema
+from structure.field import *
 
 
 class Promotion(Schema):
-    tenant = field(Struct(TenantKey), nullable=False)
-    audit = field(Struct(AuditStamp), nullable=False)
-    code = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=True)
-    discount = field(Decimal(12, 2), nullable=True)
-    valid_from = field(Date(), nullable=False)
-    valid_to = field(Date(), nullable=True)
+    tenant = struct(TenantKey, nullable=False)
+    audit = struct(AuditStamp, nullable=False)
+    code = string(nullable=False)
+    name = string(nullable=True)
+    discount = decimal(12, 2, nullable=True)
+    valid_from = date(nullable=False)
+    valid_to = date(nullable=True)

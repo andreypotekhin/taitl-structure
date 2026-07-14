@@ -4,18 +4,18 @@
 
 Module: `testing.model.v1.orders.schemas.order`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant` | `tenant` | `TenantKey` | no | no |
-| `audit` | `audit` | `AuditStamp` | no | no |
-| `business` | `business` | `BusinessDate` | no | no |
-| `id` | `id` | `string` | no | yes |
-| `customer_id` | `customer_id` | `string` | no | no |
-| `product_id` | `product_id` | `string` | no | no |
-| `promotion_code` | `promo-code` | `string` | yes | no |
-| `total` | `total` | `string` | yes | no |
-| `discount` | `discount` | `string` | yes | no |
-| `quantity` | `quantity` | `integer` | yes | no |
-| `tags` | `tags` | `array<string!>` | yes | no |
-| `attributes` | `attributes` | `map<string,string?>` | yes | no |
-| `shipping` | `shipping` | `Address` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant` | `tenant` | `TenantKey` | no |
+| `audit` | `audit` | `AuditStamp` | no |
+| `business` | `business` | `BusinessDate` | no |
+| `id` | `id` | `string` | no |
+| `customer_id` | `customer_id` | `string` | no |
+| `product_id` | `product_id` | `string` | no |
+| `promotion_code` | `promo-code` | `string` | yes |
+| `total` | `total` | `string` | yes |
+| `discount` | `discount` | `string` | yes |
+| `quantity` | `quantity` | `integer` | yes |
+| `tags` | `tags` | `array<string!>` | yes |
+| `attributes` | `attributes` | `map<string,string?>` | yes |
+| `shipping` | `shipping` | `Address` | yes |

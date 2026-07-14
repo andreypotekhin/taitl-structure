@@ -2511,13 +2511,12 @@ class CompileTransform:
             if (
                 join.method is JoinMethod.LOOKUP
                 and join.dedupe is None
-                and not self._unique_join(join.input_name, join.input_schema, conditions)
             ):
                 diagnostics.append(
                     Diagnostic(
                         entry=diagnostic_registry.get("JOIN-W0601"),
                         problem=f"lookup_join(...) uniqueness is not proven for input {join.input_name}.",
-                        use="Mark the joined key field primary_key=True, declare a unique key, or use left_join(...) or inner_join(...) when multiplication is intended.",
+                        use="Use JoinDedupe.latest_by(...) or JoinDedupe.earliest_by(...), or use left_join(...) or inner_join(...) when multiplication is intended.",
                         context={"input": join.input_name, "occurrence": str(occurrence)},
                         source=f"{transform_class.__module__}.{transform_class.__name__}.{member}",
                     )
@@ -2781,35 +2780,6 @@ class CompileTransform:
                 f"Join key types are incompatible: {self._type_text(left.type)} and {self._type_text(right.type)}.",
                 "Join fields with compatible types or use explicit expression helpers before comparing keys.",
             )
-
-    def _unique_join(
-        self,
-        input_name: str,
-        input_schema: type[Schema],
-        conditions: list[Expression],
-    ) -> bool:
-        if len(conditions) != 1:
-            return False
-        left, right = conditions[0].args
-        return self._primary_key_for_scope(left, input_name, input_schema) or self._primary_key_for_scope(
-            right,
-            input_name,
-            input_schema,
-        )
-
-    def _primary_key_for_scope(
-        self,
-        expression: Expression,
-        scope: str,
-        schema: type[Schema],
-    ) -> bool:
-        if expression.kind != "field" or not expression.data or expression.data.get("scope") != scope:
-            return False
-        path = str(expression.data.get("name", expression.data.get("field", "")))
-        if "." in path:
-            return False
-        field = schema._structure_fields.get(path)
-        return bool(field and field.primary_key)
 
     def _scopes(self, expression: Expression) -> set[str]:
         scopes = set().union(*(self._scopes(argument) for argument in expression.args))

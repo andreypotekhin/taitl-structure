@@ -4,7 +4,7 @@
 
 Module: `testing.model.v3.orders.schemas.v3`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `external_id` | `external_id` | `string` | yes | no |
-| `region` | `region` | `string` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `external_id` | `external_id` | `string` | yes |
+| `region` | `region` | `string` | yes |

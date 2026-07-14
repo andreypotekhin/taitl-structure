@@ -1,44 +1,30 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Mapping
+from typing import Mapping
 
 from structure.app.dsl.model.schemas.FieldDefinition import FieldDefinition
 from structure.app.dsl.model.types.StructureType import StructureType
 
-if TYPE_CHECKING:
-    from structure.app.dsl.model.schemas.Schema import Schema
 
-
+@dataclass(frozen=True)
 class FieldDeclaration:
+    type: StructureType
+    nullable: bool = True
+    alias: str | None = None
+    metadata: Mapping[str, object] = field(default_factory=dict)
+    description: str | None = None
+    _options: frozenset[str] = field(default_factory=frozenset, repr=False, compare=False)
 
-    def __init__(
-        self,
-        type: StructureType,
-        *,
-        nullable: bool = True,
-        primary_key: bool = False,
-        alias: str | None = None,
-        metadata: Mapping[str, object] | None = None,
-        description: str | None = None,
-    ) -> None:
-        self.type = type
-        self.nullable = False if primary_key else nullable
-        self.primary_key = primary_key
-        self.alias = alias
-        self.metadata = MappingProxyType(dict(metadata or {}))
-        self.description = description
-        self.name = ""
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
 
-    def __set_name__(self, owner: type[Schema], name: str) -> None:
-        self.name = name
-
-    def definition(self) -> FieldDefinition:
+    def definition(self, name: str) -> FieldDefinition:
         return FieldDefinition(
-            name=self.name,
+            name=name,
             type=self.type,
             nullable=self.nullable,
-            primary_key=self.primary_key,
             alias=self.alias,
             metadata=self.metadata,
             description=self.description,

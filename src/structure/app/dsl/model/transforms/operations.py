@@ -15,8 +15,8 @@ from structure.app.compiler.ir.model.SelectedRowsPlan import SelectedRowsPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import CompileContext, current_context
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.expr.expressions import literal
+from structure.app.dsl.model.schemas.FieldDeclaration import FieldDeclaration
 from structure.app.dsl.model.schemas.Schema import Schema
-from structure.app.dsl.model.schemas.schema_api import field as schema_field
 from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.BooleanType import BooleanType
@@ -1552,8 +1552,8 @@ def _map_entry_type(map_type: MapType) -> StructType:
         "_MapEntry",
         (Schema,),
         {
-            "key": schema_field(map_type.key, nullable=False),
-            "value": schema_field(map_type.value, nullable=map_type.value_contains_null),
+            "key": FieldDeclaration(map_type.key, nullable=False),
+            "value": FieldDeclaration(map_type.value, nullable=map_type.value_contains_null),
         },
     )
     return StructType(schema)

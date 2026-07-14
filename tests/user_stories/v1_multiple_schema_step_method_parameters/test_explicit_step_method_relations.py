@@ -2,18 +2,18 @@ from structure import *
 
 
 class Order(Schema):
-    id = field(String(), nullable=False)
-    product_id = field(String(), nullable=False)
+    id = field.string(nullable=False)
+    product_id = field.string(nullable=False)
 
 
 class Product(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=False)
+    id = field.string(nullable=False)
+    name = field.string(nullable=False)
 
 
 class Enriched(Schema):
-    id = field(String(), nullable=False)
-    product_name = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    product_name = field.string(nullable=True)
 
 
 def test_multiple_schema_parameters_and_results_are_explicit() -> None:

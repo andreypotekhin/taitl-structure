@@ -7,25 +7,25 @@ from structure.app.target.pyspark.api import PySpark
 
 
 class Raw(Schema):
-    id = field(String(), nullable=False)
-    value = field(Integer(), nullable=True)
+    id = field.string(nullable=False)
+    value = field.integer(nullable=True)
 
 
 class Normalized(Schema):
-    id = field(String(), nullable=False)
-    value = field(Integer(), nullable=True)
+    id = field.string(nullable=False)
+    value = field.integer(nullable=True)
 
 
 class Audited(Schema):
-    id = field(String(), nullable=False)
-    value = field(Integer(), nullable=True)
-    audit = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    value = field.integer(nullable=True)
+    audit = field.string(nullable=True)
 
 
 class Published(Schema):
-    id = field(String(), nullable=False)
-    value = field(Integer(), nullable=True)
-    audit = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    value = field.integer(nullable=True)
+    audit = field.string(nullable=True)
 
 
 class DirectNormalize(Transform):

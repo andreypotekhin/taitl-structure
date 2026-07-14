@@ -4,11 +4,11 @@
 
 Module: `examples.orders.schemas.analytics`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant` | `tenant` | `TenantKey` | no | no |
-| `customer_id` | `customer_id` | `string` | no | no |
-| `order_date` | `order_date` | `date` | yes | no |
-| `order_count` | `order_count` | `long` | no | no |
-| `gross_total` | `gross_total` | `decimal(12,2)` | no | no |
-| `net_total` | `net_total` | `decimal(12,2)` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant` | `tenant` | `TenantKey` | no |
+| `customer_id` | `customer_id` | `string` | no |
+| `order_date` | `order_date` | `date` | yes |
+| `order_count` | `order_count` | `long` | no |
+| `gross_total` | `gross_total` | `decimal(12,2)` | no |
+| `net_total` | `net_total` | `decimal(12,2)` | no |

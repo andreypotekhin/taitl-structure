@@ -1,89 +1,90 @@
-from structure import *
+from structure import Schema
+from structure.field import *
 
 from testing.model.v3.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
 
 
 class OrderRaw(Schema):
-    tenant = field(Struct(TenantKey), nullable=False)
-    audit = field(Struct(AuditStamp), nullable=False)
-    business = field(Struct(BusinessDate), nullable=False)
-    id = field(String(), nullable=False, primary_key=True)
-    customer_id = field(String(), nullable=False)
-    product_id = field(String(), nullable=False)
-    promotion_code = field(String(), nullable=True, alias="promo-code")
-    total = field(String(), nullable=True)
-    discount = field(String(), nullable=True)
-    quantity = field(Integer(), nullable=True)
-    tags = field(Array(String(), contains_null=False), nullable=True)
-    attributes = field(Map(String(), String()), nullable=True)
-    shipping = field(Struct(Address), nullable=True)
+    tenant = struct(TenantKey, nullable=False)
+    audit = struct(AuditStamp, nullable=False)
+    business = struct(BusinessDate, nullable=False)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    product_id = string(nullable=False)
+    promotion_code = string(nullable=True, alias='promo-code')
+    total = string(nullable=True)
+    discount = string(nullable=True)
+    quantity = integer(nullable=True)
+    tags = array(string(), contains_null=False, nullable=True)
+    attributes = map(string(), string(), nullable=True)
+    shipping = struct(Address, nullable=True)
 
 
 class OrderNormalized(Schema):
-    tenant = field(Struct(TenantKey), nullable=False)
-    audit = field(Struct(AuditStamp), nullable=False)
-    business = field(Struct(BusinessDate), nullable=False)
-    id = field(String(), nullable=False, primary_key=True)
-    customer_id = field(String(), nullable=False)
-    product_id = field(String(), nullable=False)
-    promotion_code = field(String(), nullable=True)
-    total = field(Decimal(12, 2), nullable=False)
-    discount = field(Decimal(12, 2), nullable=False)
-    net_total = field(Decimal(12, 2), nullable=False)
-    quantity = field(Long(), nullable=False)
-    tags = field(Array(String(), contains_null=False), nullable=True)
-    attributes = field(Map(String(), String()), nullable=True)
-    shipping = field(Struct(Address), nullable=True)
-    is_large = field(Boolean(), nullable=False)
+    tenant = struct(TenantKey, nullable=False)
+    audit = struct(AuditStamp, nullable=False)
+    business = struct(BusinessDate, nullable=False)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    product_id = string(nullable=False)
+    promotion_code = string(nullable=True)
+    total = decimal(12, 2, nullable=False)
+    discount = decimal(12, 2, nullable=False)
+    net_total = decimal(12, 2, nullable=False)
+    quantity = long(nullable=False)
+    tags = array(string(), contains_null=False, nullable=True)
+    attributes = map(string(), string(), nullable=True)
+    shipping = struct(Address, nullable=True)
+    is_large = boolean(nullable=False)
 
 
 class OrderWithCustomer(OrderNormalized):
-    customer_name = field(String(), nullable=True)
-    customer_tier = field(String(), nullable=True)
-    customer_region = field(String(), nullable=True)
+    customer_name = string(nullable=True)
+    customer_tier = string(nullable=True)
+    customer_region = string(nullable=True)
 
 
 class OrderWithProduct(OrderWithCustomer):
-    product_name = field(String(), nullable=True)
-    product_category = field(String(), nullable=True)
-    product_active = field(Boolean(), nullable=True)
-    product_list_price = field(Decimal(12, 2), nullable=True)
+    product_name = string(nullable=True)
+    product_category = string(nullable=True)
+    product_active = boolean(nullable=True)
+    product_list_price = decimal(12, 2, nullable=True)
 
 
 class OrderWithPromotion(OrderWithProduct):
-    promotion_name = field(String(), nullable=True)
-    promotion_discount = field(Decimal(12, 2), nullable=True)
+    promotion_name = string(nullable=True)
+    promotion_discount = decimal(12, 2, nullable=True)
 
 
 class OrderFulfillment(OrderWithPromotion):
-    shipment_line = field(Integer(), nullable=False)
-    carrier = field(String(), nullable=True)
-    tracking_number = field(String(), nullable=True)
-    shipped_at = field(Timestamp(), nullable=True)
+    shipment_line = integer(nullable=False)
+    carrier = string(nullable=True)
+    tracking_number = string(nullable=True)
+    shipped_at = timestamp(nullable=True)
 
 
 class OrderPublication(Schema):
-    tenant = field(Struct(TenantKey), nullable=False)
-    business = field(Struct(BusinessDate), nullable=False)
-    id = field(String(), nullable=False, primary_key=True)
-    customer_id = field(String(), nullable=False)
-    customer_name = field(String(), nullable=True)
-    customer_tier = field(String(), nullable=True)
-    product_name = field(String(), nullable=True)
-    product_category = field(String(), nullable=True)
-    promotion_name = field(String(), nullable=True)
-    total = field(Decimal(12, 2), nullable=False)
-    discount = field(Decimal(12, 2), nullable=False)
-    net_total = field(Decimal(12, 2), nullable=False)
-    quantity = field(Long(), nullable=False)
-    carrier = field(String(), nullable=True)
-    tracking_number = field(String(), nullable=True)
-    shipped_at = field(Timestamp(), nullable=True)
-    is_large = field(Boolean(), nullable=False)
+    tenant = struct(TenantKey, nullable=False)
+    business = struct(BusinessDate, nullable=False)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    customer_name = string(nullable=True)
+    customer_tier = string(nullable=True)
+    product_name = string(nullable=True)
+    product_category = string(nullable=True)
+    promotion_name = string(nullable=True)
+    total = decimal(12, 2, nullable=False)
+    discount = decimal(12, 2, nullable=False)
+    net_total = decimal(12, 2, nullable=False)
+    quantity = long(nullable=False)
+    carrier = string(nullable=True)
+    tracking_number = string(nullable=True)
+    shipped_at = timestamp(nullable=True)
+    is_large = boolean(nullable=False)
 
 
 class PublicationFlags(Schema):
-    has_promotion = field(Boolean(), nullable=False)
+    has_promotion = boolean(nullable=False)
 
 
 class OrderPublished(OrderPublication, PublicationFlags):
@@ -91,28 +92,28 @@ class OrderPublished(OrderPublication, PublicationFlags):
 
 
 class OrderCustomerReconciliation(Schema):
-    tenant_id = field(String(), nullable=True)
-    order_id = field(String(), nullable=True)
-    order_customer_id = field(String(), nullable=True)
-    customer_id = field(String(), nullable=True)
-    customer_name = field(String(), nullable=True)
-    match_status = field(String(), nullable=True)
+    tenant_id = string(nullable=True)
+    order_id = string(nullable=True)
+    order_customer_id = string(nullable=True)
+    customer_id = string(nullable=True)
+    customer_name = string(nullable=True)
+    match_status = string(nullable=True)
 
 
 class CustomerOrderBackfill(Schema):
-    tenant_id = field(String(), nullable=True)
-    order_id = field(String(), nullable=True)
-    order_customer_id = field(String(), nullable=True)
-    customer_id = field(String(), nullable=True)
-    customer_name = field(String(), nullable=True)
-    customer_region = field(String(), nullable=True)
+    tenant_id = string(nullable=True)
+    order_id = string(nullable=True)
+    order_customer_id = string(nullable=True)
+    customer_id = string(nullable=True)
+    customer_name = string(nullable=True)
+    customer_region = string(nullable=True)
 
 
 class OrderProductCandidate(Schema):
-    tenant_id = field(String(), nullable=True)
-    order_id = field(String(), nullable=True)
-    customer_id = field(String(), nullable=True)
-    customer_name = field(String(), nullable=True)
-    product_id = field(String(), nullable=True)
-    product_name = field(String(), nullable=True)
+    tenant_id = string(nullable=True)
+    order_id = string(nullable=True)
+    customer_id = string(nullable=True)
+    customer_name = string(nullable=True)
+    product_id = string(nullable=True)
+    product_name = string(nullable=True)
 

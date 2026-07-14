@@ -58,7 +58,7 @@ narrower use cases and roadmap features.
 ## 5. Schemas
 
 - + As a developer, I can define fields with types and nullability so that generated Spark schemas are explicit.
-- + As a developer, I can declare fields with explicit type objects such as `String()` and `Decimal(12, 2)` so that
+- + As a developer, I can declare fields with factories such as `string()` and `decimal(12, 2)` so that
   schema syntax is unambiguous and extensible.
 - + As a developer, I can declare field aliases so that Python schema code can use identifier-safe names while Spark
   DataFrames keep their source column names.

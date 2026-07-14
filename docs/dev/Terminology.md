@@ -70,9 +70,9 @@ Example:
 
 ```python
 class OrderRaw(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    customer_id = field(String(), nullable=True)
-    total = field(Decimal(12, 2), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=True)
+    total = decimal(12, 2, nullable=True)
 ```
 
 ### Field

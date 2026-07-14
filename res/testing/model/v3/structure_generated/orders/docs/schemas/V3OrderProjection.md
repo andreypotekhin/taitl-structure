@@ -4,34 +4,34 @@
 
 Module: `testing.model.v3.orders.schemas.v3`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `id` | `id` | `string` | no | no |
-| `is_candidate` | `is_candidate` | `boolean` | yes | no |
-| `name_contains_order` | `name_contains_order` | `boolean` | yes | no |
-| `name_like_order` | `name_like_order` | `boolean` | yes | no |
-| `name_ilike_order` | `name_ilike_order` | `boolean` | yes | no |
-| `name_matches_order` | `name_matches_order` | `boolean` | yes | no |
-| `external_id` | `external_id` | `string` | yes | no |
-| `quantity` | `quantity` | `integer` | yes | no |
-| `safe_quantity` | `safe_quantity` | `integer` | yes | no |
-| `name_prefix` | `name_prefix` | `string` | yes | no |
-| `name_words` | `name_words` | `array<string!>` | yes | no |
-| `name_slug` | `name_slug` | `string` | yes | no |
-| `name_digits` | `name_digits` | `string` | yes | no |
-| `name_length` | `name_length` | `integer` | yes | no |
-| `name_title` | `name_title` | `string` | yes | no |
-| `name_reversed` | `name_reversed` | `string` | yes | no |
-| `name_translated` | `name_translated` | `string` | yes | no |
-| `order_position` | `order_position` | `integer` | yes | no |
-| `name_distance` | `name_distance` | `integer` | yes | no |
-| `display_name` | `display_name` | `string` | no | no |
-| `next_day` | `next_day` | `date` | yes | no |
-| `days_since_booking` | `days_since_booking` | `integer` | yes | no |
-| `booking_month` | `booking_month` | `timestamp` | yes | no |
-| `absolute_amount` | `absolute_amount` | `decimal(11,2)` | yes | no |
-| `rounded_amount` | `rounded_amount` | `decimal(11,2)` | yes | no |
-| `ceiling_amount` | `ceiling_amount` | `decimal(11,0)` | yes | no |
-| `floor_amount` | `floor_amount` | `decimal(11,0)` | yes | no |
-| `score_is_nan` | `score_is_nan` | `boolean` | no | no |
-| `recency_rank` | `recency_rank` | `long` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `id` | `id` | `string` | no |
+| `is_candidate` | `is_candidate` | `boolean` | yes |
+| `name_contains_order` | `name_contains_order` | `boolean` | yes |
+| `name_like_order` | `name_like_order` | `boolean` | yes |
+| `name_ilike_order` | `name_ilike_order` | `boolean` | yes |
+| `name_matches_order` | `name_matches_order` | `boolean` | yes |
+| `external_id` | `external_id` | `string` | yes |
+| `quantity` | `quantity` | `integer` | yes |
+| `safe_quantity` | `safe_quantity` | `integer` | yes |
+| `name_prefix` | `name_prefix` | `string` | yes |
+| `name_words` | `name_words` | `array<string!>` | yes |
+| `name_slug` | `name_slug` | `string` | yes |
+| `name_digits` | `name_digits` | `string` | yes |
+| `name_length` | `name_length` | `integer` | yes |
+| `name_title` | `name_title` | `string` | yes |
+| `name_reversed` | `name_reversed` | `string` | yes |
+| `name_translated` | `name_translated` | `string` | yes |
+| `order_position` | `order_position` | `integer` | yes |
+| `name_distance` | `name_distance` | `integer` | yes |
+| `display_name` | `display_name` | `string` | no |
+| `next_day` | `next_day` | `date` | yes |
+| `days_since_booking` | `days_since_booking` | `integer` | yes |
+| `booking_month` | `booking_month` | `timestamp` | yes |
+| `absolute_amount` | `absolute_amount` | `decimal(11,2)` | yes |
+| `rounded_amount` | `rounded_amount` | `decimal(11,2)` | yes |
+| `ceiling_amount` | `ceiling_amount` | `decimal(11,0)` | yes |
+| `floor_amount` | `floor_amount` | `decimal(11,0)` | yes |
+| `score_is_nan` | `score_is_nan` | `boolean` | no |
+| `recency_rank` | `recency_rank` | `long` | yes |

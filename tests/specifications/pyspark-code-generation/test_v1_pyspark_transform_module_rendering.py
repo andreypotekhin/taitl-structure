@@ -8,17 +8,17 @@ from structure.app.target.pyspark.api import PySpark
 
 
 class CacheRaw(Schema):
-    id = field(String(), nullable=False)
-    status = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    status = field.string(nullable=True)
 
 
 class CachePublished(Schema):
-    id = field(String(), nullable=False)
-    status = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    status = field.string(nullable=True)
 
 
 class UdfRaw(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 @transform
@@ -26,7 +26,7 @@ class UdfPublished(Transform):
     rows = input(UdfRaw)
     published = output(UdfRaw)
 
-    @special(type="udf", return_type=String)
+    @special(type="udf", return_type=types.string())
     def normalize(value: Any):
         return value.strip().lower()
 

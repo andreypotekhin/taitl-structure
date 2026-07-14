@@ -7,33 +7,33 @@ from structure.app.target.pyspark.api import PySpark
 
 
 class Raw(Schema):
-    id = field(String(), nullable=False)
-    status = field(String(), nullable=True)
-    amount = field(String(), nullable=False)
-    count = field(Integer(), nullable=False)
+    id = field.string(nullable=False)
+    status = field.string(nullable=True)
+    amount = field.string(nullable=False)
+    count = field.integer(nullable=False)
 
 
 class Published(Schema):
-    id = field(String(), nullable=False)
-    status = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    status = field.string(nullable=True)
 
 
 class Identity(Schema):
-    id = field(String(), nullable=False)
+    id = field.string(nullable=False)
 
 
 class Counted(Schema):
-    count = field(Long(), nullable=False)
+    count = field.long(nullable=False)
 
 
 class Money(Schema):
-    amount = field(Decimal(12, 2), nullable=False)
-    count = field(Long(), nullable=False)
+    amount = field.decimal(12, 2, nullable=False)
+    count = field.long(nullable=False)
 
 
 class Customer(Schema):
-    id = field(String(), nullable=False)
-    name = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    name = field.string(nullable=True)
 
 
 def test_return_project_to_schema_copies_same_name_fields() -> None:

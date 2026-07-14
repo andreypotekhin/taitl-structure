@@ -1,88 +1,72 @@
 {
+  "package": "structure",
   "exports": {
-    "Array": {
-      "dataclass_fields": [
-        "name",
-        "element",
-        "contains_null"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.types.Array",
-      "qualname": "Array",
-      "signature": "(element: structure.app.dsl.model.types.StructureType.StructureType, *, contains_null: bool = True) -> None"
-    },
     "ArtifactCacheReport": {
+      "kind": "class",
+      "module": "structure.app.compiler.artifacts.model.ArtifactCacheReport",
+      "qualname": "ArtifactCacheReport",
+      "signature": "(entries: 'int', hits: 'int', misses: 'int', loaded: 'int') -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "entries",
         "hits",
         "misses",
         "loaded"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.compiler.artifacts.model.ArtifactCacheReport",
-      "qualname": "ArtifactCacheReport",
-      "signature": "(entries: 'int', hits: 'int', misses: 'int', loaded: 'int') -> None"
+      ]
     },
     "AsOf": {
-      "dataclass_fields": [],
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.AsOf",
+      "qualname": "AsOf",
+      "signature": "(*values)",
       "enum_members": [
         "BACKWARD",
         "FORWARD"
       ],
-      "kind": "class",
-      "module": "structure.app.dsl.model.transforms.AsOf",
-      "qualname": "AsOf",
-      "signature": "(*values)"
-    },
-    "Boolean": {
-      "dataclass_fields": [
-        "name"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.types.Boolean",
-      "qualname": "Boolean",
-      "signature": "() -> None"
+      "dataclass_fields": []
     },
     "CompileKey": {
+      "kind": "class",
+      "module": "structure.app.compiler.artifacts.model.CompileKey",
+      "qualname": "CompileKey",
+      "signature": "(subject: 'tuple[str, ...]', structure_version: 'str', options: 'tuple[object, ...]', sources: 'tuple[tuple[str, int | None, int | None, str | None], ...]', manifest: 'str' = '') -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "subject",
         "structure_version",
         "options",
         "sources",
         "manifest"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.compiler.artifacts.model.CompileKey",
-      "qualname": "CompileKey",
-      "signature": "(subject: 'tuple[str, ...]', structure_version: 'str', options: 'tuple[object, ...]', sources: 'tuple[tuple[str, int | None, int | None, str | None], ...]', manifest: 'str' = '') -> None"
+      ]
     },
     "CompiledArtifactPool": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.app.compiler.artifacts.commands.CompiledArtifactPool",
       "qualname": "CompiledArtifactPool",
-      "signature": "(*, max_entries: 'int | None' = None) -> 'None'"
+      "signature": "(*, max_entries: 'int | None' = None) -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "CompiledTransform": {
+      "kind": "class",
+      "module": "structure.app.compiler.artifacts.model.CompiledTransform",
+      "qualname": "CompiledTransform",
+      "signature": "(key: 'CompileKey', transform_plan: 'TransformPlan', pyspark_plan: 'PySparkExecutionPlan', schemas: 'TransformSchemas | None', semantic_fingerprint: 'str') -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "key",
         "transform_plan",
         "pyspark_plan",
         "schemas",
         "semantic_fingerprint"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.compiler.artifacts.model.CompiledTransform",
-      "qualname": "CompiledTransform",
-      "signature": "(key: 'CompileKey', transform_plan: 'TransformPlan', pyspark_plan: 'PySparkExecutionPlan', schemas: 'TransformSchemas | None', semantic_fingerprint: 'str') -> None"
+      ]
     },
     "CompilerOptions": {
+      "kind": "class",
+      "module": "structure.app.compiler.artifacts.model.CompilerOptions",
+      "qualname": "CompilerOptions",
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_code_options: 'tuple[str, ...]', target_backend: 'str', target_profile: 'str', target_variant: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', schema_types_key: 'str | None' = None) -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "project_root",
         "source_roots",
@@ -101,64 +85,22 @@
         "strict_performance",
         "warn_on_udfs",
         "schema_types_key"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.compiler.artifacts.model.CompilerOptions",
-      "qualname": "CompilerOptions",
-      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_code_options: 'tuple[str, ...]', target_backend: 'str', target_profile: 'str', target_variant: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', schema_types_key: 'str | None' = None) -> None"
-    },
-    "Date": {
-      "dataclass_fields": [
-        "name"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.types.Date",
-      "qualname": "Date",
-      "signature": "() -> None"
-    },
-    "Decimal": {
-      "dataclass_fields": [
-        "name",
-        "precision",
-        "scale"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.types.Decimal",
-      "qualname": "Decimal",
-      "signature": "(precision: 'int', scale: 'int') -> 'None'"
+      ]
     },
     "DiskStorage": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.app.target.pyspark.storage.DiskStorage",
       "qualname": "DiskStorage",
-      "signature": "(root: 'Path | str') -> 'None'"
-    },
-    "Double": {
-      "dataclass_fields": [
-        "name"
-      ],
+      "signature": "(root: 'Path | str') -> 'None'",
       "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.types.Double",
-      "qualname": "Double",
-      "signature": "() -> None"
-    },
-    "Float": {
-      "dataclass_fields": [
-        "name"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.types.Float",
-      "qualname": "Float",
-      "signature": "() -> None"
+      "dataclass_fields": []
     },
     "GeneratedTransform": {
+      "kind": "class",
+      "module": "structure.app.compiler.artifacts.model.GeneratedTransform",
+      "qualname": "GeneratedTransform",
+      "signature": "(source_unit: 'str', module_name: 'str', classes: 'tuple[str, ...]', generated_package: 'str', files: 'Mapping[str, str]', storage: 'object', result: 'object' = None) -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "source_unit",
         "module_name",
@@ -167,25 +109,13 @@
         "files",
         "storage",
         "result"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.compiler.artifacts.model.GeneratedTransform",
-      "qualname": "GeneratedTransform",
-      "signature": "(source_unit: 'str', module_name: 'str', classes: 'tuple[str, ...]', generated_package: 'str', files: 'Mapping[str, str]', storage: 'object', result: 'object' = None) -> None"
-    },
-    "Integer": {
-      "dataclass_fields": [
-        "name"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.types.Integer",
-      "qualname": "Integer",
-      "signature": "() -> None"
+      ]
     },
     "Join": {
-      "dataclass_fields": [],
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.Join",
+      "qualname": "Join",
+      "signature": "(*values)",
       "enum_members": [
         "LEFT",
         "INNER",
@@ -193,175 +123,133 @@
         "FULL",
         "CROSS"
       ],
-      "kind": "class",
-      "module": "structure.app.dsl.model.transforms.Join",
-      "qualname": "Join",
-      "signature": "(*values)"
+      "dataclass_fields": []
     },
     "JoinDedupe": {
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.JoinDedupe",
+      "qualname": "JoinDedupe",
+      "signature": "(order_by: 'Expression', direction: 'str', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "order_by",
         "direction",
         "ties"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.transforms.JoinDedupe",
-      "qualname": "JoinDedupe",
-      "signature": "(order_by: 'Expression', direction: 'str', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> None"
+      ]
     },
     "JoinHint": {
-      "dataclass_fields": [],
-      "enum_members": [
-        "BROADCAST"
-      ],
       "kind": "class",
       "module": "structure.app.dsl.model.transforms.JoinHint",
       "qualname": "JoinHint",
-      "signature": "(*values)"
+      "signature": "(*values)",
+      "enum_members": [
+        "BROADCAST"
+      ],
+      "dataclass_fields": []
     },
     "JoinStrategy": {
-      "dataclass_fields": [],
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.JoinStrategy",
+      "qualname": "JoinStrategy",
+      "signature": "(*values)",
       "enum_members": [
         "BROADCAST_HASH",
         "SHUFFLE_HASH",
         "SORT_MERGE",
         "SHUFFLE_REPLICATE_NL"
       ],
-      "kind": "class",
-      "module": "structure.app.dsl.model.transforms.JoinStrategy",
-      "qualname": "JoinStrategy",
-      "signature": "(*values)"
-    },
-    "Long": {
-      "dataclass_fields": [
-        "name"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.types.Long",
-      "qualname": "Long",
-      "signature": "() -> None"
-    },
-    "Map": {
-      "dataclass_fields": [
-        "name",
-        "key",
-        "value",
-        "value_contains_null"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.types.Map",
-      "qualname": "Map",
-      "signature": "(key: structure.app.dsl.model.types.StructureType.StructureType, value: structure.app.dsl.model.types.StructureType.StructureType, *, value_contains_null: bool = True) -> None"
+      "dataclass_fields": []
     },
     "MemoryStorage": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.app.target.pyspark.storage.MemoryStorage",
       "qualname": "MemoryStorage",
-      "signature": "() -> 'None'"
+      "signature": "() -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "OverlapPolicy": {
-      "dataclass_fields": [],
-      "enum_members": [
-        "ERROR"
-      ],
       "kind": "class",
       "module": "structure.app.dsl.model.transforms.OverlapPolicy",
       "qualname": "OverlapPolicy",
-      "signature": "(*values)"
+      "signature": "(*values)",
+      "enum_members": [
+        "ERROR"
+      ],
+      "dataclass_fields": []
     },
     "PackageImportStorage": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.app.target.pyspark.storage.PackageImportStorage",
       "qualname": "PackageImportStorage",
-      "signature": "(package: 'str') -> 'None'"
+      "signature": "(package: 'str') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "ResultSchemas": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.app.runtime.schemas.model.TransformSchemas",
       "qualname": "ResultSchemas",
-      "signature": "(schemas: 'Mapping[str, Any] | None' = None, *, aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> 'None'"
+      "signature": "(schemas: 'Mapping[str, Any] | None' = None, *, aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "Schema": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.app.dsl.model.schemas.Schema",
       "qualname": "Schema",
-      "signature": "(**values: 'object') -> 'None'"
+      "signature": "(**values: 'object') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "SchemaMode": {
-      "dataclass_fields": [],
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.SchemaMode",
+      "qualname": "SchemaMode",
+      "signature": "(*values)",
       "enum_members": [
         "STRICT",
         "ALLOW_EXTRA_COLUMNS"
       ],
-      "kind": "class",
-      "module": "structure.app.dsl.model.transforms.SchemaMode",
-      "qualname": "SchemaMode",
-      "signature": "(*values)"
+      "dataclass_fields": []
     },
     "StreamingMode": {
-      "dataclass_fields": [],
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.StreamingMode",
+      "qualname": "StreamingMode",
+      "signature": "(*values)",
       "enum_members": [
         "YES",
         "NO"
       ],
-      "kind": "class",
-      "module": "structure.app.dsl.model.transforms.StreamingMode",
-      "qualname": "StreamingMode",
-      "signature": "(*values)"
+      "dataclass_fields": []
     },
     "StreamingOutputMode": {
-      "dataclass_fields": [],
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.StreamingOutputMode",
+      "qualname": "StreamingOutputMode",
+      "signature": "(*values)",
       "enum_members": [
         "APPEND",
         "UPDATE",
         "COMPLETE"
       ],
-      "kind": "class",
-      "module": "structure.app.dsl.model.transforms.StreamingOutputMode",
-      "qualname": "StreamingOutputMode",
-      "signature": "(*values)"
-    },
-    "String": {
-      "dataclass_fields": [
-        "name"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.types.String",
-      "qualname": "String",
-      "signature": "() -> 'None'"
-    },
-    "Struct": {
-      "dataclass_fields": [
-        "name",
-        "schema"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.types.Struct",
-      "qualname": "Struct",
-      "signature": "(schema: type[structure.app.dsl.model.schemas.Schema.Schema]) -> None"
+      "dataclass_fields": []
     },
     "StructureCompileError": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.app.compiler.diagnostics.model.StructureCompileError",
       "qualname": "StructureCompileError",
-      "signature": "(diagnostic: 'Diagnostic') -> 'None'"
+      "signature": "(diagnostic: 'Diagnostic') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "StructureConfig": {
+      "kind": "class",
+      "module": "structure.app.configuration.model.StructureConfig",
+      "qualname": "StructureConfig",
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_docs: 'bool', generated_docs_dir: 'Path', generated_docs_formats: 'tuple[str, ...]', generated_code_options: 'tuple[str, ...]', execution_mode: 'str', target_backend: 'str', target_profile: 'str', target_variant: 'str', compat_targets: 'tuple[str, ...]', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', source_map: 'Mapping[str, str]') -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "project_root",
         "source_roots",
@@ -389,1230 +277,1222 @@
         "fail_on_diff",
         "spark_sql",
         "source_map"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.configuration.model.StructureConfig",
-      "qualname": "StructureConfig",
-      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_docs: 'bool', generated_docs_dir: 'Path', generated_docs_formats: 'tuple[str, ...]', generated_code_options: 'tuple[str, ...]', execution_mode: 'str', target_backend: 'str', target_profile: 'str', target_variant: 'str', compat_targets: 'tuple[str, ...]', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', source_map: 'Mapping[str, str]') -> None"
+      ]
     },
     "StructureRuntimeError": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.app.runtime.session.model.StructureRuntimeError",
       "qualname": "StructureRuntimeError",
-      "signature": "(diagnostic: 'RuntimeDiagnostic') -> 'None'"
+      "signature": "(diagnostic: 'RuntimeDiagnostic') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "StructureSession": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.app.runtime.session.model.StructureSession",
       "qualname": "StructureSession",
-      "signature": "(*, spark=None, ctx=None, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, execution_mode: 'str | None' = None, target_backend: 'str | None' = None, target_profile: 'str | None' = None, target_variant: 'str | None' = None, generated_package: 'str | None' = None, schema_types=None, online_executor: 'Callable[..., object] | None' = None, storage=None, artifacts: 'CompiledArtifactPool | None' = None) -> 'None'"
+      "signature": "(*, spark=None, ctx=None, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, execution_mode: 'str | None' = None, target_backend: 'str | None' = None, target_profile: 'str | None' = None, target_variant: 'str | None' = None, generated_package: 'str | None' = None, schema_types=None, online_executor: 'Callable[..., object] | None' = None, storage=None, artifacts: 'CompiledArtifactPool | None' = None) -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "StructureTools": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.app.tools.api.StructureTools",
       "qualname": "StructureTools",
-      "signature": "()"
+      "signature": "()",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "TiePolicy": {
-      "dataclass_fields": [],
-      "enum_members": [
-        "ERROR"
-      ],
       "kind": "class",
       "module": "structure.app.dsl.model.transforms.TiePolicy",
       "qualname": "TiePolicy",
-      "signature": "(*values)"
-    },
-    "Timestamp": {
-      "dataclass_fields": [
-        "name"
+      "signature": "(*values)",
+      "enum_members": [
+        "ERROR"
       ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.dsl.model.types.Timestamp",
-      "qualname": "Timestamp",
-      "signature": "() -> None"
+      "dataclass_fields": []
     },
     "Transform": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.app.dsl.model.transforms.Transform",
       "qualname": "Transform",
-      "signature": "(**inputs: 'object') -> 'None'"
+      "signature": "(**inputs: 'object') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "TransformResult": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "class",
       "module": "structure.app.runtime.session.model.TransformResult",
       "qualname": "TransformResult",
-      "signature": "(outputs: 'Mapping[str, Any]', *, single: 'bool' = False, schema: 'Mapping[str, Any] | None' = None, aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> 'None'"
+      "signature": "(outputs: 'Mapping[str, Any]', *, single: 'bool' = False, schema: 'Mapping[str, Any] | None' = None, aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "TransformSchemas": {
+      "kind": "class",
+      "module": "structure.app.runtime.schemas.model.TransformSchemas",
+      "qualname": "TransformSchemas",
+      "signature": "(inputs: 'Mapping[str, Any]', steps: 'Mapping[str, Any]', outputs: 'Mapping[str, Any]', output_aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> None",
+      "enum_members": [],
       "dataclass_fields": [
         "inputs",
         "steps",
         "outputs",
         "output_aliases"
-      ],
-      "enum_members": [],
-      "kind": "class",
-      "module": "structure.app.runtime.schemas.model.TransformSchemas",
-      "qualname": "TransformSchemas",
-      "signature": "(inputs: 'Mapping[str, Any]', steps: 'Mapping[str, Any]', outputs: 'Mapping[str, Any]', output_aliases: 'Mapping[str, tuple[str, ...]] | None' = None) -> None"
+      ]
     },
     "abs": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "abs",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "approx_count_distinct": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "approx_count_distinct",
-      "signature": "(value: 'object', *, relative_sd: 'float | None' = None, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', *, relative_sd: 'float | None' = None, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "approx_percentile": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "approx_percentile",
-      "signature": "(value: 'object', percentage: 'float', *, accuracy: 'int | None' = None, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', percentage: 'float', *, accuracy: 'int | None' = None, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "arr_aggregate": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "arr_aggregate",
-      "signature": "(value: 'object', initial: 'object', merge: 'Callable[[Expression, Expression], object]', finish: 'Callable[[Expression], object] | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', initial: 'object', merge: 'Callable[[Expression, Expression], object]', finish: 'Callable[[Expression], object] | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "arr_distinct": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "arr_distinct",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "arr_exists": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "arr_exists",
-      "signature": "(value: 'object', function: 'Callable[[Expression], object]') -> 'Expression'"
+      "signature": "(value: 'object', function: 'Callable[[Expression], object]') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "arr_filter": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "arr_filter",
-      "signature": "(value: 'object', function: 'Callable[[Expression], object]') -> 'Expression'"
+      "signature": "(value: 'object', function: 'Callable[[Expression], object]') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "arr_flatten": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "arr_flatten",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "arr_forall": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "arr_forall",
-      "signature": "(value: 'object', function: 'Callable[[Expression], object]') -> 'Expression'"
+      "signature": "(value: 'object', function: 'Callable[[Expression], object]') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "arr_position": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "arr_position",
-      "signature": "(value: 'object', item: 'object') -> 'Expression'"
+      "signature": "(value: 'object', item: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "arr_sort_by": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "arr_sort_by",
-      "signature": "(value: 'object', function: 'Callable[[Expression], object]', *, descending: 'bool' = False) -> 'Expression'"
+      "signature": "(value: 'object', function: 'Callable[[Expression], object]', *, descending: 'bool' = False) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "arr_transform": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "arr_transform",
-      "signature": "(value: 'object', function: 'Callable[[Expression], object]') -> 'Expression'"
+      "signature": "(value: 'object', function: 'Callable[[Expression], object]') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "arr_zip_with": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "arr_zip_with",
-      "signature": "(left: 'object', right: 'object', function: 'Callable[[Expression, Expression], object]') -> 'Expression'"
+      "signature": "(left: 'object', right: 'object', function: 'Callable[[Expression, Expression], object]') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "array": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "array",
-      "signature": "(*values: 'object') -> 'Expression'"
+      "signature": "(*values: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "array_contains": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "array_contains",
-      "signature": "(value: 'object', item: 'object') -> 'Expression'"
+      "signature": "(value: 'object', item: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "array_except": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "array_except",
-      "signature": "(left: 'object', right: 'object') -> 'Expression'"
+      "signature": "(left: 'object', right: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "array_repeat": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "array_repeat",
-      "signature": "(value: 'object', count: 'object') -> 'Expression'"
+      "signature": "(value: 'object', count: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "array_union": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "array_union",
-      "signature": "(left: 'object', right: 'object') -> 'Expression'"
+      "signature": "(left: 'object', right: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "as_of_one": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "as_of_one",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', left_time: 'object', right_time: 'object', direction: 'AsOf' = <AsOf.BACKWARD: 'backward'>, tolerance: 'object | None' = None, how: 'Join' = <Join.LEFT: 'left'>, ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>, hint: 'JoinHint | None' = None) -> 'Relation | InputScope'"
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', left_time: 'object', right_time: 'object', direction: 'AsOf' = <AsOf.BACKWARD: 'backward'>, tolerance: 'object | None' = None, how: 'Join' = <Join.LEFT: 'left'>, ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>, hint: 'JoinHint | None' = None) -> 'Relation | InputScope'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "avg": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "avg",
-      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "bool_and": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "bool_and",
-      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "bool_or": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "bool_or",
-      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "ceil": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "ceil",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "coalesce": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "coalesce",
-      "signature": "(*values: 'object') -> 'Expression'"
+      "signature": "(*values: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "collect_list": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "collect_list",
-      "signature": "(value: 'object', *, element_type: 'StructureType | None' = None, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', *, element_type: 'StructureType | None' = None, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "collect_set": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "collect_set",
-      "signature": "(value: 'object', *, element_type: 'StructureType | None' = None, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', *, element_type: 'StructureType | None' = None, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "compile_transform": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "CompileTransform",
       "module": "structure.app.compiler.frontend.commands.CompileTransform",
       "qualname": null,
-      "signature": "(transform_class: 'type[Transform] | TransformPipeline', *, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, overrides: 'Mapping[str, object] | None' = None, **settings: 'object') -> 'TransformPlan'"
+      "signature": "(transform_class: 'type[Transform] | TransformPipeline', *, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, overrides: 'Mapping[str, object] | None' = None, **settings: 'object') -> 'TransformPlan'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "concat_ws": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "concat_ws",
-      "signature": "(separator: 'str', *values: 'object') -> 'Expression'"
+      "signature": "(separator: 'str', *values: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "corr": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "corr",
-      "signature": "(left: 'object', right: 'object', *, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(left: 'object', right: 'object', *, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "count": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "count",
-      "signature": "(*, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(*, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "count_distinct": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "count_distinct",
-      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "covar": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "covar",
-      "signature": "(left: 'object', right: 'object', *, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(left: 'object', right: 'object', *, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "cross_join": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "cross_join",
-      "signature": "(relation: 'Relation | None' = None, *, right: 'Relation | None' = None, allow_cartesian: 'bool' = False, strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
+      "signature": "(relation: 'Relation | None' = None, *, right: 'Relation | None' = None, allow_cartesian: 'bool' = False, strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "cube": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "cube",
-      "signature": "(*keys: 'object', **named_keys: 'object') -> \"'GroupedRows'\""
+      "signature": "(*keys: 'object', **named_keys: 'object') -> \"'GroupedRows'\"",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "cume_dist": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "cume_dist",
-      "signature": "(*, over: \"'WindowSpec'\") -> 'Expression'"
+      "signature": "(*, over: \"'WindowSpec'\") -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "current_row": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "current_row",
-      "signature": "() -> \"'WindowBound'\""
+      "signature": "() -> \"'WindowBound'\"",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "date_add": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "date_add",
-      "signature": "(value: 'object', *, days: 'int') -> 'Expression'"
+      "signature": "(value: 'object', *, days: 'int') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "date_trunc": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "date_trunc",
-      "signature": "(value: 'object', *, unit: 'str') -> 'Expression'"
+      "signature": "(value: 'object', *, unit: 'str') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "datediff": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "datediff",
-      "signature": "(end: 'object', start: 'object') -> 'Expression'"
+      "signature": "(end: 'object', start: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "dedupe_earliest_by": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "dedupe_earliest_by",
-      "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'"
+      "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "dedupe_latest_by": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "dedupe_latest_by",
-      "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'"
+      "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "dense_rank": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "dense_rank",
-      "signature": "(*, partition_by: 'object', order_by: 'object', descending: 'bool' = False) -> 'Expression'"
+      "signature": "(*, partition_by: 'object', order_by: 'object', descending: 'bool' = False) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "distinct": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "distinct",
-      "signature": "(relation: 'object | None' = None) -> 'None'"
+      "signature": "(relation: 'object | None' = None) -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "drop_duplicates": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "drop_duplicates",
-      "signature": "(*subset: 'object') -> 'None'"
+      "signature": "(*subset: 'object') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "earliest_by": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "earliest_by",
-      "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'"
+      "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "element_at": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "element_at",
-      "signature": "(value: 'object', key: 'object') -> 'Expression'"
+      "signature": "(value: 'object', key: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "event_time_between": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "event_time_between",
-      "signature": "(left: 'object', right: 'object', *, upper: 'str', lower: 'str' = '0 seconds') -> 'Expression'"
+      "signature": "(left: 'object', right: 'object', *, upper: 'str', lower: 'str' = '0 seconds') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "exists": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "exists",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None) -> 'Expression'"
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "field": {
-      "dataclass_fields": [],
+      "kind": "_FieldModule",
+      "module": "structure.field",
+      "qualname": null,
+      "signature": "(*args: object, **kwargs: object) -> NoReturn",
       "enum_members": [],
-      "kind": "function",
-      "module": "structure.app.dsl.model.schemas.schema_api",
-      "qualname": "field",
-      "signature": "(type: 'StructureType', *, nullable: 'bool' = True, primary_key: 'bool' = False, alias: 'str | None' = None, metadata: 'Mapping[str, object] | None' = None, description: 'str | None' = None) -> 'FieldDeclaration'"
+      "dataclass_fields": []
     },
     "first_value": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "first_value",
-      "signature": "(value: 'object', *, order_by: 'object | None' = None, over: \"'WindowSpec | None'\" = None, ignore_nulls: 'bool' = False, where: 'object | None' = None, ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'Expression'"
+      "signature": "(value: 'object', *, order_by: 'object | None' = None, over: \"'WindowSpec | None'\" = None, ignore_nulls: 'bool' = False, where: 'object | None' = None, ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "floor": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "floor",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "following": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "following",
-      "signature": "(value: 'int') -> \"'WindowBound'\""
+      "signature": "(value: 'int') -> \"'WindowBound'\"",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "full_join": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "full_join",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "group_by": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "group_by",
-      "signature": "(*keys: 'object', **named_keys: 'object') -> \"'GroupedRows'\""
+      "signature": "(*keys: 'object', **named_keys: 'object') -> \"'GroupedRows'\"",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "grouping_id": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "grouping_id",
-      "signature": "() -> 'Expression'"
+      "signature": "() -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "grouping_sets": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "grouping_sets",
-      "signature": "(*levels: 'object', **named_levels: 'object') -> \"'GroupedRows'\""
+      "signature": "(*levels: 'object', **named_levels: 'object') -> \"'GroupedRows'\"",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "having": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "having",
-      "signature": "(predicate: 'object') -> 'None'"
+      "signature": "(predicate: 'object') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "initcap": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "initcap",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "inner_join": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "inner_join",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None, strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None, strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "input": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "input",
-      "signature": "(value: 'type[Schema] | InputDeclaration', *, streaming: 'StreamingMode' = <StreamingMode.NO: 'no'>) -> 'InputDeclaration | BindingSelector'"
+      "signature": "(value: 'type[Schema] | InputDeclaration', *, streaming: 'StreamingMode' = <StreamingMode.NO: 'no'>) -> 'InputDeclaration | BindingSelector'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "instr": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "instr",
-      "signature": "(value: 'object', *, substring: 'str') -> 'Expression'"
+      "signature": "(value: 'object', *, substring: 'str') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "is_grouped": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "is_grouped",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "isnan": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "isnan",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "isnotnull": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "isnotnull",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "isnull": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "isnull",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "lag": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "lag",
-      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', offset: 'int' = 1, default: 'object' = None, descending: 'bool' = False) -> 'Expression'"
+      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', offset: 'int' = 1, default: 'object' = None, descending: 'bool' = False) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "lane": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "lane",
-      "signature": "(value: 'type[Schema] | SelectedDeclaration') -> 'LaneDeclaration | BindingSelector'"
+      "signature": "(value: 'type[Schema] | SelectedDeclaration') -> 'LaneDeclaration | BindingSelector'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "last_value": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "last_value",
-      "signature": "(value: 'object', *, order_by: 'object | None' = None, over: \"'WindowSpec | None'\" = None, ignore_nulls: 'bool' = False, where: 'object | None' = None, ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'Expression'"
+      "signature": "(value: 'object', *, order_by: 'object | None' = None, over: \"'WindowSpec | None'\" = None, ignore_nulls: 'bool' = False, where: 'object | None' = None, ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "latest_by": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "latest_by",
-      "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'"
+      "signature": "(order_by: 'object', *, partition_by: 'object', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "lead": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "lead",
-      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', offset: 'int' = 1, default: 'object' = None, descending: 'bool' = False) -> 'Expression'"
+      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', offset: 'int' = 1, default: 'object' = None, descending: 'bool' = False) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "left_join": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "left_join",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None, strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None, strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "length": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "length",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "levenshtein": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "levenshtein",
-      "signature": "(left: 'object', right: 'object') -> 'Expression'"
+      "signature": "(left: 'object', right: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "lookup_join": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "lookup_join",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', how: 'Join' = <Join.LEFT: 'left'>, hint: 'JoinHint | None' = None, dedupe: 'JoinDedupe | None' = None) -> 'Relation | InputScope'"
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', how: 'Join' = <Join.LEFT: 'left'>, hint: 'JoinHint | None' = None, dedupe: 'JoinDedupe | None' = None) -> 'Relation | InputScope'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "lower": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "lower",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "map_concat": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "map_concat",
-      "signature": "(*values: 'object', duplicates: 'str' = 'error') -> 'Expression'"
+      "signature": "(*values: 'object', duplicates: 'str' = 'error') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "map_contains_key": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "map_contains_key",
-      "signature": "(value: 'object', key: 'object') -> 'Expression'"
+      "signature": "(value: 'object', key: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "map_entries": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "map_entries",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "map_filter": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "map_filter",
-      "signature": "(value: 'object', function: 'Callable[[Expression, Expression], object]') -> 'Expression'"
+      "signature": "(value: 'object', function: 'Callable[[Expression, Expression], object]') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "map_from_entries": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "map_from_entries",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "map_keys": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "map_keys",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "map_transform_keys": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "map_transform_keys",
-      "signature": "(value: 'object', function: 'Callable[[Expression, Expression], object]', *, duplicates: 'str' = 'error') -> 'Expression'"
+      "signature": "(value: 'object', function: 'Callable[[Expression, Expression], object]', *, duplicates: 'str' = 'error') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "map_transform_values": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "map_transform_values",
-      "signature": "(value: 'object', function: 'Callable[[Expression, Expression], object]') -> 'Expression'"
+      "signature": "(value: 'object', function: 'Callable[[Expression, Expression], object]') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "map_values": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "map_values",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "map_zip_with": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "map_zip_with",
-      "signature": "(left: 'object', right: 'object', function: 'Callable[[Expression, Expression, Expression], object]') -> 'Expression'"
+      "signature": "(left: 'object', right: 'object', function: 'Callable[[Expression, Expression, Expression], object]') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "max": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "max",
-      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "min": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "min",
-      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "not_exists": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "not_exists",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None) -> 'Expression'"
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', hint: 'JoinHint | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "nth_value": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "nth_value",
-      "signature": "(value: 'object', n: 'int', *, over: \"'WindowSpec'\", ignore_nulls: 'bool' = False) -> 'Expression'"
+      "signature": "(value: 'object', n: 'int', *, over: \"'WindowSpec'\", ignore_nulls: 'bool' = False) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "ntile": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "ntile",
-      "signature": "(value: 'int', *, over: \"'WindowSpec'\") -> 'Expression'"
+      "signature": "(value: 'int', *, over: \"'WindowSpec'\") -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "output": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "output",
-      "signature": "(value: 'type[Schema] | OutputDeclaration') -> 'OutputDeclaration | BindingSelector'"
+      "signature": "(value: 'type[Schema] | OutputDeclaration') -> 'OutputDeclaration | BindingSelector'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "percent_rank": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "percent_rank",
-      "signature": "(*, over: \"'WindowSpec'\") -> 'Expression'"
+      "signature": "(*, over: \"'WindowSpec'\") -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "preceding": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "preceding",
-      "signature": "(value: 'int') -> \"'WindowBound'\""
+      "signature": "(value: 'int') -> \"'WindowBound'\"",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "project": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "project",
-      "signature": "(source: 'object | None' = None, target: 'type[Schema] | Iterable[str] | None' = None) -> 'object'"
+      "signature": "(source: 'object | None' = None, target: 'type[Schema] | Iterable[str] | None' = None) -> 'object'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "range_between": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "range_between",
-      "signature": "(start: \"'WindowBound'\", end: \"'WindowBound'\") -> \"'WindowFrame'\""
+      "signature": "(start: \"'WindowBound'\", end: \"'WindowBound'\") -> \"'WindowFrame'\"",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "rank": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "rank",
-      "signature": "(*, partition_by: 'object', order_by: 'object', descending: 'bool' = False) -> 'Expression'"
+      "signature": "(*, partition_by: 'object', order_by: 'object', descending: 'bool' = False) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "raw": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "raw",
-      "signature": "(function: 'Callable | None' = None, *, input: 'object | None' = None, output: 'object | None' = None, inout: 'object | None' = None, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming_safe: 'bool' = False, target_backend: 'str | Iterable[str] | None' = None, target_platform: 'str | None' = None)"
+      "signature": "(function: 'Callable | None' = None, *, input: 'object | None' = None, output: 'object | None' = None, inout: 'object | None' = None, schema_mode: 'SchemaMode' = <SchemaMode.STRICT: 'strict'>, project_output: 'bool' = False, streaming_safe: 'bool' = False, target_backend: 'str | Iterable[str] | None' = None, target_platform: 'str | None' = None)",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "regexp_extract": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "regexp_extract",
-      "signature": "(value: 'object', *, pattern: 'str', group: 'int' = 1) -> 'Expression'"
+      "signature": "(value: 'object', *, pattern: 'str', group: 'int' = 1) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "regexp_replace": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "regexp_replace",
-      "signature": "(value: 'object', *, pattern: 'str', replacement: 'str') -> 'Expression'"
+      "signature": "(value: 'object', *, pattern: 'str', replacement: 'str') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "reverse": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "reverse",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "right_join": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "right_join",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'"
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', strategy: 'JoinStrategy | None' = None) -> 'Relation | InputScope'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "rolling_avg": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "rolling_avg",
-      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', preceding: 'int', descending: 'bool' = False) -> 'Expression'"
+      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', preceding: 'int', descending: 'bool' = False) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "rolling_max": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "rolling_max",
-      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', preceding: 'int', descending: 'bool' = False) -> 'Expression'"
+      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', preceding: 'int', descending: 'bool' = False) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "rolling_min": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "rolling_min",
-      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', preceding: 'int', descending: 'bool' = False) -> 'Expression'"
+      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', preceding: 'int', descending: 'bool' = False) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "rolling_sum": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "rolling_sum",
-      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', preceding: 'int', descending: 'bool' = False) -> 'Expression'"
+      "signature": "(value: 'object', *, partition_by: 'object', order_by: 'object', preceding: 'int', descending: 'bool' = False) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "rollup": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "rollup",
-      "signature": "(*keys: 'object', **named_keys: 'object') -> \"'GroupedRows'\""
+      "signature": "(*keys: 'object', **named_keys: 'object') -> \"'GroupedRows'\"",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "round": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "round",
-      "signature": "(value: 'object', *, scale: 'int' = 0) -> 'Expression'"
+      "signature": "(value: 'object', *, scale: 'int' = 0) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "row_number": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "row_number",
-      "signature": "(*, partition_by: 'object', order_by: 'object', descending: 'bool' = False) -> 'Expression'"
+      "signature": "(*, partition_by: 'object', order_by: 'object', descending: 'bool' = False) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "rows_between": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "rows_between",
-      "signature": "(start: \"'WindowBound'\", end: \"'WindowBound'\") -> \"'WindowFrame'\""
+      "signature": "(start: \"'WindowBound'\", end: \"'WindowBound'\") -> \"'WindowFrame'\"",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "rowset_join": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "rowset_join",
-      "signature": "(relation: 'Relation | None' = None, *, left: 'object | None' = None, right: 'Relation | None' = None, on: 'object | None' = None, how: 'Join' = <Join.INNER: 'inner'>, hint: 'JoinHint | None' = None, strategy: 'JoinStrategy | None' = None, allow_cartesian: 'bool' = False) -> 'Relation | InputScope'"
+      "signature": "(relation: 'Relation | None' = None, *, left: 'object | None' = None, right: 'Relation | None' = None, on: 'object | None' = None, how: 'Join' = <Join.INNER: 'inner'>, hint: 'JoinHint | None' = None, strategy: 'JoinStrategy | None' = None, allow_cartesian: 'bool' = False) -> 'Relation | InputScope'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "size": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "size",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "special": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "special",
-      "signature": "(function: 'Callable | None' = None, *, type: 'str', **kwargs)"
+      "signature": "(function: 'Callable | None' = None, *, type: 'str', **kwargs)",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "split": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "split",
-      "signature": "(value: 'object', *, pattern: 'str', limit: 'int' = -1) -> 'Expression'"
+      "signature": "(value: 'object', *, pattern: 'str', limit: 'int' = -1) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "stddev": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "stddev",
-      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "step": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "step",
-      "signature": "(target=None, **kwargs)"
+      "signature": "(target=None, **kwargs)",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "substring": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "substring",
-      "signature": "(value: 'object', *, start: 'int', length: 'int') -> 'Expression'"
+      "signature": "(value: 'object', *, start: 'int', length: 'int') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "sum": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "sum",
-      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "temporal_one": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.InputScope",
       "qualname": "temporal_one",
-      "signature": "(relation: 'Relation | None' = None, *, on: 'object', at: 'object', valid_from: 'object', valid_to: 'object', how: 'Join' = <Join.LEFT: 'left'>, overlaps: 'OverlapPolicy' = <OverlapPolicy.ERROR: 'error'>, hint: 'JoinHint | None' = None) -> 'Relation | InputScope'"
+      "signature": "(relation: 'Relation | None' = None, *, on: 'object', at: 'object', valid_from: 'object', valid_to: 'object', how: 'Join' = <Join.LEFT: 'left'>, overlaps: 'OverlapPolicy' = <OverlapPolicy.ERROR: 'error'>, hint: 'JoinHint | None' = None) -> 'Relation | InputScope'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "to_decimal": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "to_decimal",
-      "signature": "(value: 'object', *, precision: 'int', scale: 'int') -> 'Expression'"
+      "signature": "(value: 'object', *, precision: 'int', scale: 'int') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "transform": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "transform",
-      "signature": "(target=None, **kwargs)"
+      "signature": "(target=None, **kwargs)",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "translate": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "translate",
-      "signature": "(value: 'object', *, matching: 'str', replacement: 'str') -> 'Expression'"
+      "signature": "(value: 'object', *, matching: 'str', replacement: 'str') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "trim": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "trim",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "try_element_at": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "try_element_at",
-      "signature": "(value: 'object', key: 'object') -> 'Expression'"
+      "signature": "(value: 'object', key: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
+    },
+    "types": {
+      "kind": "module",
+      "module": null,
+      "qualname": null,
+      "signature": null,
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "unbounded_following": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "unbounded_following",
-      "signature": "() -> \"'WindowBound'\""
+      "signature": "() -> \"'WindowBound'\"",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "unbounded_preceding": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "unbounded_preceding",
-      "signature": "() -> \"'WindowBound'\""
+      "signature": "() -> \"'WindowBound'\"",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "upper": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "upper",
-      "signature": "(value: 'object') -> 'Expression'"
+      "signature": "(value: 'object') -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "variance": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "variance",
-      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', *, where: 'object | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "watermark": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "watermark",
-      "signature": "(field: 'object', *, delay: 'str' = '10 minutes') -> 'None'"
+      "signature": "(field: 'object', *, delay: 'str' = '10 minutes') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "when": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.expr.expressions",
       "qualname": "when",
-      "signature": "(condition: 'object', value: 'object') -> \"'WhenBuilder'\""
+      "signature": "(condition: 'object', value: 'object') -> \"'WhenBuilder'\"",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "where": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.transform_api",
       "qualname": "where",
-      "signature": "(*predicates: 'object') -> \"'WhereChain'\""
+      "signature": "(*predicates: 'object') -> \"'WhereChain'\"",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "window": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "window",
-      "signature": "(*, partition_by: 'object', order_by: 'object', frame: \"'WindowFrame | None'\" = None) -> \"'WindowSpec'\""
+      "signature": "(*, partition_by: 'object', order_by: 'object', frame: \"'WindowFrame | None'\" = None) -> \"'WindowSpec'\"",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "window_avg": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "window_avg",
-      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "window_bool_and": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "window_bool_and",
-      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "window_bool_or": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "window_bool_or",
-      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "window_collect_list": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "window_collect_list",
-      "signature": "(value: 'object', *, over: \"'WindowSpec'\", element_type: 'StructureType | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\", element_type: 'StructureType | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "window_collect_set": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "window_collect_set",
-      "signature": "(value: 'object', *, over: \"'WindowSpec'\", element_type: 'StructureType | None' = None) -> 'Expression'"
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\", element_type: 'StructureType | None' = None) -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "window_count": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "window_count",
-      "signature": "(value: 'object | None' = None, *, over: \"'WindowSpec'\") -> 'Expression'"
+      "signature": "(value: 'object | None' = None, *, over: \"'WindowSpec'\") -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "window_count_distinct": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "window_count_distinct",
-      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "window_max": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "window_max",
-      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "window_min": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "window_min",
-      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "window_stddev": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "window_stddev",
-      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "window_sum": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "window_sum",
-      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     },
     "window_variance": {
-      "dataclass_fields": [],
-      "enum_members": [],
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "window_variance",
-      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'"
+      "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'",
+      "enum_members": [],
+      "dataclass_fields": []
     }
-  },
-  "package": "structure"
+  }
 }

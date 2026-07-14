@@ -2,29 +2,29 @@ from structure import *
 
 
 class RawRow(Schema):
-    id = field(String(), nullable=True)
+    id = field.string(nullable=True)
 
 
 class NormalizedRow(Schema):
-    id = field(String(), nullable=True)
-    hook_owner = field(String(), nullable=True)
+    id = field.string(nullable=True)
+    hook_owner = field.string(nullable=True)
 
 
 class PublishedRow(Schema):
-    id = field(String(), nullable=True)
-    hook_owner = field(String(), nullable=True)
+    id = field.string(nullable=True)
+    hook_owner = field.string(nullable=True)
 
 
 class StreamEvent(Schema):
-    id = field(String(), nullable=True)
-    event_time = field(Timestamp(), nullable=True)
+    id = field.string(nullable=True)
+    event_time = field.timestamp(nullable=True)
 
 
 class StreamCustomer(Schema):
-    id = field(String(), nullable=True, primary_key=True)
-    value = field(String(), nullable=True)
+    id = field.string(nullable=True)
+    value = field.string(nullable=True)
 
 
 class StreamEnriched(Schema):
-    id = field(String(), nullable=True)
-    value = field(String(), nullable=True)
+    id = field.string(nullable=True)
+    value = field.string(nullable=True)

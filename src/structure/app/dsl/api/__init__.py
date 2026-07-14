@@ -43,21 +43,6 @@ from structure.app.dsl.model.expr.InputScope import (
     rowset_join,
     temporal_one,
 )
-from structure.app.dsl.model.schemas.schema_api import (
-    Array,
-    Boolean,
-    Date,
-    Decimal,
-    Double,
-    Float,
-    Integer,
-    Long,
-    Map,
-    String,
-    Struct,
-    Timestamp,
-    field,
-)
 from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.AsOf import AsOf
 from structure.app.dsl.model.transforms.Join import Join
@@ -179,30 +164,18 @@ from structure.app.dsl.model.transforms.transform_api import (
 from structure.app.dsl.model.types.DecimalType import DecimalType
 
 __all__ = [
-    "Array",
     "AsOf",
-    "Boolean",
-    "Date",
-    "Decimal",
     "DecimalType",
-    "Double",
-    "Float",
-    "Integer",
     "Join",
     "JoinDedupe",
     "JoinHint",
     "JoinStrategy",
-    "Long",
-    "Map",
     "OverlapPolicy",
     "SchemaMode",
-    "String",
     "StreamingMode",
     "StreamingOutputMode",
     "Schema",
     "StructureCompileError",
-    "Struct",
-    "Timestamp",
     "TiePolicy",
     "Transform",
     "abs",
@@ -253,7 +226,6 @@ __all__ = [
     "event_time_between",
     "compile_transform",
     "exists",
-    "field",
     "floor",
     "initcap",
     "instr",

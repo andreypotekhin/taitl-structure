@@ -82,6 +82,7 @@ ignore = [
 per-file-ignores = [
     '__init__.py:F401', # module imported but unused
     'examples/orders/**/*.py:F403,F405', # end-user examples intentionally use Structure's public wildcard import
+    'examples/streams/schemas/*.py:F403,F405', # schema modules intentionally import concise field factories
     'tests/**/*.py:F403,F405', # DSL-facing tests intentionally use Structure's public wildcard import
 ]
 max-line-length = 120

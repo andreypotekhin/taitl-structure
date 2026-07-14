@@ -4,12 +4,12 @@
 
 Module: `testing.model.v2.orders.schemas.promotion`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant` | `tenant` | `TenantKey` | no | no |
-| `audit` | `audit` | `AuditStamp` | no | no |
-| `code` | `code` | `string` | no | yes |
-| `name` | `name` | `string` | yes | no |
-| `discount` | `discount` | `decimal(12,2)` | yes | no |
-| `valid_from` | `valid_from` | `date` | no | no |
-| `valid_to` | `valid_to` | `date` | yes | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant` | `tenant` | `TenantKey` | no |
+| `audit` | `audit` | `AuditStamp` | no |
+| `code` | `code` | `string` | no |
+| `name` | `name` | `string` | yes |
+| `discount` | `discount` | `decimal(12,2)` | yes |
+| `valid_from` | `valid_from` | `date` | no |
+| `valid_to` | `valid_to` | `date` | yes |

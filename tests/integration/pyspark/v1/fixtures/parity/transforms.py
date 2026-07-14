@@ -29,11 +29,6 @@ class NormalizeBase(Transform):
 class ParentHookPublished(NormalizeBase):
     published = output(PublishedRow)
 
-    def mark(self, *, normalized, spark, ctx):
-        from pyspark.sql import functions as F
-
-        return normalized.withColumn("hook_owner", F.lit("child"))
-
     def publish(self, row: NormalizedRow) -> PublishedRow:
         return PublishedRow(id=row.id, hook_owner=row.hook_owner)
 

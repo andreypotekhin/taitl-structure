@@ -4,10 +4,10 @@
 
 Module: `examples.streams.schemas.race`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `race_id` | `race_id` | `string` | no | no |
-| `run_id` | `run_id` | `string` | no | no |
-| `paddler_id` | `paddler_id` | `string` | no | no |
-| `rank` | `rank` | `integer` | no | no |
-| `adjusted_millis` | `adjusted_millis` | `long` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `race_id` | `race_id` | `string` | no |
+| `run_id` | `run_id` | `string` | no |
+| `paddler_id` | `paddler_id` | `string` | no |
+| `rank` | `rank` | `integer` | no |
+| `adjusted_millis` | `adjusted_millis` | `long` | no |

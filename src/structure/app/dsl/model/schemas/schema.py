@@ -18,11 +18,11 @@ class Schema:
             fields.update(getattr(base, "_structure_fields", {}))
 
         local_fields: dict[str, FieldDefinition] = {}
-        for value in cls.__dict__.values():
+        for name, value in cls.__dict__.items():
             if isinstance(value, FieldDeclaration):
-                definition = value.definition()
-                local_fields[value.name] = definition
-                fields[value.name] = definition
+                definition = value.definition(name)
+                local_fields[name] = definition
+                fields[name] = definition
 
         cls._require_unique_columns(fields)
         cls._require_acyclic_structs(fields)

@@ -9,31 +9,31 @@ from structure.app.target.pyspark.api import PySpark
 
 
 class Order(Schema):
-    id = field(String(), nullable=False)
-    product_id = field(String(), nullable=False)
-    status = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    product_id = field.string(nullable=False)
+    status = field.string(nullable=True)
 
 
 class Product(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=False)
-    valid_from = field(String(), nullable=False)
-    valid_to = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    name = field.string(nullable=False)
+    valid_from = field.string(nullable=False)
+    valid_to = field.string(nullable=True)
 
 
 class Published(Schema):
-    id = field(String(), nullable=False)
-    status = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    status = field.string(nullable=True)
 
 
 class Enriched(Schema):
-    id = field(String(), nullable=False)
-    product_name = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    product_name = field.string(nullable=True)
 
 
 class OuterEnriched(Schema):
-    id = field(String(), nullable=True)
-    product_name = field(String(), nullable=True)
+    id = field.string(nullable=True)
+    product_name = field.string(nullable=True)
 
 
 def test_where_before_join_renders_before_join() -> None:
@@ -263,13 +263,13 @@ def test_inner_join_accepts_using_key(using: object) -> None:
 
 def test_inner_join_accepts_multiple_using_keys() -> None:
     class CompositeOrder(Schema):
-        tenant_id = field(String(), nullable=False)
-        id = field(String(), nullable=False)
+        tenant_id = field.string(nullable=False)
+        id = field.string(nullable=False)
 
     class CompositeProduct(Schema):
-        tenant_id = field(String(), nullable=False)
-        id = field(String(), nullable=False)
-        name = field(String(), nullable=True)
+        tenant_id = field.string(nullable=False)
+        id = field.string(nullable=False)
+        name = field.string(nullable=True)
 
     @transform
     class AddProduct(Transform):

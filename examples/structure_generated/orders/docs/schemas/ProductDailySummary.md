@@ -4,15 +4,15 @@
 
 Module: `examples.orders.schemas.analytics`
 
-| Field | Column | Type | Nullable | Primary key |
-| --- | --- | --- | --- | --- |
-| `tenant` | `tenant` | `TenantKey` | no | no |
-| `product_id` | `product_id` | `string` | no | no |
-| `order_date` | `order_date` | `date` | yes | no |
-| `order_count` | `order_count` | `long` | no | no |
-| `distinct_customers` | `distinct_customers` | `long` | no | no |
-| `units` | `units` | `long` | no | no |
-| `min_units` | `min_units` | `long` | no | no |
-| `max_units` | `max_units` | `long` | no | no |
-| `avg_units` | `avg_units` | `double` | no | no |
-| `gross_total` | `gross_total` | `decimal(12,2)` | no | no |
+| Field | Column | Type | Nullable |
+| --- | --- | --- | --- |
+| `tenant` | `tenant` | `TenantKey` | no |
+| `product_id` | `product_id` | `string` | no |
+| `order_date` | `order_date` | `date` | yes |
+| `order_count` | `order_count` | `long` | no |
+| `distinct_customers` | `distinct_customers` | `long` | no |
+| `units` | `units` | `long` | no |
+| `min_units` | `min_units` | `long` | no |
+| `max_units` | `max_units` | `long` | no |
+| `avg_units` | `avg_units` | `double` | no |
+| `gross_total` | `gross_total` | `decimal(12,2)` | no |

@@ -17,9 +17,10 @@ def test_schema_generation_cli_prints_generated_source(mocker) -> None:
     )
 
     assert result.exit_code == 0, result.output
-    assert "from structure import *" in result.output
+    assert "from structure import Schema" in result.output
+    assert "from structure.field import *" in result.output
     assert "class OrderRaw(Schema):" in result.output
-    assert "    id = field(String(), nullable=False)" in result.output
+    assert "    id = string(nullable=False)" in result.output
     assert spark.read.format_value == "parquet"
     assert spark.read.path == "orders.parquet"
 

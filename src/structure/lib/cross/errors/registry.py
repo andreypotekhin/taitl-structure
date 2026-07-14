@@ -111,7 +111,7 @@ diagnostic_registry = DiagnosticRegistry(
             docs="docs/Diagnostics.md#join-w0601",
             introduced="1.0.0",
             problem_template="Structure cannot prove the right-side join key is unique.",
-            use_template="Mark the joined key as primary_key=True, declare uniqueness metadata, or use left_join/inner_join when multiplication is intended.",
+            use_template="Use JoinDedupe.latest_by(...) or JoinDedupe.earliest_by(...), or use left_join/inner_join when multiplication is intended.",
         ),
         DiagnosticEntry(
             code="BACKEND-E2401",

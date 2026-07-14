@@ -5,91 +5,78 @@
       "column": "id",
       "name": "id",
       "nullable": false,
-      "primary_key": false,
       "type": "string"
     },
     {
       "column": "normalized_tags",
       "name": "normalized_tags",
       "nullable": true,
-      "primary_key": false,
       "type": "array<string?>"
     },
     {
       "column": "sorted_tags",
       "name": "sorted_tags",
       "nullable": true,
-      "primary_key": false,
       "type": "array<string!>"
     },
     {
       "column": "flat_tags",
       "name": "flat_tags",
       "nullable": true,
-      "primary_key": false,
       "type": "array<string!>"
     },
     {
       "column": "score_total",
       "name": "score_total",
       "nullable": true,
-      "primary_key": false,
       "type": "integer"
     },
     {
       "column": "tag_position",
       "name": "tag_position",
       "nullable": true,
-      "primary_key": false,
       "type": "long"
     },
     {
       "column": "has_priority",
       "name": "has_priority",
       "nullable": true,
-      "primary_key": false,
       "type": "boolean"
     },
     {
       "column": "all_tags_present",
       "name": "all_tags_present",
       "nullable": true,
-      "primary_key": false,
       "type": "boolean"
     },
     {
       "column": "normalized_attributes",
       "name": "normalized_attributes",
       "nullable": true,
-      "primary_key": false,
       "type": "map<string,string?>"
     },
     {
       "column": "zipped_attributes",
       "name": "zipped_attributes",
       "nullable": true,
-      "primary_key": false,
       "type": "map<string,string?>"
     },
     {
       "column": "attribute_keys",
       "name": "attribute_keys",
       "nullable": true,
-      "primary_key": false,
       "type": "array<string!>"
     },
     {
       "column": "attribute_values",
       "name": "attribute_values",
       "nullable": true,
-      "primary_key": false,
       "type": "array<string!>"
     },
     {
       "column": "roundtrip_attributes",
       "name": "roundtrip_attributes",
       "nullable": true,
-      "primary_key": false,
       "type": "map<string,string?>"
     }
   ],

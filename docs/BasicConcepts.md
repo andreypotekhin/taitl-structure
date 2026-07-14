@@ -27,7 +27,7 @@ class EnrichOrders(Transform):
 ### Schema
 
 A schema is a `Schema` class that describes a row contract: field names, order, types, nullability,
-inheritance, and Structure metadata such as primary keys.
+inheritance, aliases, metadata, and descriptions.
 
 Schemas define input rows, intermediate rows, and output rows.
 
@@ -36,10 +36,14 @@ A schema is not a Spark DataFrame and does not contain data.
 Example:
 
 ```python
+from structure import Schema
+from structure.field import *
+
+
 class OrderRaw(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    customer_id = field(String(), nullable=True)
-    total = field(Decimal(12, 2), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=True)
+    total = decimal(12, 2, nullable=True)
 ```
 
 ### Field

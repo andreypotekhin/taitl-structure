@@ -12,7 +12,6 @@ def test_fields_keep_types_nullability_and_collection_shape() -> None:
 
     assert fields["id"].type.name == "string"
     assert fields["id"].nullable is False
-    assert fields["id"].primary_key is True
     assert fields["total"].type.name == "string"
     assert fields["total"].nullable is True
 
@@ -49,7 +48,7 @@ def test_field_aliases_define_spark_column_names_without_renaming_python_fields(
     """I can declare field aliases for non-identifier Spark column names."""
 
     class Raw(Schema):
-        promotion_code = field(String(), nullable=True, alias="promo-code")
+        promotion_code = field.string(nullable=True, alias='promo-code')
 
     field_def = Raw._structure_fields["promotion_code"]
 
@@ -62,10 +61,10 @@ def test_aliases_are_schema_local_but_inherited_with_field_contracts() -> None:
     """Aliases belong to the declaring schema unless inherited."""
 
     class Raw(Schema):
-        promotion_code = field(String(), nullable=True, alias="promo-code")
+        promotion_code = field.string(nullable=True, alias='promo-code')
 
     class Normalized(Schema):
-        promotion_code = field(String(), nullable=True)
+        promotion_code = field.string(nullable=True)
 
     class StillRaw(Raw):
         pass
@@ -79,13 +78,13 @@ def test_invalid_and_duplicate_aliases_fail_early() -> None:
     """Aliases must be useful Spark column names."""
 
     with pytest.raises(ValueError, match="field alias must be a non-empty string"):
-        field(String(), alias="")
+        field.string(alias='')
 
     with pytest.raises(ValueError, match="field alias must be a non-empty string"):
-        field(String(), alias=123)  # type: ignore[arg-type]
+        field.string(alias=123)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError, match="duplicate Spark column name 'promo-code'"):
 
         class Duplicate(Schema):
-            promotion_code = field(String(), alias="promo-code")
-            alternate_code = field(String(), alias="promo-code")
+            promotion_code = field.string(alias='promo-code')
+            alternate_code = field.string(alias='promo-code')

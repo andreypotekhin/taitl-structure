@@ -45,9 +45,9 @@ typed `order` row scope as `o`.
 | `like(...)` | `like` | `o.name.like("A%")` |
 | `ilike(...)` | `ilike` | `o.name.ilike("a%")` |
 | `rlike(...)` | `rlike` | `o.name.rlike("^A")` |
-| `cast(...)` | `cast` | `o.total.cast(Decimal(12, 2))` |
-| `astype(...)` | `astype` | `o.total.astype(Decimal(12, 2))` |
-| `try_cast(...)` | `try_cast` | `o.raw_total.try_cast(Decimal(12, 2))` |
+| `cast(...)` | `cast` | `o.total.cast(types.decimal(12, 2))` |
+| `astype(...)` | `astype` | `o.total.astype(types.decimal(12, 2))` |
+| `try_cast(...)` | `try_cast` | `o.raw_total.try_cast(types.decimal(12, 2))` |
 | `asc()` | `asc` | `o.at.asc()` |
 | `desc()` | `desc` | `o.at.desc()` |
 | `asc_nulls_first()` | `asc_nulls_first` | `o.at.asc_nulls_first()` |

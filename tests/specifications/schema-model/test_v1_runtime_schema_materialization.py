@@ -135,7 +135,7 @@ def test_v1_runtime_schema_materializes_effective_inherited_fields() -> None:
 
 def test_v1_runtime_schema_materialization_uses_alias_column_name() -> None:
     class Raw(Schema):
-        promotion_code = field(String(), nullable=True, alias="promo-code")
+        promotion_code = field.string(nullable=True, alias='promo-code')
 
     schema = PySpark.schema.materialize()(Raw, types=FakeTypes)
 

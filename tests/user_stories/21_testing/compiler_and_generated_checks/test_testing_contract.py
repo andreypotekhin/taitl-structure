@@ -30,11 +30,11 @@ def test_intentionally_broken_transform_tests_keep_diagnostics_actionable() -> N
     """I can run intentionally broken transform tests so compiler diagnostics stay actionable."""
 
     class Raw(Schema):
-        id = field(String(), nullable=False)
+        id = field.string(nullable=False)
 
     class Published(Schema):
-        id = field(String(), nullable=False)
-        status = field(String(), nullable=False)
+        id = field.string(nullable=False)
+        status = field.string(nullable=False)
 
     @transform
     class MissingOutputField(Transform):

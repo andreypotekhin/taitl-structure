@@ -5,70 +5,60 @@
       "column": "tenant",
       "name": "tenant",
       "nullable": false,
-      "primary_key": false,
       "type": "TenantKey"
     },
     {
       "column": "product_id",
       "name": "product_id",
       "nullable": false,
-      "primary_key": false,
       "type": "string"
     },
     {
       "column": "order_date",
       "name": "order_date",
       "nullable": true,
-      "primary_key": false,
       "type": "date"
     },
     {
       "column": "order_count",
       "name": "order_count",
       "nullable": false,
-      "primary_key": false,
       "type": "long"
     },
     {
       "column": "distinct_customers",
       "name": "distinct_customers",
       "nullable": false,
-      "primary_key": false,
       "type": "long"
     },
     {
       "column": "units",
       "name": "units",
       "nullable": false,
-      "primary_key": false,
       "type": "long"
     },
     {
       "column": "min_units",
       "name": "min_units",
       "nullable": false,
-      "primary_key": false,
       "type": "long"
     },
     {
       "column": "max_units",
       "name": "max_units",
       "nullable": false,
-      "primary_key": false,
       "type": "long"
     },
     {
       "column": "avg_units",
       "name": "avg_units",
       "nullable": false,
-      "primary_key": false,
       "type": "double"
     },
     {
       "column": "gross_total",
       "name": "gross_total",
       "nullable": false,
-      "primary_key": false,
       "type": "decimal(12,2)"
     }
   ],

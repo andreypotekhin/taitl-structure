@@ -29,7 +29,6 @@ FieldDef
   name
   type
   nullable
-  primary_key
   alias
   metadata
   description
@@ -76,8 +75,6 @@ Rules:
 - `name` is the Python class attribute name.
 - `type` is a Structure `TypeDef`.
 - `nullable` defaults to `True`.
-- `primary_key` defaults to `False`.
-- `primary_key=True` implies `nullable=False`.
 - `alias` is an optional Spark column name. If absent, the Spark column name is `name`.
 - `metadata` is immutable and defaults to empty.
 - `description` is optional.
@@ -116,26 +113,26 @@ transformations remain a v2 expression feature.
 Type equality is structural:
 
 ```text
-String() == String()
-Decimal(12, 2) == Decimal(12, 2)
-Array(String()) == Array(String())
-Struct(Address) == Struct(Address)
+string() == string()
+decimal(12, 2) == decimal(12, 2)
+array(string()) == array(string())
+struct(Address) == struct(Address)
 ```
 
 ## Supported Types v1
 
-- `String()`
-- `Integer()`
-- `Long()`
-- `Float()`
-- `Double()`
-- `Decimal(precision, scale)`
-- `Boolean()`
-- `Date()`
-- `Timestamp()`
-- `Struct(SchemaClass)`
-- `Array(type_)`
-- `Map(key_type, value_type)`
+- `string()`
+- `integer()`
+- `long()`
+- `float()`
+- `double()`
+- `decimal(precision, scale)`
+- `boolean()`
+- `date()`
+- `timestamp()`
+- `struct(SchemaClass)`
+- `array(type_)`
+- `map(key_type, value_type)`
 
 ## Extraction Flow
 
@@ -167,11 +164,11 @@ Example:
 
 ```python
 class EntityKeys(Schema):
-    id = field(String(), nullable=False, primary_key=True)
+    id = string(nullable=False)
 
 
 class Order(EntityKeys):
-    total = field(Decimal(12, 2), nullable=True)
+    total = decimal(12, 2, nullable=True)
 ```
 
 Effective `Order` fields:
@@ -185,9 +182,9 @@ total  declaring_schema=Order       inherited=False
 
 ```python
 class Customer(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=True)
-    tier = field(String(), nullable=True)
+    id = string(nullable=False)
+    name = string(nullable=True)
+    tier = string(nullable=True)
 ```
 
 Generated PySpark schema:
@@ -203,18 +200,18 @@ CUSTOMER_SCHEMA = T.StructType([
 ## Spark Type Mapping
 
 ```text
-String()             -> T.StringType()
-Integer()            -> T.IntegerType()
-Long()               -> T.LongType()
-Float()              -> T.FloatType()
-Double()             -> T.DoubleType()
-Decimal(12, 2)       -> T.DecimalType(12, 2)
-Boolean()            -> T.BooleanType()
-Date()               -> T.DateType()
-Timestamp()          -> T.TimestampType()
-Array(String())      -> T.ArrayType(T.StringType(), containsNull=True)
-Struct(Address)      -> T.StructType([...])
-Map(String(), Long()) -> T.MapType(T.StringType(), T.LongType(), valueContainsNull=True)
+string()             -> T.StringType()
+integer()            -> T.IntegerType()
+long()               -> T.LongType()
+float()              -> T.FloatType()
+double()             -> T.DoubleType()
+decimal(12, 2)       -> T.DecimalType(12, 2)
+boolean()            -> T.BooleanType()
+date()               -> T.DateType()
+timestamp()          -> T.TimestampType()
+array(string())      -> T.ArrayType(T.StringType(), containsNull=True)
+struct(Address)      -> T.StructType([...])
+map(string(), long()) -> T.MapType(T.StringType(), T.LongType(), valueContainsNull=True)
 ```
 
 Spark schema generation must be deterministic and formatted consistently. When a field has an alias, Spark schema

@@ -6,18 +6,18 @@ from structure.app.target.pyspark.api import PySpark
 
 
 class OrderRaw(Schema):
-    id = field(String(), nullable=False)
-    product_id = field(String(), nullable=False)
+    id = field.string(nullable=False)
+    product_id = field.string(nullable=False)
 
 
 class Product(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=False)
+    id = field.string(nullable=False)
+    name = field.string(nullable=False)
 
 
 class OrderWithProduct(Schema):
-    id = field(String(), nullable=False)
-    product_name = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    product_name = field.string(nullable=True)
 
 
 def test_multiple_schema_parameters_and_results_compile_in_order() -> None:
@@ -218,14 +218,14 @@ def test_join_relation_can_be_inferred_from_class_input_scope() -> None:
 
 
 class ProductAlias(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=False)
+    id = field.string(nullable=False)
+    name = field.string(nullable=False)
 
 
 class OrderWithProductAlias(Schema):
-    id = field(String(), nullable=False)
-    product_name = field(String(), nullable=True)
-    alias_name = field(String(), nullable=True)
+    id = field.string(nullable=False)
+    product_name = field.string(nullable=True)
+    alias_name = field.string(nullable=True)
 
 
 def test_serial_join_relation_can_be_inferred_from_earlier_joined_scope() -> None:

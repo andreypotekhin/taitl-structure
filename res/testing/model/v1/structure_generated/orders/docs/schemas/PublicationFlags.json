@@ -5,7 +5,6 @@
       "column": "has_promotion",
       "name": "has_promotion",
       "nullable": false,
-      "primary_key": false,
       "type": "boolean"
     }
   ],
