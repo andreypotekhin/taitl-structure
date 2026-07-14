@@ -3,7 +3,7 @@ from typing import Any, cast
 
 import pytest
 
-from structure import SchemaMode
+from structure import *
 from structure.app.runtime.execution.online.logic.PySparkHookInvoker import PySparkHookInvoker
 from structure.app.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.app.target.pyspark.model.PySparkHookRecipe import PySparkHookRecipe

@@ -7,7 +7,7 @@ from integration.pyspark.v1.fixtures.parity.schemas import (
     StreamEvent,
 )
 
-from structure import Join, StreamingMode, Transform, input, lane, lookup_join, output, raw, step, transform, watermark
+from structure import *
 
 
 class NormalizeBase(Transform):

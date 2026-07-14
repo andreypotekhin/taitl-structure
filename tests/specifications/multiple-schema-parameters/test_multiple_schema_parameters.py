@@ -1,10 +1,7 @@
 import pytest
 
-from structure import Join, Schema, String, Transform, field, input, lane, lookup_join, output, raw
-from structure import step as dsl_step
-from structure import transform
+from structure import *
 from structure.app.compiler.api import Compiler
-from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 
@@ -32,7 +29,7 @@ def test_multiple_schema_parameters_and_results_compile_in_order() -> None:
         accepted = output(OrderWithProduct)
         audited = output(OrderWithProduct)
 
-        @dsl_step(
+        @step(
             input=[orders_external, products],
             output=[accepted, audited],
         )
@@ -51,17 +48,17 @@ def test_multiple_schema_parameters_and_results_compile_in_order() -> None:
             return accepted_order, audited_order
 
     plan = compile_transform(AddProduct)
-    step = plan.steps[0]
+    compiled_step = plan.steps[0]
 
-    assert [(item.parameter, item.source, item.driving) for item in step.inputs] == [
+    assert [(item.parameter, item.source, item.driving) for item in compiled_step.inputs] == [
         ("order", "orders_external", True),
         ("product", "products", False),
     ]
-    assert [(item.lane, item.frame) for item in step.results] == [
+    assert [(item.lane, item.frame) for item in compiled_step.results] == [
         ("accepted", "accepted"),
         ("audited", "audited"),
     ]
-    assert step.joins[0].source == "products"
+    assert compiled_step.joins[0].source == "products"
     assert [item.source for item in plan.outputs] == ["accepted", "audited"]
 
 
@@ -76,9 +73,9 @@ def test_unique_schema_parameters_are_inferred() -> None:
             product = lookup_join(product, on=product.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product.name)
 
-    step = compile_transform(AddProduct).steps[0]
+    compiled_step = compile_transform(AddProduct).steps[0]
 
-    assert [item.source for item in step.inputs] == ["orders", "products"]
+    assert [item.source for item in compiled_step.inputs] == ["orders", "products"]
 
 
 def test_plural_parameter_name_disambiguates_same_schema_driving_inputs() -> None:
@@ -88,13 +85,13 @@ def test_plural_parameter_name_disambiguates_same_schema_driving_inputs() -> Non
         orders2 = input(OrderRaw)
         picked = output(OrderRaw)
 
-        @dsl_step(output=picked)
+        @step(output=picked)
         def pick(self, order1: OrderRaw) -> OrderRaw:
             return OrderRaw(id=order1.id, product_id=order1.product_id)
 
-    step = compile_transform(PickOrders).steps[0]
+    compiled_step = compile_transform(PickOrders).steps[0]
 
-    assert [(item.parameter, item.source, item.lane) for item in step.inputs] == [
+    assert [(item.parameter, item.source, item.lane) for item in compiled_step.inputs] == [
         ("order1", "orders1", "orders1"),
     ]
 
@@ -107,14 +104,14 @@ def test_plural_parameter_name_disambiguates_same_schema_relation_inputs() -> No
         products2 = input(Product)
         enriched = output(OrderWithProduct)
 
-        @dsl_step(output=enriched)
+        @step(output=enriched)
         def add_product(self, order: OrderRaw, product2: Product) -> OrderWithProduct:
             product2 = lookup_join(product2, on=product2.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product2.name)
 
-    step = compile_transform(AddProduct).steps[0]
+    compiled_step = compile_transform(AddProduct).steps[0]
 
-    assert [(item.parameter, item.source, item.lane) for item in step.inputs] == [
+    assert [(item.parameter, item.source, item.lane) for item in compiled_step.inputs] == [
         ("order", "orders", "orders"),
         ("product2", "products2", "products2"),
     ]
@@ -129,21 +126,21 @@ def test_plural_parameter_name_disambiguates_same_schema_lanes() -> None:
         orders2 = lane(OrderRaw)
         picked = output(OrderRaw)
 
-        @dsl_step(input=raw1, output=orders1)
+        @step(input=raw1, output=orders1)
         def seed1(self, order: OrderRaw) -> OrderRaw:
             return OrderRaw(id=order.id, product_id=order.product_id)
 
-        @dsl_step(input=raw2, output=orders2)
+        @step(input=raw2, output=orders2)
         def seed2(self, order: OrderRaw) -> OrderRaw:
             return OrderRaw(id=order.id, product_id=order.product_id)
 
-        @dsl_step(output=picked)
+        @step(output=picked)
         def pick(self, order2: OrderRaw) -> OrderRaw:
             return OrderRaw(id=order2.id, product_id=order2.product_id)
 
-    step = compile_transform(PickOrders).steps[2]
+    compiled_step = compile_transform(PickOrders).steps[2]
 
-    assert [(item.parameter, item.source, item.lane) for item in step.inputs] == [
+    assert [(item.parameter, item.source, item.lane) for item in compiled_step.inputs] == [
         ("order2", "orders2", "orders2"),
     ]
 
@@ -156,7 +153,7 @@ def test_partial_explicit_input_declaration_disables_plural_parameter_inference(
         products2 = input(Product)
         enriched = output(OrderWithProduct)
 
-        @dsl_step(input=orders, output=enriched)
+        @step(input=orders, output=enriched)
         def add_product(self, order: OrderRaw, product2: Product) -> OrderWithProduct:
             product2 = lookup_join(product2, on=product2.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product2.name)
@@ -176,12 +173,12 @@ def test_join_relation_can_be_inferred_from_on_clause() -> None:
             lookup_join(on=product.id == order.product_id, how=Join.LEFT)
             return OrderWithProduct(id=order.id, product_name=product.name)
 
-    step = compile_transform(AddProduct).steps[0]
+    compiled_step = compile_transform(AddProduct).steps[0]
 
-    assert step.joins[0].input_name == "product"
-    assert step.joins[0].source == "products"
-    assert step.operations[0].kind == "join"
-    assert step.operations[0].join == step.joins[0]
+    assert compiled_step.joins[0].input_name == "product"
+    assert compiled_step.joins[0].source == "products"
+    assert compiled_step.operations[0].kind == "join"
+    assert compiled_step.operations[0].join == compiled_step.joins[0]
 
 
 def test_join_relation_can_be_inferred_from_reversed_operands() -> None:
@@ -195,10 +192,10 @@ def test_join_relation_can_be_inferred_from_reversed_operands() -> None:
             lookup_join(on=order.product_id == product.id, how=Join.LEFT)
             return OrderWithProduct(id=order.id, product_name=product.name)
 
-    step = compile_transform(AddProduct).steps[0]
+    compiled_step = compile_transform(AddProduct).steps[0]
 
-    assert step.joins[0].input_name == "product"
-    assert step.joins[0].source == "products"
+    assert compiled_step.joins[0].input_name == "product"
+    assert compiled_step.joins[0].source == "products"
 
 
 def test_join_relation_can_be_inferred_from_class_input_scope() -> None:
@@ -212,11 +209,11 @@ def test_join_relation_can_be_inferred_from_class_input_scope() -> None:
             lookup_join(on=self.products.id == order.product_id, how=Join.LEFT)
             return OrderWithProduct(id=order.id, product_name=self.products.name)
 
-    step = compile_transform(AddProduct).steps[0]
-    projection = {assignment.field.name: assignment.expression for assignment in step.projection}
+    compiled_step = compile_transform(AddProduct).steps[0]
+    projection = {assignment.field.name: assignment.expression for assignment in compiled_step.projection}
 
-    assert step.joins[0].input_name == "products"
-    assert step.joins[0].source == "products"
+    assert compiled_step.joins[0].input_name == "products"
+    assert compiled_step.joins[0].source == "products"
     assert projection["product_name"].nullable
 
 
@@ -253,10 +250,10 @@ def test_serial_join_relation_can_be_inferred_from_earlier_joined_scope() -> Non
                 alias_name=alias.name,
             )
 
-    step = compile_transform(AddProduct).steps[0]
+    compiled_step = compile_transform(AddProduct).steps[0]
 
-    assert [join.input_name for join in step.joins] == ["product", "alias"]
-    assert [operation.kind for operation in step.operations] == ["join", "join"]
+    assert [join.input_name for join in compiled_step.joins] == ["product", "alias"]
+    assert [operation.kind for operation in compiled_step.operations] == ["join", "join"]
 
 
 def test_array_input_binds_lane_parameters_in_order() -> None:
@@ -268,26 +265,26 @@ def test_array_input_binds_lane_parameters_in_order() -> None:
         product_lane = lane(Product)
         enriched = output(OrderWithProduct)
 
-        @dsl_step(input=orders, output=order_lane)
+        @step(input=orders, output=order_lane)
         def seed_order(self, order: OrderRaw) -> OrderRaw:
             return OrderRaw(id=order.id, product_id=order.product_id)
 
-        @dsl_step(input=products, output=product_lane)
+        @step(input=products, output=product_lane)
         def seed_product(self, product: Product) -> Product:
             return Product(id=product.id, name=product.name)
 
-        @dsl_step(input=[order_lane, product_lane], output=enriched)
+        @step(input=[order_lane, product_lane], output=enriched)
         def add_product(self, order: OrderRaw, product: Product) -> OrderWithProduct:
             product = lookup_join(product, on=product.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product.name)
 
-    step = compile_transform(AddProduct).steps[2]
+    compiled_step = compile_transform(AddProduct).steps[2]
 
-    assert [(item.parameter, item.source, item.lane) for item in step.inputs] == [
+    assert [(item.parameter, item.source, item.lane) for item in compiled_step.inputs] == [
         ("order", "order_lane", "order_lane"),
         ("product", "product_lane", "product_lane"),
     ]
-    assert step.output_lane == "enriched"
+    assert compiled_step.output_lane == "enriched"
 
 
 def test_repeated_schema_parameters_require_explicit_inputs() -> None:
@@ -321,7 +318,7 @@ def test_multi_result_after_hooks_select_their_dataframe() -> None:
         accepted = output(OrderWithProduct)
         audited = output(OrderWithProduct)
 
-        @dsl_step(input=[orders, products], output=[accepted, audited])
+        @step(input=[orders, products], output=[accepted, audited])
         def add_product(
             self,
             order: OrderRaw,
@@ -335,10 +332,10 @@ def test_multi_result_after_hooks_select_their_dataframe() -> None:
         def audit(self, *, audited, spark, ctx):
             return audited
 
-    step = compile_transform(AddProduct).steps[0]
+    compiled_step = compile_transform(AddProduct).steps[0]
 
-    assert not step.results[0].after_hooks
-    assert [hook.name for hook in step.results[1].after_hooks] == ["audit"]
+    assert not compiled_step.results[0].after_hooks
+    assert [hook.name for hook in compiled_step.results[1].after_hooks] == ["audit"]
 
 
 def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
@@ -349,7 +346,7 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
         accepted = output(OrderWithProduct)
         audited = output(OrderWithProduct)
 
-        @dsl_step(input=[orders, products], output=[accepted, audited])
+        @step(input=[orders, products], output=[accepted, audited])
         def add_product(
             self,
             order: OrderRaw,
@@ -401,7 +398,7 @@ def test_generated_plural_lane_hook_replaces_outputs_in_order() -> None:
         accepted = output(OrderWithProduct)
         audited = output(OrderWithProduct)
 
-        @dsl_step(input=[orders, products], output=[accepted, audited])
+        @step(input=[orders, products], output=[accepted, audited])
         def add_product(
             self,
             order: OrderRaw,
@@ -440,7 +437,7 @@ def test_multi_result_raw_hook_rejects_unproduced_output_selection() -> None:
         accepted = output(OrderWithProduct)
         audited = output(OrderWithProduct)
 
-        @dsl_step(input=[orders, products], output=[accepted, audited])
+        @step(input=[orders, products], output=[accepted, audited])
         def add_product(
             self,
             order: OrderRaw,
@@ -464,7 +461,7 @@ def test_hook_signature_must_match_selected_lane() -> None:
         orders = input(OrderRaw)
         enriched = output(OrderWithProduct)
 
-        @dsl_step(output=enriched)
+        @step(output=enriched)
         def add_product(self, order: OrderRaw) -> OrderWithProduct:
             return OrderWithProduct(id=order.id, product_name=None)
 

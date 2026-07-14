@@ -1,7 +1,7 @@
 import pytest
 from helpers.fake_pyspark_schema import StringType, StructField, StructType  # type: ignore[import-not-found]
 
-from structure import StructureTools
+from structure import *
 from structure.app.runtime.session.model.StructureSession import StructureSession
 from structure.app.tools.model import StructureToolError
 

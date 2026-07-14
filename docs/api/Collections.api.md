@@ -23,8 +23,13 @@ These helpers map to Spark array and map operations while keeping callback bodie
 
 - `array(...)` needs at least one typed value. Compatible numeric values widen from Integer to Long to Float to Double;
   other element types must match.
+- `arr_position(...)` requires a compatible Python literal as its searched item. Column items are unavailable in the
+  supported PySpark 3.5 baseline.
+- `map_contains_key(...)` likewise requires a compatible Python literal key in the supported PySpark 3.5 baseline.
 - Array indices are one-based. `element_at(...)` follows Spark's ANSI out-of-range behavior, while
   `try_element_at(...)` yields null for a missing or out-of-range element.
+- `arr_flatten(...)` yields null when the outer array is null or contains a null immediate nested array, matching
+  Spark's `flatten` behavior.
 - Lookup results are nullable because a map key can be absent and a safe array lookup can be out of range.
 
 ## Array Callbacks

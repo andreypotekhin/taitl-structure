@@ -9,7 +9,7 @@ from typing import Any, cast
 import pytest
 
 import structure
-from structure.app.dsl.api import compile_transform
+from structure import *
 
 SNAPSHOT = Path("res/testing/snapshots/api/public_structure.v1.json")
 
@@ -66,7 +66,7 @@ class Publish(Transform):
 
 def test_method_level_transform_reports_the_step_migration() -> None:
     with pytest.raises(TypeError, match=r"replace method-level @transform\(\.\.\.\) with @step"):
-        structure.transform(lambda: None, output=object())
+        transform(lambda: None, output=object())
 
 
 def _snapshot() -> dict[str, object]:

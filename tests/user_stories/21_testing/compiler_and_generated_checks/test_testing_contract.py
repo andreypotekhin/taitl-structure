@@ -2,8 +2,7 @@ import ast
 
 import pytest
 
-from structure import Schema, String, StructureCompileError, Transform, field, input, output, transform
-from structure.app.dsl.api import compile_transform
+from structure import *
 
 
 def test_user_story_tests_compile_transforms_before_deployment(orders_plan) -> None:

@@ -1,6 +1,6 @@
 import sys
 
-from structure import StructureTools
+from structure import *
 from structure.app.tools.api import StructureTools as AppStructureTools
 
 

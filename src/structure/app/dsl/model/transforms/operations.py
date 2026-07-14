@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import date, datetime
+from functools import cache as cached
+from math import isfinite
 from typing import TypeVar
 
 from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
@@ -12,6 +15,8 @@ from structure.app.compiler.ir.model.SelectedRowsPlan import SelectedRowsPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import CompileContext, current_context
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.expr.expressions import literal
+from structure.app.dsl.model.schemas.Schema import Schema
+from structure.app.dsl.model.schemas.schema_api import field as schema_field
 from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.BooleanType import BooleanType
@@ -21,6 +26,7 @@ from structure.app.dsl.model.types.IntegerType import IntegerType
 from structure.app.dsl.model.types.LongType import LongType
 from structure.app.dsl.model.types.MapType import MapType
 from structure.app.dsl.model.types.StringType import StringType
+from structure.app.dsl.model.types.StructType import StructType
 from structure.app.dsl.model.types.StructureType import StructureType
 
 F = TypeVar("F", bound=Callable)
@@ -132,6 +138,8 @@ def covar(left: object, right: object, *, where: object | None = None) -> Expres
 def approx_count_distinct(
     value: object, *, relative_sd: float | None = None, where: object | None = None
 ) -> Expression:
+    if relative_sd is not None and not _relative_standard_deviation(relative_sd):
+        raise TypeError("approx_count_distinct(...) relative_sd must be a finite number greater than 0 and at most 0.39")
     return _aggregate(
         "approx_count_distinct",
         literal(value),
@@ -149,6 +157,10 @@ def approx_percentile(
     accuracy: int | None = None,
     where: object | None = None,
 ) -> Expression:
+    if not _percentage(percentage):
+        raise TypeError("approx_percentile(...) percentage must be a finite number from 0 through 1")
+    if accuracy is not None and not _positive_integer(accuracy):
+        raise TypeError("approx_percentile(...) accuracy must be a positive integer")
     argument = literal(value)
     return _aggregate(
         "approx_percentile",
@@ -299,6 +311,8 @@ def lag(
     descending: bool = False,
 ) -> Expression:
     argument = literal(value)
+    _integer_at_least("lag(...) offset", offset, 1)
+    _window_default("lag(...)", argument, default)
     return _window_expression(
         "lag",
         argument,
@@ -322,6 +336,8 @@ def lead(
     descending: bool = False,
 ) -> Expression:
     argument = literal(value)
+    _integer_at_least("lead(...) offset", offset, 1)
+    _window_default("lead(...)", argument, default)
     return _window_expression(
         "lead",
         argument,
@@ -343,7 +359,8 @@ def rolling_sum(
     preceding: int,
     descending: bool = False,
 ) -> Expression:
-    argument = literal(value)
+    argument = _numeric_expression(value, "rolling_sum(...)")
+    _integer_at_least("rolling_sum(...) preceding", preceding, 0)
     return _rolling_expression(
         "sum",
         argument,
@@ -364,7 +381,8 @@ def rolling_avg(
     preceding: int,
     descending: bool = False,
 ) -> Expression:
-    argument = literal(value)
+    argument = _numeric_expression(value, "rolling_avg(...)")
+    _integer_at_least("rolling_avg(...) preceding", preceding, 0)
     return _rolling_expression(
         "avg",
         argument,
@@ -385,7 +403,8 @@ def rolling_min(
     preceding: int,
     descending: bool = False,
 ) -> Expression:
-    argument = literal(value)
+    argument = _orderable_expression(value, "rolling_min(...)")
+    _integer_at_least("rolling_min(...) preceding", preceding, 0)
     return _rolling_expression(
         "min",
         argument,
@@ -406,7 +425,8 @@ def rolling_max(
     preceding: int,
     descending: bool = False,
 ) -> Expression:
-    argument = literal(value)
+    argument = _orderable_expression(value, "rolling_max(...)")
+    _integer_at_least("rolling_max(...) preceding", preceding, 0)
     return _rolling_expression(
         "max",
         argument,
@@ -420,6 +440,8 @@ def rolling_max(
 
 
 def window(*, partition_by: object, order_by: object, frame: "WindowFrame | None" = None) -> "WindowSpec":
+    if frame is not None and not isinstance(frame, WindowFrame):
+        raise TypeError("window(frame=...) requires rows_between(...) or range_between(...)")
     spec = WindowSpec(
         partition_by=_partition_by(partition_by, call="window(...)"),
         order_by=_order_by(order_by, call="window(...)"),
@@ -450,14 +472,12 @@ def current_row() -> "WindowBound":
 
 
 def preceding(value: int) -> "WindowBound":
-    if value < 0:
-        raise TypeError("preceding(...) value must be greater than or equal to 0")
+    _integer_at_least("preceding(...) value", value, 0)
     return WindowBound("preceding", value)
 
 
 def following(value: int) -> "WindowBound":
-    if value < 0:
-        raise TypeError("following(...) value must be greater than or equal to 0")
+    _integer_at_least("following(...) value", value, 0)
     return WindowBound("following", value)
 
 
@@ -470,16 +490,14 @@ def cume_dist(*, over: "WindowSpec") -> Expression:
 
 
 def ntile(value: int, *, over: "WindowSpec") -> Expression:
-    if value < 1:
-        raise TypeError("ntile(...) value must be greater than or equal to 1")
+    _integer_at_least("ntile(...) value", value, 1)
     return _window_over_expression(
         "ntile", over=over, type=IntegerType(), nullable=False, options=(("buckets", value),)
     )
 
 
 def nth_value(value: object, n: int, *, over: "WindowSpec", ignore_nulls: bool = False) -> Expression:
-    if n < 1:
-        raise TypeError("nth_value(...) n must be greater than or equal to 1")
+    _integer_at_least("nth_value(...) n", n, 1)
     argument = literal(value)
     return _window_over_expression(
         "nth_value",
@@ -493,21 +511,23 @@ def nth_value(value: object, n: int, *, over: "WindowSpec", ignore_nulls: bool =
 
 
 def window_sum(value: object, *, over: "WindowSpec") -> Expression:
-    argument = literal(value)
+    argument = _numeric_expression(value, "window_sum(...)")
     return _window_over_expression("sum", argument, over=over, type=argument.type, nullable=argument.nullable)
 
 
 def window_avg(value: object, *, over: "WindowSpec") -> Expression:
-    return _window_over_expression("avg", literal(value), over=over, type=DoubleType(), nullable=True)
+    return _window_over_expression(
+        "avg", _numeric_expression(value, "window_avg(...)"), over=over, type=DoubleType(), nullable=True
+    )
 
 
 def window_min(value: object, *, over: "WindowSpec") -> Expression:
-    argument = literal(value)
+    argument = _orderable_expression(value, "window_min(...)")
     return _window_over_expression("min", argument, over=over, type=argument.type, nullable=argument.nullable)
 
 
 def window_max(value: object, *, over: "WindowSpec") -> Expression:
-    argument = literal(value)
+    argument = _orderable_expression(value, "window_max(...)")
     return _window_over_expression("max", argument, over=over, type=argument.type, nullable=argument.nullable)
 
 
@@ -760,6 +780,36 @@ def _window_bound_position(bound: "WindowBound") -> float:
     raise TypeError(f"Unsupported window bound: {bound.kind}")
 
 
+def _integer_at_least(name: str, value: object, minimum: int) -> None:
+    if not isinstance(value, int) or isinstance(value, bool) or value < minimum:
+        requirement = "a positive integer" if minimum == 1 else f"an integer greater than or equal to {minimum}"
+        raise TypeError(f"{name} must be {requirement}")
+
+
+def _window_default(call: str, value: Expression, default: object) -> None:
+    if default is None:
+        return
+    if not isinstance(default, (bool, int, float, str, date, datetime)):
+        raise TypeError(f"{call} default must be a Python scalar literal or None")
+    default_type = _typed_type(f"{call} default", literal(default))
+    value_type = _typed_type(f"{call} value", value)
+    numeric = {"decimal", "double", "float", "integer", "long"}
+    if not _same_type(value_type, default_type) and not {value_type.name, default_type.name} <= numeric:
+        raise TypeError(f"{call} default must be compatible with the value expression type")
+
+
+def _positive_integer(value: object) -> bool:
+    return isinstance(value, int) and not isinstance(value, bool) and value > 0
+
+
+def _relative_standard_deviation(value: object) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and isfinite(value) and 0 < value <= 0.39
+
+
+def _percentage(value: object) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and isfinite(value) and 0 <= value <= 1
+
+
 def _window_boolean(value: object, call: str) -> Expression:
     argument = literal(value)
     if not isinstance(argument.type, BooleanType):
@@ -768,9 +818,29 @@ def _window_boolean(value: object, call: str) -> Expression:
 
 
 def _window_numeric(value: object, call: str) -> Expression:
+    return _numeric_expression(value, call)
+
+
+def _numeric_expression(value: object, call: str) -> Expression:
     argument = literal(value)
     if argument.type is None or argument.type.name not in {"integer", "long", "float", "double", "decimal"}:
         raise TypeError(f"{call} requires a numeric expression")
+    return argument
+
+
+def _orderable_expression(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if argument.type is None or argument.type.name not in {
+        "date",
+        "decimal",
+        "double",
+        "float",
+        "integer",
+        "long",
+        "string",
+        "timestamp",
+    }:
+        raise TypeError(f"{call} requires an orderable scalar expression")
     return argument
 
 
@@ -1003,9 +1073,14 @@ def arr_aggregate(
     argument = literal(value)
     initial_value = literal(initial)
     array = _array_type(argument, "arr_aggregate(...)")
-    accumulator = _lambda_arg(initial_value.type, nullable=initial_value.nullable, name="acc")
+    accumulator_type = _typed_type("arr_aggregate(...) initial", initial_value)
+    accumulator = _lambda_arg(accumulator_type, nullable=initial_value.nullable, name="acc")
     item = _lambda_arg(array.element, nullable=array.contains_null, name="item")
     merged = _callback_expression("arr_aggregate(...)", merge, accumulator, item)
+    _unify_types(
+        "arr_aggregate(...) merge callback",
+        (accumulator_type, _typed_type("arr_aggregate(...) merge", merged)),
+    )
     finished = _callback_expression("arr_aggregate(...)", finish, accumulator) if finish is not None else merged
     result_type = finished.type
     if result_type is None:
@@ -1027,6 +1102,11 @@ def arr_sort_by(value: object, function: Callable[[Expression], object], *, desc
     right = _lambda_arg(array.element, nullable=array.contains_null, name="right")
     left_key = _callback_expression("arr_sort_by(...)", function, left)
     right_key = _callback_expression("arr_sort_by(...)", function, right)
+    _sortable_type("arr_sort_by(...) callback", left_key)
+    _unify_types(
+        "arr_sort_by(...) callback",
+        (_typed_type("arr_sort_by(...) callback", left_key), _typed_type("arr_sort_by(...) callback", right_key)),
+    )
     return _reserved_expression(
         "array_sort_by",
         group="higher_order",
@@ -1049,7 +1129,9 @@ def arr_flatten(value: object) -> Expression:
         group="higher_order",
         name="array_flatten",
         type=ArrayType(nested.element, contains_null=nested.contains_null),
-        nullable=argument.nullable,
+        # Spark returns null when any immediate nested array is null, even if
+        # the outer array itself is present.
+        nullable=argument.nullable or array.contains_null,
         args=(argument,),
     )
 
@@ -1069,14 +1151,18 @@ def arr_distinct(value: object) -> Expression:
 
 def arr_position(value: object, item: object) -> Expression:
     argument = literal(value)
-    _array_type(argument, "arr_position(...)")
+    array_type = _array_type(argument, "arr_position(...)")
+    needle = literal(item)
+    if needle.kind != "literal":
+        raise TypeError("arr_position(...) item must be a Python literal for PySpark 3.5 compatibility")
+    _unify_types("arr_position(...)", (array_type.element, _typed_type("arr_position(...)", needle)))
     return _reserved_expression(
         "array_position",
         group="higher_order",
         name="array_position",
         type=LongType(),
         nullable=True,
-        args=(argument, literal(item)),
+        args=(argument, needle),
     )
 
 
@@ -1112,6 +1198,8 @@ def map_contains_key(value: object, key: object) -> Expression:
     argument = literal(value)
     map_type = _map_type(argument, "map_contains_key(...)")
     key_expression = literal(key)
+    if key_expression.kind != "literal":
+        raise TypeError("map_contains_key(...) key must be a Python literal for PySpark 3.5 compatibility")
     _map_key_type("map_contains_key(...)", map_type, key_expression)
     return _reserved_expression(
         "map_contains_key",
@@ -1205,6 +1293,8 @@ def map_transform_keys(
     result_type = result.type
     if result_type is None:
         raise AssertionError("higher-order callback validation must reject untyped results")
+    if result.nullable:
+        raise TypeError("map_transform_keys(...) callback must return a non-null key expression")
     return _reserved_expression(
         "map_transform_keys",
         group="higher_order",
@@ -1224,7 +1314,8 @@ def map_zip_with(
     right_arg = literal(right)
     left_map = _map_type(left_arg, "map_zip_with(...)")
     right_map = _map_type(right_arg, "map_zip_with(...)")
-    key = _lambda_arg(left_map.key, nullable=False, name="key")
+    key_type = _unify_types("map_zip_with(...) key", (left_map.key, right_map.key))
+    key = _lambda_arg(key_type, nullable=False, name="key")
     left_value = _lambda_arg(left_map.value, nullable=True, name="left_value")
     right_value = _lambda_arg(right_map.value, nullable=True, name="right_value")
     result = _callback_expression("map_zip_with(...)", function, key, left_value, right_value)
@@ -1235,7 +1326,7 @@ def map_zip_with(
         "map_zip_with",
         group="higher_order",
         name="map_zip_with",
-        type=MapType(left_map.key, result_type, value_contains_null=result.nullable),
+        type=MapType(key_type, result_type, value_contains_null=result.nullable),
         nullable=left_arg.nullable or right_arg.nullable,
         args=(left_arg, right_arg, key, left_value, right_value, result),
     )
@@ -1269,12 +1360,12 @@ def map_values(value: object) -> Expression:
 
 def map_entries(value: object) -> Expression:
     argument = literal(value)
-    _map_type(argument, "map_entries(...)")
+    map_type = _map_type(argument, "map_entries(...)")
     return _reserved_expression(
         "map_entries",
         group="higher_order",
         name="map_entries",
-        type=ArrayType(MapType(StringType(), StringType()), contains_null=False),
+        type=ArrayType(_map_entry_type(map_type), contains_null=False),
         nullable=argument.nullable,
         args=(argument,),
     )
@@ -1282,12 +1373,13 @@ def map_entries(value: object) -> Expression:
 
 def map_from_entries(value: object) -> Expression:
     argument = literal(value)
-    _array_type(argument, "map_from_entries(...)")
+    array = _array_type(argument, "map_from_entries(...)")
+    entry = _map_entry_fields(array, "map_from_entries(...)")
     return _reserved_expression(
         "map_from_entries",
         group="higher_order",
         name="map_from_entries",
-        type=MapType(StringType(), StringType()),
+        type=MapType(entry["key"].type, entry["value"].type, value_contains_null=entry["value"].nullable),
         nullable=argument.nullable,
         args=(argument,),
     )
@@ -1433,6 +1525,38 @@ def _map_key_type(call: str, map_type: MapType, key: Expression) -> None:
         ) from error
 
 
+def _sortable_type(call: str, expression: Expression) -> None:
+    type = _typed_type(call, expression)
+    if type.name not in {"date", "decimal", "double", "float", "integer", "long", "string", "timestamp"}:
+        raise TypeError(f"{call} must return an orderable scalar expression; received {type.name}")
+
+
+@cached
+def _map_entry_type(map_type: MapType) -> StructType:
+    schema = type(
+        "_MapEntry",
+        (Schema,),
+        {
+            "key": schema_field(map_type.key, nullable=False),
+            "value": schema_field(map_type.value, nullable=map_type.value_contains_null),
+        },
+    )
+    return StructType(schema)
+
+
+def _map_entry_fields(array: ArrayType, call: str):
+    if array.contains_null:
+        raise TypeError(f"{call} requires an Array of non-null key/value Struct entries")
+    if not isinstance(array.element, StructType):
+        raise TypeError(f"{call} requires an Array of key/value Struct entries")
+    fields = array.element.schema._structure_fields
+    if set(fields) != {"key", "value"}:
+        raise TypeError(f"{call} requires Struct entries with exactly key and value fields")
+    if fields["key"].nullable:
+        raise TypeError(f"{call} requires non-null key fields")
+    return fields
+
+
 def _unified_argument_type(call: str, arguments: tuple[Expression, ...]) -> StructureType:
     types = tuple(argument.type for argument in arguments if argument.type is not None)
     if not types:
@@ -1473,6 +1597,8 @@ def _same_type(left: StructureType, right: StructureType) -> bool:
             and _same_type(left.key, right.key)
             and _same_type(left.value, right.value)
         )
+    if isinstance(left, StructType) and isinstance(right, StructType):
+        return left.schema is right.schema
     if left.name == "decimal":
         return getattr(left, "precision") == getattr(right, "precision") and getattr(left, "scale") == getattr(
             right, "scale"

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import date, datetime
 from typing import Mapping, cast
 
 from structure.app.dsl.model.schemas.Schema import Schema
@@ -8,6 +9,8 @@ from structure.app.dsl.model.types.StructureType import StructureType
 from structure.app.target.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
 from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.app.target.pyspark.model.PySparkOutputRecipe import PySparkOutputRecipe
+from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 
@@ -71,6 +74,8 @@ class RenderPySparkTransformModule:
             "from pyspark.sql import functions as F",
             "from pyspark.sql import types as T",
         ]
+        if self._has_temporal_literal(plan):
+            lines.insert(0, "import datetime")
         if self._has_window(plan):
             lines.insert(1, "from pyspark.sql import Window")
         lines.extend(self._source_imports(plan, source_transform=source_transform))
@@ -323,27 +328,82 @@ class RenderPySparkTransformModule:
 
     def _expressions(self, plan: PySparkExecutionPlan):
         for step in plan.steps:
-            yield from step.filters
-            yield from (assignment.expression for assignment in step.projection)
-            for result in step.results:
-                yield from (assignment.expression for assignment in result.projection)
-            for operation in step.operations:
-                if operation.filter is not None:
-                    yield operation.filter
-                if operation.watermark is not None:
-                    yield operation.watermark.expression
+            yield from self._step_expressions(step)
         for output in plan.outputs:
-            yield from output.filters
-            yield from (assignment.expression for assignment in output.projection)
-            for operation in output.operations:
-                if operation.filter is not None:
-                    yield operation.filter
+            yield from self._step_expressions(output)
+
+    def _step_expressions(self, step: PySparkStepRecipe | PySparkOutputRecipe):
+        yield from step.filters
+        yield from (assignment.expression for assignment in step.projection)
+        yield from self._joins_expressions(step.joins)
+        yield from self._aggregate_expressions(getattr(step, "aggregate", None))
+        for result in getattr(step, "results", ()):
+            yield from (assignment.expression for assignment in result.projection)
+            yield from self._aggregate_expressions(result.aggregate)
+        for operation in step.operations:
+            yield from self._operation_expressions(operation)
+
+    def _operation_expressions(self, operation):
+        if operation.filter is not None:
+            yield operation.filter
+        if operation.join is not None:
+            yield from self._joins_expressions((operation.join,))
+        if operation.aggregate is not None:
+            yield from self._aggregate_expressions(operation.aggregate)
+        if operation.selected_rows is not None:
+            yield operation.selected_rows.order_by
+            yield from operation.selected_rows.partition_by
+        if operation.duplicate_rows is not None:
+            yield from operation.duplicate_rows.subset
+        if operation.watermark is not None:
+            yield operation.watermark.expression
+
+    def _joins_expressions(self, joins):
+        for join in joins:
+            yield join.predicate
+            if join.dedupe is not None:
+                yield join.dedupe.order_by
+            if join.temporal is not None:
+                yield join.temporal.at
+                yield join.temporal.valid_from
+                yield join.temporal.valid_to
+            if join.as_of is not None:
+                yield join.as_of.left_time
+                yield join.as_of.right_time
+                if join.as_of.tolerance is not None:
+                    yield join.as_of.tolerance
+
+    def _aggregate_expressions(self, aggregate):
+        if aggregate is None:
+            return
+        yield from (key.expression for key in aggregate.keys)
+        if aggregate.having is not None:
+            yield aggregate.having
+        for assignment in aggregate.assignments:
+            if assignment.expression is not None:
+                yield assignment.expression
+            yield from assignment.arguments
+            if assignment.filter is not None:
+                yield assignment.filter
+            if assignment.order_by is not None:
+                yield assignment.order_by
 
     def _expression_udfs(self, expression) -> tuple[dict[str, object], ...]:
         found = [dict(expression.data)] if expression.kind == "python_udf" else []
         for argument in expression.args:
             found.extend(self._expression_udfs(argument))
         return tuple(found)
+
+    def _has_temporal_literal(self, plan: PySparkExecutionPlan) -> bool:
+        return any(self._has_temporal_literal_expression(expression) for expression in self._expressions(plan))
+
+    def _has_temporal_literal_expression(self, expression) -> bool:
+        return (
+            isinstance(expression.data.get("default"), (date, datetime))
+            or (expression.kind == "literal" and isinstance(expression.data.get("value"), (date, datetime)))
+        ) or any(
+            self._has_temporal_literal_expression(argument) for argument in expression.args
+        )
 
     def _last_step_validates_final(self, plan: PySparkExecutionPlan) -> bool:
         if not plan.steps:

@@ -2,8 +2,7 @@ from typing import Any, cast
 
 import pytest
 
-from structure import Schema, String, Transform, field, input, lane, output, step, transform
-from structure.app.dsl.api import compile_transform
+from structure import *
 from structure.app.runtime.api import StructureSession, TransformResult
 from structure.app.target.pyspark.api import PySpark
 

@@ -6,7 +6,7 @@ from typing import Any, cast
 
 import pytest
 
-from structure.app.dsl.api import compile_transform
+from structure import *
 
 
 def test_v3_source_fixtures_import_without_live_spark(monkeypatch: pytest.MonkeyPatch) -> None:

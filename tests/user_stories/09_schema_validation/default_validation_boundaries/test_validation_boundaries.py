@@ -6,7 +6,7 @@ from testing.model.v1.orders.schemas.order import (
     OrderWithPromotion,
 )
 
-from structure.app.dsl.api import SchemaMode
+from structure import *
 
 
 def test_intermediate_schema_validation_is_placed_after_step_methods(orders_recipe) -> None:

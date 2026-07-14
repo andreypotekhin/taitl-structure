@@ -10,7 +10,7 @@ from pathlib import Path
 
 import pytest
 
-from structure import StructureSession
+from structure import *
 from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.target.pyspark.api import PySpark

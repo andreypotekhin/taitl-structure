@@ -1,4 +1,4 @@
-from structure.app.dsl.api import compile_transform
+from structure import *
 from structure.app.target.pyspark.api import PySpark
 
 

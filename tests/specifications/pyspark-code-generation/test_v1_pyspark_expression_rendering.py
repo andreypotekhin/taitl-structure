@@ -2,8 +2,7 @@ from typing import Any, cast
 
 import pytest
 
-import structure
-from structure.app.dsl.api import compile_transform
+from structure import *
 from structure.app.target.capabilities.api import BackendCapabilityError, PySparkCapabilities
 from structure.app.target.pyspark.api import PySpark
 
@@ -66,16 +65,16 @@ def test_v1_expression_renderer_renders_join_predicates() -> None:
 
 
 def test_v1_expression_renderer_passes_field_aliases_to_spark() -> None:
-    class Raw(structure.Schema):
-        promotion_code = structure.field(structure.String(), nullable=True, alias="promo-code")
+    class Raw(Schema):
+        promotion_code = field(String(), nullable=True, alias="promo-code")
 
-    class Published(structure.Schema):
-        promotion_code = structure.field(structure.String(), nullable=True)
+    class Published(Schema):
+        promotion_code = field(String(), nullable=True)
 
-    @structure.transform
-    class Publish(structure.Transform):
-        rows = structure.input(Raw)
-        published = structure.output(Published)
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             return Published(promotion_code=row.promotion_code)
@@ -87,29 +86,29 @@ def test_v1_expression_renderer_passes_field_aliases_to_spark() -> None:
 
 
 def test_v1_expression_renderer_renders_nested_struct_construction() -> None:
-    class Address(structure.Schema):
-        city = structure.field(structure.String(), nullable=False)
-        postal_code = structure.field(structure.String(), nullable=False)
+    class Address(Schema):
+        city = field(String(), nullable=False)
+        postal_code = field(String(), nullable=False)
 
-    class Raw(structure.Schema):
-        id = structure.field(structure.String(), nullable=False)
-        shipping = structure.field(structure.Struct(Address), nullable=True)
+    class Raw(Schema):
+        id = field(String(), nullable=False)
+        shipping = field(Struct(Address), nullable=True)
 
-    class Published(structure.Schema):
-        id = structure.field(structure.String(), nullable=False)
-        shipping = structure.field(structure.Struct(Address), nullable=False)
+    class Published(Schema):
+        id = field(String(), nullable=False)
+        shipping = field(Struct(Address), nullable=False)
 
-    @structure.transform
-    class Publish(structure.Transform):
-        rows = structure.input(Raw)
-        published = structure.output(Published)
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
-            structure.where(row.shipping.is_not_null())  # type: ignore[attr-defined]
+            where(row.shipping.is_not_null())  # type: ignore[attr-defined]
             return Published(
                 id=row.id,
                 shipping=Address(
-                    city=structure.trim(row.shipping.city),  # type: ignore[attr-defined]
+                    city=trim(row.shipping.city),  # type: ignore[attr-defined]
                     postal_code=row.shipping.postal_code,  # type: ignore[attr-defined]
                 ),
             )
@@ -124,19 +123,19 @@ def test_v1_expression_renderer_renders_nested_struct_construction() -> None:
 
 
 def test_v1_expression_renderer_escapes_dotted_nested_field_aliases() -> None:
-    class Address(structure.Schema):
-        postal_code = structure.field(structure.String(), nullable=False, alias="postal.code")
+    class Address(Schema):
+        postal_code = field(String(), nullable=False, alias="postal.code")
 
-    class Raw(structure.Schema):
-        shipping = structure.field(structure.Struct(Address), nullable=False)
+    class Raw(Schema):
+        shipping = field(Struct(Address), nullable=False)
 
-    class Published(structure.Schema):
-        postal_code = structure.field(structure.String(), nullable=False)
+    class Published(Schema):
+        postal_code = field(String(), nullable=False)
 
-    @structure.transform
-    class Publish(structure.Transform):
-        rows = structure.input(Raw)
-        published = structure.output(Published)
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             return Published(postal_code=row.shipping.postal_code)  # type: ignore[attr-defined]
@@ -150,34 +149,34 @@ def test_v1_expression_renderer_escapes_dotted_nested_field_aliases() -> None:
 
 
 def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> None:
-    class Raw(structure.Schema):
-        customer_id = structure.field(structure.String(), nullable=False)
-        status = structure.field(structure.String(), nullable=True)
-        total = structure.field(structure.Integer(), nullable=False)
-        tax = structure.field(structure.Integer(), nullable=False)
-        price = structure.field(structure.Integer(), nullable=False)
-        quantity = structure.field(structure.Integer(), nullable=False)
+    class Raw(Schema):
+        customer_id = field(String(), nullable=False)
+        status = field(String(), nullable=True)
+        total = field(Integer(), nullable=False)
+        tax = field(Integer(), nullable=False)
+        price = field(Integer(), nullable=False)
+        quantity = field(Integer(), nullable=False)
 
-    class Published(structure.Schema):
-        customer_id = structure.field(structure.String(), nullable=False)
-        size_tier = structure.field(structure.String(), nullable=False)
-        is_big = structure.field(structure.Boolean(), nullable=False)
-        is_open = structure.field(structure.Boolean(), nullable=True)
-        is_small = structure.field(structure.Boolean(), nullable=False)
-        is_at_most_sample = structure.field(structure.Boolean(), nullable=False)
-        total_with_tax = structure.field(structure.Integer(), nullable=False)
-        line_total = structure.field(structure.Integer(), nullable=False)
+    class Published(Schema):
+        customer_id = field(String(), nullable=False)
+        size_tier = field(String(), nullable=False)
+        is_big = field(Boolean(), nullable=False)
+        is_open = field(Boolean(), nullable=True)
+        is_small = field(Boolean(), nullable=False)
+        is_at_most_sample = field(Boolean(), nullable=False)
+        total_with_tax = field(Integer(), nullable=False)
+        line_total = field(Integer(), nullable=False)
 
-    @structure.transform
-    class Publish(structure.Transform):
-        rows = structure.input(Raw)
-        published = structure.output(Published)
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             order = cast(Any, row)
             return Published(
-                customer_id=structure.upper(structure.trim(order.customer_id)),
-                size_tier=structure.when(order.total >= 1000, "large").otherwise("standard"),
+                customer_id=upper(trim(order.customer_id)),
+                size_tier=when(order.total >= 1000, "large").otherwise("standard"),
                 is_big=order.total >= 1000,
                 is_open=order.status.isin("new", "held"),
                 is_small=order.total < 100,
@@ -214,19 +213,19 @@ def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> N
 
 
 def test_v3_expression_renderer_renders_string_predicates() -> None:
-    class Raw(structure.Schema):
-        status = structure.field(structure.String(), nullable=True)
+    class Raw(Schema):
+        status = field(String(), nullable=True)
 
-    class Published(structure.Schema):
-        contains_new = structure.field(structure.Boolean(), nullable=True)
-        matches_new = structure.field(structure.Boolean(), nullable=True)
-        matches_new_case_insensitive = structure.field(structure.Boolean(), nullable=True)
-        matches_release = structure.field(structure.Boolean(), nullable=True)
+    class Published(Schema):
+        contains_new = field(Boolean(), nullable=True)
+        matches_new = field(Boolean(), nullable=True)
+        matches_new_case_insensitive = field(Boolean(), nullable=True)
+        matches_release = field(Boolean(), nullable=True)
 
-    @structure.transform
-    class Publish(structure.Transform):
-        rows = structure.input(Raw)
-        published = structure.output(Published)
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             status = cast(Any, row).status
@@ -250,20 +249,20 @@ def test_v3_expression_renderer_renders_string_predicates() -> None:
 
 
 def test_v3_expression_renderer_renders_collection_indexing() -> None:
-    class Raw(structure.Schema):
-        tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=False)
-        attributes = structure.field(
-            structure.Map(structure.String(), structure.String(), value_contains_null=False), nullable=False
+    class Raw(Schema):
+        tags = field(Array(String(), contains_null=False), nullable=False)
+        attributes = field(
+            Map(String(), String(), value_contains_null=False), nullable=False
         )
 
-    class Published(structure.Schema):
-        first_tag = structure.field(structure.String(), nullable=True)
-        region = structure.field(structure.String(), nullable=True)
+    class Published(Schema):
+        first_tag = field(String(), nullable=True)
+        region = field(String(), nullable=True)
 
-    @structure.transform
-    class Publish(structure.Transform):
-        rows = structure.input(Raw)
-        published = structure.output(Published)
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             source = cast(Any, row)
@@ -280,26 +279,26 @@ def test_v3_expression_renderer_renders_collection_indexing() -> None:
 
 
 def test_v3_expression_renderer_renders_scalar_casts() -> None:
-    class Raw(structure.Schema):
-        raw_count = structure.field(structure.String(), nullable=True)
-        count = structure.field(structure.Integer(), nullable=False)
+    class Raw(Schema):
+        raw_count = field(String(), nullable=True)
+        count = field(Integer(), nullable=False)
 
-    class Published(structure.Schema):
-        count = structure.field(structure.Integer(), nullable=True)
-        count_text = structure.field(structure.String(), nullable=False)
-        try_count = structure.field(structure.Integer(), nullable=True)
+    class Published(Schema):
+        count = field(Integer(), nullable=True)
+        count_text = field(String(), nullable=False)
+        try_count = field(Integer(), nullable=True)
 
-    @structure.transform
-    class Publish(structure.Transform):
-        rows = structure.input(Raw)
-        published = structure.output(Published)
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             source = cast(Any, row)
             return Published(
-                count=source.raw_count.cast(structure.Integer()),
-                count_text=source.count.astype(structure.String()),
-                try_count=source.raw_count.try_cast(structure.Integer()),
+                count=source.raw_count.cast(Integer()),
+                count_text=source.count.astype(String()),
+                try_count=source.raw_count.try_cast(Integer()),
             )
 
     plan = compile_transform(Publish)
@@ -318,40 +317,40 @@ def test_v3_expression_renderer_renders_scalar_casts() -> None:
 
 
 def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
-    class Raw(structure.Schema):
-        label = structure.field(structure.String(), nullable=True)
+    class Raw(Schema):
+        label = field(String(), nullable=True)
 
-    class Published(structure.Schema):
-        prefix = structure.field(structure.String(), nullable=True)
-        parts = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
-        normalized = structure.field(structure.String(), nullable=True)
-        extracted = structure.field(structure.String(), nullable=True)
-        character_count = structure.field(structure.Integer(), nullable=True)
-        title = structure.field(structure.String(), nullable=True)
-        backward = structure.field(structure.String(), nullable=True)
-        normalized_letters = structure.field(structure.String(), nullable=True)
-        dash_position = structure.field(structure.Integer(), nullable=True)
-        distance = structure.field(structure.Integer(), nullable=True)
-        joined = structure.field(structure.String(), nullable=False)
+    class Published(Schema):
+        prefix = field(String(), nullable=True)
+        parts = field(Array(String(), contains_null=False), nullable=True)
+        normalized = field(String(), nullable=True)
+        extracted = field(String(), nullable=True)
+        character_count = field(Integer(), nullable=True)
+        title = field(String(), nullable=True)
+        backward = field(String(), nullable=True)
+        normalized_letters = field(String(), nullable=True)
+        dash_position = field(Integer(), nullable=True)
+        distance = field(Integer(), nullable=True)
+        joined = field(String(), nullable=False)
 
-    @structure.transform
-    class Publish(structure.Transform):
-        rows = structure.input(Raw)
-        published = structure.output(Published)
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             return Published(
-                prefix=structure.substring(row.label, start=1, length=3),
-                parts=structure.split(row.label, pattern="-"),
-                normalized=structure.regexp_replace(row.label, pattern=r"\s+", replacement=" "),
-                extracted=structure.regexp_extract(row.label, pattern=r"^([^-]+)", group=1),
-                character_count=structure.length(row.label),
-                title=structure.initcap(row.label),
-                backward=structure.reverse(row.label),
-                normalized_letters=structure.translate(row.label, matching="-", replacement="_"),
-                dash_position=structure.instr(row.label, substring="-"),
-                distance=structure.levenshtein(row.label, "release"),
-                joined=structure.concat_ws(" / ", row.label, "release"),
+                prefix=substring(row.label, start=1, length=3),
+                parts=split(row.label, pattern="-"),
+                normalized=regexp_replace(row.label, pattern=r"\s+", replacement=" "),
+                extracted=regexp_extract(row.label, pattern=r"^([^-]+)", group=1),
+                character_count=length(row.label),
+                title=initcap(row.label),
+                backward=reverse(row.label),
+                normalized_letters=translate(row.label, matching="-", replacement="_"),
+                dash_position=instr(row.label, substring="-"),
+                distance=levenshtein(row.label, "release"),
+                joined=concat_ws(" / ", row.label, "release"),
             )
 
     recipe = PySpark.plan.lower()(compile_transform(Publish))
@@ -374,26 +373,26 @@ def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
 
 
 def test_v3_expression_renderer_renders_temporal_sql_helpers() -> None:
-    class Raw(structure.Schema):
-        start_date = structure.field(structure.Date(), nullable=False)
-        end_date = structure.field(structure.Date(), nullable=True)
-        recorded_at = structure.field(structure.Timestamp(), nullable=True)
+    class Raw(Schema):
+        start_date = field(Date(), nullable=False)
+        end_date = field(Date(), nullable=True)
+        recorded_at = field(Timestamp(), nullable=True)
 
-    class Published(structure.Schema):
-        due_date = structure.field(structure.Date(), nullable=False)
-        elapsed_days = structure.field(structure.Integer(), nullable=True)
-        month = structure.field(structure.Timestamp(), nullable=True)
+    class Published(Schema):
+        due_date = field(Date(), nullable=False)
+        elapsed_days = field(Integer(), nullable=True)
+        month = field(Timestamp(), nullable=True)
 
-    @structure.transform
-    class Publish(structure.Transform):
-        rows = structure.input(Raw)
-        published = structure.output(Published)
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             return Published(
-                due_date=structure.date_add(row.start_date, days=7),
-                elapsed_days=structure.datediff(row.end_date, row.start_date),
-                month=structure.date_trunc(row.recorded_at, unit="month"),
+                due_date=date_add(row.start_date, days=7),
+                elapsed_days=datediff(row.end_date, row.start_date),
+                month=date_trunc(row.recorded_at, unit="month"),
             )
 
     recipe = PySpark.plan.lower()(compile_transform(Publish))
@@ -408,26 +407,26 @@ def test_v3_expression_renderer_renders_temporal_sql_helpers() -> None:
 
 
 def test_v3_expression_renderer_renders_numeric_sql_helpers() -> None:
-    class Raw(structure.Schema):
-        amount = structure.field(structure.Decimal(precision=12, scale=2), nullable=True)
+    class Raw(Schema):
+        amount = field(Decimal(precision=12, scale=2), nullable=True)
 
-    class Published(structure.Schema):
-        absolute_amount = structure.field(structure.Decimal(precision=12, scale=2), nullable=True)
-        rounded_amount = structure.field(structure.Decimal(precision=12, scale=2), nullable=True)
-        ceiling = structure.field(structure.Decimal(precision=11, scale=0), nullable=True)
-        floor = structure.field(structure.Decimal(precision=11, scale=0), nullable=True)
+    class Published(Schema):
+        absolute_amount = field(Decimal(precision=12, scale=2), nullable=True)
+        rounded_amount = field(Decimal(precision=12, scale=2), nullable=True)
+        ceiling = field(Decimal(precision=11, scale=0), nullable=True)
+        floor = field(Decimal(precision=11, scale=0), nullable=True)
 
-    @structure.transform
-    class Publish(structure.Transform):
-        rows = structure.input(Raw)
-        published = structure.output(Published)
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             return Published(
-                absolute_amount=structure.abs(row.amount),
-                rounded_amount=structure.round(row.amount, scale=1),
-                ceiling=structure.ceil(row.amount),
-                floor=structure.floor(row.amount),
+                absolute_amount=abs(row.amount),
+                rounded_amount=round(row.amount, scale=1),
+                ceiling=ceil(row.amount),
+                floor=floor(row.amount),
             )
 
     recipe = PySpark.plan.lower()(compile_transform(Publish))
@@ -443,25 +442,25 @@ def test_v3_expression_renderer_renders_numeric_sql_helpers() -> None:
 
 
 def test_v3_expression_renderer_renders_predicate_sql_helpers() -> None:
-    class Raw(structure.Schema):
-        label = structure.field(structure.String(), nullable=True)
-        score = structure.field(structure.Double(), nullable=True)
+    class Raw(Schema):
+        label = field(String(), nullable=True)
+        score = field(Double(), nullable=True)
 
-    class Published(structure.Schema):
-        missing_label = structure.field(structure.Boolean(), nullable=False)
-        present_label = structure.field(structure.Boolean(), nullable=False)
-        invalid_score = structure.field(structure.Boolean(), nullable=False)
+    class Published(Schema):
+        missing_label = field(Boolean(), nullable=False)
+        present_label = field(Boolean(), nullable=False)
+        invalid_score = field(Boolean(), nullable=False)
 
-    @structure.transform
-    class Publish(structure.Transform):
-        rows = structure.input(Raw)
-        published = structure.output(Published)
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             return Published(
-                missing_label=structure.isnull(row.label),
-                present_label=structure.isnotnull(row.label),
-                invalid_score=structure.isnan(row.score),
+                missing_label=isnull(row.label),
+                present_label=isnotnull(row.label),
+                invalid_score=isnan(row.score),
             )
 
     recipe = PySpark.plan.lower()(compile_transform(Publish))
@@ -476,19 +475,19 @@ def test_v3_expression_renderer_renders_predicate_sql_helpers() -> None:
 
 
 def test_v3_expression_renderer_renders_struct_get_field() -> None:
-    class Address(structure.Schema):
-        city = structure.field(structure.String(), nullable=False, alias="city-name")
+    class Address(Schema):
+        city = field(String(), nullable=False, alias="city-name")
 
-    class Raw(structure.Schema):
-        address = structure.field(structure.Struct(Address), nullable=True)
+    class Raw(Schema):
+        address = field(Struct(Address), nullable=True)
 
-    class Published(structure.Schema):
-        city = structure.field(structure.String(), nullable=True)
+    class Published(Schema):
+        city = field(String(), nullable=True)
 
-    @structure.transform
-    class Publish(structure.Transform):
-        rows = structure.input(Raw)
-        published = structure.output(Published)
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
 
         def publish(self, row: Raw) -> Published:
             return Published(city=cast(Any, row).address.get_field("city"))

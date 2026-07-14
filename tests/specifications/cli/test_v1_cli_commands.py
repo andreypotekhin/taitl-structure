@@ -10,7 +10,7 @@ from uuid import uuid4
 
 from click.testing import CliRunner
 
-from structure import DiskStorage
+from structure import *
 from structure.app.cli.api import cli
 
 

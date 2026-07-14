@@ -7,7 +7,7 @@ import pytest
 hypothesis = pytest.importorskip("hypothesis")
 strategies = pytest.importorskip("hypothesis.strategies")
 
-from structure import Schema, String, field
+from structure import *
 
 
 @hypothesis.given(strategies.from_regex(r"[A-Za-z_][A-Za-z0-9_]{0,24}", fullmatch=True))

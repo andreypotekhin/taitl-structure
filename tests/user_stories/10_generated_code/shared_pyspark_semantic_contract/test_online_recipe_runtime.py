@@ -5,7 +5,7 @@ from typing import Any, cast
 
 import pytest
 
-import structure
+from structure import *
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.runtime.execution.online.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 from structure.app.runtime.execution.online.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
@@ -34,76 +34,76 @@ from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkVa
 from structure.app.target.pyspark.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
 
 
-class RawOrder(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    status = structure.field(structure.String(), nullable=True)
+class RawOrder(Schema):
+    id = field(String(), nullable=False)
+    status = field(String(), nullable=True)
 
 
-class PublishedOrder(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    status = structure.field(structure.String(), nullable=True)
+class PublishedOrder(Schema):
+    id = field(String(), nullable=False)
+    status = field(String(), nullable=True)
 
 
-class Address(structure.Schema):
-    city = structure.field(structure.String(), nullable=False)
-    postal_code = structure.field(structure.String(), nullable=False)
+class Address(Schema):
+    city = field(String(), nullable=False)
+    postal_code = field(String(), nullable=False)
 
 
-class RawShippedOrder(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    shipping = structure.field(structure.Struct(Address), nullable=True)
+class RawShippedOrder(Schema):
+    id = field(String(), nullable=False)
+    shipping = field(Struct(Address), nullable=True)
 
 
-class PublishedShippedOrder(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    shipping = structure.field(structure.Struct(Address), nullable=False)
+class PublishedShippedOrder(Schema):
+    id = field(String(), nullable=False)
+    shipping = field(Struct(Address), nullable=False)
 
 
-class Customer(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    segment = structure.field(structure.String(), nullable=True)
-    valid_from = structure.field(structure.String(), nullable=False)
-    valid_to = structure.field(structure.String(), nullable=True)
+class Customer(Schema):
+    id = field(String(), nullable=False)
+    segment = field(String(), nullable=True)
+    valid_from = field(String(), nullable=False)
+    valid_to = field(String(), nullable=True)
 
 
-class PublishedOrderId(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
+class PublishedOrderId(Schema):
+    id = field(String(), nullable=False)
 
 
-class PublishedOrderStatus(structure.Schema):
-    status = structure.field(structure.String(), nullable=True)
+class PublishedOrderStatus(Schema):
+    status = field(String(), nullable=True)
 
 
-class RawMetric(structure.Schema):
-    customer_id = structure.field(structure.String(), nullable=False)
-    quantity = structure.field(structure.Long(), nullable=False)
+class RawMetric(Schema):
+    customer_id = field(String(), nullable=False)
+    quantity = field(Long(), nullable=False)
 
 
-class RawTagBatch(structure.Schema):
-    tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
+class RawTagBatch(Schema):
+    tags = field(Array(String(), contains_null=False), nullable=True)
 
 
-class RawMapBatch(structure.Schema):
-    attributes = structure.field(
-        structure.Map(structure.String(), structure.String(), value_contains_null=True), nullable=True
+class RawMapBatch(Schema):
+    attributes = field(
+        Map(String(), String(), value_contains_null=True), nullable=True
     )
 
 
-class CustomerMetric(structure.Schema):
-    customer_id = structure.field(structure.String(), nullable=False)
-    order_count = structure.field(structure.Long(), nullable=False)
-    distinct_customers = structure.field(structure.Long(), nullable=False)
-    quantity = structure.field(structure.Long(), nullable=False)
-    min_quantity = structure.field(structure.Long(), nullable=False)
-    max_quantity = structure.field(structure.Long(), nullable=False)
-    avg_quantity = structure.field(structure.Double(), nullable=False)
+class CustomerMetric(Schema):
+    customer_id = field(String(), nullable=False)
+    order_count = field(Long(), nullable=False)
+    distinct_customers = field(Long(), nullable=False)
+    quantity = field(Long(), nullable=False)
+    min_quantity = field(Long(), nullable=False)
+    max_quantity = field(Long(), nullable=False)
+    avg_quantity = field(Double(), nullable=False)
 
 
-class GroupingSetMetric(structure.Schema):
-    customer_id = structure.field(structure.String(), nullable=True)
-    order_count = structure.field(structure.Long(), nullable=False)
-    grouping_id = structure.field(structure.Integer(), nullable=False)
-    customer_grouped = structure.field(structure.Boolean(), nullable=False)
+class GroupingSetMetric(Schema):
+    customer_id = field(String(), nullable=True)
+    order_count = field(Long(), nullable=False)
+    grouping_id = field(Integer(), nullable=False)
+    customer_grouped = field(Boolean(), nullable=False)
 
 
 class PermissivePublishedOrder(PublishedOrder):
@@ -242,7 +242,7 @@ def test_online_expression_evaluator_builds_nested_struct_columns() -> None:
     functions = FakeFunctions("functions")
     expression = PySparkExpressionRecipe(
         kind="struct",
-        type=structure.Struct(Address),
+        type=Struct(Address),
         nullable=False,
         data={"fields": tuple(Address._structure_fields.values())},
         args=(
@@ -946,7 +946,7 @@ def test_online_schema_validation_projects_equivalent_spark_shapes() -> None:
     validation = PySparkValidationRecipe(
         target="published",
         schema=PermissivePublishedOrder,
-        mode=structure.SchemaMode.ALLOW_EXTRA_COLUMNS,
+        mode=SchemaMode.ALLOW_EXTRA_COLUMNS,
         project=True,
         reason="hook",
     )
@@ -964,7 +964,7 @@ def test_online_schema_validation_accepts_spark_collection_nullability_metadata(
     validation = PySparkValidationRecipe(
         target="tags",
         schema=RawTagBatch,
-        mode=structure.SchemaMode.STRICT,
+        mode=SchemaMode.STRICT,
         project=False,
         reason="output",
     )
@@ -988,7 +988,7 @@ def test_online_schema_validation_rejects_nested_struct_shape_drift() -> None:
     validation = PySparkValidationRecipe(
         target="published",
         schema=PublishedShippedOrder,
-        mode=structure.SchemaMode.STRICT,
+        mode=SchemaMode.STRICT,
         project=False,
         reason="output",
     )
@@ -1016,7 +1016,7 @@ def test_online_schema_validation_rejects_strict_shape_drift() -> None:
     validation = PySparkValidationRecipe(
         target="published",
         schema=PublishedOrder,
-        mode=structure.SchemaMode.STRICT,
+        mode=SchemaMode.STRICT,
         project=False,
         reason="output",
     )
@@ -1036,9 +1036,9 @@ def test_online_schema_validation_rejects_strict_shape_drift() -> None:
 
 
 def _online_plan() -> PySparkExecutionPlan:
-    input_validation = PySparkValidationRecipe("orders", RawOrder, structure.SchemaMode.STRICT, False, "input")
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, structure.SchemaMode.STRICT, False, "output"
+        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
     )
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
@@ -1106,13 +1106,13 @@ def _with_operations(plan: PySparkExecutionPlan, *operations: PySparkOperationRe
 
 
 def _join_and_hook_plan() -> PySparkExecutionPlan:
-    input_validation = PySparkValidationRecipe("orders", RawOrder, structure.SchemaMode.STRICT, False, "input")
-    customer_validation = PySparkValidationRecipe("customers", Customer, structure.SchemaMode.STRICT, False, "input")
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
     published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, structure.SchemaMode.STRICT, False, "output"
+        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
     )
     projected_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, structure.SchemaMode.STRICT, True, "hook_projected"
+        "published", PublishedOrder, SchemaMode.STRICT, True, "hook_projected"
     )
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
@@ -1143,8 +1143,8 @@ def _join_and_hook_plan() -> PySparkExecutionPlan:
                 input_schema=Customer,
                 left_alias="orders",
                 right_alias="customers",
-                how=structure.Join.LEFT,
-                hint=structure.JoinHint.BROADCAST,
+                how=Join.LEFT,
+                hint=JoinHint.BROADCAST,
                 predicate=_binary("null_safe_eq", _field(RawOrder, "id"), _field_scope("customers", Customer, "id")),
                 occurrence=0,
             ),
@@ -1190,8 +1190,8 @@ def _join_and_hook_plan() -> PySparkExecutionPlan:
                         input_schema=Customer,
                         left_alias="published",
                         right_alias="customers",
-                        how=structure.Join.INNER,
-                        hint=structure.JoinHint.BROADCAST,
+                        how=Join.INNER,
+                        hint=JoinHint.BROADCAST,
                         predicate=_binary(
                             "eq", _field(PublishedOrder, "id"), _field_scope("customers", Customer, "id")
                         ),
@@ -1208,10 +1208,10 @@ def _join_and_hook_plan() -> PySparkExecutionPlan:
 
 
 def _existence_join_plan() -> PySparkExecutionPlan:
-    input_validation = PySparkValidationRecipe("orders", RawOrder, structure.SchemaMode.STRICT, False, "input")
-    customer_validation = PySparkValidationRecipe("customers", Customer, structure.SchemaMode.STRICT, False, "input")
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
     published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, structure.SchemaMode.STRICT, False, "output"
+        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
     )
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
@@ -1252,7 +1252,7 @@ def _existence_join_plan() -> PySparkExecutionPlan:
                     input_schema=Customer,
                     left_alias="orders",
                     right_alias="customers",
-                    how=structure.Join.INNER,
+                    how=Join.INNER,
                     hint=None,
                     predicate=_binary("eq", _field(RawOrder, "id"), _field_scope("customers", Customer, "id")),
                     occurrence=0,
@@ -1290,10 +1290,10 @@ def _existence_join_plan() -> PySparkExecutionPlan:
 
 
 def _inner_join_plan() -> PySparkExecutionPlan:
-    input_validation = PySparkValidationRecipe("orders", RawOrder, structure.SchemaMode.STRICT, False, "input")
-    customer_validation = PySparkValidationRecipe("customers", Customer, structure.SchemaMode.STRICT, False, "input")
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
     published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, structure.SchemaMode.STRICT, False, "output"
+        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
     )
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
@@ -1337,9 +1337,9 @@ def _inner_join_plan() -> PySparkExecutionPlan:
                     input_schema=Customer,
                     left_alias="orders",
                     right_alias="customers",
-                    how=structure.Join.INNER,
+                    how=Join.INNER,
                     hint=None,
-                    strategy=structure.JoinStrategy.SHUFFLE_HASH,
+                    strategy=JoinStrategy.SHUFFLE_HASH,
                     predicate=_binary("eq", _field(RawOrder, "id"), _field_scope("customers", Customer, "id")),
                     occurrence=0,
                     method=JoinMethod.ROWSET,
@@ -1376,8 +1376,8 @@ def _inner_join_plan() -> PySparkExecutionPlan:
 
 
 def _aggregate_plan() -> PySparkExecutionPlan:
-    input_validation = PySparkValidationRecipe("metrics", RawMetric, structure.SchemaMode.STRICT, False, "input")
-    total_validation = PySparkValidationRecipe("totals", CustomerMetric, structure.SchemaMode.STRICT, False, "output")
+    input_validation = PySparkValidationRecipe("metrics", RawMetric, SchemaMode.STRICT, False, "input")
+    total_validation = PySparkValidationRecipe("totals", CustomerMetric, SchemaMode.STRICT, False, "output")
     aggregate = PySparkAggregateRecipe(
         keys=(
             PySparkAggregateKey(
@@ -1480,8 +1480,8 @@ def _aggregate_plan() -> PySparkExecutionPlan:
 
 
 def _grouping_sets_plan() -> PySparkExecutionPlan:
-    input_validation = PySparkValidationRecipe("metrics", RawMetric, structure.SchemaMode.STRICT, False, "input")
-    total_validation = PySparkValidationRecipe("totals", GroupingSetMetric, structure.SchemaMode.STRICT, False, "output")
+    input_validation = PySparkValidationRecipe("metrics", RawMetric, SchemaMode.STRICT, False, "input")
+    total_validation = PySparkValidationRecipe("totals", GroupingSetMetric, SchemaMode.STRICT, False, "output")
     aggregate = PySparkAggregateRecipe(
         keys=(
             PySparkAggregateKey(
@@ -1571,9 +1571,9 @@ def _grouping_sets_plan() -> PySparkExecutionPlan:
 
 
 def _selected_row_plan() -> PySparkExecutionPlan:
-    input_validation = PySparkValidationRecipe("orders", RawOrder, structure.SchemaMode.STRICT, False, "input")
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, structure.SchemaMode.STRICT, False, "output"
+        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
     )
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
@@ -1583,7 +1583,7 @@ def _selected_row_plan() -> PySparkExecutionPlan:
         direction="latest",
         order_by=_field(RawOrder, "status"),
         partition_by=(_field(RawOrder, "id"),),
-        ties=structure.TiePolicy.ERROR,
+        ties=TiePolicy.ERROR,
     )
     step = PySparkStepRecipe(
         name="publish",
@@ -1640,9 +1640,9 @@ def _selected_row_plan() -> PySparkExecutionPlan:
 
 
 def _drop_duplicates_plan(*, subset: bool = False) -> PySparkExecutionPlan:
-    input_validation = PySparkValidationRecipe("orders", RawOrder, structure.SchemaMode.STRICT, False, "input")
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, structure.SchemaMode.STRICT, False, "output"
+        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
     )
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
@@ -1707,10 +1707,10 @@ def _drop_duplicates_plan(*, subset: bool = False) -> PySparkExecutionPlan:
 
 
 def _deduped_join_plan() -> PySparkExecutionPlan:
-    input_validation = PySparkValidationRecipe("orders", RawOrder, structure.SchemaMode.STRICT, False, "input")
-    customer_validation = PySparkValidationRecipe("customers", Customer, structure.SchemaMode.STRICT, False, "input")
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
     published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, structure.SchemaMode.STRICT, False, "output"
+        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
     )
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
@@ -1754,14 +1754,14 @@ def _deduped_join_plan() -> PySparkExecutionPlan:
                     input_schema=Customer,
                     left_alias="orders",
                     right_alias="customers",
-                    how=structure.Join.LEFT,
+                    how=Join.LEFT,
                     hint=None,
                     predicate=_binary("eq", _field(RawOrder, "id"), _field_scope("customers", Customer, "id")),
                     occurrence=0,
                     dedupe=PySparkJoinDedupeRecipe(
                         order_by=_field_scope("customers", Customer, "segment"),
                         direction="latest",
-                        ties=structure.TiePolicy.ERROR,
+                        ties=TiePolicy.ERROR,
                     ),
                 )
             ),
@@ -1796,10 +1796,10 @@ def _deduped_join_plan() -> PySparkExecutionPlan:
 
 
 def _relation_drop_duplicates_join_plan(*, before_join: bool) -> PySparkExecutionPlan:
-    input_validation = PySparkValidationRecipe("orders", RawOrder, structure.SchemaMode.STRICT, False, "input")
-    customer_validation = PySparkValidationRecipe("customers", Customer, structure.SchemaMode.STRICT, False, "input")
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
     published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, structure.SchemaMode.STRICT, False, "output"
+        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
     )
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
@@ -1814,7 +1814,7 @@ def _relation_drop_duplicates_join_plan(*, before_join: bool) -> PySparkExecutio
         input_schema=Customer,
         left_alias="orders",
         right_alias="customers",
-        how=structure.Join.LEFT,
+        how=Join.LEFT,
         hint=None,
         predicate=_binary("eq", _field(RawOrder, "id"), _field_scope("customers", Customer, "id")),
         occurrence=0,
@@ -1881,10 +1881,10 @@ def _relation_drop_duplicates_join_plan(*, before_join: bool) -> PySparkExecutio
 
 
 def _temporal_join_plan() -> PySparkExecutionPlan:
-    input_validation = PySparkValidationRecipe("orders", RawOrder, structure.SchemaMode.STRICT, False, "input")
-    customer_validation = PySparkValidationRecipe("customers", Customer, structure.SchemaMode.STRICT, False, "input")
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
     published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, structure.SchemaMode.STRICT, False, "output"
+        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
     )
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
@@ -1928,7 +1928,7 @@ def _temporal_join_plan() -> PySparkExecutionPlan:
                     input_schema=Customer,
                     left_alias="orders",
                     right_alias="customers",
-                    how=structure.Join.LEFT,
+                    how=Join.LEFT,
                     hint=None,
                     predicate=_binary("eq", _field(RawOrder, "id"), _field_scope("customers", Customer, "id")),
                     occurrence=0,
@@ -1971,10 +1971,10 @@ def _temporal_join_plan() -> PySparkExecutionPlan:
 
 
 def _as_of_join_plan() -> PySparkExecutionPlan:
-    input_validation = PySparkValidationRecipe("orders", RawOrder, structure.SchemaMode.STRICT, False, "input")
-    customer_validation = PySparkValidationRecipe("customers", Customer, structure.SchemaMode.STRICT, False, "input")
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
     published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, structure.SchemaMode.STRICT, False, "output"
+        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
     )
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
@@ -2018,7 +2018,7 @@ def _as_of_join_plan() -> PySparkExecutionPlan:
                     input_schema=Customer,
                     left_alias="orders",
                     right_alias="customers",
-                    how=structure.Join.LEFT,
+                    how=Join.LEFT,
                     hint=None,
                     predicate=_binary("eq", _field(RawOrder, "id"), _field_scope("customers", Customer, "id")),
                     occurrence=0,
@@ -2026,7 +2026,7 @@ def _as_of_join_plan() -> PySparkExecutionPlan:
                     as_of=PySparkJoinAsOfRecipe(
                         left_time=_field(RawOrder, "status"),
                         right_time=_field_scope("customers", Customer, "valid_from"),
-                        direction=structure.AsOf.BACKWARD,
+                        direction=AsOf.BACKWARD,
                     ),
                 )
             ),
@@ -2061,10 +2061,10 @@ def _as_of_join_plan() -> PySparkExecutionPlan:
 
 
 def _multi_result_plan() -> PySparkExecutionPlan:
-    input_validation = PySparkValidationRecipe("orders", RawOrder, structure.SchemaMode.STRICT, False, "input")
-    id_validation = PySparkValidationRecipe("ids", PublishedOrderId, structure.SchemaMode.STRICT, True, "output")
+    input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
+    id_validation = PySparkValidationRecipe("ids", PublishedOrderId, SchemaMode.STRICT, True, "output")
     status_validation = PySparkValidationRecipe(
-        "statuses", PublishedOrderStatus, structure.SchemaMode.STRICT, False, "output"
+        "statuses", PublishedOrderStatus, SchemaMode.STRICT, False, "output"
     )
     id_projection = (PySparkProjectionRecipe(PublishedOrderId._structure_fields["id"], _field(RawOrder, "id")),)
     status_projection = (
@@ -2147,11 +2147,11 @@ def _multi_result_plan() -> PySparkExecutionPlan:
     )
 
 
-def _field(schema: type[structure.Schema], name: str) -> PySparkExpressionRecipe:
+def _field(schema: type[Schema], name: str) -> PySparkExpressionRecipe:
     return _field_scope(schema.__name__, schema, name)
 
 
-def _field_scope(scope: str, schema: type[structure.Schema], name: str) -> PySparkExpressionRecipe:
+def _field_scope(scope: str, schema: type[Schema], name: str) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe(
         kind="field",
         type=schema._structure_fields[name].type,
@@ -2160,7 +2160,7 @@ def _field_scope(scope: str, schema: type[structure.Schema], name: str) -> PySpa
     )
 
 
-def _field_path(schema: type[structure.Schema], *path: str) -> PySparkExpressionRecipe:
+def _field_path(schema: type[Schema], *path: str) -> PySparkExpressionRecipe:
     field = schema._structure_fields[path[0]]
     type_ = field.type
     nullable = field.nullable
@@ -2207,7 +2207,7 @@ def _is_null(expression: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
 
 
 def _is_nan(expression: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("is_nan", structure.Boolean(), False, {}, (expression,))
+    return PySparkExpressionRecipe("is_nan", Boolean(), False, {}, (expression,))
 
 
 def _not(expression: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
@@ -2219,27 +2219,27 @@ def _binary(kind: str, left: PySparkExpressionRecipe, right: PySparkExpressionRe
 
 
 def _isin(value: PySparkExpressionRecipe, *items: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("isin", structure.Boolean(), True, {}, (value, *items))
+    return PySparkExpressionRecipe("isin", Boolean(), True, {}, (value, *items))
 
 
 def _string_predicate(kind: str, value: PySparkExpressionRecipe, pattern: str) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe(kind, structure.Boolean(), value.nullable, {"pattern": pattern}, (value,))
+    return PySparkExpressionRecipe(kind, Boolean(), value.nullable, {"pattern": pattern}, (value,))
 
 
 def _item(collection: PySparkExpressionRecipe, key: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("item", structure.String(), True, {}, (collection, key))
+    return PySparkExpressionRecipe("item", String(), True, {}, (collection, key))
 
 
 def _get_field(parent: PySparkExpressionRecipe, field: str) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("get_field", structure.String(), parent.nullable, {"field": field}, (parent,))
+    return PySparkExpressionRecipe("get_field", String(), parent.nullable, {"field": field}, (parent,))
 
 
 def _cast(value: PySparkExpressionRecipe, spark_type: str) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("cast", structure.Integer(), value.nullable, {"spark_type": spark_type}, (value,))
+    return PySparkExpressionRecipe("cast", Integer(), value.nullable, {"spark_type": spark_type}, (value,))
 
 
 def _try_cast(value: PySparkExpressionRecipe, spark_type: str) -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("try_cast", structure.Integer(), True, {"spark_type": spark_type}, (value,))
+    return PySparkExpressionRecipe("try_cast", Integer(), True, {"spark_type": spark_type}, (value,))
 
 
 def _order(value: PySparkExpressionRecipe, direction: str) -> PySparkExpressionRecipe:
@@ -2265,7 +2265,7 @@ def _event_time_between(
 ) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe(
         kind="event_time_between",
-        type=structure.Boolean(),
+        type=Boolean(),
         nullable=False,
         data={"lower": lower, "upper": upper},
         args=(left, right),
@@ -2273,15 +2273,15 @@ def _event_time_between(
 
 
 def _lambda_item() -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("lambda_arg", structure.String(), False, {"name": "item"})
+    return PySparkExpressionRecipe("lambda_arg", String(), False, {"name": "item"})
 
 
 def _lambda_key() -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("lambda_arg", structure.String(), False, {"name": "key"})
+    return PySparkExpressionRecipe("lambda_arg", String(), False, {"name": "key"})
 
 
 def _lambda_value() -> PySparkExpressionRecipe:
-    return PySparkExpressionRecipe("lambda_arg", structure.String(), True, {"name": "value"})
+    return PySparkExpressionRecipe("lambda_arg", String(), True, {"name": "value"})
 
 
 def _array_transform(array: PySparkExpressionRecipe, body: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
@@ -2297,13 +2297,13 @@ def _array_filter(array: PySparkExpressionRecipe, body: PySparkExpressionRecipe)
 
 
 def _array_aggregate_with_finish(array: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
-    accumulator = PySparkExpressionRecipe("lambda_arg", structure.Integer(), False, {"name": "acc"})
-    item = PySparkExpressionRecipe("lambda_arg", structure.String(), False, {"name": "item"})
+    accumulator = PySparkExpressionRecipe("lambda_arg", Integer(), False, {"name": "acc"})
+    item = PySparkExpressionRecipe("lambda_arg", String(), False, {"name": "item"})
     merged = _binary("add", accumulator, item)
     finished = _call("abs", accumulator)
     return PySparkExpressionRecipe(
         "transform_expression",
-        structure.Integer(),
+        Integer(),
         False,
         {"function": "array_aggregate"},
         (array, _literal(0), accumulator, item, merged, finished),
@@ -2311,8 +2311,8 @@ def _array_aggregate_with_finish(array: PySparkExpressionRecipe) -> PySparkExpre
 
 
 def _array_sort_by(array: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
-    left = PySparkExpressionRecipe("lambda_arg", structure.String(), True, {"name": "left"})
-    right = PySparkExpressionRecipe("lambda_arg", structure.String(), True, {"name": "right"})
+    left = PySparkExpressionRecipe("lambda_arg", String(), True, {"name": "left"})
+    right = PySparkExpressionRecipe("lambda_arg", String(), True, {"name": "right"})
     return PySparkExpressionRecipe(
         "transform_expression",
         array.type,
@@ -2363,7 +2363,7 @@ def _window(
         data["preceding"] = preceding
     return PySparkExpressionRecipe(
         "transform_expression",
-        value.type if value is not None else structure.Long(),
+        value.type if value is not None else Long(),
         value.nullable if value is not None else False,
         data,
         args,
@@ -2383,13 +2383,13 @@ def _hook(
         lanes=lanes,
         outputs=outputs,
         sources=lanes,
-        schema_mode=structure.SchemaMode.STRICT,
+        schema_mode=SchemaMode.STRICT,
         project_output=False,
         streaming_safe=True,
     )
 
 
-def _frame(name: str, schema: type[structure.Schema]) -> "FakeFrame":
+def _frame(name: str, schema: type[Schema]) -> "FakeFrame":
     return FakeFrame(
         name,
         FakeSchema(

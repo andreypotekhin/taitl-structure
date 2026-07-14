@@ -3,219 +3,218 @@ from typing import Any, cast
 
 import pytest
 
-import structure
+from structure import *
 from structure.app.compiler.api import Compiler
 from structure.app.compiler.compileability.streaming_compatibility.api import StreamingSupport
-from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 
-class StreamRaw(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    event_time = structure.field(structure.Timestamp(), nullable=False)
+class StreamRaw(Schema):
+    id = field(String(), nullable=False)
+    event_time = field(Timestamp(), nullable=False)
 
 
-class StreamClean(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
+class StreamClean(Schema):
+    id = field(String(), nullable=False)
 
 
-class StreamLookup(structure.Schema):
-    id = structure.field(structure.String(), nullable=False, primary_key=True)
-    value = structure.field(structure.String(), nullable=True)
-    valid_from = structure.field(structure.Timestamp(), nullable=False)
-    valid_to = structure.field(structure.Timestamp(), nullable=True)
+class StreamLookup(Schema):
+    id = field(String(), nullable=False, primary_key=True)
+    value = field(String(), nullable=True)
+    valid_from = field(Timestamp(), nullable=False)
+    valid_to = field(Timestamp(), nullable=True)
 
 
-class StreamEnriched(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    value = structure.field(structure.String(), nullable=True)
+class StreamEnriched(Schema):
+    id = field(String(), nullable=False)
+    value = field(String(), nullable=True)
 
 
-class StreamSummary(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    row_count = structure.field(structure.Long(), nullable=False)
+class StreamSummary(Schema):
+    id = field(String(), nullable=False)
+    row_count = field(Long(), nullable=False)
 
 
 def test_event_time_between_rejects_non_timestamp_expressions() -> None:
     with pytest.raises(TypeError, match="requires Timestamp Structure expressions"):
-        structure.event_time_between(structure.lower("left"), structure.lower("right"), upper="1 hour")
+        event_time_between(lower("left"), lower("right"), upper="1 hour")
 
 
-@structure.transform(streaming_compatible=True)
-class StreamingProjection(structure.Transform):
-    rows = structure.input(StreamRaw)
-    clean = structure.output(StreamClean)
+@transform(streaming_compatible=True)
+class StreamingProjection(Transform):
+    rows = input(StreamRaw)
+    clean = output(StreamClean)
 
     def normalize(self, row: StreamRaw) -> StreamClean:
-        structure.where(row.id.is_not_null())  # type: ignore[attr-defined]
+        where(row.id.is_not_null())  # type: ignore[attr-defined]
         return StreamClean(id=row.id)
 
 
-@structure.transform(streaming_compatible=True)
-class StreamingUnknownHook(structure.Transform):
-    rows = structure.input(StreamRaw)
-    clean = structure.output(StreamClean)
+@transform(streaming_compatible=True)
+class StreamingUnknownHook(Transform):
+    rows = input(StreamRaw)
+    clean = output(StreamClean)
 
     def normalize(self, row: StreamRaw) -> StreamClean:
         return StreamClean(id=row.id)
 
-    @structure.raw
+    @raw
     def arbitrary_hook(self, *, rows, spark, ctx):
         return rows
 
 
-@structure.transform(streaming_compatible=True)
-class StreamingExists(structure.Transform):
-    rows = structure.input(StreamRaw)
-    lookups = structure.input(StreamLookup)
-    clean = structure.output(StreamClean)
+@transform(streaming_compatible=True)
+class StreamingExists(Transform):
+    rows = input(StreamRaw)
+    lookups = input(StreamLookup)
+    clean = output(StreamClean)
 
     def keep_known(self, row: StreamRaw, lookup: StreamLookup) -> StreamClean:
-        structure.where(structure.exists(on=lookup.id == row.id))
-        structure.where(structure.not_exists(on=lookup.value == row.id))
+        where(exists(on=lookup.id == row.id))
+        where(not_exists(on=lookup.value == row.id))
         return StreamClean(id=row.id)
 
 
-@structure.transform(streaming_compatible=True)
-class StreamingJoinMany(structure.Transform):
-    rows = structure.input(StreamRaw)
-    lookups = structure.input(StreamLookup)
-    enriched = structure.output(StreamEnriched)
+@transform(streaming_compatible=True)
+class StreamingJoinMany(Transform):
+    rows = input(StreamRaw)
+    lookups = input(StreamLookup)
+    enriched = output(StreamEnriched)
 
     def expand(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
-        structure.inner_join(on=lookup.id == row.id)
+        inner_join(on=lookup.id == row.id)
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
-@structure.transform(streaming_compatible=True)
-class StreamingDedupedLookup(structure.Transform):
-    rows = structure.input(StreamRaw)
-    lookups = structure.input(StreamLookup)
-    enriched = structure.output(StreamEnriched)
+@transform(streaming_compatible=True)
+class StreamingDedupedLookup(Transform):
+    rows = input(StreamRaw)
+    lookups = input(StreamLookup)
+    enriched = output(StreamEnriched)
 
     def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
-        structure.lookup_join(
+        lookup_join(
             lookup,
             on=lookup.id == row.id,
-            how=structure.Join.LEFT,
-            dedupe=structure.JoinDedupe.latest_by(lookup.valid_from),
+            how=Join.LEFT,
+            dedupe=JoinDedupe.latest_by(lookup.valid_from),
         )
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
-@structure.transform(streaming_compatible=True)
-class StreamingTemporalLookup(structure.Transform):
-    rows = structure.input(StreamRaw)
-    lookups = structure.input(StreamLookup)
-    enriched = structure.output(StreamEnriched)
+@transform(streaming_compatible=True)
+class StreamingTemporalLookup(Transform):
+    rows = input(StreamRaw)
+    lookups = input(StreamLookup)
+    enriched = output(StreamEnriched)
 
     def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
-        structure.temporal_one(
+        temporal_one(
             on=lookup.id == row.id,
             at=row.id,
             valid_from=lookup.valid_from,
             valid_to=lookup.valid_to,
-            how=structure.Join.LEFT,
+            how=Join.LEFT,
         )
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
-@structure.transform(streaming_compatible=True)
-class StreamingAsOfLookup(structure.Transform):
-    rows = structure.input(StreamRaw)
-    lookups = structure.input(StreamLookup)
-    enriched = structure.output(StreamEnriched)
+@transform(streaming_compatible=True)
+class StreamingAsOfLookup(Transform):
+    rows = input(StreamRaw)
+    lookups = input(StreamLookup)
+    enriched = output(StreamEnriched)
 
     def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
-        structure.as_of_one(
+        as_of_one(
             on=lookup.id == row.id,
             left_time=row.id,
             right_time=lookup.valid_from,
-            direction=structure.AsOf.BACKWARD,
-            how=structure.Join.LEFT,
+            direction=AsOf.BACKWARD,
+            how=Join.LEFT,
         )
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
-@structure.transform(streaming_compatible=True)
-class StreamingAggregate(structure.Transform):
-    rows = structure.input(StreamRaw)
-    summary = structure.output(StreamSummary)
+@transform(streaming_compatible=True)
+class StreamingAggregate(Transform):
+    rows = input(StreamRaw)
+    summary = output(StreamSummary)
 
     def summarize(self, row: StreamRaw) -> StreamSummary:
-        structure.group_by(row.id)
-        return StreamSummary(id=row.id, row_count=structure.count())
+        group_by(row.id)
+        return StreamSummary(id=row.id, row_count=count())
 
 
-@structure.transform(streaming_compatible=True)
-class StreamingWatermarkedAggregate(structure.Transform):
-    rows = structure.input(StreamRaw, streaming=structure.StreamingMode.YES)
-    summary = structure.output(StreamSummary)
+@transform(streaming_compatible=True)
+class StreamingWatermarkedAggregate(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    summary = output(StreamSummary)
 
     def summarize(self, row: StreamRaw) -> StreamSummary:
-        structure.watermark(row.event_time, delay="10 minutes")
-        structure.group_by(row.id)
-        return StreamSummary(id=row.id, row_count=structure.count())
+        watermark(row.event_time, delay="10 minutes")
+        group_by(row.id)
+        return StreamSummary(id=row.id, row_count=count())
 
 
-@structure.transform(streaming_compatible=True)
-class StreamingWatermarkedDedupe(structure.Transform):
-    rows = structure.input(StreamRaw, streaming=structure.StreamingMode.YES)
-    clean = structure.output(StreamClean)
+@transform(streaming_compatible=True)
+class StreamingWatermarkedDedupe(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    clean = output(StreamClean)
 
     def unique_rows(self, row: StreamRaw) -> StreamClean:
-        structure.watermark(row.event_time, delay="10 minutes")
-        structure.drop_duplicates(row.id)
+        watermark(row.event_time, delay="10 minutes")
+        drop_duplicates(row.id)
         return StreamClean(id=row.id)
 
 
-@structure.transform(streaming_compatible=True)
-class StreamingInnerStreamJoin(structure.Transform):
-    rows = structure.input(StreamRaw, streaming=structure.StreamingMode.YES)
-    lookups = structure.input(StreamLookup, streaming=structure.StreamingMode.YES)
-    enriched = structure.output(StreamEnriched)
+@transform(streaming_compatible=True)
+class StreamingInnerStreamJoin(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    lookups = input(StreamLookup, streaming=StreamingMode.YES)
+    enriched = output(StreamEnriched)
 
     def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
-        structure.watermark(row.event_time, delay="10 minutes")
-        structure.watermark(lookup.valid_from, delay="20 minutes")
-        structure.inner_join(
+        watermark(row.event_time, delay="10 minutes")
+        watermark(lookup.valid_from, delay="20 minutes")
+        inner_join(
             lookup,
             on=(cast(Any, lookup).id == cast(Any, row).id)
-            & structure.event_time_between(cast(Any, row).event_time, cast(Any, lookup).valid_from, upper="1 hour"),
+            & event_time_between(cast(Any, row).event_time, cast(Any, lookup).valid_from, upper="1 hour"),
         )
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
-@structure.transform(streaming_compatible=True)
-class StreamingUnmarkedSideJoin(structure.Transform):
-    rows = structure.input(StreamRaw, streaming=structure.StreamingMode.YES)
-    lookups = structure.input(StreamLookup)
-    enriched = structure.output(StreamEnriched)
+@transform(streaming_compatible=True)
+class StreamingUnmarkedSideJoin(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    lookups = input(StreamLookup)
+    enriched = output(StreamEnriched)
 
     def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
-        structure.watermark(row.event_time, delay="10 minutes")
-        structure.watermark(lookup.valid_from, delay="20 minutes")
-        structure.inner_join(
+        watermark(row.event_time, delay="10 minutes")
+        watermark(lookup.valid_from, delay="20 minutes")
+        inner_join(
             lookup,
             on=(cast(Any, lookup).id == cast(Any, row).id)
-            & structure.event_time_between(cast(Any, row).event_time, cast(Any, lookup).valid_from, upper="1 hour"),
+            & event_time_between(cast(Any, row).event_time, cast(Any, lookup).valid_from, upper="1 hour"),
         )
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
-@structure.transform(streaming_compatible=True)
-class StreamingOneSidedStreamJoin(structure.Transform):
-    rows = structure.input(StreamRaw)
-    lookups = structure.input(StreamLookup, streaming=structure.StreamingMode.YES)
-    enriched = structure.output(StreamEnriched)
+@transform(streaming_compatible=True)
+class StreamingOneSidedStreamJoin(Transform):
+    rows = input(StreamRaw)
+    lookups = input(StreamLookup, streaming=StreamingMode.YES)
+    enriched = output(StreamEnriched)
 
     def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
-        structure.watermark(row.event_time, delay="10 minutes")
-        structure.watermark(lookup.valid_from, delay="20 minutes")
-        structure.inner_join(
+        watermark(row.event_time, delay="10 minutes")
+        watermark(lookup.valid_from, delay="20 minutes")
+        inner_join(
             lookup,
             on=(cast(Any, lookup).id == cast(Any, row).id)
-            & structure.event_time_between(cast(Any, row).event_time, cast(Any, lookup).valid_from, upper="1 hour"),
+            & event_time_between(cast(Any, row).event_time, cast(Any, lookup).valid_from, upper="1 hour"),
         )
         return StreamEnriched(id=row.id, value=lookup.value)
 

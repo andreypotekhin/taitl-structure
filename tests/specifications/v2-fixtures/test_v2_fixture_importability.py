@@ -5,10 +5,9 @@ from typing import Any, cast
 
 import pytest
 
-import structure
+from structure import *
 from structure.app.compiler.api import OperationCardinality
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
-from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 
@@ -102,7 +101,7 @@ def test_v2_order_fixture_records_inner_join_shipments(monkeypatch: pytest.Monke
     assert len(add_shipments.joins) == 1
     assert add_shipments.joins[0].method is JoinMethod.ROWSET
     assert add_shipments.joins[0].input_name == "shipment"
-    assert add_shipments.joins[0].strategy is structure.JoinStrategy.SHUFFLE_HASH
+    assert add_shipments.joins[0].strategy is JoinStrategy.SHUFFLE_HASH
     assert add_shipments.operations[0].capability is not None
     assert add_shipments.operations[0].capability.name == "rowset_join"
     assert add_shipments.operations[0].cardinality is OperationCardinality.ROW_MULTIPLYING
@@ -120,7 +119,7 @@ def test_v2_order_fixture_records_deduped_product_lookup(monkeypatch: pytest.Mon
     assert lookup.method is JoinMethod.LOOKUP
     assert lookup.dedupe is not None
     assert lookup.dedupe.direction == "latest"
-    assert lookup.dedupe.ties is structure.TiePolicy.ERROR
+    assert lookup.dedupe.ties is TiePolicy.ERROR
     assert lookup.dedupe.order_by.data is not None
     assert lookup.dedupe.order_by.data["field"] == "audit.ingested_at"
 
@@ -148,9 +147,9 @@ def test_v2_rowset_join_fixture_records_full_right_and_cross_joins(
         JoinMethod.ROWSET,
     ]
     assert [step.joins[0].how for step in plan.steps[:3]] == [
-        structure.Join.FULL,
-        structure.Join.RIGHT,
-        structure.Join.CROSS,
+        Join.FULL,
+        Join.RIGHT,
+        Join.CROSS,
     ]
     assert [step.operations[0].capability.name for step in plan.steps[:3] if step.operations[0].capability] == [
         "rowset_join",
@@ -185,22 +184,22 @@ def test_v2_rowset_join_fixture_records_full_right_and_cross_joins(
 
 
 def test_group_by_lowers_to_aggregate_recipe() -> None:
-    class Raw(structure.Schema):
-        customer_id = structure.field(structure.String(), nullable=False)
-        quantity = structure.field(structure.Long(), nullable=False)
+    class Raw(Schema):
+        customer_id = field(String(), nullable=False)
+        quantity = field(Long(), nullable=False)
 
-    class Total(structure.Schema):
-        customer_id = structure.field(structure.String(), nullable=False)
-        quantity = structure.field(structure.Long(), nullable=False)
+    class Total(Schema):
+        customer_id = field(String(), nullable=False)
+        quantity = field(Long(), nullable=False)
 
-    @structure.transform
-    class Totals(structure.Transform):
-        rows = structure.input(Raw)
-        totals = structure.output(Total)
+    @transform
+    class Totals(Transform):
+        rows = input(Raw)
+        totals = output(Total)
 
         def total(self, row: Raw) -> Total:
-            structure.group_by(customer_id=row.customer_id)
-            return Total(customer_id=row.customer_id, quantity=structure.count())
+            group_by(customer_id=row.customer_id)
+            return Total(customer_id=row.customer_id, quantity=count())
 
     plan = PySpark.plan.lower()(compile_transform(Totals))
 
@@ -215,22 +214,22 @@ def test_group_by_lowers_to_aggregate_recipe() -> None:
 
 
 def test_aggregate_expression_without_group_by_fails_in_frontend() -> None:
-    class Raw(structure.Schema):
-        customer_id = structure.field(structure.String(), nullable=False)
+    class Raw(Schema):
+        customer_id = field(String(), nullable=False)
 
-    class Total(structure.Schema):
-        customer_id = structure.field(structure.String(), nullable=False)
-        quantity = structure.field(structure.Long(), nullable=False)
+    class Total(Schema):
+        customer_id = field(String(), nullable=False)
+        quantity = field(Long(), nullable=False)
 
-    @structure.transform
-    class Totals(structure.Transform):
-        rows = structure.input(Raw)
-        totals = structure.output(Total)
+    @transform
+    class Totals(Transform):
+        rows = input(Raw)
+        totals = output(Total)
 
         def total(self, row: Raw) -> Total:
-            return Total(customer_id=row.customer_id, quantity=structure.count())
+            return Total(customer_id=row.customer_id, quantity=count())
 
-    with pytest.raises(structure.StructureCompileError) as raised:
+    with pytest.raises(StructureCompileError) as raised:
         compile_transform(Totals)
 
     assert raised.value.diagnostic.code == "DSL-E0402"
@@ -238,24 +237,24 @@ def test_aggregate_expression_without_group_by_fails_in_frontend() -> None:
 
 
 def test_numeric_aggregate_rejects_non_numeric_input_type() -> None:
-    class Raw(structure.Schema):
-        customer_id = structure.field(structure.String(), nullable=False)
-        label = structure.field(structure.String(), nullable=False)
+    class Raw(Schema):
+        customer_id = field(String(), nullable=False)
+        label = field(String(), nullable=False)
 
-    class Total(structure.Schema):
-        customer_id = structure.field(structure.String(), nullable=False)
-        label_total = structure.field(structure.String(), nullable=False)
+    class Total(Schema):
+        customer_id = field(String(), nullable=False)
+        label_total = field(String(), nullable=False)
 
-    @structure.transform
-    class Totals(structure.Transform):
-        rows = structure.input(Raw)
-        totals = structure.output(Total)
+    @transform
+    class Totals(Transform):
+        rows = input(Raw)
+        totals = output(Total)
 
         def total(self, row: Raw) -> Total:
-            structure.group_by(customer_id=row.customer_id)
-            return Total(customer_id=row.customer_id, label_total=structure.sum(row.label))
+            group_by(customer_id=row.customer_id)
+            return Total(customer_id=row.customer_id, label_total=sum(row.label))
 
-    with pytest.raises(structure.StructureCompileError) as raised:
+    with pytest.raises(StructureCompileError) as raised:
         compile_transform(Totals)
 
     diagnostic = raised.value.diagnostic
@@ -265,24 +264,24 @@ def test_numeric_aggregate_rejects_non_numeric_input_type() -> None:
 
 
 def test_nullable_aggregate_input_cannot_feed_non_nullable_output() -> None:
-    class Raw(structure.Schema):
-        customer_id = structure.field(structure.String(), nullable=False)
-        quantity = structure.field(structure.Long(), nullable=True)
+    class Raw(Schema):
+        customer_id = field(String(), nullable=False)
+        quantity = field(Long(), nullable=True)
 
-    class Total(structure.Schema):
-        customer_id = structure.field(structure.String(), nullable=False)
-        quantity = structure.field(structure.Long(), nullable=False)
+    class Total(Schema):
+        customer_id = field(String(), nullable=False)
+        quantity = field(Long(), nullable=False)
 
-    @structure.transform
-    class Totals(structure.Transform):
-        rows = structure.input(Raw)
-        totals = structure.output(Total)
+    @transform
+    class Totals(Transform):
+        rows = input(Raw)
+        totals = output(Total)
 
         def total(self, row: Raw) -> Total:
-            structure.group_by(customer_id=row.customer_id)
-            return Total(customer_id=row.customer_id, quantity=structure.sum(row.quantity))
+            group_by(customer_id=row.customer_id)
+            return Total(customer_id=row.customer_id, quantity=sum(row.quantity))
 
-    with pytest.raises(structure.StructureCompileError) as raised:
+    with pytest.raises(StructureCompileError) as raised:
         compile_transform(Totals)
 
     diagnostic = raised.value.diagnostic

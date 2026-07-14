@@ -1,8 +1,7 @@
 import pytest
 
 import structure
-from structure import Schema, String, StructureCompileError, Transform, field, input, lane, output, raw, step, transform
-from structure.app.dsl.api import SchemaMode, compile_transform
+from structure import *
 from structure.compat import legacy
 
 

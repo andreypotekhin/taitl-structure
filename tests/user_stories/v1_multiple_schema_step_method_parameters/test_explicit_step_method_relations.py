@@ -1,5 +1,4 @@
-from structure import Join, Schema, String, Transform, field, input, lookup_join, output, step, transform
-from structure.app.dsl.api import compile_transform
+from structure import *
 
 
 class Order(Schema):

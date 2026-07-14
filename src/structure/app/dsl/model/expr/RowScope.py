@@ -39,3 +39,13 @@ class RowScope:
             nullable=self._structure_scope_nullable or field.nullable,
             data=data,
         )
+
+    def where(self, *predicates: object):
+        from structure.app.dsl.model.transforms.transform_api import where
+
+        return where(*predicates)
+
+    def project(self, *args: object) -> object:
+        from structure.app.dsl.model.transforms.transform_api import project
+
+        return project(*args)

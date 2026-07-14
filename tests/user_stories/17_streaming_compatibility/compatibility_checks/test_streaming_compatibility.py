@@ -1,9 +1,8 @@
 import sys
 
-from structure import Schema, String, Transform, field, input, output, raw, transform, where
+from structure import *
 from structure.app.compiler.api import Compiler
 from structure.app.compiler.compileability.streaming_compatibility.api import StreamingSupport
-from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 

@@ -2,65 +2,64 @@ from typing import Any, cast
 
 import pytest
 
-import structure
-from structure.app.dsl.api import compile_transform
+from structure import *
 from structure.app.runtime.session.model.TransformResult import TransformResult
 from structure.app.target.pyspark.api import PySpark
 
 
-class Raw(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    product_id = structure.field(structure.String(), nullable=True)
+class Raw(Schema):
+    id = field(String(), nullable=False)
+    product_id = field(String(), nullable=True)
 
 
-class Normalized(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    product_id = structure.field(structure.String(), nullable=True)
+class Normalized(Schema):
+    id = field(String(), nullable=False)
+    product_id = field(String(), nullable=True)
 
 
-class Product(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    name = structure.field(structure.String(), nullable=True)
+class Product(Schema):
+    id = field(String(), nullable=False)
+    name = field(String(), nullable=True)
 
 
-class Enriched(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    product_name = structure.field(structure.String(), nullable=True)
+class Enriched(Schema):
+    id = field(String(), nullable=False)
+    product_name = field(String(), nullable=True)
 
 
-class Published(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    product_name = structure.field(structure.String(), nullable=True)
+class Published(Schema):
+    id = field(String(), nullable=False)
+    product_name = field(String(), nullable=True)
 
 
-class Metric(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    value = structure.field(structure.Integer(), nullable=True)
+class Metric(Schema):
+    id = field(String(), nullable=False)
+    value = field(Integer(), nullable=True)
 
 
-@structure.transform
-class NormalizeOrders(structure.Transform):
-    orders = structure.input(Raw)
-    normalized = structure.output(Normalized)
+@transform
+class NormalizeOrders(Transform):
+    orders = input(Raw)
+    normalized = output(Normalized)
 
     def normalize(self, order: Raw) -> Normalized:
         return Normalized(id=order.id, product_id=order.product_id)
 
 
-@structure.transform
-class AddProduct(structure.Transform):
-    normalized = structure.input(Normalized)
-    products = structure.input(Product)
-    enriched = structure.output(Enriched)
+@transform
+class AddProduct(Transform):
+    normalized = input(Normalized)
+    products = input(Product)
+    enriched = output(Enriched)
 
     def add_product(self, order: Normalized, product: Product) -> Enriched:
         return Enriched(id=order.id, product_name=order.product_id)
 
 
-@structure.transform
-class PublishOrders(structure.Transform):
-    enriched = structure.input(Enriched)
-    published = structure.output(Published)
+@transform
+class PublishOrders(Transform):
+    enriched = input(Enriched)
+    published = output(Published)
 
     def publish(self, order: Enriched) -> Published:
         return Published(id=order.id, product_name=order.product_name)
@@ -77,7 +76,7 @@ def test_instance_to_runs_with_final_output_shape() -> None:
         NormalizeOrders(orders=object())
         .to(AddProduct(products=object()))
         .to(PublishOrders())
-        .run(structure.StructureSession(schema_types=FakeTypes, online_executor=executor))
+        .run(StructureSession(schema_types=FakeTypes, online_executor=executor))
     )
 
     assert isinstance(result, TransformResult)
@@ -100,7 +99,7 @@ def test_multi_argument_to_matches_sequential_to() -> None:
 
 
 def test_static_transform_to_starts_pipeline() -> None:
-    pipeline = structure.Transform.to(NormalizeOrders(orders=object()), AddProduct(products=object()), PublishOrders())
+    pipeline = Transform.to(NormalizeOrders(orders=object()), AddProduct(products=object()), PublishOrders())
 
     assert [step.name for step in compile_transform(pipeline).steps] == [
         "normalize_orders.normalize",
@@ -117,18 +116,18 @@ def test_downstream_constructor_input_satisfies_missing_input() -> None:
 
 
 def test_output_alias_satisfies_downstream_input_name() -> None:
-    @structure.transform
-    class NormalizeWithBoundaryAlias(structure.Transform):
-        orders = structure.input(Raw)
-        normalized = structure.output(Normalized).alias("orders")
+    @transform
+    class NormalizeWithBoundaryAlias(Transform):
+        orders = input(Raw)
+        normalized = output(Normalized).alias("orders")
 
         def normalize(self, row: Raw) -> Normalized:
             return Normalized(id=row.id, product_id=row.product_id)
 
-    @structure.transform
-    class PublishNormalized(structure.Transform):
-        orders = structure.input(Normalized)
-        published = structure.output(Published)
+    @transform
+    class PublishNormalized(Transform):
+        orders = input(Normalized)
+        published = output(Published)
 
         def publish(self, order: Normalized) -> Published:
             return Published(id=order.id, product_name=order.product_id)
@@ -143,10 +142,10 @@ def test_output_alias_satisfies_downstream_input_name() -> None:
 
 
 def test_stage_rename_satisfies_downstream_input_name() -> None:
-    @structure.transform
-    class PublishNormalized(structure.Transform):
-        orders = structure.input(Normalized)
-        published = structure.output(Published)
+    @transform
+    class PublishNormalized(Transform):
+        orders = input(Normalized)
+        published = output(Published)
 
         def publish(self, order: Normalized) -> Published:
             return Published(id=order.id, product_name=order.product_id)
@@ -158,10 +157,10 @@ def test_stage_rename_satisfies_downstream_input_name() -> None:
 
 
 def test_input_alias_satisfies_upstream_output_name() -> None:
-    @structure.transform
-    class PublishNormalized(structure.Transform):
-        rows = structure.input(Normalized).alias("normalized")
-        published = structure.output(Published)
+    @transform
+    class PublishNormalized(Transform):
+        rows = input(Normalized).alias("normalized")
+        published = output(Published)
 
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, product_name=row.product_id)
@@ -174,13 +173,13 @@ def test_input_alias_satisfies_upstream_output_name() -> None:
 def test_ambiguous_output_alias_match_fails() -> None:
     with pytest.raises(TypeError, match="output alias orders is used by both accepted and rejected"):
 
-        @structure.transform
-        class RouteMetrics(structure.Transform):
-            rows = structure.input(Metric)
-            accepted = structure.output(Metric).alias("orders")
-            rejected = structure.output(Metric).alias("orders")
+        @transform
+        class RouteMetrics(Transform):
+            rows = input(Metric)
+            accepted = output(Metric).alias("orders")
+            rejected = output(Metric).alias("orders")
 
-            @structure.step(output=[accepted, rejected])
+            @step(output=[accepted, rejected])
             def route(self, row: Metric) -> tuple[Metric, Metric]:
                 return (
                     Metric(id=row.id, value=row.value),
@@ -189,10 +188,10 @@ def test_ambiguous_output_alias_match_fails() -> None:
 
 
 def test_input_alias_constructor_keyword_normalizes_to_canonical_input() -> None:
-    @structure.transform
-    class NormalizeInputAlias(structure.Transform):
-        rows = structure.input(Raw).alias("orders")
-        normalized = structure.output(Normalized)
+    @transform
+    class NormalizeInputAlias(Transform):
+        rows = input(Raw).alias("orders")
+        normalized = output(Normalized)
 
         def normalize(self, row: Raw) -> Normalized:
             return Normalized(id=row.id, product_id=row.product_id)
@@ -226,61 +225,61 @@ def test_result_aliases_are_lookup_synonyms_not_mapping_keys() -> None:
 def test_downstream_constructor_conflicts_with_matching_upstream_output() -> None:
     pipeline = NormalizeOrders(orders=object()).to(AddProduct(normalized=object(), products=object()))
 
-    with pytest.raises(structure.StructureCompileError, match="both explicitly bound and produced upstream"):
+    with pytest.raises(StructureCompileError, match="both explicitly bound and produced upstream"):
         compile_transform(pipeline)
 
 
 def test_missing_downstream_input_fails() -> None:
     pipeline = NormalizeOrders(orders=object()).to(AddProduct())
 
-    with pytest.raises(structure.StructureCompileError, match="products is not supplied"):
+    with pytest.raises(StructureCompileError, match="products is not supplied"):
         compile_transform(pipeline)
 
 
 def test_ambiguous_upstream_output_match_fails() -> None:
-    @structure.transform
-    class RouteMetrics(structure.Transform):
-        rows = structure.input(Metric)
-        accepted = structure.output(Metric)
-        rejected = structure.output(Metric)
+    @transform
+    class RouteMetrics(Transform):
+        rows = input(Metric)
+        accepted = output(Metric)
+        rejected = output(Metric)
 
-        @structure.step(output=[accepted, rejected])
+        @step(output=[accepted, rejected])
         def route(self, row: Metric) -> tuple[Metric, Metric]:
             return (
                 Metric(id=row.id, value=row.value),
                 Metric(id=row.id, value=row.value),
             )
 
-    @structure.transform
-    class PublishMetric(structure.Transform):
-        row = structure.input(Metric)
-        published = structure.output(Metric)
+    @transform
+    class PublishMetric(Transform):
+        row = input(Metric)
+        published = output(Metric)
 
         def publish(self, row: Metric) -> Metric:
             return Metric(id=row.id, value=row.value)
 
     pipeline = RouteMetrics(rows=object()).to(PublishMetric())
 
-    with pytest.raises(structure.StructureCompileError, match="matched outputs: accepted, rejected"):
+    with pytest.raises(StructureCompileError, match="matched outputs: accepted, rejected"):
         compile_transform(pipeline)
 
 
 def test_lane_declaration_cannot_be_constructor_binding() -> None:
-    class LaneOwner(structure.Transform):
-        rows = structure.lane(Raw)
+    class LaneOwner(Transform):
+        rows = lane(Raw)
 
-    pipeline = structure.Transform.to(NormalizeOrders(orders=LaneOwner.rows))
+    pipeline = Transform.to(NormalizeOrders(orders=LaneOwner.rows))
 
-    with pytest.raises(structure.StructureCompileError, match="bound to a lane"):
+    with pytest.raises(StructureCompileError, match="bound to a lane"):
         compile_transform(pipeline)
 
 
 def test_class_field_pipeline_compiles_and_renders_generated_transform() -> None:
-    class OrderPipeline(structure.Transform):
-        orders = structure.input(Raw)
-        products = structure.input(Product)
+    class OrderPipeline(Transform):
+        orders = input(Raw)
+        products = input(Product)
 
-        pipeline = structure.Transform.to(
+        pipeline = Transform.to(
             NormalizeOrders(orders=orders),
             AddProduct(products=products),
             PublishOrders(),
@@ -309,10 +308,10 @@ def test_class_field_pipeline_compiles_and_renders_generated_transform() -> None
 
 
 def test_generated_transform_renders_output_alias_metadata() -> None:
-    @structure.transform
-    class NormalizeWithBoundaryAlias(structure.Transform):
-        orders = structure.input(Raw)
-        normalized = structure.output(Normalized).alias("orders")
+    @transform
+    class NormalizeWithBoundaryAlias(Transform):
+        orders = input(Raw)
+        normalized = output(Normalized).alias("orders")
 
         def normalize(self, order: Raw) -> Normalized:
             return Normalized(id=order.id, product_id=order.product_id)
@@ -329,21 +328,21 @@ def test_generated_transform_renders_output_alias_metadata() -> None:
 
 
 def test_inherited_lane_remains_available_to_override() -> None:
-    class BaseNormalize(structure.Transform):
-        rows = structure.input(Raw)
-        normalized = structure.lane(Normalized)
+    class BaseNormalize(Transform):
+        rows = input(Raw)
+        normalized = lane(Normalized)
 
-        @structure.step(output=normalized)
+        @step(output=normalized)
         def normalize(self, row: Raw) -> Normalized:
             return Normalized(id=row.id, product_id=row.product_id)
 
-    @structure.transform
+    @transform
     class Publish(BaseNormalize):
-        published = structure.output(Normalized)
+        published = output(Normalized)
 
-        @structure.step(output=BaseNormalize.normalized)
+        @step(output=BaseNormalize.normalized)
         def normalize(self, row: Raw) -> Normalized:
-            structure.where(cast(Any, row.id).is_not_null())
+            where(cast(Any, row.id).is_not_null())
             return Normalized(id=row.id, product_id=row.product_id)
 
         def publish(self, row: Normalized) -> Normalized:

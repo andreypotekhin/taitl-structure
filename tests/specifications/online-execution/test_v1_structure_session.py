@@ -8,7 +8,7 @@ from uuid import uuid4
 
 import pytest
 
-import structure
+from structure import *
 
 
 @contextmanager
@@ -91,7 +91,7 @@ def test_v1_session_reads_project_config() -> None:
             encoding="utf-8",
         )
 
-        session = structure.StructureSession(project_root=root, schema_types=FakeTypes)
+        session = StructureSession(project_root=root, schema_types=FakeTypes)
 
         assert session.config.execution_mode == "generated"
         assert session.execution_mode == "generated"
@@ -107,7 +107,7 @@ def test_v1_session_convenience_overrides_win_over_project_config() -> None:
             encoding="utf-8",
         )
 
-        session = structure.StructureSession(
+        session = StructureSession(
             project_root=root,
             execution_mode="online",
             generated_package="programmatic_generated",
@@ -123,9 +123,9 @@ def test_v1_session_convenience_overrides_win_over_project_config() -> None:
 def test_v1_session_uses_supplied_config() -> None:
     with workspace_tmp() as root:
         (root / "src").mkdir()
-        config = structure.StructureConfig.resolve(project_root=root, execution_mode="generated")
+        config = StructureConfig.resolve(project_root=root, execution_mode="generated")
 
-        session = structure.StructureSession(config=config, schema_types=FakeTypes)
+        session = StructureSession(config=config, schema_types=FakeTypes)
 
         assert session.config is config
         assert session.execution_mode == "generated"
@@ -139,8 +139,8 @@ def test_v1_session_compiler_options_match_project_config() -> None:
             encoding="utf-8",
         )
 
-        options = structure.CompilerOptions.resolve(project_root=root, schema_types=FakeTypes)
-        session = structure.StructureSession(project_root=root, schema_types=FakeTypes)
+        options = CompilerOptions.resolve(project_root=root, schema_types=FakeTypes)
+        session = StructureSession(project_root=root, schema_types=FakeTypes)
 
         assert session.compiler_options == options
 
@@ -148,15 +148,15 @@ def test_v1_session_compiler_options_match_project_config() -> None:
 def test_v1_session_rejects_config_mixed_with_project_or_overrides() -> None:
     with workspace_tmp() as root:
         (root / "src").mkdir()
-        config = structure.StructureConfig.resolve(project_root=root)
+        config = StructureConfig.resolve(project_root=root)
 
         with pytest.raises(ValueError) as raised:
-            structure.StructureSession(config=config, project_root=root)
+            StructureSession(config=config, project_root=root)
 
         assert "config=StructureConfig.resolve" in str(raised.value)
 
         with pytest.raises(ValueError) as raised:
-            structure.StructureSession(config=config, execution_mode="generated")
+            StructureSession(config=config, execution_mode="generated")
 
         assert "config override fields" in str(raised.value)
 
@@ -177,7 +177,7 @@ def test_v1_online_session_defers_to_runner_and_exposes_schemas_without_pyspark(
         products="products-df",
         promotions="promotions-df",
     )
-    session = structure.StructureSession(spark="spark", ctx="ctx", schema_types=FakeTypes, online_executor=executor)
+    session = StructureSession(spark="spark", ctx="ctx", schema_types=FakeTypes, online_executor=executor)
 
     result = invocation.run(session)
 
@@ -208,7 +208,7 @@ def test_v1_online_session_reuses_session_compiled_artifact(monkeypatch) -> None
         return original(self, *args, **kwargs)
 
     monkeypatch.setattr(BuildCompiledTransform, "__call__", counted)
-    session = structure.StructureSession(schema_types=FakeTypes, online_executor=lambda **kwargs: "online-result")
+    session = StructureSession(schema_types=FakeTypes, online_executor=lambda **kwargs: "online-result")
     inputs = {
         "orders": "orders-df",
         "customers": "customers-df",
@@ -245,8 +245,8 @@ def test_v1_sessions_share_explicit_artifact_pool(monkeypatch) -> None:
         "promotions": "promotions-df",
     }
 
-    first = structure.StructureSession(artifacts=pool, schema_types=FakeTypes, online_executor=lambda **_: None)
-    second = structure.StructureSession(artifacts=pool, schema_types=FakeTypes, online_executor=lambda **_: None)
+    first = StructureSession(artifacts=pool, schema_types=FakeTypes, online_executor=lambda **_: None)
+    second = StructureSession(artifacts=pool, schema_types=FakeTypes, online_executor=lambda **_: None)
 
     EnrichOrders(**inputs).run(first)
     EnrichOrders(**inputs).run(second)
@@ -261,7 +261,7 @@ def test_v1_session_load_reuses_explicit_artifact(monkeypatch) -> None:
     from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
 
     artifact = EnrichOrders.compile(schema_types=FakeTypes)
-    session = structure.StructureSession(schema_types=FakeTypes, online_executor=lambda **_: None)
+    session = StructureSession(schema_types=FakeTypes, online_executor=lambda **_: None)
     session.load(artifact)
 
     monkeypatch.setattr(
@@ -309,7 +309,7 @@ def test_v1_compile_key_includes_version_and_source_hash() -> None:
 
     key = BuildCompiledTransform().key(
         EnrichOrders,
-        options=structure.CompilerOptions.resolve(schema_types=FakeTypes),
+        options=CompilerOptions.resolve(schema_types=FakeTypes),
     )
 
     assert key.structure_version
@@ -371,7 +371,7 @@ def test_v1_pipeline_reuses_shared_compiled_artifact(monkeypatch) -> None:
         return original(self, *args, **kwargs)
 
     monkeypatch.setattr(BuildCompiledTransform, "__call__", counted)
-    session = structure.StructureSession(schema_types=FakeTypes, online_executor=lambda **kwargs: object())
+    session = StructureSession(schema_types=FakeTypes, online_executor=lambda **kwargs: object())
     NormalizeOrders(orders=object()).to(PublishOrders()).run(session)
     NormalizeOrders(orders=object()).to(PublishOrders()).run(session)
 
@@ -381,9 +381,9 @@ def test_v1_pipeline_reuses_shared_compiled_artifact(monkeypatch) -> None:
 def test_v1_online_session_reports_missing_declared_inputs() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    session = structure.StructureSession(schema_types=FakeTypes, online_executor=lambda **kwargs: None)
+    session = StructureSession(schema_types=FakeTypes, online_executor=lambda **kwargs: None)
 
-    with pytest.raises(structure.StructureRuntimeError) as raised:
+    with pytest.raises(StructureRuntimeError) as raised:
         session.run(EnrichOrders(orders="orders-df"))
 
     diagnostic = raised.value.diagnostic
@@ -409,7 +409,7 @@ def test_v1_generated_session_delegates_to_generated_class() -> None:
             products="products-df",
             promotions="promotions-df",
         )
-        session = structure.StructureSession(
+        session = StructureSession(
             spark="spark",
             ctx="ctx",
             execution_mode="generated",
@@ -436,7 +436,7 @@ def test_v1_generated_session_delegates_to_generated_class() -> None:
 def test_v1_generated_session_can_import_from_memory_storage() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    storage = structure.MemoryStorage()
+    storage = MemoryStorage()
     fingerprint = _fingerprint(EnrichOrders, generated_package="memory_generated")
     storage.write(
         {
@@ -472,7 +472,7 @@ def test_v1_generated_session_can_import_from_memory_storage() -> None:
         products="products-df",
         promotions="promotions-df",
     )
-    session = structure.StructureSession(
+    session = StructureSession(
         spark="spark",
         ctx="ctx",
         execution_mode="generated",
@@ -499,7 +499,7 @@ def test_v1_generated_session_rejects_stale_artifact() -> None:
     module_name = "testing.model.v1.structure_generated.orders.pyspark.transforms.order"
     installed = _install_generated_module(module_name, fingerprint="stale")
     try:
-        session = structure.StructureSession(
+        session = StructureSession(
             execution_mode="generated",
             generated_package="testing.model.v1.structure_generated.orders",
             schema_types=FakeTypes,
@@ -511,7 +511,7 @@ def test_v1_generated_session_rejects_stale_artifact() -> None:
             promotions="promotions-df",
         )
 
-        with pytest.raises(structure.StructureRuntimeError) as raised:
+        with pytest.raises(StructureRuntimeError) as raised:
             session.run(invocation)
 
         assert raised.value.diagnostic.code == "GEN-E0901"
@@ -525,13 +525,13 @@ def test_v1_memory_storage_does_not_import_unowned_modules() -> None:
     sys.modules[module.__name__] = module
     try:
         with pytest.raises(ImportError):
-            structure.MemoryStorage().import_module(module.__name__)
+            MemoryStorage().import_module(module.__name__)
     finally:
         sys.modules.pop(module.__name__, None)
 
 
 def test_v1_package_import_storage_rejects_modules_outside_package() -> None:
-    storage = structure.PackageImportStorage("structure_generated")
+    storage = PackageImportStorage("structure_generated")
 
     with pytest.raises(ImportError):
         storage.import_module("other_generated.pyspark.transforms.order")
@@ -546,13 +546,13 @@ def test_v1_generated_session_reports_missing_generated_code() -> None:
         products="products-df",
         promotions="promotions-df",
     )
-    session = structure.StructureSession(
+    session = StructureSession(
         execution_mode="generated",
         generated_package="missing_structure_generated",
         schema_types=FakeTypes,
     )
 
-    with pytest.raises(structure.StructureRuntimeError) as raised:
+    with pytest.raises(StructureRuntimeError) as raised:
         session.run(invocation)
 
     diagnostic = raised.value.diagnostic
@@ -582,7 +582,7 @@ def test_v1_generated_spark_connect_classic_only_failure_reports_boundary() -> N
             products="products-df",
             promotions="promotions-df",
         )
-        session = structure.StructureSession(
+        session = StructureSession(
             spark="spark",
             execution_mode="generated",
             generated_package="testing.model.v1.structure_generated.orders",
@@ -590,7 +590,7 @@ def test_v1_generated_spark_connect_classic_only_failure_reports_boundary() -> N
             target_variant="spark-connect",
         )
 
-        with pytest.raises(structure.StructureRuntimeError) as raised:
+        with pytest.raises(StructureRuntimeError) as raised:
             session.run(invocation)
 
         diagnostic = raised.value.diagnostic

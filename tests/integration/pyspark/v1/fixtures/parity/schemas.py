@@ -1,4 +1,4 @@
-from structure import Schema, String, Timestamp, field
+from structure import *
 
 
 class RawRow(Schema):

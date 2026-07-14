@@ -2,7 +2,7 @@ import pytest
 from testing.model.v1.orders.schemas.common import Address
 from testing.model.v1.orders.schemas.order import OrderNormalized, OrderRaw, OrderWithCustomer
 
-from structure import Schema, String, field
+from structure import *
 
 
 def test_fields_keep_types_nullability_and_collection_shape() -> None:

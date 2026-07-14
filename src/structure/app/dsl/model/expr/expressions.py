@@ -12,7 +12,9 @@ from structure.app.dsl.model.types.DoubleType import DoubleType
 from structure.app.dsl.model.types.FloatType import FloatType
 from structure.app.dsl.model.types.IntegerType import IntegerType
 from structure.app.dsl.model.types.LongType import LongType
+from structure.app.dsl.model.types.MapType import MapType
 from structure.app.dsl.model.types.StringType import StringType
+from structure.app.dsl.model.types.StructType import StructType
 from structure.app.dsl.model.types.StructureType import StructureType
 from structure.app.dsl.model.types.TimestampType import TimestampType
 
@@ -296,9 +298,16 @@ def to_decimal(value: object, *, precision: int, scale: int) -> Expression:
 
 
 def coalesce(*values: object) -> Expression:
+    if not values:
+        raise TypeError("coalesce(...) requires at least one value")
     arguments = tuple(literal(value) for value in values)
-    result_type = next((argument.type for argument in arguments if argument.type is not None), None)
-    return Expression(kind="call", type=result_type, nullable=False, data={"function": "coalesce"}, args=arguments)
+    return Expression(
+        kind="call",
+        type=_common_type("coalesce(...)", arguments),
+        nullable=all(argument.nullable for argument in arguments),
+        data={"function": "coalesce"},
+        args=arguments,
+    )
 
 
 def event_time_between(left: object, right: object, *, upper: str, lower: str = "0 seconds") -> Expression:
@@ -335,7 +344,7 @@ class WhenBuilder:
         alternative = literal(fallback)
         return Expression(
             kind="when",
-            type=self.value.type or alternative.type,
+            type=_common_type("when(...).otherwise(...)", (self.value, alternative)),
             nullable=self.value.nullable or alternative.nullable,
             args=(self.condition, self.value, alternative),
         )
@@ -376,6 +385,67 @@ def _numeric_argument(value: object, call: str) -> Expression:
     if argument.type is None or argument.type.name not in {"decimal", "double", "float", "integer", "long"}:
         raise TypeError(f"{call} requires a numeric Structure expression")
     return argument
+
+
+def _common_type(call: str, arguments: tuple[Expression, ...]) -> StructureType | None:
+    if any(argument.type is None and not argument.nullable for argument in arguments):
+        raise TypeError(f"{call} requires typed Structure expressions or null literals")
+    types = tuple(argument.type for argument in arguments if argument.type is not None)
+    if not types:
+        return None
+    first = types[0]
+    if all(_same_type(type, first) for type in types[1:]):
+        return first
+    if all(isinstance(type, (IntegerType, LongType, FloatType, DoubleType, DecimalType)) for type in types):
+        return _common_numeric_type(call, types)
+    names = ", ".join(type.name for type in types)
+    raise TypeError(f"{call} requires compatible types; received {names}")
+
+
+def _common_numeric_type(call: str, types: tuple[StructureType, ...]) -> StructureType:
+    decimals = tuple(type for type in types if isinstance(type, DecimalType))
+    if decimals:
+        if not all(isinstance(type, (IntegerType, LongType, DecimalType)) for type in types):
+            names = ", ".join(type.name for type in types)
+            raise TypeError(f"{call} requires compatible types; received {names}")
+        scale = max(type.scale for type in decimals)
+        integer_digits = max(
+            type.precision - type.scale
+            if isinstance(type, DecimalType)
+            else 19
+            if isinstance(type, LongType)
+            else 10
+            for type in types
+        )
+        precision = integer_digits + scale
+        if precision > 38:
+            raise TypeError(f"{call} cannot represent compatible Decimal values wider than precision 38")
+        return DecimalType(precision=precision, scale=scale)
+    if any(isinstance(type, DoubleType) for type in types):
+        return DoubleType()
+    if any(isinstance(type, FloatType) for type in types):
+        return FloatType()
+    if any(isinstance(type, LongType) for type in types):
+        return LongType()
+    return IntegerType()
+
+
+def _same_type(left: StructureType, right: StructureType) -> bool:
+    if left.name != right.name:
+        return False
+    if isinstance(left, ArrayType) and isinstance(right, ArrayType):
+        return left.contains_null == right.contains_null and _same_type(left.element, right.element)
+    if isinstance(left, MapType) and isinstance(right, MapType):
+        return (
+            left.value_contains_null == right.value_contains_null
+            and _same_type(left.key, right.key)
+            and _same_type(left.value, right.value)
+        )
+    if isinstance(left, StructType) and isinstance(right, StructType):
+        return left.schema is right.schema
+    if isinstance(left, DecimalType) and isinstance(right, DecimalType):
+        return left.precision == right.precision and left.scale == right.scale
+    return True
 
 
 def _ceiling_type(type: object) -> StructureType:

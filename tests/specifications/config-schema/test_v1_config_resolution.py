@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
 
-from structure import StructureConfig
+from structure import *
 from structure.app.configuration.api import ConfigError, Configuration
 
 

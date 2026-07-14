@@ -4,7 +4,7 @@ from typing import Any, cast
 
 import pytest
 
-from structure import StructureRuntimeError
+from structure import *
 from structure.app.runtime.execution.online.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 from structure.lib.cross.errors import Diagnostic, DiagnosticEntry, DiagnosticRegistry, diagnostic_registry
 

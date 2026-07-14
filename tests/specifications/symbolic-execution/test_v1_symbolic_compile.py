@@ -3,23 +3,7 @@ from typing import cast
 
 import pytest
 
-from structure import step
-from structure.app.dsl.api import (
-    Join,
-    JoinHint,
-    Schema,
-    SchemaMode,
-    String,
-    Struct,
-    Transform,
-    compile_transform,
-    field,
-    input,
-    output,
-    transform,
-    trim,
-    where,
-)
+from structure import *
 from structure.app.dsl.model.types.StructType import StructType
 
 

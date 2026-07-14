@@ -1,10 +1,7 @@
 from typing import Any, cast
 
-import structure
-from structure import step as dsl_step
-from structure import sum, temporal_one, transform, trim, where, window, window_count, window_sum
+from structure import *
 from structure.app.compiler.api import Compiler
-from structure.app.dsl.api import compile_transform
 from structure.app.target.capabilities.api import Capabilities
 from structure.app.target.pyspark.api import PySpark
 from structure.app.target.pyspark.commands.RenderPySparkRuntimeModule import render_pyspark_runtime_module
@@ -25,179 +22,179 @@ CLASSIC_ONLY_TOKENS = (
 )
 
 
-class RawBatch(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    promo_code = structure.field(structure.String(), nullable=True)
-    event_date = structure.field(structure.Date(), nullable=False)
-    sequence = structure.field(structure.Long(), nullable=False)
-    amount = structure.field(structure.Long(), nullable=False)
-    tags = structure.field(structure.Array(structure.String(), contains_null=True), nullable=True)
-    attributes = structure.field(
-        structure.Map(structure.String(), structure.String(), value_contains_null=True), nullable=True
+class RawBatch(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    promo_code = field(String(), nullable=True)
+    event_date = field(Date(), nullable=False)
+    sequence = field(Long(), nullable=False)
+    amount = field(Long(), nullable=False)
+    tags = field(Array(String(), contains_null=True), nullable=True)
+    attributes = field(
+        Map(String(), String(), value_contains_null=True), nullable=True
     )
 
 
-class RankedBatch(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    promo_code = structure.field(structure.String(), nullable=True)
-    event_date = structure.field(structure.Date(), nullable=False)
-    sequence = structure.field(structure.Long(), nullable=False)
-    amount = structure.field(structure.Long(), nullable=False)
-    tags = structure.field(structure.Array(structure.String(), contains_null=True), nullable=True)
-    attributes = structure.field(
-        structure.Map(structure.String(), structure.String(), value_contains_null=True), nullable=True
+class RankedBatch(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    promo_code = field(String(), nullable=True)
+    event_date = field(Date(), nullable=False)
+    sequence = field(Long(), nullable=False)
+    amount = field(Long(), nullable=False)
+    tags = field(Array(String(), contains_null=True), nullable=True)
+    attributes = field(
+        Map(String(), String(), value_contains_null=True), nullable=True
     )
-    row_number = structure.field(structure.Long(), nullable=False)
-    rank = structure.field(structure.Long(), nullable=False)
-    dense_rank = structure.field(structure.Long(), nullable=False)
-    previous_sequence = structure.field(structure.Long(), nullable=True)
-    next_sequence = structure.field(structure.Long(), nullable=True)
-    rolling_units = structure.field(structure.Long(), nullable=False)
-    rolling_avg_units = structure.field(structure.Double(), nullable=False)
-    rolling_min_units = structure.field(structure.Long(), nullable=False)
-    rolling_max_units = structure.field(structure.Long(), nullable=False)
+    row_number = field(Long(), nullable=False)
+    rank = field(Long(), nullable=False)
+    dense_rank = field(Long(), nullable=False)
+    previous_sequence = field(Long(), nullable=True)
+    next_sequence = field(Long(), nullable=True)
+    rolling_units = field(Long(), nullable=False)
+    rolling_avg_units = field(Double(), nullable=False)
+    rolling_min_units = field(Long(), nullable=False)
+    rolling_max_units = field(Long(), nullable=False)
 
 
-class AccountSummary(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_count = structure.field(structure.Long(), nullable=False)
-    distinct_events = structure.field(structure.Long(), nullable=False)
-    total_amount = structure.field(structure.Long(), nullable=False)
-    min_amount = structure.field(structure.Long(), nullable=False)
-    max_amount = structure.field(structure.Long(), nullable=False)
-    avg_amount = structure.field(structure.Double(), nullable=False)
+class AccountSummary(Schema):
+    account_id = field(String(), nullable=False)
+    event_count = field(Long(), nullable=False)
+    distinct_events = field(Long(), nullable=False)
+    total_amount = field(Long(), nullable=False)
+    min_amount = field(Long(), nullable=False)
+    max_amount = field(Long(), nullable=False)
+    avg_amount = field(Double(), nullable=False)
 
 
-class Customer(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    name = structure.field(structure.String(), nullable=True)
+class Customer(Schema):
+    id = field(String(), nullable=False)
+    name = field(String(), nullable=True)
 
 
-class Product(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    name = structure.field(structure.String(), nullable=True)
-    ingested_at = structure.field(structure.Long(), nullable=False)
+class Product(Schema):
+    id = field(String(), nullable=False)
+    name = field(String(), nullable=True)
+    ingested_at = field(Long(), nullable=False)
 
 
-class BlockedProduct(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
+class BlockedProduct(Schema):
+    id = field(String(), nullable=False)
 
 
-class Promotion(structure.Schema):
-    code = structure.field(structure.String(), nullable=False)
-    name = structure.field(structure.String(), nullable=True)
-    valid_from = structure.field(structure.Date(), nullable=False)
-    valid_to = structure.field(structure.Date(), nullable=True)
+class Promotion(Schema):
+    code = field(String(), nullable=False)
+    name = field(String(), nullable=True)
+    valid_from = field(Date(), nullable=False)
+    valid_to = field(Date(), nullable=True)
 
 
-class Shipment(structure.Schema):
-    event_id = structure.field(structure.String(), nullable=False)
-    line = structure.field(structure.Long(), nullable=False)
+class Shipment(Schema):
+    event_id = field(String(), nullable=False)
+    line = field(Long(), nullable=False)
 
 
-class CustomerBatch(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    promo_code = structure.field(structure.String(), nullable=True)
-    event_date = structure.field(structure.Date(), nullable=False)
-    customer_name = structure.field(structure.String(), nullable=True)
+class CustomerBatch(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    promo_code = field(String(), nullable=True)
+    event_date = field(Date(), nullable=False)
+    customer_name = field(String(), nullable=True)
 
 
-class ProductBatch(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    promo_code = structure.field(structure.String(), nullable=True)
-    event_date = structure.field(structure.Date(), nullable=False)
-    customer_name = structure.field(structure.String(), nullable=True)
-    product_name = structure.field(structure.String(), nullable=True)
+class ProductBatch(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    promo_code = field(String(), nullable=True)
+    event_date = field(Date(), nullable=False)
+    customer_name = field(String(), nullable=True)
+    product_name = field(String(), nullable=True)
 
 
-class PromotedBatch(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    customer_name = structure.field(structure.String(), nullable=True)
-    product_name = structure.field(structure.String(), nullable=True)
-    promotion_name = structure.field(structure.String(), nullable=True)
+class PromotedBatch(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    customer_name = field(String(), nullable=True)
+    product_name = field(String(), nullable=True)
+    promotion_name = field(String(), nullable=True)
 
 
-class JoinedBatch(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    customer_name = structure.field(structure.String(), nullable=True)
-    product_name = structure.field(structure.String(), nullable=True)
-    promotion_name = structure.field(structure.String(), nullable=True)
-    shipment_line = structure.field(structure.Long(), nullable=False)
+class JoinedBatch(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    customer_name = field(String(), nullable=True)
+    product_name = field(String(), nullable=True)
+    promotion_name = field(String(), nullable=True)
+    shipment_line = field(Long(), nullable=False)
 
 
-class RowsetMatchBatch(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=True)
-    event_id = structure.field(structure.String(), nullable=True)
-    customer_id = structure.field(structure.String(), nullable=True)
-    customer_name = structure.field(structure.String(), nullable=True)
+class RowsetMatchBatch(Schema):
+    account_id = field(String(), nullable=True)
+    event_id = field(String(), nullable=True)
+    customer_id = field(String(), nullable=True)
+    customer_name = field(String(), nullable=True)
 
 
-class RowsetBackfillBatch(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=True)
-    event_id = structure.field(structure.String(), nullable=True)
-    customer_id = structure.field(structure.String(), nullable=False)
-    customer_name = structure.field(structure.String(), nullable=True)
+class RowsetBackfillBatch(Schema):
+    account_id = field(String(), nullable=True)
+    event_id = field(String(), nullable=True)
+    customer_id = field(String(), nullable=False)
+    customer_name = field(String(), nullable=True)
 
 
-class RowsetCandidateBatch(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    product_id = structure.field(structure.String(), nullable=False)
-    product_name = structure.field(structure.String(), nullable=True)
+class RowsetCandidateBatch(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    product_id = field(String(), nullable=False)
+    product_name = field(String(), nullable=True)
 
 
-class AdvancedSummaryBatch(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=True)
-    grouping_id = structure.field(structure.Long(), nullable=False)
-    account_subtotal = structure.field(structure.Boolean(), nullable=False)
-    event_count = structure.field(structure.Long(), nullable=False)
-    paid_amount = structure.field(structure.Long(), nullable=True)
-    any_large = structure.field(structure.Boolean(), nullable=True)
-    amount_stddev = structure.field(structure.Double(), nullable=True)
-    estimated_events = structure.field(structure.Long(), nullable=False)
-    event_ids = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
+class AdvancedSummaryBatch(Schema):
+    account_id = field(String(), nullable=True)
+    grouping_id = field(Long(), nullable=False)
+    account_subtotal = field(Boolean(), nullable=False)
+    event_count = field(Long(), nullable=False)
+    paid_amount = field(Long(), nullable=True)
+    any_large = field(Boolean(), nullable=True)
+    amount_stddev = field(Double(), nullable=True)
+    estimated_events = field(Long(), nullable=False)
+    event_ids = field(Array(String(), contains_null=False), nullable=True)
 
 
-class AdvancedWindowBatch(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    percent_rank = structure.field(structure.Double(), nullable=False)
-    cume_dist = structure.field(structure.Double(), nullable=False)
-    tile = structure.field(structure.Long(), nullable=False)
-    first_event = structure.field(structure.String(), nullable=True)
-    last_event = structure.field(structure.String(), nullable=True)
-    second_event = structure.field(structure.String(), nullable=True)
-    running_amount = structure.field(structure.Long(), nullable=False)
-    running_count = structure.field(structure.Long(), nullable=False)
+class AdvancedWindowBatch(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    percent_rank = field(Double(), nullable=False)
+    cume_dist = field(Double(), nullable=False)
+    tile = field(Long(), nullable=False)
+    first_event = field(String(), nullable=True)
+    last_event = field(String(), nullable=True)
+    second_event = field(String(), nullable=True)
+    running_amount = field(Long(), nullable=False)
+    running_count = field(Long(), nullable=False)
 
 
-class AdvancedCollectionBatch(structure.Schema):
-    event_id = structure.field(structure.String(), nullable=False)
-    has_priority = structure.field(structure.Boolean(), nullable=True)
-    tags = structure.field(structure.Array(structure.String(), contains_null=True), nullable=True)
-    tag_position = structure.field(structure.Long(), nullable=True)
-    attribute_keys = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
+class AdvancedCollectionBatch(Schema):
+    event_id = field(String(), nullable=False)
+    has_priority = field(Boolean(), nullable=True)
+    tags = field(Array(String(), contains_null=True), nullable=True)
+    tag_position = field(Long(), nullable=True)
+    attribute_keys = field(Array(String(), contains_null=False), nullable=True)
 
 
 @transform
-class BatchProjectionFeatures(structure.Transform):
-    rows = structure.input(RawBatch)
-    ranked = structure.output(RankedBatch)
+class BatchProjectionFeatures(Transform):
+    rows = input(RawBatch)
+    ranked = output(RankedBatch)
 
     def rank_events(self, row: RawBatch) -> RankedBatch:
-        structure.drop_duplicates(row.account_id, row.event_id)
-        structure.dedupe_latest_by(row.sequence, partition_by=row.account_id)
-        tags = structure.arr_filter(
-            structure.arr_transform(row.tags, lambda tag: structure.lower(trim(tag))), lambda tag: tag.is_not_null()
+        drop_duplicates(row.account_id, row.event_id)
+        dedupe_latest_by(row.sequence, partition_by=row.account_id)
+        tags = arr_filter(
+            arr_transform(row.tags, lambda tag: lower(trim(tag))), lambda tag: tag.is_not_null()
         )
-        attributes = structure.map_filter(
-            structure.map_transform_values(row.attributes, lambda key, value: structure.lower(trim(value))),
+        attributes = map_filter(
+            map_transform_values(row.attributes, lambda key, value: lower(trim(value))),
             lambda key, value: value.is_not_null(),
         )
         return RankedBatch(
@@ -209,48 +206,48 @@ class BatchProjectionFeatures(structure.Transform):
             amount=row.amount,
             tags=tags,
             attributes=attributes,
-            row_number=structure.row_number(partition_by=row.account_id, order_by=row.sequence),
-            rank=structure.rank(partition_by=row.account_id, order_by=row.sequence, descending=True),
-            dense_rank=structure.dense_rank(partition_by=row.account_id, order_by=row.sequence),
-            previous_sequence=structure.lag(row.sequence, partition_by=row.account_id, order_by=row.sequence),
-            next_sequence=structure.lead(row.sequence, partition_by=row.account_id, order_by=row.sequence),
-            rolling_units=structure.rolling_sum(
+            row_number=row_number(partition_by=row.account_id, order_by=row.sequence),
+            rank=rank(partition_by=row.account_id, order_by=row.sequence, descending=True),
+            dense_rank=dense_rank(partition_by=row.account_id, order_by=row.sequence),
+            previous_sequence=lag(row.sequence, partition_by=row.account_id, order_by=row.sequence),
+            next_sequence=lead(row.sequence, partition_by=row.account_id, order_by=row.sequence),
+            rolling_units=rolling_sum(
                 row.amount, partition_by=row.account_id, order_by=row.sequence, preceding=2
             ),
-            rolling_avg_units=structure.rolling_avg(
+            rolling_avg_units=rolling_avg(
                 row.amount, partition_by=row.account_id, order_by=row.sequence, preceding=2
             ),
-            rolling_min_units=structure.rolling_min(
+            rolling_min_units=rolling_min(
                 row.amount, partition_by=row.account_id, order_by=row.sequence, preceding=2
             ),
-            rolling_max_units=structure.rolling_max(
+            rolling_max_units=rolling_max(
                 row.amount, partition_by=row.account_id, order_by=row.sequence, preceding=2
             ),
         )
 
 
 @transform
-class BatchRowsetJoinFeatures(structure.Transform):
-    rows = structure.input(RawBatch)
-    customers = structure.input(Customer)
-    products = structure.input(Product)
-    matches = structure.output(RowsetMatchBatch)
-    backfills = structure.output(RowsetBackfillBatch)
-    candidates = structure.output(RowsetCandidateBatch)
+class BatchRowsetJoinFeatures(Transform):
+    rows = input(RawBatch)
+    customers = input(Customer)
+    products = input(Product)
+    matches = output(RowsetMatchBatch)
+    backfills = output(RowsetBackfillBatch)
+    candidates = output(RowsetCandidateBatch)
 
-    @dsl_step(input=[rows, customers], output=matches)
+    @step(input=[rows, customers], output=matches)
     def reconcile(self, row: RawBatch, customer: Customer) -> RowsetMatchBatch:
-        structure.full_join(on=(row.account_id == customer.id) | (row.event_id == customer.id))
+        full_join(on=(row.account_id == customer.id) | (row.event_id == customer.id))
         return RowsetMatchBatch(
-            account_id=structure.coalesce(row.account_id, customer.id),
+            account_id=coalesce(row.account_id, customer.id),
             event_id=row.event_id,
             customer_id=customer.id,
             customer_name=customer.name,
         )
 
-    @dsl_step(input=[rows, customers], output=backfills)
+    @step(input=[rows, customers], output=backfills)
     def keep_customers(self, row: RawBatch, customer: Customer) -> RowsetBackfillBatch:
-        structure.right_join(on=customer.id == row.account_id)
+        right_join(on=customer.id == row.account_id)
         return RowsetBackfillBatch(
             account_id=row.account_id,
             event_id=row.event_id,
@@ -258,9 +255,9 @@ class BatchRowsetJoinFeatures(structure.Transform):
             customer_name=customer.name,
         )
 
-    @dsl_step(input=[rows, products], output=candidates)
+    @step(input=[rows, products], output=candidates)
     def expand_candidates(self, row: RawBatch, product: Product) -> RowsetCandidateBatch:
-        structure.cross_join(product, allow_cartesian=True)
+        cross_join(product, allow_cartesian=True)
         return RowsetCandidateBatch(
             account_id=row.account_id,
             event_id=row.event_id,
@@ -270,116 +267,116 @@ class BatchRowsetJoinFeatures(structure.Transform):
 
 
 @transform
-class BatchAdvancedAnalyticalFeatures(structure.Transform):
-    rows = structure.input(RawBatch)
-    summaries = structure.output(AdvancedSummaryBatch)
-    cubes = structure.output(AdvancedSummaryBatch)
-    windows = structure.output(AdvancedWindowBatch)
-    collections = structure.output(AdvancedCollectionBatch)
+class BatchAdvancedAnalyticalFeatures(Transform):
+    rows = input(RawBatch)
+    summaries = output(AdvancedSummaryBatch)
+    cubes = output(AdvancedSummaryBatch)
+    windows = output(AdvancedWindowBatch)
+    collections = output(AdvancedCollectionBatch)
 
-    @dsl_step(input=rows, output=summaries)
+    @step(input=rows, output=summaries)
     def summarize(self, row: RawBatch) -> AdvancedSummaryBatch:
         amount = cast(Any, row.amount)
-        structure.rollup(account_id=row.account_id)
+        rollup(account_id=row.account_id)
         return AdvancedSummaryBatch(
             account_id=row.account_id,
-            grouping_id=structure.grouping_id(),
-            account_subtotal=structure.is_grouped(row.account_id),
-            event_count=structure.count(),
+            grouping_id=grouping_id(),
+            account_subtotal=is_grouped(row.account_id),
+            event_count=count(),
             paid_amount=sum(row.amount, where=amount > 0),
-            any_large=structure.bool_or(amount > 10),
-            amount_stddev=structure.stddev(row.amount),
-            estimated_events=structure.approx_count_distinct(row.event_id),
-            event_ids=structure.collect_set(row.event_id, element_type=structure.String()),
+            any_large=bool_or(amount > 10),
+            amount_stddev=stddev(row.amount),
+            estimated_events=approx_count_distinct(row.event_id),
+            event_ids=collect_set(row.event_id, element_type=String()),
         )
 
-    @dsl_step(input=rows, output=cubes)
+    @step(input=rows, output=cubes)
     def summarize_cube(self, row: RawBatch) -> AdvancedSummaryBatch:
         amount = cast(Any, row.amount)
-        structure.cube(account_id=row.account_id)
+        cube(account_id=row.account_id)
         return AdvancedSummaryBatch(
             account_id=row.account_id,
-            grouping_id=structure.grouping_id(),
-            account_subtotal=structure.is_grouped(row.account_id),
-            event_count=structure.count(),
+            grouping_id=grouping_id(),
+            account_subtotal=is_grouped(row.account_id),
+            event_count=count(),
             paid_amount=sum(row.amount, where=amount > 0),
-            any_large=structure.bool_or(amount > 10),
-            amount_stddev=structure.stddev(row.amount),
-            estimated_events=structure.approx_count_distinct(row.event_id),
-            event_ids=structure.collect_set(row.event_id, element_type=structure.String()),
+            any_large=bool_or(amount > 10),
+            amount_stddev=stddev(row.amount),
+            estimated_events=approx_count_distinct(row.event_id),
+            event_ids=collect_set(row.event_id, element_type=String()),
         )
 
-    @dsl_step(input=rows, output=windows)
+    @step(input=rows, output=windows)
     def rank_with_reusable_window(self, row: RawBatch) -> AdvancedWindowBatch:
         batch_window = window(
             partition_by=row.account_id,
             order_by=row.sequence,
-            frame=structure.rows_between(structure.preceding(2), structure.current_row()),
+            frame=rows_between(preceding(2), current_row()),
         )
         return AdvancedWindowBatch(
             account_id=row.account_id,
             event_id=row.event_id,
-            percent_rank=structure.percent_rank(over=batch_window),
-            cume_dist=structure.cume_dist(over=batch_window),
-            tile=structure.ntile(2, over=batch_window),
-            first_event=structure.first_value(row.event_id, over=batch_window),
-            last_event=structure.last_value(row.event_id, over=batch_window),
-            second_event=structure.nth_value(row.event_id, 2, over=batch_window),
+            percent_rank=percent_rank(over=batch_window),
+            cume_dist=cume_dist(over=batch_window),
+            tile=ntile(2, over=batch_window),
+            first_event=first_value(row.event_id, over=batch_window),
+            last_event=last_value(row.event_id, over=batch_window),
+            second_event=nth_value(row.event_id, 2, over=batch_window),
             running_amount=window_sum(row.amount, over=batch_window),
             running_count=window_count(over=batch_window),
         )
 
-    @dsl_step(input=rows, output=collections)
+    @step(input=rows, output=collections)
     def summarize_collections(self, row: RawBatch) -> AdvancedCollectionBatch:
-        clean_attributes = structure.map_filter(
-            structure.map_transform_keys(
-                structure.map_transform_values(row.attributes, lambda key, value: structure.lower(trim(value))),
-                lambda key, value: structure.lower(trim(key)),
+        clean_attributes = map_filter(
+            map_transform_keys(
+                map_transform_values(row.attributes, lambda key, value: lower(trim(value))),
+                lambda key, value: lower(trim(key)),
             ),
             lambda key, value: value.is_not_null(),
         )
         return AdvancedCollectionBatch(
             event_id=row.event_id,
-            has_priority=structure.arr_exists(row.tags, lambda tag: structure.lower(trim(tag)) == "priority"),
-            tags=structure.arr_distinct(
-                structure.arr_zip_with(row.tags, row.tags, lambda left, right: structure.lower(trim(left)))
+            has_priority=arr_exists(row.tags, lambda tag: lower(trim(tag)) == "priority"),
+            tags=arr_distinct(
+                arr_zip_with(row.tags, row.tags, lambda left, right: lower(trim(left)))
             ),
-            tag_position=structure.arr_position(row.tags, "priority"),
-            attribute_keys=structure.map_keys(clean_attributes),
+            tag_position=arr_position(row.tags, "priority"),
+            attribute_keys=map_keys(clean_attributes),
         )
 
 
 @transform
-class BatchAggregateFeatures(structure.Transform):
-    rows = structure.input(RawBatch)
-    summary = structure.output(AccountSummary)
+class BatchAggregateFeatures(Transform):
+    rows = input(RawBatch)
+    summary = output(AccountSummary)
 
     def summarize(self, row: RawBatch) -> AccountSummary:
-        structure.group_by(account_id=row.account_id)
+        group_by(account_id=row.account_id)
         return AccountSummary(
             account_id=row.account_id,
-            event_count=structure.count(),
-            distinct_events=structure.count_distinct(row.event_id),
+            event_count=count(),
+            distinct_events=count_distinct(row.event_id),
             total_amount=sum(row.amount),
-            min_amount=structure.min(row.amount),
-            max_amount=structure.max(row.amount),
-            avg_amount=structure.avg(row.amount),
+            min_amount=min(row.amount),
+            max_amount=max(row.amount),
+            avg_amount=avg(row.amount),
         )
 
 
 @transform
-class BatchJoinFeatures(structure.Transform):
-    rows = structure.input(RawBatch)
-    customers = structure.input(Customer)
-    products = structure.input(Product)
-    blocked_products = structure.input(BlockedProduct)
-    promotions = structure.input(Promotion)
-    shipments = structure.input(Shipment)
-    joined = structure.output(JoinedBatch)
+class BatchJoinFeatures(Transform):
+    rows = input(RawBatch)
+    customers = input(Customer)
+    products = input(Product)
+    blocked_products = input(BlockedProduct)
+    promotions = input(Promotion)
+    shipments = input(Shipment)
+    joined = output(JoinedBatch)
 
     def add_customer(self, row: RawBatch, customer: Customer) -> CustomerBatch:
-        customer = structure.lookup_join(
-            customer, on=row.account_id == customer.id, how=structure.Join.LEFT, hint=structure.JoinHint.BROADCAST
+        customer = lookup_join(
+            customer, on=row.account_id == customer.id, how=Join.LEFT, hint=JoinHint.BROADCAST
         )
         return CustomerBatch(
             account_id=row.account_id,
@@ -390,13 +387,13 @@ class BatchJoinFeatures(structure.Transform):
         )
 
     def add_product(self, row: CustomerBatch, product: Product, blocked_product: BlockedProduct) -> ProductBatch:
-        where(structure.exists(on=row.event_id == product.id))
-        where(structure.not_exists(on=row.event_id == blocked_product.id))
-        product = structure.lookup_join(
+        where(exists(on=row.event_id == product.id))
+        where(not_exists(on=row.event_id == blocked_product.id))
+        product = lookup_join(
             product,
             on=row.event_id == product.id,
-            how=structure.Join.LEFT,
-            dedupe=structure.JoinDedupe.latest_by(product.ingested_at, ties=structure.TiePolicy.ERROR),
+            how=Join.LEFT,
+            dedupe=JoinDedupe.latest_by(product.ingested_at, ties=TiePolicy.ERROR),
         )
         return ProductBatch(
             account_id=row.account_id,
@@ -414,7 +411,7 @@ class BatchJoinFeatures(structure.Transform):
             at=row.event_date,
             valid_from=promotion.valid_from,
             valid_to=promotion.valid_to,
-            how=structure.Join.LEFT,
+            how=Join.LEFT,
         )
         return PromotedBatch(
             account_id=row.account_id,
@@ -425,10 +422,10 @@ class BatchJoinFeatures(structure.Transform):
         )
 
     def add_shipments(self, row: PromotedBatch, shipment: Shipment) -> JoinedBatch:
-        shipment = structure.inner_join(
+        shipment = inner_join(
             shipment,
             on=row.event_id == shipment.event_id,
-            strategy=structure.JoinStrategy.SHUFFLE_HASH,
+            strategy=JoinStrategy.SHUFFLE_HASH,
         )
         return JoinedBatch(
             account_id=row.account_id,
@@ -513,7 +510,7 @@ def test_spark_connect_traceability_shape_matches_ordinary_pyspark_for_completed
     ]
 
 
-def _lower(transform_class: type[structure.Transform], *, target_variant: str) -> Any:
+def _lower(transform_class: type[Transform], *, target_variant: str) -> Any:
     capabilities = Capabilities.resolve()(target_backend="pyspark", target_variant=target_variant)
     return PySpark.plan.lower()(compile_transform(transform_class), capabilities=capabilities)
 
@@ -527,7 +524,7 @@ def _render(plan: Any) -> str:
     )
 
 
-def _schemas(plan: Any) -> set[type[structure.Schema]]:
+def _schemas(plan: Any) -> set[type[Schema]]:
     schemas = {input.schema for input in plan.inputs}
     schemas.update(output.output_schema for output in plan.outputs)
     for step in plan.steps:
@@ -536,7 +533,7 @@ def _schemas(plan: Any) -> set[type[structure.Schema]]:
     return schemas
 
 
-def _completed_batch_transforms() -> tuple[type[structure.Transform], ...]:
+def _completed_batch_transforms() -> tuple[type[Transform], ...]:
     return (
         BatchProjectionFeatures,
         BatchAggregateFeatures,

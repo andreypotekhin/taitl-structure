@@ -1,7 +1,6 @@
 import pytest
 
-from structure import Schema, String, Transform, field, input, output, transform
-from structure.app.dsl.api import compile_transform
+from structure import *
 
 
 class Raw(Schema):

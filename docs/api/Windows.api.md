@@ -17,7 +17,8 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 
 - All inline helpers require `partition_by=` and `order_by=`.
 - `order_by=` accepts one expression or an ordered list/tuple. Order descriptors can set direction and null placement.
-- `lag(...)` and `lead(...)` default to `offset=1`; use `default=` for an explicit fallback.
+- `lag(...)` and `lead(...)` default to `offset=1`; use a compatible Python scalar literal with `default=` for an
+  explicit fallback, including date and timestamp literals. Expression, collection, and object defaults are unsupported.
 
 ## Rolling Windows
 

@@ -1,8 +1,7 @@
 import pytest
 
-import structure
+from structure import *
 from structure.app.cli.commands.RenderExplainReport import render_explain_report
-from structure.app.dsl.api import compile_transform
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.IntegerType import IntegerType
@@ -13,50 +12,50 @@ from structure.app.target.pyspark.api import PySpark
 from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
 
 
-class CollectionSource(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
-    extra_tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
-    attributes = structure.field(structure.Map(structure.String(), structure.String()), nullable=True)
-    extra_attributes = structure.field(structure.Map(structure.String(), structure.String()), nullable=True)
+class CollectionSource(Schema):
+    id = field(String(), nullable=False)
+    tags = field(Array(String(), contains_null=False), nullable=True)
+    extra_tags = field(Array(String(), contains_null=False), nullable=True)
+    attributes = field(Map(String(), String()), nullable=True)
+    extra_attributes = field(Map(String(), String()), nullable=True)
 
 
-class CollectionSummary(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    tag_count = structure.field(structure.Integer(), nullable=True)
-    has_priority = structure.field(structure.Boolean(), nullable=True)
-    has_region = structure.field(structure.Boolean(), nullable=True)
-    defaults = structure.field(structure.Array(structure.String(), contains_null=False), nullable=False)
-    repeated = structure.field(structure.Array(structure.String(), contains_null=False), nullable=False)
-    unioned = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
-    excluded = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
-    first_tag = structure.field(structure.String(), nullable=True)
-    safe_tag = structure.field(structure.String(), nullable=True)
-    region = structure.field(structure.String(), nullable=True)
-    safe_region = structure.field(structure.String(), nullable=True)
-    merged = structure.field(structure.Map(structure.String(), structure.String()), nullable=True)
+class CollectionSummary(Schema):
+    id = field(String(), nullable=False)
+    tag_count = field(Integer(), nullable=True)
+    has_priority = field(Boolean(), nullable=True)
+    has_region = field(Boolean(), nullable=True)
+    defaults = field(Array(String(), contains_null=False), nullable=False)
+    repeated = field(Array(String(), contains_null=False), nullable=False)
+    unioned = field(Array(String(), contains_null=False), nullable=True)
+    excluded = field(Array(String(), contains_null=False), nullable=True)
+    first_tag = field(String(), nullable=True)
+    safe_tag = field(String(), nullable=True)
+    region = field(String(), nullable=True)
+    safe_region = field(String(), nullable=True)
+    merged = field(Map(String(), String()), nullable=True)
 
 
-@structure.transform
-class CollectionHelperTransform(structure.Transform):
-    rows = structure.input(CollectionSource)
-    summary = structure.output(CollectionSummary)
+@transform
+class CollectionHelperTransform(Transform):
+    rows = input(CollectionSource)
+    summary = output(CollectionSummary)
 
     def summarize(self, row: CollectionSource) -> CollectionSummary:
         return CollectionSummary(
             id=row.id,
-            tag_count=structure.size(row.tags),
-            has_priority=structure.array_contains(row.tags, "priority"),
-            has_region=structure.map_contains_key(row.attributes, "region"),
-            defaults=structure.array("priority", "standard"),
-            repeated=structure.array_repeat("priority", 2),
-            unioned=structure.array_union(row.tags, row.extra_tags),
-            excluded=structure.array_except(row.tags, row.extra_tags),
-            first_tag=structure.element_at(row.tags, 1),
-            safe_tag=structure.try_element_at(row.tags, 2),
-            region=structure.element_at(row.attributes, "region"),
-            safe_region=structure.try_element_at(row.attributes, "region"),
-            merged=structure.map_concat(row.attributes, row.extra_attributes),
+            tag_count=size(row.tags),
+            has_priority=array_contains(row.tags, "priority"),
+            has_region=map_contains_key(row.attributes, "region"),
+            defaults=array("priority", "standard"),
+            repeated=array_repeat("priority", 2),
+            unioned=array_union(row.tags, row.extra_tags),
+            excluded=array_except(row.tags, row.extra_tags),
+            first_tag=element_at(row.tags, 1),
+            safe_tag=try_element_at(row.tags, 2),
+            region=element_at(row.attributes, "region"),
+            safe_region=try_element_at(row.attributes, "region"),
+            merged=map_concat(row.attributes, row.extra_attributes),
         )
 
 
@@ -92,24 +91,24 @@ def test_collection_helpers_reject_ambiguous_or_incompatible_inputs() -> None:
     attributes = Expression(kind="field", type=MapType(StringType(), StringType()), nullable=False)
 
     with pytest.raises(TypeError, match="at least one typed value"):
-        structure.array()
+        array()
     with pytest.raises(TypeError, match="compatible types"):
-        structure.array("priority", 1)
+        array("priority", 1)
     with pytest.raises(TypeError, match="compatible types"):
-        structure.array_contains(tags, 1)
+        array_contains(tags, 1)
     with pytest.raises(TypeError, match="map key type"):
-        structure.map_contains_key(attributes, 1)
+        map_contains_key(attributes, 1)
     with pytest.raises(TypeError, match="integral"):
-        structure.array_repeat("priority", "two")
+        array_repeat("priority", "two")
     with pytest.raises(TypeError, match="compatible types"):
-        structure.array_union(tags, scores)
+        array_union(tags, scores)
     with pytest.raises(TypeError, match="cannot be zero"):
-        structure.element_at(tags, 0)
+        element_at(tags, 0)
     with pytest.raises(TypeError, match='duplicates="error"'):
-        structure.map_concat(attributes, attributes, duplicates="last_win")
+        map_concat(attributes, attributes, duplicates="last_win")
 
 
 def test_array_construction_unifies_integral_literals() -> None:
-    expression = structure.array(1, 2**31)
+    expression = array(1, 2**31)
 
     assert expression.type == ArrayType(LongType(), contains_null=False)

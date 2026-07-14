@@ -1,6 +1,6 @@
 import sys
 
-from structure import Schema, String, field
+from structure import *
 from structure.app.target.pyspark.api import PySpark
 
 

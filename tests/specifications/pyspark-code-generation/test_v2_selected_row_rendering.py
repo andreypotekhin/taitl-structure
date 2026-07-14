@@ -2,111 +2,110 @@ from typing import Any, cast
 
 import pytest
 
-import structure
+from structure import *
 from structure.app.cli.commands.RenderExplainReport import render_explain_report
-from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
 from structure.app.target.pyspark.commands.RenderPySparkTransformModule import render_pyspark_transform_module
 
 
-class RawEvent(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    sequence = structure.field(structure.Long(), nullable=False)
+class RawEvent(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    sequence = field(Long(), nullable=False)
 
 
-class LatestEvent(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    sequence = structure.field(structure.Long(), nullable=False)
+class LatestEvent(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    sequence = field(Long(), nullable=False)
 
 
-class Account(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False, primary_key=True)
-    tier = structure.field(structure.String(), nullable=False)
+class Account(Schema):
+    account_id = field(String(), nullable=False, primary_key=True)
+    tier = field(String(), nullable=False)
 
 
-class AccountEvent(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    tier = structure.field(structure.String(), nullable=True)
+class AccountEvent(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    tier = field(String(), nullable=True)
 
 
-class RankedEvent(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    sequence = structure.field(structure.Long(), nullable=False)
-    row_number = structure.field(structure.Long(), nullable=False)
-    rank = structure.field(structure.Long(), nullable=False)
-    dense_rank = structure.field(structure.Long(), nullable=False)
-    previous_sequence = structure.field(structure.Long(), nullable=True)
-    next_sequence = structure.field(structure.Long(), nullable=True)
-    rolling_units = structure.field(structure.Long(), nullable=False)
-    rolling_avg_units = structure.field(structure.Double(), nullable=False)
-    rolling_min_units = structure.field(structure.Long(), nullable=False)
-    rolling_max_units = structure.field(structure.Long(), nullable=False)
+class RankedEvent(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    sequence = field(Long(), nullable=False)
+    row_number = field(Long(), nullable=False)
+    rank = field(Long(), nullable=False)
+    dense_rank = field(Long(), nullable=False)
+    previous_sequence = field(Long(), nullable=True)
+    next_sequence = field(Long(), nullable=True)
+    rolling_units = field(Long(), nullable=False)
+    rolling_avg_units = field(Double(), nullable=False)
+    rolling_min_units = field(Long(), nullable=False)
+    rolling_max_units = field(Long(), nullable=False)
 
 
-class AdvancedRankedEvent(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    percent_rank = structure.field(structure.Double(), nullable=False)
-    cume_dist = structure.field(structure.Double(), nullable=False)
-    bucket = structure.field(structure.Long(), nullable=False)
-    framed_total = structure.field(structure.Long(), nullable=False)
+class AdvancedRankedEvent(Schema):
+    account_id = field(String(), nullable=False)
+    percent_rank = field(Double(), nullable=False)
+    cume_dist = field(Double(), nullable=False)
+    bucket = field(Long(), nullable=False)
+    framed_total = field(Long(), nullable=False)
 
 
-class MultiOrderedEvent(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    event_id = structure.field(structure.String(), nullable=False)
-    sequence = structure.field(structure.Long(), nullable=False)
-    rank = structure.field(structure.Long(), nullable=False)
-    running_total = structure.field(structure.Long(), nullable=False)
+class MultiOrderedEvent(Schema):
+    account_id = field(String(), nullable=False)
+    event_id = field(String(), nullable=False)
+    sequence = field(Long(), nullable=False)
+    rank = field(Long(), nullable=False)
+    running_total = field(Long(), nullable=False)
 
 
-class AggregateWindowEvent(structure.Schema):
-    account_id = structure.field(structure.String(), nullable=False)
-    accepted = structure.field(structure.Boolean(), nullable=True)
-    sequence_stddev = structure.field(structure.Double(), nullable=True)
-    sequence_variance = structure.field(structure.Double(), nullable=True)
-    sequences = structure.field(structure.Array(structure.Long(), contains_null=False), nullable=True)
-    distinct_sequences = structure.field(structure.Array(structure.Long(), contains_null=False), nullable=True)
+class AggregateWindowEvent(Schema):
+    account_id = field(String(), nullable=False)
+    accepted = field(Boolean(), nullable=True)
+    sequence_stddev = field(Double(), nullable=True)
+    sequence_variance = field(Double(), nullable=True)
+    sequences = field(Array(Long(), contains_null=False), nullable=True)
+    distinct_sequences = field(Array(Long(), contains_null=False), nullable=True)
 
 
-@structure.transform
-class LatestEventTransform(structure.Transform):
-    events = structure.input(RawEvent)
-    latest = structure.output(LatestEvent)
+@transform
+class LatestEventTransform(Transform):
+    events = input(RawEvent)
+    latest = output(LatestEvent)
 
     def latest_events(self, row: RawEvent) -> LatestEvent:
-        structure.latest_by(row.sequence, partition_by=row.account_id)
+        latest_by(row.sequence, partition_by=row.account_id)
         return LatestEvent(account_id=row.account_id, event_id=row.event_id, sequence=row.sequence)
 
 
-@structure.transform
-class LatestDedupeEventTransform(structure.Transform):
-    events = structure.input(RawEvent)
-    latest = structure.output(LatestEvent)
+@transform
+class LatestDedupeEventTransform(Transform):
+    events = input(RawEvent)
+    latest = output(LatestEvent)
 
     def latest_events(self, row: RawEvent) -> LatestEvent:
-        structure.dedupe_latest_by(row.sequence, partition_by=row.account_id)
+        dedupe_latest_by(row.sequence, partition_by=row.account_id)
         return LatestEvent(account_id=row.account_id, event_id=row.event_id, sequence=row.sequence)
 
 
-@structure.transform
-class EarliestDedupeEventTransform(structure.Transform):
-    events = structure.input(RawEvent)
-    earliest = structure.output(LatestEvent)
+@transform
+class EarliestDedupeEventTransform(Transform):
+    events = input(RawEvent)
+    earliest = output(LatestEvent)
 
     def earliest_events(self, row: RawEvent) -> LatestEvent:
-        structure.dedupe_earliest_by(row.sequence, partition_by=row.account_id)
+        dedupe_earliest_by(row.sequence, partition_by=row.account_id)
         return LatestEvent(account_id=row.account_id, event_id=row.event_id, sequence=row.sequence)
 
 
-@structure.transform
-class RankedEventTransform(structure.Transform):
-    events = structure.input(RawEvent)
-    ranked = structure.output(RankedEvent)
+@transform
+class RankedEventTransform(Transform):
+    events = input(RawEvent)
+    ranked = output(RankedEvent)
 
     def rank_events(self, row: RawEvent) -> RankedEvent:
         event = cast(Any, row)
@@ -114,156 +113,156 @@ class RankedEventTransform(structure.Transform):
             account_id=row.account_id,
             event_id=row.event_id,
             sequence=row.sequence,
-            row_number=structure.row_number(partition_by=row.account_id, order_by=event.sequence.asc()),
-            rank=structure.rank(partition_by=row.account_id, order_by=event.sequence.desc()),
-            dense_rank=structure.dense_rank(partition_by=row.account_id, order_by=row.sequence),
-            previous_sequence=structure.lag(row.sequence, partition_by=row.account_id, order_by=row.sequence),
-            next_sequence=structure.lead(row.sequence, partition_by=row.account_id, order_by=row.sequence),
-            rolling_units=structure.rolling_sum(
+            row_number=row_number(partition_by=row.account_id, order_by=event.sequence.asc()),
+            rank=rank(partition_by=row.account_id, order_by=event.sequence.desc()),
+            dense_rank=dense_rank(partition_by=row.account_id, order_by=row.sequence),
+            previous_sequence=lag(row.sequence, partition_by=row.account_id, order_by=row.sequence),
+            next_sequence=lead(row.sequence, partition_by=row.account_id, order_by=row.sequence),
+            rolling_units=rolling_sum(
                 row.sequence, partition_by=row.account_id, order_by=row.sequence, preceding=2
             ),
-            rolling_avg_units=structure.rolling_avg(
+            rolling_avg_units=rolling_avg(
                 row.sequence, partition_by=row.account_id, order_by=row.sequence, preceding=2
             ),
-            rolling_min_units=structure.rolling_min(
+            rolling_min_units=rolling_min(
                 row.sequence, partition_by=row.account_id, order_by=row.sequence, preceding=2
             ),
-            rolling_max_units=structure.rolling_max(
+            rolling_max_units=rolling_max(
                 row.sequence, partition_by=row.account_id, order_by=row.sequence, preceding=2
             ),
         )
 
 
-@structure.transform
-class AdvancedRankedEventTransform(structure.Transform):
-    events = structure.input(RawEvent)
-    ranked = structure.output(AdvancedRankedEvent)
+@transform
+class AdvancedRankedEventTransform(Transform):
+    events = input(RawEvent)
+    ranked = output(AdvancedRankedEvent)
 
     def rank_events(self, row: RawEvent) -> AdvancedRankedEvent:
         event = cast(Any, row)
-        spec = structure.window(
+        spec = window(
             partition_by=row.account_id,
             order_by=event.sequence.asc_nulls_last(),
-            frame=structure.rows_between(structure.preceding(3), structure.current_row()),
+            frame=rows_between(preceding(3), current_row()),
         )
         return AdvancedRankedEvent(
             account_id=row.account_id,
-            percent_rank=structure.percent_rank(over=spec),
-            cume_dist=structure.cume_dist(over=spec),
-            bucket=structure.ntile(4, over=spec),
-            framed_total=structure.window_sum(row.sequence, over=spec),
+            percent_rank=percent_rank(over=spec),
+            cume_dist=cume_dist(over=spec),
+            bucket=ntile(4, over=spec),
+            framed_total=window_sum(row.sequence, over=spec),
         )
 
 
-@structure.transform
-class MultiOrderedEventTransform(structure.Transform):
-    events = structure.input(RawEvent)
-    ranked = structure.output(MultiOrderedEvent)
+@transform
+class MultiOrderedEventTransform(Transform):
+    events = input(RawEvent)
+    ranked = output(MultiOrderedEvent)
 
     def rank_events(self, row: RawEvent) -> MultiOrderedEvent:
         event = cast(Any, row)
-        spec = structure.window(
+        spec = window(
             partition_by=row.account_id,
             order_by=(event.sequence.asc_nulls_last(), event.event_id.desc_nulls_first()),
-            frame=structure.rows_between(structure.preceding(2), structure.current_row()),
+            frame=rows_between(preceding(2), current_row()),
         )
         return MultiOrderedEvent(
             account_id=row.account_id,
             event_id=row.event_id,
             sequence=row.sequence,
-            rank=structure.rank(
+            rank=rank(
                 partition_by=row.account_id,
                 order_by=(event.sequence.asc_nulls_last(), event.event_id.desc_nulls_first()),
             ),
-            running_total=structure.window_sum(row.sequence, over=spec),
+            running_total=window_sum(row.sequence, over=spec),
         )
 
 
-@structure.transform
-class AggregateWindowEventTransform(structure.Transform):
-    events = structure.input(RawEvent)
-    aggregated = structure.output(AggregateWindowEvent)
+@transform
+class AggregateWindowEventTransform(Transform):
+    events = input(RawEvent)
+    aggregated = output(AggregateWindowEvent)
 
     def aggregate_events(self, row: RawEvent) -> AggregateWindowEvent:
         event = cast(Any, row)
-        spec = structure.window(
+        spec = window(
             partition_by=row.account_id,
             order_by=row.sequence,
-            frame=structure.rows_between(structure.unbounded_preceding(), structure.current_row()),
+            frame=rows_between(unbounded_preceding(), current_row()),
         )
         return AggregateWindowEvent(
             account_id=row.account_id,
-            accepted=structure.window_bool_and(event.sequence > 0, over=spec),
-            sequence_stddev=structure.window_stddev(row.sequence, over=spec),
-            sequence_variance=structure.window_variance(row.sequence, over=spec),
-            sequences=structure.window_collect_list(row.sequence, over=spec),
-            distinct_sequences=structure.window_collect_set(row.sequence, over=spec),
+            accepted=window_bool_and(event.sequence > 0, over=spec),
+            sequence_stddev=window_stddev(row.sequence, over=spec),
+            sequence_variance=window_variance(row.sequence, over=spec),
+            sequences=window_collect_list(row.sequence, over=spec),
+            distinct_sequences=window_collect_set(row.sequence, over=spec),
         )
 
 
-@structure.transform
-class UniqueEventTransform(structure.Transform):
-    events = structure.input(RawEvent)
-    unique = structure.output(LatestEvent)
+@transform
+class UniqueEventTransform(Transform):
+    events = input(RawEvent)
+    unique = output(LatestEvent)
 
     def unique_events(self, row: RawEvent) -> LatestEvent:
-        structure.distinct()
+        distinct()
         return LatestEvent(account_id=row.account_id, event_id=row.event_id, sequence=row.sequence)
 
 
-@structure.transform
-class UniqueAccountEventTransform(structure.Transform):
-    events = structure.input(RawEvent)
-    unique = structure.output(LatestEvent)
+@transform
+class UniqueAccountEventTransform(Transform):
+    events = input(RawEvent)
+    unique = output(LatestEvent)
 
     def unique_events(self, row: RawEvent) -> LatestEvent:
-        structure.drop_duplicates(row.account_id)
+        drop_duplicates(row.account_id)
         return LatestEvent(account_id=row.account_id, event_id=row.event_id, sequence=row.sequence)
 
 
-@structure.transform
-class UniqueRelationEventTransform(structure.Transform):
-    events = structure.input(RawEvent)
-    unique = structure.output(LatestEvent)
+@transform
+class UniqueRelationEventTransform(Transform):
+    events = input(RawEvent)
+    unique = output(LatestEvent)
 
     def unique_events(self, row: RawEvent) -> LatestEvent:
-        structure.distinct(row)
+        distinct(row)
         return LatestEvent(account_id=row.account_id, event_id=row.event_id, sequence=row.sequence)
 
 
-@structure.transform
-class PreJoinUniqueAccountTransform(structure.Transform):
-    events = structure.input(RawEvent)
-    accounts = structure.input(Account)
-    enriched = structure.output(AccountEvent)
+@transform
+class PreJoinUniqueAccountTransform(Transform):
+    events = input(RawEvent)
+    accounts = input(Account)
+    enriched = output(AccountEvent)
 
     def enrich(self, event: RawEvent, account: Account) -> AccountEvent:
-        structure.drop_duplicates(account.account_id)
-        structure.lookup_join(account, on=account.account_id == event.account_id)
+        drop_duplicates(account.account_id)
+        lookup_join(account, on=account.account_id == event.account_id)
         return AccountEvent(account_id=event.account_id, event_id=event.event_id, tier=account.tier)
 
 
-@structure.transform
-class PostJoinUniqueAccountTransform(structure.Transform):
-    events = structure.input(RawEvent)
-    accounts = structure.input(Account)
-    enriched = structure.output(AccountEvent)
+@transform
+class PostJoinUniqueAccountTransform(Transform):
+    events = input(RawEvent)
+    accounts = input(Account)
+    enriched = output(AccountEvent)
 
     def enrich(self, event: RawEvent, account: Account) -> AccountEvent:
-        structure.lookup_join(account, on=account.account_id == event.account_id)
-        structure.drop_duplicates(account.account_id)
+        lookup_join(account, on=account.account_id == event.account_id)
+        drop_duplicates(account.account_id)
         return AccountEvent(account_id=event.account_id, event_id=event.event_id, tier=account.tier)
 
 
-@structure.transform
-class MixedScopeDropDuplicatesTransform(structure.Transform):
-    events = structure.input(RawEvent)
-    accounts = structure.input(Account)
-    enriched = structure.output(AccountEvent)
+@transform
+class MixedScopeDropDuplicatesTransform(Transform):
+    events = input(RawEvent)
+    accounts = input(Account)
+    enriched = output(AccountEvent)
 
     def enrich(self, event: RawEvent, account: Account) -> AccountEvent:
-        structure.lookup_join(account, on=account.account_id == event.account_id)
-        structure.drop_duplicates(event.account_id, account.account_id)
+        lookup_join(account, on=account.account_id == event.account_id)
+        drop_duplicates(event.account_id, account.account_id)
         return AccountEvent(account_id=event.account_id, event_id=event.event_id, tier=account.tier)
 
 
@@ -382,7 +381,7 @@ def test_window_helpers_render_multiple_explicitly_ordered_keys() -> None:
 
 def test_window_requires_at_least_one_order_key() -> None:
     with pytest.raises(TypeError, match="window\\(\\.\\.\\.\\) requires at least one order_by expression"):
-        structure.window(partition_by=RawEvent.account_id, order_by=())
+        window(partition_by=RawEvent.account_id, order_by=())
 
 
 def test_window_aggregate_helpers_render_over_an_explicit_frame() -> None:
@@ -402,19 +401,19 @@ def test_window_aggregate_helpers_render_over_an_explicit_frame() -> None:
 
 
 def test_window_aggregate_helpers_reject_invalid_inputs_and_combinations() -> None:
-    spec = structure.window(partition_by=RawEvent.account_id, order_by=RawEvent.sequence)
+    spec = window(partition_by=RawEvent.account_id, order_by=RawEvent.sequence)
 
     with pytest.raises(TypeError, match="window_bool_and\\(\\.\\.\\.\\) requires a Boolean expression"):
-        structure.window_bool_and(RawEvent.sequence, over=spec)
+        window_bool_and(RawEvent.sequence, over=spec)
     with pytest.raises(TypeError, match="window_stddev\\(\\.\\.\\.\\) requires a numeric expression"):
-        structure.window_stddev(RawEvent.event_id, over=spec)
+        window_stddev(RawEvent.event_id, over=spec)
     with pytest.raises(TypeError, match="does not permit distinct window aggregates"):
-        structure.window_count_distinct(RawEvent.sequence, over=spec)
+        window_count_distinct(RawEvent.sequence, over=spec)
     with pytest.raises(TypeError, match="range_between\\(\\.\\.\\.\\) requires exactly one order_by expression"):
-        structure.window(
+        window(
             partition_by=RawEvent.account_id,
             order_by=(RawEvent.sequence, RawEvent.event_id),
-            frame=structure.range_between(structure.preceding(1), structure.current_row()),
+            frame=range_between(preceding(1), current_row()),
         )
 
 

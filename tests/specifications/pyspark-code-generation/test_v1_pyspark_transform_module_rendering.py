@@ -1,8 +1,7 @@
 import sys
 
-from structure import Schema, String, Transform, field, input, output, step, transform
+from structure import *
 from structure.app.cli.commands.RenderExplainReport import render_explain_report
-from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 

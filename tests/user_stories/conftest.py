@@ -1,7 +1,7 @@
 import pytest
 
+from structure import *
 from structure.app.compiler.api import Compiler
-from structure.app.dsl.api import compile_transform
 from structure.app.target.pyspark.api import PySpark
 
 

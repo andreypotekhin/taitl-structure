@@ -1,41 +1,40 @@
 import pytest
 
-import structure
-from structure.app.dsl.api import compile_transform
+from structure import *
 
 
-class RawTags(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
+class RawTags(Schema):
+    id = field(String(), nullable=False)
+    tags = field(Array(String(), contains_null=False), nullable=True)
 
 
-class CleanTags(structure.Schema):
-    tags = structure.field(structure.Array(structure.String(), contains_null=False), nullable=True)
+class CleanTags(Schema):
+    tags = field(Array(String(), contains_null=False), nullable=True)
 
 
-class RawAttributes(structure.Schema):
-    id = structure.field(structure.String(), nullable=False)
-    attributes = structure.field(
-        structure.Map(structure.String(), structure.String(), value_contains_null=True), nullable=True
+class RawAttributes(Schema):
+    id = field(String(), nullable=False)
+    attributes = field(
+        Map(String(), String(), value_contains_null=True), nullable=True
     )
 
 
-class CleanAttributes(structure.Schema):
-    attributes = structure.field(
-        structure.Map(structure.String(), structure.String(), value_contains_null=False), nullable=True
+class CleanAttributes(Schema):
+    attributes = field(
+        Map(String(), String(), value_contains_null=False), nullable=True
     )
 
 
 def test_v2_array_transform_non_array_input_reports_actionable_diagnostic() -> None:
-    @structure.transform
-    class BadTransform(structure.Transform):
-        rows = structure.input(RawTags)
-        clean = structure.output(CleanTags)
+    @transform
+    class BadTransform(Transform):
+        rows = input(RawTags)
+        clean = output(CleanTags)
 
         def clean_tags(self, row: RawTags) -> CleanTags:
-            return CleanTags(tags=structure.arr_transform(row.id, lambda tag: structure.lower(tag)))
+            return CleanTags(tags=arr_transform(row.id, lambda tag: lower(tag)))
 
-    with pytest.raises(structure.StructureCompileError) as raised:
+    with pytest.raises(StructureCompileError) as raised:
         compile_transform(BadTransform)
 
     diagnostic = raised.value.diagnostic
@@ -45,15 +44,15 @@ def test_v2_array_transform_non_array_input_reports_actionable_diagnostic() -> N
 
 
 def test_v2_array_filter_non_boolean_callback_reports_actionable_diagnostic() -> None:
-    @structure.transform
-    class BadFilter(structure.Transform):
-        rows = structure.input(RawTags)
-        clean = structure.output(CleanTags)
+    @transform
+    class BadFilter(Transform):
+        rows = input(RawTags)
+        clean = output(CleanTags)
 
         def clean_tags(self, row: RawTags) -> CleanTags:
-            return CleanTags(tags=structure.arr_filter(row.tags, lambda tag: structure.lower(structure.trim(tag))))
+            return CleanTags(tags=arr_filter(row.tags, lambda tag: lower(trim(tag))))
 
-    with pytest.raises(structure.StructureCompileError) as raised:
+    with pytest.raises(StructureCompileError) as raised:
         compile_transform(BadFilter)
 
     diagnostic = raised.value.diagnostic
@@ -64,15 +63,15 @@ def test_v2_array_filter_non_boolean_callback_reports_actionable_diagnostic() ->
 
 
 def test_v2_array_filter_python_boolean_callback_reports_helper_context() -> None:
-    @structure.transform
-    class BadCallback(structure.Transform):
-        rows = structure.input(RawTags)
-        clean = structure.output(CleanTags)
+    @transform
+    class BadCallback(Transform):
+        rows = input(RawTags)
+        clean = output(CleanTags)
 
         def clean_tags(self, row: RawTags) -> CleanTags:
-            return CleanTags(tags=structure.arr_filter(row.tags, lambda tag: tag and tag.is_not_null()))
+            return CleanTags(tags=arr_filter(row.tags, lambda tag: tag and tag.is_not_null()))
 
-    with pytest.raises(structure.StructureCompileError) as raised:
+    with pytest.raises(StructureCompileError) as raised:
         compile_transform(BadCallback)
 
     diagnostic = raised.value.diagnostic
@@ -83,15 +82,15 @@ def test_v2_array_filter_python_boolean_callback_reports_helper_context() -> Non
 
 
 def test_v2_array_transform_untyped_callback_return_reports_actionable_diagnostic() -> None:
-    @structure.transform
-    class BadReturn(structure.Transform):
-        rows = structure.input(RawTags)
-        clean = structure.output(CleanTags)
+    @transform
+    class BadReturn(Transform):
+        rows = input(RawTags)
+        clean = output(CleanTags)
 
         def clean_tags(self, row: RawTags) -> CleanTags:
-            return CleanTags(tags=structure.arr_transform(row.tags, lambda tag: object()))
+            return CleanTags(tags=arr_transform(row.tags, lambda tag: object()))
 
-    with pytest.raises(structure.StructureCompileError) as raised:
+    with pytest.raises(StructureCompileError) as raised:
         compile_transform(BadReturn)
 
     diagnostic = raised.value.diagnostic
@@ -103,17 +102,17 @@ def test_v2_array_transform_untyped_callback_return_reports_actionable_diagnosti
 
 
 def test_v2_map_transform_non_map_input_reports_actionable_diagnostic() -> None:
-    @structure.transform
-    class BadTransform(structure.Transform):
-        rows = structure.input(RawAttributes)
-        clean = structure.output(CleanAttributes)
+    @transform
+    class BadTransform(Transform):
+        rows = input(RawAttributes)
+        clean = output(CleanAttributes)
 
         def clean_attributes(self, row: RawAttributes) -> CleanAttributes:
             return CleanAttributes(
-                attributes=structure.map_transform_values(row.id, lambda key, value: structure.lower(value))
+                attributes=map_transform_values(row.id, lambda key, value: lower(value))
             )
 
-    with pytest.raises(structure.StructureCompileError) as raised:
+    with pytest.raises(StructureCompileError) as raised:
         compile_transform(BadTransform)
 
     diagnostic = raised.value.diagnostic
@@ -123,19 +122,19 @@ def test_v2_map_transform_non_map_input_reports_actionable_diagnostic() -> None:
 
 
 def test_v2_map_filter_non_boolean_callback_reports_actionable_diagnostic() -> None:
-    @structure.transform
-    class BadFilter(structure.Transform):
-        rows = structure.input(RawAttributes)
-        clean = structure.output(CleanAttributes)
+    @transform
+    class BadFilter(Transform):
+        rows = input(RawAttributes)
+        clean = output(CleanAttributes)
 
         def clean_attributes(self, row: RawAttributes) -> CleanAttributes:
             return CleanAttributes(
-                attributes=structure.map_filter(
-                    row.attributes, lambda key, value: structure.lower(structure.trim(value))
+                attributes=map_filter(
+                    row.attributes, lambda key, value: lower(trim(value))
                 )
             )
 
-    with pytest.raises(structure.StructureCompileError) as raised:
+    with pytest.raises(StructureCompileError) as raised:
         compile_transform(BadFilter)
 
     diagnostic = raised.value.diagnostic
@@ -145,15 +144,15 @@ def test_v2_map_filter_non_boolean_callback_reports_actionable_diagnostic() -> N
 
 
 def test_v2_map_filter_python_boolean_callback_reports_helper_context() -> None:
-    @structure.transform
-    class BadCallback(structure.Transform):
-        rows = structure.input(RawAttributes)
-        clean = structure.output(CleanAttributes)
+    @transform
+    class BadCallback(Transform):
+        rows = input(RawAttributes)
+        clean = output(CleanAttributes)
 
         def clean_attributes(self, row: RawAttributes) -> CleanAttributes:
-            return CleanAttributes(attributes=structure.map_filter(row.attributes, lambda key, value: value and key))
+            return CleanAttributes(attributes=map_filter(row.attributes, lambda key, value: value and key))
 
-    with pytest.raises(structure.StructureCompileError) as raised:
+    with pytest.raises(StructureCompileError) as raised:
         compile_transform(BadCallback)
 
     diagnostic = raised.value.diagnostic

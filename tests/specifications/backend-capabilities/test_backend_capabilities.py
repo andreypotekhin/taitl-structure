@@ -144,6 +144,46 @@ def test_supported_v2_higher_order_requirement_passes(name: str) -> None:
     assert decision.supported
 
 
+@pytest.mark.parametrize("target_variant", ["ordinary", "spark-connect"])
+@pytest.mark.parametrize(
+    "name",
+    [
+        "array",
+        "array_aggregate",
+        "array_contains",
+        "array_distinct",
+        "array_except",
+        "array_exists",
+        "array_filter",
+        "array_flatten",
+        "array_forall",
+        "array_position",
+        "array_repeat",
+        "array_sort_by",
+        "array_transform",
+        "array_union",
+        "array_zip_with",
+        "collection_size",
+        "element_at",
+        "map_concat",
+        "map_contains_key",
+        "map_entries",
+        "map_filter",
+        "map_from_entries",
+        "map_keys",
+        "map_transform_keys",
+        "map_transform_values",
+        "map_values",
+        "map_zip_with",
+        "try_element_at",
+    ],
+)
+def test_v3_collection_capabilities_are_explicit_for_each_supported_variant(target_variant: str, name: str) -> None:
+    resolved = Capabilities.resolve()(target_backend="pyspark", target_variant=target_variant)
+
+    assert resolved.require(CapabilityRequirement(group="higher_order", name=name)).supported
+
+
 def test_supported_v2_dedupe_requirement_passes() -> None:
     resolved = Capabilities.resolve()()
 

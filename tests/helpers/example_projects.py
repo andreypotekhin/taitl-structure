@@ -5,10 +5,10 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator, Sequence
 
+from structure import *
 from structure.app.cli.model.DiscoveredStructureProject import DiscoveredStructureProject
 from structure.app.configuration.model.StructureConfig import StructureConfig
 from structure.app.docs.api import Docs
-from structure.app.dsl.api import compile_transform
 from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.target.pyspark.api import PySpark
 

@@ -1,7 +1,7 @@
 import sys
 from dataclasses import dataclass
 
-from structure import Schema, String, field
+from structure import *
 from structure.app.target.pyspark.api import PySpark
 
 

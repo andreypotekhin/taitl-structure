@@ -7,7 +7,7 @@ from helpers.fake_pyspark_schema import (  # type: ignore[import-not-found]
     StructType,
 )
 
-from structure import StructureTools
+from structure import *
 
 
 def test_generate_structure_schema_from_pyspark_struct_type() -> None:

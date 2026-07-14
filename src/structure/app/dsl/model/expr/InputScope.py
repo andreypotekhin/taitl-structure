@@ -101,10 +101,10 @@ class InputScope(RowScope):
             return getattr(self._structure_joined_scope, name)
         return super().__getattr__(name)
 
-    def where(self, predicate: object):
+    def where(self, *predicates: object):
         from structure.app.dsl.model.transforms.transform_api import where
 
-        return where(predicate)
+        return where(*predicates)
 
     def project(self, *args: object) -> object:
         from structure.app.dsl.model.transforms.transform_api import project
