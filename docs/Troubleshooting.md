@@ -1,15 +1,15 @@
 # Troubleshooting
 
-### Problem (online execution): generated transform is not importable in generated mode
+### Problem (generated-code execution): generated transform is not importable
 
 When: Running a transform with `execution_mode = "generated"`.
 Error: "Generated transform is not importable."
 Cause: Structure is configured to run checked-in generated PySpark, but the generated module is missing,
        stale, or not on the Python import path.
 Fix: Run `structure compile`, ensure the generated source root is importable, or set `execution_mode =
-     "online"`. See [OnlineExecution.md](background/OnlineExecution.back.md).
+     "online"`. See [Execution.md](background/Execution.back.md).
 
-### Problem (online execution): unknown transform constructor input
+### Problem (execution): unknown transform constructor input
 
 When: Constructing a transform invocation such as `EnrichOrders(orders=df, typo=df)`.
 Error: "Unknown transform input."

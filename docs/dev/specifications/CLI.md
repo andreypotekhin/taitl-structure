@@ -8,7 +8,7 @@ compiler understanding, and cleans generated files.
 
 The CLI is intentionally a compiler surface, not a Spark job runner. `structure check`, `structure compile`, and
 `structure compile --fail-on-diff` must run without PySpark, Java, Spark startup, a `SparkSession`, or a Spark cluster.
-Online runtime execution remains available through `StructureSession`, not through the v1 CLI.
+Direct runtime execution remains available through `StructureSession`, not through the v1 CLI.
 
 ## Command Surface
 

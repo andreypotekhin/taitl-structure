@@ -141,7 +141,7 @@ The first implementation treats right, full, cross, non-equi, and disjunctive ro
 stream-static compatibility for simpler left and inner joins is unchanged.
 
 Spark Connect support is checked through backend capabilities. Unsupported join forms fail before generated code or
-online execution.
+execution.
 
 ## Diagnostics
 

@@ -137,7 +137,7 @@ Hook order is deterministic:
 1. Transform public methods are scanned in declaration order.
 2. A schema-returning method creates a compiled step.
 3. A raw method creates a hook at that exact source-order position.
-4. Generated and online execution invoke hooks in the same order.
+4. Generated-code execution and execution invoke hooks in the same order.
 5. Validation and hook projection follow the shared execution semantic contract at the hook boundary.
 
 Multiple adjacent hooks are allowed. A hook can rely on the DataFrame returned by the previous hook for the same lane.
@@ -152,7 +152,7 @@ Rules:
 - Traceability and explain output must show an opaque hook boundary.
 - Diagnostics should prefer direct DSL or `@special(type="expr")` fixes when logic can stay compiler-visible.
 - Generated code calls hooks on the source transform implementation instance.
-- Online execution calls the same hook methods on the transform invocation.
+- Execution calls the same hook methods on the transform invocation.
 - Hook internals may import backend libraries because they run at runtime.
 
 ## Backend Target Scope
@@ -198,7 +198,7 @@ Rules:
 - By default, returned shape must match the target schema in strict mode.
 - `schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS` permits additional columns at that hook boundary.
 - `project_output=True` projects the hook result back to the target schema.
-- Hook output validation placement must match online and generated execution.
+- Hook output validation placement must match execution and generated-code execution.
 
 `SchemaMode` must include at least:
 
@@ -243,8 +243,8 @@ HookDef
   source_line
 ```
 
-The shared PySpark execution plan lowers each `HookDef` to a deterministic hook call recipe consumed by online and
-generated execution.
+The shared PySpark execution plan lowers each `HookDef` to a deterministic hook call recipe consumed by execution and
+generated-code execution.
 
 ## Diagnostics
 

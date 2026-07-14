@@ -10,7 +10,7 @@ be consumed by the online PySpark runner at runtime or by the PySpark code gener
 
 - Schema-first authoring.
 - IDE-friendly source code.
-- Spark optimizer-visible online and generated execution for the v1 target.
+- Spark optimizer-visible execution and generated-code execution for the v1 target.
 - Explicit arbitrary target-scoped hooks.
 - Clean hook-free generated code.
 - Lightweight runtime session.
@@ -35,7 +35,7 @@ compiler
   compiler provenance
   static dataflow traceability
 
-        -> online execution
+        -> execution
 
 StructureSession
   OnlinePySparkRunner
@@ -50,7 +50,7 @@ generated/structure_generated/
   runtime/
   traceability/  # compiler metadata, not runtime telemetry
 
-        -> generated execution
+        -> generated-code execution
 
 Airflow / Spark job imports generated code when configured
 ```
@@ -63,7 +63,7 @@ Airflow / Spark job imports generated code when configured
 - Symbolic execution engine
 - Intermediate representation
 - Compileability checker
-- Online execution runtime
+- Execution runtime
 - PySpark code generator
 - Runtime support library
 - CLI
@@ -75,7 +75,7 @@ Each component has a detailed design document under `docs/dev/design/`.
 The compiler produces backend-neutral IR. The online PySpark runner lowers IR to live PySpark DataFrame and Column
 objects. The PySpark code generator lowers IR to concrete PySpark source code.
 
-Online and generated PySpark execution share a target semantic contract. Checked `TransformPlan` IR plus
+Execution and generated-code execution share a target semantic contract. Checked `TransformPlan` IR plus
 `PySparkCapabilities` lowers to deterministic PySpark execution recipes before either runtime path consumes it. The
 online runner interprets those recipes with live PySpark objects. The generated emitter renders those same recipes as
 source text. The contract is specified in [ExecutionSemanticContract.md](specifications/ExecutionSemanticContract.md) and designed in
@@ -88,7 +88,7 @@ backend capability interface specified in [BackendCapabilities.md](specification
 
 Compiler phases must not depend on a live Spark installation. Discovery, schema extraction, symbolic execution,
 compileability checks, IR construction, code generation, compiler provenance, static dataflow traceability, and
-generated-file diff checks run without PySpark imports, Java, a SparkSession, or a Spark cluster. Online and generated
+generated-file diff checks run without PySpark imports, Java, a SparkSession, or a Spark cluster. Execution and generated-code execution
 PySpark execution may depend on PySpark at runtime; the compiler itself must not.
 
 Spark-free compilation does not mean Structure reimplements the whole PySpark API. The compiler owns a curated

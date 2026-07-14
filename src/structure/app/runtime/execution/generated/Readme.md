@@ -1,8 +1,8 @@
-# Generated Execution App
+# Generated-Code Execution App
 
 ## Purpose
-The generated execution app runs checked-in generated PySpark classes for a bound Structure transform. It supports
-teams that want generated source as the operational artifact while preserving the same invocation model as online mode.
+The generated-code execution app runs checked-in generated PySpark classes for a bound Structure transform. It supports
+teams that want generated source as the operational artifact while preserving the same invocation model as direct execution.
 
 ## Dependency Exchanges
 The app consumes a bound source `Transform`, generated package name, `PySparkExecutionPlan` metadata, session Spark

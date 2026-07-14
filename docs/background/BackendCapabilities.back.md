@@ -5,7 +5,7 @@ questions such as which PySpark versions are supported, which DSL features are a
 which validation modes are allowed, and which imports generated code should use.
 
 The capability contract keeps backend-specific rules out of discovery, symbolic execution, generic IR construction,
-online runtime orchestration, and generated-code text rendering. It is also the extension point for the alternative
+direct runtime orchestration, and generated-code text rendering. It is also the extension point for the alternative
 backend contract specified in [AlternativeBackends.md](AlternativeBackends.back.md)).
 
 ## Scope
@@ -293,7 +293,7 @@ also report degraded, opaque, and unknown features so users can decide whether a
 project.
 
 Backends must not be supported by rewriting user Structure source. They must consume the same checked IR and either
-lower it honestly or fail with a backend diagnostic before online execution or generation.
+lower it honestly or fail with a backend diagnostic before execution or generation.
 
 ## Diagnostics
 

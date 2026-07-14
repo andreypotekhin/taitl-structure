@@ -1,7 +1,7 @@
 # Spark Streaming First Slice Design
 
 Spark Structured Streaming support starts as caller-owned streaming execution, not generated streaming job ownership.
-Structure should let a developer pass a streaming DataFrame into the same online or generated transform shape used for
+Structure should let a developer pass a streaming DataFrame into the same execution or generated-code execution shape used for
 batch work when every compiler-visible operation is valid for that streaming shape. The first slice turns the existing
 streaming compatibility classification into a tested support claim for a narrow, useful surface.
 
@@ -54,7 +54,7 @@ The first slice supports:
 - hooks only when the author explicitly marks them `streaming_safe=True`;
 - `structure explain` and compatibility reports showing `compatible`, `batch_only`, or `unknown`.
 
-The slice admits generated and online execution equally. A feature is not first-slice streaming-supported until both
+The slice admits generated-code execution and execution equally. A feature is not first-slice streaming-supported until both
 runtime paths have parity tests or documented manual evidence with a real streaming source.
 
 ## Relationship To Compatibility Checks
@@ -117,15 +117,15 @@ Examples:
 - "Hook `drop_bad_rows` is opaque. Mark it `streaming_safe=True` only if it returns a DataFrame and avoids Spark
   actions, RDD/Pandas conversion, streaming lifecycle APIs, and stateful operations."
 
-Diagnostics should link to `docs/background/OnlineExecution.back.md` for the support boundary and to
-`docs/background/OnlineExecution.back.md` for intentionally deferred features.
+Diagnostics should link to `docs/background/Execution.back.md` for the support boundary and to
+`docs/background/Execution.back.md` for intentionally deferred features.
 
 ## Testing And Evidence
 
 Sprint 09 support needs evidence beyond static classification:
 
 - compiler tests proving incompatible operations become warnings or errors with the right severity;
-- online runtime tests with a streaming source such as Spark's rate source or a memory stream equivalent;
+- direct runtime tests with a streaming source such as Spark's rate source or a memory stream equivalent;
 - generated-code runtime tests for the same fixture;
 - generated-source scans proving no lifecycle calls or actions are emitted;
 - explain tests showing streaming compatibility status and the reason for batch-only or unknown operations.
@@ -137,7 +137,7 @@ make its result release-blocking for the support claim.
 
 The first slice is intentionally small because streaming failures are often operational rather than syntactic. By
 leaving lifecycle ownership with the caller, Structure can provide value immediately: typed transform authoring,
-online/generated parity, schema checks, explain output, and clear compile-time diagnostics without taking over query
+execution/generated-code parity, schema checks, explain output, and clear compile-time diagnostics without taking over query
 deployment.
 
 Full streaming orchestration should build on this slice later by adding explicit source, sink, trigger, checkpoint,

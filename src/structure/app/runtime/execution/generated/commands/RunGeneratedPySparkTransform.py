@@ -133,9 +133,9 @@ class RunGeneratedPySparkTransform:
             problem=problem,
             use=(
                 "Run `structure compile`, ensure the generated source root is importable, "
-                "or set execution_mode = \"online\"."
+                "or switch to direct execution with execution_mode = \"online\"."
             ),
-            docs="docs/reference/OnlineExecution.md",
+            docs="docs/background/Execution.back.md",
         )
         return StructureRuntimeError(diagnostic)
 

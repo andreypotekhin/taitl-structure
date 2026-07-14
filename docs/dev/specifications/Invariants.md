@@ -53,7 +53,7 @@ After lowering to the PySpark execution plan, Structure should be able to prove:
 - every schema recipe maps to a generated schema constant;
 - every generated expression recipe lowers to optimizer-visible PySpark DataFrame or Column operations;
 - performance guardrails remain absent from generated paths unless a hook owns the arbitrary PySpark boundary;
-- online and generated execution consume the same target-level recipe model.
+- execution and generated-code execution consume the same target-level recipe model.
 
 ## Generated-File Invariants
 
@@ -67,7 +67,7 @@ Before writing or comparing generated files, Structure should be able to prove:
 
 ## Runtime-Result Invariants
 
-After online or generated execution result assembly, Structure should be able to prove:
+After execution or generated-code execution result assembly, Structure should be able to prove:
 
 - single-output transforms expose the documented single result and named result access;
 - multi-output transforms return every declared output lane exactly once;

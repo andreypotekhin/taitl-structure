@@ -7,7 +7,7 @@ validation policy, and runtime invocation. It must feel like ordinary typed Pyth
 compiled step methods lower to Spark-plan-visible DataFrame and Column operations through backend-neutral IR.
 
 The DSL is not a second PySpark wrapper layer. It is a small authoring surface that captures enough metadata and
-symbolic behavior for `structure check`, online execution, optional generated PySpark, compiler provenance, static
+symbolic behavior for `structure check`, execution, optional generated PySpark, compiler provenance, static
 dataflow traceability, and streaming compatibility checks to agree.
 
 ## Scope
@@ -35,7 +35,7 @@ Detailed contracts are delegated to narrower specifications:
 - schema model: [SchemaModel.md](SchemaModel.md);
 - assignment, literals, and nullability: [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md);
 - join behavior: [JoinSemantics.md](JoinSemantics.md);
-- online and generated runtime behavior: [OnlineExecution.md](OnlineExecution.md);
+- execution and generated-code runtime behavior: [Execution.md](Execution.md);
 - streaming compatibility: [StreamingCompatibility.md](StreamingCompatibility.md);
 - version and compatibility policy: [CompatibilityPolicy.md](CompatibilityPolicy.md);
 - diagnostic code, registry, and documentation lifecycle: [Diagnostics.md](Diagnostics.md).
@@ -423,7 +423,7 @@ Rules:
 - Python string methods such as `order.customer_id.strip().lower()` are not compileable. Diagnostics should suggest
   direct DSL helpers such as `lower(trim(order.customer_id))`.
 - Expression helpers must carry enough metadata for type checking, nullability checking, streaming compatibility, IR,
-  online lowering, generated lowering, and diagnostics.
+  execution lowering, generated lowering, and diagnostics.
 - Backend-specific lowering belongs in target layers, not in public expression objects.
 
 Detailed type, literal, and nullability behavior is specified by [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md).
@@ -661,7 +661,7 @@ Rules:
 - `inputs` is a read-only namespace containing the original DataFrames bound to the transform invocation. It does not
   contain intermediate DataFrames unless they were also declared original inputs.
 - Hooks must return a DataFrame at runtime.
-- Generated code and online execution call hooks on the source transform instance so hook behavior remains transparent.
+- Generated code and execution call hooks on the source transform instance so hook behavior remains transparent.
 - Hooks may import and use PySpark because they execute at runtime, not during compiler phases.
 - Hook metadata must be present in IR so generated code can call hooks and traceability can mark opaque boundaries.
 
@@ -687,7 +687,7 @@ Rules:
 - Class-level settings override project defaults.
 - Unknown validation decorator arguments are invalid.
 - Validation policy must be recorded on `StepPlan`.
-- Runtime validation placement must be identical for online and generated execution.
+- Runtime validation placement must be identical for execution and generated-code execution.
 
 Project-level validation configuration and runtime validation behavior are outside this DSL spec. This document only
 defines the public source hooks for validation policy.
@@ -708,10 +708,10 @@ Rules:
 - The session owns resolved configuration, execution mode, target backend, runner selection, and optional plan cache.
 - The session must not start Spark, stop Spark, mutate Spark configuration silently, own streaming lifecycle, or manage
   orchestration concerns.
-- The default execution mode is online.
-- Generated execution remains available through configuration.
+- The default `execution_mode` value is `online`, which selects execution.
+- Generated-code execution remains available through configuration.
 
-Detailed runtime behavior is specified by [OnlineExecution.md](OnlineExecution.md).
+Detailed runtime behavior is specified by [Execution.md](Execution.md).
 
 ## Discovery and Metadata
 
@@ -798,7 +798,7 @@ Rules:
 - Public DSL objects must not expose backend-specific PySpark implementation details as their semantic model.
 - IR should contain enough source context for actionable diagnostics and provenance.
 - IR must preserve deterministic operation order.
-- IR must be consumable by both online PySpark execution and generated PySpark emission.
+- IR must be consumable by both PySpark execution and generated PySpark emission.
 - Backend capability checks consume IR plus target metadata, not live Spark objects.
 
 ## Compileability Checks
@@ -967,7 +967,7 @@ The following are outside v1 DSL scope:
 15. Implement `@validate_output(...)` method-level metadata.
 16. Build `TransformPlan` and `StepPlan` IR from symbolic execution.
 17. Run compileability checks against IR without PySpark imports.
-18. Ensure online and generated execution consume the same IR semantics.
+18. Ensure execution and generated-code execution consume the same IR semantics.
 19. Add diagnostics with direct DSL fixes, helper fixes, hook workarounds, and spec links.
 20. Add tests for import safety, metadata, symbolic execution, diagnostics, and runtime invocation.
 21. Update public docs and model fixtures to use only canonical DSL syntax.
@@ -1017,5 +1017,5 @@ The implementation is complete when tests prove:
   link.
 - `structure check` and `structure compile` can validate DSL source without PySpark, Java, SparkSession, Spark
   startup, or a Spark cluster.
-- Online and generated execution preserve the same DSL semantics for projection, filtering, expression helpers, joins,
+- Execution and generated-code execution preserve the same DSL semantics for projection, filtering, expression helpers, joins,
   hooks, validation policy, and hook input namespaces.

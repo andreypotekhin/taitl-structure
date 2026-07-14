@@ -46,7 +46,7 @@ Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
 
 | API Area | Status | PySpark Coverage | Reference |
 | --- | --- | --- | --- |
-| PySpark batch | supported | Spark DataFrames | [Online](../background/OnlineExecution.back.md) |
+| PySpark batch | supported | Spark DataFrames | [Execution](../background/Execution.back.md) |
 | Spark Connect batch | supported | Spark Connect DataFrame and Column APIs | [Compatibility.md](../Compatibility.md) |
 | Streaming transforms | supported | Streaming-safe shapes | [Streaming API](../api/Streaming.api.md) |
 | Generated lifecycle | unsupported | `readStream`, `writeStream` | [Streaming](../background/SparkStreaming.back.md) |

@@ -11,7 +11,7 @@
 - `where(...)` filtering.
 - Projection generation.
 - Backend capability interface for first-slice PySpark requirements.
-- Shared PySpark execution recipes for online/generated parity.
+- Shared PySpark execution recipes for execution/generated-code parity.
 - `StructureSession`.
 - Builder-style transform invocation.
 - Online PySpark execution of the first-slice transform.
@@ -20,7 +20,7 @@
 - Online-materialized output schema available from the transform invocation after `.run(session)`.
 - Generated transform class.
 - Input validation.
-- Online/generated parity test.
+- Execution/generated-code parity test.
 - CLI `check` for the first v1 fixture.
 
 ## Phase 2: v1 Complete
@@ -31,7 +31,7 @@
 - Compatibility policy enforcement for Python and target PySpark configuration.
 - Backend capability checks for every supported v1 operation.
 - Online PySpark runner for all v1 transform operations.
-- Runtime target registry for online and generated PySpark execution.
+- Runtime target registry for execution and generated-code execution.
 - Shared PySpark semantic lowering for every supported v1 operation.
 - Source-order multi-step method chains.
 - Intermediate validation.
@@ -111,7 +111,7 @@ Later, add optional pytest and build-tool integrations as v2 adoption tooling. P
 separately planned v4 follow-up after the transformation coverage program.
 
 Compiler build integration must stay Spark-free. `structure check`, `structure compile`, and
-`structure compile --fail-on-diff` must not require PySpark, Java, a SparkSession, or a Spark cluster. Online runtime,
+`structure compile --fail-on-diff` must not require PySpark, Java, a SparkSession, or a Spark cluster. Direct runtime,
 generated-code import, and PySpark execution tests may require those dependencies and should remain separate from
 compiler checks.
 

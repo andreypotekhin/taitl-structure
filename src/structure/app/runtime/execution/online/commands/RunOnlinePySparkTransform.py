@@ -783,15 +783,18 @@ class RunOnlinePySparkTransform:
         transform = f"{type(invocation).__module__}.{type(invocation).__name__}"
         diagnostic = RuntimeDiagnostic(
             code="ONLINE-E1202",
-            title="Online PySpark runner is not configured",
+            title="Direct PySpark runner is not configured",
             transform=transform,
             execution_mode=session.execution_mode,
             target_backend=session.target_backend,
             target_profile=getattr(session, "target_profile", ">=3.5,<4.1"),
             target_variant=getattr(session, "target_variant", "ordinary"),
-            problem="Structure has no live SparkSession or injected online executor for this session.",
-            use="Pass spark or online_executor to StructureSession, or use execution_mode = \"generated\".",
-            docs="docs/reference/OnlineExecution.md",
+            problem="Structure has no live SparkSession or injected direct executor for this session.",
+            use=(
+                "Pass spark or online_executor to StructureSession, or switch to generated-code execution "
+                'with execution_mode = "generated".'
+            ),
+            docs="docs/background/Execution.back.md",
         )
         return StructureRuntimeError(diagnostic)
 

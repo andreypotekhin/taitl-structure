@@ -24,7 +24,7 @@ create a `SparkSession`, connect to a Spark server, or inspect the installed Spa
 Sprint 09 promotes Spark Connect from experimental to supported for completed compiler-visible batch features when the
 acceptance checks in this specification pass. The support claim is limited to:
 
-- online execution through `StructureSession`;
+- execution through `StructureSession`;
 - generated PySpark execution;
 - compiler-visible Structure DSL features completed in v1 and v2;
 - schema-only validation and strict projection;
@@ -161,7 +161,7 @@ DataFrame APIs and live tests prove that the directive does not change row or sc
 
 ## Ordinary-Only Requirements
 
-The Spark Connect variant must reject these requirements before online execution or generation:
+The Spark Connect variant must reject these requirements before execution or generation:
 
 ```text
 backend.spark_context
@@ -185,7 +185,7 @@ StructureSession(spark=spark, ctx=ctx, config=config)
 ```
 
 For Spark Connect, `spark` is a caller-created Spark Connect session. Structure must not create or own the connection.
-Online execution and generated execution must call the same public DataFrame and Column methods used by the shared
+Execution and generated-code execution must call the same public DataFrame and Column methods used by the shared
 PySpark recipe layer.
 
 Runtime code must not access:
@@ -279,7 +279,7 @@ script and mark CI coverage as a release blocker before publishing a stable supp
 Spark Connect batch support is complete when:
 
 - `target_variant = "spark-connect"` resolves a supported backend capability profile;
-- completed v1/v2 batch fixtures pass online/generated parity against a real Spark Connect session;
+- completed v1/v2 batch fixtures pass execution/generated-code parity against a real Spark Connect session;
 - compiler commands remain Spark-free;
 - generated source contains no classic-only internals;
 - unsupported ordinary-only features fail before runtime or generation;

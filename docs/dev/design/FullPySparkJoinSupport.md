@@ -10,7 +10,7 @@ and generated PySpark remains reviewable.
 The design goal is not to mirror every stringly PySpark call. It is to cover the behavior users reach for in
 `DataFrame.join(...)`: right and full outer joins, cross joins, arbitrary boolean join predicates, PySpark join strategy
 hints, and reviewable explain output. Structure should expose those behaviors through typed scopes, explicit
-cardinality, backend capabilities, diagnostics, traceability, and shared online/generated PySpark recipes.
+cardinality, backend capabilities, diagnostics, traceability, and shared execution/generated-code PySpark recipes.
 
 ## First-Slice Boundary
 
@@ -138,7 +138,7 @@ The PySpark recipe layer should render:
 - ordinary `.join(...)` for inner and left rowset joins;
 - explicit `select(...)` after the join to produce declared output fields and avoid duplicate unqualified names.
 
-Online execution must consume the same recipe shape as generated code. The compiler and code generator must stay
+Execution must consume the same recipe shape as generated code. The compiler and code generator must stay
 Spark-free.
 
 ## Backend Capabilities

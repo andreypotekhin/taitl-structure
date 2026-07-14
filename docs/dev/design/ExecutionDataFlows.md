@@ -19,7 +19,7 @@
 14. Report compile metrics.
 ```
 
-## Online Runtime Flow
+## Execution Runtime Flow
 
 ```text
 1. Caller creates SparkSession.
@@ -55,7 +55,7 @@
 
 ```text
 1. Caller creates streaming DataFrame using Spark readStream.
-2. Caller passes streaming DataFrame to an online or generated transform.
+2. Caller passes streaming DataFrame to an execution or generated-code execution transform.
 3. Runtime applies streaming-compatible DataFrame operations.
 4. Caller owns writeStream, trigger, output mode, checkpoint, and lifecycle.
 ```

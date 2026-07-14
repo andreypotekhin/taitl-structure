@@ -1,7 +1,7 @@
 # Spark Streaming
 
 Structure supports Spark Structured Streaming transformations: callers own the streaming source and sink, then pass
-streaming DataFrames into ordinary online or generated Structure transforms. Structure returns a DataFrame plan.
+streaming DataFrames into ordinary execution or generated-code execution transforms. Structure returns a DataFrame plan.
 
 See the exhaustive [streaming API table](../api/Streaming.api.md) for supported declarations, parity, and examples.
 
@@ -50,7 +50,7 @@ class EnrichOrders(Transform):
 
 When the marker is present, unknown or incompatible operations are errors.
 
-Online and generated execution both apply a declared watermark. Structure applies a current-input watermark at its
+Execution and generated-code execution both apply a declared watermark. Structure applies a current-input watermark at its
 declared transform step and applies a lookup-input watermark before the lookup join. This keeps state and late-data
 semantics independent of the selected execution mode.
 

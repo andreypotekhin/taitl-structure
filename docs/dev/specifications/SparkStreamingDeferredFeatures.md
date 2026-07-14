@@ -86,6 +86,6 @@ A deferred feature can move into a sprint only when its plan includes:
 - diagnostics with links and concrete user actions;
 - explain output;
 - generated-source snapshots;
-- online/generated parity where relevant;
+- execution/generated-code parity where relevant;
 - live Spark Structured Streaming evidence;
 - troubleshooting entries for likely operational failures.

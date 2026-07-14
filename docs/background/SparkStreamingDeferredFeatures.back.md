@@ -34,7 +34,7 @@ A deferred feature can become supported only when Structure defines:
 - backend capabilities;
 - compile-time diagnostics with clear fixes;
 - explain output showing state assumptions;
-- online and generated behavior where both apply;
+- execution and generated-code execution behavior where both apply;
 - live Spark Structured Streaming verification;
 - troubleshooting guidance for likely operational failures.
 

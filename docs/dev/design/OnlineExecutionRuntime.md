@@ -1,8 +1,8 @@
-# Design: Online Execution Runtime
+# Design: Execution Runtime
 
 ## Purpose
 
-The online execution runtime runs Structure transforms directly from source metadata and compiler IR. It lets v1 users
+The execution runtime runs Structure transforms directly from source metadata and compiler IR. It lets v1 users
 execute transforms without committing generated PySpark code while preserving the strict Spark-plan-visible behavior
 that generated PySpark exists to expose.
 
@@ -105,12 +105,12 @@ execution_mode = "generated"
 It computes the generated module and class for the transform invocation, imports the generated class, constructs it with
 `spark=session.spark` and `ctx=session.ctx`, then calls `run(**inputs)`.
 
-Missing generated code is a runtime configuration problem, not a reason to fall back silently to online execution. The
+Missing generated code is a runtime configuration problem, not a reason to fall back silently to execution. The
 diagnostic must tell the user to run `structure compile`, fix import roots, or change `execution_mode`.
 
 ## Shared Semantic Contract
 
-Online execution and generated code must not become independent semantic implementations. The generated emitter owns
+Execution and generated code must not become independent semantic implementations. The generated emitter owns
 text concerns such as imports, formatting, and stable source output. The shared contract in
 [ExecutionSemanticContract.md](../specifications/ExecutionSemanticContract.md) owns semantic concerns:
 
@@ -154,12 +154,12 @@ Runtime compilation errors should reuse compiler diagnostics. Runtime execution 
 - suggested fix;
 - documentation link.
 
-Generated-mode import errors must be explicit. Online mode must not silently switch to generated mode, and generated
-mode must not silently switch to online mode.
+Generated-mode import errors must be explicit. Direct execution must not silently switch to generated-code execution,
+and generated-code execution must not silently switch to direct execution.
 
 ## Non-Goals
 
-The online runtime does not:
+The direct runtime does not:
 
 - generate streaming orchestration;
 - start or stop Spark;
@@ -170,11 +170,11 @@ The online runtime does not:
 
 ## Acceptance
 
-Online execution is implemented when:
+Execution is implemented when:
 
 - `StructureSession` is public;
 - transform invocations bind named inputs and can be run later;
 - `execution_mode = "online"` is default;
 - generated mode remains available;
-- online and generated paths are tested for semantic parity;
+- execution and generated-code paths are tested for semantic parity;
 - compiler commands remain Spark-free.

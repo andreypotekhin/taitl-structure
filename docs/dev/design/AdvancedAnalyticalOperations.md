@@ -7,12 +7,12 @@ dedupe, projection windows, rolling row metrics, and basic array/map higher-orde
 remaining aggregation, window, and higher-order function surface needed for full v2 analytical support.
 
 The goal is not to mirror every PySpark function. The goal is to admit the analytical operations that are common,
-typed, reviewable, explainable, and reusable across online and generated execution without hidden UDFs.
+typed, reviewable, explainable, and reusable across execution and generated-code execution without hidden UDFs.
 
 ## Design Stance
 
 Advanced analytical operations must stay compiler-visible. A helper is admitted only when Structure can represent it
-in IR, validate type and nullability, classify backend capability, explain field lineage, and lower online and
+in IR, validate type and nullability, classify backend capability, explain field lineage, and lower execution and
 generated PySpark through the shared recipe layer.
 
 The public DSL should expose business-level intent:

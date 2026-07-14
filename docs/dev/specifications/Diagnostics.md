@@ -78,7 +78,7 @@ VAL     schema validation, validation placement, and data quality constraints
 BACKEND backend capabilities and compatibility
 STREAM  streaming compatibility
 GEN     generated output, formatting, stale diffs, provenance, and traceability artifacts
-ONLINE  online execution, sessions, transform invocation, and input binding
+ONLINE  execution, sessions, transform invocation, and input binding
 CLI     CLI command behavior, clean safety, profile output, and command usage
 ```
 

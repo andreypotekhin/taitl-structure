@@ -13,7 +13,7 @@ Without one capability interface, target behavior drifts into many places:
 
 - symbolic execution starts knowing PySpark details;
 - compileability checks accumulate version-specific conditions;
-- online execution and generated code make separate syntax choices;
+- execution and generated code make separate syntax choices;
 - streaming compatibility repeats backend support rules;
 - unsupported features produce inconsistent diagnostics.
 
@@ -55,7 +55,7 @@ Groups are intentionally broad:
 - `imports`
 
 Future alternative backends may add `runtime`, `output`, `hook`, and `type` groups when those requirements are needed
-to distinguish online execution, generated output mode, target-scoped hook support, and backend type limits.
+to distinguish execution, generated output mode, target-scoped hook support, and backend type limits.
 
 The current implementation has one concrete target profile: ordinary PySpark for
 `target_profile = ">=3.5,<4.1"`.
@@ -104,7 +104,7 @@ This replaces older `STRUCT-E...` examples with the current registry-backed code
 ## Consequences
 
 New DSL operations must declare backend capability behavior before they are considered supported. Compiler checks,
-online lowering, generated code, streaming classification, and future explain output should all ask the same capability
+execution lowering, generated code, streaming classification, and future explain output should all ask the same capability
 object instead of owning their own backend support rules.
 
 Spark Connect is a PySpark target variant with backend family `spark_connect_dataframe`. Sprint 09 support for

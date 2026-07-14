@@ -16,7 +16,7 @@ generated/structure_generated/
   traceability/  # compiler metadata, not runtime telemetry
 ```
 
-Generated artifacts are optional for ordinary online execution. They remain first-class for provenance, review,
+Generated artifacts are optional for ordinary execution. They remain first-class for provenance, review,
 snapshot tests, and projects configured with `execution_mode = "generated"`.
 
 ## Transform Class Generation
@@ -59,7 +59,7 @@ projects that commit generated artifacts.
 
 ## Online Parity
 
-Generated code and online execution must preserve the same transform semantics. Text concerns such as imports and
+Generated code and execution must preserve the same transform semantics. Text concerns such as imports and
 formatting belong here. Semantic concerns such as expression lowering, join aliasing, validation placement, hook order,
 and projection shape belong to the shared contract in [ExecutionSemanticContract.md](../specifications/ExecutionSemanticContract.md).
 

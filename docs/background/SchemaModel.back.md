@@ -225,8 +225,8 @@ Generated Spark schemas are caller-facing shape artifacts. A constant such as `O
 PySpark `StructType` and may be imported by caller code for `spark.read.schema(...)`, runtime validation, and projection
 before caller-owned writes.
 
-Online execution must materialize equivalent Spark schemas from `SchemaDef.fields` and expose them from the transform
-invocation after `run(session)`. This gives online callers the same shape contract without requiring generated files.
+Execution must materialize equivalent Spark schemas from `SchemaDef.fields` and expose them from the transform
+invocation after `run(session)`. This gives execution callers the same shape contract without requiring generated files.
 
 ## Validation Rules
 

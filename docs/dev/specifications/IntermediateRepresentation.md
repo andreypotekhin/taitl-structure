@@ -3,7 +3,7 @@
 ## Purpose
 
 The Structure intermediate representation is the compiler contract between source DSL semantics and execution targets.
-The DSL frontend produces IR. Compileability checkers, online PySpark execution, PySpark code generation, streaming
+The DSL frontend produces IR. Compileability checkers, PySpark execution, PySpark code generation, streaming
 compatibility checks, compiler provenance, and static dataflow traceability consume IR.
 
 The IR must be backend-neutral. It must describe what the transform means, not how PySpark source text happens to spell
@@ -34,7 +34,7 @@ specifications:
 - schema inheritance: [SchemaInheritance.md](SchemaInheritance.md);
 - type compatibility and nullability: [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md);
 - join semantics: [JoinSemantics.md](JoinSemantics.md);
-- online runtime behavior: [OnlineExecution.md](OnlineExecution.md);
+- direct runtime behavior: [Execution.md](Execution.md);
 - generated PySpark rendering: [PySparkCodeGeneration.md](PySparkCodeGeneration.md);
 - streaming compatibility classification: [StreamingCompatibility.md](StreamingCompatibility.md);
 - CLI behavior and diff checks: [CLI.md](CLI.md);
@@ -53,7 +53,7 @@ The IR must be:
 - immutable or treated as immutable after construction;
 - explicit about operation order;
 - explicit about scopes, aliases, and schema boundaries;
-- rich enough for diagnostics, provenance, traceability, online execution, generated output, and streaming checks;
+- rich enough for diagnostics, provenance, traceability, execution, generated output, and streaming checks;
 - compact enough to build and inspect quickly during `structure check`;
 - serializable for debugging, snapshot tests, and future incremental compile fingerprints.
 
@@ -77,10 +77,10 @@ source import
 construct and validate IR without importing PySpark, starting Java, creating a `SparkSession`, or contacting a Spark
 cluster.
 
-Online execution is the runtime exception: `OnlinePySparkRunner` consumes the already checked IR and lowers it to live
+Execution is the runtime exception: `OnlinePySparkRunner` consumes the already checked IR and lowers it to live
 PySpark DataFrame and Column operations at run time.
 
-For PySpark targets, online execution and generated code share an additional target semantic layer after IR validation.
+For PySpark targets, execution and generated code share an additional target semantic layer after IR validation.
 Checked `TransformPlan` IR plus `PySparkCapabilities` lowers to deterministic PySpark execution recipes as specified
 by [ExecutionSemanticContract.md](ExecutionSemanticContract.md). The IR remains backend-neutral; the shared recipes are
 target-specific consumer input.
@@ -320,7 +320,7 @@ Rules:
   a single stream of operations. If hooks are also stored in `hooks_before` and `hooks_after`, duplication must be
   avoided in execution.
 - The last compiled operation before raw hooks should establish the step output schema, usually through `Project`.
-- Step output validation is represented explicitly enough for online and generated execution to place validation
+- Step output validation is represented explicitly enough for execution and generated-code execution to place validation
   identically.
 
 The implementation may choose either of these equivalent shapes:
@@ -414,7 +414,7 @@ Rules:
 - `streaming_support` may be absent before the streaming compatibility pass and filled later.
 - Operations must be immutable after construction or copied on update by later passes.
 
-Operation kinds outside the supported set must fail before online execution or generation.
+Operation kinds outside the supported set must fail before execution or generation.
 
 ## Filter Operation
 
@@ -602,7 +602,7 @@ Rules:
 - Hooks are opaque runtime boundaries.
 - Hook calls preserve Transform class declaration order.
 - Source and output lanes reference declared inputs, lanes, or outputs.
-- `pass_inputs` records whether online and generated execution must pass the original named inputs namespace.
+- `pass_inputs` records whether execution and generated-code execution must pass the original named inputs namespace.
 - Hook calls must not contain the runtime DataFrame returned by the hook.
 - Hook calls must not contain generated PySpark source text.
 - `schema_mode` and `project_output` must be present for after-hook validation and projection decisions.
@@ -637,7 +637,7 @@ Rules:
 - Hook validation points follow hook metadata.
 - When `project_output=True`, IR must represent validate, project, then strict validate.
 - Disabled validation should omit the validation point rather than represent it as a no-op mode.
-- Online and generated execution must consume the same validation placement model.
+- Execution and generated-code execution must consume the same validation placement model.
 
 The validation runtime behavior is backend-specific. The IR records only the intent and placement.
 
@@ -662,7 +662,7 @@ Rules:
 - `reads` records referenced fields and scopes when available.
 - Expressions must be side-effect-free symbolic values.
 - Expressions must not store Python call frames, live Spark objects, or backend-specific rendered code.
-- Unsupported expression kinds must fail before online execution or generation.
+- Unsupported expression kinds must fail before execution or generation.
 
 Backends lower expression IR to their own expression model. In v1 the only backend is PySpark.
 
@@ -851,7 +851,7 @@ Rules:
 - Input, intermediate, and output validation should be explicit in the executable IR or derivable from policy without
   ambiguity.
 - The policy model must distinguish disabled validation from permissive validation.
-- Online and generated execution must use the same effective policy.
+- Execution and generated-code execution must use the same effective policy.
 
 `input_validation_mode`, `intermediate_validation_mode`, and `output_validation_mode` values are configured outside this
 spec. The IR stores the resolved mode used by validation passes.
@@ -957,8 +957,8 @@ Rules:
 - The IR semantic model is not PySpark-specific.
 - PySpark capability choices belong to the PySpark target layer.
 - Capability diagnostics may attach to IR nodes.
-- Unsupported backend operations must fail before online execution or generation.
-- Online and generated PySpark paths must use the same capability data.
+- Unsupported backend operations must fail before execution or generation.
+- Execution and generated-code paths must use the same capability data.
 
 For v1, `backend` is `pyspark`. Future backends must not require changing public DSL source for existing v1 semantics.
 
@@ -1184,7 +1184,7 @@ Rules for adding v2 variants:
 - Add the semantic specification first or at the same time.
 - Add generic IR validation.
 - Add backend capability checks.
-- Add online and generated lowering or explicitly mark the feature unsupported for one path.
+- Add execution and generated-code lowering or explicitly mark the feature unsupported for one path.
 - Add streaming classification.
 - Add provenance and traceability records.
 - Add snapshot tests and parity tests where runtime behavior exists.
@@ -1214,7 +1214,7 @@ Rules:
 
 V4 adds IR variants only as the transformation coverage program admits a typed operation family. Each variant must
 record operand types, honest nullability or row cardinality, capability requirements, traceability, and shared
-online/generated lowering. The release does not reserve IR for backend expansion, loading, storage, or orchestration.
+execution/generated-code lowering. The release does not reserve IR for backend expansion, loading, storage, or orchestration.
 
 ## Implementation Checklist
 
@@ -1273,7 +1273,7 @@ The implementation is complete when tests prove:
 - hooks produce `HookCall` IR with source order, selected source lanes, selected output lanes, `pass_inputs`,
   `schema_mode`, `project_output`, and `streaming_safe`;
 - hook functions are not executed during IR construction;
-- validation policy is represented so online and generated execution place validation identically;
+- validation policy is represented so execution and generated-code execution place validation identically;
 - `project_output=True` is represented as validate, project, then strict validate;
 - generic IR validation rejects unresolved scopes;
 - generic IR validation rejects unresolved fields;
@@ -1288,8 +1288,8 @@ The implementation is complete when tests prove:
 - hook boundaries are marked opaque in provenance and traceability;
 - deterministic IR debug serialization contains no timestamps, memory addresses, or absolute workspace paths;
 - backend capability checks consume IR plus target metadata without live Spark objects;
-- online execution and generated PySpark emission consume the same checked `TransformPlan`;
-- online execution and generated PySpark emission share the PySpark execution recipes defined by
+- execution and generated PySpark emission consume the same checked `TransformPlan`;
+- execution and generated PySpark emission share the PySpark execution recipes defined by
   [ExecutionSemanticContract.md](ExecutionSemanticContract.md);
 - `structure check` and `structure compile` can build and validate IR without PySpark, Java, Spark startup,
   `SparkSession`, or a Spark cluster.
@@ -1321,4 +1321,4 @@ Recommended test groups:
 - static dataflow traceability records;
 - deterministic serialization and snapshot tests;
 - Spark-free compiler command checks;
-- online/generated consumer parity for the same `TransformPlan`.
+- execution/generated-code consumer parity for the same `TransformPlan`.

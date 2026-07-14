@@ -88,7 +88,7 @@ default.
 
 The exact public DSL is deferred. Candidate forms may include field arguments, schema-level declarations, or decorators.
 The implementation must not commit to a public constraint syntax until it can support diagnostics, generated code,
-online/generated parity, and testing.
+execution/generated-code parity, and testing.
 
 Conceptually, the compiler model should be able to represent:
 
@@ -114,7 +114,7 @@ work.
 Generated schema constants are supported caller-facing artifacts. A generated constant such as
 `ORDER_ENRICHED_SCHEMA` is an ordinary PySpark `StructType` and may be imported by caller code.
 
-Online execution must expose the same Spark `StructType` schemas without requiring generated files to exist. The
+Execution must expose the same Spark `StructType` schemas without requiring generated files to exist. The
 transform result makes the materialized schemas available by declared output name:
 
 ```python

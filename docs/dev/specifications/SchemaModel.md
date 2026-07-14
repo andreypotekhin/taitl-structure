@@ -225,8 +225,8 @@ Generated Spark schemas are caller-facing shape artifacts. A constant such as `O
 PySpark `StructType` and may be imported by caller code for `spark.read.schema(...)`, runtime validation, and projection
 before caller-owned writes.
 
-Online execution must materialize equivalent Spark schemas from `SchemaDef.fields` and expose them from the transform
-invocation after `run(session)`. This gives online callers the same shape contract without requiring generated files.
+Execution must materialize equivalent Spark schemas from `SchemaDef.fields` and expose them from the transform
+invocation after `run(session)`. This gives execution callers the same shape contract without requiring generated files.
 
 ## Validation Rules
 
@@ -286,7 +286,7 @@ Targets:
 7. Generate Spark `StructType` definitions from `SchemaDef.fields`.
 8. Support runtime validation using generated Spark schemas.
 9. Keep generated Spark schemas shape-only when future constraint metadata is added.
-10. Materialize equivalent Spark schemas for online execution.
+10. Materialize equivalent Spark schemas for execution.
 11. Add diagnostics with links to relevant specifications.
 12. Add tests for primitive, decimal, array, map, struct, and inherited schemas.
 13. Add tests proving generated schema constants can be imported by caller code.
@@ -298,6 +298,6 @@ Targets:
 - Field origin metadata is retained for inherited and overridden fields.
 - Generated Spark `StructType` field order matches `SchemaDef.fields`.
 - Generated Spark `StructType` constants can be imported and used by caller code.
-- Online execution exposes an equivalent final output Spark schema after `run(session)`.
+- Execution exposes an equivalent final output Spark schema after `run(session)`.
 - Schema extraction works without PySpark, Java, a SparkSession, or Spark startup.
 - Invalid field declarations fail during `structure check` with actionable diagnostics.

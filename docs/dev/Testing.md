@@ -1,6 +1,6 @@
 # Testing
 
-Structure requires layered testing because correctness spans source DSL semantics, online execution, generated code,
+Structure requires layered testing because correctness spans source DSL semantics, execution, generated code,
 runtime behavior, and performance guardrails.
 
 ## Test Layers
@@ -13,11 +13,11 @@ runtime behavior, and performance guardrails.
 6. IR tests.
 7. Compileability checker tests.
 8. Negative compiler and diagnostic tests.
-9. Online execution tests.
+9. Execution tests.
 10. Generated-code snapshot tests.
 11. Syntax/import tests.
 12. PySpark execution tests.
-13. Online/generated parity tests.
+13. Execution/generated-code parity tests.
 14. Performance guardrail tests.
 15. Compile-time performance benchmarks.
 16. Golden generated-output tests.
@@ -83,7 +83,7 @@ Golden tests must:
 - treat generated source stability as a reviewability contract.
 
 Golden generated-output tests prove that generated source is stable and reviewable. They do not by themselves prove
-runtime behavior. Runtime behavior is proved by online/generated parity, differential tests, and integration tests.
+runtime behavior. Runtime behavior is proved by execution/generated-code parity, differential tests, and integration tests.
 
 ## Differential Tests
 
@@ -125,18 +125,18 @@ Invariant tests prove internal phase-boundary truths that should hold after Stru
 [Invariants.md](specifications/Invariants.md). Use invariants for impossible internal states, not user-correctable
 problems. User-correctable problems must still produce structured diagnostics with documentation links.
 
-## Online Execution Correctness
+## Execution Correctness
 
-Online execution should be tested by:
+Execution should be tested by:
 
 - config defaults and invalid execution-mode diagnostics
 - transform invocation input binding
 - deferred construction without Spark work
 - `StructureSession.run(...)` delegation
-- online PySpark execution against small Spark DataFrames
+- PySpark execution against small Spark DataFrames
 - parity with generated PySpark output for every supported v1 operation
 
-## Online/Generated Parity
+## Execution/Generated-Code Parity
 
 Every supported compiled operation must have at least one parity test before the operation is considered complete.
 Parity tests run the same transform online through `StructureSession` and through the generated PySpark class, then
@@ -158,7 +158,7 @@ in the repository's Spark integration lane. A skipped local live test is not rel
 
 Concept tests live under `tests/concepts`. They are end-to-end, black-box tests for the project vocabulary in
 [Concepts.md](Concepts.md). Their job is to prove that a named concept works through public user-facing surfaces such as
-the DSL, CLI, `StructureSession`, generated packages, runtime diagnostics, and online/generated parity.
+the DSL, CLI, `StructureSession`, generated packages, runtime diagnostics, and execution/generated-code parity.
 
 Concept tests are also the concept coverage map. One test may cover several concept leaves, but the covered concept
 should be visible from the test module, test name, docstring, or a nearby coverage table. Concept tests should exercise
@@ -167,7 +167,7 @@ small representative scenarios instead of duplicating every unit, specification,
 Keep concept tests focused on observable behavior:
 
 - prefer public API, CLI, runtime output, generated package behavior, and diagnostics
-- prefer online/generated parity when a concept has runtime semantics
+- prefer execution/generated-code parity when a concept has runtime semantics
 - avoid asserting compiler internals, renderer implementation details, or exact IR shape unless the concept itself is
   that public artifact
 - avoid re-testing every edge already owned by `tests/specifications/...`; include one black-box representative and
@@ -225,7 +225,7 @@ enabled.
 
 Compiler tests must prove the no-Spark compile contract: `structure check`, `structure compile`, and
 `structure compile --fail-on-diff` run without PySpark, Java, a SparkSession, Spark startup, or a Spark cluster. Keep
-online execution, generated-code import, and PySpark execution tests in separate suites because those may legitimately
+execution, generated-code import, and PySpark execution tests in separate suites because those may legitimately
 require PySpark and a local Spark runtime.
 
 ## Testing Helpers
@@ -290,10 +290,10 @@ Recommended CI pipeline:
 3. structure compile --fail-on-diff
 4. pytest compiler tests
 5. pytest negative compiler and diagnostic tests
-6. pytest online execution tests
+6. pytest execution tests
 7. pytest generated-code tests
 8. pytest PySpark execution tests
-9. pytest online/generated parity tests
+9. pytest execution/generated-code parity tests
 10. pytest golden tests
 11. pytest differential tests that do not require live infrastructure
 12. pytest metamorphic and property-based tests

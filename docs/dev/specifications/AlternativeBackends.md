@@ -152,7 +152,7 @@ TargetAdapter
   online_runner
 ```
 
-Only supported modes need implementation. For example, DuckDB may provide a SQL generator before it provides online
+Only supported modes need implementation. For example, DuckDB may provide a SQL generator before it provides direct
 execution. Spark SQL may provide SQL rendering while still using PySpark-family runtime support.
 
 Adapter rules:
@@ -392,7 +392,7 @@ A new backend may be documented as supported only when it has:
 - generic compatibility checks;
 - type mapping for every supported schema type;
 - expression, filter, projection, join, and validation lowering for every claimed feature;
-- generated or online execution mode specification;
+- generated or execution mode specification;
 - hook ABI rules or an explicit no-hooks limitation;
 - diagnostics for unsupported capabilities;
 - deterministic output tests;
@@ -416,7 +416,7 @@ Alternative backend infrastructure is ready when tests prove:
 - target profiles resolve without importing backend runtimes;
 - unknown backend ids fail before source execution reaches target lowering;
 - compiler-visible IR requirements are checked for the active target;
-- unsupported active-target features fail before online execution or generation;
+- unsupported active-target features fail before execution or generation;
 - degraded features produce structured warnings;
 - compatibility reports can compare at least two target profiles for one transform;
 - hook target defaults are resolved deterministically;

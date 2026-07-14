@@ -25,7 +25,7 @@ narrower use cases and roadmap features.
 - + As a developer, I can set `generated_dir` so that generated files are written predictably.
 - + As a developer, I can set `target_profile` so that generated code targets an intended PySpark version range.
 - + As a developer, I can receive an error when a requested feature cannot be generated for the configured PySpark target.
-- + As a developer, I can configure `execution_mode` so that my project chooses online or generated execution.
+- + As a developer, I can configure `execution_mode` so that my project chooses execution or generated-code execution.
 - As a developer, I can set validation defaults so that schema enforcement is project-wide and repeatable.
 - As a developer, I can configure input, intermediate, and output validation modes independently so that constraint cost
   is controlled by phase.
@@ -71,7 +71,7 @@ narrower use cases and roadmap features.
   use consistent schemas.
 - + As a developer, I can import generated schema constants in caller code so that source reads and storage writes use the
   same shape contract as Structure transforms.
-- + As a developer, I can access the final output Spark schema after online `.run(session)` so that online execution does
+- + As a developer, I can access the final output Spark schema after `.run(session)` so that execution does
   not require generated files for persistence setup.
 
 ## 6. Transform Classes
@@ -159,12 +159,12 @@ narrower use cases and roadmap features.
   `spark`, and `ctx` so that generated code is predictable.
 - + As a developer, I can import generated schema constants as ordinary PySpark `StructType` values so that caller-owned
   reads and writes can use the same schemas.
-- + As a developer, online execution exposes equivalent Spark schemas so that generated files are not required for
+- + As a developer, execution exposes equivalent Spark schemas so that generated files are not required for
   pre-write validation/projection.
 - + As a developer, I can rely on generated schema constants staying shape-only so that future data-quality metadata does
   not change existing schema imports.
-- + As a developer, I can rely on online execution and generated execution to preserve the same transform semantics.
-- + As a developer, I can rely on online execution and generated execution to consume the same PySpark semantic contract
+- + As a developer, I can rely on execution and generated-code execution to preserve the same transform semantics.
+- + As a developer, I can rely on execution and generated-code execution to consume the same PySpark semantic contract
   so that supported operations cannot drift between runtime modes.
 
 ## 11. Symbolic Execution
@@ -296,7 +296,7 @@ narrower use cases and roadmap features.
 - + As a developer, I can compile transforms during tests so that unsupported code is caught before deployment.
 - + As a developer, I can test generated PySpark code against small Spark DataFrames so that transformation behavior is verified.
 - + As a developer, I can snapshot generated code so that generator changes are reviewable.
-- + As a developer, I can run online/generated parity tests for every supported compiled operation so that runtime
+- + As a developer, I can run execution/generated-code parity tests for every supported compiled operation so that runtime
   semantics stay synchronized.
 - + As a developer, I can assert schema validation behavior so that invalid inputs fail as expected.
 - + As a developer, I can assert configuration validation behavior so that invalid settings fail with structured diagnostics.
@@ -320,7 +320,7 @@ the first analytical join slice.
   combinations fail before runtime.
 - As a developer, I can inspect v2 operation cardinality in explain output so that row-preserving, row-filtering,
   row-multiplying, and select-one behavior is visible.
-- As a developer, I can rely on online and generated execution using the same v2 PySpark recipe layer so that supported
+- As a developer, I can rely on execution and generated-code execution using the same v2 PySpark recipe layer so that supported
   analytical behavior cannot drift between runtime modes.
 - As a developer, I can keep caller-owned streaming lifecycle in v2 so that existing streaming compatibility boundaries
   remain stable.
@@ -411,7 +411,7 @@ the first analytical join slice.
 - + As a developer, I can generate documentation artifacts for schemas and transforms so that the public contract is
   readable without inspecting generated PySpark.
 - + As a developer, I can use pytest helpers for compiler checks, generated-code freshness, generated-code snapshots,
-  expected diagnostics, and online/generated parity.
+  expected diagnostics, and execution/generated-code parity.
 
 ## 22E. StructureTools
 

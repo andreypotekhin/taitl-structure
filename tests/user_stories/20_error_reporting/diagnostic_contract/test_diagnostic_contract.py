@@ -60,8 +60,9 @@ def test_online_runner_reports_configuration_workaround_without_live_runtime() -
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "ONLINE-E1202"
-    assert "no live SparkSession or injected online executor" in diagnostic.problem
+    assert "no live SparkSession or injected direct executor" in diagnostic.problem
     assert 'execution_mode = "generated"' in diagnostic.use
+    assert "generated-code execution" in diagnostic.use
 
 
 def test_diagnostic_registry_rejects_duplicate_codes() -> None:

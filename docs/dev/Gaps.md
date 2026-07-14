@@ -190,7 +190,7 @@ Before moving a gap to implemented, add or update:
 - backend capability support or an explicit unsupported diagnostic;
 - symbolic execution and IR tests;
 - generated PySpark rendering tests;
-- online execution tests when the feature runs online;
+- execution tests when the feature runs online;
 - Spark Connect evidence when the feature is claimed for that variant;
 - streaming compatibility classification when the feature can receive streaming inputs;
 - API reference rows in [API.ref.md](../reference/API.ref.md).

@@ -1,10 +1,10 @@
 # Execution Semantic Contract
 
-Online execution and generated execution are two ways to run the same Structure transform. They differ in output form:
-online execution uses live PySpark objects at runtime, while generated execution imports checked-in PySpark source.
+Execution and generated-code execution are two ways to run the same Structure transform. They differ in output form:
+execution uses live PySpark objects at runtime, while generated-code execution imports checked-in PySpark source.
 They share the same transform meaning.
 
-This reference defines the shared semantic contract between checked `TransformPlan` IR, online PySpark execution,
+This reference defines the shared semantic contract between checked `TransformPlan` IR, PySpark execution,
 and generated PySpark emission. The contract exists to prevent two independent lowerers from drifting apart on
 projection order, filter order, join aliasing, hook order, validation placement, schema projection, literal typing, or
 performance guardrails.
@@ -14,7 +14,7 @@ performance guardrails.
 This reference covers:
 
 - the shared PySpark semantic lowering layer;
-- parity requirements for online and generated PySpark execution;
+- parity requirements for execution and generated-code execution;
 - deterministic operation recipes consumed by online runners and generated emitters;
 - the boundary between semantic concerns and source-text concerns;
 - compiled-path performance guardrails.
@@ -22,7 +22,7 @@ This reference covers:
 Related references own narrower behavior:
 
 - backend-neutral IR shape: [IntermediateRepresentation.md](IntermediateRepresentation.back.md));
-- online runtime selection and session behavior: [OnlineExecution.md](OnlineExecution.back.md));
+- direct runtime selection and session behavior: [Execution.md](Execution.back.md));
 - generated source text shape: [PySparkCodeGeneration.md](PySparkCodeGeneration.back.md));
 - symbolic capture: [SymbolicExecution.md](SymbolicExecution.back.md));
 - type and literal compatibility: [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.back.md));
@@ -108,7 +108,7 @@ PySparkHookRecipe
 ```
 
 Implementations may rename these records when a local naming pattern is clearer. The observable requirement is that a
-single target plan carries the semantic choices consumed by both online and generated execution.
+single target plan carries the semantic choices consumed by both execution and generated-code execution.
 
 The shared target plan must not contain:
 
@@ -147,7 +147,7 @@ The shared PySpark execution plan must decide these items once:
 - final schema projection and validation;
 - compiled-path performance guardrails.
 
-Online and generated execution may differ only in representation details that do not change observable DataFrame
+Execution and generated-code execution may differ only in representation details that do not change observable DataFrame
 semantics. Allowed differences include:
 
 - Python imports and generated file headers;
@@ -169,12 +169,12 @@ A new compiled operation is not supported until all of these are true:
 1. The source DSL behavior is specified.
 2. The backend-neutral IR shape is specified.
 3. The PySpark execution recipe is specified.
-4. The online runner can consume the recipe or the feature is explicitly unsupported online.
+4. The direct runtime runner can consume the recipe or the feature is explicitly unsupported for execution.
 5. The generated emitter can render the recipe or the feature is explicitly unsupported for generated mode.
-6. A parity test proves online and generated behavior match for the operation when both modes support it.
+6. A parity test proves execution and generated-code execution behavior match for the operation when both modes support it.
 7. Guardrail tests prove compiled paths do not use prohibited PySpark escape hatches.
 
-Unsupported operations must fail through diagnostics before online execution or generated source rendering.
+Unsupported operations must fail through diagnostics before execution or generated source rendering.
 
 ## Parity Matrix
 
@@ -273,11 +273,11 @@ Operation:
   WindowProject
 
 Problem:
-  Broad WindowProject forms have no PySpark execution recipe, so online and generated execution could drift.
+  Broad WindowProject forms have no PySpark execution recipe, so execution and generated-code execution could drift.
 
 Use:
   Use latest_by(...) or earliest_by(...) for admitted selected-row windows, move broader logic into an explicit hook,
   or wait for the broader v2 windowing reference.
 
-See docs/background/OnlineExecution.back.md
+See docs/background/Execution.back.md
 ```

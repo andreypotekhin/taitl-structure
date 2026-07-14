@@ -3,13 +3,13 @@
 ## Purpose
 
 PySpark code generation lowers Structure compiler IR into deterministic, readable Python modules that use PySpark
-DataFrame and Column APIs. The generated modules are optional for ordinary runtime execution, because online execution
+DataFrame and Column APIs. The generated modules are optional for ordinary runtime execution, because execution
 is the v1 default, but they remain first-class artifacts for provenance, code review, debugging, snapshot tests, and
 projects that deliberately choose `execution_mode = "generated"`.
 
 The generator is a source-text emitter. It must not redefine transform semantics. Projection, filtering, expression
 lowering, join aliasing, hook order, validation placement, schema projection, and performance guardrails must agree
-with online PySpark execution.
+with PySpark execution.
 
 Generated transform modules contain deterministic per-transform semantic fingerprints from the compiled artifacts they
 render. Generated mode compares that metadata to the artifact selected by its session and rejects stale output rather
@@ -35,8 +35,8 @@ This specification owns generated PySpark source shape and generator behavior fo
 Semantic contracts are owned by narrower specifications:
 
 - public DSL and transform IR: [DSL.md](DSL.md);
-- online/generated execution parity: [ExecutionSemanticContract.md](ExecutionSemanticContract.md);
-- online and generated runtime selection: [OnlineExecution.md](OnlineExecution.md);
+- execution/generated-code execution parity: [ExecutionSemanticContract.md](ExecutionSemanticContract.md);
+- execution and generated-code runtime selection: [Execution.md](Execution.md);
 - schema model and Spark type mapping: [SchemaModel.md](SchemaModel.md);
 - data quality constraint boundaries: [DataQualityConstraints.md](DataQualityConstraints.md);
 - schema declaration syntax: [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.md);
@@ -48,7 +48,7 @@ Semantic contracts are owned by narrower specifications:
 - compatibility policy: [CompatibilityPolicy.md](CompatibilityPolicy.md).
 
 When this document overlaps those specifications, this document owns how already-decided semantics are rendered as
-PySpark source text. The shared execution contract owns parity between online and generated PySpark consumers. The
+PySpark source text. The shared execution contract owns parity between execution and generated-code consumers. The
 narrower specification owns feature behavior.
 
 ## Generated Layout
@@ -211,7 +211,7 @@ Rules:
   inherited parent steps. Users must still treat every generated class as compiler-owned.
 - Generated classes are owned by the compiler. Users must not subclass or edit generated classes.
 
-Generated execution through `GeneratedPySparkRunner` imports this class, instantiates it with
+Generated-code execution through `GeneratedPySparkRunner` imports this class, instantiates it with
 `spark=session.spark` and `ctx=session.ctx`, and calls `run(...)` with the transform invocation's stored input
 DataFrames.
 
@@ -288,7 +288,7 @@ Rules:
 - Field order follows `SchemaDef.fields`.
 - Field names in generated Spark `StructField` declarations use the field's Spark column name, which is `alias` when
   supplied and the Python field name otherwise.
-- Online execution materializes equivalent Spark schemas from the same `SchemaDef.fields` model instead of importing
+- Execution materializes equivalent Spark schemas from the same `SchemaDef.fields` model instead of importing
   generated schema modules.
 - Inherited fields are rendered in effective schema order after inheritance resolution.
 - Spark type mapping follows [SchemaModel.md](SchemaModel.md).
@@ -578,7 +578,7 @@ Rules:
 - The namespace contains original declared input DataFrames, not intermediate DataFrames.
 - Hook return values become the new selected lane DataFrame.
 - Hook output validation and optional projection follow the hook metadata.
-- Hook recipes retain their declaring transform owner. Generated and online execution use this owner to avoid accidental
+- Hook recipes retain their declaring transform owner. Generated-code execution and execution use this owner to avoid accidental
   late lookup of a child method when the compiled boundary selected a parent hook body.
 
 Generated code does not inspect hook internals. Hook behavior is opaque to compiler traceability except for the declared
@@ -607,7 +607,7 @@ Using a frozen dataclass, named tuple, or small custom class is acceptable. The 
 
 ## Validation Placement
 
-Generated validation must match online execution.
+Generated validation must match execution.
 
 Rules:
 
@@ -828,8 +828,8 @@ See docs/dev/specifications/PySparkCodeGeneration.md
 
 ## Generated Mode Import Failures
 
-Generated code generation must support the generated execution diagnostics specified by
-[OnlineExecution.md](OnlineExecution.md).
+Generated code generation must support the generated-code execution diagnostics specified by
+[Execution.md](Execution.md).
 
 When generated mode cannot import a generated class, runtime diagnostics should suggest:
 
@@ -866,7 +866,7 @@ The following are outside v1 PySpark generation scope:
 5. Generate schema modules from `SchemaDef.fields`.
 6. Generate or expose runtime helpers for `assert_schema`, `project_schema`, and `HookInputs`.
 7. Keep generated schema constants shape-only when future constraint metadata is added.
-8. Share schema rendering/materialization rules with online execution.
+8. Share schema rendering/materialization rules with execution.
 9. Generate one transform class per `TransformPlan`.
 10. Generate deterministic imports and ownership headers.
 11. Render input validation at the start of `run(...)` from shared validation recipes.
@@ -883,7 +883,7 @@ The following are outside v1 PySpark generation scope:
 22. Add snapshot tests for generated schemas, transforms, runtime helpers, and traceability.
 23. Add tests proving caller code can import generated schemas for reads and pre-write validation/projection.
 24. Add tests proving online-materialized schemas match generated schema constants.
-25. Add parity tests proving generated and online execution agree.
+25. Add parity tests proving generated-code execution and execution agree.
 
 ## Acceptance Criteria
 
@@ -934,10 +934,10 @@ The implementation is complete when tests prove:
   target backend, and target capabilities.
 - `execution_mode = "generated"` can import a generated class and run it through `GeneratedPySparkRunner`.
 - Missing generated classes in generated mode produce the import-failure guidance from
-  [OnlineExecution.md](OnlineExecution.md).
+  [Execution.md](Execution.md).
 - `structure check` and `structure compile` run without PySpark, Java, Spark startup, a `SparkSession`, or a Spark
   cluster.
-- Generated and online execution produce equivalent DataFrames for projection, filtering, expression helpers, joins,
+- Generated-code execution and execution produce equivalent DataFrames for projection, filtering, expression helpers, joins,
   grouped aggregates, selected-row helpers, hooks, `pass_inputs=True`, validation, `schema_mode`, and
   `project_output`.
 
@@ -964,4 +964,4 @@ Recommended test groups:
 - `--fail-on-diff` stale output detection;
 - deterministic traceability output;
 - Spark-free compiler command checks;
-- online/generated parity scenarios.
+- execution/generated-code parity scenarios.

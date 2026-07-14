@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Online execution and generated PySpark must be two faces of the same compiled transform. The online runner works with
+Execution and generated PySpark must be two faces of the same compiled transform. The online runner works with
 live PySpark DataFrame and Column objects. The generated emitter writes Python source text. Neither should make its own
 semantic decisions after IR validation.
 
@@ -110,9 +110,9 @@ The first implementation slice should support projection-only transforms:
 1. Lower input validation into recipes.
 2. Lower a single `ProjectOperation` into projection assignment recipes.
 3. Lower final output validation into recipes.
-4. Interpret the recipes online.
+4. Interpret the recipes during execution.
 5. Render the recipes into generated code.
-6. Add a parity test proving online and generated outputs match.
+6. Add a parity test proving execution and generated-code execution outputs match.
 
 Do not add filters, joins, or hooks until projection parity is passing.
 
@@ -151,9 +151,9 @@ PySpark when it produces pure recipe objects.
 
 The design is implemented when:
 
-- both online and generated paths consume `PySparkExecutionPlan` or an equivalent shared target plan;
+- both execution and generated-code paths consume `PySparkExecutionPlan` or an equivalent shared target plan;
 - projection-only parity passes before richer operations are added;
-- each new operation has at least one online/generated parity test;
+- each new operation has at least one execution/generated-code parity test;
 - generator-specific code no longer chooses semantic aliases, validation placement, or expression mapping by itself;
 - online-specific code no longer chooses those semantics separately;
 - compiler commands still run without PySpark, Java, Spark startup, a SparkSession, or a Spark cluster.

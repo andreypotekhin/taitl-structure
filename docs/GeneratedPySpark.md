@@ -2,9 +2,9 @@
 
 Structure can emit generated PySpark code.
 
-Online execution is the default, so users can run transforms through `StructureSession` without committing
-generated files. Generated code remains useful when a team wants reviewable build output, provenance, snapshot
-tests, or generated-mode runtime entrypoints.
+Execution is the default, so users can run transforms through `StructureSession` without committing generated files.
+Code generation remains useful when a team wants reviewable build output, provenance, snapshot tests, or
+generated-code execution entrypoints.
 
 ## Generated Class Shape
 
@@ -89,8 +89,8 @@ df.write.mode("overwrite").parquet(target_path)
 Generated `*_SCHEMA` constants are shape-only. Future data-quality constraint metadata must be generated
 separately unless a later design adds Spark-compatible metadata without changing schema shape semantics.
 
-Online execution exposes equivalent materialized schemas through `result.schema` after `run(session)`. Use
-that online surface when generated files are not committed or imported.
+Execution exposes equivalent materialized schemas through `result.schema` after `run(session)`. Use that direct
+runtime surface when generated files are not committed or imported.
 
 ## Ownership Rules
 

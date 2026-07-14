@@ -65,7 +65,7 @@ class CurrentAccountEvents(Transform):
 ```
 
 Structure retains the row with the greatest `sequence` in every `account_id` partition. The selection is part of the
-compiled transform, so it works the same way in online execution and generated PySpark; it does not need a raw hook or
+compiled transform, so it works the same way in execution and generated-code execution; it does not need a raw hook or
 an unreviewable `dropDuplicates(...)` call.
 
 ## Run It

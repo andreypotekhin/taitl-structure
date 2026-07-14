@@ -1,8 +1,8 @@
 # Roadmap
 
 The roadmap is staged around an IR-first north star. v1 first proves one useful executable transform running both
-online and as generated PySpark, then broadens into the contract that lets Structure replace hand-maintained PySpark
-boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful for
+through execution and as generated PySpark, then broadens into the contract that lets Structure replace hand-maintained PySpark
+boilerplate with strict execution and optional generated-code workflow. v2 makes that workflow useful for
 mainstream analytical pipelines, promotes Spark Connect for completed batch features, and completes static
 caller-owned Spark streaming compatibility diagnostics. v3 closes its scheduled PySpark parity work and hardens
 compiler-visible streaming transformations while callers retain lifecycle ownership. v4 expands predictable PySpark
@@ -15,8 +15,8 @@ transformation API coverage while loading, storage, and orchestration remain cal
 - First executable slice for one schema-to-schema transform.
 - Online PySpark execution by default through `StructureSession`.
 - Builder-style transform invocation.
-- Runtime target registry for online and generated PySpark execution.
-- Shared PySpark execution semantic contract for online/generated parity.
+- Runtime target registry for execution and generated-code execution.
+- Shared PySpark execution semantic contract for execution/generated-code parity.
 - Generated PySpark classes.
 - Python 3.11+ and PySpark 3.5.x/4.0.x compatibility policy.
 - Source-order step methods.
@@ -33,7 +33,7 @@ transformation API coverage while loading, storage, and orchestration remain cal
 - `@raw(lane=lane)` and `@raw(lane=lane)` hooks.
 - Compiler provenance from source node to IR node to generated PySpark node.
 - Static dataflow traceability inferred from IR.
-- Streaming-compatible online and generated transforms.
+- Streaming-compatible execution and generated-code execution transforms.
 - Streaming compatibility report.
 - Diagnostic codes with documentation links.
 - Setup/configuration doctor.
@@ -59,10 +59,10 @@ transformation API coverage while loading, storage, and orchestration remain cal
 - Generated documentation artifacts for schemas and transforms completed in Sprint 10 adoption tooling.
 - Pytest helper or plugin completed in Sprint 10 adoption tooling.
 - Spark Connect support for completed v1/v2 batch features, using `target_backend = "pyspark"` and
-  `target_variant = "spark-connect"`, backed by live online/generated runtime evidence.
+  `target_variant = "spark-connect"`, backed by live execution/generated-code runtime evidence.
 - Static first-slice Spark streaming compatibility for caller-owned streaming DataFrames, static lookup side inputs,
   row-local projection/filtering, schema-only validation, and explicit lifecycle/source/sink deferrals. Live
-  online/generated runtime evidence remains a v3 entry gate.
+  execution/generated-code runtime evidence remains a v3 entry gate.
 
 ## v3
 

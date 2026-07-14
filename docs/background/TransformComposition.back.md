@@ -173,7 +173,7 @@ Composition uses declared transform outputs as external boundaries. A stage cann
 to a `lane(...)` declaration because lanes are internal implementation state.
 
 Hook-bearing stage transforms are not supported in `.to(...)` composition yet. Run hook-bearing transforms separately
-until composition hook ownership is specified for both online and generated execution.
+until composition hook ownership is specified for both execution and generated-code execution.
 
 Composition also does not interleave wrapper-local step methods with a wrapper pipeline in the first slice. Keep a
 wrapper transform focused on the pipeline field.

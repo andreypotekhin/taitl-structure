@@ -90,7 +90,7 @@ default.
 
 The exact public DSL is deferred. Candidate forms may include field arguments, schema-level declarations, or decorators.
 The implementation must not commit to a public constraint syntax until it can support diagnostics, generated code,
-online/generated parity, and testing.
+execution/generated-code parity, and testing.
 
 Conceptually, the compiler model should be able to represent:
 
@@ -116,7 +116,7 @@ work.
 Generated schema constants are supported caller-facing artifacts. A generated constant such as
 `ORDER_ENRICHED_SCHEMA` is an ordinary PySpark `StructType` and may be imported by caller code.
 
-Online execution must expose the same Spark `StructType` schemas without requiring generated files to exist. The
+Execution must expose the same Spark `StructType` schemas without requiring generated files to exist. The
 transform result makes the materialized schemas available by declared output name:
 
 ```python
@@ -207,14 +207,14 @@ otherwise.
 1. Keep v1 `schema_only` validation row-scan-free.
 2. Add a constraint IR model only after the public behavior is specified.
 3. Classify every constraint by cost and streaming compatibility.
-4. Add validation recipes for supported constraints through the shared online/generated execution contract.
+4. Add validation recipes for supported constraints through the shared execution/generated-code execution contract.
 5. Keep generated `*_SCHEMA` constants shape-only.
 6. Generate separate constraint metadata or runtime helpers when constraints are implemented.
-7. Expose online materialized Spark schemas after transform execution.
+7. Expose execution-materialized Spark schemas after transform execution.
 8. Add diagnostics that link to this specification and explain Spark-action cost.
 9. Add tests proving `schema_only` does not trigger data scans.
 10. Add tests proving action-triggering checks are opt-in.
-11. Add generated schema reuse tests for `spark.read.schema(...)`, online execution, and pre-write
+11. Add generated schema reuse tests for `spark.read.schema(...)`, execution, and pre-write
     validation/projection.
 
 ## Acceptance Criteria
@@ -222,7 +222,7 @@ otherwise.
 - v1 docs state that default validation is schema-first and schema-only at intermediate boundaries.
 - `schema_and_constraints` is documented as opt-in and potentially more expensive.
 - Generated schema constants are documented as caller-facing `StructType` artifacts.
-- Online execution exposes equivalent materialized Spark schemas after `run(session)`.
+- Execution exposes equivalent materialized Spark schemas after `run(session)`.
 - Generated schema constants remain shape-only even after future constraint metadata exists.
 - Any future action-triggering data check is explicit in source or configuration.
 - Diagnostics explain whether a validation failure came from schema shape or data-quality constraints.

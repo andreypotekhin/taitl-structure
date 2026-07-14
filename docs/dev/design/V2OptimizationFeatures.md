@@ -14,7 +14,7 @@ This keeps the complexity budget bounded:
 
 - common operations become typed, traceable, generated, and parity-tested Structure semantics;
 - rare or highly backend-specific operations remain explicit hooks;
-- unsupported operations fail before rendering or online execution instead of silently becoming UDFs, RDD work, or
+- unsupported operations fail before rendering or execution instead of silently becoming UDFs, RDD work, or
   row-wise Python callbacks.
 
 ## Spark Higher-Order Functions

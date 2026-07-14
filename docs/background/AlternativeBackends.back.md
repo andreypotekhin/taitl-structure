@@ -150,7 +150,7 @@ TargetAdapter
   online_runner
 ```
 
-Only supported modes need implementation. For example, DuckDB may provide a SQL generator before it provides online
+Only supported modes need implementation. For example, DuckDB may provide a SQL generator before it provides direct
 execution. Spark SQL may provide SQL rendering while still using PySpark-family runtime support.
 
 Adapter rules:
@@ -359,7 +359,7 @@ Problem:
 Use:
   Rewrite the join to use supported equality semantics, or keep target_backend = "pyspark" for this transform.
 
-See docs/background/OnlineExecution.back.md
+See docs/background/Execution.back.md
 ```
 
 Opaque hook warning example:
@@ -379,7 +379,7 @@ Problem:
 Use:
   Add target_backend="pyspark", write a Polars-specific hook, or move the logic into compiler-visible Structure DSL.
 
-See docs/background/OnlineExecution.back.md
+See docs/background/Execution.back.md
 ```
 
 ## Backend Admission Criteria
@@ -390,7 +390,7 @@ A new backend may be documented as supported only when it has:
 - generic compatibility checks;
 - type mapping for every supported schema type;
 - expression, filter, projection, join, and validation lowering for every claimed feature;
-- generated or online execution mode reference;
+- generated or execution mode reference;
 - hook ABI rules or an explicit no-hooks limitation;
 - diagnostics for unsupported capabilities;
 - deterministic output tests;

@@ -247,7 +247,7 @@ Arbitrary PySpark is still supported, but only through explicit hooks. Hooks rec
 
 ## Default Project Layout
 
-For online execution (default):
+For execution (default):
 
 ```text
 src/
@@ -256,7 +256,7 @@ src/
     transforms/
 ```
 
-For generated code executions:
+For code generation and generated-code execution:
 
 ```text
 src/
@@ -304,7 +304,7 @@ See `pyproject.seed.toml` for defaults.
 Structure targets Python 3.11+, PySpark 3.5.x and 4.0.x, Linux runtimes, and Linux/macOS/Windows development
 environments.
 
-Airflow can call online or generated transforms. It is not a Structure dependency.
+Airflow can call execution or generated-code execution transforms. It is not a Structure dependency.
 
 Ordinary PySpark is the default target. Spark Connect is a PySpark variant for completed v1/v2 batch features once
 Sprint 09 support evidence is in place.
@@ -381,11 +381,11 @@ Solve a focused pipeline outcome: [Recipes.md](Recipes.md)
 
 ## Roadmap
 
-The roadmap follows an IR-first path: prove strict online execution with optional generated code, grow into
+The roadmap follows an IR-first path: prove strict execution with optional code generation, grow into
 mainstream analytical pipelines, promote Spark Connect for completed batch features, and deepen compiler-visible
 streaming transformations while callers retain orchestration.
 
-- **Initial release:** online PySpark execution by default, optional generated PySpark classes, projection,
+- **Initial release:** PySpark execution by default, optional generated PySpark classes, projection,
   filtering, joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow
   traceability, streaming-compatible transforms, diagnostic links, and setup checks.
 - **v2:** mainstream analytical features: existence joins, `inner_join(...)`, broad rowset joins, deterministic lookup

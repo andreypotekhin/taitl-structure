@@ -7,7 +7,7 @@ to serve as base list for concepts testing (tests/concepts/).
 
 Concept tests are end-to-end, black-box tests for this vocabulary. They prove that a concept works through public
 Structure surfaces such as the DSL, CLI, `StructureSession`, generated packages, runtime diagnostics, and
-online/generated parity.
+execution/generated-code parity.
 
 Treat `tests/concepts` as the concept coverage map. A single test may cover several concept leaves, but the covered
 concepts should be visible from the test module, test name, docstring, or a nearby coverage table. Concept tests should
@@ -417,7 +417,7 @@ helpers that know about checked-in model code, fixture data, pytest fixtures, or
   - generated-code import
   - generated-code runtime parity
 
-- online execution
+- execution
   - online runner
   - generated runner
   - runtime plan compilation
@@ -425,7 +425,7 @@ helpers that know about checked-in model code, fixture data, pytest fixtures, or
   - online PySpark lowering
   - generated mode import
   - generated mode import failure
-  - online/generated parity
+  - execution/generated-code parity
   - input validation order
   - hook execution order
   - validation placement parity

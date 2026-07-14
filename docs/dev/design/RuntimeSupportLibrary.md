@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The runtime library supports online and generated PySpark execution with focused, reusable helpers.
+The runtime library supports execution and generated-code execution with focused, reusable helpers.
 
 ## Responsibilities
 
@@ -22,7 +22,7 @@ The shared runtime helpers should not:
 - start Spark sessions
 - manage Airflow or streaming lifecycle
 
-The online execution runtime may ask the compiler frontend for a `TransformPlan`, but that responsibility belongs to a
+The execution runtime may ask the compiler frontend for a `TransformPlan`, but that responsibility belongs to a
 runner component rather than low-level schema helpers.
 
 ## Schema Validation
@@ -46,7 +46,7 @@ Hooks can request looser validation followed by projection.
 ## Data Flow
 
 ```text
-online or generated transform
+execution or generated-code execution transform
   -> assert_schema
 DataFrame operations
   -> assert_schema
@@ -57,4 +57,4 @@ optional project_schema
 ## Compile-Time Performance
 
 Runtime library does not affect compile time except for generated import paths and public API compatibility. Keep it
-small and stable. Compiler commands must remain Spark-free even though online runtime execution may import PySpark.
+small and stable. Compiler commands must remain Spark-free even though direct runtime execution may import PySpark.

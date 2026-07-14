@@ -6,7 +6,7 @@ This specification defines the remaining aggregation, window, and higher-order f
 Sprint 08 analytical slice. It is implementation-ready input for Sprint 09 work.
 
 The feature goal is full compiler-visible analytical coverage for mainstream batch pipelines. A supported operation
-must compile to IR, pass backend capability checks, lower through shared online/generated PySpark recipes, appear in
+must compile to IR, pass backend capability checks, lower through shared execution/generated-code PySpark recipes, appear in
 traceability and explain output, and reject unsupported forms before runtime.
 
 ## Scope
@@ -292,7 +292,7 @@ Each feature family must have explicit capability names:
 - `hof.map.transform_keys`;
 - `hof.map.zip_with`.
 
-Unsupported features must fail before online execution or generated rendering with a backend diagnostic that names the
+Unsupported features must fail before execution or generated rendering with a backend diagnostic that names the
 configured backend and the missing capability.
 
 ## Streaming Compatibility
@@ -330,7 +330,7 @@ Generated traceability must expose enough structured data for Sprint 10 generate
 
 - Each admitted helper has public DSL tests, compileability tests, backend capability tests, generated PySpark
   rendering tests, online recipe tests, and public API snapshot coverage.
-- Online and generated execution produce equal rows and schemas for representative fixtures.
+- Execution and generated-code execution produce equal rows and schemas for representative fixtures.
 - Unsupported forms fail with actionable diagnostics before Spark runtime.
 - Public reference docs include examples and limitations.
 - `structure explain` compact and expanded modes cover each admitted family.

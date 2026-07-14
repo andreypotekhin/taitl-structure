@@ -1,7 +1,7 @@
-# Online Execution App
+# Direct Execution App
 
 ## Purpose
-The online execution app interprets PySpark target recipes directly at runtime. It is Structure's default execution
+The direct execution app interprets PySpark target recipes directly at runtime. It is Structure's default execution
 path and keeps authored transforms executable without first writing generated source files.
 
 ## Dependency Exchanges

@@ -178,9 +178,9 @@ target_profile = ">=3.5,<4.1"
 target_variant = "ordinary"
 ```
 
-`execution_mode` selects how transforms run. The default is `online`, where `StructureSession` executes
-transforms at runtime from compiler IR. `generated` delegates runtime execution to checked-in generated
-PySpark classes.
+`execution_mode` selects the runtime implementation. The stable default value, `online`, selects execution through
+`StructureSession` and compiler IR. `generated` selects generated-code execution through checked-in generated PySpark
+classes.
 
 Allowed values:
 
@@ -191,11 +191,11 @@ generated
 
 `target_backend` selects the runtime backend. The initial release supports `pyspark`.
 
-`target_profile` constrains which PySpark APIs online and generated execution may use. The default targets
+`target_profile` constrains which PySpark APIs execution and generated-code execution may use. The default targets
 PySpark 3.5.x and 4.0.x. If a DSL feature cannot be generated for the configured profile, `structure check` and
 `structure compile` should fail with `BACKEND-E2402` and name the unsupported capability. Unknown backend
 targets fail with `BACKEND-E2401`. Backend capability behavior is specified in
-[BackendCapabilities.md](background/OnlineExecution.back.md).
+[BackendCapabilities.md](background/BackendCapabilities.back.md).
 
 `target_variant` selects the runtime variant inside the PySpark target. `ordinary` is the default in-process PySpark
 contract. `spark-connect` is experimental for completed v1/v2 batch features and must not change DSL syntax,

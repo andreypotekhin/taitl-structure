@@ -71,7 +71,7 @@ def test_pytest_helpers_cover_expected_diagnostics() -> None:
 
 
 def test_pytest_helpers_cover_online_generated_parity() -> None:
-    """As a developer, I can use pytest helpers for online/generated parity."""
+    """As a developer, I can use pytest helpers for execution/generated-code parity."""
 
     online = TransformResultLike(
         {

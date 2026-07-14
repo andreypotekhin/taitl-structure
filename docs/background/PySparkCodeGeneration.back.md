@@ -1,13 +1,13 @@
 # PySpark Code Generation
 
 PySpark code generation lowers Structure compiler IR into deterministic, readable Python modules that use PySpark
-DataFrame and Column APIs. The generated modules are optional for ordinary runtime execution because online execution
+DataFrame and Column APIs. The generated modules are optional for ordinary runtime execution because execution
 is the default, but they remain first-class artifacts for provenance, code review, debugging, snapshot tests, and
 projects that deliberately choose `execution_mode = "generated"`.
 
 The generator is a source-text emitter. It does not redefine transform semantics. Projection, filtering, expression
 lowering, join aliasing, hook order, validation placement, schema projection, and performance guardrails agree with
-online PySpark execution.
+PySpark execution.
 
 Generated transform modules carry a deterministic fingerprint of the compiled artifact they render. Generated mode
 checks it before execution and asks users to regenerate stale output rather than running it silently.
@@ -32,8 +32,8 @@ This reference covers generated PySpark source shape and generator behavior for:
 Semantic behavior is covered by narrower references:
 
 - public DSL and transform IR: [DSL.md](DSL.back.md));
-- online/generated execution parity: [ExecutionSemanticContract.md](ExecutionSemanticContract.back.md));
-- online and generated runtime selection: [OnlineExecution.md](OnlineExecution.back.md));
+- execution/generated-code execution parity: [ExecutionSemanticContract.md](ExecutionSemanticContract.back.md));
+- execution and generated-code runtime selection: [Execution.md](Execution.back.md));
 - schema model and Spark type mapping: [SchemaModel.md](SchemaModel.back.md));
 - data quality constraint boundaries: [DataQualityConstraints.md](DataQualityConstraints.back.md));
 - schema declaration syntax: [SchemaDeclarationSyntax.md](SchemaDeclarationSyntax.back.md));
@@ -45,7 +45,7 @@ Semantic behavior is covered by narrower references:
 - compatibility policy: [CompatibilityPolicy.md](CompatibilityPolicy.back.md)).
 
 When this document overlaps those references, this document owns how already-decided semantics are rendered as
-PySpark source text. The shared execution contract owns parity between online and generated PySpark consumers. The
+PySpark source text. The shared execution contract owns parity between execution and generated-code consumers. The
 narrower reference owns feature behavior.
 
 ## Generated Layout
@@ -203,7 +203,7 @@ Rules:
 - The generated class must not inherit from the source transform class.
 - Generated classes are owned by the compiler. Users must not subclass or edit generated classes.
 
-Generated execution through `GeneratedPySparkRunner` imports this class, instantiates it with
+Generated-code execution through `GeneratedPySparkRunner` imports this class, instantiates it with
 `spark=session.spark` and `ctx=session.ctx`, and calls `run(...)` with the transform invocation's stored input
 DataFrames.
 
@@ -280,7 +280,7 @@ Rules:
 - Field order follows `SchemaDef.fields`.
 - Field names in generated Spark `StructField` declarations use the field's Spark column name, which is `alias` when
   supplied and the Python field name otherwise.
-- Online execution materializes equivalent Spark schemas from the same `SchemaDef.fields` model instead of importing
+- Execution materializes equivalent Spark schemas from the same `SchemaDef.fields` model instead of importing
   generated schema modules.
 - Inherited fields are rendered in effective schema order after inheritance resolution.
 - Spark type mapping follows [SchemaModel.md](SchemaModel.back.md)).
@@ -593,7 +593,7 @@ Using a frozen dataclass, named tuple, or small custom class is acceptable. The 
 
 ## Validation Placement
 
-Generated validation must match online execution.
+Generated validation must match execution.
 
 Rules:
 
@@ -757,7 +757,7 @@ Problem:
 Use:
   Set target_profile to a supported range such as ">=3.5,<4.1".
 
-See docs/background/OnlineExecution.back.md
+See docs/background/Execution.back.md
 ```
 
 Generation failure example:
@@ -802,8 +802,8 @@ See docs/background/PySparkCodeGeneration.back.md
 
 ## Generated Mode Import Failures
 
-Generated code generation must support the generated execution diagnostics specified by
-[OnlineExecution.md](OnlineExecution.back.md)).
+Generated code generation must support the generated-code execution diagnostics specified by
+[Execution.md](Execution.back.md)).
 
 When generated mode cannot import a generated class, runtime diagnostics should suggest:
 

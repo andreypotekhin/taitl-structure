@@ -18,9 +18,9 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | JOIN-E0601 | error | Unsupported join condition | Use equality pairs with `==` or `null_safe_eq(...)` and combine them with `&`. |
 | JOIN-W0601 | warning | lookup_join uniqueness is not proven | Mark the joined key `primary_key=True`, use `inner_join(...)`, or provide deterministic `JoinDedupe`. |
 | GEN-E0901 | error | Generated output is stale | Run `structure compile` and commit the generated changes. |
-| GEN-E0902 | error | Generated transform is not importable | Rebuild generated code or use `execution_mode = "online"`. |
+| GEN-E0902 | error | Generated transform is not importable | Rebuild generated code or switch to direct execution with `execution_mode = "online"`. |
 | ONLINE-E1201 | error | Transform input is missing | Pass every declared input DataFrame before `run(session)`. |
-| ONLINE-E1202 | error | Online PySpark runner is not configured | Pass an online executor or use `execution_mode = "generated"`. |
+| ONLINE-E1202 | error | Direct PySpark runner is not configured | Pass a SparkSession or custom `online_executor`, or switch to generated-code execution with `execution_mode = "generated"`. |
 | ONLINE-E1203 | error | Execution mode is unsupported | Use `execution_mode = "online"` or `execution_mode = "generated"`. |
 | BACKEND-E2401 | error | Unsupported backend target | Set `target_backend = "pyspark"` for v1. |
 | BACKEND-E2402 | error | Unsupported backend capability | Choose a supported operation or use a hook. |

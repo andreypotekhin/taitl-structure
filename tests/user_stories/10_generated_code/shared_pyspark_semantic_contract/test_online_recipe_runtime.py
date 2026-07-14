@@ -111,7 +111,7 @@ class PermissivePublishedOrder(PublishedOrder):
 
 
 def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> None:
-    """I can rely on online execution and generated execution to consume the same PySpark semantic contract."""
+    """I can rely on execution and generated-code execution to consume the same PySpark semantic contract."""
 
     evaluator = PySparkExpressionEvaluator()
     functions = FakeFunctions("functions")
@@ -352,7 +352,7 @@ def test_online_expression_evaluator_preserves_window_projection_semantics() -> 
 
 
 def test_online_runner_executes_lowered_pyspark_recipe(monkeypatch) -> None:
-    """I can rely on online execution and generated execution to consume the same PySpark semantic contract."""
+    """I can rely on execution and generated-code execution to consume the same PySpark semantic contract."""
 
     functions = FakeFunctions("pyspark.sql.functions")
     _install_fake_pyspark(monkeypatch, functions)
@@ -465,7 +465,7 @@ def test_online_runner_preserves_injected_multi_output_result_contract() -> None
 
 
 def test_online_runner_applies_step_hooks_and_step_and_output_joins(monkeypatch) -> None:
-    """I can rely on online execution and generated execution to preserve the same transform semantics."""
+    """I can rely on execution and generated-code execution to preserve the same transform semantics."""
 
     _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
     invocation = FakeInvocation(
@@ -506,7 +506,7 @@ def test_online_runner_applies_step_hooks_and_step_and_output_joins(monkeypatch)
 
 
 def test_online_runner_applies_existence_join_modes(monkeypatch) -> None:
-    """I can rely on online and generated execution to share v2 existence join semantics."""
+    """I can rely on execution and generated-code execution to share v2 existence join semantics."""
 
     _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
     invocation = FakeInvocation(
@@ -537,7 +537,7 @@ def test_online_runner_applies_existence_join_modes(monkeypatch) -> None:
 
 
 def test_online_runner_applies_inner_join_as_row_multiplying_join(monkeypatch) -> None:
-    """I can rely on online and generated execution to share v2 row-multiplying join semantics."""
+    """I can rely on execution and generated-code execution to share v2 row-multiplying join semantics."""
 
     _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
     invocation = FakeInvocation(
@@ -568,7 +568,7 @@ def test_online_runner_applies_inner_join_as_row_multiplying_join(monkeypatch) -
 
 
 def test_online_runner_applies_grouped_aggregate_recipe(monkeypatch) -> None:
-    """I can rely on online and generated execution to share v2 aggregate semantics."""
+    """I can rely on execution and generated-code execution to share v2 aggregate semantics."""
 
     _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
     invocation = FakeInvocation(metrics=_frame("metrics", RawMetric))
@@ -604,7 +604,7 @@ def test_online_runner_applies_grouped_aggregate_recipe(monkeypatch) -> None:
 
 
 def test_online_runner_applies_grouping_sets_and_having_recipe(monkeypatch) -> None:
-    """I can rely on online and generated execution to share v3 grouping-set and having semantics."""
+    """I can rely on execution and generated-code execution to share v3 grouping-set and having semantics."""
 
     _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
     invocation = FakeInvocation(metrics=_frame("metrics", RawMetric))
@@ -643,7 +643,7 @@ def test_online_runner_applies_grouping_sets_and_having_recipe(monkeypatch) -> N
 
 
 def test_online_runner_applies_selected_row_window_recipe(monkeypatch) -> None:
-    """I can rely on online and generated execution to share v2 selected-row semantics."""
+    """I can rely on execution and generated-code execution to share v2 selected-row semantics."""
 
     _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
     invocation = FakeInvocation(orders=_frame("orders", RawOrder))
@@ -674,7 +674,7 @@ def test_online_runner_applies_selected_row_window_recipe(monkeypatch) -> None:
 
 
 def test_online_runner_applies_exact_duplicate_removal_recipe(monkeypatch) -> None:
-    """I can rely on online and generated execution to share exact duplicate cleanup semantics."""
+    """I can rely on execution and generated-code execution to share exact duplicate cleanup semantics."""
 
     _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
     invocation = FakeInvocation(orders=_frame("orders", RawOrder))
@@ -794,7 +794,7 @@ def test_online_runner_applies_relation_duplicate_removal_after_join(monkeypatch
 
 
 def test_online_runner_dedupes_lookup_input_deterministically(monkeypatch) -> None:
-    """I can rely on online and generated execution to share v2 deduped lookup semantics."""
+    """I can rely on execution and generated-code execution to share v2 deduped lookup semantics."""
 
     _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
     invocation = FakeInvocation(
@@ -829,7 +829,7 @@ def test_online_runner_dedupes_lookup_input_deterministically(monkeypatch) -> No
 
 
 def test_online_runner_applies_temporal_closed_open_lookup(monkeypatch) -> None:
-    """I can rely on online and generated execution to share v2 temporal lookup semantics."""
+    """I can rely on execution and generated-code execution to share v2 temporal lookup semantics."""
 
     _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
     invocation = FakeInvocation(
@@ -860,7 +860,7 @@ def test_online_runner_applies_temporal_closed_open_lookup(monkeypatch) -> None:
 
 
 def test_online_runner_applies_backward_as_of_lookup(monkeypatch) -> None:
-    """I can rely on online and generated execution to share v2 as-of lookup semantics."""
+    """I can rely on execution and generated-code execution to share v2 as-of lookup semantics."""
 
     _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
     invocation = FakeInvocation(
@@ -896,7 +896,7 @@ def test_online_runner_applies_backward_as_of_lookup(monkeypatch) -> None:
 
 
 def test_online_runner_materializes_multiple_step_results(monkeypatch) -> None:
-    """I can run online/generated parity tests for every supported compiled operation."""
+    """I can run execution/generated-code parity tests for every supported compiled operation."""
 
     _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
     invocation = FakeInvocation(orders=_frame("orders", RawOrder))
@@ -930,7 +930,7 @@ def test_online_runner_materializes_multiple_step_results(monkeypatch) -> None:
 
 
 def test_online_schema_validation_projects_equivalent_spark_shapes() -> None:
-    """Online execution exposes equivalent Spark schemas."""
+    """Execution exposes equivalent Spark schemas."""
 
     validator = PySparkFrameValidator()
     frame = FakeFrame(
@@ -1011,7 +1011,7 @@ def test_online_schema_validation_rejects_nested_struct_shape_drift() -> None:
 
 
 def test_online_schema_validation_rejects_strict_shape_drift() -> None:
-    """I can rely on online execution and generated execution to preserve the same transform semantics."""
+    """I can rely on execution and generated-code execution to preserve the same transform semantics."""
 
     validation = PySparkValidationRecipe(
         target="published",

@@ -17,9 +17,9 @@ The v1 implementation must follow these decisions:
 - generated code lives below a distinct generated namespace;
 - schema declarations use explicit immutable type objects;
 - compiler commands do not import PySpark or require Spark, Java, a SparkSession, or a cluster;
-- online execution is the default runtime mode;
+- execution is the default runtime mode;
 - generated PySpark remains an optional, committed, reviewable artifact;
-- online and generated execution consume the same checked semantic contract;
+- execution and generated-code execution consume the same checked semantic contract;
 - default validation is schema-only, with value-level data-quality constraints requiring explicit opt-in;
 - hooks are explicit runtime escape hatches and are opaque to compile-time expression analysis;
 - `@special(type="expr")` is the public compiler-visible extension point for reusable expression logic;
@@ -50,7 +50,7 @@ docs/dev/specifications/CompilerPerformanceTargets.md
 docs/dev/specifications/Diagnostics.md
 docs/dev/specifications/IntermediateRepresentation.md
 docs/dev/specifications/ExecutionSemanticContract.md
-docs/dev/specifications/OnlineExecution.md
+docs/dev/specifications/Execution.md
 docs/dev/specifications/PySparkCodeGeneration.md
 docs/dev/specifications/BackendCapabilities.md
 docs/dev/specifications/DataQualityConstraints.md
@@ -140,18 +140,18 @@ syntax are outside v1 unless a later compatibility layer is explicitly specified
 SparkSession creation, Spark startup, or cluster access.
 
 Runtime execution and runtime tests may import PySpark. Compiler tests must not require PySpark unless the test is
-specifically exercising generated or online runtime behavior.
+specifically exercising generated or direct runtime behavior.
 
 ### Execution Modes
 
-Online execution is the default:
+Execution is the default:
 
 ```toml
 [tool.structure]
 execution_mode = "online"
 ```
 
-Generated execution remains available:
+Generated-code execution remains available:
 
 ```toml
 [tool.structure]
@@ -203,7 +203,7 @@ Every supported operation must have:
 - public DSL syntax or explicit runtime API;
 - compiler metadata or IR shape;
 - backend capability requirement when backend support matters;
-- online and generated execution behavior when both modes support it;
+- execution and generated-code execution behavior when both modes support it;
 - diagnostics for invalid source and unsupported targets;
 - acceptance tests or planned tests in `tests/user_stories`.
 

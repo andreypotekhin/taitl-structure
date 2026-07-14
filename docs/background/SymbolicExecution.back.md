@@ -2,8 +2,8 @@
 
 Symbolic execution is the compiler phase that turns user-written compiled step methods into backend-neutral
 IR. It executes the method body with symbolic schema row proxies instead of real data, records filters, joins,
-expressions, and output projection, and then hands a deterministic `StepPlan` to compileability checks, online
-execution, generated PySpark emission, compiler provenance, and static dataflow traceability.
+expressions, and output projection, and then hands a deterministic `StepPlan` to compileability checks, execution,
+generated PySpark emission, compiler provenance, and static dataflow traceability.
 
 The purpose is not to run the user's pipeline in Python. The purpose is to let developers write readable schema-oriented
 Python while preserving Spark optimizer visibility. Any source behavior that cannot be represented as Structure IR
@@ -34,7 +34,7 @@ Related references own detailed semantics for narrower topics:
 - schema inheritance and field origin: [SchemaInheritance.md](SchemaInheritance.back.md));
 - expression type and nullability checks: [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.back.md));
 - join condition, alias, and cardinality checks: [JoinSemantics.md](JoinSemantics.back.md));
-- online lowering: [OnlineExecution.md](OnlineExecution.back.md));
+- execution lowering: [Execution.md](Execution.back.md));
 - streaming checks: [StreamingCompatibility.md](StreamingCompatibility.back.md));
 - CLI behavior and metrics: [CLI.md](CLI.back.md)).
 
@@ -61,7 +61,7 @@ Rules:
 - Schema inspection provides `SchemaDef`, `FieldDef`, inheritance, and field-origin metadata.
 - Symbolic execution must not decide backend-specific PySpark details.
 - Compileability checks may reject IR created by symbolic execution.
-- Online execution and generated code must consume the same IR.
+- Execution and generated code must consume the same IR.
 
 ## Canonical Example
 
@@ -323,7 +323,7 @@ Rules:
 - The helper result must be a symbolic expression or a Python literal accepted in expression position.
 - The engine must record the outer helper call identity for diagnostics and provenance.
 - The engine may either inline the expanded expression into IR or preserve a `CallExpr` with expansion metadata, as long
-  as online execution, generated code, traceability, and diagnostics agree.
+  as execution, generated code, traceability, and diagnostics agree.
 - Class-local helpers declared without `self` must be callable through `self`.
 - Recursive helpers are invalid in v1 unless a future spec defines recursion limits.
 - Helper expansion should be cacheable when the helper identity, argument symbolic shapes, and keyword values are the
@@ -628,12 +628,12 @@ Rules:
 - Public DSL imports must be import-safe.
 - User module import may execute normal Python class declarations, but symbolic execution happens only in compiler or
   runtime compile phases.
-- Online execution may import PySpark after it receives IR and live DataFrames; that belongs to the runtime runner.
+- Execution may import PySpark after it receives IR and live DataFrames; that belongs to the runtime runner.
 - Generated code emission may produce PySpark source text without importing PySpark.
 
 ## Determinism and Performance
 
-Symbolic execution is on the developer feedback path for `structure check`, `structure compile`, online first run, and
+Symbolic execution is on the developer feedback path for `structure check`, `structure compile`, first execution run, and
 CI. It must be deterministic and fast.
 
 Rules:

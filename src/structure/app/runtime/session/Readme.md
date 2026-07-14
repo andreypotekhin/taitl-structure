@@ -6,7 +6,7 @@ context, execution mode, generated package settings, and target backend choices 
 
 ## Dependency Exchanges
 The app consumes transform invocations from the DSL app, compiles them with the compiler frontend, lowers them through
-the PySpark target, and delegates to online or generated execution apps. It exposes `StructureSession`,
+the PySpark target, and delegates to execution or generated-code execution apps. It exposes `StructureSession`,
 `TransformResult`, `RuntimeDiagnostic`, and `StructureRuntimeError` through the runtime API.
 
 ## Inner Workings

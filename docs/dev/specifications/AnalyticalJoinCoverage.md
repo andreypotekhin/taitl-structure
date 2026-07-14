@@ -305,7 +305,7 @@ The analytical join family is implemented incrementally. Each admitted join form
 - backend capability acceptance and rejection;
 - IR shape and cardinality classification;
 - generated PySpark rendering;
-- online/generated parity on small DataFrames;
+- execution/generated-code parity on small DataFrames;
 - static traceability output;
 - diagnostics for unsupported shapes;
 - streaming compatibility classification where applicable.

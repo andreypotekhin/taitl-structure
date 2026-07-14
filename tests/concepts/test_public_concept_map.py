@@ -15,7 +15,7 @@ def test_public_concept_map_names_starting_concepts_and_test_owners() -> None:
         "joins",
         "hooks",
         "generated PySpark",
-        "online execution",
+        "execution",
         "diagnostics",
         "compatibility",
     ):

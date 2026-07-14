@@ -3,7 +3,7 @@
 ## Purpose
 
 Structure schemas define row shape and type meaning for compiler checks, generated Spark schemas, runtime validation,
-online execution, generated code, diagnostics, and traceability. This specification ties together schema declaration
+execution, generated code, diagnostics, and traceability. This specification ties together schema declaration
 syntax, schema model extraction, inheritance, output construction, nullability, and assignment compatibility into one
 schema semantics reference.
 
@@ -24,7 +24,7 @@ Structure schema behavior has four layers:
 3. Runtime shape: generated or materialized Spark `StructType` values.
 4. Value constraints: future explicit data-quality checks outside the base shape model.
 
-The schema model is the source of truth. Generated PySpark schemas and online materialized schemas are derived
+The schema model is the source of truth. Generated PySpark schemas and execution-materialized schemas are derived
 artifacts.
 
 ## Canonical Declaration
@@ -142,7 +142,7 @@ Rules:
 - Unknown keyword fields are rejected.
 - All target fields must be supplied or copied through a specified base overlay.
 - Projection order follows the target schema, not source keyword order.
-- Assignment type and nullability are checked before generated or online runtime execution.
+- Assignment type and nullability are checked before generated or direct runtime execution.
 
 Base overlay syntax copies compatible inherited fields:
 
@@ -174,14 +174,14 @@ Rules:
 
 ## Runtime Shape
 
-Generated schema constants and online materialized schemas are shape-only Spark `StructType` artifacts.
+Generated schema constants and execution-materialized schemas are shape-only Spark `StructType` artifacts.
 
 Rules:
 
 - They include field names, field order, Spark data types, nullability, and nested shape.
 - They do not include future value-level constraints as executable behavior.
 - They may be used by caller code for `spark.read.schema(...)`, validation, and pre-write projection.
-- Online execution exposes equivalent schemas after `.run(session)` without requiring generated files.
+- Execution exposes equivalent schemas after `.run(session)` without requiring generated files.
 
 ## Diagnostics
 
@@ -227,7 +227,7 @@ See docs/dev/specifications/SchemaSemantics.md
 7. Attach type and nullability to expressions.
 8. Check output assignment compatibility.
 9. Generate Spark `StructType` constants from `SchemaDef`.
-10. Materialize equivalent Spark schemas during online execution.
+10. Materialize equivalent Spark schemas during execution.
 11. Keep generated schema constants shape-only.
 12. Add schema diagnostics with documentation links.
 
@@ -239,6 +239,6 @@ See docs/dev/specifications/SchemaSemantics.md
 - Invalid type declarations fail during compiler commands.
 - Output constructors reject missing, unknown, incompatible, or nullable-to-non-nullable fields.
 - Base overlays copy only compatible fields and preserve explicit override semantics.
-- Generated Spark schemas and online materialized schemas are equivalent.
+- Generated Spark schemas and execution-materialized schemas are equivalent.
 - Schema-only validation uses schema shape and does not scan rows.
 - Diagnostics link to this document or a narrower schema specification.

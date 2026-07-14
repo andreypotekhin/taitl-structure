@@ -77,7 +77,7 @@ BACKEND backend capabilities and compatibility
 CONNECT Spark Connect runtime and tooling compatibility boundaries
 STREAM  streaming compatibility
 GEN     generated output, formatting, stale diffs, provenance, and traceability artifacts
-ONLINE  online execution, sessions, transform invocation, and input binding
+ONLINE  execution, sessions, transform invocation, and input binding
 CLI     CLI command behavior, clean safety, profile output, and command usage
 ```
 

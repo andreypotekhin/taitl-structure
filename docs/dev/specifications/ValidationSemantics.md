@@ -135,7 +135,7 @@ Execution order follows the shared recipe stream:
 
 Input validation happens before the first step method. Final output validation happens before returning the result.
 
-Online and generated execution must use identical validation placement.
+Execution and generated-code execution must use identical validation placement.
 
 ## Streaming Compatibility
 
@@ -199,7 +199,7 @@ See docs/dev/specifications/ValidationSemantics.md
 6. Implement strict and allow-extra schema modes.
 7. Implement projection to target schema order.
 8. Place validation recipes through `ExecutionSemanticContract.md`.
-9. Ensure online and generated execution consume the same validation recipes.
+9. Ensure execution and generated-code execution consume the same validation recipes.
 10. Add diagnostics with links to this specification.
 11. Add tests proving schema-only validation does not scan rows.
 12. Add tests for input, intermediate, output, hook allow-extra, and projection behavior.
@@ -213,7 +213,7 @@ See docs/dev/specifications/ValidationSemantics.md
 - Strict validation rejects unexpected columns.
 - `SchemaMode.ALLOW_EXTRA_COLUMNS` accepts extra hook columns only at the declared hook boundary.
 - `project_output=True` removes extra hook columns and restores target field order.
-- Online and generated execution validate at the same points.
+- Execution and generated-code execution validate at the same points.
 - Schema-only validation does not call Spark actions.
 - Streaming-compatible transforms can use default schema-only validation.
 - Validation diagnostics include phase, schema, field or column, problem, fix, and docs link.

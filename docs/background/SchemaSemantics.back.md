@@ -1,7 +1,7 @@
 # Schema Semantics
 
 Structure schemas define row shape and type meaning for compiler checks, generated Spark schemas, runtime validation,
-online execution, generated code, diagnostics, and traceability. This reference ties together schema declaration
+execution, generated code, diagnostics, and traceability. This reference ties together schema declaration
 syntax, schema model extraction, inheritance, output construction, nullability, and assignment compatibility into one
 schema semantics reference.
 
@@ -24,7 +24,7 @@ Structure schema behavior has four layers:
 3. Runtime shape: generated or materialized Spark `StructType` values.
 4. Value constraints: future explicit data-quality checks outside the base shape model.
 
-The schema model is the source of truth. Generated PySpark schemas and online materialized schemas are derived
+The schema model is the source of truth. Generated PySpark schemas and execution-materialized schemas are derived
 artifacts.
 
 ## Canonical Declaration
@@ -143,7 +143,7 @@ Rules:
 - Unknown keyword fields are rejected.
 - All target fields must be supplied or copied through a specified base overlay.
 - Projection order follows the target schema, not source keyword order.
-- Assignment type and nullability are checked before generated or online runtime execution.
+- Assignment type and nullability are checked before generated or direct runtime execution.
 
 Nested `Struct(...)` fields may be assigned by copying a whole compatible struct expression or by constructing the
 nested schema explicitly:
@@ -198,14 +198,14 @@ Rules:
 
 ## Runtime Shape
 
-Generated schema constants and online materialized schemas are shape-only Spark `StructType` artifacts.
+Generated schema constants and execution-materialized schemas are shape-only Spark `StructType` artifacts.
 
 Rules:
 
 - They include field names, field order, Spark data types, nullability, and nested shape.
 - They do not include future value-level constraints as executable behavior.
 - They may be used by caller code for `spark.read.schema(...)`, validation, and pre-write projection.
-- Online execution exposes equivalent schemas after `.run(session)` without requiring generated files.
+- Execution exposes equivalent schemas after `.run(session)` without requiring generated files.
 
 ## Diagnostics
 

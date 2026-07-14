@@ -99,7 +99,7 @@ A lane is an intermediate DataFrame stream inside a transform. Lanes let a trans
 states, branch outputs, or disambiguate repeated schemas.
 
 Lanes are neither constructor inputs nor public transform results. They are named internal flow states used by
-method-level binding, hooks, IR, online execution, and generated code.
+method-level binding, hooks, IR, execution, and generated code.
 
 Example:
 
@@ -173,7 +173,7 @@ An expression helper function is a reusable compiler-visible function marked wit
 symbolic arguments, the helper expands as expression IR.
 
 Expression helpers are Structure's preferred way to use reusable expression logic while keeping it visible to
-compiler checks, traceability, online execution, and generated code.
+compiler checks, traceability, execution, and generated code.
 
 Example:
 
@@ -269,7 +269,7 @@ Lowering turns a higher-level semantic representation into a lower-level target 
 In Structure, there are two important lowering steps:
 
 - backend-neutral IR lowers to shared PySpark execution recipes;
-- those recipes are either interpreted online or rendered as generated PySpark source.
+- those recipes are either interpreted during execution or rendered as generated PySpark source.
 
 Lowering must implement checked IR, not invent semantics.
 
@@ -290,8 +290,8 @@ DSL objects and generic IR should not contain PySpark implementation details.
 
 ### Execution Plan
 
-The PySpark execution plan is the shared target-level recipe model consumed by both online PySpark execution
-and the generated PySpark emitter.
+The PySpark execution plan is the shared target-level recipe model consumed by execution and the generated PySpark
+emitter.
 
 It decides expression mapping, filter order, projection field order, join aliases, hook order, validation
 placement, literal typing, and guardrails once.

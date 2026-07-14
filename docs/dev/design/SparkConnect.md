@@ -4,7 +4,7 @@ Spark Connect support keeps Structure's PySpark authoring model intact while all
 Connect session instead of an in-process classic PySpark session. The design goal is not a second backend and not a SQL
 rewrite. It is a supported PySpark target variant for compiler-visible batch transforms once the project has live
 runtime evidence, CI coverage, and diagnostics that prevent classic-only assumptions from leaking into generated or
-online execution.
+execution.
 
 ## Design Position
 
@@ -33,7 +33,7 @@ shape and backend capabilities.
 
 That slice intentionally left out the evidence needed for a support claim:
 
-- live online execution against a Spark Connect session;
+- live execution against a Spark Connect session;
 - live generated-code execution against a Spark Connect session;
 - CI provisioning or documented manual verification for a Connect server;
 - runtime session guardrails and setup diagnostics;
@@ -55,7 +55,7 @@ Sprint 09 promotion covers completed compiler-visible batch features only:
 - the implemented compiler-visible array and map higher-order helper set;
 - schema materialization, schema-only validation, strict projection, and generated schema imports;
 - explicit optimization directives only when the PySpark DataFrame API supports the directive without classic internals;
-- online and generated execution through the same PySpark recipe layer.
+- execution and generated-code execution through the same PySpark recipe layer.
 
 The design deliberately excludes:
 
@@ -79,7 +79,7 @@ Runtime guardrails belong at the edges:
 - configuration resolution identifies `target_variant = "spark-connect"` without importing PySpark;
 - `structure doctor` or an equivalent setup check may validate a live Connect session only when the user asks for a
   runtime check;
-- online and generated parity tests use caller-created sessions and never rely on a local `SparkContext`;
+- execution and generated-code parity tests use caller-created sessions and never rely on a local `SparkContext`;
 - diagnostics name the classic-only feature, explain why Connect cannot run it, and link to the Spark Connect reference.
 
 ## Hook Policy
@@ -104,14 +104,14 @@ Spark Connect moves from experimental to supported for batch features only after
 - the capability profile has explicit supported and unsupported decisions for every completed v1/v2 batch feature;
 - recently implemented full rowset joins and advanced analytical helpers are included in the Connect capability and
   generated-source guardrail matrix;
-- online and generated parity tests pass against a real Spark Connect session;
+- execution and generated-code parity tests pass against a real Spark Connect session;
 - generated source snapshots are identical in public API shape and do not emit classic-only internals;
 - `structure check`, `compile`, and `explain` remain Spark-free;
 - CI or a documented manual verification script exercises Spark Connect for each supported PySpark line;
 - public docs explain the supported batch surface and the remaining exclusions.
 
 This is a stricter bar than "the generated code looks similar." Spark Connect becomes supported only when a user can
-run the same completed batch transform online and generated against Connect and receive clear diagnostics before they
+run the same completed batch transform through execution and generated-code execution against Connect and receive clear diagnostics before they
 hit unsupported classic behavior.
 
 ## Design Consequences

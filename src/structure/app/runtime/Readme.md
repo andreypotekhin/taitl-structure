@@ -1,8 +1,8 @@
 # Runtime App
 
 ## Purpose
-The runtime app owns execution after a user has instantiated a transform with concrete inputs. It keeps online and
-generated execution behind `StructureSession` so callers can choose an execution mode without learning compiler or
+The runtime app owns execution after a user has instantiated a transform with concrete inputs. It keeps execution and
+generated-code execution behind `StructureSession` so callers can choose an execution mode without learning compiler or
 target internals.
 
 ## Dependency Exchanges

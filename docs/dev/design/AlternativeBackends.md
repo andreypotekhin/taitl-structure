@@ -18,7 +18,7 @@ The goal is:
 ```text
 one Structure source module
   -> checked backend-neutral IR
-  -> target-specific online execution or generated artifacts
+  -> target-specific execution or generated artifacts
 ```
 
 The promise applies to compiler-visible Structure code: schemas, compiled step methods, expression helpers, filters,
@@ -32,7 +32,7 @@ Polars, Pandas, DuckDB, or Spark SQL object.
 
 Initial candidates:
 
-- PySpark DataFrame: current v1 target, distributed, lazy, optimizer-visible, online and generated.
+- PySpark DataFrame: current v1 target, distributed, lazy, optimizer-visible, execution and generated-code capable.
 - Spark SQL: PySpark-family SQL/relation target through Python `SparkSession` APIs.
 - Type-safe Python Dataset/DataFrame patterns: an investigation area for Python apps that want stronger static typing
   over PySpark DataFrames without leaving Python.
@@ -151,7 +151,7 @@ runtime code the compiler cannot inspect.
 
 ## Fail-Fast Rules
 
-For the active target, Structure should fail before online execution or generation when:
+For the active target, Structure should fail before execution or generation when:
 
 - no capability profile exists for `target_backend`;
 - the IR contains an operation the profile does not support;

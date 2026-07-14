@@ -67,7 +67,7 @@ Never silently choose the slow path.
    Compiled transformations should lower to PySpark DataFrame and Column expressions, not row-wise Python functions.
 
 4. **Runtime and generated-code visibility**
-   Online execution should preserve generated-code semantics, and optional generated PySpark should be deterministic,
+   Execution should preserve generated-code semantics, and optional code generation should be deterministic,
    readable, and suitable for code review.
 
 5. **Explicit escape hatches**
@@ -126,9 +126,9 @@ Public instance methods with schema return annotations are compiled as step meth
 OrderRaw -> OrderNormalized -> OrderWithCustomer -> OrderEnriched
 ```
 
-## Online and Generated PySpark Model
+## Execution and Code Generation Model
 
-Online execution is the default:
+Execution is the default:
 
 ```python
 session = StructureSession(spark=spark, ctx=ctx)
@@ -188,7 +188,7 @@ Optional generated code is intentionally more verbose because it makes runtime b
 - final projection
 - final validation
 
-This split gives developers compact authoring, online execution by default, and reviewable PySpark when teams want it.
+This split gives developers compact authoring, execution by default, and reviewable PySpark when teams want it.
 
 ## Schema Enforcement
 
@@ -233,7 +233,7 @@ Class-local expression helpers do not take `self`, but may be called through `se
 customer_id=self.clean_id(order.customer_id)
 ```
 
-Expression helpers are symbolically executed and lowered into online or generated Spark expressions.
+Expression helpers are symbolically executed and lowered into execution recipes or generated Spark expressions.
 
 ## Hooks
 
@@ -305,13 +305,13 @@ and live streaming evidence.
 
 ## Compatibility Policy
 
-Structure targets Python 3.11+ and online/generated PySpark for PySpark 3.5.x and 4.0.x. The default project
+Structure targets Python 3.11+ and execution/generated-code execution for PySpark 3.5.x and 4.0.x. The default project
 settings are `execution_mode = "online"`, `target_profile = ">=3.5,<4.1"`, and `target_variant = "ordinary"`.
 
-Online and generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs by default.
+Execution and generated-code execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs by default.
 Sprint 09 promotes Spark Connect to supported status for completed v1/v2 batch features after live runtime evidence,
 diagnostics, and CI or documented verification are in place. Spark Connect must not change Structure source syntax,
-online invocation construction, generated class construction, `run(...)` signatures, streaming orchestration semantics,
+execution invocation construction, generated class construction, `run(...)` signatures, streaming orchestration semantics,
 or generated-code reviewability.
 
 Generated PySpark, compiler traceability metadata, and configuration each have explicit versioning rules. The public policy
@@ -416,14 +416,14 @@ Recommended implementation techniques:
 ## Roadmap
 
 The roadmap follows an IR-first north star: the initial release proves that Structure can replace hand-maintained
-PySpark boilerplate with strict online execution and optional generated-code workflow. v2 makes that workflow useful
+PySpark boilerplate with strict execution and optional code-generation workflow. v2 makes that workflow useful
 for mainstream analytical pipelines and promotes Spark Connect for completed batch features. v3 expands streaming
 transformation support without taking over lifecycle concerns. v4 expands predictable PySpark transformation API
 coverage while loading, storage, and orchestration remain caller-owned.
 
 ### Initial Release
 
-Online PySpark execution by default, optional generated PySpark classes, projection, filtering, joins, typed
+PySpark execution by default, optional generated PySpark classes, projection, filtering, joins, typed
 intermediate schemas, hooks, validation, compiler provenance, compact static dataflow traceability, streaming-compatible
 transforms, diagnostic links, and setup checks.
 

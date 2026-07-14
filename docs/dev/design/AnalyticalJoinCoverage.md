@@ -15,7 +15,7 @@ silently deduplicate duplicate right rows. C27 does not change that contract.
 The analytical join family begins in v2. Existence joins, `inner_join(...)`, deterministic deduped `lookup_join(...)`, and
 temporal validity-window `temporal_one(...)` are admitted in the default PySpark profile. Hooks remain the honest escape
 hatch for join shapes that are not yet specified, represented in IR, checked by backend capabilities, lowered through
-shared PySpark recipes, and covered by online/generated parity tests.
+shared PySpark recipes, and covered by execution/generated-code parity tests.
 
 ## Feature Ladder
 
@@ -139,7 +139,7 @@ and deduped `lookup_join(...)` carries a `PySparkJoinDedupeRecipe` with directio
 Temporal joins add dedicated policy records for the event-time expression, right-side validity bounds, and overlap
 policy. As-of joins may add a dedicated policy record when implemented.
 
-Online execution and generated code must consume those recipes through the shared execution semantic contract.
+Execution and generated code must consume those recipes through the shared execution semantic contract.
 
 ## Diagnostics and Traceability
 
@@ -152,7 +152,7 @@ right-side prejoin reductions, and temporal joins as dependencies on both key fi
 ## Implementation Notes
 
 - Add backend capability requirements before lowering a new join form.
-- Add syntax only with semantic tests and online/generated parity tests.
+- Add syntax only with semantic tests and execution/generated-code parity tests.
 - Keep v2 existence joins, `inner_join(...)`, and deterministic lookup dedupe independent of temporal joins.
 - Keep temporal and as-of joins batch-only until streaming compatibility is specified.
 - Add examples showing when a hook is still the right escape hatch.

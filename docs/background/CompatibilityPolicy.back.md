@@ -12,7 +12,7 @@ The compatibility policy must:
 - define the boundary for future non-PySpark backends;
 - define Spark Connect scope;
 - define semantic versioning expectations;
-- define online runtime compatibility;
+- define direct runtime compatibility;
 - define generated-code compatibility;
 - define compiler traceability schema versioning;
 - define config schema versioning.
@@ -30,10 +30,10 @@ target_profile = ">=3.5,<4.1"
 target_variant = "ordinary"
 ```
 
-This means online and generated execution should target PySpark 3.5.x and 4.0.x APIs unless the user configures a
+This means execution and generated-code execution should target PySpark 3.5.x and 4.0.x APIs unless the user configures a
 different target.
 
-Airflow is not a hard dependency. Online and generated transforms should be usable from Airflow, Spark jobs, notebooks,
+Airflow is not a hard dependency. Execution and generated-code execution should be usable from Airflow, Spark jobs, notebooks,
 or other orchestrators without pulling in scheduler-specific runtime dependencies.
 
 Linux is the v1 runtime target. Linux and macOS are the v1 development targets. Windows development may work where the
@@ -67,7 +67,7 @@ Future backend work is Python-hosted: v2-v4 prioritize PySpark-family targets su
 DataFrame patterns. Polars LazyFrame, DuckDB, Ibis, and other non-PySpark backend expansion begin only after v4. Other
 targets should come through Ibis when Ibis supports them. Dask DataFrame and Ray Dataset remain out of scope until after
 the relational core is stable.
-Unsupported active-target requirements must fail before online execution or generation. Multi-target compatibility
+Unsupported active-target requirements must fail before execution or generation. Multi-target compatibility
 checks may report non-active target issues as unsupported, degraded, opaque, or unknown.
 
 ## Spark Connect Scope
@@ -80,7 +80,7 @@ target_profile = ">=3.5,<4.1"
 target_variant = "spark-connect"
 ```
 
-Mainstream online/generated execution targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Sprint
+Mainstream execution/generated-code execution targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Sprint
 09 promotes Spark Connect from experimental parity to supported status for completed compiler-visible batch features
 only, after live runtime evidence, diagnostics, and CI or documented verification are in place. V3 hardens streaming
 transformations while callers retain lifecycle ownership.
@@ -97,7 +97,7 @@ Spark Connect support is intentionally narrow:
 - public docs make the support level explicit.
 
 Spark Connect must not rely on SparkContext, RDDs, direct JVM/Py4J access, `_jdf`, or private classic PySpark fields.
-Unsupported variant capabilities must fail through backend capability diagnostics before online execution or generated
+Unsupported variant capabilities must fail through backend capability diagnostics before execution or generated
 code is claimed compatible. The detailed support contract is specified in [SparkConnect.md](SparkConnect.back.md)).
 
 ## Semantic Versioning
@@ -107,7 +107,7 @@ After 1.0, Structure follows semantic versioning.
 Major releases may:
 
 - change public DSL behavior;
-- change online runtime API behavior;
+- change direct runtime API behavior;
 - remove or change documented config keys;
 - change generated-runtime helper contracts;
 - change generated-code compatibility rules;
@@ -121,7 +121,7 @@ Minor releases may:
 - add PySpark support;
 - add diagnostics;
 - improve generated code without changing semantics;
-- improve online execution without changing semantics;
+- improve execution without changing semantics;
 - add compiler traceability fields in a backward-compatible way.
 
 Patch releases may:
@@ -133,16 +133,16 @@ Patch releases may:
 
 Before 1.0, minor releases may change public contracts, but every breaking change should include migration notes.
 
-## Online Runtime Compatibility
+## Execution Compatibility
 
-Online execution is the default v1 runtime surface. Compatible online execution means:
+Execution is the default v1 runtime surface. Compatible execution means:
 
 - transform invocations bind declared input DataFrames by name;
 - `StructureSession` accepts caller-owned Spark sessions and optional hook context;
-- online execution preserves the same transform semantics as generated PySpark for supported v1 features;
-- compiler commands remain Spark-free even though online runtime execution may import PySpark.
+- execution preserves the same transform semantics as generated PySpark for supported v1 features;
+- compiler commands remain Spark-free even though direct runtime execution may import PySpark.
 
-Breaking changes to `StructureSession`, transform invocation binding, or online/generated semantic parity require a
+Breaking changes to `StructureSession`, transform invocation binding, or execution/generated-code semantic parity require a
 major version after 1.0 or a compatibility shim.
 
 ## Generated-Code Compatibility

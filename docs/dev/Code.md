@@ -110,7 +110,7 @@ to project vocabulary (e.g. generator).
 
 ### Recursivity of app/logic package structure 
 App and logic packages can consist of other (sub-) application and logic packages.
-For instance, we can have runtime/execution/online/ dir structure for Online Execution component app.
+For instance, we can have a `runtime/execution/online/` directory for the direct execution component app.
 In such case, the packages do not follow the above described structure: instead, they are 
 simply a set subpackages. In other words, app/logic hierarchy as a whole 
 definitely adheres to the above structure on leaf packages, and definitely does not 

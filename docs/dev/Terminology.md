@@ -14,10 +14,24 @@ Structure DSL source code
   -> backend-neutral IR
   -> compileability and capability checks
   -> PySpark target recipes
-  -> online execution or generated PySpark
+  -> execution or code generation
 ```
 
 DSL and IR describe transform meaning. PySpark-specific choices belong behind the target boundary.
+
+## Execution and Code Generation
+
+**Execution** is the default direct runtime path: Structure interprets a checked shared PySpark plan against live
+DataFrames supplied through `StructureSession`.
+
+**Code generation** emits deterministic, reviewable PySpark modules from that same plan. It is an artifact-producing
+compiler action, not a runtime mode.
+
+**Generated-code execution** is the separate runtime path that imports and runs those generated PySpark modules.
+Execution and generated-code execution must preserve the same observable transform semantics.
+
+`execution_mode = "online" | "generated"` remains the stable configuration interface. The values identify the direct
+and generated-code runtime implementations; they are not the preferred explanatory vocabulary.
 
 ## DSL
 
@@ -111,7 +125,7 @@ rejected = output(OrderRejected)
 
 A lane is an intermediate DataFrame stream inside a transform. Lanes let a transform identify internal funnel states, branch outputs, or disambiguate repeated schemas.
 
-Lanes are neither constructor inputs nor public transform results. They are internal flow identificators used by method-level binding, hooks, IR, online execution, and generated code.
+Lanes are neither constructor inputs nor public transform results. They are internal flow identificators used by method-level binding, hooks, IR, execution, and generated code.
 
 Example:
 
@@ -163,7 +177,7 @@ lower(trim(order.customer_id)) == "c-001"
 
 An expression helper function is a reusable compiler-visible function marked with `@special(type="expr")`. When called with symbolic arguments, the helper is expanded as expression IR.
 
-Expression helper functions are Structure's preferred way to use expression logic while keeping it visible to the compiler checks, traceability, online execution, and generated code.
+Expression helper functions are Structure's preferred way to use expression logic while keeping it visible to the compiler checks, traceability, execution, and generated code.
 
 Example:
 
@@ -361,7 +375,7 @@ TransformPlan EnrichOrders
 `TransformPlan` represents one compiled transform class. It contains ordered inputs, ordered steps, ordered outputs,
 validation policy, streaming policy, provenance, dataflow records, capability metadata, and diagnostics.
 
-It is the semantic source of truth for online and generated execution.
+It is the semantic source of truth for execution and generated-code execution.
 
 ### InputPlan
 
@@ -454,7 +468,7 @@ Hook boundaries are marked opaque.
 Capability metadata records target backend and version information used by backend capability checks. For v1, the main
 target is PySpark.
 
-Capability checks happen before online execution or code generation so unsupported operations fail early.
+Capability checks happen before execution or code generation so unsupported operations fail early.
 
 ### Determinism
 
@@ -477,7 +491,7 @@ Lowering is the process of turning a higher-level semantic representation into a
 In Structure, there are two important lowering steps:
 
 - backend-neutral IR lowers to shared PySpark execution recipes;
-- those recipes are either interpreted online or rendered as generated PySpark source.
+- those recipes are either interpreted during execution or rendered as generated PySpark source.
 
 Lowering must not invent semantics. It must implement checked IR.
 
@@ -498,8 +512,8 @@ DSL objects and generic IR should not contain PySpark implementation details.
 
 ### PySpark Execution Plan
 
-The PySpark execution plan is the shared target-level recipe model consumed by both online PySpark execution and the
-generated PySpark emitter.
+The PySpark execution plan is the shared target-level recipe model consumed by execution and the generated PySpark
+emitter.
 
 It decides expression mapping, filter order, projection field order, join aliases, hook order, validation placement,
 literal typing, and guardrails once.
@@ -513,17 +527,17 @@ PySparkStepRecipe normalize
     orders: select(id, customer_id, total)
 ```
 
-### Online Lowering
+### Execution Lowering
 
-Online lowering turns checked IR plus PySpark capabilities into target recipes, then the online runner interprets those
-recipes with live PySpark DataFrame and Column APIs at runtime.
+Execution lowering turns checked IR plus PySpark capabilities into target recipes, then the direct runtime runner
+interprets those recipes with live PySpark DataFrame and Column APIs.
 
-Online execution does not write generated files and does not execute generated source text.
+Execution does not write generated files and does not execute generated source text.
 
 Example:
 
 ```text
-OnlinePySparkRunner interprets PySparkStepRecipe with live DataFrames.
+The direct runtime runner interprets `PySparkStepRecipe` with live DataFrames.
 ```
 
 ### Generated Lowering
@@ -616,7 +630,7 @@ orders = self._impl.add_quality_columns(orders=orders, spark=self.spark, ctx=sel
 
 ### Validation Lowering
 
-Validation lowering places schema checks at the same points in online and generated execution: inputs, intermediate
+Validation lowering places schema checks at the same points in execution and generated-code execution: inputs, intermediate
 outputs, hook outputs, projections after `project_output=True`, and final outputs according to policy.
 
 ### Backend Capability Check
@@ -634,10 +648,10 @@ materialization.
 
 Arbitrary PySpark belongs in explicit hooks, where the opacity is visible.
 
-### Online/Generated Parity
+### Execution/Generated-Code Parity
 
-Online/generated parity means online execution and generated execution produce the same observable DataFrame semantics
-from the same checked `TransformPlan`.
+Execution/generated-code parity means execution and generated-code execution produce the same observable DataFrame
+semantics from the same checked `TransformPlan`.
 
 Parity covers projection order, filters, expressions, joins, hooks, validation placement, schema projection, result
 shape, and diagnostics for unsupported cases.
@@ -648,6 +662,6 @@ shape, and diagnostics for unsupported cases.
 - [DSL.md](specifications/DSL.md): public DSL contract.
 - [SymbolicExecution.md](specifications/SymbolicExecution.md): symbolic capture contract.
 - [IntermediateRepresentation.md](specifications/IntermediateRepresentation.md): IR shape and invariants.
-- [ExecutionSemanticContract.md](specifications/ExecutionSemanticContract.md): shared online/generated lowering contract.
+- [ExecutionSemanticContract.md](specifications/ExecutionSemanticContract.md): shared execution/generated-code lowering contract.
 - [PySparkCodeGeneration.md](specifications/PySparkCodeGeneration.md): generated PySpark rendering contract.
-- [OnlineExecution.md](specifications/OnlineExecution.md): runtime session and online runner behavior.
+- [Execution.md](specifications/Execution.md): runtime session and direct runtime behavior.

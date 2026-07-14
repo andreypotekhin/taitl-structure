@@ -2,11 +2,11 @@
 
 ## Purpose
 
-Online execution and generated execution are two ways to run the same Structure transform. They differ in output form:
-online execution uses live PySpark objects at runtime, while generated execution imports checked-in PySpark source.
+Execution and generated-code execution are two ways to run the same Structure transform. They differ in output form:
+execution uses live PySpark objects at runtime, while generated-code execution imports checked-in PySpark source.
 They must not differ in transform meaning.
 
-This specification defines the shared semantic contract between checked `TransformPlan` IR, online PySpark execution,
+This specification defines the shared semantic contract between checked `TransformPlan` IR, PySpark execution,
 and generated PySpark emission. The contract exists to prevent two independent lowerers from drifting apart on
 projection order, filter order, join aliasing, hook order, validation placement, schema projection, literal typing, or
 performance guardrails.
@@ -16,7 +16,7 @@ performance guardrails.
 This specification owns:
 
 - the shared PySpark semantic lowering layer;
-- parity requirements for online and generated PySpark execution;
+- parity requirements for execution and generated-code execution;
 - deterministic operation recipes consumed by online runners and generated emitters;
 - the boundary between semantic concerns and source-text concerns;
 - operation-by-operation parity test requirements;
@@ -25,7 +25,7 @@ This specification owns:
 Related specifications own narrower behavior:
 
 - backend-neutral IR shape: [IntermediateRepresentation.md](IntermediateRepresentation.md);
-- online runtime selection and session behavior: [OnlineExecution.md](OnlineExecution.md);
+- direct runtime selection and session behavior: [Execution.md](Execution.md);
 - generated source text shape: [PySparkCodeGeneration.md](PySparkCodeGeneration.md);
 - symbolic capture: [SymbolicExecution.md](SymbolicExecution.md);
 - type and literal compatibility: [NullabilityAndTypeCoercion.md](NullabilityAndTypeCoercion.md);
@@ -51,8 +51,8 @@ TransformPlan
 The generated code emitter must not re-decide transform semantics while rendering source text. The online runner must
 not execute generated Python source text. Both consume the same PySpark execution recipes.
 
-A checked compiled artifact is the runtime unit that holds the plan and recipes. Online execution interprets that
-artifact; generation renders it. Generated modules carry the artifact semantic fingerprint and generated execution
+A checked compiled artifact is the runtime unit that holds the plan and recipes. Execution interprets that
+artifact; generation renders it. Generated modules carry the artifact semantic fingerprint and generated-code execution
 must reject a module whose fingerprint differs from the artifact selected by the session.
 
 ## Shared Target Plan
@@ -116,7 +116,7 @@ PySparkHookRecipe
 ```
 
 Implementations may rename these records when a local naming pattern is clearer. The observable requirement is that a
-single target plan carries the semantic choices consumed by both online and generated execution.
+single target plan carries the semantic choices consumed by both execution and generated-code execution.
 
 The shared target plan must not contain:
 
@@ -156,7 +156,7 @@ The shared PySpark execution plan must decide these items once:
 - watermark placement on the current frame and on joined inputs before their join;
 - compiled-path performance guardrails.
 
-Online and generated execution may differ only in representation details that do not change observable DataFrame
+Execution and generated-code execution may differ only in representation details that do not change observable DataFrame
 semantics. Allowed differences include:
 
 - Python imports and generated file headers;
@@ -178,12 +178,12 @@ A new compiled operation is not supported until all of these are true:
 1. The source DSL behavior is specified.
 2. The backend-neutral IR shape is specified.
 3. The PySpark execution recipe is specified.
-4. The online runner can consume the recipe or the feature is explicitly unsupported online.
+4. The direct runtime runner can consume the recipe or the feature is explicitly unsupported for execution.
 5. The generated emitter can render the recipe or the feature is explicitly unsupported for generated mode.
-6. A parity test proves online and generated behavior match for the operation when both modes support it.
+6. A parity test proves execution and generated-code execution behavior match for the operation when both modes support it.
 7. Guardrail tests prove compiled paths do not use prohibited PySpark escape hatches.
 
-Unsupported operations must fail through diagnostics before online execution or generated source rendering.
+Unsupported operations must fail through diagnostics before execution or generated source rendering.
 
 ## Parity Matrix
 
@@ -294,7 +294,7 @@ Operation:
   WindowProject
 
 Problem:
-  Broad WindowProject forms have no PySpark execution recipe, so online and generated execution could drift.
+  Broad WindowProject forms have no PySpark execution recipe, so execution and generated-code execution could drift.
 
 Use:
   Use latest_by(...) or earliest_by(...) for admitted selected-row windows, move broader logic into an explicit hook,
@@ -307,16 +307,16 @@ See docs/dev/specifications/ExecutionSemanticContract.md
 
 The contract is implemented when tests prove:
 
-- online and generated execution consume the same checked `TransformPlan`;
+- execution and generated-code execution consume the same checked `TransformPlan`;
 - a shared PySpark target plan exists for projection-only execution;
-- projection field order is identical online and generated;
-- input, intermediate, hook, and final validation placement is identical online and generated;
-- literal typing and casts are identical online and generated;
-- filters preserve source order online and generated;
-- join aliases and repeated join occurrence names are deterministic online and generated;
-- hook calls and `HookInputs` shape are identical online and generated;
-- `schema_mode` and `project_output` behavior is identical online and generated;
+- projection field order is identical for execution and generated-code execution;
+- input, intermediate, hook, and final validation placement is identical for execution and generated-code execution;
+- literal typing and casts are identical for execution and generated-code execution;
+- filters preserve source order for execution and generated-code execution;
+- join aliases and repeated join occurrence names are deterministic for execution and generated-code execution;
+- hook calls and `HookInputs` shape are identical for execution and generated-code execution;
+- `schema_mode` and `project_output` behavior is identical for execution and generated-code execution;
 - generated source snapshots are secondary to runtime parity tests;
-- unsupported operations fail before either online execution or generated rendering;
+- unsupported operations fail before either execution or generated rendering;
 - compiled recipes contain no prohibited UDF, RDD, collection, or row-wise behavior;
 - compiler commands remain Spark-free.

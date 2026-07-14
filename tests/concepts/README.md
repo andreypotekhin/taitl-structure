@@ -12,9 +12,10 @@ Starting coverage is intentionally focused on concepts visible to Structure user
 - joins: `tests/user_stories/15_joins`
 - hooks: `tests/user_stories/16_hooks`
 - generated PySpark: `tests/golden`, `tests/specifications/pyspark-code-generation`
-- online execution: `tests/specifications/online-execution`
+- execution: `tests/specifications/online-execution`
 - diagnostics: `tests/user_stories/20_error_reporting`, `tests/specifications/compiler-diagnostics`
 - compatibility: `tests/specifications/compatibility`, `tests/integration`
 
-Prefer black-box tests through public APIs, CLI commands, generated code, diagnostics, and online/generated parity.
+Prefer black-box tests through public APIs, CLI commands, generated code, diagnostics, and execution/generated-code
+parity.
 Avoid asserting compiler internals unless the public concept is the generated artifact or traceability report itself.

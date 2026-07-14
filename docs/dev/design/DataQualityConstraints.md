@@ -49,7 +49,7 @@ row-count policy.
 
 ## Validation Recipes
 
-Once constraints are implemented, they should lower through the shared PySpark semantic contract. Online execution and
+Once constraints are implemented, they should lower through the shared PySpark semantic contract. Execution and
 generated code must consume the same validation recipes so constraint behavior cannot drift between runtime modes.
 
 Conceptual recipe:
@@ -84,7 +84,7 @@ Every data-quality diagnostic should include:
 
 ## Generated Schema Reuse
 
-Generated schema modules are part of the generated-code public surface. Online execution must also expose equivalent
+Generated schema modules are part of the generated-code public surface. Execution must also expose equivalent
 materialized Spark schemas without requiring generated files. Both surfaces are intentionally useful outside transform
 internals.
 
@@ -97,7 +97,7 @@ df = project_schema(df, ORDER_ENRICHED_SCHEMA)
 df.write.mode("overwrite").parquet(target_path)
 ```
 
-Online execution should expose the same shape through the transform result:
+Execution should expose the same shape through the transform result:
 
 ```python
 transform = EnrichOrders(orders=orders_df, customers=customers_df, products=products_df)
@@ -114,7 +114,7 @@ mode, table format, checkpoints, and environment policy are deployment concerns.
 
 - Keep `schema_only` validation row-scan-free.
 - Keep generated `*_SCHEMA` constants deterministic and shape-only.
-- Materialize equivalent Spark schemas during online execution and expose them from the transform invocation.
+- Materialize equivalent Spark schemas during execution and expose them from the transform invocation.
 - Add separate generated constraint metadata when constraints are implemented.
 - Classify streaming compatibility from constraint cost.
 - Add tests proving generated schemas can be imported and used by caller code.

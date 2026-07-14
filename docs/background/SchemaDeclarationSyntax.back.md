@@ -250,7 +250,7 @@ return OrderPublished(
 )
 ```
 
-The compiler lowers the nested constructor to Spark `struct(...)` in generated and online PySpark execution. It does
+The compiler lowers the nested constructor to Spark `struct(...)` in generated and PySpark execution. It does
 not treat the nested object as a Python runtime value. To change one child field, construct the whole nested value for
 now; partial nested updates are tracked as planned follow-up work.
 

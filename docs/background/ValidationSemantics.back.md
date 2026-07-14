@@ -133,7 +133,7 @@ Execution order follows the shared recipe stream:
 
 Input validation happens before the first step method. Final output validation happens before returning the result.
 
-Online and generated execution must use identical validation placement.
+Execution and generated-code execution must use identical validation placement.
 
 ## Streaming Compatibility
 

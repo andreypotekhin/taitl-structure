@@ -1,1 +1,1 @@
-"""Source fixtures for live online/generated execution parity tests."""
+"""Source fixtures for live execution/generated-code execution parity tests."""

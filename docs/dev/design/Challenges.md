@@ -539,13 +539,13 @@ Recommended direction:
 Resolved by [P06202601.v1-first-executable-slice.plan.md](../planning/done/P06202601.v1-first-executable-slice.plan.md), the first executable slice model fixture under
 `res/testing/model/v1`, and the revised Sprint 01 plan.
 
-The roadmap's v1 remains the broad north star: online execution, optional generated PySpark, schemas, validation, joins,
+The roadmap's v1 remains the broad north star: execution, optional generated PySpark, schemas, validation, joins,
 hooks, compiler traceability, static dataflow, streaming compatibility reporting, diagnostics, doctor checks, and build
 integration. That scope is coherent, but it is too broad to serve as the first adoption checkpoint.
 
 The first adoption checkpoint is now first executable slice, an internal dev/test planning label. first executable slice proves one executable contract before
 the larger v1 scope hardens: one transform with schema declaration, projection, filtering, one `@special(type="expr")` helper, input
-validation, online execution, generated execution, and parity tests.
+validation, execution, generated-code execution, and parity tests.
 
 Deferred from Sprint 01 into later v1 work:
 
@@ -562,7 +562,7 @@ Resolved by [BackendCapabilities.md](../specifications/BackendCapabilities.md), 
 [D06202604.Backend-capability-interface.md](decisions/D06202604.Backend-capability-interface.md), and plan
 [P06202604.Backend-capability-interface.plan.md](../planning/P06202604.Backend-capability-interface.plan.md).
 
-Backend adaptability is now an explicit internal capability contract. Compiler checks, online execution, generated
+Backend adaptability is now an explicit internal capability contract. Compiler checks, execution, generated
 PySpark emission, streaming compatibility checks, and future explain output should ask a `BackendCapabilities` object
 whether a `CapabilityRequirement` is supported. The v1 profile supports ordinary PySpark for
 `target_profile = ">=3.5,<4.1"` without importing PySpark during compiler commands.
@@ -570,14 +570,14 @@ whether a `CapabilityRequirement` is supported. The v1 profile supports ordinary
 Unsupported backend targets fail with `BACKEND-E2401`. Unsupported backend capabilities fail with `BACKEND-E2402`.
 New DSL operations must declare capability behavior before they are considered supported.
 
-## +C24. Online and Generated Execution Need a Shared Semantic Contract
+## +C24. Execution and Generated-Code Execution Need a Shared Semantic Contract
 
 Resolved by [ExecutionSemanticContract.md](../specifications/ExecutionSemanticContract.md), design
 [ExecutionSemanticContract.md](ExecutionSemanticContract.md), decision
 [D06202601.Online-generated-semantic-contract.md](decisions/D06202601.Online-generated-semantic-contract.md), and plan
 [P06202601.Online-generated-semantic-contract.plan.md](../planning/done/P06202601.Online-generated-semantic-contract.plan.md).
 
-Online execution and generated code intentionally share semantics while differing in output form. The shared contract
+Execution and generated code intentionally share semantics while differing in output form. The shared contract
 requires checked `TransformPlan` IR plus `PySparkCapabilities` to lower into deterministic PySpark execution recipes.
 `OnlinePySparkRunner` interprets those recipes with live PySpark objects, while `PySparkCodeGenerator` renders the same
 recipes as source text.
@@ -587,7 +587,7 @@ typing, capability-selected backend spellings, and compiled-path performance gua
 plan. Imports, formatting, file headers, comments, and generated output paths remain generator concerns. Live DataFrame
 binding and hook invocation remain online-runner concerns.
 
-Each new compiled operation must add a recipe shape and an online/generated parity test before it is considered
+Each new compiled operation must add a recipe shape and an execution/generated-code parity test before it is considered
 supported.
 
 ## +C25. Extension Points Are Not Yet Sorted Into Supported and Unsupported
@@ -616,7 +616,7 @@ metadata and must not scan rows. Accepted values, ranges, regex-like constraints
 uniqueness, referential checks, and row-count expectations belong to a future opt-in constraint model.
 
 Generated PySpark schema constants are supported caller-facing `StructType` artifacts. Callers may import them for
-`spark.read.schema(...)`, runtime validation, and projection before their own writes. Online execution exposes
+`spark.read.schema(...)`, runtime validation, and projection before their own writes. Execution exposes
 equivalent materialized schemas after `.run(session)`, for example through `result.schema.enriched`. Generated
 `*_SCHEMA` constants remain shape-only; future constraint metadata must live beside them rather than silently changing
 their meaning.
@@ -662,7 +662,7 @@ delivery path.
 Recommended direction:
 
 - Add small deployment recipes after the first executable contract works.
-- Cover local development, CI with `structure check`, CI with `compile --fail-on-diff`, Airflow-generated execution,
+- Cover local development, CI with `structure check`, CI with `compile --fail-on-diff`, Airflow-generated-code execution,
   Databricks notebook or job usage, and packaged wheel usage.
 - Document how generated files are committed, reviewed, and promoted across environments.
 - Add troubleshooting entries for import roots, missing generated modules, PySpark target mismatch, and stale generated
@@ -731,7 +731,7 @@ boundary.
 Risk: enabling hook-bearing stages without a design would either drop hook behavior silently or make hook dispatch
 depend on whichever wrapper, source stage, or runtime pipeline object happens to execute the composed plan. Generated
 composition has the same risk for source imports, `_impl` construction, hook order, validation points, traceability, and
-online/generated parity.
+execution/generated-code parity.
 
 Recommended direction:
 
@@ -774,7 +774,7 @@ docs/dev/specifications/
   Diagnostics.md
   IntermediateRepresentation.md
   ExecutionSemanticContract.md
-  OnlineExecution.md
+  Execution.md
   PySparkCodeGeneration.md
   BackendCapabilities.md
   DataQualityConstraints.md

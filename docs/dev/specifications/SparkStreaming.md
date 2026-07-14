@@ -8,12 +8,12 @@ transformations that may run on streaming DataFrames; callers own streaming life
 Structure supports a transform with a streaming input when all of these are true:
 
 - the configured backend is PySpark;
-- the caller creates the streaming source and passes the streaming DataFrame into online or generated execution;
+- the caller creates the streaming source and passes the streaming DataFrame into execution or generated-code execution;
 - the transform has one current pipeline input that may be streaming;
 - joined side inputs are static DataFrames;
 - every compiler-visible operation is classified as streaming-compatible;
 - opaque hooks are absent or explicitly marked `streaming_safe=True`;
-- generated and online execution do not emit or call streaming lifecycle APIs, Spark actions, RDD conversion, Pandas
+- generated-code execution and execution do not emit or call streaming lifecycle APIs, Spark actions, RDD conversion, Pandas
   conversion, Python UDFs, or local collection.
 
 The support claim covers returned DataFrame plans only. Streaming sources, sinks, query start/stop behavior, triggers,
@@ -44,14 +44,14 @@ Severity rules:
 
 ## Runtime Contract
 
-Online execution uses the existing session:
+Execution uses the existing session:
 
 ```python
 session = StructureSession(spark=spark, ctx=ctx, config=config)
 result = EnrichOrders(orders=orders_stream, customers=customers_static).run(session)
 ```
 
-Generated execution uses the existing generated class API:
+Generated-code execution uses the existing generated class API:
 
 ```python
 result = EnrichOrdersGenerated(spark=spark, ctx=ctx).run(
@@ -95,7 +95,7 @@ not as proof from body analysis.
 
 `watermark(field, delay="10 minutes")` records a compiler-visible event-time watermark and lowers to PySpark
 `DataFrame.withWatermark(...)`. Watermarks are transformation metadata, not lifecycle ownership.
-Online execution interprets that lowered recipe directly, and generated execution renders the same call. A watermark on
+Execution interprets that lowered recipe directly, and generated-code execution renders the same call. A watermark on
 a lookup relation is applied before that relation is joined.
 
 `event_time_between(left_time, right_time, upper=..., lower="0 seconds")` records the bounded event-time relationship
@@ -138,7 +138,7 @@ Diagnostics must include:
 - configured severity;
 - the runtime-shape assumption, especially that joined side inputs are static;
 - a user action;
-- a link to `docs/background/OnlineExecution.back.md` or `docs/background/OnlineExecution.back.md`.
+- a link to `docs/background/Execution.back.md` or `docs/background/Execution.back.md`.
 
 Required diagnostic cases:
 
@@ -154,7 +154,7 @@ Required diagnostic cases:
 Sprint 09 must add or schedule these checks:
 
 - static compatibility tests for each supported and rejected operation family;
-- online runtime parity with a real streaming current input and static lookup side input;
+- direct runtime parity with a real streaming current input and static lookup side input;
 - generated runtime parity for the same fixture;
 - generated-source scans excluding lifecycle APIs and actions from compatible transforms;
 - explain tests showing compatible, batch-only, and unknown classifications;

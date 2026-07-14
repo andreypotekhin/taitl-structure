@@ -30,7 +30,7 @@ Spark Connect support covers completed v1/v2 batch features that lower through p
   selected-row helpers, ranking, lag/lead, rolling metrics, and dedupe helpers;
 - the implemented compiler-visible array and map helper set;
 - schema-only validation and strict projection;
-- online execution through `StructureSession`;
+- execution through `StructureSession`;
 - generated PySpark execution with the same constructor and `run(...)` signature as ordinary PySpark.
 
 ## What Is Not Included
@@ -51,7 +51,7 @@ opaque. For Spark Connect, hook bodies must use public Connect-compatible PySpar
 
 ## Runtime Boundaries
 
-If online or generated execution detects that runtime code touched classic-only Spark internals while
+If execution or generated-code execution detects that runtime code touched classic-only Spark internals while
 `target_variant = "spark-connect"` is active, Structure raises `CONNECT-E2601`. This diagnostic covers detected
 SparkContext, RDD, JVM, Py4J, and private classic-field access from hook bodies or generated transform execution.
 

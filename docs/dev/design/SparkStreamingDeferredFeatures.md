@@ -79,7 +79,7 @@ A deferred streaming feature becomes eligible only when it has:
 - backend capability names and unsupported decisions;
 - diagnostics with concrete user actions;
 - explain output showing lifecycle and state assumptions;
-- online and generated parity where both modes apply;
+- execution and generated-code parity where both modes apply;
 - live Spark Structured Streaming evidence;
 - public reference documentation.
 

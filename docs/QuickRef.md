@@ -86,7 +86,7 @@ Parent transform step methods run before child transform step methods. Multiple 
 Step methods do not call other step methods directly; attempt to do so, except for the override case above, will result in error. 
 
 Reference: [transforms API](api/Transforms.api.md), [DSL](background/DSL.back.md),
-[online execution](background/OnlineExecution.back.md), and
+[execution](background/Execution.back.md), and
 [transform inheritance and composition](background/DSL.back.md).
 
 ## Inputs
@@ -184,9 +184,9 @@ def publish(self, order: OrderNormalized) -> OrderPublished:
 
 Reference: [transforms API](api/Transforms.api.md), [DSL step methods](background/DSL.back.md),
 [symbolic execution](background/DSL.back.md), and
-[execution semantics](background/OnlineExecution.back.md).
+[execution semantics](background/Execution.back.md).
 
-## Online Execution
+## Execution
 
 Structure does not own storage orchestration. Callers own `write`, `writeStream`, table creation,
 partitioning, checkpoints, output modes, and storage options.
@@ -211,8 +211,8 @@ enriched_df = result.enriched
 The session owns the caller-supplied Spark reference, Structure configuration,
 execution mode and compiled artifacts. It preserves the compiled code between transform and invocations. For instance, the subsequent construction of new insances `EnrichOrders` and repeat invocations of its .run() (on same session) do not trigger recompiling.
 
-Reference: [transforms API](api/Transforms.api.md), [online execution](background/OnlineExecution.back.md), and
-[execution semantic contract](background/OnlineExecution.back.md).
+Reference: [transforms API](api/Transforms.api.md), [execution](background/Execution.back.md), and
+[execution semantic contract](background/ExecutionSemanticContract.back.md).
 
 ## Generated PySpark Code
 
@@ -479,7 +479,7 @@ return CustomerOrderSummary(
 Reference: [aggregations API](api/Aggregations.api.md),
 [advanced analytical operations](background/DSL.back.md), [DSL](background/DSL.back.md),
 [IR](background/PySparkCodeGeneration.back.md), [PySpark code generation](background/PySparkCodeGeneration.back.md), and
-[streaming compatibility](background/OnlineExecution.back.md).
+[streaming compatibility](background/StreamingCompatibility.back.md).
 
 ## Latest and Earliest Rows
 
@@ -511,7 +511,7 @@ For complete, outcome-oriented examples, see the [Latest Rows recipe](recipes/La
 Reference: [aggregations API](api/Aggregations.api.md), [DSL](background/DSL.back.md),
 [IR](background/PySparkCodeGeneration.back.md),
 [PySpark code generation](background/PySparkCodeGeneration.back.md), and
-[streaming compatibility](background/OnlineExecution.back.md).
+[streaming compatibility](background/StreamingCompatibility.back.md).
 
 ## Window Projection Functions
 
@@ -570,7 +570,7 @@ Streaming: broad window helpers are batch-only in v2 streaming compatibility.
 Reference: [windows API](api/Windows.api.md),
 [advanced analytical operations](background/DSL.back.md), [DSL](background/DSL.back.md),
 [IR](background/PySparkCodeGeneration.back.md), [PySpark code generation](background/PySparkCodeGeneration.back.md), and
-[streaming compatibility](background/OnlineExecution.back.md).
+[streaming compatibility](background/StreamingCompatibility.back.md).
 
 ## Removing Duplicate Rows
 
@@ -610,7 +610,7 @@ watermark, state, and output-mode semantics.
 Reference: [aggregations API](api/Aggregations.api.md), [DSL](background/DSL.back.md),
 [IR](background/PySparkCodeGeneration.back.md),
 [PySpark code generation](background/PySparkCodeGeneration.back.md), and
-[streaming compatibility](background/OnlineExecution.back.md).
+[streaming compatibility](background/StreamingCompatibility.back.md).
 
 ## Higher-Order Functions
 
@@ -686,7 +686,7 @@ is rejected; combine symbolic predicates with `&`, `|`, and `~`.
 
 Reference: [collections API](api/Collections.api.md),
 [advanced analytical operations](background/DSL.back.md), [DSL](background/DSL.back.md), and
-[backend capabilities](background/OnlineExecution.back.md).
+[backend capabilities](background/BackendCapabilities.back.md).
 
 ## Joins
 
@@ -976,7 +976,7 @@ class OrderPipeline(Transform):
 
 Reference: [transforms API](api/Transforms.api.md),
 [transform inheritance and composition](background/DSL.back.md),
-[DSL](background/DSL.back.md), and [execution semantics](background/OnlineExecution.back.md).
+[DSL](background/DSL.back.md), and [execution semantics](background/Execution.back.md).
 
 ## Hooks
 
@@ -1096,7 +1096,7 @@ src/orders/...
 generated/structure_generated/orders/...
 ```
 
-Generated paths are used only when Structure is configured to emit PySpark code; online execution is the
+Generated paths are used only when Structure is configured to emit PySpark code; execution is the
 default. These paths are configurable. Mark `src` and `generated` as source roots in the IDE.
 
 Reference: [source module rules](background/PySparkCodeGeneration.back.md),
@@ -1111,11 +1111,11 @@ is supported by Spark Structured Streaming, the transform can run in a streaming
 Structure does not generate `readStream` or `writeStream`; the caller owns streaming orchestration.
 
 Reference: [streaming API](api/Streaming.api.md) and
-[streaming compatibility](background/OnlineExecution.back.md).
+[streaming compatibility](background/StreamingCompatibility.back.md).
 
 ## Compatibility
 
-Online and generated execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs for
+Execution and generated-code execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs for
 PySpark 3.5.x and 4.0.x by default:
 
 ```toml
@@ -1138,8 +1138,8 @@ make integration BACKEND=spark-connect35
 make integration BACKEND=spark-connect40
 ```
 
-Reference: [compatibility policy](background/OnlineExecution.back.md) and
-[backend capabilities](background/OnlineExecution.back.md).
+Reference: [compatibility policy](background/CompatibilityPolicy.back.md) and
+[backend capabilities](background/BackendCapabilities.back.md).
 
 ## Schema Generation Tool
 

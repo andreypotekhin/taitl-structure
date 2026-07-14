@@ -28,7 +28,7 @@ Fix: Install Docker Desktop with Compose v2, start Docker, open a new terminal, 
 
 When: Running `poetry run pytest --run-integration tests/integration/pyspark -q`.
 Error: Pytest reports `could not import 'pyspark': No module named 'pyspark'`.
-Cause: Live online/generated parity tests need the optional PySpark runtime, which is intentionally not installed for
+Cause: Live execution/generated-code parity tests need the optional PySpark runtime, which is intentionally not installed for
 the default compiler-only test environment.
 Fix: Install the project's integration dependencies or run `make integration` in the supported containerized Spark
 environment, then rerun the explicit PySpark command. Do not treat the skip as release verification.

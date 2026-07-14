@@ -25,9 +25,9 @@ def assert_online_generated_parity(
     names = tuple(outputs or online_outputs)
     if tuple(online_outputs) != tuple(generated_outputs) and outputs is None:
         raise AssertionError(
-            "Online/generated outputs differ.\n"
-            f"online outputs: {tuple(online_outputs)!r}\n"
-            f"generated outputs: {tuple(generated_outputs)!r}"
+            "Execution/generated-code outputs differ.\n"
+            f"execution outputs: {tuple(online_outputs)!r}\n"
+            f"generated-code outputs: {tuple(generated_outputs)!r}"
         )
     for name in names:
         if name not in online_outputs:
@@ -83,5 +83,7 @@ def _schema(value: Any) -> str | None:
 def _assert_output(name: str, online: FrameSnapshot, generated: FrameSnapshot) -> None:
     if online != generated:
         raise AssertionError(
-            f"Online/generated parity failed for output {name!r}.\n" f"online: {online!r}\n" f"generated: {generated!r}"
+            f"Execution/generated-code parity failed for output {name!r}.\n"
+            f"execution: {online!r}\n"
+            f"generated-code: {generated!r}"
         )

@@ -168,7 +168,7 @@ diagnostic_registry = DiagnosticRegistry(
             problem_template="Structure could not import the generated PySpark class for this transform.",
             use_template=(
                 "Run `structure compile`, ensure the generated source root is importable, "
-                'or set execution_mode = "online".'
+                'or switch to direct execution with execution_mode = "online".'
             ),
         ),
         DiagnosticEntry(
@@ -185,13 +185,16 @@ diagnostic_registry = DiagnosticRegistry(
         DiagnosticEntry(
             code="ONLINE-E1202",
             severity="error",
-            title="Online PySpark runner is not configured",
+            title="Direct PySpark runner is not configured",
             owner="runtime",
             status="active",
             docs="docs/Diagnostics.md#online-e1202",
             introduced="1.0.0",
             problem_template="The session has no live PySpark executor.",
-            use_template='Pass an online_executor to StructureSession or use execution_mode = "generated".',
+            use_template=(
+                'Pass a SparkSession or custom online_executor to StructureSession, or switch to generated-code '
+                'execution with execution_mode = "generated".'
+            ),
         ),
         DiagnosticEntry(
             code="ONLINE-E1203",

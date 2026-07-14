@@ -38,7 +38,7 @@ relevant public API in the PySpark 3.5.x and 4.0.x target intersection. Each cat
 
 The catalog is checked by tests. A public transformation API cannot silently disappear from consideration, and a public
 Structure helper cannot be documented as supported without a target capability, generated-rendering evidence, and
-online/generated parity evidence. The catalog itself is generated or validated from a maintained local inventory; no
+execution/generated-code parity evidence. The catalog itself is generated or validated from a maintained local inventory; no
 build step downloads Spark documentation.
 
 The reference baseline is the intersection of PySpark 3.5.x and 4.0.x. An API available only on part of that range may
@@ -53,7 +53,7 @@ when all of the following are true:
 1. Its source syntax is small, typed, and does not expose raw SQL strings or arbitrary PySpark objects.
 2. Symbolic execution can determine its operands, output type, honest nullability, and cardinality effect.
 3. The intermediate representation records the operation without embedding backend objects.
-4. Shared PySpark recipes lower it identically for online and generated execution.
+4. Shared PySpark recipes lower it identically for execution and generated-code execution.
 5. Target capability checks reject unsupported PySpark versions or Spark Connect variants before execution.
 6. Diagnostics state the legal types and a compiler-visible alternative where the operation is rejected.
 7. Unit, generated-code, parity, capability, streaming-classification, and public-reference evidence cover the

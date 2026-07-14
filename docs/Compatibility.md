@@ -3,7 +3,7 @@
 Structure compatibility has four public surfaces:
 
 - the Structure source DSL and configuration users write;
-- the online runtime behavior users execute through `StructureSession`;
+- the direct runtime behavior users execute through `StructureSession`;
 - the generated PySpark code optionally committed to user projects;
 - optional metadata artifacts such as compiler provenance and static dataflow traceability.
 
@@ -17,7 +17,7 @@ Structure targets:
 - Python 3.11 and newer;
 - PySpark 3.5.x and 4.0.x, expressed as `target_profile = ">=3.5,<4.1"` by default;
 - ordinary PySpark, expressed as `target_variant = "ordinary"` by default;
-- Linux runtime environments for online and generated PySpark execution;
+- Linux runtime environments for execution and generated-code execution;
 - Linux and macOS development environments;
 - Airflow and other schedulers without a hard runtime dependency on them.
 
@@ -38,14 +38,14 @@ target_variant = "ordinary"
 `execution_mode` is `online` by default. Projects may set it to `generated` when runtime execution should go
 through checked-in generated classes.
 
-The `target_profile` value constrains which PySpark APIs online and generated execution may use. Structure should avoid
+The `target_profile` value constrains which PySpark APIs execution and generated-code execution may use. Structure should avoid
 APIs outside that range unless the user explicitly changes the target.
 
 `target_variant` selects the PySpark runtime variant. `ordinary` is the default in-process PySpark contract.
 `spark-connect` uses Spark Connect through the PySpark DataFrame and Column API.
 
 When a transform uses a feature that cannot run for the configured target, Structure should fail during
-`structure check`, `structure compile`, or online runtime compilation with a backend capability diagnostic.
+`structure check`, `structure compile`, or direct runtime compilation with a backend capability diagnostic.
 Unknown backend targets use `BACKEND-E2401`; unsupported backend features use `BACKEND-E2402`.
 
 ## Spark Connect
@@ -90,17 +90,17 @@ Internal versions follow vN notation (v1 etc.). Decimal positions in N correspon
 position in semantic version. Example: v132 is same as semantic version 1.3.2. This also means that we only 
 plant for single digits in each semantic position.
 
-## Online Runtime Compatibility
+## Execution Compatibility
 
-Online execution is the default runtime surface. Compatible online execution means:
+Execution is the default runtime surface. Compatible execution means:
 
 - transform invocations use declared input names;
 - `StructureSession` accepts caller-owned Spark sessions and optional hook context;
-- online execution preserves the same transform semantics as generated PySpark for supported initial-release
+- execution preserves the same transform semantics as generated-code execution for supported initial-release
   features;
-- compiler commands remain Spark-free even though online runtime execution may import PySpark.
+- compiler commands remain Spark-free even though execution may import PySpark.
 
-Breaking changes to `StructureSession`, transform invocation binding, or online/generated semantic parity
+Breaking changes to `StructureSession`, transform invocation binding, or execution/generated-code semantic parity
 require a major version after 1.0 or a compatibility shim.
 
 ## Generated-Code Compatibility
@@ -171,7 +171,7 @@ Config schema rules:
 
 ## Roadmap
 
-v2 expands online/generated PySpark features and adoption tooling while preserving the same basic compatibility
+v2 expands execution/generated-code PySpark features and adoption tooling while preserving the same basic compatibility
 contract. Sprint 09 supports completed v1/v2 batch features through the PySpark target variant `spark-connect`.
 
 v3 hardens compiler-visible streaming transformations while callers retain streaming lifecycle ownership.

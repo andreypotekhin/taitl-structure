@@ -21,7 +21,7 @@ In scope:
 - nullable-side type checking after right and full joins;
 - output construction rules for row-admitting joins;
 - backend capability checks;
-- PySpark generated and online lowering through shared recipes;
+- PySpark generated and execution lowering through shared recipes;
 - traceability and rich explain output;
 - batch-only streaming classification for the new join forms.
 
@@ -230,7 +230,7 @@ Unsupported capability diagnostics use `BACKEND-E2402` and link to this specific
 
 ## PySpark Lowering
 
-Generated and online execution consume the same PySpark join recipe.
+Generated-code execution and execution consume the same PySpark join recipe.
 
 Lowering rules:
 
