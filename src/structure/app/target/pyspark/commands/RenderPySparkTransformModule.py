@@ -1,20 +1,29 @@
 from __future__ import annotations
 
+import ast
+import inspect
+import textwrap
 from collections import defaultdict
 from datetime import date, datetime
-from typing import Mapping, cast
+from typing import Callable, Mapping, cast
 
 from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.types.StructureType import StructureType
+from structure.app.target.pyspark.commands.RenderPySparkExpression import render_pyspark_expression
 from structure.app.target.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
 from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
+from structure.app.target.pyspark.logic.GeneratedCodeOptions import GeneratedCodeOptions
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 
 class RenderPySparkTransformModule:
+
+    def __init__(self) -> None:
+        self._options = GeneratedCodeOptions()
 
     def __call__(
         self,
@@ -24,11 +33,16 @@ class RenderPySparkTransformModule:
         schema_modules: Mapping[type[Schema], str],
         runtime_module: str,
         semantic_fingerprint: str | None = None,
+        generated_code_options: tuple[str, ...] = (),
     ) -> str:
         imports = self._imports(
-            plan, source_transform=source_transform, schema_modules=schema_modules, runtime_module=runtime_module
+            plan,
+            source_transform=source_transform,
+            schema_modules=schema_modules,
+            runtime_module=runtime_module,
+            generated_code_options=generated_code_options,
         )
-        body = self._class(plan, source_transform=source_transform)
+        body = self._class(plan, source_transform=source_transform, generated_code_options=generated_code_options)
         metadata = self._fingerprints({source_transform: semantic_fingerprint} if semantic_fingerprint else {})
         return f"{imports}\n\n\n{metadata}{body}\n"
 
@@ -39,6 +53,7 @@ class RenderPySparkTransformModule:
         schema_modules: Mapping[type[Schema], str],
         runtime_module: str,
         semantic_fingerprints: Mapping[str, str] | None = None,
+        generated_code_options: tuple[str, ...] = (),
     ) -> str:
         imports: list[str] = []
         bodies: list[str] = []
@@ -49,9 +64,12 @@ class RenderPySparkTransformModule:
                     source_transform=source_transform,
                     schema_modules=schema_modules,
                     runtime_module=runtime_module,
+                    generated_code_options=generated_code_options,
                 ).splitlines()
             )
-            bodies.append(self._class(plan, source_transform=source_transform))
+            bodies.append(
+                self._class(plan, source_transform=source_transform, generated_code_options=generated_code_options)
+            )
         separator = "\n\n\n"
         metadata = self._fingerprints(semantic_fingerprints or {})
         return f"{self._unique(imports)}\n\n\n{metadata}{separator.join(bodies)}\n"
@@ -68,6 +86,7 @@ class RenderPySparkTransformModule:
         source_transform: str,
         schema_modules: Mapping[type[Schema], str],
         runtime_module: str,
+        generated_code_options: tuple[str, ...],
     ) -> str:
         lines = [
             "from pyspark.sql import DataFrame, SparkSession",
@@ -78,7 +97,13 @@ class RenderPySparkTransformModule:
             lines.insert(0, "import datetime")
         if self._has_window(plan):
             lines.insert(1, "from pyspark.sql import Window")
-        lines.extend(self._source_imports(plan, source_transform=source_transform))
+        lines.extend(
+            self._source_imports(
+                plan,
+                source_transform=source_transform,
+                generated_code_options=generated_code_options,
+            )
+        )
 
         helpers = ["TransformResult", "assert_schema", "project_schema"]
         lines.append(f"from {runtime_module} import {', '.join(helpers)}")
@@ -97,27 +122,246 @@ class RenderPySparkTransformModule:
             unique.append(line)
         return "\n".join(unique)
 
-    def _class(self, plan: PySparkExecutionPlan, *, source_transform: str) -> str:
-        parent_classes = self._parent_classes(plan, source_transform=source_transform)
-        if not parent_classes:
-            return "\n".join(self._legacy_class(plan, source_transform=source_transform))
-        lines: list[str] = []
-        for parent in parent_classes:
-            lines.extend(self._owner_class(parent, plan, source_transform=source_transform))
-            lines.append("")
-            lines.append("")
-        lines.extend(self._concrete_class(plan, source_transform=source_transform, parent_classes=parent_classes))
-        return "\n".join(lines)
+    def _class(
+        self,
+        plan: PySparkExecutionPlan,
+        *,
+        source_transform: str,
+        generated_code_options: tuple[str, ...],
+    ) -> str:
+        embed_exprs = self._options.enabled(generated_code_options, "embed_exprs")
+        with render_pyspark_expression.embed_exprs(embed_exprs):
+            if self._options.enabled(generated_code_options, "mirror_methods"):
+                lines = self._mirror_class(
+                    plan,
+                    source_transform=source_transform,
+                    generated_code_options=generated_code_options,
+                )
+            else:
+                parent_classes = self._parent_classes(plan, source_transform=source_transform)
+                if not parent_classes:
+                    lines = self._legacy_class(
+                        plan,
+                        source_transform=source_transform,
+                        generated_code_options=generated_code_options,
+                    )
+                else:
+                    lines = []
+                    for parent in parent_classes:
+                        lines.extend(self._owner_class(parent, plan, source_transform=source_transform))
+                        lines.append("")
+                        lines.append("")
+                    lines.extend(
+                        self._concrete_class(
+                            plan,
+                            source_transform=source_transform,
+                            parent_classes=parent_classes,
+                            generated_code_options=generated_code_options,
+                        )
+                    )
+            if embed_exprs:
+                self._insert_special_helpers(lines, plan)
+            return "\n".join(lines)
 
-    def _legacy_class(self, plan: PySparkExecutionPlan, *, source_transform: str) -> list[str]:
+    def _mirror_class(
+        self,
+        plan: PySparkExecutionPlan,
+        *,
+        source_transform: str,
+        generated_code_options: tuple[str, ...],
+    ) -> list[str]:
+        class_name = f"{plan.transform}Generated"
+        source_name = source_transform.rsplit(".", 1)[1]
+        fields = self._mirror_fields(plan)
+        lines = [f"class {class_name}:", "", "    def __init__(self, *, spark: SparkSession, ctx=None,"]
+        for input in plan.inputs:
+            lines.append(f"        {input.name}: DataFrame,")
+        lines.extend(["    ):", "        self.spark = spark", "        self.ctx = ctx", "        self._ran = False"])
+        for input in plan.inputs:
+            lines.append(f"        self.{fields[f'input:{input.name}']} = {input.name}")
+        if self._requires_impl(plan, generated_code_options=generated_code_options):
+            lines.append(f"        self._impl = {source_name}()")
+        lines.extend(self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options))
+
+        methods = self._mirror_step_methods(plan, source_transform=source_transform, fields=fields)
+        if methods:
+            lines.extend(["", *methods])
+
+        lines.extend(["", "    def run(self) -> TransformResult:"])
+        lines.extend(
+            [
+                "        if self._ran:",
+                '            raise RuntimeError("A mirrored generated transform instance can run only once.")',
+                "        self._ran = True",
+            ]
+        )
+        for input in plan.inputs:
+            current = fields[input.name]
+            original = fields[f"input:{input.name}"]
+            lines.append(f"        self.{current} = self.{original}")
+            lines.extend(self._validation(input.validation, target=f"self.{current}"))
+        for step in plan.steps:
+            lines.append(f"        self.{self._mirror_step_method(step)}()")
+
+        sources = {frame: f"self.{field}" for frame, field in fields.items()}
+        result_entries: list[str] = []
+        schema_entries: list[str] = []
+        for output in plan.outputs:
+            lines.append("")
+            lines.append(render_pyspark_step(output, current=sources[output.source], sources=sources))
+            lines.append(f"        self.{fields[output.name]} = {output.name}")
+            result_entries.append(f'"{output.name}": self.{fields[output.name]}')
+            schema_entries.append(f'"{output.name}": {render_pyspark_schema.constant_name(output.output_schema)}')
+        single = "True" if len(plan.outputs) == 1 else "False"
+        aliases = self._output_aliases(plan)
+        alias_argument = f", aliases={aliases!r}" if aliases else ""
+        lines.append(
+            f"        return TransformResult("
+            f"{{{', '.join(result_entries)}}}, "
+            f"single={single}, "
+            f"schema={{{', '.join(schema_entries)}}}"
+            f"{alias_argument})"
+        )
+        wrappers = self._hook_methods(plan, embed_hooks=self._options.enabled(generated_code_options, "embed_hooks"))
+        if wrappers:
+            lines.extend(["", *wrappers])
+        if self._options.enabled(generated_code_options, "embed_udfs"):
+            lines.extend(["", *self._udf_methods(plan)])
+        return lines
+
+    def _mirror_step_methods(
+        self,
+        plan: PySparkExecutionPlan,
+        *,
+        source_transform: str,
+        fields: Mapping[str, str],
+    ) -> list[str]:
+        methods: list[str] = []
+        sources = {frame: f"self.{field}" for frame, field in fields.items()}
+        for step in plan.steps:
+            if methods:
+                methods.append("")
+            methods.append(f"    def {self._mirror_step_method(step)}(self):")
+            methods.append(
+                render_pyspark_step(
+                    step,
+                    current=sources[step.source],
+                    sources=sources,
+                    source_transform=source_transform,
+                    generated_hooks=True,
+                )
+            )
+            for result in step.results:
+                methods.append(f"        self.{fields[result.frame]} = {result.frame}")
+        return methods
+
+    def _hook_methods(self, plan: PySparkExecutionPlan, *, embed_hooks: bool) -> list[str]:
+        methods: list[str] = []
+        seen: set[str] = set()
+        for hook in self._hooks(plan):
+            if hook.name in seen:
+                continue
+            seen.add(hook.name)
+            if methods:
+                methods.append("")
+            if embed_hooks:
+                methods.extend(self._embedded_method(hook))
+            else:
+                parameters = ", ".join((*hook.lanes, "spark", "ctx"))
+                arguments = ", ".join(f"{parameter}={parameter}" for parameter in (*hook.lanes, "spark", "ctx"))
+                methods.extend(
+                    [
+                        f"    def {hook.name}(self, *, {parameters}):",
+                        f"        return self._impl.{hook.name}({arguments})",
+                    ]
+                )
+        return methods
+
+    def _embedded_method(self, hook) -> list[str]:
+        origin = hook.origin
+        if origin is None or origin.owner is None:
+            raise TypeError(f"embed_hooks cannot locate the source for generated hook {hook.name!r}.")
+        return self._embedded_function(origin.owner.__dict__[origin.member_name])
+
+    def _embedded_function(self, function: Callable, *, static: bool = False) -> list[str]:
+        source = textwrap.dedent(inspect.getsource(function))
+        module = ast.parse(source)
+        node = next((node for node in module.body if isinstance(node, ast.FunctionDef)), None)
+        if node is None:
+            raise TypeError(f"Cannot extract generated function {function!r}.")
+        node.decorator_list = []
+        rendered = ast.unparse(node)
+        decorators = ["    @staticmethod"] if static else []
+        return [*decorators, *(f"    {line}" if line else "" for line in rendered.splitlines())]
+
+    def _mirror_fields(self, plan: PySparkExecutionPlan) -> dict[str, str]:
+        fields: dict[str, str] = {}
+        used = {"spark", "ctx", "run", "_impl"}
+        for input in plan.inputs:
+            fields[f"input:{input.name}"] = f"_input_{input.name}"
+            fields[input.name] = self._mirror_field(input.name, used)
+            used.add(fields[input.name])
+        for step in plan.steps:
+            for result in step.results:
+                if result.frame not in fields:
+                    fields[result.frame] = self._mirror_field(result.frame, used)
+                    used.add(fields[result.frame])
+        for output in plan.outputs:
+            if output.name not in fields:
+                fields[output.name] = self._mirror_field(output.name, used)
+                used.add(fields[output.name])
+        return fields
+
+    def _mirror_field(self, frame: str, used: set[str]) -> str:
+        name = "".join(character if character.isalnum() or character == "_" else "_" for character in frame)
+        name = name if name.isidentifier() else f"_frame_{name}"
+        candidate = name
+        ordinal = 2
+        while candidate in used:
+            candidate = f"{name}_{ordinal}"
+            ordinal += 1
+        return candidate
+
+    def _mirror_step_method(self, step) -> str:
+        name = step.origin.member_name if step.origin is not None else step.name
+        return "".join(character if character.isalnum() or character == "_" else "_" for character in name)
+
+    def _insert_special_helpers(self, lines: list[str], plan: PySparkExecutionPlan) -> None:
+        definitions: dict[str, PySparkExpressionRecipe] = {}
+        for expression in self._expressions(plan):
+            for special in self._expression_specials(expression):
+                name = str(special.data["name"])
+                definitions.setdefault(name, special)
+        for name in sorted(definitions):
+            special = definitions[name]
+            parameters = ", ".join(cast(tuple[str, ...], special.data["parameters"]))
+            with render_pyspark_expression.embed_exprs(False):
+                body = render_pyspark_expression(cast(PySparkExpressionRecipe, special.data["body"]))
+            lines.extend(["", "    @staticmethod", f"    def {name}({parameters}):", f"        return {body}"])
+
+    def _expression_specials(self, expression):
+        if expression.kind == "special_expr":
+            yield expression
+            yield from self._expression_specials(expression.data["expanded"])
+            return
+        for argument in expression.args:
+            yield from self._expression_specials(argument)
+
+    def _legacy_class(
+        self,
+        plan: PySparkExecutionPlan,
+        *,
+        source_transform: str,
+        generated_code_options: tuple[str, ...],
+    ) -> list[str]:
         class_name = f"{plan.transform}Generated"
         source_name = source_transform.rsplit(".", 1)[1]
         lines = [f"class {class_name}:", "", "    def __init__(self, *, spark: SparkSession, ctx=None):"]
         lines.append("        self.spark = spark")
         lines.append("        self.ctx = ctx")
-        if self._requires_impl(plan):
+        if self._requires_impl(plan, generated_code_options=generated_code_options):
             lines.append(f"        self._impl = {source_name}()")
-        lines.extend(self._udf_initializers(plan, source_name=source_name))
+        lines.extend(self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options))
         lines.extend(["", "    def run(", "        self,", "        *,"])
         for input in plan.inputs:
             lines.append(f"        {input.name}: DataFrame,")
@@ -131,7 +375,14 @@ class RenderPySparkTransformModule:
         sources.update({f"input:{input.name}": self._raw_input_name(input.name) for input in plan.inputs})
         for step in plan.steps:
             lines.append("")
-            lines.append(render_pyspark_step(step, current=sources[step.source], sources=sources))
+            lines.append(
+                render_pyspark_step(
+                    step,
+                    current=sources[step.source],
+                    sources=sources,
+                    generated_hooks=self._options.enabled(generated_code_options, "embed_hooks"),
+                )
+            )
             for result in step.results:
                 sources[result.frame] = result.frame
 
@@ -152,6 +403,10 @@ class RenderPySparkTransformModule:
             f"schema={{{', '.join(schema_entries)}}}"
             f"{alias_argument})"
         )
+        if self._options.enabled(generated_code_options, "embed_hooks"):
+            lines.extend(["", *self._hook_methods(plan, embed_hooks=True)])
+        if self._options.enabled(generated_code_options, "embed_udfs"):
+            lines.extend(["", *self._udf_methods(plan)])
         return lines
 
     def _owner_class(
@@ -174,6 +429,7 @@ class RenderPySparkTransformModule:
         *,
         source_transform: str,
         parent_classes: tuple[str, ...],
+        generated_code_options: tuple[str, ...],
     ) -> list[str]:
         class_name = f"{plan.transform}Generated"
         bases = f"({', '.join(self._generated_class_name(owner) for owner in parent_classes)})" if parent_classes else ""
@@ -183,9 +439,9 @@ class RenderPySparkTransformModule:
         lines.extend(["", "    def __init__(self, *, spark: SparkSession, ctx=None):"])
         lines.append("        self.spark = spark")
         lines.append("        self.ctx = ctx")
-        if self._requires_impl(plan):
+        if self._requires_impl(plan, generated_code_options=generated_code_options):
             lines.append(f"        self._impl = {source_name}()")
-        lines.extend(self._udf_initializers(plan, source_name=source_name))
+        lines.extend(self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options))
         lines.extend(["", "    def run(", "        self,", "        *,"])
         for input in plan.inputs:
             lines.append(f"        {input.name}: DataFrame,")
@@ -217,6 +473,10 @@ class RenderPySparkTransformModule:
             f"schema={{{', '.join(schema_entries)}}}"
             f"{alias_argument})"
         )
+        if self._options.enabled(generated_code_options, "embed_hooks"):
+            lines.extend(["", *self._hook_methods(plan, embed_hooks=True)])
+        if self._options.enabled(generated_code_options, "embed_udfs"):
+            lines.extend(["", *self._udf_methods(plan)])
         return lines
 
     def _step_methods(
@@ -286,8 +546,14 @@ class RenderPySparkTransformModule:
     def _generated_class_name(self, owner: str) -> str:
         return f"{owner.rsplit('.', 1)[1]}Generated"
 
-    def _source_imports(self, plan: PySparkExecutionPlan, *, source_transform: str) -> list[str]:
-        if not self._requires_impl(plan):
+    def _source_imports(
+        self,
+        plan: PySparkExecutionPlan,
+        *,
+        source_transform: str,
+        generated_code_options: tuple[str, ...],
+    ) -> list[str]:
+        if not self._requires_impl(plan, generated_code_options=generated_code_options):
             return []
         imports: dict[str, set[str]] = defaultdict(set)
         module, name = source_transform.rsplit(".", 1)
@@ -301,18 +567,35 @@ class RenderPySparkTransformModule:
             for module, names in sorted(imports.items())
         ]
 
-    def _requires_impl(self, plan: PySparkExecutionPlan) -> bool:
-        return self._has_hooks(plan) or bool(self._udfs(plan))
+    def _requires_impl(self, plan: PySparkExecutionPlan, *, generated_code_options: tuple[str, ...] = ()) -> bool:
+        return (self._has_hooks(plan) and not self._options.enabled(generated_code_options, "embed_hooks")) or (
+            bool(self._udfs(plan)) and not self._options.enabled(generated_code_options, "embed_udfs")
+        )
 
-    def _udf_initializers(self, plan: PySparkExecutionPlan, *, source_name: str) -> list[str]:
+    def _udf_initializers(
+        self,
+        plan: PySparkExecutionPlan,
+        *,
+        source_name: str,
+        generated_code_options: tuple[str, ...],
+    ) -> list[str]:
         lines: list[str] = []
         for udf in self._udfs(plan):
             function_name = udf["function_name"]
             return_type = self._udf_return_type(udf, source_name=source_name)
-            lines.append(
-                f"        self.{udf['udf_name']} = F.udf(self._impl.{function_name}, returnType={return_type})"
+            implementation = f"self.{function_name}" if self._options.enabled(generated_code_options, "embed_udfs") else (
+                f"self._impl.{function_name}"
             )
+            lines.append(f"        self.{udf['udf_name']} = F.udf({implementation}, returnType={return_type})")
         return lines
+
+    def _udf_methods(self, plan: PySparkExecutionPlan) -> list[str]:
+        methods: list[str] = []
+        for udf in self._udfs(plan):
+            if methods:
+                methods.append("")
+            methods.extend(self._embedded_function(cast(Callable, udf["function"]), static=True))
+        return methods
 
     def _udf_return_type(self, udf: dict[str, object], *, source_name: str) -> str:
         if udf.get("pyspark_return_type"):
@@ -417,14 +700,14 @@ class RenderPySparkTransformModule:
     def _raw_input_name(self, name: str) -> str:
         return f"_input_{name}"
 
-    def _validation(self, validation: PySparkValidationRecipe) -> list[str]:
+    def _validation(self, validation: PySparkValidationRecipe, *, target: str | None = None) -> list[str]:
         schema = render_pyspark_schema.constant_name(validation.schema)
-        target = validation.target if validation.reason == "input" else "df"
+        frame = target or (validation.target if validation.reason == "input" else "df")
         lines = [
-            f'        assert_schema({target}, {schema}, name="{validation.schema.__name__}", mode="{validation.mode.value}")'
+            f'        assert_schema({frame}, {schema}, name="{validation.schema.__name__}", mode="{validation.mode.value}")'
         ]
         if validation.project:
-            lines.append(f"        df = project_schema(df, {schema})")
+            lines.append(f"        {frame} = project_schema({frame}, {schema})")
         return lines
 
     def _schema_imports(

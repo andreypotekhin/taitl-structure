@@ -1,6 +1,7 @@
 import importlib
 import sys
 import types
+from ast import parse
 from pathlib import Path
 from typing import Any, cast
 
@@ -86,6 +87,20 @@ def test_v3_model_includes_checked_in_generated_docs_and_pyspark() -> None:
     assert "class V3OrderFeaturesGenerated" in generated
     assert ".try_cast('int')" in generated
     assert "V3OrderFeatures" in index
+
+
+def test_v3_orders_fixture_includes_generated_method_layout_matrix() -> None:
+    root = Path(__file__).resolve().parents[3] / "res/testing/model/v3/structure_generated/orders/pyspark"
+    variants = {
+        "transforms": (),
+        "transforms-mirror": ("def normalize(self):", "self._impl = EnrichOrders()"),
+        "transforms-mirror-embed": ("def normalize(self):", "def remove_negative_totals(self, *, orders, spark, ctx):"),
+    }
+
+    for directory, expected in variants.items():
+        text = (root / directory / "order.py").read_text(encoding="utf-8")
+        parse(text)
+        assert all(fragment in text for fragment in expected)
 
 
 def _stub_pyspark(monkeypatch: pytest.MonkeyPatch) -> None:

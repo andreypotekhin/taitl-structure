@@ -41,6 +41,62 @@ def test_window_rejects_invalid_frame_objects() -> None:
 
 
 @pytest.mark.parametrize(
+    "call",
+    [
+        lambda: window(partition_by="tenant", order_by=array("ordered")),
+        lambda: lag(1, partition_by="tenant", order_by=array("ordered")),
+        lambda: first_value(1, order_by=array("ordered")),
+        lambda: last_value(1, order_by=array("ordered")),
+    ],
+)
+def test_ordered_helpers_reject_collection_ordering_expressions(call) -> None:
+    with pytest.raises(TypeError, match="orderable scalar expression"):
+        call()
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        lambda: first_value(1, order_by="sequence", ignore_nulls=True),
+        lambda: last_value(1, order_by="sequence", ignore_nulls=True),
+    ],
+)
+def test_ordered_aggregate_values_reject_window_only_ignore_nulls(call) -> None:
+    with pytest.raises(TypeError, match=r"ignore_nulls=True\) requires over"):
+        call()
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        lambda: rank(partition_by="tenant", order_by="ordered", descending=cast(bool, 1)),
+        lambda: rolling_sum(
+            1,
+            partition_by="tenant",
+            order_by="ordered",
+            preceding=1,
+            descending=cast(bool, "reverse"),
+        ),
+        lambda: nth_value(
+            1,
+            1,
+            over=window(partition_by="tenant", order_by="ordered"),
+            ignore_nulls=cast(bool, 1),
+        ),
+        lambda: first_value(
+            1,
+            over=window(partition_by="tenant", order_by="ordered"),
+            ignore_nulls=cast(bool, "yes"),
+        ),
+        lambda: arr_sort_by(array("priority"), lambda item: item, descending=cast(bool, 1)),
+    ],
+)
+def test_ordering_and_null_handling_options_require_booleans(call) -> None:
+    with pytest.raises(TypeError, match="must be a Boolean"):
+        call()
+
+
+@pytest.mark.parametrize(
     ("call", "message"),
     [
         (

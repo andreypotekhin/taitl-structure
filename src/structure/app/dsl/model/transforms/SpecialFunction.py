@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime
+from inspect import signature
 from typing import Any, Callable, cast, get_type_hints
 
 from structure.app.compiler.symbolic_execution.model.CompileContext import current_context
@@ -35,7 +36,7 @@ class SpecialFunction:
 
     def __call__(self, *args, **kwargs):
         if self.type == "expr":
-            return literal(self.function(*args, **kwargs))
+            return self._expr(args, kwargs)
         if self.type == "udf":
             if current_context() is None:
                 return self.function(*args, **kwargs)
@@ -48,6 +49,34 @@ class SpecialFunction:
                 "step method. Use @special(type=\"udf\") for scalar Python UDFs or a hook for DataFrame logic."
             )
         return self.function(*args, **kwargs)
+
+    def _expr(self, args: tuple[object, ...], kwargs: dict[str, object]) -> Expression:
+        expanded = literal(self.function(*args, **kwargs))
+        context = current_context()
+        if context is None or not context.capture_special_exprs:
+            return expanded
+
+        bound = signature(self.function).bind(*args, **kwargs)
+        bound.apply_defaults()
+        arguments = {name: literal(value) for name, value in bound.arguments.items()}
+        generic_arguments = {
+            name: Expression(kind="lambda_arg", type=value.type, nullable=value.nullable, data={"name": name})
+            for name, value in arguments.items()
+        }
+        body = literal(self.function(**generic_arguments))
+        return Expression(
+            kind="special_expr",
+            type=expanded.type,
+            nullable=expanded.nullable,
+            data={
+                "name": self.function.__name__,
+                "parameters": tuple(arguments),
+                "body": body,
+                "expanded": expanded,
+                "keyword_arguments": tuple((name, literal(value)) for name, value in kwargs.items()),
+            },
+            args=tuple(literal(argument) for argument in args),
+        )
 
     def __get__(self, instance: object, owner: type | None = None):
         if instance is None:

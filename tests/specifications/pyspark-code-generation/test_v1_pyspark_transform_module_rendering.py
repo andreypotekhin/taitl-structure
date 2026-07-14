@@ -1,4 +1,6 @@
+import ast
 import sys
+from typing import Any
 
 from structure import *
 from structure.app.cli.commands.RenderExplainReport import render_explain_report
@@ -13,6 +15,23 @@ class CacheRaw(Schema):
 class CachePublished(Schema):
     id = field(String(), nullable=False)
     status = field(String(), nullable=True)
+
+
+class UdfRaw(Schema):
+    id = field(String(), nullable=False)
+
+
+@transform
+class UdfPublished(Transform):
+    rows = input(UdfRaw)
+    published = output(UdfRaw)
+
+    @special(type="udf", return_type=String)
+    def normalize(value: Any):
+        return value.strip().lower()
+
+    def publish(self, row: UdfRaw) -> UdfRaw:
+        return UdfRaw(id=self.normalize(row.id))
 
 
 @transform
@@ -90,6 +109,80 @@ def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
         '        return TransformResult({"published": published}, single=True, '
         'schema={"published": ORDER_PUBLISHED_SCHEMA})'
     )
+
+
+def test_mirror_methods_render_source_named_steps_and_constructor_inputs() -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    text = PySpark.render.transform()(
+        PySpark.plan.lower()(compile_transform(EnrichOrders)),
+        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
+        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        schema_modules=_schema_modules(),
+        generated_code_options=("mirror_methods",),
+    )
+
+    ast.parse(text)
+    assert "    def __init__(self, *, spark: SparkSession, ctx=None," in text
+    assert "        orders: DataFrame," in text
+    assert "    def normalize(self):" in text
+    assert "    def add_customer(self):" in text
+    assert "    def run(self) -> TransformResult:" in text
+    assert "        self.orders = self._input_orders" in text
+    assert "        self.normalize()" in text
+
+
+def test_embed_exprs_render_static_helpers() -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    text = PySpark.render.transform()(
+        PySpark.plan.lower()(compile_transform(EnrichOrders, generated_code_options=("embed_exprs",))),
+        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
+        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        schema_modules=_schema_modules(),
+        generated_code_options=("embed_exprs",),
+    )
+
+    ast.parse(text)
+
+    assert "@staticmethod\n    def clean_id(value):" in text
+    assert "return F.lower(F.trim(value))" in text
+    assert "self.clean_id(" in text
+
+
+def test_embed_hooks_copies_raw_hook_source() -> None:
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    text = PySpark.render.transform()(
+        PySpark.plan.lower()(compile_transform(EnrichOrders)),
+        source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
+        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        schema_modules=_schema_modules(),
+        generated_code_options=("mirror_methods", "embed_hooks"),
+    )
+
+    ast.parse(text)
+
+    assert "from testing.model.v1.orders.transforms.order import EnrichOrders" not in text
+    assert "    def remove_negative_totals(self, *, orders, spark, ctx):" in text
+    assert "return orders.where(F.col('net_total') >= 0)" in text
+
+
+def test_embed_udfs_copies_udf_source() -> None:
+    text = PySpark.render.transform()(
+        PySpark.plan.lower()(compile_transform(UdfPublished)),
+        source_transform="tests.UdfPublished",
+        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        schema_modules={UdfRaw: "testing.model.v1.structure_generated.cache.pyspark.schemas.order"},
+        generated_code_options=("mirror_methods", "embed_udfs"),
+    )
+
+    ast.parse(text)
+
+    assert "self._impl" not in text
+    assert "= F.udf(self.normalize, returnType=" in text
+    assert "    @staticmethod\n    def normalize(value: Any):" in text
+    assert "return value.strip().lower()" in text
 
 
 def test_v2_cache_directive_renders_as_post_projection_persist() -> None:

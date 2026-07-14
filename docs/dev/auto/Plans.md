@@ -78,7 +78,7 @@ user-visible effects and under-specifying incidental implementation details.
 
 Anchor the plan with observable outcomes. State what the user can do after implementation, the commands to run, and the
 outputs they should see. Acceptance should be phrased as behavior a human can verify ("after starting the server,
-navigating to [http://localhost:8080/health](http://localhost:8080/health) returns HTTP 200 with body OK") rather than
+requesting the health endpoint returns HTTP 200 with body OK") rather than
 internal attributes ("added a HealthCheck struct"). If a change is internal, explain how its impact can still be
 demonstrated (for example, by running tests that fail before and pass after, and by showing a scenario that uses the new
 behavior).

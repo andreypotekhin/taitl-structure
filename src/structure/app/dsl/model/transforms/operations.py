@@ -206,10 +206,13 @@ def first_value(
     ties: TiePolicy = TiePolicy.ERROR,
 ) -> Expression:
     argument = literal(value)
+    _boolean_option("first_value(...)", "ignore_nulls", ignore_nulls)
     if over is not None:
         return _window_over_expression(
             "first_value", argument, over=over, type=argument.type, nullable=True, ignore_nulls=ignore_nulls
         )
+    if ignore_nulls:
+        raise TypeError("first_value(..., ignore_nulls=True) requires over=...")
     if order_by is None:
         raise TypeError("first_value(...) aggregate requires order_by=...")
     if ties is not TiePolicy.ERROR:
@@ -220,7 +223,7 @@ def first_value(
         type=argument.type,
         nullable=argument.nullable,
         where=where,
-        order_by=literal(order_by),
+        order_by=_orderable_expression(order_by, "first_value(...) order_by"),
     )
 
 
@@ -234,10 +237,13 @@ def last_value(
     ties: TiePolicy = TiePolicy.ERROR,
 ) -> Expression:
     argument = literal(value)
+    _boolean_option("last_value(...)", "ignore_nulls", ignore_nulls)
     if over is not None:
         return _window_over_expression(
             "last_value", argument, over=over, type=argument.type, nullable=True, ignore_nulls=ignore_nulls
         )
+    if ignore_nulls:
+        raise TypeError("last_value(..., ignore_nulls=True) requires over=...")
     if order_by is None:
         raise TypeError("last_value(...) aggregate requires order_by=...")
     if ties is not TiePolicy.ERROR:
@@ -248,7 +254,7 @@ def last_value(
         type=argument.type,
         nullable=argument.nullable,
         where=where,
-        order_by=literal(order_by),
+        order_by=_orderable_expression(order_by, "last_value(...) order_by"),
     )
 
 
@@ -630,7 +636,7 @@ def _aggregate(
 def _selected_rows(direction: str, order_by: object, *, partition_by: object, ties: TiePolicy, call: str) -> None:
     if ties is not TiePolicy.ERROR:
         raise TypeError(f"{call} currently supports ties=TiePolicy.ERROR only")
-    order = literal(order_by)
+    order = _orderable_expression(order_by, f"{call} order_by")
     partitions = _partition_by(partition_by, call=call)
     _context(call).operations.append(
         OperationPlan.selected_rows_operation(
@@ -651,6 +657,7 @@ def _window_expression(
     offset: int | None = None,
     default: object = None,
 ) -> Expression:
+    _boolean_option(f"{function}(...)", "descending", descending)
     if offset is not None and offset < 1:
         raise TypeError(f"{function}(...) offset must be greater than or equal to 1")
     partitions = _partition_by(partition_by, call=f"{function}(...)")
@@ -681,6 +688,7 @@ def _rolling_expression(
     preceding: int,
     descending: bool,
 ) -> Expression:
+    _boolean_option(f"rolling_{function}(...)", "descending", descending)
     if preceding < 0:
         raise TypeError(f"rolling_{function}(...) preceding must be greater than or equal to 0")
     partitions = _partition_by(partition_by, call=f"rolling_{function}(...)")
@@ -710,6 +718,7 @@ def _window_over_expression(
     ignore_nulls: bool = False,
     options: tuple[tuple[str, object], ...] = (),
 ) -> Expression:
+    _boolean_option(f"window_{function}(...)", "ignore_nulls", ignore_nulls)
     _validate_window_spec(over)
     if function in _WINDOW_AGGREGATES and over.frame is None:
         raise TypeError(
@@ -747,7 +756,7 @@ def _partition_by(partition_by: object, *, call: str) -> tuple[Expression, ...]:
 
 def _order_by(order_by: object, *, call: str) -> tuple[Expression, ...]:
     values = order_by if isinstance(order_by, (tuple, list)) else (order_by,)
-    ordering = tuple(literal(value) for value in values)
+    ordering = tuple(_orderable_expression(value, f"{call} order_by") for value in values)
     if not ordering:
         raise TypeError(f"{call} requires at least one order_by expression")
     return ordering
@@ -784,6 +793,11 @@ def _integer_at_least(name: str, value: object, minimum: int) -> None:
     if not isinstance(value, int) or isinstance(value, bool) or value < minimum:
         requirement = "a positive integer" if minimum == 1 else f"an integer greater than or equal to {minimum}"
         raise TypeError(f"{name} must be {requirement}")
+
+
+def _boolean_option(call: str, name: str, value: object) -> None:
+    if not isinstance(value, bool):
+        raise TypeError(f"{call} {name} must be a Boolean")
 
 
 def _window_default(call: str, value: Expression, default: object) -> None:
@@ -1096,6 +1110,7 @@ def arr_aggregate(
 
 
 def arr_sort_by(value: object, function: Callable[[Expression], object], *, descending: bool = False) -> Expression:
+    _boolean_option("arr_sort_by(...)", "descending", descending)
     argument = literal(value)
     array = _array_type(argument, "arr_sort_by(...)")
     left = _lambda_arg(array.element, nullable=array.contains_null, name="left")

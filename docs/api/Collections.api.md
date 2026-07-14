@@ -48,6 +48,7 @@ These helpers map to Spark array and map operations while keeping callback bodie
 
 - Callbacks run once during symbolic compilation, not once per Python row.
 - Predicate callbacks must return symbolic Boolean expressions; merge and sort callbacks must return symbolic values.
+- `arr_sort_by(..., descending=...)` requires a Boolean direction flag.
 
 ## Map Helpers
 

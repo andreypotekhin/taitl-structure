@@ -202,6 +202,19 @@ contract. `spark-connect` is experimental for completed v1/v2 batch features and
 generated class APIs, `run(...)` signatures, or streaming orchestration semantics. See
 [Compatibility.md](Compatibility.md).
 
+## Generated Code Options
+
+```toml
+generated_code_options = ["mirror_methods", "embed_exprs"]
+```
+
+`generated_code_options` is an optional list of independent generated-source choices. Supported values are
+`mirror_methods`, `embed_exprs`, `embed_hooks`, and `embed_udfs`. `mirror_methods` gives generated classes
+constructor-held DataFrames and a zero-argument `run()` whose named methods mirror source schema steps. Expression
+specials expand inline by default; `embed_exprs` renders them as generated helpers. `embed_hooks` and `embed_udfs`
+embed the corresponding opted-in source bodies. An omitted list preserves the existing generated class layout and
+source-backed hook/UDF delegation.
+
 ## Traceability Settings
 
 ```toml

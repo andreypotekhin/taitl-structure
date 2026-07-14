@@ -1,4 +1,5 @@
 from datetime import date, datetime
+from typing import Any, cast
 
 import pytest
 
@@ -19,6 +20,15 @@ class CoalesceSource(Schema):
 
 class CoalesceTarget(Schema):
     amount = field(Decimal(12, 2), nullable=False)
+
+
+class NullablePredicateSource(Schema):
+    enabled = field(Boolean(), nullable=True)
+    label = field(String(), nullable=True)
+
+
+class RequiredPredicateTarget(Schema):
+    accepted = field(Boolean(), nullable=False)
 
 
 @transform
@@ -66,6 +76,15 @@ class TemporalFallback(Transform):
                 default=datetime(2026, 7, 13, 12, 31),
             ),
         )
+
+
+@transform
+class NullableNegation(Transform):
+    source = input(NullablePredicateSource)
+    target = output(RequiredPredicateTarget)
+
+    def normalize(self, row: NullablePredicateSource) -> RequiredPredicateTarget:
+        return RequiredPredicateTarget(accepted=~cast(Any, row).enabled)
 
 
 def test_coalesce_uses_the_common_decimal_type_regardless_of_argument_order() -> None:
@@ -134,3 +153,80 @@ def test_coalesce_rejects_unknown_or_incompatible_type_combinations(values) -> N
 def test_when_rejects_incompatible_branch_types() -> None:
     with pytest.raises(TypeError, match=r"when\(\.\.\.\).otherwise\(\.\.\.\) requires compatible types"):
         when(True, "text").otherwise(1)
+
+
+@pytest.mark.parametrize(
+    ("precision", "scale", "message"),
+    [
+        (39, 0, "precision must be an integer from 1 through 38"),
+        (True, 0, "precision must be an integer from 1 through 38"),
+        (12, cast(int, 1.5), "scale must be an integer from 0 through precision"),
+        (12, 13, "scale must be an integer from 0 through precision"),
+    ],
+)
+def test_decimal_type_rejects_values_outside_spark_domain(precision: int, scale: int, message: str) -> None:
+    with pytest.raises(ValueError, match=message):
+        Decimal(precision, scale)
+
+
+def test_to_decimal_rejects_precision_larger_than_spark_supports() -> None:
+    with pytest.raises(ValueError, match="precision must be an integer from 1 through 38"):
+        to_decimal("1", precision=39, scale=0)
+
+
+def test_arithmetic_widens_numeric_types_and_propagates_nullability() -> None:
+    integer = _expression(Integer(), nullable=False)
+    nullable_long = _expression(Long(), nullable=True)
+
+    widened = integer + 0.5
+    nullable = integer + nullable_long
+
+    assert widened.type is not None and widened.type.name == "double"
+    assert widened.nullable is False
+    assert nullable.type is not None and nullable.type.name == "long"
+    assert nullable.nullable is True
+
+
+def test_arithmetic_rejects_non_numeric_operands() -> None:
+    with pytest.raises(TypeError, match="Arithmetic requires numeric Structure expressions"):
+        _expression(Integer(), nullable=False) + "one"
+
+
+def test_predicates_propagate_nullable_sql_three_valued_logic() -> None:
+    nullable_boolean = _expression(Boolean(), nullable=True)
+    nullable_string = _expression(String(), nullable=True)
+    non_null_string = _expression(String(), nullable=False)
+    nullable_timestamp = _expression(Timestamp(), nullable=True)
+    null_safe = nullable_string.null_safe_eq(None)
+
+    assert (nullable_string == "active").nullable is True
+    assert (nullable_string != "active").nullable is True
+    assert null_safe.type is not None
+    assert null_safe.type.name == "boolean"
+    assert null_safe.nullable is False
+    assert (nullable_boolean & True).nullable is True
+    assert (nullable_boolean | False).nullable is True
+    assert (~nullable_boolean).nullable is True
+    assert non_null_string.isin("active", "held").nullable is False
+    assert non_null_string.isin("active", None).nullable is True
+    assert event_time_between(nullable_timestamp, datetime(2026, 7, 13), upper="1 hour").nullable is True
+
+
+@pytest.mark.parametrize(
+    "expression",
+    [
+        lambda: _expression(String(), nullable=False) & True,
+        lambda: _expression(Boolean(), nullable=False) | 1,
+        lambda: ~_expression(String(), nullable=False),
+    ],
+)
+def test_logical_operators_require_boolean_operands(expression) -> None:
+    with pytest.raises(TypeError, match="Boolean Structure expression"):
+        expression()
+
+
+def test_nullable_negation_cannot_fill_a_non_nullable_output() -> None:
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(NullableNegation)
+
+    assert raised.value.diagnostic.code == "SCHEMA-E0301"

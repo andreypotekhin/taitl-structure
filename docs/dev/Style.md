@@ -217,6 +217,10 @@ Implemented suggestions get moved to docs/dev/suggestions/done.
 Because we often read documentation as plain-text Markdown, we want it to look good in plain text editor.
 In particular, we maintain line limit of 120 characters per line.
 
+### Documentation hygiene
+Do not include sensitive information such as passwords, host names, absolute paths, developer username/home dir
+in any documents. Timezone should be specified as abbreviation, rather than city-name-based.
+
 ### Action id
 Include an action id for each action (suggestion, TODO item, etc.), the form of XMMDDYYNN, where X is action code
 (D for decisions, S for suggestions, T for TODO items, M for migrations, P for planning documents), YY is year, MM is month (01-12), DD is day (01-31), NN is a sequence number. For instance, S07142501 is the first suggestion on July 14, 2025.

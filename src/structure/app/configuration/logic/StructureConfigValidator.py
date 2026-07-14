@@ -8,6 +8,8 @@ from structure.app.configuration.model.ConfigError import ConfigError
 
 class StructureConfigValidator:
 
+    _generated_code_options = {"mirror_methods", "embed_exprs", "embed_hooks", "embed_udfs"}
+
     _enums = {
         "execution_mode": ("online", "generated"),
         "target_backend": ("pyspark",),
@@ -42,6 +44,7 @@ class StructureConfigValidator:
             "generated_docs_formats",
             'Use generated_docs_formats = ["markdown", "json"].',
         )
+        self._validate_generated_code_options(values["generated_code_options"])
         self._validate_hook_target_default(values["hook_target_default"])
         for key in self._bools:
             self._validate_type(values[key], key, bool)
@@ -124,6 +127,34 @@ class StructureConfigValidator:
             "hook_target_default",
             'Use hook_target_default = ["pyspark"] or hook_target_default = "explicit".',
         )
+
+    def _validate_generated_code_options(self, value: object) -> None:
+        if not isinstance(value, (list, tuple)):
+            self._fail_invalid(
+                "generated_code_options",
+                f"Expected list, got {type(value).__name__}",
+                'Use generated_code_options = ["mirror_methods", "embed_exprs"].',
+            )
+        options = cast(tuple[str, ...] | list[str], value)
+        if not all(isinstance(item, str) and item for item in options):
+            self._fail_invalid(
+                "generated_code_options",
+                "generated_code_options must contain non-empty strings",
+                'Use generated_code_options = ["mirror_methods", "embed_exprs"].',
+            )
+        if len(options) != len(set(options)):
+            self._fail_invalid(
+                "generated_code_options",
+                "generated_code_options must not contain duplicates",
+                'Use generated_code_options = ["mirror_methods", "embed_exprs"].',
+            )
+        unknown = sorted(set(options) - self._generated_code_options)
+        if unknown:
+            self._fail_invalid(
+                "generated_code_options",
+                f"Unsupported generated code option(s): {', '.join(unknown)}",
+                'Use mirror_methods, embed_exprs, embed_hooks, or embed_udfs.',
+            )
 
     def _fail_invalid(self, setting: str, problem: str, use: str) -> None:
         raise ConfigError(ConfigDiagnostic(code="CONF-E0102", setting=setting, problem=problem, use=use))

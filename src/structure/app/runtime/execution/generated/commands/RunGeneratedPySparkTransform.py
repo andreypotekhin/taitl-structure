@@ -8,10 +8,14 @@ from structure.app.runtime.execution.logic.SparkConnectRuntimeDiagnostics import
 from structure.app.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.app.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.app.runtime.session.model.TransformResult import TransformResult
+from structure.app.target.pyspark.logic.GeneratedCodeOptions import GeneratedCodeOptions
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
 
 
 class RunGeneratedPySparkTransform:
+
+    def __init__(self) -> None:
+        self._options = GeneratedCodeOptions()
 
     def __call__(
         self,
@@ -39,9 +43,8 @@ class RunGeneratedPySparkTransform:
                 problem=f"Generated module {module.__name__} does not define {class_name}.",
             ) from error
 
-        runner = generated_class(spark=session.spark, ctx=session.ctx)
         try:
-            result = runner.run(**invocation._structure_bound_inputs)
+            result = self._run(generated_class, invocation, session=session)
         except Exception as error:
             boundary = spark_connect_runtime_error(
                 invocation,
@@ -61,6 +64,12 @@ class RunGeneratedPySparkTransform:
                 aliases=self._output_aliases(plan),
             )
         return self._result(plan, result)
+
+    def _run(self, generated_class, invocation: Transform, *, session):
+        inputs = invocation._structure_bound_inputs
+        if self._options.enabled(session.config.generated_code_options, "mirror_methods"):
+            return generated_class(spark=session.spark, ctx=session.ctx, **inputs).run()
+        return generated_class(spark=session.spark, ctx=session.ctx).run(**inputs)
 
     def _result(self, plan: PySparkExecutionPlan, df) -> TransformResult:
         if len(plan.outputs) == 1:

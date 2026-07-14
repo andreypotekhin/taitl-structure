@@ -32,6 +32,31 @@ def enrich_orders(*, orders, customers, spark, ctx=None):
     ).enriched
 ```
 
+## Generated Code Options
+
+`generated_code_options` changes generated source while preserving the compiled execution plan. The default is an empty
+list and keeps the `run(*, inputs)` API shown above.
+
+```toml
+generated_code_options = ["mirror_methods", "embed_exprs", "embed_hooks", "embed_udfs"]
+```
+
+`mirror_methods` renders one zero-argument generated method for each schema-returning source step. Its generated class
+receives every input in its constructor and `run()` uses instance fields for inputs, lanes, and outputs.
+
+```python
+result = EnrichOrdersGenerated(
+    spark=spark,
+    ctx=ctx,
+    orders=orders,
+    customers=customers,
+).run()
+```
+
+Create a new mirror instance for each batch. Expression specials expand at their call sites by default. `embed_exprs`
+instead emits static generated helpers. `embed_hooks` and `embed_udfs` copy opted-in raw
+hook and UDF bodies into generated source. Without them, generated code delegates to the original transform instance.
+
 ## Hook-Free Generated Code
 
 If a transform has no hooks, generated code should not import the source transform class.

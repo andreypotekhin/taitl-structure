@@ -12,6 +12,7 @@ class StructureConfigBuilder:
         compat_targets = cast(list[str], values["compat_targets"])
         generated_dir = root / str(values["generated_dir"])
         generated_docs_formats = cast(list[str], values["generated_docs_formats"])
+        generated_code_options = cast(list[str], values["generated_code_options"])
         hook_target_default = values["hook_target_default"]
         hook_targets = (
             str(hook_target_default)
@@ -26,6 +27,7 @@ class StructureConfigBuilder:
             generated_docs=bool(values["generated_docs"]),
             generated_docs_dir=generated_dir / str(values["generated_docs_dir"]),
             generated_docs_formats=tuple(generated_docs_formats),
+            generated_code_options=tuple(sorted(generated_code_options)),
             execution_mode=str(values["execution_mode"]),
             target_backend=str(values["target_backend"]),
             target_profile=str(values["target_profile"]),

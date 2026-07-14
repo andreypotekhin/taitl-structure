@@ -136,6 +136,7 @@ class Transform:
             target_backend=resolved.target_backend,
             target_profile=resolved.target_profile,
             target_variant=resolved.target_variant,
+            generated_code_options=resolved.generated_code_options,
         )
         project = DiscoverStructureProject()(structure_config)
         source_unit = cls.__module__
@@ -156,6 +157,7 @@ class Transform:
             source_schema_modules=project.schema_modules,
             generated_package=resolved.generated_package,
             semantic_fingerprints=fingerprints,
+            generated_code_options=resolved.generated_code_options,
         )
         target = storage or DiskStorage(resolved.generated_dir)
         result = target.write(files)

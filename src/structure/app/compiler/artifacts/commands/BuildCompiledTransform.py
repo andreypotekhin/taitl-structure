@@ -38,7 +38,11 @@ class BuildCompiledTransform:
             target_variant=options.target_variant,
         )
         manifest = self._manifest(subject, options=options, capability=self._capability(options))
-        transform_plan = Compiler.frontend.compile()(subject, warn_on_udfs=options.warn_on_udfs)
+        transform_plan = Compiler.frontend.compile()(
+            subject,
+            warn_on_udfs=options.warn_on_udfs,
+            generated_code_options=options.generated_code_options,
+        )
         pyspark_plan = PySpark.plan.lower()(transform_plan, capabilities=capabilities)
         schemas = Schemas.build()(pyspark_plan, types=schema_types) if materialize_schemas else None
         artifact = CompiledTransform(

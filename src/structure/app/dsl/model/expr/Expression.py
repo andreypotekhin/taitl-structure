@@ -5,6 +5,11 @@ from typing import Mapping, cast
 
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.BooleanType import BooleanType
+from structure.app.dsl.model.types.DecimalType import DecimalType
+from structure.app.dsl.model.types.DoubleType import DoubleType
+from structure.app.dsl.model.types.FloatType import FloatType
+from structure.app.dsl.model.types.IntegerType import IntegerType
+from structure.app.dsl.model.types.LongType import LongType
 from structure.app.dsl.model.types.MapType import MapType
 from structure.app.dsl.model.types.StringType import StringType
 from structure.app.dsl.model.types.StructType import StructType
@@ -26,18 +31,19 @@ class Expression:
         return Expression(kind="is_not_null", type=BooleanType(), nullable=False, args=(self,))
 
     def null_safe_eq(self, other: object) -> "Expression":
-        return self._binary("null_safe_eq", other)
+        return self._binary("null_safe_eq", other, type=BooleanType())
 
     def isin(self, *values: object) -> "Expression":
         from structure.app.dsl.model.expr.expressions import literal
 
         if not values:
             raise TypeError("isin(...) requires at least one value")
+        arguments = tuple(literal(value) for value in values)
         return Expression(
             kind="isin",
             type=BooleanType(),
-            nullable=True,
-            args=(self, *(literal(value) for value in values)),
+            nullable=self.nullable or any(argument.nullable for argument in arguments),
+            args=(self, *arguments),
         )
 
     def between(self, lower: object, upper: object) -> "Expression":
@@ -149,49 +155,50 @@ class Expression:
         )
 
     def __and__(self, other: object) -> "Expression":
-        return self._binary("and", other, type=BooleanType())
+        return self._boolean_binary("and", other)
 
     def __or__(self, other: object) -> "Expression":
-        return self._binary("or", other, type=BooleanType())
+        return self._boolean_binary("or", other)
 
     def __invert__(self) -> "Expression":
-        return Expression(kind="not", type=BooleanType(), nullable=False, args=(self,))
+        self._require_boolean("~")
+        return Expression(kind="not", type=BooleanType(), nullable=self.nullable, args=(self,))
 
     def __eq__(self, other: object) -> "Expression":  # type: ignore[override]
-        return self._binary("eq", other, type=BooleanType())
+        return self._comparison("eq", other)
 
     def __ne__(self, other: object) -> "Expression":  # type: ignore[override]
-        return self._binary("ne", other, type=BooleanType())
+        return self._comparison("ne", other)
 
     def __add__(self, other: object) -> "Expression":
-        return self._binary("add", other, type=self.type, nullable=self.nullable)
+        return self._arithmetic("add", other)
 
     def __radd__(self, other: object) -> "Expression":
-        return self._reverse_binary("add", other, type=self.type, nullable=self.nullable)
+        return self._arithmetic("add", other, reverse=True)
 
     def __sub__(self, other: object) -> "Expression":
-        return self._binary("sub", other, type=self.type, nullable=self.nullable)
+        return self._arithmetic("sub", other)
 
     def __rsub__(self, other: object) -> "Expression":
-        return self._reverse_binary("sub", other, type=self.type, nullable=self.nullable)
+        return self._arithmetic("sub", other, reverse=True)
 
     def __mul__(self, other: object) -> "Expression":
-        return self._binary("mul", other, type=self.type, nullable=self.nullable)
+        return self._arithmetic("mul", other)
 
     def __rmul__(self, other: object) -> "Expression":
-        return self._reverse_binary("mul", other, type=self.type, nullable=self.nullable)
+        return self._arithmetic("mul", other, reverse=True)
 
     def __gt__(self, other: object) -> "Expression":
-        return self._binary("gt", other, type=BooleanType())
+        return self._comparison("gt", other)
 
     def __lt__(self, other: object) -> "Expression":
-        return self._binary("lt", other, type=BooleanType())
+        return self._comparison("lt", other)
 
     def __le__(self, other: object) -> "Expression":
-        return self._binary("le", other, type=BooleanType())
+        return self._comparison("le", other)
 
     def __ge__(self, other: object) -> "Expression":
-        return self._binary("ge", other, type=BooleanType())
+        return self._comparison("ge", other)
 
     def __bool__(self) -> bool:
         raise TypeError("Structure expressions cannot be used as Python booleans. Use where(...), &, |, or ~.")
@@ -219,6 +226,63 @@ class Expression:
         from structure.app.dsl.model.expr.expressions import literal
 
         return Expression(kind=kind, type=type, nullable=nullable, args=(literal(other), self))
+
+    def _boolean_binary(self, kind: str, other: object) -> "Expression":
+        from structure.app.dsl.model.expr.expressions import literal
+
+        other_expression = literal(other)
+        self._require_boolean(kind)
+        if not isinstance(other_expression.type, BooleanType):
+            raise TypeError(f"{kind}(...) requires Boolean Structure expressions")
+        return Expression(
+            kind=kind,
+            type=BooleanType(),
+            nullable=self.nullable or other_expression.nullable,
+            args=(self, other_expression),
+        )
+
+    def _comparison(self, kind: str, other: object) -> "Expression":
+        from structure.app.dsl.model.expr.expressions import literal
+
+        other_expression = literal(other)
+        return Expression(
+            kind=kind,
+            type=BooleanType(),
+            nullable=self.nullable or other_expression.nullable,
+            args=(self, other_expression),
+        )
+
+    def _require_boolean(self, call: str) -> None:
+        if not isinstance(self.type, BooleanType):
+            raise TypeError(f"{call}(...) requires a Boolean Structure expression")
+
+    def _arithmetic(self, kind: str, other: object, *, reverse: bool = False) -> "Expression":
+        from structure.app.dsl.model.expr.expressions import literal
+
+        other_expression = literal(other)
+        type = self._arithmetic_type(other_expression)
+        arguments = (other_expression, self) if reverse else (self, other_expression)
+        return Expression(kind=kind, type=type, nullable=self.nullable or other_expression.nullable, args=arguments)
+
+    def _arithmetic_type(self, other: "Expression") -> StructureType:
+        types = (self.type, other.type)
+        if not all(isinstance(type, (IntegerType, LongType, FloatType, DoubleType, DecimalType)) for type in types):
+            raise TypeError("Arithmetic requires numeric Structure expressions")
+        numeric = cast(tuple[StructureType, StructureType], types)
+        if any(isinstance(type, DoubleType) for type in numeric):
+            return DoubleType()
+        if any(isinstance(type, DecimalType) for type in numeric) and any(
+            isinstance(type, FloatType) for type in numeric
+        ):
+            return DoubleType()
+        if any(isinstance(type, FloatType) for type in numeric):
+            return FloatType()
+        decimal = next((type for type in numeric if isinstance(type, DecimalType)), None)
+        if decimal is not None:
+            return decimal
+        if any(isinstance(type, LongType) for type in numeric):
+            return LongType()
+        return IntegerType()
 
     def _string_predicate(self, name: str, pattern: str) -> "Expression":
         if not isinstance(self.type, StringType):

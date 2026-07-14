@@ -47,7 +47,7 @@ class PySparkFrameValidator:
             return True
         if not self._same_type(expression.type, field_type):
             return True
-        return expression.kind == "sub" and isinstance(field_type, DecimalType)
+        return expression.kind in {"add", "sub", "mul"} and isinstance(field_type, DecimalType)
 
     def _window_rank_expression(self, expression) -> bool:
         if expression.kind != "transform_expression":

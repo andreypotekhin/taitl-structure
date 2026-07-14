@@ -27,8 +27,10 @@ typed `order` row scope as `o`.
 
 **Details And Differences**
 
-- Field access is typed and alias-aware. Python `and`, `or`, and expression truthiness are rejected.
-- `between(...)` is inclusive; `null_safe_eq(...)` considers two nulls equal.
+- Field access is typed and alias-aware. Python `and`, `or`, and expression truthiness are rejected; `&`, `|`, and `~`
+  require Boolean expressions.
+- Comparisons and Boolean operators preserve SQL three-valued null semantics. `between(...)` is inclusive;
+  `null_safe_eq(...)` considers two nulls equal and is never null.
 
 ## General Column Transformations
 
@@ -95,5 +97,7 @@ typed `order` row scope as `o`.
 
 - Pattern, replacement, separator, and search arguments are explicit compiler-visible values.
 - Null and NaN predicates remain distinct. `when(...)` must finish with `.otherwise(...)` before use.
+- Decimal precision is an integer from 1 through 38; scale is an integer from 0 through that precision.
+- Arithmetic requires numeric operands, widens mixed numeric expressions, and propagates operand nullability.
 - Raw `expr(...)`, `call_function(...)`, and UDF/UDTF expressions are unsupported. See the
   [Schemas reference](../reference/Schema.ref.md).

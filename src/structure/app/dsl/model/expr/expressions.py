@@ -322,7 +322,7 @@ def event_time_between(left: object, right: object, *, upper: str, lower: str = 
     return Expression(
         kind="event_time_between",
         type=BooleanType(),
-        nullable=False,
+        nullable=left_argument.nullable or right_argument.nullable,
         data={"lower": lower, "upper": upper},
         args=(left_argument, right_argument),
     )

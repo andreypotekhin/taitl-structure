@@ -104,7 +104,7 @@ validation/projection.
 ## Demo Script
 
 ```bash
-structure compile --source-root tests/fixtures/schema_validation/src --out /tmp/generated
+structure compile --source-root tests/fixtures/schema_validation/src --out generated
 pytest tests/test_schema_validation.py
 ```
 

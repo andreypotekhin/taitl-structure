@@ -13,8 +13,9 @@ _current: ContextVar["CompileContext | None"] = ContextVar("structure_compile_co
 
 class CompileContext:
 
-    def __init__(self, *, step: str) -> None:
+    def __init__(self, *, step: str, capture_special_exprs: bool = False) -> None:
         self.step = step
+        self.capture_special_exprs = capture_special_exprs
         self.filters: list[Expression] = []
         self.joins: list[JoinPlan] = []
         self.operations: list[OperationPlan] = []

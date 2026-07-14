@@ -59,7 +59,8 @@ the current `order` row scope as `o`.
 **Details And Differences**
 
 - Statistical metrics return nullable doubles. Collection order is Spark-dependent.
-- `first_value(...)` and `last_value(...)` aggregate forms require `order_by=` and currently use `TiePolicy.ERROR`.
+- `first_value(...)` and `last_value(...)` aggregate forms require a scalar `order_by=` and currently use
+  `TiePolicy.ERROR`; `ignore_nulls=` is supported only with `over=`.
 - Exact percentiles, aggregate aliases, and more statistics remain future work.
 
 ## Selection And Dedupe
@@ -75,6 +76,6 @@ the current `order` row scope as `o`.
 
 **Details And Differences**
 
-- Selected-row helpers need explicit partition and ordering expressions.
+- Selected-row helpers need explicit partition and scalar ordering expressions.
 - `drop_duplicates(...)` accepts a same-scope field subset; `distinct(...)` can use the whole relation.
 - Operations apply in source order. See [Transforms reference](../background/DSL.back.md).

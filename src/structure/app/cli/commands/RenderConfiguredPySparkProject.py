@@ -36,6 +36,7 @@ class RenderConfiguredPySparkProject:
                     source_schema_modules=project.schema_modules,
                     generated_package=config.generated_package,
                     semantic_fingerprints=fingerprints,
+                    generated_code_options=config.generated_code_options,
                 )
             )
         return files

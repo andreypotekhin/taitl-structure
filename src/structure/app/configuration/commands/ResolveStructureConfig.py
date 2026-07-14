@@ -21,6 +21,7 @@ class ResolveStructureConfig:
         "generated_docs",
         "generated_docs_dir",
         "generated_docs_formats",
+        "generated_code_options",
         "execution_mode",
         "target_backend",
         "target_profile",

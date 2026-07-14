@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import json
 import re
+from contextlib import contextmanager
+from contextvars import ContextVar, Token
 from typing import Any, Mapping, cast
 
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
+
+_embed_exprs: ContextVar[bool] = ContextVar("structure_embed_exprs", default=False)
 
 
 class RenderPySparkExpression:
@@ -17,6 +21,14 @@ class RenderPySparkExpression:
     ) -> str:
         aliases = scope_aliases or {}
         return self._render(expression, aliases)
+
+    @contextmanager
+    def embed_exprs(self, enabled: bool):
+        token: Token[bool] = _embed_exprs.set(enabled)
+        try:
+            yield
+        finally:
+            _embed_exprs.reset(token)
 
     def _render(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         if expression.kind == "field":
@@ -34,6 +46,8 @@ class RenderPySparkExpression:
         if expression.kind == "python_udf":
             args = [self._render(argument, aliases) for argument in expression.args]
             return f"self.{expression.data['udf_name']}({', '.join(args)})"
+        if expression.kind == "special_expr":
+            return self._special_expr(expression, aliases)
         if expression.kind == "transform_expression":
             return self._reserved(expression, aliases)
         if expression.kind == "is_not_null":
@@ -102,6 +116,16 @@ class RenderPySparkExpression:
         if expression.kind == "not":
             return f"~({self._render(expression.args[0], aliases)})"
         raise TypeError(f"Unsupported PySpark expression recipe: {expression.kind}")
+
+    def _special_expr(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
+        if not _embed_exprs.get():
+            return self._render(cast(PySparkExpressionRecipe, expression.data["expanded"]), aliases)
+        arguments = [self._render(argument, aliases) for argument in expression.args]
+        arguments.extend(
+            f"{name}={self._render(argument, aliases)}"
+            for name, argument in cast(tuple[tuple[str, PySparkExpressionRecipe], ...], expression.data["keyword_arguments"])
+        )
+        return f"self.{expression.data['name']}({', '.join(arguments)})"
 
     def _reserved(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         function = expression.data["function"]

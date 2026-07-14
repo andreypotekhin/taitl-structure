@@ -30,6 +30,7 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert config.generated_docs is True
         assert config.generated_docs_dir == root / "generated" / "docs"
         assert config.generated_docs_formats == ("markdown", "json")
+        assert config.generated_code_options == ()
         assert config.warn_on_udfs is True
         assert config.execution_mode == "online"
         assert config.target_profile == ">=3.5,<4.1"
@@ -206,7 +207,36 @@ def test_v1_config_accepts_udf_warning_opt_out() -> None:
 
         config = Configuration.resolve()(project_root=root)
 
-        assert config.warn_on_udfs is False
+    assert config.warn_on_udfs is False
+
+
+def test_v1_config_accepts_canonical_generated_code_options() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+
+        config = StructureConfig.resolve(
+            project_root=root,
+            generated_code_options=["embed_exprs", "mirror_methods"],
+        )
+
+        assert config.generated_code_options == ("embed_exprs", "mirror_methods")
+
+
+def test_v1_config_rejects_invalid_generated_code_options() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+
+        for options, problem in ((["unknown"], "Unsupported"), (["mirror_methods", "mirror_methods"], "duplicates")):
+            try:
+                StructureConfig.resolve(project_root=root, generated_code_options=options)
+            except ConfigError as error:
+                diagnostic = error.diagnostic
+            else:
+                raise AssertionError("invalid generated code options should fail")
+
+            assert diagnostic.code == "CONF-E0102"
+            assert diagnostic.setting == "generated_code_options"
+            assert problem in diagnostic.problem
 
 
 def test_v1_config_rejects_generated_docs_dir_escape() -> None:

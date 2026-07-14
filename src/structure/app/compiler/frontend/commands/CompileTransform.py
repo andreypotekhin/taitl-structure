@@ -118,7 +118,11 @@ class CompileTransform:
                 problem=f"{transform_class.__name__} declares no inputs.",
                 use="Declare at least one transform input with name = input(Schema).",
             )
-        steps, lanes, explicit_outputs, diagnostics = self._steps(transform_class, inputs)
+        steps, lanes, explicit_outputs, diagnostics = self._steps(
+            transform_class,
+            inputs,
+            capture_special_exprs="embed_exprs" in config.generated_code_options,
+        )
         outputs = self._outputs(transform_class, lanes, explicit_outputs)
         diagnostics.extend(self._udf_diagnostics(transform_class, steps, outputs, config=config))
         return TransformPlan(
@@ -207,6 +211,8 @@ class CompileTransform:
         self,
         transform_class: type[Transform],
         inputs: list[InputPlan],
+        *,
+        capture_special_exprs: bool,
     ) -> tuple[list[StepPlan], dict[str, dict[str, object]], set[str], list[Diagnostic]]:
         instance = transform_class()
         members = self._member_collector.collect(transform_class)
@@ -233,6 +239,7 @@ class CompileTransform:
                 inputs,
                 explicit_outputs,
                 diagnostics,
+                capture_special_exprs=capture_special_exprs,
             )
             if result is not None and pending_raw:
                 for raw_member in pending_raw:
@@ -488,6 +495,7 @@ class CompileTransform:
         diagnostics: list[Diagnostic],
         *,
         plan_name: str | None = None,
+        capture_special_exprs: bool = False,
     ) -> tuple[StepResultPlan, ...] | None:
         name = item.name
         member = item.member
@@ -533,7 +541,7 @@ class CompileTransform:
         options = self._step_options(item.owner, metadata)
         parent_call: dict[str, object] = {}
 
-        context = CompileContext(step=plan_name or name)
+        context = CompileContext(step=plan_name or name, capture_special_exprs=capture_special_exprs)
         arguments = [
             (
                 RowScope(name=binding.scope, schema=binding.schema)
@@ -560,6 +568,7 @@ class CompileTransform:
                     explicit_outputs,
                     diagnostics,
                     parent_call,
+                    capture_special_exprs=capture_special_exprs,
                 ):
                     with context:
                         result = member(instance, *arguments)
@@ -719,6 +728,8 @@ class CompileTransform:
         explicit_outputs: set[str],
         diagnostics: list[Diagnostic],
         parent_call: dict[str, object],
+        *,
+        capture_special_exprs: bool,
     ):
         originals: list[tuple[type[Transform], str, object]] = []
         scheduled: dict[CompilerTransformMember, tuple[StepResultPlan, ...]] = {}
@@ -740,6 +751,7 @@ class CompileTransform:
                         explicit_outputs,
                         diagnostics,
                         plan_name=f"{candidate.owner.__name__}.{candidate.name}",
+                        capture_special_exprs=capture_special_exprs,
                     )
                     if result is None:
                         raise TypeError(f"{candidate.source} is not a compiled step method")
@@ -2808,6 +2820,8 @@ class CompileTransform:
     def _nullable(self, expression: Expression, filters: tuple[Expression, ...] | list[Expression]) -> bool:
         if self._narrowed(expression, filters):
             return False
+        if expression.kind == "special_expr":
+            return self._nullable(cast(Expression, (expression.data or {})["expanded"]), filters)
         if expression.kind == "field":
             parent = self._parent_field(expression)
             if parent is not None and self._narrowed(parent, filters):
@@ -2817,7 +2831,7 @@ class CompileTransform:
             return expression.nullable
         if expression.kind == "struct":
             return False
-        if expression.kind in {"is_null", "is_not_null", "is_nan", "null_safe_eq", "not"}:
+        if expression.kind in {"is_null", "is_not_null", "is_nan", "null_safe_eq"}:
             return False
         if expression.kind == "call":
             function = (expression.data or {}).get("function")

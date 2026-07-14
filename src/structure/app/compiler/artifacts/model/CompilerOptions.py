@@ -13,6 +13,7 @@ class CompilerOptions:
     source_roots: tuple[Path, ...]
     generated_dir: Path
     generated_package: str
+    generated_code_options: tuple[str, ...]
     target_backend: str
     target_profile: str
     target_variant: str
@@ -55,6 +56,7 @@ class CompilerOptions:
             source_roots=config.source_roots,
             generated_dir=config.generated_dir,
             generated_package=config.generated_package,
+            generated_code_options=config.generated_code_options,
             target_backend=config.target_backend,
             target_profile=config.target_profile,
             target_variant=config.target_variant,
@@ -72,6 +74,7 @@ class CompilerOptions:
     def fingerprint(self) -> tuple[object, ...]:
         return (
             self.generated_package,
+            self.generated_code_options,
             self.target_backend,
             self.target_profile,
             self.target_variant,

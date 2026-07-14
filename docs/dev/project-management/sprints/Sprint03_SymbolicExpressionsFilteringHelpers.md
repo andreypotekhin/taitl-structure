@@ -121,7 +121,7 @@ df = orders.where(
 
 ```bash
 structure check --source-root tests/fixtures/expressions/src
-structure compile --source-root tests/fixtures/expressions/src --out /tmp/generated
+structure compile --source-root tests/fixtures/expressions/src --out generated
 pytest tests/test_expressions_filtering.py
 ```
 

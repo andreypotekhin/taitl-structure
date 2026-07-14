@@ -14,6 +14,7 @@ class StructureConfig:
     generated_docs: bool
     generated_docs_dir: Path
     generated_docs_formats: tuple[str, ...]
+    generated_code_options: tuple[str, ...]
     execution_mode: str
     target_backend: str
     target_profile: str

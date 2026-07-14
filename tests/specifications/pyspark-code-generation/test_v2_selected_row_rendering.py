@@ -93,6 +93,16 @@ class LatestDedupeEventTransform(Transform):
 
 
 @transform
+class EarliestEventTransform(Transform):
+    events = input(RawEvent)
+    earliest = output(LatestEvent)
+
+    def earliest_events(self, row: RawEvent) -> LatestEvent:
+        earliest_by(row.sequence, partition_by=row.account_id)
+        return LatestEvent(account_id=row.account_id, event_id=row.event_id, sequence=row.sequence)
+
+
+@transform
 class EarliestDedupeEventTransform(Transform):
     events = input(RawEvent)
     earliest = output(LatestEvent)
@@ -293,6 +303,15 @@ def test_dedupe_latest_by_renders_deterministic_selected_row_window() -> None:
     assert 'events = events.where(F.col("__structure_latest_events_latest_rank") == F.lit(1))' in text
 
 
+def test_earliest_by_records_one_ascending_selected_row_operation() -> None:
+    plan = PySpark.plan.lower()(compile_transform(EarliestEventTransform))
+
+    assert len(plan.steps[0].operations) == 1
+    operation = plan.steps[0].operations[0]
+    assert operation.selected_rows is not None
+    assert operation.selected_rows.direction == "earliest"
+
+
 def test_dedupe_earliest_by_records_selected_row_operation() -> None:
     plan = PySpark.plan.lower()(compile_transform(EarliestDedupeEventTransform))
     operation = plan.steps[0].operations[0]
@@ -401,7 +420,7 @@ def test_window_aggregate_helpers_render_over_an_explicit_frame() -> None:
 
 
 def test_window_aggregate_helpers_reject_invalid_inputs_and_combinations() -> None:
-    spec = window(partition_by=RawEvent.account_id, order_by=RawEvent.sequence)
+    spec = window(partition_by="account", order_by="sequence")
 
     with pytest.raises(TypeError, match="window_bool_and\\(\\.\\.\\.\\) requires a Boolean expression"):
         window_bool_and(RawEvent.sequence, over=spec)
@@ -411,8 +430,8 @@ def test_window_aggregate_helpers_reject_invalid_inputs_and_combinations() -> No
         window_count_distinct(RawEvent.sequence, over=spec)
     with pytest.raises(TypeError, match="range_between\\(\\.\\.\\.\\) requires exactly one order_by expression"):
         window(
-            partition_by=RawEvent.account_id,
-            order_by=(RawEvent.sequence, RawEvent.event_id),
+            partition_by="account",
+            order_by=("sequence", "event_id"),
             frame=range_between(preceding(1), current_row()),
         )
 

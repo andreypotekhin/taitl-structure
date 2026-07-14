@@ -1,3 +1,5 @@
+from typing import cast
+
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.target.capabilities.model.BackendCapabilities import BackendCapabilities
 from structure.app.target.capabilities.model.CapabilityRequirement import CapabilityRequirement
@@ -9,11 +11,19 @@ class PySparkExpressionMapper:
     def map(self, expression: Expression, *, capabilities: BackendCapabilities) -> PySparkExpressionRecipe:
         group, name = self._requirement(expression)
         capabilities.require(CapabilityRequirement(group=group, name=name))
+        data = dict(expression.data or {})
+        if expression.kind == "special_expr":
+            data["body"] = self.map(cast(Expression, data["body"]), capabilities=capabilities)
+            data["expanded"] = self.map(cast(Expression, data["expanded"]), capabilities=capabilities)
+            data["keyword_arguments"] = tuple(
+                (name, self.map(argument, capabilities=capabilities))
+                for name, argument in cast(tuple[tuple[str, Expression], ...], data["keyword_arguments"])
+            )
         return PySparkExpressionRecipe(
             kind=expression.kind,
             type=expression.type,
             nullable=expression.nullable,
-            data=dict(expression.data or {}),
+            data=data,
             args=tuple(self.map(argument, capabilities=capabilities) for argument in expression.args),
         )
 

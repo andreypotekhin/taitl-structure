@@ -16,9 +16,11 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 **Details And Differences**
 
 - All inline helpers require `partition_by=` and `order_by=`.
-- `order_by=` accepts one expression or an ordered list/tuple. Order descriptors can set direction and null placement.
+- `order_by=` accepts one scalar expression or an ordered list/tuple of scalar expressions. Order descriptors can set
+  direction and null placement.
 - `lag(...)` and `lead(...)` default to `offset=1`; use a compatible Python scalar literal with `default=` for an
   explicit fallback, including date and timestamp literals. Expression, collection, and object defaults are unsupported.
+- `descending=` requires a Boolean direction flag.
 
 ## Rolling Windows
 
@@ -32,7 +34,7 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 **Details And Differences**
 
 - `preceding=` gives the number of prior rows included with the current row.
-- All rolling helpers accept `descending=True` for reverse order.
+- All rolling helpers accept `descending=True` for reverse order; the direction flag must be Boolean.
 
 ## Reusable Windows And Frames
 
@@ -77,7 +79,7 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 **Details And Differences**
 
 - `ntile(...)` needs a positive bucket count; `nth_value(...)` indexes from one.
-- `first_value(...)`, `last_value(...)`, and `nth_value(...)` support `ignore_nulls=` in reusable-window form.
+- `first_value(...)`, `last_value(...)`, and `nth_value(...)` support a Boolean `ignore_nulls=` in reusable-window form.
 - Aggregate window helpers require an explicit row or range frame. A range frame requires exactly one order key.
 - Spark does not permit distinct window aggregates, so `window_count_distinct(...)` rejects the combination early.
 - Raw `Column.over(...)` and raw PySpark `WindowSpec` objects are unsupported. See the

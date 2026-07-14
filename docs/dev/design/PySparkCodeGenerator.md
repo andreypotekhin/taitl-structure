@@ -35,6 +35,12 @@ class EnrichOrdersGenerated:
         ...
 ```
 
+With `generated_code_options = ["mirror_methods"]`, the generated constructor accepts original input DataFrames and
+`run()` is zero-argument. Compiler-visible schema steps become source-named state transitions over generated instance
+fields. Expression specials are inline by default; `embed_exprs`, `embed_hooks`, and `embed_udfs` independently control
+expression-helper, raw-hook, and UDF rendering. These choices affect source artifact identity but never alter the
+flattened execution plan.
+
 ## Codegen Rules
 
 - Generate imports deterministically.

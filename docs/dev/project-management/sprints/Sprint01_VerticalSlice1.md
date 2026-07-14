@@ -191,7 +191,7 @@ class NormalizeOrdersGenerated:
 
 ```bash
 structure check --source-root tests/fixtures/vertical_slice_1/src
-structure compile --source-root tests/fixtures/vertical_slice_1/src --out /tmp/generated
+structure compile --source-root tests/fixtures/vertical_slice_1/src --out generated
 pytest tests/test_vertical_slice_1.py
 ```
 

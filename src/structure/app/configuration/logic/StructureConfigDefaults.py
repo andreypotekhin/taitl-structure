@@ -12,6 +12,7 @@ class StructureConfigDefaults:
             "generated_docs": True,
             "generated_docs_dir": "docs",
             "generated_docs_formats": ["markdown", "json"],
+            "generated_code_options": [],
             "execution_mode": "online",
             "target_backend": "pyspark",
             "target_profile": ">=3.5,<4.1",
