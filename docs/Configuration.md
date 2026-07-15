@@ -215,6 +215,13 @@ specials expand inline by default; `embed_exprs` renders them as generated helpe
 embed the corresponding opted-in source bodies. An omitted list preserves the existing generated class layout and
 source-backed hook/UDF delegation.
 
+`embed_hooks` changes generated source only, never online execution. It copies each raw hook after generated `run(...)`
+without its `@raw` decorator and removes the source-transform import and `_impl` field when no Python UDF needs them.
+An embedded hook must be standalone: use local imports for runtime dependencies, parameters and local values for data,
+and only `self.spark` or `self.ctx` from the generated instance. Source globals, closure values, `super()`, and other
+instance state are rejected with `GEN-E0903`. A transform that uses a Python UDF must omit `embed_hooks` or also select
+`embed_udfs`; the latter is required before the generated module can be source-transform-free.
+
 ## Traceability Settings
 
 ```toml

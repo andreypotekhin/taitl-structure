@@ -191,7 +191,9 @@ generated lifecycle code can rely on a complete enough PySpark-family contract.
 ### v3 non-goals
 
 - Wholesale PySpark wrapper behavior.
-- Raw SQL expressions, raw PySpark `WindowSpec`, UDF/UDTF symbolic helpers, and arbitrary Python callbacks.
+- Raw SQL expressions, raw PySpark `WindowSpec`, UDTF helpers, and arbitrary Python callbacks. Scalar
+  `@special(type="udf")` remains supported for ordinary batch PySpark with its warning policy, but is excluded from
+  Structure's streaming contract.
 - Cost-based join reordering, nearest as-of joins, and lateral or table-valued-function joins until a dedicated plan
   admits their contracts.
 - Row-expanding generator helpers unless a separate cardinality design admits them.
@@ -217,7 +219,8 @@ over caller-supplied DataFrames.
 
 - Loading, storage, writes, catalog/table management, and DataFrame actions.
 - Streaming sources, sinks, triggers, checkpoints, output modes, and query lifecycle.
-- Raw SQL, raw `WindowSpec`, UDF/UDTF helpers, and arbitrary Python callback behavior.
+- Raw SQL, raw `WindowSpec`, UDTF helpers, and arbitrary Python callback behavior. Scalar `@special(type="udf")`
+  remains ordinary-PySpark batch support only.
 - Alternative backend expansion and non-batch Spark Connect work.
 - Cost-based join reordering without a separate optimizer design.
 

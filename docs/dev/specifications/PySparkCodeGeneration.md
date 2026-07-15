@@ -583,6 +583,14 @@ Rules:
 Generated code does not inspect hook internals. Hook behavior is opaque to compiler traceability except for the declared
 hook boundary.
 
+With `generated_code_options = ["embed_hooks"]`, generated code instead calls the copied generated method and does not
+import a source transform solely for hooks. The renderer extracts the declaring method through Python AST, removes its
+`@raw` decorator and docstring, and emits it after generated `run(...)`. It accepts local imports, local values,
+parameters, builtins, `self.spark`, and `self.ctx`; it rejects module globals, closures, `super()`, and other instance
+attributes with `GEN-E0903`. If an inherited hook belongs to a distinct owner, generated owner-qualified dispatch must
+select that owner method rather than accidentally resolving an identically named child method. Python UDF plans reject
+`embed_hooks` unless `embed_udfs` also removes their source-transform dependency.
+
 ## HookInputs Namespace
 
 Generated `HookInputs` may be imported from generated runtime support or emitted into a runtime support module.

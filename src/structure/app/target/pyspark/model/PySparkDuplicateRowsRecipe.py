@@ -9,3 +9,4 @@ from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkEx
 class PySparkDuplicateRowsRecipe:
     subset: tuple[PySparkExpressionRecipe, ...] = ()
     scope: str | None = None
+    within_watermark: bool = False

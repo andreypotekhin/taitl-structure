@@ -4,6 +4,7 @@ import json
 import shutil
 from datetime import date
 from pathlib import Path
+from typing import Any
 from uuid import uuid4
 
 import pytest
@@ -20,6 +21,7 @@ from examples.streams.schemas.race import Gate, Paddler, Race
 from examples.streams.transforms.passages import PreparePassages
 from examples.streams.transforms.penalties import CorrelatePenalties
 from examples.streams.transforms.progress import BuildGateProgress
+from structure import Schema, StreamingMode, Transform, field, input, output, special, transform, types
 
 pytestmark = pytest.mark.integration
 
@@ -30,19 +32,40 @@ SCHEMA_MODULES = {
 }
 
 
+class StreamUdfRaw(Schema):
+    id = field.string(nullable=False)
+
+
+class StreamUdfClean(Schema):
+    id = field.string(nullable=False)
+
+
+@transform(streaming_compatible=True)
+class StreamingScalarUdf(Transform):
+    rows = input(StreamUdfRaw, streaming=StreamingMode.YES)
+    clean = output(StreamUdfClean)
+
+    @special(type="udf", return_type=types.string())
+    def normalize(value: Any):
+        return value.strip()
+
+    def normalize_rows(self, row: StreamUdfRaw) -> StreamUdfClean:
+        return StreamUdfClean(id=self.normalize(row.id))
+
+
 def test_caller_owned_file_streams_run_online_and_generated_transforms(spark, tmp_path) -> None:
     if backend_name().startswith("spark-connect"):
         pytest.skip("memory sink verification requires a classic PySpark session")
 
     files = {}
-    for transform, source in (
+    for transform_type, source in (
         (PreparePassages, "examples.streams.transforms.passages.PreparePassages"),
         (BuildGateProgress, "examples.streams.transforms.progress.BuildGateProgress"),
         (CorrelatePenalties, "examples.streams.transforms.penalties.CorrelatePenalties"),
     ):
         files.update(
             render_generated_project(
-                transform,
+                transform_type,
                 source_transform=source,
                 generated_package=PACKAGE,
                 source_schema_modules=SCHEMA_MODULES,
@@ -157,6 +180,45 @@ def test_caller_owned_file_streams_run_online_and_generated_transforms(spark, tm
         }
     ]
     assert online_penalties == penalties
+
+
+def test_scalar_udf_runs_as_a_row_local_caller_owned_file_stream_transform(spark, tmp_path) -> None:
+    if backend_name().startswith("spark-connect"):
+        pytest.skip("scalar Python UDFs are ordinary-PySpark only")
+
+    package = "integration_streaming_udf_generated"
+    files = render_generated_project(
+        StreamingScalarUdf,
+        source_transform=f"{__name__}.StreamingScalarUdf",
+        generated_package=package,
+        source_schema_modules={__name__: [StreamUdfRaw, StreamUdfClean]},
+    )
+    source = tmp_path / "scalar-udf"
+    _write_json(source / "events.json", [{"id": "  event-1  "}])
+
+    with generated_project(tmp_path, package, files):
+        from pyspark.sql.types import StringType, StructField, StructType
+
+        schema = StructType([StructField("id", StringType(), nullable=False)])
+        online_input = spark.readStream.schema(schema).json(str(source))
+        generated_input = spark.readStream.schema(schema).json(str(source))
+        online = StreamingScalarUdf(rows=online_input).run(session(spark, execution_mode="online")).clean
+        generated = (
+            StreamingScalarUdf(rows=generated_input)
+            .run(session(spark, execution_mode="generated", generated_package=package))
+            .clean
+        )
+
+        online_rows = _collect_stream(online, tmp_path / "online-udf-checkpoint", output_mode="append", order_by="id")
+        generated_rows = _collect_stream(
+            generated,
+            tmp_path / "generated-udf-checkpoint",
+            output_mode="append",
+            order_by="id",
+        )
+
+    assert online_rows == [{"id": "event-1"}]
+    assert generated_rows == online_rows
 
 
 def _collect_stream(frame, checkpoint, *, output_mode: str, order_by: str) -> list[dict[str, object]]:

@@ -313,6 +313,14 @@
       ],
       "dataclass_fields": []
     },
+    "TimeWindow": {
+      "kind": "class",
+      "module": "structure.app.dsl.model.transforms.TimeWindow",
+      "qualname": "TimeWindow",
+      "signature": "(**values: 'object') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
+    },
     "Transform": {
       "kind": "class",
       "module": "structure.app.dsl.model.transforms.Transform",
@@ -690,6 +698,14 @@
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "drop_duplicates",
+      "signature": "(*subset: 'object') -> 'None'",
+      "enum_members": [],
+      "dataclass_fields": []
+    },
+    "drop_duplicates_within_watermark": {
+      "kind": "function",
+      "module": "structure.app.dsl.model.transforms.operations",
+      "qualname": "drop_duplicates_within_watermark",
       "signature": "(*subset: 'object') -> 'None'",
       "enum_members": [],
       "dataclass_fields": []
@@ -1394,7 +1410,7 @@
       "kind": "function",
       "module": "structure.app.dsl.model.transforms.operations",
       "qualname": "window",
-      "signature": "(*, partition_by: 'object', order_by: 'object', frame: \"'WindowFrame | None'\" = None) -> \"'WindowSpec'\"",
+      "signature": "(*arguments: 'object', partition_by: 'object | None' = None, order_by: 'object | None' = None, frame: \"'WindowFrame | None'\" = None, slide: 'str | None' = None, start: 'str | None' = None) -> \"'WindowSpec | Expression'\"",
       "enum_members": [],
       "dataclass_fields": []
     },

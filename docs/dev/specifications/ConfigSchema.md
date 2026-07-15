@@ -36,6 +36,7 @@ generated_package = "structure_generated"
 generated_docs = true
 generated_docs_dir = "docs"
 generated_docs_formats = ["markdown", "json"]
+generated_code_options = []
 execution_mode = "online"
 target_backend = "pyspark"
 target_profile = ">=3.5,<4.1"
@@ -95,6 +96,21 @@ Rules:
 - Must be a valid dotted Python package name.
 - Must not be `"structure"`.
 - Must not collide with a discovered source package.
+
+### generated_code_options
+
+Type: list of unique, non-empty strings.
+
+Default: `[]`.
+
+Rules:
+
+- Values are canonicalized into sorted order before they enter `StructureConfig` and `CompilerOptions`.
+- The setting changes generated source only; it does not change online execution semantics.
+- `embed_hooks` copies eligible raw-hook methods into the generated class. The copied method must have only local
+  dependencies, parameters, Python builtins, and `self.spark`/`self.ctx`.
+- `embed_hooks` without `embed_udfs` is invalid for a transform that uses a Python UDF, because `_impl` would still
+  require the source transform.
 
 ### generated_docs
 

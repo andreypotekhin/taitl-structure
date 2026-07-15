@@ -57,8 +57,8 @@ Rules:
 - Additional named inputs referenced through joins are static side inputs unless declared `StreamingMode.YES`.
 - Passing a streaming DataFrame as a joined side input requires explicit `StreamingMode.YES`, watermarks on both
   sides, and an event-time bound for the admitted inner stream-stream join shape.
-- Generated code should not branch on `df.isStreaming`; the same transform body should work for batch and streaming
-  inputs when the operation contract is satisfied.
+- Generated code does not branch on `df.isStreaming` except for ordinary `drop_duplicates(...)`: that narrowly scoped
+  branch selects batch `dropDuplicates` or streaming `dropDuplicatesWithinWatermark`. It owns no lifecycle behavior.
 
 ## Configuration
 
@@ -112,8 +112,8 @@ where(order.id.is_not_null())
 where(to_decimal(order.total, precision=12, scale=2) >= 0)
 ```
 
-Expression-based derived columns are compatible when they lower to Spark SQL functions or Column operators that do not
-require cross-row state, local collection, Python UDF execution, or RDD conversion.
+Expression-based derived columns are compatible when they lower to Spark SQL functions, Column operators, or scalar
+`@special(type="udf")` calls that do not require cross-row state, local collection, or RDD conversion.
 
 Schema-only validation is compatible. It may inspect `df.schema`, column names, data types, and nullability metadata.
 It must not trigger Spark jobs.
@@ -143,7 +143,7 @@ These operations are not streaming-compatible in v1:
   `dedupe_earliest_by(...)`;
 - stream-stream joins that lack declared streaming input modes, watermarks, or event-time bounds;
 - right, full, cross, semi, or anti joins involving the streaming current DataFrame;
-- Python UDFs, Pandas UDFs, RDD operations, `mapInPandas`, and `foreachPartition`;
+- Pandas UDFs, RDD operations, `mapInPandas`, and `foreachPartition`;
 - local Spark actions such as `collect()`, `count()`, `toPandas()`, `show()`, and `take()`;
 - arbitrary hooks unless marked streaming-safe.
 

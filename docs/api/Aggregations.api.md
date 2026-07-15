@@ -71,11 +71,14 @@ the current `order` row scope as `o`.
 | `earliest_by(...)` | `row_number` selection | `earliest_by(order.at, partition_by=order.customer_id)` |
 | `dedupe_latest_by(...)` | Deterministic dedupe | `dedupe_latest_by(order.at, partition_by=order.customer_id)` |
 | `dedupe_earliest_by(...)` | Deterministic dedupe | `dedupe_earliest_by(order.at, partition_by=order.customer_id)` |
-| `drop_duplicates(...)` | `dropDuplicates` | `drop_duplicates(order.customer_id)` |
+| `drop_duplicates(...)` | `dropDuplicates` / `dropDuplicatesWithinWatermark` | `drop_duplicates(order.customer_id)` |
+| `drop_duplicates_within_watermark(...)` | `dropDuplicatesWithinWatermark` | `drop_duplicates_within_watermark(order.customer_id)` |
 | `distinct(...)` | `distinct` | `distinct(order)` |
 
 **Details And Differences**
 
 - Selected-row helpers need explicit partition and scalar ordering expressions.
-- `drop_duplicates(...)` accepts a same-scope field subset; `distinct(...)` can use the whole relation.
+- `drop_duplicates(...)` accepts a same-scope field subset; `distinct(...)` can use the whole relation. For streaming
+  frames it requires a preceding watermark and uses bounded `dropDuplicatesWithinWatermark`; batch frames use normal
+  `dropDuplicates`. `drop_duplicates_within_watermark(...)` is the explicit streaming-only spelling.
 - Operations apply in source order. See [Transforms reference](../background/DSL.back.md).

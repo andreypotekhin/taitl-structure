@@ -57,6 +57,17 @@ Create a new mirror instance for each batch. Expression specials expand at their
 instead emits static generated helpers. `embed_hooks` and `embed_udfs` copy opted-in raw
 hook and UDF bodies into generated source. Without them, generated code delegates to the original transform instance.
 
+### Embedded Raw Hooks
+
+`embed_hooks` emits each raw hook as an ordinary generated method after `run(...)` and calls it at the same declared
+hook boundary. The generated module does not import its source transform or construct `_impl` solely for such hooks.
+The body is copied from a source snapshot when `structure compile` runs, so regenerate after changing a hook.
+
+The copied body remains opaque to Structure: it is not compiled into expressions or optimized. It must be standalone.
+Local imports, parameters, local assignments, Python builtins, `self.spark`, and `self.ctx` are supported. Module globals,
+closures, `super()`, and other `self` attributes are rejected with `GEN-E0903`. A Python UDF still needs source-backed
+implementation unless `embed_udfs` is also selected.
+
 ## Hook-Free Generated Code
 
 If a transform has no hooks, generated code should not import the source transform class.

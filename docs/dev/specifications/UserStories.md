@@ -234,6 +234,8 @@ narrower use cases and roadmap features.
   lookup logic can use named source DataFrames.
 - + As a developer, I can use arbitrary PySpark DataFrame code inside hooks so that escape hatches are available.
 - + As a developer, I can expect generated code to call hooks directly on the source transform instance so that hook behavior is transparent.
+- + As a developer, I can set `generated_code_options = ["embed_hooks"]` to generate a standalone raw-hook body when
+  it uses only local dependencies, so generated PySpark does not need the source transform module.
 - + As a developer, I can bind hooks with `@raw(lane=lane)` and `@raw(lane=lane)` so that their
   input DataFrame is unambiguous.
 

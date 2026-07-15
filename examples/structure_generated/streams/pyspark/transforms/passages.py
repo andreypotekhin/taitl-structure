@@ -54,7 +54,10 @@ class PreparePassagesGenerated:
             ((F.col("gates_3.race_id") == F.col("raw_event.race_id")) & (F.col("gates_3.number") == F.col("raw_event.gate_number"))),
             "left",
         )
-        events = events.dropDuplicates(["id"])
+        if events.isStreaming:
+            events = events.dropDuplicatesWithinWatermark(["id"])
+        else:
+            events = events.dropDuplicates(["id"])
         events = events.select(
             F.col("raw_event.id"),
             F.col("raw_event.race_id"),

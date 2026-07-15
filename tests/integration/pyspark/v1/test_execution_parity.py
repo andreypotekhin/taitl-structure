@@ -39,6 +39,30 @@ def test_parent_hook_owner_has_online_generated_runtime_parity(spark, tmp_path) 
         ]
 
 
+def test_embedded_parent_hook_has_online_generated_runtime_parity(spark, tmp_path) -> None:
+    package = "integration_embedded_parent_hook_generated"
+    files = render_generated_project(
+        transforms.ParentHookPublished,
+        source_transform=f"{SOURCE_MODULE}.ParentHookPublished",
+        generated_package=package,
+        source_schema_modules={SCHEMA_MODULE: [schemas.RawRow, schemas.NormalizedRow, schemas.PublishedRow]},
+        generated_code_options=("embed_hooks",),
+    )
+    transform_source = files[f"{package}/pyspark/transforms/transforms.py"]
+
+    assert SOURCE_MODULE not in transform_source
+    assert "self._impl" not in transform_source
+
+    with generated_project(tmp_path, package, files):
+        generated_schemas = importlib.import_module(f"{package}.pyspark.schemas.schemas")
+        generated_transforms = importlib.import_module(f"{package}.pyspark.transforms.transforms")
+        frame = spark.createDataFrame([("one",)], generated_schemas.RAW_ROW_SCHEMA)
+        online = transforms.ParentHookPublished(rows=frame).run(session(spark, execution_mode="online"))
+        generated = generated_transforms.ParentHookPublishedGenerated(spark=spark).run(rows=frame)
+
+        assert_online_generated_parity(lambda: online, lambda: generated)
+
+
 def test_watermarked_stream_static_lookup_has_online_generated_plan_parity(spark, tmp_path, capsys) -> None:
     package = "integration_watermark_generated"
     files = render_generated_project(

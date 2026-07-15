@@ -58,4 +58,6 @@ class PySparkExpressionMapper:
             return "expression", "standard_helper_call"
         if expression.kind == "python_udf":
             return "expression", "python_udf"
+        if expression.kind == "time_window":
+            return "streaming", "time_window"
         return "expression", "standard_helper_call"

@@ -2,9 +2,12 @@ import ast
 import sys
 from typing import Any
 
+import pytest
+
 from structure import *
 from structure.app.cli.commands.RenderExplainReport import render_explain_report
 from structure.app.target.pyspark.api import PySpark
+from structure.app.target.pyspark.logic.RenderEmbeddedHooks import EmbeddedHookError
 
 
 class CacheRaw(Schema):
@@ -42,6 +45,49 @@ class CachePublishedOrders(Transform):
     @step(cache=True)
     def publish(self, order: CacheRaw) -> CachePublished:
         return CachePublished(id=order.id, status=order.status)
+
+
+EMBEDDED_HOOK_GLOBAL = "source-module-state"
+
+
+@transform
+class EmbeddedHookWithState(Transform):
+    rows = input(CacheRaw)
+    published = output(CachePublished)
+    state: object
+
+    def publish(self, row: CacheRaw) -> CachePublished:
+        return CachePublished(id=row.id, status=row.status)
+
+    @raw(inout=lane(rows) | lane(rows))
+    def publish_hook(self, *, rows, spark, ctx):
+        return self.state
+
+
+@transform
+class EmbeddedHookWithGlobal(Transform):
+    rows = input(CacheRaw)
+    published = output(CachePublished)
+
+    def publish(self, row: CacheRaw) -> CachePublished:
+        return CachePublished(id=row.id, status=row.status)
+
+    @raw(inout=lane(rows) | lane(rows))
+    def publish_hook(self, *, rows, spark, ctx):
+        return EMBEDDED_HOOK_GLOBAL
+
+
+@transform
+class EmbeddedHookWithSuper(Transform):
+    rows = input(CacheRaw)
+    published = output(CachePublished)
+
+    def publish(self, row: CacheRaw) -> CachePublished:
+        return CachePublished(id=row.id, status=row.status)
+
+    @raw(inout=lane(rows) | lane(rows))
+    def publish_hook(self, *, rows, spark, ctx):
+        return super().publish_hook(rows=rows, spark=spark, ctx=ctx)  # type: ignore[misc]
 
 
 def test_v1_transform_module_renderer_is_spark_free() -> None:
@@ -164,8 +210,58 @@ def test_embed_hooks_copies_raw_hook_source() -> None:
     ast.parse(text)
 
     assert "from testing.model.v1.orders.transforms.order import EnrichOrders" not in text
+    assert "self._impl" not in text
+    assert "orders = self.remove_negative_totals(orders=orders, spark=self.spark, ctx=self.ctx)" in text
     assert "    def remove_negative_totals(self, *, orders, spark, ctx):" in text
     assert "return orders.where(F.col('net_total') >= 0)" in text
+    assert text.index("    def run(self) -> TransformResult:") < text.index("    def remove_negative_totals(")
+
+
+@pytest.mark.parametrize(
+    ("transform", "reference"),
+    (
+        (EmbeddedHookWithState, "self.state"),
+        (EmbeddedHookWithGlobal, "EMBEDDED_HOOK_GLOBAL"),
+        (EmbeddedHookWithSuper, "super()"),
+    ),
+)
+def test_embed_hooks_rejects_source_state_dependencies(transform, reference: str) -> None:
+    with pytest.raises(EmbeddedHookError) as raised:
+        _render(transform, generated_code_options=("embed_hooks",))
+
+    assert raised.value.diagnostic.code == "GEN-E0903"
+    assert raised.value.diagnostic.context["hook"] == "publish_hook"
+    assert reference in raised.value.diagnostic.problem
+
+
+def test_embed_hooks_rejects_python_udf_without_embed_udfs() -> None:
+    with pytest.raises(EmbeddedHookError) as raised:
+        _render(UdfPublished, generated_code_options=("embed_hooks",))
+
+    assert raised.value.diagnostic.code == "GEN-E0903"
+    assert "Python UDFs" in raised.value.diagnostic.problem
+
+
+def test_embed_hooks_rejects_closure_dependencies() -> None:
+    captured = "source closure"
+
+    @transform
+    class EmbeddedHookWithClosure(Transform):
+        rows = input(CacheRaw)
+        published = output(CachePublished)
+
+        def publish(self, row: CacheRaw) -> CachePublished:
+            return CachePublished(id=row.id, status=row.status)
+
+        @raw(inout=lane(rows) | lane(rows))
+        def publish_hook(self, *, rows, spark, ctx):
+            return captured
+
+    with pytest.raises(EmbeddedHookError) as raised:
+        _render(EmbeddedHookWithClosure, generated_code_options=("embed_hooks",))
+
+    assert raised.value.diagnostic.context["hook"] == "publish_hook"
+    assert "captured" in raised.value.diagnostic.problem
 
 
 def test_embed_udfs_copies_udf_source() -> None:
@@ -233,3 +329,13 @@ def _schema_modules() -> dict[type, str]:
         Product: "testing.model.v1.structure_generated.orders.pyspark.schemas.product",
         Promotion: "testing.model.v1.structure_generated.orders.pyspark.schemas.promotion",
     }
+
+
+def _render(transform: type[Transform], *, generated_code_options: tuple[str, ...]) -> str:
+    return PySpark.render.transform()(
+        PySpark.plan.lower()(compile_transform(transform)),
+        source_transform=f"{transform.__module__}.{transform.__name__}",
+        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        schema_modules={CacheRaw: "testing.cache", CachePublished: "testing.cache", UdfRaw: "testing.cache"},
+        generated_code_options=generated_code_options,
+    )

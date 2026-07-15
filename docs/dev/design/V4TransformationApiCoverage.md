@@ -60,8 +60,9 @@ when all of the following are true:
    operation at the appropriate level.
 
 Schema constructors continue to own output names and aliases. Therefore Column `alias()` and `name()` do not gain
-direct parity. Raw `expr`, raw `WindowSpec`, Python UDF/UDTF helpers, and arbitrary callback control flow remain
-explicitly unsupported rather than becoming partial escape hatches.
+direct parity. Raw `expr`, raw `WindowSpec`, Python UDTF helpers, and arbitrary callback control flow remain explicitly
+unsupported rather than becoming partial escape hatches. Scalar `@special(type="udf")` is existing row-local
+ordinary-PySpark batch and streaming support with its warning policy.
 
 ## Planned Delivery Order
 

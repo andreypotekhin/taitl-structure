@@ -770,6 +770,9 @@ Rules:
   input, `lane(name)` selects the current lane, and `output(name)` selects a materialized output.
 - Hooks must return a DataFrame at runtime.
 - Generated code and execution call hooks on the source transform instance so hook behavior remains transparent.
+- Generated code normally delegates hooks to the source transform. With `generated_code_options = ["embed_hooks"]`,
+  Structure instead copies a standalone hook body into generated PySpark. The source form remains the authority for
+  hook metadata and the copied body remains opaque to the compiler.
 - Hooks may import and use PySpark because they execute at runtime, not during compiler phases.
 - Hook metadata must be present in IR so generated code can call hooks and traceability can mark opaque boundaries.
 

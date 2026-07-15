@@ -6,6 +6,7 @@ import pytest
 from structure import *
 from structure.app.compiler.api import Compiler
 from structure.app.compiler.compileability.streaming_compatibility.api import StreamingSupport
+from structure.app.dsl.model.types.StructType import StructType
 from structure.app.target.pyspark.api import PySpark
 
 
@@ -31,6 +32,12 @@ class StreamEnriched(Schema):
 
 
 class StreamSummary(Schema):
+    id = field.string(nullable=False)
+    row_count = field.long(nullable=False)
+
+
+class StreamWindowSummary(Schema):
+    bucket = field.struct(TimeWindow, nullable=False)
     id = field.string(nullable=False)
     row_count = field.long(nullable=False)
 
@@ -149,12 +156,51 @@ class StreamingAggregate(Transform):
 @transform(streaming_compatible=True)
 class StreamingWatermarkedAggregate(Transform):
     rows = input(StreamRaw, streaming=StreamingMode.YES)
+    summary = output(StreamWindowSummary)
+
+    def summarize(self, row: StreamRaw) -> StreamWindowSummary:
+        watermark(row.event_time, delay="10 minutes")
+        group_by(bucket=window(row.event_time, "10 minutes"), id=row.id)
+        return StreamWindowSummary(bucket=window(row.event_time, "10 minutes"), id=row.id, row_count=count())
+
+
+@transform(streaming_compatible=True)
+class StreamingWatermarkedBusinessKeyAggregate(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
     summary = output(StreamSummary)
 
     def summarize(self, row: StreamRaw) -> StreamSummary:
         watermark(row.event_time, delay="10 minutes")
         group_by(row.id)
         return StreamSummary(id=row.id, row_count=count())
+
+
+@transform(streaming_compatible=True)
+class StreamingSlidingAggregate(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    summary = output(StreamWindowSummary)
+
+    def summarize(self, row: StreamRaw) -> StreamWindowSummary:
+        watermark(row.event_time, delay="10 minutes")
+        group_by(bucket=window(row.event_time, "10 minutes", "5 minutes"), id=row.id)
+        return StreamWindowSummary(
+            bucket=window(row.event_time, "10 minutes", "5 minutes"),
+            id=row.id,
+            row_count=count(),
+        )
+
+
+@transform(streaming_compatible=True)
+class StreamingScalarUdf(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    clean = output(StreamClean)
+
+    @special(type="udf", return_type=types.string())
+    def normalize(value: Any):
+        return value.strip()
+
+    def normalize_rows(self, row: StreamRaw) -> StreamClean:
+        return StreamClean(id=self.normalize(row.id))
 
 
 @transform(streaming_compatible=True)
@@ -165,6 +211,17 @@ class StreamingWatermarkedDedupe(Transform):
     def unique_rows(self, row: StreamRaw) -> StreamClean:
         watermark(row.event_time, delay="10 minutes")
         drop_duplicates(row.id)
+        return StreamClean(id=row.id)
+
+
+@transform(streaming_compatible=True)
+class StreamingExplicitWatermarkedDedupe(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    clean = output(StreamClean)
+
+    def unique_rows(self, row: StreamRaw) -> StreamClean:
+        watermark(row.event_time, delay="10 minutes")
+        drop_duplicates_within_watermark(row.id)
         return StreamClean(id=row.id)
 
 
@@ -282,7 +339,48 @@ def test_v2_grouped_aggregates_are_batch_only_without_spark() -> None:
     assert "watermark" in report.findings[0].problem
 
 
-def test_v2_watermarked_aggregate_is_streaming_compatible_without_spark() -> None:
+def test_v4_watermarked_business_key_aggregate_reports_unbounded_state() -> None:
+    unbounded = compile_transform(StreamingWatermarkedBusinessKeyAggregate)
+    report = Compiler.compileability.streaming()(PySpark.plan.lower()(unbounded), required=True)
+
+    assert report.support is StreamingSupport.BATCH_ONLY
+    assert report.findings[0].operation == "unbounded grouped aggregate"
+
+
+def test_v4_event_time_window_has_time_window_schema_and_rejects_mixed_signature() -> None:
+    plan = compile_transform(StreamingWatermarkedAggregate)
+    aggregate = next(operation.aggregate for operation in plan.steps[0].operations if operation.aggregate is not None)
+
+    assert aggregate is not None
+    assert isinstance(aggregate.keys[0].expression.type, StructType)
+    assert aggregate.keys[0].expression.type.schema is TimeWindow
+    with pytest.raises(TypeError, match="cannot mix event-time arguments"):
+        window("event_time", "10 minutes", partition_by="id")  # type: ignore[call-overload]
+
+
+def test_v4_sliding_window_renders_with_positional_slide() -> None:
+    plan = PySpark.plan.lower()(compile_transform(StreamingSlidingAggregate))
+    rendered = "\n".join(
+        PySpark.render.project()(
+            plan,
+            source_transform="tests.fixtures.streaming.transforms.StreamingSlidingAggregate",
+            generated_package="streaming_generated",
+            source_schema_modules={"tests.fixtures.streaming.schemas": [StreamRaw, StreamWindowSummary]},
+        ).values()
+    )
+
+    assert "F.window(F.col(\"stream_raw.event_time\"), '10 minutes', '5 minutes')" in rendered
+
+
+def test_v4_scalar_udf_is_a_compatible_row_local_streaming_expression() -> None:
+    plan = compile_transform(StreamingScalarUdf)
+    report = Compiler.compileability.streaming()(PySpark.plan.lower()(plan), required=True)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
+def test_v2_windowed_watermarked_aggregate_is_streaming_compatible_without_spark() -> None:
     plan = compile_transform(StreamingWatermarkedAggregate)
 
     report = Compiler.compileability.streaming()(
@@ -296,6 +394,18 @@ def test_v2_watermarked_aggregate_is_streaming_compatible_without_spark() -> Non
 
 def test_v2_watermarked_dedupe_is_streaming_compatible_without_spark() -> None:
     plan = compile_transform(StreamingWatermarkedDedupe)
+
+    report = Compiler.compileability.streaming()(
+        PySpark.plan.lower()(plan),
+        required=bool((plan.options or {})["streaming_compatible"]),
+    )
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
+def test_v4_explicit_watermarked_dedupe_is_streaming_compatible_without_spark() -> None:
+    plan = compile_transform(StreamingExplicitWatermarkedDedupe)
 
     report = Compiler.compileability.streaming()(
         PySpark.plan.lower()(plan),
@@ -380,7 +490,7 @@ def test_v2_aggregate_streaming_report_is_included_in_explain_output() -> None:
 
     assert "status: batch_only" in report
     assert "STREAM-E0801: batch_only in summarize (grouped aggregate)" in report
-    assert "operations: aggregate(aggregate keys=id metrics=count streaming_modes=update|complete)" in report
+    assert "operations: aggregate(aggregate keys=id metrics=count streaming_modes=append|update)" in report
 
 
 def test_v2_watermarked_aggregate_explain_output_names_policy() -> None:
@@ -390,7 +500,7 @@ def test_v2_watermarked_aggregate_explain_output_names_policy() -> None:
 
     assert "status: compatible" in report
     assert (
-        "operations: watermark(event_time 10 minutes), aggregate(aggregate keys=id metrics=count streaming_modes=update|complete)"
+        "operations: watermark(event_time 10 minutes), aggregate(aggregate keys=bucket,id metrics=count streaming_modes=append|update)"
         in report
     )
 
@@ -434,12 +544,13 @@ def test_v2_generated_watermark_code_avoids_streaming_lifecycle_and_actions() ->
         plan,
         source_transform="tests.fixtures.streaming.transforms.StreamingWatermarkedAggregate",
         generated_package="streaming_generated",
-        source_schema_modules={"tests.fixtures.streaming.schemas": [StreamRaw, StreamSummary]},
+        source_schema_modules={"tests.fixtures.streaming.schemas": [StreamRaw, StreamWindowSummary]},
     )
 
     generated = "\n".join(files.values())
 
     assert '.withWatermark("event_time", ' in generated
+    assert "F.window(F.col(\"stream_raw.event_time\"), '10 minutes')" in generated
     forbidden = (
         "readStream",
         "writeStream",
@@ -451,3 +562,33 @@ def test_v2_generated_watermark_code_avoids_streaming_lifecycle_and_actions() ->
         ".rdd",
     )
     assert all(value not in generated for value in forbidden)
+
+
+def test_v4_generated_dedupe_uses_only_the_permitted_streaming_branch() -> None:
+    files = PySpark.render.project()(
+        PySpark.plan.lower()(compile_transform(StreamingWatermarkedDedupe)),
+        source_transform="tests.fixtures.streaming.transforms.StreamingWatermarkedDedupe",
+        generated_package="streaming_generated",
+        source_schema_modules={"tests.fixtures.streaming.schemas": [StreamRaw, StreamClean]},
+    )
+
+    generated = "\n".join(files.values())
+
+    assert ".isStreaming:" in generated
+    assert ".dropDuplicatesWithinWatermark([\"id\"])" in generated
+    assert ".dropDuplicates([\"id\"])" in generated
+    assert all(value not in generated for value in ("readStream", "writeStream", "start(", "awaitTermination", "checkpoint"))
+
+
+def test_v4_generated_explicit_dedupe_has_no_adaptive_branch() -> None:
+    files = PySpark.render.project()(
+        PySpark.plan.lower()(compile_transform(StreamingExplicitWatermarkedDedupe)),
+        source_transform="tests.fixtures.streaming.transforms.StreamingExplicitWatermarkedDedupe",
+        generated_package="streaming_generated",
+        source_schema_modules={"tests.fixtures.streaming.schemas": [StreamRaw, StreamClean]},
+    )
+
+    generated = "\n".join(files.values())
+
+    assert ".dropDuplicatesWithinWatermark([\"id\"])" in generated
+    assert ".isStreaming" not in generated

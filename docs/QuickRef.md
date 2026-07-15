@@ -586,7 +586,7 @@ def unique_events(self, event: RawEvent) -> RawEvent:
     return RawEvent.project(event)
 ```
 
-`drop_duplicates(...)` with accepts list of typed field expressions for PySpark-compatible subset dedupe. The relation is
+`drop_duplicates(...)` accepts a list of typed field expressions for PySpark-compatible subset dedupe. The relation is
 inferred when all fields come from the same relation:
 
 ```python
@@ -597,6 +597,10 @@ def unique_accounts(self, event: RawEvent) -> RawEvent:
 
 Dedupe operations run in source order: before a relation is joined they prepare that relation's
 source; after a join they apply to the active joined frame using the specified relation fields.
+
+For a streaming frame, declare `watermark(event_time, delay=...)` first: ordinary `drop_duplicates(...)` then uses
+bounded `dropDuplicatesWithinWatermark` rather than forever-global dedupe. Use
+`drop_duplicates_within_watermark(...)` when the streaming-only intent should be explicit.
 
 When the selected row must be deterministic, prefer `dedupe_latest_by(...)` or `dedupe_earliest_by(...)` 
 with an explicit ordering and tie policy. 

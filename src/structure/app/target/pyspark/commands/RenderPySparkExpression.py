@@ -46,6 +46,13 @@ class RenderPySparkExpression:
         if expression.kind == "python_udf":
             args = [self._render(argument, aliases) for argument in expression.args]
             return f"self.{expression.data['udf_name']}({', '.join(args)})"
+        if expression.kind == "time_window":
+            arguments = [self._render(expression.args[0], aliases), repr(expression.data["duration"])]
+            if expression.data.get("slide") is not None:
+                arguments.append(repr(expression.data["slide"]))
+            if expression.data.get("start") is not None:
+                arguments.append(repr(expression.data["start"]))
+            return f"F.window({', '.join(arguments)})"
         if expression.kind == "special_expr":
             return self._special_expr(expression, aliases)
         if expression.kind == "transform_expression":

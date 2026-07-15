@@ -143,6 +143,7 @@ class PySparkStepMapper:
                                 self._expressions.map(expression, capabilities=capabilities) for expression in subset
                             ),
                             scope=None if duplicate_rows is None else duplicate_rows.scope,
+                            within_watermark=False if duplicate_rows is None else duplicate_rows.within_watermark,
                         )
                     )
                 )

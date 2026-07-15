@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import ast
-import inspect
-import textwrap
 from collections import defaultdict
 from datetime import date, datetime
 from typing import Callable, Mapping, cast
@@ -13,16 +10,19 @@ from structure.app.target.pyspark.commands.RenderPySparkExpression import render
 from structure.app.target.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
 from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
 from structure.app.target.pyspark.logic.GeneratedCodeOptions import GeneratedCodeOptions
+from structure.app.target.pyspark.logic.RenderEmbeddedHooks import EmbeddedHook, EmbeddedHookError, RenderEmbeddedHooks
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.app.target.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
 from structure.app.target.pyspark.model.PySparkValidationRecipe import PySparkValidationRecipe
+from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 
 
 class RenderPySparkTransformModule:
 
     def __init__(self) -> None:
+        self._embedded_hooks = RenderEmbeddedHooks()
         self._options = GeneratedCodeOptions()
 
     def __call__(
@@ -129,6 +129,7 @@ class RenderPySparkTransformModule:
         source_transform: str,
         generated_code_options: tuple[str, ...],
     ) -> str:
+        embedded_hooks = self._embedded(plan, generated_code_options=generated_code_options)
         embed_exprs = self._options.enabled(generated_code_options, "embed_exprs")
         with render_pyspark_expression.embed_exprs(embed_exprs):
             if self._options.enabled(generated_code_options, "mirror_methods"):
@@ -136,19 +137,32 @@ class RenderPySparkTransformModule:
                     plan,
                     source_transform=source_transform,
                     generated_code_options=generated_code_options,
+                    embedded_hooks=embedded_hooks,
                 )
             else:
-                parent_classes = self._parent_classes(plan, source_transform=source_transform)
+                parent_classes = self._parent_classes(
+                    plan,
+                    source_transform=source_transform,
+                    embedded_hooks=embedded_hooks,
+                )
                 if not parent_classes:
                     lines = self._legacy_class(
                         plan,
                         source_transform=source_transform,
                         generated_code_options=generated_code_options,
+                        embedded_hooks=embedded_hooks,
                     )
                 else:
                     lines = []
                     for parent in parent_classes:
-                        lines.extend(self._owner_class(parent, plan, source_transform=source_transform))
+                        lines.extend(
+                            self._owner_class(
+                                parent,
+                                plan,
+                                source_transform=source_transform,
+                                embedded_hooks=embedded_hooks,
+                            )
+                        )
                         lines.append("")
                         lines.append("")
                     lines.extend(
@@ -157,6 +171,7 @@ class RenderPySparkTransformModule:
                             source_transform=source_transform,
                             parent_classes=parent_classes,
                             generated_code_options=generated_code_options,
+                            embedded_hooks=embedded_hooks,
                         )
                     )
             if embed_exprs:
@@ -169,6 +184,7 @@ class RenderPySparkTransformModule:
         *,
         source_transform: str,
         generated_code_options: tuple[str, ...],
+        embedded_hooks: tuple[EmbeddedHook, ...],
     ) -> list[str]:
         class_name = f"{plan.transform}Generated"
         source_name = source_transform.rsplit(".", 1)[1]
@@ -222,7 +238,11 @@ class RenderPySparkTransformModule:
             f"schema={{{', '.join(schema_entries)}}}"
             f"{alias_argument})"
         )
-        wrappers = self._hook_methods(plan, embed_hooks=self._options.enabled(generated_code_options, "embed_hooks"))
+        wrappers = (
+            self._flat_methods(embedded_hooks)
+            if self._options.enabled(generated_code_options, "embed_hooks")
+            else self._hook_methods(plan, embed_hooks=False)
+        )
         if wrappers:
             lines.extend(["", *wrappers])
         if self._options.enabled(generated_code_options, "embed_udfs"):
@@ -265,30 +285,24 @@ class RenderPySparkTransformModule:
             if methods:
                 methods.append("")
             if embed_hooks:
-                methods.extend(self._embedded_method(hook))
-            else:
-                parameters = ", ".join((*hook.lanes, "spark", "ctx"))
-                arguments = ", ".join(f"{parameter}={parameter}" for parameter in (*hook.lanes, "spark", "ctx"))
-                methods.extend(
-                    [
-                        f"    def {hook.name}(self, *, {parameters}):",
-                        f"        return self._impl.{hook.name}({arguments})",
-                    ]
-                )
+                raise AssertionError("Embedded hook methods are rendered by RenderEmbeddedHooks.")
+            parameters = ", ".join((*hook.lanes, "spark", "ctx"))
+            arguments = ", ".join(f"{parameter}={parameter}" for parameter in (*hook.lanes, "spark", "ctx"))
+            methods.extend(
+                [
+                    f"    def {hook.name}(self, *, {parameters}):",
+                    f"        return self._impl.{hook.name}({arguments})",
+                ]
+            )
         return methods
 
-    def _embedded_method(self, hook) -> list[str]:
-        origin = hook.origin
-        if origin is None or origin.owner is None:
-            raise TypeError(f"embed_hooks cannot locate the source for generated hook {hook.name!r}.")
-        return self._embedded_function(origin.owner.__dict__[origin.member_name])
-
     def _embedded_function(self, function: Callable, *, static: bool = False) -> list[str]:
-        source = textwrap.dedent(inspect.getsource(function))
-        module = ast.parse(source)
-        node = next((node for node in module.body if isinstance(node, ast.FunctionDef)), None)
-        if node is None:
-            raise TypeError(f"Cannot extract generated function {function!r}.")
+        import ast
+        import inspect
+        import textwrap
+
+        node = ast.parse(textwrap.dedent(inspect.getsource(function))).body[0]
+        assert isinstance(node, ast.FunctionDef)
         node.decorator_list = []
         rendered = ast.unparse(node)
         decorators = ["    @staticmethod"] if static else []
@@ -353,6 +367,7 @@ class RenderPySparkTransformModule:
         *,
         source_transform: str,
         generated_code_options: tuple[str, ...],
+        embedded_hooks: tuple[EmbeddedHook, ...],
     ) -> list[str]:
         class_name = f"{plan.transform}Generated"
         source_name = source_transform.rsplit(".", 1)[1]
@@ -404,7 +419,7 @@ class RenderPySparkTransformModule:
             f"{alias_argument})"
         )
         if self._options.enabled(generated_code_options, "embed_hooks"):
-            lines.extend(["", *self._hook_methods(plan, embed_hooks=True)])
+            lines.extend(["", *self._methods_for(embedded_hooks, source_transform)])
         if self._options.enabled(generated_code_options, "embed_udfs"):
             lines.extend(["", *self._udf_methods(plan)])
         return lines
@@ -415,10 +430,21 @@ class RenderPySparkTransformModule:
         plan: PySparkExecutionPlan,
         *,
         source_transform: str,
+        embedded_hooks: tuple[EmbeddedHook, ...],
     ) -> list[str]:
         class_name = self._generated_class_name(owner)
         lines = [f"class {class_name}:"]
-        lines.extend(self._step_methods(plan, owner=owner, source_transform=source_transform))
+        lines.extend(
+            self._step_methods(
+                plan,
+                owner=owner,
+                source_transform=source_transform,
+                generated_hooks=bool(embedded_hooks),
+            )
+        )
+        methods = self._methods_for(embedded_hooks, owner)
+        if methods:
+            lines.extend(["", *methods])
         if len(lines) == 1:
             lines.append("    pass")
         return lines
@@ -430,12 +456,20 @@ class RenderPySparkTransformModule:
         source_transform: str,
         parent_classes: tuple[str, ...],
         generated_code_options: tuple[str, ...],
+        embedded_hooks: tuple[EmbeddedHook, ...],
     ) -> list[str]:
         class_name = f"{plan.transform}Generated"
         bases = f"({', '.join(self._generated_class_name(owner) for owner in parent_classes)})" if parent_classes else ""
         source_name = source_transform.rsplit(".", 1)[1]
         lines = [f"class {class_name}{bases}:"]
-        lines.extend(self._step_methods(plan, owner=source_transform, source_transform=source_transform))
+        lines.extend(
+            self._step_methods(
+                plan,
+                owner=source_transform,
+                source_transform=source_transform,
+                generated_hooks=bool(embedded_hooks),
+            )
+        )
         lines.extend(["", "    def __init__(self, *, spark: SparkSession, ctx=None):"])
         lines.append("        self.spark = spark")
         lines.append("        self.ctx = ctx")
@@ -474,7 +508,7 @@ class RenderPySparkTransformModule:
             f"{alias_argument})"
         )
         if self._options.enabled(generated_code_options, "embed_hooks"):
-            lines.extend(["", *self._hook_methods(plan, embed_hooks=True)])
+            lines.extend(["", *self._methods_for(embedded_hooks, source_transform)])
         if self._options.enabled(generated_code_options, "embed_udfs"):
             lines.extend(["", *self._udf_methods(plan)])
         return lines
@@ -485,6 +519,7 @@ class RenderPySparkTransformModule:
         *,
         owner: str,
         source_transform: str,
+        generated_hooks: bool,
     ) -> list[str]:
         methods: list[str] = []
         sources = self._frame_sources(plan)
@@ -500,6 +535,7 @@ class RenderPySparkTransformModule:
                     current=sources[step.source],
                     sources=sources,
                     source_transform=source_transform,
+                    generated_hooks=generated_hooks,
                 )
             )
             methods.append("        return {")
@@ -529,13 +565,23 @@ class RenderPySparkTransformModule:
         name = "".join(character.lower() if character.isalnum() else "_" for character in step.name).strip("_")
         return f"_step_{name}_{step.ordinal}"
 
-    def _parent_classes(self, plan: PySparkExecutionPlan, *, source_transform: str) -> tuple[str, ...]:
+    def _parent_classes(
+        self,
+        plan: PySparkExecutionPlan,
+        *,
+        source_transform: str,
+        embedded_hooks: tuple[EmbeddedHook, ...] = (),
+    ) -> tuple[str, ...]:
         owners: list[str] = []
         for step in plan.steps:
             owner = self._step_owner(step, source_transform=source_transform)
             if owner == source_transform or owner in owners:
                 continue
             owners.append(owner)
+        for hook in embedded_hooks:
+            owner = hook.origin.import_name
+            if owner != source_transform and owner not in owners:
+                owners.append(owner)
         return tuple(owners)
 
     def _step_owner(self, step, *, source_transform: str) -> str:
@@ -545,6 +591,67 @@ class RenderPySparkTransformModule:
 
     def _generated_class_name(self, owner: str) -> str:
         return f"{owner.rsplit('.', 1)[1]}Generated"
+
+    def _embedded(
+        self,
+        plan: PySparkExecutionPlan,
+        *,
+        generated_code_options: tuple[str, ...],
+    ) -> tuple[EmbeddedHook, ...]:
+        if not self._options.enabled(generated_code_options, "embed_hooks"):
+            return ()
+        if self._udfs(plan) and not self._options.enabled(generated_code_options, "embed_udfs"):
+            self._embedded_fail(
+                "Python UDFs still require the source transform implementation; "
+                "remove embed_hooks or enable embed_udfs when that option is available."
+            )
+        hooks = self._embedded_hooks(self._hooks(plan))
+        self._validate_embedded_names(plan, hooks)
+        return hooks
+
+    def _validate_embedded_names(self, plan: PySparkExecutionPlan, hooks: tuple[EmbeddedHook, ...]) -> None:
+        reserved = {"__init__", "run"}
+        reserved.update(self._step_method(step) for step in plan.steps)
+        reserved.update(self._mirror_step_method(step) for step in plan.steps)
+        for hook in hooks:
+            if hook.name in reserved:
+                self._embedded_fail(f"Embedded hook {hook.name!r} collides with a generated class member.", hook=hook.name)
+
+    def _methods_for(self, hooks: tuple[EmbeddedHook, ...], owner: str) -> list[str]:
+        methods: list[str] = []
+        for hook in hooks:
+            if hook.origin.import_name != owner:
+                continue
+            if methods:
+                methods.append("")
+            methods.extend(hook.lines)
+        return methods
+
+    def _flat_methods(self, hooks: tuple[EmbeddedHook, ...]) -> list[str]:
+        names: set[str] = set()
+        methods: list[str] = []
+        for hook in hooks:
+            if hook.name in names:
+                self._embedded_fail(
+                    f"Embedded hook {hook.name!r} has multiple declaring owners in a flat generated class.",
+                    hook=hook.name,
+                )
+            names.add(hook.name)
+            if methods:
+                methods.append("")
+            methods.extend(hook.lines)
+        return methods
+
+    def _embedded_fail(self, problem: str, *, hook: str | None = None) -> None:
+        context = {"hook": hook} if hook is not None else {}
+        raise EmbeddedHookError(
+            Diagnostic(
+                entry=diagnostic_registry["GEN-E0903"],
+                problem=problem,
+                use="Use delegated hooks, or remove the conflicting dependency from the generated layout.",
+                context=context,
+            )
+        )
 
     def _source_imports(
         self,

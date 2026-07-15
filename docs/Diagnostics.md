@@ -19,6 +19,7 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | JOIN-W0601 | warning | lookup_join uniqueness is not proven | Provide deterministic `JoinDedupe`, or use `inner_join(...)` when multiplication is intended. |
 | GEN-E0901 | error | Generated output is stale | Run `structure compile` and commit the generated changes. |
 | GEN-E0902 | error | Generated transform is not importable | Rebuild generated code or switch to direct execution with `execution_mode = "online"`. |
+| GEN-E0903 | error | Embedded hook cannot be generated | Use local imports and a standalone hook body, or remove `embed_hooks`. |
 | ONLINE-E1201 | error | Transform input is missing | Pass every declared input DataFrame before `run(session)`. |
 | ONLINE-E1202 | error | Direct PySpark runner is not configured | Pass a SparkSession or custom `online_executor`, or switch to generated-code execution with `execution_mode = "generated"`. |
 | ONLINE-E1203 | error | Execution mode is unsupported | Use `execution_mode = "online"` or `execution_mode = "generated"`. |
@@ -66,6 +67,9 @@ See [Diagnostics.md](background/Diagnostics.back.md#gen-e0901).
 
 ### GEN-E0902
 See [Diagnostics.md](background/Diagnostics.back.md#gen-e0902).
+
+### GEN-E0903
+See [Diagnostics.md](background/Diagnostics.back.md#gen-e0903).
 
 ### ONLINE-E1201
 See [Diagnostics.md](background/Diagnostics.back.md#online-e1201).

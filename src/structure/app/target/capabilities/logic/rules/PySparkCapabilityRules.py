@@ -147,6 +147,7 @@ COMMON_CAPABILITIES = frozenset(
         ("streaming", "row_local_projection"),
         ("streaming", "row_local_filter"),
         ("streaming", "watermark"),
+        ("streaming", "time_window"),
         ("streaming", "stream_static_left_join"),
         ("streaming", "stream_static_inner_join"),
         ("imports", "generated_pyspark_imports"),

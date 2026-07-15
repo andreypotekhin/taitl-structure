@@ -60,9 +60,9 @@ result = EnrichOrdersGenerated(spark=spark, ctx=ctx).run(
 )
 ```
 
-For a compatible transform, `result.isStreaming` should be true when the current input is streaming. Structure must not
-branch on `isStreaming` in generated transform bodies. The same DataFrame plan should be valid for batch and streaming
-inputs when the operation contract is satisfied.
+For a compatible transform, `result.isStreaming` should be true when the current input is streaming. Structure uses a
+single narrow `isStreaming` branch only for ordinary `drop_duplicates(...)`, selecting batch `dropDuplicates` or
+streaming `dropDuplicatesWithinWatermark`; all lifecycle behavior remains caller-owned.
 
 ## Supported Operations
 

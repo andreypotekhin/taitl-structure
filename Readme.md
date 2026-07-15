@@ -1,6 +1,6 @@
 # Structure
 
-**Structure** is a Python-to-PySpark runtime compiler which allows writing Spark data pipelines in Pythonic way, creating optimizer-friendly PySpark code behind the scenes. It can also be used as PySpark code generator: output the schemas and transformations as PySpark code. 
+**Structure** is a Python-to-PySpark runtime compiler which allows writing Spark data pipelines in Pythonic way, resulting in optimizer-friendly PySpark code creation at runtime. It can also be used as PySpark code generator: output the schemas and transformations as PySpark code. 
 
 ## Less Code, More Spark
 
@@ -8,15 +8,15 @@ Structure can help replace hand-maintained PySpark boilerplate.
 
 ![add_promotion.screen](res/img/screenshots/add_promotion.screen.jpg)
 
-Structure pipelines express filtering, joins, projections, hydration, and normalization as compact Python
-while Spark still sees optimizer-visible DataFrame logic.
+Structure allows to express filtering, joins, projections, aggregation as compact Python
+code, while Spark still sees optimizer-visible DataFrame logic.
 
 ## Nutshell
 Define schemas. Define transforms. Run transforms.
 
 ### Example Schema
 
-Schema classes (direct or indirect subclasses of Schema) compile to PySpark schemas (StructType, StructField).
+Schema classes compile to PySpark schemas (StructType, StructField).
 
 ```python
 from structure import *

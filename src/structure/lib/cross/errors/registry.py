@@ -172,6 +172,17 @@ diagnostic_registry = DiagnosticRegistry(
             ),
         ),
         DiagnosticEntry(
+            code="GEN-E0903",
+            severity="error",
+            title="Embedded hook cannot be generated",
+            owner="generation",
+            status="active",
+            docs="docs/Diagnostics.md#gen-e0903",
+            introduced="1.0.0",
+            problem_template="A raw hook depends on source state that generated PySpark does not package.",
+            use_template="Use local imports and a standalone hook body, or remove embed_hooks.",
+        ),
+        DiagnosticEntry(
             code="ONLINE-E1201",
             severity="error",
             title="Transform input is missing",

@@ -5,7 +5,8 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from functools import cache as cached
 from math import isfinite
-from typing import TypeVar
+from re import fullmatch
+from typing import TypeVar, overload
 
 from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
 from structure.app.compiler.ir.model.DuplicateRowsPlan import DuplicateRowsPlan
@@ -18,6 +19,7 @@ from structure.app.dsl.model.expr.expressions import literal
 from structure.app.dsl.model.schemas.FieldDeclaration import FieldDeclaration
 from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
+from structure.app.dsl.model.transforms.TimeWindow import TimeWindow
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.BooleanType import BooleanType
 from structure.app.dsl.model.types.DoubleType import DoubleType
@@ -28,6 +30,7 @@ from structure.app.dsl.model.types.MapType import MapType
 from structure.app.dsl.model.types.StringType import StringType
 from structure.app.dsl.model.types.StructType import StructType
 from structure.app.dsl.model.types.StructureType import StructureType
+from structure.app.dsl.model.types.TimestampType import TimestampType
 
 F = TypeVar("F", bound=Callable)
 
@@ -445,7 +448,61 @@ def rolling_max(
     )
 
 
-def window(*, partition_by: object, order_by: object, frame: "WindowFrame | None" = None) -> "WindowSpec":
+@overload
+def window(
+    *,
+    partition_by: object,
+    order_by: object,
+    frame: "WindowFrame | None" = None,
+) -> "WindowSpec": ...
+
+
+@overload
+def window(
+    event_time: object,
+    duration: str,
+    /,
+    slide: str | None = None,
+    start: str | None = None,
+) -> Expression: ...
+
+
+def window(
+    *arguments: object,
+    partition_by: object | None = None,
+    order_by: object | None = None,
+    frame: "WindowFrame | None" = None,
+    slide: str | None = None,
+    start: str | None = None,
+) -> "WindowSpec | Expression":
+    if arguments:
+        if partition_by is not None or order_by is not None or frame is not None:
+            raise TypeError("window(...) cannot mix event-time arguments with partition_by=, order_by=, or frame=")
+        if not 2 <= len(arguments) <= 4:
+            raise TypeError("window(event_time, duration, slide=None, start=None) requires event_time and duration")
+        if len(arguments) >= 3 and slide is not None:
+            raise TypeError("window(...) received slide both positionally and by keyword")
+        if len(arguments) == 4 and start is not None:
+            raise TypeError("window(...) received start both positionally and by keyword")
+        event_time = literal(arguments[0])
+        if not isinstance(event_time.type, TimestampType):
+            raise TypeError("window(event_time, ...) requires a timestamp expression")
+        duration = _positive_interval("window(... duration)", arguments[1])
+        positional_slide = arguments[2] if len(arguments) >= 3 else slide
+        positional_start = arguments[3] if len(arguments) == 4 else start
+        resolved_slide = None if positional_slide is None else _positive_interval("window(... slide)", positional_slide)
+        resolved_start = None if positional_start is None else _positive_interval("window(... start)", positional_start)
+        return Expression(
+            kind="time_window",
+            type=StructType(TimeWindow),
+            nullable=False,
+            data={"duration": duration, "slide": resolved_slide, "start": resolved_start},
+            args=(event_time,),
+        )
+    if slide is not None or start is not None:
+        raise TypeError("window(slide=... or start=...) requires event_time and duration positional arguments")
+    if partition_by is None or order_by is None:
+        raise TypeError("window(partition_by=..., order_by=..., frame=None) requires partition_by and order_by")
     if frame is not None and not isinstance(frame, WindowFrame):
         raise TypeError("window(frame=...) requires rows_between(...) or range_between(...)")
     spec = WindowSpec(
@@ -594,6 +651,19 @@ def window_collect_set(value: object, *, over: "WindowSpec", element_type: Struc
 def drop_duplicates(*subset: object) -> None:
     duplicate_rows = _duplicate_rows(subset, call="drop_duplicates(...)")
     _context("drop_duplicates()").operations.append(OperationPlan.drop_duplicates_operation(duplicate_rows))
+
+
+def drop_duplicates_within_watermark(*subset: object) -> None:
+    duplicate_rows = _duplicate_rows(subset, call="drop_duplicates_within_watermark(...)")
+    _context("drop_duplicates_within_watermark()").operations.append(
+        OperationPlan.drop_duplicates_operation(
+            DuplicateRowsPlan(
+                subset=duplicate_rows.subset,
+                scope=duplicate_rows.scope,
+                within_watermark=True,
+            )
+        )
+    )
 
 
 def distinct(relation: object | None = None) -> None:
@@ -1544,6 +1614,15 @@ def _sortable_type(call: str, expression: Expression) -> None:
     type = _typed_type(call, expression)
     if type.name not in {"date", "decimal", "double", "float", "integer", "long", "string", "timestamp"}:
         raise TypeError(f"{call} must return an orderable scalar expression; received {type.name}")
+
+
+def _positive_interval(call: str, value: object) -> str:
+    if not isinstance(value, str) or not fullmatch(
+        r"\s*[1-9]\d*(?:\.\d+)?\s+(?:microseconds?|milliseconds?|seconds?|minutes?|hours?|days?|weeks?)\s*",
+        value,
+    ):
+        raise TypeError(f"{call} requires a positive fixed Spark interval string, such as '10 minutes'")
+    return value.strip()
 
 
 @cached

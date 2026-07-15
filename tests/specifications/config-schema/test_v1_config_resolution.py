@@ -6,6 +6,7 @@ from pathlib import Path
 from uuid import uuid4
 
 from structure import *
+from structure.app.compiler.artifacts.model.CompilerOptions import CompilerOptions as CompilerArtifactOptions
 from structure.app.configuration.api import ConfigError, Configuration
 
 
@@ -220,6 +221,25 @@ def test_v1_config_accepts_canonical_generated_code_options() -> None:
         )
 
         assert config.generated_code_options == ("embed_exprs", "mirror_methods")
+
+
+def test_v1_config_resolves_embed_hooks_from_toml_and_changes_compiler_fingerprint() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            '[tool.structure]\ngenerated_code_options = ["embed_hooks", "embed_exprs"]\n',
+            encoding="utf-8",
+        )
+
+        embedded = StructureConfig.resolve(project_root=root)
+        delegated = StructureConfig.resolve(project_root=root, generated_code_options=[])
+
+    assert embedded.generated_code_options == ("embed_exprs", "embed_hooks")
+    assert embedded.source_map["generated_code_options"] == "structure.toml"
+    assert (
+        CompilerArtifactOptions.from_config(embedded).fingerprint()
+        != CompilerArtifactOptions.from_config(delegated).fingerprint()
+    )
 
 
 def test_v1_config_rejects_invalid_generated_code_options() -> None:

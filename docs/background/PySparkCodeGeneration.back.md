@@ -570,6 +570,12 @@ Rules:
 Generated code does not inspect hook internals. Hook behavior is opaque to compiler traceability except for the declared
 hook boundary.
 
+`generated_code_options = ["embed_hooks"]` changes only generated layout. It AST-copies an eligible raw hook after
+generated `run(...)`, removes `@raw`, and calls the copied method at the same boundary. The source transform is not
+imported solely for embedded hooks. Supported dependencies are local imports, parameters, local values, builtins, and
+`self.spark`/`self.ctx`; source globals, closures, `super()`, and other instance state fail with `GEN-E0903`. The body
+remains an optimizer-opaque hook. Python UDFs require delegated source implementation unless `embed_udfs` is selected.
+
 ## HookInputs Namespace
 
 Generated `HookInputs` may be imported from generated runtime support or emitted into a runtime support module.

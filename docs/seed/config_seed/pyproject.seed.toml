@@ -12,6 +12,8 @@ source_roots = []
 # Source package paths are mirrored below generated_package.
 generated_dir = "generated"
 generated_package = "structure_generated"
+# Generated-source choices. The default keeps source-backed hooks; embed_hooks copies standalone raw hooks.
+generated_code_options = []
 
 # Backend target.
 execution_mode = "online"

@@ -244,6 +244,7 @@ class RunOnlinePySparkTransform:
                 duplicate_rows = operation.duplicate_rows
                 subset = () if duplicate_rows is None else duplicate_rows.subset
                 scope = None if duplicate_rows is None else duplicate_rows.scope
+                within_watermark = False if duplicate_rows is None else duplicate_rows.within_watermark
                 if (
                     scope
                     and scope != getattr(step, "source_scope", None)
@@ -252,11 +253,11 @@ class RunOnlinePySparkTransform:
                 ):
                     source = self._source_for_scope(step, scope)
                     frame = prepared_frames[source] if source in prepared_frames else prepared_frames[scope]
-                    prepared = frame.dropDuplicates(self._drop_duplicates_subset(subset))
+                    prepared = self._drop_duplicates(frame, subset, within_watermark=within_watermark)
                     prepared_frames[source] = prepared
                     prepared_frames[scope] = prepared
                 else:
-                    df = df.dropDuplicates(self._drop_duplicates_subset(subset))
+                    df = self._drop_duplicates(df, subset, within_watermark=within_watermark)
             if operation.kind == "watermark" and operation.watermark is not None:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     df = self._watermark(operation.watermark, df)
@@ -294,6 +295,12 @@ class RunOnlinePySparkTransform:
         if not subset:
             return None
         return [self._field_column(expression) for expression in subset]
+
+    def _drop_duplicates(self, frame, subset, *, within_watermark: bool):
+        columns = self._drop_duplicates_subset(subset)
+        if within_watermark or getattr(frame, "isStreaming", False):
+            return frame.dropDuplicatesWithinWatermark(columns)
+        return frame.dropDuplicates(columns)
 
     def _field_column(self, expression) -> str:
         if expression.kind != "field":

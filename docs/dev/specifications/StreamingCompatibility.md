@@ -57,8 +57,8 @@ Rules:
 - Additional named inputs referenced through joins are static side inputs unless declared `StreamingMode.YES`.
 - Passing a streaming DataFrame as a joined side input requires explicit `StreamingMode.YES`, watermarks on both
   sides, and an event-time bound for the admitted inner stream-stream join shape.
-- Generated code should not branch on `df.isStreaming`; the same transform body should work for batch and streaming
-  inputs when the operation contract is satisfied.
+- Generated code does not branch on `df.isStreaming` except for ordinary `drop_duplicates(...)`: that narrowly scoped
+  branch selects batch `dropDuplicates` or streaming `dropDuplicatesWithinWatermark`. It owns no lifecycle behavior.
 
 ## Configuration
 
@@ -112,8 +112,8 @@ where(order.id.is_not_null())
 where(to_decimal(order.total, precision=12, scale=2) >= 0)
 ```
 
-Expression-based derived columns are compatible when they lower to Spark SQL functions or Column operators that do not
-require cross-row state, local collection, Python UDF execution, or RDD conversion.
+Expression-based derived columns are compatible when they lower to Spark SQL functions, Column operators, or scalar
+`@special(type="udf")` calls that do not require cross-row state, local collection, or RDD conversion.
 
 Schema-only validation is compatible. It may inspect `df.schema`, column names, data types, and nullability metadata.
 It must not trigger Spark jobs.
@@ -124,10 +124,16 @@ hooks are out of scope for v1 and must not be introduced by streaming-compatible
 Watermarks are compatible when declared with `watermark(field, delay=...)` before the stateful operation they support.
 The generated code lowers this to `DataFrame.withWatermark(...)`.
 
-Grouped aggregations are compatible when the current streaming frame has a prior compiler-visible watermark. Structure
-reports `update` and `complete` as caller-owned output-mode choices.
+Grouped aggregations are compatible only when the current streaming frame has a prior compiler-visible watermark and a
+direct grouping key for that same event-time field, or `window(event_time, duration, slide=None, start=None)`. The
+event-time helper returns `Struct[TimeWindow]` with non-null `start` and `end` timestamps. Structure reports `append`
+and `update` as caller-owned output-mode choices. A watermarked business-key aggregate remains rejected because the
+watermark does not bound its state.
 
-Exact and subset dedupe are compatible when the current streaming frame has a prior compiler-visible watermark.
+`drop_duplicates(...)` uses batch `dropDuplicates` for batch frames and `dropDuplicatesWithinWatermark` for streaming
+frames. `drop_duplicates_within_watermark(...)` is the explicit streaming-only spelling and requires a declared
+streaming input plus a prior compiler-visible watermark. Both spellings have watermark-bounded, rather than forever-global,
+deduplication semantics.
 
 Inner stream-stream rowset joins are compatible when both inputs are declared `StreamingMode.YES`, both joined
 frames have watermarks, and the predicate includes `event_time_between(left_time, right_time, upper=...)`.
@@ -148,7 +154,7 @@ These operations are not streaming-compatible in v1:
   `dedupe_earliest_by(...)`;
 - stream-stream joins that lack declared streaming input modes, watermarks, or event-time bounds;
 - right, full, cross, semi, or anti joins involving the streaming current DataFrame;
-- Python UDFs, Pandas UDFs, RDD operations, `mapInPandas`, and `foreachPartition`;
+- Pandas UDFs, RDD operations, `mapInPandas`, and `foreachPartition`;
 - local Spark actions such as `collect()`, `count()`, `toPandas()`, `show()`, and `take()`;
 - arbitrary hooks unless marked streaming-safe.
 
@@ -383,7 +389,7 @@ The implementation is complete when tests prove these scenarios:
 - A possible stream-stream join is rejected for explicit streaming-compatible transforms.
 - A hook without `streaming_safe=True` makes compatibility unknown or emits a warning.
 - A hook with `streaming_safe=True` is accepted as a trusted boundary after signature validation.
-- Global sort, aggregation, deduplication, limit, Python UDF, Pandas UDF, RDD conversion, and local actions are
+- Global sort, aggregation, deduplication, limit, Pandas UDF, RDD conversion, and local actions are
   rejected.
 - Generated code for a compatible transform contains no `readStream`, `writeStream`, `collect`, `count`, or `toPandas`.
 - Diagnostics link to [StreamingCompatibility.md](StreamingCompatibility.md).

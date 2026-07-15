@@ -94,7 +94,8 @@ Gaps:
 | Encoding/binary helpers | planned | `base64`, `unbase64`, `encode`, `decode` | Lower priority. |
 | JSON/XML/CSV helpers | planned | Spark JSON, XML, CSV functions | Needs schema contracts. |
 | Variant/geospatial helpers | planned | `VARIANT`, `ST_*` functions | Outside current type model. |
-| UDF/UDTF symbolic helpers | unsupported | `udf`, `udtf`, UDT | Use hooks for opaque PySpark. |
+| Scalar Python UDFs | implemented | `@special(type="udf")`, PySpark `udf` | Ordinary PySpark row-local batch and streaming support with the existing `warn_on_udfs` warning policy; excluded from Spark Connect. |
+| Python UDTFs and UDTs | unsupported | `udtf`, UDT | Use caller-owned PySpark or hooks; row expansion needs a cardinality contract. |
 | Raw SQL string expressions | unsupported | `expr`, `call_function` | Keep compiler-visible expressions structured. |
 
 ## Joins
@@ -178,9 +179,18 @@ Gaps:
 | Generated streaming sinks | unsupported | `DataFrame.writeStream` | Callers own sinks and side effects. |
 | Triggers, checkpoints, and output modes | unsupported | `trigger`, `checkpointLocation`, `outputMode` | Callers apply lifecycle policy; Structure may report required modes. |
 | Watermarks | implemented | `withWatermark` | Compiler-visible transform operation. |
-| Streaming aggregations | implemented | Structured Streaming aggregations | Admitted only with a prior compiler-visible watermark. |
-| Stateful streaming dedupe | implemented | `dropDuplicatesWithinWatermark` | Admitted only with a prior compiler-visible watermark. |
-| `foreachBatch` and custom sinks | unsupported | `foreachBatch`, `foreach` | Keep side effects outside the DSL. |
+| Event-time tumbling and sliding aggregations | implemented | `groupBy(window(...))` | Requires a prior watermark on the direct event-time grouping key or `window(event_time, ...)`; caller uses `append` or `update`. |
+| Cross-mode dedupe | implemented | `dropDuplicates` / `dropDuplicatesWithinWatermark` | `drop_duplicates(...)` uses batch `dropDuplicates` and streaming bounded dedupe after a watermark. |
+| Explicit bounded dedupe | implemented | `dropDuplicatesWithinWatermark` | `drop_duplicates_within_watermark(...)` requires `StreamingMode.YES` and a preceding watermark. |
+| Session and chained windows | deferred | session windows, chained window aggregation | Needs session merge, output-mode, and multi-stage state rules. |
+| Stream-stream outer and semi joins | deferred | left/right/full outer, semi stream-stream joins | Spark has watermark/time-bound variants; Structure has no admitted state contract for them. |
+| Unsupported stream-static directions | deferred | right/full/cross/semi/anti stream-static joins | Use a supported left/inner stream-static lookup or caller-owned PySpark. |
+| Global/unbounded aggregation and dedupe | deferred | global `groupBy`, unwatermarked `dropDuplicates` | Rejected to prevent unbounded state; group by a watermarked event-time key/window or bound it outside Structure. |
+| Sorting, limits, analytic windows, selected-row helpers | deferred | `orderBy`, `limit`, ranking, `Window`, top-N | Caller-owned streaming logic; analytical windows remain batch-only. |
+| Multiple stateful operators | deferred | chains of streaming aggregates/dedupe/joins | Needs explicit composition and state-budget policy. |
+| Pandas, RDD, and state-processor boundaries | deferred | Pandas UDF, RDD, `mapInPandas`, state processors | Scalar UDF is row-local streaming-supported; use caller-owned streaming code at these other boundaries. |
+| Generators | deferred | `explode`, `posexplode`, `inline` | Pending the row-cardinality design. |
+| Caller-owned lifecycle APIs | unsupported | sources, sinks, triggers, checkpoints, query start/stop, `foreachBatch` | Intentionally owned by the end user; Structure only transforms supplied DataFrames. |
 
 ## Admission Checklist
 

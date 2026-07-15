@@ -479,6 +479,33 @@ def test_lowered_recipes_record_step_and_hook_owners() -> None:
     assert normalize.after_hooks[0].origin.class_name == "NormalizeWithHook"
 
 
+def test_embed_hooks_dispatches_an_inherited_hook_to_its_declaring_generated_class() -> None:
+    class NormalizeWithHook(DirectNormalize):
+        @raw(inout=lane(DirectNormalize.normalized) | lane(DirectNormalize.normalized))
+        def audit(self, *, normalized, spark, ctx):
+            return normalized
+
+    @transform
+    class Publish(NormalizeWithHook):
+        published = output(Published)
+
+        def publish(self, row: Normalized) -> Published:
+            return Published(id=row.id, value=row.value, audit="published")
+
+    text = PySpark.render.transform()(
+        PySpark.plan.lower()(compile_transform(Publish)),
+        source_transform=f"{__name__}.Publish",
+        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        schema_modules={Raw: __name__, Normalized: __name__, Published: __name__},
+        generated_code_options=("embed_hooks",),
+    )
+
+    assert "class NormalizeWithHookGenerated:" in text
+    assert "    def audit(self, *, normalized, spark, ctx):" in text
+    assert "NormalizeWithHookGenerated.audit(self, normalized=normalized, spark=self.spark, ctx=self.ctx)" in text
+    assert "self._impl" not in text
+
+
 def test_explicit_parent_step_does_not_run_raw_hook_overridden_by_child_method() -> None:
     class NormalizeWithHook(DirectNormalize):
         @raw(inout=lane(DirectNormalize.normalized) | lane(DirectNormalize.normalized))

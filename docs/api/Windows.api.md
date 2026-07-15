@@ -41,6 +41,7 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |
 | `window(...)` | `Window.partitionBy(...).orderBy(...)` | `w = window(partition_by=o.customer_id, order_by=o.at)` |
+| `window(event_time, duration, slide=None, start=None)` | `functions.window` | `window(o.at, "10 minutes", "5 minutes")` |
 | `rows_between(...)` | `rowsBetween` | `rows_between(preceding(2), current_row())` |
 | `range_between(...)` | `rangeBetween` | `range_between(preceding(10), current_row())` |
 | `unbounded_preceding()` | `Window.unboundedPreceding` | `rows_between(unbounded_preceding(), current_row())` |
@@ -51,7 +52,10 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 
 **Details And Differences**
 
-- `window(...)` returns a Structure `WindowSpec`, not a raw PySpark `WindowSpec`.
+- `window(partition_by=..., order_by=..., frame=...)` returns a Structure `WindowSpec`, not a raw PySpark `WindowSpec`.
+- `window(event_time, duration, slide=None, start=None)` returns `Struct[TimeWindow]` for a named grouping key. It
+  accepts fixed positive interval strings and is the event-time streaming form; its positional arguments cannot mix
+  with the analytical keyword family.
 - Use frame constructors with reusable windows; `preceding(...)` and `following(...)` require non-negative values.
 
 ## Reusable-Window Functions

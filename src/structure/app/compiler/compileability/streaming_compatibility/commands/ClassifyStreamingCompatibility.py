@@ -17,19 +17,28 @@ class ClassifyStreamingCompatibility:
     def __call__(self, plan: PySparkExecutionPlan, *, required: bool = False) -> StreamingReport:
         findings: list[StreamingFinding] = []
         input_modes = {input.name: input.streaming for input in plan.inputs}
+        watermarks: dict[str, set[str]] = {}
         for step in plan.steps:
-            watermarks: set[str] = set()
-            findings.extend(self._window_projection(step.name, tuple(assignment.expression for assignment in step.projection)))
+            expressions = tuple(assignment.expression for assignment in step.projection)
+            findings.extend(self._window_projection(step.name, expressions))
             for result in step.results:
+                result_expressions = tuple(assignment.expression for assignment in result.projection)
                 findings.extend(
-                    self._window_projection(result.lane, tuple(assignment.expression for assignment in result.projection))
+                    self._window_projection(result.lane, result_expressions)
                 )
             for operation in step.operations:
                 if operation.watermark is not None:
-                    watermarks.add(operation.watermark.scope)
+                    watermarks.setdefault(operation.watermark.scope, set()).add(operation.watermark.column)
                     continue
                 if operation.aggregate is not None:
-                    findings.extend(self._aggregate(step.name, watermarked=self._current_watermarked(step, watermarks)))
+                    findings.extend(
+                        self._aggregate(
+                            step.name,
+                            operation.aggregate,
+                            watermark_columns=watermarks.get(step.source_scope, set()),
+                            scope=step.source_scope,
+                        )
+                    )
                 if operation.selected_rows is not None:
                     findings.extend(self._selected_rows(step.name, operation.selected_rows.direction))
                 if operation.kind == "drop_duplicates":
@@ -38,7 +47,9 @@ class ClassifyStreamingCompatibility:
                         self._drop_duplicates(
                             step.name,
                             subset=subset,
-                            watermarked=self._current_watermarked(step, watermarks),
+                            watermarked=bool(watermarks.get(step.source_scope)),
+                            explicit=bool(operation.duplicate_rows and operation.duplicate_rows.within_watermark),
+                            streaming_input=input_modes.get(step.source) is StreamingMode.YES,
                         )
                     )
                 if operation.join is not None:
@@ -49,7 +60,7 @@ class ClassifyStreamingCompatibility:
                             input_modes=input_modes,
                             current_input=step.source,
                             current_scope=step.source_scope,
-                            watermarks=watermarks,
+                            watermarks=set(watermarks),
                         )
                     )
             for hook in (
@@ -70,24 +81,61 @@ class ClassifyStreamingCompatibility:
             findings=tuple(findings),
         )
 
-    def _current_watermarked(self, step, watermarks: set[str]) -> bool:
-        return step.source_scope in watermarks
-
-    def _aggregate(self, step: str, *, watermarked: bool) -> tuple[StreamingFinding, ...]:
-        if watermarked:
+    def _aggregate(
+        self,
+        step: str,
+        aggregate,
+        *,
+        watermark_columns: set[str],
+        scope: str,
+    ) -> tuple[StreamingFinding, ...]:
+        if not watermark_columns:
+            return (
+                StreamingFinding(
+                    code="STREAM-E0801",
+                    support=StreamingSupport.BATCH_ONLY,
+                    step=step,
+                    operation="grouped aggregate",
+                    problem=(
+                        "Grouped aggregations on streaming inputs require a compiler-visible watermark and a direct "
+                        "event-time grouping key."
+                    ),
+                    use="Call watermark(event_time_field, delay=...) before group_by(window(event_time_field, ...)) or keep this transform batch-only.",
+                ),
+            )
+        if any(self._watermarked_grouping_key(key.expression, watermark_columns, scope) for key in aggregate.keys):
             return ()
         return (
             StreamingFinding(
                 code="STREAM-E0801",
                 support=StreamingSupport.BATCH_ONLY,
                 step=step,
-                operation="grouped aggregate",
+                operation="unbounded grouped aggregate",
                 problem=(
-                    "Grouped aggregations on streaming inputs require a compiler-visible watermark and explicit "
-                    "state/output-mode policy."
+                    "A watermark alone cannot bound state for a business-key aggregate. The watermark event-time "
+                    "field must be grouped directly or through window(event_time, ...)."
                 ),
-                use="Call watermark(event_time_field, delay=...) before group_by(...) or keep this transform batch-only.",
+                use="Group by window(the_watermarked_event_time, duration) or the event-time field itself, or keep this transform batch-only.",
             ),
+        )
+
+    def _watermarked_grouping_key(
+        self,
+        expression: PySparkExpressionRecipe,
+        watermark_columns: set[str],
+        scope: str,
+    ) -> bool:
+        if expression.kind == "field":
+            return (
+                str(expression.data.get("scope", "")) == scope
+                and str(expression.data.get("field", "")) in watermark_columns
+            )
+        return (
+            expression.kind == "time_window"
+            and bool(expression.args)
+            and expression.args[0].kind == "field"
+            and str(expression.args[0].data.get("scope", "")) == scope
+            and str(expression.args[0].data.get("field", "")) in watermark_columns
         )
 
     def _selected_rows(self, step: str, direction: str) -> tuple[StreamingFinding, ...]:
@@ -105,7 +153,26 @@ class ClassifyStreamingCompatibility:
             ),
         )
 
-    def _drop_duplicates(self, step: str, *, subset: int, watermarked: bool) -> tuple[StreamingFinding, ...]:
+    def _drop_duplicates(
+        self,
+        step: str,
+        *,
+        subset: int,
+        watermarked: bool,
+        explicit: bool,
+        streaming_input: bool,
+    ) -> tuple[StreamingFinding, ...]:
+        if explicit and not streaming_input:
+            return (
+                StreamingFinding(
+                    code="STREAM-E0801",
+                    support=StreamingSupport.BATCH_ONLY,
+                    step=step,
+                    operation="watermark-bounded duplicate removal",
+                    problem="drop_duplicates_within_watermark(...) requires an input declared with StreamingMode.YES.",
+                    use="Declare the current input with streaming=StreamingMode.YES or use drop_duplicates(...) for cross-mode transforms.",
+                ),
+            )
         if watermarked:
             return ()
         operation = "exact duplicate removal" if not subset else "subset duplicate removal"

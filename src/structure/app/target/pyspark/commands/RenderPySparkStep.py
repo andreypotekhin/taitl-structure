@@ -149,6 +149,9 @@ class RenderPySparkStep:
         generated_hooks: bool,
     ) -> tuple[str, str]:
         if generated_hooks:
+            origin = hook.origin
+            if origin is not None and source_transform is not None and origin.import_name != source_transform:
+                return f"{origin.class_name}Generated.{origin.member_name}", "self, "
             return f"self.{hook.name}", ""
         origin = hook.origin
         if origin is None or source_transform is None or origin.import_name == source_transform:
@@ -207,13 +210,17 @@ class RenderPySparkStep:
                     source_key = self._source_for_scope(step, scope)
                     source = prepared_sources.get(source_key, prepared_sources.get(scope, source_key))
                     prepared = f"{target}_{self._identifier(scope)}_deduped_{dedupe_index}"
-                    ordered_lines.append(f"        {prepared} = {source}.dropDuplicates({self._dedupe_subset(duplicate_rows)})")
+                    ordered_lines.extend(
+                        self._drop_duplicates(
+                            source,
+                            prepared,
+                            duplicate_rows,
+                        )
+                    )
                     prepared_sources[source_key] = prepared
                     prepared_sources[scope] = prepared
                 else:
-                    ordered_lines.append(
-                        f"        {target} = {target}.dropDuplicates({self._dedupe_subset(duplicate_rows)})"
-                    )
+                    ordered_lines.extend(self._drop_duplicates(target, target, duplicate_rows))
             if operation.kind == "watermark" and operation.watermark is not None:
                 if operation.watermark.scope == getattr(step, "source_scope", ""):
                     ordered_lines.extend(self._watermark(operation.watermark, target=target))
@@ -228,6 +235,22 @@ class RenderPySparkStep:
         if not duplicate_rows.subset:
             return ""
         return json.dumps(tuple(self._field_column(expression) for expression in duplicate_rows.subset))
+
+    def _drop_duplicates(
+        self,
+        source: str,
+        target: str,
+        duplicate_rows: PySparkDuplicateRowsRecipe,
+    ) -> list[str]:
+        subset = self._dedupe_subset(duplicate_rows)
+        if duplicate_rows.within_watermark:
+            return [f"        {target} = {source}.dropDuplicatesWithinWatermark({subset})"]
+        return [
+            f"        if {source}.isStreaming:",
+            f"            {target} = {source}.dropDuplicatesWithinWatermark({subset})",
+            "        else:",
+            f"            {target} = {source}.dropDuplicates({subset})",
+        ]
 
     def _prepares_relation(
         self,

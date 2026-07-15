@@ -96,14 +96,20 @@ def render_generated_project(
     source_transform: str,
     generated_package: str,
     source_schema_modules: Mapping[str, Sequence[type[Schema]]],
+    generated_code_options: tuple[str, ...] = (),
 ) -> dict[str, str]:
-    artifact = transform_type.compile(generated_package=generated_package, target_variant=target_variant())
+    artifact = transform_type.compile(
+        generated_package=generated_package,
+        generated_code_options=generated_code_options,
+        target_variant=target_variant(),
+    )
     return PySpark.render.project()(
         artifact.pyspark_plan,
         source_transform=source_transform,
         generated_package=generated_package,
         source_schema_modules=source_schema_modules,
         semantic_fingerprint=artifact.semantic_fingerprint,
+        generated_code_options=generated_code_options,
     )
 
 

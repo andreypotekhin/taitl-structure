@@ -28,6 +28,16 @@ class PySparkExpressionEvaluator:
             return self._call(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "python_udf":
             return self._python_udf(expression, functions=functions, aliases=aliases, window=window)
+        if expression.kind == "time_window":
+            arguments = [
+                self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window),
+                expression.data["duration"],
+            ]
+            if expression.data.get("slide") is not None:
+                arguments.append(expression.data["slide"])
+            if expression.data.get("start") is not None:
+                arguments.append(expression.data["start"])
+            return functions.window(*arguments)
         if expression.kind == "transform_expression":
             return self._reserved(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "is_not_null":

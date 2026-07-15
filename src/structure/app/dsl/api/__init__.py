@@ -83,6 +83,7 @@ from structure.app.dsl.model.transforms.operations import (
     dense_rank,
     distinct,
     drop_duplicates,
+    drop_duplicates_within_watermark,
     earliest_by,
     first_value,
     group_by,
@@ -147,6 +148,7 @@ from structure.app.dsl.model.transforms.operations import (
 from structure.app.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.app.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.app.dsl.model.transforms.StreamingOutputMode import StreamingOutputMode
+from structure.app.dsl.model.transforms.TimeWindow import TimeWindow
 from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.transforms.transform_api import (
@@ -221,6 +223,7 @@ __all__ = [
     "dense_rank",
     "distinct",
     "drop_duplicates",
+    "drop_duplicates_within_watermark",
     "earliest_by",
     "element_at",
     "event_time_between",
@@ -298,6 +301,7 @@ __all__ = [
     "temporal_one",
     "to_decimal",
     "transform",
+    "TimeWindow",
     "trim",
     "try_element_at",
     "upper",

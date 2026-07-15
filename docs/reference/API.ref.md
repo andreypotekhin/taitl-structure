@@ -25,7 +25,8 @@ Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
 
 - Schema classes own field names, aliases, types, and nullability instead of exposing raw Spark schema objects.
 - Transform source is compiler-visible. `@raw` remains the honest boundary for caller-owned PySpark behavior.
-- Expression truthiness, raw SQL strings, and arbitrary UDF/UDTF expressions are unsupported.
+- Expression truthiness, raw SQL strings, UDTFs, and arbitrary callback bodies are unsupported. Scalar
+  `@special(type="udf")` remains an ordinary-PySpark row-local feature with its warning policy.
 
 ## Analytical APIs
 
@@ -53,7 +54,9 @@ Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
 
 **Details And Differences**
 
-- Callers own streaming sources, sinks, triggers, checkpoints, output modes, and query lifecycle.
+- Callers own streaming sources, sinks, triggers, checkpoints, output modes, and query lifecycle. Event-time
+  tumbling/sliding aggregation, watermark-bounded dedupe, and scalar Python UDFs are compiler-visible transformations;
+  scalar UDFs remain ordinary-PySpark only.
 - Classic-only Spark internals such as SparkContext, RDDs, JVM access, and `_jdf` are unsupported for Spark Connect.
 
 ## Planned And Unsupported Surface
@@ -69,7 +72,7 @@ transformation APIs and stay outside Structure's scope.
 | Array variants; generators | planned | `slice`, `sort_array`, `explode` | Need a row-expansion contract. |
 | Window order; more aggregates | supported | Window functions and aggregate frames | Sprint 14. |
 | Collection basics | supported | Core arrays/maps | [Collections API](../api/Collections.api.md) |
-| Raw APIs/lifecycle | unsupported | `expr`, `WindowSpec`, `udf` | Use hooks; caller owns lifecycle. |
+| Raw APIs/lifecycle | unsupported | `expr`, raw `WindowSpec`, UDTF | Use hooks; caller owns lifecycle. Scalar `@special(type="udf")` is row-local ordinary-PySpark supported. |
 
 For detailed restrictions, diagnostics, and feature-admission rationale, consult [API Gaps](../dev/Gaps.md) and the
 linked reference pages.
