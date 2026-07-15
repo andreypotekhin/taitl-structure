@@ -15,4 +15,4 @@ Module: `examples.orders.schemas.analytics`
 | `min_units` | `min_units` | `long` | no |
 | `max_units` | `max_units` | `long` | no |
 | `avg_units` | `avg_units` | `double` | no |
-| `gross_total` | `gross_total` | `decimal(12,2)` | no |
+| `gross_total` | `gross_total` | `decimal(22,2)` | no |

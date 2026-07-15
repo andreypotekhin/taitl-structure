@@ -45,7 +45,7 @@ V3_ORDER_PROJECTION_SCHEMA = T.StructType([
     T.StructField("days_since_booking", T.IntegerType(), True),
     T.StructField("booking_month", T.TimestampType(), True),
     T.StructField("absolute_amount", T.DecimalType(11, 2), True),
-    T.StructField("rounded_amount", T.DecimalType(11, 2), True),
+    T.StructField("rounded_amount", T.DecimalType(10, 0), True),
     T.StructField("ceiling_amount", T.DecimalType(11, 0), True),
     T.StructField("floor_amount", T.DecimalType(11, 0), True),
     T.StructField("score_is_nan", T.BooleanType(), False),

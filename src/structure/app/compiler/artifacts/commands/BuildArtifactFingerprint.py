@@ -17,8 +17,7 @@ class BuildArtifactFingerprint:
                 field
                 for field in fields(value)
                 if not (
-                    type(value).__name__ == "CompiledTransform"
-                    and field.name in {"schemas", "semantic_fingerprint"}
+                    type(value).__name__ == "CompiledTransform" and field.name in {"schemas", "semantic_fingerprint"}
                 )
             )
             return (

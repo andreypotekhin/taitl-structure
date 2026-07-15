@@ -3,11 +3,13 @@ from __future__ import annotations
 import inspect
 from collections.abc import Mapping
 from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import replace
 from pathlib import Path
 from typing import cast, get_args, get_origin, get_type_hints
 
 from structure.app.compiler.diagnostics.api import StructureCompileError
+from structure.app.compiler.diagnostics.logic.BuildCompilerDiagnosticSource import BuildCompilerDiagnosticSource
 from structure.app.compiler.frontend.logic.CompilerInputCollector import CompilerInputCollector
 from structure.app.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
 from structure.app.compiler.frontend.logic.CompilerTransformMemberCollector import CompilerTransformMemberCollector
@@ -58,12 +60,14 @@ from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 
 SourceDeclaration = InputDeclaration | LaneDeclaration | BindingSelector
 WriteDeclaration = LaneDeclaration | OutputDeclaration | BindingSelector
+_diagnostic_project_root: ContextVar[Path | None] = ContextVar("diagnostic_project_root", default=None)
 
 
 class CompileTransform:
 
     def __init__(self) -> None:
         self._composer = ComposeTransformPlans()
+        self._diagnostic_source = BuildCompilerDiagnosticSource()
         self._input_collector = CompilerInputCollector()
         self._member_collector = CompilerTransformMemberCollector()
 
@@ -87,12 +91,22 @@ class CompileTransform:
             raise ValueError(f"Configuration override supplied twice: {names}.")
         merged.update(settings)
         resolved = config or StructureConfig.resolve(project_root=project_root, overrides=merged)
-        return self._compile(transform_class, config=resolved)
+        token = _diagnostic_project_root.set(resolved.project_root)
+        try:
+            return self._compile(transform_class, config=resolved)
+        finally:
+            _diagnostic_project_root.reset(token)
 
-    def _compile(self, transform_class: type[Transform] | TransformPipeline, *, config: StructureConfig) -> TransformPlan:
+    def _compile(
+        self, transform_class: type[Transform] | TransformPipeline, *, config: StructureConfig
+    ) -> TransformPlan:
         if isinstance(transform_class, TransformPipeline):
             return self._compose_pipeline(transform_class, name="ComposedTransform", config=config)
-        if not isinstance(transform_class, type) or not issubclass(transform_class, Transform) or transform_class is Transform:
+        if (
+            not isinstance(transform_class, type)
+            or not issubclass(transform_class, Transform)
+            or transform_class is Transform
+        ):
             raise self._error(
                 "DSL-E0402",
                 transform_class=transform_class if isinstance(transform_class, type) else None,
@@ -101,7 +115,9 @@ class CompileTransform:
             )
         pipeline = getattr(transform_class, "_structure_pipeline", None)
         if pipeline is not None:
-            return self._compose_pipeline(pipeline, name=transform_class.__name__, config=config, wrapper_class=transform_class)
+            return self._compose_pipeline(
+                pipeline, name=transform_class.__name__, config=config, wrapper_class=transform_class
+            )
         if not transform_class._structure_outputs:
             raise self._error(
                 "DSL-E0402",
@@ -182,6 +198,10 @@ class CompileTransform:
                         use="Prefer Structure expression helpers when logic can stay compiler-visible, or set warn_on_udfs = false.",
                         context={"udf": qualname},
                         source=f"{transform_class.__module__}.{transform_class.__name__}",
+                        primary_span=self._diagnostic_source(
+                            transform_class,
+                            project_root=_diagnostic_project_root.get(),
+                        ),
                     )
                 )
         return tuple(diagnostics)
@@ -290,9 +310,7 @@ class CompileTransform:
                 "DSL-E0402",
                 transform_class=transform_class,
                 member=item.name,
-                problem=(
-                    f"@raw replaces lane(s) that {target.name} does not produce: {', '.join(unknown)}."
-                ),
+                problem=(f"@raw replaces lane(s) that {target.name} does not produce: {', '.join(unknown)}."),
                 use=f"Select one of: {', '.join(output_lanes)}.",
             )
         target_backend, target_defaulted = cast(tuple[tuple[str, ...], bool], metadata["target_backend"])
@@ -416,7 +434,9 @@ class CompileTransform:
                 return declaration.declaration, f"input:{declaration.name}"
             if declaration.role == "lane":
                 self._declared_selector(transform_class, declaration, member=member, role="input")
-                return declaration.declaration, self._raw_available(declaration.name, available, transform_class, member)
+                return declaration.declaration, self._raw_available(
+                    declaration.name, available, transform_class, member
+                )
         if isinstance(declaration, InputDeclaration):
             self._declared_input(transform_class, declaration, member=member)
             return declaration, str(available.get(declaration.name, {}).get("source", f"input:{declaration.name}"))
@@ -443,7 +463,9 @@ class CompileTransform:
             context={"parameter": name},
         )
 
-    def _raw_argument(self, arguments, sources, by_name, declaration, source, transform_class, member, *, output: bool) -> None:
+    def _raw_argument(
+        self, arguments, sources, by_name, declaration, source, transform_class, member, *, output: bool
+    ) -> None:
         name = declaration.name
         previous = by_name.get(name)
         if previous is None:
@@ -510,7 +532,9 @@ class CompileTransform:
                     problem=f"{transform_class.__name__}.{name} has an invalid tuple return annotation.",
                     use="Use a fixed tuple of Schema classes, such as tuple[Accepted, Audited].",
                 )
-            if item.overridden and any(self._return_schemas(get_type_hints(parent.member).get("return")) for parent in item.overridden):
+            if item.overridden and any(
+                self._return_schemas(get_type_hints(parent.member).get("return")) for parent in item.overridden
+            ):
                 raise self._error(
                     "DSL-E0402",
                     transform_class=transform_class,
@@ -984,7 +1008,9 @@ class CompileTransform:
                         f"{transform_class.__name__}.{member} reads relation parameter "
                         f"{parameter} before it is joined."
                     ),
-                    use=(f"Use left_join({parameter}, on=...) or lookup_join({parameter}, on=...) before reading its fields."),
+                    use=(
+                        f"Use left_join({parameter}, on=...) or lookup_join({parameter}, on=...) before reading its fields."
+                    ),
                     context={"input": parameter},
                 )
 
@@ -2195,7 +2221,9 @@ class CompileTransform:
         if function in numeric_functions and not all(self._numeric_type(item.type) for item in arguments):
             raise self._aggregate_error(transform_class, member, output_schema, field, function, "a numeric expression")
         if function in {"max", "min", "first_value", "last_value"} and not self._orderable_type(argument.type):
-            raise self._aggregate_error(transform_class, member, output_schema, field, function, "an orderable scalar expression")
+            raise self._aggregate_error(
+                transform_class, member, output_schema, field, function, "an orderable scalar expression"
+            )
         if function in {"count_distinct", "approx_count_distinct"} and not self._scalar_type(argument.type):
             raise self._aggregate_error(transform_class, member, output_schema, field, function, "a scalar expression")
         if function in {"bool_and", "bool_or"} and not isinstance(argument.type, BooleanType):
@@ -2464,7 +2492,13 @@ class CompileTransform:
                     f"lookup_join(...) supports Join.LEFT and Join.INNER, not {join.how!r}.",
                     "Use Join.LEFT or Join.INNER, or use rowset_join(...) for broad rowset joins.",
                 )
-            if join.method is JoinMethod.ROWSET and join.how not in {Join.LEFT, Join.INNER, Join.RIGHT, Join.FULL, Join.CROSS}:
+            if join.method is JoinMethod.ROWSET and join.how not in {
+                Join.LEFT,
+                Join.INNER,
+                Join.RIGHT,
+                Join.FULL,
+                Join.CROSS,
+            }:
                 raise self._join_error(
                     transform_class,
                     member,
@@ -2508,10 +2542,7 @@ class CompileTransform:
                 left, right = condition.args
                 self._validate_join_pair(transform_class, member, join.input_name, occurrence, left, right)
 
-            if (
-                join.method is JoinMethod.LOOKUP
-                and join.dedupe is None
-            ):
+            if join.method is JoinMethod.LOOKUP and join.dedupe is None:
                 diagnostics.append(
                     Diagnostic(
                         entry=diagnostic_registry.get("JOIN-W0601"),
@@ -2803,6 +2834,8 @@ class CompileTransform:
             return False
         if expression.kind in {"is_null", "is_not_null", "is_nan", "null_safe_eq"}:
             return False
+        if expression.kind in {"aggregate", "transform_expression"}:
+            return expression.nullable
         if expression.kind == "call":
             function = (expression.data or {}).get("function")
             if function == "coalesce":
@@ -2836,7 +2869,9 @@ class CompileTransform:
         if not isinstance(path, tuple) or len(path) < 2:
             return None
         parent_path = path[:-1]
-        parent_name_path = name_path[:-1] if isinstance(name_path, tuple) and len(name_path) == len(path) else parent_path
+        parent_name_path = (
+            name_path[:-1] if isinstance(name_path, tuple) and len(name_path) == len(path) else parent_path
+        )
         parent_data = dict(data)
         parent_data["field"] = ".".join(str(item) for item in parent_path)
         parent_data["name"] = ".".join(str(item) for item in parent_name_path)
@@ -2900,7 +2935,16 @@ class CompileTransform:
         return type is not None and type.name in {"decimal", "double", "float", "integer", "long"}
 
     def _orderable_type(self, type: StructureType | None) -> bool:
-        return type is not None and type.name in {"date", "decimal", "double", "float", "integer", "long", "string", "timestamp"}
+        return type is not None and type.name in {
+            "date",
+            "decimal",
+            "double",
+            "float",
+            "integer",
+            "long",
+            "string",
+            "timestamp",
+        }
 
     def _scalar_type(self, type: StructureType | None) -> bool:
         return type is not None and type.name not in {"array", "map", "struct"}
@@ -2980,6 +3024,11 @@ class CompileTransform:
                 use=use,
                 context=context or {},
                 source=source,
+                primary_span=self._diagnostic_source(
+                    transform_class,
+                    member,
+                    project_root=_diagnostic_project_root.get(),
+                ),
             )
         )
 

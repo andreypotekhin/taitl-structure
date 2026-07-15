@@ -43,9 +43,7 @@ class CompilerOptions:
         if isinstance(options, StructureConfig):
             config = options
         if config is not None and (project_root is not None or overrides or settings):
-            raise ValueError(
-                "Pass either config/options, or pass project_root/config override fields, not both."
-            )
+            raise ValueError("Pass either config/options, or pass project_root/config override fields, not both.")
         resolved = config or StructureConfig.resolve(project_root=project_root, overrides=overrides, **settings)
         return cls.from_config(resolved, schema_types=schema_types)
 

@@ -1038,7 +1038,7 @@ Rules:
 - Shared name registries, import collectors, and diagnostics accumulators must not be mutated from parallel workers
   without deterministic merge logic.
 
-Immutability enables caching, safe parallel rendering, and future v3 incremental compile fingerprints.
+Immutability enables caching, safe parallel rendering, and future incremental compile fingerprints.
 
 ## Serialization and Debug Output
 

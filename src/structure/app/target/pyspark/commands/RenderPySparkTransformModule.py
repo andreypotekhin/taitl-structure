@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import date, datetime
-from typing import Callable, Mapping, cast
+from typing import Callable, Iterable, Mapping, cast
 
 from structure.app.dsl.model.schemas.Schema import Schema
 from structure.app.dsl.model.types.StructureType import StructureType
@@ -97,6 +97,8 @@ class RenderPySparkTransformModule:
             lines.insert(0, "import datetime")
         if self._has_window(plan):
             lines.insert(1, "from pyspark.sql import Window")
+        if self._has_explicit_cache_level(plan):
+            lines.insert(1, "from pyspark import StorageLevel")
         lines.extend(
             self._source_imports(
                 plan,
@@ -197,7 +199,9 @@ class RenderPySparkTransformModule:
             lines.append(f"        self.{fields[f'input:{input.name}']} = {input.name}")
         if self._requires_impl(plan, generated_code_options=generated_code_options):
             lines.append(f"        self._impl = {source_name}()")
-        lines.extend(self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options))
+        lines.extend(
+            self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options)
+        )
 
         methods = self._mirror_step_methods(plan, source_transform=source_transform, fields=fields)
         if methods:
@@ -376,7 +380,9 @@ class RenderPySparkTransformModule:
         lines.append("        self.ctx = ctx")
         if self._requires_impl(plan, generated_code_options=generated_code_options):
             lines.append(f"        self._impl = {source_name}()")
-        lines.extend(self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options))
+        lines.extend(
+            self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options)
+        )
         lines.extend(["", "    def run(", "        self,", "        *,"])
         for input in plan.inputs:
             lines.append(f"        {input.name}: DataFrame,")
@@ -459,7 +465,9 @@ class RenderPySparkTransformModule:
         embedded_hooks: tuple[EmbeddedHook, ...],
     ) -> list[str]:
         class_name = f"{plan.transform}Generated"
-        bases = f"({', '.join(self._generated_class_name(owner) for owner in parent_classes)})" if parent_classes else ""
+        bases = (
+            f"({', '.join(self._generated_class_name(owner) for owner in parent_classes)})" if parent_classes else ""
+        )
         source_name = source_transform.rsplit(".", 1)[1]
         lines = [f"class {class_name}{bases}:"]
         lines.extend(
@@ -475,7 +483,9 @@ class RenderPySparkTransformModule:
         lines.append("        self.ctx = ctx")
         if self._requires_impl(plan, generated_code_options=generated_code_options):
             lines.append(f"        self._impl = {source_name}()")
-        lines.extend(self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options))
+        lines.extend(
+            self._udf_initializers(plan, source_name=source_name, generated_code_options=generated_code_options)
+        )
         lines.extend(["", "    def run(", "        self,", "        *,"])
         for input in plan.inputs:
             lines.append(f"        {input.name}: DataFrame,")
@@ -615,7 +625,9 @@ class RenderPySparkTransformModule:
         reserved.update(self._mirror_step_method(step) for step in plan.steps)
         for hook in hooks:
             if hook.name in reserved:
-                self._embedded_fail(f"Embedded hook {hook.name!r} collides with a generated class member.", hook=hook.name)
+                self._embedded_fail(
+                    f"Embedded hook {hook.name!r} collides with a generated class member.", hook=hook.name
+                )
 
     def _methods_for(self, hooks: tuple[EmbeddedHook, ...], owner: str) -> list[str]:
         methods: list[str] = []
@@ -669,10 +681,7 @@ class RenderPySparkTransformModule:
             if hook.origin is None:
                 continue
             imports[hook.origin.module].add(hook.origin.class_name)
-        return [
-            f"from {module} import {', '.join(sorted(names))}"
-            for module, names in sorted(imports.items())
-        ]
+        return [f"from {module} import {', '.join(sorted(names))}" for module, names in sorted(imports.items())]
 
     def _requires_impl(self, plan: PySparkExecutionPlan, *, generated_code_options: tuple[str, ...] = ()) -> bool:
         return (self._has_hooks(plan) and not self._options.enabled(generated_code_options, "embed_hooks")) or (
@@ -690,8 +699,10 @@ class RenderPySparkTransformModule:
         for udf in self._udfs(plan):
             function_name = udf["function_name"]
             return_type = self._udf_return_type(udf, source_name=source_name)
-            implementation = f"self.{function_name}" if self._options.enabled(generated_code_options, "embed_udfs") else (
-                f"self._impl.{function_name}"
+            implementation = (
+                f"self.{function_name}"
+                if self._options.enabled(generated_code_options, "embed_udfs")
+                else (f"self._impl.{function_name}")
             )
             lines.append(f"        self.{udf['udf_name']} = F.udf({implementation}, returnType={return_type})")
         return lines
@@ -748,6 +759,21 @@ class RenderPySparkTransformModule:
         if operation.watermark is not None:
             yield operation.watermark.expression
 
+    def _has_explicit_cache_level(self, plan: PySparkExecutionPlan) -> bool:
+        return self._operations_have_explicit_cache_level(plan.steps) or self._operations_have_explicit_cache_level(
+            plan.outputs
+        )
+
+    def _operations_have_explicit_cache_level(
+        self,
+        items: Iterable[PySparkStepRecipe | PySparkOutputRecipe],
+    ) -> bool:
+        return any(
+            operation.kind == "cache" and operation.cache is not None and operation.cache.storage_level is not None
+            for item in items
+            for operation in item.operations
+        )
+
     def _joins_expressions(self, joins):
         for join in joins:
             yield join.predicate
@@ -791,9 +817,7 @@ class RenderPySparkTransformModule:
         return (
             isinstance(expression.data.get("default"), (date, datetime))
             or (expression.kind == "literal" and isinstance(expression.data.get("value"), (date, datetime)))
-        ) or any(
-            self._has_temporal_literal_expression(argument) for argument in expression.args
-        )
+        ) or any(self._has_temporal_literal_expression(argument) for argument in expression.args)
 
     def _last_step_validates_final(self, plan: PySparkExecutionPlan) -> bool:
         if not plan.steps:
@@ -874,7 +898,11 @@ class RenderPySparkTransformModule:
         return (
             bool(selected_rows)
             or any(join.dedupe is not None or join.as_of is not None for join in joins)
-            or any(self._has_window_projection(assignment.expression) for step in plan.steps for assignment in step.projection)
+            or any(
+                self._has_window_projection(assignment.expression)
+                for step in plan.steps
+                for assignment in step.projection
+            )
             or any(
                 self._has_window_projection(assignment.expression)
                 for step in plan.steps
@@ -892,9 +920,7 @@ class RenderPySparkTransformModule:
         data = expression.data or {}
         function = data.get("function")
         return (
-            expression.kind == "transform_expression"
-            and isinstance(function, str)
-            and function.startswith("window_")
+            expression.kind == "transform_expression" and isinstance(function, str) and function.startswith("window_")
         ) or any(self._has_window_projection(argument) for argument in expression.args)
 
 

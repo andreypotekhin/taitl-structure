@@ -13,6 +13,7 @@ from structure.app.target.pyspark.logic.mapping.PySparkValidationMapper import P
 from structure.app.target.pyspark.model.PySparkAggregateAssignment import PySparkAggregateAssignment
 from structure.app.target.pyspark.model.PySparkAggregateKey import PySparkAggregateKey
 from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
+from structure.app.target.pyspark.model.PySparkCacheRecipe import PySparkCacheRecipe
 from structure.app.target.pyspark.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
 from structure.app.target.pyspark.model.PySparkJoinAsOfRecipe import PySparkJoinAsOfRecipe
 from structure.app.target.pyspark.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
@@ -157,7 +158,13 @@ class PySparkStepMapper:
                     )
                 )
             if operation.kind == "cache":
-                recipes.append(PySparkOperationRecipe.cache_operation())
+                recipes.append(
+                    PySparkOperationRecipe.cache_operation(
+                        PySparkCacheRecipe(
+                            storage_level=None if operation.cache is None else operation.cache.storage_level
+                        )
+                    )
+                )
         return tuple(recipes)
 
     def _aggregate(
@@ -184,8 +191,7 @@ class PySparkStepMapper:
                     ),
                     key=assignment.key,
                     arguments=tuple(
-                        self._expressions.map(argument, capabilities=capabilities)
-                        for argument in assignment.arguments
+                        self._expressions.map(argument, capabilities=capabilities) for argument in assignment.arguments
                     ),
                     filter=(
                         None
@@ -213,7 +219,9 @@ class PySparkStepMapper:
             assignments=tuple(assignments),
             grouping=aggregate.grouping,
             levels=aggregate.levels,
-            having=None if aggregate.having is None else self._expressions.map(aggregate.having, capabilities=capabilities),
+            having=(
+                None if aggregate.having is None else self._expressions.map(aggregate.having, capabilities=capabilities)
+            ),
         )
 
     def _require_operation_capability(

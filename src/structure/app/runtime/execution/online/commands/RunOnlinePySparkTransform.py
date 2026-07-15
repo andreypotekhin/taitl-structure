@@ -209,7 +209,9 @@ class RunOnlinePySparkTransform:
                 )
             for filter in step.filters:
                 df = df.where(
-                    self._expressions.evaluate(filter, functions=functions, aliases=self._scope_aliases(step), window=window)
+                    self._expressions.evaluate(
+                        filter, functions=functions, aliases=self._scope_aliases(step), window=window
+                    )
                 )
             return df
 
@@ -288,7 +290,13 @@ class RunOnlinePySparkTransform:
     def _post_operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, df):
         for operation in step.operations:
             if operation.kind == "cache":
-                df = df.persist()
+                cache = operation.cache
+                if cache is None or cache.storage_level is None:
+                    df = df.persist()
+                else:
+                    from pyspark import StorageLevel  # type: ignore[import-not-found]
+
+                    df = df.persist(StorageLevel(*cache.storage_level))
         return df
 
     def _drop_duplicates_subset(self, subset) -> list[str] | None:
@@ -330,11 +338,7 @@ class RunOnlinePySparkTransform:
             group = df.cube
         else:
             raise TypeError(f"Unsupported aggregate grouping: {aggregate.grouping}")
-        key_columns = (
-            self._aggregate_key_columns(aggregate)
-            if aggregate.grouping in {"rollup", "cube"}
-            else ()
-        )
+        key_columns = self._aggregate_key_columns(aggregate) if aggregate.grouping in {"rollup", "cube"} else ()
         if aggregate.grouping in {"rollup", "cube"}:
             for key, column in key_columns:
                 df = df.withColumn(
@@ -348,13 +352,15 @@ class RunOnlinePySparkTransform:
             group = df.rollup if aggregate.grouping == "rollup" else df.cube
         grouped = group(
             *(
-                self._aggregate_key_column(key, key_columns)
-                if aggregate.grouping in {"rollup", "cube"}
-                else self._expressions.evaluate(
-                    key.expression,
-                    functions=functions,
-                    aliases=self._scope_aliases(step),
-                ).alias(key.name)
+                (
+                    self._aggregate_key_column(key, key_columns)
+                    if aggregate.grouping in {"rollup", "cube"}
+                    else self._expressions.evaluate(
+                        key.expression,
+                        functions=functions,
+                        aliases=self._scope_aliases(step),
+                    ).alias(key.name)
+                )
                 for key in aggregate.keys
             )
         )
@@ -454,7 +460,9 @@ class RunOnlinePySparkTransform:
                 return functions.col(self._grouping_set_key_column(assignment, key_columns=key_columns)).alias(
                     assignment.field.column
                 )
-            return functions.lit(None).cast(self._spark_type(assignment.field.type, types)).alias(assignment.field.column)
+            return (
+                functions.lit(None).cast(self._spark_type(assignment.field.type, types)).alias(assignment.field.column)
+            )
         if assignment.function == "grouping_id":
             return (
                 functions.lit(self._grouping_id(aggregate, level=level))
@@ -508,7 +516,11 @@ class RunOnlinePySparkTransform:
                 .alias(assignment.field.column)
             )
         if assignment.function == "grouping_id":
-            return functions.grouping_id().cast(self._spark_type(assignment.field.type, types)).alias(assignment.field.column)
+            return (
+                functions.grouping_id()
+                .cast(self._spark_type(assignment.field.type, types))
+                .alias(assignment.field.column)
+            )
         if assignment.function == "is_grouped" and assignment.expression is not None:
             column = self._aggregate_grouping_column(
                 assignment,
@@ -517,7 +529,11 @@ class RunOnlinePySparkTransform:
                 key_columns=key_columns,
                 functions=functions,
             )
-            return functions.grouping(column).cast(self._spark_type(assignment.field.type, types)).alias(assignment.field.column)
+            return (
+                functions.grouping(column)
+                .cast(self._spark_type(assignment.field.type, types))
+                .alias(assignment.field.column)
+            )
         arguments = assignment.arguments or (() if assignment.expression is None else (assignment.expression,))
         if assignment.function in self._aggregate_functions() and arguments:
             columns = [
@@ -546,8 +562,19 @@ class RunOnlinePySparkTransform:
         if assignment.function in {"first_value", "last_value"} and assignment.expression is not None:
             if assignment.order_by is None:
                 raise TypeError(f"{assignment.function}(...) requires order_by")
-            column = self._expressions.evaluate(assignment.expression, functions=functions, aliases=self._scope_aliases(step))
-            order_by = self._expressions.evaluate(assignment.order_by, functions=functions, aliases=self._scope_aliases(step))
+            column = self._expressions.evaluate(
+                assignment.expression, functions=functions, aliases=self._scope_aliases(step)
+            )
+            order_by = self._expressions.evaluate(
+                assignment.order_by, functions=functions, aliases=self._scope_aliases(step)
+            )
+            if assignment.filter is not None:
+                predicate = self._expressions.evaluate(
+                    assignment.filter,
+                    functions=functions,
+                    aliases=self._scope_aliases(step),
+                )
+                order_by = functions.when(predicate, order_by)
             function = functions.min_by if assignment.function == "first_value" else functions.max_by
             return function(column, order_by).alias(assignment.field.column)
         if assignment.function == "first" and assignment.expression is not None:
@@ -572,10 +599,7 @@ class RunOnlinePySparkTransform:
         )
 
     def _aggregate_key_columns(self, aggregate):
-        return tuple(
-            (key, f"__structure_group_{index}_{key.name}")
-            for index, key in enumerate(aggregate.keys)
-        )
+        return tuple((key, f"__structure_group_{index}_{key.name}") for index, key in enumerate(aggregate.keys))
 
     def _aggregate_key_column(self, target, key_columns):
         for key, column in key_columns:

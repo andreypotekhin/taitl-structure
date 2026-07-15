@@ -289,15 +289,25 @@ class Expression:
             raise TypeError(f"{name}(...) requires a String Structure expression")
         if not isinstance(pattern, str):
             raise TypeError(f"{name}(...) requires a string literal")
-        return Expression(kind=name, type=BooleanType(), nullable=self.nullable, data={"pattern": pattern}, args=(self,))
+        return Expression(
+            kind=name, type=BooleanType(), nullable=self.nullable, data={"pattern": pattern}, args=(self,)
+        )
 
     def _cast(self, target: StructureType) -> "Expression":
         if not isinstance(target, StructureType) or target.name in {"array", "map", "struct"}:
             raise TypeError("cast(...) requires a scalar Structure type")
-        return Expression(kind="cast", type=target, nullable=self.nullable, data={"spark_type": self._spark_type(target)}, args=(self,))
+        return Expression(
+            kind="cast",
+            type=target,
+            nullable=self.nullable,
+            data={"spark_type": self._spark_type(target)},
+            args=(self,),
+        )
 
     def _order(self, direction: str) -> "Expression":
-        return Expression(kind="order", type=self.type, nullable=self.nullable, data={"direction": direction}, args=(self,))
+        return Expression(
+            kind="order", type=self.type, nullable=self.nullable, data={"direction": direction}, args=(self,)
+        )
 
     def _spark_type(self, target: StructureType) -> str:
         if target.name == "integer":

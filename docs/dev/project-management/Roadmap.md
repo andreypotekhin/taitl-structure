@@ -147,7 +147,7 @@ supported logic Spark-plan-visible, and hooks remain explicit escape hatches.
   composed hook boundaries, and explicit decisions on earlier-stage output exposure and mixed wrapper-local logic.
 - **Adoption and scale tooling:** generated documentation artifacts for schemas and transforms, pytest helpers,
   generated-code freshness checks, snapshots, and richer generated-code explain reports move through Sprint 10.
-  Production incremental compilation with cache diagnostics begins v4 after the v3 feature surface stabilizes.
+  Production incremental compilation with cache diagnostics remains future work after the v4 feature surface stabilizes.
 
 ### v2 non-goals
 

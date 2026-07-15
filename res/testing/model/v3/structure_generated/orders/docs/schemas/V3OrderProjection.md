@@ -30,7 +30,7 @@ Module: `testing.model.v3.orders.schemas.v3`
 | `days_since_booking` | `days_since_booking` | `integer` | yes |
 | `booking_month` | `booking_month` | `timestamp` | yes |
 | `absolute_amount` | `absolute_amount` | `decimal(11,2)` | yes |
-| `rounded_amount` | `rounded_amount` | `decimal(11,2)` | yes |
+| `rounded_amount` | `rounded_amount` | `decimal(10,0)` | yes |
 | `ceiling_amount` | `ceiling_amount` | `decimal(11,0)` | yes |
 | `floor_amount` | `floor_amount` | `decimal(11,0)` | yes |
 | `score_is_nan` | `score_is_nan` | `boolean` | no |

@@ -33,8 +33,8 @@ class OrderAnalyticsGenerated:
         ).agg(
             F.first(F.col("order_fulfillment.tenant"), ignorenulls=False).alias("tenant"),
             F.count(F.lit(1)).cast(T.LongType()).alias("order_count"),
-            F.sum(F.col("order_fulfillment.total")).cast(T.DecimalType(12, 2)).alias("gross_total"),
-            F.sum(F.col("order_fulfillment.net_total")).cast(T.DecimalType(12, 2)).alias("net_total"),
+            F.sum(F.col("order_fulfillment.total")).cast(T.DecimalType(22, 2)).alias("gross_total"),
+            F.sum(F.col("order_fulfillment.net_total")).cast(T.DecimalType(22, 2)).alias("net_total"),
         ).select(
             F.col("tenant"),
             F.col("customer_id"),
@@ -59,7 +59,7 @@ class OrderAnalyticsGenerated:
             F.min(F.col("order_fulfillment.quantity")).cast(T.LongType()).alias("min_units"),
             F.max(F.col("order_fulfillment.quantity")).cast(T.LongType()).alias("max_units"),
             F.avg(F.col("order_fulfillment.quantity")).cast(T.DoubleType()).alias("avg_units"),
-            F.sum(F.col("order_fulfillment.total")).cast(T.DecimalType(12, 2)).alias("gross_total"),
+            F.sum(F.col("order_fulfillment.total")).cast(T.DecimalType(22, 2)).alias("gross_total"),
         ).select(
             F.col("tenant"),
             F.col("product_id"),

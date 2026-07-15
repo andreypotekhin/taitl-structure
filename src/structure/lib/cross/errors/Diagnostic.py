@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import Mapping
 
 from structure.lib.cross.errors.DiagnosticEntry import DiagnosticEntry
+from structure.lib.cross.errors.SourceSpan import SourceSpan
 
 
 @dataclass(frozen=True)
@@ -13,6 +14,8 @@ class Diagnostic:
     use: str = ""
     context: Mapping[str, str] = field(default_factory=dict)
     source: str = ""
+    primary_span: SourceSpan | None = None
+    related_spans: tuple[SourceSpan, ...] = ()
 
     @property
     def code(self) -> str:

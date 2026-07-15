@@ -658,7 +658,7 @@ Rules:
 - Avoid broad reflection after discovery has produced metadata.
 - Cache safe expression helper expansions when it materially improves compile time.
 - Do not cache results in a way that hides source context, warnings, or diagnostics.
-- Keep IR immutable or effectively immutable after construction to support v3 incremental compile fingerprints.
+- Keep IR immutable or effectively immutable after construction to support future incremental compile fingerprints.
 
 Required compile metrics:
 

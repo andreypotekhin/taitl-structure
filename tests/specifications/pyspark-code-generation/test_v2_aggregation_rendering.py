@@ -29,8 +29,8 @@ class AdvancedCustomerTotal(Schema):
     any_large = field.boolean(nullable=True)
     quantity_stddev = field.double(nullable=True)
     approximate_customers = field.long(nullable=False)
-    ordered_first_customer = field.string(nullable=False)
-    ordered_last_customer = field.string(nullable=False)
+    ordered_first_customer = field.string(nullable=True)
+    ordered_last_customer = field.string(nullable=True)
     customers = field.array(field.string(), contains_null=False, nullable=True)
 
 
@@ -47,6 +47,20 @@ class GroupingSetTotal(Schema):
     grouping_id = field.integer(nullable=False)
     region_grouped = field.boolean(nullable=False)
     customer_grouped = field.boolean(nullable=False)
+
+
+class GrandTotal(Schema):
+    order_count = field.long(nullable=False)
+    grouping_id = field.integer(nullable=False)
+
+
+class GrandValueTotal(Schema):
+    total_quantity = field.long(nullable=False)
+    average_quantity = field.double(nullable=False)
+    minimum_quantity = field.long(nullable=False)
+    maximum_quantity = field.long(nullable=False)
+    first_customer = field.string(nullable=False)
+    last_customer = field.string(nullable=False)
 
 
 @transform
@@ -80,8 +94,8 @@ class AdvancedCustomerTotals(Transform):
             any_large=bool_or(literal(row.quantity) > 10),
             quantity_stddev=stddev(row.quantity),
             approximate_customers=approx_count_distinct(row.customer_id),
-            ordered_first_customer=first_value(row.customer_id, order_by=row.quantity),
-            ordered_last_customer=last_value(row.customer_id, order_by=row.quantity),
+            ordered_first_customer=first_value(row.customer_id, order_by=row.quantity, where=row.quantity > 0),
+            ordered_last_customer=last_value(row.customer_id, order_by=row.quantity, where=row.quantity > 0),
             customers=collect_set(row.customer_id, element_type=types.string()),
         )
 
@@ -92,9 +106,7 @@ class SaleGroupingSets(Transform):
     totals = output(GroupingSetTotal)
 
     def summarize(self, row: RawSale) -> GroupingSetTotal:
-        grouping_sets((row.region, row.customer_id), (row.region,), ()).having(
-            lambda total: total.order_count > 0
-        )
+        grouping_sets((row.region, row.customer_id), (row.region,), ()).having(lambda total: total.order_count > 0)
         return GroupingSetTotal(
             region=row.region,
             customer_id=row.customer_id,
@@ -102,6 +114,33 @@ class SaleGroupingSets(Transform):
             grouping_id=grouping_id(),
             region_grouped=is_grouped(row.region),
             customer_grouped=is_grouped(row.customer_id),
+        )
+
+
+@transform
+class SaleGrandTotal(Transform):
+    rows = input(RawSale)
+    totals = output(GrandTotal)
+
+    def summarize(self, row: RawSale) -> GrandTotal:
+        grouping_sets(())
+        return GrandTotal(order_count=count(), grouping_id=grouping_id())
+
+
+@transform
+class SaleGrandValueTotal(Transform):
+    rows = input(RawSale)
+    totals = output(GrandValueTotal)
+
+    def summarize(self, row: RawSale) -> GrandValueTotal:
+        grouping_sets(())
+        return GrandValueTotal(
+            total_quantity=sum(row.quantity),
+            average_quantity=avg(row.quantity),
+            minimum_quantity=min(row.quantity),
+            maximum_quantity=max(row.quantity),
+            first_customer=first_value(row.customer_id, order_by=row.quantity),
+            last_customer=last_value(row.customer_id, order_by=row.quantity),
         )
 
 
@@ -160,10 +199,12 @@ def test_advanced_aggregate_helpers_render_spark_visible_rollup_and_metrics() ->
     assert 'F.stddev(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_stddev")' in text
     assert 'F.approx_count_distinct(F.col("raw_order.customer_id")).cast(T.LongType())' in text
     assert (
-        'F.min_by(F.col("raw_order.customer_id"), F.col("raw_order.quantity")).alias("ordered_first_customer")' in text
+        'F.min_by(F.col("raw_order.customer_id"), F.when((F.col("raw_order.quantity") > F.lit(0)), '
+        'F.col("raw_order.quantity"))).alias("ordered_first_customer")' in text
     )
     assert (
-        'F.max_by(F.col("raw_order.customer_id"), F.col("raw_order.quantity")).alias("ordered_last_customer")' in text
+        'F.max_by(F.col("raw_order.customer_id"), F.when((F.col("raw_order.quantity") > F.lit(0)), '
+        'F.col("raw_order.quantity"))).alias("ordered_last_customer")' in text
     )
     assert 'F.collect_set(F.col("raw_order.customer_id")).cast(T.ArrayType(T.StringType(), containsNull=False))' in text
 
@@ -191,6 +232,28 @@ def test_grouping_sets_lower_to_explicit_levels_and_render_union_branches() -> N
     assert "rows = rows.unionByName(rows_grouping_set_2)" in text
     assert "rows = rows.unionByName(rows_grouping_set_3)" in text
     assert 'rows = rows.where((F.col("order_count") > F.lit(0)))' in text
+
+
+def test_grouping_sets_supports_a_global_aggregate_level() -> None:
+    plan = PySpark.plan.lower()(compile_transform(SaleGrandTotal))
+
+    aggregate = plan.steps[0].aggregate
+    assert aggregate is not None
+    assert aggregate.keys == ()
+    assert aggregate.levels == ((),)
+
+    text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
+
+    assert "rows_grouping_set_1 = rows.groupBy(" in text
+    assert 'F.lit(0).cast(T.IntegerType()).alias("grouping_id")' in text
+
+
+def test_global_grouping_set_marks_value_aggregates_nullable_for_empty_input() -> None:
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(SaleGrandValueTotal)
+
+    assert raised.value.diagnostic.code == "SCHEMA-E0301"
+    assert "GrandValueTotal.total_quantity" in raised.value.diagnostic.problem
 
 
 def test_grouping_sets_traceability_and_explain_name_levels() -> None:

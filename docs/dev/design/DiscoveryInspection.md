@@ -66,4 +66,4 @@ contract.
 ## Compile-Time Performance
 
 Discovery is often the largest compile-time cost for large projects. Use source fingerprints, avoid repeated imports,
-and keep inspection results cache-friendly so end-of-v3 production incremental compile can reuse them safely.
+and keep inspection results cache-friendly so future production incremental compile can reuse them safely.

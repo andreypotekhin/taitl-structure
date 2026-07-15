@@ -128,9 +128,7 @@ class RankedEventTransform(Transform):
             dense_rank=dense_rank(partition_by=row.account_id, order_by=row.sequence),
             previous_sequence=lag(row.sequence, partition_by=row.account_id, order_by=row.sequence),
             next_sequence=lead(row.sequence, partition_by=row.account_id, order_by=row.sequence),
-            rolling_units=rolling_sum(
-                row.sequence, partition_by=row.account_id, order_by=row.sequence, preceding=2
-            ),
+            rolling_units=rolling_sum(row.sequence, partition_by=row.account_id, order_by=row.sequence, preceding=2),
             rolling_avg_units=rolling_avg(
                 row.sequence, partition_by=row.account_id, order_by=row.sequence, preceding=2
             ),
@@ -395,7 +393,10 @@ def test_window_helpers_render_multiple_explicitly_ordered_keys() -> None:
 
     order = 'orderBy(F.col("raw_event.sequence").asc_nulls_last(), F.col("raw_event.event_id").desc_nulls_first())'
     assert f"F.rank().over(Window.partitionBy(F.col(\"raw_event.account_id\")).{order})" in text
-    assert f"F.sum(F.col(\"raw_event.sequence\")).over(Window.partitionBy(F.col(\"raw_event.account_id\")).{order}.rowsBetween(-2, Window.currentRow))" in text
+    assert (
+        f"F.sum(F.col(\"raw_event.sequence\")).over(Window.partitionBy(F.col(\"raw_event.account_id\")).{order}.rowsBetween(-2, Window.currentRow))"
+        in text
+    )
 
 
 def test_window_requires_at_least_one_order_key() -> None:
@@ -428,12 +429,25 @@ def test_window_aggregate_helpers_reject_invalid_inputs_and_combinations() -> No
         window_stddev(RawEvent.event_id, over=spec)
     with pytest.raises(TypeError, match="does not permit distinct window aggregates"):
         window_count_distinct(RawEvent.sequence, over=spec)
-    with pytest.raises(TypeError, match="range_between\\(\\.\\.\\.\\) requires exactly one order_by expression"):
+    with pytest.raises(
+        TypeError, match="bounded range_between\\(\\.\\.\\.\\) requires exactly one order_by expression"
+    ):
         window(
             partition_by="account",
             order_by=("sequence", "event_id"),
             frame=range_between(preceding(1), current_row()),
         )
+    with pytest.raises(TypeError, match="bounded range_between\\(\\.\\.\\.\\) requires a numeric order_by expression"):
+        window(
+            partition_by="account",
+            order_by="sequence",
+            frame=range_between(current_row(), current_row()),
+        )
+    assert window(
+        partition_by="account",
+        order_by=("sequence", "event_id"),
+        frame=range_between(unbounded_preceding(), unbounded_following()),
+    )
 
 
 def test_window_projection_helpers_add_window_import_to_generated_module() -> None:

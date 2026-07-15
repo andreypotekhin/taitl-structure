@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
+from structure.app.target.pyspark.model.PySparkCacheRecipe import PySparkCacheRecipe
 from structure.app.target.pyspark.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
@@ -19,6 +20,7 @@ class PySparkOperationRecipe:
     selected_rows: PySparkSelectedRowsRecipe | None = None
     duplicate_rows: PySparkDuplicateRowsRecipe | None = None
     watermark: PySparkWatermarkRecipe | None = None
+    cache: PySparkCacheRecipe | None = None
 
     @staticmethod
     def filter_operation(predicate: PySparkExpressionRecipe) -> "PySparkOperationRecipe":
@@ -48,5 +50,5 @@ class PySparkOperationRecipe:
         return PySparkOperationRecipe(kind="watermark", watermark=watermark)
 
     @staticmethod
-    def cache_operation() -> "PySparkOperationRecipe":
-        return PySparkOperationRecipe(kind="cache")
+    def cache_operation(cache: PySparkCacheRecipe) -> "PySparkOperationRecipe":
+        return PySparkOperationRecipe(kind="cache", cache=cache)

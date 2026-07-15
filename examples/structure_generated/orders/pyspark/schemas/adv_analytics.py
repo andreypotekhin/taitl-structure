@@ -35,7 +35,7 @@ ORDER_PRODUCT_CUBE_SCHEMA = T.StructType([
     T.StructField("grouping_id", T.IntegerType(), False),
     T.StructField("order_count", T.LongType(), False),
     T.StructField("distinct_customers", T.LongType(), False),
-    T.StructField("gross_total", T.DecimalType(12, 2), False),
+    T.StructField("gross_total", T.DecimalType(22, 2), False),
 ])
 
 ORDER_CUSTOMER_WINDOW_SCHEMA = T.StructType([

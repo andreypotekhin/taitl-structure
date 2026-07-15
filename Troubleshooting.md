@@ -1,5 +1,14 @@
 # Troubleshooting
 
+## Disk-less Source Transform Is Unavailable or Ambiguous
+
+When calling `session.run(transform="package.module:Transform", ...)`, Structure reports that no source transform is
+compiled or that the selected transform is ambiguous.
+
+Compile the source tree into that session first with `session.compile(sources)`. If two source trees expose the same
+module and class name, give each variant a distinct Python package root. See
+[disk-less source compilation](docs/dev/specifications/DisklessSourceCompilation.md).
+
 ## Input DataFrame Column Is Not a Python Identifier
 
 Use a Python-safe field name and point `alias` at the real Spark column:

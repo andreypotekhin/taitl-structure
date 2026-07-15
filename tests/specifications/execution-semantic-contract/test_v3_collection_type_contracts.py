@@ -33,8 +33,60 @@ def _map(key: StructureType, value: StructureType, *, value_contains_null: bool 
 
 
 def test_array_aggregate_requires_a_type_stable_accumulator() -> None:
-    with pytest.raises(TypeError, match=r"arr_aggregate\(\.\.\.\) merge callback requires compatible types"):
+    with pytest.raises(
+        TypeError, match=r"arr_aggregate\(\.\.\.\) merge callback must return the initial accumulator type"
+    ):
         arr_aggregate(array("a"), 0, lambda accumulator, item: item)
+    with pytest.raises(
+        TypeError, match=r"arr_aggregate\(\.\.\.\) merge callback must return the initial accumulator type"
+    ):
+        arr_aggregate(array(2**31), 0, lambda accumulator, item: accumulator + item)
+
+
+def test_array_aggregate_propagates_input_and_empty_initial_nullability() -> None:
+    nullable_array = Expression(
+        kind="test_nullable_array",
+        type=types.array(types.integer(), contains_null=False),
+        nullable=True,
+    )
+    required_array = Expression(
+        kind="test_required_array",
+        type=types.array(types.integer(), contains_null=False),
+        nullable=False,
+    )
+    nullable_initial = Expression(kind="test_nullable_initial", type=types.integer(), nullable=True)
+
+    assert arr_aggregate(nullable_array, 0, lambda accumulator, item: accumulator + item).nullable is True
+    assert (
+        arr_aggregate(required_array, nullable_initial, lambda accumulator, item: coalesce(accumulator, 0)).nullable
+        is True
+    )
+    assert (
+        arr_aggregate(
+            nullable_array,
+            0,
+            lambda accumulator, item: accumulator + item,
+            finish=lambda accumulator: coalesce(accumulator, 0),
+        ).nullable
+        is True
+    )
+
+
+def test_array_aggregate_finish_receives_a_nullable_merge_accumulator() -> None:
+    nullable_items = Expression(
+        kind="test_nullable_items",
+        type=types.array(types.integer(), contains_null=True),
+        nullable=False,
+    )
+
+    result = arr_aggregate(
+        nullable_items,
+        0,
+        lambda accumulator, item: item,
+        finish=lambda accumulator: accumulator,
+    )
+
+    assert result.nullable is True
 
 
 def test_array_position_requires_an_item_compatible_with_the_array_element() -> None:
@@ -47,6 +99,18 @@ def test_array_position_requires_a_literal_item_for_pyspark_35_compatibility() -
 
     with pytest.raises(TypeError, match=r"arr_position\(\.\.\.\) item must be a Python literal"):
         arr_position(array("priority"), item)
+
+
+def test_array_position_is_required_when_its_array_is_required() -> None:
+    required = arr_position(array("priority"), "missing")
+    nullable_array = Expression(
+        kind="test_nullable_array",
+        type=types.array(types.string(), contains_null=True),
+        nullable=True,
+    )
+
+    assert required.nullable is False
+    assert arr_position(nullable_array, "missing").nullable is True
 
 
 def test_map_contains_key_requires_a_literal_key_for_pyspark_35_compatibility() -> None:
@@ -79,6 +143,46 @@ def test_array_flatten_is_nullable_when_a_nested_array_can_be_null() -> None:
     assert isinstance(flattened.type, ArrayType)
     assert flattened.type.element == types.string()
     assert flattened.type.contains_null is False
+
+
+@pytest.mark.parametrize("helper", [arr_exists, arr_forall])
+def test_array_predicates_propagate_element_and_callback_nullability(helper) -> None:
+    nullable_items = Expression(
+        kind="test_nullable_items",
+        type=types.array(types.string(), contains_null=True),
+        nullable=False,
+    )
+    required_items = Expression(
+        kind="test_required_items",
+        type=types.array(types.string(), contains_null=False),
+        nullable=False,
+    )
+    nullable_predicate = Expression(kind="test_nullable_predicate", type=types.boolean(), nullable=True)
+
+    assert helper(nullable_items, lambda item: item == "priority").nullable is True
+    assert helper(required_items, lambda _: nullable_predicate).nullable is True
+    assert helper(required_items, lambda item: item == "priority").nullable is False
+
+
+def test_collection_aggregates_exclude_null_input_elements() -> None:
+    nullable_value = Expression(kind="test_nullable_value", type=types.string(), nullable=True)
+    frame = window(
+        partition_by="tenant",
+        order_by="ordered",
+        frame=rows_between(current_row(), current_row()),
+    )
+
+    expressions = (
+        collect_list(nullable_value),
+        collect_set(nullable_value),
+        window_collect_list(nullable_value, over=frame),
+        window_collect_set(nullable_value, over=frame),
+    )
+
+    assert all(
+        isinstance(expression.type, ArrayType) and not expression.type.contains_null and not expression.nullable
+        for expression in expressions
+    )
 
 
 @pytest.mark.parametrize(
@@ -114,13 +218,32 @@ def test_map_transform_keys_rejects_nullable_callback_results() -> None:
         )
 
 
-def test_map_zip_with_requires_compatible_key_types() -> None:
-    with pytest.raises(TypeError, match=r"map_zip_with\(\.\.\.\) key requires compatible types"):
+def test_map_zip_with_requires_matching_key_types() -> None:
+    with pytest.raises(TypeError, match=r"map_zip_with\(\.\.\.\) requires matching map key types"):
         map_zip_with(
-            _map(types.string(), types.string()),
+            _map(types.integer(), types.string()),
             _map(types.long(), types.string()),
             lambda key, left, right: left,
         )
+
+
+@pytest.mark.parametrize(
+    ("left", "right"),
+    [
+        (_map(types.integer(), types.string()), _map(types.long(), types.string())),
+        (_map(types.string(), types.integer()), _map(types.string(), types.long())),
+    ],
+)
+def test_map_concat_requires_matching_key_and_value_types(left: Expression, right: Expression) -> None:
+    with pytest.raises(TypeError, match=r"map_concat\(\.\.\.\) requires maps with matching key and value types"):
+        map_concat(left, right)
+
+
+def test_map_keys_cannot_contain_maps() -> None:
+    with pytest.raises(ValueError, match="MapType key cannot contain another MapType"):
+        types.map(types.map(types.string(), types.string()), types.string())
+    with pytest.raises(ValueError, match="MapType key cannot contain another MapType"):
+        types.map(types.array(types.map(types.string(), types.string())), types.string())
 
 
 def test_map_entries_preserves_key_and_value_types_for_round_tripping() -> None:

@@ -35,6 +35,8 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 
 - `preceding=` gives the number of prior rows included with the current row.
 - All rolling helpers accept `descending=True` for reverse order; the direction flag must be Boolean.
+- Rolling and reusable `sum(...)` / `avg(...)` retain Spark's widened numeric result types, including Decimal precision
+  and scale growth.
 
 ## Reusable Windows And Frames
 
@@ -84,7 +86,10 @@ as `o`, its customer key as `p`, and its event-time order key as `t`.
 
 - `ntile(...)` needs a positive bucket count; `nth_value(...)` indexes from one.
 - `first_value(...)`, `last_value(...)`, and `nth_value(...)` support a Boolean `ignore_nulls=` in reusable-window form.
-- Aggregate window helpers require an explicit row or range frame. A range frame requires exactly one order key.
+- Aggregate window helpers require an explicit row or range frame. A bounded range frame requires exactly one numeric
+  order key; a fully unbounded range frame permits multiple order keys of any orderable scalar type.
+- Window `collect_list(...)` and `collect_set(...)` skip null inputs and return empty non-null arrays for empty frames.
+- Value window aggregates other than `count(...)` can be null for an empty frame, even when their input is non-null.
 - Spark does not permit distinct window aggregates, so `window_count_distinct(...)` rejects the combination early.
 - Raw `Column.over(...)` and raw PySpark `WindowSpec` objects are unsupported. See the
   [Transforms reference](../background/DSL.back.md).

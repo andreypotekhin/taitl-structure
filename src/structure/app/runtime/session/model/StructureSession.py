@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
-from structure.app.compiler.artifacts.commands import CompiledArtifactPool
+from structure.app.compiler.artifacts.commands import CompiledArtifactPool, CompileStructureSources
 from structure.app.compiler.artifacts.model import CompiledTransform, CompilerOptions
 from structure.app.configuration.model.StructureConfig import StructureConfig
 from structure.app.dsl.model.transforms.Transform import Transform
@@ -12,6 +12,10 @@ from structure.app.runtime.execution.api import Execution
 from structure.app.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.app.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.app.runtime.session.model.TransformResult import TransformResult
+from structure.app.sources.commands.DiscoverStructureSources import DiscoverStructureSources
+from structure.app.sources.model.CompiledSources import CompiledSources
+from structure.app.sources.model.SourceTransformAddress import SourceTransformAddress
+from structure.app.sources.model.StructureSources import StructureSources
 
 
 class StructureSession:
@@ -61,8 +65,17 @@ class StructureSession:
         self.storage = storage
         self.compiler_options = CompilerOptions.from_config(resolved, schema_types=schema_types)
         self.artifacts = artifacts or CompiledArtifactPool()
+        self._source_transforms: dict[SourceTransformAddress, list[type[Transform]]] = {}
 
-    def run(self, invocation: Transform) -> TransformResult:
+    def run(self, invocation: Transform | None = None, *, transform=None, **inputs) -> TransformResult:
+        if transform is not None:
+            if invocation is not None:
+                raise ValueError("Pass either a transform invocation or transform=, not both.")
+            return self._run_source(transform, inputs)
+        if invocation is None:
+            raise TypeError(
+                "StructureSession.run(...) requires a transform invocation or transform=python.module:Class."
+            )
         artifact = self._compiled(invocation)
         plan = artifact.pyspark_plan
         self._validate_inputs(invocation, artifact)
@@ -86,24 +99,58 @@ class StructureSession:
     def _compiled(self, invocation: Transform) -> CompiledTransform:
         return self.compile(invocation if isinstance(invocation, TransformPipeline) else type(invocation))
 
-    def compile(self, transform_or_pipeline: type[Transform] | TransformPipeline) -> CompiledTransform:
+    def compile(self, transform_or_pipeline: type[Transform] | TransformPipeline | StructureSources):
+        if isinstance(transform_or_pipeline, StructureSources):
+            compiled = CompileStructureSources()(
+                transform_or_pipeline,
+                compile_one=lambda subject: self.artifacts.get_or_compile(
+                    subject,
+                    options=self.compiler_options,
+                    schema_types=self.schema_types,
+                ),
+            )
+            self._register_sources(compiled)
+            return compiled
         return self.artifacts.get_or_compile(
             transform_or_pipeline,
             options=self.compiler_options,
             schema_types=self.schema_types,
         )
 
-    def load(self, artifact: CompiledTransform) -> None:
+    def load(self, artifact: CompiledTransform | CompiledSources) -> None:
+        if isinstance(artifact, CompiledSources):
+            self._register_sources(artifact)
+            for item in artifact.values():
+                self.artifacts.load(item)
+            return
         self.artifacts.load(artifact)
 
     def load_many(self, artifacts) -> object:
-        return self.artifacts.load_many(artifacts)
+        for artifact in artifacts:
+            self.load(artifact)
+        return self.artifacts.status()
 
     def clear_compiled(self) -> None:
         self.artifacts.clear()
 
     def cache_status(self):
         return self.artifacts.status()
+
+    def _register_sources(self, compiled: CompiledSources) -> None:
+        transforms = DiscoverStructureSources()(compiled.sources)
+        for address, transform in transforms.items():
+            registered = self._source_transforms.setdefault(address, [])
+            if transform not in registered:
+                registered.append(transform)
+
+    def _run_source(self, transform, inputs: dict[str, object]) -> TransformResult:
+        address = SourceTransformAddress.parse(transform)
+        candidates = self._source_transforms.get(address, [])
+        if not candidates:
+            raise ValueError(f"No compiled source transform {address}. Call session.compile(sources) first.")
+        if len(candidates) > 1:
+            raise ValueError(f"Source transform {address} is ambiguous across compiled source sets.")
+        return self.run(candidates[0](**inputs))
 
     def _validate_inputs(self, invocation: Transform, artifact: CompiledTransform) -> None:
         if isinstance(invocation, TransformPipeline):

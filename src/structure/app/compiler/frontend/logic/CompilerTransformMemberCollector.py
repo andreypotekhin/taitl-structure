@@ -4,12 +4,16 @@ import inspect
 from collections import defaultdict
 
 from structure.app.compiler.diagnostics.api import StructureCompileError
+from structure.app.compiler.diagnostics.logic.BuildCompilerDiagnosticSource import BuildCompilerDiagnosticSource
 from structure.app.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 
 
 class CompilerTransformMemberCollector:
+
+    def __init__(self) -> None:
+        self._diagnostic_source = BuildCompilerDiagnosticSource()
 
     def collect(self, transform_class: type[Transform]) -> tuple[CompilerTransformMember, ...]:
         candidates = self._candidates(transform_class)
@@ -85,6 +89,7 @@ class CompilerTransformMemberCollector:
                     use=f"Override {name} on {transform_class.__name__} or rename one parent method.",
                     context={"member": name},
                     source=f"{transform_class.__module__}.{transform_class.__name__}.{name}",
+                    primary_span=self._diagnostic_source(transform_class, name),
                 )
             )
         member = active[0]

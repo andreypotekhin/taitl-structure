@@ -9,8 +9,8 @@ class CustomerDailyTotal(Schema):
     customer_id = string(nullable=False)
     order_date = date(nullable=True)
     order_count = long(nullable=False)
-    gross_total = decimal(12, 2, nullable=False)
-    net_total = decimal(12, 2, nullable=False)
+    gross_total = decimal(22, 2, nullable=False)
+    net_total = decimal(22, 2, nullable=False)
 
 
 class ProductDailySummary(Schema):
@@ -23,7 +23,7 @@ class ProductDailySummary(Schema):
     min_units = long(nullable=False)
     max_units = long(nullable=False)
     avg_units = double(nullable=False)
-    gross_total = decimal(12, 2, nullable=False)
+    gross_total = decimal(22, 2, nullable=False)
 
 
 class CustomerEventRank(Schema):
@@ -40,4 +40,3 @@ class CustomerEventRank(Schema):
     rolling_avg_units = double(nullable=False)
     rolling_min_units = long(nullable=False)
     rolling_max_units = long(nullable=False)
-

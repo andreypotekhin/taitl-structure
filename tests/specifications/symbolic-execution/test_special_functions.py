@@ -126,6 +126,5 @@ def test_special_udf_traceability_marks_python_body_opaque() -> None:
     )
 
     assert ("publish", "clean", "expression", "python UDF body") in {
-        (boundary.step, boundary.hook, boundary.phase, boundary.reason)
-        for boundary in traceability.opaque_boundaries
+        (boundary.step, boundary.hook, boundary.phase, boundary.reason) for boundary in traceability.opaque_boundaries
     }

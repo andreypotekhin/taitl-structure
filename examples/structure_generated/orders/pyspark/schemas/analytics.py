@@ -10,8 +10,8 @@ CUSTOMER_DAILY_TOTAL_SCHEMA = T.StructType([
     T.StructField("customer_id", T.StringType(), False),
     T.StructField("order_date", T.DateType(), True),
     T.StructField("order_count", T.LongType(), False),
-    T.StructField("gross_total", T.DecimalType(12, 2), False),
-    T.StructField("net_total", T.DecimalType(12, 2), False),
+    T.StructField("gross_total", T.DecimalType(22, 2), False),
+    T.StructField("net_total", T.DecimalType(22, 2), False),
 ])
 
 PRODUCT_DAILY_SUMMARY_SCHEMA = T.StructType([
@@ -24,7 +24,7 @@ PRODUCT_DAILY_SUMMARY_SCHEMA = T.StructType([
     T.StructField("min_units", T.LongType(), False),
     T.StructField("max_units", T.LongType(), False),
     T.StructField("avg_units", T.DoubleType(), False),
-    T.StructField("gross_total", T.DecimalType(12, 2), False),
+    T.StructField("gross_total", T.DecimalType(22, 2), False),
 ])
 
 CUSTOMER_EVENT_RANK_SCHEMA = T.StructType([

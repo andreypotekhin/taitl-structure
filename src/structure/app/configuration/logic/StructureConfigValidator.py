@@ -31,9 +31,9 @@ class StructureConfigValidator:
         "spark.sql.ansi.enabled",
     }
 
-    def validate(self, values: Mapping[str, object], root: Path) -> None:
+    def validate(self, values: Mapping[str, object], root: Path, *, allow_empty_source_roots: bool = False) -> None:
         self._validate_type(values["source_roots"], "source_roots", list)
-        if not values["source_roots"]:
+        if not values["source_roots"] and not allow_empty_source_roots:
             self._fail_invalid("source_roots", "source_roots cannot be empty", 'Set source_roots = ["src"].')
 
         for key in ("generated_dir", "generated_package", "generated_docs_dir", "target_profile"):

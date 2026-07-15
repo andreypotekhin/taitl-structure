@@ -20,6 +20,11 @@ the current `order` row scope as `o`.
 - Named keys in `group_by(...)` determine output names.
 - Every metric helper in this section accepts a symbolic metric-local `where=` filter, for example
   `sum(order.total, where=order.is_paid)`.
+- `where=` must be Boolean. A filtered min/max/avg/sum/first/last can be null when no row qualifies.
+- `sum(...)` widens Integer values to Long, Float values to Double, and Decimal precision by ten digits (capped at 38),
+  matching Spark's aggregate result type.
+- `avg(...)` returns Double for non-Decimal inputs; Decimal averages grow precision and scale by four digits, each capped
+  at 38.
 
 ## Subtotals And Aggregate Metadata
 
@@ -34,7 +39,8 @@ the current `order` row scope as `o`.
 
 **Details And Differences**
 
-- `grouping_sets(...)` renders explicit grouped branches and `unionByName`.
+- `grouping_sets(...)` renders explicit grouped branches and `unionByName`; `grouping_sets(())` is a single global
+  aggregate branch.
 - `grouping_id()` and `is_grouped(...)` describe subtotal rows, whose grouping fields can be null.
 - `having(...)` reads aggregate-output scope rather than the input row. It can be a bare statement after grouping or
   chained from `group_by(...)`, `rollup(...)`, `cube(...)`, or `grouping_sets(...)`.
@@ -59,8 +65,11 @@ the current `order` row scope as `o`.
 **Details And Differences**
 
 - Statistical metrics return nullable doubles. Collection order is Spark-dependent.
+- `collect_list(...)` and `collect_set(...)` skip null inputs and return an empty non-null array when no values qualify.
 - `first_value(...)` and `last_value(...)` aggregate forms require a scalar `order_by=` and currently use
   `TiePolicy.ERROR`; `ignore_nulls=` is supported only with `over=`.
+- A filtered `first_value(...)` or `last_value(...)` masks nonqualifying order keys, so an excluded row cannot become
+  the selected minimum or maximum.
 - Exact percentiles, aggregate aliases, and more statistics remain future work.
 
 ## Selection And Dedupe

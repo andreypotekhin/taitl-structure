@@ -43,7 +43,7 @@ class V3OrderProjection(Schema):
     days_since_booking = integer(nullable=True)
     booking_month = timestamp(nullable=True)
     absolute_amount = decimal(11, 2, nullable=True)
-    rounded_amount = decimal(11, 2, nullable=True)
+    rounded_amount = decimal(10, 0, nullable=True)
     ceiling_amount = decimal(11, 0, nullable=True)
     floor_amount = decimal(11, 0, nullable=True)
     score_is_nan = boolean(nullable=False)

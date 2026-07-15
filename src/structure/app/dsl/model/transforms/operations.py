@@ -8,9 +8,8 @@ from math import isfinite
 from re import fullmatch
 from typing import TypeVar, overload
 
-from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
+from structure.app.compiler.ir.model.CachePlan import CachePlan
 from structure.app.compiler.ir.model.DuplicateRowsPlan import DuplicateRowsPlan
-from structure.app.compiler.ir.model.OperationCardinality import OperationCardinality
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
 from structure.app.compiler.ir.model.SelectedRowsPlan import SelectedRowsPlan
 from structure.app.compiler.symbolic_execution.model.CompileContext import CompileContext, current_context
@@ -22,6 +21,7 @@ from structure.app.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.app.dsl.model.transforms.TimeWindow import TimeWindow
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.BooleanType import BooleanType
+from structure.app.dsl.model.types.DecimalType import DecimalType
 from structure.app.dsl.model.types.DoubleType import DoubleType
 from structure.app.dsl.model.types.FloatType import FloatType
 from structure.app.dsl.model.types.IntegerType import IntegerType
@@ -53,8 +53,6 @@ def grouping_sets(*levels: object, **named_levels: object) -> "GroupedRows":
     if not parsed_levels:
         raise TypeError("grouping_sets(...) requires at least one grouping level")
     keys = _grouping_set_keys(parsed_levels)
-    if not keys:
-        raise TypeError("grouping_sets(...) requires at least one non-empty grouping level")
     context.aggregate_keys = keys
     context.aggregate_levels = tuple(tuple(name for name, _ in level) for level in parsed_levels)
     context.aggregate_grouping = "grouping_sets"
@@ -96,30 +94,44 @@ def count_distinct(value: object, *, where: object | None = None) -> Expression:
 
 def min(value: object, *, where: object | None = None) -> Expression:
     argument = literal(value)
-    return _aggregate("min", argument, type=argument.type, nullable=argument.nullable, where=where)
+    return _aggregate("min", argument, type=argument.type, nullable=argument.nullable or where is not None, where=where)
 
 
 def max(value: object, *, where: object | None = None) -> Expression:
     argument = literal(value)
-    return _aggregate("max", argument, type=argument.type, nullable=argument.nullable, where=where)
+    return _aggregate("max", argument, type=argument.type, nullable=argument.nullable or where is not None, where=where)
 
 
 def avg(value: object, *, where: object | None = None) -> Expression:
     argument = literal(value)
-    return _aggregate("avg", argument, type=DoubleType(), nullable=argument.nullable, where=where)
+    return _aggregate(
+        "avg",
+        argument,
+        type=_avg_type(argument),
+        nullable=argument.nullable or where is not None,
+        where=where,
+    )
 
 
 def sum(value: object, *, where: object | None = None) -> Expression:
     argument = literal(value)
-    return _aggregate("sum", argument, type=argument.type, nullable=argument.nullable, where=where)
+    return _aggregate(
+        "sum", argument, type=_sum_type(argument), nullable=argument.nullable or where is not None, where=where
+    )
 
 
 def bool_and(value: object, *, where: object | None = None) -> Expression:
-    return _aggregate("bool_and", literal(value), type=BooleanType(), nullable=True, where=where)
+    argument = literal(value)
+    return _aggregate(
+        "bool_and", argument, type=BooleanType(), nullable=argument.nullable or where is not None, where=where
+    )
 
 
 def bool_or(value: object, *, where: object | None = None) -> Expression:
-    return _aggregate("bool_or", literal(value), type=BooleanType(), nullable=True, where=where)
+    argument = literal(value)
+    return _aggregate(
+        "bool_or", argument, type=BooleanType(), nullable=argument.nullable or where is not None, where=where
+    )
 
 
 def stddev(value: object, *, where: object | None = None) -> Expression:
@@ -142,7 +154,9 @@ def approx_count_distinct(
     value: object, *, relative_sd: float | None = None, where: object | None = None
 ) -> Expression:
     if relative_sd is not None and not _relative_standard_deviation(relative_sd):
-        raise TypeError("approx_count_distinct(...) relative_sd must be a finite number greater than 0 and at most 0.39")
+        raise TypeError(
+            "approx_count_distinct(...) relative_sd must be a finite number greater than 0 and at most 0.39"
+        )
     return _aggregate(
         "approx_count_distinct",
         literal(value),
@@ -182,8 +196,8 @@ def collect_list(
     return _aggregate(
         "collect_list",
         argument,
-        type=ArrayType(_collection_element_type(argument, element_type), contains_null=argument.nullable),
-        nullable=True,
+        type=ArrayType(_collection_element_type(argument, element_type), contains_null=False),
+        nullable=False,
         where=where,
     )
 
@@ -193,8 +207,8 @@ def collect_set(value: object, *, element_type: StructureType | None = None, whe
     return _aggregate(
         "collect_set",
         argument,
-        type=ArrayType(_collection_element_type(argument, element_type), contains_null=argument.nullable),
-        nullable=True,
+        type=ArrayType(_collection_element_type(argument, element_type), contains_null=False),
+        nullable=False,
         where=where,
     )
 
@@ -224,7 +238,7 @@ def first_value(
         "first_value",
         argument,
         type=argument.type,
-        nullable=argument.nullable,
+        nullable=argument.nullable or where is not None,
         where=where,
         order_by=_orderable_expression(order_by, "first_value(...) order_by"),
     )
@@ -255,7 +269,7 @@ def last_value(
         "last_value",
         argument,
         type=argument.type,
-        nullable=argument.nullable,
+        nullable=argument.nullable or where is not None,
         where=where,
         order_by=_orderable_expression(order_by, "last_value(...) order_by"),
     )
@@ -373,7 +387,7 @@ def rolling_sum(
     return _rolling_expression(
         "sum",
         argument,
-        type=argument.type,
+        type=_sum_type(argument),
         nullable=argument.nullable,
         partition_by=partition_by,
         order_by=order_by,
@@ -395,7 +409,7 @@ def rolling_avg(
     return _rolling_expression(
         "avg",
         argument,
-        type=DoubleType(),
+        type=_avg_type(argument),
         nullable=argument.nullable,
         partition_by=partition_by,
         order_by=order_by,
@@ -575,23 +589,46 @@ def nth_value(value: object, n: int, *, over: "WindowSpec", ignore_nulls: bool =
 
 def window_sum(value: object, *, over: "WindowSpec") -> Expression:
     argument = _numeric_expression(value, "window_sum(...)")
-    return _window_over_expression("sum", argument, over=over, type=argument.type, nullable=argument.nullable)
+    return _window_over_expression(
+        "sum",
+        argument,
+        over=over,
+        type=_sum_type(argument),
+        nullable=argument.nullable or not _window_frame_includes_current_row(over),
+    )
 
 
 def window_avg(value: object, *, over: "WindowSpec") -> Expression:
+    argument = _numeric_expression(value, "window_avg(...)")
     return _window_over_expression(
-        "avg", _numeric_expression(value, "window_avg(...)"), over=over, type=DoubleType(), nullable=True
+        "avg",
+        argument,
+        over=over,
+        type=_avg_type(argument),
+        nullable=argument.nullable or not _window_frame_includes_current_row(over),
     )
 
 
 def window_min(value: object, *, over: "WindowSpec") -> Expression:
     argument = _orderable_expression(value, "window_min(...)")
-    return _window_over_expression("min", argument, over=over, type=argument.type, nullable=argument.nullable)
+    return _window_over_expression(
+        "min",
+        argument,
+        over=over,
+        type=argument.type,
+        nullable=argument.nullable or not _window_frame_includes_current_row(over),
+    )
 
 
 def window_max(value: object, *, over: "WindowSpec") -> Expression:
     argument = _orderable_expression(value, "window_max(...)")
-    return _window_over_expression("max", argument, over=over, type=argument.type, nullable=argument.nullable)
+    return _window_over_expression(
+        "max",
+        argument,
+        over=over,
+        type=argument.type,
+        nullable=argument.nullable or not _window_frame_includes_current_row(over),
+    )
 
 
 def window_count(value: object | None = None, *, over: "WindowSpec") -> Expression:
@@ -608,12 +645,24 @@ def window_count_distinct(value: object, *, over: "WindowSpec") -> Expression:
 
 def window_bool_and(value: object, *, over: "WindowSpec") -> Expression:
     argument = _window_boolean(value, "window_bool_and(...)")
-    return _window_over_expression("bool_and", argument, over=over, type=BooleanType(), nullable=True)
+    return _window_over_expression(
+        "bool_and",
+        argument,
+        over=over,
+        type=BooleanType(),
+        nullable=argument.nullable or not _window_frame_includes_current_row(over),
+    )
 
 
 def window_bool_or(value: object, *, over: "WindowSpec") -> Expression:
     argument = _window_boolean(value, "window_bool_or(...)")
-    return _window_over_expression("bool_or", argument, over=over, type=BooleanType(), nullable=True)
+    return _window_over_expression(
+        "bool_or",
+        argument,
+        over=over,
+        type=BooleanType(),
+        nullable=argument.nullable or not _window_frame_includes_current_row(over),
+    )
 
 
 def window_stddev(value: object, *, over: "WindowSpec") -> Expression:
@@ -632,8 +681,8 @@ def window_collect_list(value: object, *, over: "WindowSpec", element_type: Stru
         "collect_list",
         argument,
         over=over,
-        type=ArrayType(_collection_element_type(argument, element_type), contains_null=argument.nullable),
-        nullable=True,
+        type=ArrayType(_collection_element_type(argument, element_type), contains_null=False),
+        nullable=False,
     )
 
 
@@ -643,8 +692,8 @@ def window_collect_set(value: object, *, over: "WindowSpec", element_type: Struc
         "collect_set",
         argument,
         over=over,
-        type=ArrayType(_collection_element_type(argument, element_type), contains_null=argument.nullable),
-        nullable=True,
+        type=ArrayType(_collection_element_type(argument, element_type), contains_null=False),
+        nullable=False,
     )
 
 
@@ -680,6 +729,11 @@ def _aggregate(
     order_by: Expression | None = None,
     options: tuple[tuple[str, object], ...] = (),
 ) -> Expression:
+    if (
+        function in {"avg", "bool_and", "bool_or", "first_value", "last_value", "max", "min", "sum"}
+        and _global_aggregate_may_be_empty()
+    ):
+        nullable = True
     args = arguments
     data: dict[str, object] = {
         "function": function,
@@ -688,8 +742,11 @@ def _aggregate(
         "arg_count": len(arguments),
     }
     if where is not None:
+        predicate = literal(where)
+        if not isinstance(predicate.type, BooleanType):
+            raise TypeError(f"{function}(...) where must be a Boolean expression")
         data["where_index"] = len(args)
-        args = (*args, literal(where))
+        args = (*args, predicate)
     if order_by is not None:
         data["order_by_index"] = len(args)
         args = (*args, order_by)
@@ -701,6 +758,11 @@ def _aggregate(
         data=data,
         args=args,
     )
+
+
+def _global_aggregate_may_be_empty() -> bool:
+    context = current_context()
+    return context is not None and context.aggregate_grouping == "grouping_sets" and () in context.aggregate_levels
 
 
 def _selected_rows(direction: str, order_by: object, *, partition_by: object, ties: TiePolicy, call: str) -> None:
@@ -841,8 +903,20 @@ def _window_frame(kind: str, start: "WindowBound", end: "WindowBound") -> "Windo
 
 
 def _validate_window_spec(spec: "WindowSpec") -> None:
-    if spec.frame is not None and spec.frame.kind == "range" and len(spec.order_by) != 1:
-        raise TypeError("range_between(...) requires exactly one order_by expression")
+    frame = spec.frame
+    if frame is None or frame.kind != "range":
+        return
+    if frame.start.kind == "unbounded_preceding" and frame.end.kind == "unbounded_following":
+        return
+    if len(spec.order_by) != 1:
+        raise TypeError("bounded range_between(...) requires exactly one order_by expression")
+    if not isinstance(spec.order_by[0].type, (DecimalType, DoubleType, FloatType, IntegerType, LongType)):
+        raise TypeError("bounded range_between(...) requires a numeric order_by expression")
+
+
+def _window_frame_includes_current_row(spec: "WindowSpec") -> bool:
+    frame = spec.frame
+    return frame is not None and _window_bound_position(frame.start) <= 0 <= _window_bound_position(frame.end)
 
 
 def _window_bound_position(bound: "WindowBound") -> float:
@@ -910,6 +984,27 @@ def _numeric_expression(value: object, call: str) -> Expression:
     if argument.type is None or argument.type.name not in {"integer", "long", "float", "double", "decimal"}:
         raise TypeError(f"{call} requires a numeric expression")
     return argument
+
+
+def _sum_type(argument: Expression) -> StructureType | None:
+    type = argument.type
+    if isinstance(type, DecimalType):
+        return DecimalType(38 if type.precision > 28 else type.precision + 10, type.scale)
+    if isinstance(type, (IntegerType, LongType)):
+        return LongType()
+    if isinstance(type, (FloatType, DoubleType)):
+        return DoubleType()
+    return type
+
+
+def _avg_type(argument: Expression) -> StructureType:
+    type = argument.type
+    if isinstance(type, DecimalType):
+        return DecimalType(
+            38 if type.precision > 34 else type.precision + 4,
+            38 if type.scale > 34 else type.scale + 4,
+        )
+    return DoubleType()
 
 
 def _orderable_expression(value: object, call: str) -> Expression:
@@ -1105,7 +1200,7 @@ def arr_exists(value: object, function: Callable[[Expression], object]) -> Expre
         group="higher_order",
         name="array_exists",
         type=BooleanType(),
-        nullable=argument.nullable,
+        nullable=argument.nullable or array.contains_null or predicate.nullable,
         args=(argument, predicate),
     )
 
@@ -1122,7 +1217,7 @@ def arr_forall(value: object, function: Callable[[Expression], object]) -> Expre
         group="higher_order",
         name="array_forall",
         type=BooleanType(),
-        nullable=argument.nullable,
+        nullable=argument.nullable or array.contains_null or predicate.nullable,
         args=(argument, predicate),
     )
 
@@ -1161,20 +1256,31 @@ def arr_aggregate(
     accumulator = _lambda_arg(accumulator_type, nullable=initial_value.nullable, name="acc")
     item = _lambda_arg(array.element, nullable=array.contains_null, name="item")
     merged = _callback_expression("arr_aggregate(...)", merge, accumulator, item)
-    _unify_types(
-        "arr_aggregate(...) merge callback",
-        (accumulator_type, _typed_type("arr_aggregate(...) merge", merged)),
+    merged_type = _typed_type("arr_aggregate(...) merge", merged)
+    if not _same_type(accumulator_type, merged_type):
+        raise TypeError("arr_aggregate(...) merge callback must return the initial accumulator type")
+    # A merge callback may turn an initially required accumulator into null.  The
+    # finish callback receives that final accumulator, not merely the initial
+    # value, so its expression contract must retain both nullability sources.
+    finish_accumulator = _lambda_arg(
+        accumulator_type,
+        nullable=initial_value.nullable or merged.nullable,
+        name="acc",
     )
-    finished = _callback_expression("arr_aggregate(...)", finish, accumulator) if finish is not None else merged
+    finished = _callback_expression("arr_aggregate(...)", finish, finish_accumulator) if finish is not None else merged
     result_type = finished.type
     if result_type is None:
         raise AssertionError("higher-order callback validation must reject untyped results")
+    result_nullable = argument.nullable or finished.nullable
+    if finish is None:
+        # Spark returns the initial accumulator unchanged for an empty array.
+        result_nullable = result_nullable or initial_value.nullable
     return _reserved_expression(
         "array_aggregate",
         group="higher_order",
         name="array_aggregate",
         type=result_type,
-        nullable=finished.nullable,
+        nullable=result_nullable,
         args=(argument, initial_value, accumulator, item, merged, finished),
     )
 
@@ -1246,7 +1352,7 @@ def arr_position(value: object, item: object) -> Expression:
         group="higher_order",
         name="array_position",
         type=LongType(),
-        nullable=True,
+        nullable=argument.nullable,
         args=(argument, needle),
     )
 
@@ -1350,13 +1456,18 @@ def map_concat(*values: object, duplicates: str = "error") -> Expression:
         raise TypeError("map_concat(...) requires at least two Map expressions")
     arguments = tuple(literal(value) for value in values)
     maps = tuple(_map_type(argument, "map_concat(...)") for argument in arguments)
-    key_type = _unified_types("map_concat(...) key", tuple(map_type.key for map_type in maps))
-    value_type = _unified_types("map_concat(...) value", tuple(map_type.value for map_type in maps))
+    first = maps[0]
+    if any(
+        not _same_type(first.key, map_type.key) or not _same_type(first.value, map_type.value) for map_type in maps[1:]
+    ):
+        raise TypeError("map_concat(...) requires maps with matching key and value types")
     return _reserved_expression(
         "map_concat",
         group="higher_order",
         name="map_concat",
-        type=MapType(key_type, value_type, value_contains_null=any(map_type.value_contains_null for map_type in maps)),
+        type=MapType(
+            first.key, first.value, value_contains_null=any(map_type.value_contains_null for map_type in maps)
+        ),
         nullable=any(argument.nullable for argument in arguments),
         args=arguments,
     )
@@ -1399,7 +1510,9 @@ def map_zip_with(
     right_arg = literal(right)
     left_map = _map_type(left_arg, "map_zip_with(...)")
     right_map = _map_type(right_arg, "map_zip_with(...)")
-    key_type = _unify_types("map_zip_with(...) key", (left_map.key, right_map.key))
+    if not _same_type(left_map.key, right_map.key):
+        raise TypeError("map_zip_with(...) requires matching map key types")
+    key_type = left_map.key
     key = _lambda_arg(key_type, nullable=False, name="key")
     left_value = _lambda_arg(left_map.value, nullable=True, name="left_value")
     right_value = _lambda_arg(right_map.value, nullable=True, name="right_value")
@@ -1493,13 +1606,7 @@ def cache(storage_level: object) -> Callable[[F], F]:
 
 
 def cache_operation(storage_level: object) -> OperationPlan:
-    return OperationPlan.reserved_operation(
-        "cache",
-        group="optimization",
-        name="cache",
-        cardinality=OperationCardinality.ROW_PRESERVING,
-        streaming=StreamingSupport.BATCH_ONLY,
-    )
+    return OperationPlan.cache_operation(CachePlan(storage_level=_cache_storage_level(storage_level)))
 
 
 def reserved_operations(function: Callable) -> tuple[OperationPlan, ...]:
@@ -1623,6 +1730,23 @@ def _positive_interval(call: str, value: object) -> str:
     ):
         raise TypeError(f"{call} requires a positive fixed Spark interval string, such as '10 minutes'")
     return value.strip()
+
+
+def _cache_storage_level(value: object) -> tuple[bool, bool, bool, bool, int] | None:
+    if value is True:
+        return None
+    names = ("useDisk", "useMemory", "useOffHeap", "deserialized", "replication")
+    try:
+        use_disk, use_memory, use_off_heap, deserialized, replication = (getattr(value, name) for name in names)
+    except AttributeError as error:
+        raise TypeError(
+            "cache(...) requires True or a PySpark StorageLevel; omit cache= to leave a step uncached"
+        ) from error
+    if not all(isinstance(option, bool) for option in (use_disk, use_memory, use_off_heap, deserialized)) or (
+        isinstance(replication, bool) or not isinstance(replication, int) or replication < 1
+    ):
+        raise TypeError("cache(...) requires a valid PySpark StorageLevel")
+    return use_disk, use_memory, use_off_heap, deserialized, replication
 
 
 @cached

@@ -32,9 +32,7 @@ class ValidateSchemaToolRequest:
 
     def _class_name(self, name: str) -> None:
         if not isinstance(name, str) or not name.isidentifier() or keyword.iskeyword(name) or not name[:1].isupper():
-            raise StructureToolError(
-                f"Invalid Schema class name: {name!r}. Use a Python class name such as OrderRaw."
-            )
+            raise StructureToolError(f"Invalid Schema class name: {name!r}. Use a Python class name such as OrderRaw.")
 
     def _source(self, *, schema=None, from_path: str | None, from_table: str | None) -> None:
         sources = [schema is not None, from_path is not None, from_table is not None]

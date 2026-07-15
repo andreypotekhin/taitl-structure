@@ -60,9 +60,7 @@ class TagSummaryTransform(Transform):
     summary = output(TagSummary)
 
     def summarize_tags(self, row: RawTags) -> TagSummary:
-        tags = arr_distinct(
-            arr_zip_with(row.tags, row.tags, lambda left, right: lower(trim(left)))
-        )
+        tags = arr_distinct(arr_zip_with(row.tags, row.tags, lambda left, right: lower(trim(left))))
         return TagSummary(
             id=row.id,
             has_priority=arr_exists(row.tags, lambda tag: lower(trim(tag)) == "priority"),
@@ -105,9 +103,7 @@ class CleanAttributeTransform(Transform):
     def clean_attributes(self, row: RawAttributes) -> CleanAttributes:
         attributes = map_filter(
             map_transform_keys(
-                map_transform_values(
-                    row.attributes, lambda key, value: lower(trim(value))
-                ),
+                map_transform_values(row.attributes, lambda key, value: lower(trim(value))),
                 lambda key, value: lower(trim(key)),
             ),
             lambda key, value: value.is_not_null(),

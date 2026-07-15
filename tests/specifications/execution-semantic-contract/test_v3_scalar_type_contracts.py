@@ -174,6 +174,38 @@ def test_to_decimal_rejects_precision_larger_than_spark_supports() -> None:
         to_decimal("1", precision=39, scale=0)
 
 
+@pytest.mark.parametrize(
+    ("scale", "precision", "result_scale"),
+    [(-4, 11, 0), (0, 11, 0), (1, 12, 1), (4, 13, 2)],
+)
+def test_round_projects_decimal_precision_and_scale_to_spark_contract(
+    scale: int, precision: int, result_scale: int
+) -> None:
+    expression = round(_expression(types.decimal(12, 2), nullable=False), scale=scale)
+
+    assert isinstance(expression.type, DecimalType)
+    assert (expression.type.precision, expression.type.scale) == (precision, result_scale)
+    assert expression.nullable is False
+
+
+def test_round_preserves_non_decimal_numeric_type() -> None:
+    expression = round(_expression(types.integer(), nullable=True), scale=-1)
+
+    assert expression.type is not None and expression.type.name == "integer"
+    assert expression.nullable is True
+
+
+@pytest.mark.parametrize("helper", [bool_and, bool_or])
+def test_boolean_aggregates_are_required_for_required_unfiltered_values(helper) -> None:
+    required = helper(_expression(types.boolean(), nullable=False))
+    nullable = helper(_expression(types.boolean(), nullable=True))
+    filtered = helper(_expression(types.boolean(), nullable=False), where=True)
+
+    assert required.nullable is False
+    assert nullable.nullable is True
+    assert filtered.nullable is True
+
+
 def test_arithmetic_widens_numeric_types_and_propagates_nullability() -> None:
     integer = _expression(types.integer(), nullable=False)
     nullable_long = _expression(types.long(), nullable=True)
@@ -190,6 +222,44 @@ def test_arithmetic_widens_numeric_types_and_propagates_nullability() -> None:
 def test_arithmetic_rejects_non_numeric_operands() -> None:
     with pytest.raises(TypeError, match="Arithmetic requires numeric Structure expressions"):
         _expression(types.integer(), nullable=False) + "one"
+
+
+@pytest.mark.parametrize("helper", [lower, trim, upper])
+def test_string_normalizers_require_and_return_string_expressions(helper) -> None:
+    normalized = helper(_expression(types.string(), nullable=False))
+
+    assert normalized.type is not None and normalized.type.name == "string"
+    assert normalized.nullable is False
+    with pytest.raises(TypeError, match=r"requires a String Structure expression"):
+        helper(1)
+
+
+@pytest.mark.parametrize("interval", ["", "one minute", "-1 second", "1 second; SELECT 1"])
+def test_event_time_between_rejects_invalid_interval_text(interval: str) -> None:
+    timestamp = _expression(types.timestamp(), nullable=False)
+
+    with pytest.raises(TypeError, match="requires a non-negative fixed Spark interval"):
+        event_time_between(timestamp, timestamp, upper=interval)
+    with pytest.raises(TypeError, match="requires a non-negative fixed Spark interval"):
+        event_time_between(timestamp, timestamp, lower=interval, upper="1 second")
+
+
+@pytest.mark.parametrize(
+    "unit", ["year", "YYYY", "quarter", "mon", "dd", "hour", "microsecond"]
+)
+def test_date_trunc_accepts_only_spark_truncation_units(unit: str) -> None:
+    timestamp = _expression(types.timestamp(), nullable=False)
+
+    expression = date_trunc(timestamp, unit=unit)
+
+    assert expression.data == {"function": "date_trunc", "unit": unit.lower()}
+    assert expression.nullable is False
+
+
+@pytest.mark.parametrize("unit", ["", "season", "month; SELECT 1"])
+def test_date_trunc_rejects_invalid_units(unit: str) -> None:
+    with pytest.raises(TypeError, match="date_trunc\\(\\.\\.\\.\\) unit must be one of"):
+        date_trunc(_expression(types.timestamp(), nullable=False), unit=unit)
 
 
 def test_predicates_propagate_nullable_sql_three_valued_logic() -> None:

@@ -186,9 +186,7 @@ class BatchProjectionFeatures(Transform):
     def rank_events(self, row: RawBatch) -> RankedBatch:
         drop_duplicates(row.account_id, row.event_id)
         dedupe_latest_by(row.sequence, partition_by=row.account_id)
-        tags = arr_filter(
-            arr_transform(row.tags, lambda tag: lower(trim(tag))), lambda tag: tag.is_not_null()
-        )
+        tags = arr_filter(arr_transform(row.tags, lambda tag: lower(trim(tag))), lambda tag: tag.is_not_null())
         attributes = map_filter(
             map_transform_values(row.attributes, lambda key, value: lower(trim(value))),
             lambda key, value: value.is_not_null(),
@@ -207,18 +205,10 @@ class BatchProjectionFeatures(Transform):
             dense_rank=dense_rank(partition_by=row.account_id, order_by=row.sequence),
             previous_sequence=lag(row.sequence, partition_by=row.account_id, order_by=row.sequence),
             next_sequence=lead(row.sequence, partition_by=row.account_id, order_by=row.sequence),
-            rolling_units=rolling_sum(
-                row.amount, partition_by=row.account_id, order_by=row.sequence, preceding=2
-            ),
-            rolling_avg_units=rolling_avg(
-                row.amount, partition_by=row.account_id, order_by=row.sequence, preceding=2
-            ),
-            rolling_min_units=rolling_min(
-                row.amount, partition_by=row.account_id, order_by=row.sequence, preceding=2
-            ),
-            rolling_max_units=rolling_max(
-                row.amount, partition_by=row.account_id, order_by=row.sequence, preceding=2
-            ),
+            rolling_units=rolling_sum(row.amount, partition_by=row.account_id, order_by=row.sequence, preceding=2),
+            rolling_avg_units=rolling_avg(row.amount, partition_by=row.account_id, order_by=row.sequence, preceding=2),
+            rolling_min_units=rolling_min(row.amount, partition_by=row.account_id, order_by=row.sequence, preceding=2),
+            rolling_max_units=rolling_max(row.amount, partition_by=row.account_id, order_by=row.sequence, preceding=2),
         )
 
 
@@ -334,9 +324,7 @@ class BatchAdvancedAnalyticalFeatures(Transform):
         return AdvancedCollectionBatch(
             event_id=row.event_id,
             has_priority=arr_exists(row.tags, lambda tag: lower(trim(tag)) == "priority"),
-            tags=arr_distinct(
-                arr_zip_with(row.tags, row.tags, lambda left, right: lower(trim(left)))
-            ),
+            tags=arr_distinct(arr_zip_with(row.tags, row.tags, lambda left, right: lower(trim(left)))),
             tag_position=arr_position(row.tags, "priority"),
             attribute_keys=map_keys(clean_attributes),
         )
@@ -371,9 +359,7 @@ class BatchJoinFeatures(Transform):
     joined = output(JoinedBatch)
 
     def add_customer(self, row: RawBatch, customer: Customer) -> CustomerBatch:
-        customer = lookup_join(
-            customer, on=row.account_id == customer.id, how=Join.LEFT, hint=JoinHint.BROADCAST
-        )
+        customer = lookup_join(customer, on=row.account_id == customer.id, how=Join.LEFT, hint=JoinHint.BROADCAST)
         return CustomerBatch(
             account_id=row.account_id,
             event_id=row.event_id,

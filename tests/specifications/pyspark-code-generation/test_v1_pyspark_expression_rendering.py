@@ -410,7 +410,7 @@ def test_v3_expression_renderer_renders_numeric_sql_helpers() -> None:
 
     class Published(Schema):
         absolute_amount = field.decimal(precision=12, scale=2, nullable=True)
-        rounded_amount = field.decimal(precision=12, scale=2, nullable=True)
+        rounded_amount = field.decimal(precision=12, scale=1, nullable=True)
         ceiling = field.decimal(precision=11, scale=0, nullable=True)
         floor = field.decimal(precision=11, scale=0, nullable=True)
 

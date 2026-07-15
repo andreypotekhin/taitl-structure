@@ -134,6 +134,15 @@ def test_v1_nullable_assignment_to_non_nullable_field_reports_schema_diagnostic(
     assert diagnostic.context == {"field": "optional_id", "schema": "OptionalClean"}
     assert "may produce null" in diagnostic.problem_text()
     assert "where(value.is_not_null())" in diagnostic.use_text()
+    assert diagnostic.primary_span is not None
+    assert (
+        diagnostic.primary_span.path
+        == "tests/specifications/compiler-diagnostics/test_v1_negative_compiler_diagnostics.py"
+    )
+    assert "--> tests/specifications/compiler-diagnostics/test_v1_negative_compiler_diagnostics.py:" in str(
+        raised.value
+    )
+    assert "def normalize" in str(raised.value)
 
 
 def test_v1_where_is_not_null_guard_allows_non_nullable_assignment() -> None:
@@ -308,9 +317,7 @@ def test_v1_or_join_condition_reports_join_diagnostic() -> None:
         clean = output(Clean)
 
         def normalize(self, row: Raw) -> Clean:
-            lookup_join(
-                self.lookup, on=(self.lookup.id == row.id) | (self.lookup.group == row.id), how=Join.LEFT
-            )
+            lookup_join(self.lookup, on=(self.lookup.id == row.id) | (self.lookup.group == row.id), how=Join.LEFT)
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
@@ -350,9 +357,7 @@ def test_v1_incompatible_join_key_types_report_join_diagnostic() -> None:
 
         def normalize(self, row: NullableRaw) -> MoneyClean:
             lookup_join(self.lookup, on=self.lookup.id == row.count, how=Join.LEFT)
-            return MoneyClean(
-                amount=coalesce(to_decimal(row.amount, precision=12, scale=2), 0), count=row.count
-            )
+            return MoneyClean(amount=coalesce(to_decimal(row.amount, precision=12, scale=2), 0), count=row.count)
 
     with pytest.raises(StructureCompileError) as raised:
         compile_transform(IncompatibleJoin)

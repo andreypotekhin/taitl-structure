@@ -54,6 +54,8 @@ narrower use cases and roadmap features.
 - + As a developer, I can rely on source file order inside transform classes so that step method execution order matches code reading order.
 - + As a developer, I can avoid external configuration files for ordinary transform discovery so that project setup remains simple.
 - + As a developer, I can use Python imports for schema and helper references so that IDE jump-to-declaration works.
+- + As a developer, I can compile a trusted in-memory source tree and run a selected transform by module and class name
+  so that notebooks and paste-and-run environments do not require source files on disk.
 
 ## 5. Schemas
 
@@ -432,8 +434,8 @@ the first analytical join slice.
   event-time constraints, and caller-owned output-mode requirements.
 - As a developer, I can receive precise caller-owned output-mode and state-policy guidance for admitted streaming
   transformations.
-- As a developer, I can use production incremental compilation so that large projects get fast local feedback after the
-  v3 feature surface stabilizes; this is v4 work.
+- As a developer, I can use production incremental compilation so that large projects get fast local feedback after a
+  future reprioritization decision.
 - As a developer, I can see cache invalidation diagnostics so that incremental compile never hides stale generated code.
 
 ## 24. Spark Connect Roadmap

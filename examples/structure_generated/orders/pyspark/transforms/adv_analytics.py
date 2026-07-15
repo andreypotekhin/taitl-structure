@@ -93,7 +93,7 @@ class AdvancedOrderAnalyticsGenerated:
             F.grouping_id().cast(T.IntegerType()).alias("grouping_id"),
             F.count(F.lit(1)).cast(T.LongType()).alias("order_count"),
             F.countDistinct(F.col("order_fulfillment.customer_id")).cast(T.LongType()).alias("distinct_customers"),
-            F.sum(F.col("order_fulfillment.total")).cast(T.DecimalType(12, 2)).alias("gross_total"),
+            F.sum(F.col("order_fulfillment.total")).cast(T.DecimalType(22, 2)).alias("gross_total"),
         ).select(
             F.col("__structure_group_0_tenant_id").alias("tenant_id"),
             F.col("__structure_group_1_product_category").alias("product_category"),

@@ -20,6 +20,14 @@ class CachePublished(Schema):
     status = field.string(nullable=True)
 
 
+class ExplicitStorageLevel:
+    useDisk = True
+    useMemory = True
+    useOffHeap = False
+    deserialized = False
+    replication = 2
+
+
 class UdfRaw(Schema):
     id = field.string(nullable=False)
 
@@ -43,6 +51,16 @@ class CachePublishedOrders(Transform):
     published = output(CachePublished)
 
     @step(cache=True)
+    def publish(self, order: CacheRaw) -> CachePublished:
+        return CachePublished(id=order.id, status=order.status)
+
+
+@transform
+class ExplicitlyCachedPublishedOrders(Transform):
+    orders = input(CacheRaw)
+    published = output(CachePublished)
+
+    @step(cache=ExplicitStorageLevel())
     def publish(self, order: CacheRaw) -> CachePublished:
         return CachePublished(id=order.id, status=order.status)
 
@@ -144,7 +162,9 @@ def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
     assert "        # Step method: add_product" in text
     assert "        # Step method: add_promotion" in text
     assert "        # Step method: publish" in text
-    assert "        orders = self._impl.use_current_orders(orders=_input_orders, spark=self.spark, ctx=self.ctx)" in text
+    assert (
+        "        orders = self._impl.use_current_orders(orders=_input_orders, spark=self.spark, ctx=self.ctx)" in text
+    )
     assert (
         "        orders = self._impl.note_lookup_inputs(orders=orders, customers=_input_customers, "
         "products=_input_products, spark=self.spark, ctx=self.ctx)" in text
@@ -302,6 +322,25 @@ def test_v2_cache_directive_is_visible_in_explain_output() -> None:
     text = render_explain_report(CachePublishedOrders)
 
     assert "operations: cache(row_preserving)" in text
+
+
+def test_v2_cache_directive_preserves_an_explicit_storage_level() -> None:
+    recipe = PySpark.plan.lower()(compile_transform(ExplicitlyCachedPublishedOrders))
+    operation = recipe.steps[0].operations[0]
+    text = PySpark.render.transform()(
+        recipe,
+        source_transform="tests.ExplicitlyCachedPublishedOrders",
+        runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
+        schema_modules={
+            CacheRaw: "testing.model.v1.structure_generated.cache.pyspark.schemas.order",
+            CachePublished: "testing.model.v1.structure_generated.cache.pyspark.schemas.order",
+        },
+    )
+
+    assert operation.cache is not None
+    assert operation.cache.storage_level == (True, True, False, False, 2)
+    assert "from pyspark import StorageLevel" in text
+    assert "        orders = orders.persist(StorageLevel(True, True, False, False, 2))" in text
 
 
 def _schema_modules() -> dict[type, str]:

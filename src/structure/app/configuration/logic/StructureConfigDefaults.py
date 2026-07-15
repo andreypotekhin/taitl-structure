@@ -3,8 +3,16 @@ from pathlib import Path
 
 class StructureConfigDefaults:
 
+    def programmatic(self) -> tuple[dict[str, object], dict[str, str]]:
+        values, sources = self.resolve_values(source_roots=[])
+        return values, sources
+
     def resolve(self, root: Path) -> tuple[dict[str, object], dict[str, str]]:
         source_roots = ["src"] if (root / "src").exists() else ["."]
+        return self.resolve_values(source_roots=source_roots)
+
+    @staticmethod
+    def resolve_values(*, source_roots: list[str]) -> tuple[dict[str, object], dict[str, str]]:
         values: dict[str, object] = {
             "source_roots": source_roots,
             "generated_dir": "generated",

@@ -138,7 +138,7 @@ checks.
 
 Status: v2 wrapped. Sprints 06-10 delivered analytical foundations, analytical joins, aggregation/window/HOF coverage,
 Spark Connect batch support, static caller-owned streaming compatibility, generated docs, and pytest helpers. Production
-incremental compile and cache diagnostics begin v4 as Sprint 17.
+incremental compile and cache diagnostics remain future work.
 
 ### M7A: v2 Scope and Analytical IR Foundations
 
@@ -212,7 +212,7 @@ Exit Criteria:
   in Markdown or JSON.
 - Pytest helpers cover `structure check`, generated-code freshness, generated-code snapshots, diagnostics, and
   online/generated parity fixtures.
-- Production incremental compile and cache diagnostics begin M9.
+- Production incremental compile and cache diagnostics remain future work outside M9.
 
 ### M7F: Transform Composition Maturity
 

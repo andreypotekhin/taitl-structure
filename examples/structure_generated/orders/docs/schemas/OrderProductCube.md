@@ -12,4 +12,4 @@ Module: `examples.orders.schemas.adv_analytics`
 | `grouping_id` | `grouping_id` | `integer` | no |
 | `order_count` | `order_count` | `long` | no |
 | `distinct_customers` | `distinct_customers` | `long` | no |
-| `gross_total` | `gross_total` | `decimal(12,2)` | no |
+| `gross_total` | `gross_total` | `decimal(22,2)` | no |

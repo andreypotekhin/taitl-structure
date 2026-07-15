@@ -34,9 +34,9 @@ def test_parent_hook_owner_has_online_generated_runtime_parity(spark, tmp_path) 
             ),
         )
 
-        assert rows(transforms.ParentHookPublished(rows=frame).run(session(spark, execution_mode="online")).published) == [
-            {"id": "one", "hook_owner": "parent"}
-        ]
+        assert rows(
+            transforms.ParentHookPublished(rows=frame).run(session(spark, execution_mode="online")).published
+        ) == [{"id": "one", "hook_owner": "parent"}]
 
 
 def test_embedded_parent_hook_has_online_generated_runtime_parity(spark, tmp_path) -> None:
@@ -76,17 +76,26 @@ def test_watermarked_stream_static_lookup_has_online_generated_plan_parity(spark
         generated_schemas = importlib.import_module(f"{package}.pyspark.schemas.schemas")
         from pyspark.sql import functions as F
 
-        events = spark.readStream.format("rate").option("rowsPerSecond", 1).load().select(
-            F.col("value").cast("string").alias("id"),
-            F.col("timestamp").alias("event_time"),
+        events = (
+            spark.readStream.format("rate")
+            .option("rowsPerSecond", 1)
+            .load()
+            .select(
+                F.col("value").cast("string").alias("id"),
+                F.col("timestamp").alias("event_time"),
+            )
         )
         customers = spark.createDataFrame([("0", "known")], generated_schemas.STREAM_CUSTOMER_SCHEMA)
-        online = transforms.WatermarkedLookup(events=events, customers=customers).run(
-            session(spark, execution_mode="online")
-        ).enriched
-        generated = transforms.WatermarkedLookup(events=events, customers=customers).run(
-            session(spark, execution_mode="generated", generated_package=package)
-        ).enriched
+        online = (
+            transforms.WatermarkedLookup(events=events, customers=customers)
+            .run(session(spark, execution_mode="online"))
+            .enriched
+        )
+        generated = (
+            transforms.WatermarkedLookup(events=events, customers=customers)
+            .run(session(spark, execution_mode="generated", generated_package=package))
+            .enriched
+        )
 
         assert online.isStreaming and generated.isStreaming
         online.explain(extended=True)

@@ -502,8 +502,8 @@ class PySparkExpressionEvaluator:
 
     def _window_arguments(self, expression, value_count):
         order_count = self._int_data(expression, "order_count", 1)
-        orders = list(expression.args[value_count:value_count + order_count])
-        return orders, list(expression.args[value_count + order_count:])
+        orders = list(expression.args[value_count : value_count + order_count])
+        return orders, list(expression.args[value_count + order_count :])
 
     def _window_order(self, order, expression, *, functions, aliases, window):
         column = self.evaluate(order, functions=functions, aliases=aliases, window=window)

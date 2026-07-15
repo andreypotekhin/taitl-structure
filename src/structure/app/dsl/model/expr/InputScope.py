@@ -703,7 +703,9 @@ def _using_predicate(
         try:
             right_key = getattr(relation, key)
         except AttributeError as error:
-            raise TypeError(f"{function}(on=...) cannot find using key {key!r} on relation {relation._structure_input_name}") from error
+            raise TypeError(
+                f"{function}(on=...) cannot find using key {key!r} on relation {relation._structure_input_name}"
+            ) from error
         expressions.append(left_key == right_key)
     predicate = expressions[0]
     for expression in expressions[1:]:

@@ -577,7 +577,9 @@ def test_v4_generated_dedupe_uses_only_the_permitted_streaming_branch() -> None:
     assert ".isStreaming:" in generated
     assert ".dropDuplicatesWithinWatermark([\"id\"])" in generated
     assert ".dropDuplicates([\"id\"])" in generated
-    assert all(value not in generated for value in ("readStream", "writeStream", "start(", "awaitTermination", "checkpoint"))
+    assert all(
+        value not in generated for value in ("readStream", "writeStream", "start(", "awaitTermination", "checkpoint")
+    )
 
 
 def test_v4_generated_explicit_dedupe_has_no_adaptive_branch() -> None:

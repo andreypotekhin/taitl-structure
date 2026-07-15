@@ -78,6 +78,7 @@ ignore = [
     'W391', # blank line at end of file
     'W503', # line break before binary operator
     'E704', # multiple statements on one line (def)
+    'E203', #  whitespace before ':'
 ]
 per-file-ignores = [
     '__init__.py:F401', # module imported but unused

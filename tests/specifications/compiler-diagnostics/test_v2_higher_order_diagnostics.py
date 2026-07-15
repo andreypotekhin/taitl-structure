@@ -104,9 +104,7 @@ def test_v2_map_transform_non_map_input_reports_actionable_diagnostic() -> None:
         clean = output(CleanAttributes)
 
         def clean_attributes(self, row: RawAttributes) -> CleanAttributes:
-            return CleanAttributes(
-                attributes=map_transform_values(row.id, lambda key, value: lower(value))
-            )
+            return CleanAttributes(attributes=map_transform_values(row.id, lambda key, value: lower(value)))
 
     with pytest.raises(StructureCompileError) as raised:
         compile_transform(BadTransform)
@@ -124,11 +122,7 @@ def test_v2_map_filter_non_boolean_callback_reports_actionable_diagnostic() -> N
         clean = output(CleanAttributes)
 
         def clean_attributes(self, row: RawAttributes) -> CleanAttributes:
-            return CleanAttributes(
-                attributes=map_filter(
-                    row.attributes, lambda key, value: lower(trim(value))
-                )
-            )
+            return CleanAttributes(attributes=map_filter(row.attributes, lambda key, value: lower(trim(value))))
 
     with pytest.raises(StructureCompileError) as raised:
         compile_transform(BadFilter)

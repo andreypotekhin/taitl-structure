@@ -130,7 +130,9 @@ class RenderPySparkExpression:
         arguments = [self._render(argument, aliases) for argument in expression.args]
         arguments.extend(
             f"{name}={self._render(argument, aliases)}"
-            for name, argument in cast(tuple[tuple[str, PySparkExpressionRecipe], ...], expression.data["keyword_arguments"])
+            for name, argument in cast(
+                tuple[tuple[str, PySparkExpressionRecipe], ...], expression.data["keyword_arguments"]
+            )
         )
         return f"self.{expression.data['name']}({', '.join(arguments)})"
 
@@ -363,8 +365,8 @@ class RenderPySparkExpression:
         self, expression: PySparkExpressionRecipe, value_count: int
     ) -> tuple[list[PySparkExpressionRecipe], list[PySparkExpressionRecipe]]:
         order_count = self._int_data(expression, "order_count", 1)
-        orders = list(expression.args[value_count:value_count + order_count])
-        return orders, list(expression.args[value_count + order_count:])
+        orders = list(expression.args[value_count : value_count + order_count])
+        return orders, list(expression.args[value_count + order_count :])
 
     def _window_order(
         self, order: PySparkExpressionRecipe, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]

@@ -26,6 +26,8 @@ These declarations and operations define compiler-visible transform methods. Exa
 | --- | --- | --- |
 | `project(...)` | `select` / projection | `return project(order, OrderPublished)(id=order.id)` |
 | `where(...)` | `filter` / `where` | `where(order.total > 0)` |
+| `@step(cache=True)` | `persist()` | `@step(cache=True)` |
+| `@step(cache=StorageLevel.MEMORY_AND_DISK)` | `persist(StorageLevel.MEMORY_AND_DISK)` | `@step(cache=StorageLevel.MEMORY_AND_DISK)` |
 | `@special(type="expr")` | Reusable `Column` expression | `@special(type="expr")\ndef clean(v): return trim(v)` |
 | `compile_transform(...)` | Compiled DataFrame plan | `compiled = compile_transform(Publish)` |
 
@@ -33,6 +35,9 @@ These declarations and operations define compiler-visible transform methods. Exa
 
 - `project(...)` builds typed projections; schema constructors and `Schema.project(...)` are often shorter.
 - `where(...)` accepts symbolic Boolean expressions and can be chained with `.where(...)`.
+- `cache=True` persists the completed step at PySpark's default storage level. Supply a PySpark `StorageLevel` for an
+  explicit level; Structure preserves its disk, memory, off-heap, deserialization, and replication settings in both
+  generated and online execution.
 - Expression specials compile without PySpark. Raw SQL and arbitrary Python UDF helpers remain outside the symbolic API.
 - `compile_transform(...)` does not start a Spark job.
 

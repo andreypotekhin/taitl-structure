@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from structure.lib.cross.errors.Diagnostic import Diagnostic
+from structure.lib.cross.errors.RenderDiagnosticSource import render_diagnostic_source
 
 
 class RenderDiagnostic:
@@ -15,8 +16,8 @@ class RenderDiagnostic:
         if diagnostic.context:
             lines.extend(["", "Context:"])
             lines.extend(f"  {key}: {value}" for key, value in diagnostic.context.items())
-        if diagnostic.source:
-            lines.extend(["", "Source:", f"  {diagnostic.source}"])
+        if diagnostic.source or diagnostic.primary_span:
+            lines.extend(["", "Source:", *render_diagnostic_source(diagnostic)])
         lines.extend(["", "Problem:", f"  {diagnostic.problem_text()}"])
         if diagnostic.why:
             lines.extend(["", "Why:", f"  {diagnostic.why}"])

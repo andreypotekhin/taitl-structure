@@ -92,8 +92,9 @@ class Transform:
         force: bool = False,
         **settings: object,
     ):
-        from structure.app.compiler.artifacts.commands import BuildCompiledTransform
+        from structure.app.compiler.artifacts.commands import BuildCompiledTransform, CompileStructureSources
         from structure.app.compiler.artifacts.model import CompilerOptions
+        from structure.app.sources.model.StructureSources import StructureSources
 
         resolved = CompilerOptions.resolve(
             options,
@@ -102,6 +103,13 @@ class Transform:
             schema_types=schema_types,
             overrides=settings,
         )
+        if cls is Transform and isinstance(options, StructureSources):
+            return CompileStructureSources()(
+                options,
+                compile_one=lambda subject: BuildCompiledTransform()(
+                    subject, options=resolved, schema_types=schema_types
+                ),
+            )
         return BuildCompiledTransform()(cls, options=resolved, schema_types=schema_types)
 
     @classmethod
@@ -145,9 +153,7 @@ class Transform:
         fingerprints = {}
         for transform in transforms:
             transform_artifact = (
-                artifact
-                if transform is cls
-                else transform.compile(resolved, schema_types=schema_types, force=force)
+                artifact if transform is cls else transform.compile(resolved, schema_types=schema_types, force=force)
             )
             plans[f"{transform.__module__}.{transform.__name__}"] = transform_artifact.pyspark_plan
             fingerprints[f"{transform.__module__}.{transform.__name__}"] = transform_artifact.semantic_fingerprint
@@ -200,14 +206,10 @@ class Transform:
                 if alias == name:
                     raise TypeError(f"{cls.__name__} {role} {name} aliases itself")
                 if alias in declarations:
-                    raise TypeError(
-                        f"{cls.__name__} {role} alias {alias} collides with a declared {role} field"
-                    )
+                    raise TypeError(f"{cls.__name__} {role} alias {alias} collides with a declared {role} field")
                 existing = aliases.get(alias)
                 if existing is not None:
-                    raise TypeError(
-                        f"{cls.__name__} {role} alias {alias} is used by both {existing} and {name}"
-                    )
+                    raise TypeError(f"{cls.__name__} {role} alias {alias} is used by both {existing} and {name}")
                 aliases[alias] = name
         return aliases
 

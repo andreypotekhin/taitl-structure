@@ -73,9 +73,8 @@ class PySparkFrameValidator:
         if actual_name == "ArrayType":
             return self._same_data_type(self._array_element(actual), self._array_element(expected))
         if actual_name == "MapType":
-            return (
-                self._same_data_type(self._map_key(actual), self._map_key(expected))
-                and self._same_data_type(self._map_value(actual), self._map_value(expected))
+            return self._same_data_type(self._map_key(actual), self._map_key(expected)) and self._same_data_type(
+                self._map_value(actual), self._map_value(expected)
             )
         if actual_name == "StructType":
             actual_fields = self._struct_fields(actual)

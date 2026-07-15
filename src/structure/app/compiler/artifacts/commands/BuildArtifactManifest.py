@@ -43,6 +43,18 @@ class BuildArtifactManifest:
     ) -> set[ArtifactDependency]:
         dependencies: set[ArtifactDependency] = set()
         for transform in self._classes(subject):
+            from structure.app.sources.model.StructureSources import source_origin
+
+            origin = source_origin(transform)
+            if origin is not None:
+                dependencies.add(
+                    ArtifactDependency(
+                        kind="source_set",
+                        name=transform.__module__,
+                        path=None,
+                        digest=origin.source_digest,
+                    )
+                )
             for owner in transform.__mro__:
                 if not isinstance(owner, type) or not issubclass(owner, Transform) or owner is Transform:
                     continue
@@ -70,7 +82,15 @@ class BuildArtifactManifest:
 
     def _dependency(self, kind: str, value: type, *, project_root: Path) -> ArtifactDependency:
         name = f"{value.__module__}.{value.__qualname__}"
-        source = inspect.getsourcefile(value)
+        from structure.app.sources.model.StructureSources import source_origin
+
+        origin = source_origin(value)
+        if origin is not None:
+            return ArtifactDependency(kind=kind, name=name, path=origin.path, digest=origin.digest)
+        try:
+            source = inspect.getsourcefile(value)
+        except TypeError:
+            source = None
         if source is None:
             return ArtifactDependency(kind=kind, name=name, path=None, digest=None)
         path = Path(source)

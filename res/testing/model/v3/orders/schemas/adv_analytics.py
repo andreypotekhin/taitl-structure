@@ -33,7 +33,7 @@ class OrderProductCube(Schema):
     grouping_id = integer(nullable=False)
     order_count = long(nullable=False)
     distinct_customers = long(nullable=False)
-    gross_total = decimal(12, 2, nullable=False)
+    gross_total = decimal(22, 2, nullable=False)
 
 
 class OrderCustomerWindow(Schema):
@@ -90,4 +90,3 @@ class OrderCollectionProfile(Schema):
     attribute_values = array(string(), contains_null=False, nullable=True)
     roundtrip_attributes = map(string(), string(), nullable=True)
     merged_attributes = map(string(), string(), nullable=True)
-

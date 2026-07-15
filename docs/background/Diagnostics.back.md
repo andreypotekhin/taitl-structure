@@ -122,6 +122,13 @@ Required when available:
 Diagnostic values may include additional structured fields for renderers and integrations. Unknown fields must not
 change the meaning of the diagnostic code.
 
+When an exact location is available, diagnostics use `primary_span` and optional `related_spans`. A span has a
+project-relative display path, one-based Unicode character lines and columns, a short optional label, and a bounded
+source excerpt captured while the diagnostic is built. `primary_span` identifies the text to change; each related span
+identifies supporting source such as a conflicting declaration. Renderers show these spans inside the existing
+`Source:` section. Diagnostics without a trustworthy span retain their logical `source` display and must never fail
+merely because source text is unavailable.
+
 ## Registry
 
 The implementation must contain a diagnostic registry before broad diagnostic work begins. The registry may be a Python

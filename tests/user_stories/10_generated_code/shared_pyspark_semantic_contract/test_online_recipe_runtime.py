@@ -15,6 +15,7 @@ from structure.app.target.capabilities.model.BackendId import BackendId
 from structure.app.target.pyspark.model.PySparkAggregateAssignment import PySparkAggregateAssignment
 from structure.app.target.pyspark.model.PySparkAggregateKey import PySparkAggregateKey
 from structure.app.target.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
+from structure.app.target.pyspark.model.PySparkCacheRecipe import PySparkCacheRecipe
 from structure.app.target.pyspark.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
 from structure.app.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.app.target.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
@@ -95,6 +96,8 @@ class CustomerMetric(Schema):
     min_quantity = field.long(nullable=False)
     max_quantity = field.long(nullable=False)
     avg_quantity = field.double(nullable=False)
+    first_qualified_customer = field.string(nullable=True)
+    last_qualified_customer = field.string(nullable=True)
 
 
 class GroupingSetMetric(Schema):
@@ -387,6 +390,30 @@ def test_online_runner_executes_lowered_pyspark_recipe(monkeypatch) -> None:
     )
 
 
+def test_online_runner_preserves_explicit_cache_level(monkeypatch) -> None:
+    functions = FakeFunctions("pyspark.sql.functions")
+    _install_fake_pyspark(monkeypatch, functions)
+    source = _frame("source", RawOrder)
+    plan = _with_operations(
+        _online_plan(),
+        PySparkOperationRecipe.cache_operation(PySparkCacheRecipe((True, True, False, False, 2))),
+    )
+
+    result = RunOnlinePySparkTransform()(
+        cast(Any, FakeInvocation(orders=source)),
+        plan,
+        session=SimpleNamespace(
+            online_executor=None,
+            spark=object(),
+            ctx=None,
+            execution_mode="online",
+            target_backend="pyspark",
+        ),
+    )
+
+    assert "persist:True,True,False,False,2" in cast(FakeFrame, result.published).operations
+
+
 def test_online_runner_applies_source_watermark_in_recipe_order(monkeypatch) -> None:
     _install_fake_pyspark(monkeypatch, FakeFunctions("pyspark.sql.functions"))
     plan = _with_operations(
@@ -593,10 +620,13 @@ def test_online_runner_applies_grouped_aggregate_recipe(monkeypatch) -> None:
         "quantity=cast(sum(col(metrics.quantity)) as LongType()),"
         "min_quantity=cast(min(col(metrics.quantity)) as LongType()),"
         "max_quantity=cast(max(col(metrics.quantity)) as LongType()),"
-        "avg_quantity=cast(avg(col(metrics.quantity)) as DoubleType())",
+        "avg_quantity=cast(avg(col(metrics.quantity)) as DoubleType()),"
+        "first_qualified_customer=min_by(col(metrics.customer_id),when((col(metrics.quantity) > lit(0)), col(metrics.quantity))),"
+        "last_qualified_customer=max_by(col(metrics.customer_id),when((col(metrics.quantity) > lit(0)), col(metrics.quantity)))",
         "select:customer_id=col(customer_id),order_count=col(order_count),"
         "distinct_customers=col(distinct_customers),quantity=col(quantity),"
-        "min_quantity=col(min_quantity),max_quantity=col(max_quantity),avg_quantity=col(avg_quantity)",
+        "min_quantity=col(min_quantity),max_quantity=col(max_quantity),avg_quantity=col(avg_quantity),"
+        "first_qualified_customer=col(first_qualified_customer),last_qualified_customer=col(last_qualified_customer)",
         "alias:totals",
     )
 
@@ -1035,9 +1065,7 @@ def test_online_schema_validation_rejects_strict_shape_drift() -> None:
 
 def _online_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
-    published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
-    )
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
         PySparkProjectionRecipe(
@@ -1106,9 +1134,7 @@ def _with_operations(plan: PySparkExecutionPlan, *operations: PySparkOperationRe
 def _join_and_hook_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
-    published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
-    )
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
     projected_validation = PySparkValidationRecipe(
         "published", PublishedOrder, SchemaMode.STRICT, True, "hook_projected"
     )
@@ -1208,9 +1234,7 @@ def _join_and_hook_plan() -> PySparkExecutionPlan:
 def _existence_join_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
-    published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
-    )
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
         PySparkProjectionRecipe(PublishedOrder._structure_fields["status"], _field(RawOrder, "status")),
@@ -1290,9 +1314,7 @@ def _existence_join_plan() -> PySparkExecutionPlan:
 def _inner_join_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
-    published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
-    )
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
         PySparkProjectionRecipe(
@@ -1418,6 +1440,20 @@ def _aggregate_plan() -> PySparkExecutionPlan:
                 field=CustomerMetric._structure_fields["avg_quantity"],
                 function="avg",
                 expression=_field(RawMetric, "quantity"),
+            ),
+            PySparkAggregateAssignment(
+                field=CustomerMetric._structure_fields["first_qualified_customer"],
+                function="first_value",
+                expression=_field(RawMetric, "customer_id"),
+                filter=_binary("gt", _field(RawMetric, "quantity"), _literal(0)),
+                order_by=_field(RawMetric, "quantity"),
+            ),
+            PySparkAggregateAssignment(
+                field=CustomerMetric._structure_fields["last_qualified_customer"],
+                function="last_value",
+                expression=_field(RawMetric, "customer_id"),
+                filter=_binary("gt", _field(RawMetric, "quantity"), _literal(0)),
+                order_by=_field(RawMetric, "quantity"),
             ),
         ),
     )
@@ -1570,9 +1606,7 @@ def _grouping_sets_plan() -> PySparkExecutionPlan:
 
 def _selected_row_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
-    published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
-    )
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
         PySparkProjectionRecipe(PublishedOrder._structure_fields["status"], _field(RawOrder, "status")),
@@ -1639,9 +1673,7 @@ def _selected_row_plan() -> PySparkExecutionPlan:
 
 def _drop_duplicates_plan(*, subset: bool = False) -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
-    published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
-    )
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
         PySparkProjectionRecipe(PublishedOrder._structure_fields["status"], _field(RawOrder, "status")),
@@ -1707,9 +1739,7 @@ def _drop_duplicates_plan(*, subset: bool = False) -> PySparkExecutionPlan:
 def _deduped_join_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
-    published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
-    )
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
         PySparkProjectionRecipe(
@@ -1796,9 +1826,7 @@ def _deduped_join_plan() -> PySparkExecutionPlan:
 def _relation_drop_duplicates_join_plan(*, before_join: bool) -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
-    published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
-    )
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
         PySparkProjectionRecipe(
@@ -1881,9 +1909,7 @@ def _relation_drop_duplicates_join_plan(*, before_join: bool) -> PySparkExecutio
 def _temporal_join_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
-    published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
-    )
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
         PySparkProjectionRecipe(
@@ -1971,9 +1997,7 @@ def _temporal_join_plan() -> PySparkExecutionPlan:
 def _as_of_join_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     customer_validation = PySparkValidationRecipe("customers", Customer, SchemaMode.STRICT, False, "input")
-    published_validation = PySparkValidationRecipe(
-        "published", PublishedOrder, SchemaMode.STRICT, False, "output"
-    )
+    published_validation = PySparkValidationRecipe("published", PublishedOrder, SchemaMode.STRICT, False, "output")
     projection = (
         PySparkProjectionRecipe(PublishedOrder._structure_fields["id"], _field(RawOrder, "id")),
         PySparkProjectionRecipe(
@@ -2061,9 +2085,7 @@ def _as_of_join_plan() -> PySparkExecutionPlan:
 def _multi_result_plan() -> PySparkExecutionPlan:
     input_validation = PySparkValidationRecipe("orders", RawOrder, SchemaMode.STRICT, False, "input")
     id_validation = PySparkValidationRecipe("ids", PublishedOrderId, SchemaMode.STRICT, True, "output")
-    status_validation = PySparkValidationRecipe(
-        "statuses", PublishedOrderStatus, SchemaMode.STRICT, False, "output"
-    )
+    status_validation = PySparkValidationRecipe("statuses", PublishedOrderStatus, SchemaMode.STRICT, False, "output")
     id_projection = (PySparkProjectionRecipe(PublishedOrderId._structure_fields["id"], _field(RawOrder, "id")),)
     status_projection = (
         PySparkProjectionRecipe(PublishedOrderStatus._structure_fields["status"], _field(RawOrder, "status")),
@@ -2433,6 +2455,7 @@ def _install_fake_pyspark(monkeypatch, functions: ModuleType) -> None:
         setattr(types, name, getattr(FakeTypes, name))
 
     setattr(pyspark, "sql", sql)
+    setattr(pyspark, "StorageLevel", FakeStorageLevel)
     setattr(sql, "functions", functions)
     setattr(sql, "types", types)
     setattr(sql, "Window", FakeWindow)
@@ -2459,6 +2482,12 @@ class FakeInvocation:
     def record_ids(self, *, ids, spark, ctx):
         self.hook_calls.append(("record_ids", ids.name, spark, ctx))
         return ids.with_operation("ids-hook")
+
+
+class FakeStorageLevel:
+
+    def __init__(self, *values) -> None:
+        self.values = values
 
 
 class FakeFunctions(ModuleType):
@@ -2592,6 +2621,12 @@ class FakeFunctions(ModuleType):
 
     def avg(self, column):
         return FakeColumn(f"avg({column.expression})")
+
+    def min_by(self, value, order):
+        return FakeColumn(f"min_by({value.expression},{order.expression})")
+
+    def max_by(self, value, order):
+        return FakeColumn(f"max_by({value.expression},{order.expression})")
 
     def countDistinct(self, column):
         return FakeColumn(f"countDistinct({column.expression})")
@@ -2760,6 +2795,10 @@ class FakeWhen:
     condition: FakeColumn
     value: FakeColumn
 
+    @property
+    def expression(self) -> str:
+        return f"when({self.condition.expression}, {self.value.expression})"
+
     def when(self, condition: FakeColumn, value: FakeColumn):
         return FakeChainedWhen(
             f"when({self.condition.expression}, {self.value.expression})"
@@ -2848,6 +2887,11 @@ class FakeFrame:
     def dropDuplicates(self, subset=None):
         suffix = "" if subset is None else ":" + ",".join(subset)
         return self.with_operation(f"dropDuplicates{suffix}")
+
+    def persist(self, storage_level=None):
+        if storage_level is None:
+            return self.with_operation("persist")
+        return self.with_operation(f"persist:{','.join(map(str, storage_level.values))}")
 
     def unionByName(self, right):
         return FakeFrame(self.name, self.schema, self.operations + right.operations + (f"unionByName:{right.name}",))

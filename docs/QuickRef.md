@@ -215,6 +215,26 @@ enriched_df = result.enriched
 The session owns the caller-supplied Spark reference, Structure configuration,
 execution mode and compiled artifacts. It preserves the compiled code between transform and invocations. For instance, the subsequent construction of new insances `EnrichOrders` and repeat invocations of its .run() (on same session) do not trigger recompiling.
 
+### Disk-less sources
+
+In notebooks and other paste-and-run environments, compile trusted source text without writing it to a project tree:
+
+```python
+sources = StructureSources.files(
+    {
+        "orders/schemas.py": schema_text,
+        "orders/transforms.py": transform_text,
+    }
+)
+session = StructureSession(spark=spark, config=StructureConfig.create())
+session.compile(sources)
+
+result = session.run(transform="orders.transforms:EnrichOrders", orders=orders_df)
+```
+
+The session compiles every concrete transform in `sources` and retains those results. Select a compiled transform with
+its Python module and class name. See [disk-less source compilation](dev/specifications/DisklessSourceCompilation.md).
+
 Reference: [transforms API](api/Transforms.api.md), [execution](background/Execution.back.md), and
 [execution semantic contract](background/ExecutionSemanticContract.back.md).
 

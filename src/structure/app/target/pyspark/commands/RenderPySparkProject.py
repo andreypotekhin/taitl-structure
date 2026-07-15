@@ -93,15 +93,14 @@ class RenderPySparkProject:
                 dependency_modules=schema_modules,
             )
 
-        files[self._module_path(transform_module)] = (
-            self._header(source_module)
-            + render_pyspark_transform_module.source_unit(
-                plans,
-                schema_modules=schema_modules,
-                runtime_module=runtime_module,
-                semantic_fingerprints=semantic_fingerprints,
-                generated_code_options=generated_code_options,
-            )
+        files[self._module_path(transform_module)] = self._header(
+            source_module
+        ) + render_pyspark_transform_module.source_unit(
+            plans,
+            schema_modules=schema_modules,
+            runtime_module=runtime_module,
+            semantic_fingerprints=semantic_fingerprints,
+            generated_code_options=generated_code_options,
         )
 
         for source_transform, plan in plans.items():

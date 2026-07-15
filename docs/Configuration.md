@@ -267,7 +267,7 @@ parallel_codegen = true
 
 Structure should be fast enough for local development and CI.
 
-Production incremental compilation is planned for v2. The initial release may record source fingerprints and
+Production incremental compilation is future work with no assigned version. The initial release may record source fingerprints and
 avoid rewriting unchanged files, but it should not expose cache semantics that users must reason about.
 
 ## Build Settings

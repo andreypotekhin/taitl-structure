@@ -5,6 +5,7 @@ import pytest
 from structure import *
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.transforms.operations import WindowFrame
+from structure.app.dsl.model.types.DecimalType import DecimalType
 
 
 @pytest.mark.parametrize(
@@ -38,6 +39,83 @@ def test_extrema_window_helpers_reject_non_orderable_arguments(call) -> None:
 def test_window_rejects_invalid_frame_objects() -> None:
     with pytest.raises(TypeError, match=r"window\(frame=\.\.\.\) requires rows_between"):
         window(partition_by="tenant", order_by="ordered", frame=cast(WindowFrame, "current row"))
+
+
+def test_sum_uses_spark_widened_types_and_filtered_aggregate_nullability() -> None:
+    required_integer = Expression(kind="test_integer", type=types.integer(), nullable=False)
+    required_float = Expression(kind="test_float", type=types.float(), nullable=False)
+    decimal = Expression(kind="test_decimal", type=types.decimal(32, 2), nullable=False)
+    frame = window(
+        partition_by="tenant",
+        order_by="ordered",
+        frame=rows_between(preceding(1), preceding(1)),
+    )
+    current_frame = window(
+        partition_by="tenant",
+        order_by="ordered",
+        frame=rows_between(preceding(1), current_row()),
+    )
+
+    integer_sum = sum(required_integer)
+    float_sum = sum(required_float)
+    decimal_sum = sum(decimal)
+    filtered_sum = sum(required_integer, where=True)
+    rolling_integer_sum = rolling_sum(
+        required_integer,
+        partition_by="tenant",
+        order_by="ordered",
+        preceding=1,
+    )
+    rolling_decimal_sum = rolling_sum(
+        decimal,
+        partition_by="tenant",
+        order_by="ordered",
+        preceding=1,
+    )
+    windowed_sum = window_sum(required_integer, over=frame)
+    windowed_minimum = window_min(required_integer, over=frame)
+    windowed_maximum = window_max(required_integer, over=frame)
+    aggregate_average = avg(decimal)
+    rolling_average = rolling_avg(
+        decimal,
+        partition_by="tenant",
+        order_by="ordered",
+        preceding=1,
+    )
+    windowed_average = window_avg(decimal, over=frame)
+    current_window_sum = window_sum(required_integer, over=current_frame)
+    current_window_average = window_avg(decimal, over=current_frame)
+    current_window_minimum = window_min(required_integer, over=current_frame)
+    current_window_maximum = window_max(required_integer, over=current_frame)
+
+    assert integer_sum.type is not None and integer_sum.type.name == "long"
+    assert float_sum.type is not None and float_sum.type.name == "double"
+    assert isinstance(decimal_sum.type, DecimalType)
+    assert decimal_sum.type.precision == 38
+    assert decimal_sum.type.scale == 2
+    assert filtered_sum.nullable is True
+    assert rolling_integer_sum.type is not None and rolling_integer_sum.type.name == "long"
+    assert isinstance(rolling_decimal_sum.type, DecimalType)
+    assert rolling_decimal_sum.type.precision == 38
+    assert rolling_decimal_sum.type.scale == 2
+    assert windowed_sum.type is not None and windowed_sum.type.name == "long"
+    assert windowed_sum.nullable is True
+    assert windowed_minimum.nullable is True
+    assert windowed_maximum.nullable is True
+    assert current_window_sum.nullable is False
+    assert current_window_average.nullable is False
+    assert current_window_minimum.nullable is False
+    assert current_window_maximum.nullable is False
+    for average in (aggregate_average, rolling_average, windowed_average):
+        assert isinstance(average.type, DecimalType)
+        assert average.type.precision == 36
+        assert average.type.scale == 6
+
+
+@pytest.mark.parametrize("call", [lambda: sum(1, where=1), lambda: max(1, where="included")])
+def test_filtered_aggregates_require_boolean_predicates(call) -> None:
+    with pytest.raises(TypeError, match=r"where must be a Boolean expression"):
+        call()
 
 
 @pytest.mark.parametrize(

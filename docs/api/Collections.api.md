@@ -48,6 +48,13 @@ These helpers map to Spark array and map operations while keeping callback bodie
 
 - Callbacks run once during symbolic compilation, not once per Python row.
 - Predicate callbacks must return symbolic Boolean expressions; merge and sort callbacks must return symbolic values.
+- `arr_exists(...)` and `arr_forall(...)` can yield null under Spark's three-valued predicate semantics when an item or
+  predicate result is null and no decisive true/false result is present.
+- `arr_aggregate(...)` yields null for a null input array. Without `finish=`, an empty array returns `initial` unchanged,
+  so a nullable initial accumulator also makes the result nullable.
+- `arr_aggregate(...)` merge callbacks must return exactly the initial accumulator type; `finish=` may convert that
+  accumulated value to a different final type.
+- `map_zip_with(...)` requires identical map key types; it does not apply numeric key widening.
 - `arr_sort_by(..., descending=...)` requires a Boolean direction flag.
 
 ## Map Helpers
@@ -71,6 +78,8 @@ These helpers map to Spark array and map operations while keeping callback bodie
 
 - Transform and filter callbacks receive symbolic key/value expressions.
 - Duplicate transformed keys are rejected by Structure's strict map contract.
+- Map keys cannot contain maps, including through an array or struct key shape, matching Spark's map-key domain.
+- `map_concat(...)` requires matching key and value types; it does not apply numeric widening between maps.
 - `map_concat(...)` accepts `duplicates="error"` only. Its inputs must not contain duplicate runtime keys; run Spark
   with `spark.sql.mapKeyDedupPolicy=EXCEPTION` (the default) so a conflicting merge fails instead of silently choosing
   a value.

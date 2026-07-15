@@ -1509,6 +1509,40 @@
       "signature": "(value: 'object', *, over: \"'WindowSpec'\") -> 'Expression'",
       "enum_members": [],
       "dataclass_fields": []
+    },
+    "StructureSources": {
+      "kind": "class",
+      "module": "structure.app.sources.model.StructureSources",
+      "qualname": "StructureSources",
+      "signature": "(texts: 'Mapping[str, str]') -> None",
+      "enum_members": [],
+      "dataclass_fields": [
+        "texts",
+        "digest",
+        "_modules"
+      ]
+    },
+    "CompiledSources": {
+      "kind": "class",
+      "module": "structure.app.sources.model.CompiledSources",
+      "qualname": "CompiledSources",
+      "signature": "(sources: \"'StructureSources'\", artifacts: 'Mapping[SourceTransformAddress, CompiledTransform]') -> None",
+      "enum_members": [],
+      "dataclass_fields": [
+        "sources",
+        "artifacts"
+      ]
+    },
+    "SourceTransformAddress": {
+      "kind": "class",
+      "module": "structure.app.sources.model.SourceTransformAddress",
+      "qualname": "SourceTransformAddress",
+      "signature": "(module: 'str', qualname: 'str') -> None",
+      "enum_members": [],
+      "dataclass_fields": [
+        "module",
+        "qualname"
+      ]
     }
   }
 }

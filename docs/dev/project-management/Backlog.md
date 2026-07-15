@@ -351,11 +351,11 @@ boundary; unimplemented parity work is now marked `planned` in `docs/dev/Gaps.md
 - Maintain one classification for every PySpark transformation API in the supported target range so missing parity is
   visible and actionable.
 - Keep loading, storage, actions, orchestration, and alternative backends out of v4.
-- Schedule incremental compile/cache diagnostics only after the transformation coverage program; its existing ExecPlan
-  remains valid but no longer sets v4's direction.
 
 ## Future Backlog
 
+- Implement production incremental compilation and cache diagnostics after the transformation coverage program and a
+  dedicated reprioritization decision. The existing ExecPlan remains a design input, not a version commitment.
 - Plan partial nested struct updates, such as Structure-native `withField` and `dropFields` equivalents, after nested
   struct construction and whole-field copying are stable.
 - Evaluate Ibis as a meta-backend after direct non-PySpark backend candidates clarify the adapter contract.

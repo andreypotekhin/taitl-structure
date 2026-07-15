@@ -29,9 +29,7 @@ class Schema:
         cls._structure_fields = fields
         cls._structure_local_fields = local_fields
         cls._structure_schema_bases = tuple(
-            base
-            for base in cls.__bases__
-            if isinstance(base, type) and issubclass(base, Schema) and base is not Schema
+            base for base in cls.__bases__ if isinstance(base, type) and issubclass(base, Schema) and base is not Schema
         )
 
     def __init__(self, **values: object) -> None:

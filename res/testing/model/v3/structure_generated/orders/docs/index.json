@@ -2376,7 +2376,7 @@
           "column": "rounded_amount",
           "name": "rounded_amount",
           "nullable": true,
-          "type": "decimal(11,2)"
+          "type": "decimal(10,0)"
         },
         {
           "column": "ceiling_amount",

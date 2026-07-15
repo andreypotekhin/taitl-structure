@@ -99,7 +99,11 @@ def test_undecorated_indirect_parent_contributes_steps() -> None:
         def publish(self, row: Audited) -> Published:
             return Published(id=row.id, value=row.value, audit=row.audit)
 
-    assert [compiled_step.name for compiled_step in compile_transform(Publish).steps] == ["normalize", "audit", "publish"]
+    assert [compiled_step.name for compiled_step in compile_transform(Publish).steps] == [
+        "normalize",
+        "audit",
+        "publish",
+    ]
 
 
 def test_multiple_inheritance_runs_parents_in_declared_order() -> None:
@@ -117,7 +121,11 @@ def test_multiple_inheritance_runs_parents_in_declared_order() -> None:
         def publish(self, row: Audited) -> Published:
             return Published(id=row.id, value=row.value, audit=row.audit)
 
-    assert [compiled_step.name for compiled_step in compile_transform(Publish).steps] == ["normalize", "audit", "publish"]
+    assert [compiled_step.name for compiled_step in compile_transform(Publish).steps] == [
+        "normalize",
+        "audit",
+        "publish",
+    ]
 
 
 def test_diamond_ancestor_contributes_once() -> None:

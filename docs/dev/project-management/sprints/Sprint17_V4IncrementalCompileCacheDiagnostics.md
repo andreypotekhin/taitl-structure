@@ -1,6 +1,6 @@
-# Follow-up v4: Incremental Compile and Cache Diagnostics
+# Future Backlog: Incremental Compile and Cache Diagnostics
 
-## Sprint Goal
+## Future Goal
 
 Add production incremental compile after the v4 transformation coverage program has established the supported
 transformation surface and its capability shapes.
@@ -12,8 +12,8 @@ why each transform was reused or recompiled.
 
 ## Placement
 
-This remains a valid v4 follow-up work package but is not Sprint 17 and does not set the v4 release direction. See
-`Sprint17_V4TransformationApiCoverage.md` for the opening v4 work.
+This remains a valid future work package. It is not Sprint 17, has no assigned version, and does not set the v4 release
+direction. See `Sprint17_V4TransformationApiCoverage.md` for the opening v4 work.
 
 ## Scope
 
@@ -34,7 +34,8 @@ This remains a valid v4 follow-up work package but is not Sprint 17 and does not
 
 ## ExecPlan
 
-`docs/dev/planning/P07092601.V4-incremental-compile-cache-diagnostics.plan.md`
+`docs/dev/planning/P07092601.V4-incremental-compile-cache-diagnostics.plan.md` (future work; filename retained for
+history)
 
 ## Engineering Tasks
 
@@ -54,4 +55,4 @@ This remains a valid v4 follow-up work package but is not Sprint 17 and does not
 
 ## Progress
 
-- [ ] Implement v4 incremental compile and cache diagnostics.
+- [ ] Implement future incremental compile and cache diagnostics when reprioritized.

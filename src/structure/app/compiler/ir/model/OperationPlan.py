@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from structure.app.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
 from structure.app.compiler.ir.model.AggregatePlan import AggregatePlan
+from structure.app.compiler.ir.model.CachePlan import CachePlan
 from structure.app.compiler.ir.model.DuplicateRowsPlan import DuplicateRowsPlan
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
@@ -24,6 +25,7 @@ class OperationPlan:
     selected_rows: SelectedRowsPlan | None = None
     duplicate_rows: DuplicateRowsPlan | None = None
     watermark: WatermarkPlan | None = None
+    cache: CachePlan | None = None
     family: str | None = None
     capability: OperationCapability | None = None
     cardinality: OperationCardinality = OperationCardinality.UNKNOWN
@@ -104,6 +106,17 @@ class OperationPlan:
             capability=OperationCapability(group="streaming", name="watermark"),
             cardinality=OperationCardinality.ROW_PRESERVING,
             streaming=StreamingSupport.COMPATIBLE,
+        )
+
+    @staticmethod
+    def cache_operation(cache: CachePlan) -> "OperationPlan":
+        return OperationPlan(
+            kind="cache",
+            cache=cache,
+            family="optimization",
+            capability=OperationCapability(group="optimization", name="cache"),
+            cardinality=OperationCardinality.ROW_PRESERVING,
+            streaming=StreamingSupport.BATCH_ONLY,
         )
 
     @staticmethod

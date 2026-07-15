@@ -43,7 +43,9 @@ class ComposeTransformPlans:
     ) -> TransformPlan:
         stages = pipeline.stages
         if not stages:
-            raise self._error(name, "Transform pipeline has no stages.", "Call Transform.to(...) with at least one stage.")
+            raise self._error(
+                name, "Transform pipeline has no stages.", "Call Transform.to(...) with at least one stage."
+            )
         stage_plans = tuple(compile_stage(stage.transform_class) for stage in stages)
         self._reject_hooks(name, stage_plans)
 
@@ -130,10 +132,7 @@ class ComposeTransformPlans:
                 )
             current_outputs = self._stage_outputs(pipeline_name, stage, plan)
 
-        return [
-            replace(input, ordinal=ordinal)
-            for ordinal, input in enumerate(inputs.values())
-        ], external
+        return [replace(input, ordinal=ordinal) for ordinal, input in enumerate(inputs.values())], external
 
     def _matching_outputs(self, input_plan: InputPlan, outputs: tuple[OutputPlan, ...]) -> tuple[OutputPlan, ...]:
         matches = [output for output in outputs if output.schema is input_plan.schema]
@@ -240,7 +239,9 @@ class ComposeTransformPlans:
                     final_outputs.append(rewritten_output)
 
         if not final_outputs:
-            raise self._error(pipeline_name, "Transform pipeline has no outputs.", "Use a final stage with output(...).")
+            raise self._error(
+                pipeline_name, "Transform pipeline has no outputs.", "Use a final stage with output(...)."
+            )
         return steps, final_outputs
 
     def _stage_input_sources(
@@ -341,9 +342,11 @@ class ComposeTransformPlans:
                 "Rename outputs declared by that transform stage.",
             )
         return tuple(
-            replace(output, aliases=self._aliases((*output.aliases, renames[output.name])))
-            if output.name in renames
-            else output
+            (
+                replace(output, aliases=self._aliases((*output.aliases, renames[output.name])))
+                if output.name in renames
+                else output
+            )
             for output in plan.outputs
         )
 
@@ -396,7 +399,9 @@ class ComposeTransformPlans:
 
     def _aggregate(self, aggregate: AggregatePlan) -> AggregatePlan:
         return AggregatePlan(
-            keys=tuple(AggregateKey(name=key.name, expression=self._expression(key.expression)) for key in aggregate.keys),
+            keys=tuple(
+                AggregateKey(name=key.name, expression=self._expression(key.expression)) for key in aggregate.keys
+            ),
             assignments=tuple(
                 AggregateAssignment(
                     field=assignment.field,

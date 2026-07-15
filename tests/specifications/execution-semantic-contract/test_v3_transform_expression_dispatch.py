@@ -81,13 +81,15 @@ def _dispatched_functions(component: type) -> set[str]:
         if len(node.ops) != 1 or len(node.comparators) != 1:
             continue
         comparator = node.comparators[0]
-        if isinstance(node.ops[0], ast.Eq) and isinstance(comparator, ast.Constant) and isinstance(comparator.value, str):
+        if (
+            isinstance(node.ops[0], ast.Eq)
+            and isinstance(comparator, ast.Constant)
+            and isinstance(comparator.value, str)
+        ):
             functions.add(comparator.value)
         if isinstance(node.ops[0], ast.In) and isinstance(comparator, (ast.Set, ast.Tuple)):
             functions.update(
-                item.value
-                for item in comparator.elts
-                if isinstance(item, ast.Constant) and isinstance(item.value, str)
+                item.value for item in comparator.elts if isinstance(item, ast.Constant) and isinstance(item.value, str)
             )
     return functions
 
@@ -149,4 +151,8 @@ def _constant_string(node: ast.expr | None) -> str | None:
 
 
 def _window_capability(function: str) -> str:
-    return f"rolling_{function.removeprefix('window_rolling_')}" if function.startswith("window_rolling_") else function.removeprefix("window_")
+    return (
+        f"rolling_{function.removeprefix('window_rolling_')}"
+        if function.startswith("window_rolling_")
+        else function.removeprefix("window_")
+    )

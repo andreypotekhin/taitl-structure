@@ -109,7 +109,16 @@ def _stub_pyspark(monkeypatch: pytest.MonkeyPatch) -> None:
     functions = python_types.ModuleType("pyspark.sql.functions")
 
     class StorageLevel:
-        MEMORY_AND_DISK = object()
+        MEMORY_AND_DISK: "StorageLevel"
+
+        def __init__(self, use_disk, use_memory, use_off_heap, deserialized, replication=1):
+            self.useDisk = use_disk
+            self.useMemory = use_memory
+            self.useOffHeap = use_off_heap
+            self.deserialized = deserialized
+            self.replication = replication
+
+    StorageLevel.MEMORY_AND_DISK = StorageLevel(True, True, False, False)
 
     def expression_function(*args: object, **kwargs: object) -> object:
         return object()

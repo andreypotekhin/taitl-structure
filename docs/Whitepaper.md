@@ -406,7 +406,7 @@ The compiler should avoid starting Spark during normal compile/check operations.
 
 Recommended implementation techniques:
 
-- source fingerprints that enable v2 production incremental compilation
+- source fingerprints that enable future production incremental compilation
 - compiler cache directory
 - parallel code generation
 - lazy module inspection where possible

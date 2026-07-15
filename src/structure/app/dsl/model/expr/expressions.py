@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime
+from re import fullmatch
 
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.types.ArrayType import ArrayType
@@ -52,24 +53,15 @@ def literal(value: object) -> Expression:
 
 
 def lower(value: object) -> Expression:
-    argument = literal(value)
-    return Expression(
-        kind="call", type=argument.type, nullable=argument.nullable, data={"function": "lower"}, args=(argument,)
-    )
+    return _string_call("lower", value)
 
 
 def trim(value: object) -> Expression:
-    argument = literal(value)
-    return Expression(
-        kind="call", type=argument.type, nullable=argument.nullable, data={"function": "trim"}, args=(argument,)
-    )
+    return _string_call("trim", value)
 
 
 def upper(value: object) -> Expression:
-    argument = literal(value)
-    return Expression(
-        kind="call", type=argument.type, nullable=argument.nullable, data={"function": "upper"}, args=(argument,)
-    )
+    return _string_call("upper", value)
 
 
 def substring(value: object, *, start: int, length: int) -> Expression:
@@ -226,8 +218,7 @@ def datediff(end: object, start: object) -> Expression:
 
 def date_trunc(value: object, *, unit: str) -> Expression:
     argument = _date_or_timestamp_argument(value, "date_trunc(...)")
-    if not isinstance(unit, str) or not unit.strip():
-        raise TypeError("date_trunc(...) unit must be a non-empty string literal")
+    unit = _date_trunc_unit(unit)
     return Expression(
         kind="call",
         type=TimestampType(),
@@ -248,9 +239,11 @@ def round(value: object, *, scale: int = 0) -> Expression:
     argument = _numeric_argument(value, "round(...)")
     if isinstance(scale, bool) or not isinstance(scale, int):
         raise TypeError("round(...) scale must be an integer")
+    if argument.type is None:
+        raise AssertionError("numeric argument validation must reject untyped expressions")
     return Expression(
         kind="call",
-        type=argument.type,
+        type=_round_type(argument.type, scale),
         nullable=argument.nullable,
         data={"function": "round", "scale": scale},
         args=(argument,),
@@ -260,14 +253,22 @@ def round(value: object, *, scale: int = 0) -> Expression:
 def ceil(value: object) -> Expression:
     argument = _numeric_argument(value, "ceil(...)")
     return Expression(
-        kind="call", type=_ceiling_type(argument.type), nullable=argument.nullable, data={"function": "ceil"}, args=(argument,)
+        kind="call",
+        type=_ceiling_type(argument.type),
+        nullable=argument.nullable,
+        data={"function": "ceil"},
+        args=(argument,),
     )
 
 
 def floor(value: object) -> Expression:
     argument = _numeric_argument(value, "floor(...)")
     return Expression(
-        kind="call", type=_ceiling_type(argument.type), nullable=argument.nullable, data={"function": "floor"}, args=(argument,)
+        kind="call",
+        type=_ceiling_type(argument.type),
+        nullable=argument.nullable,
+        data={"function": "floor"},
+        args=(argument,),
     )
 
 
@@ -315,10 +316,8 @@ def event_time_between(left: object, right: object, *, upper: str, lower: str = 
     right_argument = literal(right)
     if not isinstance(left_argument.type, TimestampType) or not isinstance(right_argument.type, TimestampType):
         raise TypeError("event_time_between(...) requires Timestamp Structure expressions")
-    if not isinstance(lower, str) or not lower.strip():
-        raise TypeError("event_time_between(lower=...) requires a non-empty string")
-    if not isinstance(upper, str) or not upper.strip():
-        raise TypeError("event_time_between(upper=...) requires a non-empty string")
+    lower = _nonnegative_interval(lower, "event_time_between(lower=...)")
+    upper = _nonnegative_interval(upper, "event_time_between(upper=...)")
     return Expression(
         kind="event_time_between",
         type=BooleanType(),
@@ -387,6 +386,44 @@ def _numeric_argument(value: object, call: str) -> Expression:
     return argument
 
 
+def _nonnegative_interval(value: object, call: str) -> str:
+    if not isinstance(value, str) or not fullmatch(
+        r"\s*\d+(?:\.\d+)?\s+(?:microseconds?|milliseconds?|seconds?|minutes?|hours?|days?|weeks?)\s*", value
+    ):
+        raise TypeError(f"{call} requires a non-negative fixed Spark interval string, such as '10 minutes'")
+    return value.strip()
+
+
+def _date_trunc_unit(value: object) -> str:
+    if not isinstance(value, str) or value.lower() not in _DATE_TRUNC_UNITS:
+        raise TypeError(
+            "date_trunc(...) unit must be one of year, yyyy, yy, quarter, month, mon, mm, week, day, dd, "
+            "hour, minute, second, millisecond, or microsecond"
+        )
+    return value.lower()
+
+
+_DATE_TRUNC_UNITS = frozenset(
+    {
+        "year",
+        "yyyy",
+        "yy",
+        "quarter",
+        "month",
+        "mon",
+        "mm",
+        "week",
+        "day",
+        "dd",
+        "hour",
+        "minute",
+        "second",
+        "millisecond",
+        "microsecond",
+    }
+)
+
+
 def _common_type(call: str, arguments: tuple[Expression, ...]) -> StructureType | None:
     if any(argument.type is None and not argument.nullable for argument in arguments):
         raise TypeError(f"{call} requires typed Structure expressions or null literals")
@@ -410,11 +447,7 @@ def _common_numeric_type(call: str, types: tuple[StructureType, ...]) -> Structu
             raise TypeError(f"{call} requires compatible types; received {names}")
         scale = max(type.scale for type in decimals)
         integer_digits = max(
-            type.precision - type.scale
-            if isinstance(type, DecimalType)
-            else 19
-            if isinstance(type, LongType)
-            else 10
+            type.precision - type.scale if isinstance(type, DecimalType) else 19 if isinstance(type, LongType) else 10
             for type in types
         )
         precision = integer_digits + scale
@@ -454,3 +487,12 @@ def _ceiling_type(type: object) -> StructureType:
             return type
         return DecimalType(precision=type.precision - type.scale + 1, scale=0)
     return LongType()
+
+
+def _round_type(type: StructureType, scale: int) -> StructureType:
+    if not isinstance(type, DecimalType):
+        return type
+
+    result_scale = min(type.scale, max(scale, 0))
+    integral_digits = type.precision - type.scale + 1
+    return DecimalType(precision=min(integral_digits + result_scale, 38), scale=result_scale)

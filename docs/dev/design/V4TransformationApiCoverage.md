@@ -84,8 +84,8 @@ slice has complete catalog and parity evidence.
    `explode`, `posexplode`, and `inline`. Implement them only if that model keeps output schemas, generated code,
    traceability, and streaming classification unambiguous. Otherwise leave them `deferred` with a precise diagnostic.
 6. **Release closure.** Complete documentation, the v4 fixture, public API snapshot, Spark target evidence, and the
-   full build. Incremental compile/cache diagnostics remain a separately planned follow-up and may proceed after the
-   transformation program without displacing it.
+   full build. Incremental compile/cache diagnostics remain future work outside v4 and require a later reprioritization
+   decision.
 
 ## Non-Negotiable Semantics
 

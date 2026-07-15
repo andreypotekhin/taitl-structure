@@ -54,12 +54,10 @@ class StructureDocsData:
             "name": plan.name,
             "source": source,
             "inputs": [
-                {"name": item.name, "schema": item.schema.__name__, "ordinal": item.ordinal}
-                for item in plan.inputs
+                {"name": item.name, "schema": item.schema.__name__, "ordinal": item.ordinal} for item in plan.inputs
             ],
             "outputs": [
-                {"name": item.name, "schema": item.schema.__name__, "ordinal": item.ordinal}
-                for item in plan.outputs
+                {"name": item.name, "schema": item.schema.__name__, "ordinal": item.ordinal} for item in plan.outputs
             ],
             "step_methods": [self.step(step) for step in plan.steps],
             "dependencies": sorted(self._dependencies(plan)),
@@ -86,8 +84,7 @@ class StructureDocsData:
                 for item in step.inputs
             ],
             "results": [
-                {"lane": item.lane, "schema": item.schema.__name__, "frame": item.frame}
-                for item in step.results
+                {"lane": item.lane, "schema": item.schema.__name__, "frame": item.frame} for item in step.results
             ],
         }
         if step.joins:

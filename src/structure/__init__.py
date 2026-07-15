@@ -175,6 +175,7 @@ from structure.app.runtime.api import (
     TransformResult,
     TransformSchemas,
 )
+from structure.app.sources import CompiledSources, SourceTransformAddress, StructureSources
 from structure.app.target.pyspark.api import DiskStorage, MemoryStorage, PackageImportStorage
 from structure.app.tools.api import StructureTools
 
@@ -188,6 +189,7 @@ __all__ = [
     "CompileKey",
     "CompiledArtifactPool",
     "CompiledTransform",
+    "CompiledSources",
     "CompilerOptions",
     "DiskStorage",
     "Join",
@@ -207,12 +209,14 @@ __all__ = [
     "StructureCompileError",
     "StructureRuntimeError",
     "StructureSession",
+    "StructureSources",
     "StructureTools",
     "Transform",
     "GeneratedTransform",
     "TiePolicy",
     "TransformResult",
     "TransformSchemas",
+    "SourceTransformAddress",
     "field",
     "abs",
     "approx_count_distinct",

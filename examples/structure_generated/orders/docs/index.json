@@ -225,13 +225,13 @@
           "column": "gross_total",
           "name": "gross_total",
           "nullable": false,
-          "type": "decimal(12,2)"
+          "type": "decimal(22,2)"
         },
         {
           "column": "net_total",
           "name": "net_total",
           "nullable": false,
-          "type": "decimal(12,2)"
+          "type": "decimal(22,2)"
         }
       ],
       "module": "examples.orders.schemas.analytics",
@@ -1071,7 +1071,7 @@
           "column": "gross_total",
           "name": "gross_total",
           "nullable": false,
-          "type": "decimal(12,2)"
+          "type": "decimal(22,2)"
         }
       ],
       "module": "examples.orders.schemas.adv_analytics",
@@ -2076,7 +2076,7 @@
           "column": "gross_total",
           "name": "gross_total",
           "nullable": false,
-          "type": "decimal(12,2)"
+          "type": "decimal(22,2)"
         }
       ],
       "module": "examples.orders.schemas.analytics",

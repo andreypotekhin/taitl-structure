@@ -73,7 +73,8 @@ class BuildCompiledTransform:
             structure_version=self._structure_version(),
             options=options.fingerprint(),
             sources=tuple(self._source(cls) for cls in classes),
-            manifest=manifest or self._manifest(subject, options=options, capability=self._capability(options)).fingerprint,
+            manifest=manifest
+            or self._manifest(subject, options=options, capability=self._capability(options)).fingerprint,
         )
 
     def _capability(self, options: CompilerOptions) -> str:
@@ -85,7 +86,15 @@ class BuildCompiledTransform:
         return (subject,)
 
     def _source(self, transform: type[Transform]) -> tuple[str, int | None, int | None, str | None]:
-        source = inspect.getsourcefile(transform)
+        from structure.app.sources.model.StructureSources import source_origin
+
+        origin = source_origin(transform)
+        if origin is not None:
+            return (origin.path, None, None, origin.digest)
+        try:
+            source = inspect.getsourcefile(transform)
+        except TypeError:
+            source = None
         if source is None:
             return (f"{transform.__module__}.{transform.__qualname__}", None, None, None)
         path = Path(source)

@@ -23,9 +23,7 @@ class ClassifyStreamingCompatibility:
             findings.extend(self._window_projection(step.name, expressions))
             for result in step.results:
                 result_expressions = tuple(assignment.expression for assignment in result.projection)
-                findings.extend(
-                    self._window_projection(result.lane, result_expressions)
-                )
+                findings.extend(self._window_projection(result.lane, result_expressions))
             for operation in step.operations:
                 if operation.watermark is not None:
                     watermarks.setdefault(operation.watermark.scope, set()).add(operation.watermark.column)
@@ -182,14 +180,14 @@ class ClassifyStreamingCompatibility:
                 support=StreamingSupport.BATCH_ONLY,
                 step=step,
                 operation=operation,
-                problem=(
-                    "Streaming duplicate removal requires a compiler-visible watermark so Spark can bound state."
-                ),
+                problem=("Streaming duplicate removal requires a compiler-visible watermark so Spark can bound state."),
                 use="Call watermark(event_time_field, delay=...) before drop_duplicates(...) or keep this transform batch-only.",
             ),
         )
 
-    def _window_projection(self, step: str, expressions: tuple[PySparkExpressionRecipe, ...]) -> tuple[StreamingFinding, ...]:
+    def _window_projection(
+        self, step: str, expressions: tuple[PySparkExpressionRecipe, ...]
+    ) -> tuple[StreamingFinding, ...]:
         if not any(self._has_window(expression) for expression in expressions):
             return ()
         return (
@@ -210,9 +208,7 @@ class ClassifyStreamingCompatibility:
         data = expression.data or {}
         function = data.get("function")
         return (
-            expression.kind == "transform_expression"
-            and isinstance(function, str)
-            and function.startswith("window_")
+            expression.kind == "transform_expression" and isinstance(function, str) and function.startswith("window_")
         ) or any(self._has_window(argument) for argument in expression.args)
 
     def _join(

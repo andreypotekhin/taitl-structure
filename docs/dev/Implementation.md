@@ -108,7 +108,7 @@ structure compile --fail-on-diff
 ```
 
 Later, add optional pytest and build-tool integrations as v2 adoption tooling. Production incremental compile is a
-separately planned v4 follow-up after the transformation coverage program.
+separately planned future item after the transformation coverage program.
 
 Compiler build integration must stay Spark-free. `structure check`, `structure compile`, and
 `structure compile --fail-on-diff` must not require PySpark, Java, a SparkSession, or a Spark cluster. Direct runtime,
@@ -132,6 +132,6 @@ Track:
 - cache hit ratio
 - total wall-clock time
 
-Add `structure compile --profile` to emit these measurements. Production incremental compilation belongs to end-of-v3;
+Add `structure compile --profile` to emit these measurements. Production incremental compilation remains future work;
 v1/v2 should preserve deterministic outputs and source fingerprints so the cache can be added without reshaping the
 compiler.

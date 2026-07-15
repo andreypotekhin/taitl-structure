@@ -10,5 +10,5 @@ Module: `examples.orders.schemas.analytics`
 | `customer_id` | `customer_id` | `string` | no |
 | `order_date` | `order_date` | `date` | yes |
 | `order_count` | `order_count` | `long` | no |
-| `gross_total` | `gross_total` | `decimal(12,2)` | no |
-| `net_total` | `net_total` | `decimal(12,2)` | no |
+| `gross_total` | `gross_total` | `decimal(22,2)` | no |
+| `net_total` | `net_total` | `decimal(22,2)` | no |

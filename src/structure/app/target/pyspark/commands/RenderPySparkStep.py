@@ -229,7 +229,19 @@ class RenderPySparkStep:
         return ordered_lines
 
     def _post_operations(self, step: PySparkStepRecipe | PySparkOutputRecipe, *, target: str) -> list[str]:
-        return [f"        {target} = {target}.persist()" for operation in step.operations if operation.kind == "cache"]
+        return [
+            (
+                f"        {target} = {target}.persist({self._cache_storage_level(operation)})"
+                if operation.cache is not None and operation.cache.storage_level is not None
+                else f"        {target} = {target}.persist()"
+            )
+            for operation in step.operations
+            if operation.kind == "cache"
+        ]
+
+    def _cache_storage_level(self, operation) -> str:
+        assert operation.cache is not None and operation.cache.storage_level is not None
+        return f"StorageLevel({', '.join(map(str, operation.cache.storage_level))})"
 
     def _dedupe_subset(self, duplicate_rows: PySparkDuplicateRowsRecipe) -> str:
         if not duplicate_rows.subset:
@@ -330,11 +342,7 @@ class RenderPySparkStep:
         grouping = {"group_by": "groupBy", "rollup": "rollup", "cube": "cube"}.get(aggregate.grouping)
         if grouping is None:
             raise TypeError(f"Unsupported aggregate grouping: {aggregate.grouping}")
-        key_columns = (
-            self._aggregate_key_columns(aggregate)
-            if aggregate.grouping in {"rollup", "cube"}
-            else ()
-        )
+        key_columns = self._aggregate_key_columns(aggregate) if aggregate.grouping in {"rollup", "cube"} else ()
         lines = []
         if aggregate.grouping in {"rollup", "cube"}:
             for key, column in key_columns:
@@ -499,8 +507,7 @@ class RenderPySparkStep:
         arguments = assignment.arguments or (() if assignment.expression is None else (assignment.expression,))
         if assignment.function in self._aggregate_functions() and arguments:
             rendered_arguments = [
-                render_pyspark_expression(argument, scope_aliases=self._scope_aliases(step))
-                for argument in arguments
+                render_pyspark_expression(argument, scope_aliases=self._scope_aliases(step)) for argument in arguments
             ]
             if assignment.filter is not None:
                 predicate = render_pyspark_expression(assignment.filter, scope_aliases=self._scope_aliases(step))
@@ -522,6 +529,9 @@ class RenderPySparkStep:
                 raise TypeError(f"{assignment.function}(...) requires order_by")
             value = render_pyspark_expression(assignment.expression, scope_aliases=self._scope_aliases(step))
             order_by = render_pyspark_expression(assignment.order_by, scope_aliases=self._scope_aliases(step))
+            if assignment.filter is not None:
+                predicate = render_pyspark_expression(assignment.filter, scope_aliases=self._scope_aliases(step))
+                order_by = f"F.when({predicate}, {order_by})"
             function = "F.min_by" if assignment.function == "first_value" else "F.max_by"
             return f"{function}({value}, {order_by}).alias({alias})"
         if assignment.function == "first" and assignment.expression is not None:
@@ -612,10 +622,7 @@ class RenderPySparkStep:
         self,
         aggregate: PySparkAggregateRecipe,
     ) -> tuple[tuple[PySparkAggregateKey, str], ...]:
-        return tuple(
-            (key, f"__structure_group_{index}_{key.name}")
-            for index, key in enumerate(aggregate.keys)
-        )
+        return tuple((key, f"__structure_group_{index}_{key.name}") for index, key in enumerate(aggregate.keys))
 
     def _aggregate_key_column(
         self,

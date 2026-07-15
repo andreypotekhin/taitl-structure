@@ -30,6 +30,14 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | STREAM-E0801 | error | Transform is not streaming-compatible | Keep the transform batch-only or rewrite the unsupported shape. |
 | STREAM-W0801 | warning | Hook streaming compatibility is unknown | Mark the hook `streaming_safe=True` only after verifying it. |
 
+## Reading Source Annotations
+
+Compiler diagnostics retain the usual context, problem, fix, and documentation link. When Structure can locate the
+relevant source safely, its `Source:` section includes a project-relative path, source excerpt, and caret pointing at
+the primary location. A labelled `:::` location identifies related source, such as the declaration that makes an
+assignment invalid. If source text is unavailable, Structure shows the logical source name instead; the diagnostic
+code and suggested fix remain the same.
+
 ## Anchors
 
 ### CONF-E0101

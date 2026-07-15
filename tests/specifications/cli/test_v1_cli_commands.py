@@ -197,6 +197,7 @@ def write_optional_transform_project(root: Path) -> None:
         encoding="utf-8",
     )
 
+
 def test_v1_cli_help_lists_commands() -> None:
     result = CliRunner().invoke(cli, ["--help"])
 

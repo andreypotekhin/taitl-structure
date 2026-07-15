@@ -509,7 +509,9 @@ def test_string_sql_helpers_are_typed_symbolic_expressions() -> None:
         assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
     }
 
-    assert [(expression.data, expression.type.name if expression.type else None) for expression in projection.values()] == [
+    assert [
+        (expression.data, expression.type.name if expression.type else None) for expression in projection.values()
+    ] == [
         ({"function": "substring", "start": 1, "length": 3}, "string"),
         ({"function": "split", "pattern": "-", "limit": -1}, "array"),
         ({"function": "regexp_replace", "pattern": r"\s+", "replacement": " "}, "string"),
@@ -625,7 +627,10 @@ def test_temporal_sql_helpers_are_typed_symbolic_expressions() -> None:
         assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
     }
 
-    assert [(expression.data, expression.type.name if expression.type else None, expression.nullable) for expression in projection.values()] == [
+    assert [
+        (expression.data, expression.type.name if expression.type else None, expression.nullable)
+        for expression in projection.values()
+    ] == [
         ({"function": "date_add", "days": 7}, "date", False),
         ({"function": "datediff"}, "integer", True),
         ({"function": "date_trunc", "unit": "month"}, "timestamp", True),
@@ -664,7 +669,7 @@ def test_numeric_sql_helpers_are_typed_symbolic_expressions() -> None:
 
     class Published(Schema):
         absolute_amount = field.decimal(precision=12, scale=2, nullable=True)
-        rounded_amount = field.decimal(precision=12, scale=2, nullable=True)
+        rounded_amount = field.decimal(precision=12, scale=1, nullable=True)
         ceiling = field.decimal(precision=11, scale=0, nullable=True)
         floor = field.decimal(precision=11, scale=0, nullable=True)
 
@@ -685,7 +690,9 @@ def test_numeric_sql_helpers_are_typed_symbolic_expressions() -> None:
         assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
     }
 
-    assert [(expression.data, expression.type.name if expression.type else None) for expression in projection.values()] == [
+    assert [
+        (expression.data, expression.type.name if expression.type else None) for expression in projection.values()
+    ] == [
         ({"function": "abs"}, "decimal"),
         ({"function": "round", "scale": 1}, "decimal"),
         ({"function": "ceil"}, "decimal"),
