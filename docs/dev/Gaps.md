@@ -11,8 +11,14 @@ See the user-facing summary in [API.ref.md](../reference/API.ref.md).
 
 ## Status
 
+- `implemented`: shipped with the required capability, diagnostic, documentation, and verification evidence for the
+  claimed target profile.
 - `planned`: accepted direction or reserved API; needs implementation, diagnostics, tests, or docs. A plan may be
   created later.
+- `scheduled`: accepted v4 catalog work assigned to a delivery slice. The pre-catalog gap list continues to use
+  `planned` until Sprint 17 reclassifies it.
+- `deferred`: deliberately postponed because its type, cardinality, determinism, or runtime contract is not yet
+  sufficiently specified. It is not an implicit promise for the current release.
 - `unsupported`: intentionally outside the compiler-visible DSL, or incompatible with Structure's contract.
 
 ## Parity Sources

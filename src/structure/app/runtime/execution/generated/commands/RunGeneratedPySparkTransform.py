@@ -109,7 +109,8 @@ class RunGeneratedPySparkTransform:
         if expected is None:
             return
         fingerprints = getattr(module, "STRUCTURE_ARTIFACT_FINGERPRINTS", {})
-        if fingerprints.get(source_transform) == expected:
+        transform = source_transform.rsplit(".", 1)[1]
+        if fingerprints.get(source_transform, fingerprints.get(transform)) == expected:
             return
         raise self._error(
             invocation,

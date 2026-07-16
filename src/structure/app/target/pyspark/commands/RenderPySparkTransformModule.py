@@ -44,7 +44,10 @@ class RenderPySparkTransformModule:
             generated_code_options=generated_code_options,
         )
         body = self._class(plan, source_transform=source_transform, generated_code_options=generated_code_options)
-        metadata = self._fingerprints({source_transform: semantic_fingerprint} if semantic_fingerprint else {})
+        metadata = self._fingerprints(
+            {source_transform: semantic_fingerprint} if semantic_fingerprint else {},
+            generated_code_options=generated_code_options,
+        )
         return f"{imports}\n\n\n{metadata}{body}\n"
 
     def source_unit(
@@ -72,12 +75,19 @@ class RenderPySparkTransformModule:
                 self._class(plan, source_transform=source_transform, generated_code_options=generated_code_options)
             )
         separator = "\n\n\n"
-        metadata = self._fingerprints(semantic_fingerprints or {})
+        metadata = self._fingerprints(semantic_fingerprints or {}, generated_code_options=generated_code_options)
         return f"{self._unique(imports)}\n\n\n{metadata}{separator.join(bodies)}\n"
 
-    def _fingerprints(self, fingerprints: Mapping[str, str]) -> str:
+    def _fingerprints(
+        self,
+        fingerprints: Mapping[str, str],
+        *,
+        generated_code_options: tuple[str, ...] = (),
+    ) -> str:
         if not fingerprints:
             return ""
+        if self._options.enabled(generated_code_options, "embed_hooks"):
+            fingerprints = {source.rsplit(".", 1)[1]: fingerprint for source, fingerprint in fingerprints.items()}
         return f"STRUCTURE_ARTIFACT_FINGERPRINTS = {dict(sorted(fingerprints.items()))!r}\n\n\n"
 
     def _imports(

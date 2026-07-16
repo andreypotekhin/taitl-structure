@@ -193,29 +193,34 @@ def test_scalar_udf_runs_as_a_row_local_caller_owned_file_stream_transform(spark
         generated_package=package,
         source_schema_modules={__name__: [StreamUdfRaw, StreamUdfClean]},
     )
-    source = tmp_path / "scalar-udf"
-    _write_json(source / "events.json", [{"id": "  event-1  "}])
+    source = Path(__file__).resolve().parents[5] / ".pytest-workspace-tmp" / "integration" / f"scalar-udf-{uuid4().hex}"
+    try:
+        _write_json(source / "events.json", [{"id": "  event-1  "}])
 
-    with generated_project(tmp_path, package, files):
-        from pyspark.sql.types import StringType, StructField, StructType
+        with generated_project(tmp_path, package, files):
+            from pyspark.sql.types import StringType, StructField, StructType
 
-        schema = StructType([StructField("id", StringType(), nullable=False)])
-        online_input = spark.readStream.schema(schema).json(str(source))
-        generated_input = spark.readStream.schema(schema).json(str(source))
-        online = StreamingScalarUdf(rows=online_input).run(session(spark, execution_mode="online")).clean
-        generated = (
-            StreamingScalarUdf(rows=generated_input)
-            .run(session(spark, execution_mode="generated", generated_package=package))
-            .clean
-        )
+            schema = StructType([StructField("id", StringType(), nullable=False)])
+            online_input = spark.readStream.schema(schema).json(str(source))
+            generated_input = spark.readStream.schema(schema).json(str(source))
+            online = StreamingScalarUdf(rows=online_input).run(session(spark, execution_mode="online")).clean
+            generated = (
+                StreamingScalarUdf(rows=generated_input)
+                .run(session(spark, execution_mode="generated", generated_package=package))
+                .clean
+            )
 
-        online_rows = _collect_stream(online, tmp_path / "online-udf-checkpoint", output_mode="append", order_by="id")
-        generated_rows = _collect_stream(
-            generated,
-            tmp_path / "generated-udf-checkpoint",
-            output_mode="append",
-            order_by="id",
-        )
+            online_rows = _collect_stream(
+                online, tmp_path / "online-udf-checkpoint", output_mode="append", order_by="id"
+            )
+            generated_rows = _collect_stream(
+                generated,
+                tmp_path / "generated-udf-checkpoint",
+                output_mode="append",
+                order_by="id",
+            )
+    finally:
+        shutil.rmtree(source, ignore_errors=True)
 
     assert online_rows == [{"id": "event-1"}]
     assert generated_rows == online_rows
