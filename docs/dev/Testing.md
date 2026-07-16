@@ -143,6 +143,10 @@ Parity tests run the same transform online through `StructureSession` and throug
 compare output column order, row contents, schema shape where Spark exposes it reliably, and expected validation
 placement.
 
+Each admitted PySpark feature family must also have one public black-box scenario in `tests/concepts/live_pyspark`. These
+integration-marked tests are the compact concept-level release proof; tests in `tests/specifications`,
+`tests/user_stories`, and `tests/integration` continue to own exhaustive semantic edges and infrastructure behavior.
+
 Generated-code snapshots are still required for reviewability, but snapshots are secondary. The semantic authority is
 runtime parity through the shared contract in [ExecutionSemanticContract.md](specifications/ExecutionSemanticContract.md).
 
@@ -153,6 +157,15 @@ runtime. Run them before release with:
 
 If pytest reports that `pyspark` cannot be imported, install the project integration environment or run the same command
 in the repository's Spark integration lane. A skipped local live test is not release evidence.
+
+For release verification, use the Compose matrix rather than a locally installed PySpark:
+
+    make integration BACKEND=pyspark35
+    make integration BACKEND=pyspark40
+
+Run `spark-connect35` and `spark-connect40` only for a feature family whose capability profile claims Spark Connect
+support. Record the exact commands, runtime versions, and passed/skipped totals in the hardening plan's
+`Outcomes & Retrospective`; this concise evidence record replaces a formal sign-off or scorecard.
 
 ## Concept Tests
 

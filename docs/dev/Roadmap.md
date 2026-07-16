@@ -80,6 +80,9 @@ transformation API coverage while loading, storage, and orchestration remain cal
 
 - A checked PySpark 3.5.x/4.0.x transformation coverage catalog.
 - Broader typed Column, SQL-function, nested-value, relational, join, aggregation, window, and collection coverage.
+- Caller-owned streaming migration for session-window aggregation, bounded stream-stream outer and semi joins, and
+  stream-static left-semi joins; sources, sinks, checkpoints, triggers, output-mode application, and query lifecycle
+  remain caller-owned in Sprint 18.
 - Row generators only after an explicit schema-and-cardinality design gate.
 - No loading, storage, actions, orchestration, alternative backends, or non-batch Spark Connect work.
 - A final hardening sprint after all v4 feature sprints, with no new feature scope.

@@ -71,8 +71,8 @@ Field references inherit nullability from their declared schema field:
 
 ```python
 class OrderRaw(Schema):
-    id = field(String(), nullable=False)
-    total = field(String(), nullable=True)
+    id = string(nullable=False)
+    total = string(nullable=True)
 ```
 
 `order.id` is non-null. `order.total` is nullable.

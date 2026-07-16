@@ -10,7 +10,7 @@ The north star is deliberately strict: v1 first proves one useful executable tra
 generated PySpark, then broadens into the contract that lets Structure replace hand-maintained PySpark boilerplate
 with a strict online runtime and optional generated-code workflow. v2 makes that workflow useful for mainstream
 analytical pipelines.
-v3 takes ownership of streaming lifecycle concerns only after the transform compiler has earned trust. Sprint 09 moves
+v3 hardens streaming transformations while lifecycle ownership remains caller-owned. Sprint 09 moves
 Spark Connect from experimental parity to supported status for completed batch features and completes the static
 caller-owned streaming compatibility contract; live streaming runtime evidence remains a v3 entry gate. v4 remains
 available for non-batch Connect hardening and broader backend expansion.
@@ -212,6 +212,9 @@ over caller-supplied DataFrames.
 - Scalar and conditional expression coverage.
 - Nested values and declared parsing coverage.
 - Relational transformations and advanced analytical coverage.
+- Sprint 18: caller-owned streaming migration for session-window aggregation, bounded stream-stream outer and semi
+  joins, and stream-static left-semi joins. The slice preserves caller ownership of sources, sinks, checkpoints,
+  triggers, output-mode application, and query lifecycle.
 - A gated row-generator design and implementation slice.
 - Final v4 hardening sprint: release evidence, documentation closure, and resolution or deferral of release-blocking
   defects after every v4 feature slice.
@@ -219,7 +222,9 @@ over caller-supplied DataFrames.
 ### v4 non-goals
 
 - Loading, storage, writes, catalog/table management, and DataFrame actions.
-- Streaming sources, sinks, triggers, checkpoints, output modes, and query lifecycle.
+- Streaming sources, sinks, triggers, checkpoints, output-mode application, and query lifecycle.
+- Unbounded state, chained stateful operators, opaque Pandas/RDD/state-processor APIs, and arbitrary streaming side
+  effects.
 - Raw SQL, raw `WindowSpec`, UDTF helpers, and arbitrary Python callback behavior. Scalar `@special(type="udf")`
   remains ordinary-PySpark batch support only.
 - Alternative backend expansion and non-batch Spark Connect work.
@@ -238,4 +243,4 @@ over caller-supplied DataFrames.
 | M6 | v1 stabilization and docs/examples | follow-up hardening sprint |
 | M7 | v2 analytical pipeline features, analytical join coverage, composition maturity, adoption tooling, and Spark Connect batch support | Sprints 06-09 |
 | M8 | v3 PySpark gap closure and streaming transformation hardening | Sprints 11-16 |
-| M9 | v4 PySpark transformation API coverage | Sprint 17, later v4 feature sprints, then the final v4 hardening sprint |
+| M9 | v4 PySpark transformation API coverage | Sprint 17, later v4 feature sprints including Sprint 18 streaming migration, then the final v4 hardening sprint |

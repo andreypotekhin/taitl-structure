@@ -22,6 +22,8 @@ v4 release is cut.
 - Resolve v4 release-blocking regressions and diagnostic, documentation, or generated-artifact defects.
 - Run the full regression suite, online/generated parity coverage, supported-target compatibility checks, and
   generated-artifact freshness checks.
+- Run each admitted feature family's live concept-parity scenario through `pyspark35` and `pyspark40`; run Spark
+  Connect lanes only for capability profiles that claim Connect support.
 - Recheck the transformation coverage catalog for complete, accurate classification and evidence links.
 - Verify release documentation, upgrade guidance, compatibility claims, troubleshooting links, and release notes.
 - Capture performance baselines for affected compiler paths and investigate material regressions.
@@ -40,6 +42,8 @@ v4 release is cut.
 - Online and generated PySpark behavior has parity evidence for every v4-supported API family.
 - Supported-target compatibility, generated-artifact freshness, diagnostics, public documentation, and troubleshooting
   references are verified for release.
+- The hardening ExecPlan records the exact default-build and Compose commands, backend versions, passed/skipped totals,
+  and explicit deferrals. A skipped live lane does not count as release evidence.
 - All remaining defects are either resolved or explicitly deferred with a documented rationale and follow-up item.
 
 ## Progress

@@ -284,10 +284,9 @@ Rules:
   generated schema modules.
 - Inherited fields are rendered in effective schema order after inheritance resolution.
 - Spark type mapping follows [SchemaModel.md](SchemaModel.back.md)).
-- Nested `Struct(...)` fields render nested `T.StructType(...)` values.
-- `Array(...)` and `Map(...)` preserve item, key, value, and nullability metadata.
-- `primary_key` and Structure-only metadata do not affect Spark `StructField` nullability except where schema model
-  rules say `primary_key=True` implies `nullable=False`.
+- Nested `struct(...)` fields render nested `T.StructType(...)` values.
+- `array(...)` and `map(...)` preserve item, key, value, and nullability metadata.
+- Structure metadata does not affect Spark `StructField` nullability.
 - Generated `*_SCHEMA` constants are shape-only. Future data-quality constraint metadata must be emitted separately
   unless a later design deliberately adds Spark-compatible metadata without changing schema shape semantics.
 - Generated schema text must not import source schema classes.

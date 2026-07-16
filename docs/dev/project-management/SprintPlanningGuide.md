@@ -15,6 +15,11 @@ contract through regression, online/generated parity, supported-target compatibi
 documentation, diagnostics, and performance-baseline checks. Its charter must name the version exit criteria, the
 release evidence to collect, and deferred follow-up work discovered during hardening.
 
+Keep release evidence lightweight. The hardening ExecPlan's `Outcomes & Retrospective` records the exact commands,
+backend versions, passed/skipped totals, and links to explicit deferrals. It does not require an approval workflow or a
+separate scorecard. `make build` is necessary but insufficient: release closure also runs the relevant classic Compose
+lanes and Spark Connect lanes only where support is claimed. A skipped live lane is not release evidence.
+
 ## Sprint Planning Inputs
 
 Each sprint should include:
@@ -36,6 +41,7 @@ Prefer small tasks that produce visible compiler progress:
 - IR node implemented
 - generated code snapshot added
 - Spark execution test added
+- live concept-parity scenario added for an admitted PySpark feature family
 - structured error implemented
 
 Avoid broad tasks such as “implement compiler.” Split them by source construct and generated PySpark output.

@@ -161,6 +161,11 @@ These operations are not streaming-compatible in v1:
 Some of these operations are supported by Spark Structured Streaming under specific watermarks, output modes, or state
 policies. Structure admits only the shapes whose transformation policy is compiler-visible.
 
+V4 Sprint 18 schedules static-gap session-window aggregation, bounded stream-stream outer and left-semi joins, and
+stream-static semi filtering. Their complete planned contract is
+[V4CallerOwnedStreamingMigration.md](V4CallerOwnedStreamingMigration.md); they remain batch-only until that plan's
+cross-target live evidence is complete.
+
 ## Joins
 
 Structure v1 allows stream-static joins only when the current pipeline DataFrame may be streaming and the joined input

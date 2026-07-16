@@ -351,6 +351,13 @@ boundary; unimplemented parity work is now marked `planned` in `docs/dev/Gaps.md
 - Maintain one classification for every PySpark transformation API in the supported target range so missing parity is
   visible and actionable.
 - Keep loading, storage, actions, orchestration, and alternative backends out of v4.
+- Deliver Sprint 18 caller-owned streaming migration: static-gap session aggregation; bounded stream-stream
+  left/right/full outer and left-semi joins; and stream-static semi filtering.
+- Require compiler-visible watermarks, event-time bounds, input modes, and caller-required output modes for every
+  stateful streaming shape; retain dynamic session gaps, chained stateful plans, unbounded state, and lifecycle APIs
+  as exclusions.
+- Add generated/online parity, explain, diagnostics, and live PySpark 3.5.x/4.0.x evidence before marking an
+  admitted streaming family supported.
 
 ## Future Backlog
 

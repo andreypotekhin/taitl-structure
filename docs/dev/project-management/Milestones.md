@@ -309,7 +309,10 @@ Exit Criteria:
   online/generated parity evidence.
 - Column, SQL-function, nested-value, relational, join, aggregate, window, and collection gaps are delivered in
   dependency order.
+- Caller-owned streaming migration admits only session-window aggregation, bounded stream-stream outer and semi joins,
+  and stream-static left-semi joins in Sprint 18, each with explicit state and output-mode diagnostics plus live
+  evidence.
 - Row generators are admitted only after an explicit schema-and-cardinality design proves their output shape safe.
-- Loading, storage, actions, orchestration, and alternative backends remain outside the milestone.
+- Loading, storage, actions, streaming orchestration, and alternative backends remain outside the milestone.
 - The final v4 hardening sprint passes the release evidence, regression, parity, compatibility, generated-artifact,
   documentation, diagnostics, and performance-baseline checks without admitting new feature scope.

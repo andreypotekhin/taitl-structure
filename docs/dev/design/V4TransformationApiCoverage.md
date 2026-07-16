@@ -17,9 +17,13 @@ row-preserving or row-reducing relational operations, joins, aggregations, windo
 row-expanding operations.
 
 V4 excludes loading and storage, table/catalog management, writes, streaming source and sink ownership, triggers,
-checkpoints, query lifecycle, Python UDF/UDTF execution, and actions that materialize data such as `collect()` or
-`count()`. These APIs either cause side effects, manage execution rather than transform data, or cannot remain inside
-Structure's symbolic transformation contract.
+checkpoints, output-mode application, query lifecycle, Python UDF/UDTF execution, and actions that materialize data
+such as `collect()` or `count()`. These APIs either cause side effects, manage execution rather than transform data, or
+cannot remain inside Structure's symbolic transformation contract.
+
+The release includes one separately scheduled streaming-transformation slice:
+[V4 Caller-Owned Streaming Migration](V4CallerOwnedStreamingMigration.md). It admits only compiler-visible session
+aggregation and bounded join shapes over caller-supplied DataFrames. It does not weaken the exclusions above.
 
 Alternative backend expansion and non-batch Spark Connect operations are not v4 objectives. The supported PySpark
 batch target remains ordinary PySpark and Spark Connect for the completed compiler-visible feature set.
@@ -80,10 +84,13 @@ slice has complete catalog and parity evidence.
    operations, ordering/limiting where their semantics are useful in a transform, nearest as-of matching, exact
    percentiles, and admitted statistical aggregates. Every operation declares whether it preserves, filters,
    aggregates, multiplies, or otherwise changes rows.
-5. **Generators behind a cardinality gate.** Design and prove an explicit schema-and-cardinality model for
+5. **Caller-owned streaming migration.** Implement Sprint 18's static-gap session aggregation, bounded stream-stream
+   outer and semi joins, and stream-static semi filtering. Require state/output-mode diagnostics and live evidence on
+   both target lines before an operation is supported.
+6. **Generators behind a cardinality gate.** Design and prove an explicit schema-and-cardinality model for
    `explode`, `posexplode`, and `inline`. Implement them only if that model keeps output schemas, generated code,
    traceability, and streaming classification unambiguous. Otherwise leave them `deferred` with a precise diagnostic.
-6. **Release closure.** Complete documentation, the v4 fixture, public API snapshot, Spark target evidence, and the
+7. **Release closure.** Complete documentation, the v4 fixture, public API snapshot, Spark target evidence, and the
    full build. Incremental compile/cache diagnostics remain future work outside v4 and require a later reprioritization
    decision.
 

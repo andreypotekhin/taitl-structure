@@ -14,7 +14,7 @@ module and class name, give each variant a distinct Python package root. See
 Use a Python-safe field name and point `alias` at the real Spark column:
 
 ```python
-promotion_code = field(String(), nullable=True, alias="promo-code")
+promotion_code = string(nullable=True, alias="promo-code")
 ```
 
 Transform code uses `promotion_code`. Spark schemas, validation, expression reads, and projection output use
@@ -23,7 +23,7 @@ choose Spark-compatible physical column names or normalize the DataFrame before 
 
 ## Nested Struct Assignment Fails
 
-For a field declared as `field(Struct(Address), ...)`, assign either a compatible whole struct expression or construct
+For a field declared as `struct(Address, ...)`, assign either a compatible whole struct expression or construct
 the nested schema explicitly:
 
 ```python

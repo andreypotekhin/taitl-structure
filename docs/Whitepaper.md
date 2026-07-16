@@ -309,10 +309,9 @@ Structure targets Python 3.11+ and execution/generated-code execution for PySpar
 settings are `execution_mode = "online"`, `target_profile = ">=3.5,<4.1"`, and `target_variant = "ordinary"`.
 
 Execution and generated-code execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs by default.
-Sprint 09 promotes Spark Connect to supported status for completed v1/v2 batch features after live runtime evidence,
-diagnostics, and CI or documented verification are in place. Spark Connect must not change Structure source syntax,
-execution invocation construction, generated class construction, `run(...)` signatures, streaming orchestration semantics,
-or generated-code reviewability.
+Spark Connect supports completed compiler-visible batch features; streaming remains caller-owned ordinary PySpark work.
+It does not change Structure source syntax, execution invocation construction, generated class construction, `run(...)`
+signatures, or generated-code reviewability.
 
 Generated PySpark, compiler traceability metadata, and configuration each have explicit versioning rules. The public policy
 lives in [Compatibility.md](Compatibility.md).

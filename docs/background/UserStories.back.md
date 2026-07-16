@@ -58,14 +58,14 @@ narrower use cases and roadmap features.
 ## 5. Schemas
 
 - + As a developer, I can define fields with types and nullability so that generated Spark schemas are explicit.
-- + As a developer, I can declare fields with explicit type objects such as `String()` and `Decimal(12, 2)` so that
-  schema syntax is unambiguous and extensible.
+- + As a developer, I can declare fields with factories such as `string()` and `decimal(12, 2)` so that schema syntax
+  is concise and unambiguous.
 - + As a developer, I can declare field aliases so that Python schema code can use identifier-safe names while Spark
   DataFrames keep their source column names.
 - + As a developer, I can declare array, map, and nested struct fields so that semi-structured Spark data remains typed.
 - + As a developer, I can inherit fields from other schema classes so that shared field groups do not need to be
   duplicated.
-- As a developer, I can define primary keys or uniqueness hints so that join cardinality warnings are possible.
+- As a developer, I can validate source uniqueness separately when a lookup join relies on it.
 - + As a developer, I can define intermediate schemas so that multi-step transformations are validated between steps.
 - + As a developer, I can generate Spark `StructType` declarations so that reads, validations, and pre-write projection
   use consistent schemas.
@@ -76,7 +76,7 @@ narrower use cases and roadmap features.
 
 ## 6. Transform Classes
 
-- + As a developer, I can decorate a class with `@transform` so that it becomes a Structure transform.
+- + As a developer, I can decorate a transform class with `@transform(...)` to record class-level options.
 - + As a developer, I can define one source transform class per logical transformation pipeline so that generated code maps cleanly to source code.
 - + As a developer, I can construct a transform with declared input DataFrames so that it represents a deferred runtime
   invocation.

@@ -98,7 +98,7 @@ rows, call Spark, or inspect live DataFrames.
 
 ## Public Source Forms
 
-The v1 symbolic engine must support these source forms inside compiled step methods:
+The symbolic engine supports these basic source forms inside compiled step methods:
 
 ```python
 order.id
@@ -120,7 +120,7 @@ when(order.total >= 1000, "large").otherwise("standard")
 ```
 
 Public examples should use these forms. Source-level `F.col`, `F.lit`, PySpark `Column` methods, Python string methods
-on symbolic expressions, and raw string column paths are not compiled-source forms in v1.
+on symbolic expressions, and raw string column paths are not compiled-source forms.
 
 The symbolic source surface is intentionally curated. Structure should not add one thin wrapper for every PySpark
 function. When a Spark capability becomes compiler-visible, define the smallest Structure-level operation family that
@@ -473,8 +473,7 @@ StepPlan
   input_schema
   output_schema
   operations
-  hooks_before
-  hooks_after
+  hooks
   validate_output
   provenance
 ```
@@ -482,10 +481,7 @@ StepPlan
 Operation order:
 
 ```text
-raw hooks metadata
-filters and joins in source order
-project from returned schema construction
-raw hooks metadata
+filters, joins, projections, and raw hooks in source order
 validation metadata
 ```
 

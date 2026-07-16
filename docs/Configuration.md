@@ -198,8 +198,8 @@ targets fail with `BACKEND-E2401`. Backend capability behavior is specified in
 [BackendCapabilities.md](background/BackendCapabilities.back.md).
 
 `target_variant` selects the runtime variant inside the PySpark target. `ordinary` is the default in-process PySpark
-contract. `spark-connect` is experimental for completed v1/v2 batch features and must not change DSL syntax,
-generated class APIs, `run(...)` signatures, or streaming orchestration semantics. See
+contract. `spark-connect` supports completed compiler-visible batch features; streaming remains caller-owned ordinary
+PySpark work. The variant does not change DSL syntax, generated class APIs, or `run(...)` signatures. See
 [Compatibility.md](Compatibility.md).
 
 ## Generated Code Options

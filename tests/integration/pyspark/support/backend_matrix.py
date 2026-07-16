@@ -81,11 +81,21 @@ def target_variant() -> str:
     return "spark-connect" if backend_name().startswith("spark-connect") else "ordinary"
 
 
+def _target_profile() -> str:
+    backend = backend_name()
+    if backend.endswith("35"):
+        return ">=3.5,<4.0"
+    if backend.endswith("40"):
+        return ">=4.0,<4.1"
+    return ">=3.5,<4.1"
+
+
 def session(spark, *, execution_mode: str, generated_package: str | None = None) -> StructureSession:
     return StructureSession(
         spark=spark,
         execution_mode=execution_mode,
         generated_package=generated_package,
+        target_profile=_target_profile(),
         target_variant=target_variant(),
     )
 
@@ -101,6 +111,7 @@ def render_generated_project(
     artifact = transform_type.compile(
         generated_package=generated_package,
         generated_code_options=generated_code_options,
+        target_profile=_target_profile(),
         target_variant=target_variant(),
     )
     return PySpark.render.project()(

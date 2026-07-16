@@ -17,6 +17,18 @@ Reusable, fixture-agnostic concept-test machinery belongs in `src/structure/lib/
 helpers that know about checked-in model code, fixture data, pytest fixtures, or specific test scenarios belong in
 `tests/helpers`.
 
+## Live PySpark Concept Parity
+
+Every admitted PySpark feature family must have one small, representative live concept scenario under
+`tests/concepts/live_pyspark/`. It uses only public Structure APIs, runs the same transform online and from generated code,
+and compares output rows, column order, and reliable schema metadata. The scenario includes an ordinary case plus the
+family's relevant null, empty, boundary, or invalid-contract case. It is a release-admission proof, not a replacement
+for narrow specification, user-story, or differential tests.
+
+Live concept scenarios carry `pytest.mark.integration`. `make build` remains Spark-free and skips them with the normal
+opt-in message. Release verification runs the relevant Compose lanes: both classic `pyspark35` and `pyspark40` for
+supported behavior, plus Spark Connect lanes only where the feature claims Connect support.
+
 ## Concept list
 
 - configuration

@@ -128,7 +128,7 @@ The shared PySpark execution plan must decide these items once:
 - input validation order and mode;
 - step order;
 - ordered schema-parameter binding and the driving relation;
-- before-hook and after-hook order;
+- source-ordered hook boundaries;
 - filter order and legal filter combination;
 - expression function mapping;
 - literal typing, casts, and null literal handling;

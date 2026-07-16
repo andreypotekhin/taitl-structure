@@ -23,35 +23,35 @@ from structure import *
 
 
 class OrderRaw(Schema):
-    id = field(String(), nullable=False)
-    customer_id = field(String(), nullable=False)
-    product_id = field(String(), nullable=False)
-    promotion_code = field(String(), nullable=True, alias="promo-code")
-    total = field(String(), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    product_id = string(nullable=False)
+    promotion_code = string(nullable=True, alias="promo-code")
+    total = string(nullable=True)
 
 
 class OrderNormalized(Schema):
-    id = field(String(), nullable=False)
-    customer_id = field(String(), nullable=False)
-    product_id = field(String(), nullable=False)
-    promotion_code = field(String(), nullable=True)
-    total = field(Decimal(12, 2), nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
+    product_id = string(nullable=False)
+    promotion_code = string(nullable=True)
+    total = decimal(12, 2, nullable=True)
 
 
 class OrderWithCustomer(OrderNormalized):
-    customer_name = field(String(), nullable=True)
-    customer_tier = field(String(), nullable=True)
+    customer_name = string(nullable=True)
+    customer_tier = string(nullable=True)
 
     
 class Customer(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=True)
-    tier = field(String(), nullable=True)   
+    id = string(nullable=False)
+    name = string(nullable=True)
+    tier = string(nullable=True)
     
 
 class Product(Schema):
-    id = field(String(), nullable=False, primary_key=True)
-    name = field(String(), nullable=False)    
+    id = string(nullable=False)
+    name = string(nullable=False)
 ```
 
 ### Example Transform

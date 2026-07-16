@@ -89,6 +89,12 @@ conversion, or a hook-only path.
 ## Scheduling
 
 Sprint 09 owns the first slice and this deferred-feature reference. V3 closed with streaming transformation hardening
-while callers retain lifecycle ownership; full streaming orchestration is not on the v4 roadmap. Individual stateful
-operation families may be considered only if they preserve the first-slice principle: explicit lifecycle policy,
-fail-early diagnostics, and live streaming evidence before support is claimed.
+while callers retain lifecycle ownership. Sprint 18 is V4's deliberately narrow migration slice: session-window
+aggregation, bounded stream-stream outer and semi joins, and stream-static left-semi joins. Its complete design is
+[V4CallerOwnedStreamingMigration.md](V4CallerOwnedStreamingMigration.md). This is transformation coverage, not
+streaming orchestration: sources, sinks, checkpoints, triggers, output-mode application, and query lifecycle remain
+caller-owned. Chained stateful operations, unbounded state, and opaque state processors remain outside v4.
+
+Each v4 family must preserve the first-slice principle: compiler-visible state and late-data semantics, fail-early
+diagnostics, explain output that states the caller's required output mode, and live streaming evidence before support
+is claimed.

@@ -4,11 +4,16 @@ import ast
 import inspect
 from pathlib import Path
 
+from structure.app.compiler.compileability.streaming_compatibility.commands.ClassifyStreamingCompatibility import (
+    ClassifyStreamingCompatibility,
+)
 from structure.app.dsl.model.expr import expressions
 from structure.app.dsl.model.transforms import operations
 from structure.app.runtime.execution.online.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
 from structure.app.target.capabilities.logic.rules.PySparkCapabilityRules import COMMON_CAPABILITIES
 from structure.app.target.pyspark.commands.RenderPySparkExpression import RenderPySparkExpression
+from structure.app.target.pyspark.commands.RenderPySparkTransformModule import RenderPySparkTransformModule
+from structure.app.target.pyspark.logic.mapping.PySparkExpressionMapper import PySparkExpressionMapper
 
 
 def test_generated_and_online_transform_expression_dispatch_are_identical() -> None:
@@ -37,6 +42,24 @@ def test_declared_scalar_helpers_have_generated_and_online_dispatch() -> None:
 
     assert helpers <= _dispatched_functions(RenderPySparkExpression)
     assert helpers <= _dispatched_functions(PySparkExpressionEvaluator)
+
+
+def test_transform_expression_consumer_catalog_covers_every_phase() -> None:
+    consumers = {
+        "mapper": PySparkExpressionMapper,
+        "renderer": RenderPySparkExpression,
+        "online evaluator": PySparkExpressionEvaluator,
+        "generated-module discovery": RenderPySparkTransformModule,
+        "stream classifier": ClassifyStreamingCompatibility,
+    }
+
+    for name, consumer in consumers.items():
+        source = Path(inspect.getfile(consumer)).read_text(encoding="utf-8")
+        assert "transform_expression" in source, f"{name} does not handle transform expressions"
+
+    requirements = _declared_collection_requirements()
+    assert {function for _, function in requirements} <= _dispatched_functions(RenderPySparkExpression)
+    assert requirements <= COMMON_CAPABILITIES
 
 
 _WINDOW_FUNCTIONS = frozenset(

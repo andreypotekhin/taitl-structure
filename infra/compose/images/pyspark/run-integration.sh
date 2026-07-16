@@ -43,7 +43,7 @@ cleanup() {
 }
 trap cleanup EXIT
 
-python -m pytest /workspace/tests/integration \
+python -m pytest /workspace/tests/integration /workspace/tests/concepts/live_pyspark \
     --rootdir=/workspace \
     -p no:cacheprovider \
     --run-integration \

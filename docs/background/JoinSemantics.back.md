@@ -63,23 +63,15 @@ Rules:
 
 ## Join Types
 
-The compiled DSL supports:
-
-- `Join.LEFT`: keep every current row; right fields are null when no match exists.
-- `Join.INNER`: keep only current rows that have at least one right match.
-
-`Join.RIGHT`, `Join.FULL`, `Join.CROSS`, and semi/anti joins are deferred. They do not fit the v1 row-centric schema
-constructor cleanly because they can introduce rows that do not have a current-row source, or they return existence
-semantics rather than a joined right scope. The v2+ plan for semi/anti predicates lives in
-[AnalyticalJoinCoverage.md](AnalyticalJoinCoverage.back.md)).
-
-If the public enum exposes deferred values for forward compatibility, the compileability checker must reject them in
-compiled step methods with a diagnostic that names the supported v1 values.
+The admitted join family includes left and inner lookup joins; existence and anti-existence predicates; explicit
+rowset left, inner, right, full, and Cartesian joins; deterministic lookup dedupe; and temporal and forward as-of
+lookups. Right and full joins require an explicit output projection because either side may be null. Cartesian joins
+require an explicit acknowledgement. See the [Joins API](../api/Joins.api.md) for operation-specific requirements.
 
 ## Join Conditions
 
-The v1 join condition is an equi-join condition: a boolean expression made from equality comparisons joined by logical
-AND.
+Lookup and rowset joins use compiler-visible symbolic predicates. Equality pairs joined by `&` are the normal form;
+time-aware helpers add their documented temporal conditions.
 
 Accepted:
 
@@ -93,10 +85,9 @@ lookup_join(on=lower(trim(order.email)) == lower(trim(customer.email)))
 lookup_join(on=order.customer_external_id.null_safe_eq(customer.external_id))
 ```
 
-Rejected in v1:
+Unsupported forms include:
 
 - `OR` conditions.
-- Inequality conditions such as `<`, `<=`, `>`, or `>=`.
 - Non-boolean `on` expressions.
 - Comparisons where neither side references the joined input.
 - Conditions that compare two fields from the same side.
@@ -131,7 +122,7 @@ Composite key rules:
 - All key pairs must involve the same joined input scope for a single join call.
 - A key pair may compare expression helpers, not only bare fields, when the helpers are deterministic and row-local.
 - Type compatibility follows the nullability and type coercion reference.
-- A composite `lookup_join(...)` is uniqueness-proven only when the exact right-side key set is known unique.
+- A composite `lookup_join(...)` should use `JoinDedupe` when the right side can contain multiple matches.
 
 ## Null Semantics
 
@@ -165,10 +156,10 @@ lookup_join(
 )
 ```
 
-There is no v1 `case_insensitive=True` join option. Normalization belongs in the expression because it is part of the
+There is no `case_insensitive=True` join option. Normalization belongs in the expression because it is part of the
 business key. Keeping it visible makes generated PySpark and traceability reviewable.
 
-The v1 `lower(...)` helper follows Spark's backend behavior. It is not a promise of full Unicode case folding or
+The `lower(...)` helper follows Spark's backend behavior. It is not a promise of full Unicode case folding or
 locale-specific collation. If the project later adds richer collation semantics, that should be a separate expression
 helper or configuration contract.
 
@@ -180,13 +171,9 @@ to match the same right row. In relational terms, it covers many-to-one and one-
 Duplicate right-side rows for the chosen key are a contract violation for `lookup_join(...)` because Spark would multiply
 the current row. Structure must not silently deduplicate or choose an arbitrary first row.
 
-Uniqueness proof sources:
-
-- A right-side schema field marked `primary_key=True` when the join key is exactly that field.
-- A future unique-key metadata feature when the join key exactly matches one declared unique key.
-- A user-enabled runtime uniqueness check, if implemented later.
-
-When no uniqueness proof exists, v1 should compile with a warning by default:
+Schema declarations do not record primary keys or uniqueness proofs. When a lookup key may contain duplicates, make the
+business rule explicit with `JoinDedupe` or use a rowset join that intentionally permits multiplication. A future
+data-quality contract may provide a separately checked uniqueness assertion.
 
 ```text
 CompileWarning JOIN-W0601: lookup_join(...) uniqueness is not proven
@@ -201,12 +188,11 @@ Why this matters:
   If customers has duplicate id values, this join can multiply rows.
 
 Use:
-  mark Customer.id as primary_key=True, declare a unique key, use inner_join(...) if multiplication is intended,
-  or add an explicit JoinDedupe policy when one selected right row is the business rule.
+  add an explicit JoinDedupe policy when one selected right row is the business rule, or use a rowset join when
+  multiplication is intended.
 ```
 
-Projects may later add a strict setting that turns this warning into an error. That setting is not required for the v1
-semantics, but diagnostics should be designed so the promotion is straightforward.
+Projects may validate uniqueness separately when it is an input-quality requirement.
 
 ## `inner_join(...)` Cardinality
 
@@ -361,7 +347,8 @@ Key:
   customers.id == order.customer_id
 
 Use:
-  field(String(), primary_key=True) on Customer.id, declare a unique key, or wait for v2 inner_join(...).
+  add an explicit JoinDedupe policy, validate the source key separately, or use a rowset join when multiplication is
+  intended.
 
 See docs/background/DSL.back.md
 ```

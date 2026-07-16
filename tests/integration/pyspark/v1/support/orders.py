@@ -9,27 +9,27 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from integration.pyspark.support.backend_matrix import session
-from testing.model.v1.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
-from testing.model.v1.orders.schemas.customer import Customer
-from testing.model.v1.orders.schemas.order import (
-    OrderNormalized,
-    OrderPublication,
-    OrderPublished,
-    OrderRaw,
-    OrderWithCustomer,
-    OrderWithProduct,
-    OrderWithPromotion,
-    PublicationFlags,
-)
-from testing.model.v1.orders.schemas.product import Product
-from testing.model.v1.orders.schemas.promotion import Promotion
-from testing.model.v1.orders.transforms.order import EnrichOrders
 
 ROOT = Path(__file__).resolve().parents[5]
 DATA = ROOT / "res" / "testing" / "data" / "v1" / "orders"
 
 
 def source_schema_modules():
+    from testing.model.v1.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
+    from testing.model.v1.orders.schemas.customer import Customer
+    from testing.model.v1.orders.schemas.order import (
+        OrderNormalized,
+        OrderPublication,
+        OrderPublished,
+        OrderRaw,
+        OrderWithCustomer,
+        OrderWithProduct,
+        OrderWithPromotion,
+        PublicationFlags,
+    )
+    from testing.model.v1.orders.schemas.product import Product
+    from testing.model.v1.orders.schemas.promotion import Promotion
+
     return {
         "testing.model.v1.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
         "testing.model.v1.orders.schemas.customer": [Customer],
@@ -63,12 +63,12 @@ def generated_order_schemas(package: str) -> SimpleNamespace:
 
 
 def run_generated_transform(spark, generated_package: str, schemas):
-    invocation = EnrichOrders(**input_frames(spark, schemas))
+    invocation = transform()(**input_frames(spark, schemas))
     return _published(invocation.run(session(spark, execution_mode="generated", generated_package=generated_package)))
 
 
 def run_online_transform(spark, schemas):
-    invocation = EnrichOrders(**input_frames(spark, schemas))
+    invocation = transform()(**input_frames(spark, schemas))
     return _published(invocation.run(session(spark, execution_mode="online")))
 
 
@@ -85,6 +85,12 @@ def input_frames(spark, schemas) -> dict[str, object]:
             schema=schemas.PROMOTION_SCHEMA,
         ),
     }
+
+
+def transform():
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    return EnrichOrders
 
 
 def _published(result):

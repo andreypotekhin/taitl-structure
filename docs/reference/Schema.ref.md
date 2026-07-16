@@ -11,7 +11,7 @@ artifacts.
 
 Structure schema behavior has four layers:
 
-1. Source declarations: Python classes that inherit `Schema` and declare fields with `field(...)`.
+1. Source declarations: Python classes that inherit `Schema` and declare fields with field factories.
 2. Compiler model: backend-neutral `SchemaDef`, `FieldDef`, and type values.
 3. Runtime shape: generated or materialized Spark `StructType` values.
 4. Value constraints: explicit data-quality rules outside the base shape model.
@@ -21,7 +21,7 @@ PySpark, start Java, create a `SparkSession`, or inspect live data.
 
 ### Canonical Declaration
 
-The canonical v1 declaration form is explicit:
+The canonical declaration form is explicit:
 
 ```python
 from structure import Schema
@@ -42,8 +42,8 @@ class OrderNormalized(Schema):
 
 Rules:
 
-- Every field uses `field(type_, ...)`.
-- Every type is an explicit immutable Structure type object.
+- Every field uses its matching field factory, such as `string(...)` or `decimal(12, 2, ...)`.
+- Field factories create immutable Structure type contracts.
 - Field order is class-body order after inheritance is resolved.
 - Field names are Python attribute names.
 - Public examples must use this form.
@@ -130,17 +130,10 @@ Rules:
 
 ### Fields
 
-`field(...)` has this v1 shape:
+Each field factory accepts `nullable=`, `alias=`, `metadata=`, and `description=`. For example:
 
 ```python
-field(
-    type_,
-    *,
-    nullable=True,
-    alias=None,
-    metadata=None,
-    description=None,
-)
+total = decimal(12, 2, nullable=False, description="Order total after discounts.")
 ```
 
 `nullable` defaults to `True`. `alias` is the Spark column name; otherwise the Python attribute name is also the Spark
@@ -279,34 +272,30 @@ orders.select(
 )
 ```
 
-That generated Spark alias is an implementation detail of projection rendering. In schema declarations, use
-`field(..., alias="spark-column-name")`.
+That generated Spark alias is an implementation detail of projection rendering. In schema declarations, use the
+factory option, such as `string(alias="spark-column-name")`.
 
 ### Unsupported Syntax
 
-The following are not part of v1 canonical syntax:
+The following are not part of the canonical syntax:
 
 - annotation-only field declarations such as `id: String`;
 - dataclass-style defaults;
 - Pydantic model inheritance as schema syntax;
-- lowercase type sentinels such as `string`;
+- `field(...)` wrappers and standalone type-object declarations such as `String()`;
 - implicit Spark type strings such as `"string"` or `"decimal(12,2)"`;
 - non-schema mixins.
 
-Existing examples using lowercase tokens should be migrated mechanically:
+Retired `field(...)` declarations migrate mechanically to factories:
 
 ```text
-field(string)          -> string()
-field(decimal(12, 2))  -> decimal(12, 2)
-field(boolean)         -> boolean()
-field(integer)         -> integer()
-field(long)            -> long()
-field(float)           -> float()
-field(double)          -> double()
+field(String(), nullable=False)        -> string(nullable=False)
+field(Decimal(12, 2), nullable=True)   -> decimal(12, 2, nullable=True)
+field(Array(String()))                  -> array(string())
+field(Struct(Address))                  -> struct(Address)
 ```
 
-The compiler may include a temporary compatibility mode for lowercase aliases during early implementation, but docs,
-fixtures, and generated examples must use only the canonical explicit type-object form.
+`field(...)` is rejected. Docs, fixtures, and generated examples use only field factories.
 
 ## Types
 
@@ -319,7 +308,7 @@ array(string()) == array(string())
 struct(Address) == struct(Address)
 ```
 
-The v1 type model is:
+The type model is:
 
 ```text
 StringType
@@ -338,7 +327,7 @@ MapType(key_type, value_type, value_contains_null)
 
 ### Scalar Types
 
-The v1 scalar type constructors are:
+The scalar field factories are:
 
 ```python
 string()
@@ -388,7 +377,7 @@ Rules:
 - `precision >= 1`
 - `scale >= 0`
 - `scale <= precision`
-- v1 should reject omitted precision and scale.
+- Omitted precision or scale is rejected.
 
 Generated PySpark mapping:
 
@@ -439,8 +428,7 @@ Rules:
 - `struct(Address)` and `struct(BillingAddress)` are compatible only when they reference the same schema class.
 - Nested struct field order follows the referenced schema class.
 - `struct(SchemaClass)` uses the effective inherited field set of `SchemaClass`.
-- Self-recursive schemas are rejected in v1.
-- Recursive cycles across multiple schemas are rejected in v1.
+- Self-recursive schemas and recursive cycles across multiple schemas are rejected.
 
 Example:
 
@@ -501,7 +489,7 @@ class Product(Schema):
 
 ### Spark Type Mapping
 
-Full v1 mapping:
+Full mapping:
 
 ```text
 string()              -> T.StringType()
@@ -575,7 +563,7 @@ class Order(EntityKeys, AuditFields):
     total = decimal(12, 2, nullable=True)
 ```
 
-Non-schema mixins are not supported in v1:
+Non-schema mixins are not supported:
 
 ```python
 class Order(EntityKeys, SomePlainMixin):  # rejected
@@ -616,11 +604,11 @@ Override rules:
 
 - Override replacement is whole-field replacement.
 - Override position is the inherited field position.
-- Type, nullability, primary key flag, metadata, and description all come from the overriding field.
+- Type, nullability, alias, metadata, and description all come from the overriding field.
 - Metadata is not merged.
 - Description is not merged.
 - Overriding a field with a non-field value is rejected.
-- Deleting an inherited field is not supported in v1.
+- Deleting an inherited field is not supported.
 
 Whole-field replacement keeps behavior visible. A reader can inspect the overriding line and know the final field
 definition.
@@ -694,7 +682,7 @@ This information is used for diagnostics, generated documentation, traceability,
 
 ### Inheritance Non-Goals
 
-The following are not part of v1:
+The following are not supported:
 
 - deleting inherited fields;
 - partial field overrides;
@@ -797,7 +785,7 @@ Schema class
 
 Schema extraction must reject:
 
-- non-Structure type values in `field(...)`;
+- invalid or non-field-factory declarations;
 - invalid decimal precision or scale;
 - invalid nested type expressions;
 - recursive struct cycles;
@@ -837,7 +825,7 @@ Rules:
 
 - Positional arguments are rejected.
 - Unknown keyword arguments are errors.
-- Missing nullable fields are errors in v1. Developers should be explicit to keep generated projections reviewable.
+- Missing nullable fields are errors. Developers should be explicit to keep generated projections reviewable.
 - All non-nullable output fields must be supplied unless defaults are introduced by a later spec.
 - Field keyword order may differ from declaration order.
 - Generated projection order follows target schema declaration order, not source keyword order.

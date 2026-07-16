@@ -16,6 +16,11 @@ Starting coverage is intentionally focused on concepts visible to Structure user
 - diagnostics: `tests/user_stories/20_error_reporting`, `tests/specifications/compiler-diagnostics`
 - compatibility: `tests/specifications/compatibility`, `tests/integration`
 
+Live PySpark concept parity scenarios live in `tests/concepts/live_pyspark`. They are marked `integration`, use only public
+Structure surfaces, and run through the Docker Compose PySpark 3.5 and 4.0 lanes. The scenarios cover scalar
+expressions, joins, aggregates, windows, collections, and source-ordered step/filter flow. They complement—not
+replace—the narrow contract tests in `tests/specifications`, `tests/user_stories`, and `tests/integration`.
+
 Prefer black-box tests through public APIs, CLI commands, generated code, diagnostics, and execution/generated-code
 parity.
 Avoid asserting compiler internals unless the public concept is the generated artifact or traceability report itself.

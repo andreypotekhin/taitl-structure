@@ -121,8 +121,7 @@ StepPlan
   input_scope
   output_scope
   operations
-  hooks_before
-  hooks_after
+  hooks
   validate_output
   source
 
@@ -296,8 +295,7 @@ Fields:
 - `input_scope`: current row scope at step entry.
 - `output_scope`: current row scope after projection into the output schema.
 - `operations`: ordered compiled operation list.
-- `hooks_before`: ordered `HookCall` list for hooks before compiled operations.
-- `hooks_after`: ordered `HookCall` list for hooks after compiled operations.
+- `hooks`: ordered `HookCall` boundaries at their source positions.
 - `validate_output`: effective validation decision for this step.
 - `source`: source anchor for the step method.
 - `inputs`: ordered parameter bindings; the first is marked as the driving relation.
@@ -309,20 +307,18 @@ Rules:
 - A step may consume only a lane or declared input frame already available earlier in source order.
 - Every parameter annotation must match its ordered input binding.
 - Every returned schema must match its ordered result binding.
-- Joins and filters are shared by all results; projections and raw hooks belong to individual results.
-- raw hooks run before compiled operations for the step.
-- raw hooks run after compiled operations for the step.
-- `operations` should contain compiled `HookCall` and `ValidateSchema` operations only when an implementation chooses
-  a single stream of operations. If hooks are also stored in `hooks_before` and `hooks_after`, duplication must be
-  avoided in execution.
-- The last compiled operation before raw hooks should establish the step output schema, usually through `Project`.
+- Joins and filters are shared by all results; projections and raw hooks preserve their class declaration order.
+- Raw hooks run at their declared source-order boundary, never by target-relative before/after placement.
+- `operations` may contain `HookCall` and `ValidateSchema` operations as one ordered stream; hook boundaries must not
+  be duplicated in execution.
+- The operation before a raw hook establishes the frame available at that boundary.
 - Step output validation is represented explicitly enough for execution and generated-code execution to place validation
   identically.
 
 The implementation may choose either of these equivalent shapes:
 
 ```text
-hooks_before + operations + hooks_after + validate_output fields
+operations (including source-ordered hooks) + validate_output fields
 ```
 
 or:

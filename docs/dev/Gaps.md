@@ -43,7 +43,10 @@ as supported, scheduled, deferred, or unsupported and will link each supported e
 
 The delivery design and first ExecPlan are [V4 Transformation API Coverage](design/V4TransformationApiCoverage.md) and
 [P07132601.V4-transformation-api-coverage.plan.md](planning/P07132601.V4-transformation-api-coverage.plan.md).
-Loading, storage, catalog/table management, actions, and streaming lifecycle ownership are excluded from this program.
+[V4 Caller-Owned Streaming Migration](design/V4CallerOwnedStreamingMigration.md) and
+[P07152602.V4-caller-owned-streaming-migration.plan.md](planning/P07152602.V4-caller-owned-streaming-migration.plan.md)
+define the dedicated bounded-streaming transformation slice. Loading, storage, catalog/table management, actions, and
+streaming lifecycle ownership are excluded from this program.
 
 ## DSL
 
@@ -116,7 +119,7 @@ Gaps:
 | Join reordering | planned | Cost-based join planning | Do not reorder source semantics casually. |
 | Forward as-of joins | implemented | As-of nearest/forward patterns | Selects the earliest qualifying right row. |
 | Nearest as-of joins | planned | Nearest time matching | Needs tie and tolerance rules. |
-| Stream-stream joins | unsupported | Streaming stream-stream joins | Needs state and watermark policy. |
+| Unbounded or non-contract stream-stream joins | unsupported | Streaming stream-stream joins | Bounded inner joins are implemented; V4 schedules bounded outer and left-semi forms. All admitted forms need explicit input modes, watermarks, event-time bounds, and state diagnostics. |
 | Raw SQL join predicates | unsupported | SQL strings in `on` | Use symbolic expressions or hooks. |
 
 ## Aggregations
@@ -182,14 +185,16 @@ Gaps:
 | Event-time tumbling and sliding aggregations | implemented | `groupBy(window(...))` | Requires a prior watermark on the direct event-time grouping key or `window(event_time, ...)`; caller uses `append` or `update`. |
 | Cross-mode dedupe | implemented | `dropDuplicates` / `dropDuplicatesWithinWatermark` | `drop_duplicates(...)` uses batch `dropDuplicates` and streaming bounded dedupe after a watermark. |
 | Explicit bounded dedupe | implemented | `dropDuplicatesWithinWatermark` | `drop_duplicates_within_watermark(...)` requires `StreamingMode.YES` and a preceding watermark. |
-| Session and chained windows | deferred | session windows, chained window aggregation | Needs session merge, output-mode, and multi-stage state rules. |
-| Stream-stream outer and semi joins | deferred | left/right/full outer, semi stream-stream joins | Spark has watermark/time-bound variants; Structure has no admitted state contract for them. |
-| Unsupported stream-static directions | deferred | right/full/cross/semi/anti stream-static joins | Use a supported left/inner stream-static lookup or caller-owned PySpark. |
-| Global/unbounded aggregation and dedupe | deferred | global `groupBy`, unwatermarked `dropDuplicates` | Rejected to prevent unbounded state; group by a watermarked event-time key/window or bound it outside Structure. |
+| Session-window aggregation | planned | `session_window` | Sprint 18: require a preceding watermark on the event-time field, a static positive gap, at least one ordinary grouping key, and caller-owned `append` mode. Dynamic gaps and session merge tuning remain caller configuration. |
+| Chained window aggregation | deferred | `window_time`, `window(window(...))` | Needs a multi-stage state contract; do not admit merely because the individual windows are legal. |
+| Bounded stream-stream outer and semi joins | planned | left/right/full outer and left-semi stream-stream joins | Sprint 18: require declared streaming inputs, watermarks on both bound event-time fields, a compiler-visible event-time bound, and caller-owned `append` mode; diagnostics must explain delayed unmatched output. |
+| Stream-static left semi join | planned | left-semi stream-static join | Sprint 18: a non-stateful `exists(...)` filter when the left/current input is streaming and the right input is static. |
+| Unsupported stream-static directions | unsupported | right/full/cross/anti stream-static joins | These runtime shapes are not admitted by Spark Structured Streaming; use a supported left/inner/left-semi lookup or caller-owned redesign. |
+| Global/unbounded aggregation and dedupe | unsupported | global `groupBy`, unwatermarked `dropDuplicates` | Structure will not admit unbounded state. Group by a watermarked event-time key/window or bound state outside Structure. |
 | Sorting, limits, analytic windows, selected-row helpers | deferred | `orderBy`, `limit`, ranking, `Window`, top-N | Caller-owned streaming logic; analytical windows remain batch-only. |
 | Multiple stateful operators | deferred | chains of streaming aggregates/dedupe/joins | Needs explicit composition and state-budget policy. |
-| Pandas, RDD, and state-processor boundaries | deferred | Pandas UDF, RDD, `mapInPandas`, state processors | Scalar UDF is row-local streaming-supported; use caller-owned streaming code at these other boundaries. |
-| Generators | deferred | `explode`, `posexplode`, `inline` | Pending the row-cardinality design. |
+| Pandas, RDD, and state-processor boundaries | unsupported | Pandas UDF, RDD, `mapInPandas`, state processors | Use caller-owned streaming code. These APIs introduce opaque execution or user-owned state semantics that do not fit Structure's symbolic transform contract. |
+| Generators | planned | `explode`, `posexplode`, `inline` | V4's row-generator gate supplies the schema/cardinality contract; each admitted generator must separately prove its streaming classification. |
 | Caller-owned lifecycle APIs | unsupported | sources, sinks, triggers, checkpoints, query start/stop, `foreachBatch` | Intentionally owned by the end user; Structure only transforms supplied DataFrames. |
 
 ## Admission Checklist

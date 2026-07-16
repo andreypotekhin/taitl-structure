@@ -59,10 +59,9 @@ target_profile = ">=3.5,<4.1"
 target_variant = "spark-connect"
 ```
 
-The initial release targets ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs. Sprint 09 promotes Spark
-Connect to supported status for completed v1/v2 compiler-visible batch features once runtime evidence, diagnostics, and
-CI or documented verification are in place. V3 adds streaming transformation hardening while callers retain lifecycle
-ownership.
+Ordinary PySpark is the default target. Spark Connect supports completed compiler-visible batch features; streaming
+transforms remain caller-owned ordinary PySpark work. V3 hardens admitted transformation contracts while callers retain
+streaming lifecycle ownership.
 
 Spark Connect must not change public DSL syntax, generated class APIs, transform `run(...)` signatures, generated-code
 review shape, or streaming orchestration semantics. It must also avoid classic-only internals such as SparkContext,
@@ -123,8 +122,7 @@ compiler instead.
 Structure keeps the initial extension surface narrow:
 
 - `@special(type="expr")` helpers for reusable compiler-visible expression logic;
-- explicit `@raw` hooks for arbitrary PySpark DataFrame code at named step
-  boundaries.
+- explicit, source-ordered `@raw` hooks for arbitrary PySpark DataFrame code.
 
 These paths have different guarantees. `@special(type="expr")` logic participates in compileability checks, generated code,
 traceability, and backend capability diagnostics. Hook bodies are opaque: Structure validates the hook

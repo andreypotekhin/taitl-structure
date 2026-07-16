@@ -59,7 +59,7 @@ from structure import *
 
 ## Canonical Source Shape
 
-The canonical v1 source shape is:
+The canonical source shape is:
 
 ```python
 class EnrichOrders(Transform):
@@ -876,8 +876,7 @@ StepPlan
   input schema
   output schema
   operations
-  hooks_before
-  hooks_after
+  hooks
   validate_output
 ```
 

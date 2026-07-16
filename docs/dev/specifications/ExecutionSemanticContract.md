@@ -182,6 +182,8 @@ A new compiled operation is not supported until all of these are true:
 5. The generated emitter can render the recipe or the feature is explicitly unsupported for generated mode.
 6. A parity test proves execution and generated-code execution behavior match for the operation when both modes support it.
 7. Guardrail tests prove compiled paths do not use prohibited PySpark escape hatches.
+8. The feature family has a representative live public concept-parity scenario. It runs through the supported classic
+   PySpark Compose lanes and through Spark Connect only when the capability profile claims Connect support.
 
 Unsupported operations must fail through diagnostics before execution or generated source rendering.
 
@@ -189,6 +191,10 @@ Unsupported operations must fail through diagnostics before execution or generat
 
 The parity matrix is cumulative. Each row must have at least one small deterministic Spark fixture before the operation
 is considered supported.
+
+The compact, user-visible representatives live in `tests/concepts/live_pyspark`; the detailed rows and edge combinations
+remain in specification, user-story, differential, and integration suites. A local skip is useful developer feedback,
+but only a passing Compose lane is release evidence.
 
 ```text
 projection-only

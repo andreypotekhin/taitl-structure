@@ -18,7 +18,7 @@ pytestmark = pytest.mark.integration
 def test_online_and_generated_execution_match_orders_contract_on_live_backend(spark, tmp_path) -> None:
     generated_package = "integration_v1_generated"
     files = render_generated_project(
-        orders.EnrichOrders,
+        orders.transform(),
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         generated_package=generated_package,
         source_schema_modules=orders.source_schema_modules(),

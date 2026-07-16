@@ -2,7 +2,8 @@
 
 This specification records lifecycle and transformation features left outside the caller-owned streaming compatibility
 slice. Source, sink, and lifecycle policy remain caller-owned; transformation features remain unsupported until they
-receive compiler-visible state semantics, diagnostics, tests, and public documentation.
+receive compiler-visible state semantics, diagnostics, tests, and public documentation. The Sprint 18 exceptions are
+specified in [V4CallerOwnedStreamingMigration.md](V4CallerOwnedStreamingMigration.md).
 
 ## Caller-Owned Lifecycle Features
 
@@ -66,7 +67,8 @@ Stateful streaming support is admitted by operation family:
 - windowed aggregations;
 - selected-row helpers such as latest/earliest;
 - ranking, lag/lead, and rolling windows where Spark admits them;
-- outer and semi stream-stream joins.
+- outer and semi stream-stream joins, scheduled by the v4 migration specification;
+- session-window aggregation with a static gap, scheduled by the v4 migration specification.
 
 Each family must define accepted output modes, required watermarks, state growth risks, deterministic tie policy, and
 live streaming tests. Until then, the operation remains `batch_only` for streaming compatibility.
