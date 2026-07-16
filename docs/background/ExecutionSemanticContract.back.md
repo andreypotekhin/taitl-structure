@@ -102,7 +102,7 @@ PySparkValidationRecipe
 PySparkHookRecipe
   name
   timing
-  pass_inputs
+  inputs
   schema_mode
   project_output
 ```
@@ -142,7 +142,7 @@ The shared PySpark execution plan must decide these items once:
 - broadcast and other supported hints;
 - right-side join field projection;
 - validation placement and validation mode;
-- hook input namespace shape;
+- hook binding shape;
 - hook `schema_mode` and `project_output` behavior;
 - final schema projection and validation;
 - compiled-path performance guardrails.
@@ -206,7 +206,7 @@ array higher-order helpers
 map higher-order helpers
 raw hooks
 raw hooks
-pass_inputs=True hook namespace
+explicit hook input bindings
 schema_mode raw hooks
 project_output raw hooks
 intermediate validation

@@ -284,7 +284,7 @@ Rules:
 Hook decorators gain optional target metadata:
 
 ```python
-@raw(lane=orders, target_backend="pyspark")
+@raw(inout=lane(orders) | lane(orders), target_backend="pyspark")
 def clean_with_pyspark(self, *, orders, spark, ctx):
     ...
 ```
@@ -309,7 +309,7 @@ HookDef
   source_order
   source_lanes
   output_lanes
-  pass_inputs
+  selected_inputs
   schema_mode
   project_output
   streaming_safe

@@ -77,7 +77,7 @@ Hooks are opaque. Mark a hook `streaming_safe=True` only when it returns a DataF
 RDD/Pandas conversion, streaming lifecycle APIs, external side effects, and stateful streaming operations.
 
 ```python
-@raw(lane=orders, streaming_safe=True)
+@raw(inout=lane(orders) | lane(orders), streaming_safe=True)
 def keep_valid(self, *, orders, spark, ctx):
     return orders.where(F.col("id").isNotNull())
 ```

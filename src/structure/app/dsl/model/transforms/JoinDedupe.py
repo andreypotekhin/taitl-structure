@@ -25,4 +25,22 @@ class JoinDedupe:
     def _policy(order_by: object, *, direction: str, ties: TiePolicy) -> "JoinDedupe":
         if not isinstance(order_by, Expression):
             raise TypeError(f"JoinDedupe.{direction}_by(order_by=...) requires a Structure expression")
+        if order_by.kind == "order":
+            raise TypeError(
+                f"JoinDedupe.{direction}_by(order_by=...) requires an unordered expression; "
+                f"{direction}_by(...) selects the ordering direction"
+            )
+        if order_by.type is None or order_by.type.name not in {
+            "date",
+            "decimal",
+            "double",
+            "float",
+            "integer",
+            "long",
+            "string",
+            "timestamp",
+        }:
+            raise TypeError(f"JoinDedupe.{direction}_by(order_by=...) requires an orderable scalar expression")
+        if not isinstance(ties, TiePolicy):
+            raise TypeError(f"JoinDedupe.{direction}_by(ties=...) requires a TiePolicy value")
         return JoinDedupe(order_by=cast(Expression, order_by), direction=direction, ties=ties)

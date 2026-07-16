@@ -172,7 +172,7 @@ Config schema rules:
 ## Roadmap
 
 v2 expands execution/generated-code PySpark features and adoption tooling while preserving the same basic compatibility
-contract. Sprint 09 supports completed v1/v2 batch features through the PySpark target variant `spark-connect`.
+contract.
 
 v3 hardens compiler-visible streaming transformations while callers retain streaming lifecycle ownership.
 

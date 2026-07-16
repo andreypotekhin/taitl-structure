@@ -200,7 +200,7 @@ Default rule:
 Opt-in rule:
 
 ```python
-@raw(lane=orders, streaming_safe=True)
+@raw(inout=lane(orders) | lane(orders), streaming_safe=True)
 def remove_negative_totals(self, *, orders, spark, ctx):
     return orders.where(F.col("total") >= 0)
 ```
@@ -212,7 +212,7 @@ def remove_negative_totals(self, *, orders, spark, ctx):
 - The hook does not convert to RDD, Pandas, local Python collections, or external side effects.
 - The hook does not call `readStream`, `writeStream`, `start()`, or query lifecycle APIs.
 - The hook does not introduce stateful streaming operations outside this reference.
-- If `pass_inputs=True`, any joined or consulted input DataFrames are static unless a later spec declares otherwise.
+- Any extra input selected by a hook binding must be static unless a later specification declares otherwise.
 
 The checker does not need to parse hook bodies in v1. It should validate the hook signature and record that
 streaming-safe hooks are trusted boundaries in traceability and diagnostics.

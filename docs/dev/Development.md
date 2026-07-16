@@ -46,5 +46,23 @@ Main: [Testing.md](Testing.md)
 
 Testing guidelines: [Style.md](Style.md)
 
+## Support and Contributions
+
+We use a contributor-led support model suited to a developer audience. A code-related issue must include all of the
+following:
+
+- A minimal runnable code example, including the dependency and runtime versions needed to run it.
+- The complete observed output, including an error and traceback when present.
+- The expected output or behavior.
+- A pull request with the proposed fix and a regression test derived from the example.
+
+The issue establishes a reproducible contract; the pull request makes the remedy reviewable and testable. Requests
+that cannot be reproduced or do not include a proposed fix remain incomplete. Non-code questions, documentation
+corrections, and feature proposals do not need a runnable reproduction, but should state their use case precisely.
+
+For work tracked inside this repository, create an [issue record](issues/Readme.md). The record is an automation-ready
+copy of the report and points to its pull request. Do not put credentials, customer data, or other sensitive material
+in either artifact.
+
 ## Troubleshooting
 [Troubleshooting.md](Troubleshooting.md)

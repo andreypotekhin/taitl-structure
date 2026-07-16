@@ -4,6 +4,17 @@
 
 Use one- or two-week iterations. The early compiler work benefits from short feedback cycles and demonstrable vertical slices.
 
+## Version Hardening Sprint
+
+Every version (`vN`) must end with a dedicated hardening sprint. Schedule it when the version is planned and place it
+after every feature-delivery sprint in that version; do not treat release evidence and documentation closure as a
+substitute for the sprint.
+
+The hardening sprint admits no new feature scope. It closes release-blocking defects and verifies the version's public
+contract through regression, online/generated parity, supported-target compatibility, generated-artifact freshness,
+documentation, diagnostics, and performance-baseline checks. Its charter must name the version exit criteria, the
+release evidence to collect, and deferred follow-up work discovered during hardening.
+
 ## Sprint Planning Inputs
 
 Each sprint should include:

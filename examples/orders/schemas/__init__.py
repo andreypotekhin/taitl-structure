@@ -15,3 +15,4 @@ from examples.orders.schemas.order import (
 from examples.orders.schemas.product import BlockedProduct, Product, ProductBase
 from examples.orders.schemas.promotion import Promotion
 from examples.orders.schemas.shipment import Shipment
+from examples.orders.schemas.v3 import V3OrderDetails, V3OrderProjection, V3OrderSource

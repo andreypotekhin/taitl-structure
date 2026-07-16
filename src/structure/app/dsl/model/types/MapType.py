@@ -12,6 +12,8 @@ class MapType(StructureType):
     value_contains_null: bool
 
     def __init__(self, key: StructureType, value: StructureType, *, value_contains_null: bool = True) -> None:
+        if not isinstance(value_contains_null, bool):
+            raise TypeError("MapType value_contains_null must be a Boolean")
         if _contains_map(key):
             raise ValueError("MapType key cannot contain another MapType")
         object.__setattr__(self, "name", "map")

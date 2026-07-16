@@ -20,7 +20,7 @@ class NormalizeBase(Transform):
     orders = input(OrderRaw)
     normalized = lane(OrderNormalized)
 
-    @transform(output=normalized)
+    @step(output=normalized)
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         return OrderNormalized.project(order)(
             customer_id=lower(trim(order.customer_id)),
@@ -57,7 +57,7 @@ step:
 class StrictPublishOrders(NormalizeBase):
     published = output(OrderPublished)
 
-    @transform(output=NormalizeBase.normalized)
+    @step(output=NormalizeBase.normalized)
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         normalized = super().normalize(order)
         where(normalized.customer_id.is_not_null())

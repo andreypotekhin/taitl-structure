@@ -2205,6 +2205,261 @@
       ],
       "module": "examples.orders.schemas.common",
       "name": "TenantKey"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "external_id",
+          "name": "external_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "region",
+          "name": "region",
+          "nullable": true,
+          "type": "string"
+        }
+      ],
+      "module": "examples.orders.schemas.v3",
+      "name": "V3OrderDetails"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "is_candidate",
+          "name": "is_candidate",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "column": "name_contains_order",
+          "name": "name_contains_order",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "column": "name_like_order",
+          "name": "name_like_order",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "column": "name_ilike_order",
+          "name": "name_ilike_order",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "column": "name_matches_order",
+          "name": "name_matches_order",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "column": "external_id",
+          "name": "external_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "quantity",
+          "name": "quantity",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "column": "safe_quantity",
+          "name": "safe_quantity",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "column": "name_prefix",
+          "name": "name_prefix",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "name_words",
+          "name": "name_words",
+          "nullable": true,
+          "type": "array<string!>"
+        },
+        {
+          "column": "name_slug",
+          "name": "name_slug",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "name_digits",
+          "name": "name_digits",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "name_length",
+          "name": "name_length",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "column": "name_title",
+          "name": "name_title",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "name_reversed",
+          "name": "name_reversed",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "name_translated",
+          "name": "name_translated",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "order_position",
+          "name": "order_position",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "column": "name_distance",
+          "name": "name_distance",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "column": "display_name",
+          "name": "display_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "next_day",
+          "name": "next_day",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "days_since_booking",
+          "name": "days_since_booking",
+          "nullable": true,
+          "type": "integer"
+        },
+        {
+          "column": "booking_month",
+          "name": "booking_month",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "absolute_amount",
+          "name": "absolute_amount",
+          "nullable": true,
+          "type": "decimal(11,2)"
+        },
+        {
+          "column": "rounded_amount",
+          "name": "rounded_amount",
+          "nullable": true,
+          "type": "decimal(10,0)"
+        },
+        {
+          "column": "ceiling_amount",
+          "name": "ceiling_amount",
+          "nullable": true,
+          "type": "decimal(11,0)"
+        },
+        {
+          "column": "floor_amount",
+          "name": "floor_amount",
+          "nullable": true,
+          "type": "decimal(11,0)"
+        },
+        {
+          "column": "score_is_nan",
+          "name": "score_is_nan",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "recency_rank",
+          "name": "recency_rank",
+          "nullable": true,
+          "type": "long"
+        }
+      ],
+      "module": "examples.orders.schemas.v3",
+      "name": "V3OrderProjection"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "name",
+          "name": "name",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "raw_quantity",
+          "name": "raw_quantity",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "amount",
+          "name": "amount",
+          "nullable": true,
+          "type": "decimal(11,2)"
+        },
+        {
+          "column": "score",
+          "name": "score",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "booked_on",
+          "name": "booked_on",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "recorded_at",
+          "name": "recorded_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "details",
+          "name": "details",
+          "nullable": true,
+          "type": "V3OrderDetails"
+        }
+      ],
+      "module": "examples.orders.schemas.v3",
+      "name": "V3OrderSource"
     }
   ],
   "transforms": [
@@ -2849,6 +3104,53 @@
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/rowset_join.py",
         "traceability": "traceability/transforms/rowset_join.RowsetJoinExamples.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "orders",
+          "ordinal": 0,
+          "schema": "V3OrderSource"
+        }
+      ],
+      "name": "V3OrderFeatures",
+      "outputs": [
+        {
+          "name": "projected",
+          "ordinal": 0,
+          "schema": "V3OrderProjection"
+        }
+      ],
+      "source": "examples.orders.transforms.v3.V3OrderFeatures",
+      "step_methods": [
+        {
+          "input_lane": "orders",
+          "input_schema": "V3OrderSource",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "row",
+              "schema": "V3OrderSource",
+              "source": "orders"
+            }
+          ],
+          "name": "project",
+          "output_lane": "projected",
+          "output_schema": "V3OrderProjection",
+          "results": [
+            {
+              "frame": "projected",
+              "lane": "projected",
+              "schema": "V3OrderProjection"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/v3.py",
+        "traceability": "traceability/transforms/v3.V3OrderFeatures.json"
       }
     }
   ]

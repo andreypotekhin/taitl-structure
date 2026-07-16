@@ -101,7 +101,7 @@ Generated code should be explicit and Spark-visible. It should:
 - validate intermediate schemas by default
 - validate outputs
 - call hooks only where hooks exist
-- pass original named inputs to hooks only when `pass_inputs=True`
+- pass each DataFrame explicitly selected by the hook binding
 - avoid UDFs in compiled paths, unless user opt-in
 - avoid `collect`, `toPandas`, and `rdd` in compiled paths
 - include section comments for source step methods

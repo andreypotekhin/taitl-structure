@@ -163,7 +163,7 @@ body can rely on one backend's DataFrame API.
 Optional hook target declaration:
 
 ```python
-@raw(lane=orders, target_backend="pyspark")
+@raw(inout=lane(orders) | lane(orders), target_backend="pyspark")
 def remove_negative_totals(self, *, orders, spark, ctx):
     return orders.where(F.col("total") >= 0)
 ```
@@ -232,7 +232,7 @@ HookDef
   source_order
   source_lanes
   output_lanes
-  pass_inputs
+  inputs
   schema_mode
   project_output
   streaming_safe
@@ -257,10 +257,10 @@ Hook:
   EnrichOrders.compare_to_raw
 
 Problem:
-  Hooks with pass_inputs=True must declare keyword-only inputs.
+  Hooks must declare every selected DataFrame as a keyword-only parameter.
 
 Use:
-  def compare_to_raw(self, *, orders, inputs, spark, ctx):
+  def compare_to_raw(self, *, orders, customers, spark, ctx):
       return orders
 
 See docs/background/HookSemantics.back.md

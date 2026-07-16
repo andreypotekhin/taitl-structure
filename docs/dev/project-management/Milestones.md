@@ -311,3 +311,5 @@ Exit Criteria:
   dependency order.
 - Row generators are admitted only after an explicit schema-and-cardinality design proves their output shape safe.
 - Loading, storage, actions, orchestration, and alternative backends remain outside the milestone.
+- The final v4 hardening sprint passes the release evidence, regression, parity, compatibility, generated-artifact,
+  documentation, diagnostics, and performance-baseline checks without admitting new feature scope.

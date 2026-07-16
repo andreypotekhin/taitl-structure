@@ -127,7 +127,7 @@ class EnrichOrders(Transform):
             total=to_decimal(order.total, precision=12, scale=2),
         )
 
-    @raw(lane=orders)
+    @raw(inout=lane(orders) | lane(orders))
     def remove_negative_totals(self, *, orders, spark, ctx):
         from pyspark.sql import functions as F
 

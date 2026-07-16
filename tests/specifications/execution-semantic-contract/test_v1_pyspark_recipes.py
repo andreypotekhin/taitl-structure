@@ -87,8 +87,8 @@ def test_v1_pyspark_recipe_records_expressions_and_projection_order() -> None:
         "shipping",
         "is_large",
     ]
-    assert projection["net_total"].kind == "sub"
-    assert [argument.kind for argument in projection["net_total"].args] == ["call", "call"]
+    assert projection["net_total"].kind == "cast"
+    assert [argument.kind for argument in projection["net_total"].args[0].args] == ["call", "call"]
     assert projection["is_large"].kind == "gt"
     assert projection["is_large"].args[1].data == {"value": 1000}
 

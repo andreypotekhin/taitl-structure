@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, cast
 
 import pytest
 
@@ -37,7 +37,7 @@ def test_special_udf_records_optimizer_warning_by_default() -> None:
         rows = input(Raw)
         published = output(Published)
 
-        @special(type="udf", return_type=types.string())
+        @special(type="udf", return_type=types.string(), nullable=False)
         def clean(value: Any):
             return value.strip()
 
@@ -55,7 +55,7 @@ def test_special_udf_warning_can_be_disabled_by_compiler_config() -> None:
         rows = input(Raw)
         published = output(Published)
 
-        @special(type="udf", return_type=types.string())
+        @special(type="udf", return_type=types.string(), nullable=False)
         def clean(value: Any):
             return value.strip()
 
@@ -86,12 +86,37 @@ def test_special_udf_requires_return_type_or_supported_annotation() -> None:
     assert "return_type" in raised.value.diagnostic.problem_text()
 
 
+@pytest.mark.parametrize("nullable", [1, "true", None])
+def test_special_udf_requires_a_boolean_nullable_declaration(nullable: object) -> None:
+    with pytest.raises(TypeError, match=r'@special\(type="udf"\) nullable must be a Boolean'):
+        special(type="udf", nullable=nullable)(lambda value: value)
+
+
+@pytest.mark.parametrize("option", ["streaming_compatible", "validate_intermediate"])
+@pytest.mark.parametrize("value", [1, "true", None])
+def test_transform_requires_boolean_class_options(option: str, value: object) -> None:
+    with pytest.raises(TypeError, match=rf"{option} must be a Boolean"):
+        transform(**{option: value})(type("InvalidOptions", (Transform,), {}))
+
+
+@pytest.mark.parametrize("option", ["project_output", "streaming_safe"])
+@pytest.mark.parametrize("value", [1, "true", None])
+def test_raw_requires_boolean_options(option: str, value: object) -> None:
+    with pytest.raises(TypeError, match=rf"@raw\({option}=\.\.\.\) requires a Boolean"):
+        raw(**cast(Any, {option: value}))(lambda: None)
+
+
+def test_raw_requires_a_schema_mode() -> None:
+    with pytest.raises(TypeError, match=r"@raw\(schema_mode=\.\.\.\) requires a SchemaMode value"):
+        raw(schema_mode=cast(Any, "strict"))(lambda: None)
+
+
 def test_special_udf_renders_generated_pyspark_udf_call() -> None:
     class Publish(Transform):
         rows = input(Raw)
         published = output(Published)
 
-        @special(type="udf", return_type=types.string())
+        @special(type="udf", return_type=types.string(), nullable=False)
         def clean(value: Any):
             return value.strip()
 
@@ -111,7 +136,7 @@ def test_special_udf_traceability_marks_python_body_opaque() -> None:
         rows = input(Raw)
         published = output(Published)
 
-        @special(type="udf", return_type=types.string())
+        @special(type="udf", return_type=types.string(), nullable=False)
         def clean(value: Any):
             return value.strip()
 

@@ -34,7 +34,7 @@ def test_v1_expression_renderer_renders_arithmetic_and_comparison() -> None:
 
     assert PySpark.render.expression()(projection["net_total"], scope_aliases={"orders": "orders"}) == (
         '(F.coalesce(F.col("orders.total").cast("decimal(12,2)"), F.lit(0)) - '
-        'F.coalesce(F.col("orders.discount").cast("decimal(12,2)"), F.lit(0)))'
+        'F.coalesce(F.col("orders.discount").cast("decimal(12,2)"), F.lit(0))).cast(\'decimal(12,2)\')'
     )
     assert PySpark.render.expression()(projection["is_large"], scope_aliases={"orders": "orders"}) == (
         '(F.coalesce(F.col("orders.total").cast("decimal(12,2)"), F.lit(0)) > F.lit(1000))'

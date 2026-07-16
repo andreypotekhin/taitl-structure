@@ -45,7 +45,7 @@ class StreamingScalarUdf(Transform):
     rows = input(StreamUdfRaw, streaming=StreamingMode.YES)
     clean = output(StreamUdfClean)
 
-    @special(type="udf", return_type=types.string())
+    @special(type="udf", return_type=types.string(), nullable=False)
     def normalize(value: Any):
         return value.strip()
 

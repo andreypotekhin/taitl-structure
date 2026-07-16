@@ -542,17 +542,16 @@ selected-row dedupe when a specific representative row matters.
 
 Hooks are explicit runtime escape hatches and are called on the source transform instance.
 
-Generated call without input namespace:
+Generated call for a single selected lane:
 
 ```python
 orders = self._impl.remove_negative_totals(orders=orders, spark=self.spark, ctx=self.ctx)
 ```
 
-Generated call with input namespace:
+Generated call with an additional selected input:
 
 ```python
-inputs = HookInputs(orders=orders, customers=customers)
-orders = self._impl.compare_to_raw(orders=orders, inputs=inputs, spark=self.spark, ctx=self.ctx)
+orders = self._impl.compare_to_raw(orders=orders, customers=customers, spark=self.spark, ctx=self.ctx)
 ```
 
 Rules:
@@ -561,9 +560,8 @@ Rules:
 - Raw hooks render at their source-order boundary.
 - Adjacent raw hooks follow source order.
 - Hooks always receive keyword arguments.
-- Generate a read-only `HookInputs` namespace only when at least one hook declares `pass_inputs=True`.
-- Build the hook input namespace once near the start of `run(...)` when needed.
-- The namespace contains original declared input DataFrames, not intermediate DataFrames.
+- Pass every DataFrame selected by the hook binding as a keyword argument.
+- An `input(...)` selector passes the original declared input; a `lane(...)` selector passes the current lane.
 - Hook return values become the new selected lane DataFrame.
 - Hook output validation and optional projection follow the hook metadata.
 
@@ -575,27 +573,6 @@ generated `run(...)`, removes `@raw`, and calls the copied method at the same bo
 imported solely for embedded hooks. Supported dependencies are local imports, parameters, local values, builtins, and
 `self.spark`/`self.ctx`; source globals, closures, `super()`, and other instance state fail with `GEN-E0903`. The body
 remains an optimizer-opaque hook. Python UDFs require delegated source implementation unless `embed_udfs` is selected.
-
-## HookInputs Namespace
-
-Generated `HookInputs` may be imported from generated runtime support or emitted into a runtime support module.
-
-Required behavior:
-
-```python
-inputs.orders
-inputs.customers
-```
-
-Rules:
-
-- Attributes are read-only after construction.
-- Unknown attributes raise normal `AttributeError`.
-- The namespace is lightweight and does not copy DataFrames.
-- It must not expose mutation helpers such as `__setitem__`.
-- Its constructor preserves input declaration order for deterministic `repr` if a `repr` is implemented.
-
-Using a frozen dataclass, named tuple, or small custom class is acceptable. The public API is attribute access.
 
 ## Validation Placement
 

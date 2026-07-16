@@ -78,8 +78,8 @@ def test_v1_symbolic_plan_records_expression_operators() -> None:
     normalize = plan.steps[0]
     projection = {assignment.field.name: assignment.expression for assignment in normalize.projection}
 
-    assert projection["net_total"].kind == "sub"
-    assert [argument.kind for argument in projection["net_total"].args] == ["call", "call"]
+    assert projection["net_total"].kind == "cast"
+    assert [argument.kind for argument in projection["net_total"].args[0].args] == ["call", "call"]
     assert projection["is_large"].kind == "gt"
     assert projection["is_large"].args[1].kind == "literal"
     assert projection["is_large"].args[1].data == {"value": 1000}

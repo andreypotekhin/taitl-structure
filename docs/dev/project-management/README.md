@@ -37,6 +37,7 @@ project-management/
     Sprint15_V3CollectionHelperParity.md
     Sprint16_V3StreamingOrchestration.md
     Sprint17_V4TransformationApiCoverage.md
+    SprintV4_Hardening.md
     done/
       Sprint12_V3JoinParityHardening.md
       Sprint13_V3AggregationParity.md
@@ -106,3 +107,12 @@ streaming lifecycle ownership with callers. The completed v3 sprint sequence is:
 V4 begins with **Sprint 17: transformation API coverage foundation**, then expands predictable PySpark transformation
 coverage across expressions, nested values, relational operations, joins, aggregations, windows, and collections.
 Loading, storage, and orchestration remain caller-owned.
+
+## Version Hardening Cadence
+
+Every version ends with a dedicated hardening sprint after its feature-delivery sprints. The sprint admits no new
+feature scope; it resolves release blockers and collects release evidence for regression, parity, compatibility,
+generated artifacts, documentation, diagnostics, and performance baselines.
+
+v4 is scheduled to close with the [Final v4 Hardening Sprint](sprints/SprintV4_Hardening.md), after all of its feature
+sprints and before the v4 release is cut.

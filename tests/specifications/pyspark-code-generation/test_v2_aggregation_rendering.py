@@ -322,6 +322,48 @@ def test_having_rejects_pre_aggregate_input_field_reads() -> None:
     assert "rows" in diagnostic.problem
 
 
+def test_having_rejects_incompatible_comparison_operands() -> None:
+    class Total(Schema):
+        customer_id = field.string(nullable=False)
+        order_count = field.long(nullable=False)
+
+    @transform
+    class BadHaving(Transform):
+        rows = input(RawSale)
+        totals = output(Total)
+
+        def summarize(self, row: RawSale) -> Total:
+            group_by(customer_id=row.customer_id).having(lambda total: total.order_count == "one")
+            return Total(customer_id=row.customer_id, order_count=count())
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(BadHaving)
+
+    assert raised.value.diagnostic.code == "DSL-E0402"
+    assert "compatible Structure expression types" in raised.value.diagnostic.problem
+
+
+def test_aggregate_filter_rejects_incompatible_comparison_operands() -> None:
+    class Total(Schema):
+        customer_id = field.string(nullable=False)
+        order_count = field.long(nullable=True)
+
+    @transform
+    class BadAggregateFilter(Transform):
+        rows = input(RawSale)
+        totals = output(Total)
+
+        def summarize(self, row: RawSale) -> Total:
+            group_by(customer_id=row.customer_id)
+            return Total(customer_id=row.customer_id, order_count=count(where=row.quantity == "one"))
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(BadAggregateFilter)
+
+    assert raised.value.diagnostic.code == "DSL-E0402"
+    assert "compatible Structure expression types" in raised.value.diagnostic.problem
+
+
 def test_statement_having_binds_to_aggregate_output_scope() -> None:
     class Total(Schema):
         customer_id = field.string(nullable=False)

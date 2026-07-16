@@ -2,7 +2,7 @@
 
 ## Purpose
 The streaming compatibility app classifies whether a lowered transform can run safely in a streaming context under
-the current v1 contract. It is a compileability check, not the future streaming orchestration runtime.
+the current contract. It is a compileability check, not the future streaming orchestration runtime.
 
 ## Dependency Exchanges
 The app consumes `PySparkExecutionPlan` recipes plus join, hook, and expression metadata, then returns a

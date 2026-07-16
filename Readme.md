@@ -409,6 +409,17 @@ Read QuickRef: [QuickRef.md](docs/QuickRef.md)
 
 Development overview: [Development.md](docs/dev/Development.md)
 
+## Support and Contributions
+
+Structure is built for engineers. For a code-related support request, open an issue with a minimal, runnable example
+and the complete output it produces, including the error and traceback where applicable. Explain the expected result
+as well. Descriptions without a reproducible example cannot be diagnosed reliably.
+
+Code-related issues also need an accompanying pull request that contains the proposed fix and a regression test. The
+example gives maintainers a shared starting point; the pull request turns that knowledge into a reviewable,
+verifiable improvement. See [developer support](docs/dev/Development.md#support-and-contributions) for the full
+submission contract.
+
 ## License
 
 LGPL-2.1 + Ethical Use Policy

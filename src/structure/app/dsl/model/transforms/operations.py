@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date, datetime
+from decimal import Decimal
 from functools import cache as cached
 from math import isfinite
 from re import fullmatch
@@ -509,7 +510,7 @@ def window(
         return Expression(
             kind="time_window",
             type=StructType(TimeWindow),
-            nullable=False,
+            nullable=event_time.nullable,
             data={"duration": duration, "slide": resolved_slide, "start": resolved_start},
             args=(event_time,),
         )
@@ -769,6 +770,8 @@ def _selected_rows(direction: str, order_by: object, *, partition_by: object, ti
     if ties is not TiePolicy.ERROR:
         raise TypeError(f"{call} currently supports ties=TiePolicy.ERROR only")
     order = _orderable_expression(order_by, f"{call} order_by")
+    if order.kind == "order":
+        raise TypeError(f"{call} order_by must be an unordered expression; {direction}_by(...) selects the direction")
     partitions = _partition_by(partition_by, call=call)
     _context(call).operations.append(
         OperationPlan.selected_rows_operation(
@@ -947,7 +950,7 @@ def _boolean_option(call: str, name: str, value: object) -> None:
 def _window_default(call: str, value: Expression, default: object) -> None:
     if default is None:
         return
-    if not isinstance(default, (bool, int, float, str, date, datetime)):
+    if not isinstance(default, (bool, int, float, str, Decimal, date, datetime)):
         raise TypeError(f"{call} default must be a Python scalar literal or None")
     default_type = _typed_type(f"{call} default", literal(default))
     value_type = _typed_type(f"{call} value", value)

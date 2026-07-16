@@ -10,6 +10,7 @@ from structure.app.cli.model.DiscoveredStructureProject import DiscoveredStructu
 from structure.app.configuration.model.StructureConfig import StructureConfig
 from structure.app.docs.api import Docs
 from structure.app.dsl.model.schemas.Schema import Schema
+from structure.app.target.capabilities.api import Capabilities
 from structure.app.target.pyspark.api import PySpark
 
 ROOT = Path(".")
@@ -45,10 +46,12 @@ def render_orders_example() -> dict[str, str]:
         from examples.orders.schemas.product import BlockedProduct, Product, ProductBase
         from examples.orders.schemas.promotion import Promotion
         from examples.orders.schemas.shipment import Shipment
+        from examples.orders.schemas.v3 import V3OrderDetails, V3OrderProjection, V3OrderSource
         from examples.orders.transforms.adv_analytics import AdvancedOrderAnalytics
         from examples.orders.transforms.analytics import OrderAnalytics
         from examples.orders.transforms.order import EnrichOrders
         from examples.orders.transforms.rowset_join import RowsetJoinExamples
+        from examples.orders.transforms.v3 import V3OrderFeatures
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
             "examples.orders.schemas.adv_analytics": [
@@ -78,6 +81,7 @@ def render_orders_example() -> dict[str, str]:
             "examples.orders.schemas.product": [ProductBase, Product, BlockedProduct],
             "examples.orders.schemas.promotion": [Promotion],
             "examples.orders.schemas.shipment": [Shipment],
+            "examples.orders.schemas.v3": [V3OrderDetails, V3OrderSource, V3OrderProjection],
         }
         files = {}
         transforms = (
@@ -85,11 +89,15 @@ def render_orders_example() -> dict[str, str]:
             (RowsetJoinExamples, "examples.orders.transforms.rowset_join.RowsetJoinExamples"),
             (OrderAnalytics, "examples.orders.transforms.analytics.OrderAnalytics"),
             (AdvancedOrderAnalytics, "examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics"),
+            (V3OrderFeatures, "examples.orders.transforms.v3.V3OrderFeatures"),
         )
         for transform_class, source_transform in transforms:
+            capabilities = (
+                Capabilities.resolve()(target_profile=">=4.0,<4.1") if transform_class is V3OrderFeatures else None
+            )
             files.update(
                 PySpark.render.project()(
-                    PySpark.plan.lower()(compile_transform(transform_class)),
+                    PySpark.plan.lower()(compile_transform(transform_class), capabilities=capabilities),
                     source_transform=source_transform,
                     generated_package="examples.structure_generated.orders",
                     source_schema_modules=schema_modules,

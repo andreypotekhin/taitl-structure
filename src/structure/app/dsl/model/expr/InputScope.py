@@ -152,6 +152,10 @@ def lookup_join(
         relation = cast(Relation, _infer_relation("lookup_join", context, on))
     if not isinstance(relation, InputScope):
         raise TypeError("lookup_join(relation, ...) requires a Structure relation parameter or transform input")
+    if not isinstance(how, Join):
+        raise TypeError("lookup_join(how=...) requires a Join value")
+    if hint is not None and not isinstance(hint, JoinHint):
+        raise TypeError("lookup_join(hint=...) requires a JoinHint value")
     if dedupe is not None and not isinstance(dedupe, JoinDedupe):
         raise TypeError("lookup_join(dedupe=...) requires a JoinDedupe policy")
 

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime
+from decimal import Decimal
 from re import fullmatch
 
 from structure.app.dsl.model.expr.Expression import Expression
@@ -40,6 +41,9 @@ def literal(value: object) -> Expression:
     if isinstance(value, float):
         return Expression(kind="literal", type=DoubleType(), nullable=False, data={"value": value})
 
+    if isinstance(value, Decimal):
+        return Expression(kind="literal", type=_decimal_literal_type(value), nullable=False, data={"value": value})
+
     if isinstance(value, datetime):
         return Expression(kind="literal", type=TimestampType(), nullable=False, data={"value": value})
 
@@ -50,6 +54,19 @@ def literal(value: object) -> Expression:
         return Expression(kind="literal", type=None, nullable=True, data={"value": None})
 
     return Expression(kind="literal", type=None, nullable=False, data={"value": value})
+
+
+def _decimal_literal_type(value: Decimal) -> DecimalType:
+    if not value.is_finite():
+        raise TypeError("Decimal literals must be finite")
+    digits = len(value.as_tuple().digits)
+    exponent = value.as_tuple().exponent
+    assert isinstance(exponent, int)
+    scale = max(-exponent, 0)
+    precision = max(digits + max(exponent, 0), scale)
+    if precision > 38:
+        raise TypeError("Decimal literals must not exceed Spark precision 38")
+    return DecimalType(precision=precision, scale=scale)
 
 
 def lower(value: object) -> Expression:
@@ -288,11 +305,13 @@ def isnan(value: object) -> Expression:
 
 
 def to_decimal(value: object, *, precision: int, scale: int) -> Expression:
-    argument = literal(value)
+    argument = _decimal_argument(value)
     return Expression(
         kind="call",
         type=DecimalType(precision=precision, scale=scale),
-        nullable=argument.nullable,
+        # Parsing and narrowing can fail for a present value, including values
+        # outside the requested Decimal domain.
+        nullable=True,
         data={"function": "to_decimal", "precision": precision, "scale": scale},
         args=(argument,),
     )
@@ -318,6 +337,8 @@ def event_time_between(left: object, right: object, *, upper: str, lower: str = 
         raise TypeError("event_time_between(...) requires Timestamp Structure expressions")
     lower = _nonnegative_interval(lower, "event_time_between(lower=...)")
     upper = _nonnegative_interval(upper, "event_time_between(upper=...)")
+    if _interval_microseconds(lower) > _interval_microseconds(upper):
+        raise TypeError("event_time_between(...) lower must not exceed upper")
     return Expression(
         kind="event_time_between",
         type=BooleanType(),
@@ -386,12 +407,45 @@ def _numeric_argument(value: object, call: str) -> Expression:
     return argument
 
 
+def _decimal_argument(value: object) -> Expression:
+    argument = literal(value)
+    if argument.type is None and argument.nullable:
+        return argument
+    if isinstance(argument.type, (StringType, IntegerType, LongType, FloatType, DoubleType, DecimalType, BooleanType)):
+        return argument
+    raise TypeError("to_decimal(...) requires a String, Boolean, or numeric Structure expression")
+
+
 def _nonnegative_interval(value: object, call: str) -> str:
     if not isinstance(value, str) or not fullmatch(
         r"\s*\d+(?:\.\d+)?\s+(?:microseconds?|milliseconds?|seconds?|minutes?|hours?|days?|weeks?)\s*", value
     ):
         raise TypeError(f"{call} requires a non-negative fixed Spark interval string, such as '10 minutes'")
     return value.strip()
+
+
+def _interval_microseconds(value: str) -> Decimal:
+    match = fullmatch(r"(\d+(?:\.\d+)?)\s+(\w+)", value)
+    if match is None:
+        raise AssertionError("validated interval text must have an amount and unit")
+    amount, unit = match.groups()
+    multiplier = {
+        "microsecond": 1,
+        "microseconds": 1,
+        "millisecond": 1_000,
+        "milliseconds": 1_000,
+        "second": 1_000_000,
+        "seconds": 1_000_000,
+        "minute": 60_000_000,
+        "minutes": 60_000_000,
+        "hour": 3_600_000_000,
+        "hours": 3_600_000_000,
+        "day": 86_400_000_000,
+        "days": 86_400_000_000,
+        "week": 604_800_000_000,
+        "weeks": 604_800_000_000,
+    }[unit]
+    return Decimal(amount) * multiplier
 
 
 def _date_trunc_unit(value: object) -> str:
@@ -447,7 +501,7 @@ def _common_numeric_type(call: str, types: tuple[StructureType, ...]) -> Structu
             raise TypeError(f"{call} requires compatible types; received {names}")
         scale = max(type.scale for type in decimals)
         integer_digits = max(
-            type.precision - type.scale if isinstance(type, DecimalType) else 19 if isinstance(type, LongType) else 10
+            type.precision - type.scale if isinstance(type, DecimalType) else 20 if isinstance(type, LongType) else 10
             for type in types
         )
         precision = integer_digits + scale

@@ -22,6 +22,14 @@ Output new suggestions to /docs/dev/suggestions/.
 Focus each suggestion on a specific topic, so it may be implemented in parallel with other tasks.
 Follow 'Documenting' subsections in Agents.md for guidance on item id and formatting.
 
+## Issue Records
+
+Before selecting discretionary improvement work, inspect open records in [../issues/](../issues/Readme.md). An issue
+record is actionable only when it includes a runnable reproduction, observed output, expected behavior, and a pull
+request with a proposed fix and regression test. Treat those fields as the contract for diagnosis and verification;
+do not infer omitted behavior. Update the record when evidence changes and move it to `issues/done/` only after the
+linked pull request is merged or its fix is otherwise accepted.
+
 ### Mastermind role
 
 See 'Mastermind role' section in 'Team roles' of Agents.md
@@ -306,6 +314,5 @@ Automation instructions
 Limits
 
 - Only consider stable parts of the codebase that are not under active development.
-
 
 

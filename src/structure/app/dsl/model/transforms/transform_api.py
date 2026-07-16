@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import inspect
+from re import fullmatch
 from typing import Any, Callable, Iterable, TypeVar, cast, overload
 
 from structure.app.compiler.ir.model.JoinPlan import JoinPlan
@@ -22,6 +23,7 @@ from structure.app.dsl.model.transforms.SpecialFunction import SpecialFunction
 from structure.app.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.dsl.model.types.BooleanType import BooleanType
+from structure.app.dsl.model.types.TimestampType import TimestampType
 
 Projected = TypeVar("Projected", bound=Schema)
 
@@ -131,13 +133,15 @@ def special(function: Callable | None = None, *, type: str, **kwargs):
         unknown_options = set(kwargs) - {"return_type", "nullable"}
         if unknown_options:
             raise TypeError(f"@special(type=\"udf\") got unknown option(s): {', '.join(sorted(unknown_options))}")
+        if "nullable" in kwargs and not isinstance(kwargs["nullable"], bool):
+            raise TypeError("@special(type=\"udf\") nullable must be a Boolean")
 
     def decorate(target: Callable) -> SpecialFunction:
         return SpecialFunction(
             target,
             type=type,
             return_type=kwargs.get("return_type"),
-            nullable=bool(kwargs.get("nullable", True)),
+            nullable=kwargs.get("nullable", True),
         )
 
     if function is None:
@@ -225,6 +229,9 @@ def _normalize_method_options(kwargs: dict[str, object]) -> dict[str, object]:
 
 def _normalize_transform_options(kwargs: dict[str, object]) -> dict[str, object]:
     options = dict(kwargs)
+    for name in _CLASS_OPTIONS & set(options):
+        if not isinstance(options[name], bool):
+            raise TypeError(f"{name} must be a Boolean")
     for name in _STEP_METHOD_OPTIONS & set(options):
         options[name] = _step_method_option(name, options[name])
     return options
@@ -330,6 +337,11 @@ def raw(
     target_backend: str | Iterable[str] | None = None,
     target_platform: str | None = None,
 ):
+    if not isinstance(schema_mode, SchemaMode):
+        raise TypeError("@raw(schema_mode=...) requires a SchemaMode value")
+    for name, value in (("project_output", project_output), ("streaming_safe", streaming_safe)):
+        if not isinstance(value, bool):
+            raise TypeError(f"@raw({name}=...) requires a Boolean")
     if inout is not None and (input is not None or output is not None):
         raise TypeError("@raw(inout=...) cannot combine with input=... or output=...")
     inputs = _method_declarations(
@@ -415,8 +427,15 @@ def watermark(field: object, *, delay: str = "10 minutes") -> None:
     expression = literal(field)
     if expression.kind != "field":
         raise TypeError("watermark(...) requires a Structure field expression")
-    if not isinstance(delay, str) or not delay.strip():
-        raise TypeError("watermark(delay=...) requires a non-empty string")
+    if not isinstance(expression.type, TimestampType):
+        raise TypeError("watermark(...) requires a Timestamp Structure field expression")
+    if not isinstance(delay, str) or not fullmatch(
+        r"\s*\d+(?:\.\d+)?\s+(?:microseconds?|milliseconds?|seconds?|minutes?|hours?|days?|weeks?)\s*", delay
+    ):
+        raise TypeError(
+            "watermark(delay=...) requires a non-negative fixed Spark interval string, such as '10 minutes'"
+        )
+    delay = delay.strip()
     context.operations.append(OperationPlan.watermark_operation(WatermarkPlan(expression=expression, delay=delay)))
 
 

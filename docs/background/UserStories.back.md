@@ -226,16 +226,16 @@ narrower use cases and roadmap features.
 
 ## 16. Hooks
 
-- + As a developer, I can attach a hook to a step method using `@raw(lane=lane)` or
-  `@raw(lane=lane)` so that custom PySpark code is tied to a concrete method.
+- + As a developer, I can attach a source-ordered hook using `@raw(inout=lane(orders) | lane(orders))` so that custom
+  PySpark code is tied to a concrete method.
 - + As a developer, I can write hook methods with a selected lane parameter such as
   `def hook(self, *, orders, spark, ctx)` so that hook parameters are minimal and stable.
-- + As a developer, I can opt a hook into original input access with `pass_inputs=True` so that unusual validation or
+- + As a developer, I can select original inputs with `input(...)` in a hook binding so that unusual validation or
   lookup logic can use named source DataFrames.
 - + As a developer, I can use arbitrary PySpark DataFrame code inside hooks so that escape hatches are available.
 - + As a developer, I can expect generated code to call hooks directly on the source transform instance so that hook behavior is transparent.
-- + As a developer, I can bind hooks with `@raw(lane=lane)` and `@raw(lane=lane)` so that their
-  input DataFrame is unambiguous.
+- + As a developer, I can bind hooks with `input=`, `output=`, or `inout=` so that their DataFrame bindings are
+  unambiguous.
 
 ## 17. Streaming Compatibility
 

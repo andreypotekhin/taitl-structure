@@ -37,7 +37,7 @@ class UdfPublished(Transform):
     rows = input(UdfRaw)
     published = output(UdfRaw)
 
-    @special(type="udf", return_type=types.string())
+    @special(type="udf", return_type=types.string(), nullable=False)
     def normalize(value: Any):
         return value.strip().lower()
 

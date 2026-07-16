@@ -31,4 +31,4 @@ def test_money_helper_preserves_decimal_contract(orders_plan, orders_transform_t
     assert projection["discount"].args[0].data == {"function": "to_decimal", "precision": 12, "scale": 2}
     assert 'F.col("order_raw.total").cast("decimal(12,2)")' in orders_transform_text
     assert 'F.col("order_raw.discount").cast("decimal(12,2)")' in orders_transform_text
-    assert ").cast(T.DecimalType(12, 2)).alias(\"net_total\")" in orders_transform_text
+    assert ").cast('decimal(12,2)').alias(\"net_total\")" in orders_transform_text

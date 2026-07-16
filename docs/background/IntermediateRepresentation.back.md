@@ -238,8 +238,8 @@ Rules:
 - `inputs` preserve class-body input declaration order.
 - `steps` preserve source-order compiled step method order.
 - Undecorated steps consume and update the uniquely inferred lane.
-- Method-level `@transform(output=target_lane)` writes a named lane or final output while the source is inferred.
-- Method-level `@transform(input=source, output=target_lane)` selects an original input or existing lane and writes the
+- Method-level `@step(output=target_lane)` writes a named lane or final output while the source is inferred.
+- Method-level `@step(input=source, output=target_lane)` selects an original input or existing lane and writes the
   target lane.
 - Method-level `input=[...]` and `output=[...]` bind multiple schema parameters or returned values in order.
 - Method-level `inout=source | target` is normalized to the same input and output declaration tuples.
@@ -273,7 +273,7 @@ Rules:
 
 - Input names are unique within one transform.
 - Input schemas must be discovered and valid before transform IR validation.
-- Input order controls generated `run(...)` parameter order and hook input namespace order.
+- Input order controls generated `run(...)` parameter order and the order of explicitly selected hook inputs.
 - Input plans do not record runtime DataFrame objects.
 
 If two inputs use the same schema and the first step consumes that schema, the compiler must record how the current
@@ -583,7 +583,7 @@ HookCall
   source_order
   source_lanes
   output_lanes
-  pass_inputs
+  inputs
   schema_mode
   project_output
   streaming_safe
@@ -599,7 +599,7 @@ Rules:
 - Hooks are opaque runtime boundaries.
 - Hook calls preserve Transform class declaration order.
 - Source and output lanes reference declared inputs, lanes, or outputs.
-- `pass_inputs` records whether execution and generated-code execution must pass the original named inputs namespace.
+- `inputs` records the explicitly selected source inputs passed to the hook.
 - Hook calls must not contain the runtime DataFrame returned by the hook.
 - Hook calls must not contain generated PySpark source text.
 - `schema_mode` and `project_output` must be present for hook validation and projection decisions.
@@ -999,7 +999,7 @@ Required IR validation checks:
 14. Every plain `lookup_join(...)` records uniqueness proof, warning, or unchecked status; deduped `lookup_join(...)`
     records the deterministic policy that reduces the right side before lookup.
 14. Every hook target resolves to a step.
-15. Every hook call has valid timing, schema mode, and `pass_inputs` metadata.
+15. Every hook call has valid timing, bindings, and schema-mode metadata.
 16. Every validation point has a schema, target, mode, and reason.
 17. All required source-order boundaries around hooks are preserved.
 18. No node contains live Spark objects or runtime DataFrames.

@@ -801,7 +801,7 @@ class RenderPySparkStep:
             return True
         if not self._same_type(assignment.expression.type, assignment.field.type):
             return True
-        return assignment.expression.kind in {"add", "sub", "mul"} and isinstance(assignment.field.type, DecimalType)
+        return False
 
     def _window_rank_expression(self, expression: PySparkExpressionRecipe) -> bool:
         if expression.kind != "transform_expression":

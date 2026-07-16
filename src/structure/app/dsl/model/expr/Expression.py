@@ -5,6 +5,7 @@ from typing import Mapping, cast
 
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.BooleanType import BooleanType
+from structure.app.dsl.model.types.DateType import DateType
 from structure.app.dsl.model.types.DecimalType import DecimalType
 from structure.app.dsl.model.types.DoubleType import DoubleType
 from structure.app.dsl.model.types.FloatType import FloatType
@@ -14,6 +15,9 @@ from structure.app.dsl.model.types.MapType import MapType
 from structure.app.dsl.model.types.StringType import StringType
 from structure.app.dsl.model.types.StructType import StructType
 from structure.app.dsl.model.types.StructureType import StructureType
+from structure.app.dsl.model.types.TimestampType import TimestampType
+
+_ORDERABLE_TYPES = frozenset({"date", "decimal", "double", "float", "integer", "long", "string", "timestamp"})
 
 
 @dataclass(frozen=True, eq=False)
@@ -31,7 +35,7 @@ class Expression:
         return Expression(kind="is_not_null", type=BooleanType(), nullable=False, args=(self,))
 
     def null_safe_eq(self, other: object) -> "Expression":
-        return self._binary("null_safe_eq", other, type=BooleanType())
+        return self._comparison("null_safe_eq", other, nullable=False)
 
     def isin(self, *values: object) -> "Expression":
         from structure.app.dsl.model.expr.expressions import literal
@@ -39,6 +43,8 @@ class Expression:
         if not values:
             raise TypeError("isin(...) requires at least one value")
         arguments = tuple(literal(value) for value in values)
+        if any(not self._comparison_compatible(argument) for argument in arguments):
+            raise TypeError("isin(...) requires values compatible with its expression type")
         return Expression(
             kind="isin",
             type=BooleanType(),
@@ -241,16 +247,52 @@ class Expression:
             args=(self, other_expression),
         )
 
-    def _comparison(self, kind: str, other: object) -> "Expression":
+    def _comparison(self, kind: str, other: object, *, nullable: bool | None = None) -> "Expression":
         from structure.app.dsl.model.expr.expressions import literal
 
         other_expression = literal(other)
+        problem = self._comparison_problem(kind, other_expression)
         return Expression(
             kind=kind,
             type=BooleanType(),
-            nullable=self.nullable or other_expression.nullable,
+            nullable=(self.nullable or other_expression.nullable) if nullable is None else nullable,
+            data={"comparison_problem": problem} if problem is not None else None,
             args=(self, other_expression),
         )
+
+    def _comparison_problem(self, kind: str, other: "Expression") -> str | None:
+        if not self._comparison_compatible(other):
+            return "Comparison requires compatible Structure expression types"
+        if kind in {"gt", "lt", "le", "ge"} and not self._orderable_comparison(other):
+            return "Ordering comparisons require orderable Structure expression types"
+        return None
+
+    def _comparison_compatible(self, other: "Expression") -> bool:
+        if isinstance(self.type, MapType) or isinstance(other.type, MapType):
+            return False
+        if self.type is None or other.type is None:
+            return (self.type is None and self.nullable) or (other.type is None and other.nullable)
+        return self._compatible_comparison_types(self.type, other.type)
+
+    def _compatible_comparison_types(self, left: StructureType, right: StructureType) -> bool:
+        if isinstance(left, (IntegerType, LongType, FloatType, DoubleType, DecimalType)) and isinstance(
+            right, (IntegerType, LongType, FloatType, DoubleType, DecimalType)
+        ):
+            return True
+        if isinstance(left, (DateType, TimestampType)) and isinstance(right, (DateType, TimestampType)):
+            return True
+        if left.name != right.name:
+            return False
+        if isinstance(left, ArrayType) and isinstance(right, ArrayType):
+            return self._compatible_comparison_types(left.element, right.element)
+        if isinstance(left, StructType) and isinstance(right, StructType):
+            return left.schema is right.schema
+        return True
+
+    def _orderable_comparison(self, other: "Expression") -> bool:
+        if self.type is None or other.type is None:
+            return True
+        return self.type.name in _ORDERABLE_TYPES and other.type.name in _ORDERABLE_TYPES
 
     def _require_boolean(self, call: str) -> None:
         if not isinstance(self.type, BooleanType):
@@ -260,11 +302,11 @@ class Expression:
         from structure.app.dsl.model.expr.expressions import literal
 
         other_expression = literal(other)
-        type = self._arithmetic_type(other_expression)
+        type = self._arithmetic_type(kind, other_expression)
         arguments = (other_expression, self) if reverse else (self, other_expression)
         return Expression(kind=kind, type=type, nullable=self.nullable or other_expression.nullable, args=arguments)
 
-    def _arithmetic_type(self, other: "Expression") -> StructureType:
+    def _arithmetic_type(self, kind: str, other: "Expression") -> StructureType:
         types = (self.type, other.type)
         if not all(isinstance(type, (IntegerType, LongType, FloatType, DoubleType, DecimalType)) for type in types):
             raise TypeError("Arithmetic requires numeric Structure expressions")
@@ -277,12 +319,40 @@ class Expression:
             return DoubleType()
         if any(isinstance(type, FloatType) for type in numeric):
             return FloatType()
-        decimal = next((type for type in numeric if isinstance(type, DecimalType)), None)
-        if decimal is not None:
-            return decimal
+        if any(isinstance(type, DecimalType) for type in numeric):
+            return self._decimal_arithmetic_type(kind, numeric)
         if any(isinstance(type, LongType) for type in numeric):
             return LongType()
         return IntegerType()
+
+    def _decimal_arithmetic_type(
+        self, kind: str, operands: tuple[StructureType, StructureType]
+    ) -> DecimalType:
+        left, right = (self._decimal_operand(type) for type in operands)
+        if kind in {"add", "sub"}:
+            scale = max(left.scale, right.scale)
+            precision = max(left.precision - left.scale, right.precision - right.scale) + scale + 1
+        else:
+            scale = left.scale + right.scale
+            precision = left.precision + right.precision + 1
+        return self._bounded_decimal_type(precision, scale)
+
+    def _decimal_operand(self, type: StructureType) -> DecimalType:
+        if isinstance(type, DecimalType):
+            return type
+        if isinstance(type, LongType):
+            return DecimalType(precision=20, scale=0)
+        return DecimalType(precision=10, scale=0)
+
+    def _bounded_decimal_type(self, precision: int, scale: int) -> DecimalType:
+        if precision <= 38:
+            return DecimalType(precision=precision, scale=scale)
+        if scale < 6:
+            return DecimalType(precision=38, scale=scale)
+        integer_digits = precision - scale
+        if integer_digits > 32:
+            return DecimalType(precision=38, scale=6)
+        return DecimalType(precision=38, scale=min(38 - integer_digits, scale))
 
     def _string_predicate(self, name: str, pattern: str) -> "Expression":
         if not isinstance(self.type, StringType):

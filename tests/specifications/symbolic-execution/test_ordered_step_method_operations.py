@@ -36,6 +36,110 @@ class OuterEnriched(Schema):
     product_name = field.string(nullable=True)
 
 
+@pytest.mark.parametrize(
+    ("argument", "message"),
+    [
+        ("how", r"lookup_join\(how=\.\.\.\) requires a Join value"),
+        ("hint", r"lookup_join\(hint=\.\.\.\) requires a JoinHint value"),
+    ],
+)
+def test_lookup_join_rejects_invalid_options_at_the_dsl_boundary(argument: str, message: str) -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            options = cast(Any, {argument: "invalid"})
+            lookup_join(product, on=product.id == order.product_id, **options)
+            return Enriched(id=order.id, product_name=product.name)
+
+    with pytest.raises(StructureCompileError, match=message):
+        compile_transform(AddProduct)
+
+
+@pytest.mark.parametrize("ties", ["error", None])
+def test_join_dedupe_factory_rejects_invalid_tie_policy(ties: object) -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            lookup_join(
+                product,
+                on=product.id == order.product_id,
+                dedupe=JoinDedupe.latest_by(product.name, ties=cast(Any, ties)),
+            )
+            return Enriched(id=order.id, product_name=product.name)
+
+    with pytest.raises(TypeError, match=r"JoinDedupe.latest_by\(ties=\.\.\.\) requires a TiePolicy value"):
+        compile_transform(AddProduct)
+
+
+@pytest.mark.parametrize(
+    ("order_by", "message"),
+    [
+        (lambda product: product.name.desc(), "requires an unordered expression"),
+        (lambda product: product.id.is_not_null(), "requires an orderable scalar expression"),
+    ],
+)
+def test_join_dedupe_factory_rejects_invalid_ordering(
+    order_by, message: str
+) -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            lookup_join(
+                product,
+                on=product.id == order.product_id,
+                dedupe=JoinDedupe.latest_by(order_by(product)),
+            )
+            return Enriched(id=order.id, product_name=product.name)
+
+    with pytest.raises(StructureCompileError, match=message):
+        compile_transform(AddProduct)
+
+
+def test_join_dedupe_compiler_validation_rejects_manual_order_descriptor() -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            lookup_join(
+                product,
+                on=product.id == order.product_id,
+                dedupe=JoinDedupe(order_by=product.name.desc(), direction="latest"),
+            )
+            return Enriched(id=order.id, product_name=product.name)
+
+    with pytest.raises(StructureCompileError, match="must be an unordered expression"):
+        compile_transform(AddProduct)
+
+
+def test_selected_row_helpers_reject_order_descriptors() -> None:
+    @transform
+    class KeepLatest(Transform):
+        orders = input(Order)
+        enriched = output(Enriched)
+
+        def keep_latest(self, order: Order) -> Enriched:
+            latest_by(order.id.desc(), partition_by=order.product_id)
+            return Enriched(id=order.id, product_name=order.product_id)
+
+    with pytest.raises(StructureCompileError, match="unordered expression"):
+        compile_transform(KeepLatest)
+
+
 def test_where_before_join_renders_before_join() -> None:
     @transform
     class AddProduct(Transform):
@@ -567,6 +671,32 @@ def test_temporal_one_rejects_left_side_validity_bound() -> None:
     assert "valid_from=...) must read only the joined temporal input" in raised.value.diagnostic.problem_text()
 
 
+@pytest.mark.parametrize("how", [Join.RIGHT, Join.FULL, Join.CROSS])
+def test_temporal_one_rejects_non_lookup_join_modes(how: Join) -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            temporal_one(
+                product,
+                on=product.id == order.product_id,
+                at=order.status,
+                valid_from=product.valid_from,
+                valid_to=product.valid_to,
+                how=how,
+            )
+            return Enriched(id=order.id, product_name=product.name)
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(AddProduct)
+
+    assert raised.value.diagnostic.code == "JOIN-E0601"
+    assert "temporal_one(...) supports Join.LEFT and Join.INNER" in raised.value.diagnostic.problem_text()
+
+
 def test_as_of_one_records_backward_lookup_and_renders_ranked_selection() -> None:
     @transform
     class AddProduct(Transform):
@@ -656,6 +786,31 @@ def test_as_of_one_rejects_left_side_right_time() -> None:
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
     assert "right_time=...) must read only the joined as-of input" in raised.value.diagnostic.problem_text()
+
+
+@pytest.mark.parametrize("how", [Join.RIGHT, Join.FULL, Join.CROSS])
+def test_as_of_one_rejects_non_lookup_join_modes(how: Join) -> None:
+    @transform
+    class AddProduct(Transform):
+        orders = input(Order)
+        products = input(Product)
+        enriched = output(Enriched)
+
+        def add_product(self, order: Order, product: Product) -> Enriched:
+            as_of_one(
+                product,
+                on=product.id == order.product_id,
+                left_time=order.status,
+                right_time=product.valid_from,
+                how=how,
+            )
+            return Enriched(id=order.id, product_name=product.name)
+
+    with pytest.raises(StructureCompileError) as raised:
+        compile_transform(AddProduct)
+
+    assert raised.value.diagnostic.code == "JOIN-E0601"
+    assert "as_of_one(...) supports Join.LEFT and Join.INNER" in raised.value.diagnostic.problem_text()
 
 
 def test_exists_join_does_not_make_relation_fields_readable() -> None:

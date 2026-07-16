@@ -55,7 +55,7 @@ class EnrichOrders(Transform):
             promotion_code=self.clean_id(order.promotion_code),
             total=total,
             discount=discount,
-            net_total=total - discount,
+            net_total=(total - discount).cast(types.decimal(12, 2)),
             quantity=coalesce(order.quantity, 1),
             tags=arr_filter(
                 arr_transform(order.tags, lambda tag: lower(trim(tag))),

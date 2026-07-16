@@ -213,7 +213,8 @@ over caller-supplied DataFrames.
 - Nested values and declared parsing coverage.
 - Relational transformations and advanced analytical coverage.
 - A gated row-generator design and implementation slice.
-- Release evidence and documentation closure.
+- Final v4 hardening sprint: release evidence, documentation closure, and resolution or deferral of release-blocking
+  defects after every v4 feature slice.
 
 ### v4 non-goals
 
@@ -237,4 +238,4 @@ over caller-supplied DataFrames.
 | M6 | v1 stabilization and docs/examples | follow-up hardening sprint |
 | M7 | v2 analytical pipeline features, analytical join coverage, composition maturity, adoption tooling, and Spark Connect batch support | Sprints 06-09 |
 | M8 | v3 PySpark gap closure and streaming transformation hardening | Sprints 11-16 |
-| M9 | v4 PySpark transformation API coverage | Sprint 17 and later v4 sprints |
+| M9 | v4 PySpark transformation API coverage | Sprint 17, later v4 feature sprints, then the final v4 hardening sprint |

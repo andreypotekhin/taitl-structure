@@ -610,6 +610,7 @@ class CompileTransform:
 
         context.operations.extend(self._reserved_operations(member, metadata))
         diagnostics.extend(self._validate_joins(transform_class, name, context.joins))
+        self._validate_comparison_problems(transform_class, name, context.filters)
         values = self._result_values(
             transform_class,
             name,
@@ -1994,6 +1995,7 @@ class CompileTransform:
                 result._structure_values[field.name],
                 field.type,
                 path=f"{output_schema.__name__}.{field.name}",
+                filters=filters,
             )
             assignments.append(
                 self._assignment(transform_class, member, output_schema, field, expression, filters=filters)
@@ -2040,6 +2042,7 @@ class CompileTransform:
                 result._structure_values[field.name],
                 field.type,
                 path=f"{output_schema.__name__}.{field.name}",
+                filters=filters,
             )
             key = self._aggregate_key_for(field.name, expression, aggregate_keys)
             if key is not None:
@@ -2144,6 +2147,7 @@ class CompileTransform:
                 use="Pass a predicate such as lambda out: out.order_count > 0.",
                 context={"schema": output_schema.__name__},
             )
+        self._validate_comparison_problems(transform_class, member, (expression,))
         scopes = self._scopes(expression)
         allowed = {output_schema.__name__}
         if not scopes <= allowed:
@@ -2201,6 +2205,9 @@ class CompileTransform:
         data = expression.data or {}
         function = str(data.get("function"))
         arg_count = self._int_data(data, "arg_count", len(expression.args))
+        where_index = self._optional_int_data(data, "where_index")
+        if where_index is not None and where_index < len(expression.args):
+            self._validate_comparison_problems(transform_class, member, (expression.args[where_index],))
         arguments = expression.args[:arg_count]
         argument = arguments[0] if arguments else None
         if function in {"count", "grouping_id"}:
@@ -2351,6 +2358,7 @@ class CompileTransform:
                     result.source._structure_values[field.name],
                     field.type,
                     path=f"{output_schema.__name__}.{field.name}",
+                    filters=filters,
                 )
             assignments.append(
                 self._assignment(transform_class, member, output_schema, field, expression, filters=filters)
@@ -2368,6 +2376,14 @@ class CompileTransform:
         filters: tuple[Expression, ...] | list[Expression],
         allow_aggregate: bool = False,
     ) -> ProjectAssignment:
+        if problem := self._comparison_problem(expression):
+            raise self._error(
+                "DSL-E0402",
+                transform_class=transform_class,
+                member=member,
+                problem=problem,
+                use="Compare compatible Structure values, or use an explicit cast before comparing them.",
+            )
         if expression.kind == "aggregate" and not allow_aggregate:
             raise self._error(
                 "DSL-E0402",
@@ -2427,6 +2443,7 @@ class CompileTransform:
         target_type: StructureType,
         *,
         path: str,
+        filters: tuple[Expression, ...] | list[Expression],
     ) -> Expression:
         if isinstance(value, Schema):
             expression_type = Struct(type(value))
@@ -2449,16 +2466,78 @@ class CompileTransform:
                         value._structure_values[nested_field.name],
                         nested_field.type,
                         path=f"{path}.{nested_field.name}",
+                        filters=filters,
                     )
                 )
-            return Expression(
+            expression = Expression(
                 kind="struct",
                 type=expression_type,
                 nullable=False,
                 data={"schema": type(value), "fields": fields},
                 args=tuple(arguments),
             )
+            if self._same_type(expression_type, target_type):
+                self._validate_struct_fields(
+                    transform_class,
+                    member,
+                    fields,
+                    expression.args,
+                    path=path,
+                    filters=filters,
+                )
+            return expression
         return literal(value)
+
+    def _validate_struct_fields(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        fields: tuple,
+        expressions: tuple[Expression, ...],
+        *,
+        path: str,
+        filters: tuple[Expression, ...] | list[Expression],
+    ) -> None:
+        for field, expression in zip(fields, expressions, strict=True):
+            field_path = f"{path}.{field.name}"
+            if problem := self._comparison_problem(expression):
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=member,
+                    problem=problem,
+                    use="Compare compatible Structure values, or use an explicit cast before comparing them.",
+                )
+            if not field.nullable and self._nullable(expression, filters):
+                raise self._error(
+                    "SCHEMA-E0301",
+                    transform_class=transform_class,
+                    member=member,
+                    problem=f"{field_path} is non-nullable, but the assigned expression may produce null.",
+                    use=(
+                        "Use a nullable nested field, guard the value with where(value.is_not_null()), "
+                        "or provide a non-null default with coalesce(...)."
+                    ),
+                    context={"field": field_path, "schema": path},
+                )
+            if self._assignable(expression.type, field.type, expression=expression):
+                continue
+            code = "SCHEMA-E0302" if self._requires_explicit_conversion(expression.type, field.type) else "SCHEMA-E0303"
+            raise self._error(
+                code,
+                transform_class=transform_class,
+                member=member,
+                problem=(
+                    f"{field_path} expects {self._type_text(field.type)}, "
+                    f"but the assigned expression is {self._type_text(expression.type)}."
+                ),
+                use=self._assignment_use(expression.type, field.type, field_path),
+                context={
+                    "field": field_path,
+                    "expected": self._type_text(field.type),
+                    "actual": self._type_text(expression.type),
+                },
+            )
 
     def _source_schema(self, source: object) -> type[Schema] | None:
         if isinstance(source, Schema):
@@ -2490,6 +2569,18 @@ class CompileTransform:
                     join.input_name,
                     occurrence,
                     f"lookup_join(...) supports Join.LEFT and Join.INNER, not {join.how!r}.",
+                    "Use Join.LEFT or Join.INNER, or use rowset_join(...) for broad rowset joins.",
+                )
+            if join.method in {JoinMethod.TEMPORAL_ONE, JoinMethod.AS_OF_ONE} and join.how not in {
+                Join.LEFT,
+                Join.INNER,
+            }:
+                raise self._join_error(
+                    transform_class,
+                    member,
+                    join.input_name,
+                    occurrence,
+                    f"{join.method.value}(...) supports Join.LEFT and Join.INNER, not {join.how!r}.",
                     "Use Join.LEFT or Join.INNER, or use rowset_join(...) for broad rowset joins.",
                 )
             if join.method is JoinMethod.ROWSET and join.how not in {
@@ -2678,6 +2769,33 @@ class CompileTransform:
         occurrence: int,
         dedupe: JoinDedupe,
     ) -> None:
+        if not isinstance(dedupe.order_by, Expression):
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                "lookup_join(dedupe=...) order_by must be a Structure expression.",
+                "Use JoinDedupe.latest_by(customer.updated_at) or JoinDedupe.earliest_by(customer.updated_at).",
+            )
+        if dedupe.order_by.kind == "order":
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                "lookup_join(dedupe=...) order_by must be an unordered expression; the policy selects the direction.",
+                "Pass the field expression directly, such as JoinDedupe.latest_by(customer.updated_at).",
+            )
+        if not self._orderable_type(dedupe.order_by.type):
+            raise self._join_error(
+                transform_class,
+                member,
+                input_name,
+                occurrence,
+                "lookup_join(dedupe=...) order_by must be an orderable scalar expression.",
+                "Use a Date, Timestamp, String, or numeric right-side expression.",
+            )
         if not isinstance(dedupe.ties, TiePolicy):
             raise self._join_error(
                 transform_class,
@@ -2834,14 +2952,21 @@ class CompileTransform:
             return False
         if expression.kind in {"is_null", "is_not_null", "is_nan", "null_safe_eq"}:
             return False
-        if expression.kind in {"aggregate", "transform_expression"}:
+        if expression.kind in {"aggregate", "transform_expression", "python_udf"}:
             return expression.nullable
+        if expression.kind in {"get_field", "item", "try_cast"}:
+            return expression.nullable
+        if expression.kind == "when":
+            _, value, fallback = expression.args
+            return self._nullable(value, filters) or self._nullable(fallback, filters)
         if expression.kind == "call":
             function = (expression.data or {}).get("function")
             if function == "coalesce":
                 return all(self._nullable(argument, filters) for argument in expression.args)
             if function == "concat_ws":
                 return False
+            if function == "to_decimal":
+                return expression.nullable
             return any(self._nullable(argument, filters) for argument in expression.args)
         if expression.args:
             return any(self._nullable(argument, filters) for argument in expression.args)
@@ -2930,6 +3055,29 @@ class CompileTransform:
         return self._assignable(left, right, expression=Expression(kind="field", type=left)) or self._assignable(
             right, left, expression=Expression(kind="field", type=right)
         )
+
+    def _comparison_problem(self, expression: Expression) -> str | None:
+        data = expression.data or {}
+        problem = data.get("comparison_problem")
+        if isinstance(problem, str):
+            return problem
+        return next((problem for argument in expression.args if (problem := self._comparison_problem(argument))), None)
+
+    def _validate_comparison_problems(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        expressions: tuple[Expression, ...] | list[Expression],
+    ) -> None:
+        for expression in expressions:
+            if problem := self._comparison_problem(expression):
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=member,
+                    problem=problem,
+                    use="Compare compatible Structure values, or use an explicit cast before comparing them.",
+                )
 
     def _numeric_type(self, type: StructureType | None) -> bool:
         return type is not None and type.name in {"decimal", "double", "float", "integer", "long"}

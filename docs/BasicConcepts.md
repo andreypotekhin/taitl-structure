@@ -55,8 +55,9 @@ and many diagnostics.
 
 ### Transform
 
-A transform is a `Transform` subclass marked with `@transform`. It declares the pipeline surface: input
-DataFrames, output results, lanes, step methods, expression helpers, and hooks.
+A transform is a `Transform` subclass. It declares the pipeline surface: input DataFrames, output results, lanes,
+step methods, expression helpers, and hooks. `@transform(...)` is optional and records class-level options such as
+streaming compatibility.
 
 A transform instance created with `EnrichOrders(orders=df)` is a deferred invocation that stores runtime
 inputs until `.run(session)` is called.
@@ -71,7 +72,7 @@ enriched_df = result.enriched
 ### Input
 
 An input is a class-level `input(Schema)` declaration. Its attribute name becomes the runtime input name,
-generated `run(...)` parameter name, hook input namespace attribute, and source scope name.
+generated `run(...)` parameter name, hook binding parameter name, and source scope name.
 
 During symbolic execution, `self.orders` resolves to a symbolic input scope. During runtime, the invocation
 stores the actual DataFrame under the same declared name.
@@ -158,7 +159,7 @@ lower(trim(order.customer_id)) == "c-001"
 when(order.total >= 1000, "large").otherwise("standard")
 ```
 
-The v1 expression surface supports field references, Python literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`,
+The expression surface supports field references, Python literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`,
 `-`, `*`, boolean `&`, `|`, `~`, `is_null()`, `is_not_null()`, `null_safe_eq(...)`, string predicates
 `contains(...)`, `like(...)`, `ilike(...)`, and `rlike(...)`, `lower(...)`, `upper(...)`, `trim(...)`,
 collection indexing with `array[index]` and `map[key]`, `to_decimal(...)`, `coalesce(...)`, and
@@ -206,7 +207,7 @@ where(
 
 ### Join
 
-A join is a symbolic relationship between the current row and a declared input. In v1, `lookup_join(...)` is the
+A join is a symbolic relationship between the current row and a declared input. `lookup_join(...)` is the
 main form: a lookup-style join.
 
 A join creates a joined scope. Fields from that scope can be used in later filters or in the returned output

@@ -34,6 +34,9 @@
 - [PublicationFlags](schemas/PublicationFlags.md)
 - [Shipment](schemas/Shipment.md)
 - [TenantKey](schemas/TenantKey.md)
+- [V3OrderDetails](schemas/V3OrderDetails.md)
+- [V3OrderProjection](schemas/V3OrderProjection.md)
+- [V3OrderSource](schemas/V3OrderSource.md)
 
 ## Transforms
 
@@ -41,3 +44,4 @@
 - [OrderAnalytics](transforms/examples.orders.transforms.analytics.OrderAnalytics.md)
 - [EnrichOrders](transforms/examples.orders.transforms.order.EnrichOrders.md)
 - [RowsetJoinExamples](transforms/examples.orders.transforms.rowset_join.RowsetJoinExamples.md)
+- [V3OrderFeatures](transforms/examples.orders.transforms.v3.V3OrderFeatures.md)

@@ -241,8 +241,8 @@ Rules:
 - Accessing `self.orders` during ordinary runtime construction before `run(session)` should not expose a live
   DataFrame API.
 - Generated `run(...)` methods use the same input names as keyword-only parameters.
-- Hook input namespaces use the same input names as read-only attributes when `pass_inputs=True`.
-- Method-level `@transform(input=declared_input)` selects a class input explicitly when the row schema is ambiguous
+- A hook receives every DataFrame explicitly selected by its binding as a keyword-only parameter.
+- Method-level `@step(input=declared_input)` selects a class input explicitly when the row schema is ambiguous
   or cannot be inferred safely.
 
 Input DataFrame schema validation is governed by the validation configuration and runtime references. The DSL only
@@ -277,9 +277,9 @@ Rules:
   result.
 - Final output fields must be materialized by explicit method-level `output=...` or by unique schema matching at the
   end of the funnel.
-- Method-level `@transform(input=declared_input_or_lane)` selects an original class input or an already-produced lane.
+- Method-level `@step(input=declared_input_or_lane)` selects an original class input or an already-produced lane.
   If a lane with the same name as an input declaration already exists, the lane shadows the original input.
-- Method-level `@transform(output=declared_lane_or_output)` writes a declared lane or final output. If the selected
+- Method-level `@step(output=declared_lane_or_output)` writes a declared lane or final output. If the selected
   name already exists as a lane, the write updates that lane.
 - Method-level `input(...)`, `lane(...)`, and `output(...)` can also wrap declarations as role selectors:
   `input(orders)` forces the original runtime input, `lane(orders)` selects or writes the current working lane named
@@ -288,10 +288,9 @@ Rules:
   original input and a latest same-named lane both match, the latest lane wins.
 - Method-level `input=[...]` and `output=[...]` bind multiple parameters or returned values in order.
 - Method-level `inout=source | target` is shorthand for one explicit source and target; one side may be a list.
-- Method-level `cache=...` records an explicit v2 cache directive for the step method. It is intentionally part of
-  `@transform(...)` rather than a separate public decorator so user projects can keep their own `@cache` helpers.
-- Method-level `inputs=`, `outputs=`, `lane=`, and `lanes=` are retired. Hook decorators still use `lane=` and
-  `lanes=`.
+- Method-level `cache=...` records an explicit cache directive for the step method through `@step(...)`, leaving user
+  projects free to use their own `@cache` helpers.
+- Method-level `inputs=`, `outputs=`, `lane=`, and `lanes=` are retired. Use `input=`, `output=`, or `inout=`.
 - Method-level references use declarations, not strings.
 
 Canonical multi-output form:
@@ -303,11 +302,11 @@ class RouteOrders(Transform):
     accepted = output(OrderAccepted)
     rejected = output(OrderRejected)
 
-    @transform(output=normalized)
+    @step(output=normalized)
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         return OrderNormalized.base(order)()
 
-    @transform(output=accepted)
+    @step(output=accepted)
     def accept(self, order: OrderNormalized) -> OrderAccepted:
         where(order.customer_id.is_not_null())
         return OrderAccepted.base(order)(status="accepted")
@@ -316,7 +315,7 @@ class RouteOrders(Transform):
         where(order.status == "accepted")
         return OrderAccepted.base(order)()
 
-    @transform(output=rejected)
+    @step(output=rejected)
     def reject(self, order: OrderNormalized) -> OrderRejected:
         where(order.customer_id.is_null())
         return OrderRejected.base(order)(reason="missing customer")
@@ -374,10 +373,10 @@ Rules:
   by source order, lane binding, inheritance, or `Transform.to(...)`; reusable inline logic belongs in private helpers
   or `@special(type="expr")` helpers.
 - Source-order lane flow must be valid. Undecorated methods consume and update the uniquely inferred lane.
-  `@transform(output=target)` writes a named lane or output.
-  `@transform(input=source, output=target)` selects both sides explicitly.
+  `@step(output=target)` writes a named lane or output.
+  `@step(input=source, output=target)` selects both sides explicitly.
 - If more than one declared input has the first step method's input schema, the compiler must require an unambiguous
-  mapping such as `@transform(input=orders_external)` or emit a diagnostic.
+  mapping such as `@step(input=orders_external)` or emit a diagnostic.
 - A multi-result step method executes its joins and `where(...)` filters once, then projects every returned schema
   from that shared row set.
 - Private helper methods are allowed and are not compiled as step methods.
@@ -975,7 +974,7 @@ For reuse:
       return lower(trim(value))
 
 Hook workaround:
-  @raw(lane=orders)
+  @raw(inout=lane(orders) | lane(orders))
   def clean_customer_id(self, *, orders, spark, ctx):
       return orders.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 
@@ -994,10 +993,10 @@ Hook:
   compare_to_raw after normalize
 
 Problem:
-  Hooks with pass_inputs=True must declare keyword-only inputs.
+  Hooks must declare each selected DataFrame as a keyword-only parameter.
 
 Use:
-  def compare_to_raw(self, *, orders, inputs, spark, ctx):
+  def compare_to_raw(self, *, orders, customers, spark, ctx):
       return orders
 
 See docs/background/DSL.back.md

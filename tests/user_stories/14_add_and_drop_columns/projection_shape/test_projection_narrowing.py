@@ -147,7 +147,7 @@ def test_schema_project_copies_fields_and_allows_overrides() -> None:
         money = output(Money)
 
         def normalize(self, row: Raw) -> Money:
-            return Money.project(row)(amount=to_decimal(row.amount, precision=12, scale=2))
+            return Money.project(row)(amount=coalesce(to_decimal(row.amount, precision=12, scale=2), 0))
 
     plan = compile_transform(Normalize)
     projection = {assignment.field.name: assignment.expression for assignment in plan.steps[0].projection}

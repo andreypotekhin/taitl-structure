@@ -103,13 +103,13 @@ customers = input(Customer)
 products = input(Product)
 ```
 
-When more than one input exists of same schema, the step method must disambiguate with @transform(input) decoration:
+When more than one input has the same schema, bind the step explicitly with `@step(input=...)`:
 
 ```python
 orders_external = input(OrderRaw)
 orders_internal = input(OrderRaw)
 
-@transform(input=orders_external)
+@step(input=orders_external)
 def normalize(self, order: OrderRaw) -> OrderNormalized:
     ...
 ```
@@ -129,10 +129,11 @@ orders_rejected = lane(OrderRaw)
 published = output(OrderEnriched)
 ```
 
-The compiler infers input and lane sources from parameter types. If that can't be done (as with `orders_raw`/`orders_rejected` above), disambiguate using @transform decoration:
+The compiler infers input and lane sources from parameter types. If that cannot be done (as with
+`orders_raw`/`orders_rejected` above), bind the result with `@step(...)`:
 
 ```python
-@transform(output=orders_rejected)
+@step(output=orders_rejected)
 def ignore_inactive_orders(self, order: OrderRaw) -> OrderRaw:
     ...
 ```
@@ -155,7 +156,7 @@ OrderRaw -> OrderNormalized -> OrderWithCustomer -> OrderEnriched
 Step methods may take additional schemas as parameters, for instance, to join with another frame. They can also return multiple relations as a tuple:
 
 ```python
-@transform(output=[orders_with_product, orders_audited])
+@step(output=[orders_with_product, orders_audited])
 def add_product(
     self,
     order: OrderRaw,
@@ -169,16 +170,17 @@ def add_product(
 
 Here, the first relation parameter (`order`) is the driving lane. The second relation parameter (`product`) is an additional relation - it must be joined before use. 
 
-The returned values are mapped to transform's outputs/lanes, based on schema class. Use @transform decoration with `input=`/`output=` to disambiguate.
+The returned values are mapped to the transform's outputs and lanes by schema class. Use `@step(...)` with
+`input=`/`output=` to disambiguate.
 
 In `input=`/`output=`  values, a same-named lane with matching schema wins over the original input. Role selectors like `lane()`, `input()`, `output()` can be used to further disambiguate, if that matters:
 
 ```python
-@transform(input=input(orders), output=lane(orders))
+@step(input=input(orders), output=lane(orders))
 def restart_from_raw(self, order: OrderRaw) -> OrderNormalized:
     ...
 
-@transform(inout=lane(orders) | output(published))
+@step(inout=lane(orders) | output(published))
 def publish(self, order: OrderNormalized) -> OrderPublished:
     ...
 ```
@@ -352,7 +354,7 @@ def add_flags(self, order: OrderRaw) -> OrderWithFlags:
     )
 ```
 
-Supported v1 expression forms are field references, literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `*`,
+Supported expression forms are field references, literals, `==`, `!=`, `<`, `<=`, `>`, `>=`, `+`, `-`, `*`,
 boolean `&`, `|`, `~`, null checks, `null_safe_eq(...)`, `contains(...)`, `like(...)`, `ilike(...)`, `rlike(...)`,
 array/map indexing, `lower(...)`, `upper(...)`, `trim(...)`, `to_decimal(...)`, `coalesce(...)`, and
 `cast(...)`, `astype(...)`, `try_cast(...)` (PySpark 4 profile), `substring(...)`, `split(...)`,
@@ -905,7 +907,7 @@ class NormalizeBase(Transform):
     orders = input(OrderRaw)
     normalized = lane(OrderNormalized)
 
-    @transform(output=normalized)
+    @step(output=normalized)
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         return OrderNormalized(
             id=lower(trim(order.id)),

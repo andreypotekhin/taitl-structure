@@ -177,7 +177,7 @@ If generated mode cannot import the generated class, Structure must fail with a 
 Execution must preserve generated-code semantics:
 
 1. Validate declared input DataFrames.
-2. Create a read-only hook input namespace only when at least one hook declares `pass_inputs=True`.
+2. Resolve every DataFrame explicitly selected by each hook binding.
 3. Execute step methods and `@raw` hooks in Transform class declaration order.
 4. For each step, lower shared filters and joins, then materialize every ordered result projection.
 5. Invoke each raw hook against its selected lane DataFrame at its source-order boundary.

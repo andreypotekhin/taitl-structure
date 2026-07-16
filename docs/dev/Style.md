@@ -213,6 +213,11 @@ Suggestions are reviewed by the manager and mastermind role.
 The approved suggestions get moved to docs/dev/suggestions/approved.
 Implemented suggestions get moved to docs/dev/suggestions/done.
 
+### Documenting issues
+Record reproducible code issues in [issues/](issues/Readme.md). Issue records are concise, structured inputs for
+maintainers and automation. They capture the runnable report, the observed and expected results, and the pull request
+that supplies the fix. Move resolved records to `issues/done/`; do not create a record for an incomplete report.
+
 ### Documentation formatting
 Because we often read documentation as plain-text Markdown, we want it to look good in plain text editor.
 In particular, we maintain line limit of 120 characters per line.
@@ -222,13 +227,15 @@ Do not include sensitive information such as passwords, host names, absolute pat
 in any documents. Timezone should be specified as abbreviation, rather than city-name-based.
 
 ### Action id
-Include an action id for each action (suggestion, TODO item, etc.), the form of XMMDDYYNN, where X is action code
-(D for decisions, S for suggestions, T for TODO items, M for migrations, P for planning documents), YY is year, MM is month (01-12), DD is day (01-31), NN is a sequence number. For instance, S07142501 is the first suggestion on July 14, 2025.
+Include an action id for each action (issue, suggestion, TODO item, etc.), the form of XMMDDYYNN, where X is action
+code (I for issues, D for decisions, S for suggestions, T for TODO items, M for migrations, P for planning
+documents), YY is year, MM is month (01-12), DD is day (01-31), NN is a sequence number. For instance,
+S07142501 is the first suggestion on July 14, 2025.
 The action file (md file that conains the action) is named [action id].[action-title].md
 and placed into appropriate directory (docs/dev/design/decisions/, docs/dev/suggestions/, docs/dev/todo/ and the like).
 
 ### Action format
-Inside md file, place each action item (suggestion, TODO item, etc.) under a separate section (H3 heading)
+Inside md file, place each action item (issue, suggestion, TODO item, etc.) under a separate section (H3 heading)
 with action id and title.
 Inside the section, include one paragraph describing the item.
 For bigger items (bigger suggestions, migrations), include a bullet list with the steps for carrying it out.

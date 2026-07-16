@@ -55,7 +55,7 @@ class EnrichOrders(Transform):
             promotion_code=self.clean_id(order.promotion_code),
             total=total,
             discount=discount,
-            net_total=total - discount,
+            net_total=(total - discount).cast(types.decimal(12, 2)),
             quantity=coalesce(order.quantity, 1),
             tags=arr_filter(
                 arr_transform(order.tags, lambda tag: lower(trim(tag))),
@@ -175,4 +175,3 @@ class EnrichOrders(Transform):
         return published.withColumn("_has_customer", F.col("customer_name").isNotNull()).withColumn(
             "_has_tracking", F.col("tracking_number").isNotNull()
         )
-

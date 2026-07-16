@@ -240,7 +240,7 @@ Expression helpers are symbolically executed and lowered into execution recipes 
 Hooks are explicit escape hatches for arbitrary PySpark code.
 
 ```python
-@raw(lane=orders)
+@raw(inout=lane(orders) | lane(orders))
 def remove_negative_totals(self, *, orders, spark, ctx):
     return orders.where(F.col("total") >= 0)
 ```
@@ -252,20 +252,20 @@ def hook_name(self, *, selected_lane_name, spark, ctx) -> DataFrame:
     ...
 ```
 
-Hooks receive the selected lane DataFrame, SparkSession, and optional context. They do not receive every named input by
-default. This keeps the hook ABI small and explicit.
+Hooks receive the DataFrames selected by their binding, SparkSession, and optional context. The binding keeps the hook
+ABI small and explicit.
 
-Hooks that need original named inputs opt in explicitly:
+Hooks can explicitly select both the current lane and an original input:
 
 ```python
-@raw(lane=orders, pass_inputs=True)
-def custom_check(self, *, orders, inputs, spark, ctx) -> DataFrame:
-    raw_orders = inputs.orders
+@raw(inout=[lane(orders), input(customers)] | lane(orders))
+def custom_check(self, *, orders, customers, spark, ctx) -> DataFrame:
+    customer_ids = customers.select("id")
     return orders
 ```
 
-The `inputs` namespace contains the original `run(...)` input DataFrames after input validation. It is intentionally
-not passed unless requested.
+`input(customers)` selects the original runtime input; `lane(orders)` selects the current intermediate lane. Every
+selected DataFrame is passed by its declared name.
 
 ## Joins
 
@@ -367,7 +367,7 @@ For reuse:
       return lower(trim(value))
 
 For arbitrary PySpark:
-  @raw(lane=orders)
+  @raw(inout=lane(orders) | lane(orders))
   def clean_id_column(self, *, orders, spark, ctx):
       return orders.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 

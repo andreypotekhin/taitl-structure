@@ -31,6 +31,8 @@ typed `order` row scope as `o`.
   require Boolean expressions.
 - Comparisons and Boolean operators preserve SQL three-valued null semantics. `between(...)` is inclusive;
   `null_safe_eq(...)` considers two nulls equal and is never null.
+- Comparisons and `isin(...)` require compatible typed values. Numeric values and Date/Timestamp pairs may be compared;
+  Map values are not comparable.
 
 ## General Column Transformations
 

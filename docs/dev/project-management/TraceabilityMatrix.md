@@ -22,6 +22,7 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 15 v3 Collection Helper Parity | Higher-Order Functions, Arrays, Maps, Testing | collection size/membership, map-key membership, array construction/repeat/union/except, element lookup/concat |
 | Sprint 16 v3 Streaming Transformation Hardening | Spark Structured Streaming, Generated Code, Integration Testing | watermarked enrichment, dedupe, aggregation, bounded stream-stream joins, caller-owned output-mode guidance, and file-stream evidence |
 | Sprint 17 v4 Transformation Coverage | API coverage, DSL, capabilities, testing | checked PySpark transformation inventory, public catalog, status tests, and v4 fixture skeleton |
+| Final v4 Hardening Sprint | Release readiness, compatibility, generated code, documentation, testing | release-blocker resolution or deferral, regression and parity evidence, target compatibility, artifact freshness, documentation, diagnostics, and performance baselines |
 
 ## Relevant Specification Items by Sprint
 
@@ -185,3 +186,9 @@ This matrix maps early sprints to specification sections and major deliverables.
 - As a developer, I can look up a relevant PySpark transformation API and see Structure support, a scheduled slice, or
   an explicit alternative so missing parity is never surprising.
 - As a maintainer, I can verify that each in-scope PySpark transformation API has exactly one documented status.
+
+### Final v4 Hardening Sprint
+
+- As a developer, I can upgrade to v4 with published release evidence for the supported transformation API surface.
+- As a maintainer, I can cut v4 only after its release-blocking defects are resolved or explicitly deferred and the
+  released targets, generated artifacts, documentation, diagnostics, parity, and performance baselines are verified.

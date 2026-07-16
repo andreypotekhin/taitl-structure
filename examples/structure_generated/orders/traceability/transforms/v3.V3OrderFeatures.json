@@ -1,0 +1,736 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=4.0,<4.1"
+  },
+  "generated_transform_class": "V3OrderFeaturesGenerated",
+  "inputs": [
+    {
+      "name": "orders",
+      "ordinal": 0,
+      "schema": "V3OrderSource"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated",
+      "ir": "ir:V3OrderFeatures",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.input.orders",
+      "ir": "ir:V3OrderFeatures.input.0.orders",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.input.orders"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project",
+      "ir": "ir:V3OrderFeatures.step.0.project",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.where.0",
+      "ir": "ir:V3OrderFeatures.step.0.project.filter.0",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.filter.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.where.1",
+      "ir": "ir:V3OrderFeatures.step.0.project.filter.1",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.filter.1"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.id",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.id",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.is_candidate",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.is_candidate",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.is_candidate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.name_contains_order",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.name_contains_order",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.name_contains_order"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.name_like_order",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.name_like_order",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.name_like_order"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.name_ilike_order",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.name_ilike_order",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.name_ilike_order"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.name_matches_order",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.name_matches_order",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.name_matches_order"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.external_id",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.external_id",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.external_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.quantity",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.quantity",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.safe_quantity",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.safe_quantity",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.safe_quantity"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.name_prefix",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.name_prefix",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.name_prefix"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.name_words",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.name_words",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.name_words"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.name_slug",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.name_slug",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.name_slug"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.name_digits",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.name_digits",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.name_digits"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.name_length",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.name_length",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.name_length"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.name_title",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.name_title",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.name_title"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.name_reversed",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.name_reversed",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.name_reversed"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.name_translated",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.name_translated",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.name_translated"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.order_position",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.order_position",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.order_position"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.name_distance",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.name_distance",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.name_distance"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.display_name",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.display_name",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.display_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.next_day",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.next_day",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.next_day"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.days_since_booking",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.days_since_booking",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.days_since_booking"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.booking_month",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.booking_month",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.booking_month"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.absolute_amount",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.absolute_amount",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.absolute_amount"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.rounded_amount",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.rounded_amount",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.rounded_amount"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.ceiling_amount",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.ceiling_amount",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.ceiling_amount"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.floor_amount",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.floor_amount",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.floor_amount"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.score_is_nan",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.score_is_nan",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.score_is_nan"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.step.0.project.select.recency_rank",
+      "ir": "ir:V3OrderFeatures.step.0.project.project.recency_rank",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.project.field.recency_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.orders.pyspark.transforms.v3.V3OrderFeaturesGenerated.run.output.0.projected.validation.final",
+      "ir": "ir:V3OrderFeatures.output.0.projected.validation.final",
+      "source": "source:examples.orders.transforms.v3.V3OrderFeatures.output.projected"
+    }
+  ],
+  "schema_constants": {
+    "Address": {
+      "constant": "ADDRESS_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.common"
+    },
+    "AuditStamp": {
+      "constant": "AUDIT_STAMP_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.common"
+    },
+    "BlockedProduct": {
+      "constant": "BLOCKED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.product"
+    },
+    "BusinessDate": {
+      "constant": "BUSINESS_DATE_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.common"
+    },
+    "Customer": {
+      "constant": "CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.customer"
+    },
+    "CustomerDailyTotal": {
+      "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.analytics"
+    },
+    "CustomerEventRank": {
+      "constant": "CUSTOMER_EVENT_RANK_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.analytics"
+    },
+    "CustomerOrderBackfill": {
+      "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderCollectionProfile": {
+      "constant": "ORDER_COLLECTION_PROFILE_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.adv_analytics"
+    },
+    "OrderCollectionSource": {
+      "constant": "ORDER_COLLECTION_SOURCE_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.adv_analytics"
+    },
+    "OrderCustomerReconciliation": {
+      "constant": "ORDER_CUSTOMER_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderCustomerWindow": {
+      "constant": "ORDER_CUSTOMER_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.adv_analytics"
+    },
+    "OrderFulfillment": {
+      "constant": "ORDER_FULFILLMENT_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderNormalized": {
+      "constant": "ORDER_NORMALIZED_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderProductCandidate": {
+      "constant": "ORDER_PRODUCT_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderProductCube": {
+      "constant": "ORDER_PRODUCT_CUBE_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.adv_analytics"
+    },
+    "OrderPublication": {
+      "constant": "ORDER_PUBLICATION_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderPublished": {
+      "constant": "ORDER_PUBLISHED_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderRaw": {
+      "constant": "ORDER_RAW_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderRevenueRollup": {
+      "constant": "ORDER_REVENUE_ROLLUP_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.adv_analytics"
+    },
+    "OrderWithCustomer": {
+      "constant": "ORDER_WITH_CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderWithProduct": {
+      "constant": "ORDER_WITH_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "OrderWithPromotion": {
+      "constant": "ORDER_WITH_PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "Product": {
+      "constant": "PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.product"
+    },
+    "ProductBase": {
+      "constant": "PRODUCT_BASE_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.product"
+    },
+    "ProductDailySummary": {
+      "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.analytics"
+    },
+    "Promotion": {
+      "constant": "PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.promotion"
+    },
+    "PublicationFlags": {
+      "constant": "PUBLICATION_FLAGS_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.order"
+    },
+    "Shipment": {
+      "constant": "SHIPMENT_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.shipment"
+    },
+    "TenantKey": {
+      "constant": "TENANT_KEY_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.common"
+    },
+    "V3OrderDetails": {
+      "constant": "V3_ORDER_DETAILS_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.v3"
+    },
+    "V3OrderProjection": {
+      "constant": "V3_ORDER_PROJECTION_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.v3"
+    },
+    "V3OrderSource": {
+      "constant": "V3_ORDER_SOURCE_SCHEMA",
+      "module": "examples.structure_generated.orders.pyspark.schemas.v3"
+    }
+  },
+  "source_transform": "examples.orders.transforms.v3.V3OrderFeatures",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "orders"
+        ],
+        "step": null,
+        "target": "V3OrderFeatures"
+      },
+      {
+        "detail": {
+          "input_schema": "V3OrderSource",
+          "output_schema": "V3OrderProjection"
+        },
+        "operation": "step",
+        "sources": [
+          "orders"
+        ],
+        "step": "project",
+        "target": "project"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "project.filter[0]"
+      },
+      {
+        "detail": {},
+        "operation": "filter",
+        "sources": [
+          "orders.raw_quantity"
+        ],
+        "step": "project",
+        "target": "project.filter[1]"
+      },
+      {
+        "detail": {
+          "field": "id"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.id"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.id"
+      },
+      {
+        "detail": {
+          "field": "is_candidate"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.raw_quantity"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.is_candidate"
+      },
+      {
+        "detail": {
+          "field": "name_contains_order"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.name_contains_order"
+      },
+      {
+        "detail": {
+          "field": "name_like_order"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.name_like_order"
+      },
+      {
+        "detail": {
+          "field": "name_ilike_order"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.name_ilike_order"
+      },
+      {
+        "detail": {
+          "field": "name_matches_order"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.name_matches_order"
+      },
+      {
+        "detail": {
+          "field": "external_id"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.details"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.external_id"
+      },
+      {
+        "detail": {
+          "field": "quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.raw_quantity"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.quantity"
+      },
+      {
+        "detail": {
+          "field": "safe_quantity"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.raw_quantity"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.safe_quantity"
+      },
+      {
+        "detail": {
+          "field": "name_prefix"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.name_prefix"
+      },
+      {
+        "detail": {
+          "field": "name_words"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.name_words"
+      },
+      {
+        "detail": {
+          "field": "name_slug"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.name_slug"
+      },
+      {
+        "detail": {
+          "field": "name_digits"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.name_digits"
+      },
+      {
+        "detail": {
+          "field": "name_length"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.name_length"
+      },
+      {
+        "detail": {
+          "field": "name_title"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.name_title"
+      },
+      {
+        "detail": {
+          "field": "name_reversed"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.name_reversed"
+      },
+      {
+        "detail": {
+          "field": "name_translated"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.name_translated"
+      },
+      {
+        "detail": {
+          "field": "order_position"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.order_position"
+      },
+      {
+        "detail": {
+          "field": "name_distance"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.name_distance"
+      },
+      {
+        "detail": {
+          "field": "display_name"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.name",
+          "orders.details"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.display_name"
+      },
+      {
+        "detail": {
+          "field": "next_day"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.booked_on"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.next_day"
+      },
+      {
+        "detail": {
+          "field": "days_since_booking"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.recorded_at",
+          "orders.booked_on"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.days_since_booking"
+      },
+      {
+        "detail": {
+          "field": "booking_month"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.recorded_at"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.booking_month"
+      },
+      {
+        "detail": {
+          "field": "absolute_amount"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.amount"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.absolute_amount"
+      },
+      {
+        "detail": {
+          "field": "rounded_amount"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.amount"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.rounded_amount"
+      },
+      {
+        "detail": {
+          "field": "ceiling_amount"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.amount"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.ceiling_amount"
+      },
+      {
+        "detail": {
+          "field": "floor_amount"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.amount"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.floor_amount"
+      },
+      {
+        "detail": {
+          "field": "score_is_nan"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.score"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.score_is_nan"
+      },
+      {
+        "detail": {
+          "field": "recency_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "orders.booked_on",
+          "orders.id",
+          "orders.details"
+        ],
+        "step": "project",
+        "target": "V3OrderProjection.recency_rank"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "V3OrderProjection"
+        ],
+        "step": null,
+        "target": "V3OrderProjection.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "v3_order_source",
+      "joins": [],
+      "name": "project",
+      "output_alias": "v3_order_projection",
+      "output_schema": "V3OrderProjection",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "projected",
+          "lane": "projected",
+          "schema": "V3OrderProjection"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.orders.pyspark.transforms.v3",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "projected",
+        "schema": "V3OrderProjection"
+      }
+    ]
+  }
+}

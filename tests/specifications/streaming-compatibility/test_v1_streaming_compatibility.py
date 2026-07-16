@@ -47,6 +47,35 @@ def test_event_time_between_rejects_non_timestamp_expressions() -> None:
         event_time_between(lower("left"), lower("right"), upper="1 hour")
 
 
+def test_watermark_rejects_non_timestamp_fields() -> None:
+    @transform
+    class InvalidWatermark(Transform):
+        rows = input(StreamRaw, streaming=StreamingMode.YES)
+        clean = output(StreamClean)
+
+        def normalize(self, row: StreamRaw) -> StreamClean:
+            watermark(row.id)
+            return StreamClean(id=row.id)
+
+    with pytest.raises(StructureCompileError, match="requires a Timestamp Structure field expression"):
+        compile_transform(InvalidWatermark)
+
+
+@pytest.mark.parametrize("delay", ["", "soon", "-1 second", "1 minute; SELECT 1"])
+def test_watermark_rejects_invalid_delay_text(delay: str) -> None:
+    @transform
+    class InvalidWatermark(Transform):
+        rows = input(StreamRaw, streaming=StreamingMode.YES)
+        clean = output(StreamClean)
+
+        def normalize(self, row: StreamRaw) -> StreamClean:
+            watermark(row.event_time, delay=delay)
+            return StreamClean(id=row.id)
+
+    with pytest.raises(StructureCompileError, match="requires a non-negative fixed Spark interval"):
+        compile_transform(InvalidWatermark)
+
+
 @transform(streaming_compatible=True)
 class StreamingProjection(Transform):
     rows = input(StreamRaw)
@@ -195,7 +224,7 @@ class StreamingScalarUdf(Transform):
     rows = input(StreamRaw, streaming=StreamingMode.YES)
     clean = output(StreamClean)
 
-    @special(type="udf", return_type=types.string())
+    @special(type="udf", return_type=types.string(), nullable=False)
     def normalize(value: Any):
         return value.strip()
 

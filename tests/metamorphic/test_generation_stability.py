@@ -29,6 +29,7 @@ def test_orders_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/orders/pyspark/schemas/product.py",
         "examples/structure_generated/orders/pyspark/schemas/promotion.py",
         "examples/structure_generated/orders/pyspark/schemas/shipment.py",
+        "examples/structure_generated/orders/pyspark/schemas/v3.py",
         "examples/structure_generated/orders/pyspark/transforms/order.py",
         "examples/structure_generated/orders/traceability/transforms/order.EnrichOrders.json",
         "examples/structure_generated/orders/pyspark/transforms/rowset_join.py",
@@ -37,6 +38,8 @@ def test_orders_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/orders/traceability/transforms/analytics.OrderAnalytics.json",
         "examples/structure_generated/orders/pyspark/transforms/adv_analytics.py",
         "examples/structure_generated/orders/traceability/transforms/adv_analytics.AdvancedOrderAnalytics.json",
+        "examples/structure_generated/orders/pyspark/transforms/v3.py",
+        "examples/structure_generated/orders/traceability/transforms/v3.V3OrderFeatures.json",
         "examples/structure_generated/orders/traceability/__init__.py",
         "examples/structure_generated/orders/traceability/transforms/__init__.py",
     ]
@@ -91,3 +94,9 @@ def test_orders_example_generation_keeps_public_behavior_fragments_stable() -> N
     assert "Window.partitionBy" in advanced
     assert "F.exists(" in advanced
     assert "F.map_from_entries(F.map_entries(" in advanced
+
+    v3 = render_orders_example()["examples/structure_generated/orders/pyspark/transforms/v3.py"]
+
+    assert "class V3OrderFeaturesGenerated:" in v3
+    assert ".try_cast('int')" in v3
+    assert "desc_nulls_last()" in v3

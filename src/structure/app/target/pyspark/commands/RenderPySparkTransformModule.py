@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import date, datetime
+from decimal import Decimal
 from typing import Callable, Iterable, Mapping, cast
 
 from structure.app.dsl.model.schemas.Schema import Schema
@@ -95,6 +96,8 @@ class RenderPySparkTransformModule:
         ]
         if self._has_temporal_literal(plan):
             lines.insert(0, "import datetime")
+        if self._has_decimal_literal(plan):
+            lines.insert(0, "from decimal import Decimal")
         if self._has_window(plan):
             lines.insert(1, "from pyspark.sql import Window")
         if self._has_explicit_cache_level(plan):
@@ -818,6 +821,15 @@ class RenderPySparkTransformModule:
             isinstance(expression.data.get("default"), (date, datetime))
             or (expression.kind == "literal" and isinstance(expression.data.get("value"), (date, datetime)))
         ) or any(self._has_temporal_literal_expression(argument) for argument in expression.args)
+
+    def _has_decimal_literal(self, plan: PySparkExecutionPlan) -> bool:
+        return any(self._has_decimal_literal_expression(expression) for expression in self._expressions(plan))
+
+    def _has_decimal_literal_expression(self, expression) -> bool:
+        return (
+            isinstance(expression.data.get("default"), Decimal)
+            or (expression.kind == "literal" and isinstance(expression.data.get("value"), Decimal))
+        ) or any(self._has_decimal_literal_expression(argument) for argument in expression.args)
 
     def _last_step_validates_final(self, plan: PySparkExecutionPlan) -> bool:
         if not plan.steps:

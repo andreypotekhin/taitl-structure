@@ -82,3 +82,4 @@ transformation API coverage while loading, storage, and orchestration remain cal
 - Broader typed Column, SQL-function, nested-value, relational, join, aggregation, window, and collection coverage.
 - Row generators only after an explicit schema-and-cardinality design gate.
 - No loading, storage, actions, orchestration, alternative backends, or non-batch Spark Connect work.
+- A final hardening sprint after all v4 feature sprints, with no new feature scope.

@@ -307,8 +307,7 @@ environments.
 
 Airflow can call execution or generated-code execution transforms. It is not a Structure dependency.
 
-Ordinary PySpark is the default target. Spark Connect is a PySpark variant for completed v1/v2 batch features once
-Sprint 09 support evidence is in place.
+Ordinary PySpark is the default target. Spark Connect is a PySpark variant for completed batch features.
 
 See [Compatibility.md](Compatibility.md) for the full versioning and compatibility policy.
 

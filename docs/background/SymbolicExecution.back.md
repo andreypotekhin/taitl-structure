@@ -559,7 +559,7 @@ For reuse:
       return lower(trim(value))
 
 Hook workaround:
-  @raw(lane=orders)
+  @raw(inout=lane(orders) | lane(orders))
   def clean_customer_id(self, *, orders, spark, ctx):
       return orders.withColumn("customer_id", F.lower(F.trim(F.col("customer_id"))))
 

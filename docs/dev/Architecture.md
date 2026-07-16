@@ -1,16 +1,16 @@
 ﻿# Architecture
 
-Structure is an IR-first runtime/compiler toolkit for schema-driven data pipelines. PySpark is the v1 runtime and
+Structure is an IR-first runtime/compiler toolkit for schema-driven data pipelines. PySpark is the runtime and
 generation target, but the compiler core is designed to remain backend-neutral.
 
-It is not intended to be a heavy runtime framework. Source DSL files compile to backend-neutral IR. In v1, that IR can
+It is not intended to be a heavy runtime framework. Source DSL files compile to backend-neutral IR. That IR can
 be consumed by the online PySpark runner at runtime or by the PySpark code generator to emit optional generated classes.
 
 ## Goals
 
 - Schema-first authoring.
 - IDE-friendly source code.
-- Spark optimizer-visible execution and generated-code execution for the v1 target.
+- Spark optimizer-visible execution and generated-code execution.
 - Explicit arbitrary target-scoped hooks.
 - Clean hook-free generated code.
 - Lightweight runtime session.

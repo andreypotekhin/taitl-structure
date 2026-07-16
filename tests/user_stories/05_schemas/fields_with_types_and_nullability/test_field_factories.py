@@ -70,6 +70,14 @@ def test_standalone_type_factories_build_composable_type_values() -> None:
     assert nested.contains_null is False
 
 
+@pytest.mark.parametrize("value", [1, "false", None])
+def test_collection_type_nullability_requires_a_boolean(value: object) -> None:
+    with pytest.raises(TypeError, match="ArrayType contains_null must be a Boolean"):
+        types.array(types.string(), contains_null=value)
+    with pytest.raises(TypeError, match="MapType value_contains_null must be a Boolean"):
+        types.map(types.string(), types.string(), value_contains_null=value)
+
+
 def test_schema_array_factory_coexists_with_array_expression_helper() -> None:
     class Source(Schema):
         tags = field_array(field_string(), contains_null=False)
