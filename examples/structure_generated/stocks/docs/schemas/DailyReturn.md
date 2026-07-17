@@ -18,4 +18,4 @@ Module: `examples.stocks.schemas.market`
 | `return_1d` | `return_1d` | `double` | yes |
 | `gain` | `gain` | `double` | yes |
 | `loss` | `loss` | `double` | yes |
-| `signed_volume` | `signed_volume` | `long` | yes |
+| `signed_volume` | `signed_volume` | `long` | no |

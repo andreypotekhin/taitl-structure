@@ -11,6 +11,6 @@ Module: `examples.stocks.schemas.indicators`
 | `return_1d` | `return_1d` | `double` | yes |
 | `benchmark_return` | `benchmark_return` | `double` | yes |
 | `excess_return` | `excess_return` | `double` | yes |
-| `daily_return_rank` | `daily_return_rank` | `long` | no |
-| `drawdown` | `drawdown` | `double` | no |
-| `realized_volatility_20` | `realized_volatility_20` | `double` | yes |
+| `daily_return_rank` | `daily_return_rank` | `long` | yes |
+| `drawdown_from_20d_high` | `drawdown_from_20d_high` | `double` | yes |
+| `daily_return_stddev_20` | `daily_return_stddev_20` | `double` | yes |

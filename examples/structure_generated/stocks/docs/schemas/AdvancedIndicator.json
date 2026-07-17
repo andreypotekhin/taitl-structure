@@ -34,18 +34,18 @@
     {
       "column": "daily_return_rank",
       "name": "daily_return_rank",
-      "nullable": false,
+      "nullable": true,
       "type": "long"
     },
     {
-      "column": "drawdown",
-      "name": "drawdown",
-      "nullable": false,
+      "column": "drawdown_from_20d_high",
+      "name": "drawdown_from_20d_high",
+      "nullable": true,
       "type": "double"
     },
     {
-      "column": "realized_volatility_20",
-      "name": "realized_volatility_20",
+      "column": "daily_return_stddev_20",
+      "name": "daily_return_stddev_20",
       "nullable": true,
       "type": "double"
     }

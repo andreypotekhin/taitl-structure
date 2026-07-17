@@ -1,0 +1,20 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "corpus",
+      "name": "corpus",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "estimated_distinct_words",
+      "name": "estimated_distinct_words",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.texts.schemas.analytics",
+  "name": "CorpusVocabulary"
+}

@@ -43,9 +43,9 @@
       "source": "source:examples.stocks.transforms.volatility.Volatility.calculate.field.range_14"
     },
     {
-      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.volatility.VolatilityGenerated.run.step.0.calculate.select.return_stddev_20",
-      "ir": "ir:Volatility.step.0.calculate.project.return_stddev_20",
-      "source": "source:examples.stocks.transforms.volatility.Volatility.calculate.field.return_stddev_20"
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.volatility.VolatilityGenerated.run.step.0.calculate.select.daily_return_stddev_20",
+      "ir": "ir:Volatility.step.0.calculate.project.daily_return_stddev_20",
+      "source": "source:examples.stocks.transforms.volatility.Volatility.calculate.field.daily_return_stddev_20"
     },
     {
       "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.volatility.VolatilityGenerated.run.step.0.calculate.select.bollinger_middle",
@@ -156,26 +156,26 @@
         },
         "operation": "project",
         "sources": [
-          "returns.high",
-          "returns.low",
           "returns.trade_date",
-          "returns.symbol"
+          "returns.symbol",
+          "returns.high",
+          "returns.low"
         ],
         "step": "calculate",
         "target": "VolatilityIndicator.range_14"
       },
       {
         "detail": {
-          "field": "return_stddev_20"
+          "field": "daily_return_stddev_20"
         },
         "operation": "project",
         "sources": [
-          "returns.return_1d",
           "returns.trade_date",
-          "returns.symbol"
+          "returns.symbol",
+          "returns.return_1d"
         ],
         "step": "calculate",
-        "target": "VolatilityIndicator.return_stddev_20"
+        "target": "VolatilityIndicator.daily_return_stddev_20"
       },
       {
         "detail": {
@@ -183,9 +183,9 @@
         },
         "operation": "project",
         "sources": [
-          "returns.close",
           "returns.trade_date",
-          "returns.symbol"
+          "returns.symbol",
+          "returns.close"
         ],
         "step": "calculate",
         "target": "VolatilityIndicator.bollinger_middle"
@@ -196,9 +196,9 @@
         },
         "operation": "project",
         "sources": [
-          "returns.close",
           "returns.trade_date",
-          "returns.symbol"
+          "returns.symbol",
+          "returns.close"
         ],
         "step": "calculate",
         "target": "VolatilityIndicator.bollinger_upper"
@@ -209,9 +209,9 @@
         },
         "operation": "project",
         "sources": [
-          "returns.close",
           "returns.trade_date",
-          "returns.symbol"
+          "returns.symbol",
+          "returns.close"
         ],
         "step": "calculate",
         "target": "VolatilityIndicator.bollinger_lower"

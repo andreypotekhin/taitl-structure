@@ -803,18 +803,11 @@ class RenderPySparkStep:
     def _needs_cast(self, assignment) -> bool:
         if isinstance(assignment.field.type, StructType):
             return False
-        if self._window_rank_expression(assignment.expression):
-            return True
         if assignment.expression.type is None:
             return True
         if not self._same_type(assignment.expression.type, assignment.field.type):
             return True
         return False
-
-    def _window_rank_expression(self, expression: PySparkExpressionRecipe) -> bool:
-        if expression.kind != "transform_expression":
-            return False
-        return expression.data.get("function") in {"window_row_number", "window_rank", "window_dense_rank"}
 
     def _needs_alias(self, assignment) -> bool:
         if assignment.expression.kind != "field":

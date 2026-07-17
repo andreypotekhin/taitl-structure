@@ -1,0 +1,678 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "ExtractTextGenerated",
+  "inputs": [
+    {
+      "name": "documents",
+      "ordinal": 0,
+      "schema": "Document"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated",
+      "ir": "ir:ExtractText",
+      "source": "source:examples.texts.transforms.extract.ExtractText"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.input.documents",
+      "ir": "ir:ExtractText.input.0.documents",
+      "source": "source:examples.texts.transforms.extract.ExtractText.input.documents"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sections.select.id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.0.sections.project.id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sections.id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sections.select.document_id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.0.sections.project.document_id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sections.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sections.select.ordinal",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.0.sections.project.ordinal",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sections.ordinal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sections.select.heading",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.0.sections.project.heading",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sections.heading"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.hook.raw.extract",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.hook.raw.extract",
+      "source": "source:examples.texts.transforms.extract.ExtractText.extract"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.paragraphs.select.id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.1.paragraphs.project.id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.paragraphs.id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.paragraphs.select.document_id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.1.paragraphs.project.document_id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.paragraphs.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.paragraphs.select.section_id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.1.paragraphs.project.section_id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.paragraphs.section_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.paragraphs.select.ordinal",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.1.paragraphs.project.ordinal",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.paragraphs.ordinal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.paragraphs.select.content",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.1.paragraphs.project.content",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.paragraphs.content"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sentences.select.id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.2.sentences.project.id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sentences.id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sentences.select.document_id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.2.sentences.project.document_id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sentences.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sentences.select.section_id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.2.sentences.project.section_id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sentences.section_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sentences.select.paragraph_id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.2.sentences.project.paragraph_id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sentences.paragraph_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sentences.select.paragraph_ordinal",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.2.sentences.project.paragraph_ordinal",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sentences.paragraph_ordinal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sentences.select.ordinal",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.2.sentences.project.ordinal",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sentences.ordinal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sentences.select.content",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.2.sentences.project.content",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sentences.content"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.words.select.id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.3.words.project.id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.words.id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.words.select.document_id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.3.words.project.document_id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.words.document_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.words.select.section_id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.3.words.project.section_id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.words.section_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.words.select.paragraph_id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.3.words.project.paragraph_id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.words.paragraph_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.words.select.paragraph_ordinal",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.3.words.project.paragraph_ordinal",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.words.paragraph_ordinal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.words.select.sentence_id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.3.words.project.sentence_id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.words.sentence_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.words.select.ordinal",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.3.words.project.ordinal",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.words.ordinal"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.words.select.token",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.3.words.project.token",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.words.token"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.output.0.sections.validation.final",
+      "ir": "ir:ExtractText.output.0.sections.validation.final",
+      "source": "source:examples.texts.transforms.extract.ExtractText.output.sections"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.output.1.paragraphs.validation.final",
+      "ir": "ir:ExtractText.output.1.paragraphs.validation.final",
+      "source": "source:examples.texts.transforms.extract.ExtractText.output.paragraphs"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.output.2.sentences.validation.final",
+      "ir": "ir:ExtractText.output.2.sentences.validation.final",
+      "source": "source:examples.texts.transforms.extract.ExtractText.output.sentences"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.output.3.words.validation.final",
+      "ir": "ir:ExtractText.output.3.words.validation.final",
+      "source": "source:examples.texts.transforms.extract.ExtractText.output.words"
+    }
+  ],
+  "schema_constants": {
+    "CorpusStatistics": {
+      "constant": "CORPUS_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.analytics"
+    },
+    "CorpusVocabulary": {
+      "constant": "CORPUS_VOCABULARY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.analytics"
+    },
+    "Document": {
+      "constant": "DOCUMENT_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.text"
+    },
+    "DocumentFeatures": {
+      "constant": "DOCUMENT_FEATURES_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.analytics"
+    },
+    "DocumentStatistics": {
+      "constant": "DOCUMENT_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.analytics"
+    },
+    "Paragraph": {
+      "constant": "PARAGRAPH_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.text"
+    },
+    "ParagraphStatistics": {
+      "constant": "PARAGRAPH_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.analytics"
+    },
+    "Section": {
+      "constant": "SECTION_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.text"
+    },
+    "SectionStatistics": {
+      "constant": "SECTION_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.analytics"
+    },
+    "Sentence": {
+      "constant": "SENTENCE_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.text"
+    },
+    "SentenceStatistics": {
+      "constant": "SENTENCE_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.analytics"
+    },
+    "SimilarDocument": {
+      "constant": "SIMILAR_DOCUMENT_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.analytics"
+    },
+    "Word": {
+      "constant": "WORD_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.text"
+    }
+  },
+  "source_transform": "examples.texts.transforms.extract.ExtractText",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "documents"
+        ],
+        "step": null,
+        "target": "ExtractText"
+      },
+      {
+        "detail": {
+          "input_schema": "Document",
+          "output_schema": "Section"
+        },
+        "operation": "step",
+        "sources": [
+          "documents"
+        ],
+        "step": "declare_hierarchy",
+        "target": "declare_hierarchy"
+      },
+      {
+        "detail": {
+          "field": "id",
+          "result": "sections"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.id"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sections.id"
+      },
+      {
+        "detail": {
+          "field": "document_id",
+          "result": "sections"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.id"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sections.document_id"
+      },
+      {
+        "detail": {
+          "field": "ordinal",
+          "result": "sections"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sections.ordinal"
+      },
+      {
+        "detail": {
+          "field": "heading",
+          "result": "sections"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.title"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sections.heading"
+      },
+      {
+        "detail": {
+          "phase": "raw",
+          "project_output": false,
+          "schema_mode": "strict"
+        },
+        "operation": "hook",
+        "sources": [
+          "Section"
+        ],
+        "step": "declare_hierarchy",
+        "target": "declare_hierarchy.hook.extract"
+      },
+      {
+        "detail": {
+          "field": "id",
+          "result": "paragraphs"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.id"
+        ],
+        "step": "declare_hierarchy",
+        "target": "paragraphs.id"
+      },
+      {
+        "detail": {
+          "field": "document_id",
+          "result": "paragraphs"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.id"
+        ],
+        "step": "declare_hierarchy",
+        "target": "paragraphs.document_id"
+      },
+      {
+        "detail": {
+          "field": "section_id",
+          "result": "paragraphs"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.id"
+        ],
+        "step": "declare_hierarchy",
+        "target": "paragraphs.section_id"
+      },
+      {
+        "detail": {
+          "field": "ordinal",
+          "result": "paragraphs"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "paragraphs.ordinal"
+      },
+      {
+        "detail": {
+          "field": "content",
+          "result": "paragraphs"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.content"
+        ],
+        "step": "declare_hierarchy",
+        "target": "paragraphs.content"
+      },
+      {
+        "detail": {
+          "field": "id",
+          "result": "sentences"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.id"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sentences.id"
+      },
+      {
+        "detail": {
+          "field": "document_id",
+          "result": "sentences"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.id"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sentences.document_id"
+      },
+      {
+        "detail": {
+          "field": "section_id",
+          "result": "sentences"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.id"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sentences.section_id"
+      },
+      {
+        "detail": {
+          "field": "paragraph_id",
+          "result": "sentences"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.id"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sentences.paragraph_id"
+      },
+      {
+        "detail": {
+          "field": "paragraph_ordinal",
+          "result": "sentences"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sentences.paragraph_ordinal"
+      },
+      {
+        "detail": {
+          "field": "ordinal",
+          "result": "sentences"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sentences.ordinal"
+      },
+      {
+        "detail": {
+          "field": "content",
+          "result": "sentences"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.content"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sentences.content"
+      },
+      {
+        "detail": {
+          "field": "id",
+          "result": "words"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.id"
+        ],
+        "step": "declare_hierarchy",
+        "target": "words.id"
+      },
+      {
+        "detail": {
+          "field": "document_id",
+          "result": "words"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.id"
+        ],
+        "step": "declare_hierarchy",
+        "target": "words.document_id"
+      },
+      {
+        "detail": {
+          "field": "section_id",
+          "result": "words"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.id"
+        ],
+        "step": "declare_hierarchy",
+        "target": "words.section_id"
+      },
+      {
+        "detail": {
+          "field": "paragraph_id",
+          "result": "words"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.id"
+        ],
+        "step": "declare_hierarchy",
+        "target": "words.paragraph_id"
+      },
+      {
+        "detail": {
+          "field": "paragraph_ordinal",
+          "result": "words"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "words.paragraph_ordinal"
+      },
+      {
+        "detail": {
+          "field": "sentence_id",
+          "result": "words"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.id"
+        ],
+        "step": "declare_hierarchy",
+        "target": "words.sentence_id"
+      },
+      {
+        "detail": {
+          "field": "ordinal",
+          "result": "words"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "words.ordinal"
+      },
+      {
+        "detail": {
+          "field": "token",
+          "result": "words"
+        },
+        "operation": "project",
+        "sources": [
+          "documents.title"
+        ],
+        "step": "declare_hierarchy",
+        "target": "words.token"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "Section"
+        ],
+        "step": null,
+        "target": "Section.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "Paragraph"
+        ],
+        "step": null,
+        "target": "Paragraph.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "Sentence"
+        ],
+        "step": null,
+        "target": "Sentence.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "Word"
+        ],
+        "step": null,
+        "target": "Word.validation.final"
+      }
+    ],
+    "opaque_boundaries": [
+      {
+        "hook": "extract",
+        "phase": "raw",
+        "reason": "arbitrary PySpark hook body",
+        "schema": "Section",
+        "step": "declare_hierarchy",
+        "target": "declare_hierarchy"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "document",
+      "joins": [],
+      "name": "declare_hierarchy",
+      "output_alias": "section",
+      "output_schema": "Section",
+      "results": [
+        {
+          "after_hooks": [
+            "extract"
+          ],
+          "frame": "sections",
+          "lane": "sections",
+          "schema": "Section"
+        },
+        {
+          "after_hooks": [],
+          "frame": "paragraphs",
+          "lane": "paragraphs",
+          "schema": "Paragraph"
+        },
+        {
+          "after_hooks": [],
+          "frame": "sentences",
+          "lane": "sentences",
+          "schema": "Sentence"
+        },
+        {
+          "after_hooks": [],
+          "frame": "words",
+          "lane": "words",
+          "schema": "Word"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.texts.pyspark.transforms.extract",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "sections",
+        "schema": "Section"
+      },
+      {
+        "mode": "strict",
+        "name": "paragraphs",
+        "schema": "Paragraph"
+      },
+      {
+        "mode": "strict",
+        "name": "sentences",
+        "schema": "Sentence"
+      },
+      {
+        "mode": "strict",
+        "name": "words",
+        "schema": "Word"
+      }
+    ]
+  }
+}

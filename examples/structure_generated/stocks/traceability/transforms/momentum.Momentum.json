@@ -48,9 +48,9 @@
       "source": "source:examples.stocks.transforms.momentum.Momentum.calculate.field.roc_10"
     },
     {
-      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.momentum.MomentumGenerated.run.step.0.calculate.select.rsi_14",
-      "ir": "ir:Momentum.step.0.calculate.project.rsi_14",
-      "source": "source:examples.stocks.transforms.momentum.Momentum.calculate.field.rsi_14"
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.momentum.MomentumGenerated.run.step.0.calculate.select.cutler_rsi_14",
+      "ir": "ir:Momentum.step.0.calculate.project.cutler_rsi_14",
+      "source": "source:examples.stocks.transforms.momentum.Momentum.calculate.field.cutler_rsi_14"
     },
     {
       "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.momentum.MomentumGenerated.run.step.0.calculate.select.stochastic_k_14",
@@ -162,26 +162,26 @@
         },
         "operation": "project",
         "sources": [
-          "returns.close",
           "returns.trade_date",
-          "returns.symbol"
+          "returns.symbol",
+          "returns.close"
         ],
         "step": "calculate",
         "target": "MomentumIndicator.roc_10"
       },
       {
         "detail": {
-          "field": "rsi_14"
+          "field": "cutler_rsi_14"
         },
         "operation": "project",
         "sources": [
-          "returns.loss",
           "returns.trade_date",
           "returns.symbol",
+          "returns.loss",
           "returns.gain"
         ],
         "step": "calculate",
-        "target": "MomentumIndicator.rsi_14"
+        "target": "MomentumIndicator.cutler_rsi_14"
       },
       {
         "detail": {
@@ -189,10 +189,10 @@
         },
         "operation": "project",
         "sources": [
-          "returns.close",
-          "returns.low",
           "returns.trade_date",
           "returns.symbol",
+          "returns.close",
+          "returns.low",
           "returns.high"
         ],
         "step": "calculate",

@@ -1,20 +1,20 @@
-# Sprint 20: V5 PySpark Platform Extraction
+# Sprint 20: V5 PySpark Plugin Extraction
 
 ## Sprint Goal
 
-Move PySpark target ownership behind the public callbacks while preserving the complete released PySpark contract.
+Move PySpark target ownership behind the public Platform API while preserving the complete released PySpark contract.
 
 ## Product Outcome
 
 PySpark users retain online and generated behavior, but Core no longer imports PySpark plans, runners, renderers,
-capability rules, or target grammar directly.
+capability rules, or PySpark platform DSL directly.
 
 ## Scope
 
 ### In Scope
 
-- `structure.platform.pyspark` authoring API and field/type definitions.
-- PySpark `PlatformAPI1` façade with schema, compiler, capability, execution, and generation service facets.
+- `structure.platform.pyspark` platform DSL and field/type definitions.
+- PySpark `PlatformAPI` façade with schema, compiler, capability, execution, and generation service facets.
 - Generic `StructureSession(runtime=..., context=...)` execution.
 - Callback-backed CLI check, compile, explain, schema tooling, traceability, and generated-file workflows.
 - PySpark classic and Connect regression, parity, and Spark-free compilation evidence.
@@ -31,7 +31,7 @@ capability rules, or target grammar directly.
 
 ## Acceptance Criteria
 
-- PySpark uses the same public callback API exposed to external distributions.
+- PySpark uses the same public Platform API exposed to external distributions.
 - Core artifact and runtime modules contain no concrete PySpark plan or runtime types.
 - Existing supported PySpark semantics and generated output remain equivalent.
 - Compiler-only commands remain free of PySpark, Java, and Spark startup.

@@ -319,7 +319,10 @@ class RenderPySparkExpression:
         if function in {"window_row_number", "window_rank", "window_dense_rank"}:
             order_by, partition_by = self._window_arguments(expression, 0)
             call = function.removeprefix("window_")
-            return f"F.{call}().over({self._window(order_by, partition_by, expression, aliases, include_frame=False)})"
+            return (
+                f"F.{call}().over({self._window(order_by, partition_by, expression, aliases, include_frame=False)})"
+                ".cast(T.LongType())"
+            )
         if function in {"window_percent_rank", "window_cume_dist"}:
             order_by, partition_by = self._window_arguments(expression, 0)
             call = function.removeprefix("window_")

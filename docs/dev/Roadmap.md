@@ -93,15 +93,13 @@ supplies target-specific service facets, and external wheels can supply equivale
 
 - Core-orchestrated schema, compilation, execution, generation, serialization, capability, and diagnostic workflows,
   with private target-local replacement of a compatible individual engine when an advanced platform requires it.
-- Public, versioned `PlatformAPI1` façades with symmetric Core/plugin API negotiation.
-- Optional synchronous façade `send(message)` for vendor-owned in-process engine/platform coordination; no message
-  bus.
-- Metadata-only discovery of one provider per platform installed through Python package entry points.
+- Public, versioned `PlatformAPI` façades with symmetric Core/plugin API negotiation.
+- Metadata-only discovery of one plugin per platform name installed through Python package entry points.
 - Exactly one target per transform or composed pipeline, with different transforms in one project allowed to select
   different installed platforms.
-- Target-owned field definitions, expressions, joins, aggregations, and other authoring APIs.
-- Bundled PySpark behavior moved behind the same public callback contracts available to external plugins.
-- Vendor-owned import packages for external platform authoring APIs.
+- Target-owned platform DSLs: field definitions, expressions, joins, aggregations, and other target APIs.
+- Bundled PySpark behavior moved behind the same public Platform API available to external plugins.
+- Vendor-owned import packages for external platform DSLs.
 - An internal finite-iterable wheel proving discovery, isolation, execution, serialization, and conformance without
   receiving a public product-support claim.
 - Immediate removal of target-owned names from the `structure` package root.

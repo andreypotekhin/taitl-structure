@@ -430,16 +430,22 @@ class PySparkExpressionEvaluator:
             return getattr(functions, name)(self.evaluate(value, functions=functions, aliases=aliases, window=window))
         if function in {"window_row_number", "window_rank", "window_dense_rank"}:
             order_by, partition_by = self._window_arguments(expression, 0)
-            return getattr(functions, function.removeprefix("window_"))().over(
-                self._window(
-                    order_by,
-                    partition_by,
-                    expression,
-                    functions=functions,
-                    aliases=aliases,
-                    window=window,
-                    include_frame=False,
+            # Spark Connect materializes these functions as int, unlike the LongType
+            # promised by Structure's expression contract and emitted generated code.
+            return (
+                getattr(functions, function.removeprefix("window_"))()
+                .over(
+                    self._window(
+                        order_by,
+                        partition_by,
+                        expression,
+                        functions=functions,
+                        aliases=aliases,
+                        window=window,
+                        include_frame=False,
+                    )
                 )
+                .cast("long")
             )
         if function in {"window_percent_rank", "window_cume_dist"}:
             order_by, partition_by = self._window_arguments(expression, 0)

@@ -1,0 +1,50 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "left_document_id",
+      "name": "left_document_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "right_document_id",
+      "name": "right_document_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source",
+      "name": "source",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "language",
+      "name": "language",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "title_prefix",
+      "name": "title_prefix",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "title_distance",
+      "name": "title_distance",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "content_distance",
+      "name": "content_distance",
+      "nullable": false,
+      "type": "integer"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.texts.schemas.analytics",
+  "name": "SimilarDocument"
+}

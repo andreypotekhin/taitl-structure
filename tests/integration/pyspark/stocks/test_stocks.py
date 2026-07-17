@@ -1,3 +1,5 @@
+import csv
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -59,12 +61,8 @@ def test_stock_fixtures_run_online_and_generated(spark, tmp_path) -> None:
         from importlib import import_module
 
         schemas = import_module(f"{PACKAGE}.pyspark.schemas.market")
-        bars = spark.read.schema(schemas.MARKET_BAR_SCHEMA).option("header", True).csv(str(FIXTURES / "bars.csv"))
-        benchmarks = (
-            spark.read.schema(schemas.BENCHMARK_RETURN_SCHEMA)
-            .option("header", True)
-            .csv(str(FIXTURES / "benchmark_returns.csv"))
-        )
+        bars = spark.createDataFrame(_bars(), schemas.MARKET_BAR_SCHEMA)
+        benchmarks = spark.createDataFrame(_benchmarks(), schemas.BENCHMARK_RETURN_SCHEMA)
         online_returns = PrepareReturns(bars=bars).run(session(spark, execution_mode="online")).returns
         generated_returns = (
             PrepareReturns(bars=bars).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).returns
@@ -86,3 +84,27 @@ def _assert_equivalent(transform, *, spark, **inputs) -> None:
         transform(**inputs).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).indicators
     )
     assert rows(online, "symbol", "trade_date") == rows(generated, "symbol", "trade_date")
+
+
+def _bars() -> list[tuple[str, date, float, float, float, float, int]]:
+    with (FIXTURES / "bars.csv").open(newline="", encoding="utf-8") as source:
+        return [
+            (
+                row["symbol"],
+                date.fromisoformat(row["trade_date"]),
+                float(row["open"]),
+                float(row["high"]),
+                float(row["low"]),
+                float(row["close"]),
+                int(row["volume"]),
+            )
+            for row in csv.DictReader(source)
+        ]
+
+
+def _benchmarks() -> list[tuple[str, date, float]]:
+    with (FIXTURES / "benchmark_returns.csv").open(newline="", encoding="utf-8") as source:
+        return [
+            (row["benchmark"], date.fromisoformat(row["trade_date"]), float(row["return_1d"]))
+            for row in csv.DictReader(source)
+        ]

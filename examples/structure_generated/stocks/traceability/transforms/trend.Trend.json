@@ -172,9 +172,9 @@
         },
         "operation": "project",
         "sources": [
-          "bars.close",
           "bars.trade_date",
-          "bars.symbol"
+          "bars.symbol",
+          "bars.close"
         ],
         "step": "calculate",
         "target": "TrendIndicator.sma_20"
@@ -185,9 +185,9 @@
         },
         "operation": "project",
         "sources": [
-          "bars.close",
           "bars.trade_date",
-          "bars.symbol"
+          "bars.symbol",
+          "bars.close"
         ],
         "step": "calculate",
         "target": "TrendIndicator.sma_50"
@@ -198,9 +198,9 @@
         },
         "operation": "project",
         "sources": [
-          "bars.high",
           "bars.trade_date",
-          "bars.symbol"
+          "bars.symbol",
+          "bars.high"
         ],
         "step": "calculate",
         "target": "TrendIndicator.high_20"
@@ -211,9 +211,9 @@
         },
         "operation": "project",
         "sources": [
-          "bars.low",
           "bars.trade_date",
-          "bars.symbol"
+          "bars.symbol",
+          "bars.low"
         ],
         "step": "calculate",
         "target": "TrendIndicator.low_20"
@@ -224,9 +224,9 @@
         },
         "operation": "project",
         "sources": [
-          "bars.close",
           "bars.trade_date",
-          "bars.symbol"
+          "bars.symbol",
+          "bars.close"
         ],
         "step": "calculate",
         "target": "TrendIndicator.above_sma_50"

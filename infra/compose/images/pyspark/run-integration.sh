@@ -32,7 +32,8 @@ if [[ "${backend}" == spark-connect* ]]; then
         connect_args+=(--packages "org.apache.spark:spark-connect_${scala_version}:${STRUCTURE_EXPECTED_SPARK}")
     fi
 
-    spark-submit "${connect_args[@]}" &
+    SPARK_SUBMIT_OPTS="${SPARK_SUBMIT_OPTS:-} -Dlog4j.configurationFile=file:/etc/spark/log4j2-integration.properties" \
+        spark-submit "${connect_args[@]}" &
     connect_pid="$!"
 fi
 

@@ -9,8 +9,8 @@ Module: `examples.stocks.schemas.indicators`
 | `symbol` | `symbol` | `string` | no |
 | `trade_date` | `trade_date` | `date` | no |
 | `close` | `close` | `double` | no |
-| `sma_20` | `sma_20` | `double` | no |
-| `sma_50` | `sma_50` | `double` | no |
-| `high_20` | `high_20` | `double` | no |
-| `low_20` | `low_20` | `double` | no |
-| `above_sma_50` | `above_sma_50` | `boolean` | no |
+| `sma_20` | `sma_20` | `double` | yes |
+| `sma_50` | `sma_50` | `double` | yes |
+| `high_20` | `high_20` | `double` | yes |
+| `low_20` | `low_20` | `double` | yes |
+| `above_sma_50` | `above_sma_50` | `boolean` | yes |

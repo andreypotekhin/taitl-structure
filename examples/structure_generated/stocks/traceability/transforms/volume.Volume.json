@@ -58,9 +58,9 @@
       "source": "source:examples.stocks.transforms.volume.Volume.calculate.field.on_balance_volume"
     },
     {
-      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.volume.VolumeGenerated.run.step.0.calculate.select.vwap_20",
-      "ir": "ir:Volume.step.0.calculate.project.vwap_20",
-      "source": "source:examples.stocks.transforms.volume.Volume.calculate.field.vwap_20"
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.volume.VolumeGenerated.run.step.0.calculate.select.typical_price_vwap_20",
+      "ir": "ir:Volume.step.0.calculate.project.typical_price_vwap_20",
+      "source": "source:examples.stocks.transforms.volume.Volume.calculate.field.typical_price_vwap_20"
     },
     {
       "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.volume.VolumeGenerated.run.output.0.indicators.validation.final",
@@ -167,9 +167,9 @@
         },
         "operation": "project",
         "sources": [
-          "returns.volume",
           "returns.trade_date",
-          "returns.symbol"
+          "returns.symbol",
+          "returns.volume"
         ],
         "step": "calculate",
         "target": "VolumeIndicator.volume_sma_20"
@@ -180,9 +180,9 @@
         },
         "operation": "project",
         "sources": [
-          "returns.volume",
           "returns.trade_date",
-          "returns.symbol"
+          "returns.symbol",
+          "returns.volume"
         ],
         "step": "calculate",
         "target": "VolumeIndicator.relative_volume"
@@ -202,17 +202,19 @@
       },
       {
         "detail": {
-          "field": "vwap_20"
+          "field": "typical_price_vwap_20"
         },
         "operation": "project",
         "sources": [
-          "returns.close",
-          "returns.volume",
           "returns.trade_date",
-          "returns.symbol"
+          "returns.symbol",
+          "returns.high",
+          "returns.low",
+          "returns.close",
+          "returns.volume"
         ],
         "step": "calculate",
-        "target": "VolumeIndicator.vwap_20"
+        "target": "VolumeIndicator.typical_price_vwap_20"
       },
       {
         "detail": {

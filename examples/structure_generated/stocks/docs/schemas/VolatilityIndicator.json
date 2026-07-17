@@ -16,19 +16,19 @@
     {
       "column": "range_14",
       "name": "range_14",
-      "nullable": false,
+      "nullable": true,
       "type": "double"
     },
     {
-      "column": "return_stddev_20",
-      "name": "return_stddev_20",
+      "column": "daily_return_stddev_20",
+      "name": "daily_return_stddev_20",
       "nullable": true,
       "type": "double"
     },
     {
       "column": "bollinger_middle",
       "name": "bollinger_middle",
-      "nullable": false,
+      "nullable": true,
       "type": "double"
     },
     {

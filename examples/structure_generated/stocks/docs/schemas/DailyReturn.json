@@ -78,7 +78,7 @@
     {
       "column": "signed_volume",
       "name": "signed_volume",
-      "nullable": true,
+      "nullable": false,
       "type": "long"
     }
   ],

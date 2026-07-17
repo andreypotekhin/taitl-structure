@@ -8,11 +8,11 @@ TREND_INDICATOR_SCHEMA = T.StructType([
     T.StructField("symbol", T.StringType(), False),
     T.StructField("trade_date", T.DateType(), False),
     T.StructField("close", T.DoubleType(), False),
-    T.StructField("sma_20", T.DoubleType(), False),
-    T.StructField("sma_50", T.DoubleType(), False),
-    T.StructField("high_20", T.DoubleType(), False),
-    T.StructField("low_20", T.DoubleType(), False),
-    T.StructField("above_sma_50", T.BooleanType(), False),
+    T.StructField("sma_20", T.DoubleType(), True),
+    T.StructField("sma_50", T.DoubleType(), True),
+    T.StructField("high_20", T.DoubleType(), True),
+    T.StructField("low_20", T.DoubleType(), True),
+    T.StructField("above_sma_50", T.BooleanType(), True),
 ])
 
 MOMENTUM_INDICATOR_SCHEMA = T.StructType([
@@ -20,16 +20,16 @@ MOMENTUM_INDICATOR_SCHEMA = T.StructType([
     T.StructField("trade_date", T.DateType(), False),
     T.StructField("return_1d", T.DoubleType(), True),
     T.StructField("roc_10", T.DoubleType(), True),
-    T.StructField("rsi_14", T.DoubleType(), True),
+    T.StructField("cutler_rsi_14", T.DoubleType(), True),
     T.StructField("stochastic_k_14", T.DoubleType(), True),
 ])
 
 VOLATILITY_INDICATOR_SCHEMA = T.StructType([
     T.StructField("symbol", T.StringType(), False),
     T.StructField("trade_date", T.DateType(), False),
-    T.StructField("range_14", T.DoubleType(), False),
-    T.StructField("return_stddev_20", T.DoubleType(), True),
-    T.StructField("bollinger_middle", T.DoubleType(), False),
+    T.StructField("range_14", T.DoubleType(), True),
+    T.StructField("daily_return_stddev_20", T.DoubleType(), True),
+    T.StructField("bollinger_middle", T.DoubleType(), True),
     T.StructField("bollinger_upper", T.DoubleType(), True),
     T.StructField("bollinger_lower", T.DoubleType(), True),
 ])
@@ -38,10 +38,10 @@ VOLUME_INDICATOR_SCHEMA = T.StructType([
     T.StructField("symbol", T.StringType(), False),
     T.StructField("trade_date", T.DateType(), False),
     T.StructField("volume", T.LongType(), False),
-    T.StructField("volume_sma_20", T.DoubleType(), False),
-    T.StructField("relative_volume", T.DoubleType(), False),
-    T.StructField("on_balance_volume", T.LongType(), True),
-    T.StructField("vwap_20", T.DoubleType(), False),
+    T.StructField("volume_sma_20", T.DoubleType(), True),
+    T.StructField("relative_volume", T.DoubleType(), True),
+    T.StructField("on_balance_volume", T.LongType(), False),
+    T.StructField("typical_price_vwap_20", T.DoubleType(), True),
 ])
 
 ADVANCED_INDICATOR_SCHEMA = T.StructType([
@@ -50,7 +50,7 @@ ADVANCED_INDICATOR_SCHEMA = T.StructType([
     T.StructField("return_1d", T.DoubleType(), True),
     T.StructField("benchmark_return", T.DoubleType(), True),
     T.StructField("excess_return", T.DoubleType(), True),
-    T.StructField("daily_return_rank", T.LongType(), False),
-    T.StructField("drawdown", T.DoubleType(), False),
-    T.StructField("realized_volatility_20", T.DoubleType(), True),
+    T.StructField("daily_return_rank", T.LongType(), True),
+    T.StructField("drawdown_from_20d_high", T.DoubleType(), True),
+    T.StructField("daily_return_stddev_20", T.DoubleType(), True),
 ])

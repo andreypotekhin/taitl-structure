@@ -8,8 +8,8 @@ Module: `examples.stocks.schemas.indicators`
 | --- | --- | --- | --- |
 | `symbol` | `symbol` | `string` | no |
 | `trade_date` | `trade_date` | `date` | no |
-| `range_14` | `range_14` | `double` | no |
-| `return_stddev_20` | `return_stddev_20` | `double` | yes |
-| `bollinger_middle` | `bollinger_middle` | `double` | no |
+| `range_14` | `range_14` | `double` | yes |
+| `daily_return_stddev_20` | `daily_return_stddev_20` | `double` | yes |
+| `bollinger_middle` | `bollinger_middle` | `double` | yes |
 | `bollinger_upper` | `bollinger_upper` | `double` | yes |
 | `bollinger_lower` | `bollinger_lower` | `double` | yes |

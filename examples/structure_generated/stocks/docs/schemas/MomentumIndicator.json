@@ -26,8 +26,8 @@
       "type": "double"
     },
     {
-      "column": "rsi_14",
-      "name": "rsi_14",
+      "column": "cutler_rsi_14",
+      "name": "cutler_rsi_14",
       "nullable": true,
       "type": "double"
     },

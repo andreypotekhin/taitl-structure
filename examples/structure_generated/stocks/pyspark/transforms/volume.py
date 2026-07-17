@@ -30,10 +30,10 @@ class VolumeGenerated:
             F.col("daily_return.symbol"),
             F.col("daily_return.trade_date"),
             F.col("daily_return.volume"),
-            F.avg(F.col("daily_return.volume")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, 0)).alias("volume_sma_20"),
-            (F.col("daily_return.volume") / F.avg(F.col("daily_return.volume")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, 0))).alias("relative_volume"),
+            F.when((F.row_number().over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())).cast(T.LongType()) >= F.lit(20)), F.avg(F.col("daily_return.volume")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, 0))).otherwise(F.lit(None)).alias("volume_sma_20"),
+            F.when((F.row_number().over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())).cast(T.LongType()) >= F.lit(20)), (F.col("daily_return.volume") / F.avg(F.col("daily_return.volume")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, 0)))).otherwise(F.lit(None)).alias("relative_volume"),
             F.sum(F.col("daily_return.signed_volume")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(Window.unboundedPreceding, Window.currentRow)).alias("on_balance_volume"),
-            (F.sum((F.col("daily_return.close") * F.col("daily_return.volume"))).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, Window.currentRow)) / F.sum(F.col("daily_return.volume")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, Window.currentRow))).alias("vwap_20"),
+            F.when((F.row_number().over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc())).cast(T.LongType()) >= F.lit(20)), (F.sum(((((F.col("daily_return.high") + F.col("daily_return.low")) + F.col("daily_return.close")) / F.lit(3.0)) * F.col("daily_return.volume"))).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, Window.currentRow)) / F.sum(F.col("daily_return.volume")).over(Window.partitionBy(F.col("daily_return.symbol")).orderBy(F.col("daily_return.trade_date").asc()).rowsBetween(-19, Window.currentRow)))).otherwise(F.lit(None)).alias("typical_price_vwap_20"),
         )
 
         # Step method: indicators

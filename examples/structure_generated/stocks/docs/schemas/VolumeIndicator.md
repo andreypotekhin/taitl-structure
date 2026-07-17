@@ -9,7 +9,7 @@ Module: `examples.stocks.schemas.indicators`
 | `symbol` | `symbol` | `string` | no |
 | `trade_date` | `trade_date` | `date` | no |
 | `volume` | `volume` | `long` | no |
-| `volume_sma_20` | `volume_sma_20` | `double` | no |
-| `relative_volume` | `relative_volume` | `double` | no |
-| `on_balance_volume` | `on_balance_volume` | `long` | yes |
-| `vwap_20` | `vwap_20` | `double` | no |
+| `volume_sma_20` | `volume_sma_20` | `double` | yes |
+| `relative_volume` | `relative_volume` | `double` | yes |
+| `on_balance_volume` | `on_balance_volume` | `long` | no |
+| `typical_price_vwap_20` | `typical_price_vwap_20` | `double` | yes |

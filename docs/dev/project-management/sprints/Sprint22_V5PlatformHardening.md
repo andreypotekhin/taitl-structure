@@ -1,4 +1,4 @@
-# Sprint 22: V5 Platform Architecture Hardening
+# Sprint 22: V5 Platform Plugin Architecture Hardening
 
 ## Sprint Goal
 
@@ -23,7 +23,7 @@ shim obscures which package owns target APIs.
 
 - New target platforms or transformation feature families.
 - Cross-platform pipelines, translation, or data interchange.
-- A generic plugin message bus, asynchronous messaging, or public support for private engine replacement.
+- A generic plugin message protocol or public support for private engine replacement.
 
 ## ExecPlan
 

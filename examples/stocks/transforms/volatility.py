@@ -10,6 +10,7 @@ class Volatility(Transform):
     indicators = output(VolatilityIndicator)
 
     def calculate(self, row: DailyReturn) -> VolatilityIndicator:
+        bar_number = row_number(partition_by=row.symbol, order_by=row.trade_date)
         window_20 = window(
             partition_by=row.symbol,
             order_by=row.trade_date,
@@ -20,14 +21,12 @@ class Volatility(Transform):
         return VolatilityIndicator(
             symbol=row.symbol,
             trade_date=row.trade_date,
-            range_14=rolling_avg(
-                row.high - row.low,
-                partition_by=row.symbol,
-                order_by=row.trade_date,
-                preceding=13,
-            ),
-            return_stddev_20=window_stddev(row.return_1d, over=window_20),
-            bollinger_middle=middle,
-            bollinger_upper=middle + 2.0 * deviation,
-            bollinger_lower=middle - 2.0 * deviation,
+            range_14=when(
+                bar_number >= 14,
+                rolling_avg(row.high - row.low, partition_by=row.symbol, order_by=row.trade_date, preceding=13),
+            ).otherwise(None),
+            daily_return_stddev_20=when(bar_number >= 21, window_stddev(row.return_1d, over=window_20)).otherwise(None),
+            bollinger_middle=when(bar_number >= 20, middle).otherwise(None),
+            bollinger_upper=when(bar_number >= 20, middle + 2.0 * deviation).otherwise(None),
+            bollinger_lower=when(bar_number >= 20, middle - 2.0 * deviation).otherwise(None),
         )

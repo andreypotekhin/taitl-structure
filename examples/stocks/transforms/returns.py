@@ -21,8 +21,10 @@ class PrepareReturns(Transform):
             volume=bar.volume,
             previous_close=previous_close,
             price_change=price_change,
-            return_1d=price_change / previous_close,
-            gain=when(price_change > 0, price_change).otherwise(0.0),
-            loss=when(price_change < 0, -price_change).otherwise(0.0),
-            signed_volume=when(price_change > 0, bar.volume).otherwise(-bar.volume),
+            return_1d=when(previous_close > 0, price_change / previous_close).otherwise(None),
+            gain=when(previous_close.is_null(), None).otherwise(when(price_change > 0, price_change).otherwise(0.0)),
+            loss=when(previous_close.is_null(), None).otherwise(when(price_change < 0, -price_change).otherwise(0.0)),
+            signed_volume=when(previous_close.is_null(), 0).otherwise(
+                when(price_change > 0, bar.volume).otherwise(when(price_change < 0, -bar.volume).otherwise(0))
+            ),
         )

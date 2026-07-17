@@ -22,25 +22,25 @@
     {
       "column": "volume_sma_20",
       "name": "volume_sma_20",
-      "nullable": false,
+      "nullable": true,
       "type": "double"
     },
     {
       "column": "relative_volume",
       "name": "relative_volume",
-      "nullable": false,
+      "nullable": true,
       "type": "double"
     },
     {
       "column": "on_balance_volume",
       "name": "on_balance_volume",
-      "nullable": true,
+      "nullable": false,
       "type": "long"
     },
     {
-      "column": "vwap_20",
-      "name": "vwap_20",
-      "nullable": false,
+      "column": "typical_price_vwap_20",
+      "name": "typical_price_vwap_20",
+      "nullable": true,
       "type": "double"
     }
   ],

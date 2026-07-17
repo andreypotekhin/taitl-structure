@@ -20,7 +20,7 @@ class DailyReturn(MarketBar):
     return_1d = double(nullable=True)
     gain = double(nullable=True)
     loss = double(nullable=True)
-    signed_volume = long(nullable=True)
+    signed_volume = long(nullable=False)
 
 
 class BenchmarkReturn(Schema):

@@ -253,6 +253,79 @@ def expected_stocks_generated() -> dict[str, str]:
     return _expected_generated("stocks")
 
 
+def render_texts_example() -> dict[str, str]:
+    with _example_imports():
+        from examples.texts.schemas.analytics import (
+            CorpusStatistics,
+            CorpusVocabulary,
+            DocumentFeatures,
+            DocumentStatistics,
+            ParagraphStatistics,
+            SectionStatistics,
+            SentenceStatistics,
+            SimilarDocument,
+        )
+        from examples.texts.schemas.text import Document, Paragraph, Section, Sentence, Word
+        from examples.texts.transforms.analyze import AnalyzeText
+        from examples.texts.transforms.corpus import CorpusText
+        from examples.texts.transforms.extract import ExtractText
+        from examples.texts.transforms.profile import ProfileDocuments
+
+        schema_modules: dict[str, Sequence[type[Schema]]] = {
+            "examples.texts.schemas.analytics": [
+                DocumentFeatures,
+                SentenceStatistics,
+                ParagraphStatistics,
+                SectionStatistics,
+                DocumentStatistics,
+                CorpusStatistics,
+                CorpusVocabulary,
+                SimilarDocument,
+            ],
+            "examples.texts.schemas.text": [Document, Section, Paragraph, Sentence, Word],
+        }
+        transforms = (
+            (ExtractText, "examples.texts.transforms.extract.ExtractText"),
+            (ProfileDocuments, "examples.texts.transforms.profile.ProfileDocuments"),
+            (AnalyzeText, "examples.texts.transforms.analyze.AnalyzeText"),
+            (CorpusText, "examples.texts.transforms.corpus.CorpusText"),
+        )
+        files = {}
+        for transform_class, source_transform in transforms:
+            files.update(
+                PySpark.render.project()(
+                    PySpark.plan.lower()(compile_transform(transform_class)),
+                    source_transform=source_transform,
+                    generated_package="examples.structure_generated.texts",
+                    source_schema_modules=schema_modules,
+                )
+            )
+        docs = Docs.render.project()(
+            StructureConfig.resolve(
+                project_root=ROOT,
+                source_roots=["examples"],
+                generated_dir="examples/structure_generated/texts",
+                generated_package="examples.structure_generated.texts",
+            ),
+            DiscoveredStructureProject(
+                transforms=tuple(transform for transform, _ in transforms),
+                schema_modules={module: tuple(schemas) for module, schemas in schema_modules.items()},
+            ),
+        )
+        files.update({f"examples/structure_generated/texts/{path}": text for path, text in docs.items()})
+        files["examples/structure_generated/texts/traceability/__init__.py"] = (
+            "# Generated traceability package marker.\n"
+        )
+        files["examples/structure_generated/texts/traceability/transforms/__init__.py"] = (
+            "# Generated transform traceability package marker.\n"
+        )
+        return {path: text.rstrip() + "\n" for path, text in files.items()}
+
+
+def expected_texts_generated() -> dict[str, str]:
+    return _expected_generated("texts")
+
+
 def _expected_generated(example: str) -> dict[str, str]:
     root = ROOT
     return {
@@ -273,6 +346,7 @@ def _example_imports() -> Iterator[None]:
         _drop("examples.orders")
         _drop("examples.streams")
         _drop("examples.stocks")
+        _drop("examples.texts")
         _drop("examples.structure_generated")
 
 

@@ -20,7 +20,7 @@ DAILY_RETURN_SCHEMA = T.StructType(MARKET_BAR_SCHEMA.fields + [
     T.StructField("return_1d", T.DoubleType(), True),
     T.StructField("gain", T.DoubleType(), True),
     T.StructField("loss", T.DoubleType(), True),
-    T.StructField("signed_volume", T.LongType(), True),
+    T.StructField("signed_volume", T.LongType(), False),
 ])
 
 BENCHMARK_RETURN_SCHEMA = T.StructType([

@@ -1,0 +1,32 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "document_id",
+      "name": "document_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "ordinal",
+      "name": "ordinal",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "heading",
+      "name": "heading",
+      "nullable": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.texts.schemas.text",
+  "name": "Section"
+}

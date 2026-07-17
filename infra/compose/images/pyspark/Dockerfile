@@ -22,6 +22,7 @@ RUN pip install --no-cache-dir \
     toml==0.10.2 \
     "pyspark[connect]==${PYSPARK_VERSION}"
 
+COPY infra/compose/images/pyspark/log4j2-integration.properties /etc/spark/log4j2-integration.properties
 COPY infra/compose/images/pyspark/run-integration.sh /usr/local/bin/run-integration
 RUN chmod +x /usr/local/bin/run-integration
 

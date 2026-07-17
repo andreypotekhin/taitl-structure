@@ -22,31 +22,31 @@
     {
       "column": "sma_20",
       "name": "sma_20",
-      "nullable": false,
+      "nullable": true,
       "type": "double"
     },
     {
       "column": "sma_50",
       "name": "sma_50",
-      "nullable": false,
+      "nullable": true,
       "type": "double"
     },
     {
       "column": "high_20",
       "name": "high_20",
-      "nullable": false,
+      "nullable": true,
       "type": "double"
     },
     {
       "column": "low_20",
       "name": "low_20",
-      "nullable": false,
+      "nullable": true,
       "type": "double"
     },
     {
       "column": "above_sma_50",
       "name": "above_sma_50",
-      "nullable": false,
+      "nullable": true,
       "type": "boolean"
     }
   ],

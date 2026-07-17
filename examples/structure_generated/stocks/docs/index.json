@@ -37,18 +37,18 @@
         {
           "column": "daily_return_rank",
           "name": "daily_return_rank",
-          "nullable": false,
+          "nullable": true,
           "type": "long"
         },
         {
-          "column": "drawdown",
-          "name": "drawdown",
-          "nullable": false,
+          "column": "drawdown_from_20d_high",
+          "name": "drawdown_from_20d_high",
+          "nullable": true,
           "type": "double"
         },
         {
-          "column": "realized_volatility_20",
-          "name": "realized_volatility_20",
+          "column": "daily_return_stddev_20",
+          "name": "daily_return_stddev_20",
           "nullable": true,
           "type": "double"
         }
@@ -161,7 +161,7 @@
         {
           "column": "signed_volume",
           "name": "signed_volume",
-          "nullable": true,
+          "nullable": false,
           "type": "long"
         }
       ],
@@ -245,8 +245,8 @@
           "type": "double"
         },
         {
-          "column": "rsi_14",
-          "name": "rsi_14",
+          "column": "cutler_rsi_14",
+          "name": "cutler_rsi_14",
           "nullable": true,
           "type": "double"
         },
@@ -284,31 +284,31 @@
         {
           "column": "sma_20",
           "name": "sma_20",
-          "nullable": false,
+          "nullable": true,
           "type": "double"
         },
         {
           "column": "sma_50",
           "name": "sma_50",
-          "nullable": false,
+          "nullable": true,
           "type": "double"
         },
         {
           "column": "high_20",
           "name": "high_20",
-          "nullable": false,
+          "nullable": true,
           "type": "double"
         },
         {
           "column": "low_20",
           "name": "low_20",
-          "nullable": false,
+          "nullable": true,
           "type": "double"
         },
         {
           "column": "above_sma_50",
           "name": "above_sma_50",
-          "nullable": false,
+          "nullable": true,
           "type": "boolean"
         }
       ],
@@ -333,19 +333,19 @@
         {
           "column": "range_14",
           "name": "range_14",
-          "nullable": false,
+          "nullable": true,
           "type": "double"
         },
         {
-          "column": "return_stddev_20",
-          "name": "return_stddev_20",
+          "column": "daily_return_stddev_20",
+          "name": "daily_return_stddev_20",
           "nullable": true,
           "type": "double"
         },
         {
           "column": "bollinger_middle",
           "name": "bollinger_middle",
-          "nullable": false,
+          "nullable": true,
           "type": "double"
         },
         {
@@ -388,25 +388,25 @@
         {
           "column": "volume_sma_20",
           "name": "volume_sma_20",
-          "nullable": false,
+          "nullable": true,
           "type": "double"
         },
         {
           "column": "relative_volume",
           "name": "relative_volume",
-          "nullable": false,
+          "nullable": true,
           "type": "double"
         },
         {
           "column": "on_balance_volume",
           "name": "on_balance_volume",
-          "nullable": true,
+          "nullable": false,
           "type": "long"
         },
         {
-          "column": "vwap_20",
-          "name": "vwap_20",
-          "nullable": false,
+          "column": "typical_price_vwap_20",
+          "name": "typical_price_vwap_20",
+          "nullable": true,
           "type": "double"
         }
       ],

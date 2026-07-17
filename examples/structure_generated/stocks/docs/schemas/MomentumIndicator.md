@@ -10,5 +10,5 @@ Module: `examples.stocks.schemas.indicators`
 | `trade_date` | `trade_date` | `date` | no |
 | `return_1d` | `return_1d` | `double` | yes |
 | `roc_10` | `roc_10` | `double` | yes |
-| `rsi_14` | `rsi_14` | `double` | yes |
+| `cutler_rsi_14` | `cutler_rsi_14` | `double` | yes |
 | `stochastic_k_14` | `stochastic_k_14` | `double` | yes |

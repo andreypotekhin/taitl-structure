@@ -349,19 +349,19 @@ def test_online_expression_evaluator_preserves_window_projection_semantics() -> 
     cases = [
         (
             _window("row_number", partition_by=customer_id, order_by=quantity),
-            "row_number().over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc()))",
+            "cast(row_number().over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc())) as long)",
         ),
         (
             _window("rank", partition_by=customer_id, order_by=quantity, descending=True),
-            "rank().over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).desc()))",
+            "cast(rank().over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).desc())) as long)",
         ),
         (
             _window("dense_rank", partition_by=customer_id, order_by=_order(quantity, "asc_nulls_last")),
-            "dense_rank().over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc_nulls_last()))",
+            "cast(dense_rank().over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc_nulls_last())) as long)",
         ),
         (
             _window("dense_rank", partition_by=customer_id, order_by=quantity),
-            "dense_rank().over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc()))",
+            "cast(dense_rank().over(partitionBy(col(metrics.customer_id)).orderBy(col(metrics.quantity).asc())) as long)",
         ),
         (
             _window("lag", value=quantity, partition_by=customer_id, order_by=quantity),
