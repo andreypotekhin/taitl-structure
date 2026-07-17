@@ -1,14 +1,20 @@
 # Streams Example
 
-`examples.streams` models white-water kayaking timing and judging. It deliberately demonstrates only transforms that
-Spark Structured Streaming can execute with compiler-visible state rules.
+The streams example app models white-water kayaking competition. 
+It demonstrates using Structure with Spark Structured Streaming.
 
+## passages.py
 `PreparePassages` normalizes timing messages, enriches them from static race, paddler, and gate reference data, applies
-an event-time watermark, and removes duplicate event identifiers. `BuildGateProgress` produces a watermarked aggregate;
-the caller must write that result in `update` or `complete` mode. `CorrelatePenalties` joins timing passages with
-independently streamed judge calls, bounded to calls reported within five minutes of a matching passage.
+an event-time watermark, and removes duplicate event identifiers. 
 
-Structure owns none of the query lifecycle. The caller creates sources and sinks, owns checkpoint locations, chooses
+## progress.py
+`BuildGateProgress` produces a watermarked aggregate; the caller must write that result in `update` or `complete` mode. 
+
+## penalties.py
+`CorrelatePenalties` joins timing passages with independently streamed judge calls, bounded to calls reported within
+five minutes of a matching passage.
+
+Structure owns none of the streaming query lifecycle. The caller creates sources and sinks, owns checkpoint locations, chooses
 triggers and output mode, and starts and stops queries. A caller-owned file-stream seam looks like this:
 
 ```python

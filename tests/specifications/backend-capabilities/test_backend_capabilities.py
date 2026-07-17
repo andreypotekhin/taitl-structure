@@ -122,6 +122,25 @@ def test_supported_session_window_requirement_passes() -> None:
 @pytest.mark.parametrize(
     "name",
     [
+        "session_window_aggregate",
+        "stream_static_left_semi_join",
+        "stream_stream_outer_join",
+        "stream_stream_left_semi_join",
+    ],
+)
+def test_v4_streaming_requirements_are_ordinary_pyspark_only(name: str) -> None:
+    ordinary = Capabilities.resolve()().require(CapabilityRequirement(group="streaming", name=name))
+    connect = Capabilities.resolve()(target_variant="spark-connect").supports(
+        CapabilityRequirement(group="streaming", name=name)
+    )
+
+    assert ordinary.supported
+    assert not connect.supported
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
         "array",
         "array_aggregate",
         "array_append",

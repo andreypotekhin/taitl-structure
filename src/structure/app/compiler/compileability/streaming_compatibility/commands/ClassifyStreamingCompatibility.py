@@ -58,7 +58,7 @@ class ClassifyStreamingCompatibility:
                             input_modes=input_modes,
                             current_input=step.source,
                             current_scope=step.source_scope,
-                            watermarks=set(watermarks),
+                            watermarks=watermarks,
                         )
                     )
             for hook in (
@@ -87,6 +87,15 @@ class ClassifyStreamingCompatibility:
         watermark_columns: set[str],
         scope: str,
     ) -> tuple[StreamingFinding, ...]:
+        session_keys = tuple(key.expression for key in aggregate.keys if self._is_session_window(key.expression))
+        if session_keys:
+            return self._session_aggregate(
+                step,
+                session_keys=session_keys,
+                key_count=len(aggregate.keys),
+                watermark_columns=watermark_columns,
+                scope=scope,
+            )
         if not watermark_columns:
             return (
                 StreamingFinding(
@@ -117,6 +126,41 @@ class ClassifyStreamingCompatibility:
             ),
         )
 
+    def _session_aggregate(
+        self,
+        step: str,
+        *,
+        session_keys: tuple[PySparkExpressionRecipe, ...],
+        key_count: int,
+        watermark_columns: set[str],
+        scope: str,
+    ) -> tuple[StreamingFinding, ...]:
+        if key_count < 2:
+            return (self._session_finding(
+                step,
+                "A streaming session-window aggregate requires an ordinary business grouping key in addition to the session window.",
+                "Group by session_window(the_watermarked_event_time, gap) and at least one business key.",
+            ),)
+        if not watermark_columns or not all(
+            self._watermarked_grouping_key(key, watermark_columns, scope) for key in session_keys
+        ):
+            return (self._session_finding(
+                step,
+                "A streaming session-window aggregate requires a preceding watermark on its session event-time field.",
+                "Call watermark(the_session_event_time, delay=...) before group_by(session_window(...), business_key).",
+            ),)
+        return ()
+
+    def _session_finding(self, step: str, problem: str, use: str) -> StreamingFinding:
+        return StreamingFinding(
+            code="STREAM-E0801",
+            support=StreamingSupport.BATCH_ONLY,
+            step=step,
+            operation="session-window aggregate",
+            problem=problem,
+            use=use,
+        )
+
     def _watermarked_grouping_key(
         self,
         expression: PySparkExpressionRecipe,
@@ -135,6 +179,9 @@ class ClassifyStreamingCompatibility:
             and str(expression.args[0].data.get("scope", "")) == scope
             and str(expression.args[0].data.get("field", "")) in watermark_columns
         )
+
+    def _is_session_window(self, expression: PySparkExpressionRecipe) -> bool:
+        return (expression.data or {}).get("function") == "session_window"
 
     def _selected_rows(self, step: str, direction: str) -> tuple[StreamingFinding, ...]:
         return (
@@ -219,7 +266,7 @@ class ClassifyStreamingCompatibility:
         input_modes: dict[str, StreamingMode],
         current_input: str,
         current_scope: str,
-        watermarks: set[str],
+        watermarks: dict[str, set[str]],
     ) -> tuple[StreamingFinding, ...]:
         if join.dedupe is not None:
             return (
@@ -283,7 +330,9 @@ class ClassifyStreamingCompatibility:
                     use="Keep this transform batch-only or use a supported stream-static lookup join.",
                 ),
             )
-        if join.method in {JoinMethod.EXISTS, JoinMethod.NOT_EXISTS}:
+        if join.method is JoinMethod.EXISTS:
+            return ()
+        if join.method is JoinMethod.NOT_EXISTS:
             return ()
         if join.how.value in {Join.LEFT.value, "inner"}:
             return ()
@@ -309,17 +358,19 @@ class ClassifyStreamingCompatibility:
         input_modes: dict[str, StreamingMode],
         current_input: str,
         current_scope: str,
-        watermarks: set[str],
+        watermarks: dict[str, set[str]],
     ) -> tuple[StreamingFinding, ...]:
+        admitted = (
+            (join.method is JoinMethod.ROWSET and join.how in {Join.INNER, Join.LEFT, Join.RIGHT, Join.FULL})
+            or join.method is JoinMethod.EXISTS
+        )
         if (
-            join.method is JoinMethod.ROWSET
-            and join.how is Join.INNER
+            admitted
             and input_modes.get(current_input) is StreamingMode.YES
-            and current_scope in watermarks
-            and join.input_name in watermarks
-            and self._has_event_time_between(join.predicate)
+            and self._watermarked_time_bound(join.predicate, current_scope, join.input_name, watermarks)
         ):
             return ()
+        shape = "outer or semi" if admitted else "unsupported"
         return (
             StreamingFinding(
                 code="STREAM-E0801",
@@ -327,11 +378,11 @@ class ClassifyStreamingCompatibility:
                 step=step,
                 operation=f"stream-stream join {join.input_name}",
                 problem=(
-                    "Stream-stream joins require both inputs declared with StreamingMode.YES, an inner rowset join, "
-                    "watermarks on both streaming inputs, and an event_time_between(...) constraint."
+                    f"Stream-stream {shape} joins require both inputs declared with StreamingMode.YES, watermarks "
+                    "on both bound event-time fields, and an event_time_between(...) constraint."
                 ),
                 use=(
-                    "Declare both inputs with StreamingMode.YES, call watermark(...) for both event-time fields, "
+                    "Declare both inputs with StreamingMode.YES, call watermark(...) for both bound event-time fields, "
                     "and include event_time_between(left_time, right_time, upper=...) in the join predicate."
                 ),
             ),
@@ -340,6 +391,35 @@ class ClassifyStreamingCompatibility:
     def _has_event_time_between(self, expression: PySparkExpressionRecipe) -> bool:
         return expression.kind == "event_time_between" or any(
             self._has_event_time_between(argument) for argument in expression.args
+        )
+
+    def _watermarked_time_bound(
+        self,
+        expression: PySparkExpressionRecipe,
+        current_scope: str,
+        joined_scope: str,
+        watermarks: dict[str, set[str]],
+    ) -> bool:
+        if expression.kind == "event_time_between" and len(expression.args) == 2:
+            left, right = expression.args
+            return self._watermarked_field(left, current_scope, watermarks) and self._watermarked_field(
+                right, joined_scope, watermarks
+            )
+        return any(
+            self._watermarked_time_bound(argument, current_scope, joined_scope, watermarks)
+            for argument in expression.args
+        )
+
+    def _watermarked_field(
+        self,
+        expression: PySparkExpressionRecipe,
+        scope: str,
+        watermarks: dict[str, set[str]],
+    ) -> bool:
+        return (
+            expression.kind == "field"
+            and str(expression.data.get("scope", "")) == scope
+            and str(expression.data.get("field", "")) in watermarks.get(scope, set())
         )
 
     def _broad_rowset_join(self, join: PySparkJoinRecipe) -> bool:

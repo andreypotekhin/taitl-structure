@@ -31,6 +31,11 @@ class StreamEnriched(Schema):
     value = field.string(nullable=True)
 
 
+class StreamOuter(Schema):
+    id = field.string(nullable=True)
+    value = field.string(nullable=True)
+
+
 class StreamSummary(Schema):
     id = field.string(nullable=False)
     row_count = field.long(nullable=False)
@@ -40,6 +45,35 @@ class StreamWindowSummary(Schema):
     bucket = field.struct(TimeWindow, nullable=False)
     id = field.string(nullable=False)
     row_count = field.long(nullable=False)
+
+
+class StreamGlobalWindowSummary(Schema):
+    bucket = field.struct(TimeWindow, nullable=False)
+    row_count = field.long(nullable=False)
+
+
+@transform(streaming_compatible=True)
+class StreamingSessionAggregate(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    summary = output(StreamWindowSummary)
+
+    def summarize(self, row: StreamRaw) -> StreamWindowSummary:
+        watermark(row.event_time, delay="10 minutes")
+        group_by(bucket=session_window(row.event_time, "5 minutes"), id=row.id)
+        return StreamWindowSummary(
+            bucket=session_window(row.event_time, "5 minutes"), id=row.id, row_count=count()
+        )
+
+
+@transform(streaming_compatible=True)
+class StreamingGlobalSessionAggregate(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    summary = output(StreamGlobalWindowSummary)
+
+    def summarize(self, row: StreamRaw) -> StreamGlobalWindowSummary:
+        watermark(row.event_time, delay="10 minutes")
+        group_by(bucket=session_window(row.event_time, "5 minutes"))
+        return StreamGlobalWindowSummary(bucket=session_window(row.event_time, "5 minutes"), row_count=count())
 
 
 def test_event_time_between_rejects_non_timestamp_expressions() -> None:
@@ -272,6 +306,43 @@ class StreamingInnerStreamJoin(Transform):
 
 
 @transform(streaming_compatible=True)
+class StreamingLeftOuterStreamJoin(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    lookups = input(StreamLookup, streaming=StreamingMode.YES)
+    enriched = output(StreamOuter)
+
+    def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamOuter:
+        watermark(row.event_time, delay="10 minutes")
+        watermark(lookup.valid_from, delay="20 minutes")
+        rowset_join(
+            lookup,
+            how=Join.LEFT,
+            on=(cast(Any, lookup).id == cast(Any, row).id)
+            & event_time_between(cast(Any, row).event_time, cast(Any, lookup).valid_from, upper="1 hour"),
+        )
+        return StreamOuter(id=row.id, value=lookup.value)
+
+
+@transform(streaming_compatible=True)
+class StreamingSemiStreamJoin(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    lookups = input(StreamLookup, streaming=StreamingMode.YES)
+    clean = output(StreamClean)
+
+    def keep_known(self, row: StreamRaw, lookup: StreamLookup) -> StreamClean:
+        watermark(row.event_time, delay="10 minutes")
+        watermark(lookup.valid_from, delay="20 minutes")
+        where(
+            exists(
+                lookup,
+                on=(cast(Any, lookup).id == cast(Any, row).id)
+                & event_time_between(cast(Any, row).event_time, cast(Any, lookup).valid_from, upper="1 hour"),
+            )
+        )
+        return StreamClean(id=row.id)
+
+
+@transform(streaming_compatible=True)
 class StreamingUnmarkedSideJoin(Transform):
     rows = input(StreamRaw, streaming=StreamingMode.YES)
     lookups = input(StreamLookup)
@@ -387,6 +458,22 @@ def test_v4_event_time_window_has_time_window_schema_and_rejects_mixed_signature
         window("event_time", "10 minutes", partition_by="id")  # type: ignore[call-overload]
 
 
+def test_v4_session_window_aggregate_requires_a_business_key_and_reports_append_only() -> None:
+    compatible = compile_transform(StreamingSessionAggregate)
+    report = Compiler.compileability.streaming()(PySpark.plan.lower()(compatible), required=True)
+    operation = next(operation for operation in compatible.steps[0].operations if operation.aggregate is not None)
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert operation.streaming_output_modes == (StreamingOutputMode.APPEND,)
+
+    global_session = compile_transform(StreamingGlobalSessionAggregate)
+    report = Compiler.compileability.streaming()(PySpark.plan.lower()(global_session), required=True)
+
+    assert report.support is StreamingSupport.BATCH_ONLY
+    assert report.findings[0].operation == "session-window aggregate"
+    assert "business grouping key" in report.findings[0].problem
+
+
 def test_v4_sliding_window_renders_with_positional_slide() -> None:
     plan = PySpark.plan.lower()(compile_transform(StreamingSlidingAggregate))
     rendered = "\n".join(
@@ -452,6 +539,15 @@ def test_v2_inner_stream_stream_join_is_compatible_with_watermarks_and_time_boun
         PySpark.plan.lower()(plan),
         required=bool((plan.options or {})["streaming_compatible"]),
     )
+
+    assert report.support is StreamingSupport.COMPATIBLE
+    assert report.findings == ()
+
+
+@pytest.mark.parametrize("transform_type", [StreamingLeftOuterStreamJoin, StreamingSemiStreamJoin])
+def test_v4_bounded_outer_and_semi_stream_stream_joins_are_compatible(transform_type: type[Transform]) -> None:
+    plan = compile_transform(transform_type)
+    report = Compiler.compileability.streaming()(PySpark.plan.lower()(plan), required=True)
 
     assert report.support is StreamingSupport.COMPATIBLE
     assert report.findings == ()
@@ -532,6 +628,15 @@ def test_v2_watermarked_aggregate_explain_output_names_policy() -> None:
         "operations: watermark(event_time 10 minutes), aggregate(aggregate keys=bucket,id metrics=count streaming_modes=append|update)"
         in report
     )
+
+
+def test_v4_session_aggregate_explain_output_names_append_only_policy() -> None:
+    from structure.app.cli.api import CliApp
+
+    report = CliApp.render_explain_report()(StreamingSessionAggregate)
+
+    assert "status: compatible" in report
+    assert "aggregate(aggregate keys=bucket,id metrics=count streaming_modes=append)" in report
 
 
 def test_v2_analytical_join_explain_output_names_join_shapes() -> None:

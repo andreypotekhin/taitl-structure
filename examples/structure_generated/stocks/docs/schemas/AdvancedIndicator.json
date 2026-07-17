@@ -1,0 +1,56 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "symbol",
+      "name": "symbol",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "trade_date",
+      "name": "trade_date",
+      "nullable": false,
+      "type": "date"
+    },
+    {
+      "column": "return_1d",
+      "name": "return_1d",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "benchmark_return",
+      "name": "benchmark_return",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "excess_return",
+      "name": "excess_return",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "daily_return_rank",
+      "name": "daily_return_rank",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "drawdown",
+      "name": "drawdown",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "realized_volatility_20",
+      "name": "realized_volatility_20",
+      "nullable": true,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.stocks.schemas.indicators",
+  "name": "AdvancedIndicator"
+}

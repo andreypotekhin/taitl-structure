@@ -1,0 +1,48 @@
+{
+  "dependencies": [],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "returns",
+      "ordinal": 0,
+      "schema": "DailyReturn"
+    }
+  ],
+  "name": "Volume",
+  "outputs": [
+    {
+      "name": "indicators",
+      "ordinal": 0,
+      "schema": "VolumeIndicator"
+    }
+  ],
+  "source": "examples.stocks.transforms.volume.Volume",
+  "step_methods": [
+    {
+      "input_lane": "returns",
+      "input_schema": "DailyReturn",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "row",
+          "schema": "DailyReturn",
+          "source": "returns"
+        }
+      ],
+      "name": "calculate",
+      "output_lane": "returns",
+      "output_schema": "VolumeIndicator",
+      "results": [
+        {
+          "frame": "returns",
+          "lane": "returns",
+          "schema": "VolumeIndicator"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/volume.py",
+    "traceability": "traceability/transforms/volume.Volume.json"
+  }
+}

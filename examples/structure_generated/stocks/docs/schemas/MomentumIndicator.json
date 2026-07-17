@@ -1,0 +1,44 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "symbol",
+      "name": "symbol",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "trade_date",
+      "name": "trade_date",
+      "nullable": false,
+      "type": "date"
+    },
+    {
+      "column": "return_1d",
+      "name": "return_1d",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "roc_10",
+      "name": "roc_10",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "rsi_14",
+      "name": "rsi_14",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "stochastic_k_14",
+      "name": "stochastic_k_14",
+      "nullable": true,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.stocks.schemas.indicators",
+  "name": "MomentumIndicator"
+}

@@ -2630,6 +2630,10 @@ class CompileTransform:
                 conditions = self._rowset_join_conditions(
                     transform_class, member, join.input_name, occurrence, join.predicate
                 )
+            elif join.method is JoinMethod.EXISTS:
+                conditions = self._existence_join_conditions(
+                    transform_class, member, join.input_name, occurrence, join.predicate
+                )
             else:
                 conditions = self._join_conditions(transform_class, member, join.input_name, occurrence, join.predicate)
             for condition in conditions:
@@ -2851,6 +2855,36 @@ class CompileTransform:
             occurrence,
             "v1 joins support equality key pairs combined with AND.",
             "Replace OR, inequality, or arbitrary predicates with equality pairs, or move custom join logic into a hook.",
+        )
+
+    def _existence_join_conditions(
+        self,
+        transform_class: type[Transform],
+        member: str,
+        input_name: str,
+        occurrence: int,
+        predicate: Expression,
+    ) -> list[Expression]:
+        if predicate.kind == "and":
+            return [
+                condition
+                for argument in predicate.args
+                for condition in self._existence_join_conditions(
+                    transform_class, member, input_name, occurrence, argument
+                )
+            ]
+        if predicate.kind in {"eq", "null_safe_eq"}:
+            return [predicate]
+        if predicate.kind == "event_time_between":
+            if input_name in self._scopes(predicate.args[0]) | self._scopes(predicate.args[1]):
+                return []
+        raise self._join_error(
+            transform_class,
+            member,
+            input_name,
+            occurrence,
+            "exists(...) supports equality key pairs and event_time_between(...) constraints combined with AND.",
+            "Use equality key pairs and, for a bounded stream-stream semi join, event_time_between(left_time, right_time, upper=...).",
         )
 
     def _rowset_join_conditions(

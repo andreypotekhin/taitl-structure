@@ -1,0 +1,50 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "symbol",
+      "name": "symbol",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "trade_date",
+      "name": "trade_date",
+      "nullable": false,
+      "type": "date"
+    },
+    {
+      "column": "range_14",
+      "name": "range_14",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "return_stddev_20",
+      "name": "return_stddev_20",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "bollinger_middle",
+      "name": "bollinger_middle",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "bollinger_upper",
+      "name": "bollinger_upper",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "bollinger_lower",
+      "name": "bollinger_lower",
+      "nullable": true,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.stocks.schemas.indicators",
+  "name": "VolatilityIndicator"
+}

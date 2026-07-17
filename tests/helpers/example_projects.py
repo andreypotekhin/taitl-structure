@@ -182,6 +182,77 @@ def expected_streams_generated() -> dict[str, str]:
     return _expected_generated("streams")
 
 
+def render_stocks_example() -> dict[str, str]:
+    with _example_imports():
+        from examples.stocks.schemas.indicators import (
+            AdvancedIndicator,
+            MomentumIndicator,
+            TrendIndicator,
+            VolatilityIndicator,
+            VolumeIndicator,
+        )
+        from examples.stocks.schemas.market import BenchmarkReturn, DailyReturn, MarketBar
+        from examples.stocks.transforms.advanced import Advanced
+        from examples.stocks.transforms.momentum import Momentum
+        from examples.stocks.transforms.returns import PrepareReturns
+        from examples.stocks.transforms.trend import Trend
+        from examples.stocks.transforms.volatility import Volatility
+        from examples.stocks.transforms.volume import Volume
+
+        schema_modules: dict[str, Sequence[type[Schema]]] = {
+            "examples.stocks.schemas.indicators": [
+                TrendIndicator,
+                MomentumIndicator,
+                VolatilityIndicator,
+                VolumeIndicator,
+                AdvancedIndicator,
+            ],
+            "examples.stocks.schemas.market": [MarketBar, DailyReturn, BenchmarkReturn],
+        }
+        transforms = (
+            (PrepareReturns, "examples.stocks.transforms.returns.PrepareReturns"),
+            (Trend, "examples.stocks.transforms.trend.Trend"),
+            (Momentum, "examples.stocks.transforms.momentum.Momentum"),
+            (Volatility, "examples.stocks.transforms.volatility.Volatility"),
+            (Volume, "examples.stocks.transforms.volume.Volume"),
+            (Advanced, "examples.stocks.transforms.advanced.Advanced"),
+        )
+        files = {}
+        for transform_class, source_transform in transforms:
+            files.update(
+                PySpark.render.project()(
+                    PySpark.plan.lower()(compile_transform(transform_class)),
+                    source_transform=source_transform,
+                    generated_package="examples.structure_generated.stocks",
+                    source_schema_modules=schema_modules,
+                )
+            )
+        docs = Docs.render.project()(
+            StructureConfig.resolve(
+                project_root=ROOT,
+                source_roots=["examples"],
+                generated_dir="examples/structure_generated/stocks",
+                generated_package="examples.structure_generated.stocks",
+            ),
+            DiscoveredStructureProject(
+                transforms=tuple(transform for transform, _ in transforms),
+                schema_modules={module: tuple(schemas) for module, schemas in schema_modules.items()},
+            ),
+        )
+        files.update({f"examples/structure_generated/stocks/{path}": text for path, text in docs.items()})
+        files["examples/structure_generated/stocks/traceability/__init__.py"] = (
+            "# Generated traceability package marker.\n"
+        )
+        files["examples/structure_generated/stocks/traceability/transforms/__init__.py"] = (
+            "# Generated transform traceability package marker.\n"
+        )
+        return {path: text.rstrip() + "\n" for path, text in files.items()}
+
+
+def expected_stocks_generated() -> dict[str, str]:
+    return _expected_generated("stocks")
+
+
 def _expected_generated(example: str) -> dict[str, str]:
     root = ROOT
     return {
@@ -201,6 +272,7 @@ def _example_imports() -> Iterator[None]:
         sys.path.remove(path)
         _drop("examples.orders")
         _drop("examples.streams")
+        _drop("examples.stocks")
         _drop("examples.structure_generated")
 
 

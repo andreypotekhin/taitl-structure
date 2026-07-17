@@ -51,5 +51,4 @@ Developers can use Structure transforms for static-gap session aggregates, bound
 
 ## Progress
 
-- [ ] Start after the v4 relational and advanced analytical coverage slice.
-
+- [ ] In progress: static-gap session aggregation is compiler-visible, requires a matching watermark and business key, and reports append-only output mode. Bounded stream-stream left outer and semi admission is covered symbolically. Remaining work includes stream-static-specific diagnostics, right/full generated and online parity, live target evidence, and public migration documentation.

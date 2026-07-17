@@ -1,0 +1,56 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "symbol",
+      "name": "symbol",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "trade_date",
+      "name": "trade_date",
+      "nullable": false,
+      "type": "date"
+    },
+    {
+      "column": "close",
+      "name": "close",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "sma_20",
+      "name": "sma_20",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "sma_50",
+      "name": "sma_50",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "high_20",
+      "name": "high_20",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "low_20",
+      "name": "low_20",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "above_sma_50",
+      "name": "above_sma_50",
+      "nullable": false,
+      "type": "boolean"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.stocks.schemas.indicators",
+  "name": "TrendIndicator"
+}

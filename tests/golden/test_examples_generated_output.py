@@ -5,8 +5,10 @@ import difflib
 import pytest
 from helpers.example_projects import (
     expected_orders_generated,
+    expected_stocks_generated,
     expected_streams_generated,
     render_orders_example,
+    render_stocks_example,
     render_streams_example,
 )
 
@@ -16,6 +18,7 @@ from helpers.example_projects import (
     [
         (render_orders_example, expected_orders_generated),
         (render_streams_example, expected_streams_generated),
+        (render_stocks_example, expected_stocks_generated),
     ],
 )
 def test_example_generated_output_matches_golden_files(actual, expected) -> None:

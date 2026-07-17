@@ -64,6 +64,7 @@ class OperationPlan:
 
     @staticmethod
     def aggregate_operation(aggregate: AggregatePlan) -> "OperationPlan":
+        session_window = any((key.expression.data or {}).get("function") == "session_window" for key in aggregate.keys)
         return OperationPlan(
             kind="aggregate",
             aggregate=aggregate,
@@ -71,7 +72,9 @@ class OperationPlan:
             capability=OperationCapability(group="aggregate", name=aggregate.grouping),
             cardinality=OperationCardinality.AGGREGATE,
             streaming=StreamingSupport.BATCH_ONLY,
-            streaming_output_modes=(StreamingOutputMode.APPEND, StreamingOutputMode.UPDATE),
+            streaming_output_modes=(StreamingOutputMode.APPEND,)
+            if session_window
+            else (StreamingOutputMode.APPEND, StreamingOutputMode.UPDATE),
         )
 
     @staticmethod

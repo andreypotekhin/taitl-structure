@@ -1,0 +1,50 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "symbol",
+      "name": "symbol",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "trade_date",
+      "name": "trade_date",
+      "nullable": false,
+      "type": "date"
+    },
+    {
+      "column": "volume",
+      "name": "volume",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "volume_sma_20",
+      "name": "volume_sma_20",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "relative_volume",
+      "name": "relative_volume",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "on_balance_volume",
+      "name": "on_balance_volume",
+      "nullable": true,
+      "type": "long"
+    },
+    {
+      "column": "vwap_20",
+      "name": "vwap_20",
+      "nullable": false,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.stocks.schemas.indicators",
+  "name": "VolumeIndicator"
+}

@@ -1,0 +1,68 @@
+{
+  "dependencies": [
+    "benchmark",
+    "benchmarks"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "returns",
+      "ordinal": 0,
+      "schema": "DailyReturn"
+    },
+    {
+      "name": "benchmarks",
+      "ordinal": 1,
+      "schema": "BenchmarkReturn"
+    }
+  ],
+  "name": "Advanced",
+  "outputs": [
+    {
+      "name": "indicators",
+      "ordinal": 0,
+      "schema": "AdvancedIndicator"
+    }
+  ],
+  "source": "examples.stocks.transforms.advanced.Advanced",
+  "step_methods": [
+    {
+      "input_lane": "returns",
+      "input_schema": "DailyReturn",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "row",
+          "schema": "DailyReturn",
+          "source": "returns"
+        },
+        {
+          "driving": false,
+          "parameter": "benchmark",
+          "schema": "BenchmarkReturn",
+          "source": "benchmarks"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "benchmark"
+        }
+      ],
+      "name": "calculate",
+      "output_lane": "indicators",
+      "output_schema": "AdvancedIndicator",
+      "results": [
+        {
+          "frame": "indicators",
+          "lane": "indicators",
+          "schema": "AdvancedIndicator"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/advanced.py",
+    "traceability": "traceability/transforms/advanced.Advanced.json"
+  }
+}

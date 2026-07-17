@@ -1,0 +1,721 @@
+{
+  "generated_by": "Structure",
+  "schemas": [
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "symbol",
+          "name": "symbol",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "trade_date",
+          "name": "trade_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "return_1d",
+          "name": "return_1d",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "benchmark_return",
+          "name": "benchmark_return",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "excess_return",
+          "name": "excess_return",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "daily_return_rank",
+          "name": "daily_return_rank",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "drawdown",
+          "name": "drawdown",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "realized_volatility_20",
+          "name": "realized_volatility_20",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.stocks.schemas.indicators",
+      "name": "AdvancedIndicator"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "benchmark",
+          "name": "benchmark",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "trade_date",
+          "name": "trade_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "return_1d",
+          "name": "return_1d",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.stocks.schemas.market",
+      "name": "BenchmarkReturn"
+    },
+    {
+      "bases": [
+        "MarketBar"
+      ],
+      "fields": [
+        {
+          "column": "symbol",
+          "name": "symbol",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "trade_date",
+          "name": "trade_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "open",
+          "name": "open",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "high",
+          "name": "high",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "low",
+          "name": "low",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "close",
+          "name": "close",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "volume",
+          "name": "volume",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "previous_close",
+          "name": "previous_close",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "price_change",
+          "name": "price_change",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "return_1d",
+          "name": "return_1d",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "gain",
+          "name": "gain",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "loss",
+          "name": "loss",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "signed_volume",
+          "name": "signed_volume",
+          "nullable": true,
+          "type": "long"
+        }
+      ],
+      "module": "examples.stocks.schemas.market",
+      "name": "DailyReturn"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "symbol",
+          "name": "symbol",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "trade_date",
+          "name": "trade_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "open",
+          "name": "open",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "high",
+          "name": "high",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "low",
+          "name": "low",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "close",
+          "name": "close",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "volume",
+          "name": "volume",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.stocks.schemas.market",
+      "name": "MarketBar"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "symbol",
+          "name": "symbol",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "trade_date",
+          "name": "trade_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "return_1d",
+          "name": "return_1d",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "roc_10",
+          "name": "roc_10",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "rsi_14",
+          "name": "rsi_14",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "stochastic_k_14",
+          "name": "stochastic_k_14",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.stocks.schemas.indicators",
+      "name": "MomentumIndicator"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "symbol",
+          "name": "symbol",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "trade_date",
+          "name": "trade_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "close",
+          "name": "close",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "sma_20",
+          "name": "sma_20",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "sma_50",
+          "name": "sma_50",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "high_20",
+          "name": "high_20",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "low_20",
+          "name": "low_20",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "above_sma_50",
+          "name": "above_sma_50",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.stocks.schemas.indicators",
+      "name": "TrendIndicator"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "symbol",
+          "name": "symbol",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "trade_date",
+          "name": "trade_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "range_14",
+          "name": "range_14",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "return_stddev_20",
+          "name": "return_stddev_20",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "bollinger_middle",
+          "name": "bollinger_middle",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bollinger_upper",
+          "name": "bollinger_upper",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "bollinger_lower",
+          "name": "bollinger_lower",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.stocks.schemas.indicators",
+      "name": "VolatilityIndicator"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "symbol",
+          "name": "symbol",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "trade_date",
+          "name": "trade_date",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "volume",
+          "name": "volume",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "volume_sma_20",
+          "name": "volume_sma_20",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "relative_volume",
+          "name": "relative_volume",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "on_balance_volume",
+          "name": "on_balance_volume",
+          "nullable": true,
+          "type": "long"
+        },
+        {
+          "column": "vwap_20",
+          "name": "vwap_20",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.stocks.schemas.indicators",
+      "name": "VolumeIndicator"
+    }
+  ],
+  "transforms": [
+    {
+      "dependencies": [
+        "benchmark",
+        "benchmarks"
+      ],
+      "inputs": [
+        {
+          "name": "returns",
+          "ordinal": 0,
+          "schema": "DailyReturn"
+        },
+        {
+          "name": "benchmarks",
+          "ordinal": 1,
+          "schema": "BenchmarkReturn"
+        }
+      ],
+      "name": "Advanced",
+      "outputs": [
+        {
+          "name": "indicators",
+          "ordinal": 0,
+          "schema": "AdvancedIndicator"
+        }
+      ],
+      "source": "examples.stocks.transforms.advanced.Advanced",
+      "step_methods": [
+        {
+          "input_lane": "returns",
+          "input_schema": "DailyReturn",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "row",
+              "schema": "DailyReturn",
+              "source": "returns"
+            },
+            {
+              "driving": false,
+              "parameter": "benchmark",
+              "schema": "BenchmarkReturn",
+              "source": "benchmarks"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "benchmark"
+            }
+          ],
+          "name": "calculate",
+          "output_lane": "indicators",
+          "output_schema": "AdvancedIndicator",
+          "results": [
+            {
+              "frame": "indicators",
+              "lane": "indicators",
+              "schema": "AdvancedIndicator"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/advanced.py",
+        "traceability": "traceability/transforms/advanced.Advanced.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "returns",
+          "ordinal": 0,
+          "schema": "DailyReturn"
+        }
+      ],
+      "name": "Momentum",
+      "outputs": [
+        {
+          "name": "indicators",
+          "ordinal": 0,
+          "schema": "MomentumIndicator"
+        }
+      ],
+      "source": "examples.stocks.transforms.momentum.Momentum",
+      "step_methods": [
+        {
+          "input_lane": "returns",
+          "input_schema": "DailyReturn",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "row",
+              "schema": "DailyReturn",
+              "source": "returns"
+            }
+          ],
+          "name": "calculate",
+          "output_lane": "returns",
+          "output_schema": "MomentumIndicator",
+          "results": [
+            {
+              "frame": "returns",
+              "lane": "returns",
+              "schema": "MomentumIndicator"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/momentum.py",
+        "traceability": "traceability/transforms/momentum.Momentum.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "bars",
+          "ordinal": 0,
+          "schema": "MarketBar"
+        }
+      ],
+      "name": "PrepareReturns",
+      "outputs": [
+        {
+          "name": "returns",
+          "ordinal": 0,
+          "schema": "DailyReturn"
+        }
+      ],
+      "source": "examples.stocks.transforms.returns.PrepareReturns",
+      "step_methods": [
+        {
+          "input_lane": "bars",
+          "input_schema": "MarketBar",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "bar",
+              "schema": "MarketBar",
+              "source": "bars"
+            }
+          ],
+          "name": "calculate",
+          "output_lane": "bars",
+          "output_schema": "DailyReturn",
+          "results": [
+            {
+              "frame": "bars",
+              "lane": "bars",
+              "schema": "DailyReturn"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/returns.py",
+        "traceability": "traceability/transforms/returns.PrepareReturns.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "bars",
+          "ordinal": 0,
+          "schema": "MarketBar"
+        }
+      ],
+      "name": "Trend",
+      "outputs": [
+        {
+          "name": "indicators",
+          "ordinal": 0,
+          "schema": "TrendIndicator"
+        }
+      ],
+      "source": "examples.stocks.transforms.trend.Trend",
+      "step_methods": [
+        {
+          "input_lane": "bars",
+          "input_schema": "MarketBar",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "bar",
+              "schema": "MarketBar",
+              "source": "bars"
+            }
+          ],
+          "name": "calculate",
+          "output_lane": "bars",
+          "output_schema": "TrendIndicator",
+          "results": [
+            {
+              "frame": "bars",
+              "lane": "bars",
+              "schema": "TrendIndicator"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/trend.py",
+        "traceability": "traceability/transforms/trend.Trend.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "returns",
+          "ordinal": 0,
+          "schema": "DailyReturn"
+        }
+      ],
+      "name": "Volatility",
+      "outputs": [
+        {
+          "name": "indicators",
+          "ordinal": 0,
+          "schema": "VolatilityIndicator"
+        }
+      ],
+      "source": "examples.stocks.transforms.volatility.Volatility",
+      "step_methods": [
+        {
+          "input_lane": "returns",
+          "input_schema": "DailyReturn",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "row",
+              "schema": "DailyReturn",
+              "source": "returns"
+            }
+          ],
+          "name": "calculate",
+          "output_lane": "returns",
+          "output_schema": "VolatilityIndicator",
+          "results": [
+            {
+              "frame": "returns",
+              "lane": "returns",
+              "schema": "VolatilityIndicator"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/volatility.py",
+        "traceability": "traceability/transforms/volatility.Volatility.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "returns",
+          "ordinal": 0,
+          "schema": "DailyReturn"
+        }
+      ],
+      "name": "Volume",
+      "outputs": [
+        {
+          "name": "indicators",
+          "ordinal": 0,
+          "schema": "VolumeIndicator"
+        }
+      ],
+      "source": "examples.stocks.transforms.volume.Volume",
+      "step_methods": [
+        {
+          "input_lane": "returns",
+          "input_schema": "DailyReturn",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "row",
+              "schema": "DailyReturn",
+              "source": "returns"
+            }
+          ],
+          "name": "calculate",
+          "output_lane": "returns",
+          "output_schema": "VolumeIndicator",
+          "results": [
+            {
+              "frame": "returns",
+              "lane": "returns",
+              "schema": "VolumeIndicator"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/volume.py",
+        "traceability": "traceability/transforms/volume.Volume.json"
+      }
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "symbol",
+      "name": "symbol",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "trade_date",
+      "name": "trade_date",
+      "nullable": false,
+      "type": "date"
+    },
+    {
+      "column": "open",
+      "name": "open",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "high",
+      "name": "high",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "low",
+      "name": "low",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "close",
+      "name": "close",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "volume",
+      "name": "volume",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.stocks.schemas.market",
+  "name": "MarketBar"
+}

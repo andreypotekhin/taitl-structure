@@ -1,0 +1,48 @@
+{
+  "dependencies": [],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "bars",
+      "ordinal": 0,
+      "schema": "MarketBar"
+    }
+  ],
+  "name": "PrepareReturns",
+  "outputs": [
+    {
+      "name": "returns",
+      "ordinal": 0,
+      "schema": "DailyReturn"
+    }
+  ],
+  "source": "examples.stocks.transforms.returns.PrepareReturns",
+  "step_methods": [
+    {
+      "input_lane": "bars",
+      "input_schema": "MarketBar",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "bar",
+          "schema": "MarketBar",
+          "source": "bars"
+        }
+      ],
+      "name": "calculate",
+      "output_lane": "bars",
+      "output_schema": "DailyReturn",
+      "results": [
+        {
+          "frame": "bars",
+          "lane": "bars",
+          "schema": "DailyReturn"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/returns.py",
+    "traceability": "traceability/transforms/returns.PrepareReturns.json"
+  }
+}

@@ -1,0 +1,312 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "AdvancedGenerated",
+  "inputs": [
+    {
+      "name": "returns",
+      "ordinal": 0,
+      "schema": "DailyReturn"
+    },
+    {
+      "name": "benchmarks",
+      "ordinal": 1,
+      "schema": "BenchmarkReturn"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.advanced.AdvancedGenerated",
+      "ir": "ir:Advanced",
+      "source": "source:examples.stocks.transforms.advanced.Advanced"
+    },
+    {
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.advanced.AdvancedGenerated.run.input.returns",
+      "ir": "ir:Advanced.input.0.returns",
+      "source": "source:examples.stocks.transforms.advanced.Advanced.input.returns"
+    },
+    {
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.advanced.AdvancedGenerated.run.input.benchmarks",
+      "ir": "ir:Advanced.input.1.benchmarks",
+      "source": "source:examples.stocks.transforms.advanced.Advanced.input.benchmarks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.advanced.AdvancedGenerated.run.step.0.calculate",
+      "ir": "ir:Advanced.step.0.calculate",
+      "source": "source:examples.stocks.transforms.advanced.Advanced.calculate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.advanced.AdvancedGenerated.run.step.0.calculate.join.1.benchmark",
+      "ir": "ir:Advanced.step.0.calculate.join.1.benchmark",
+      "source": "source:examples.stocks.transforms.advanced.Advanced.calculate.join.1.benchmark"
+    },
+    {
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.advanced.AdvancedGenerated.run.step.0.calculate.select.symbol",
+      "ir": "ir:Advanced.step.0.calculate.project.symbol",
+      "source": "source:examples.stocks.transforms.advanced.Advanced.calculate.field.symbol"
+    },
+    {
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.advanced.AdvancedGenerated.run.step.0.calculate.select.trade_date",
+      "ir": "ir:Advanced.step.0.calculate.project.trade_date",
+      "source": "source:examples.stocks.transforms.advanced.Advanced.calculate.field.trade_date"
+    },
+    {
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.advanced.AdvancedGenerated.run.step.0.calculate.select.return_1d",
+      "ir": "ir:Advanced.step.0.calculate.project.return_1d",
+      "source": "source:examples.stocks.transforms.advanced.Advanced.calculate.field.return_1d"
+    },
+    {
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.advanced.AdvancedGenerated.run.step.0.calculate.select.benchmark_return",
+      "ir": "ir:Advanced.step.0.calculate.project.benchmark_return",
+      "source": "source:examples.stocks.transforms.advanced.Advanced.calculate.field.benchmark_return"
+    },
+    {
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.advanced.AdvancedGenerated.run.step.0.calculate.select.excess_return",
+      "ir": "ir:Advanced.step.0.calculate.project.excess_return",
+      "source": "source:examples.stocks.transforms.advanced.Advanced.calculate.field.excess_return"
+    },
+    {
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.advanced.AdvancedGenerated.run.step.0.calculate.select.daily_return_rank",
+      "ir": "ir:Advanced.step.0.calculate.project.daily_return_rank",
+      "source": "source:examples.stocks.transforms.advanced.Advanced.calculate.field.daily_return_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.advanced.AdvancedGenerated.run.step.0.calculate.select.drawdown",
+      "ir": "ir:Advanced.step.0.calculate.project.drawdown",
+      "source": "source:examples.stocks.transforms.advanced.Advanced.calculate.field.drawdown"
+    },
+    {
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.advanced.AdvancedGenerated.run.step.0.calculate.select.realized_volatility_20",
+      "ir": "ir:Advanced.step.0.calculate.project.realized_volatility_20",
+      "source": "source:examples.stocks.transforms.advanced.Advanced.calculate.field.realized_volatility_20"
+    },
+    {
+      "generated": "generated:examples.structure_generated.stocks.pyspark.transforms.advanced.AdvancedGenerated.run.output.0.indicators.validation.final",
+      "ir": "ir:Advanced.output.0.indicators.validation.final",
+      "source": "source:examples.stocks.transforms.advanced.Advanced.output.indicators"
+    }
+  ],
+  "schema_constants": {
+    "AdvancedIndicator": {
+      "constant": "ADVANCED_INDICATOR_SCHEMA",
+      "module": "examples.structure_generated.stocks.pyspark.schemas.indicators"
+    },
+    "BenchmarkReturn": {
+      "constant": "BENCHMARK_RETURN_SCHEMA",
+      "module": "examples.structure_generated.stocks.pyspark.schemas.market"
+    },
+    "DailyReturn": {
+      "constant": "DAILY_RETURN_SCHEMA",
+      "module": "examples.structure_generated.stocks.pyspark.schemas.market"
+    },
+    "MarketBar": {
+      "constant": "MARKET_BAR_SCHEMA",
+      "module": "examples.structure_generated.stocks.pyspark.schemas.market"
+    },
+    "MomentumIndicator": {
+      "constant": "MOMENTUM_INDICATOR_SCHEMA",
+      "module": "examples.structure_generated.stocks.pyspark.schemas.indicators"
+    },
+    "TrendIndicator": {
+      "constant": "TREND_INDICATOR_SCHEMA",
+      "module": "examples.structure_generated.stocks.pyspark.schemas.indicators"
+    },
+    "VolatilityIndicator": {
+      "constant": "VOLATILITY_INDICATOR_SCHEMA",
+      "module": "examples.structure_generated.stocks.pyspark.schemas.indicators"
+    },
+    "VolumeIndicator": {
+      "constant": "VOLUME_INDICATOR_SCHEMA",
+      "module": "examples.structure_generated.stocks.pyspark.schemas.indicators"
+    }
+  },
+  "source_transform": "examples.stocks.transforms.advanced.Advanced",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "returns",
+          "benchmarks"
+        ],
+        "step": null,
+        "target": "Advanced"
+      },
+      {
+        "detail": {
+          "input_schema": "DailyReturn",
+          "output_schema": "AdvancedIndicator"
+        },
+        "operation": "step",
+        "sources": [
+          "returns",
+          "benchmark"
+        ],
+        "step": "calculate",
+        "target": "calculate"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "benchmarks"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "row.trade_date",
+          "benchmark.trade_date"
+        ],
+        "step": "calculate",
+        "target": "calculate.join[1].benchmark"
+      },
+      {
+        "detail": {
+          "field": "symbol"
+        },
+        "operation": "project",
+        "sources": [
+          "row.symbol"
+        ],
+        "step": "calculate",
+        "target": "AdvancedIndicator.symbol"
+      },
+      {
+        "detail": {
+          "field": "trade_date"
+        },
+        "operation": "project",
+        "sources": [
+          "row.trade_date"
+        ],
+        "step": "calculate",
+        "target": "AdvancedIndicator.trade_date"
+      },
+      {
+        "detail": {
+          "field": "return_1d"
+        },
+        "operation": "project",
+        "sources": [
+          "row.return_1d"
+        ],
+        "step": "calculate",
+        "target": "AdvancedIndicator.return_1d"
+      },
+      {
+        "detail": {
+          "field": "benchmark_return"
+        },
+        "operation": "project",
+        "sources": [
+          "benchmark.return_1d"
+        ],
+        "step": "calculate",
+        "target": "AdvancedIndicator.benchmark_return"
+      },
+      {
+        "detail": {
+          "field": "excess_return"
+        },
+        "operation": "project",
+        "sources": [
+          "row.return_1d",
+          "benchmark.return_1d"
+        ],
+        "step": "calculate",
+        "target": "AdvancedIndicator.excess_return"
+      },
+      {
+        "detail": {
+          "field": "daily_return_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "row.return_1d",
+          "row.trade_date"
+        ],
+        "step": "calculate",
+        "target": "AdvancedIndicator.daily_return_rank"
+      },
+      {
+        "detail": {
+          "field": "drawdown"
+        },
+        "operation": "project",
+        "sources": [
+          "row.close",
+          "row.trade_date",
+          "row.symbol"
+        ],
+        "step": "calculate",
+        "target": "AdvancedIndicator.drawdown"
+      },
+      {
+        "detail": {
+          "field": "realized_volatility_20"
+        },
+        "operation": "project",
+        "sources": [
+          "row.return_1d",
+          "row.trade_date",
+          "row.symbol"
+        ],
+        "step": "calculate",
+        "target": "AdvancedIndicator.realized_volatility_20"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "AdvancedIndicator"
+        ],
+        "step": null,
+        "target": "AdvancedIndicator.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "daily_return",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "benchmark",
+          "right_alias": "benchmarks"
+        }
+      ],
+      "name": "calculate",
+      "output_alias": "advanced_indicator",
+      "output_schema": "AdvancedIndicator",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "indicators",
+          "lane": "indicators",
+          "schema": "AdvancedIndicator"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.stocks.pyspark.transforms.advanced",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "indicators",
+        "schema": "AdvancedIndicator"
+      }
+    ]
+  }
+}
