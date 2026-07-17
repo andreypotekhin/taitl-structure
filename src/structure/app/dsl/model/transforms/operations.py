@@ -143,6 +143,14 @@ def variance(value: object, *, where: object | None = None) -> Expression:
     return _aggregate("variance", literal(value), type=DoubleType(), nullable=True, where=where)
 
 
+def skewness(value: object, *, where: object | None = None) -> Expression:
+    return _aggregate("skewness", literal(value), type=DoubleType(), nullable=True, where=where)
+
+
+def kurtosis(value: object, *, where: object | None = None) -> Expression:
+    return _aggregate("kurtosis", literal(value), type=DoubleType(), nullable=True, where=where)
+
+
 def corr(left: object, right: object, *, where: object | None = None) -> Expression:
     return _aggregate("corr", literal(left), literal(right), type=DoubleType(), nullable=True, where=where)
 
@@ -187,6 +195,21 @@ def approx_percentile(
         nullable=True,
         where=where,
         options=(("percentage", percentage), ("accuracy", accuracy)),
+    )
+
+
+def percentile(value: object, percentage: float, *, frequency: int = 1, where: object | None = None) -> Expression:
+    if not _percentage(percentage):
+        raise TypeError("percentile(...) percentage must be a finite number from 0 through 1")
+    if not _positive_integer(frequency):
+        raise TypeError("percentile(...) frequency must be a positive integer")
+    return _aggregate(
+        "percentile",
+        literal(value),
+        type=DoubleType(),
+        nullable=True,
+        where=where,
+        options=(("percentage", percentage), ("frequency", frequency)),
     )
 
 
@@ -527,6 +550,21 @@ def window(
     )
     _validate_window_spec(spec)
     return spec
+
+
+def session_window(event_time: object, gap: str) -> Expression:
+    timestamp = literal(event_time)
+    if not isinstance(timestamp.type, TimestampType):
+        raise TypeError("session_window(...) requires a timestamp expression")
+    return _reserved_expression(
+        "session_window",
+        group="streaming",
+        name="session_window",
+        type=StructType(TimeWindow),
+        nullable=timestamp.nullable,
+        args=(timestamp,),
+        data=(("gap", _positive_interval("session_window(... gap)", gap)),),
+    )
 
 
 def rows_between(start: "WindowBound", end: "WindowBound") -> "WindowFrame":
@@ -1312,6 +1350,33 @@ def arr_sort_by(value: object, function: Callable[[Expression], object], *, desc
     )
 
 
+def arr_sort(value: object) -> Expression:
+    argument = literal(value)
+    array = _array_type(argument, "arr_sort(...)")
+    _sortable_type("arr_sort(...) array element", _lambda_arg(array.element, nullable=array.contains_null, name="item"))
+    return _reserved_expression(
+        "array_sort",
+        group="higher_order",
+        name="array_sort",
+        type=argument.type,
+        nullable=argument.nullable,
+        args=(argument,),
+    )
+
+
+def arr_reverse(value: object) -> Expression:
+    argument = literal(value)
+    _array_type(argument, "arr_reverse(...)")
+    return _reserved_expression(
+        "array_reverse",
+        group="higher_order",
+        name="array_reverse",
+        type=argument.type,
+        nullable=argument.nullable,
+        args=(argument,),
+    )
+
+
 def arr_flatten(value: object) -> Expression:
     argument = literal(value)
     array = _array_type(argument, "arr_flatten(...)")
@@ -1436,12 +1501,114 @@ def array_repeat(value: object, count: object) -> Expression:
     )
 
 
+def sequence(start: object, stop: object, step: object | None = None) -> Expression:
+    begin = literal(start)
+    end = literal(stop)
+    arguments = (begin, end) if step is None else (begin, end, literal(step))
+    element_type = _unified_argument_type("sequence(...)", arguments)
+    if not isinstance(element_type, (IntegerType, LongType)):
+        raise TypeError("sequence(...) requires compatible integer or long values")
+    if len(arguments) == 3:
+        increment = arguments[2]
+        if increment.kind == "literal" and isinstance(increment.data, dict) and increment.data.get("value") == 0:
+            raise TypeError("sequence(...) step must not be zero")
+    return _reserved_expression(
+        "array_sequence",
+        group="higher_order",
+        name="array_sequence",
+        type=ArrayType(element_type, contains_null=False),
+        nullable=any(argument.nullable for argument in arguments),
+        args=arguments,
+    )
+
+
+def arr_append(value: object, item: object) -> Expression:
+    return _array_mutation("array_append", value, item)
+
+
+def arr_prepend(value: object, item: object) -> Expression:
+    return _array_mutation("array_prepend", value, item)
+
+
+def arr_insert(value: object, position: object, item: object) -> Expression:
+    argument = literal(value)
+    array_type = _array_type(argument, "arr_insert(...)")
+    offset = literal(position)
+    if offset.kind != "literal" or not isinstance(offset.type, (IntegerType, LongType)):
+        raise TypeError("arr_insert(...) position must be an integral Python literal for PySpark 3.5 compatibility")
+    if isinstance(offset.data, dict) and offset.data.get("value") == 0:
+        raise TypeError("arr_insert(...) position is one-based and cannot be zero")
+    element = literal(item)
+    element_type = _unify_types("arr_insert(...)", (array_type.element, _typed_type("arr_insert(...)", element)))
+    return _reserved_expression(
+        "array_insert",
+        group="higher_order",
+        name="array_insert",
+        type=ArrayType(element_type, contains_null=array_type.contains_null or element.nullable),
+        nullable=argument.nullable,
+        args=(argument, offset, element),
+    )
+
+
+def arr_remove(value: object, item: object) -> Expression:
+    argument = literal(value)
+    array_type = _array_type(argument, "arr_remove(...)")
+    element = literal(item)
+    if element.kind != "literal" or element.nullable:
+        raise TypeError("arr_remove(...) item must be a non-null Python literal for PySpark 3.5 compatibility")
+    _unify_types("arr_remove(...)", (array_type.element, _typed_type("arr_remove(...)", element)))
+    return _reserved_expression(
+        "array_remove",
+        group="higher_order",
+        name="array_remove",
+        type=argument.type,
+        nullable=argument.nullable,
+        args=(argument, element),
+    )
+
+
+def arr_compact(value: object) -> Expression:
+    argument = literal(value)
+    array_type = _array_type(argument, "arr_compact(...)")
+    return _reserved_expression(
+        "array_compact",
+        group="higher_order",
+        name="array_compact",
+        type=ArrayType(array_type.element, contains_null=False),
+        nullable=argument.nullable,
+        args=(argument,),
+    )
+
+
 def array_union(left: object, right: object) -> Expression:
     return _array_set_operation("array_union", left, right)
 
 
 def array_except(left: object, right: object) -> Expression:
     return _array_set_operation("array_except", left, right)
+
+
+def array_intersect(left: object, right: object) -> Expression:
+    return _array_set_operation("array_intersect", left, right)
+
+
+def slice(value: object, start: object, length: object) -> Expression:
+    argument = literal(value)
+    array = _array_type(argument, "slice(...)")
+    offset = literal(start)
+    size = literal(length)
+    if not isinstance(offset.type, (IntegerType, LongType)) or not isinstance(size.type, (IntegerType, LongType)):
+        raise TypeError("slice(...) start and length must be integral Structure expressions")
+    if size.kind == "literal" and isinstance(size.data, dict) and size.data.get("value", 0) < 0:
+        raise TypeError("slice(...) length must not be negative")
+    return _reserved_expression(
+        "array_slice",
+        group="higher_order",
+        name="array_slice",
+        type=ArrayType(array.element, contains_null=array.contains_null),
+        nullable=argument.nullable or offset.nullable or size.nullable,
+        args=(argument, offset, size),
+    )
 
 
 def element_at(value: object, key: object) -> Expression:
@@ -1677,6 +1844,23 @@ def _array_set_operation(function: str, left: object, right: object) -> Expressi
         type=ArrayType(element_type, contains_null=left_array.contains_null or right_array.contains_null),
         nullable=left_argument.nullable or right_argument.nullable,
         args=(left_argument, right_argument),
+    )
+
+
+def _array_mutation(function: str, value: object, item: object) -> Expression:
+    argument = literal(value)
+    array_type = _array_type(argument, f"{function.removeprefix('array_')}(...)")
+    element = literal(item)
+    element_type = _unify_types(
+        f"{function.removeprefix('array_')}(...)", (array_type.element, _typed_type(function, element))
+    )
+    return _reserved_expression(
+        function,
+        group="higher_order",
+        name=function,
+        type=ArrayType(element_type, contains_null=array_type.contains_null or element.nullable),
+        nullable=argument.nullable,
+        args=(argument, element),
     )
 
 

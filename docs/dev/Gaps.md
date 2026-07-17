@@ -43,9 +43,10 @@ The latest Spark docs may be useful for discovery, but features introduced after
 
 ## V4 Coverage Program
 
-V3's scheduled gaps are complete. V4 now treats this page as input to a checked transformation coverage catalog rather
-than as a list of isolated surprises. The catalog will classify every relevant PySpark 3.5.x/4.0.x transformation API
-as supported, scheduled, deferred, or unsupported and will link each supported entry to capability and parity evidence.
+V3's scheduled gaps are complete. V4 now treats this page as input to the checked
+[PySpark Transformation Coverage catalog](../reference/PySparkTransformationCoverage.md), rather than as a list of
+isolated surprises. The catalog classifies every relevant PySpark 3.5.x/4.0.x transformation API as supported,
+scheduled, deferred, or unsupported and links each supported entry to capability and parity evidence.
 
 The delivery design and first ExecPlan are [V4 Transformation API Coverage](design/V4TransformationApiCoverage.md) and
 [P07132601.V4-transformation-api-coverage.plan.md](planning/P07132601.V4-transformation-api-coverage.plan.md).
@@ -73,14 +74,14 @@ Gaps:
 
 | Gap | Status | Target PySpark Parity | Notes |
 | --- | --- | --- | --- |
-| String predicates | implemented | `contains`, `like`, `ilike`, `rlike` | Typed methods keep plain and regex matching compiler-visible. |
+| String predicates | implemented | `contains`, `startswith`, `endswith`, `like`, `ilike`, `rlike` | Typed methods keep plain and regex matching compiler-visible. |
 | Collection indexing | implemented | `getItem`, `__getitem__` | Typed Array/Map result inference with nullable lookup results. |
 | Struct field helpers | implemented | `getField` | Alias-aware typed `get_field(name)` complements attributes. |
 | Rich casts | implemented | `cast`, `astype`, `try_cast` | Scalar casts work across targets; nullable `try_cast` requires profile `>=4.0,<4.1`. |
 | Ordering modifiers | implemented | `asc`, `desc`, null ordering | Typed descriptors work in inline and reusable windows. |
 | Null/NaN predicates | implemented | `isNaN` | Function-style `isnull`, `isnotnull`, and typed `isnan` keep null and NaN semantics distinct. |
-| Bitwise column methods | planned | `bitwiseAND`, `bitwiseOR`, `bitwiseXOR` | Needs bitwise helpers first. |
-| Struct mutation | planned | `withField`, `dropFields` | Postponed until nested projection and whole-field copying are stable. |
+| Bitwise column methods | implemented | `bitwiseAND`, `bitwiseOR`, `bitwiseXOR`, `bitwise_not` | Typed integer/long methods preserve nullability and use explicit backend capability checks. |
+| Struct mutation | implemented | `with_field(..., schema=...)`, `drop_fields(..., schema=...)` | Explicit result Schema preserves the exact nested type and aliases. |
 | Column alias/name methods | unsupported | `alias`, `name` | Schema constructors and field aliases own output names. |
 | Raw `over(...)` windows | unsupported | `Column.over` | Structure uses compiler-visible window helpers instead. |
 | Raw Python truthiness | unsupported | `Column.__bool__` | Use symbolic predicates. |
@@ -95,13 +96,14 @@ Gaps:
 
 | Gap | Status | Target PySpark Parity | Notes |
 | --- | --- | --- | --- |
-| Broader string helpers | implemented | `substring`, `split`, `regexp_replace`, `regexp_extract`, `length`, `concat_ws`, `initcap`, `reverse`, `translate`, `instr`, `levenshtein` | Typed cross-version String transformation, search, and comparison core. |
-| Date/time helpers | implemented | `date_add`, `datediff`, `date_trunc` | Typed Date/Timestamp temporal helper set. |
-| Numeric/math helpers | implemented | `abs`, `round`, `ceil`, `floor` | Typed deterministic scalar helper set. |
+| Broader string helpers | implemented | `ltrim`, `rtrim`, `substring`, `split`, `regexp_replace`, `regexp_extract`, `length`, `concat_ws`, `initcap`, `reverse`, `translate`, `instr`, `levenshtein` | Typed cross-version String transformation, search, and comparison core. |
+| Date/time helpers | implemented | `date_add`, `date_sub`, `datediff`, `date_trunc`, `trunc`, calendar extraction, `to_date`, `to_timestamp` | Typed Date/Timestamp temporal helper set. |
+| Numeric/math helpers | implemented | `abs`, `round`, `bround`, `ceil`, `floor`, `sqrt`, `pow`, `log`, `exp`, `signum` | Typed deterministic scalar helper set. |
 | Predicate helpers | implemented | `isnull`, `isnotnull`, `isnan` | Function-style null checks and typed NaN predicate. |
-| Hash helpers | planned | `hash`, `xxhash64`, `sha2`, `md5` | Needs stability notes. |
-| Encoding/binary helpers | planned | `base64`, `unbase64`, `encode`, `decode` | Lower priority. |
-| JSON/XML/CSV helpers | planned | Spark JSON, XML, CSV functions | Needs schema contracts. |
+| Null-control functions | implemented | `nullif`, `nvl`, `nvl2`, `ifnull`, `zeroifnull`, `nanvl` | Typed fallback, branch, null, and NaN semantics are compiler-visible. |
+| Hash helpers | implemented | `hash`, `xxhash64`, `md5`, `sha1`, `sha2` | Typed scalar hashes and String digests; they are not security or cross-engine identity primitives. |
+| Encoding/binary helpers | deferred | `base64`, `unbase64`, `encode`, `decode` | Structure has no public binary type; use `@raw` until a binary-type design preserves exact input/output contracts. |
+| JSON/XML/CSV helpers | deferred | Spark JSON, XML, CSV functions | JSON/CSV needs an inline Schema transport and normalized options contract; XML remains outside the public type model. Use `@raw` meanwhile. |
 | Variant/geospatial helpers | planned | `VARIANT`, `ST_*` functions | Outside current type model. |
 | Scalar Python UDFs | implemented | `@special(type="udf")`, PySpark `udf` | Ordinary PySpark row-local batch and streaming support with the existing `warn_on_udfs` warning policy; excluded from Spark Connect. |
 | Python UDTFs and UDTs | unsupported | `udtf`, UDT | Use caller-owned PySpark or hooks; row expansion needs a cardinality contract. |
@@ -141,8 +143,8 @@ Gaps:
 | Explicit grouping sets | implemented | Custom grouping-set levels | Lowers as generated PySpark branch unions. |
 | Having predicates | implemented | SQL/PySpark post-aggregate filters | Uses aggregate-output predicate scope. |
 | Aggregate aliases | planned | `GroupedData.agg` aliases | Schema constructors own output aliases. |
-| Exact percentile family | planned | `percentile`, `percentile_approx` | Current helper is `approx_percentile(...)`. |
-| Additional stats | planned | `skewness`, `kurtosis`, `mode` | Wait for analytical contracts to settle. |
+| Exact percentile family | implemented | `percentile`, `percentile_approx` | `percentile(...)` uses a scalar 0–1 percentage and positive literal frequency; `approx_percentile(...)` remains the bounded-memory alternative. |
+| Additional stats | planned | `skewness`, `kurtosis`, `mode` | `skewness(...)` and `kurtosis(...)` are implemented; deterministic `mode(...)` is deferred because PySpark 3.5 lacks its deterministic tie option. |
 | Dict/list aggregate syntax | unsupported | `GroupedData.agg({"x": "sum"})` | Use typed helpers. |
 
 ## Windows
@@ -170,7 +172,7 @@ Gaps:
 | --- | --- | --- | --- |
 | Collection size and membership | implemented | `size`, `array_contains`, `map_contains_key` | Typed count and membership helpers preserve Spark null semantics. |
 | Array construction and set operations | implemented | `array`, `array_repeat`, `array_union`, `array_except` | Compatible numerics widen; other element types must agree. |
-| Array slicing and sorting variants | planned | `slice`, `sort_array`, `reverse` | Needs null ordering docs. |
+| Array slicing and sorting variants | implemented | `slice`, `array_sort`, `reverse` | `slice(...)`, `arr_sort(...)`, and `arr_reverse(...)` preserve typed array contracts. |
 | Element lookup and map concatenation | implemented | `element_at`, `try_element_at`, `map_concat` | Lookup results are nullable; safe lookup avoids out-of-range errors; map concat rejects duplicate-key policy overrides. |
 | Explode/generator helpers | planned | `explode`, `posexplode`, `inline` | Needs row-expansion design. |
 | Python control flow in callbacks | unsupported | Arbitrary Python lambdas | Return symbolic expressions only. |

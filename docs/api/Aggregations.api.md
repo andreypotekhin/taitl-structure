@@ -57,6 +57,9 @@ the current `order` row scope as `o`.
 | `covar(...)` | `covar` | `covar(order.price, order.quantity)` |
 | `approx_count_distinct(...)` | `approx_count_distinct` | `approx_count_distinct(o.customer_id, relative_sd=0.05)` |
 | `approx_percentile(...)` | `approx_percentile` | `approx_percentile(order.total, 0.5, accuracy=100)` |
+| `percentile(...)` | `percentile` | `percentile(order.total, 0.5)` |
+| `skewness(...)` | `skewness` | `skewness(order.total)` |
+| `kurtosis(...)` | `kurtosis` | `kurtosis(order.total)` |
 | `collect_list(...)` | `collect_list` | `collect_list(order.customer_id)` |
 | `collect_set(...)` | `collect_set` | `collect_set(order.customer_id)` |
 | `first_value(...)` | Ordered first-value aggregate | `first_value(order.id, order_by=order.created_at)` |

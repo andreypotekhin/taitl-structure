@@ -18,6 +18,15 @@ class PySparkExpressionEvaluator:
             return self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window).getField(
                 expression.data["field"]
             )
+        if expression.kind == "with_field":
+            return self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window).withField(
+                expression.data["field"],
+                self.evaluate(expression.args[1], functions=functions, aliases=aliases, window=window),
+            )
+        if expression.kind == "drop_fields":
+            return self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window).dropFields(
+                *cast(tuple[str, ...], expression.data["fields"])
+            )
         if expression.kind == "struct":
             return self._struct(expression, functions=functions, aliases=aliases, window=window)
         if expression.kind == "literal":
@@ -70,6 +79,18 @@ class PySparkExpressionEvaluator:
             return self._binary(expression, functions=functions, aliases=aliases, window=window, operator="sub")
         if expression.kind == "mul":
             return self._binary(expression, functions=functions, aliases=aliases, window=window, operator="mul")
+        if expression.kind == "div":
+            return self._binary(expression, functions=functions, aliases=aliases, window=window, operator="div")
+        if expression.kind == "mod":
+            return self._binary(expression, functions=functions, aliases=aliases, window=window, operator="mod")
+        if expression.kind == "neg":
+            return -self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window)
+        if expression.kind in {"bitwise_and", "bitwise_or", "bitwise_xor"}:
+            return self._bitwise_binary(expression, functions=functions, aliases=aliases, window=window)
+        if expression.kind == "bitwise_not":
+            return functions.bitwise_not(
+                self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window)
+            )
         if expression.kind == "when":
             condition, value, fallback = (
                 self.evaluate(argument, functions=functions, aliases=aliases, window=window)
@@ -94,7 +115,7 @@ class PySparkExpressionEvaluator:
             return self.evaluate(value, functions=functions, aliases=aliases, window=window).isin(
                 *(self.evaluate(item, functions=functions, aliases=aliases, window=window) for item in items)
             )
-        if expression.kind in {"contains", "like", "ilike", "rlike"}:
+        if expression.kind in {"contains", "startswith", "endswith", "like", "ilike", "rlike"}:
             value = self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window)
             return getattr(value, expression.kind)(expression.data["pattern"])
         if expression.kind == "item":
@@ -143,6 +164,11 @@ class PySparkExpressionEvaluator:
 
     def _reserved(self, expression: PySparkExpressionRecipe, *, functions, aliases, window):
         function = expression.data["function"]
+        if function == "session_window":
+            return functions.session_window(
+                self.evaluate(expression.args[0], functions=functions, aliases=aliases, window=window),
+                expression.data["gap"],
+            )
         if function == "array_transform":
             array, body = expression.args
             return functions.transform(
@@ -225,6 +251,12 @@ class PySparkExpressionEvaluator:
                     window=window,
                 ),
             )
+        if function == "array_sort":
+            [array] = expression.args
+            return functions.array_sort(self.evaluate(array, functions=functions, aliases=aliases, window=window))
+        if function == "array_reverse":
+            [array] = expression.args
+            return functions.reverse(self.evaluate(array, functions=functions, aliases=aliases, window=window))
         if function == "array_flatten":
             [array] = expression.args
             return functions.flatten(self.evaluate(array, functions=functions, aliases=aliases, window=window))
@@ -277,7 +309,50 @@ class PySparkExpressionEvaluator:
             return functions.array_repeat(
                 self.evaluate(value, functions=functions, aliases=aliases, window=window), repeats
             )
-        if function in {"array_union", "array_except"}:
+        if function == "array_sequence":
+            return functions.sequence(
+                *(
+                    self.evaluate(value, functions=functions, aliases=aliases, window=window)
+                    for value in expression.args
+                )
+            )
+        if function in {"array_append", "array_prepend"}:
+            array, item = expression.args
+            return getattr(functions, function)(
+                self.evaluate(array, functions=functions, aliases=aliases, window=window),
+                self.evaluate(item, functions=functions, aliases=aliases, window=window),
+            )
+        if function == "array_insert":
+            array, position, item = expression.args
+            return functions.array_insert(
+                self.evaluate(array, functions=functions, aliases=aliases, window=window),
+                position.data["value"],
+                self.evaluate(item, functions=functions, aliases=aliases, window=window),
+            )
+        if function == "array_remove":
+            array, item = expression.args
+            return functions.array_remove(
+                self.evaluate(array, functions=functions, aliases=aliases, window=window), item.data["value"]
+            )
+        if function == "array_compact":
+            [array] = expression.args
+            return functions.array_compact(self.evaluate(array, functions=functions, aliases=aliases, window=window))
+        if function == "array_slice":
+            value, start, length = expression.args
+            offset = (
+                start.data["value"]
+                if start.kind == "literal"
+                else self.evaluate(start, functions=functions, aliases=aliases, window=window)
+            )
+            size = (
+                length.data["value"]
+                if length.kind == "literal"
+                else self.evaluate(length, functions=functions, aliases=aliases, window=window)
+            )
+            return functions.slice(
+                self.evaluate(value, functions=functions, aliases=aliases, window=window), offset, size
+            )
+        if function in {"array_union", "array_except", "array_intersect"}:
             left, right = expression.args
             return getattr(functions, function)(
                 self.evaluate(left, functions=functions, aliases=aliases, window=window),
@@ -545,14 +620,20 @@ class PySparkExpressionEvaluator:
         args = [
             self.evaluate(argument, functions=functions, aliases=aliases, window=window) for argument in expression.args
         ]
-        if function == "lower":
-            return functions.lower(args[0])
-        if function == "trim":
-            return functions.trim(args[0])
-        if function == "upper":
-            return functions.upper(args[0])
+        if function in {"lower", "ltrim", "rtrim", "trim", "upper"}:
+            return getattr(functions, function)(args[0])
         if function == "coalesce":
             return functions.coalesce(*args)
+        if function in {"nvl", "ifnull"}:
+            return getattr(functions, function)(args[0], args[1])
+        if function == "nvl2":
+            return functions.nvl2(args[0], args[1], args[2])
+        if function == "zeroifnull":
+            return functions.zeroifnull(args[0])
+        if function == "nullif":
+            return functions.nullif(args[0], args[1])
+        if function == "nanvl":
+            return functions.nanvl(args[0], args[1])
         if function == "to_decimal":
             precision = expression.data["precision"]
             scale = expression.data["scale"]
@@ -577,18 +658,46 @@ class PySparkExpressionEvaluator:
             return functions.levenshtein(args[0], args[1])
         if function == "concat_ws":
             return functions.concat_ws(expression.data["separator"], *args)
+        if function in {"hash", "xxhash64"}:
+            return getattr(functions, function)(*args)
+        if function in {"md5", "sha1"}:
+            return getattr(functions, function)(args[0])
+        if function == "sha2":
+            return functions.sha2(args[0], expression.data["bits"])
         if function == "date_add":
             return functions.date_add(args[0], expression.data["days"])
+        if function == "date_sub":
+            return functions.date_sub(args[0], expression.data["days"])
         if function == "datediff":
             return functions.datediff(args[0], args[1])
         if function == "date_trunc":
             return functions.date_trunc(expression.data["unit"], args[0])
+        if function == "trunc":
+            return functions.trunc(args[0], expression.data["unit"])
+        if function in {"year", "month", "dayofmonth", "hour", "minute", "second"}:
+            return getattr(functions, function)(args[0])
+        if function in {"to_date", "to_timestamp"}:
+            return (
+                getattr(functions, function)(args[0], expression.data["format"])
+                if "format" in expression.data
+                else getattr(functions, function)(args[0])
+            )
         if function == "abs":
             return functions.abs(args[0])
         if function == "round":
             return functions.round(args[0], expression.data["scale"])
+        if function == "bround":
+            return functions.bround(args[0], expression.data["scale"])
         if function in {"ceil", "floor"}:
             return getattr(functions, function)(args[0])
+        if function in {"sqrt", "exp", "signum"}:
+            return getattr(functions, function)(args[0])
+        if function == "pow":
+            return functions.pow(args[0], args[1])
+        if function == "log":
+            return (
+                functions.log(expression.data["base"], args[0]) if "base" in expression.data else functions.log(args[0])
+            )
         raise TypeError(f"Unsupported PySpark helper call: {function}")
 
     def _python_udf(self, expression: PySparkExpressionRecipe, *, functions, aliases, window):
@@ -631,4 +740,19 @@ class PySparkExpressionEvaluator:
             return left - right
         if operator == "mul":
             return left * right
+        if operator == "div":
+            return left / right
+        if operator == "mod":
+            return left % right
         raise TypeError(f"Unsupported PySpark binary operator: {operator}")
+
+    def _bitwise_binary(self, expression: PySparkExpressionRecipe, *, functions, aliases, window):
+        left, right = (
+            self.evaluate(argument, functions=functions, aliases=aliases, window=window) for argument in expression.args
+        )
+        method = {
+            "bitwise_and": "bitwiseAND",
+            "bitwise_or": "bitwiseOR",
+            "bitwise_xor": "bitwiseXOR",
+        }[expression.kind]
+        return getattr(left, method)(right)

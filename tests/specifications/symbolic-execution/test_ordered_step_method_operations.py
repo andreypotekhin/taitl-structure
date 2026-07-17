@@ -86,9 +86,7 @@ def test_join_dedupe_factory_rejects_invalid_tie_policy(ties: object) -> None:
         (lambda product: product.id.is_not_null(), "requires an orderable scalar expression"),
     ],
 )
-def test_join_dedupe_factory_rejects_invalid_ordering(
-    order_by, message: str
-) -> None:
+def test_join_dedupe_factory_rejects_invalid_ordering(order_by, message: str) -> None:
     @transform
     class AddProduct(Transform):
         orders = input(Order)

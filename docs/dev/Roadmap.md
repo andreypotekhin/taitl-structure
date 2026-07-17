@@ -6,7 +6,9 @@ boilerplate with strict execution and optional generated-code workflow. v2 makes
 mainstream analytical pipelines, promotes Spark Connect for completed batch features, and completes static
 caller-owned Spark streaming compatibility diagnostics. v3 closes its scheduled PySpark parity work and hardens
 compiler-visible streaming transformations while callers retain lifecycle ownership. v4 expands predictable PySpark
-transformation API coverage while loading, storage, and orchestration remain caller-owned.
+transformation API coverage while loading, storage, and orchestration remain caller-owned. v5 makes target ownership
+explicit through a public Platform API: Core continues to orchestrate every workflow, the bundled PySpark platform
+supplies target-specific service facets, and external wheels can supply equivalent platform integrations.
 
 ## v1
 
@@ -86,3 +88,20 @@ transformation API coverage while loading, storage, and orchestration remain cal
 - Row generators only after an explicit schema-and-cardinality design gate.
 - No loading, storage, actions, orchestration, alternative backends, or non-batch Spark Connect work.
 - A final hardening sprint after all v4 feature sprints, with no new feature scope.
+
+## v5
+
+- Core-orchestrated schema, compilation, execution, generation, serialization, capability, and diagnostic workflows,
+  with private target-local replacement of a compatible individual engine when an advanced platform requires it.
+- Public, versioned `PlatformAPI1` façades with symmetric Core/plugin API negotiation.
+- Optional synchronous façade `send(message)` for vendor-owned in-process engine/platform coordination; no message
+  bus.
+- Metadata-only discovery of one provider per platform installed through Python package entry points.
+- Exactly one target per transform or composed pipeline, with different transforms in one project allowed to select
+  different installed platforms.
+- Target-owned field definitions, expressions, joins, aggregations, and other authoring APIs.
+- Bundled PySpark behavior moved behind the same public callback contracts available to external plugins.
+- Vendor-owned import packages for external platform authoring APIs.
+- An internal finite-iterable wheel proving discovery, isolation, execution, serialization, and conformance without
+  receiving a public product-support claim.
+- Immediate removal of target-owned names from the `structure` package root.

@@ -1,4 +1,15 @@
-# Design: Alternative Backends
+# Design: Alternative Backends (Superseded for v5)
+
+## v5 Status
+
+This document records the pre-v5 same-source portability direction. It is superseded for v5 by
+`PlatformCallbackArchitecture.md`. v5 makes platforms own their authoring APIs and supports exactly one target per
+transform or composed pipeline. It does not compile the same transform source to several backends or report portability
+across target APIs.
+
+The target-family ideas and target-runtime research below remain useful background for future work, but they are not v5
+requirements. Do not implement this document's common backend-neutral grammar, `compat_targets`, or multi-target hook
+configuration as part of v5.
 
 ## Purpose
 

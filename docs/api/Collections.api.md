@@ -16,6 +16,8 @@ These helpers map to Spark array and map operations while keeping callback bodie
 | `array_repeat(...)` | `array_repeat` | `array_repeat("priority", 2)` |
 | `array_union(...)` | `array_union` | `array_union(order.tags, order.extra_tags)` |
 | `array_except(...)` | `array_except` | `array_except(order.tags, order.extra_tags)` |
+| `array_intersect(...)` | `array_intersect` | `array_intersect(order.tags, order.extra_tags)` |
+| `slice(...)` | `slice` | `slice(order.tags, 1, 10)` |
 | `element_at(...)` | `element_at` | `element_at(order.tags, 1)` |
 | `try_element_at(...)` | `try_element_at` | `try_element_at(order.tags, 2)` |
 
@@ -28,6 +30,11 @@ These helpers map to Spark array and map operations while keeping callback bodie
 - `map_contains_key(...)` likewise requires a compatible Python literal key in the supported PySpark 3.5 baseline.
 - Array indices are one-based. `element_at(...)` follows Spark's ANSI out-of-range behavior, while
   `try_element_at(...)` yields null for a missing or out-of-range element.
+- `slice(...)` uses Spark's one-based start position and rejects a negative length before compilation.
+- `sequence(...)` supports compatible Integer or Long bounds and an optional nonzero step.
+- `arr_append(...)`, `arr_prepend(...)`, and `arr_insert(...)` preserve typed array contents; insertion positions are
+  one-based. `arr_remove(...)` deliberately requires a non-null Python literal for the PySpark 3.5 baseline.
+- `arr_compact(...)` removes null items, so its result has `contains_null=False`.
 - `arr_flatten(...)` yields null when the outer array is null or contains a null immediate nested array, matching
   Spark's `flatten` behavior.
 - Lookup results are nullable because a map key can be absent and a safe array lookup can be out of range.
@@ -42,7 +49,9 @@ These helpers map to Spark array and map operations while keeping callback bodie
 | `arr_forall(...)` | `forall` | `arr_forall(order.tags, lambda tag: tag.is_not_null())` |
 | `arr_zip_with(...)` | `zip_with` | `arr_zip_with(order.tags, order.tags, lambda left, right: left)` |
 | `arr_aggregate(...)` | `aggregate` | `arr_aggregate(order.scores, 0, lambda acc, score: acc + score)` |
+| `arr_sort(...)` | `array_sort` | `arr_sort(order.tags)` |
 | `arr_sort_by(...)` | `array_sort` | `arr_sort_by(order.tags, lambda tag: tag, descending=True)` |
+| `arr_reverse(...)` | `reverse` | `arr_reverse(order.tags)` |
 
 **Details And Differences**
 
@@ -56,6 +65,7 @@ These helpers map to Spark array and map operations while keeping callback bodie
   accumulated value to a different final type.
 - `map_zip_with(...)` requires identical map key types; it does not apply numeric key widening.
 - `arr_sort_by(..., descending=...)` requires a Boolean direction flag.
+- `arr_sort(...)` accepts arrays whose element type Spark can order; `arr_reverse(...)` preserves the array element type.
 
 ## Map Helpers
 

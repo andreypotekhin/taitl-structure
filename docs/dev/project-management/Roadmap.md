@@ -12,8 +12,10 @@ with a strict online runtime and optional generated-code workflow. v2 makes that
 analytical pipelines.
 v3 hardens streaming transformations while lifecycle ownership remains caller-owned. Sprint 09 moves
 Spark Connect from experimental parity to supported status for completed batch features and completes the static
-caller-owned streaming compatibility contract; live streaming runtime evidence remains a v3 entry gate. v4 remains
-available for non-batch Connect hardening and broader backend expansion.
+caller-owned streaming compatibility contract; live streaming runtime evidence remains a v3 entry gate. v4 focuses on
+PySpark transformation coverage. v5 pivots target ownership to a public platform callback architecture: Core retains
+every workflow engine by default, while bundled and external platforms supply target-specific callbacks. A selected
+platform may privately replace a compatible individual engine for its own target; this is not a public extension API.
 
 The project should prioritize:
 
@@ -230,6 +232,51 @@ over caller-supplied DataFrames.
 - Alternative backend expansion and non-batch Spark Connect work.
 - Cost-based join reordering without a separate optimizer design.
 
+## v5 Scope
+
+v5 separates Structure Core from target semantics without turning plugins into replacement applications. Core owns
+schema processing, compilation, execution, generation, serialization, capability reporting, diagnostics, artifact
+management, and CLI orchestration. Platform plugins participate through one provider and one negotiated `PlatformAPI1`
+façade, at the highest version supported by Core and that provider.
+
+### v5 sequence
+
+- Sprint 19: specify and implement discovery, provider manifests, API negotiation, target resolution, callback
+  contracts, and Core-owned artifact envelopes.
+- Sprint 20: refactor PySpark authoring, schema, compiler, execution, generation, and capability behavior behind the
+  public callbacks while preserving current runtime and generated-code evidence.
+- Sprint 21: publish the external plugin author contract and conformance kit; build the internal finite-iterable wheel
+  to prove real package discovery, execution, serialization, disabling, and isolation.
+- Sprint 22: remove legacy PySpark root exports and backend-specific Core paths, migrate documentation and fixtures,
+  run compatibility evidence, and harden v5 for release.
+
+### v5 must include
+
+- Exactly one target per transform or composed pipeline; different transforms in one project may use different
+  installed targets.
+- Metadata-only package entry-point discovery, with all installed distributions eligible by default and explicit
+  distribution disabling for conflicts.
+- Short platform identifiers with deterministic duplicate-provider diagnostics.
+- Explicit minimum/maximum Platform API versions and highest-mutual-version negotiation in both downgrade directions.
+- Core-owned workflows with independent schema, compiler, capability, execution, generation, and serialization
+  callback-provider entry points.
+- Target-owned public field definitions and transformation grammar; no permanent root aliases for PySpark APIs.
+- A generic `StructureSession(runtime=..., context=...)` runtime boundary.
+- Standard Core diagnostic and capability records whose target-specific content is supplied by plugins.
+- A bundled `structure.platform.pyspark` implementation with no private integration path.
+- Supported external plugin development through vendor-owned packages, public documentation, and conformance tests.
+- An internal finite-iterable plugin supporting projection, inner/left joins, grouped sum/count, re-iterable results,
+  `collect()`, and opaque-plan serialization.
+
+### v5 non-goals
+
+- Source compatibility between platform-specific transforms.
+- More than one target in a transform or composed pipeline.
+- Cross-platform data exchange, pipeline handoff, or automatic API translation.
+- A generic plugin message bus or arbitrary plugin-defined Core workflows.
+- Production support or public end-user documentation for the finite-iterable conformance plugin.
+- New PySpark transformation families unrelated to completing the platform extraction.
+
 ## Release Milestones
 
 | Milestone | Goal | Sprints |
@@ -244,3 +291,4 @@ over caller-supplied DataFrames.
 | M7 | v2 analytical pipeline features, analytical join coverage, composition maturity, adoption tooling, and Spark Connect batch support | Sprints 06-09 |
 | M8 | v3 PySpark gap closure and streaming transformation hardening | Sprints 11-16 |
 | M9 | v4 PySpark transformation API coverage | Sprint 17, later v4 feature sprints including Sprint 18 streaming migration, then the final v4 hardening sprint |
+| M10 | v5 Core-orchestrated platform callback architecture | Sprints 19-22 |

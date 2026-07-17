@@ -1,0 +1,51 @@
+{
+  "baseline": {
+    "pyspark": ">=3.5,<4.1",
+    "policy": "Intersection of the public PySpark 3.5.x and 4.0.x transformation APIs selected for Structure's typed DSL.",
+    "source": "https://spark.apache.org/docs/4.0.1/api/python/reference/pyspark.sql/"
+  },
+  "excluded_categories": [
+    "DataFrameReader, DataStreamReader, DataFrameWriter, and DataStreamWriter",
+    "SparkSession, catalog, table, and storage management",
+    "actions and materializers such as collect, count, first, foreach, toPandas, and rdd",
+    "streaming lifecycle operations such as start, awaitTermination, trigger, checkpoint, and outputMode",
+    "Python UDF/UDTF registration and arbitrary callback APIs"
+  ],
+  "apis": [
+    {"id": "column.comparison", "family": "Column", "pyspark": ["__eq__", "eqNullSafe", "__ne__", "__lt__", "__le__", "__gt__", "__ge__", "between", "isin"]},
+    {"id": "column.boolean", "family": "Column", "pyspark": ["__and__", "__or__", "__invert__", "isNull", "isNotNull", "isNaN"]},
+    {"id": "column.arithmetic", "family": "Column", "pyspark": ["__add__", "__sub__", "__mul__", "__truediv__", "__mod__", "__neg__"]},
+    {"id": "column.bitwise", "family": "Column", "pyspark": ["bitwiseAND", "bitwiseOR", "bitwiseXOR", "bitwiseNOT"]},
+    {"id": "column.string-predicates", "family": "Column", "pyspark": ["contains", "startswith", "endswith", "like", "ilike", "rlike"]},
+    {"id": "column.cast", "family": "Column", "pyspark": ["cast", "try_cast", "astype"]},
+    {"id": "column.nested-access", "family": "Column", "pyspark": ["getField", "getItem", "__getitem__"]},
+    {"id": "column.struct-mutation", "family": "Column", "pyspark": ["withField", "dropFields"]},
+    {"id": "column.sort", "family": "Column", "pyspark": ["asc", "desc", "asc_nulls_first", "asc_nulls_last", "desc_nulls_first", "desc_nulls_last"]},
+    {"id": "column.alias", "family": "Column", "pyspark": ["alias", "name"]},
+    {"id": "column.window", "family": "Column", "pyspark": ["over"]},
+    {"id": "functions.conditional", "family": "SQL functions", "pyspark": ["when", "coalesce", "nullif", "nvl", "nvl2", "ifnull", "zeroifnull"]},
+    {"id": "functions.null", "family": "SQL functions", "pyspark": ["isnull", "isnotnull", "isnan", "nanvl"]},
+    {"id": "functions.string", "family": "SQL functions", "pyspark": ["lower", "upper", "trim", "ltrim", "rtrim", "length", "substring", "split", "concat_ws", "regexp_extract", "regexp_replace", "initcap", "reverse", "translate", "instr", "levenshtein"]},
+    {"id": "functions.numeric", "family": "SQL functions", "pyspark": ["abs", "round", "bround", "ceil", "floor", "sqrt", "pow", "log", "exp", "signum"]},
+    {"id": "functions.temporal", "family": "SQL functions", "pyspark": ["date_add", "date_sub", "datediff", "date_trunc", "trunc", "year", "month", "dayofmonth", "hour", "minute", "second", "to_date", "to_timestamp"]},
+    {"id": "functions.hash", "family": "SQL functions", "pyspark": ["hash", "xxhash64", "md5", "sha1", "sha2"]},
+    {"id": "functions.encoding", "family": "SQL functions", "pyspark": ["base64", "unbase64", "encode", "decode"]},
+    {"id": "functions.parsing", "family": "SQL functions", "pyspark": ["from_json", "to_json", "from_csv", "to_csv"]},
+    {"id": "functions.array-construction", "family": "SQL functions", "pyspark": ["array", "array_repeat", "sequence", "array_append", "array_prepend", "array_insert", "array_remove", "array_compact"]},
+    {"id": "functions.array-lookup", "family": "SQL functions", "pyspark": ["size", "array_contains", "array_position", "element_at", "try_element_at", "slice"]},
+    {"id": "functions.array-transform", "family": "SQL functions", "pyspark": ["array_distinct", "array_union", "array_intersect", "array_except", "array_sort", "reverse", "flatten", "transform", "filter", "exists", "forall", "aggregate", "zip_with"]},
+    {"id": "functions.map", "family": "SQL functions", "pyspark": ["map_from_entries", "map_keys", "map_values", "map_entries", "map_contains_key", "map_concat", "map_filter", "transform_keys", "transform_values", "map_zip_with"]},
+    {"id": "functions.generators", "family": "SQL functions", "pyspark": ["explode", "explode_outer", "posexplode", "posexplode_outer", "inline", "inline_outer"]},
+    {"id": "dataframe.projection", "family": "DataFrame", "pyspark": ["select", "selectExpr", "withColumn", "withColumns", "withColumnRenamed", "drop", "filter", "where"]},
+    {"id": "dataframe.join", "family": "DataFrame", "pyspark": ["join", "crossJoin", "hint"]},
+    {"id": "dataframe.set", "family": "DataFrame", "pyspark": ["union", "unionByName", "intersect", "intersectAll", "subtract", "exceptAll"]},
+    {"id": "dataframe.deduplication", "family": "DataFrame", "pyspark": ["distinct", "dropDuplicates", "dropDuplicatesWithinWatermark"]},
+    {"id": "dataframe.ordering", "family": "DataFrame", "pyspark": ["sort", "orderBy", "limit", "offset", "sample"]},
+    {"id": "dataframe.grouping", "family": "DataFrame", "pyspark": ["groupBy", "rollup", "cube", "groupingSets"]},
+    {"id": "grouped.aggregates", "family": "GroupedData", "pyspark": ["agg", "count", "min", "max", "sum", "avg", "mean"]},
+    {"id": "functions.aggregate-advanced", "family": "SQL functions", "pyspark": ["count_distinct", "approx_count_distinct", "approx_percentile", "percentile", "stddev", "variance", "corr", "covar_samp", "skewness", "kurtosis", "mode"]},
+    {"id": "functions.window", "family": "SQL functions", "pyspark": ["row_number", "rank", "dense_rank", "percent_rank", "cume_dist", "ntile", "lag", "lead", "first_value", "last_value", "nth_value"]},
+    {"id": "streaming.watermark", "family": "DataFrame", "pyspark": ["withWatermark"]},
+    {"id": "streaming.session-window", "family": "SQL functions", "pyspark": ["session_window"]}
+  ]
+}

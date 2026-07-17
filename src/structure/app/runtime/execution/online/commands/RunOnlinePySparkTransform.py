@@ -554,6 +554,8 @@ class RunOnlinePySparkTransform:
                 columns.append(options["percentage"])
                 if "accuracy" in options:
                     columns.append(options["accuracy"])
+            if assignment.function == "percentile":
+                columns.extend((options["percentage"], options["frequency"]))
             return (
                 self._aggregate_function(functions, assignment.function)(*columns)
                 .cast(self._spark_type(assignment.field.type, types))
@@ -621,6 +623,9 @@ class RunOnlinePySparkTransform:
             "count_distinct",
             "max",
             "min",
+            "kurtosis",
+            "percentile",
+            "skewness",
             "stddev",
             "sum",
             "variance",
@@ -640,6 +645,9 @@ class RunOnlinePySparkTransform:
             "count_distinct": "countDistinct",
             "max": "max",
             "min": "min",
+            "kurtosis": "kurtosis",
+            "percentile": "percentile",
+            "skewness": "skewness",
             "stddev": "stddev",
             "sum": "sum",
             "variance": "variance",

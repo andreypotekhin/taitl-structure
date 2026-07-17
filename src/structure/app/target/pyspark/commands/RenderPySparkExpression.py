@@ -35,6 +35,14 @@ class RenderPySparkExpression:
             return self._field(expression, aliases)
         if expression.kind == "get_field":
             return f"{self._render(expression.args[0], aliases)}.getField({expression.data['field']!r})"
+        if expression.kind == "with_field":
+            return (
+                f"{self._render(expression.args[0], aliases)}.withField({expression.data['field']!r}, "
+                f"{self._render(expression.args[1], aliases)})"
+            )
+        if expression.kind == "drop_fields":
+            fields = ", ".join(repr(field) for field in cast(tuple[str, ...], expression.data["fields"]))
+            return f"{self._render(expression.args[0], aliases)}.dropFields({fields})"
         if expression.kind == "struct":
             return self._struct(expression, aliases)
         if expression.kind == "literal":
@@ -85,6 +93,16 @@ class RenderPySparkExpression:
             return self._binary(expression, aliases, "-")
         if expression.kind == "mul":
             return self._binary(expression, aliases, "*")
+        if expression.kind == "div":
+            return self._binary(expression, aliases, "/")
+        if expression.kind == "mod":
+            return self._binary(expression, aliases, "%")
+        if expression.kind == "neg":
+            return f"(-{self._render(expression.args[0], aliases)})"
+        if expression.kind in {"bitwise_and", "bitwise_or", "bitwise_xor"}:
+            return self._bitwise_binary(expression, aliases)
+        if expression.kind == "bitwise_not":
+            return f"F.bitwise_not({self._render(expression.args[0], aliases)})"
         if expression.kind == "when":
             condition, value, fallback = expression.args
             return (
@@ -98,7 +116,7 @@ class RenderPySparkExpression:
             value, *items = expression.args
             rendered_items = ", ".join(self._render(item, aliases) for item in items)
             return f"{self._render(value, aliases)}.isin({rendered_items})"
-        if expression.kind in {"contains", "like", "ilike", "rlike"}:
+        if expression.kind in {"contains", "startswith", "endswith", "like", "ilike", "rlike"}:
             return f"{self._render(expression.args[0], aliases)}.{expression.kind}({expression.data['pattern']!r})"
         if expression.kind == "item":
             collection, key = expression.args
@@ -138,6 +156,8 @@ class RenderPySparkExpression:
 
     def _reserved(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         function = expression.data["function"]
+        if function == "session_window":
+            return f"F.session_window({self._render(expression.args[0], aliases)}, {expression.data['gap']!r})"
         if function == "array_transform":
             array, body = expression.args
             argument = self._lambda_name(body, "item")
@@ -181,6 +201,12 @@ class RenderPySparkExpression:
                 descending=bool(expression.data.get("descending")),
             )
             return f"F.array_sort({self._render(array, aliases)}, lambda left, right: {comparator})"
+        if function == "array_sort":
+            [array] = expression.args
+            return f"F.array_sort({self._render(array, aliases)})"
+        if function == "array_reverse":
+            [array] = expression.args
+            return f"F.reverse({self._render(array, aliases)})"
         if function == "array_flatten":
             [array] = expression.args
             return f"F.flatten({self._render(array, aliases)})"
@@ -210,7 +236,33 @@ class RenderPySparkExpression:
                 self._render_literal_value(count) if count.kind == "literal" else self._render(count, aliases)
             )
             return f"F.array_repeat({self._render(value, aliases)}, {rendered_count})"
-        if function in {"array_union", "array_except"}:
+        if function == "array_sequence":
+            return f"F.sequence({', '.join(self._render(value, aliases) for value in expression.args)})"
+        if function in {"array_append", "array_prepend"}:
+            array, item = expression.args
+            return f"F.{function}({self._render(array, aliases)}, {self._render(item, aliases)})"
+        if function == "array_insert":
+            array, position, item = expression.args
+            return (
+                f"F.array_insert({self._render(array, aliases)}, {self._render_literal_value(position)}, "
+                f"{self._render(item, aliases)})"
+            )
+        if function == "array_remove":
+            array, item = expression.args
+            return f"F.array_remove({self._render(array, aliases)}, {self._render_literal_value(item)})"
+        if function == "array_compact":
+            [array] = expression.args
+            return f"F.array_compact({self._render(array, aliases)})"
+        if function == "array_slice":
+            value, start, length = expression.args
+            rendered_start = (
+                self._render_literal_value(start) if start.kind == "literal" else self._render(start, aliases)
+            )
+            rendered_length = (
+                self._render_literal_value(length) if length.kind == "literal" else self._render(length, aliases)
+            )
+            return f"F.slice({self._render(value, aliases)}, {rendered_start}, {rendered_length})"
+        if function in {"array_union", "array_except", "array_intersect"}:
             left, right = expression.args
             return f"F.{function}({self._render(left, aliases)}, {self._render(right, aliases)})"
         if function in {"element_at", "try_element_at"}:
@@ -403,14 +455,20 @@ class RenderPySparkExpression:
     def _call(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
         function = expression.data["function"]
         args = [self._render(argument, aliases) for argument in expression.args]
-        if function == "lower":
-            return f"F.lower({args[0]})"
-        if function == "trim":
-            return f"F.trim({args[0]})"
-        if function == "upper":
-            return f"F.upper({args[0]})"
+        if function in {"lower", "ltrim", "rtrim", "trim", "upper"}:
+            return f"F.{function}({args[0]})"
         if function == "coalesce":
             return f"F.coalesce({', '.join(args)})"
+        if function in {"nvl", "ifnull"}:
+            return f"F.{function}({args[0]}, {args[1]})"
+        if function == "nvl2":
+            return f"F.nvl2({args[0]}, {args[1]}, {args[2]})"
+        if function == "zeroifnull":
+            return f"F.zeroifnull({args[0]})"
+        if function == "nullif":
+            return f"F.nullif({args[0]}, {args[1]})"
+        if function == "nanvl":
+            return f"F.nanvl({args[0]}, {args[1]})"
         if function == "to_decimal":
             precision = expression.data["precision"]
             scale = expression.data["scale"]
@@ -435,18 +493,46 @@ class RenderPySparkExpression:
             return f"F.levenshtein({args[0]}, {args[1]})"
         if function == "concat_ws":
             return f"F.concat_ws({expression.data['separator']!r}, {', '.join(args)})"
+        if function in {"hash", "xxhash64"}:
+            return f"F.{function}({', '.join(args)})"
+        if function in {"md5", "sha1"}:
+            return f"F.{function}({args[0]})"
+        if function == "sha2":
+            return f"F.sha2({args[0]}, {expression.data['bits']})"
         if function == "date_add":
             return f"F.date_add({args[0]}, {expression.data['days']})"
+        if function == "date_sub":
+            return f"F.date_sub({args[0]}, {expression.data['days']})"
         if function == "datediff":
             return f"F.datediff({args[0]}, {args[1]})"
         if function == "date_trunc":
             return f"F.date_trunc({expression.data['unit']!r}, {args[0]})"
+        if function == "trunc":
+            return f"F.trunc({args[0]}, {expression.data['unit']!r})"
+        if function in {"year", "month", "dayofmonth", "hour", "minute", "second"}:
+            return f"F.{function}({args[0]})"
+        if function in {"to_date", "to_timestamp"}:
+            return (
+                f"F.{function}({args[0]}, {expression.data['format']!r})"
+                if "format" in expression.data
+                else f"F.{function}({args[0]})"
+            )
         if function == "abs":
             return f"F.abs({args[0]})"
         if function == "round":
             return f"F.round({args[0]}, {expression.data['scale']})"
+        if function == "bround":
+            return f"F.bround({args[0]}, {expression.data['scale']})"
         if function in {"ceil", "floor"}:
             return f"F.{function}({args[0]})"
+        if function in {"sqrt", "exp", "signum"}:
+            return f"F.{function}({args[0]})"
+        if function == "pow":
+            return f"F.pow({args[0]}, {args[1]})"
+        if function == "log":
+            return (
+                f"F.log({expression.data['base']!r}, {args[0]})" if "base" in expression.data else f"F.log({args[0]})"
+            )
         raise TypeError(f"Unsupported PySpark helper call: {function}")
 
     def _struct(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
@@ -464,6 +550,15 @@ class RenderPySparkExpression:
     def _binary(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str], operator: str) -> str:
         left, right = expression.args
         return f"({self._render(left, aliases)} {operator} {self._render(right, aliases)})"
+
+    def _bitwise_binary(self, expression: PySparkExpressionRecipe, aliases: Mapping[str, str]) -> str:
+        left, right = expression.args
+        method = {
+            "bitwise_and": "bitwiseAND",
+            "bitwise_or": "bitwiseOR",
+            "bitwise_xor": "bitwiseXOR",
+        }[expression.kind]
+        return f"{self._render(left, aliases)}.{method}({self._render(right, aliases)})"
 
     def _literal(self, value: str) -> str:
         return json.dumps(value)

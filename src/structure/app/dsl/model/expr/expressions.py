@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, datetime
 from decimal import Decimal
+from math import isfinite
 from re import fullmatch
 
 from structure.app.dsl.model.expr.Expression import Expression
@@ -71,6 +72,14 @@ def _decimal_literal_type(value: Decimal) -> DecimalType:
 
 def lower(value: object) -> Expression:
     return _string_call("lower", value)
+
+
+def ltrim(value: object) -> Expression:
+    return _string_call("ltrim", value)
+
+
+def rtrim(value: object) -> Expression:
+    return _string_call("rtrim", value)
 
 
 def trim(value: object) -> Expression:
@@ -208,6 +217,35 @@ def concat_ws(separator: str, *values: object) -> Expression:
     )
 
 
+def hash(*values: object) -> Expression:
+    return _hash_call("hash", IntegerType(), values)
+
+
+def xxhash64(*values: object) -> Expression:
+    return _hash_call("xxhash64", LongType(), values)
+
+
+def md5(value: object) -> Expression:
+    return _string_call("md5", value)
+
+
+def sha1(value: object) -> Expression:
+    return _string_call("sha1", value)
+
+
+def sha2(value: object, *, bits: int = 256) -> Expression:
+    argument = _string_argument(value, "sha2(...)")
+    if bits not in {224, 256, 384, 512}:
+        raise TypeError("sha2(...) bits must be one of 224, 256, 384, or 512")
+    return Expression(
+        kind="call",
+        type=StringType(),
+        nullable=argument.nullable,
+        data={"function": "sha2", "bits": bits},
+        args=(argument,),
+    )
+
+
 def date_add(value: object, *, days: int) -> Expression:
     argument = _date_or_timestamp_argument(value, "date_add(...)")
     if isinstance(days, bool) or not isinstance(days, int):
@@ -217,6 +255,19 @@ def date_add(value: object, *, days: int) -> Expression:
         type=DateType(),
         nullable=argument.nullable,
         data={"function": "date_add", "days": days},
+        args=(argument,),
+    )
+
+
+def date_sub(value: object, *, days: int) -> Expression:
+    argument = _date_or_timestamp_argument(value, "date_sub(...)")
+    if isinstance(days, bool) or not isinstance(days, int):
+        raise TypeError("date_sub(...) days must be an integer")
+    return Expression(
+        kind="call",
+        type=DateType(),
+        nullable=argument.nullable,
+        data={"function": "date_sub", "days": days},
         args=(argument,),
     )
 
@@ -245,6 +296,66 @@ def date_trunc(value: object, *, unit: str) -> Expression:
     )
 
 
+def trunc(value: object, *, unit: str) -> Expression:
+    argument = _date_argument(value, "trunc(...)")
+    unit = _trunc_unit(unit)
+    return Expression(
+        kind="call",
+        type=DateType(),
+        nullable=argument.nullable,
+        data={"function": "trunc", "unit": unit},
+        args=(argument,),
+    )
+
+
+def year(value: object) -> Expression:
+    return _calendar_part("year", value, _date_or_timestamp_argument)
+
+
+def month(value: object) -> Expression:
+    return _calendar_part("month", value, _date_or_timestamp_argument)
+
+
+def dayofmonth(value: object) -> Expression:
+    return _calendar_part("dayofmonth", value, _date_or_timestamp_argument)
+
+
+def hour(value: object) -> Expression:
+    return _calendar_part("hour", value, _timestamp_argument)
+
+
+def minute(value: object) -> Expression:
+    return _calendar_part("minute", value, _timestamp_argument)
+
+
+def second(value: object) -> Expression:
+    return _calendar_part("second", value, _timestamp_argument)
+
+
+def to_date(value: object, *, format: str | None = None) -> Expression:
+    argument = _temporal_conversion_argument(value, "to_date(...)")
+    format = _temporal_format(format, "to_date(...)")
+    return Expression(
+        kind="call",
+        type=DateType(),
+        nullable=True if isinstance(argument.type, StringType) else argument.nullable,
+        data={"function": "to_date", **({"format": format} if format is not None else {})},
+        args=(argument,),
+    )
+
+
+def to_timestamp(value: object, *, format: str | None = None) -> Expression:
+    argument = _temporal_conversion_argument(value, "to_timestamp(...)")
+    format = _temporal_format(format, "to_timestamp(...)")
+    return Expression(
+        kind="call",
+        type=TimestampType(),
+        nullable=True if isinstance(argument.type, StringType) else argument.nullable,
+        data={"function": "to_timestamp", **({"format": format} if format is not None else {})},
+        args=(argument,),
+    )
+
+
 def abs(value: object) -> Expression:
     argument = _numeric_argument(value, "abs(...)")
     return Expression(
@@ -263,6 +374,21 @@ def round(value: object, *, scale: int = 0) -> Expression:
         type=_round_type(argument.type, scale),
         nullable=argument.nullable,
         data={"function": "round", "scale": scale},
+        args=(argument,),
+    )
+
+
+def bround(value: object, *, scale: int = 0) -> Expression:
+    argument = _numeric_argument(value, "bround(...)")
+    if isinstance(scale, bool) or not isinstance(scale, int):
+        raise TypeError("bround(...) scale must be an integer")
+    if argument.type is None:
+        raise AssertionError("numeric argument validation must reject untyped expressions")
+    return Expression(
+        kind="call",
+        type=_round_type(argument.type, scale),
+        nullable=argument.nullable,
+        data={"function": "bround", "scale": scale},
         args=(argument,),
     )
 
@@ -287,6 +413,47 @@ def floor(value: object) -> Expression:
         data={"function": "floor"},
         args=(argument,),
     )
+
+
+def sqrt(value: object) -> Expression:
+    return _double_numeric_call("sqrt", value)
+
+
+def pow(value: object, exponent: object) -> Expression:
+    base = _numeric_argument(value, "pow(...)")
+    power = _numeric_argument(exponent, "pow(...)")
+    return Expression(
+        kind="call",
+        type=DoubleType(),
+        nullable=base.nullable or power.nullable,
+        data={"function": "pow"},
+        args=(base, power),
+    )
+
+
+def log(value: object, *, base: float | int | None = None) -> Expression:
+    argument = _numeric_argument(value, "log(...)")
+    if base is None:
+        return Expression(
+            kind="call", type=DoubleType(), nullable=argument.nullable, data={"function": "log"}, args=(argument,)
+        )
+    if isinstance(base, bool) or not isinstance(base, (int, float)) or not isfinite(base) or base <= 0 or base == 1:
+        raise TypeError("log(...) base must be a positive numeric literal other than 1")
+    return Expression(
+        kind="call",
+        type=DoubleType(),
+        nullable=argument.nullable,
+        data={"function": "log", "base": base},
+        args=(argument,),
+    )
+
+
+def exp(value: object) -> Expression:
+    return _double_numeric_call("exp", value)
+
+
+def signum(value: object) -> Expression:
+    return _double_numeric_call("signum", value)
 
 
 def isnull(value: object) -> Expression:
@@ -327,6 +494,67 @@ def coalesce(*values: object) -> Expression:
         nullable=all(argument.nullable for argument in arguments),
         data={"function": "coalesce"},
         args=arguments,
+    )
+
+
+def nvl(value: object, fallback: object) -> Expression:
+    return _null_fallback("nvl", value, fallback)
+
+
+def ifnull(value: object, fallback: object) -> Expression:
+    return _null_fallback("ifnull", value, fallback)
+
+
+def nvl2(value: object, when_not_null: object, when_null: object) -> Expression:
+    tested = literal(value)
+    present = literal(when_not_null)
+    missing = literal(when_null)
+    return Expression(
+        kind="call",
+        type=_common_type("nvl2(...)", (present, missing)),
+        nullable=present.nullable or missing.nullable,
+        data={"function": "nvl2"},
+        args=(tested, present, missing),
+    )
+
+
+def zeroifnull(value: object) -> Expression:
+    argument = _numeric_argument(value, "zeroifnull(...)")
+    if argument.type is None:
+        raise AssertionError("numeric argument validation must reject untyped expressions")
+    return Expression(
+        kind="call", type=argument.type, nullable=False, data={"function": "zeroifnull"}, args=(argument,)
+    )
+
+
+def nullif(value: object, other: object) -> Expression:
+    left = literal(value)
+    right = literal(other)
+    if left.type is None:
+        raise TypeError("nullif(...) requires a typed left Structure expression")
+    comparison = left == right
+    if comparison.data is not None:
+        raise TypeError("nullif(...) requires comparable Structure expression types")
+    return Expression(
+        kind="call",
+        type=left.type,
+        nullable=True,
+        data={"function": "nullif"},
+        args=(left, right),
+    )
+
+
+def nanvl(value: object, fallback: object) -> Expression:
+    left = literal(value)
+    right = literal(fallback)
+    if not isinstance(left.type, (FloatType, DoubleType)) or not isinstance(right.type, (FloatType, DoubleType)):
+        raise TypeError("nanvl(...) requires Float or Double Structure expressions")
+    return Expression(
+        kind="call",
+        type=DoubleType(),
+        nullable=left.nullable or right.nullable,
+        data={"function": "nanvl"},
+        args=(left, right),
     )
 
 
@@ -393,6 +621,40 @@ def _string_literal(value: object, call: str, parameter: str) -> None:
         raise TypeError(f"{call} {parameter} must be a string literal")
 
 
+def _null_fallback(function: str, value: object, fallback: object) -> Expression:
+    arguments = (literal(value), literal(fallback))
+    return Expression(
+        kind="call",
+        type=_common_type(f"{function}(...)", arguments),
+        nullable=all(argument.nullable for argument in arguments),
+        data={"function": function},
+        args=arguments,
+    )
+
+
+def _hash_call(function: str, type: StructureType, values: tuple[object, ...]) -> Expression:
+    if not values:
+        raise TypeError(f"{function}(...) requires at least one scalar Structure expression")
+    arguments = tuple(_hash_argument(value, f"{function}(...)") for value in values)
+    return Expression(
+        kind="call",
+        type=type,
+        nullable=any(argument.nullable for argument in arguments),
+        data={"function": function},
+        args=arguments,
+    )
+
+
+def _hash_argument(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(
+        argument.type,
+        (BooleanType, StringType, IntegerType, LongType, FloatType, DoubleType, DecimalType, DateType, TimestampType),
+    ):
+        raise TypeError(f"{call} requires scalar Structure expressions")
+    return argument
+
+
 def _date_or_timestamp_argument(value: object, call: str) -> Expression:
     argument = literal(value)
     if not isinstance(argument.type, (DateType, TimestampType)):
@@ -400,11 +662,54 @@ def _date_or_timestamp_argument(value: object, call: str) -> Expression:
     return argument
 
 
+def _date_argument(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, DateType):
+        raise TypeError(f"{call} requires a Date Structure expression")
+    return argument
+
+
+def _timestamp_argument(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, TimestampType):
+        raise TypeError(f"{call} requires a Timestamp Structure expression")
+    return argument
+
+
+def _calendar_part(function: str, value: object, argument) -> Expression:
+    source = argument(value, f"{function}(...)")
+    return Expression(
+        kind="call", type=IntegerType(), nullable=source.nullable, data={"function": function}, args=(source,)
+    )
+
+
+def _temporal_conversion_argument(value: object, call: str) -> Expression:
+    argument = literal(value)
+    if not isinstance(argument.type, (StringType, DateType, TimestampType)):
+        raise TypeError(f"{call} requires a String, Date, or Timestamp Structure expression")
+    return argument
+
+
+def _temporal_format(value: object, call: str) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value:
+        raise TypeError(f"{call} format must be a non-empty string literal")
+    return value
+
+
 def _numeric_argument(value: object, call: str) -> Expression:
     argument = literal(value)
     if argument.type is None or argument.type.name not in {"decimal", "double", "float", "integer", "long"}:
         raise TypeError(f"{call} requires a numeric Structure expression")
     return argument
+
+
+def _double_numeric_call(function: str, value: object) -> Expression:
+    argument = _numeric_argument(value, f"{function}(...)")
+    return Expression(
+        kind="call", type=DoubleType(), nullable=argument.nullable, data={"function": function}, args=(argument,)
+    )
 
 
 def _decimal_argument(value: object) -> Expression:
@@ -457,6 +762,12 @@ def _date_trunc_unit(value: object) -> str:
     return value.lower()
 
 
+def _trunc_unit(value: object) -> str:
+    if not isinstance(value, str) or value.lower() not in _TRUNC_UNITS:
+        raise TypeError("trunc(...) unit must be one of year, yyyy, yy, quarter, month, mon, mm, or week")
+    return value.lower()
+
+
 _DATE_TRUNC_UNITS = frozenset(
     {
         "year",
@@ -476,6 +787,9 @@ _DATE_TRUNC_UNITS = frozenset(
         "microsecond",
     }
 )
+
+
+_TRUNC_UNITS = frozenset({"year", "yyyy", "yy", "quarter", "month", "mon", "mm", "week"})
 
 
 def _common_type(call: str, arguments: tuple[Expression, ...]) -> StructureType | None:

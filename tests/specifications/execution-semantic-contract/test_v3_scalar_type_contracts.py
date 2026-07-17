@@ -9,6 +9,7 @@ from structure.app.dsl.api import compile_transform
 from structure.app.dsl.model.expr.Expression import Expression
 from structure.app.dsl.model.expr.expressions import literal
 from structure.app.dsl.model.types.DecimalType import DecimalType
+from structure.app.dsl.model.types.StructType import StructType
 from structure.app.target.pyspark.api import PySpark
 
 
@@ -333,6 +334,176 @@ def test_coalesce_remains_nullable_when_all_arguments_can_be_null() -> None:
     assert expression.nullable is True
 
 
+def test_nullif_preserves_the_left_type_and_is_always_nullable() -> None:
+    required = _expression(types.integer(), nullable=False)
+    nullable = _expression(types.string(), nullable=True)
+
+    integer = nullif(required, 0)
+    label = nullif(nullable, "unknown")
+
+    assert integer.type is not None and integer.type.name == "integer"
+    assert integer.nullable is True
+    assert label.type is not None and label.type.name == "string"
+    assert label.nullable is True
+
+
+@pytest.mark.parametrize(
+    "values",
+    [
+        (None, "unknown"),
+        (_expression(types.integer(), nullable=False), "unknown"),
+        (_expression(types.map(types.string(), types.string()), nullable=False), None),
+    ],
+)
+def test_nullif_requires_a_typed_left_expression_and_comparable_values(values: tuple[object, object]) -> None:
+    with pytest.raises(TypeError, match=r"nullif\(\.\.\.\) requires"):
+        nullif(*values)
+
+
+def test_nanvl_returns_double_and_propagates_nullability() -> None:
+    required_float = _expression(types.float(), nullable=False)
+    nullable_double = _expression(types.double(), nullable=True)
+
+    fallback = nanvl(required_float, nullable_double)
+
+    assert fallback.type is not None and fallback.type.name == "double"
+    assert fallback.nullable is True
+
+
+@pytest.mark.parametrize("values", [(1.0, 1), (_expression(types.integer(), nullable=False), 1.0)])
+def test_nanvl_requires_floating_point_values(values: tuple[object, object]) -> None:
+    with pytest.raises(TypeError, match=r"nanvl\(\.\.\.\) requires Float or Double Structure expressions"):
+        nanvl(*values)
+
+
+def test_deterministic_numeric_helpers_return_typed_null_propagating_expressions() -> None:
+    nullable_decimal = _expression(types.decimal(12, 2), nullable=True)
+    required_integer = _expression(types.integer(), nullable=False)
+
+    rounded = bround(nullable_decimal, scale=1)
+    assert isinstance(rounded.type, DecimalType)
+    assert rounded.type.precision == 12 and rounded.type.scale == 1
+    assert rounded.nullable is True
+    for expression in (
+        sqrt(nullable_decimal),
+        pow(nullable_decimal, required_integer),
+        log(nullable_decimal),
+        log(nullable_decimal, base=10),
+        exp(nullable_decimal),
+        signum(nullable_decimal),
+    ):
+        assert expression.type is not None and expression.type.name == "double"
+        assert expression.nullable is True
+
+
+@pytest.mark.parametrize("function", [sqrt, exp, signum])
+def test_unary_deterministic_numeric_helpers_require_numeric_values(function) -> None:
+    with pytest.raises(TypeError, match=r"requires a numeric Structure expression"):
+        function("not numeric")
+
+
+@pytest.mark.parametrize("base", [True, 0, 1, -2, float("inf"), float("nan"), "ten"])
+def test_log_requires_a_valid_literal_base(base: object) -> None:
+    with pytest.raises(TypeError, match=r"log\(\.\.\.\) base must be a positive numeric literal other than 1"):
+        log(1.0, base=base)  # type: ignore[arg-type]
+
+
+def test_hash_helpers_have_typed_results_and_explicit_null_contracts() -> None:
+    nullable_label = _expression(types.string(), nullable=True)
+    required_id = _expression(types.long(), nullable=False)
+
+    hash_code = hash(nullable_label, required_id)
+    long_hash = xxhash64(nullable_label)
+    assert hash_code.type is not None and hash_code.type.name == "integer"
+    assert hash(nullable_label).nullable is True
+    assert long_hash.type is not None and long_hash.type.name == "long"
+    assert long_hash.nullable is True
+    for expression in (md5(nullable_label), sha1(nullable_label), sha2(nullable_label, bits=512)):
+        assert expression.type is not None and expression.type.name == "string"
+        assert expression.nullable is True
+
+
+def test_null_control_helpers_preserve_typed_branch_contracts() -> None:
+    nullable_label = _expression(types.string(), nullable=True)
+    required_label = _expression(types.string(), nullable=False)
+    nullable_amount = _expression(types.decimal(12, 2), nullable=True)
+
+    assert nvl(nullable_label, "unknown").nullable is False
+    fallback = ifnull(nullable_label, "unknown")
+    assert fallback.type is not None and fallback.type.name == "string"
+    assert nvl2(nullable_label, required_label, "missing").nullable is False
+    assert zeroifnull(nullable_amount).type is nullable_amount.type
+    assert zeroifnull(nullable_amount).nullable is False
+
+
+def test_zeroifnull_requires_a_numeric_expression() -> None:
+    with pytest.raises(TypeError, match=r"zeroifnull\(\.\.\.\) requires a numeric Structure expression"):
+        zeroifnull("none")
+
+
+@pytest.mark.parametrize("function", [hash, xxhash64])
+def test_hash_helpers_require_scalar_values(function) -> None:
+    with pytest.raises(TypeError, match=r"requires scalar Structure expressions"):
+        function(_expression(types.map(types.string(), types.string()), nullable=False))
+
+
+@pytest.mark.parametrize("bits", [0, 128, 225, 1024])
+def test_sha2_requires_a_supported_digest_length(bits: int) -> None:
+    with pytest.raises(TypeError, match=r"sha2\(\.\.\.\) bits must be one of"):
+        sha2("value", bits=bits)
+
+
+def test_temporal_helpers_preserve_typed_calendar_contracts() -> None:
+    required_date = _expression(types.date(), nullable=False)
+    nullable_timestamp = _expression(types.timestamp(), nullable=True)
+    required_text = _expression(types.string(), nullable=False)
+
+    previous = date_sub(required_date, days=1)
+    month_start = trunc(required_date, unit="month")
+    assert previous.type is not None and previous.type.name == "date"
+    assert month_start.type is not None and month_start.type.name == "date"
+    for expression in (year(required_date), month(required_date), dayofmonth(required_date)):
+        assert expression.type is not None and expression.type.name == "integer"
+        assert expression.nullable is False
+    for expression in (hour(nullable_timestamp), minute(nullable_timestamp), second(nullable_timestamp)):
+        assert expression.type is not None and expression.type.name == "integer"
+        assert expression.nullable is True
+    assert to_date(required_text, format="yyyy-MM-dd").nullable is True
+    assert to_timestamp(required_text, format="yyyy-MM-dd HH:mm:ss").nullable is True
+
+
+@pytest.mark.parametrize("function", [hour, minute, second])
+def test_time_extraction_requires_timestamp_values(function) -> None:
+    with pytest.raises(TypeError, match=r"requires a Timestamp Structure expression"):
+        function(_expression(types.date(), nullable=False))
+
+
+@pytest.mark.parametrize("unit", ["day", "season", "month; SELECT 1"])
+def test_trunc_requires_supported_date_units(unit: str) -> None:
+    with pytest.raises(TypeError, match=r"trunc\(\.\.\.\) unit must be one of"):
+        trunc(_expression(types.date(), nullable=False), unit=unit)
+
+
+@pytest.mark.parametrize("format", ["", 1])
+def test_temporal_conversions_require_non_empty_format_literals(format: object) -> None:
+    with pytest.raises(TypeError, match=r"format must be a non-empty string literal"):
+        to_date("2026-07-15", format=format)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("function", [ltrim, rtrim])
+def test_one_sided_trim_preserves_string_type_and_nullability(function) -> None:
+    expression = function(_expression(types.string(), nullable=True))
+
+    assert expression.type is not None and expression.type.name == "string"
+    assert expression.nullable is True
+
+
+@pytest.mark.parametrize("function", [ltrim, rtrim])
+def test_one_sided_trim_requires_a_string_expression(function) -> None:
+    with pytest.raises(TypeError, match=r"requires a String Structure expression"):
+        function(1)
+
+
 @pytest.mark.parametrize(
     "values",
     [
@@ -436,6 +607,17 @@ def test_event_time_window_propagates_timestamp_nullability() -> None:
     assert required.nullable is False
 
 
+def test_session_window_propagates_timestamp_nullability_and_requires_a_fixed_gap() -> None:
+    nullable = session_window(_expression(types.timestamp(), nullable=True), "10 minutes")
+    required = session_window(_expression(types.timestamp(), nullable=False), "10 minutes")
+
+    assert nullable.type == StructType(TimeWindow)
+    assert nullable.nullable is True
+    assert required.nullable is False
+    with pytest.raises(TypeError, match="positive fixed Spark interval"):
+        session_window(_expression(types.timestamp(), nullable=False), "0 minutes")
+
+
 @pytest.mark.parametrize(
     ("scale", "precision", "result_scale"),
     [(-4, 11, 0), (0, 11, 0), (1, 12, 1), (4, 13, 2)],
@@ -479,6 +661,75 @@ def test_arithmetic_widens_numeric_types_and_propagates_nullability() -> None:
     assert widened.nullable is False
     assert nullable.type is not None and nullable.type.name == "long"
     assert nullable.nullable is True
+
+
+def test_division_modulo_and_negation_have_typed_null_propagating_results() -> None:
+    integer = _expression(types.integer(), nullable=False)
+    nullable_decimal = _expression(types.decimal(12, 2), nullable=True)
+
+    quotient = integer / 2
+    remainder = integer % 2
+    decimal_quotient = nullable_decimal / 2
+    negated = -nullable_decimal
+
+    assert quotient.type is not None and quotient.type.name == "double"
+    assert remainder.type is not None and remainder.type.name == "integer"
+    assert isinstance(decimal_quotient.type, DecimalType)
+    assert decimal_quotient.nullable is True
+    assert negated.type is nullable_decimal.type
+    assert negated.nullable is True
+
+
+def test_declared_struct_mutation_requires_an_exact_result_schema() -> None:
+    class Source(Schema):
+        label = field.string(nullable=True)
+        rank = field.integer(nullable=False)
+
+    class Replaced(Schema):
+        label = field.string(nullable=False)
+        rank = field.integer(nullable=False)
+
+    class Dropped(Schema):
+        label = field.string(nullable=True)
+
+    value = _expression(types.struct(Source), nullable=True)
+
+    replaced = value.with_field("label", "known", schema=Replaced)
+    dropped = value.drop_fields("rank", schema=Dropped)
+
+    assert replaced.type is not None and replaced.type.name == "struct"
+    assert replaced.nullable is True
+    assert dropped.data == {"fields": ("rank",)}
+
+
+def test_bitwise_operations_preserve_integral_types_and_nullability() -> None:
+    integer = _expression(types.integer(), nullable=False)
+    nullable_long = _expression(types.long(), nullable=True)
+    intersected = integer.bitwise_and(3)
+    combined = integer.bitwise_or(nullable_long)
+    changed = integer.bitwise_xor(nullable_long)
+    inverted = nullable_long.bitwise_not()
+
+    assert intersected.kind == "bitwise_and"
+    assert intersected.type is not None and intersected.type.name == "integer"
+    assert combined.type is not None and combined.type.name == "long"
+    assert changed.nullable is True
+    assert inverted.type is not None and inverted.type.name == "long"
+    assert inverted.nullable is True
+
+
+@pytest.mark.parametrize(
+    "expression",
+    [
+        lambda: _expression(types.integer(), nullable=False).bitwise_and(0.5),
+        lambda: _expression(types.integer(), nullable=False).bitwise_or(True),
+        lambda: _expression(types.decimal(8, 0), nullable=False).bitwise_xor(1),
+        lambda: _expression(types.string(), nullable=False).bitwise_not(),
+    ],
+)
+def test_bitwise_operations_require_integral_operands(expression) -> None:
+    with pytest.raises(TypeError, match="Bitwise operations require integral Structure expressions"):
+        expression()
 
 
 def test_arithmetic_projects_spark_decimal_precision_and_scale() -> None:
@@ -552,13 +803,17 @@ def test_arithmetic_rejects_non_numeric_operands() -> None:
 def test_comparisons_require_compatible_and_orderable_operands() -> None:
     integer = _expression(types.integer(), nullable=False)
 
-    assert (integer == "one").data == {"comparison_problem": "Comparison requires compatible Structure expression types"}
+    assert (integer == "one").data == {
+        "comparison_problem": "Comparison requires compatible Structure expression types"
+    }
     assert integer.null_safe_eq("one").data == {
         "comparison_problem": "Comparison requires compatible Structure expression types"
     }
     with pytest.raises(TypeError, match="compatible with its expression type"):
         integer.isin(1, "one")
-    assert (integer == object()).data == {"comparison_problem": "Comparison requires compatible Structure expression types"}
+    assert (integer == object()).data == {
+        "comparison_problem": "Comparison requires compatible Structure expression types"
+    }
     assert (_expression(types.boolean(), nullable=False) > False).data == {
         "comparison_problem": "Ordering comparisons require orderable Structure expression types"
     }
@@ -588,6 +843,18 @@ def test_string_normalizers_require_and_return_string_expressions(helper) -> Non
         helper(1)
 
 
+@pytest.mark.parametrize("method", ["startswith", "endswith"])
+def test_string_boundary_predicates_require_string_literals_and_preserve_nullability(method: str) -> None:
+    nullable = _expression(types.string(), nullable=True)
+    predicate = getattr(nullable, method)("order-")
+
+    assert predicate.kind == method
+    assert predicate.type is not None and predicate.type.name == "boolean"
+    assert predicate.nullable is True
+    with pytest.raises(TypeError, match=rf"{method}\(\.\.\.\) requires a string literal"):
+        getattr(nullable, method)(1)
+
+
 @pytest.mark.parametrize("interval", ["", "one minute", "-1 second", "1 second; SELECT 1"])
 def test_event_time_between_rejects_invalid_interval_text(interval: str) -> None:
     timestamp = _expression(types.timestamp(), nullable=False)
@@ -605,9 +872,7 @@ def test_event_time_between_rejects_a_reversed_interval_range() -> None:
         event_time_between(timestamp, timestamp, lower="2 minutes", upper="1 minute")
 
 
-@pytest.mark.parametrize(
-    "unit", ["year", "YYYY", "quarter", "mon", "dd", "hour", "microsecond"]
-)
+@pytest.mark.parametrize("unit", ["year", "YYYY", "quarter", "mon", "dd", "hour", "microsecond"])
 def test_date_trunc_accepts_only_spark_truncation_units(unit: str) -> None:
     timestamp = _expression(types.timestamp(), nullable=False)
 

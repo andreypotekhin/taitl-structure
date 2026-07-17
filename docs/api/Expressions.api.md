@@ -10,6 +10,8 @@ typed `order` row scope as `o`.
 | Field read | `col` / attribute access | `o.customer_id` |
 | Nested field read | Nested Column access | `o.customer.address.zip` |
 | `expr.get_field(...)` | `Column.getField` | `o.customer.address.get_field("zip")` |
+| `expr.with_field(..., schema=...)` | `Column.withField` | `o.details.with_field("label", "known", schema=Details)` |
+| `expr.drop_fields(..., schema=...)` | `Column.dropFields` | `o.details.drop_fields("legacy", schema=CurrentDetails)` |
 | `==` | `Column.__eq__` | `o.total == 0` |
 | `!=` | `Column.__ne__` | `o.total != 0` |
 | `<` | `Column.__lt__` | `o.total < 0` |
@@ -33,6 +35,8 @@ typed `order` row scope as `o`.
   `null_safe_eq(...)` considers two nulls equal and is never null.
 - Comparisons and `isin(...)` require compatible typed values. Numeric values and Date/Timestamp pairs may be compared;
   Map values are not comparable.
+- Struct mutation requires an explicit declared result Schema. It is rejected unless that schema exactly preserves the
+  source shape apart from the named replacement or removals.
 
 ## General Column Transformations
 
@@ -41,9 +45,18 @@ typed `order` row scope as `o`.
 | `+` and reverse `+` | Column addition | `(o.total + 1, 1 + o.total)` |
 | `-` and reverse `-` | Column subtraction | `(o.total - 1, 1 - o.total)` |
 | `*` and reverse `*` | Column multiplication | `(o.total * 2, 2 * o.total)` |
+| `/` and reverse `/` | Column division | `(o.total / 2, 2 / o.total)` |
+| `%` and reverse `%` | Column remainder | `(o.total % 2, 2 % o.total)` |
+| Unary `-` | Column negation | `-o.total` |
+| `bitwise_and(...)` | `Column.bitwiseAND` | `o.flags.bitwise_and(3)` |
+| `bitwise_or(...)` | `Column.bitwiseOR` | `o.flags.bitwise_or(o.mask)` |
+| `bitwise_xor(...)` | `Column.bitwiseXOR` | `o.flags.bitwise_xor(o.mask)` |
+| `bitwise_not()` | `functions.bitwise_not` | `o.flags.bitwise_not()` |
 | `expr[index]` | `getItem` | `o.tags[0]` |
 | `expr[key]` | `getItem` | `o.attributes["region"]` |
 | `contains(...)` | `contains` | `o.name.contains("A")` |
+| `startswith(...)` | `startswith` | `o.name.startswith("order-")` |
+| `endswith(...)` | `endswith` | `o.name.endswith("-hold")` |
 | `like(...)` | `like` | `o.name.like("A%")` |
 | `ilike(...)` | `ilike` | `o.name.ilike("a%")` |
 | `rlike(...)` | `rlike` | `o.name.rlike("^A")` |
@@ -61,7 +74,10 @@ typed `order` row scope as `o`.
 
 - Array and map lookup results are nullable. String predicates require String expressions; `rlike(...)` uses Java regex.
 - `try_cast(...)` is always nullable and needs target profile `>=4.0,<4.1`.
-- The current arithmetic surface excludes division and modulo; raw `Column.over(...)` remains unsupported.
+- Division, remainder, and negation require numeric expressions. Integral division returns Double; Decimal division uses
+  Spark's bounded Decimal precision rules. Raw `Column.over(...)` remains unsupported.
+- Bitwise methods accept only `integer` and `long` expressions. A mixed pair returns `long`; nullability propagates
+  from either operand.
 
 ## SQL Function Helpers
 
@@ -69,6 +85,8 @@ typed `order` row scope as `o`.
 | --- | --- | --- |
 | `lower(...)` | `lower` | `lower(o.name)` |
 | `upper(...)` | `upper` | `upper(o.name)` |
+| `ltrim(...)` | `ltrim` | `ltrim(o.name)` |
+| `rtrim(...)` | `rtrim` | `rtrim(o.name)` |
 | `trim(...)` | `trim` | `trim(o.name)` |
 | `substring(...)` | `substring` | `substring(o.code, start=1, length=3)` |
 | `split(...)` | `split` | `split(o.code, pattern="-")` |
@@ -81,25 +99,60 @@ typed `order` row scope as `o`.
 | `translate(...)` | `translate` | `translate(o.name, matching="-", replacement="_")` |
 | `instr(...)` | `instr` | `instr(o.name, substring="A")` |
 | `levenshtein(...)` | `levenshtein` | `levenshtein(o.name, "Ada")` |
+| `hash(...)` | `hash` | `hash(o.tenant, o.id)` |
+| `xxhash64(...)` | `xxhash64` | `xxhash64(o.tenant, o.id)` |
+| `md5(...)` | `md5` | `md5(o.name)` |
+| `sha1(...)` | `sha1` | `sha1(o.name)` |
+| `sha2(...)` | `sha2` | `sha2(o.name, bits=256)` |
 | `date_add(...)` | `date_add` | `date_add(o.day, days=1)` |
+| `date_sub(...)` | `date_sub` | `date_sub(o.day, days=1)` |
 | `datediff(...)` | `datediff` | `datediff(o.end_day, o.start_day)` |
 | `date_trunc(...)` | `date_trunc` | `date_trunc(o.at, unit="month")` |
+| `trunc(...)` | `trunc` | `trunc(o.day, unit="month")` |
+| `year(...)`, `month(...)`, `dayofmonth(...)` | Calendar extraction | `year(o.day)` |
+| `hour(...)`, `minute(...)`, `second(...)` | Time extraction | `hour(o.at)` |
+| `to_date(...)` | `to_date` | `to_date(o.raw_day, format="yyyy-MM-dd")` |
+| `to_timestamp(...)` | `to_timestamp` | `to_timestamp(o.raw_at, format="yyyy-MM-dd HH:mm:ss")` |
 | `abs(...)` | `abs` | `abs(o.total)` |
 | `round(...)` | `round` | `round(o.total, scale=2)` |
+| `bround(...)` | `bround` | `bround(o.total, scale=2)` |
 | `ceil(...)` | `ceil` | `ceil(o.total)` |
 | `floor(...)` | `floor` | `floor(o.total)` |
+| `sqrt(...)` | `sqrt` | `sqrt(o.total)` |
+| `pow(...)` | `pow` | `pow(o.total, 2)` |
+| `log(...)` | `log` | `log(o.total, base=10)` |
+| `exp(...)` | `exp` | `exp(o.total)` |
+| `signum(...)` | `signum` | `signum(o.total)` |
 | `isnull(...)` | `isnull` | `isnull(o.score)` |
 | `isnotnull(...)` | `isnotnull` | `isnotnull(o.score)` |
 | `isnan(...)` | `isnan` | `isnan(o.score)` |
 | `to_decimal(...)` | `Column.cast(DecimalType)` | `to_decimal(o.raw_total, precision=12, scale=2)` |
 | `coalesce(...)` | `functions.coalesce` | `coalesce(o.discount, 0)` |
+| `nvl(...)` | `functions.nvl` | `nvl(o.discount, 0)` |
+| `ifnull(...)` | `functions.ifnull` | `ifnull(o.discount, 0)` |
+| `nvl2(...)` | `functions.nvl2` | `nvl2(o.code, "known", "missing")` |
+| `zeroifnull(...)` | `functions.zeroifnull` | `zeroifnull(o.total)` |
+| `nullif(...)` | `functions.nullif` | `nullif(o.status, "unknown")` |
+| `nanvl(...)` | `functions.nanvl` | `nanvl(o.score, 0.0)` |
 | `when(...).otherwise(...)` | `when`, `otherwise` | `when(o.total > 0, "paid").otherwise("free")` |
 
 **Details And Differences**
 
 - Pattern, replacement, separator, and search arguments are explicit compiler-visible values.
 - Null and NaN predicates remain distinct. `when(...)` must finish with `.otherwise(...)` before use.
+- `nullif(value, other)` returns `value`'s type and is always nullable because a matching value becomes null.
+- `nanvl(value, fallback)` accepts Float/Double inputs, returns Double, and replaces only NaN—not null—values.
+- `nvl(...)` and `ifnull(...)` select a typed fallback; `nvl2(...)` selects between typed present/null branches;
+  `zeroifnull(...)` accepts numeric expressions and is never null.
 - Decimal precision is an integer from 1 through 38; scale is an integer from 0 through that precision.
 - Arithmetic requires numeric operands, widens mixed numeric expressions, and propagates operand nullability.
+- `bround(...)` uses Spark's half-even rounding. `sqrt(...)`, `pow(...)`, `log(...)`, `exp(...)`, and `signum(...)`
+  return Double values; `log(..., base=...)` accepts a finite positive literal base other than one.
+- `trunc(...)` accepts Date values and `year`, `month`, `quarter`, or `week` units (including Spark aliases).
+  Calendar extraction accepts Date or Timestamp values; time extraction requires Timestamp. String temporal parsing is
+  nullable because invalid input becomes null, and its optional format is a compiler-visible literal.
+- `hash(...)` and `xxhash64(...)` accept scalar inputs. They are Spark hash functions, not cryptographic identifiers;
+  do not use them for security, cross-engine interchange, or persistent identifiers. `md5(...)`, `sha1(...)`, and
+  `sha2(...)` are deterministic digests of String values, not password-storage primitives.
 - Raw `expr(...)`, `call_function(...)`, and UDF/UDTF expressions are unsupported. See the
   [Schemas reference](../reference/Schema.ref.md).

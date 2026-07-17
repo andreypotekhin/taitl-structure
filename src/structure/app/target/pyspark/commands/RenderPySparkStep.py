@@ -520,6 +520,8 @@ class RenderPySparkStep:
                 rendered_arguments.append(repr(options["percentage"]))
                 if "accuracy" in options:
                     rendered_arguments.append(repr(options["accuracy"]))
+            if assignment.function == "percentile":
+                rendered_arguments.extend((repr(options["percentage"]), repr(options["frequency"])))
             return (
                 f"{function}({', '.join(rendered_arguments)}).cast({render_pyspark_schema.type(assignment.field.type)})"
                 f".alias({alias})"
@@ -568,6 +570,9 @@ class RenderPySparkStep:
             "count_distinct",
             "max",
             "min",
+            "kurtosis",
+            "percentile",
+            "skewness",
             "stddev",
             "sum",
             "variance",
@@ -587,6 +592,9 @@ class RenderPySparkStep:
             "count_distinct": "F.countDistinct",
             "max": "F.max",
             "min": "F.min",
+            "kurtosis": "F.kurtosis",
+            "percentile": "F.percentile",
+            "skewness": "F.skewness",
             "stddev": "F.stddev",
             "sum": "F.sum",
             "variance": "F.variance",

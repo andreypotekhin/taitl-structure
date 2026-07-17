@@ -97,6 +97,22 @@
 - Admit row generators only after their schema-and-cardinality contract is proven.
 - Keep loading, storage, actions, orchestration, alternative backends, and non-batch Spark Connect work out of v4.
 
+## Phase 6: v5
+
+- Add the unversioned platform discovery bootstrap and versioned callback API contracts.
+- Negotiate the highest Platform API version supported by Core and every callback provider in the selected plugin.
+- Keep schema, compilation, execution, generation, serialization, capabilities, diagnostics, and file ownership
+  orchestrated by Core while delegating target behavior through callbacks.
+- Resolve one target per transform, permit different targets across a project, and reject cross-target pipelines.
+- Discover installed providers without importing plugin code; load only the selected target or an explicit capability
+  query.
+- Move PySpark field definitions, grammar, semantic checks, lowering, execution, generation, and schema behavior under
+  `structure.platform.pyspark` callbacks.
+- Generalize compiled artifacts and `StructureSession(runtime=..., context=...)` without exposing target runtime types
+  in Core.
+- Publish the external plugin contract, author guide, conformance suite, diagnostics, and migration guide.
+- Prove the contract with a separately packaged internal finite-iterable plugin.
+
 ## Build Integration
 
 Initial build integration should rely on CLI commands:

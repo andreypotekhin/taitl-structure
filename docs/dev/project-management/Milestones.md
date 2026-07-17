@@ -316,3 +316,30 @@ Exit Criteria:
 - Loading, storage, actions, streaming orchestration, and alternative backends remain outside the milestone.
 - The final v4 hardening sprint passes the release evidence, regression, parity, compatibility, generated-artifact,
   documentation, diagnostics, and performance-baseline checks without admitting new feature scope.
+
+## M10: v5 Platform Callback Architecture
+
+Status: scheduled after the final v4 hardening sprint. Sprints 19-22 deliver the public callback contract, migrate the
+bundled PySpark platform, prove external-wheel isolation, validate private target-local engine replacement and
+synchronous callback messaging, and close the breaking v5 migration.
+
+### Exit Criteria
+
+- Core owns every public schema, compilation, execution, generation, serialization, capability, diagnostic, artifact,
+  and CLI workflow; platform code is invoked only through documented callbacks.
+- Discovery reads installed distribution metadata without importing plugin modules and reports duplicate short ids
+  deterministically.
+- Core and the selected platform provider negotiate the highest mutually supported Platform API version; artifacts
+  retain the negotiated version and reject incompatible consumers.
+- A transform and composed pipeline resolve exactly one target, while a project can compile transforms assigned to
+  different installed targets.
+- Public target grammar and field definitions are absent from the `structure` root and PySpark code imports them from
+  `structure.platform.pyspark`.
+- PySpark schema handling, semantic checks, lowering, online execution, generated execution, rendering, capabilities,
+  and diagnostics use the public callback boundary without behavioral regression.
+- External vendors can implement the published contract from their own packages and verify it with the conformance
+  suite.
+- The separately packaged finite-iterable plugin proves real entry-point discovery, API negotiation, target isolation,
+  finite-generator execution, joins, grouped aggregation, collection, and opaque-plan serialization.
+- The full build and supported PySpark integration matrix pass, and v5 migration, extension, troubleshooting, and
+  release documentation are complete.

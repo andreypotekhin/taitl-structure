@@ -41,6 +41,17 @@ def test_window_rejects_invalid_frame_objects() -> None:
         window(partition_by="tenant", order_by="ordered", frame=cast(WindowFrame, "current row"))
 
 
+def test_exact_percentile_and_moment_statistics_require_numeric_values() -> None:
+    for expression in (percentile(1, 0.5), skewness(1), kurtosis(1)):
+        assert expression.type is not None and expression.type.name == "double"
+        assert expression.nullable is True
+
+    with pytest.raises(TypeError, match="percentage"):
+        percentile(1, 1.1)
+    with pytest.raises(TypeError, match="frequency"):
+        percentile(1, 0.5, frequency=0)
+
+
 def test_sum_uses_spark_widened_types_and_filtered_aggregate_nullability() -> None:
     required_integer = Expression(kind="test_integer", type=types.integer(), nullable=False)
     required_float = Expression(kind="test_float", type=types.float(), nullable=False)

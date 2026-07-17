@@ -137,6 +137,13 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
         (_binary("add", _field(RawOrder, "id"), _literal("A-1")), "(col(orders.id) + lit('A-1'))"),
         (_binary("sub", _field(RawOrder, "id"), _literal("A-1")), "(col(orders.id) - lit('A-1'))"),
         (_binary("mul", _field(RawOrder, "id"), _literal("A-1")), "(col(orders.id) * lit('A-1'))"),
+        (_binary("div", _field(RawOrder, "id"), _literal(2)), "(col(orders.id) / lit(2))"),
+        (_binary("mod", _field(RawOrder, "id"), _literal(2)), "(col(orders.id) % lit(2))"),
+        (_unary("neg", _field(RawOrder, "id")), "-(col(orders.id))"),
+        (_binary("bitwise_and", _field(RawOrder, "id"), _literal(3)), "col(orders.id).bitwiseAND(lit(3))"),
+        (_binary("bitwise_or", _field(RawOrder, "id"), _literal(3)), "col(orders.id).bitwiseOR(lit(3))"),
+        (_binary("bitwise_xor", _field(RawOrder, "id"), _literal(3)), "col(orders.id).bitwiseXOR(lit(3))"),
+        (_unary("bitwise_not", _field(RawOrder, "id")), "bitwise_not(col(orders.id))"),
         (
             _binary("null_safe_eq", _field(RawOrder, "status"), _literal(None)),
             "col(orders.status).eqNullSafe(lit(None))",
@@ -146,6 +153,8 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
             "col(orders.status).isin(lit('new'),lit('held'))",
         ),
         (_string_predicate("contains", _field(RawOrder, "status"), "new"), "col(orders.status).contains('new')"),
+        (_string_predicate("startswith", _field(RawOrder, "status"), "new"), "col(orders.status).startswith('new')"),
+        (_string_predicate("endswith", _field(RawOrder, "status"), "new"), "col(orders.status).endswith('new')"),
         (_string_predicate("like", _field(RawOrder, "status"), "new%"), "col(orders.status).like('new%')"),
         (
             _string_predicate("ilike", _field(RawOrder, "status"), "NEW%"),
@@ -186,16 +195,55 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
             _call("concat_ws", _field(RawOrder, "status"), _literal("release"), separator=" / "),
             "concat_ws(' / ',col(orders.status),lit('release'))",
         ),
+        (_call("hash", _field(RawOrder, "id"), _field(RawOrder, "status")), "hash(col(orders.id),col(orders.status))"),
+        (
+            _call("xxhash64", _field(RawOrder, "id"), _field(RawOrder, "status")),
+            "xxhash64(col(orders.id),col(orders.status))",
+        ),
+        (_call("md5", _field(RawOrder, "status")), "md5(col(orders.status))"),
+        (_call("sha1", _field(RawOrder, "status")), "sha1(col(orders.status))"),
+        (_call("sha2", _field(RawOrder, "status"), bits=512), "sha2(col(orders.status),512)"),
         (_call("date_add", _field(RawOrder, "status"), days=7), "date_add(col(orders.status),7)"),
+        (_call("date_sub", _field(RawOrder, "status"), days=7), "date_sub(col(orders.status),7)"),
         (
             _call("datediff", _field(RawOrder, "id"), _field(RawOrder, "status")),
             "datediff(col(orders.id),col(orders.status))",
         ),
         (_call("date_trunc", _field(RawOrder, "status"), unit="month"), "date_trunc('month',col(orders.status))"),
+        (_call("trunc", _field(RawOrder, "status"), unit="month"), "trunc(col(orders.status),'month')"),
+        (_call("year", _field(RawOrder, "status")), "year(col(orders.status))"),
+        (_call("month", _field(RawOrder, "status")), "month(col(orders.status))"),
+        (_call("dayofmonth", _field(RawOrder, "status")), "dayofmonth(col(orders.status))"),
+        (_call("hour", _field(RawOrder, "status")), "hour(col(orders.status))"),
+        (_call("minute", _field(RawOrder, "status")), "minute(col(orders.status))"),
+        (_call("second", _field(RawOrder, "status")), "second(col(orders.status))"),
+        (_call("to_date", _field(RawOrder, "status"), format="yyyy-MM-dd"), "to_date(col(orders.status),'yyyy-MM-dd')"),
+        (
+            _call("to_timestamp", _field(RawOrder, "status"), format="yyyy-MM-dd HH:mm:ss"),
+            "to_timestamp(col(orders.status),'yyyy-MM-dd HH:mm:ss')",
+        ),
         (_call("abs", _field(RawOrder, "status")), "abs(col(orders.status))"),
         (_call("round", _field(RawOrder, "status"), scale=1), "round(col(orders.status),1)"),
         (_call("ceil", _field(RawOrder, "status")), "ceil(col(orders.status))"),
         (_call("floor", _field(RawOrder, "status")), "floor(col(orders.status))"),
+        (_call("nullif", _field(RawOrder, "status"), _literal("unknown")), "nullif(col(orders.status),lit('unknown'))"),
+        (_call("nvl", _field(RawOrder, "status"), _literal("unknown")), "nvl(col(orders.status),lit('unknown'))"),
+        (_call("ifnull", _field(RawOrder, "status"), _literal("unknown")), "ifnull(col(orders.status),lit('unknown'))"),
+        (
+            _call("nvl2", _field(RawOrder, "status"), _literal("known"), _literal("unknown")),
+            "nvl2(col(orders.status),lit('known'),lit('unknown'))",
+        ),
+        (_call("zeroifnull", _field(RawOrder, "status")), "zeroifnull(col(orders.status))"),
+        (_call("nanvl", _field(RawOrder, "status"), _literal(0.0)), "nanvl(col(orders.status),lit(0.0))"),
+        (_call("bround", _field(RawOrder, "status"), scale=1), "bround(col(orders.status),1)"),
+        (_call("sqrt", _field(RawOrder, "status")), "sqrt(col(orders.status))"),
+        (_call("pow", _field(RawOrder, "status"), _literal(2)), "pow(col(orders.status),lit(2))"),
+        (_call("log", _field(RawOrder, "status")), "log(col(orders.status))"),
+        (_call("log", _field(RawOrder, "status"), base=10), "log(10,col(orders.status))"),
+        (_call("exp", _field(RawOrder, "status")), "exp(col(orders.status))"),
+        (_call("signum", _field(RawOrder, "status")), "signum(col(orders.status))"),
+        (_call("ltrim", _field(RawOrder, "status")), "ltrim(col(orders.status))"),
+        (_call("rtrim", _field(RawOrder, "status")), "rtrim(col(orders.status))"),
         (_not(_is_null(_field(RawOrder, "status"))), "~(col(orders.status).isNull())"),
         (_is_nan(_field(RawOrder, "status")), "isnan(col(orders.status))"),
         (_call("upper", _call("trim", _field(RawOrder, "status"))), "upper(trim(col(orders.status)))"),
@@ -2238,6 +2286,10 @@ def _binary(kind: str, left: PySparkExpressionRecipe, right: PySparkExpressionRe
     return PySparkExpressionRecipe(kind, left.type, False, {}, (left, right))
 
 
+def _unary(kind: str, value: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
+    return PySparkExpressionRecipe(kind, value.type, value.nullable, {}, (value,))
+
+
 def _isin(value: PySparkExpressionRecipe, *items: PySparkExpressionRecipe) -> PySparkExpressionRecipe:
     return PySparkExpressionRecipe("isin", types.boolean(), True, {}, (value, *items))
 
@@ -2504,6 +2556,12 @@ class FakeFunctions(ModuleType):
     def lower(self, column):
         return FakeColumn(f"lower({column.expression})", source_name=column.source_name)
 
+    def ltrim(self, column):
+        return FakeColumn(f"ltrim({column.expression})", source_name=column.source_name)
+
+    def rtrim(self, column):
+        return FakeColumn(f"rtrim({column.expression})", source_name=column.source_name)
+
     def trim(self, column):
         return FakeColumn(f"trim({column.expression})", source_name=column.source_name)
 
@@ -2543,8 +2601,26 @@ class FakeFunctions(ModuleType):
     def concat_ws(self, separator, *columns):
         return FakeColumn(f"concat_ws({separator!r},{','.join(column.expression for column in columns)})")
 
+    def hash(self, *columns):
+        return FakeColumn("hash(" + ",".join(column.expression for column in columns) + ")")
+
+    def xxhash64(self, *columns):
+        return FakeColumn("xxhash64(" + ",".join(column.expression for column in columns) + ")")
+
+    def md5(self, column):
+        return FakeColumn(f"md5({column.expression})")
+
+    def sha1(self, column):
+        return FakeColumn(f"sha1({column.expression})")
+
+    def sha2(self, column, bits):
+        return FakeColumn(f"sha2({column.expression},{bits})")
+
     def date_add(self, column, days):
         return FakeColumn(f"date_add({column.expression},{days})")
+
+    def date_sub(self, column, days):
+        return FakeColumn(f"date_sub({column.expression},{days})")
 
     def datediff(self, end, start):
         return FakeColumn(f"datediff({end.expression},{start.expression})")
@@ -2552,11 +2628,43 @@ class FakeFunctions(ModuleType):
     def date_trunc(self, unit, column):
         return FakeColumn(f"date_trunc({unit!r},{column.expression})")
 
+    def trunc(self, column, unit):
+        return FakeColumn(f"trunc({column.expression},{unit!r})")
+
+    def year(self, column):
+        return FakeColumn(f"year({column.expression})")
+
+    def month(self, column):
+        return FakeColumn(f"month({column.expression})")
+
+    def dayofmonth(self, column):
+        return FakeColumn(f"dayofmonth({column.expression})")
+
+    def hour(self, column):
+        return FakeColumn(f"hour({column.expression})")
+
+    def minute(self, column):
+        return FakeColumn(f"minute({column.expression})")
+
+    def second(self, column):
+        return FakeColumn(f"second({column.expression})")
+
+    def to_date(self, column, format=None):
+        suffix = "" if format is None else f",{format!r}"
+        return FakeColumn(f"to_date({column.expression}{suffix})")
+
+    def to_timestamp(self, column, format=None):
+        suffix = "" if format is None else f",{format!r}"
+        return FakeColumn(f"to_timestamp({column.expression}{suffix})")
+
     def abs(self, column):
         return FakeColumn(f"abs({column.expression})")
 
     def round(self, column, scale):
         return FakeColumn(f"round({column.expression},{scale})")
+
+    def bround(self, column, scale):
+        return FakeColumn(f"bround({column.expression},{scale})")
 
     def ceil(self, column):
         return FakeColumn(f"ceil({column.expression})")
@@ -2564,11 +2672,51 @@ class FakeFunctions(ModuleType):
     def floor(self, column):
         return FakeColumn(f"floor({column.expression})")
 
+    def sqrt(self, column):
+        return FakeColumn(f"sqrt({column.expression})")
+
+    def pow(self, base, exponent):
+        return FakeColumn(f"pow({base.expression},{exponent.expression})")
+
+    def log(self, *arguments):
+        return FakeColumn(
+            "log("
+            + ",".join(str(argument) if isinstance(argument, int) else argument.expression for argument in arguments)
+            + ")"
+        )
+
+    def exp(self, column):
+        return FakeColumn(f"exp({column.expression})")
+
+    def signum(self, column):
+        return FakeColumn(f"signum({column.expression})")
+
+    def bitwise_not(self, column):
+        return FakeColumn(f"bitwise_not({column.expression})")
+
     def isnan(self, column):
         return FakeColumn(f"isnan({column.expression})")
 
     def coalesce(self, *columns):
         return FakeColumn("coalesce(" + ",".join(column.expression for column in columns) + ")")
+
+    def nvl(self, value, fallback):
+        return FakeColumn(f"nvl({value.expression},{fallback.expression})")
+
+    def ifnull(self, value, fallback):
+        return FakeColumn(f"ifnull({value.expression},{fallback.expression})")
+
+    def nvl2(self, value, present, missing):
+        return FakeColumn(f"nvl2({value.expression},{present.expression},{missing.expression})")
+
+    def zeroifnull(self, value):
+        return FakeColumn(f"zeroifnull({value.expression})")
+
+    def nullif(self, left, right):
+        return FakeColumn(f"nullif({left.expression},{right.expression})")
+
+    def nanvl(self, left, right):
+        return FakeColumn(f"nanvl({left.expression},{right.expression})")
 
     def struct(self, *columns):
         fields = ",".join(f"{column.output_name or column.expression}={column.expression}" for column in columns)
@@ -2698,6 +2846,12 @@ class FakeColumn:
     def contains(self, value):
         return FakeColumn(f"{self.expression}.contains({value!r})")
 
+    def startswith(self, value):
+        return FakeColumn(f"{self.expression}.startswith({value!r})")
+
+    def endswith(self, value):
+        return FakeColumn(f"{self.expression}.endswith({value!r})")
+
     def like(self, pattern):
         return FakeColumn(f"{self.expression}.like({pattern!r})")
 
@@ -2706,6 +2860,15 @@ class FakeColumn:
 
     def rlike(self, pattern):
         return FakeColumn(f"{self.expression}.rlike({pattern!r})")
+
+    def bitwiseAND(self, other):
+        return FakeColumn(f"{self.expression}.bitwiseAND({other.expression})")
+
+    def bitwiseOR(self, other):
+        return FakeColumn(f"{self.expression}.bitwiseOR({other.expression})")
+
+    def bitwiseXOR(self, other):
+        return FakeColumn(f"{self.expression}.bitwiseXOR({other.expression})")
 
     def asc_nulls_last(self):
         return FakeColumn(f"{self.expression}.asc_nulls_last()")
@@ -2751,6 +2914,15 @@ class FakeColumn:
 
     def __mul__(self, other):
         return FakeColumn(f"({self.expression} * {other.expression})", self.source_name)
+
+    def __truediv__(self, other):
+        return FakeColumn(f"({self.expression} / {other.expression})", self.source_name)
+
+    def __mod__(self, other):
+        return FakeColumn(f"({self.expression} % {other.expression})", self.source_name)
+
+    def __neg__(self):
+        return FakeColumn(f"-({self.expression})", self.source_name)
 
     def __invert__(self):
         return FakeColumn(f"~({self.expression})")

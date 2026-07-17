@@ -41,6 +41,319 @@ def test_v1_expression_renderer_renders_arithmetic_and_comparison() -> None:
     )
 
 
+def test_v4_expression_renderer_renders_division_modulo_and_negation() -> None:
+    class Raw(Schema):
+        amount = field.integer(nullable=True)
+
+    class Published(Schema):
+        quotient = field.double(nullable=True)
+        remainder = field.integer(nullable=True)
+        negated = field.integer(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(quotient=row.amount / 2, remainder=row.amount % 2, negated=-row.amount)
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["quotient"], scope_aliases={"rows": "orders"}) == '(F.col("orders.amount") / F.lit(2))'
+    assert render(projection["remainder"], scope_aliases={"rows": "orders"}) == '(F.col("orders.amount") % F.lit(2))'
+    assert render(projection["negated"], scope_aliases={"rows": "orders"}) == '(-F.col("orders.amount"))'
+
+
+def test_v4_expression_renderer_renders_typed_bitwise_column_operations() -> None:
+    class Raw(Schema):
+        flags = field.integer(nullable=False)
+        mask = field.long(nullable=False)
+
+    class Published(Schema):
+        intersected = field.integer(nullable=False)
+        combined = field.long(nullable=False)
+        changed = field.long(nullable=False)
+        inverted = field.integer(nullable=False)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                intersected=row.flags.bitwise_and(3),
+                combined=row.flags.bitwise_or(row.mask),
+                changed=row.flags.bitwise_xor(row.mask),
+                inverted=row.flags.bitwise_not(),
+            )
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["intersected"], scope_aliases={"rows": "orders"}) == (
+        'F.col("orders.flags").bitwiseAND(F.lit(3))'
+    )
+    assert render(projection["combined"], scope_aliases={"rows": "orders"}) == (
+        'F.col("orders.flags").bitwiseOR(F.col("orders.mask"))'
+    )
+    assert render(projection["changed"], scope_aliases={"rows": "orders"}) == (
+        'F.col("orders.flags").bitwiseXOR(F.col("orders.mask"))'
+    )
+    assert render(projection["inverted"], scope_aliases={"rows": "orders"}) == 'F.bitwise_not(F.col("orders.flags"))'
+
+
+def test_v4_expression_renderer_renders_nullif() -> None:
+    class Raw(Schema):
+        label = field.string(nullable=False)
+
+    class Published(Schema):
+        label = field.string(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(label=nullif(row.label, "unknown"))
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    expression = recipe.steps[0].projection[0].expression
+
+    assert PySpark.render.expression()(expression, scope_aliases={"rows": "orders"}) == (
+        'F.nullif(F.col("orders.label"), F.lit(\'unknown\'))'
+    )
+
+
+def test_v4_expression_renderer_renders_remaining_null_control_helpers() -> None:
+    class Raw(Schema):
+        label = field.string(nullable=True)
+        amount = field.decimal(12, 2, nullable=True)
+
+    class Published(Schema):
+        nvl_label = field.string(nullable=False)
+        ifnull_label = field.string(nullable=False)
+        branch_label = field.string(nullable=False)
+        amount = field.decimal(12, 2, nullable=False)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                nvl_label=nvl(row.label, "unknown"),
+                ifnull_label=ifnull(row.label, "unknown"),
+                branch_label=nvl2(row.label, "known", "unknown"),
+                amount=zeroifnull(row.amount),
+            )
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["nvl_label"], scope_aliases={"rows": "orders"}) == (
+        'F.nvl(F.col("orders.label"), F.lit(\'unknown\'))'
+    )
+    assert render(projection["ifnull_label"], scope_aliases={"rows": "orders"}) == (
+        'F.ifnull(F.col("orders.label"), F.lit(\'unknown\'))'
+    )
+    assert render(projection["branch_label"], scope_aliases={"rows": "orders"}) == (
+        'F.nvl2(F.col("orders.label"), F.lit(\'known\'), F.lit(\'unknown\'))'
+    )
+    assert render(projection["amount"], scope_aliases={"rows": "orders"}) == 'F.zeroifnull(F.col("orders.amount"))'
+
+
+def test_v4_expression_renderer_renders_nanvl() -> None:
+    class Raw(Schema):
+        observed = field.double(nullable=True)
+        fallback = field.double(nullable=True)
+
+    class Published(Schema):
+        observed = field.double(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(observed=nanvl(row.observed, row.fallback))
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    expression = recipe.steps[0].projection[0].expression
+
+    assert PySpark.render.expression()(expression, scope_aliases={"rows": "orders"}) == (
+        'F.nanvl(F.col("orders.observed"), F.col("orders.fallback"))'
+    )
+
+
+def test_v4_expression_renderer_renders_one_sided_trim() -> None:
+    class Raw(Schema):
+        label = field.string(nullable=True)
+
+    class Published(Schema):
+        left = field.string(nullable=True)
+        right = field.string(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(left=ltrim(row.label), right=rtrim(row.label))
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["left"], scope_aliases={"rows": "orders"}) == 'F.ltrim(F.col("orders.label"))'
+    assert render(projection["right"], scope_aliases={"rows": "orders"}) == 'F.rtrim(F.col("orders.label"))'
+
+
+def test_v4_expression_renderer_renders_deterministic_numeric_functions() -> None:
+    class Raw(Schema):
+        amount = field.decimal(12, 2, nullable=True)
+
+    class Published(Schema):
+        rounded = field.decimal(12, 1, nullable=True)
+        square_root = field.double(nullable=True)
+        exponentiated = field.double(nullable=True)
+        natural_log = field.double(nullable=True)
+        base_ten_log = field.double(nullable=True)
+        exponent = field.double(nullable=True)
+        sign = field.double(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                rounded=bround(row.amount, scale=1),
+                square_root=sqrt(row.amount),
+                exponentiated=pow(row.amount, 2),
+                natural_log=log(row.amount),
+                base_ten_log=log(row.amount, base=10),
+                exponent=exp(row.amount),
+                sign=signum(row.amount),
+            )
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["rounded"], scope_aliases={"rows": "orders"}) == 'F.bround(F.col("orders.amount"), 1)'
+    assert render(projection["square_root"], scope_aliases={"rows": "orders"}) == 'F.sqrt(F.col("orders.amount"))'
+    assert (
+        render(projection["exponentiated"], scope_aliases={"rows": "orders"})
+        == 'F.pow(F.col("orders.amount"), F.lit(2))'
+    )
+    assert render(projection["natural_log"], scope_aliases={"rows": "orders"}) == 'F.log(F.col("orders.amount"))'
+    assert render(projection["base_ten_log"], scope_aliases={"rows": "orders"}) == 'F.log(10, F.col("orders.amount"))'
+    assert render(projection["exponent"], scope_aliases={"rows": "orders"}) == 'F.exp(F.col("orders.amount"))'
+    assert render(projection["sign"], scope_aliases={"rows": "orders"}) == 'F.signum(F.col("orders.amount"))'
+
+
+def test_v4_expression_renderer_renders_temporal_helpers() -> None:
+    class Raw(Schema):
+        observed_on = field.date(nullable=True)
+        observed_at = field.timestamp(nullable=True)
+        raw_observed_at = field.string(nullable=False)
+
+    class Published(Schema):
+        previous = field.date(nullable=True)
+        month_start = field.date(nullable=True)
+        year_part = field.integer(nullable=True)
+        hour_part = field.integer(nullable=True)
+        parsed_date = field.date(nullable=True)
+        parsed_timestamp = field.timestamp(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                previous=date_sub(row.observed_on, days=1),
+                month_start=trunc(row.observed_on, unit="month"),
+                year_part=year(row.observed_on),
+                hour_part=hour(row.observed_at),
+                parsed_date=to_date(row.raw_observed_at, format="yyyy-MM-dd HH:mm:ss"),
+                parsed_timestamp=to_timestamp(row.raw_observed_at, format="yyyy-MM-dd HH:mm:ss"),
+            )
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert (
+        render(projection["previous"], scope_aliases={"rows": "orders"}) == 'F.date_sub(F.col("orders.observed_on"), 1)'
+    )
+    assert (
+        render(projection["month_start"], scope_aliases={"rows": "orders"})
+        == 'F.trunc(F.col("orders.observed_on"), \'month\')'
+    )
+    assert render(projection["year_part"], scope_aliases={"rows": "orders"}) == 'F.year(F.col("orders.observed_on"))'
+    assert render(projection["hour_part"], scope_aliases={"rows": "orders"}) == 'F.hour(F.col("orders.observed_at"))'
+    assert render(projection["parsed_date"], scope_aliases={"rows": "orders"}) == (
+        'F.to_date(F.col("orders.raw_observed_at"), \'yyyy-MM-dd HH:mm:ss\')'
+    )
+    assert render(projection["parsed_timestamp"], scope_aliases={"rows": "orders"}) == (
+        'F.to_timestamp(F.col("orders.raw_observed_at"), \'yyyy-MM-dd HH:mm:ss\')'
+    )
+
+
+def test_v4_expression_renderer_renders_hash_helpers() -> None:
+    class Raw(Schema):
+        id = field.long(nullable=False)
+        label = field.string(nullable=True)
+
+    class Published(Schema):
+        hash_code = field.integer(nullable=True)
+        long_hash = field.long(nullable=True)
+        md5_hash = field.string(nullable=True)
+        sha1_hash = field.string(nullable=True)
+        sha2_hash = field.string(nullable=True)
+
+    @transform
+    class Publish(Transform):
+        rows = input(Raw)
+        published = output(Published)
+
+        def publish(self, row: Raw) -> Published:
+            return Published(
+                hash_code=hash(row.id, row.label),
+                long_hash=xxhash64(row.id, row.label),
+                md5_hash=md5(row.label),
+                sha1_hash=sha1(row.label),
+                sha2_hash=sha2(row.label, bits=512),
+            )
+
+    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
+    render = PySpark.render.expression()
+
+    assert render(projection["hash_code"], scope_aliases={"rows": "orders"}) == (
+        'F.hash(F.col("orders.id"), F.col("orders.label"))'
+    )
+    assert render(projection["long_hash"], scope_aliases={"rows": "orders"}) == (
+        'F.xxhash64(F.col("orders.id"), F.col("orders.label"))'
+    )
+    assert render(projection["md5_hash"], scope_aliases={"rows": "orders"}) == 'F.md5(F.col("orders.label"))'
+    assert render(projection["sha1_hash"], scope_aliases={"rows": "orders"}) == 'F.sha1(F.col("orders.label"))'
+    assert render(projection["sha2_hash"], scope_aliases={"rows": "orders"}) == 'F.sha2(F.col("orders.label"), 512)'
+
+
 def test_v1_expression_renderer_renders_join_predicates() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
@@ -218,6 +531,8 @@ def test_v3_expression_renderer_renders_string_predicates() -> None:
 
     class Published(Schema):
         contains_new = field.boolean(nullable=True)
+        starts_new = field.boolean(nullable=True)
+        ends_new = field.boolean(nullable=True)
         matches_new = field.boolean(nullable=True)
         matches_new_case_insensitive = field.boolean(nullable=True)
         matches_release = field.boolean(nullable=True)
@@ -231,6 +546,8 @@ def test_v3_expression_renderer_renders_string_predicates() -> None:
             status = cast(Any, row).status
             return Published(
                 contains_new=status.contains("new"),
+                starts_new=status.startswith("new"),
+                ends_new=status.endswith("new"),
                 matches_new=status.like("new%"),
                 matches_new_case_insensitive=status.ilike("NEW%"),
                 matches_release=status.rlike(r"release-[0-9]+"),
@@ -242,6 +559,8 @@ def test_v3_expression_renderer_renders_string_predicates() -> None:
 
     assert [render(expression, scope_aliases={"rows": "orders"}) for expression in projection.values()] == [
         'F.col("orders.status").contains(\'new\')',
+        'F.col("orders.status").startswith(\'new\')',
+        'F.col("orders.status").endswith(\'new\')',
         'F.col("orders.status").like(\'new%\')',
         'F.col("orders.status").ilike(\'NEW%\')',
         "F.col(\"orders.status\").rlike('release-[0-9]+')",

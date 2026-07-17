@@ -49,8 +49,10 @@ class PySparkExpressionMapper:
             return "expression", "cast"
         if expression.kind == "try_cast":
             return "expression", "try_cast"
-        if expression.kind in {"add", "sub", "mul", "when"}:
+        if expression.kind in {"add", "sub", "mul", "div", "mod", "neg", "when"}:
             return "expression", "standard_helper_call"
+        if expression.kind in {"bitwise_and", "bitwise_or", "bitwise_xor", "bitwise_not"}:
+            return "expression", "bitwise"
         if expression.kind == "call":
             function = (expression.data or {}).get("function")
             if function == "to_decimal":
@@ -60,4 +62,6 @@ class PySparkExpressionMapper:
             return "expression", "python_udf"
         if expression.kind == "time_window":
             return "streaming", "time_window"
+        if expression.kind == "transform_expression" and (expression.data or {}).get("function") == "session_window":
+            return "streaming", "session_window"
         return "expression", "standard_helper_call"

@@ -455,7 +455,7 @@ the first analytical join slice.
 
 ## 25. PySpark Transformation API Coverage
 
-- As a developer, I can look up each relevant PySpark transformation API and see whether Structure supports it, plans
+- + As a developer, I can look up each relevant PySpark transformation API and see whether Structure supports it, plans
   it, defers it with a reason, or deliberately excludes it so missing parity is not surprising.
 - As a developer, I can use new transformation helpers only when Structure preserves typed inputs, result type,
   nullability, cardinality, and target compatibility.

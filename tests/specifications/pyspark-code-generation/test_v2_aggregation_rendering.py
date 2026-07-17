@@ -28,6 +28,9 @@ class AdvancedCustomerTotal(Schema):
     paid_quantity = field.long(nullable=True)
     any_large = field.boolean(nullable=True)
     quantity_stddev = field.double(nullable=True)
+    exact_quantity_percentile = field.double(nullable=True)
+    quantity_skewness = field.double(nullable=True)
+    quantity_kurtosis = field.double(nullable=True)
     approximate_customers = field.long(nullable=False)
     ordered_first_customer = field.string(nullable=True)
     ordered_last_customer = field.string(nullable=True)
@@ -93,6 +96,9 @@ class AdvancedCustomerTotals(Transform):
             paid_quantity=sum(row.quantity, where=literal(row.quantity) > 0),
             any_large=bool_or(literal(row.quantity) > 10),
             quantity_stddev=stddev(row.quantity),
+            exact_quantity_percentile=percentile(row.quantity, 0.5),
+            quantity_skewness=skewness(row.quantity),
+            quantity_kurtosis=kurtosis(row.quantity),
             approximate_customers=approx_count_distinct(row.customer_id),
             ordered_first_customer=first_value(row.customer_id, order_by=row.quantity, where=row.quantity > 0),
             ordered_last_customer=last_value(row.customer_id, order_by=row.quantity, where=row.quantity > 0),
@@ -197,6 +203,12 @@ def test_advanced_aggregate_helpers_render_spark_visible_rollup_and_metrics() ->
     assert 'F.sum(F.when((F.col("raw_order.quantity") > F.lit(0)), F.col("raw_order.quantity")))' in text
     assert 'F.bool_or((F.col("raw_order.quantity") > F.lit(10))).cast(T.BooleanType()).alias("any_large")' in text
     assert 'F.stddev(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_stddev")' in text
+    assert (
+        'F.percentile(F.col("raw_order.quantity"), 0.5, 1).cast(T.DoubleType()).alias("exact_quantity_percentile")'
+        in text
+    )
+    assert 'F.skewness(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_skewness")' in text
+    assert 'F.kurtosis(F.col("raw_order.quantity")).cast(T.DoubleType()).alias("quantity_kurtosis")' in text
     assert 'F.approx_count_distinct(F.col("raw_order.customer_id")).cast(T.LongType())' in text
     assert (
         'F.min_by(F.col("raw_order.customer_id"), F.when((F.col("raw_order.quantity") > F.lit(0)), '

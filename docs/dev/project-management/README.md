@@ -36,12 +36,12 @@ project-management/
     Sprint07_AnalyticalJoinCoverage.md
     Sprint15_V3CollectionHelperParity.md
     Sprint16_V3StreamingOrchestration.md
-    Sprint17_V4TransformationApiCoverage.md
     SprintV4_Hardening.md
     done/
       Sprint12_V3JoinParityHardening.md
       Sprint13_V3AggregationParity.md
       Sprint14_V3WindowParity.md
+      Sprint17_V4TransformationApiCoverage.md
       Sprint08_AggregationsWindowsHigherOrderFunctions.md
       Sprint11_V3DslAndSqlFunctionParity.md
       Sprint09_OptimizationExplainDocsTooling.md

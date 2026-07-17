@@ -129,7 +129,7 @@ class ClassifyStreamingCompatibility:
                 and str(expression.data.get("field", "")) in watermark_columns
             )
         return (
-            expression.kind == "time_window"
+            (expression.kind == "time_window" or (expression.data or {}).get("function") == "session_window")
             and bool(expression.args)
             and expression.args[0].kind == "field"
             and str(expression.args[0].data.get("scope", "")) == scope

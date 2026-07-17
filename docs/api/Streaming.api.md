@@ -38,9 +38,8 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
   one call cannot mix the two argument families, while separate calls may use either form in the same transform.
 - Event-time windows return `Struct[TimeWindow]` with non-null `start` and `end` timestamps. Tumbling and sliding
   aggregates require a preceding watermark on that same event-time field and use caller-owned `append` or `update` mode.
-- `session_window(...)` is planned for v4 Sprint 18. Its initial streaming form requires a preceding watermark on the
-  same event-time field, a static positive gap, one ordinary grouping key in addition to the session key, and
-  caller-owned `append` mode. Dynamic gaps remain deferred.
+- `session_window(...)` requires a preceding watermark on the same event-time field, a static positive gap, one
+  ordinary grouping key in addition to the session key, and caller-owned `append` mode. Dynamic gaps remain deferred.
 - `drop_duplicates(...)` remains cross-mode: batch lowers to `dropDuplicates`, while a streaming frame lowers to
   watermark-bounded `dropDuplicatesWithinWatermark`. `drop_duplicates_within_watermark(...)` makes that streaming-only
   choice explicit and requires `StreamingMode.YES` plus a preceding watermark.
@@ -52,8 +51,8 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 ## Lifecycle Boundaries
 
 Supported transform shapes include row-local projection/filter (including scalar Python UDFs), stream-static joins,
-event-time window aggregation, bounded dedupe, and bounded inner stream-stream joins. Sprint 18 plans session-window
-aggregation, bounded stream-stream outer and semi joins, and stream-static `exists(...)` filtering. Callers own
+event-time and session-window aggregation, bounded dedupe, and bounded inner stream-stream joins. Sprint 18 plans
+bounded stream-stream outer and semi joins, and stream-static `exists(...)` filtering. Callers own
 `readStream`, `writeStream`, checkpoints, triggers, output-mode application, and query lifecycle. `foreachBatch` and
 `foreach` remain unsupported. See [V4 Caller-Owned Streaming Migration](../dev/design/V4CallerOwnedStreamingMigration.md)
 and the [Execution reference](../background/Execution.back.md).

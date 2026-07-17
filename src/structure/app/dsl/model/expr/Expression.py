@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import builtins
 from dataclasses import dataclass
-from typing import Mapping, cast
+from typing import Any, Mapping, cast
 
 from structure.app.dsl.model.types.ArrayType import ArrayType
 from structure.app.dsl.model.types.BooleanType import BooleanType
@@ -18,6 +19,36 @@ from structure.app.dsl.model.types.StructureType import StructureType
 from structure.app.dsl.model.types.TimestampType import TimestampType
 
 _ORDERABLE_TYPES = frozenset({"date", "decimal", "double", "float", "integer", "long", "string", "timestamp"})
+
+
+def _schema_field(schema: Any, name: str):
+    fields = schema._structure_fields
+    return fields.get(name) or next((field for field in fields.values() if field.column == name), None)
+
+
+def _same_field(left, right) -> bool:
+    return (
+        left.name == right.name
+        and left.column == right.column
+        and left.nullable == right.nullable
+        and _same_type(left.type, right.type)
+    )
+
+
+def _same_type(left: StructureType | None, right: StructureType | None) -> bool:
+    if left is None or right is None or left.name != right.name:
+        return False
+    if isinstance(left, DecimalType) and isinstance(right, DecimalType):
+        return left.precision == right.precision and left.scale == right.scale
+    if isinstance(left, ArrayType) and isinstance(right, ArrayType):
+        return left.contains_null == right.contains_null and _same_type(left.element, right.element)
+    if isinstance(left, MapType) and isinstance(right, MapType):
+        return (
+            left.value_contains_null == right.value_contains_null
+            and _same_type(left.key, right.key)
+            and _same_type(left.value, right.value)
+        )
+    return not isinstance(left, StructType) or not isinstance(right, StructType) or left.schema is right.schema
 
 
 @dataclass(frozen=True, eq=False)
@@ -57,6 +88,12 @@ class Expression:
 
     def contains(self, value: str) -> "Expression":
         return self._string_predicate("contains", value)
+
+    def startswith(self, prefix: str) -> "Expression":
+        return self._string_predicate("startswith", prefix)
+
+    def endswith(self, suffix: str) -> "Expression":
+        return self._string_predicate("endswith", suffix)
 
     def like(self, pattern: str) -> "Expression":
         return self._string_predicate("like", pattern)
@@ -123,6 +160,53 @@ class Expression:
             raise TypeError("get_field(...) requires a non-empty field name")
         return self._struct_field(name, attribute=False)
 
+    def with_field(self, name: str, value: object, *, schema: Any) -> "Expression":
+        from structure.app.dsl.model.expr.expressions import literal
+
+        source, target = self._struct_mutation_schema(schema, "with_field(...)")
+        field = _schema_field(target, name)
+        if field is None:
+            raise TypeError(f"with_field(...) result schema {target.__name__} cannot find {name!r}")
+        replacement = literal(value)
+        if not _same_type(replacement.type, field.type) or replacement.nullable and not field.nullable:
+            raise TypeError("with_field(...) value must match the declared result field type and nullability")
+        source_fields = source._structure_fields
+        target_fields = target._structure_fields
+        expected = set(source_fields) | {field.name}
+        if set(target_fields) != expected or any(
+            name != field.name and not _same_field(source_fields[name], target_fields[name]) for name in source_fields
+        ):
+            raise TypeError("with_field(...) result schema must preserve every source field except the replaced field")
+        return Expression(
+            kind="with_field",
+            type=StructType(target),
+            nullable=self.nullable,
+            data={"field": field.column},
+            args=(self, replacement),
+        )
+
+    def drop_fields(self, *names: str, schema: Any) -> "Expression":
+        source, target = self._struct_mutation_schema(schema, "drop_fields(...)")
+        if not names or any(not isinstance(name, str) or not name for name in names):
+            raise TypeError("drop_fields(...) requires at least one non-empty field name")
+        source_fields = source._structure_fields
+        dropped = tuple(_schema_field(source, name) for name in names)
+        if any(field is None for field in dropped):
+            raise TypeError("drop_fields(...) names must exist in the source Struct schema")
+        dropped_names = {field.name for field in dropped if field is not None}
+        remaining = {name: field for name, field in source_fields.items() if name not in dropped_names}
+        if set(target._structure_fields) != set(remaining) or any(
+            not _same_field(field, target._structure_fields[name]) for name, field in remaining.items()
+        ):
+            raise TypeError("drop_fields(...) result schema must equal the source schema without the dropped fields")
+        return Expression(
+            kind="drop_fields",
+            type=StructType(target),
+            nullable=self.nullable,
+            data={"fields": tuple(field.column for field in dropped if field is not None)},
+            args=(self,),
+        )
+
     def _struct_field(self, name: str, *, attribute: bool) -> "Expression":
         if not isinstance(self.type, StructType):
             if attribute:
@@ -160,6 +244,13 @@ class Expression:
             args=(self,),
         )
 
+    def _struct_mutation_schema(self, schema: Any, call: str) -> tuple[Any, Any]:
+        if not isinstance(self.type, StructType):
+            raise TypeError(f"{call} requires a Struct Structure expression")
+        if not isinstance(schema, builtins.type) or not hasattr(schema, "_structure_fields"):
+            raise TypeError(f"{call} schema must be a declared Structure Schema class")
+        return self.type.schema, schema
+
     def __and__(self, other: object) -> "Expression":
         return self._boolean_binary("and", other)
 
@@ -193,6 +284,35 @@ class Expression:
 
     def __rmul__(self, other: object) -> "Expression":
         return self._arithmetic("mul", other, reverse=True)
+
+    def __truediv__(self, other: object) -> "Expression":
+        return self._arithmetic("div", other)
+
+    def __rtruediv__(self, other: object) -> "Expression":
+        return self._arithmetic("div", other, reverse=True)
+
+    def __mod__(self, other: object) -> "Expression":
+        return self._arithmetic("mod", other)
+
+    def __rmod__(self, other: object) -> "Expression":
+        return self._arithmetic("mod", other, reverse=True)
+
+    def __neg__(self) -> "Expression":
+        self._arithmetic_type("neg", self)
+        return Expression(kind="neg", type=self.type, nullable=self.nullable, args=(self,))
+
+    def bitwise_and(self, other: object) -> "Expression":
+        return self._bitwise_binary("bitwise_and", other)
+
+    def bitwise_or(self, other: object) -> "Expression":
+        return self._bitwise_binary("bitwise_or", other)
+
+    def bitwise_xor(self, other: object) -> "Expression":
+        return self._bitwise_binary("bitwise_xor", other)
+
+    def bitwise_not(self) -> "Expression":
+        self._require_integral()
+        return Expression(kind="bitwise_not", type=self.type, nullable=self.nullable, args=(self,))
 
     def __gt__(self, other: object) -> "Expression":
         return self._comparison("gt", other)
@@ -306,6 +426,28 @@ class Expression:
         arguments = (other_expression, self) if reverse else (self, other_expression)
         return Expression(kind=kind, type=type, nullable=self.nullable or other_expression.nullable, args=arguments)
 
+    def _bitwise_binary(self, kind: str, other: object) -> "Expression":
+        from structure.app.dsl.model.expr.expressions import literal
+
+        other_expression = literal(other)
+        self._require_integral(other_expression)
+        result = (
+            LongType()
+            if isinstance(self.type, LongType) or isinstance(other_expression.type, LongType)
+            else IntegerType()
+        )
+        return Expression(
+            kind=kind,
+            type=result,
+            nullable=self.nullable or other_expression.nullable,
+            args=(self, other_expression),
+        )
+
+    def _require_integral(self, other: "Expression" | None = None) -> None:
+        operands = (self,) if other is None else (self, other)
+        if not all(isinstance(operand.type, (IntegerType, LongType)) for operand in operands):
+            raise TypeError("Bitwise operations require integral Structure expressions")
+
     def _arithmetic_type(self, kind: str, other: "Expression") -> StructureType:
         types = (self.type, other.type)
         if not all(isinstance(type, (IntegerType, LongType, FloatType, DoubleType, DecimalType)) for type in types):
@@ -321,20 +463,28 @@ class Expression:
             return FloatType()
         if any(isinstance(type, DecimalType) for type in numeric):
             return self._decimal_arithmetic_type(kind, numeric)
+        if kind == "div":
+            return DoubleType()
         if any(isinstance(type, LongType) for type in numeric):
             return LongType()
         return IntegerType()
 
-    def _decimal_arithmetic_type(
-        self, kind: str, operands: tuple[StructureType, StructureType]
-    ) -> DecimalType:
+    def _decimal_arithmetic_type(self, kind: str, operands: tuple[StructureType, StructureType]) -> DecimalType:
         left, right = (self._decimal_operand(type) for type in operands)
         if kind in {"add", "sub"}:
             scale = max(left.scale, right.scale)
             precision = max(left.precision - left.scale, right.precision - right.scale) + scale + 1
-        else:
+        elif kind == "mul":
             scale = left.scale + right.scale
             precision = left.precision + right.precision + 1
+        elif kind == "div":
+            scale = max(6, left.scale + right.precision + 1)
+            precision = left.precision - left.scale + right.scale + scale
+        elif kind == "mod":
+            scale = max(left.scale, right.scale)
+            precision = min(left.precision - left.scale, right.precision - right.scale) + scale
+        else:
+            return left
         return self._bounded_decimal_type(precision, scale)
 
     def _decimal_operand(self, type: StructureType) -> DecimalType:

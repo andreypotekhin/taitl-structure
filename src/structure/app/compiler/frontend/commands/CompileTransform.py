@@ -2224,6 +2224,9 @@ class CompileTransform:
             "corr",
             "covar",
             "approx_percentile",
+            "percentile",
+            "skewness",
+            "kurtosis",
         }
         if function in numeric_functions and not all(self._numeric_type(item.type) for item in arguments):
             raise self._aggregate_error(transform_class, member, output_schema, field, function, "a numeric expression")
@@ -2961,8 +2964,12 @@ class CompileTransform:
             return self._nullable(value, filters) or self._nullable(fallback, filters)
         if expression.kind == "call":
             function = (expression.data or {}).get("function")
-            if function == "coalesce":
+            if function in {"coalesce", "nvl", "ifnull"}:
                 return all(self._nullable(argument, filters) for argument in expression.args)
+            if function == "nvl2":
+                return self._nullable(expression.args[1], filters) or self._nullable(expression.args[2], filters)
+            if function == "zeroifnull":
+                return False
             if function == "concat_ws":
                 return False
             if function == "to_decimal":

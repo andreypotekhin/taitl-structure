@@ -30,7 +30,7 @@ unclassified.
 
 ## ExecPlan
 
-`docs/dev/planning/P07132601.V4-transformation-api-coverage.plan.md`
+`docs/dev/planning/done/P07132601.V4-transformation-api-coverage.plan.md`
 
 ## Engineering Tasks
 
@@ -49,4 +49,8 @@ unclassified.
 
 ## Progress
 
-- [ ] Implement the coverage inventory, catalog, tests, and fixture skeleton.
+- [x] (2026-07-15) Implemented the checked inventory, catalog, Spark-free integrity tests, and import-safe fixture
+  skeleton. The catalog assigns every baseline family a status and links supported entries to public and test evidence.
+- [x] (2026-07-16) Completed the V4 coverage implementation plan. The catalog has no scheduled entries: supported
+  helpers carry compiler-visible evidence, and the remaining boundaries are explicit deferrals with `@raw` guidance.
+  `make build` passed (1,057 passed, 19 skipped); both PySpark 3.5 and 4.0 integration lanes completed successfully.

@@ -13,7 +13,7 @@ why each transform was reused or recompiled.
 ## Placement
 
 This remains a valid future work package. It is not Sprint 17, has no assigned version, and does not set the v4 release
-direction. See `Sprint17_V4TransformationApiCoverage.md` for the opening v4 work.
+direction. See `done/Sprint17_V4TransformationApiCoverage.md` for the completed opening v4 work.
 
 ## Scope
 

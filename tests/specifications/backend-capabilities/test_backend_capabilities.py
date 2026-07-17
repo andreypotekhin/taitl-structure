@@ -40,6 +40,13 @@ def test_supported_v1_requirement_passes() -> None:
     assert decision.code == ""
 
 
+@pytest.mark.parametrize("target_variant", ["ordinary", "spark-connect"])
+def test_bitwise_expression_capability_is_available_on_each_batch_target(target_variant: str) -> None:
+    resolved = Capabilities.resolve()(target_backend="pyspark", target_variant=target_variant)
+
+    assert resolved.require(CapabilityRequirement(group="expression", name="bitwise")).supported
+
+
 @pytest.mark.parametrize(
     "name",
     [
@@ -86,11 +93,14 @@ def test_supported_v2_join_requirement_passes(name: str) -> None:
         "grouping_sets",
         "having",
         "is_grouped",
+        "kurtosis",
         "last_value",
         "max",
         "min",
+        "percentile",
         "rollup",
         "stddev",
+        "skewness",
         "sum",
         "variance",
     ],
@@ -103,22 +113,38 @@ def test_supported_v2_aggregate_requirement_passes(name: str) -> None:
     assert decision.supported
 
 
+def test_supported_session_window_requirement_passes() -> None:
+    decision = Capabilities.resolve()().require(CapabilityRequirement(group="streaming", name="session_window"))
+
+    assert decision.supported
+
+
 @pytest.mark.parametrize(
     "name",
     [
         "array",
         "array_aggregate",
+        "array_append",
+        "array_compact",
         "array_contains",
         "array_distinct",
         "array_except",
+        "array_intersect",
         "array_exists",
         "array_filter",
         "array_flatten",
         "array_forall",
         "array_position",
+        "array_prepend",
+        "array_reverse",
+        "array_insert",
+        "array_remove",
+        "array_sequence",
+        "array_sort",
         "array_sort_by",
         "array_transform",
         "array_repeat",
+        "array_slice",
         "array_union",
         "array_zip_with",
         "collection_size",
@@ -150,15 +176,25 @@ def test_supported_v2_higher_order_requirement_passes(name: str) -> None:
     [
         "array",
         "array_aggregate",
+        "array_append",
+        "array_compact",
         "array_contains",
         "array_distinct",
         "array_except",
+        "array_intersect",
         "array_exists",
         "array_filter",
         "array_flatten",
         "array_forall",
         "array_position",
         "array_repeat",
+        "array_slice",
+        "array_prepend",
+        "array_reverse",
+        "array_insert",
+        "array_remove",
+        "array_sequence",
+        "array_sort",
         "array_sort_by",
         "array_transform",
         "array_union",

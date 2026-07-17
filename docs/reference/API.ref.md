@@ -4,13 +4,15 @@ This describes Structure's public, compiler-visible API.
 
 If you are just starting using this library, see [QuickRef.md](../QuickRef.md) for an introduction.
 
-supported` means the public contract is available now. `planned` has an accepted direction but is not available yet.
-`unsupported` deliberately stays outside the scope. Structure is not a one-to-one PySpark
+`supported` means the public contract is available now. `scheduled` is assigned to a V4 delivery slice. `deferred`
+needs a more complete type, cardinality, or determinism contract. `unsupported` deliberately stays outside the scope.
+Structure is not a one-to-one PySpark
 wrapper: admitted APIs remain typed, symbolic, capability-checked, explainable, and readable in generated code.
 
 The default target is ordinary PySpark `>=3.5,<4.1`; completed compiler-visible batch features also target Spark
 Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
-[PySpark Transformation Coverage](../dev/design/V4TransformationApiCoverage.md) for the v4 coverage design, and
+[PySpark Transformation Coverage](PySparkTransformationCoverage.md) for the checked v4 catalog,
+[the coverage design](../dev/design/V4TransformationApiCoverage.md) for its admission rules, and
 [API Gaps](../dev/Gaps.md) for the developer backlog.
 
 ## Core APIs
@@ -61,13 +63,14 @@ Connect. See [Compatibility.md](../Compatibility.md) for the full target policy,
 
 ## Planned And Unsupported Surface
 
-V4 is building a checked catalog for every relevant PySpark transformation API in the supported target range. Until the
-catalog lands, the rows below identify the current high-level gaps. Loading, storage, actions, and orchestration are not
-transformation APIs and stay outside Structure's scope.
+The checked [PySpark Transformation Coverage](PySparkTransformationCoverage.md) catalog classifies the V4 baseline.
+The rows below remain a compact orientation aid. Loading, storage, actions, and orchestration are not transformation
+APIs and stay outside Structure's scope.
 
 | API Area | Status | PySpark Parity | Details |
 | --- | --- | --- | --- |
-| Bitwise; struct mutation | planned | `bitwise*`, `withField`, `dropFields` | Need typed projection design. |
+| Struct mutation | planned | `withField`, `dropFields` | Needs typed projection design. |
+| Bitwise expressions | supported | `bitwise_and`, `bitwise_or`, `bitwise_xor`, `bitwise_not` | Integer/long-only typed Column expressions. |
 | Nearest as-of, reordering, extra stats | planned | Advanced joins and analytics | Need admitted contracts. |
 | Array variants; generators | planned | `slice`, `sort_array`, `explode` | Need a row-expansion contract. |
 | Window order; more aggregates | supported | Window functions and aggregate frames | Sprint 14. |

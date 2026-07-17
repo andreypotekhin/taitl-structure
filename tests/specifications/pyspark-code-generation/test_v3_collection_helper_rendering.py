@@ -29,6 +29,16 @@ class CollectionSummary(Schema):
     repeated = field.array(field.string(), contains_null=False, nullable=False)
     unioned = field.array(field.string(), contains_null=False, nullable=True)
     excluded = field.array(field.string(), contains_null=False, nullable=True)
+    intersected = field.array(field.string(), contains_null=False, nullable=True)
+    first_two_tags = field.array(field.string(), contains_null=False, nullable=True)
+    tag_sequence = field.array(field.integer(), contains_null=False, nullable=False)
+    appended_tags = field.array(field.string(), contains_null=False, nullable=True)
+    prepended_tags = field.array(field.string(), contains_null=False, nullable=True)
+    inserted_tags = field.array(field.string(), contains_null=False, nullable=True)
+    removed_tags = field.array(field.string(), contains_null=False, nullable=True)
+    compacted_tags = field.array(field.string(), contains_null=False, nullable=True)
+    sorted_tags = field.array(field.string(), contains_null=False, nullable=True)
+    reversed_tags = field.array(field.string(), contains_null=False, nullable=True)
     first_tag = field.string(nullable=True)
     safe_tag = field.string(nullable=True)
     region = field.string(nullable=True)
@@ -51,6 +61,16 @@ class CollectionHelperTransform(Transform):
             repeated=array_repeat("priority", 2),
             unioned=array_union(row.tags, row.extra_tags),
             excluded=array_except(row.tags, row.extra_tags),
+            intersected=array_intersect(row.tags, row.extra_tags),
+            first_two_tags=slice(row.tags, 1, 2),
+            tag_sequence=sequence(1, 3),
+            appended_tags=arr_append(row.tags, "tail"),
+            prepended_tags=arr_prepend(row.tags, "head"),
+            inserted_tags=arr_insert(row.tags, 1, "first"),
+            removed_tags=arr_remove(row.tags, "deprecated"),
+            compacted_tags=arr_compact(row.tags),
+            sorted_tags=arr_sort(row.tags),
+            reversed_tags=arr_reverse(row.tags),
             first_tag=element_at(row.tags, 1),
             safe_tag=try_element_at(row.tags, 2),
             region=element_at(row.attributes, "region"),
@@ -71,6 +91,16 @@ def test_collection_helpers_render_as_readable_pyspark_functions() -> None:
     assert "F.array_repeat(F.lit('priority'), 2).alias(\"repeated\")" in text
     assert 'F.array_union(F.col("collection_source.tags"), F.col("collection_source.extra_tags"))' in text
     assert 'F.array_except(F.col("collection_source.tags"), F.col("collection_source.extra_tags"))' in text
+    assert 'F.array_intersect(F.col("collection_source.tags"), F.col("collection_source.extra_tags"))' in text
+    assert 'F.slice(F.col("collection_source.tags"), 1, 2)' in text
+    assert 'F.sequence(F.lit(1), F.lit(3))' in text
+    assert 'F.array_append(F.col("collection_source.tags"), F.lit(\'tail\'))' in text
+    assert 'F.array_prepend(F.col("collection_source.tags"), F.lit(\'head\'))' in text
+    assert 'F.array_insert(F.col("collection_source.tags"), 1, F.lit(\'first\'))' in text
+    assert 'F.array_remove(F.col("collection_source.tags"), \'deprecated\')' in text
+    assert 'F.array_compact(F.col("collection_source.tags"))' in text
+    assert 'F.array_sort(F.col("collection_source.tags"))' in text
+    assert 'F.reverse(F.col("collection_source.tags"))' in text
     assert 'F.element_at(F.col("collection_source.tags"), F.lit(1)).alias("first_tag")' in text
     assert 'F.try_element_at(F.col("collection_source.tags"), F.lit(2)).alias("safe_tag")' in text
     assert 'F.element_at(F.col("collection_source.attributes"), F.lit(\'region\'))' in text
@@ -102,6 +132,24 @@ def test_collection_helpers_reject_ambiguous_or_incompatible_inputs() -> None:
         array_repeat("priority", "two")
     with pytest.raises(TypeError, match="compatible types"):
         array_union(tags, scores)
+    with pytest.raises(TypeError, match="compatible types"):
+        array_intersect(tags, scores)
+    with pytest.raises(TypeError, match="integral"):
+        slice(tags, "one", 2)
+    with pytest.raises(TypeError, match="must not be negative"):
+        slice(tags, 1, -1)
+    with pytest.raises(TypeError, match="orderable"):
+        arr_sort(Expression(kind="field", type=ArrayType(MapType(StringType(), StringType())), nullable=False))
+    with pytest.raises(TypeError, match="integer or long"):
+        sequence("start", "stop")
+    with pytest.raises(TypeError, match="must not be zero"):
+        sequence(1, 3, 0)
+    with pytest.raises(TypeError, match="Python literal"):
+        arr_insert(tags, scores[0], "first")
+    with pytest.raises(TypeError, match="cannot be zero"):
+        arr_insert(tags, 0, "first")
+    with pytest.raises(TypeError, match="non-null Python literal"):
+        arr_remove(tags, scores[0])
     with pytest.raises(TypeError, match="cannot be zero"):
         element_at(tags, 0)
     with pytest.raises(TypeError, match='duplicates="error"'):
