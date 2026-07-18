@@ -3,6 +3,8 @@ from __future__ import annotations
 from structure.app.compiler.api import Compiler
 from structure.app.compiler.ir.model.JoinMethod import JoinMethod
 from structure.app.compiler.ir.model.OperationPlan import OperationPlan
+from structure.app.dsl.model.transforms.Join import Join
+from structure.app.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.app.dsl.model.transforms.Transform import Transform
 from structure.app.target.pyspark.api import PySpark
 from structure.app.target.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
@@ -46,6 +48,7 @@ class RenderExplainReport:
         for item in recipe.inputs:
             lines.append(f"    {item.name}: {item.schema.__name__}")
         lines.extend(["", "  steps:"])
+        input_modes = {input.name: input.streaming for input in recipe.inputs}
         for step, source_step in zip(recipe.steps, plan.steps, strict=True):
             outputs = (
                 step.output_schema.__name__
@@ -59,7 +62,9 @@ class RenderExplainReport:
             if step.filters:
                 lines.append(f"      filters: {len(step.filters)}")
             if step.joins:
-                lines.append(f"      joins: {', '.join(self._join(join) for join in step.joins)}")
+                lines.append(
+                    f"      joins: {', '.join(self._join(join, current=step.source, input_modes=input_modes) for join in step.joins)}"
+                )
             helpers = self._collection_helpers(
                 assignment.expression
                 for assignment in (
@@ -172,7 +177,13 @@ class RenderExplainReport:
         modes = "|".join(mode.value for mode in operation.streaming_output_modes)
         return f" streaming_modes={modes}"
 
-    def _join(self, join: PySparkJoinRecipe) -> str:
+    def _join(
+        self,
+        join: PySparkJoinRecipe,
+        *,
+        current: str,
+        input_modes: dict[str, StreamingMode],
+    ) -> str:
         parts = [f"{join.input_name} {join.method.value} {self._cardinality(join)}"]
         if join.dedupe is not None:
             parts.append(f"dedupe={join.dedupe.direction}/{join.dedupe.ties.value}")
@@ -184,7 +195,22 @@ class RenderExplainReport:
             parts.append(f"hint={join.hint.value}")
         if join.strategy is not None:
             parts.append(f"strategy={join.strategy.value}")
+        if self._requires_append(join, current=current, input_modes=input_modes):
+            parts.append("streaming_modes=append")
         return " ".join(parts)
+
+    def _requires_append(
+        self,
+        join: PySparkJoinRecipe,
+        *,
+        current: str,
+        input_modes: dict[str, StreamingMode],
+    ) -> bool:
+        if input_modes.get(current) is not StreamingMode.YES or input_modes.get(join.source) is not StreamingMode.YES:
+            return False
+        return join.method is JoinMethod.EXISTS or (
+            join.method is JoinMethod.ROWSET and join.how in {Join.LEFT, Join.RIGHT, Join.FULL}
+        )
 
     def _cardinality(self, join: PySparkJoinRecipe) -> str:
         if join.method.value in {"exists", "not_exists"}:

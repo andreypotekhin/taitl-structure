@@ -51,4 +51,4 @@ Developers can use Structure transforms for static-gap session aggregates, bound
 
 ## Progress
 
-- [ ] In progress: static-gap session aggregation is compiler-visible, requires a matching watermark and business key, and reports append-only output mode. Bounded stream-stream left outer and semi admission is covered symbolically. Remaining work includes stream-static-specific diagnostics, right/full generated and online parity, live target evidence, and public migration documentation.
+- [x] Complete: session aggregates, bounded left/right/full outer and semi stream-stream joins, and stream-static semi filtering are compiler-visible; capability, diagnostic, explain, and live plan-construction evidence passed on PySpark 3.5 and 4.0.

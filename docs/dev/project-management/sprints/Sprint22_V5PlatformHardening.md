@@ -23,7 +23,7 @@ shim obscures which package owns target APIs.
 
 - New target platforms or transformation feature families.
 - Cross-platform pipelines, translation, or data interchange.
-- A generic plugin message protocol or public support for private engine replacement.
+- Public support for private engine replacement.
 
 ## ExecPlan
 

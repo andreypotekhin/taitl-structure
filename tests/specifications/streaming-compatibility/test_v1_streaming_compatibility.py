@@ -60,9 +60,7 @@ class StreamingSessionAggregate(Transform):
     def summarize(self, row: StreamRaw) -> StreamWindowSummary:
         watermark(row.event_time, delay="10 minutes")
         group_by(bucket=session_window(row.event_time, "5 minutes"), id=row.id)
-        return StreamWindowSummary(
-            bucket=session_window(row.event_time, "5 minutes"), id=row.id, row_count=count()
-        )
+        return StreamWindowSummary(bucket=session_window(row.event_time, "5 minutes"), id=row.id, row_count=count())
 
 
 @transform(streaming_compatible=True)
@@ -324,6 +322,42 @@ class StreamingLeftOuterStreamJoin(Transform):
 
 
 @transform(streaming_compatible=True)
+class StreamingRightOuterStreamJoin(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    lookups = input(StreamLookup, streaming=StreamingMode.YES)
+    enriched = output(StreamOuter)
+
+    def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamOuter:
+        watermark(row.event_time, delay="10 minutes")
+        watermark(lookup.valid_from, delay="20 minutes")
+        rowset_join(
+            lookup,
+            how=Join.RIGHT,
+            on=(cast(Any, lookup).id == cast(Any, row).id)
+            & event_time_between(cast(Any, row).event_time, cast(Any, lookup).valid_from, upper="1 hour"),
+        )
+        return StreamOuter(id=row.id, value=lookup.value)
+
+
+@transform(streaming_compatible=True)
+class StreamingFullOuterStreamJoin(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    lookups = input(StreamLookup, streaming=StreamingMode.YES)
+    enriched = output(StreamOuter)
+
+    def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamOuter:
+        watermark(row.event_time, delay="10 minutes")
+        watermark(lookup.valid_from, delay="20 minutes")
+        rowset_join(
+            lookup,
+            how=Join.FULL,
+            on=(cast(Any, lookup).id == cast(Any, row).id)
+            & event_time_between(cast(Any, row).event_time, cast(Any, lookup).valid_from, upper="1 hour"),
+        )
+        return StreamOuter(id=row.id, value=lookup.value)
+
+
+@transform(streaming_compatible=True)
 class StreamingSemiStreamJoin(Transform):
     rows = input(StreamRaw, streaming=StreamingMode.YES)
     lookups = input(StreamLookup, streaming=StreamingMode.YES)
@@ -339,6 +373,17 @@ class StreamingSemiStreamJoin(Transform):
                 & event_time_between(cast(Any, row).event_time, cast(Any, lookup).valid_from, upper="1 hour"),
             )
         )
+        return StreamClean(id=row.id)
+
+
+@transform(streaming_compatible=True)
+class StreamingStaticAntiJoin(Transform):
+    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    lookups = input(StreamLookup)
+    clean = output(StreamClean)
+
+    def discard_known(self, row: StreamRaw, lookup: StreamLookup) -> StreamClean:
+        where(not_exists(lookup, on=lookup.id == row.id))
         return StreamClean(id=row.id)
 
 
@@ -544,13 +589,39 @@ def test_v2_inner_stream_stream_join_is_compatible_with_watermarks_and_time_boun
     assert report.findings == ()
 
 
-@pytest.mark.parametrize("transform_type", [StreamingLeftOuterStreamJoin, StreamingSemiStreamJoin])
+@pytest.mark.parametrize(
+    "transform_type",
+    [
+        StreamingLeftOuterStreamJoin,
+        StreamingRightOuterStreamJoin,
+        StreamingFullOuterStreamJoin,
+        StreamingSemiStreamJoin,
+    ],
+)
 def test_v4_bounded_outer_and_semi_stream_stream_joins_are_compatible(transform_type: type[Transform]) -> None:
     plan = compile_transform(transform_type)
     report = Compiler.compileability.streaming()(PySpark.plan.lower()(plan), required=True)
 
     assert report.support is StreamingSupport.COMPATIBLE
     assert report.findings == ()
+
+
+def test_v4_stream_static_anti_join_is_batch_only() -> None:
+    plan = compile_transform(StreamingStaticAntiJoin)
+    report = Compiler.compileability.streaming()(PySpark.plan.lower()(plan), required=True)
+
+    assert report.support is StreamingSupport.BATCH_ONLY
+    assert report.findings[0].operation == "stream-static anti join lookup"
+
+
+def test_v4_outer_and_semi_join_explain_output_names_append_requirement() -> None:
+    from structure.app.cli.api import CliApp
+
+    outer = CliApp.render_explain_report()(StreamingFullOuterStreamJoin)
+    semi = CliApp.render_explain_report()(StreamingSemiStreamJoin)
+
+    assert "lookup rowset_join row_multiplying streaming_modes=append" in outer
+    assert "lookup exists row_filtering streaming_modes=append" in semi
 
 
 def test_v2_unmarked_joined_input_keeps_stream_static_semantics() -> None:

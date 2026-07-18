@@ -274,7 +274,7 @@ management, and CLI orchestration. Platform plugins participate through one disc
 - Source compatibility between platform-specific transforms.
 - More than one target in a transform or composed pipeline.
 - Cross-platform data exchange, pipeline handoff, or automatic API translation.
-- A generic plugin message protocol or arbitrary plugin-defined Core workflows.
+- Arbitrary plugin-defined Core workflows.
 - Production support or public end-user documentation for the finite-iterable conformance plugin.
 - New PySpark transformation families unrelated to completing the platform extraction.
 

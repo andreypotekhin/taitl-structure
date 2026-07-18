@@ -136,19 +136,23 @@ class ClassifyStreamingCompatibility:
         scope: str,
     ) -> tuple[StreamingFinding, ...]:
         if key_count < 2:
-            return (self._session_finding(
-                step,
-                "A streaming session-window aggregate requires an ordinary business grouping key in addition to the session window.",
-                "Group by session_window(the_watermarked_event_time, gap) and at least one business key.",
-            ),)
+            return (
+                self._session_finding(
+                    step,
+                    "A streaming session-window aggregate requires an ordinary business grouping key in addition to the session window.",
+                    "Group by session_window(the_watermarked_event_time, gap) and at least one business key.",
+                ),
+            )
         if not watermark_columns or not all(
             self._watermarked_grouping_key(key, watermark_columns, scope) for key in session_keys
         ):
-            return (self._session_finding(
-                step,
-                "A streaming session-window aggregate requires a preceding watermark on its session event-time field.",
-                "Call watermark(the_session_event_time, delay=...) before group_by(session_window(...), business_key).",
-            ),)
+            return (
+                self._session_finding(
+                    step,
+                    "A streaming session-window aggregate requires a preceding watermark on its session event-time field.",
+                    "Call watermark(the_session_event_time, delay=...) before group_by(session_window(...), business_key).",
+                ),
+            )
         return ()
 
     def _session_finding(self, step: str, problem: str, use: str) -> StreamingFinding:
@@ -291,6 +295,20 @@ class ClassifyStreamingCompatibility:
                 current_scope=current_scope,
                 watermarks=watermarks,
             )
+        if join.method is JoinMethod.NOT_EXISTS and input_modes.get(current_input) is StreamingMode.YES:
+            return (
+                StreamingFinding(
+                    code="STREAM-E0801",
+                    support=StreamingSupport.BATCH_ONLY,
+                    step=step,
+                    operation=f"stream-static anti join {join.input_name}",
+                    problem=(
+                        "Stream-static anti joins are not admitted because v4 defines only the left-semi "
+                        "existence-filter contract."
+                    ),
+                    use="Use exists(...) for supported stream-static filtering or keep this transform batch-only.",
+                ),
+            )
         if join.temporal is not None:
             return (
                 StreamingFinding(
@@ -361,9 +379,8 @@ class ClassifyStreamingCompatibility:
         watermarks: dict[str, set[str]],
     ) -> tuple[StreamingFinding, ...]:
         admitted = (
-            (join.method is JoinMethod.ROWSET and join.how in {Join.INNER, Join.LEFT, Join.RIGHT, Join.FULL})
-            or join.method is JoinMethod.EXISTS
-        )
+            join.method is JoinMethod.ROWSET and join.how in {Join.INNER, Join.LEFT, Join.RIGHT, Join.FULL}
+        ) or join.method is JoinMethod.EXISTS
         if (
             admitted
             and input_modes.get(current_input) is StreamingMode.YES

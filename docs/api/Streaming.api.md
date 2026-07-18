@@ -50,9 +50,9 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 
 ## Lifecycle Boundaries
 
-Supported transform shapes include row-local projection/filter (including scalar Python UDFs), stream-static joins,
-event-time and session-window aggregation, bounded dedupe, and bounded inner stream-stream joins. Sprint 18 plans
-bounded stream-stream outer and semi joins, and stream-static `exists(...)` filtering. Callers own
+Supported transform shapes include row-local projection/filter (including scalar Python UDFs), stream-static left/inner
+joins and `exists(...)` filtering, event-time and session-window aggregation, bounded dedupe, bounded inner
+stream-stream joins, and bounded left/right/full outer and semi stream-stream joins. Callers own
 `readStream`, `writeStream`, checkpoints, triggers, output-mode application, and query lifecycle. `foreachBatch` and
 `foreach` remain unsupported. See [V4 Caller-Owned Streaming Migration](../dev/design/V4CallerOwnedStreamingMigration.md)
 and the [Execution reference](../background/Execution.back.md).
