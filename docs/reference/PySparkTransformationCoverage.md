@@ -32,6 +32,8 @@ a contract first. `unsupported` is deliberately outside the DSL; use the named a
 | Ranking, selection, aggregate windows | supported | Typed window helpers | Raw `WindowSpec` is unsupported. |
 | Watermarks | supported | `watermark` | Caller owns source, sink, trigger, output mode, and lifecycle. |
 | Session window | supported | `session_window(event_time, gap)` | Static positive gap returns a typed `TimeWindow` grouping key. |
+| Bounded stream-stream outer/semi joins | supported | `rowset_join(..., how=Join.LEFT|RIGHT|FULL)`, `exists(...)` | Both streams require watermarks and `event_time_between(...)`; caller uses append mode. |
+| Stream-static semi filtering | supported | `exists(...)` | The streaming relation stays on the left; it has no state or output-mode requirement. |
 
 ## Excluded Categories
 

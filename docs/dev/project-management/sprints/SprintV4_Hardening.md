@@ -48,5 +48,7 @@ v4 release is cut.
 
 ## Progress
 
-- [ ] Start after all v4 feature sprints complete.
-- [ ] Complete release hardening and record the resulting v4 release evidence.
+- [x] Started 2026-07-17 after Sprint 18.
+- [x] Completed 2026-07-17: catalog/golden verification, default build (1081 passed, 22 skipped), and successful
+  `pyspark35`/`pyspark40` Compose lanes. Public V4 documentation now reflects delivered streaming migration forms and
+  explicit deferrals; benchmark baselines remain non-release-blocking until benchmark infrastructure exists.

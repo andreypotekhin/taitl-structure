@@ -445,6 +445,11 @@ transformations, joins, aggregations, windows, and collections. It classifies ev
 transformation API so users can distinguish a Structure equivalent from a deliberate boundary. Loading, storage,
 orchestration, actions, and alternative-backend work are outside this release.
 
+V4 also completes caller-owned streaming migration for static-gap session aggregates, bounded stream-stream outer and
+semi joins, and stream-static semi filtering. Structure keeps source, sink, checkpoint, trigger, output-mode
+application, and query lifecycle in caller code while reporting the compiler-visible watermark, time-bound, and append
+requirements of admitted transformations.
+
 ## Summary
 
 Structure provides a middle path between hand-written PySpark and purely table-oriented transformation frameworks.
