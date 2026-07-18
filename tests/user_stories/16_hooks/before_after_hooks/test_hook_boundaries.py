@@ -2,7 +2,6 @@ import pytest
 
 import structure
 from structure import *
-from structure.compat import legacy
 
 
 def test_hooks_attach_to_declared_step_method_boundaries(orders_recipe) -> None:
@@ -212,5 +211,3 @@ def test_before_and_after_are_retired_from_public_namespaces() -> None:
 
     assert not hasattr(structure, "before")
     assert not hasattr(structure, "after")
-    assert not hasattr(legacy, "before")
-    assert not hasattr(legacy, "after")

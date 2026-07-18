@@ -27,7 +27,7 @@ from structure.core.dsl.model.types.TimestampType import TimestampType
 
 Projected = TypeVar("Projected", bound=Schema)
 
-_CLASS_OPTIONS = {"validate_intermediate", "streaming_compatible"}
+_CLASS_OPTIONS = {"target", "validate_intermediate", "streaming_compatible"}
 _STEP_METHOD_OPTIONS = {"target_backend", "target_platform", "target_profile"}
 _METHOD_BINDING_OPTIONS = {"input", "output", "inout"}
 _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
@@ -90,6 +90,10 @@ def lane(value: type[Schema] | SelectedDeclaration) -> LaneDeclaration | Binding
 
 
 def transform(target=None, **kwargs):
+    if isinstance(target, str):
+        kwargs = {**kwargs, "target": target}
+        target = None
+
     def decorate(item):
         if inspect.isclass(item):
             return _decorate_transform_class(item, kwargs)
@@ -230,6 +234,10 @@ def _normalize_method_options(kwargs: dict[str, object]) -> dict[str, object]:
 def _normalize_transform_options(kwargs: dict[str, object]) -> dict[str, object]:
     options = dict(kwargs)
     for name in _CLASS_OPTIONS & set(options):
+        if name == "target":
+            if not isinstance(options[name], str) or not options[name]:
+                raise TypeError("target must be a non-empty string")
+            continue
         if not isinstance(options[name], bool):
             raise TypeError(f"{name} must be a Boolean")
     for name in _STEP_METHOD_OPTIONS & set(options):

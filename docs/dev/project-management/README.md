@@ -36,12 +36,12 @@ project-management/
     Sprint07_AnalyticalJoinCoverage.md
     Sprint15_V3CollectionHelperParity.md
     Sprint16_V3StreamingOrchestration.md
-    SprintV4_Hardening.md
     done/
       Sprint12_V3JoinParityHardening.md
       Sprint13_V3AggregationParity.md
       Sprint14_V3WindowParity.md
       Sprint17_V4TransformationApiCoverage.md
+      SprintV4_Hardening.md
       Sprint08_AggregationsWindowsHigherOrderFunctions.md
       Sprint11_V3DslAndSqlFunctionParity.md
       Sprint09_OptimizationExplainDocsTooling.md
@@ -114,5 +114,5 @@ Every version ends with a dedicated hardening sprint after its feature-delivery 
 feature scope; it resolves release blockers and collects release evidence for regression, parity, compatibility,
 generated artifacts, documentation, diagnostics, and performance baselines.
 
-v4 is scheduled to close with the [Final v4 Hardening Sprint](sprints/SprintV4_Hardening.md), after all of its feature
-sprints and before the v4 release is cut.
+v4 closed with the [Final v4 Hardening Sprint](sprints/done/SprintV4_Hardening.md), after all of its feature sprints
+and before v5 implementation resumed.

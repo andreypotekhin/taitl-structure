@@ -49,4 +49,9 @@ mutually supported Platform API version, and assemble a Core-owned artifact thro
 
 - [x] (2026-07-17) Renamed the implementation package from `structure.app` to `structure.core` across source,
   tests, package metadata, and public API snapshots.
-- [ ] Implement after the final v4 hardening sprint.
+- [x] (2026-07-17) Split each v1 Platform API class into its own source unit while retaining the package re-exports.
+- [x] (2026-07-17) Hardened metadata-only platform discovery with normalized distribution disablement, identity checks,
+  and actionable load and negotiation diagnostics.
+- [x] (2026-07-17) Added immutable platform configuration merging and target resolution for decorators, overrides,
+  defaults, and cross-target pipelines.
+- [ ] Continue Platform API definitions, configuration, target resolution, and Core artifact foundation.
