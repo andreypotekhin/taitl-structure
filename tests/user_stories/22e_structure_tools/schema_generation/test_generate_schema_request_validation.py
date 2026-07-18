@@ -2,8 +2,8 @@ import pytest
 from helpers.fake_pyspark_schema import StringType, StructField, StructType  # type: ignore[import-not-found]
 
 from structure import *
-from structure.app.runtime.session.model.StructureSession import StructureSession
-from structure.app.tools.model import StructureToolError
+from structure.core.runtime.session.model.StructureSession import StructureSession
+from structure.core.tools.model import StructureToolError
 
 
 def test_generate_requires_exactly_one_source() -> None:

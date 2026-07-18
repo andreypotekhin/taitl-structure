@@ -1,11 +1,11 @@
 import pytest
 
 from structure import *
-from structure.app.dsl.model.expr.Expression import Expression
-from structure.app.dsl.model.types.ArrayType import ArrayType
-from structure.app.dsl.model.types.MapType import MapType
-from structure.app.dsl.model.types.StructType import StructType
-from structure.app.dsl.model.types.StructureType import StructureType
+from structure.core.dsl.model.expr.Expression import Expression
+from structure.core.dsl.model.types.ArrayType import ArrayType
+from structure.core.dsl.model.types.MapType import MapType
+from structure.core.dsl.model.types.StructType import StructType
+from structure.core.dsl.model.types.StructureType import StructureType
 
 
 class MapEntry(Schema):

@@ -5,9 +5,9 @@ from typing import Any
 import pytest
 
 from structure import *
-from structure.app.cli.commands.RenderExplainReport import render_explain_report
-from structure.app.target.pyspark.api import PySpark
-from structure.app.target.pyspark.logic.RenderEmbeddedHooks import EmbeddedHookError
+from structure.core.cli.commands.RenderExplainReport import render_explain_report
+from structure.core.target.pyspark.api import PySpark
+from structure.core.target.pyspark.logic.RenderEmbeddedHooks import EmbeddedHookError
 
 
 class CacheRaw(Schema):

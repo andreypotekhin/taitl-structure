@@ -1,0 +1,56 @@
+from __future__ import annotations
+
+from contextvars import ContextVar, Token
+from types import TracebackType
+from typing import Any
+
+from structure.core.compiler.ir.model.JoinPlan import JoinPlan
+from structure.core.compiler.ir.model.OperationPlan import OperationPlan
+from structure.core.dsl.model.expr.Expression import Expression
+
+_current: ContextVar["CompileContext | None"] = ContextVar("structure_compile_context", default=None)
+
+
+class CompileContext:
+
+    def __init__(self, *, step: str, capture_special_exprs: bool = False) -> None:
+        self.step = step
+        self.capture_special_exprs = capture_special_exprs
+        self.filters: list[Expression] = []
+        self.joins: list[JoinPlan] = []
+        self.operations: list[OperationPlan] = []
+        self.aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
+        self.aggregate_levels: tuple[tuple[str, ...], ...] = ()
+        self.aggregate_grouping: str = "group_by"
+        self.aggregate_having: Any | None = None
+        self.default_project_source: object | None = None
+        self.current_scopes: set[str] = set()
+        self.relation_scopes: dict[str, object] = {}
+        self._token: Token[CompileContext | None] | None = None
+
+    def __enter__(self) -> "CompileContext":
+        self._token = _current.set(self)
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
+        if self._token is not None:
+            _current.reset(self._token)
+
+    def register_current_scope(self, scope: str) -> None:
+        self.current_scopes.add(scope)
+
+    def register_relation_scope(self, scope: str, relation: object) -> object:
+        existing = self.relation_scopes.get(scope)
+        if existing is not None:
+            return existing
+        self.relation_scopes[scope] = relation
+        return relation
+
+
+def current_context() -> CompileContext | None:
+    return _current.get()

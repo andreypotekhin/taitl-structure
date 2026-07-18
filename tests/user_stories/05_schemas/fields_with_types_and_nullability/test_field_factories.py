@@ -4,9 +4,9 @@ import structure
 from structure import Schema
 from structure import array as expression_array
 from structure import types
-from structure.app.dsl.model.types.Array import Array
-from structure.app.dsl.model.types.Decimal import Decimal
-from structure.app.dsl.model.types.Map import Map
+from structure.core.dsl.model.types.Array import Array
+from structure.core.dsl.model.types.Decimal import Decimal
+from structure.core.dsl.model.types.Map import Map
 from structure.field import *
 from structure.field import array as field_array
 from structure.field import string as field_string

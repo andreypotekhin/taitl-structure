@@ -1,7 +1,7 @@
-from structure.app.runtime.api import Runtime
-from structure.app.runtime.execution.generated.api import RunGeneratedPySparkTransform
-from structure.app.runtime.execution.online.api import RunOnlinePySparkTransform
-from structure.app.runtime.schemas.api import BuildTransformSchemas
+from structure.core.runtime.api import Runtime
+from structure.core.runtime.execution.generated.api import RunGeneratedPySparkTransform
+from structure.core.runtime.execution.online.api import RunOnlinePySparkTransform
+from structure.core.runtime.schemas.api import BuildTransformSchemas
 
 
 def test_runtime_endpoint_groups_fresh_command_instances() -> None:

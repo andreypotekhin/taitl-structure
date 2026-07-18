@@ -47,4 +47,6 @@ mutually supported Platform API version, and assemble a Core-owned artifact thro
 
 ## Progress
 
+- [x] (2026-07-17) Renamed the implementation package from `structure.app` to `structure.core` across source,
+  tests, package metadata, and public API snapshots.
 - [ ] Implement after the final v4 hardening sprint.

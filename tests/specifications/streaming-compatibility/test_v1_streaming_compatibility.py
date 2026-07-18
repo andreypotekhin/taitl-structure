@@ -4,10 +4,10 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.app.compiler.api import Compiler
-from structure.app.compiler.compileability.streaming_compatibility.api import StreamingSupport
-from structure.app.dsl.model.types.StructType import StructType
-from structure.app.target.pyspark.api import PySpark
+from structure.core.compiler.api import Compiler
+from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
+from structure.core.dsl.model.types.StructType import StructType
+from structure.core.target.pyspark.api import PySpark
 
 
 class StreamRaw(Schema):
@@ -615,7 +615,7 @@ def test_v4_stream_static_anti_join_is_batch_only() -> None:
 
 
 def test_v4_outer_and_semi_join_explain_output_names_append_requirement() -> None:
-    from structure.app.cli.api import CliApp
+    from structure.core.cli.api import CliApp
 
     outer = CliApp.render_explain_report()(StreamingFullOuterStreamJoin)
     semi = CliApp.render_explain_report()(StreamingSemiStreamJoin)
@@ -669,7 +669,7 @@ def test_v1_streaming_unsafe_hook_is_unknown_with_registered_finding() -> None:
 
 
 def test_v1_streaming_report_is_included_in_explain_output() -> None:
-    from structure.app.cli.api import CliApp
+    from structure.core.cli.api import CliApp
 
     report = CliApp.render_explain_report()(StreamingUnknownHook)
 
@@ -680,7 +680,7 @@ def test_v1_streaming_report_is_included_in_explain_output() -> None:
 
 
 def test_v2_aggregate_streaming_report_is_included_in_explain_output() -> None:
-    from structure.app.cli.api import CliApp
+    from structure.core.cli.api import CliApp
 
     report = CliApp.render_explain_report()(StreamingAggregate)
 
@@ -690,7 +690,7 @@ def test_v2_aggregate_streaming_report_is_included_in_explain_output() -> None:
 
 
 def test_v2_watermarked_aggregate_explain_output_names_policy() -> None:
-    from structure.app.cli.api import CliApp
+    from structure.core.cli.api import CliApp
 
     report = CliApp.render_explain_report()(StreamingWatermarkedAggregate)
 
@@ -702,7 +702,7 @@ def test_v2_watermarked_aggregate_explain_output_names_policy() -> None:
 
 
 def test_v4_session_aggregate_explain_output_names_append_only_policy() -> None:
-    from structure.app.cli.api import CliApp
+    from structure.core.cli.api import CliApp
 
     report = CliApp.render_explain_report()(StreamingSessionAggregate)
 
@@ -711,7 +711,7 @@ def test_v4_session_aggregate_explain_output_names_append_only_policy() -> None:
 
 
 def test_v2_analytical_join_explain_output_names_join_shapes() -> None:
-    from structure.app.cli.api import CliApp
+    from structure.core.cli.api import CliApp
 
     exists_report = CliApp.render_explain_report()(StreamingExists)
     many_report = CliApp.render_explain_report()(StreamingJoinMany)

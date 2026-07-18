@@ -6,9 +6,9 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.app.compiler.api import OperationCardinality
-from structure.app.compiler.ir.model.JoinMethod import JoinMethod
-from structure.app.target.pyspark.api import PySpark
+from structure.core.compiler.api import OperationCardinality
+from structure.core.compiler.ir.model.JoinMethod import JoinMethod
+from structure.core.target.pyspark.api import PySpark
 
 
 def test_v2_source_fixtures_import_without_live_spark(monkeypatch: pytest.MonkeyPatch) -> None:

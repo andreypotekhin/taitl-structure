@@ -3,8 +3,8 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.app.target.capabilities.api import BackendCapabilityError, PySparkCapabilities
-from structure.app.target.pyspark.api import PySpark
+from structure.core.target.capabilities.api import BackendCapabilityError, PySparkCapabilities
+from structure.core.target.pyspark.api import PySpark
 
 
 def test_v1_expression_renderer_renders_filter_helpers_and_literals() -> None:

@@ -1,6 +1,6 @@
 from structure import *
-from structure.app.target.pyspark.api import PySpark
-from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
+from structure.core.target.pyspark.api import PySpark
+from structure.core.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
 
 
 class RawTags(Schema):

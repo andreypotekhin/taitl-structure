@@ -1,6 +1,6 @@
 import sys
 
-from structure.app.target.capabilities.api import Capabilities, CapabilityRequirement
+from structure.core.target.capabilities.api import Capabilities, CapabilityRequirement
 
 
 def test_default_pyspark_support_range_resolves_without_importing_pyspark() -> None:

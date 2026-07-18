@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from click.testing import CliRunner
 
-from structure.app.cli.api import cli
+from structure.core.cli.api import cli
 
 
 @contextmanager

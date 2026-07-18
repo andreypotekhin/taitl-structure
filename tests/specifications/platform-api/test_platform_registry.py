@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from structure.app.platform import PlatformRegistry
+from structure.core.platform import PlatformRegistry
 from structure.platform.api import PlatformDescriptor
 from structure.platform.api.v1 import PlatformAPI
 

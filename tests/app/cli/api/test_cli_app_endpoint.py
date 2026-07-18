@@ -1,4 +1,4 @@
-from structure.app.cli.api import CliApp
+from structure.core.cli.api import CliApp
 
 
 def test_cli_app_endpoint_groups_fresh_command_instances() -> None:

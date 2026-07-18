@@ -1,8 +1,8 @@
 import pytest
 
 from structure import *
-from structure.app.compiler.api import Compiler
-from structure.app.target.pyspark.api import PySpark
+from structure.core.compiler.api import Compiler
+from structure.core.target.pyspark.api import PySpark
 
 
 class OrderRaw(Schema):

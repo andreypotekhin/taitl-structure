@@ -17,19 +17,19 @@ reuse, sharing and preventing app code bloat.
 - Always define the value returned by a method in method signature
 
 ### App structure
-The installable package lives under `src/structure`. Inside that package, project code consists of apps and libraries:
+The installable package lives under `src/structure`. Inside that package, project code consists of Core and libraries:
 
-- `src/structure/app` - apps
+- `src/structure/core` - Core implementation
 - `src/structure/lib` - libs
 
-Apps: configuration, cli, dsl, compiler, target, runtime
+Core components: configuration, cli, dsl, compiler, target, runtime
 and other system components (and subcomponents) defined by project architecture. Compiler subapps include
 frontend, discovery, symbolic_execution, ir, compileability, diagnostics, and traceability. Target subapps include
 capabilities and concrete targets such as pyspark.
 
 ```text
 src/structure/
-  app/
+  core/
     cli/
     compiler/
       api/
@@ -56,9 +56,9 @@ src/structure/
     helper/ - shared helpers (no business logic)
 ```
 
-We refer to apps and libs with slash notation (`app/cli/`, `app/cli`), full slash notation
-(`structure/app/cli/`), dot notation (`structure.app.cli`), space notation (app cli, cli app), canonic notation
-(CLI app, Helper Library), and sometimes reverse notation (lib common).
+We refer to Core components and libraries with slash notation (`core/cli/`, `core/cli`), full slash notation
+(`structure/core/cli/`), dot notation (`structure.core.cli`), space notation (Core CLI, CLI Core), canonic notation
+(CLI Core, Helper Library), and sometimes reverse notation (lib common).
 
 ### Library package structure
 Library package structure: no specific structure, various subpackages as need arises
@@ -66,7 +66,7 @@ Library package structure: no specific structure, various subpackages as need ar
 ### Application package structure
 Application package structure:
 
-structure/app/[app]/
+structure/core/[component]/
   - api/ - Programmatic API endpoints - application entry points.
     The main endpoint is an uppercase stateless class, such as `Compiler`, `Runtime`,
     `PySpark`, `Configuration`, `Capabilities`, or `CliApp`.

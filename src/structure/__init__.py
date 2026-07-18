@@ -1,15 +1,15 @@
 from importlib import import_module
 
-from structure.app.compiler.api import (
+from structure.core.compiler.api import (
     ArtifactCacheReport,
     CompileKey,
     CompiledTransform,
     CompilerOptions,
     GeneratedTransform,
 )
-from structure.app.compiler.artifacts.commands import CompiledArtifactPool
-from structure.app.configuration.api import StructureConfig
-from structure.app.dsl.api import (
+from structure.core.compiler.artifacts.commands import CompiledArtifactPool
+from structure.core.configuration.api import StructureConfig
+from structure.core.dsl.api import (
     AsOf,
     Join,
     JoinDedupe,
@@ -211,16 +211,16 @@ from structure.app.dsl.api import (
     xxhash64,
     zeroifnull,
 )
-from structure.app.runtime.api import (
+from structure.core.runtime.api import (
     ResultSchemas,
     StructureRuntimeError,
     StructureSession,
     TransformResult,
     TransformSchemas,
 )
-from structure.app.sources import CompiledSources, SourceTransformAddress, StructureSources
-from structure.app.target.pyspark.api import DiskStorage, MemoryStorage, PackageImportStorage
-from structure.app.tools.api import StructureTools
+from structure.core.sources import CompiledSources, SourceTransformAddress, StructureSources
+from structure.core.target.pyspark.api import DiskStorage, MemoryStorage, PackageImportStorage
+from structure.core.tools.api import StructureTools
 
 
 field = import_module("structure.field")

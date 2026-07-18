@@ -5,7 +5,7 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.app.runtime.execution.online.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
+from structure.core.runtime.execution.online.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 from structure.lib.cross.errors import Diagnostic, DiagnosticEntry, DiagnosticRegistry, diagnostic_registry
 
 ROOT = Path(__file__).resolve().parents[4]

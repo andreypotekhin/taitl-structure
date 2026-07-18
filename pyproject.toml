@@ -11,14 +11,14 @@ license = "LGPL-2.1 + Ethical Use Policy"
 readme = "Readme.md"
 include = [
     "Readme.md",
-    { path = "src/structure/app/target/pyspark/resources/runtime.py.template", format = [ "sdist", "wheel" ] },
+    { path = "src/structure/core/target/pyspark/resources/runtime.py.template", format = [ "sdist", "wheel" ] },
 ]
 packages = [
     { include = "structure", from = "src" },
 ]
 
 [tool.poetry.scripts]
-structure = 'structure.app.cli.api:cli'
+structure = 'structure.core.cli.api:cli'
 
 [tool.poetry.dependencies]
 python = ">=3.11,<4.0.0"

@@ -3,9 +3,9 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.app.compiler.api import Compiler, OperationCardinality, StreamingSupport
-from structure.app.compiler.ir.model.JoinMethod import JoinMethod
-from structure.app.target.pyspark.api import PySpark
+from structure.core.compiler.api import Compiler, OperationCardinality, StreamingSupport
+from structure.core.compiler.ir.model.JoinMethod import JoinMethod
+from structure.core.target.pyspark.api import PySpark
 
 
 class Order(Schema):

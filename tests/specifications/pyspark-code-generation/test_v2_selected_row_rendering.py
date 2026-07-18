@@ -3,10 +3,10 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.app.cli.commands.RenderExplainReport import render_explain_report
-from structure.app.target.pyspark.api import PySpark
-from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
-from structure.app.target.pyspark.commands.RenderPySparkTransformModule import render_pyspark_transform_module
+from structure.core.cli.commands.RenderExplainReport import render_explain_report
+from structure.core.target.pyspark.api import PySpark
+from structure.core.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
+from structure.core.target.pyspark.commands.RenderPySparkTransformModule import render_pyspark_transform_module
 
 
 class RawEvent(Schema):

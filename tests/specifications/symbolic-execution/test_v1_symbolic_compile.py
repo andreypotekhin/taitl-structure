@@ -4,7 +4,7 @@ from typing import cast
 import pytest
 
 from structure import *
-from structure.app.dsl.model.types.StructType import StructType
+from structure.core.dsl.model.types.StructType import StructType
 
 
 def test_v1_fixture_imports_without_pyspark() -> None:

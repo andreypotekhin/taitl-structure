@@ -4,7 +4,7 @@ import sys
 from types import ModuleType
 from typing import NoReturn
 
-from structure.app.dsl.model.schemas.schema_api import (
+from structure.core.dsl.model.schemas.schema_api import (
     array,
     boolean,
     date,

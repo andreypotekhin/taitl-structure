@@ -197,7 +197,7 @@ def test_v1_online_session_defers_to_runner_and_exposes_schemas_without_pyspark(
 def test_v1_online_session_reuses_session_compiled_artifact(monkeypatch) -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
+    from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
 
     calls = 0
     original = BuildCompiledTransform.__call__
@@ -225,8 +225,8 @@ def test_v1_online_session_reuses_session_compiled_artifact(monkeypatch) -> None
 def test_v1_sessions_share_explicit_artifact_pool(monkeypatch) -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    from structure.app.compiler.artifacts.commands import CompiledArtifactPool
-    from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
+    from structure.core.compiler.artifacts.commands import CompiledArtifactPool
+    from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
 
     calls = 0
     original = BuildCompiledTransform.__call__
@@ -258,7 +258,7 @@ def test_v1_sessions_share_explicit_artifact_pool(monkeypatch) -> None:
 def test_v1_session_load_reuses_explicit_artifact(monkeypatch) -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
+    from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
 
     artifact = EnrichOrders.compile(schema_types=FakeTypes)
     session = StructureSession(schema_types=FakeTypes, online_executor=lambda **_: None)
@@ -283,7 +283,7 @@ def test_v1_session_load_reuses_explicit_artifact(monkeypatch) -> None:
 def test_v1_transform_compile_builds_detached_artifacts(monkeypatch) -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
+    from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
 
     calls = 0
     original = BuildCompiledTransform.__call__
@@ -305,7 +305,7 @@ def test_v1_transform_compile_builds_detached_artifacts(monkeypatch) -> None:
 def test_v1_compile_key_includes_version_and_source_hash() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
+    from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
 
     key = BuildCompiledTransform().key(
         EnrichOrders,
@@ -334,8 +334,8 @@ def test_v1_compiled_artifact_does_not_capture_bound_inputs() -> None:
 
 def test_v1_pipeline_reuses_shared_compiled_artifact(monkeypatch) -> None:
     from structure import Schema, Transform, field, input, output, transform
-    from structure.app.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
-    from structure.app.dsl.model.transforms.TransformPipeline import TransformPipeline
+    from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
+    from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 
     class Raw(Schema):
         id = field.string(nullable=False)

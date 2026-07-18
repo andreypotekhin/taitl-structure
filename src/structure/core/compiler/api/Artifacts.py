@@ -1,0 +1,15 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
+
+
+class Artifacts:
+
+    @staticmethod
+    def build() -> BuildCompiledTransform:
+        from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
+
+        return BuildCompiledTransform()

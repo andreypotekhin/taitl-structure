@@ -1,5 +1,5 @@
 from structure import *
-from structure.app.target.pyspark.api import PySpark
+from structure.core.target.pyspark.api import PySpark
 
 
 def test_v1_step_renderer_renders_before_hook_against_current_input() -> None:

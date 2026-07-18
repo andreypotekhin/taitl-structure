@@ -1,4 +1,4 @@
-from structure.app.configuration.api import Configuration, ResolveStructureConfig
+from structure.core.configuration.api import Configuration, ResolveStructureConfig
 
 
 def test_configuration_endpoint_returns_fresh_command_instance() -> None:

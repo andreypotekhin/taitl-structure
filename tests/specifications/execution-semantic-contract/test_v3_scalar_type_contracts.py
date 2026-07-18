@@ -5,12 +5,12 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.app.dsl.api import compile_transform
-from structure.app.dsl.model.expr.Expression import Expression
-from structure.app.dsl.model.expr.expressions import literal
-from structure.app.dsl.model.types.DecimalType import DecimalType
-from structure.app.dsl.model.types.StructType import StructType
-from structure.app.target.pyspark.api import PySpark
+from structure.core.dsl.api import compile_transform
+from structure.core.dsl.model.expr.Expression import Expression
+from structure.core.dsl.model.expr.expressions import literal
+from structure.core.dsl.model.types.DecimalType import DecimalType
+from structure.core.dsl.model.types.StructType import StructType
+from structure.core.target.pyspark.api import PySpark
 
 
 def _expression(type, *, nullable: bool) -> Expression:

@@ -11,9 +11,9 @@ from pathlib import Path
 import pytest
 
 from structure import *
-from structure.app.dsl.model.schemas.Schema import Schema
-from structure.app.dsl.model.transforms.Transform import Transform
-from structure.app.target.pyspark.api import PySpark
+from structure.core.dsl.model.schemas.Schema import Schema
+from structure.core.dsl.model.transforms.Transform import Transform
+from structure.core.target.pyspark.api import PySpark
 
 BACKENDS = ("pyspark35", "pyspark40", "spark-connect35", "spark-connect40")
 CLASSIC_ONLY_TOKENS = (

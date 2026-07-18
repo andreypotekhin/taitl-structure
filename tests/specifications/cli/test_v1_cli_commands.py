@@ -11,7 +11,7 @@ from uuid import uuid4
 from click.testing import CliRunner
 
 from structure import *
-from structure.app.cli.api import cli
+from structure.core.cli.api import cli
 
 
 @contextmanager
@@ -462,7 +462,7 @@ def test_v1_cli_clean_removes_owned_generated_files_only() -> None:
 
 
 def test_v1_cli_unexpected_failure_renders_internal_diagnostic(mocker) -> None:
-    module = import_module("structure.app.cli.api.cli")
+    module = import_module("structure.core.cli.api.cli")
     mocker.patch.object(module.CliApp, "resolve_config", side_effect=RuntimeError("boom"))
 
     result = CliRunner().invoke(cli, ["check"])

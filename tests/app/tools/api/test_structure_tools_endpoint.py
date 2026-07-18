@@ -1,7 +1,7 @@
 import sys
 
 from structure import *
-from structure.app.tools.api import StructureTools as AppStructureTools
+from structure.core.tools.api import StructureTools as AppStructureTools
 
 
 def test_structure_tools_is_public_and_import_safe() -> None:

@@ -3,12 +3,12 @@ import sys
 from click.testing import CliRunner
 from helpers.fake_pyspark_schema import StringType, StructField, StructType  # type: ignore[import-not-found]
 
-from structure.app.cli.api import cli
+from structure.core.cli.api import cli
 
 
 def test_schema_generation_cli_prints_generated_source(mocker) -> None:
     spark = FakeSpark(StructType((StructField("id", StringType(), False),)))
-    module = "structure.app.cli.api.cli"
+    module = "structure.core.cli.api.cli"
     mocker.patch(f"{module}._spark_session", return_value=spark)
 
     result = CliRunner().invoke(
@@ -38,7 +38,7 @@ def test_schema_generation_cli_validates_without_importing_pyspark() -> None:
 
 def test_schema_generation_cli_parses_reader_options(mocker) -> None:
     spark = FakeSpark(StructType((StructField("id", StringType(), False),)))
-    mocker.patch("structure.app.cli.api.cli._spark_session", return_value=spark)
+    mocker.patch("structure.core.cli.api.cli._spark_session", return_value=spark)
 
     result = CliRunner().invoke(
         cli,
@@ -84,7 +84,7 @@ def test_schema_generation_cli_rejects_invalid_reader_option() -> None:
 
 
 def test_schema_generation_cli_validates_format_before_starting_spark(mocker) -> None:
-    spark_session = mocker.patch("structure.app.cli.api.cli._spark_session")
+    spark_session = mocker.patch("structure.core.cli.api.cli._spark_session")
 
     result = CliRunner().invoke(
         cli,

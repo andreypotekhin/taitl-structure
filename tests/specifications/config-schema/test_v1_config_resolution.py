@@ -6,8 +6,8 @@ from pathlib import Path
 from uuid import uuid4
 
 from structure import *
-from structure.app.compiler.artifacts.model.CompilerOptions import CompilerOptions as CompilerArtifactOptions
-from structure.app.configuration.api import ConfigError, Configuration
+from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOptions as CompilerArtifactOptions
+from structure.core.configuration.api import ConfigError, Configuration
 
 
 @contextmanager

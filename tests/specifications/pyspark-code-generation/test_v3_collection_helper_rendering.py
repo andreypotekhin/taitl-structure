@@ -1,15 +1,15 @@
 import pytest
 
 from structure import *
-from structure.app.cli.commands.RenderExplainReport import render_explain_report
-from structure.app.dsl.model.expr.Expression import Expression
-from structure.app.dsl.model.types.ArrayType import ArrayType
-from structure.app.dsl.model.types.IntegerType import IntegerType
-from structure.app.dsl.model.types.LongType import LongType
-from structure.app.dsl.model.types.MapType import MapType
-from structure.app.dsl.model.types.StringType import StringType
-from structure.app.target.pyspark.api import PySpark
-from structure.app.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
+from structure.core.cli.commands.RenderExplainReport import render_explain_report
+from structure.core.dsl.model.expr.Expression import Expression
+from structure.core.dsl.model.types.ArrayType import ArrayType
+from structure.core.dsl.model.types.IntegerType import IntegerType
+from structure.core.dsl.model.types.LongType import LongType
+from structure.core.dsl.model.types.MapType import MapType
+from structure.core.dsl.model.types.StringType import StringType
+from structure.core.target.pyspark.api import PySpark
+from structure.core.target.pyspark.commands.RenderPySparkStep import render_pyspark_step
 
 
 class CollectionSource(Schema):

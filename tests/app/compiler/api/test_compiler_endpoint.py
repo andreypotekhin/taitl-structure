@@ -1,4 +1,4 @@
-from structure.app.compiler.api import (
+from structure.core.compiler.api import (
     BuildCompilerTraceability,
     ClassifyStreamingCompatibility,
     Compiler,

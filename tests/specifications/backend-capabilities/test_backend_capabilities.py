@@ -8,7 +8,7 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
-from structure.app.target.capabilities.api import (
+from structure.core.target.capabilities.api import (
     BACKEND_E2401,
     BACKEND_E2402,
     BackendCapabilityError,

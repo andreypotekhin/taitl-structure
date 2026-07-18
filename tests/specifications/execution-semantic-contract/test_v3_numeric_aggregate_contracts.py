@@ -3,9 +3,9 @@ from typing import cast
 import pytest
 
 from structure import *
-from structure.app.dsl.model.expr.Expression import Expression
-from structure.app.dsl.model.transforms.operations import WindowFrame
-from structure.app.dsl.model.types.DecimalType import DecimalType
+from structure.core.dsl.model.expr.Expression import Expression
+from structure.core.dsl.model.transforms.operations import WindowFrame
+from structure.core.dsl.model.types.DecimalType import DecimalType
 
 
 @pytest.mark.parametrize(

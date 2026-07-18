@@ -171,7 +171,7 @@ opaque-plan serialization.
 
 It is not a public production target, does not claim streaming or generation, and must not appear in end-user feature
 documentation. Its tests demonstrate real metadata discovery, API negotiation, disablement, conflict diagnostics,
-isolation from `structure.app`, and the private engine-compatibility gate where useful.
+isolation from `structure.core`, and the private engine-compatibility gate where useful.
 
 ## Migration Boundary
 

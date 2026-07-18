@@ -1,7 +1,7 @@
 import re
 from pathlib import Path
 
-API_ROOT = Path("src/structure/app")
+API_ROOT = Path("src/structure/core")
 LOWERCASE_ENDPOINTS = {
     "capabilities",
     "cli_actions",

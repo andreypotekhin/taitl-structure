@@ -3,7 +3,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
 
-from structure.app.target.pyspark.api import PySpark
+from structure.core.target.pyspark.api import PySpark
 
 
 @contextmanager

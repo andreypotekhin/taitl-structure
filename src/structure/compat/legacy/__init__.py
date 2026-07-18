@@ -2,7 +2,7 @@
 
 import inspect
 
-from structure.app.dsl.model.transforms.transform_api import _decorate_transform_method, transform as _transform
+from structure.core.dsl.model.transforms.transform_api import _decorate_transform_method, transform as _transform
 
 
 def transform(target=None, **kwargs):

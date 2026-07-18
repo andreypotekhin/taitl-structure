@@ -73,6 +73,20 @@ Fix: Rerun `make integration`. For repeated failures, inspect the matching servi
 `docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml logs spark35-master spark35-worker`
 or the `spark40-*` services for the PySpark 4.0 lane.
 
+### Problem (integration): Spark Connect logs `INVALID_HANDLE.SESSION_CLOSED` during `releaseExecute`
+
+When: A Spark Connect 3.5 integration lane finishes a test or the full pytest run.
+Error: The Connect server logs `Spark Connect RPC error during: releaseExecute` followed by
+`[INVALID_HANDLE.SESSION_CLOSED]`. The pytest progress line may still end in dots and `[100%]`.
+Cause: PySpark 3.5 can send a best-effort execution-release request after the corresponding Spark Connect session has
+already closed. This is a server-side cleanup race, not a failed Structure transform. A stale integration image can
+also expose the server's cleanup output directly.
+Fix: If pytest has no `F`, `FAILED`, or nonzero exit status, treat the message as non-fatal. Rebuild the integration
+image once to use the quiet Connect runner:
+`make integration-rebuild BACKEND=spark-connect35`. Subsequent `make integration BACKEND=spark-connect35` runs reuse
+the image and cache. If pytest actually fails, retain the reported traceback; the runner prints the last 200 Connect
+server log lines only for a failing test run.
+
 ### Problem (context): `message` during [when]
 
 When: [describe when problem manifests]

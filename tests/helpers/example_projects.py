@@ -6,12 +6,12 @@ from pathlib import Path
 from typing import Iterator, Sequence
 
 from structure import *
-from structure.app.cli.model.DiscoveredStructureProject import DiscoveredStructureProject
-from structure.app.configuration.model.StructureConfig import StructureConfig
-from structure.app.docs.api import Docs
-from structure.app.dsl.model.schemas.Schema import Schema
-from structure.app.target.capabilities.api import Capabilities
-from structure.app.target.pyspark.api import PySpark
+from structure.core.cli.model.DiscoveredStructureProject import DiscoveredStructureProject
+from structure.core.configuration.model.StructureConfig import StructureConfig
+from structure.core.docs.api import Docs
+from structure.core.dsl.model.schemas.Schema import Schema
+from structure.core.target.capabilities.api import Capabilities
+from structure.core.target.pyspark.api import PySpark
 
 ROOT = Path(".")
 EXAMPLES = ROOT / "examples"

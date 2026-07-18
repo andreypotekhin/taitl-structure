@@ -4,8 +4,8 @@ from collections.abc import Callable, Mapping
 from pathlib import Path
 from typing import Any
 
-from structure.app.cli.api.CliApp import CliApp
-from structure.app.configuration.model.StructureConfig import StructureConfig
+from structure.core.cli.api.CliApp import CliApp
+from structure.core.configuration.model.StructureConfig import StructureConfig
 
 
 def assert_check_success(

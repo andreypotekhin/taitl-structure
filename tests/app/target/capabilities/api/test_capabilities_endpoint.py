@@ -1,4 +1,4 @@
-from structure.app.target.capabilities.api import Capabilities, ResolveBackendCapabilities
+from structure.core.target.capabilities.api import Capabilities, ResolveBackendCapabilities
 
 
 def test_capabilities_endpoint_returns_fresh_command_instance() -> None:

@@ -1,6 +1,6 @@
 import sys
 
-from structure.app.docs.api import Docs, RenderStructureDocsProject
+from structure.core.docs.api import Docs, RenderStructureDocsProject
 
 
 def test_docs_endpoint_groups_fresh_command_instances_without_spark_imports() -> None:

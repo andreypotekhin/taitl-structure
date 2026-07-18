@@ -1,9 +1,9 @@
 import sys
 
 from structure import *
-from structure.app.compiler.api import Compiler
-from structure.app.compiler.compileability.streaming_compatibility.api import StreamingSupport
-from structure.app.target.pyspark.api import PySpark
+from structure.core.compiler.api import Compiler
+from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
+from structure.core.target.pyspark.api import PySpark
 
 
 class StreamRaw(Schema):
