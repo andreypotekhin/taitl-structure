@@ -7,7 +7,7 @@ For exhaustive supported APIs, PySpark parity names, examples, and semantic diff
 
 ## Schema Classes
 
-A schema class defines a row contract and compiles into PySpark schema (`StructType`/`StructField`).
+A schema class defines a contract and compiles into PySpark schema (`StructType`/`StructField`).
 
 ```python
 from structure import Schema
@@ -26,7 +26,7 @@ class OrderWithCustomer(OrderRaw):
     customer_name = string(nullable=True)
 ```
 
-Use schema classes for inputs, intermediate rows, and outputs. 
+Use schema classes for inputs and outputs of the Transforms (next). 
 
 Inheritance allows to for schema reuse, while avoiding repeat declarations.
 

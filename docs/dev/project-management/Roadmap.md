@@ -278,6 +278,37 @@ management, and CLI orchestration. Platform plugins participate through one disc
 - Production support or public end-user documentation for the finite-iterable conformance plugin.
 - New PySpark transformation families unrelated to completing the platform extraction.
 
+## v6 Scope
+
+v6 admits one bounded, batch-only recurrence shape over caller-supplied timeline DataFrames. A PySpark-platform
+`scan(...)` expression carries a typed `Schema` state through an explicitly partitioned and ordered timeline, producing
+one normal transform output row for each input timeline row. It is not a reinterpretation of `lag(...)`, an input-less
+transform, a persistent Transform instance state, or a streaming state-store API.
+
+### v6 sequence
+
+- Specify ordered timeline scan semantics, schema/cardinality rules, diagnostics, and capability requirements.
+- Add typed scan-state symbolic execution and immutable platform planning records.
+- Lower bounded scans through public PySpark DataFrame and Column APIs; prove online/generated parity and generated
+  source readability.
+- Add live PySpark evidence, performance guidance, generated documentation, and release hardening.
+
+### v6 must include
+
+- A caller-supplied finite timeline input with explicit partition and deterministic ordering keys.
+- A typed initial state and typed transition callback that returns the same state schema.
+- One state-before-transition result per timeline row, with a declared maximum rows per partition.
+- Duplicate-order-key and over-bound failures, batch-only capability diagnostics, explain/traceability facts, and
+  online/generated PySpark parity.
+- A two-partition Fibonacci example demonstrating reset state at partition boundaries.
+
+### v6 non-goals
+
+- Input-less transforms, generated source frames, generic row generators, and constructor parameter declarations.
+- Persistent state between transform invocations, global scans, arbitrary unbounded scans, and all streaming scans.
+- UDF-, Pandas-, RDD-, driver-loop-, or raw-hook-based recurrence execution.
+- Alternative-platform scan portability before each platform supplies its own explicit capability and lowering.
+
 ## Release Milestones
 
 | Milestone | Goal | Sprints |
@@ -293,3 +324,4 @@ management, and CLI orchestration. Platform plugins participate through one disc
 | M8 | v3 PySpark gap closure and streaming transformation hardening | Sprints 11-16 |
 | M9 | v4 PySpark transformation API coverage | Sprint 17, later v4 feature sprints including Sprint 18 streaming migration, then the final v4 hardening sprint |
 | M10 | v5 Core-orchestrated platform plugin architecture | Sprints 19-22 |
+| M11 | v6 bounded ordered timeline scans and typed recurrence transforms | post-v5 v6 sprints |

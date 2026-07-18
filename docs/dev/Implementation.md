@@ -113,6 +113,15 @@
 - Publish the external plugin contract, author guide, conformance suite, diagnostics, and migration guide.
 - Prove the contract with a separately packaged internal finite-iterable plugin.
 
+## Phase 7: v6
+
+- Add the PySpark-platform bounded ordered timeline `scan(...)` capability.
+- Carry typed Schema state through caller-supplied, explicitly partitioned and ordered batch timelines.
+- Lower scans through public PySpark DataFrame and Column APIs with declared per-partition bounds and deterministic
+  duplicate-order diagnostics.
+- Prove online/generated parity, generated-code readability, and live PySpark recurrence fixtures.
+- Keep input-less transforms, persistent state, unbounded/global scans, and streaming scans out of scope.
+
 ## Build Integration
 
 Initial build integration should rely on CLI commands:

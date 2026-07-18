@@ -90,12 +90,23 @@ class Transform:
         config=None,
         schema_types=None,
         force: bool = False,
+        platform_configuration=None,
+        platform_registry=None,
+        target: str | None = None,
         **settings: object,
     ):
-        from structure.core.compiler.artifacts.commands import BuildCompiledTransform, CompileStructureSources
+        from structure.core.compiler.artifacts.commands import (
+            BuildCompiledTransform,
+            BuildPlatformArtifact,
+            CompileStructureSources,
+        )
         from structure.core.compiler.artifacts.model import CompilerOptions
         from structure.core.sources.model.StructureSources import StructureSources
 
+        if platform_configuration is not None or platform_registry is not None:
+            if platform_configuration is None or platform_registry is None:
+                raise ValueError("platform_configuration and platform_registry must be supplied together.")
+            return BuildPlatformArtifact(platform_registry)(cls, configuration=platform_configuration, target=target)
         resolved = CompilerOptions.resolve(
             options,
             project_root=project_root,

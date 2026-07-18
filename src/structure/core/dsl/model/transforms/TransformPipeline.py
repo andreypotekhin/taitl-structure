@@ -41,11 +41,18 @@ class TransformPipeline:
         config=None,
         schema_types=None,
         force: bool = False,
+        platform_configuration=None,
+        platform_registry=None,
+        target: str | None = None,
         **settings: object,
     ):
-        from structure.core.compiler.artifacts.commands import BuildCompiledTransform
+        from structure.core.compiler.artifacts.commands import BuildCompiledTransform, BuildPlatformArtifact
         from structure.core.compiler.artifacts.model import CompilerOptions
 
+        if platform_configuration is not None or platform_registry is not None:
+            if platform_configuration is None or platform_registry is None:
+                raise ValueError("platform_configuration and platform_registry must be supplied together.")
+            return BuildPlatformArtifact(platform_registry)(self, configuration=platform_configuration, target=target)
         resolved = CompilerOptions.resolve(
             options,
             project_root=project_root,

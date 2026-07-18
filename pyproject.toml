@@ -86,6 +86,7 @@ per-file-ignores = [
     'examples/stocks/**/*.py:F403,F405', # end-user examples intentionally use Structure's public wildcard import
     'examples/texts/**/*.py:F403,F405', # end-user examples intentionally use Structure's public wildcard import
     'examples/streams/schemas/*.py:F403,F405', # schema modules intentionally import concise field factories
+    'examples/math/schemas/*.py:F403,F405', # schema modules intentionally import concise field factories
     'tests/**/*.py:F403,F405', # DSL-facing tests intentionally use Structure's public wildcard import
 ]
 max-line-length = 120
@@ -117,10 +118,11 @@ follow_imports = "skip"
 module = [
     "examples.orders.transforms.*",
     "examples.streams.transforms.*",
+    "examples.math.transforms.*",
     "examples.stocks.transforms.*",
     "examples.texts.transforms.*",
 ]
-disable_error_code = ["attr-defined", "operator"]
+disable_error_code = ["attr-defined", "operator", "var-annotated", "assignment"]
 
 [[tool.mypy.overrides]]
 module = [

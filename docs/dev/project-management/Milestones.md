@@ -345,3 +345,20 @@ the breaking v5 migration.
   finite-generator execution, joins, grouped aggregation, collection, and opaque-plan serialization.
 - The full build and supported PySpark integration matrix pass, and v5 migration, extension, troubleshooting, and
   release documentation are complete.
+
+## M11: v6 Ordered Timeline Scans and Typed Recurrence Transforms
+
+Status: scheduled after M10. The execution plan is
+`docs/dev/planning/P07182601.V6-timeline-scan-recurrence.plan.md`.
+
+### Exit Criteria
+
+- A normal transform consumes a caller-provided finite timeline DataFrame and produces one typed output row per
+  timeline row through a PySpark-platform `scan(...)` expression.
+- Scan state has a declared Schema type, an initial state, an explicit partition/order contract, a deterministic
+  duplicate-key failure, and a positive per-partition maximum.
+- The bounded batch PySpark lowering is optimizer-visible, has no UDF/RDD/Pandas/action/driver-loop fallback, and has
+  online/generated parity and generated-source evidence.
+- Fibonacci fixtures prove correct recurrence values and independent state reset for separate timeline partitions.
+- Streaming, global/unbounded scans, input-less transforms, persistent invocation state, and generic row generators
+  remain explicitly unsupported.
