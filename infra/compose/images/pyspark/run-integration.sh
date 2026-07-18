@@ -3,6 +3,7 @@ set -euo pipefail
 
 backend="${1:?integration backend is required}"
 connect_pid=""
+connect_log=""
 
 mkdir -p /tmp/artifacts /tmp/spark-artifacts
 cd /tmp
@@ -32,8 +33,9 @@ if [[ "${backend}" == spark-connect* ]]; then
         connect_args+=(--packages "org.apache.spark:spark-connect_${scala_version}:${STRUCTURE_EXPECTED_SPARK}")
     fi
 
+    connect_log="/tmp/spark-connect-server.log"
     SPARK_SUBMIT_OPTS="${SPARK_SUBMIT_OPTS:-} -Dlog4j.configurationFile=file:/etc/spark/log4j2-integration.properties" \
-        spark-submit "${connect_args[@]}" &
+        spark-submit "${connect_args[@]}" >"${connect_log}" 2>&1 &
     connect_pid="$!"
 fi
 
@@ -44,9 +46,20 @@ cleanup() {
 }
 trap cleanup EXIT
 
+pytest_status=0
 python -m pytest /workspace/tests/integration /workspace/tests/concepts/live_pyspark \
     --rootdir=/workspace \
     -p no:cacheprovider \
     --run-integration \
     "--integration-backend=${backend}" \
-    ${INTEGRATION_PYTEST_ARGS:-}
+    -W 'ignore:distutils Version classes are deprecated:DeprecationWarning' \
+    -W 'ignore:The copy keyword is deprecated:Warning' \
+    -W 'ignore:ReleaseExecute failed with exception:UserWarning' \
+    ${INTEGRATION_PYTEST_ARGS:-} || pytest_status=$?
+
+if (( pytest_status != 0 )) && [[ -n "${connect_log}" && -f "${connect_log}" ]]; then
+    echo "Spark Connect server output (last 200 lines):" >&2
+    tail -n 200 "${connect_log}" >&2
+fi
+
+exit "${pytest_status}"

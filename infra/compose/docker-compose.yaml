@@ -161,6 +161,9 @@ services:
       - type: bind
         source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
         target: /workspace/.pytest-workspace-tmp/integration
+      - type: volume
+        source: spark-connect-ivy35
+        target: /root/.ivy2
 
   structure-integration-spark-connect40:
     image: structure-integration-pyspark40
@@ -192,3 +195,10 @@ services:
       - type: bind
         source: ${STRUCTURE_ROOT:-../..}/.pytest-workspace-tmp/integration
         target: /workspace/.pytest-workspace-tmp/integration
+      - type: volume
+        source: spark-connect-ivy40
+        target: /root/.ivy2
+
+volumes:
+  spark-connect-ivy35:
+  spark-connect-ivy40:

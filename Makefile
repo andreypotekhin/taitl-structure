@@ -14,7 +14,7 @@ TEST_ROOTS := tests
 PYTHON_ROOTS := $(SOURCE_ROOTS) $(EXAMPLE_ROOTS) $(TEST_ROOTS)
 TYPE_ROOTS := src examples tests
 
-.PHONY: all help install update format lint type test golden differential metamorphic concepts rigidity check build compose-env integration clean
+.PHONY: all help install update format lint type test golden differential metamorphic concepts rigidity check build compose-env integration integration-rebuild integration-down clean
 
 all: check build
 
@@ -33,6 +33,8 @@ help:
 	@echo "  make check      Run lint, type, tests"
 	@echo "  make build      Run checks and build the package"
 	@echo "  make integration Run live Docker Compose integration tests"
+	@echo "  make integration-rebuild Rebuild integration images, then run live tests"
+	@echo "  make integration-down Stop integration services while preserving dependency caches"
 	@echo "  make build INTEGRATION=1 Run checks, package build, then integration tests"
 	@echo "  make clean      Remove local build and tool caches"
 
@@ -85,6 +87,12 @@ compose-env:
 
 integration: compose-env
 	$(PYTHON) scripts/run_integration.py --backend $(BACKEND)
+
+integration-rebuild: compose-env
+	$(PYTHON) scripts/run_integration.py --backend $(BACKEND) --build
+
+integration-down: compose-env
+	$(PYTHON) scripts/run_integration.py --down
 
 clean:
 	$(PYTHON) -c "import pathlib, shutil; [shutil.rmtree(pathlib.Path(p), ignore_errors=True) for p in '.venv .mypy_cache .pytest_cache dist build'.split()]; [shutil.rmtree(p, ignore_errors=True) for p in pathlib.Path('.').glob('*.egg-info')]"

@@ -70,6 +70,24 @@ the relational core is stable.
 Unsupported active-target requirements must fail before execution or generation. Multi-target compatibility
 checks may report non-active target issues as unsupported, degraded, opaque, or unknown.
 
+## v5 Platform Migration
+
+M10 replaces the shared-source alternative-backend direction with one target platform per transform. This is a planned
+breaking v5 boundary, not a reinterpretation of released configuration. The v5 Platform API makes each target own its
+DSL, schema extensions, semantic checks, lowering, and runtime values; Core retains workflow orchestration and public
+artifact/diagnostic contracts. No v5 compatibility promise exists between transforms authored for different platforms.
+
+At v5 release, `target_backend`, `target_profile`, and `target_variant` are removed. Their replacement is
+`platform.default`, `platform.disabled_distributions`, and a target-owned `platform.<name>` table, as specified in
+[PlatformConfiguration.md](PlatformConfiguration.md). The bundled PySpark values move to
+`platform.pyspark.profile` and `platform.pyspark.variant`. The v5 migration guide must include this mapping and must
+fail legacy keys with an actionable configuration diagnostic rather than silently guessing how to translate them.
+
+The platform boundary also changes direct execution from `StructureSession(spark=...)` to
+`StructureSession(runtime=..., context=..., config=...)`. The selected plugin validates the supplied runtime. Generated
+artifacts are compatible only with their recorded platform identity, plugin version, and negotiated Platform API
+version; users rebuild artifacts after any incompatible change.
+
 ## Spark Connect Scope
 
 Spark Connect is a PySpark target variant, not a separate backend id. The configuration shape is:

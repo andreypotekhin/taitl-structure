@@ -17,10 +17,12 @@ mutually supported Platform API version, and assemble a Core-owned artifact thro
 - One platform plugin and a versioned `PlatformAPI` façade with focused service facets.
 - Metadata-only package entry-point discovery and distribution disabling.
 - Duplicate platform-name, incomplete-plugin, load-failure, and incompatible-version diagnostics.
-- Target resolution for configuration, programmatic overrides, `@transform`, projects, and pipelines.
+- Versioned platform configuration, target resolution for configuration, programmatic overrides, `@transform`,
+  projects, and pipelines.
 - Core artifact envelopes, plugin identity, negotiated version, cache-key changes, and opaque payloads.
 - Core schema, compiler, capability, execution, generation, and serialization service-facet boundaries.
-- Private target-local engine-replacement manifest validation, engine-suite revisioning, and output-boundary checks.
+- Default-denied class injection, global `plugin_options = "allow_injection"` opt-in, private engine-manifest
+  validation, engine-suite revisioning, and output-boundary checks.
 
 ### Out of Scope
 
@@ -36,10 +38,11 @@ mutually supported Platform API version, and assemble a Core-owned artifact thro
 
 - Discovery does not import plugin modules until a target or capability query selects them.
 - Both API downgrade directions and non-overlapping ranges are covered by tests.
+- Platform configuration has deterministic table-merge, distribution-disablement, and target-resolution behavior.
 - A transform resolves exactly one target and a cross-target pipeline fails before Platform API service facets run.
 - Core workflows run against a fake v1 platform façade without knowing the opaque payload type.
-- A compatible replacement engine is constructed only for its selected target; incompatible engine manifests fail
-  activation without stock-engine fallback.
+- A replacement engine is never resolved or constructed by default. The global opt-in enables it only for its selected
+  target; incompatible engine manifests fail activation without stock-engine fallback.
 - `make build` passes.
 
 ## Progress

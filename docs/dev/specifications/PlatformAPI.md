@@ -13,8 +13,9 @@ and opaque runtime values. Structure makes no portability promise between platfo
 ## Scope
 
 This specification defines the public v1 API definitions, one-plugin discovery model, negotiated `PlatformAPI` façade,
-its focused service facets, compiler request/result boundary, and capability reporting. It also defines the public
-limits that keep this API small.
+its focused service facets, workflow request/result boundaries, and capability reporting. It also defines the public
+limits that keep this API small. Platform configuration and target-resolution precedence are specified separately in
+[PlatformConfiguration.md](PlatformConfiguration.md).
 
 Private Core engine replacement is not part of this specification. Its compatibility gate and manifest are intentionally
 private and are described only in `docs/dev/design/PlatformCallbackArchitecture.md`.
@@ -25,8 +26,16 @@ A plugin distribution exposes exactly one plugin through one unversioned Python 
 `structure.platform`. The entry-point name is the short user-facing platform name, such as `pyspark` or `iterable`.
 Discovery reads package metadata before importing the plugin implementation.
 
+A platform name is an ASCII lowercase identifier matching `[a-z][a-z0-9-]*`. It is case-sensitive and must be used
+unchanged in the entry point, descriptor, `@transform(target=...)`, and configuration. This deliberately keeps a
+platform table addressable as `platform.<name>` in TOML and prevents aliases from obscuring duplicate detection.
+
 The plugin exposes a `PlatformDescriptor` with platform name, display name, distribution identity, plugin version, and
 inclusive minimum/maximum Platform API versions. It then supplies one `PlatformAPI` façade for a requested version.
+
+Core validates that the descriptor's platform name equals the entry-point name and that its normalized distribution
+identity equals the distribution that supplied the entry point. A mismatch is a plugin compatibility error; Core must
+not make a plugin reachable through an alias. The descriptor must be readable without global target activation.
 
 Core selects the highest version in the overlap of its range and the selected plugin's range. No overlap, a façade
 for an unadvertised version, or a façade missing a required facet fails target activation before compilation or
@@ -90,6 +99,47 @@ The schema facet validates platform field ownership and materializes target sche
 facet returns lifecycle capabilities plus target-defined inspection records. Execution validates a duck-typed runtime
 and evaluates an opaque payload. Generation returns content only; Core owns file writes. Serialization encodes and
 decodes only opaque payloads; Core owns the outer artifact envelope and persistence.
+
+## Facet Boundaries
+
+Every public v1 request and result model is immutable. Requests contain Core-owned facts plus opaque platform values
+previously returned by the same negotiated façade. Results may contain opaque values, but every diagnostic and
+capability record uses the standard Core model. A plugin must not require callers to import its implementation package
+to construct a request.
+
+The required schema facet accepts a schema declaration and selected-platform context, validates field ownership, and
+returns a normalized Core schema plus an opaque materialization payload. It must reject a foreign platform field before
+the compiler facet starts.
+
+The required compiler facet accepts `CompileRequest` and returns `PlatformCompilation`. `CompileRequest` contains the
+discovered transform, normalized Core schemas, resolved target name, target constraints, immutable selected-plugin
+configuration, and source locations. `PlatformCompilation` contains an opaque lowered payload, optional opaque
+analysis payload, deterministic fingerprint material, diagnostics, and target traceability facts. Fingerprint material
+must be deterministic for equal semantic source and configuration and must not contain runtime object identities.
+
+The required capabilities facet accepts the resolved target and immutable platform configuration. It returns semantic
+capability records and lifecycle availability for execution, generation, and serialization. It must not inspect a live
+runtime or compile a transform merely to answer a capability query.
+
+When present, the execution facet accepts an opaque compiled payload, normalized Core inputs, a caller-owned opaque
+runtime, optional caller context, and execution options. It validates runtime suitability and returns the target output
+inside the Core result boundary. It never starts a global session or owns external resource lifecycle.
+
+When present, the generation facet accepts an opaque compiled payload and Core-owned generation metadata, then returns
+an immutable collection of relative paths and file contents. Paths must be relative, normalized, unique, and remain
+inside the Core-selected generated root. Core preflights every result and performs all writes atomically only after all
+selected facets succeed.
+
+When present, the serialization facet encodes and decodes only opaque platform payloads. It receives the recorded
+Platform API version and a plugin-private payload version, and returns deterministic bytes or immutable data plus that
+payload version. Core owns checksums, envelope framing, storage paths, plugin identity checks, and recovery diagnostics.
+The facet must reject a payload version it cannot decode rather than attempting an implicit upgrade.
+
+An artifact envelope records the platform name, normalized plugin distribution identity, plugin version, negotiated API
+version, selected platform configuration, payload version, Core schema/input/output metadata, diagnostics,
+traceability, and semantic/cache fingerprints. Execution, generation, and decoding must reject an envelope whose
+platform, distribution, plugin version, API version, or effective engine identity does not match the selected target;
+the safe remedy is to install the recorded plugin version or rebuild the artifact.
 
 ## API Containment Rules
 

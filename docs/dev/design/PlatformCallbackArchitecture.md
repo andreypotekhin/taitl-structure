@@ -123,7 +123,8 @@ plugin does not supply an instance or a public factory. The replacement may subc
 the stock concrete engine, but it must return the same public artifacts, results, reports, schemas, and serialized
 envelopes as the stock engine.
 
-The replacement applies only after its platform is selected and only to that workflow. Thus a project compiling a
+The replacement applies only after its platform is selected, its compatibility is verified, and Core finds the global
+`platform.plugin_options = "allow_injection"` opt-in. It applies only to that workflow. Thus a project compiling a
 PySpark transform and an iterable transform can use different engine classes without global mutable state. The
 distribution name is relevant to discovery and duplicate-id diagnostics only; the replacement is selected by the
 resolved platform name and its unique selected plugin.
@@ -133,6 +134,12 @@ resolved platform name and its unique selected plugin.
 Private engine replacement is intentionally stricter than public Platform API compatibility. It does not participate in
 Platform API downgrade negotiation. A plugin with a replacement manifest declares both a normal package dependency on
 Structure and the manifest's `requires_structure` range plus `core_engine_revision` token.
+
+Class injection is disabled by default. The global Structure configuration setting
+`platform.plugin_options = "allow_injection"` is the sole v5 opt-in and applies to any selected plugin; it is not a
+platform-specific setting. Before resolving a replacement class, Core requires that value and otherwise fails the
+requested transform with a diagnostic naming the plugin and explaining that class injection is disabled by default.
+The diagnostic shows the exact setting and advises users to enable it only for trusted plugins.
 
 `core_engine_revision` represents the complete current suite of private engine contracts, including the current private
 base classes and `EngineContext`. Structure changes it only when those contracts change. This catches the unsafe hybrid

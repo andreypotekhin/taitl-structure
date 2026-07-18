@@ -1,7 +1,7 @@
 # Local Integration Infrastructure
 
-This directory contains the Docker Compose stack for Structure integration tests. The default stack starts every
-currently claimed PySpark backend version at the same time, with distinct services and host ports.
+This directory contains the Docker Compose stack for Structure integration tests. A run starts only the Spark version
+needed by its selected backend and leaves that local service available for the next run.
 
 ## Environment
 
@@ -19,7 +19,7 @@ Run the full matrix:
 
     make integration
 
-Run one backend's test selection against the all-version stack:
+Run one backend's test selection:
 
     make integration BACKEND=pyspark35
     make integration BACKEND=pyspark40
@@ -28,6 +28,12 @@ Run one backend's test selection against the all-version stack:
 
 The Spark Connect lanes are experimental. They start the Spark Connect gateway inside the test runner container and do
 not add separate Connect services to the Compose stack.
+
+The test runner is removed after every run, while the Spark master/worker services and the versioned Spark Connect Ivy
+caches are retained locally. This avoids repeat image builds, Spark startup, and Spark Connect dependency downloads.
+Use `make integration-rebuild` after changing a Compose image, and `make integration-down` to stop the retained
+services without deleting the dependency caches. Docker's normal `docker compose ... down -v` removes those caches and
+forces the Spark Connect dependencies to download again.
 
 Include integration tests after the ordinary build:
 

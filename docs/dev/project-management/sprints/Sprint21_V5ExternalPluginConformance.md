@@ -20,7 +20,8 @@ Core implementation modules.
 - Opaque-plan serialization service facets and Core-owned envelope round trips.
 - Installed-plugin eligibility, distribution disabling, duplicate-platform-name diagnostics, and vendor-owned platform
   DSL imports.
-- Private engine-manifest compatibility evidence, without publicizing the private engine extension.
+- Default-denied class-injection and private engine-manifest compatibility evidence, without publicizing the private
+  engine extension.
 
 ### Out of Scope
 
@@ -37,7 +38,8 @@ Core implementation modules.
 - Tests build and install the fixture wheel in isolation and discover it through distribution metadata.
 - The fixture imports only public Core and Platform API packages.
 - API negotiation, execution, serialization, disablement, and conflict behavior pass through real entry points.
-- The fixture proves that a rejected private engine manifest fails its selected target rather than falling back.
+- The fixture proves that injection is blocked without the global opt-in and that a rejected private engine manifest
+  fails its selected target rather than falling back.
 - The conformance kit produces actionable failures for incomplete or inconsistent plugins.
 - `make build` passes.
 

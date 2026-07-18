@@ -343,7 +343,7 @@ Run the full local backend matrix:
 make integration
 ```
 
-Run one backend's test selection against the all-version stack:
+Run one backend's test selection:
 
 ```text
 make integration BACKEND=pyspark35
@@ -351,6 +351,11 @@ make integration BACKEND=pyspark40
 make integration BACKEND=spark-connect35
 make integration BACKEND=spark-connect40
 ```
+
+Integration runs retain the selected local Spark master/worker services and the versioned Spark Connect dependency
+caches; only the disposable test runner is removed. This makes repeated focused runs fast without sharing test process
+state. Run `make integration-rebuild` after changing the integration image, or `make integration-down` to stop the
+services while preserving those caches.
 
 Run integration tests after the ordinary build:
 
@@ -360,7 +365,7 @@ make build INTEGRATION=1
 
 The Compose stack is defined in `infra/compose/docker-compose.yaml`. Local values are stored in
 `infra/compose/.env`, created automatically from the tracked `infra/compose/.env_example` when missing. The full stack
-starts the currently claimed PySpark backend versions at the same time on distinct services and ports.
+starts the selected PySpark backend version on distinct services and ports.
 
 The current matrix covers ordinary PySpark 3.5/4.0 and Spark Connect over PySpark 3.5/4.0. Spark Connect lanes start
 the Connect gateway inside the runner container instead of adding separate Compose services.

@@ -13,21 +13,29 @@ COMPOSE = ROOT / "infra" / "compose" / "docker-compose.yaml"
 ENV = ROOT / "infra" / "compose" / ".env"
 WORKSPACE_TMP = ROOT / ".pytest-workspace-tmp" / "integration"
 BACKENDS = ("pyspark35", "pyspark40", "spark-connect35", "spark-connect40")
-SERVICES = ("spark35-master", "spark35-worker", "spark40-master", "spark40-worker")
+SERVICES = {
+    "pyspark35": ("spark35-master", "spark35-worker"),
+    "spark-connect35": ("spark35-master", "spark35-worker"),
+    "pyspark40": ("spark40-master", "spark40-worker"),
+    "spark-connect40": ("spark40-master", "spark40-worker"),
+}
 
 
 def main() -> None:
     args = parse()
     ensure_compose_env()
+    if args.down:
+        run("down", "--remove-orphans")
+        return
+
     WORKSPACE_TMP.mkdir(parents=True, exist_ok=True)
     backends = BACKENDS if args.backend == "all" else (args.backend,)
 
-    try:
-        run("up", "-d", "--build", *SERVICES)
-        for backend in backends:
-            run("run", "--rm", f"structure-integration-{backend}")
-    finally:
-        run("down", "--remove-orphans", check=False)
+    build = ("--build",) if args.build else ()
+    run("up", "-d", *build, *_services(backends))
+    for backend in backends:
+        print(f"\n=== Structure integration: {backend} ===", flush=True)
+        run("run", "--rm", f"structure-integration-{backend}")
 
 
 def parse() -> argparse.Namespace:
@@ -35,7 +43,21 @@ def parse() -> argparse.Namespace:
         description="Run Structure integration tests against local Compose infrastructure."
     )
     parser.add_argument("--backend", choices=("all", *BACKENDS), default="all")
+    parser.add_argument(
+        "--build",
+        action="store_true",
+        help="Rebuild integration images before running tests.",
+    )
+    parser.add_argument(
+        "--down",
+        action="store_true",
+        help="Stop the local integration services without deleting their named caches.",
+    )
     return parser.parse_args()
+
+
+def _services(backends: tuple[str, ...]) -> tuple[str, ...]:
+    return tuple(dict.fromkeys(service for backend in backends for service in SERVICES[backend]))
 
 
 def run(*args: str, check: bool = True) -> None:
