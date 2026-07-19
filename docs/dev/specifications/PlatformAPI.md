@@ -96,9 +96,9 @@ opaque
 payloads but does not inspect them to infer target semantics.
 
 The schema facet validates platform field ownership and materializes target schema representations. The capabilities
-facet returns lifecycle capabilities plus target-defined inspection records. Execution validates a duck-typed runtime
-and evaluates an opaque payload. Generation returns content only; Core owns file writes. Serialization encodes and
-decodes only opaque payloads; Core owns the outer artifact envelope and persistence.
+facet resolves the target-defined capability model for an explicit profile and variant. Execution validates a duck-typed
+runtime and evaluates an opaque payload. Generation returns content only; Core owns file writes. Serialization encodes
+and decodes only opaque payloads; Core owns the outer artifact envelope and persistence.
 
 ## Facet Boundaries
 
@@ -117,9 +117,13 @@ configuration, and source locations. `PlatformCompilation` contains an opaque lo
 analysis payload, deterministic fingerprint material, diagnostics, and target traceability facts. Fingerprint material
 must be deterministic for equal semantic source and configuration and must not contain runtime object identities.
 
-The required capabilities facet accepts the resolved target and immutable platform configuration. It returns semantic
-capability records and lifecycle availability for execution, generation, and serialization. It must not inspect a live
-runtime or compile a transform merely to answer a capability query.
+The required capabilities facet resolves a semantic capability model from a target profile and variant:
+
+    class CapabilitiesAPI(Protocol):
+        def resolve(self, *, profile: str, variant: str) -> BackendCapabilities: ...
+
+The returned model answers typed `CapabilityRequirement` queries. It must not inspect a live runtime or compile a
+transform merely to answer a capability query.
 
 When present, the execution facet accepts an opaque compiled payload, normalized Core inputs, a caller-owned opaque
 runtime, optional caller context, and execution options. It validates runtime suitability and returns the target output

@@ -76,6 +76,7 @@ structure/core/[component]/
       Usage: `Compiler.frontend.compile()` returns a new `CompileTransform` command.
   - commands/ - action-oriented command classes called from endpoint methods.
     Ex: `CompileTransform` implements frontend compilation.
+    Commands are created/invoked only through api facade endpoints - not directly.
       Usage: `Compiler.frontend.compile()(TransformClass)`.
   - model/ - public app model exposed by endpoint parameters, return types, or API exports.
   - logic/ - app-private implementation classes used by commands and models.

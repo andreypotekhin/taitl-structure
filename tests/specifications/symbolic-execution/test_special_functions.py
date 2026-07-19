@@ -4,7 +4,7 @@ import pytest
 
 from structure import *
 from structure.core.compiler.api import Compiler
-from structure.core.target.pyspark.api import PySpark
+from structure.platform.pyspark.api import PySpark
 
 
 class Raw(Schema):

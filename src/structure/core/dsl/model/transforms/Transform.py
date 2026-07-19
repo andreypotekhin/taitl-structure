@@ -137,9 +137,10 @@ class Transform:
     ):
         from structure.core.cli.commands.DiscoverStructureProject import DiscoverStructureProject
         from structure.core.compiler.artifacts.model import CompilerOptions, GeneratedTransform
+        from structure.core.compiler.artifacts.storage import DiskStorage
         from structure.core.configuration.model.StructureConfig import StructureConfig
-        from structure.core.target.pyspark.api import PySpark
-        from structure.core.target.pyspark.storage import DiskStorage
+        from structure.core.platforms.api.Platform import Platform
+        from structure.platform.api.v1.GenerationRequest import GenerationRequest
 
         resolved = CompilerOptions.resolve(
             options,
@@ -166,15 +167,20 @@ class Transform:
             transform_artifact = (
                 artifact if transform is cls else transform.compile(resolved, schema_types=schema_types, force=force)
             )
-            plans[f"{transform.__module__}.{transform.__name__}"] = transform_artifact.pyspark_plan
+            plans[f"{transform.__module__}.{transform.__name__}"] = transform_artifact.payload
             fingerprints[f"{transform.__module__}.{transform.__name__}"] = transform_artifact.semantic_fingerprint
-        files = PySpark.render.project().source_unit(
-            plans,
-            source_module=source_unit,
-            source_schema_modules=project.schema_modules,
-            generated_package=resolved.generated_package,
-            semantic_fingerprints=fingerprints,
-            generated_code_options=resolved.generated_code_options,
+        platform = Platform.registry().select(resolved.target_backend)
+        if platform.api.generator is None:
+            raise ValueError(f"PLATFORM-E2709: Platform {resolved.target_backend!r} does not provide generation.")
+        files = platform.api.generator.generate(
+            GenerationRequest(
+                payload=plans,
+                source_module=source_unit,
+                source_schema_modules=project.schema_modules,
+                generated_package=resolved.generated_package,
+                semantic_fingerprints=fingerprints,
+                generated_code_options=resolved.generated_code_options,
+            )
         )
         target = storage or DiskStorage(resolved.generated_dir)
         result = target.write(files)

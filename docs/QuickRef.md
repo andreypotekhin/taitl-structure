@@ -1,6 +1,6 @@
 # Quick Reference
 
-For exhaustive supported APIs, PySpark parity names, examples, and semantic differences, see the
+For exhaustive referemce on supported APIs, PySpark parity, examples and semantic differences, see the
 [API reference](reference/API.ref.md): [schemas](api/Schemas.api.md), [transforms](api/Transforms.api.md),
 [expressions](api/Expressions.api.md), [joins](api/Joins.api.md), [aggregations](api/Aggregations.api.md),
 [windows](api/Windows.api.md), [collections](api/Collections.api.md), and [streaming](api/Streaming.api.md).
@@ -26,11 +26,11 @@ class OrderWithCustomer(OrderRaw):
     customer_name = string(nullable=True)
 ```
 
-Use schema classes for inputs and outputs of the Transforms (next). 
+The schema classes are used for inputs and outputs of the Transforms (next). 
 
-Inheritance allows to for schema reuse, while avoiding repeat declarations.
+Inheritance allows to reuse schemas and avoid repeat declarations of fields.
 
-Use `alias=` when the Spark DataFrame column is not a Python identifier.
+Use `alias=` when the Spark DataFrame column is not a valid Python identifier.
 
 Reference: [schemas API](api/Schemas.api.md), [schema declaration syntax](reference/Schema.ref.md),
 [schema semantics](reference/Schema.ref.md), and
@@ -51,9 +51,9 @@ class NormalizeOrders(Transform):
           total=to_decimal(order.total, precision=12, scale=2))        
 ```
 
-A 'step method' is transform method that receives and returns a schema class(es), like the `normalize` method above. A transform may have multiple step methods, which are executed in the order of their declaration.
+A 'step method' is transform method that receives and returns schema classes, like the `normalize` method above. A transform class may have multiple step methods, which are executed in the order of declaration.
 
-Run the transform:
+Running the transform:
 
 ```python
 session = StructureSession(spark=spark)
@@ -65,9 +65,9 @@ result = NormalizeOrders(
 normalized_df = result.normalized
 ```
 
-Invocation of run() method compiles transform and invokes its steps methods. 
+The run() method compiles the transform and invokes its steps methods. 
 
-Transform classes may inherit from other Transform classes. In such case, parent transforms execute first:
+Transforms may subclass other Transforms. In such case, parent transforms execute first:
 
 ```python
 class NormalizeBase(Transform):
@@ -84,18 +84,18 @@ class PublishOrders(NormalizeBase):
         ...
 ```
 
-Parent transform step methods run before child transform step methods. Multiple parents are allowed: their step methods run in the declared order, left to right. A step method override in child transform can call parent implementation: `super().normalize(order)`, `Base.normalize(self, order)`, or
+Parent transform step methods run before child transform step methods. Multiple parents are allowed: their step methods run in the declared order (left to right). A step method override in child transform can call parent implementation: `super().normalize(order)`, `Base.normalize(self, order)`, or
 `super(Base, self).normalize(order)`.
 
-Step methods do not call other step methods directly; attempt to do so, except for the override case above, will result in error. 
+Step methods do not call other step methods directly. Attempt to do so, except for the override as shown above, will result in error. 
 
 Reference: [transforms API](api/Transforms.api.md), [DSL](background/DSL.back.md),
 [execution](background/Execution.back.md), and
 [transform inheritance and composition](background/DSL.back.md).
 
-## Inputs
+## Inputs/Outputs
 
-Inputs are named class attributes that correspond to PySpark DataFrames
+Inputs are Transform fields that correspond to input (consumed) DataFrames.
 
 ```python
 orders = input(OrderRaw)
@@ -114,13 +114,14 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
     ...
 ```
 
+Outputs are Transform fields that correspond to produced (output) DataFrames.
+
 Reference: [transforms API](api/Transforms.api.md), [DSL inputs](background/DSL.back.md), and
 [source module rules](background/PySparkCodeGeneration.back.md).
 
 ## Lanes
 
-Intermediate lanes can be declared to for funnel
-stages and branching. Most transforms don't need lanes.
+Intermediate lanes can be added to carry or branch processing stages. Most transforms don't need lanes.
 
 ```python
 orders_raw = input(OrderRaw)
@@ -129,8 +130,8 @@ orders_rejected = lane(OrderRaw)
 published = output(OrderEnriched)
 ```
 
-The compiler infers input and lane sources from parameter types. If that cannot be done (as with
-`orders_raw`/`orders_rejected` above), bind the result with `@step(...)`:
+The compiler infers input and lane sources from step method parameter types. If that cannot be done (as with
+`orders_raw`/`orders_rejected` above), disambiguate with `@step(...)` decorator:
 
 ```python
 @step(output=orders_rejected)

@@ -1,11 +1,14 @@
 from dataclasses import dataclass
+from typing import Any, cast
 
 from structure import Transform, transform
 from structure.core.compiler.artifacts.commands import GeneratePlatformArtifact, SerializePlatformArtifact
-from structure.core.platform import PlatformConfiguration, PlatformRegistry
+from structure.core.platforms.api import Platform
+from structure.core.platforms.model.PlatformConfiguration import PlatformConfiguration
 from structure.core.runtime.execution.commands import ExecutePlatformArtifact
+from structure.core.target.capabilities.model.BackendCapabilities import BackendCapabilities
 from structure.platform.api import PlatformDescriptor
-from structure.platform.api.v1 import PlatformAPI, PlatformCompilation
+from structure.platform.api.v1 import ExecutionRequest, GenerationRequest, PlatformAPI, PlatformCompilation
 
 
 @transform(target="fake")
@@ -34,12 +37,15 @@ class Compiler:
 
 class Facet:
     def materialize(self, schema): return schema
-    def supports(self, capability): return True
+    def build(self, request): return request.payload
+    def read(self, request): return request.schema
+    def source(self, schema, *, to): return schema
+    def resolve(self, *, profile, variant): return cast(BackendCapabilities, object())
 
 
 class Executor:
-    def execute(self, payload, runtime):
-        return runtime[payload]
+    def execute(self, request: ExecutionRequest):
+        return cast(Any, request.runtime)[request.payload]
 
 
 class Serializer:
@@ -48,7 +54,7 @@ class Serializer:
 
 
 class Generator:
-    def generate(self, payload): return {"generated/module.py": "content"}
+    def generate(self, request: GenerationRequest): return {"generated/module.py": "content"}
 
 
 class Plugin:
@@ -58,7 +64,7 @@ class Plugin:
 
 def test_core_artifact_preserves_plugin_identity_without_inspecting_payload() -> None:
     artifact = FakeTransform.compile(
-        platform_registry=PlatformRegistry(lambda: [Entry()]),
+        platform_registry=Platform.registry(lambda: [Entry()]),
         platform_configuration=PlatformConfiguration.resolve({"platform": {"fake": {"profile": "test"}}}),
     )
 
@@ -69,7 +75,7 @@ def test_core_artifact_preserves_plugin_identity_without_inspecting_payload() ->
 
 def test_core_execution_routes_the_opaque_payload_only_after_identity_validation() -> None:
     configuration = PlatformConfiguration.resolve({"platform": {"fake": {}}})
-    registry = PlatformRegistry(lambda: [Entry()])
+    registry = Platform.registry(lambda: [Entry()])
     artifact = FakeTransform.compile(platform_registry=registry, platform_configuration=configuration)
 
     assert ExecutePlatformArtifact(registry)(artifact, configuration=configuration, runtime={artifact.payload: "done"}) == "done"
@@ -77,7 +83,7 @@ def test_core_execution_routes_the_opaque_payload_only_after_identity_validation
 
 def test_core_serialization_preserves_the_artifact_envelope() -> None:
     configuration = PlatformConfiguration.resolve({"platform": {"fake": {}}})
-    registry = PlatformRegistry(lambda: [Entry()])
+    registry = Platform.registry(lambda: [Entry()])
     artifact = FakeTransform.compile(platform_registry=registry, platform_configuration=configuration)
 
     decoded = SerializePlatformArtifact(registry).decode(artifact, b"payload", configuration=configuration)
@@ -88,7 +94,7 @@ def test_core_serialization_preserves_the_artifact_envelope() -> None:
 
 def test_core_generation_returns_content_without_writing_files() -> None:
     configuration = PlatformConfiguration.resolve({"platform": {"fake": {}}})
-    registry = PlatformRegistry(lambda: [Entry()])
+    registry = Platform.registry(lambda: [Entry()])
     artifact = FakeTransform.compile(platform_registry=registry, platform_configuration=configuration)
 
     assert GeneratePlatformArtifact(registry)(artifact, configuration=configuration) == {"generated/module.py": "content"}

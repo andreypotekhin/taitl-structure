@@ -4,16 +4,14 @@ import ast
 import inspect
 from pathlib import Path
 
-from structure.core.compiler.compileability.streaming_compatibility.commands.ClassifyStreamingCompatibility import (
-    ClassifyStreamingCompatibility,
-)
 from structure.core.dsl.model.expr import expressions
 from structure.core.dsl.model.transforms import operations
-from structure.core.runtime.execution.online.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
-from structure.core.target.capabilities.logic.rules.PySparkCapabilityRules import COMMON_CAPABILITIES
-from structure.core.target.pyspark.commands.RenderPySparkExpression import RenderPySparkExpression
-from structure.core.target.pyspark.commands.RenderPySparkTransformModule import RenderPySparkTransformModule
-from structure.core.target.pyspark.logic.mapping.PySparkExpressionMapper import PySparkExpressionMapper
+from structure.platform.pyspark.capabilities.PySparkCapabilityRules import COMMON_CAPABILITIES
+from structure.platform.pyspark.commands.ClassifyStreamingCompatibility import ClassifyStreamingCompatibility
+from structure.platform.pyspark.commands.RenderPySparkExpression import RenderPySparkExpression
+from structure.platform.pyspark.commands.RenderPySparkTransformModule import RenderPySparkTransformModule
+from structure.platform.pyspark.execution.online.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
+from structure.platform.pyspark.logic.mapping.PySparkExpressionMapper import PySparkExpressionMapper
 
 
 def test_generated_and_online_transform_expression_dispatch_are_identical() -> None:

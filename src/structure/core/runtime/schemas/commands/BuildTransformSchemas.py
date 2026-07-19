@@ -1,26 +1,17 @@
-from __future__ import annotations
-
-from types import MappingProxyType
+from typing import cast
 
 from structure.core.runtime.schemas.model.TransformSchemas import TransformSchemas
-from structure.core.target.pyspark.api import PySpark
-from structure.core.target.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.platform.api.v1.TransformSchemaRequest import TransformSchemaRequest
 
 
 class BuildTransformSchemas:
+    def __call__(self, payload: object, *, types=None) -> TransformSchemas:
+        target = getattr(getattr(payload, "backend", None), "name", None)
+        if not isinstance(target, str):
+            raise ValueError("PLATFORM-E2708: Schema materialization requires a platform-owned payload.")
+        from structure.core.platforms.api.Platform import Platform
 
-    def __call__(self, plan: PySparkExecutionPlan, *, types=None) -> TransformSchemas:
-        materialize = PySpark.schema.materialize()
-        inputs = {input.name: materialize(input.schema, types=types) for input in plan.inputs}
-        steps = {step.name: materialize(step.output_schema, types=types) for step in plan.steps}
-        outputs = {output.name: materialize(output.output_schema, types=types) for output in plan.outputs}
-        output_aliases = {output.name: output.aliases for output in plan.outputs if output.aliases}
-        return TransformSchemas(
-            inputs=MappingProxyType(inputs),
-            steps=MappingProxyType(steps),
-            outputs=MappingProxyType(outputs),
-            output_aliases=MappingProxyType(output_aliases),
+        return cast(
+            TransformSchemas,
+            Platform.registry().select(target).api.schema.build(TransformSchemaRequest(payload=payload, types=types)),
         )
-
-
-build_transform_schemas = BuildTransformSchemas()

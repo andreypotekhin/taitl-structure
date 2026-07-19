@@ -8,7 +8,7 @@ from structure.core.compiler.artifacts.model import CompiledTransform, CompilerO
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
-from structure.core.runtime.execution.api import Execution
+from structure.core.platforms.api.Platform import Platform
 from structure.core.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.core.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.core.runtime.session.model.TransformResult import TransformResult
@@ -16,6 +16,7 @@ from structure.core.sources.commands.DiscoverStructureSources import DiscoverStr
 from structure.core.sources.model.CompiledSources import CompiledSources
 from structure.core.sources.model.SourceTransformAddress import SourceTransformAddress
 from structure.core.sources.model.StructureSources import StructureSources
+from structure.platform.api.v1.ExecutionRequest import ExecutionRequest
 
 
 class StructureSession:
@@ -24,6 +25,7 @@ class StructureSession:
         self,
         *,
         spark=None,
+        runtime=None,
         ctx=None,
         config: StructureConfig | None = None,
         project_root: Path | str | None = None,
@@ -37,6 +39,8 @@ class StructureSession:
         storage=None,
         artifacts: CompiledArtifactPool | None = None,
     ) -> None:
+        if spark is not None and runtime is not None:
+            raise ValueError("Pass either runtime= or the legacy spark= argument, not both.")
         overrides = {
             "execution_mode": execution_mode,
             "target_backend": target_backend,
@@ -52,7 +56,8 @@ class StructureSession:
             )
 
         resolved = config or StructureConfig.resolve(project_root=project_root, overrides=supplied_overrides)
-        self.spark = spark
+        self.runtime = runtime if runtime is not None else spark
+        self.spark = self.runtime
         self.ctx = ctx
         self.config = resolved
         self.execution_mode = resolved.execution_mode
@@ -77,24 +82,26 @@ class StructureSession:
                 "StructureSession.run(...) requires a transform invocation or transform=python.module:Class."
             )
         artifact = self._compiled(invocation)
-        plan = artifact.pyspark_plan
         self._validate_inputs(invocation, artifact)
         schemas = artifact.schemas
         if schemas is None:
             raise RuntimeError("Runtime execution requires materialized transform schemas")
 
-        if self.execution_mode == "online":
-            result = Execution.online.pyspark()(invocation, plan, session=self)
-            return result._structure_with_schema(schemas.outputs, aliases=schemas.output_aliases)
-        if self.execution_mode == "generated":
-            result = Execution.generated.pyspark()(
-                invocation,
-                plan,
-                session=self,
+        platform = Platform.registry().select(self.target_backend)
+        if platform.api.executor is None:
+            raise self._invalid_mode(invocation)
+        result = platform.api.executor.execute(
+            ExecutionRequest(
+                payload=artifact.payload,
+                runtime=self,
+                invocation=invocation,
+                mode=self.execution_mode,
                 semantic_fingerprint=artifact.semantic_fingerprint,
             )
-            return result._structure_with_schema(schemas.outputs, aliases=schemas.output_aliases)
-        raise self._invalid_mode(invocation)
+        )
+        if not isinstance(result, TransformResult):
+            raise TypeError(f"Platform {self.target_backend!r} returned an invalid execution result.")
+        return result._structure_with_schema(schemas.outputs, aliases=schemas.output_aliases)
 
     def _compiled(self, invocation: Transform) -> CompiledTransform:
         return self.compile(invocation if isinstance(invocation, TransformPipeline) else type(invocation))

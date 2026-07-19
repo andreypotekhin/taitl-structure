@@ -244,7 +244,7 @@ management, and CLI orchestration. Platform plugins participate through one disc
 
 - Sprint 19: specify and implement discovery, plugin manifests, API negotiation, target resolution, Platform API
   contracts, and Core-owned artifact envelopes.
-- Sprint 20: refactor PySpark authoring, schema, compiler, execution, generation, and capability behavior behind the
+- +Sprint 20: refactor PySpark authoring, schema, compiler, execution, generation, and capability behavior behind the
   public Platform API while preserving current runtime and generated-code evidence.
 - Sprint 21: publish the external plugin author contract and conformance kit; build the internal finite-iterable wheel
   to prove real package discovery, execution, serialization, disabling, and isolation.

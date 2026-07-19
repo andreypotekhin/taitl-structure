@@ -6,8 +6,8 @@ import pytest
 
 from structure import *
 from structure.core.cli.commands.RenderExplainReport import render_explain_report
-from structure.core.target.pyspark.api import PySpark
-from structure.core.target.pyspark.logic.RenderEmbeddedHooks import EmbeddedHookError
+from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark.logic.RenderEmbeddedHooks import EmbeddedHookError
 
 
 class CacheRaw(Schema):

@@ -5,27 +5,28 @@ from pathlib import Path
 import click
 
 from structure.core.cli.commands.DiscoverStructureProject import DiscoverStructureProject
-from structure.core.cli.commands.RenderConfiguredPySparkProject import RenderConfiguredPySparkProject
+from structure.core.cli.commands.RenderConfiguredPlatformProject import RenderConfiguredPlatformProject
 from structure.core.cli.model.DiscoveredStructureProject import DiscoveredStructureProject
+from structure.core.compiler.artifacts.commands.CompareGeneratedFiles import CompareGeneratedFiles
+from structure.core.compiler.artifacts.commands.WriteGeneratedFiles import WriteGeneratedFiles
+from structure.core.compiler.artifacts.model.GeneratedFileSetResult import GeneratedFileSetResult
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.docs.api import Docs
-from structure.core.target.pyspark.api import PySpark
-from structure.core.target.pyspark.model.GeneratedFileSetResult import GeneratedFileSetResult
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry, render_diagnostic
 
 
 class CompileStructureProject:
 
     def __init__(self) -> None:
-        self._pyspark = RenderConfiguredPySparkProject()
+        self._platform = RenderConfiguredPlatformProject()
 
     def __call__(self, config: StructureConfig) -> tuple[str, ...]:
         project = DiscoverStructureProject()(config)
-        files = self._pyspark(config, project) | self._docs(config, project)
+        files = self._platform(config, project) | self._docs(config, project)
         result = (
             self._compare(config, files)
             if config.fail_on_diff
-            else PySpark.files.write()(files, root=config.generated_dir)
+            else WriteGeneratedFiles()(files, root=config.generated_dir)
         )
         return (
             "Structure compile passed",
@@ -42,7 +43,7 @@ class CompileStructureProject:
         return Docs.render.project()(config, project)
 
     def _compare(self, config: StructureConfig, files: dict[str, str]) -> GeneratedFileSetResult:
-        result = PySpark.files.compare()(
+        result = CompareGeneratedFiles()(
             files,
             root=config.generated_dir,
             ignore_prefixes=self._compare_ignore_prefixes(config),

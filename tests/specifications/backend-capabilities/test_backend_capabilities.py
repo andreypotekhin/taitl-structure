@@ -14,8 +14,8 @@ from structure.core.target.capabilities.api import (
     BackendCapabilityError,
     Capabilities,
     CapabilityRequirement,
-    PySparkCapabilities,
 )
+from structure.platform.pyspark.capabilities.PySparkCapabilityRules import PySparkCapabilities
 
 
 def test_default_pyspark_capabilities_do_not_import_pyspark() -> None:

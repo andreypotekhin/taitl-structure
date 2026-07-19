@@ -1,5 +1,5 @@
-from structure.core.runtime.execution.generated.api import GeneratedExecution
-from structure.core.runtime.execution.online.api import OnlineExecution
+from structure.core.runtime.execution.api.GeneratedExecution import GeneratedExecution
+from structure.core.runtime.execution.api.OnlineExecution import OnlineExecution
 
 
 class Execution:

@@ -2,7 +2,7 @@ import sys
 from dataclasses import dataclass
 
 from structure import *
-from structure.core.target.pyspark.api import PySpark
+from structure.platform.pyspark.api import PySpark
 
 
 @dataclass(frozen=True)

@@ -1,7 +1,7 @@
 import json
 
 from structure import *
-from structure.core.target.pyspark.api import PySpark
+from structure.platform.pyspark.api import PySpark
 
 
 def _source_schema_modules():

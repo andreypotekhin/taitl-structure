@@ -1,7 +1,8 @@
 import pytest
 
 from structure import Transform, transform
-from structure.core.platform import PlatformConfiguration, ResolvePlatformTarget
+from structure.core.platforms.api import Platform
+from structure.core.platforms.model.PlatformConfiguration import PlatformConfiguration
 
 
 @transform(target="fake")
@@ -29,7 +30,7 @@ def test_platform_tables_merge_and_list_values_replace() -> None:
 
 
 def test_target_resolution_prefers_declaration_then_explicit_then_default() -> None:
-    resolver = ResolvePlatformTarget()
+    resolver = Platform.resolve_target()
     configuration = PlatformConfiguration.resolve({"platform": {"default": "default"}})
 
     assert resolver(FakeTransform, configuration=configuration) == "fake"
@@ -38,7 +39,7 @@ def test_target_resolution_prefers_declaration_then_explicit_then_default() -> N
 
 
 def test_target_resolution_rejects_conflicts_missing_targets_and_cross_target_pipelines() -> None:
-    resolver = ResolvePlatformTarget()
+    resolver = Platform.resolve_target()
     empty = PlatformConfiguration.resolve({})
 
     with pytest.raises(ValueError, match="PLATFORM-E2703"):

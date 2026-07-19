@@ -61,7 +61,7 @@
       "dataclass_fields": [
         "key",
         "transform_plan",
-        "pyspark_plan",
+        "payload",
         "schemas",
         "semantic_fingerprint"
       ],
@@ -69,7 +69,7 @@
       "kind": "class",
       "module": "structure.core.compiler.artifacts.model.CompiledTransform",
       "qualname": "CompiledTransform",
-      "signature": "(key: 'CompileKey', transform_plan: 'TransformPlan', pyspark_plan: 'PySparkExecutionPlan', schemas: 'TransformSchemas | None', semantic_fingerprint: 'str') -> None"
+      "signature": "(key: 'CompileKey', transform_plan: 'TransformPlan', payload: 'object', schemas: 'TransformSchemas | None', semantic_fingerprint: 'str') -> None"
     },
     "CompilerOptions": {
       "dataclass_fields": [
@@ -101,7 +101,7 @@
       "dataclass_fields": [],
       "enum_members": [],
       "kind": "class",
-      "module": "structure.core.target.pyspark.storage.DiskStorage",
+      "module": "structure.platform.pyspark.storage.DiskStorage",
       "qualname": "DiskStorage",
       "signature": "(root: 'Path | str') -> 'None'"
     },
@@ -174,7 +174,7 @@
       "dataclass_fields": [],
       "enum_members": [],
       "kind": "class",
-      "module": "structure.core.target.pyspark.storage.MemoryStorage",
+      "module": "structure.platform.pyspark.storage.MemoryStorage",
       "qualname": "MemoryStorage",
       "signature": "() -> 'None'"
     },
@@ -192,7 +192,7 @@
       "dataclass_fields": [],
       "enum_members": [],
       "kind": "class",
-      "module": "structure.core.target.pyspark.storage.PackageImportStorage",
+      "module": "structure.platform.pyspark.storage.PackageImportStorage",
       "qualname": "PackageImportStorage",
       "signature": "(package: 'str') -> 'None'"
     },
@@ -314,7 +314,7 @@
       "kind": "class",
       "module": "structure.core.runtime.session.model.StructureSession",
       "qualname": "StructureSession",
-      "signature": "(*, spark=None, ctx=None, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, execution_mode: 'str | None' = None, target_backend: 'str | None' = None, target_profile: 'str | None' = None, target_variant: 'str | None' = None, generated_package: 'str | None' = None, schema_types=None, online_executor: 'Callable[..., object] | None' = None, storage=None, artifacts: 'CompiledArtifactPool | None' = None) -> 'None'"
+      "signature": "(*, spark=None, runtime=None, ctx=None, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, execution_mode: 'str | None' = None, target_backend: 'str | None' = None, target_profile: 'str | None' = None, target_variant: 'str | None' = None, generated_package: 'str | None' = None, schema_types=None, online_executor: 'Callable[..., object] | None' = None, storage=None, artifacts: 'CompiledArtifactPool | None' = None) -> 'None'"
     },
     "StructureSources": {
       "dataclass_fields": [

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
-from typing import Mapping
+from typing import Mapping, cast
 
-from structure.core.target.pyspark.logic.SparkConnectCompatibility import is_spark_connect_session
-from structure.core.tools.logic.maps.MapPySparkSchemaToStructureSource import MapPySparkSchemaToStructureSource
+from structure.core.platforms.api.Platform import Platform
+from structure.core.tools.logic.model.GeneratedSchemaSource import GeneratedSchemaSource
 from structure.core.tools.logic.render.RenderStructureSchemaSource import RenderStructureSchemaSource
 from structure.core.tools.logic.rules.ValidateSchemaToolRequest import ValidateSchemaToolRequest
-from structure.core.tools.model import StructureToolError
+from structure.platform.api.v1.SchemaInspectionRequest import SchemaInspectionRequest
 
 
 class GenerateStructureSchema:
@@ -33,57 +33,18 @@ class GenerateStructureSchema:
             options=options,
             to=to,
         )
-        schema = self._schema(
-            schema=schema,
-            from_path=from_path,
-            from_table=from_table,
-            format=format,
-            spark=spark,
-            session=session,
-            options=options,
+        target = getattr(session, "target_backend", "pyspark")
+        schema_api = Platform.registry().select(target).api.schema
+        schema = schema_api.read(
+            SchemaInspectionRequest(
+                schema=schema,
+                from_path=from_path,
+                from_table=from_table,
+                format=format,
+                runtime=spark if spark is not None else getattr(session, "runtime", None),
+                target_variant=getattr(session, "target_variant", None),
+                options=options,
+            )
         )
-        source = MapPySparkSchemaToStructureSource()(schema, to=to)
-        return RenderStructureSchemaSource()(source)
-
-    def _schema(
-        self,
-        *,
-        schema=None,
-        from_path: str | None,
-        from_table: str | None,
-        format: str | None,
-        spark=None,
-        session=None,
-        options: Mapping[str, str] | None,
-    ):
-        if schema is not None:
-            return getattr(schema, "schema", schema)
-
-        spark = spark if spark is not None else session.spark
-        if from_table is not None:
-            try:
-                return spark.table(from_table).schema
-            except Exception as error:
-                if is_spark_connect_session(session=session, spark=spark):
-                    raise self._spark_connect_error("table", from_table, error) from error
-                raise
-
-        reader = spark.read
-        if options:
-            reader = reader.options(**dict(options))
-        try:
-            return reader.format(format).load(from_path).schema
-        except Exception as error:
-            if is_spark_connect_session(session=session, spark=spark):
-                raise self._spark_connect_error("path", from_path, error) from error
-            raise
-
-    def _spark_connect_error(self, source: str, value: str | None, error: Exception) -> StructureToolError:
-        return StructureToolError(
-            f"StructureTools could not read schema from {source} {value!r} through Spark Connect. "
-            "Spark Connect metadata access must stay within APIs exposed by the remote session. "
-            "Pass schema=... with an explicit StructType, or run the tool with target_variant = \"ordinary\" "
-            "when metadata access requires classic PySpark internals. "
-            f"Cause: {type(error).__name__}: {error}. "
-            "See docs/reference/SparkConnect.md."
-        )
+        source = schema_api.source(schema, to=to)
+        return RenderStructureSchemaSource()(cast(GeneratedSchemaSource, source))

@@ -5,7 +5,7 @@ import pytest
 from structure import *
 from structure.core.compiler.api import Compiler, OperationCardinality, StreamingSupport
 from structure.core.compiler.ir.model.JoinMethod import JoinMethod
-from structure.core.target.pyspark.api import PySpark
+from structure.platform.pyspark.api import PySpark
 
 
 class Order(Schema):

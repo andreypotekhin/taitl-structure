@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 import inspect
-from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 
 from structure.core.compiler.artifacts.model.ArtifactDependency import ArtifactDependency
@@ -11,6 +10,7 @@ from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOpti
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
+from structure.version import VERSION
 
 
 class BuildArtifactManifest:
@@ -105,7 +105,4 @@ class BuildArtifactManifest:
         return ArtifactDependency(kind=kind, name=name, path=display, digest=digest)
 
     def _structure_version(self) -> str:
-        try:
-            return version("structure")
-        except PackageNotFoundError:
-            return "unknown"
+        return VERSION

@@ -56,7 +56,7 @@ class Product(Schema):
 
 ### Example Transform
 
-Transform class compiles into PySpark code operating on DataFrames. (See 'Generated code' section below.)
+Transform class compiles into PySpark code operating on DataFrames. For an example of compiled code, see 'Generated code' section below.
 
 ```python
 from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
@@ -129,7 +129,7 @@ result = EnrichOrders(
 enriched_df = result.enriched
 ```
 
-On invocation of run(), Structure compiles Transform and all its dependencies into an in-memory artifact for execution - the execution plan. It executes the plan by translating ('lowering') it into PySpark statements. PySpark code can also be saved to disk, if your project prefers to have generated code. Execution order follows the declared order of transform's 'step' methods - the methods that take schema object(s) and  return schema object(s).
+On invocation of run(), Structure compiles Transform and all its dependencies into an in-memory artifact for execution - the execution plan. It executes the plan by translating ('lowering') into PySpark statements. PySpark code can also be saved to disk, if your project requires so. Execution order follows the declared order of transform's 'step' methods - the methods that take schema object(s) and return schema object(s).
 
 ### Generated PySpark Code
 
@@ -230,7 +230,7 @@ class EnrichOrdersGenerated:
 
 ## API Coverage
 
-Structure tries to cover most of PySpark APIs related to data transformation, such as projection, filtering, joins, aggregation, deduplication, windowing, higher order functions. Example of a less-trivial analytical transform:
+Structure tries to cover most of PySpark APIs related to data transformation: filtering, joins, aggregation, deduplication, windowing, higher order functions. Example of a less-trivial analytical transform:
 
 ```python
 class OrderAnalytics(Transform):
@@ -379,7 +379,7 @@ Structure is intentionally strict: compiled methods must lower to Spark Optimize
 
 Unsupported Python operations are rejected. This is a performance feature: Spark can optimize transformations only when work remains visible in the DataFrame logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, and whole-stage code generation all depend on expressing work through Spark's relational expression model.
 
-Arbitrary PySpark is still supported, but only through explicit @raw hooks around step method. Hooks receive the underlying DataFrame(s) for arbitrary manipulation. Hooks are escape hatches: Structure calls them, records them as opaque boundaries, but does not treat their body as compiler-visible logic.
+Arbitrary Python and ad-hoc PySpark is still supported, but only through explicit @raw hook methods. Hooks receive the underlying DataFrame(s) for arbitrary manipulation. Hooks are escape hatches: Structure calls them, records them as opaque boundaries, but does not treat their body as compiler-visible logic.
 
 ## IDE Friendliness
 
@@ -390,14 +390,14 @@ Python-first approach allows for such IDE conveniences, as:
 
 ## Out of scope
 
-Structure focuses on data transformation. Loading, writing to storage, orchestrating and other activities outside of data transformation is the responsibility of end-user.
+Structure focuses on data transformation. Loading, writing, orchestrating and other activities outside of data transformations are the responsibility of end-user.
 
 ## Compatibility
 
 Structure targets Python 3.11+, PySpark 3.5.x and 4.0.x, Linux runtimes, and Linux/macOS/Windows development
 environments.
 
-Airflow can run transforms or call generated PySpark code. It is not a Structure dependency.
+Airflow can run transforms or call generated PySpark code, but is not a Structure dependency.
 
 See [Compatibility.md](docs/Compatibility.md) for the versioning and compatibility policy.
 

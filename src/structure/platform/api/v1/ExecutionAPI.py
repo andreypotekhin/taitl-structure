@@ -1,5 +1,7 @@
 from typing import Protocol
 
+from structure.platform.api.v1.ExecutionRequest import ExecutionRequest
+
 
 class ExecutionAPI(Protocol):
-    def execute(self, payload: object, runtime: object) -> object: ...
+    def execute(self, request: ExecutionRequest) -> object: ...

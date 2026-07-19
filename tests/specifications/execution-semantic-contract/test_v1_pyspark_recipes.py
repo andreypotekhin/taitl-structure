@@ -1,7 +1,7 @@
 import sys
 
 from structure import *
-from structure.core.target.pyspark.api import PySpark
+from structure.platform.pyspark.api import PySpark
 
 
 def test_v1_pyspark_recipe_lowering_is_spark_free() -> None:

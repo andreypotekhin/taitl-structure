@@ -6,3 +6,4 @@ class PlatformCompilation:
     lowered: object
     fingerprint: str
     analysis: object | None = None
+    schemas: object | None = None

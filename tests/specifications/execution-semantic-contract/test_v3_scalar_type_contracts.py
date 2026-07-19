@@ -10,7 +10,7 @@ from structure.core.dsl.model.expr.Expression import Expression
 from structure.core.dsl.model.expr.expressions import literal
 from structure.core.dsl.model.types.DecimalType import DecimalType
 from structure.core.dsl.model.types.StructType import StructType
-from structure.core.target.pyspark.api import PySpark
+from structure.platform.pyspark.api import PySpark
 
 
 def _expression(type, *, nullable: bool) -> Expression:

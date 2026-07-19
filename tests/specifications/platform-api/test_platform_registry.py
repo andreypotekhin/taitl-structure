@@ -1,8 +1,11 @@
 from dataclasses import dataclass
+from typing import cast
 
 import pytest
 
-from structure.core.platform import PlatformRegistry
+from structure.core.platforms.api import Platform
+from structure.core.platforms.logic.PlatformRegistry import PlatformRegistry
+from structure.core.target.capabilities.model.BackendCapabilities import BackendCapabilities
 from structure.platform.api import PlatformDescriptor
 from structure.platform.api.v1 import PlatformAPI
 
@@ -28,11 +31,20 @@ class Facet:
     def materialize(self, schema):
         return schema
 
+    def build(self, request):
+        return request.payload
+
+    def read(self, request):
+        return request.schema
+
+    def source(self, schema, *, to):
+        return schema
+
     def compile(self, request):
         return request
 
-    def supports(self, capability):
-        return True
+    def resolve(self, *, profile, variant):
+        return cast(BackendCapabilities, object())
 
 
 class Plugin:
@@ -51,7 +63,7 @@ def test_discovery_uses_metadata_without_loading_plugins() -> None:
         loaded = True
         return Plugin()
 
-    registry = PlatformRegistry(lambda: [Entry("fake", "fake-wheel", load)])
+    registry = Platform.registry(lambda: [Entry("fake", "fake-wheel", load)])
 
     discovered = registry.discover()
 
@@ -59,18 +71,40 @@ def test_discovery_uses_metadata_without_loading_plugins() -> None:
     assert not loaded
 
 
+def test_platform_api_creates_a_registry() -> None:
+    registry = Platform.registry(lambda: [Entry("fake", "fake-wheel", Plugin)])
+
+    assert registry.select("fake").descriptor.name == "fake"
+
+
+def test_source_checkout_discovers_bundled_pyspark_without_installed_entry_point(monkeypatch) -> None:
+    monkeypatch.setattr("structure.core.platforms.logic.PlatformRegistry.entry_points", lambda **_: ())
+
+    selected = PlatformRegistry().select("pyspark")
+
+    assert selected.descriptor.distribution == "structure"
+
+
 @pytest.mark.parametrize("minimum,maximum", [(1, 1), (1, 2)])
 def test_selection_negotiates_the_highest_mutual_v1_version(minimum, maximum) -> None:
-    registry = PlatformRegistry(lambda: [Entry("fake", "fake-wheel", lambda: Plugin(minimum, maximum))])
+    registry = Platform.registry(lambda: [Entry("fake", "fake-wheel", lambda: Plugin(minimum, maximum))])
 
     selected = registry.select("fake")
 
     assert selected.api_version == 1
 
 
+def test_selection_downgrades_a_newer_core_to_the_highest_supported_plugin_version() -> None:
+    registry = Platform.registry(
+        lambda: [Entry("fake", "fake-wheel", lambda: Plugin(1, 1))], minimum_api_version=1, maximum_api_version=2
+    )
+
+    assert registry.select("fake").api_version == 1
+
+
 def test_selection_rejects_an_incompatible_or_duplicate_platform() -> None:
-    incompatible = PlatformRegistry(lambda: [Entry("fake", "fake-wheel", lambda: Plugin(2, 2))])
-    duplicate = PlatformRegistry(lambda: [Entry("fake", "one", Plugin), Entry("fake", "two", Plugin)])
+    incompatible = Platform.registry(lambda: [Entry("fake", "fake-wheel", lambda: Plugin(2, 2))])
+    duplicate = Platform.registry(lambda: [Entry("fake", "one", Plugin), Entry("fake", "two", Plugin)])
 
     with pytest.raises(ValueError, match="no compatible"):
         incompatible.select("fake")
@@ -86,7 +120,7 @@ def test_discovery_normalizes_disabled_distribution_names_without_loading_plugin
         loaded = True
         return Plugin()
 
-    registry = PlatformRegistry(lambda: [Entry("fake", "Fake_Wheel", load)])
+    registry = Platform.registry(lambda: [Entry("fake", "Fake_Wheel", load)])
 
     assert registry.discover(disabled_distributions=frozenset({"fake-wheel"})) == ()
     assert not loaded
@@ -94,7 +128,7 @@ def test_discovery_normalizes_disabled_distribution_names_without_loading_plugin
 
 @pytest.mark.parametrize("name", ["Fake", "fake_name", "2fake"])
 def test_discovery_rejects_invalid_platform_entry_point_names(name) -> None:
-    registry = PlatformRegistry(lambda: [Entry(name, "fake-wheel", Plugin)])
+    registry = Platform.registry(lambda: [Entry(name, "fake-wheel", Plugin)])
 
     with pytest.raises(ValueError, match="PLATFORM-E2706"):
         registry.discover()
@@ -104,7 +138,7 @@ def test_selection_reports_plugin_load_failure_without_a_traceback() -> None:
     def load():
         raise RuntimeError("missing optional dependency")
 
-    registry = PlatformRegistry(lambda: [Entry("fake", "fake-wheel", load)])
+    registry = Platform.registry(lambda: [Entry("fake", "fake-wheel", load)])
 
     with pytest.raises(ValueError, match="PLATFORM-E2705: Could not load.*RuntimeError: missing optional dependency"):
         registry.select("fake")
@@ -118,7 +152,7 @@ def test_selection_reports_plugin_load_failure_without_a_traceback() -> None:
     ],
 )
 def test_selection_rejects_descriptor_identity_mismatches(plugin, message) -> None:
-    registry = PlatformRegistry(lambda: [Entry("fake", "fake-wheel", lambda: plugin)])
+    registry = Platform.registry(lambda: [Entry("fake", "fake-wheel", lambda: plugin)])
 
     with pytest.raises(ValueError, match=message):
         registry.select("fake")

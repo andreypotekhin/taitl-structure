@@ -194,6 +194,15 @@ def test_v1_online_session_defers_to_runner_and_exposes_schemas_without_pyspark(
     assert result.schema["published"].name == "StructType"
 
 
+def test_v5_session_accepts_a_generic_runtime() -> None:
+    session = StructureSession(runtime="runtime", schema_types=FakeTypes)
+
+    assert session.runtime == "runtime"
+    assert session.spark == "runtime"
+    with pytest.raises(ValueError, match="either runtime= or the legacy spark"):
+        StructureSession(spark="spark", runtime="runtime", schema_types=FakeTypes)
+
+
 def test_v1_online_session_reuses_session_compiled_artifact(monkeypatch) -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
