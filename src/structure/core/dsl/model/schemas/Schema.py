@@ -24,8 +24,7 @@ class Schema:
                 local_fields[name] = definition
                 fields[name] = definition
 
-        cls._require_unique_columns(fields)
-        cls._require_acyclic_structs(fields)
+        cls._validate_fields(fields)
         cls._structure_fields = fields
         cls._structure_local_fields = local_fields
         cls._structure_schema_bases = tuple(
@@ -82,44 +81,15 @@ class Schema:
             return _MISSING
 
     @classmethod
-    def _require_unique_columns(cls, fields: dict[str, FieldDefinition]) -> None:
-        columns: dict[str, str] = {}
-        for field in fields.values():
-            other = columns.get(field.column)
-            if other is not None:
-                raise ValueError(
-                    f"{cls.__name__} has duplicate Spark column name {field.column!r}. " "Use a unique field alias."
-                )
-            columns[field.column] = field.name
-
-    @classmethod
-    def _require_acyclic_structs(cls, fields: dict[str, FieldDefinition]) -> None:
-        for field in fields.values():
-            cls._require_acyclic_type(field.type, path=(cls,))
-
-    @classmethod
-    def _require_acyclic_type(cls, type, *, path: tuple[type["Schema"], ...]) -> None:
-        from structure.core.dsl.model.types.ArrayType import ArrayType
-        from structure.core.dsl.model.types.MapType import MapType
-        from structure.core.dsl.model.types.StructType import StructType
-
-        if isinstance(type, ArrayType):
-            cls._require_acyclic_type(type.element, path=path)
-            return
-        if isinstance(type, MapType):
-            cls._require_acyclic_type(type.key, path=path)
-            cls._require_acyclic_type(type.value, path=path)
-            return
-        if not isinstance(type, StructType):
-            return
-        if type.schema in path:
-            cycle = " -> ".join(schema.__name__ for schema in (*path, type.schema))
-            raise ValueError(
-                f"{cls.__name__} has recursive Struct(...) schema composition: {cycle}. "
-                "Nested Schema fields must form an acyclic schema graph."
+    def _validate_fields(cls, fields: dict[str, FieldDefinition]) -> None:
+        validators = {field.validator for field in fields.values() if field.validator is not None}
+        if len(validators) > 1:
+            raise TypeError(
+                f"{cls.__name__} combines field declarations from multiple platforms. "
+                "Use one platform's field DSL for each Schema."
             )
-        for field in type.schema._structure_fields.values():
-            cls._require_acyclic_type(field.type, path=(*path, type.schema))
+        if validators:
+            validators.pop()(cls, fields)
 
 
 _MISSING = object()

@@ -7,11 +7,11 @@ from structure.core.compiler.ir.model.HookPlan import HookPlan
 from structure.core.compiler.ir.model.JoinPlan import JoinPlan
 from structure.core.compiler.ir.model.OperationPlan import OperationPlan
 from structure.core.compiler.ir.model.ProjectAssignment import ProjectAssignment
-from structure.core.compiler.ir.model.StepInputPlan import StepInputPlan
 from structure.core.compiler.ir.model.StepResultPlan import StepResultPlan
-from structure.core.compiler.ir.model.TransformMemberOrigin import TransformMemberOrigin
 from structure.core.dsl.model.expr.Expression import Expression
 from structure.core.dsl.model.schemas.Schema import Schema
+from structure.platform.api.v1.StepInputPlan import StepInputPlan
+from structure.platform.api.v1.TransformMemberOrigin import TransformMemberOrigin
 
 
 @dataclass(frozen=True)
@@ -35,3 +35,4 @@ class StepPlan:
     results: tuple[StepResultPlan, ...] = ()
     options: dict[str, object] | None = None
     origin: TransformMemberOrigin | None = None
+    platform_body: object | None = None

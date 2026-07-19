@@ -8,8 +8,8 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import Callable, NoReturn
 
-from structure.core.compiler.ir.model.TransformMemberOrigin import TransformMemberOrigin
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry, render_diagnostic
+from structure.platform.api.v1 import TransformMemberOrigin
 from structure.platform.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
 
 

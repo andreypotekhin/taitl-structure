@@ -54,7 +54,7 @@ artifacts. Generated modules mirror source import paths under `structure_generat
 # src/orders/schemas/order.py
 
 from structure import Schema
-from structure.field import *
+from structure.platform.pyspark.dsl.field import *
 
 
 class OrderRaw(Schema):
@@ -86,7 +86,7 @@ aliases are schema-local unless inherited.
 # src/orders/schemas/customer.py
 
 from structure import Schema
-from structure.field import *
+from structure.platform.pyspark.dsl.field import *
 
 
 class Customer(Schema):

@@ -1,7 +1,7 @@
 from testing.model.v3.orders.schemas.common import AuditStamp, TenantKey
 
 from structure import Schema
-from structure.field import *
+from structure.platform.pyspark.dsl.field import *
 
 
 class Customer(Schema):
@@ -12,4 +12,3 @@ class Customer(Schema):
     tier = string(nullable=True)
     region = string(nullable=True)
     email = string(nullable=True)
-

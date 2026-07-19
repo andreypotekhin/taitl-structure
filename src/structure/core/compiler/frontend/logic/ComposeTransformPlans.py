@@ -9,7 +9,6 @@ from structure.core.compiler.ir.model.AggregateAssignment import AggregateAssign
 from structure.core.compiler.ir.model.AggregateKey import AggregateKey
 from structure.core.compiler.ir.model.AggregatePlan import AggregatePlan
 from structure.core.compiler.ir.model.DuplicateRowsPlan import DuplicateRowsPlan
-from structure.core.compiler.ir.model.InputPlan import InputPlan
 from structure.core.compiler.ir.model.JoinPlan import JoinPlan
 from structure.core.compiler.ir.model.OperationPlan import OperationPlan
 from structure.core.compiler.ir.model.OutputPlan import OutputPlan
@@ -27,6 +26,7 @@ from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclarat
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline, TransformPipelineStage
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
+from structure.platform.api.v1 import InputPlan
 
 CompileStage = Callable[[type[Transform]], TransformPlan]
 
@@ -196,7 +196,7 @@ class ComposeTransformPlans:
             if value.schema is not input_plan.schema:
                 raise self._error(
                     pipeline_name,
-                    f"{value.name} declares {value.schema.__name__}, but {stage.transform_class.__name__}.{input_plan.name} expects {input_plan.schema.__name__}.",
+                    f"{value.name} declares {value.schema.__name__}, but {stage.transform_class.__name__}.{input_plan.name} expects {getattr(input_plan.schema, '__name__', input_plan.schema)}.",
                     "Bind only inputs with the same schema.",
                 )
             return value.name

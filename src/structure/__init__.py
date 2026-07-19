@@ -1,5 +1,3 @@
-from importlib import import_module
-
 from structure.core.compiler.api import (
     ArtifactCacheReport,
     CompileKey,
@@ -223,9 +221,6 @@ from structure.platform.pyspark.api import DiskStorage, MemoryStorage, PackageIm
 from structure.core.tools.api import StructureTools
 
 
-field = import_module("structure.field")
-types = import_module("structure.types")
-
 __all__ = [
     "ArtifactCacheReport",
     "AsOf",
@@ -260,7 +255,6 @@ __all__ = [
     "TransformResult",
     "TransformSchemas",
     "SourceTransformAddress",
-    "field",
     "abs",
     "bround",
     "approx_count_distinct",
@@ -414,7 +408,6 @@ __all__ = [
     "skewness",
     "split",
     "translate",
-    "types",
     "step",
     "substring",
     "temporal_one",

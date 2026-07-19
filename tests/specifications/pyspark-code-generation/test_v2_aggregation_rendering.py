@@ -4,6 +4,7 @@ from structure import *
 from structure.core.cli.api import CliApp
 from structure.core.compiler.api import Compiler
 from structure.core.dsl.model.expr.expressions import literal
+from structure.platform.pyspark import field, types
 from structure.platform.pyspark.api import PySpark
 from structure.platform.pyspark.commands.RenderPySparkStep import render_pyspark_step
 

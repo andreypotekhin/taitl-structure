@@ -9,6 +9,7 @@ from structure import *
 from structure.core.compiler.ir.model.JoinMethod import JoinMethod
 from structure.core.runtime.session.model.TransformResult import TransformResult
 from structure.core.target.capabilities.model.BackendId import BackendId
+from structure.platform.pyspark import field, types
 from structure.platform.pyspark.execution.online.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 from structure.platform.pyspark.execution.online.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
 from structure.platform.pyspark.execution.online.logic.PySparkFrameValidator import PySparkFrameValidator

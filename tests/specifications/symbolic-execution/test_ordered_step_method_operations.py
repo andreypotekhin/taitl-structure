@@ -5,6 +5,7 @@ import pytest
 from structure import *
 from structure.core.compiler.api import Compiler, OperationCardinality, StreamingSupport
 from structure.core.compiler.ir.model.JoinMethod import JoinMethod
+from structure.platform.pyspark import field, types
 from structure.platform.pyspark.api import PySpark
 
 

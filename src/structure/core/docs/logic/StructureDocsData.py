@@ -54,7 +54,8 @@ class StructureDocsData:
             "name": plan.name,
             "source": source,
             "inputs": [
-                {"name": item.name, "schema": item.schema.__name__, "ordinal": item.ordinal} for item in plan.inputs
+                {"name": item.name, "schema": getattr(item.schema, "__name__", str(item.schema)), "ordinal": item.ordinal}
+                for item in plan.inputs
             ],
             "outputs": [
                 {"name": item.name, "schema": item.schema.__name__, "ordinal": item.ordinal} for item in plan.outputs
@@ -78,7 +79,7 @@ class StructureDocsData:
                 {
                     "parameter": item.parameter,
                     "source": item.source,
-                    "schema": item.schema.__name__,
+                    "schema": getattr(item.schema, "__name__", str(item.schema)),
                     "driving": item.driving,
                 }
                 for item in step.inputs

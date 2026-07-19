@@ -19,6 +19,7 @@ class BuildArtifactFingerprint:
                 if not (
                     type(value).__name__ == "CompiledTransform" and field.name in {"schemas", "semantic_fingerprint"}
                 )
+                and field.name != "platform_body"
             )
             return (
                 f"{type(value).__module__}.{type(value).__qualname__}",

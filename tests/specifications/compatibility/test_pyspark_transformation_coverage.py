@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any
 
 import structure
+from structure.platform import pyspark
 
 ROOT = Path(__file__).resolve().parents[3]
 INVENTORY = ROOT / "docs/reference/pyspark-transformation-inventory.json"
@@ -36,12 +37,11 @@ def test_pyspark_transformation_catalog_entries_are_actionable() -> None:
 
 
 def test_supported_catalog_entries_name_exported_structure_api_evidence() -> None:
-    public_symbols = set(structure.__all__)
     for entry in _load(CATALOG)["entries"]:
         if entry["status"] != "supported":
             continue
         assert entry["public_symbols"], f"{entry['id']} lacks a public Structure spelling"
-        assert set(entry["public_symbols"]) <= public_symbols
+        assert all(hasattr(structure, symbol) or hasattr(pyspark, symbol) for symbol in entry["public_symbols"])
         assert any(
             "tests/" in evidence for evidence in entry["evidence"]
         ), f"{entry['id']} lacks parity or generated-code evidence"

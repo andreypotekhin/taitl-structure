@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.core.compiler.ir.model.TransformMemberOrigin import TransformMemberOrigin
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.platform.api.v1.TransformMemberOrigin import TransformMemberOrigin
 
 HookDeclaration = InputDeclaration | LaneDeclaration | OutputDeclaration
 

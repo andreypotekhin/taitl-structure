@@ -1,5 +1,5 @@
-from structure.core.compiler.ir.model.InputPlan import InputPlan
 from structure.core.dsl.model.transforms.Transform import Transform
+from structure.platform.api.v1 import InputPlan
 
 
 class CompilerInputCollector:

@@ -1,4 +1,5 @@
 from structure import *
+from structure.platform.pyspark import field, types
 from structure.platform.pyspark.api import PySpark
 from structure.platform.pyspark.commands.RenderPySparkStep import render_pyspark_step
 

@@ -1,4 +1,5 @@
 from structure import *
+from structure.platform.pyspark import field, types
 
 
 class Order(Schema):

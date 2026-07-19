@@ -1,7 +1,7 @@
 from typing import Any, cast
 
-from structure.core.dsl.model.types.StructureType import StructureType
 from structure.platform.pyspark.commands.MaterializePySparkSchema import materialize_pyspark_schema
+from structure.platform.pyspark.dsl.types import StructureType
 from structure.platform.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 
 

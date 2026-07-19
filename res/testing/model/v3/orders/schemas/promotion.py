@@ -1,7 +1,7 @@
 from testing.model.v3.orders.schemas.common import AuditStamp, TenantKey
 
 from structure import Schema
-from structure.field import *
+from structure.platform.pyspark.dsl.field import *
 
 
 class Promotion(Schema):
@@ -12,4 +12,3 @@ class Promotion(Schema):
     discount = decimal(12, 2, nullable=True)
     valid_from = date(nullable=False)
     valid_to = date(nullable=True)
-

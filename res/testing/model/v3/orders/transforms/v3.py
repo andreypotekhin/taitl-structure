@@ -1,4 +1,5 @@
 from structure import *
+from structure.platform.pyspark import types
 
 from testing.model.v3.orders.schemas.v3 import V3OrderProjection, V3OrderSource
 

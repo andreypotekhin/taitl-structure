@@ -1,7 +1,7 @@
 from testing.model.v3.orders.schemas.common import AuditStamp, TenantKey
 
 from structure import Schema
-from structure.field import *
+from structure.platform.pyspark.dsl.field import *
 
 
 class ProductBase(Schema):
@@ -21,4 +21,3 @@ class Product(ProductBase):
 
 class BlockedProduct(Product):
     reason = string(nullable=True)
-

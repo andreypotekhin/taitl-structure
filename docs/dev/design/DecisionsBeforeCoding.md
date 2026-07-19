@@ -15,7 +15,7 @@ The v1 implementation must follow these decisions:
 
 - ordinary Python source roots are the input roots;
 - generated code lives below a distinct generated namespace;
-- schema declarations use immutable `structure.field` factories;
+- PySpark schema declarations use immutable `structure.platform.pyspark.dsl.field` factories;
 - compiler commands do not import PySpark or require Spark, Java, a SparkSession, or a cluster;
 - execution is the default runtime mode;
 - generated PySpark remains an optional, committed, reviewable artifact;
@@ -131,8 +131,9 @@ class OrderRaw(Schema):
     total = decimal(12, 2)
 ```
 
-Dedicated schema modules import factories with `from structure.field import *`; mixed modules use `field.string()` and
-related namespaced factories. Annotation-only, dataclass, Pydantic, and Spark-string type syntax are outside v1.
+Dedicated PySpark schema modules import factories with `from structure.platform.pyspark.dsl.field import *`; mixed
+modules use the plugin's namespaced `field.string()` factory. Annotation-only, dataclass, Pydantic, and Spark-string
+type syntax are outside v1.
 
 ### Spark-Free Compiler
 

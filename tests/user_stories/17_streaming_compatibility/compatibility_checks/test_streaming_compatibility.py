@@ -3,6 +3,7 @@ import sys
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
+from structure.platform.pyspark import field, types
 from structure.platform.pyspark.api import PySpark
 
 

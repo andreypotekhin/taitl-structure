@@ -1,4 +1,8 @@
+from typing import cast
+
 from structure.core.compiler.ir.model.TransformPlan import TransformPlan
+from structure.core.dsl.model.schemas.Schema import Schema
+from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.core.target.capabilities.model.BackendCapabilities import BackendCapabilities
 from structure.platform.pyspark.logic.mapping.PySparkInputMapper import PySparkInputMapper
 from structure.platform.pyspark.logic.mapping.PySparkOutputMapper import PySparkOutputMapper
@@ -24,7 +28,13 @@ class LowerPySparkPlan:
         if target is None:
             raise ValueError("PySpark plan lowering requires explicit capabilities.")
         inputs = tuple(
-            self._inputs.map(input.name, input.schema, input.ordinal, input.streaming, input.aliases)
+            self._inputs.map(
+                input.name,
+                cast(type[Schema], input.schema),
+                input.ordinal,
+                cast(StreamingMode, input.streaming),
+                input.aliases,
+            )
             for input in plan.inputs
         )
         steps = tuple(

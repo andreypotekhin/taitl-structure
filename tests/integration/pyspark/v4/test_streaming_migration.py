@@ -12,7 +12,6 @@ from structure import (
     count,
     event_time_between,
     exists,
-    field,
     group_by,
     input,
     output,
@@ -21,6 +20,7 @@ from structure import (
     transform,
     watermark,
 )
+from structure.platform.pyspark import field
 
 pytestmark = pytest.mark.integration
 

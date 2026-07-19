@@ -53,7 +53,7 @@ def _write_project(root: Path) -> None:
         "\n".join(
             [
                 "from structure import Schema",
-                "from structure.field import *",
+                "from structure.platform.pyspark.dsl.field import *",
                 "",
                 "class OrderRaw(Schema):",
                 "    id = string(nullable=False)",

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.core.compiler.ir.model.TransformMemberOrigin import TransformMemberOrigin
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.platform.api.v1 import TransformMemberOrigin
 
 
 @dataclass(frozen=True)

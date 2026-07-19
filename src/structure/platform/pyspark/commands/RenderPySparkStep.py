@@ -7,9 +7,9 @@ from structure.core.compiler.ir.model.JoinMethod import JoinMethod
 from structure.core.dsl.model.transforms.Join import Join
 from structure.core.dsl.model.types.DecimalType import DecimalType
 from structure.core.dsl.model.types.StructType import StructType
-from structure.core.dsl.model.types.StructureType import StructureType
 from structure.platform.pyspark.commands.RenderPySparkExpression import render_pyspark_expression
 from structure.platform.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
+from structure.platform.pyspark.dsl.types import StructureType
 from structure.platform.pyspark.model.PySparkAggregateAssignment import PySparkAggregateAssignment
 from structure.platform.pyspark.model.PySparkAggregateKey import PySparkAggregateKey
 from structure.platform.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe

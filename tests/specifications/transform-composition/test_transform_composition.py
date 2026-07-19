@@ -4,6 +4,7 @@ import pytest
 
 from structure import *
 from structure.core.runtime.session.model.TransformResult import TransformResult
+from structure.platform.pyspark import field, types
 from structure.platform.pyspark.api import PySpark
 
 

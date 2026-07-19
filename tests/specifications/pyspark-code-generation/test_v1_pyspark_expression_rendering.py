@@ -4,6 +4,7 @@ import pytest
 
 from structure import *
 from structure.core.target.capabilities.api import BackendCapabilityError
+from structure.platform.pyspark import field, types
 from structure.platform.pyspark.api import PySpark
 from structure.platform.pyspark.capabilities.PySparkCapabilityRules import PySparkCapabilities
 

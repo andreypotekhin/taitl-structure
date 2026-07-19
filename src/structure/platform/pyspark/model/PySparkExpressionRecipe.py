@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Mapping
 
-from structure.core.dsl.model.types.StructureType import StructureType
+from structure.platform.pyspark.dsl.types import StructureType
 
 
 @dataclass(frozen=True)

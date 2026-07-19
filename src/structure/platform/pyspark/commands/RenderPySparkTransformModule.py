@@ -6,11 +6,11 @@ from decimal import Decimal
 from typing import Callable, Iterable, Mapping, cast
 
 from structure.core.dsl.model.schemas.Schema import Schema
-from structure.core.dsl.model.types.StructureType import StructureType
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 from structure.platform.pyspark.commands.RenderPySparkExpression import render_pyspark_expression
 from structure.platform.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
 from structure.platform.pyspark.commands.RenderPySparkStep import render_pyspark_step
+from structure.platform.pyspark.dsl.types import StructureType
 from structure.platform.pyspark.logic.GeneratedCodeOptions import GeneratedCodeOptions
 from structure.platform.pyspark.logic.RenderEmbeddedHooks import EmbeddedHook, EmbeddedHookError, RenderEmbeddedHooks
 from structure.platform.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan

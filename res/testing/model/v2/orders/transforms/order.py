@@ -16,6 +16,7 @@ from testing.model.v2.orders.schemas.promotion import Promotion
 from testing.model.v2.orders.schemas.shipment import Shipment
 
 from structure import *
+from structure.platform.pyspark import types
 
 
 @transform(streaming_compatible=True)

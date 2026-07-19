@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import replace
 from pathlib import Path
-from typing import Mapping
+from typing import Mapping, cast
 
 from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOptions
 from structure.core.compiler.frontend.commands.CompileTransform import CompileTransform
@@ -11,7 +11,7 @@ from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.core.platforms.api.Platform import Platform
 from structure.core.platforms.model.PlatformConfiguration import PlatformConfiguration
-from structure.platform.api.v1 import CompileRequest, PlatformCompilation
+from structure.platform.api.v1 import CompileRequest, PlatformCompilation, SchemaValidationRequest
 
 
 class CompilePlatformTransform:
@@ -43,20 +43,31 @@ class CompilePlatformTransform:
                 registry=registry,
             )
         resolved = self._config(config=config, project_root=project_root, overrides=overrides, settings=settings)
-        plan = self._analyze(transform, config=resolved)
+        target = self._target(transform, default=resolved.target_backend)
+        configuration = {
+            "profile": resolved.target_profile,
+            "variant": resolved.target_variant,
+            "warn_on_udfs": resolved.warn_on_udfs,
+            "generated_code_options": resolved.generated_code_options,
+            "schema_types": schema_types,
+            "materialize_schemas": materialize_schemas,
+        }
+        platform = (registry or self._registry or Platform.registry()).select(target)
+        self._validate_declared_schemas(transform, platform, configuration)
+        plan = self._analyze(
+            transform,
+            config=resolved,
+            _authoring=platform.api.authoring,
+            _authoring_target=target,
+            _authoring_configuration=configuration,
+        )
         return self._compile(
             transform,
             plan,
-            target=self._target(transform, default=resolved.target_backend),
-            configuration={
-                "profile": resolved.target_profile,
-                "variant": resolved.target_variant,
-                "warn_on_udfs": resolved.warn_on_udfs,
-                "generated_code_options": resolved.generated_code_options,
-                "schema_types": schema_types,
-                "materialize_schemas": materialize_schemas,
-            },
+            target=target,
+            configuration=configuration,
             registry=registry,
+            platform=platform,
         )
 
     def _compile_options(
@@ -68,25 +79,33 @@ class CompilePlatformTransform:
         materialize_schemas: bool,
         registry,
     ) -> PlatformCompilation:
+        target = self._target(transform, default=options.target_backend)
+        configuration = {
+            "profile": options.target_profile,
+            "variant": options.target_variant,
+            "warn_on_udfs": options.warn_on_udfs,
+            "generated_code_options": options.generated_code_options,
+            "schema_types": schema_types,
+            "materialize_schemas": materialize_schemas,
+        }
+        platform = (registry or self._registry or Platform.registry()).select(target)
+        self._validate_declared_schemas(transform, platform, configuration)
         plan = self._analyze(
             transform,
             project_root=options.project_root,
             warn_on_udfs=options.warn_on_udfs,
             generated_code_options=options.generated_code_options,
+            _authoring=platform.api.authoring,
+            _authoring_target=target,
+            _authoring_configuration=configuration,
         )
         return self._compile(
             transform,
             plan,
-            target=self._target(transform, default=options.target_backend),
-            configuration={
-                "profile": options.target_profile,
-                "variant": options.target_variant,
-                "warn_on_udfs": options.warn_on_udfs,
-                "generated_code_options": options.generated_code_options,
-                "schema_types": schema_types,
-                "materialize_schemas": materialize_schemas,
-            },
+            target=target,
+            configuration=configuration,
             registry=registry,
+            platform=platform,
         )
 
     def _compile(
@@ -97,14 +116,40 @@ class CompilePlatformTransform:
         target: str,
         configuration: Mapping[str, object],
         registry,
+        platform=None,
     ) -> PlatformCompilation:
-        platform = (registry or self._registry or Platform.registry()).select(target)
+        platform = platform or (registry or self._registry or Platform.registry()).select(target)
         compilation = platform.api.compiler.compile(
             CompileRequest(transform=transform, target=target, configuration=configuration, analysis=plan)
         )
         if not isinstance(compilation, PlatformCompilation):
             raise ValueError(f"PLATFORM-E2708: Platform {target!r} returned an invalid compilation result.")
         return replace(compilation, analysis=plan)
+
+    @staticmethod
+    def _validate_declared_schemas(
+        transform: type[Transform] | TransformPipeline, platform, configuration: Mapping[str, object]
+    ) -> None:
+        validate = getattr(platform.api.schema, "validate", None)
+        if not callable(validate):
+            return
+        schemas: dict[object, None] = {}
+        for transform_class in CompilePlatformTransform._transform_classes(transform):
+            declarations = (
+                *transform_class._structure_inputs.values(),
+                *transform_class._structure_lanes.values(),
+                *transform_class._structure_outputs.values(),
+            )
+            for declaration in declarations:
+                schemas[cast(object, getattr(declaration, "schema"))] = None
+        validate(SchemaValidationRequest(schemas=tuple(schemas), configuration=configuration))
+
+    @staticmethod
+    def _transform_classes(transform: type[Transform] | TransformPipeline) -> tuple[type[Transform], ...]:
+        pipeline = transform if isinstance(transform, TransformPipeline) else transform._structure_pipeline
+        if pipeline is None:
+            return (transform,)  # type: ignore[return-value]
+        return tuple(stage.transform_class for stage in pipeline.stages)
 
     def _config(
         self,

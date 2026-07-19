@@ -3,6 +3,7 @@ from typing import Any, cast
 import pytest
 
 from structure import *
+from structure.platform.pyspark import field, types
 
 
 def test_field_access_produces_symbolic_projection_expressions(orders_plan) -> None:

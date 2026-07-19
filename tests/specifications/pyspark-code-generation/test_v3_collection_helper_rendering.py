@@ -8,6 +8,7 @@ from structure.core.dsl.model.types.IntegerType import IntegerType
 from structure.core.dsl.model.types.LongType import LongType
 from structure.core.dsl.model.types.MapType import MapType
 from structure.core.dsl.model.types.StringType import StringType
+from structure.platform.pyspark import field, types
 from structure.platform.pyspark.api import PySpark
 from structure.platform.pyspark.commands.RenderPySparkStep import render_pyspark_step
 

@@ -19,7 +19,8 @@ Detailed syntax remains owned by:
 
 Structure schema behavior has four layers:
 
-1. Source declarations: Python classes that inherit `Schema` and declare fields with `structure.field` factories.
+1. Source declarations: Python classes that inherit `Schema` and declare PySpark fields with
+   `structure.platform.pyspark.dsl.field` factories.
 2. Compiler model: backend-neutral `SchemaDef`, `FieldDef`, and type values.
 3. Runtime shape: generated or materialized Spark `StructType` values.
 4. Value constraints: future explicit data-quality checks outside the base shape model.

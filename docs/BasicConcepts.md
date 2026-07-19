@@ -37,7 +37,7 @@ Example:
 
 ```python
 from structure import Schema
-from structure.field import *
+from structure.platform.pyspark.dsl.field import *
 
 
 class OrderRaw(Schema):

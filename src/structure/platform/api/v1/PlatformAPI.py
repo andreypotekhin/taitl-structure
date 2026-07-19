@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from structure.platform.api.v1.AnalysisAPI import AnalysisAPI
+from structure.platform.api.v1.AuthoringAPI import AuthoringAPI
 from structure.platform.api.v1.CapabilitiesAPI import CapabilitiesAPI
 from structure.platform.api.v1.CompilerAPI import CompilerAPI
 from structure.platform.api.v1.ExecutionAPI import ExecutionAPI
@@ -15,6 +16,7 @@ class PlatformAPI:
     schema: SchemaAPI
     compiler: CompilerAPI
     capabilities: CapabilitiesAPI
+    authoring: AuthoringAPI | None = None
     executor: ExecutionAPI | None = None
     generator: GenerationAPI | None = None
     serializer: SerializationAPI | None = None

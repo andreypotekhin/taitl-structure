@@ -6,6 +6,7 @@ from structure.core.dsl.model.types.ArrayType import ArrayType
 from structure.core.dsl.model.types.MapType import MapType
 from structure.core.dsl.model.types.StructType import StructType
 from structure.core.dsl.model.types.StructureType import StructureType
+from structure.platform.pyspark import field, types
 
 
 class MapEntry(Schema):

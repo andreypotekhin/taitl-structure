@@ -124,7 +124,8 @@ def test_structure_sources_snapshot_a_directory(tmp_path) -> None:
 
 def _schemas() -> str:
     return """
-from structure import Schema, field
+from structure import Schema
+from structure.platform.pyspark import field
 
 class Row(Schema):
     id = field.string(nullable=False)

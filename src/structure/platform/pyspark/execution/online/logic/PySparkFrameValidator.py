@@ -1,7 +1,7 @@
 from structure.core.dsl.model.types.DecimalType import DecimalType
 from structure.core.dsl.model.types.StructType import StructType
-from structure.core.dsl.model.types.StructureType import StructureType
 from structure.platform.pyspark.commands.MaterializePySparkSchema import materialize_pyspark_schema
+from structure.platform.pyspark.dsl.types import StructureType
 from structure.platform.pyspark.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 

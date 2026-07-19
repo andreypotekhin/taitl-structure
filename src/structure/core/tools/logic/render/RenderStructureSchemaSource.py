@@ -15,7 +15,7 @@ class RenderStructureSchemaSource:
         return "\n".join(lines) + "\n"
 
     def _imports(self) -> tuple[str, ...]:
-        return ("from structure import Schema", "from structure.field import *")
+        return ("from structure import Schema", "from structure.platform.pyspark.dsl.field import *")
 
     def _class(self, schema: GeneratedSchemaClass) -> tuple[str, ...]:
         lines = [f"class {schema.name}(Schema):"]

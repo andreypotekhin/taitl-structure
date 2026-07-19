@@ -1,6 +1,6 @@
 from examples.orders.schemas.common import AuditStamp, TenantKey
 from structure import Schema
-from structure.field import *
+from structure.platform.pyspark.dsl.field import *
 
 
 class Shipment(Schema):

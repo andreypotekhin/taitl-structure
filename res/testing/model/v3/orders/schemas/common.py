@@ -1,5 +1,5 @@
 from structure import Schema
-from structure.field import *
+from structure.platform.pyspark.dsl.field import *
 
 
 class TenantKey(Schema):
@@ -22,4 +22,3 @@ class Address(Schema):
 
 class BusinessDate(Schema):
     order_date = date(nullable=True)
-

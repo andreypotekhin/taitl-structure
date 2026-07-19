@@ -3,6 +3,7 @@ from testing.model.v1.orders.schemas.common import Address
 from testing.model.v1.orders.schemas.order import OrderNormalized, OrderRaw, OrderWithCustomer
 
 from structure import *
+from structure.platform.pyspark import field, types
 
 
 def test_fields_keep_types_nullability_and_collection_shape() -> None:

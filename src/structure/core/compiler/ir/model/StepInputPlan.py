@@ -1,16 +1,3 @@
-from __future__ import annotations
+from structure.platform.api.v1.StepInputPlan import StepInputPlan
 
-from dataclasses import dataclass
-
-from structure.core.dsl.model.schemas.Schema import Schema
-
-
-@dataclass(frozen=True)
-class StepInputPlan:
-    parameter: str
-    schema: type[Schema]
-    source: str
-    scope: str
-    lane: str
-    ordinal: int
-    driving: bool
+__all__ = ["StepInputPlan"]

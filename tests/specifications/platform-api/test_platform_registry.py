@@ -28,6 +28,9 @@ class Entry:
 
 
 class Facet:
+    def validate(self, request):
+        return None
+
     def materialize(self, schema):
         return schema
 

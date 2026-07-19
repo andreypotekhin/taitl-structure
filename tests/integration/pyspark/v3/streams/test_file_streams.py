@@ -21,7 +21,8 @@ from examples.streams.schemas.race import Gate, Paddler, Race
 from examples.streams.transforms.passages import PreparePassages
 from examples.streams.transforms.penalties import CorrelatePenalties
 from examples.streams.transforms.progress import BuildGateProgress
-from structure import Schema, StreamingMode, Transform, field, input, output, special, transform, types
+from structure import Schema, StreamingMode, Transform, input, output, special, transform
+from structure.platform.pyspark import field, types
 
 pytestmark = pytest.mark.integration
 

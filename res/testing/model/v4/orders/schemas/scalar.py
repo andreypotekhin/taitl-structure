@@ -1,4 +1,5 @@
-from structure import Schema, field
+from structure import Schema
+from structure.platform.pyspark import field
 
 
 class BitwiseSource(Schema):

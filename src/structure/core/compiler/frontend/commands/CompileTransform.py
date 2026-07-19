@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Mapping
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar
 from dataclasses import replace
 from pathlib import Path
@@ -23,10 +23,8 @@ from structure.core.compiler.ir.model.JoinMethod import JoinMethod
 from structure.core.compiler.ir.model.OperationPlan import OperationPlan
 from structure.core.compiler.ir.model.OutputPlan import OutputPlan
 from structure.core.compiler.ir.model.ProjectAssignment import ProjectAssignment
-from structure.core.compiler.ir.model.StepInputPlan import StepInputPlan
 from structure.core.compiler.ir.model.StepPlan import StepPlan
 from structure.core.compiler.ir.model.StepResultPlan import StepResultPlan
-from structure.core.compiler.ir.model.TransformMemberOrigin import TransformMemberOrigin
 from structure.core.compiler.ir.model.TransformPlan import TransformPlan
 from structure.core.compiler.symbolic_execution.model.CompileContext import CompileContext
 from structure.core.configuration.model.StructureConfig import StructureConfig
@@ -57,10 +55,21 @@ from structure.core.dsl.model.types.Struct import Struct
 from structure.core.dsl.model.types.StructType import StructType
 from structure.core.dsl.model.types.StructureType import StructureType
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
+from structure.platform.api.v1 import (
+    AuthoringAPI,
+    StepAuthoringInput,
+    StepAuthoringRequest,
+    StepAuthoringResult,
+    StepInputPlan,
+    TransformMemberOrigin,
+)
 
 SourceDeclaration = InputDeclaration | LaneDeclaration | BindingSelector
 WriteDeclaration = LaneDeclaration | OutputDeclaration | BindingSelector
 _diagnostic_project_root: ContextVar[Path | None] = ContextVar("diagnostic_project_root", default=None)
+_authoring: ContextVar[tuple[object | None, str, Mapping[str, object]]] = ContextVar(
+    "structure_platform_authoring", default=(None, "", {})
+)
 
 
 class CompileTransform:
@@ -80,6 +89,9 @@ class CompileTransform:
         overrides: Mapping[str, object] | None = None,
         **settings: object,
     ) -> TransformPlan:
+        authoring = settings.pop("_authoring", None)
+        target = str(settings.pop("_authoring_target", ""))
+        platform_configuration = settings.pop("_authoring_configuration", None)
         if config is not None and (project_root is not None or overrides or settings):
             raise ValueError(
                 "Pass either config=StructureConfig.resolve(...), or pass project_root/config override fields, not both."
@@ -92,9 +104,11 @@ class CompileTransform:
         merged.update(settings)
         resolved = config or StructureConfig.resolve(project_root=project_root, overrides=merged)
         token = _diagnostic_project_root.set(resolved.project_root)
+        authoring_token = _authoring.set((authoring, target, cast(Mapping[str, object], platform_configuration or {})))
         try:
             return self._compile(transform_class, config=resolved)
         finally:
+            _authoring.reset(authoring_token)
             _diagnostic_project_root.reset(token)
 
     def _compile(
@@ -564,16 +578,54 @@ class CompileTransform:
         )
         options = self._step_options(item.owner, metadata)
         parent_call: dict[str, object] = {}
+        authoring_body: object | None = None
 
         context = CompileContext(step=plan_name or name, capture_special_exprs=capture_special_exprs)
-        arguments = [
+        fallback_arguments = [
             (
-                RowScope(name=binding.scope, schema=binding.schema)
+                RowScope(name=binding.scope, schema=cast(type[Schema], binding.schema))
                 if binding.driving
-                else InputScope(name=binding.scope, schema=binding.schema, source=binding.source)
+                else InputScope(name=binding.scope, schema=cast(type[Schema], binding.schema), source=binding.source)
             )
             for binding in bindings
         ]
+        authoring, target, configuration = _authoring.get()
+        authoring_api = cast(AuthoringAPI | None, authoring)
+        request = StepAuthoringRequest(
+            target=target,
+            configuration=configuration,
+            name=plan_name or name,
+            origin=TransformMemberOrigin.of(item.owner, name),
+            inputs=tuple(
+                StepAuthoringInput(
+                    parameter=binding.parameter,
+                    schema=binding.schema,
+                    source=binding.source,
+                    scope=binding.scope,
+                    lane=binding.lane,
+                    ordinal=binding.ordinal,
+                    driving=binding.driving,
+                )
+                for binding in bindings
+            ),
+            results=tuple(
+                StepAuthoringResult(schema=schema, lane=lane, frame=lane, ordinal=ordinal)
+                for ordinal, (schema, lane) in enumerate(zip(output_schemas, output_lanes, strict=True))
+            ),
+            options=options,
+            capture_special_exprs=capture_special_exprs,
+        )
+        authoring_session = authoring_api.open_step(request) if authoring_api is not None else None
+        session = authoring_session if authoring_session is not None else nullcontext()
+        arguments = authoring_session.arguments() if authoring_session is not None else tuple(fallback_arguments)
+        if len(arguments) != len(bindings):
+            raise self._error(
+                "PLATFORM-E2708",
+                transform_class=transform_class,
+                member=name,
+                problem=f"Platform {target!r} supplied {len(arguments)} symbolic arguments for {len(bindings)} bindings.",
+                use="Update the platform authoring facet to return one argument per step input.",
+            )
         context.default_project_source = arguments[0]
         context.register_current_scope(bindings[0].scope)
         for binding, argument in zip(bindings[1:], arguments[1:], strict=True):
@@ -594,8 +646,11 @@ class CompileTransform:
                     parent_call,
                     capture_special_exprs=capture_special_exprs,
                 ):
-                    with context:
-                        result = member(instance, *arguments)
+                    with session:
+                        with context:
+                            result = member(instance, *arguments)
+                        if authoring_session is not None:
+                            authoring_body = authoring_session.capture(result)
         except StructureCompileError:
             raise
         except Exception as error:
@@ -607,6 +662,15 @@ class CompileTransform:
                 use="Use Structure expression helpers, combine predicates with &, |, or ~, or move arbitrary PySpark to a hook.",
                 context={"error": type(error).__name__},
             ) from error
+
+        if authoring_session is not None and authoring_body is None:
+            raise self._error(
+                "PLATFORM-E2708",
+                transform_class=transform_class,
+                member=name,
+                problem=f"Platform {target!r} did not capture symbolic step {name!r}.",
+                use="Return an opaque body from StepAuthoringSession.capture(...).",
+            )
 
         context.operations.extend(self._reserved_operations(member, metadata))
         diagnostics.extend(self._validate_joins(transform_class, name, context.joins))
@@ -689,7 +753,7 @@ class CompileTransform:
         steps.append(
             StepPlan(
                 name=plan_name or name,
-                input_schema=driver.schema,
+                input_schema=cast(type[Schema], driver.schema),
                 output_schema=first.schema,
                 source=driver.source,
                 source_scope=driver.scope,
@@ -707,6 +771,7 @@ class CompileTransform:
                 results=tuple(result_plans),
                 options=options,
                 origin=TransformMemberOrigin.of(item.owner, name),
+                platform_body=authoring_body,
             )
         )
         for result in result_plans:

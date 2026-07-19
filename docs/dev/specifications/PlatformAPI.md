@@ -53,10 +53,11 @@ Conceptually, the unversioned API definitions contain:
 ## PlatformAPI
 
 `PlatformAPI` is the only versioned public façade returned by a plugin. It is immutable or session-scoped and has no
-global activation behavior. It exposes three required service facets and three optional lifecycle facets:
+global activation behavior. It exposes four required service facets and three optional lifecycle facets:
 
     class PlatformAPI(Protocol):
         schema: SchemaAPI
+        authoring: AuthoringAPI
         compiler: CompilerAPI
         capabilities: CapabilitiesAPI
         executor: ExecutionAPI | None
@@ -68,7 +69,7 @@ The version belongs to the import package, not the class names. For example, v1 
 Core activates exactly one negotiated versioned API package for a selected plugin and session. It rejects any attempt to
 mix service facets from different versioned API packages in that façade.
 
-`schema`, `compiler`, and `capabilities` must be present. `executor`, `generator`, and `serializer` are `None` only
+`schema`, `authoring`, `compiler`, and `capabilities` must be present. `executor`, `generator`, and `serializer` are `None` only
 when the capability facet reports that corresponding lifecycle service as unavailable. Core must report a mismatch
 between claimed capability and missing/present optional facet as a platform compatibility error.
 
@@ -90,9 +91,10 @@ source locations for diagnostics. Core does not add a method per expression, joi
 compilation phase.
 
 `PlatformCompilation` contains an opaque lowered payload, optional Core analysis payload, deterministic fingerprint
-material, and Core diagnostic records. Core owns DSL inspection and symbolic interpretation, then gives the neutral
-plan to the plugin. The plugin decides target applicability, target-specific semantic validation, and lowering. Core
-stores and routes opaque payloads but does not inspect them to infer target semantics.
+material, and Core diagnostic records. Core owns structural inspection and invokes step methods in declaration order.
+The authoring facet supplies symbolic arguments and captures the returned platform body. The plugin decides target
+applicability, target-specific semantic validation, and lowering. Core stores and routes opaque payloads but does not
+inspect them to infer target semantics.
 
 The schema facet validates platform field ownership and materializes target schema representations. The capabilities
 facet resolves the target-defined capability model for an explicit profile and variant. Execution validates a duck-typed
@@ -105,6 +107,15 @@ Every public v1 request and result model is immutable. Requests contain Core-own
 previously returned by the same negotiated façade. Results may contain opaque values, but every diagnostic and
 capability record uses the standard Core model. A plugin must not require callers to import its implementation package
 to construct a request.
+
+The required authoring facet owns symbolic authoring without owning Transform lifecycle:
+
+    class AuthoringAPI(Protocol):
+        def open_step(self, request: StepAuthoringRequest) -> StepAuthoringSession: ...
+
+Core resolves inheritance, bindings, source order, decorators, and hooks, then enters one returned session for the
+step. The session returns one symbolic argument per input binding and captures the returned DSL value as an opaque
+platform body. It must not call Core compiler, frontend, capability, traceability, schema, or registry facades.
 
 The required schema facet accepts a schema declaration and selected-platform context, validates field ownership, and
 returns a normalized Core schema plus an opaque materialization payload. It must reject a foreign platform field before
@@ -149,7 +160,7 @@ the safe remedy is to install the recorded plugin version or rebuild the artifac
 - Core calls a small number of workflow-shaped facet methods, not target-operation methods.
 - Platform plans, expressions, target schemas, analysis, and runtime objects remain opaque to Core.
 - Optional lifecycle facets are absent when unsupported; there are no empty plugin registrations.
-- Public v1 contracts are additive only. A new stable need creates a later version rather than mutating v1.
+- v1 includes the authoring boundary required for platform-owned DSL semantics.
 - Platform DSL APIs are imported from platform packages, never added to the `structure` root.
 
 ## Acceptance Evidence

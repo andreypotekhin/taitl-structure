@@ -1,6 +1,7 @@
 import sys
 
 from structure import *
+from structure.platform.pyspark import field, types
 from structure.platform.pyspark.api import PySpark
 
 

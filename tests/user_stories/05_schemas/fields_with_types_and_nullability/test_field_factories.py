@@ -3,13 +3,13 @@ import pytest
 import structure
 from structure import Schema
 from structure import array as expression_array
-from structure import types
 from structure.core.dsl.model.types.Array import Array
 from structure.core.dsl.model.types.Decimal import Decimal
 from structure.core.dsl.model.types.Map import Map
-from structure.field import *
-from structure.field import array as field_array
-from structure.field import string as field_string
+from structure.platform.pyspark import types
+from structure.platform.pyspark.dsl.field import *
+from structure.platform.pyspark.dsl.field import array as field_array
+from structure.platform.pyspark.dsl.field import string as field_string
 
 
 def test_schema_module_wildcard_factories_keep_type_and_nullability_contracts() -> None:
@@ -58,8 +58,8 @@ def test_one_declaration_can_bind_to_multiple_schema_fields() -> None:
 
 def test_legacy_constructors_are_not_root_exports() -> None:
     assert not hasattr(structure, "String")
-    with pytest.raises(TypeError, match=r"field\(\.\.\.\) is no longer supported"):
-        getattr(structure, "field")(object())
+    assert not hasattr(structure, "field")
+    assert not hasattr(structure, "types")
 
 
 def test_standalone_type_factories_build_composable_type_values() -> None:

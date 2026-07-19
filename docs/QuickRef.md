@@ -11,7 +11,7 @@ A schema class defines a contract and compiles into PySpark schema (`StructType`
 
 ```python
 from structure import Schema
-from structure.field import *
+from structure.platform.pyspark.dsl.field import *
 
 
 class OrderRaw(Schema):

@@ -16,8 +16,8 @@ from structure.core.dsl.model.types.LongType import LongType
 from structure.core.dsl.model.types.MapType import MapType
 from structure.core.dsl.model.types.StringType import StringType
 from structure.core.dsl.model.types.StructType import StructType
-from structure.core.dsl.model.types.StructureType import StructureType
 from structure.core.dsl.model.types.TimestampType import TimestampType
+from structure.platform.pyspark.dsl.types import StructureType
 
 
 class RenderPySparkSchema:

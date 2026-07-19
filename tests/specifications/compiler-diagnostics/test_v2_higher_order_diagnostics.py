@@ -1,6 +1,7 @@
 import pytest
 
 from structure import *
+from structure.platform.pyspark import field, types
 
 
 class RawTags(Schema):

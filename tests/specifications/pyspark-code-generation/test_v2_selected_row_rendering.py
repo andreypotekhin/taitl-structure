@@ -4,6 +4,7 @@ import pytest
 
 from structure import *
 from structure.core.cli.commands.RenderExplainReport import render_explain_report
+from structure.platform.pyspark import field, types
 from structure.platform.pyspark.api import PySpark
 from structure.platform.pyspark.commands.RenderPySparkStep import render_pyspark_step
 from structure.platform.pyspark.commands.RenderPySparkTransformModule import render_pyspark_transform_module

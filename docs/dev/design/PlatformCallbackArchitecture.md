@@ -39,7 +39,8 @@ class, as described below.
 
 Structure retains its target-independent declarations:
 
-    from structure import Schema, Transform, field, transform
+    from structure import Schema, Transform, transform
+    from structure.platform.pyspark import field
     from structure.platform.pyspark import col, join, sum
 
 The second import is the target-owned platform DSL. It may be syntactically close to the native target and may differ
@@ -75,16 +76,16 @@ Unversioned Platform API definitions are under `structure.platform.api`. Version
 `structure.platform.api.v1`. The unversioned definitions describe plugin identity and supported API ranges, then obtain
 one `PlatformAPI` façade for the selected version.
 
-`PlatformAPI` exposes small schema, compiler, and capability service facets, plus optional execution, generation, and
-serialization facets. Schema, compiler, and capability are required. The other facets are absent only when capabilities
+`PlatformAPI` exposes small schema, authoring, compiler, and capability service facets, plus optional execution, generation, and
+serialization facets. Schema, authoring, compiler, and capability are required. The other facets are absent only when capabilities
 report the related lifecycle service as unavailable. Requests and results use public immutable models. Target plans,
 runtime values, and target-specific analysis may
 be opaque to Core: Core routes and fingerprints them through the appropriate service facet but does not interpret them.
 
 Core owns the workflow around each service facet. For example, the compile engine discovers a transform, establishes
-source and diagnostic context, builds the neutral plan, invokes `platform.compiler.compile(request)` with that plan,
-produces the standard artifact envelope, caches it, and renders failures. The compiler facet decides whether a target
-operation is legal, such as whether
+source and diagnostic context, builds the neutral plan, invokes its methods in Core-controlled order through the
+selected platform authoring facet, invokes `platform.compiler.compile(request)` with the completed plan, produces the
+standard artifact envelope, caches it, and renders failures. The compiler facet decides whether a target operation is legal, such as whether
 `having()` follows `group_by()`, performs target lowering, and supplies target diagnostic text through Core diagnostic
 records.
 

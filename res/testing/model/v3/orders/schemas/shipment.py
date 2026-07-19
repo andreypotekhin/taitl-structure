@@ -1,5 +1,5 @@
 from structure import Schema
-from structure.field import *
+from structure.platform.pyspark.dsl.field import *
 
 from testing.model.v3.orders.schemas.common import AuditStamp, TenantKey
 
@@ -12,4 +12,3 @@ class Shipment(Schema):
     carrier = string(nullable=True)
     tracking_number = string(nullable=True)
     shipped_at = timestamp(nullable=True)
-

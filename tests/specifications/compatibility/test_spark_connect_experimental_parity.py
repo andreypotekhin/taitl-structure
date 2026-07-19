@@ -3,6 +3,7 @@ from typing import Any, cast
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.target.capabilities.api import Capabilities
+from structure.platform.pyspark import field, types
 from structure.platform.pyspark.api import PySpark
 from structure.platform.pyspark.commands.RenderPySparkRuntimeModule import render_pyspark_runtime_module
 from structure.platform.pyspark.commands.RenderPySparkTransformModule import render_pyspark_transform_module

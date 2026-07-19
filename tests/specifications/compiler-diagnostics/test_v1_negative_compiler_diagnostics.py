@@ -3,6 +3,7 @@ from typing import Any, cast
 import pytest
 
 from structure import *
+from structure.platform.pyspark import field, types
 
 
 class Raw(Schema):

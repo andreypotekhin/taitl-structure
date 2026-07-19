@@ -1,5 +1,5 @@
 from structure import Schema
-from structure.field import *
+from structure.platform.pyspark.dsl.field import *
 
 from testing.model.v3.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
 
@@ -116,4 +116,3 @@ class OrderProductCandidate(Schema):
     customer_name = string(nullable=True)
     product_id = string(nullable=True)
     product_name = string(nullable=True)
-

@@ -1,5 +1,6 @@
 from structure.platform.api.v1 import PlatformAPI as V1PlatformAPI
 from structure.platform.pyspark.platform_v1.Analysis import Analysis
+from structure.platform.pyspark.platform_v1.Authoring import Authoring
 from structure.platform.pyspark.platform_v1.Capabilities import Capabilities
 from structure.platform.pyspark.platform_v1.Compiler import Compiler
 from structure.platform.pyspark.platform_v1.Execution import Execution
@@ -14,6 +15,7 @@ class PlatformAPI:
             schema=Schema(),
             compiler=Compiler(),
             capabilities=Capabilities(),
+            authoring=Authoring(),
             executor=Execution(),
             generator=Generation(),
             explainer=Explain(),

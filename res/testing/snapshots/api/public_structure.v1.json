@@ -871,14 +871,6 @@
       "qualname": "exp",
       "signature": "(value: 'object') -> 'Expression'"
     },
-    "field": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "_FieldModule",
-      "module": "structure.field",
-      "qualname": null,
-      "signature": "(*args: object, **kwargs: object) -> NoReturn"
-    },
     "first_value": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -1694,14 +1686,6 @@
       "module": "structure.core.dsl.model.transforms.operations",
       "qualname": "try_element_at",
       "signature": "(value: 'object', key: 'object') -> 'Expression'"
-    },
-    "types": {
-      "dataclass_fields": [],
-      "enum_members": [],
-      "kind": "module",
-      "module": null,
-      "qualname": null,
-      "signature": null
     },
     "unbounded_following": {
       "dataclass_fields": [],

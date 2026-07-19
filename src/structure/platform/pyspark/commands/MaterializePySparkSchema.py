@@ -2,19 +2,21 @@ from __future__ import annotations
 
 from structure.core.dsl.model.schemas.FieldDefinition import FieldDefinition
 from structure.core.dsl.model.schemas.Schema import Schema
-from structure.core.dsl.model.types.ArrayType import ArrayType
-from structure.core.dsl.model.types.BooleanType import BooleanType
-from structure.core.dsl.model.types.DateType import DateType
-from structure.core.dsl.model.types.DecimalType import DecimalType
-from structure.core.dsl.model.types.DoubleType import DoubleType
-from structure.core.dsl.model.types.FloatType import FloatType
-from structure.core.dsl.model.types.IntegerType import IntegerType
-from structure.core.dsl.model.types.LongType import LongType
-from structure.core.dsl.model.types.MapType import MapType
-from structure.core.dsl.model.types.StringType import StringType
-from structure.core.dsl.model.types.StructType import StructType
-from structure.core.dsl.model.types.StructureType import StructureType
-from structure.core.dsl.model.types.TimestampType import TimestampType
+from structure.platform.pyspark.dsl.types import (
+    ArrayType,
+    BooleanType,
+    DateType,
+    DecimalType,
+    DoubleType,
+    FloatType,
+    IntegerType,
+    LongType,
+    MapType,
+    StringType,
+    StructType,
+    StructureType,
+    TimestampType,
+)
 
 
 class MaterializePySparkSchema:

@@ -2,6 +2,7 @@ import pytest
 
 import structure
 from structure import *
+from structure.platform.pyspark import field, types
 
 
 def test_hooks_attach_to_declared_step_method_boundaries(orders_recipe) -> None:
