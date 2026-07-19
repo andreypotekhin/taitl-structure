@@ -1,14 +1,17 @@
 import json
 from collections.abc import Mapping
 
-from structure.core.compiler.api.Compiler import Compiler
 from structure.core.dsl.model.schemas.Schema import Schema
+from structure.platform.pyspark.commands.BuildCompilerTraceability import BuildCompilerTraceability
 from structure.platform.pyspark.commands.RenderPySparkSchema import render_pyspark_schema
 from structure.platform.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.platform.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
 
 
 class PySparkTraceabilityReport:
+
+    def __init__(self) -> None:
+        self._traceability = BuildCompilerTraceability()
 
     def render(
         self,
@@ -18,7 +21,7 @@ class PySparkTraceabilityReport:
         transform_module: str,
         schema_modules: Mapping[type[Schema], str],
     ) -> str:
-        traceability = Compiler.traceability.build()(
+        traceability = self._traceability(
             plan,
             source_transform=source_transform,
             transform_module=transform_module,

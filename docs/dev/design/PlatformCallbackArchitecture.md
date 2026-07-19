@@ -82,8 +82,9 @@ runtime values, and target-specific analysis may
 be opaque to Core: Core routes and fingerprints them through the appropriate service facet but does not interpret them.
 
 Core owns the workflow around each service facet. For example, the compile engine discovers a transform, establishes
-source and diagnostic context, invokes `platform.compiler.compile(request)`, produces the standard artifact envelope,
-caches it, and renders failures. The compiler facet decides whether a target operation is legal, such as whether
+source and diagnostic context, builds the neutral plan, invokes `platform.compiler.compile(request)` with that plan,
+produces the standard artifact envelope, caches it, and renders failures. The compiler facet decides whether a target
+operation is legal, such as whether
 `having()` follows `group_by()`, performs target lowering, and supplies target diagnostic text through Core diagnostic
 records.
 

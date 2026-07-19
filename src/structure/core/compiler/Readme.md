@@ -13,6 +13,7 @@ those outputs; upstream CLI, runtime session, and tests call compiler APIs to va
 The compound `compiler` API endpoint groups command factories by compiler concern:
 
 ```python
+Compiler.frontend.analyze()
 Compiler.frontend.compile()
 Compiler.compileability.streaming()
 Compiler.traceability.build()
@@ -22,6 +23,10 @@ Each subcommand returns a fresh action instance. IR, diagnostic, streaming, and 
 available from the `api/` packages as simplified imports.
 
 ## Inner Workings
+`frontend.analyze()` inspects source classes and returns backend-neutral `TransformPlan` IR. `frontend.compile()`
+selects the negotiated platform, supplies that plan to its compiler facet, and returns its opaque payload with the
+Core-owned analysis attached. Plugins lower supplied plans; they do not call Core compiler facades.
+
 Compiler apps divide the pipeline by responsibility: `frontend` inspects source classes, `symbolic_execution`
 captures `where(...)` and `lookup_join(...)` effects, `ir` stores plan records, `compileability` classifies target
 fitness, `diagnostics` defines compile errors, and `traceability` maps source, IR, recipes, and generated artifacts.

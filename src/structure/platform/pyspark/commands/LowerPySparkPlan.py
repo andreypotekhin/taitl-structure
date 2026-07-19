@@ -1,5 +1,4 @@
 from structure.core.compiler.ir.model.TransformPlan import TransformPlan
-from structure.core.target.capabilities.api import Capabilities
 from structure.core.target.capabilities.model.BackendCapabilities import BackendCapabilities
 from structure.platform.pyspark.logic.mapping.PySparkInputMapper import PySparkInputMapper
 from structure.platform.pyspark.logic.mapping.PySparkOutputMapper import PySparkOutputMapper
@@ -9,7 +8,8 @@ from structure.platform.pyspark.model.PySparkExecutionPlan import PySparkExecuti
 
 class LowerPySparkPlan:
 
-    def __init__(self) -> None:
+    def __init__(self, capabilities: BackendCapabilities | None = None) -> None:
+        self._capabilities = capabilities
         self._inputs = PySparkInputMapper()
         self._steps = PySparkStepMapper()
         self._outputs = PySparkOutputMapper()
@@ -20,7 +20,9 @@ class LowerPySparkPlan:
         *,
         capabilities: BackendCapabilities | None = None,
     ) -> PySparkExecutionPlan:
-        target = capabilities or Capabilities.resolve()()
+        target = capabilities or self._capabilities
+        if target is None:
+            raise ValueError("PySpark plan lowering requires explicit capabilities.")
         inputs = tuple(
             self._inputs.map(input.name, input.schema, input.ordinal, input.streaming, input.aliases)
             for input in plan.inputs

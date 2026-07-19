@@ -84,16 +84,15 @@ The compiler facet has one public workflow-shaped entry point:
     class CompilerAPI(Protocol):
         def compile(self, request: CompileRequest) -> PlatformCompilation: ...
 
-`CompileRequest` is immutable and contains only facts Core already owns: the discovered transform declaration, resolved
-Core schema structure, selected target and target constraints, opaque platform configuration, and source locations for
-diagnostics. Core does not add a method per expression, join, aggregation, validation rule, or compilation phase.
+`CompileRequest` is immutable and contains only facts Core already owns: the discovered transform declaration, its
+backend-neutral `TransformPlan` analysis, selected target and target constraints, opaque platform configuration, and
+source locations for diagnostics. Core does not add a method per expression, join, aggregation, validation rule, or
+compilation phase.
 
-`PlatformCompilation` contains an opaque lowered payload, optional opaque analysis payload, deterministic fingerprint
-material, and Core diagnostic records. The plugin decides platform DSL semantics, symbolic interpretation, operation
-applicability, semantic validation, and lowering. For example, PySpark decides whether `having()` is valid after its
-own grouping operation; the iterable plugin decides the limits of its smaller platform DSL. Core stores and routes
-opaque
-payloads but does not inspect them to infer target semantics.
+`PlatformCompilation` contains an opaque lowered payload, optional Core analysis payload, deterministic fingerprint
+material, and Core diagnostic records. Core owns DSL inspection and symbolic interpretation, then gives the neutral
+plan to the plugin. The plugin decides target applicability, target-specific semantic validation, and lowering. Core
+stores and routes opaque payloads but does not inspect them to infer target semantics.
 
 The schema facet validates platform field ownership and materializes target schema representations. The capabilities
 facet resolves the target-defined capability model for an explicit profile and variant. Execution validates a duck-typed
@@ -111,10 +110,9 @@ The required schema facet accepts a schema declaration and selected-platform con
 returns a normalized Core schema plus an opaque materialization payload. It must reject a foreign platform field before
 the compiler facet starts.
 
-The required compiler facet accepts `CompileRequest` and returns `PlatformCompilation`. `CompileRequest` contains the
-discovered transform, normalized Core schemas, resolved target name, target constraints, immutable selected-plugin
-configuration, and source locations. `PlatformCompilation` contains an opaque lowered payload, optional opaque
-analysis payload, deterministic fingerprint material, diagnostics, and target traceability facts. Fingerprint material
+The required compiler facet accepts `CompileRequest` and returns `PlatformCompilation`. `CompileRequest.analysis` is
+the backend-neutral `TransformPlan` produced by Core before the call. The platform returns its opaque lowered payload;
+Core attaches the plan to the compilation for its artifact workflow. Fingerprint material
 must be deterministic for equal semantic source and configuration and must not contain runtime object identities.
 
 The required capabilities facet resolves a semantic capability model from a target profile and variant:

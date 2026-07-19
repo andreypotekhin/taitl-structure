@@ -4,6 +4,7 @@ import hashlib
 import inspect
 from pathlib import Path
 
+from structure.core.compiler.api.Compiler import Compiler
 from structure.core.compiler.artifacts.commands.BuildArtifactFingerprint import BuildArtifactFingerprint
 from structure.core.compiler.artifacts.commands.BuildArtifactManifest import BuildArtifactManifest
 from structure.core.compiler.artifacts.model.CompiledTransform import CompiledTransform
@@ -14,7 +15,6 @@ from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.core.platforms.api.Platform import Platform
 from structure.core.runtime.schemas.model.TransformSchemas import TransformSchemas
-from structure.platform.api.v1.CompileRequest import CompileRequest
 from structure.version import VERSION
 
 
@@ -34,20 +34,12 @@ class BuildCompiledTransform:
         materialize_schemas: bool = True,
     ) -> CompiledTransform:
         manifest = self._manifest(subject, options=options, capability=self._capability(options))
-        platform = self._registry.select(options.target_backend)
-        compilation = platform.api.compiler.compile(
-            CompileRequest(
-                transform=subject,
-                target=options.target_backend,
-                configuration={
-                    "profile": options.target_profile,
-                    "variant": options.target_variant,
-                    "warn_on_udfs": options.warn_on_udfs,
-                    "generated_code_options": options.generated_code_options,
-                    "schema_types": schema_types,
-                    "materialize_schemas": materialize_schemas,
-                },
-            )
+        compilation = Compiler.frontend.compile()(
+            subject,
+            options=options,
+            schema_types=schema_types,
+            materialize_schemas=materialize_schemas,
+            registry=self._registry,
         )
         if not isinstance(compilation.analysis, TransformPlan):
             raise ValueError(f"PLATFORM-E2708: Platform {options.target_backend!r} returned an invalid compilation.")

@@ -7,3 +7,4 @@ class CompileRequest:
     transform: object
     target: str
     configuration: Mapping[str, object]
+    analysis: object | None = None

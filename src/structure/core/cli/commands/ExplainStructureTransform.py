@@ -16,7 +16,7 @@ class ExplainStructureTransform:
                 sys.path.insert(0, text)
         module_name, name = transform.rsplit(".", 1)
         module = importlib.import_module(module_name)
-        report = RenderExplainReport()(getattr(module, name))
+        report = RenderExplainReport()(getattr(module, name), config=config)
         return (report, *self._compatibility(config))
 
     def _compatibility(self, config: StructureConfig) -> tuple[str, ...]:

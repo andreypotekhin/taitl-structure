@@ -31,7 +31,7 @@ class RenderStructureDocsProject:
         docs_root = self._docs_root(config)
         selected = transforms or project.transforms
         plans = {
-            f"{transform.__module__}.{transform.__name__}": Compiler.frontend.compile()(transform)
+            f"{transform.__module__}.{transform.__name__}": Compiler.frontend.analyze()(transform)
             for transform in selected
         }
         data = self._data.project(project, plans)

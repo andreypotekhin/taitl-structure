@@ -1,31 +1,39 @@
 from __future__ import annotations
 
-from structure.core.compiler.api.Compiler import Compiler
 from structure.core.compiler.ir.model.JoinMethod import JoinMethod
 from structure.core.compiler.ir.model.OperationPlan import OperationPlan
+from structure.core.compiler.ir.model.TransformPlan import TransformPlan
 from structure.core.dsl.model.transforms.Join import Join
 from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.platform.api.v1.ExplainRequest import ExplainRequest
-from structure.platform.pyspark.commands.LowerPySparkPlan import LowerPySparkPlan
+from structure.platform.pyspark.commands.BuildCompilerTraceability import BuildCompilerTraceability
+from structure.platform.pyspark.commands.ClassifyStreamingCompatibility import ClassifyStreamingCompatibility
+from structure.platform.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.platform.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
 
 
 class RenderPySparkExplainReport:
 
+    def __init__(self) -> None:
+        self._streaming = ClassifyStreamingCompatibility()
+        self._traceability = BuildCompilerTraceability()
+
     def __call__(self, request: ExplainRequest) -> str:
         transform = request.transform
         if not isinstance(transform, type) or not issubclass(transform, Transform):
             raise TypeError("PySpark explain rendering requires a Transform class.")
-        plan = Compiler.frontend.compile()(transform)
-        recipe = LowerPySparkPlan()(plan)
-        streaming = Compiler.compileability.streaming()(
+        plan = request.analysis
+        recipe = request.payload
+        if not isinstance(plan, TransformPlan) or not isinstance(recipe, PySparkExecutionPlan):
+            raise ValueError("PLATFORM-E2708: PySpark explain rendering requires compiled analysis and payload.")
+        streaming = self._streaming(
             recipe,
             required=bool((plan.options or {}).get("streaming_compatible", False)),
         )
         source_transform = f"{transform.__module__}.{transform.__name__}"
         transform_module = f"{transform.__module__}.{recipe.transform}Generated"
-        traceability = Compiler.traceability.build()(
+        traceability = self._traceability(
             recipe,
             source_transform=source_transform,
             transform_module=transform_module,

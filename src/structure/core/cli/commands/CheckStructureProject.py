@@ -12,7 +12,7 @@ class CheckStructureProject:
     def __call__(self, config: StructureConfig) -> tuple[str, ...]:
         project = DiscoverStructureProject()(config)
         for transform in project.transforms:
-            RenderExplainReport()(transform)
+            RenderExplainReport()(transform, config=config)
         lines = [
             "Structure check passed",
             f"  source roots: {', '.join(self._relative(config, root) for root in config.source_roots)}",
