@@ -1,6 +1,3 @@
-from enum import Enum
+from structure.platform.pyspark.dsl.joins import AsOf
 
-
-class AsOf(Enum):
-    BACKWARD = "backward"
-    FORWARD = "forward"
+__all__ = ["AsOf"]

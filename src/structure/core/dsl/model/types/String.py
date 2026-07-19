@@ -1,5 +1,3 @@
-from structure.core.dsl.model.types.StringType import StringType
+from structure.platform.pyspark.dsl.types import String
 
-
-class String(StringType):
-    pass
+__all__ = ["String"]

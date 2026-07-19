@@ -1,5 +1,5 @@
 from structure import Schema
-from structure.platform.pyspark.dsl.field import *
+from structure.platform.pyspark import *
 
 
 class ScalarEvent(Schema):

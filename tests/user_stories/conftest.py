@@ -2,7 +2,7 @@ import pytest
 
 from structure import *
 from structure.core.compiler.api import Compiler
-from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark import PySpark
 
 
 @pytest.fixture
@@ -14,7 +14,7 @@ def orders_plan():
 
 @pytest.fixture
 def orders_recipe(orders_plan):
-    return PySpark.plan.lower()(orders_plan)
+    return PySpark.compiler.lower()(orders_plan)
 
 
 @pytest.fixture

@@ -1,3 +1,3 @@
-from structure.platform.api.v1.InputPlan import InputPlan
+from structure.platform.api.v1.model import InputPlan
 
 __all__ = ["InputPlan"]

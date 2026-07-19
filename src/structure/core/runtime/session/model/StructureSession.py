@@ -16,7 +16,7 @@ from structure.core.sources.commands.DiscoverStructureSources import DiscoverStr
 from structure.core.sources.model.CompiledSources import CompiledSources
 from structure.core.sources.model.SourceTransformAddress import SourceTransformAddress
 from structure.core.sources.model.StructureSources import StructureSources
-from structure.platform.api.v1.ExecutionRequest import ExecutionRequest
+from structure.platform.api.v1.model import ExecutionRequest
 
 
 class StructureSession:

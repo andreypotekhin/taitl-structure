@@ -1,5 +1,5 @@
 from structure.core.compiler.compileability.streaming_compatibility.model.StreamingReport import StreamingReport
-from structure.platform.api.v1.StreamingAnalysisRequest import StreamingAnalysisRequest
+from structure.platform.api.v1.model import StreamingAnalysisRequest
 
 
 class ClassifyStreamingCompatibility:

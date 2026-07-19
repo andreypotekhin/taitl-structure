@@ -25,7 +25,7 @@ The canonical declaration form is explicit:
 
 ```python
 from structure import Schema
-from structure.platform.pyspark.dsl.field import *
+from structure.platform.pyspark import *
 
 
 class OrderRaw(Schema):
@@ -81,11 +81,11 @@ for compiler checks, generated Spark `StructType` code, runtime validation, trac
 
 ### Public Imports
 
-The PySpark schema declaration DSL is imported from `structure.platform.pyspark.dsl.field`:
+The PySpark schema declaration DSL is imported from `structure.platform.pyspark`:
 
 ```python
 from structure import Schema
-from structure.platform.pyspark.dsl.field import *
+from structure.platform.pyspark import *
 ```
 
 Standalone PySpark type values for casts and UDF contracts are available through
@@ -519,7 +519,7 @@ columns, partition columns, tenancy fields, and common source metadata. It is no
 
 ```python
 from structure import Schema
-from structure.platform.pyspark.dsl.field import *
+from structure.platform.pyspark import *
 
 
 class EntityKeys(Schema):

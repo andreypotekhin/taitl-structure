@@ -64,8 +64,9 @@ global activation behavior. It exposes four required service facets and three op
         generator: GenerationAPI | None
         serializer: SerializationAPI | None
 
-The version belongs to the import package, not the class names. For example, v1 code imports
-`structure.platform.api.v1.PlatformAPI` and `CompilerAPI`; it never imports `PlatformAPI1` or `CompilerAPI1`.
+The version belongs to the import package, and the façade class follows the conventional name order. For example, v1
+code imports `structure.platform.api.v1.PlatformAPIV1` and `CompilerAPI`; it never imports `V1PlatformAPI` or
+`CompilerAPI1`.
 Core activates exactly one negotiated versioned API package for a selected plugin and session. It rejects any attempt to
 mix service facets from different versioned API packages in that façade.
 

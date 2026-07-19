@@ -15,7 +15,7 @@ from structure.core.target.capabilities.api import (
     Capabilities,
     CapabilityRequirement,
 )
-from structure.platform.pyspark.capabilities.PySparkCapabilityRules import PySparkCapabilities
+from structure.platform.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
 
 
 def test_default_pyspark_capabilities_do_not_import_pyspark() -> None:

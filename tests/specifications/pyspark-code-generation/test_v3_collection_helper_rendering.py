@@ -8,9 +8,8 @@ from structure.core.dsl.model.types.IntegerType import IntegerType
 from structure.core.dsl.model.types.LongType import LongType
 from structure.core.dsl.model.types.MapType import MapType
 from structure.core.dsl.model.types.StringType import StringType
-from structure.platform.pyspark import field, types
-from structure.platform.pyspark.api import PySpark
-from structure.platform.pyspark.commands.RenderPySparkStep import render_pyspark_step
+from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
 
 
 class CollectionSource(Schema):
@@ -81,7 +80,7 @@ class CollectionHelperTransform(Transform):
 
 
 def test_collection_helpers_render_as_readable_pyspark_functions() -> None:
-    plan = PySpark.plan.lower()(compile_transform(CollectionHelperTransform))
+    plan = PySpark.compiler.lower()(compile_transform(CollectionHelperTransform))
 
     text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
 

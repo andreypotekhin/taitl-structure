@@ -10,8 +10,7 @@ from structure.core.dsl.model.expr.Expression import Expression
 from structure.core.dsl.model.expr.expressions import literal
 from structure.core.dsl.model.types.DecimalType import DecimalType
 from structure.core.dsl.model.types.StructType import StructType
-from structure.platform.pyspark import field, types
-from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark import PySpark, field, types
 
 
 def _expression(type, *, nullable: bool) -> Expression:
@@ -301,7 +300,7 @@ def test_coalesce_common_type_allows_a_reversed_decimal_fallback_in_a_projection
 
 
 def test_generated_module_imports_datetime_for_temporal_literals() -> None:
-    recipe = PySpark.plan.lower()(compile_transform(TemporalFallback))
+    recipe = PySpark.compiler.lower()(compile_transform(TemporalFallback))
 
     text = PySpark.render.transform()(
         recipe,
@@ -760,7 +759,7 @@ def test_decimal_literals_are_typed_and_imported_by_generated_modules() -> None:
     literal_expression = literal(Decimal("0.0010"))
 
     assert _decimal_shape(literal_expression) == (4, 4)
-    recipe = PySpark.plan.lower()(compile_transform(DecimalLiteralProjection))
+    recipe = PySpark.compiler.lower()(compile_transform(DecimalLiteralProjection))
     text = PySpark.render.transform()(
         recipe,
         source_transform="tests.DecimalLiteralProjection",
@@ -773,7 +772,7 @@ def test_decimal_literals_are_typed_and_imported_by_generated_modules() -> None:
 
 
 def test_lag_accepts_decimal_defaults_and_imports_them_in_generated_modules() -> None:
-    recipe = PySpark.plan.lower()(compile_transform(DecimalWindowDefault))
+    recipe = PySpark.compiler.lower()(compile_transform(DecimalWindowDefault))
     text = PySpark.render.transform()(
         recipe,
         source_transform="tests.DecimalWindowDefault",

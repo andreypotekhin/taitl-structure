@@ -1,7 +1,3 @@
-from enum import Enum
+from structure.platform.pyspark.dsl.operations import StreamingSupport
 
-
-class StreamingSupport(Enum):
-    COMPATIBLE = "compatible"
-    BATCH_ONLY = "batch_only"
-    UNKNOWN = "unknown"
+__all__ = ["StreamingSupport"]

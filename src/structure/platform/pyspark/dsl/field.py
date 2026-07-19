@@ -2,20 +2,22 @@ from __future__ import annotations
 
 from typing import Mapping, cast
 
-from structure.core.dsl.model.types.Array import Array
-from structure.core.dsl.model.types.Boolean import Boolean
-from structure.core.dsl.model.types.Date import Date
-from structure.core.dsl.model.types.Decimal import Decimal
-from structure.core.dsl.model.types.Double import Double
-from structure.core.dsl.model.types.Float import Float
-from structure.core.dsl.model.types.Integer import Integer
-from structure.core.dsl.model.types.Long import Long
-from structure.core.dsl.model.types.Map import Map
-from structure.core.dsl.model.types.String import String
-from structure.core.dsl.model.types.Struct import Struct
-from structure.core.dsl.model.types.StructureType import StructureType
-from structure.core.dsl.model.types.Timestamp import Timestamp
 from structure.dsl import FieldDeclaration, Schema
+from structure.platform.pyspark.dsl.types import (
+    Array,
+    Boolean,
+    Date,
+    Decimal,
+    Double,
+    Float,
+    Integer,
+    Long,
+    Map,
+    String,
+    Struct,
+    StructureType,
+    Timestamp,
+)
 from structure.platform.pyspark.dsl.ValidatePySparkSchemas import ValidatePySparkSchemas
 
 _validate = ValidatePySparkSchemas().validate

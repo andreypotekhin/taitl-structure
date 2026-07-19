@@ -217,7 +217,7 @@ from structure.core.runtime.api import (
     TransformSchemas,
 )
 from structure.core.sources import CompiledSources, SourceTransformAddress, StructureSources
-from structure.platform.pyspark.api import DiskStorage, MemoryStorage, PackageImportStorage
+from structure.platform.pyspark.files.model import DiskStorage, MemoryStorage, PackageImportStorage
 from structure.core.tools.api import StructureTools
 
 

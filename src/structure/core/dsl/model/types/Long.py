@@ -1,5 +1,3 @@
-from structure.core.dsl.model.types.LongType import LongType
+from structure.platform.pyspark.dsl.types import Long
 
-
-class Long(LongType):
-    pass
+__all__ = ["Long"]

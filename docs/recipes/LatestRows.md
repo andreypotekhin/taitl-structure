@@ -27,7 +27,7 @@ consumers receive.
 
 ```python
 from structure import *
-from structure.platform.pyspark.dsl.field import long, string
+from structure.platform.pyspark import long, string
 
 
 class AccountEvent(Schema):

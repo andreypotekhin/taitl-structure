@@ -3,8 +3,7 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.platform.pyspark import field, types
-from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark import PySpark, field, types
 
 
 class Raw(Schema):
@@ -426,7 +425,7 @@ def test_generated_pyspark_renders_inherited_and_override_steps_in_order() -> No
             return Published(id=row.id, value=row.value, audit="published")
 
     text = PySpark.render.transform()(
-        PySpark.plan.lower()(compile_transform(Publish)),
+        PySpark.compiler.lower()(compile_transform(Publish)),
         source_transform=f"{__name__}.Publish",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules={Raw: __name__, Normalized: __name__, Published: __name__},
@@ -460,7 +459,7 @@ def test_child_method_with_same_name_overrides_inherited_raw_hook() -> None:
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="published")
 
-    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    recipe = PySpark.compiler.lower()(compile_transform(Publish))
 
     assert not recipe.steps[0].after_hooks
     assert not recipe.steps[1].after_hooks
@@ -479,7 +478,7 @@ def test_lowered_recipes_record_step_and_hook_owners() -> None:
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="published")
 
-    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    recipe = PySpark.compiler.lower()(compile_transform(Publish))
     normalize = recipe.steps[0]
 
     assert normalize.origin is not None
@@ -502,7 +501,7 @@ def test_embed_hooks_dispatches_an_inherited_hook_to_its_declaring_generated_cla
             return Published(id=row.id, value=row.value, audit="published")
 
     text = PySpark.render.transform()(
-        PySpark.plan.lower()(compile_transform(Publish)),
+        PySpark.compiler.lower()(compile_transform(Publish)),
         source_transform=f"{__name__}.Publish",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules={Raw: __name__, Normalized: __name__, Published: __name__},
@@ -536,7 +535,7 @@ def test_explicit_parent_step_does_not_run_raw_hook_overridden_by_child_method()
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="published")
 
-    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    recipe = PySpark.compiler.lower()(compile_transform(Publish))
 
     assert not recipe.steps[0].after_hooks
     assert not recipe.steps[1].after_hooks

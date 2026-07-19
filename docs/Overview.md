@@ -29,7 +29,7 @@ Define schemas. Define transforms. Run transforms.
 
 ```python
 from structure import Schema
-from structure.platform.pyspark.dsl.field import *
+from structure.platform.pyspark import *
 
 
 class OrderRaw(Schema):

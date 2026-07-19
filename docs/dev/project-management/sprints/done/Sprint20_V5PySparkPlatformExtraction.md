@@ -95,6 +95,6 @@ Follow-up hardening removed the remaining direct `structure.platform.pyspark` im
 runtime schema materialization, legacy runtime execution adapters, and generated-file storage now dispatch through
 generic Core boundaries and Platform API facets.
 
-The PySpark plug-in entry point now delegates to `platform_v1`, where each Platform API service has its own named
+The PySpark plug-in entry point now delegates to `api`, where each Platform API service has its own named
 source unit. Selected-platform values use the readable `platform.api` form, and runtime version consumers share the
 single build-defined package version.

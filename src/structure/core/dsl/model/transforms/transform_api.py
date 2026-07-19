@@ -1,16 +1,9 @@
 from __future__ import annotations
 
 import inspect
-from re import fullmatch
 from typing import Any, Callable, Iterable, TypeVar, cast, overload
 
-from structure.core.compiler.ir.model.JoinPlan import JoinPlan
-from structure.core.compiler.ir.model.OperationPlan import OperationPlan
-from structure.core.compiler.ir.model.WatermarkPlan import WatermarkPlan
-from structure.core.compiler.symbolic_execution.model.CompileContext import current_context
-from structure.core.dsl.model.expr.expressions import literal
 from structure.core.dsl.model.expr.InputScope import InputScope, lookup_join
-from structure.core.dsl.model.schemas.Projection import Projection
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.BindingSelector import BindingSelector, SelectedDeclaration
 from structure.core.dsl.model.transforms.InOutBinding import InOutBinding
@@ -22,8 +15,6 @@ from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.core.dsl.model.transforms.SpecialFunction import SpecialFunction
 from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.core.dsl.model.transforms.Transform import Transform
-from structure.core.dsl.model.types.BooleanType import BooleanType
-from structure.core.dsl.model.types.TimestampType import TimestampType
 
 Projected = TypeVar("Projected", bound=Schema)
 
@@ -249,7 +240,7 @@ def _step_method_options(kwargs: dict[str, object]) -> dict[str, object]:
     return {name: kwargs[name] for name in _STEP_METHOD_OPTIONS if name in kwargs}
 
 
-def _reserved_operations(kwargs: dict[str, object]) -> tuple[OperationPlan, ...]:
+def _reserved_operations(kwargs: dict[str, object]) -> tuple[object, ...]:
     if "cache" not in kwargs:
         return ()
     return (cache_operation(kwargs["cache"]),)
@@ -409,42 +400,11 @@ def raw(
 
 
 def where(*predicates: object) -> "WhereChain":
-    context = current_context()
-    if context is None:
-        raise RuntimeError("where(...) can only be used inside a compiled Structure step method")
-    if not predicates:
-        raise TypeError("where(...) requires at least one boolean Structure expression")
-    for position, predicate in enumerate(predicates, start=1):
-        expression = literal(predicate)
-        if not isinstance(expression.type, BooleanType):
-            raise TypeError(f"where(...) requires a boolean Structure expression for predicate {position}")
-        if expression.kind == "existence_join" and expression.data is not None:
-            join = cast(JoinPlan, expression.data["join"])
-            context.joins.append(join)
-            context.operations.append(OperationPlan.join_operation(join))
-            continue
-        context.filters.append(expression)
-        context.operations.append(OperationPlan.filter_operation(expression))
-    return WhereChain()
+    return cast(WhereChain, _pyspark_where(*predicates))
 
 
 def watermark(field: object, *, delay: str = "10 minutes") -> None:
-    context = current_context()
-    if context is None:
-        raise RuntimeError("watermark(...) can only be used inside a compiled Structure step method")
-    expression = literal(field)
-    if expression.kind != "field":
-        raise TypeError("watermark(...) requires a Structure field expression")
-    if not isinstance(expression.type, TimestampType):
-        raise TypeError("watermark(...) requires a Timestamp Structure field expression")
-    if not isinstance(delay, str) or not fullmatch(
-        r"\s*\d+(?:\.\d+)?\s+(?:microseconds?|milliseconds?|seconds?|minutes?|hours?|days?|weeks?)\s*", delay
-    ):
-        raise TypeError(
-            "watermark(delay=...) requires a non-negative fixed Spark interval string, such as '10 minutes'"
-        )
-    delay = delay.strip()
-    context.operations.append(OperationPlan.watermark_operation(WatermarkPlan(expression=expression, delay=delay)))
+    _pyspark_watermark(field, delay=delay)
 
 
 @overload
@@ -460,22 +420,7 @@ def project(source: object) -> Any: ...
 
 
 def project(source: object | None = None, target: type[Schema] | Iterable[str] | None = None) -> object:
-    if target is None:
-        context = current_context()
-        if context is not None and isinstance(source, type) and issubclass(source, Schema):
-            return Projection(source=_default_project_source(context), target=source)
-        if context is not None and source is not None:
-            return Projection(source=_default_project_source(context), fields=_project_fields(source))
-        raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
-    if isinstance(source, type) and issubclass(source, Schema):
-        raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
-    if source is None:
-        raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
-    if isinstance(target, type):
-        if not issubclass(target, Schema):
-            raise TypeError("project(source, target) requires a Schema class target")
-        return Projection(source=source, target=target)
-    return Projection(source=source, fields=_project_fields(target))
+    return cast(object, _pyspark_project(source, cast(Any, target)))
 
 
 class WhereChain:
@@ -503,28 +448,6 @@ class WhereChain:
         if target is None:
             return project(source)
         return project(source, target)
-
-
-def _default_project_source(context) -> object:
-    if context.default_project_source is None:
-        raise TypeError("project(...) requires a source row first, such as project(order, OrderPublished)")
-    return context.default_project_source
-
-
-def _project_fields(value: object) -> tuple[str, ...]:
-    if isinstance(value, (str, bytes)):
-        raise TypeError("project(source, fields) requires a non-empty field sequence")
-    try:
-        fields = tuple(cast(Iterable[object], value))
-    except TypeError as error:
-        raise TypeError("project(source, fields) requires a non-empty field sequence") from error
-    if not fields:
-        raise TypeError("project(source, fields) requires at least one field")
-    if not all(isinstance(field, str) for field in fields):
-        raise TypeError("project(source, fields) requires field names as strings")
-    if len(set(fields)) != len(fields):
-        raise TypeError("project(source, fields) cannot repeat field names")
-    return cast(tuple[str, ...], fields)
 
 
 def _hook_target_backend(value: str | Iterable[str] | None) -> tuple[tuple[str, ...], bool]:
@@ -573,3 +496,10 @@ def _hook_outputs(phase: str, kwargs: dict[str, object], *, default: tuple) -> t
     return _declarations(
         kwargs, singular="output", plural="outputs", allowed=(InputDeclaration, LaneDeclaration, OutputDeclaration)
     )
+
+
+# Transitional compatibility exports. The declaration API retains its historic names while
+# PySpark owns body construction and target validation.
+from structure.platform.pyspark.dsl.body import project as _pyspark_project  # noqa: E402
+from structure.platform.pyspark.dsl.body import watermark as _pyspark_watermark  # noqa: E402
+from structure.platform.pyspark.dsl.body import where as _pyspark_where  # noqa: E402

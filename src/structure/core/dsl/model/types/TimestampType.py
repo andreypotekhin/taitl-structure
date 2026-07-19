@@ -1,7 +1,3 @@
-from structure.core.dsl.model.types.ScalarType import ScalarType
+from structure.platform.pyspark.dsl.types import TimestampType
 
-
-class TimestampType(ScalarType):
-
-    def __init__(self) -> None:
-        super().__init__("timestamp")
+__all__ = ["TimestampType"]

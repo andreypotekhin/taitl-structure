@@ -12,8 +12,8 @@ from structure.core.runtime.execution.commands import ExecutePlatformArtifact
 from structure.core.target.capabilities.model.BackendCapabilities import BackendCapabilities
 from structure.platform.api import PlatformDescriptor
 from structure.platform.api.v1 import ExecutionRequest, GenerationRequest, PlatformAPI, PlatformCompilation
-from structure.platform.pyspark import PySparkPlatform
-from structure.platform.pyspark.dsl.field import string
+from structure.platform.pyspark import PySparkPlatform, string
+from structure.platform.pyspark.symbolic_execution.model import PySparkSymbolicContext, current_pyspark_context
 
 
 @transform(target="fake")
@@ -64,6 +64,7 @@ class Facet:
     def read(self, request): return request.schema
     def source(self, schema, *, to): return schema
     def resolve(self, *, profile, variant): return cast(BackendCapabilities, object())
+    def open_step(self, request): raise AssertionError("Fake platform does not author transform steps.")
 
 
 class Executor:
@@ -82,7 +83,7 @@ class Generator:
 
 class Plugin:
     descriptor = PlatformDescriptor("fake", "Fake", "fake-wheel", "1.0", 1, 1)
-    def api(self, version): return PlatformAPI(Facet(), Compiler(), Facet(), executor=Executor(), generator=Generator(), serializer=Serializer())
+    def api(self, version): return PlatformAPI(Facet(), Compiler(), Facet(), Facet(), executor=Executor(), generator=Generator(), serializer=Serializer())
 
 
 class CapturingCompiler:
@@ -98,11 +99,35 @@ class CapturingCompiler:
 class RecordingAuthoring:
     def __init__(self) -> None:
         self.requests: list[object] = []
+        self.capture_contexts: list[PySparkSymbolicContext | None] = []
         self._delegate = PySparkPlatform().api(1).authoring
 
     def open_step(self, request):
         self.requests.append(request)
-        return self._delegate.open_step(request)
+        return RecordingSession(self._delegate.open_step(request), self.capture_contexts)
+
+
+class RecordingSession:
+    def __init__(self, delegate, capture_contexts) -> None:
+        self._delegate = delegate
+        self._capture_contexts = capture_contexts
+
+    def __enter__(self):
+        self._delegate.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc, traceback):
+        return self._delegate.__exit__(exc_type, exc, traceback)
+
+    def arguments(self):
+        return self._delegate.arguments()
+
+    def context(self):
+        return self._delegate.context()
+
+    def capture(self, value):
+        self._capture_contexts.append(current_pyspark_context())
+        return self._delegate.capture(value)
 
 
 class PySparkPlugin:
@@ -110,7 +135,7 @@ class PySparkPlugin:
 
     def __init__(self, compiler, authoring=None, schema=None) -> None:
         self._compiler = compiler
-        self._authoring = authoring
+        self._authoring = authoring or PySparkPlatform().api(1).authoring
         self._schema = schema or Facet()
 
     def api(self, version):
@@ -180,6 +205,8 @@ def test_core_frontend_compiles_analysis_before_calling_the_platform_facet() -> 
 
     assert compiler.request is not None
     assert [request.name for request in authoring.requests] == ["publish"]
+    assert len(authoring.capture_contexts) == 1
+    assert authoring.capture_contexts[0] is not None
     assert compiler.request.analysis is compilation.analysis
     assert compilation.lowered is compiler.payload
     assert compilation.analysis.name == "CompiledTransform"

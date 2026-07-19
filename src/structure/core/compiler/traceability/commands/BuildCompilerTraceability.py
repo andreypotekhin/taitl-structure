@@ -1,5 +1,5 @@
 from structure.core.compiler.traceability.model.CompilerTraceability import CompilerTraceability
-from structure.platform.api.v1.TraceabilityRequest import TraceabilityRequest
+from structure.platform.api.v1.model import TraceabilityRequest
 
 
 class BuildCompilerTraceability:

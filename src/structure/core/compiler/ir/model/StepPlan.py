@@ -10,8 +10,7 @@ from structure.core.compiler.ir.model.ProjectAssignment import ProjectAssignment
 from structure.core.compiler.ir.model.StepResultPlan import StepResultPlan
 from structure.core.dsl.model.expr.Expression import Expression
 from structure.core.dsl.model.schemas.Schema import Schema
-from structure.platform.api.v1.StepInputPlan import StepInputPlan
-from structure.platform.api.v1.TransformMemberOrigin import TransformMemberOrigin
+from structure.platform.api.v1.model import StepInputPlan, TransformMemberOrigin
 
 
 @dataclass(frozen=True)

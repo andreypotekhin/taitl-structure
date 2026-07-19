@@ -4,10 +4,9 @@ import pytest
 
 from structure import *
 from structure.core.cli.commands.RenderExplainReport import render_explain_report
-from structure.platform.pyspark import field, types
-from structure.platform.pyspark.api import PySpark
-from structure.platform.pyspark.commands.RenderPySparkStep import render_pyspark_step
-from structure.platform.pyspark.commands.RenderPySparkTransformModule import render_pyspark_transform_module
+from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
+from structure.platform.pyspark.render.commands.RenderPySparkTransformModule import render_pyspark_transform_module
 
 
 class RawEvent(Schema):
@@ -276,7 +275,7 @@ class MixedScopeDropDuplicatesTransform(Transform):
 
 
 def test_latest_by_renders_spark_visible_row_number_window() -> None:
-    plan = PySpark.plan.lower()(compile_transform(LatestEventTransform))
+    plan = PySpark.compiler.lower()(compile_transform(LatestEventTransform))
 
     text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
 
@@ -290,7 +289,7 @@ def test_latest_by_renders_spark_visible_row_number_window() -> None:
 
 
 def test_dedupe_latest_by_renders_deterministic_selected_row_window() -> None:
-    plan = PySpark.plan.lower()(compile_transform(LatestDedupeEventTransform))
+    plan = PySpark.compiler.lower()(compile_transform(LatestDedupeEventTransform))
 
     text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
 
@@ -303,7 +302,7 @@ def test_dedupe_latest_by_renders_deterministic_selected_row_window() -> None:
 
 
 def test_earliest_by_records_one_ascending_selected_row_operation() -> None:
-    plan = PySpark.plan.lower()(compile_transform(EarliestEventTransform))
+    plan = PySpark.compiler.lower()(compile_transform(EarliestEventTransform))
 
     assert len(plan.steps[0].operations) == 1
     operation = plan.steps[0].operations[0]
@@ -312,7 +311,7 @@ def test_earliest_by_records_one_ascending_selected_row_operation() -> None:
 
 
 def test_dedupe_earliest_by_records_selected_row_operation() -> None:
-    plan = PySpark.plan.lower()(compile_transform(EarliestDedupeEventTransform))
+    plan = PySpark.compiler.lower()(compile_transform(EarliestDedupeEventTransform))
     operation = plan.steps[0].operations[0]
 
     assert operation.selected_rows is not None
@@ -322,7 +321,7 @@ def test_dedupe_earliest_by_records_selected_row_operation() -> None:
 
 
 def test_window_projection_helpers_render_spark_visible_windows() -> None:
-    plan = PySpark.plan.lower()(compile_transform(RankedEventTransform))
+    plan = PySpark.compiler.lower()(compile_transform(RankedEventTransform))
 
     text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
 
@@ -365,7 +364,7 @@ def test_window_projection_helpers_render_spark_visible_windows() -> None:
 
 
 def test_advanced_window_helpers_render_valid_function_frames() -> None:
-    plan = PySpark.plan.lower()(compile_transform(AdvancedRankedEventTransform))
+    plan = PySpark.compiler.lower()(compile_transform(AdvancedRankedEventTransform))
 
     text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
 
@@ -388,7 +387,7 @@ def test_advanced_window_helpers_render_valid_function_frames() -> None:
 
 
 def test_window_helpers_render_multiple_explicitly_ordered_keys() -> None:
-    plan = PySpark.plan.lower()(compile_transform(MultiOrderedEventTransform))
+    plan = PySpark.compiler.lower()(compile_transform(MultiOrderedEventTransform))
 
     text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
 
@@ -406,7 +405,7 @@ def test_window_requires_at_least_one_order_key() -> None:
 
 
 def test_window_aggregate_helpers_render_over_an_explicit_frame() -> None:
-    plan = PySpark.plan.lower()(compile_transform(AggregateWindowEventTransform))
+    plan = PySpark.compiler.lower()(compile_transform(AggregateWindowEventTransform))
 
     text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
 
@@ -452,7 +451,7 @@ def test_window_aggregate_helpers_reject_invalid_inputs_and_combinations() -> No
 
 
 def test_window_projection_helpers_add_window_import_to_generated_module() -> None:
-    plan = PySpark.plan.lower()(compile_transform(RankedEventTransform))
+    plan = PySpark.compiler.lower()(compile_transform(RankedEventTransform))
 
     text = render_pyspark_transform_module(
         plan,
@@ -478,7 +477,7 @@ def test_latest_by_explain_names_window_operation_and_streaming_status() -> None
 
 
 def test_drop_duplicates_renders_spark_visible_exact_duplicate_removal() -> None:
-    plan = PySpark.plan.lower()(compile_transform(UniqueEventTransform))
+    plan = PySpark.compiler.lower()(compile_transform(UniqueEventTransform))
 
     text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
 
@@ -486,7 +485,7 @@ def test_drop_duplicates_renders_spark_visible_exact_duplicate_removal() -> None
 
 
 def test_distinct_relation_renders_exact_relation_duplicate_removal() -> None:
-    plan = PySpark.plan.lower()(compile_transform(UniqueRelationEventTransform))
+    plan = PySpark.compiler.lower()(compile_transform(UniqueRelationEventTransform))
 
     text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
 
@@ -501,7 +500,7 @@ def test_drop_duplicates_explain_names_dedupe_operation_and_streaming_status() -
 
 
 def test_drop_duplicates_renders_subset_columns_when_requested() -> None:
-    plan = PySpark.plan.lower()(compile_transform(UniqueAccountEventTransform))
+    plan = PySpark.compiler.lower()(compile_transform(UniqueAccountEventTransform))
 
     text = render_pyspark_step(plan.steps[0], current="events", sources={"events": "events"})
 
@@ -516,7 +515,7 @@ def test_drop_duplicates_subset_explain_names_subset_and_streaming_status() -> N
 
 
 def test_relation_drop_duplicates_before_join_prepares_join_source() -> None:
-    plan = PySpark.plan.lower()(compile_transform(PreJoinUniqueAccountTransform))
+    plan = PySpark.compiler.lower()(compile_transform(PreJoinUniqueAccountTransform))
 
     text = render_pyspark_step(
         plan.steps[0],
@@ -529,7 +528,7 @@ def test_relation_drop_duplicates_before_join_prepares_join_source() -> None:
 
 
 def test_relation_drop_duplicates_after_join_applies_to_joined_frame() -> None:
-    plan = PySpark.plan.lower()(compile_transform(PostJoinUniqueAccountTransform))
+    plan = PySpark.compiler.lower()(compile_transform(PostJoinUniqueAccountTransform))
 
     text = render_pyspark_step(
         plan.steps[0],

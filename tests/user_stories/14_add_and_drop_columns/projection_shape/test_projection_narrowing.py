@@ -3,8 +3,7 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.platform.pyspark import field, types
-from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark import PySpark, field, types
 
 
 class Raw(Schema):
@@ -122,7 +121,7 @@ def test_generated_projection_narrowing_uses_select_not_drop() -> None:
         def publish(self, row: Raw) -> Published:
             return where(cast(Any, row.status).is_not_null()).project(row, Published)
 
-    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    recipe = PySpark.compiler.lower()(compile_transform(Publish))
     text = PySpark.render.transform()(
         recipe,
         source_transform="tests.projection.Publish",

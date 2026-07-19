@@ -1,12 +1,3 @@
-from __future__ import annotations
+from structure.platform.pyspark.dsl.aggregation import ProjectAssignment
 
-from dataclasses import dataclass
-
-from structure.core.dsl.model.expr.Expression import Expression
-from structure.core.dsl.model.schemas.FieldDefinition import FieldDefinition
-
-
-@dataclass(frozen=True)
-class ProjectAssignment:
-    field: FieldDefinition
-    expression: Expression
+__all__ = ["ProjectAssignment"]

@@ -1,14 +1,18 @@
 from __future__ import annotations
 
-from contextvars import ContextVar, Token
+from contextvars import Token
 from types import TracebackType
 from typing import Any
 
 from structure.core.compiler.ir.model.JoinPlan import JoinPlan
 from structure.core.compiler.ir.model.OperationPlan import OperationPlan
 from structure.core.dsl.model.expr.Expression import Expression
-
-_current: ContextVar["CompileContext | None"] = ContextVar("structure_compile_context", default=None)
+from structure.platform.api.v1.model.SymbolicContext import (
+    SymbolicContext,
+    current_symbolic_context,
+    install_symbolic_context,
+    reset_symbolic_context,
+)
 
 
 class CompileContext:
@@ -26,10 +30,10 @@ class CompileContext:
         self.default_project_source: object | None = None
         self.current_scopes: set[str] = set()
         self.relation_scopes: dict[str, object] = {}
-        self._token: Token[CompileContext | None] | None = None
+        self._token: Token[SymbolicContext | None] | None = None
 
     def __enter__(self) -> "CompileContext":
-        self._token = _current.set(self)
+        self._token = install_symbolic_context(self)
         return self
 
     def __exit__(
@@ -39,7 +43,7 @@ class CompileContext:
         traceback: TracebackType | None,
     ) -> None:
         if self._token is not None:
-            _current.reset(self._token)
+            reset_symbolic_context(self._token)
 
     def register_current_scope(self, scope: str) -> None:
         self.current_scopes.add(scope)
@@ -52,5 +56,5 @@ class CompileContext:
         return relation
 
 
-def current_context() -> CompileContext | None:
-    return _current.get()
+def current_context() -> SymbolicContext | None:
+    return current_symbolic_context()

@@ -1,9 +1,7 @@
 from collections.abc import Mapping
 
-from structure.core.dsl.model.types.ArrayType import ArrayType
-from structure.core.dsl.model.types.MapType import MapType
-from structure.core.dsl.model.types.StructType import StructType
 from structure.dsl import FieldDefinition, Schema
+from structure.platform.pyspark.dsl.types import ArrayType, MapType, StructType
 
 
 class ValidatePySparkSchemas:

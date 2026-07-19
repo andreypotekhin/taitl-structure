@@ -1,7 +1,3 @@
-from structure.core.dsl.model.types.ScalarType import ScalarType
+from structure.platform.pyspark.dsl.types import IntegerType
 
-
-class IntegerType(ScalarType):
-
-    def __init__(self) -> None:
-        super().__init__("integer")
+__all__ = ["IntegerType"]

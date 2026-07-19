@@ -20,7 +20,7 @@
         "FORWARD"
       ],
       "kind": "class",
-      "module": "structure.core.dsl.model.transforms.AsOf",
+        "module": "structure.platform.pyspark.dsl.joins.AsOf",
       "qualname": "AsOf",
       "signature": "(*values)"
     },
@@ -101,7 +101,7 @@
       "dataclass_fields": [],
       "enum_members": [],
       "kind": "class",
-      "module": "structure.platform.pyspark.storage.DiskStorage",
+      "module": "structure.platform.pyspark.files.model.DiskStorage",
       "qualname": "DiskStorage",
       "signature": "(root: 'Path | str') -> 'None'"
     },
@@ -131,7 +131,7 @@
         "CROSS"
       ],
       "kind": "class",
-      "module": "structure.core.dsl.model.transforms.Join",
+        "module": "structure.platform.pyspark.dsl.joins.Join",
       "qualname": "Join",
       "signature": "(*values)"
     },
@@ -143,9 +143,9 @@
       ],
       "enum_members": [],
       "kind": "class",
-      "module": "structure.core.dsl.model.transforms.JoinDedupe",
+        "module": "structure.platform.pyspark.dsl.joins.JoinDedupe",
       "qualname": "JoinDedupe",
-      "signature": "(order_by: 'Expression', direction: 'str', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> None"
+      "signature": "(order_by: 'Any', direction: 'str', ties: 'TiePolicy' = <TiePolicy.ERROR: 'error'>) -> None"
     },
     "JoinHint": {
       "dataclass_fields": [],
@@ -153,7 +153,7 @@
         "BROADCAST"
       ],
       "kind": "class",
-      "module": "structure.core.dsl.model.transforms.JoinHint",
+        "module": "structure.platform.pyspark.dsl.joins.JoinHint",
       "qualname": "JoinHint",
       "signature": "(*values)"
     },
@@ -166,7 +166,7 @@
         "SHUFFLE_REPLICATE_NL"
       ],
       "kind": "class",
-      "module": "structure.core.dsl.model.transforms.JoinStrategy",
+        "module": "structure.platform.pyspark.dsl.joins.JoinStrategy",
       "qualname": "JoinStrategy",
       "signature": "(*values)"
     },
@@ -174,7 +174,7 @@
       "dataclass_fields": [],
       "enum_members": [],
       "kind": "class",
-      "module": "structure.platform.pyspark.storage.MemoryStorage",
+      "module": "structure.platform.pyspark.files.model.MemoryStorage",
       "qualname": "MemoryStorage",
       "signature": "() -> 'None'"
     },
@@ -184,7 +184,7 @@
         "ERROR"
       ],
       "kind": "class",
-      "module": "structure.core.dsl.model.transforms.OverlapPolicy",
+        "module": "structure.platform.pyspark.dsl.joins.OverlapPolicy",
       "qualname": "OverlapPolicy",
       "signature": "(*values)"
     },
@@ -192,7 +192,7 @@
       "dataclass_fields": [],
       "enum_members": [],
       "kind": "class",
-      "module": "structure.platform.pyspark.storage.PackageImportStorage",
+      "module": "structure.platform.pyspark.files.model.PackageImportStorage",
       "qualname": "PackageImportStorage",
       "signature": "(package: 'str') -> 'None'"
     },
@@ -253,7 +253,7 @@
         "COMPLETE"
       ],
       "kind": "class",
-      "module": "structure.core.dsl.model.transforms.StreamingOutputMode",
+        "module": "structure.platform.pyspark.dsl.operations.StreamingOutputMode",
       "qualname": "StreamingOutputMode",
       "signature": "(*values)"
     },
@@ -342,7 +342,7 @@
         "ERROR"
       ],
       "kind": "class",
-      "module": "structure.core.dsl.model.transforms.TiePolicy",
+        "module": "structure.platform.pyspark.dsl.joins.TiePolicy",
       "qualname": "TiePolicy",
       "signature": "(*values)"
     },
@@ -350,7 +350,7 @@
       "dataclass_fields": [],
       "enum_members": [],
       "kind": "class",
-      "module": "structure.core.dsl.model.transforms.TimeWindow",
+      "module": "structure.platform.pyspark.dsl.TimeWindow",
       "qualname": "TimeWindow",
       "signature": "(**values: 'object') -> 'None'"
     },

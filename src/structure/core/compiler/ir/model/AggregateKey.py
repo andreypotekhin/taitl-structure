@@ -1,11 +1,3 @@
-from __future__ import annotations
+from structure.platform.pyspark.dsl.aggregation import AggregateKey
 
-from dataclasses import dataclass
-
-from structure.core.dsl.model.expr.Expression import Expression
-
-
-@dataclass(frozen=True)
-class AggregateKey:
-    name: str
-    expression: Expression
+__all__ = ["AggregateKey"]

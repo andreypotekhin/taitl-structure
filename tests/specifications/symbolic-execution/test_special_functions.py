@@ -4,8 +4,7 @@ import pytest
 
 from structure import *
 from structure.core.compiler.api import Compiler
-from structure.platform.pyspark import field, types
-from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark import PySpark, field, types
 
 
 class Raw(Schema):
@@ -124,7 +123,7 @@ def test_special_udf_renders_generated_pyspark_udf_call() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(id=self.clean(row.id))
 
-    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    recipe = PySpark.compiler.lower()(compile_transform(Publish))
     expression = recipe.steps[0].projection[0].expression
     text = PySpark.render.expression()(expression, scope_aliases={"rows": "rows"})
 
@@ -144,7 +143,7 @@ def test_special_udf_traceability_marks_python_body_opaque() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(id=self.clean(row.id))
 
-    recipe = PySpark.plan.lower()(compile_transform(Publish))
+    recipe = PySpark.compiler.lower()(compile_transform(Publish))
     traceability = Compiler.traceability.build()(
         recipe,
         source_transform=f"{Publish.__module__}.{Publish.__name__}",

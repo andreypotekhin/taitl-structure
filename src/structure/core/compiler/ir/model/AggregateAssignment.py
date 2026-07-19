@@ -1,18 +1,3 @@
-from __future__ import annotations
+from structure.platform.pyspark.dsl.aggregation import AggregateAssignment
 
-from dataclasses import dataclass
-
-from structure.core.dsl.model.expr.Expression import Expression
-from structure.core.dsl.model.schemas.FieldDefinition import FieldDefinition
-
-
-@dataclass(frozen=True)
-class AggregateAssignment:
-    field: FieldDefinition
-    function: str
-    expression: Expression | None = None
-    key: str | None = None
-    arguments: tuple[Expression, ...] = ()
-    filter: Expression | None = None
-    order_by: Expression | None = None
-    options: tuple[tuple[str, object], ...] = ()
+__all__ = ["AggregateAssignment"]

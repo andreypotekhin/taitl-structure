@@ -3,8 +3,7 @@ import sys
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
-from structure.platform.pyspark import field, types
-from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark import PySpark, field, types
 
 
 class StreamRaw(Schema):
@@ -45,7 +44,7 @@ def test_streaming_projection_filter_and_validation_are_compatible_without_spark
 
     plan = compile_transform(StreamingProjection)
     report = Compiler.compileability.streaming()(
-        PySpark.plan.lower()(plan),
+        PySpark.compiler.lower()(plan),
         required=bool((plan.options or {})["streaming_compatible"]),
     )
 
@@ -60,7 +59,7 @@ def test_streaming_unknown_hook_reports_a_registered_warning() -> None:
 
     plan = compile_transform(StreamingUnknownHook)
     report = Compiler.compileability.streaming()(
-        PySpark.plan.lower()(plan),
+        PySpark.compiler.lower()(plan),
         required=bool((plan.options or {})["streaming_compatible"]),
     )
 
@@ -73,7 +72,7 @@ def test_streaming_unknown_hook_reports_a_registered_warning() -> None:
 def test_generated_streaming_compatible_code_avoids_lifecycle_and_actions() -> None:
     """I can keep streaming orchestration outside Structure in v1 and v2."""
 
-    plan = PySpark.plan.lower()(compile_transform(StreamingProjection))
+    plan = PySpark.compiler.lower()(compile_transform(StreamingProjection))
     files = PySpark.render.project()(
         plan,
         source_transform="tests.fixtures.streaming.transforms.StreamingProjection",

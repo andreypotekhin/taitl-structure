@@ -6,10 +6,10 @@ from structure import array as expression_array
 from structure.core.dsl.model.types.Array import Array
 from structure.core.dsl.model.types.Decimal import Decimal
 from structure.core.dsl.model.types.Map import Map
+from structure.platform.pyspark import *
+from structure.platform.pyspark import array as field_array
+from structure.platform.pyspark import string as field_string
 from structure.platform.pyspark import types
-from structure.platform.pyspark.dsl.field import *
-from structure.platform.pyspark.dsl.field import array as field_array
-from structure.platform.pyspark.dsl.field import string as field_string
 
 
 def test_schema_module_wildcard_factories_keep_type_and_nullability_contracts() -> None:

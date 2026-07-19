@@ -1,10 +1,3 @@
-from dataclasses import dataclass, field
-from typing import Mapping
+from structure.platform.pyspark.dsl.operations import OperationCapability
 
-
-@dataclass(frozen=True)
-class OperationCapability:
-    group: str
-    name: str
-    source: Mapping[str, str] = field(default_factory=dict)
-    docs: str = "docs/reference/BackendCapabilities.md"
+__all__ = ["OperationCapability"]

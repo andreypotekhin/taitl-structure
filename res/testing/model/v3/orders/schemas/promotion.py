@@ -1,7 +1,7 @@
 from testing.model.v3.orders.schemas.common import AuditStamp, TenantKey
 
 from structure import Schema
-from structure.platform.pyspark.dsl.field import *
+from structure.platform.pyspark import *
 
 
 class Promotion(Schema):

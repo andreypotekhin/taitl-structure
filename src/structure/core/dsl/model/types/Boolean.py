@@ -1,5 +1,3 @@
-from structure.core.dsl.model.types.BooleanType import BooleanType
+from structure.platform.pyspark.dsl.types import Boolean
 
-
-class Boolean(BooleanType):
-    pass
+__all__ = ["Boolean"]

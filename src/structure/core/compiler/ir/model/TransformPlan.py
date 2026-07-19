@@ -6,7 +6,7 @@ from structure.core.compiler.ir.model.OutputPlan import OutputPlan
 from structure.core.compiler.ir.model.StepPlan import StepPlan
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.lib.cross.errors import Diagnostic
-from structure.platform.api.v1.InputPlan import InputPlan
+from structure.platform.api.v1.model import InputPlan
 
 
 @dataclass(frozen=True)

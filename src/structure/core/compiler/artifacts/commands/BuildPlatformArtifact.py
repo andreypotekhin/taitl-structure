@@ -3,8 +3,7 @@ from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.core.platforms.api.Platform import Platform
 from structure.core.platforms.model.PlatformConfiguration import PlatformConfiguration
-from structure.platform.api.v1.CompileRequest import CompileRequest
-from structure.platform.api.v1.PlatformCompilation import PlatformCompilation
+from structure.platform.api.v1.model import CompileRequest, PlatformCompilation
 
 
 class BuildPlatformArtifact:

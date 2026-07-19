@@ -1,7 +1,6 @@
 from structure import *
-from structure.platform.pyspark import field, types
-from structure.platform.pyspark.api import PySpark
-from structure.platform.pyspark.commands.RenderPySparkStep import render_pyspark_step
+from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
 
 
 class RawTags(Schema):
@@ -113,7 +112,7 @@ class CleanAttributeTransform(Transform):
 
 
 def test_array_higher_order_helpers_render_spark_visible_lambdas() -> None:
-    plan = PySpark.plan.lower()(compile_transform(CleanTagTransform))
+    plan = PySpark.compiler.lower()(compile_transform(CleanTagTransform))
 
     text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
 
@@ -124,7 +123,7 @@ def test_array_higher_order_helpers_render_spark_visible_lambdas() -> None:
 
 
 def test_map_higher_order_helpers_render_spark_visible_lambdas() -> None:
-    plan = PySpark.plan.lower()(compile_transform(CleanAttributeTransform))
+    plan = PySpark.compiler.lower()(compile_transform(CleanAttributeTransform))
 
     text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
 
@@ -137,7 +136,7 @@ def test_map_higher_order_helpers_render_spark_visible_lambdas() -> None:
 
 
 def test_advanced_array_higher_order_helpers_render_spark_visible_lambdas() -> None:
-    plan = PySpark.plan.lower()(compile_transform(TagSummaryTransform))
+    plan = PySpark.compiler.lower()(compile_transform(TagSummaryTransform))
 
     text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
 
@@ -151,7 +150,7 @@ def test_advanced_array_higher_order_helpers_render_spark_visible_lambdas() -> N
 
 
 def test_array_aggregate_renders_its_finish_callback_against_the_final_accumulator() -> None:
-    plan = PySpark.plan.lower()(compile_transform(TagTextSummaryTransform))
+    plan = PySpark.compiler.lower()(compile_transform(TagTextSummaryTransform))
 
     text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
 
@@ -162,7 +161,7 @@ def test_array_aggregate_renders_its_finish_callback_against_the_final_accumulat
 
 
 def test_array_sort_by_renders_its_symbolic_key_as_a_spark_comparator() -> None:
-    plan = PySpark.plan.lower()(compile_transform(SortedTagsTransform))
+    plan = PySpark.compiler.lower()(compile_transform(SortedTagsTransform))
 
     text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
 

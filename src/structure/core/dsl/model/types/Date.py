@@ -1,5 +1,3 @@
-from structure.core.dsl.model.types.DateType import DateType
+from structure.platform.pyspark.dsl.types import Date
 
-
-class Date(DateType):
-    pass
+__all__ = ["Date"]

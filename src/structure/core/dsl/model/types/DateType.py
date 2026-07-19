@@ -1,7 +1,3 @@
-from structure.core.dsl.model.types.ScalarType import ScalarType
+from structure.platform.pyspark.dsl.types import DateType
 
-
-class DateType(ScalarType):
-
-    def __init__(self) -> None:
-        super().__init__("date")
+__all__ = ["DateType"]

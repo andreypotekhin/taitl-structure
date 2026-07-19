@@ -1,8 +1,3 @@
-from __future__ import annotations
+from structure.platform.pyspark.dsl.types import StructureType
 
-from dataclasses import dataclass
-
-
-@dataclass(frozen=True)
-class StructureType:
-    name: str
+__all__ = ["StructureType"]

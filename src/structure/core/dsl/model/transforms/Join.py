@@ -1,9 +1,3 @@
-from enum import Enum
+from structure.platform.pyspark.dsl.joins import Join
 
-
-class Join(Enum):
-    LEFT = "left"
-    INNER = "inner"
-    RIGHT = "right"
-    FULL = "full"
-    CROSS = "cross"
+__all__ = ["Join"]

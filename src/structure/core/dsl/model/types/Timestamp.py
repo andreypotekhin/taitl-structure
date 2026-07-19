@@ -1,5 +1,3 @@
-from structure.core.dsl.model.types.TimestampType import TimestampType
+from structure.platform.pyspark.dsl.types import Timestamp
 
-
-class Timestamp(TimestampType):
-    pass
+__all__ = ["Timestamp"]

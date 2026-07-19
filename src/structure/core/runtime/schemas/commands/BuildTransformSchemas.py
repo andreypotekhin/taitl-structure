@@ -1,7 +1,7 @@
 from typing import cast
 
 from structure.core.runtime.schemas.model.TransformSchemas import TransformSchemas
-from structure.platform.api.v1.TransformSchemaRequest import TransformSchemaRequest
+from structure.platform.api.v1.model import TransformSchemaRequest
 
 
 class BuildTransformSchemas:

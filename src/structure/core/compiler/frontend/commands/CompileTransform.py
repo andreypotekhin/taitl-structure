@@ -580,7 +580,7 @@ class CompileTransform:
         parent_call: dict[str, object] = {}
         authoring_body: object | None = None
 
-        context = CompileContext(step=plan_name or name, capture_special_exprs=capture_special_exprs)
+        fallback_context = CompileContext(step=plan_name or name, capture_special_exprs=capture_special_exprs)
         fallback_arguments = [
             (
                 RowScope(name=binding.scope, schema=cast(type[Schema], binding.schema))
@@ -617,6 +617,7 @@ class CompileTransform:
         )
         authoring_session = authoring_api.open_step(request) if authoring_api is not None else None
         session = authoring_session if authoring_session is not None else nullcontext()
+        context = authoring_session.context() if authoring_session is not None else fallback_context
         arguments = authoring_session.arguments() if authoring_session is not None else tuple(fallback_arguments)
         if len(arguments) != len(bindings):
             raise self._error(
@@ -647,7 +648,7 @@ class CompileTransform:
                     capture_special_exprs=capture_special_exprs,
                 ):
                     with session:
-                        with context:
+                        with (nullcontext() if authoring_session is not None else context):
                             result = member(instance, *arguments)
                         if authoring_session is not None:
                             authoring_body = authoring_session.capture(result)

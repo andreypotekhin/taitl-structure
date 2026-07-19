@@ -1,5 +1,3 @@
-from structure.core.dsl.model.types.IntegerType import IntegerType
+from structure.platform.pyspark.dsl.types import Integer
 
-
-class Integer(IntegerType):
-    pass
+__all__ = ["Integer"]

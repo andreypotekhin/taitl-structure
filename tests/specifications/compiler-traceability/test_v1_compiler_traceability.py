@@ -2,14 +2,14 @@ import sys
 
 from structure import *
 from structure.core.compiler.api import Compiler
-from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark import PySpark
 
 
 def _traceability():
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
     return Compiler.traceability.build()(
-        PySpark.plan.lower()(compile_transform(EnrichOrders)),
+        PySpark.compiler.lower()(compile_transform(EnrichOrders)),
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         transform_module="testing.model.v1.structure_generated.orders.pyspark.transforms.order",
     )

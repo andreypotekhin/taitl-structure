@@ -9,14 +9,14 @@ the [Schema reference](../reference/Schema.ref.md).
 
 ## Layers
 
-1. A `Schema` subclass declares PySpark fields with `structure.platform.pyspark.dsl.field` factories.
+1. A `Schema` subclass declares PySpark fields with `structure.platform.pyspark` factories.
 2. Compilation resolves inheritance into an ordered, backend-neutral schema model.
 3. Execution and generated code materialize equivalent Spark `StructType` shapes.
 4. Explicit data-quality rules, when configured, add value constraints without changing the base row shape.
 
 ```python
 from structure import Schema
-from structure.platform.pyspark.dsl.field import *
+from structure.platform.pyspark import *
 
 
 class OrderRaw(Schema):

@@ -5,8 +5,8 @@ import pytest
 
 from structure import *
 from structure.core.runtime.session.model.StructureRuntimeError import StructureRuntimeError
-from structure.platform.pyspark.execution.online.logic.PySparkHookInvoker import PySparkHookInvoker
-from structure.platform.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
+from structure.platform.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
+from structure.platform.pyspark.execution.logic.PySparkHookInvoker import PySparkHookInvoker
 
 
 def test_online_hooks_receive_selected_lane_spark_and_context() -> None:

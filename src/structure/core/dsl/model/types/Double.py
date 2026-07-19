@@ -1,5 +1,3 @@
-from structure.core.dsl.model.types.DoubleType import DoubleType
+from structure.platform.pyspark.dsl.types import Double
 
-
-class Double(DoubleType):
-    pass
+__all__ = ["Double"]

@@ -2,8 +2,7 @@ import pytest
 
 from structure import *
 from structure.core.compiler.api import Compiler
-from structure.platform.pyspark import field, types
-from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark import PySpark, field, types
 
 
 class OrderRaw(Schema):
@@ -362,7 +361,7 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
             return audited
 
     text = PySpark.render.transform()(
-        PySpark.plan.lower()(compile_transform(AddProduct)),
+        PySpark.compiler.lower()(compile_transform(AddProduct)),
         source_transform="tests.specifications.multiple_schema_parameters.AddProduct",
         runtime_module="testing.runtime",
         schema_modules={
@@ -382,7 +381,7 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
     )
 
     traceability = Compiler.traceability.build()(
-        PySpark.plan.lower()(compile_transform(AddProduct)),
+        PySpark.compiler.lower()(compile_transform(AddProduct)),
         source_transform="tests.specifications.multiple_schema_parameters.AddProduct",
         transform_module="testing.generated.AddProductGenerated",
     )
@@ -414,7 +413,7 @@ def test_generated_plural_lane_hook_replaces_outputs_in_order() -> None:
             return accepted, audited
 
     text = PySpark.render.transform()(
-        PySpark.plan.lower()(compile_transform(AddProduct)),
+        PySpark.compiler.lower()(compile_transform(AddProduct)),
         source_transform="tests.specifications.multiple_schema_parameters.AddProduct",
         runtime_module="testing.runtime",
         schema_modules={

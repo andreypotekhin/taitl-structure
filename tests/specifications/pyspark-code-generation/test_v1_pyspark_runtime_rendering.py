@@ -1,8 +1,11 @@
 import sys
 from importlib.resources import files
 
-from structure.platform.pyspark.api import PySpark
-from structure.platform.pyspark.commands.RenderPySparkRuntimeModule import RESOURCE_PACKAGE, RUNTIME_MODULE_RESOURCE
+from structure.platform.pyspark import PySpark
+from structure.platform.pyspark.render.commands.RenderPySparkRuntimeModule import (
+    RESOURCE_PACKAGE,
+    RUNTIME_MODULE_RESOURCE,
+)
 
 
 def test_v1_runtime_module_renderer_is_spark_free() -> None:

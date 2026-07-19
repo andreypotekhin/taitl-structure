@@ -6,7 +6,7 @@ from structure.core.platforms.api.Platform import Platform
 from structure.core.tools.logic.model.GeneratedSchemaSource import GeneratedSchemaSource
 from structure.core.tools.logic.render.RenderStructureSchemaSource import RenderStructureSchemaSource
 from structure.core.tools.logic.rules.ValidateSchemaToolRequest import ValidateSchemaToolRequest
-from structure.platform.api.v1.SchemaInspectionRequest import SchemaInspectionRequest
+from structure.platform.api.v1.model import SchemaInspectionRequest
 
 
 class GenerateStructureSchema:

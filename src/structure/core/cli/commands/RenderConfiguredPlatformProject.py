@@ -7,7 +7,7 @@ from structure.core.compiler.api import Compiler, CompilerOptions
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.platforms.api.Platform import Platform
-from structure.platform.api.v1.GenerationRequest import GenerationRequest
+from structure.platform.api.v1.model import GenerationRequest
 
 
 class RenderConfiguredPlatformProject:

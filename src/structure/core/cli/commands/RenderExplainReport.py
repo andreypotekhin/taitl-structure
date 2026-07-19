@@ -3,7 +3,7 @@ from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.platforms.api.Platform import Platform
 from structure.core.platforms.model.PlatformConfiguration import PlatformConfiguration
-from structure.platform.api.v1.ExplainRequest import ExplainRequest
+from structure.platform.api.v1.model import ExplainRequest
 
 
 class RenderExplainReport:

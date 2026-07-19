@@ -11,7 +11,7 @@ from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.docs.api import Docs
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.target.capabilities.api import Capabilities
-from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark import PySpark
 
 ROOT = Path(".")
 EXAMPLES = ROOT / "examples"
@@ -97,7 +97,7 @@ def render_orders_example() -> dict[str, str]:
             )
             files.update(
                 PySpark.render.project()(
-                    PySpark.plan.lower()(compile_transform(transform_class), capabilities=capabilities),
+                    PySpark.compiler.lower()(compile_transform(transform_class), capabilities=capabilities),
                     source_transform=source_transform,
                     generated_package="examples.structure_generated.orders",
                     source_schema_modules=schema_modules,
@@ -150,7 +150,7 @@ def render_streams_example() -> dict[str, str]:
         for transform_class, source_transform in transforms:
             files.update(
                 PySpark.render.project()(
-                    PySpark.plan.lower()(compile_transform(transform_class)),
+                    PySpark.compiler.lower()(compile_transform(transform_class)),
                     source_transform=source_transform,
                     generated_package="examples.structure_generated.streams",
                     source_schema_modules=schema_modules,
@@ -221,7 +221,7 @@ def render_stocks_example() -> dict[str, str]:
         for transform_class, source_transform in transforms:
             files.update(
                 PySpark.render.project()(
-                    PySpark.plan.lower()(compile_transform(transform_class)),
+                    PySpark.compiler.lower()(compile_transform(transform_class)),
                     source_transform=source_transform,
                     generated_package="examples.structure_generated.stocks",
                     source_schema_modules=schema_modules,
@@ -294,7 +294,7 @@ def render_texts_example() -> dict[str, str]:
         for transform_class, source_transform in transforms:
             files.update(
                 PySpark.render.project()(
-                    PySpark.plan.lower()(compile_transform(transform_class)),
+                    PySpark.compiler.lower()(compile_transform(transform_class)),
                     source_transform=source_transform,
                     generated_package="examples.structure_generated.texts",
                     source_schema_modules=schema_modules,

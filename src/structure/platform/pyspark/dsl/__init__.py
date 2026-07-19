@@ -1,6 +1,34 @@
 from importlib import import_module
 
-__all__ = ["field", "types"]
+from structure.platform.pyspark.dsl.joins import (
+    AsOf,
+    Join,
+    JoinAsOf,
+    JoinDedupe,
+    JoinHint,
+    JoinMethod,
+    JoinPlan,
+    JoinStrategy,
+    JoinTemporal,
+    OverlapPolicy,
+    TiePolicy,
+)
+
+__all__ = [
+    "AsOf",
+    "Join",
+    "JoinAsOf",
+    "JoinDedupe",
+    "JoinHint",
+    "JoinMethod",
+    "JoinPlan",
+    "JoinStrategy",
+    "JoinTemporal",
+    "OverlapPolicy",
+    "TiePolicy",
+    "field",
+    "types",
+]
 
 
 def __getattr__(name: str):

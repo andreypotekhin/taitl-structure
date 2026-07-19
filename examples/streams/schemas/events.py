@@ -1,6 +1,6 @@
 from examples.streams.schemas.race import Race
 from structure import Schema
-from structure.platform.pyspark.dsl.field import *
+from structure.platform.pyspark import *
 
 
 class RawEvent(Schema):

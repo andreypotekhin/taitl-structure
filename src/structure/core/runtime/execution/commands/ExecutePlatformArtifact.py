@@ -1,6 +1,6 @@
 from structure.core.compiler.artifacts.model.PlatformArtifact import PlatformArtifact
 from structure.core.platforms.model.PlatformConfiguration import PlatformConfiguration
-from structure.platform.api.v1.ExecutionRequest import ExecutionRequest
+from structure.platform.api.v1.model import ExecutionRequest
 
 
 class ExecutePlatformArtifact:

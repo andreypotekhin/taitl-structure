@@ -5,8 +5,7 @@ import pytest
 from structure import *
 from structure.core.compiler.api import Compiler, OperationCardinality, StreamingSupport
 from structure.core.compiler.ir.model.JoinMethod import JoinMethod
-from structure.platform.pyspark import field, types
-from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark import PySpark, field, types
 
 
 class Order(Schema):
@@ -151,7 +150,7 @@ def test_where_before_join_renders_before_join() -> None:
             lookup_join(product, on=product.id == order.product_id, how=Join.LEFT)
             return Enriched(id=order.id, product_name=product.name)
 
-    compiled_step = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    compiled_step = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
     text = PySpark.render.step()(compiled_step, current="orders", sources={"products": "products"})
 
     assert text.index("orders = orders.where(") < text.index("orders = orders.join(")
@@ -169,7 +168,7 @@ def test_where_after_join_renders_after_join() -> None:
             where(cast(Any, product).name.is_not_null())
             return Enriched(id=order.id, product_name=product.name)
 
-    compiled_step = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    compiled_step = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
     text = PySpark.render.step()(compiled_step, current="orders", sources={"products": "products"})
 
     assert text.index("orders = orders.join(") < text.index("orders = orders.where(")
@@ -250,7 +249,7 @@ def test_inferred_lookup_join_preserves_filter_join_order() -> None:
         StreamingSupport.COMPATIBLE,
     ]
 
-    recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    recipe = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert text.index("orders = orders.where(") < text.index("orders = orders.join(")
@@ -277,7 +276,7 @@ def test_exists_join_records_row_filtering_operation() -> None:
     assert compiled_step.operations[0].capability.name == "exists"
     assert compiled_step.operations[0].cardinality is OperationCardinality.ROW_FILTERING
 
-    recipe = PySpark.plan.lower()(compile_transform(PublishKnownProducts)).steps[0]
+    recipe = PySpark.compiler.lower()(compile_transform(PublishKnownProducts)).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert '"left_semi"' in text
@@ -296,7 +295,7 @@ def test_not_exists_join_records_row_filtering_operation() -> None:
             return Published(id=order.id, status=order.status)
 
     compiled_step = compile_transform(PublishUnknownProducts).steps[0]
-    recipe = PySpark.plan.lower()(compile_transform(PublishUnknownProducts)).steps[0]
+    recipe = PySpark.compiler.lower()(compile_transform(PublishUnknownProducts)).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert compiled_step.joins[0].method is JoinMethod.NOT_EXISTS
@@ -322,7 +321,7 @@ def test_inner_join_records_row_multiplying_operation() -> None:
 
     plan = compile_transform(AddProduct)
     compiled_step = plan.steps[0]
-    recipe_plan = PySpark.plan.lower()(plan)
+    recipe_plan = PySpark.compiler.lower()(plan)
     recipe = recipe_plan.steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
     traceability = Compiler.traceability.build()(
@@ -358,7 +357,7 @@ def test_inner_join_accepts_using_key(using: object) -> None:
             inner_join(on=using)
             return Enriched(id=order.id, product_name=product.name)
 
-    recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    recipe = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert 'F.col("order.id") == F.col("products.id")' in text
@@ -384,7 +383,7 @@ def test_inner_join_accepts_multiple_using_keys() -> None:
             inner_join(product, on=["tenant_id", "id"])
             return Enriched(id=order.id, product_name=product.name)
 
-    recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    recipe = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert 'F.col("composite_order.tenant_id") == F.col("products.tenant_id")' in text
@@ -428,7 +427,7 @@ def test_join_strategy_renders_supported_pyspark_hint(strategy: JoinStrategy, hi
             inner_join(on=product.id == order.product_id, strategy=strategy)
             return Enriched(id=order.id, product_name=product.name)
 
-    recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    recipe = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert f'.hint("{hint}")' in text
@@ -447,7 +446,7 @@ def test_bare_right_join_records_rowset_operation() -> None:
 
     plan = compile_transform(AddProduct)
     compiled_step = plan.steps[0]
-    recipe_plan = PySpark.plan.lower()(plan)
+    recipe_plan = PySpark.compiler.lower()(plan)
     recipe = recipe_plan.steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
     traceability = Compiler.traceability.build()(
@@ -484,7 +483,7 @@ def test_explicit_full_rowset_join_accepts_disjunctive_predicate() -> None:
             return OuterEnriched(id=order.id, product_name=product.name)
 
     plan = compile_transform(AddProduct)
-    recipe = PySpark.plan.lower()(plan).steps[0]
+    recipe = PySpark.compiler.lower()(plan).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert plan.steps[0].joins[0].method is JoinMethod.ROWSET
@@ -504,7 +503,7 @@ def test_full_join_shortcut_accepts_non_equi_predicate() -> None:
             full_join(on=cast(Any, product).valid_from <= cast(Any, order).status)
             return OuterEnriched(id=order.id, product_name=product.name)
 
-    recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    recipe = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert recipe.joins[0].method is JoinMethod.ROWSET
@@ -538,7 +537,7 @@ def test_cross_join_renders_cross_join_call() -> None:
             cross_join(product, allow_cartesian=True)
             return Enriched(id=order.id, product_name=product.name)
 
-    recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    recipe = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert recipe.joins[0].method is JoinMethod.ROWSET
@@ -565,7 +564,7 @@ def test_deduped_lookup_join_records_policy_and_renders_deterministic_lookup() -
 
     plan = compile_transform(AddProduct)
     compiled_step = plan.steps[0]
-    recipe = PySpark.plan.lower()(plan).steps[0]
+    recipe = PySpark.compiler.lower()(plan).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert len(plan.diagnostics) == 0
@@ -623,7 +622,7 @@ def test_temporal_one_records_closed_open_validity_lookup() -> None:
 
     plan = compile_transform(AddProduct)
     compiled_step = plan.steps[0]
-    recipe_plan = PySpark.plan.lower()(plan)
+    recipe_plan = PySpark.compiler.lower()(plan)
     recipe = recipe_plan.steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
     traceability = Compiler.traceability.build()(
@@ -715,7 +714,7 @@ def test_as_of_one_records_backward_lookup_and_renders_ranked_selection() -> Non
 
     plan = compile_transform(AddProduct)
     compiled_step = plan.steps[0]
-    recipe_plan = PySpark.plan.lower()(plan)
+    recipe_plan = PySpark.compiler.lower()(plan)
     recipe = recipe_plan.steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
     traceability = Compiler.traceability.build()(
@@ -757,7 +756,7 @@ def test_as_of_one_records_forward_lookup_and_renders_earliest_selection() -> No
             )
             return Enriched(id=order.id, product_name=product.name)
 
-    recipe = PySpark.plan.lower()(compile_transform(AddProduct)).steps[0]
+    recipe = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert '(F.col("products.valid_from") >= F.col("order.status"))' in text

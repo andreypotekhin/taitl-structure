@@ -43,6 +43,7 @@ def test_pyspark_compiler_and_explainer_consume_core_supplied_analysis(monkeypat
 
     monkeypatch.setattr(Compiler.frontend, "compile", lambda: (_ for _ in ()).throw(AssertionError("Core re-entry")))
 
+    assert api.explainer is not None
     report = api.explainer.render(ExplainRequest(Publish, payload=compilation.lowered, analysis=analysis))
 
     assert "Publish" in report

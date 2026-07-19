@@ -1,5 +1,3 @@
-from enum import Enum
+from structure.platform.pyspark.dsl.joins import JoinHint
 
-
-class JoinHint(Enum):
-    BROADCAST = "broadcast"
+__all__ = ["JoinHint"]

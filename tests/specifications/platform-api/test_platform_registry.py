@@ -49,13 +49,16 @@ class Facet:
     def resolve(self, *, profile, variant):
         return cast(BackendCapabilities, object())
 
+    def open_step(self, request):
+        raise AssertionError("This registry fixture does not author transform steps.")
+
 
 class Plugin:
     def __init__(self, minimum=1, maximum=1, *, name="fake", distribution="fake-wheel"):
         self.descriptor = PlatformDescriptor(name, "Fake", distribution, "1.0", minimum, maximum)
 
     def api(self, version):
-        return PlatformAPI(schema=Facet(), compiler=Facet(), capabilities=Facet())
+        return PlatformAPI(schema=Facet(), compiler=Facet(), capabilities=Facet(), authoring=Facet())
 
 
 def test_discovery_uses_metadata_without_loading_plugins() -> None:

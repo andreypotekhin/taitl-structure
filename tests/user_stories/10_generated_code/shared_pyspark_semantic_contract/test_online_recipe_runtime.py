@@ -10,30 +10,30 @@ from structure.core.compiler.ir.model.JoinMethod import JoinMethod
 from structure.core.runtime.session.model.TransformResult import TransformResult
 from structure.core.target.capabilities.model.BackendId import BackendId
 from structure.platform.pyspark import field, types
-from structure.platform.pyspark.execution.online.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
-from structure.platform.pyspark.execution.online.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
-from structure.platform.pyspark.execution.online.logic.PySparkFrameValidator import PySparkFrameValidator
-from structure.platform.pyspark.model.PySparkAggregateAssignment import PySparkAggregateAssignment
-from structure.platform.pyspark.model.PySparkAggregateKey import PySparkAggregateKey
-from structure.platform.pyspark.model.PySparkAggregateRecipe import PySparkAggregateRecipe
-from structure.platform.pyspark.model.PySparkCacheRecipe import PySparkCacheRecipe
-from structure.platform.pyspark.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
-from structure.platform.pyspark.model.PySparkExecutionPlan import PySparkExecutionPlan
-from structure.platform.pyspark.model.PySparkExpressionRecipe import PySparkExpressionRecipe
-from structure.platform.pyspark.model.PySparkHookRecipe import PySparkHookRecipe
-from structure.platform.pyspark.model.PySparkInputRecipe import PySparkInputRecipe
-from structure.platform.pyspark.model.PySparkJoinAsOfRecipe import PySparkJoinAsOfRecipe
-from structure.platform.pyspark.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
-from structure.platform.pyspark.model.PySparkJoinRecipe import PySparkJoinRecipe
-from structure.platform.pyspark.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
-from structure.platform.pyspark.model.PySparkOperationRecipe import PySparkOperationRecipe
-from structure.platform.pyspark.model.PySparkOutputRecipe import PySparkOutputRecipe
-from structure.platform.pyspark.model.PySparkProjectionRecipe import PySparkProjectionRecipe
-from structure.platform.pyspark.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
-from structure.platform.pyspark.model.PySparkStepRecipe import PySparkStepRecipe
-from structure.platform.pyspark.model.PySparkStepResultRecipe import PySparkStepResultRecipe
-from structure.platform.pyspark.model.PySparkValidationRecipe import PySparkValidationRecipe
-from structure.platform.pyspark.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
+from structure.platform.pyspark.compiler.model.PySparkAggregateAssignment import PySparkAggregateAssignment
+from structure.platform.pyspark.compiler.model.PySparkAggregateKey import PySparkAggregateKey
+from structure.platform.pyspark.compiler.model.PySparkAggregateRecipe import PySparkAggregateRecipe
+from structure.platform.pyspark.compiler.model.PySparkCacheRecipe import PySparkCacheRecipe
+from structure.platform.pyspark.compiler.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe
+from structure.platform.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.platform.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
+from structure.platform.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
+from structure.platform.pyspark.compiler.model.PySparkInputRecipe import PySparkInputRecipe
+from structure.platform.pyspark.compiler.model.PySparkJoinAsOfRecipe import PySparkJoinAsOfRecipe
+from structure.platform.pyspark.compiler.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe
+from structure.platform.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
+from structure.platform.pyspark.compiler.model.PySparkJoinTemporalRecipe import PySparkJoinTemporalRecipe
+from structure.platform.pyspark.compiler.model.PySparkOperationRecipe import PySparkOperationRecipe
+from structure.platform.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
+from structure.platform.pyspark.compiler.model.PySparkProjectionRecipe import PySparkProjectionRecipe
+from structure.platform.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
+from structure.platform.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
+from structure.platform.pyspark.compiler.model.PySparkStepResultRecipe import PySparkStepResultRecipe
+from structure.platform.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
+from structure.platform.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
+from structure.platform.pyspark.execution.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
+from structure.platform.pyspark.execution.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
+from structure.platform.pyspark.execution.logic.PySparkFrameValidator import PySparkFrameValidator
 
 
 class RawOrder(Schema):

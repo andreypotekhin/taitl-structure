@@ -4,8 +4,7 @@ import pytest
 
 from structure import *
 from structure.core.runtime.api import StructureSession, TransformResult
-from structure.platform.pyspark import field, types
-from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark import PySpark, field, types
 
 
 class Raw(Schema):
@@ -292,7 +291,7 @@ def test_v1_input_selector_reads_original_input_after_shadowing() -> None:
     ]
 
     text = PySpark.render.transform()(
-        PySpark.plan.lower()(plan),
+        PySpark.compiler.lower()(plan),
         source_transform="tests.specifications.multiple_outputs.PublishOrders",
         runtime_module="testing.runtime",
         schema_modules={
@@ -356,7 +355,7 @@ def test_v1_final_output_materializes_named_result_from_implicit_lane() -> None:
             return Published(id=row.id)
 
     text = PySpark.render.transform()(
-        PySpark.plan.lower()(compile_transform(PublishOrders)),
+        PySpark.compiler.lower()(compile_transform(PublishOrders)),
         source_transform="tests.specifications.multiple_outputs.PublishOrders",
         runtime_module="testing.runtime",
         schema_modules={
@@ -615,7 +614,7 @@ def test_v1_generated_pyspark_uses_per_lane_step_sources() -> None:
         def reject(self, row: Normalized) -> Rejected:
             return Rejected(id=row.id, reason="missing customer")
 
-    recipe = PySpark.plan.lower()(compile_transform(RouteOrders))
+    recipe = PySpark.compiler.lower()(compile_transform(RouteOrders))
     text = PySpark.render.transform()(
         recipe,
         source_transform="tests.specifications.multiple_outputs.RouteOrders",

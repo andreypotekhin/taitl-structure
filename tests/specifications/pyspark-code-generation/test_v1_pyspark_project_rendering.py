@@ -1,7 +1,7 @@
 import json
 
 from structure import *
-from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark import PySpark
 
 
 def _source_schema_modules():
@@ -42,7 +42,7 @@ def test_v1_project_renderer_emits_runtime_schemas_transform_and_traceability() 
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
     files = PySpark.render.project()(
-        PySpark.plan.lower()(compile_transform(EnrichOrders)),
+        PySpark.compiler.lower()(compile_transform(EnrichOrders)),
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         generated_package="testing.model.v1.structure_generated.orders",
         source_schema_modules=_source_schema_modules(),
@@ -105,7 +105,7 @@ def test_v1_project_renderer_emits_runtime_schemas_transform_and_traceability() 
 def test_v1_project_renderer_is_deterministic() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    plan = PySpark.plan.lower()(compile_transform(EnrichOrders))
+    plan = PySpark.compiler.lower()(compile_transform(EnrichOrders))
     kwargs = {
         "source_transform": "testing.model.v1.orders.transforms.order.EnrichOrders",
         "generated_package": "testing.model.v1.structure_generated.orders",

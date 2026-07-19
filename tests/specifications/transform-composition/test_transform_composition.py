@@ -4,8 +4,7 @@ import pytest
 
 from structure import *
 from structure.core.runtime.session.model.TransformResult import TransformResult
-from structure.platform.pyspark import field, types
-from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark import PySpark, field, types
 
 
 class Raw(Schema):
@@ -288,7 +287,7 @@ def test_class_field_pipeline_compiles_and_renders_generated_transform() -> None
 
     plan = compile_transform(OrderPipeline)
     text = PySpark.render.transform()(
-        PySpark.plan.lower()(plan),
+        PySpark.compiler.lower()(plan),
         source_transform=f"{__name__}.OrderPipeline",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules={
@@ -319,7 +318,7 @@ def test_generated_transform_renders_output_alias_metadata() -> None:
 
     plan = compile_transform(NormalizeWithBoundaryAlias)
     text = PySpark.render.transform()(
-        PySpark.plan.lower()(plan),
+        PySpark.compiler.lower()(plan),
         source_transform=f"{__name__}.NormalizeWithBoundaryAlias",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules={Raw: __name__, Normalized: __name__},

@@ -1,7 +1,3 @@
-from enum import Enum
+from structure.platform.pyspark.dsl.operations import StreamingOutputMode
 
-
-class StreamingOutputMode(Enum):
-    APPEND = "append"
-    UPDATE = "update"
-    COMPLETE = "complete"
+__all__ = ["StreamingOutputMode"]

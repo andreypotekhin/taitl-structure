@@ -1,6 +1,6 @@
 from examples.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
 from structure import Schema
-from structure.platform.pyspark.dsl.field import *
+from structure.platform.pyspark import *
 
 
 class OrderRaw(Schema):

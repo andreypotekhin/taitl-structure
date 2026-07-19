@@ -26,7 +26,7 @@ region.
 
 ```python
 from structure import *
-from structure.platform.pyspark.dsl.field import decimal, long, string
+from structure.platform.pyspark import decimal, long, string
 
 
 class Purchase(Schema):

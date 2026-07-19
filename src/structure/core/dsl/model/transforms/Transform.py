@@ -140,7 +140,7 @@ class Transform:
         from structure.core.compiler.artifacts.storage import DiskStorage
         from structure.core.configuration.model.StructureConfig import StructureConfig
         from structure.core.platforms.api.Platform import Platform
-        from structure.platform.api.v1.GenerationRequest import GenerationRequest
+        from structure.platform.api.v1.model import GenerationRequest
 
         resolved = CompilerOptions.resolve(
             options,

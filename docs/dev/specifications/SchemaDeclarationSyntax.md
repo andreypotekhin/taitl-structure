@@ -12,7 +12,7 @@ The canonical schema-module declaration form is:
 
 ```python
 from structure import Schema
-from structure.platform.pyspark.dsl.field import *
+from structure.platform.pyspark import *
 
 
 class OrderRaw(Schema):
@@ -32,17 +32,17 @@ The field declaration has two visible parts:
 1. A Python class attribute name, which becomes the Structure field name.
 2. A field factory such as `string()` or `decimal(12, 2)`.
 
-`from structure.platform.pyspark.dsl.field import *` is intentionally limited to PySpark schema modules. Transform
+`from structure.platform.pyspark import *` is intentionally limited to PySpark schema modules. Transform
 modules that need an expression `array(...)` helper should import the PySpark DSL explicitly rather than combining
 wildcard imports.
 
 ## Public Imports
 
-The PySpark schema-field DSL is importable from `structure.platform.pyspark.dsl.field`:
+The PySpark schema-field DSL is importable from `structure.platform.pyspark`:
 
 ```python
 from structure import Schema
-from structure.platform.pyspark.dsl.field import *
+from structure.platform.pyspark import *
 ```
 
 Standalone PySpark types for casts and special-function contracts are available through

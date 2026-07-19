@@ -1,5 +1,3 @@
-from structure.core.dsl.model.types.DecimalType import DecimalType
+from structure.platform.pyspark.dsl.types import Decimal
 
-
-class Decimal(DecimalType):
-    pass
+__all__ = ["Decimal"]

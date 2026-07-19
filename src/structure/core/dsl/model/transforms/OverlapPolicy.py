@@ -1,5 +1,3 @@
-from enum import Enum
+from structure.platform.pyspark.dsl.joins import OverlapPolicy
 
-
-class OverlapPolicy(Enum):
-    ERROR = "error"
+__all__ = ["OverlapPolicy"]

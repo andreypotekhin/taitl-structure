@@ -1,5 +1,3 @@
-from enum import Enum
+from structure.platform.pyspark.dsl.joins import TiePolicy
 
-
-class TiePolicy(Enum):
-    ERROR = "error"
+__all__ = ["TiePolicy"]

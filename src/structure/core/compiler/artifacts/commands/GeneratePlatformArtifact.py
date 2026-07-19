@@ -1,6 +1,6 @@
 from structure.core.compiler.artifacts.model.PlatformArtifact import PlatformArtifact
 from structure.core.platforms.model.PlatformConfiguration import PlatformConfiguration
-from structure.platform.api.v1.GenerationRequest import GenerationRequest
+from structure.platform.api.v1.model import GenerationRequest
 
 
 class GeneratePlatformArtifact:

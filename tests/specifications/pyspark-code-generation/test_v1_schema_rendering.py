@@ -1,8 +1,7 @@
 import sys
 
 from structure import *
-from structure.platform.pyspark import field, types
-from structure.platform.pyspark.api import PySpark
+from structure.platform.pyspark import PySpark, field, types
 
 
 def test_v1_schema_rendering_is_spark_free() -> None:
