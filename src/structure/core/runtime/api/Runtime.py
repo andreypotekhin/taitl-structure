@@ -3,6 +3,5 @@ from structure.core.runtime.schemas.api import Schemas
 
 
 class Runtime:
-
-    execution = Execution
-    schemas = Schemas
+    execution = Execution()
+    schemas = Schemas()

@@ -7,8 +7,7 @@ import click
 from structure.core.cli.commands.DiscoverStructureProject import DiscoverStructureProject
 from structure.core.cli.commands.RenderConfiguredPlatformProject import RenderConfiguredPlatformProject
 from structure.core.cli.model.DiscoveredStructureProject import DiscoveredStructureProject
-from structure.core.compiler.artifacts.commands.CompareGeneratedFiles import CompareGeneratedFiles
-from structure.core.compiler.artifacts.commands.WriteGeneratedFiles import WriteGeneratedFiles
+from structure.core.compiler.api.Compiler import Compiler
 from structure.core.compiler.artifacts.model.GeneratedFileSetResult import GeneratedFileSetResult
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.docs.api import Docs
@@ -26,7 +25,7 @@ class CompileStructureProject:
         result = (
             self._compare(config, files)
             if config.fail_on_diff
-            else WriteGeneratedFiles()(files, root=config.generated_dir)
+            else Compiler.artifacts.write()(files, root=config.generated_dir)
         )
         return (
             "Structure compile passed",
@@ -43,7 +42,7 @@ class CompileStructureProject:
         return Docs.render.project()(config, project)
 
     def _compare(self, config: StructureConfig, files: dict[str, str]) -> GeneratedFileSetResult:
-        result = CompareGeneratedFiles()(
+        result = Compiler.artifacts.compare()(
             files,
             root=config.generated_dir,
             ignore_prefixes=self._compare_ignore_prefixes(config),

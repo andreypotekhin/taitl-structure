@@ -1,8 +1,11 @@
-from structure.core.compiler.compileability.streaming_compatibility.api import ClassifyStreamingCompatibility
+from structure.core.compiler.compileability.streaming_compatibility.api import (
+    ClassifyStreamingCompatibility,
+    StreamingCompatibility,
+)
 
 
 class Compileability:
+    streaming_compatibility = StreamingCompatibility()
 
-    @staticmethod
-    def streaming() -> ClassifyStreamingCompatibility:
-        return ClassifyStreamingCompatibility()
+    def streaming(self) -> ClassifyStreamingCompatibility:
+        return self.streaming_compatibility.classify()

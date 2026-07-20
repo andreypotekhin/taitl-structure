@@ -3,11 +3,8 @@ from structure.core.compiler.frontend.commands.CompileTransform import CompileTr
 
 
 class Frontend:
-
-    @staticmethod
-    def analyze() -> CompileTransform:
+    def analyze(self) -> CompileTransform:
         return CompileTransform()
 
-    @staticmethod
-    def compile() -> CompilePlatformTransform:
+    def compile(self) -> CompilePlatformTransform:
         return CompilePlatformTransform()

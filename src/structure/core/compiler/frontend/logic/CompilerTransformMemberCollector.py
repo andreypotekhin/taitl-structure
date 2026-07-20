@@ -3,8 +3,7 @@ from __future__ import annotations
 import inspect
 from collections import defaultdict
 
-from structure.core.compiler.diagnostics.api import StructureCompileError
-from structure.core.compiler.diagnostics.logic.BuildCompilerDiagnosticSource import BuildCompilerDiagnosticSource
+from structure.core.compiler.diagnostics.api import Diagnostics, StructureCompileError
 from structure.core.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
@@ -13,7 +12,7 @@ from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 class CompilerTransformMemberCollector:
 
     def __init__(self) -> None:
-        self._diagnostic_source = BuildCompilerDiagnosticSource()
+        self._diagnostic_source = Diagnostics().source()
 
     def collect(self, transform_class: type[Transform]) -> tuple[CompilerTransformMember, ...]:
         candidates = self._candidates(transform_class)

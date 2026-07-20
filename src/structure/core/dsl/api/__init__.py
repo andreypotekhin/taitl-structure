@@ -1,5 +1,5 @@
 from structure.core.compiler.diagnostics.api import StructureCompileError
-from structure.core.compiler.frontend.commands.CompileTransform import compile_transform
+from structure.core.compiler.frontend.api import compile_transform
 from structure.core.dsl.model.expr.expressions import (
     abs,
     bround,

@@ -3,8 +3,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from pathlib import Path
 
-from structure.core.compiler.artifacts.commands import CompiledArtifactPool, CompileStructureSources
-from structure.core.compiler.artifacts.model import CompiledTransform, CompilerOptions
+from structure.core.compiler.artifacts.api.Artifacts import Artifacts
+from structure.core.compiler.artifacts.model import CompiledArtifactPool, CompiledTransform, CompilerOptions
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
@@ -12,7 +12,7 @@ from structure.core.platforms.api.Platform import Platform
 from structure.core.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.core.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.core.runtime.session.model.TransformResult import TransformResult
-from structure.core.sources.commands.DiscoverStructureSources import DiscoverStructureSources
+from structure.core.sources.api import Sources
 from structure.core.sources.model.CompiledSources import CompiledSources
 from structure.core.sources.model.SourceTransformAddress import SourceTransformAddress
 from structure.core.sources.model.StructureSources import StructureSources
@@ -108,7 +108,7 @@ class StructureSession:
 
     def compile(self, transform_or_pipeline: type[Transform] | TransformPipeline | StructureSources):
         if isinstance(transform_or_pipeline, StructureSources):
-            compiled = CompileStructureSources()(
+            compiled = Artifacts().sources()(
                 transform_or_pipeline,
                 compile_one=lambda subject: self.artifacts.get_or_compile(
                     subject,
@@ -144,7 +144,7 @@ class StructureSession:
         return self.artifacts.status()
 
     def _register_sources(self, compiled: CompiledSources) -> None:
-        transforms = DiscoverStructureSources()(compiled.sources)
+        transforms = Sources().discover()(compiled.sources)
         for address, transform in transforms.items():
             registered = self._source_transforms.setdefault(address, [])
             if transform not in registered:

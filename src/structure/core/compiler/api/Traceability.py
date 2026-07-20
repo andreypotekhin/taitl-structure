@@ -1,8 +1,9 @@
 from structure.core.compiler.traceability.api import BuildCompilerTraceability
+from structure.core.compiler.traceability.api import Traceability as TraceabilityApp
 
 
 class Traceability:
+    compiler = TraceabilityApp()
 
-    @staticmethod
-    def build() -> BuildCompilerTraceability:
-        return BuildCompilerTraceability()
+    def build(self) -> BuildCompilerTraceability:
+        return self.compiler.build()

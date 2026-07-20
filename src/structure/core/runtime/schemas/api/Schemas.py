@@ -2,7 +2,5 @@ from structure.core.runtime.schemas.commands.BuildTransformSchemas import BuildT
 
 
 class Schemas:
-
-    @staticmethod
-    def build() -> BuildTransformSchemas:
+    def build(self) -> BuildTransformSchemas:
         return BuildTransformSchemas()

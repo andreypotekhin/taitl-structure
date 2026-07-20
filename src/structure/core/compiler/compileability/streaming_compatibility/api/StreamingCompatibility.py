@@ -4,7 +4,5 @@ from structure.core.compiler.compileability.streaming_compatibility.commands.Cla
 
 
 class StreamingCompatibility:
-
-    @staticmethod
-    def classify() -> ClassifyStreamingCompatibility:
+    def classify(self) -> ClassifyStreamingCompatibility:
         return ClassifyStreamingCompatibility()

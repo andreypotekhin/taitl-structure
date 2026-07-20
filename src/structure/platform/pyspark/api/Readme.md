@@ -1,7 +1,14 @@
 # PySpark Platform Facade
 
-`PySpark` is the bundled plugin's composition root. It owns one endpoint instance for each PySpark app and is the
-only cross-app endpoint surface: `PySpark.compiler`, `PySpark.schema`, `PySpark.render`, `PySpark.execution`,
-`PySpark.files`, `PySpark.capabilities`, and `PySpark.symbolic_execution`.
+## Purpose
+`PySpark` is the bundled plugin's composition root. It exposes the platform's long-lived app endpoints and adapts them
+to the negotiated Platform API v1 facets.
 
-The remaining classes adapt those endpoints to the negotiated Platform API v1 facets.
+## Dependency Exchanges
+Core reaches the plugin through negotiated schema, compiler, authoring, execution, generation, explain, and analysis
+facets. PySpark peer apps reach one another only through `PySpark.compiler`, `PySpark.schema`, `PySpark.render`,
+`PySpark.execution`, `PySpark.files`, `PySpark.capabilities`, and `PySpark.symbolic_execution`.
+
+## Inner Workings
+The façade owns one endpoint instance per PySpark app. Its facet adapters translate the versioned platform contract to
+those endpoint commands without exposing another app's private commands or logic.

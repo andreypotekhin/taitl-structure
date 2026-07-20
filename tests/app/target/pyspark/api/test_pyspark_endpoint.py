@@ -201,6 +201,13 @@ def test_pyspark_apps_do_not_import_another_apps_private_commands_or_logic() -> 
     assert not violations, "PySpark apps must invoke peers through their API endpoints:\n" + "\n".join(violations)
 
 
+def test_pyspark_app_readmes_follow_the_core_app_format() -> None:
+    for readme in Path("src/structure/platform/pyspark").rglob("Readme.md"):
+        content = readme.read_text(encoding="utf-8")
+        for heading in ("## Purpose", "## Dependency Exchanges", "## Inner Workings"):
+            assert heading in content, f"{readme} is missing {heading}"
+
+
 def test_pyspark_dsl_does_not_import_core_concrete_target_models() -> None:
     root = Path("src/structure/platform/pyspark")
     forbidden = (

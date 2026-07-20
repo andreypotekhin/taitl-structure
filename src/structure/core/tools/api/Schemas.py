@@ -3,6 +3,5 @@ from structure.core.tools.commands.GenerateStructureSchema import GenerateStruct
 
 class Schemas:
 
-    @staticmethod
-    def generate(**kwargs) -> str:
+    def generate(self, **kwargs) -> str:
         return GenerateStructureSchema()(**kwargs)

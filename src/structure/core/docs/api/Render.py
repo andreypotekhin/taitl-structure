@@ -2,7 +2,5 @@ from structure.core.docs.commands.RenderStructureDocsProject import RenderStruct
 
 
 class Render:
-
-    @staticmethod
-    def project() -> RenderStructureDocsProject:
+    def project(self) -> RenderStructureDocsProject:
         return RenderStructureDocsProject()

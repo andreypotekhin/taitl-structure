@@ -5,7 +5,7 @@ Import PySpark expressions, joins, field factories, and concrete types from
 Structure lifecycle and artifact concepts.
 """
 
-from structure.core.compiler.artifacts.commands.CompiledArtifactPool import CompiledArtifactPool
+from structure.core.compiler.artifacts.model.CompiledArtifactPool import CompiledArtifactPool
 from structure.core.compiler.artifacts.model.ArtifactCacheReport import ArtifactCacheReport
 from structure.core.compiler.artifacts.model.CompileKey import CompileKey
 from structure.core.compiler.artifacts.model.CompiledTransform import CompiledTransform
@@ -13,7 +13,7 @@ from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOpti
 from structure.core.compiler.artifacts.model.GeneratedTransform import GeneratedTransform
 from structure.core.compiler.artifacts.storage import DiskStorage, MemoryStorage, PackageImportStorage
 from structure.core.compiler.diagnostics.api import StructureCompileError
-from structure.core.compiler.frontend.commands.CompileTransform import compile_transform
+from structure.core.compiler.frontend.api import compile_transform
 from structure.core.configuration.api import StructureConfig
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode

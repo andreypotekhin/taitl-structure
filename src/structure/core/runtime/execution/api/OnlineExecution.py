@@ -2,6 +2,5 @@ from structure.core.runtime.execution.commands.RunOnlinePlatformTransform import
 
 
 class OnlineExecution:
-    @staticmethod
-    def pyspark() -> RunOnlinePlatformTransform:
+    def pyspark(self) -> RunOnlinePlatformTransform:
         return RunOnlinePlatformTransform()

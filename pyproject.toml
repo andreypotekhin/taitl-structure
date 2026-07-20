@@ -72,6 +72,8 @@ ignore = [
     'E305', # expected 2 blank lines after class or function definition, found 1
     "E402", # pydeeq -> module level import not at top of file
     "E501", # line too long
+    'F403', # whildcard imports
+    'F405', # name may be undefined, or defined from star imports
     'F541', # f-string is missing placeholders
     'E712', # spark -> comparison to False should be 'if cond is False:' or 'if not cond:'
     'F401', # module imported but unused
@@ -85,14 +87,6 @@ ignore = [
 ]
 per-file-ignores = [
     '__init__.py:F401', # module imported but unused
-    'examples/orders/**/*.py:F403,F405', # end-user examples intentionally use Structure's public wildcard import
-    'examples/stocks/**/*.py:F403,F405', # end-user examples intentionally use Structure's public wildcard import
-    'examples/texts/**/*.py:F403,F405', # end-user examples intentionally use Structure's public wildcard import
-    'examples/streams/schemas/*.py:F403,F405', # schema modules intentionally import concise field factories
-    'examples/streams/transforms/*.py:F403,F405', # transform modules intentionally import the complete PySpark DSL
-    'examples/math/schemas/*.py:F403,F405', # schema modules intentionally import concise field factories
-    'examples/math/transforms/*.py:F403,F405', # transform modules intentionally import the complete PySpark DSL
-    'tests/**/*.py:F403,F405,F406', # DSL-facing tests intentionally use Structure's public wildcard import
 ]
 max-line-length = 120
 count = true

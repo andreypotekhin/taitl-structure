@@ -8,8 +8,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import cast, get_args, get_origin, get_type_hints
 
-from structure.core.compiler.diagnostics.api import StructureCompileError
-from structure.core.compiler.diagnostics.logic.BuildCompilerDiagnosticSource import BuildCompilerDiagnosticSource
+from structure.core.compiler.diagnostics.api import Diagnostics, StructureCompileError
 from structure.core.compiler.frontend.logic.CompilerInputCollector import CompilerInputCollector
 from structure.core.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
 from structure.core.compiler.frontend.logic.CompilerTransformMemberCollector import CompilerTransformMemberCollector
@@ -26,7 +25,7 @@ from structure.core.compiler.ir.model.ProjectAssignment import ProjectAssignment
 from structure.core.compiler.ir.model.StepPlan import StepPlan
 from structure.core.compiler.ir.model.StepResultPlan import StepResultPlan
 from structure.core.compiler.ir.model.TransformPlan import TransformPlan
-from structure.core.compiler.symbolic_execution.model.CompileContext import CompileContext
+from structure.core.compiler.symbolic_execution.api import SymbolicExecution
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.dsl.model.expr.Expression import Expression
 from structure.core.dsl.model.expr.expressions import literal
@@ -76,7 +75,7 @@ class CompileTransform:
 
     def __init__(self) -> None:
         self._composer = ComposeTransformPlans()
-        self._diagnostic_source = BuildCompilerDiagnosticSource()
+        self._diagnostic_source = Diagnostics().source()
         self._input_collector = CompilerInputCollector()
         self._member_collector = CompilerTransformMemberCollector()
 
@@ -580,7 +579,7 @@ class CompileTransform:
         parent_call: dict[str, object] = {}
         authoring_body: object | None = None
 
-        fallback_context = CompileContext(step=plan_name or name, capture_special_exprs=capture_special_exprs)
+        fallback_context = SymbolicExecution().open()(step=plan_name or name, capture_special_exprs=capture_special_exprs)
         fallback_arguments = [
             (
                 RowScope(name=binding.scope, schema=cast(type[Schema], binding.schema))

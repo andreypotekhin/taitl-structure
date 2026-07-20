@@ -2,7 +2,6 @@ from structure.core.target.capabilities.commands.ResolveBackendCapabilities impo
 
 
 class Capabilities:
-
     @staticmethod
     def resolve() -> ResolveBackendCapabilities:
         return ResolveBackendCapabilities()

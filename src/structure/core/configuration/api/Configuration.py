@@ -2,7 +2,6 @@ from structure.core.configuration.commands.ResolveStructureConfig import Resolve
 
 
 class Configuration:
-
     @staticmethod
     def resolve() -> ResolveStructureConfig:
         return ResolveStructureConfig()

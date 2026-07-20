@@ -14,6 +14,7 @@ from structure.core.compiler.compileability.streaming_compatibility.api import (
     StreamingSupport,
 )
 from structure.core.compiler.diagnostics.api import StructureCompileError
+from structure.core.compiler.diagnostics.api import Diagnostics
 from structure.core.compiler.frontend.api import CompilePlatformTransform, CompileTransform
 from structure.core.compiler.ir.api import (
     HookPlan,
@@ -29,7 +30,7 @@ from structure.core.compiler.ir.api import (
     StepResultPlan,
     TransformPlan,
 )
-from structure.core.compiler.symbolic_execution.api import CompileContext, current_context
+from structure.core.compiler.symbolic_execution.api import CompileContext, SymbolicExecution, current_context
 from structure.core.compiler.traceability.api import (
     BuildCompilerTraceability,
     CompilerProvenance,
@@ -52,6 +53,7 @@ __all__ = [
     "CompilerProvenance",
     "CompilerTraceability",
     "DataflowDependency",
+    "Diagnostics",
     "GeneratedTransform",
     "HookPlan",
     "InputPlan",
@@ -69,6 +71,7 @@ __all__ = [
     "StreamingReport",
     "StreamingSupport",
     "StructureCompileError",
+    "SymbolicExecution",
     "TransformPlan",
     "Compiler",
     "current_context",

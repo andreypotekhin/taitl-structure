@@ -31,7 +31,7 @@
       "dataclass_fields": [],
       "enum_members": [],
       "kind": "class",
-      "module": "structure.core.compiler.artifacts.commands.CompiledArtifactPool",
+      "module": "structure.core.compiler.artifacts.model.CompiledArtifactPool",
       "qualname": "CompiledArtifactPool",
       "signature": "(*, max_entries: 'int | None' = None) -> 'None'"
     },

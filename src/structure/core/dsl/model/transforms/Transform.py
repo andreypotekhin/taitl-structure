@@ -95,18 +95,14 @@ class Transform:
         target: str | None = None,
         **settings: object,
     ):
-        from structure.core.compiler.artifacts.commands import (
-            BuildCompiledTransform,
-            BuildPlatformArtifact,
-            CompileStructureSources,
-        )
+        from structure.core.compiler.api.Compiler import Compiler
         from structure.core.compiler.artifacts.model import CompilerOptions
         from structure.core.sources.model.StructureSources import StructureSources
 
         if platform_configuration is not None or platform_registry is not None:
             if platform_configuration is None or platform_registry is None:
                 raise ValueError("platform_configuration and platform_registry must be supplied together.")
-            return BuildPlatformArtifact(platform_registry)(cls, configuration=platform_configuration, target=target)
+            return Compiler.artifacts.platform(platform_registry)(cls, configuration=platform_configuration, target=target)
         resolved = CompilerOptions.resolve(
             options,
             project_root=project_root,
@@ -115,13 +111,13 @@ class Transform:
             overrides=settings,
         )
         if cls is Transform and isinstance(options, StructureSources):
-            return CompileStructureSources()(
+            return Compiler.artifacts.sources()(
                 options,
-                compile_one=lambda subject: BuildCompiledTransform()(
+                compile_one=lambda subject: Compiler.artifacts.build()(
                     subject, options=resolved, schema_types=schema_types
                 ),
             )
-        return BuildCompiledTransform()(cls, options=resolved, schema_types=schema_types)
+        return Compiler.artifacts.build()(cls, options=resolved, schema_types=schema_types)
 
     @classmethod
     def generate(
@@ -135,7 +131,7 @@ class Transform:
         force: bool = False,
         **settings: object,
     ):
-        from structure.core.cli.commands.DiscoverStructureProject import DiscoverStructureProject
+        from structure.core.cli.api import CliApp
         from structure.core.compiler.artifacts.model import CompilerOptions, GeneratedTransform
         from structure.core.compiler.artifacts.storage import DiskStorage
         from structure.core.configuration.model.StructureConfig import StructureConfig
@@ -158,7 +154,7 @@ class Transform:
             target_variant=resolved.target_variant,
             generated_code_options=resolved.generated_code_options,
         )
-        project = DiscoverStructureProject()(structure_config)
+        project = CliApp.discover_project()(structure_config)
         source_unit = cls.__module__
         transforms = cls._source_unit_transforms(project.transforms)
         plans = {}

@@ -3,7 +3,8 @@ from __future__ import annotations
 from collections import defaultdict
 
 from structure.core.cli.model.DiscoveredStructureProject import DiscoveredStructureProject
-from structure.core.compiler.api import Compiler, CompilerOptions
+from structure.core.compiler.api.Compiler import Compiler
+from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOptions
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.platforms.api.Platform import Platform

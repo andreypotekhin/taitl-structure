@@ -6,7 +6,7 @@ from collections.abc import Mapping, Sequence
 from typing import cast
 
 from structure.core.cli.model.DiscoveredStructureProject import DiscoveredStructureProject
-from structure.core.compiler.api import Compiler
+from structure.core.compiler.api.Compiler import Compiler
 from structure.core.compiler.ir.model.TransformPlan import TransformPlan
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.docs.logic.RenderStructureDocsMarkdown import RenderStructureDocsMarkdown

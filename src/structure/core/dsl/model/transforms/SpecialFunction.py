@@ -4,7 +4,6 @@ from datetime import date, datetime
 from inspect import signature
 from typing import Any, Callable, cast, get_type_hints
 
-from structure.core.compiler.symbolic_execution.model.CompileContext import current_context
 from structure.core.dsl.model.expr.Expression import Expression
 from structure.core.dsl.model.expr.expressions import literal
 from structure.core.dsl.model.types.BooleanType import BooleanType
@@ -35,24 +34,24 @@ class SpecialFunction:
         self.__module__ = function.__module__
 
     def __call__(self, *args, **kwargs):
+        context = self._context()
         if self.type == "expr":
-            return self._expr(args, kwargs)
+            return self._expr(args, kwargs, context=context)
         if self.type == "udf":
-            if current_context() is None:
+            if context is None:
                 return self.function(*args, **kwargs)
             if kwargs:
                 raise TypeError("@special(type=\"udf\") calls only support positional expression arguments")
             return self._udf(args)
-        if self.type == "opaque" and current_context() is not None:
+        if self.type == "opaque" and context is not None:
             raise TypeError(
                 f"{self.function.__qualname__} is @special(type=\"opaque\") and cannot be called from a compiled "
                 "step method. Use @special(type=\"udf\") for scalar Python UDFs or a hook for DataFrame logic."
             )
         return self.function(*args, **kwargs)
 
-    def _expr(self, args: tuple[object, ...], kwargs: dict[str, object]) -> Expression:
+    def _expr(self, args: tuple[object, ...], kwargs: dict[str, object], *, context) -> Expression:
         expanded = literal(self.function(*args, **kwargs))
-        context = current_context()
         if context is None or not context.capture_special_exprs:
             return expanded
 
@@ -77,6 +76,12 @@ class SpecialFunction:
             },
             args=tuple(literal(argument) for argument in args),
         )
+
+    @staticmethod
+    def _context():
+        from structure.core.compiler.symbolic_execution.api import SymbolicExecution
+
+        return SymbolicExecution().current()()
 
     def __get__(self, instance: object, owner: type | None = None):
         if instance is None:

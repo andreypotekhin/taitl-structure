@@ -2,6 +2,5 @@ from structure.core.runtime.execution.commands.RunGeneratedPlatformTransform imp
 
 
 class GeneratedExecution:
-    @staticmethod
-    def pyspark() -> RunGeneratedPlatformTransform:
+    def pyspark(self) -> RunGeneratedPlatformTransform:
         return RunGeneratedPlatformTransform()

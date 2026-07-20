@@ -17,3 +17,6 @@ __all__ = [
 from structure.core.compiler.artifacts.model.ArtifactCacheReport import ArtifactCacheReport
 from structure.core.compiler.artifacts.model.ArtifactDependency import ArtifactDependency
 from structure.core.compiler.artifacts.model.ArtifactManifest import ArtifactManifest
+from structure.core.compiler.artifacts.model.CompiledArtifactPool import CompiledArtifactPool
+
+__all__ = ["CompiledArtifactPool"]

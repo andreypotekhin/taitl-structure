@@ -1,8 +1,3 @@
-from structure.core.compiler.frontend.api import CompileTransform
+from structure.core.compiler.frontend.api.Frontend import Frontend
 
-
-class Frontend:
-
-    @staticmethod
-    def compile() -> CompileTransform:
-        return CompileTransform()
+__all__ = ["Frontend"]

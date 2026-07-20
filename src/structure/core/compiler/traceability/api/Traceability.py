@@ -2,7 +2,5 @@ from structure.core.compiler.traceability.commands.BuildCompilerTraceability imp
 
 
 class Traceability:
-
-    @staticmethod
-    def build() -> BuildCompilerTraceability:
+    def build(self) -> BuildCompilerTraceability:
         return BuildCompilerTraceability()

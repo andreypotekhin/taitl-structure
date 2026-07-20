@@ -26,9 +26,9 @@ class InputDeclaration:
     def __get__(self, instance: Transform | None, owner: type[Transform] | None = None):
         if instance is None:
             return self
-        from structure.core.compiler.symbolic_execution.model.CompileContext import current_context
+        from structure.core.compiler.symbolic_execution.api import SymbolicExecution
 
-        context = current_context()
+        context = SymbolicExecution().current()()
         scope = InputScope(name=self.name, schema=self.schema)
         if context is None:
             return scope
