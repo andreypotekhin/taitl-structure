@@ -9,6 +9,7 @@ from structure.platform.api.v1.model.PlatformCompilation import PlatformCompilat
 from structure.platform.api.v1.model.SchemaInspectionRequest import SchemaInspectionRequest
 from structure.platform.api.v1.model.SchemaValidationRequest import SchemaValidationRequest
 from structure.platform.api.v1.model.StepAuthoringInput import StepAuthoringInput
+from structure.platform.api.v1.model.StepAuthoringCapture import StepAuthoringCapture
 from structure.platform.api.v1.model.StepAuthoringRequest import StepAuthoringRequest
 from structure.platform.api.v1.model.StepAuthoringResult import StepAuthoringResult
 from structure.platform.api.v1.model.StepAuthoringSession import StepAuthoringSession
@@ -52,7 +53,7 @@ _CORE_CONTRACTS = {
 
 __all__ = [
     "CompileRequest", "ExecutionRequest", "ExplainRequest", "GenerationRequest", "InputPlan", "PlatformCompilation",
-    "SchemaInspectionRequest", "SchemaValidationRequest", "StepAuthoringInput", "StepAuthoringRequest", "HookPlan",
+    "SchemaInspectionRequest", "SchemaValidationRequest", "StepAuthoringCapture", "StepAuthoringInput", "StepAuthoringRequest", "HookPlan",
     "StepAuthoringResult", "StepAuthoringSession", "StepInputPlan", "StepPlan", "StepResultPlan", "StreamingAnalysisRequest",
     "SymbolicContext", "OutputPlan", "TraceabilityRequest", "TransformMemberOrigin", "TransformPlan", "TransformSchemaRequest", "current_symbolic_context",
     *_CORE_CONTRACTS,

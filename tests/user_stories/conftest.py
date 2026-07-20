@@ -10,12 +10,14 @@ from structure.platform.pyspark import PySpark
 def orders_plan():
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    return compile_transform(EnrichOrders)
+    return Compiler.frontend.compile()(EnrichOrders, materialize_schemas=False).analysis
 
 
 @pytest.fixture
-def orders_recipe(orders_plan):
-    return PySpark.compiler.lower()(orders_plan)
+def orders_recipe():
+    from testing.model.v1.orders.transforms.order import EnrichOrders
+
+    return Compiler.frontend.compile()(EnrichOrders, materialize_schemas=False).lowered
 
 
 @pytest.fixture

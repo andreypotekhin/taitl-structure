@@ -1,3 +1,4 @@
+from structure.platform.pyspark.render.commands.DescribePySparkDocumentation import DescribePySparkDocumentation
 from structure.platform.pyspark.render.commands.RenderPySparkExplainReport import RenderPySparkExplainReport
 from structure.platform.pyspark.render.commands.RenderPySparkExpression import RenderPySparkExpression
 from structure.platform.pyspark.render.commands.RenderPySparkProject import RenderPySparkProject
@@ -8,6 +9,9 @@ from structure.platform.pyspark.render.logic.GeneratedCodeOptions import Generat
 
 
 class Render:
+
+    def documentation(self) -> DescribePySparkDocumentation:
+        return DescribePySparkDocumentation()
 
     def expression(self) -> RenderPySparkExpression:
         return RenderPySparkExpression()

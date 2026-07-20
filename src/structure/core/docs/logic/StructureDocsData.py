@@ -20,9 +20,13 @@ class StructureDocsData:
         self,
         project: DiscoveredStructureProject,
         plans: Mapping[str, TransformPlan],
+        *,
+        platform_details: Mapping[str, Mapping[str, object]],
     ) -> dict[str, object]:
         schemas = [self.schema(schema, module) for module, items in project.schema_modules.items() for schema in items]
-        transforms = [self.transform(source, plan) for source, plan in sorted(plans.items())]
+        transforms = [
+            self.transform(source, plan, platform_details.get(source, {})) for source, plan in sorted(plans.items())
+        ]
         return {
             "schemas": sorted(schemas, key=lambda item: str(item["name"])),
             "transforms": transforms,
@@ -49,7 +53,7 @@ class StructureDocsData:
             data["metadata"] = dict(field.metadata)
         return data
 
-    def transform(self, source: str, plan: TransformPlan) -> dict[str, object]:
+    def transform(self, source: str, plan: TransformPlan, platform_details: Mapping[str, object]) -> dict[str, object]:
         return {
             "name": plan.name,
             "source": source,
@@ -60,15 +64,15 @@ class StructureDocsData:
             "outputs": [
                 {"name": item.name, "schema": item.schema.__name__, "ordinal": item.ordinal} for item in plan.outputs
             ],
-            "step_methods": [self.step(step) for step in plan.steps],
-            "dependencies": sorted(self._dependencies(plan)),
+            "step_methods": [self.step(step, self._step_details(platform_details, step.name)) for step in plan.steps],
+            "dependencies": sorted(self._dependencies(plan, platform_details)),
             "target_artifacts": {
                 "pyspark_transform": self._target_transform(source),
                 "traceability": self._traceability(source, plan),
             },
         }
 
-    def step(self, step: StepPlan) -> dict[str, object]:
+    def step(self, step: StepPlan, platform_details: Mapping[str, object]) -> dict[str, object]:
         data: dict[str, object] = {
             "name": step.name,
             "input_lane": step.input_lane,
@@ -88,8 +92,8 @@ class StructureDocsData:
                 {"lane": item.lane, "schema": item.schema.__name__, "frame": item.frame} for item in step.results
             ],
         }
-        if step.joins:
-            data["joins"] = [{"input": join.input_name, "how": join.how.value} for join in step.joins]
+        if joins := platform_details.get("joins"):
+            data["joins"] = joins
         if step.before_hooks:
             data["before_hooks"] = [hook.name for hook in step.before_hooks]
         if step.after_hooks:
@@ -109,12 +113,19 @@ class StructureDocsData:
             return item.schema.__name__
         return item.name
 
-    def _dependencies(self, plan: TransformPlan) -> set[str]:
+    def _dependencies(self, plan: TransformPlan, platform_details: Mapping[str, object]) -> set[str]:
         dependencies: set[str] = set()
         for step in plan.steps:
             dependencies.update(item.source for item in step.inputs if not item.driving)
-            dependencies.update(join.input_name for join in step.joins)
+        target_dependencies = platform_details.get("dependencies", ())
+        if isinstance(target_dependencies, (tuple, list, set)):
+            dependencies.update(str(item) for item in target_dependencies)
         return dependencies
+
+    @staticmethod
+    def _step_details(platform_details: Mapping[str, object], name: str) -> Mapping[str, object]:
+        steps = platform_details.get("steps", {})
+        return steps.get(name, {}) if isinstance(steps, Mapping) else {}
 
     def _target_transform(self, source: str) -> str:
         module = source.rsplit(".", 2)[1]

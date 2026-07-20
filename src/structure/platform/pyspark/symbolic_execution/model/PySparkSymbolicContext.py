@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextvars import Token
 from types import TracebackType
+from typing import TYPE_CHECKING
 
 from structure.platform.api.v1.model.SymbolicContext import (
     SymbolicContext,
@@ -10,19 +11,29 @@ from structure.platform.api.v1.model.SymbolicContext import (
     reset_symbolic_context,
 )
 
+if TYPE_CHECKING:
+    from structure.platform.pyspark.dsl.aggregation.AggregatePlan import AggregatePlan
+    from structure.platform.pyspark.dsl.aggregation.ProjectAssignment import ProjectAssignment
+    from structure.platform.pyspark.dsl.Expression import Expression
+    from structure.platform.pyspark.dsl.joins.JoinPlan import JoinPlan
+    from structure.platform.pyspark.dsl.operations.OperationPlan import OperationPlan
+
 
 class PySparkSymbolicContext:
 
     def __init__(self, *, step: str, capture_special_exprs: bool = False) -> None:
         self.step = step
         self.capture_special_exprs = capture_special_exprs
-        self.filters: list[object] = []
-        self.joins: list[object] = []
-        self.operations: list[object] = []
-        self.aggregate_keys: tuple[tuple[str, object], ...] | None = None
+        self.filters: list[Expression] = []
+        self.joins: list[JoinPlan] = []
+        self.operations: list[OperationPlan] = []
+        self.aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
         self.aggregate_levels: tuple[tuple[str, ...], ...] = ()
         self.aggregate_grouping = "group_by"
-        self.aggregate_having: object | None = None
+        self.aggregate_having: Expression | None = None
+        self.projection: tuple[ProjectAssignment, ...] = ()
+        self.aggregate: AggregatePlan | None = None
+        self.results: tuple[object, ...] = ()
         self.default_project_source: object | None = None
         self.current_scopes: set[str] = set()
         self.relation_scopes: dict[str, object] = {}

@@ -1,18 +1,19 @@
 # Compiler Frontend App
 
 ## Purpose
-The compiler frontend app turns a decorated `Transform` class into backend-neutral `TransformPlan` IR. It is the
-source-aware phase that validates transform class shape, method order, input and output lanes, hooks, and projected
-schema assignments.
+The compiler frontend separates Structure analysis from platform compilation. `analyze()` produces a structural
+`TransformPlan` without evaluating a step body. `compile()` selects a platform, has it author opaque step bodies while
+Core preserves Structure lifecycle rules, then dispatches the completed plan to that platform compiler.
 
 ## Dependency Exchanges
-The app consumes DSL classes such as `Transform`, `Structure`, `OutputDeclaration`, `RowScope`, and expression
-helpers, records symbolic effects through `CompileContext`, and emits `TransformPlan`, `InputPlan`, `StepPlan`,
-`OutputPlan`, `HookPlan`, and `ProjectAssignment` objects. It raises `StructureCompileError` with registry-backed
-diagnostics for invalid source.
+The app consumes `Transform` declarations, inheritance metadata, inputs, lanes, outputs, decorators, and hooks. It
+emits structural `TransformPlan`, `InputPlan`, `StepPlan`, `StepResultPlan`, `OutputPlan`, and `HookPlan` values.
+During compilation it exchanges `StepAuthoringRequest` and opaque `StepAuthoringCapture` values with the selected
+platform. PySpark expressions, projections, joins, aggregates, concrete types, and target diagnostics belong to the
+bundled PySpark plugin rather than this app.
 
 ## Inner Workings
-`CompileTransform` is the central action. It instantiates the transform class, scans public methods in source order,
-runs schema-returning methods inside a symbolic `CompileContext`, builds projection assignments from returned schema
-instances, attaches `@raw` hooks at their declaration position, and resolves final outputs from default or explicit
-lanes.
+`AnalyzeTransform` discovers declarations, validates inheritance and lane routing, attaches hooks at their structural
+position, and resolves final outputs. `CompilePlatformTransform` negotiates the platform, validates declarations,
+invokes steps in Core-defined source order with platform-supplied arguments, and calls the selected compiler facet once.
+The bundled documentation workflow uses the frontend authoring endpoint to retain PySpark-rich educational output.

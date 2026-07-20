@@ -4,7 +4,7 @@ from structure.platform.api.v1.api import (
 )
 from structure.platform.api.v1.model import (
     CompileRequest, ExecutionRequest, ExplainRequest, GenerationRequest, InputPlan, PlatformCompilation,
-    SchemaInspectionRequest, SchemaValidationRequest, StepAuthoringInput, StepAuthoringRequest, StepAuthoringResult,
+    SchemaInspectionRequest, SchemaValidationRequest, StepAuthoringCapture, StepAuthoringInput, StepAuthoringRequest, StepAuthoringResult,
     StepAuthoringSession, StepInputPlan, StreamingAnalysisRequest, SymbolicContext, TraceabilityRequest,
     TransformMemberOrigin, TransformSchemaRequest, current_symbolic_context,
 )
@@ -30,6 +30,7 @@ __all__ = [
     "SchemaAPI",
     "SchemaInspectionRequest",
     "SchemaValidationRequest",
+    "StepAuthoringCapture",
     "SerializationAPI",
     "StreamingAnalysisRequest",
     "TraceabilityRequest",

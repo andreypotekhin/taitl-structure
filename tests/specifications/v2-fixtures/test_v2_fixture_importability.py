@@ -6,9 +6,13 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.core.compiler.api import OperationCardinality
+from structure.core.compiler.api import Compiler, OperationCardinality
 from structure.core.compiler.ir.model.JoinMethod import JoinMethod
 from structure.platform.pyspark import *
+
+
+def _compilation(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False)
 
 
 def test_v2_source_fixtures_import_without_live_spark(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -201,7 +205,7 @@ def test_group_by_lowers_to_aggregate_recipe() -> None:
             group_by(customer_id=row.customer_id)
             return Total(customer_id=row.customer_id, quantity=count())
 
-    plan = PySpark.compiler.lower()(compile_transform(Totals))
+    plan = _compilation(Totals).lowered
 
     operation = plan.steps[0].operations[0]
     assert operation.kind == "aggregate"
@@ -293,7 +297,7 @@ def test_v2_order_analytics_fixture_lowers_grouped_aggregates(monkeypatch: pytes
     _stub_pyspark(monkeypatch)
     module = importlib.import_module("testing.model.v2.orders.transforms.analytics")
 
-    plan = PySpark.compiler.lower()(compile_transform(module.OrderAnalytics))
+    plan = _compilation(module.OrderAnalytics).lowered
 
     assert [step.name for step in plan.steps] == [
         "customer_daily_totals",
@@ -352,7 +356,7 @@ def test_v2_advanced_analytics_fixture_lowers_admitted_feature_families(monkeypa
     _stub_pyspark(monkeypatch)
     module = importlib.import_module("testing.model.v2.orders.transforms.adv_analytics")
 
-    plan = PySpark.compiler.lower()(compile_transform(module.AdvancedOrderAnalytics))
+    plan = _compilation(module.AdvancedOrderAnalytics).lowered
 
     assert [step.name for step in plan.steps] == [
         "revenue_rollup",

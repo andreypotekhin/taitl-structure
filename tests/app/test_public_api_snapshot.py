@@ -10,6 +10,7 @@ import pytest
 
 import structure
 from structure import *
+from structure.core.compiler.api import Compiler
 from structure.platform.pyspark import *
 
 SNAPSHOT = Path("res/testing/snapshots/api/public_structure.v1.json")
@@ -58,7 +59,7 @@ class Publish(Transform):
         namespace,
     )
 
-    plan = compile_transform(cast(Any, namespace["Publish"]))
+    plan = Compiler.frontend.analyze()(cast(Any, namespace["Publish"]))
 
     assert plan.name == "Publish"
     assert [input.name for input in plan.inputs] == ["rows"]

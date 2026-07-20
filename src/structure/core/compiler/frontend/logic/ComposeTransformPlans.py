@@ -5,6 +5,7 @@ from collections.abc import Callable
 from dataclasses import replace
 
 from structure.core.compiler.diagnostics.api import StructureCompileError
+from structure.core.compiler.frontend.logic.LegacyStepPlan import LegacyStepPlan, LegacyStepResultPlan
 from structure.core.compiler.ir.model.AggregateAssignment import AggregateAssignment
 from structure.core.compiler.ir.model.AggregateKey import AggregateKey
 from structure.core.compiler.ir.model.AggregatePlan import AggregatePlan
@@ -280,15 +281,26 @@ class ComposeTransformPlans:
     ) -> StepPlan:
         results = tuple(self._result(result, label=label, final_names=final_names) for result in step.results)
         primary = results[0]
+        if isinstance(step, LegacyStepPlan):
+            return replace(
+                step,
+                source=frame_map.get(step.source, self._frame(label, step.source)),
+                input_lane=frame_map.get(step.input_lane, self._frame(label, step.input_lane)),
+                output_lane=primary.frame,
+                projection=tuple(self._projection(assignment) for assignment in step.projection),
+                joins=tuple(self._join(join, frame_map=frame_map) for join in step.joins),
+                operations=tuple(self._operation(operation, frame_map=frame_map) for operation in step.operations),
+                aggregate=None if step.aggregate is None else self._aggregate(step.aggregate),
+                before_hooks=(),
+                after_hooks=(),
+                inputs=tuple(self._input(input, label=label, frame_map=frame_map) for input in step.inputs),
+                results=results,
+            )
         return replace(
             step,
             source=frame_map.get(step.source, self._frame(label, step.source)),
             input_lane=frame_map.get(step.input_lane, self._frame(label, step.input_lane)),
             output_lane=primary.frame,
-            projection=tuple(self._projection(assignment) for assignment in step.projection),
-            joins=tuple(self._join(join, frame_map=frame_map) for join in step.joins),
-            operations=tuple(self._operation(operation, frame_map=frame_map) for operation in step.operations),
-            aggregate=None if step.aggregate is None else self._aggregate(step.aggregate),
             before_hooks=(),
             after_hooks=(),
             inputs=tuple(self._input(input, label=label, frame_map=frame_map) for input in step.inputs),
@@ -304,12 +316,19 @@ class ComposeTransformPlans:
 
     def _result(self, result: StepResultPlan, *, label: str, final_names: set[str]) -> StepResultPlan:
         frame = result.frame if result.frame in final_names else self._frame(label, result.frame)
+        if isinstance(result, LegacyStepResultPlan):
+            return replace(
+                result,
+                lane=frame,
+                frame=frame,
+                projection=tuple(self._projection(assignment) for assignment in result.projection),
+                aggregate=None if result.aggregate is None else self._aggregate(result.aggregate),
+                after_hooks=(),
+            )
         return replace(
             result,
             lane=frame,
             frame=frame,
-            projection=tuple(self._projection(assignment) for assignment in result.projection),
-            aggregate=None if result.aggregate is None else self._aggregate(result.aggregate),
             after_hooks=(),
         )
 
@@ -317,11 +336,7 @@ class ComposeTransformPlans:
         return replace(
             output,
             source=frame_map[output.source],
-            filters=tuple(self._expression(filter) for filter in output.filters),
-            projection=tuple(self._projection(assignment) for assignment in output.projection),
             ordinal=ordinal,
-            joins=tuple(self._join(join, frame_map=frame_map) for join in output.joins),
-            operations=tuple(self._operation(operation, frame_map=frame_map) for operation in output.operations),
         )
 
     def _stage_outputs(

@@ -9,6 +9,7 @@ from structure.platform.pyspark.compiler.model.PySparkExpressionRecipe import Py
 from structure.platform.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.platform.pyspark.compiler.model.PySparkSelectedRowsRecipe import PySparkSelectedRowsRecipe
 from structure.platform.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
+from structure.platform.pyspark.dsl.operations import StreamingOutputMode
 
 
 @dataclass(frozen=True)
@@ -21,6 +22,7 @@ class PySparkOperationRecipe:
     duplicate_rows: PySparkDuplicateRowsRecipe | None = None
     watermark: PySparkWatermarkRecipe | None = None
     cache: PySparkCacheRecipe | None = None
+    streaming_output_modes: tuple[StreamingOutputMode, ...] = ()
 
     @staticmethod
     def filter_operation(predicate: PySparkExpressionRecipe) -> "PySparkOperationRecipe":

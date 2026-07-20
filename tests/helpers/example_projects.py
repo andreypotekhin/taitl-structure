@@ -3,16 +3,17 @@ from __future__ import annotations
 import sys
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator, Sequence
+from typing import Iterator, Sequence, cast
 
 from structure import *
 from structure.core.cli.model.DiscoveredStructureProject import DiscoveredStructureProject
+from structure.core.compiler.api import Compiler
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.docs.api import Docs
 from structure.core.dsl.model.schemas.Schema import Schema
-from structure.core.target.capabilities.api import Capabilities
 from structure.platform.pyspark import *
 from structure.platform.pyspark import PySpark
+from structure.platform.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 
 ROOT = Path(".")
 EXAMPLES = ROOT / "examples"
@@ -93,12 +94,16 @@ def render_orders_example() -> dict[str, str]:
             (V3OrderFeatures, "examples.orders.transforms.v3.V3OrderFeatures"),
         )
         for transform_class, source_transform in transforms:
-            capabilities = (
-                Capabilities.resolve()(target_profile=">=4.0,<4.1") if transform_class is V3OrderFeatures else None
-            )
             files.update(
                 PySpark.render.project()(
-                    PySpark.compiler.lower()(compile_transform(transform_class), capabilities=capabilities),
+                    cast(
+                        PySparkExecutionPlan,
+                        Compiler.frontend.compile()(
+                            transform_class,
+                            materialize_schemas=False,
+                            target_profile=">=4.0,<4.1" if transform_class is V3OrderFeatures else None,
+                        ).lowered,
+                    ),
                     source_transform=source_transform,
                     generated_package="examples.structure_generated.orders",
                     source_schema_modules=schema_modules,
@@ -151,7 +156,10 @@ def render_streams_example() -> dict[str, str]:
         for transform_class, source_transform in transforms:
             files.update(
                 PySpark.render.project()(
-                    PySpark.compiler.lower()(compile_transform(transform_class)),
+                    cast(
+                        PySparkExecutionPlan,
+                        Compiler.frontend.compile()(transform_class, materialize_schemas=False).lowered,
+                    ),
                     source_transform=source_transform,
                     generated_package="examples.structure_generated.streams",
                     source_schema_modules=schema_modules,
@@ -222,7 +230,10 @@ def render_stocks_example() -> dict[str, str]:
         for transform_class, source_transform in transforms:
             files.update(
                 PySpark.render.project()(
-                    PySpark.compiler.lower()(compile_transform(transform_class)),
+                    cast(
+                        PySparkExecutionPlan,
+                        Compiler.frontend.compile()(transform_class, materialize_schemas=False).lowered,
+                    ),
                     source_transform=source_transform,
                     generated_package="examples.structure_generated.stocks",
                     source_schema_modules=schema_modules,
@@ -295,7 +306,10 @@ def render_texts_example() -> dict[str, str]:
         for transform_class, source_transform in transforms:
             files.update(
                 PySpark.render.project()(
-                    PySpark.compiler.lower()(compile_transform(transform_class)),
+                    cast(
+                        PySparkExecutionPlan,
+                        Compiler.frontend.compile()(transform_class, materialize_schemas=False).lowered,
+                    ),
                     source_transform=source_transform,
                     generated_package="examples.structure_generated.texts",
                     source_schema_modules=schema_modules,

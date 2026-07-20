@@ -73,10 +73,12 @@ structure/core/[component]/
     Sub-endpoints are class attributes, such as `Compiler.frontend`, `Runtime.schemas`,
     and `PySpark.render`.
     Endpoint methods are static factories returning fresh command instances.
-      Usage: `Compiler.frontend.analyze()` returns a new neutral-plan command; `Compiler.frontend.compile()` returns
-      a new Core-to-platform compilation command.
+      Usage: `Compiler.frontend.analyze()` returns a new structural-plan command; `Compiler.frontend.compile()` returns
+      a new Core-to-platform compilation command. `Compiler.frontend.author()` is the bundled-documentation endpoint
+      that attaches a selected platform body without lowering it.
   - commands/ - action-oriented command classes called from endpoint methods.
-    Ex: `CompileTransform` implements frontend analysis; `CompilePlatformTransform` dispatches platform compilation.
+    Ex: `AnalyzeTransform` implements frontend analysis; `CompileTransform` is the transitional authoring runner;
+    `CompilePlatformTransform` dispatches platform compilation.
     Commands are created/invoked only through api facade endpoints - not directly.
       Usage: `Compiler.frontend.analyze()(TransformClass)` or `Compiler.frontend.compile()(TransformClass)`.
   - model/ - public app model exposed by endpoint parameters, return types, or API exports.

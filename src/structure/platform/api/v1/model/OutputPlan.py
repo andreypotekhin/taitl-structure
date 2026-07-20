@@ -11,9 +11,5 @@ class OutputPlan:
     source: str
     source_scope: str
     source_schema: Any
-    filters: tuple[Any, ...]
-    projection: tuple[Any, ...]
     ordinal: int
-    joins: tuple[Any, ...] = ()
-    operations: tuple[Any, ...] = ()
     aliases: tuple[str, ...] = ()

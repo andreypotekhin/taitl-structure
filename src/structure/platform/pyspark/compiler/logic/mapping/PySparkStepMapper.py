@@ -1,3 +1,6 @@
+from dataclasses import replace
+from typing import Any, cast
+
 from structure.platform.api.v1.model import BackendCapabilities, CapabilityRequirement, StepPlan
 from structure.platform.pyspark.compiler.logic.mapping.PySparkExpressionMapper import PySparkExpressionMapper
 from structure.platform.pyspark.compiler.logic.mapping.PySparkHookMapper import PySparkHookMapper
@@ -21,6 +24,8 @@ from structure.platform.pyspark.compiler.model.PySparkWatermarkRecipe import PyS
 from structure.platform.pyspark.dsl.aggregation import AggregatePlan, ProjectAssignment
 from structure.platform.pyspark.dsl.joins import JoinMethod, JoinPlan
 from structure.platform.pyspark.dsl.operations import OperationCapability
+from structure.platform.pyspark.symbolic_execution.model.PySparkResultBody import PySparkResultBody
+from structure.platform.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
 class PySparkStepMapper:
@@ -38,12 +43,13 @@ class PySparkStepMapper:
         last: bool,
         capabilities: BackendCapabilities,
     ) -> PySparkStepRecipe:
+        body = self._body(step)
         input_alias = self._names.alias(step.input_schema.__name__)
         output_alias = self._names.alias(step.output_schema.__name__)
-        operations = self._operations(step, input_alias=input_alias, capabilities=capabilities)
+        operations = self._operations(body, input_alias=input_alias, capabilities=capabilities)
         joins = tuple(operation.join for operation in operations if operation.join is not None) or tuple(
             self._join(join, occurrence=occurrence, left_alias=input_alias, capabilities=capabilities)
-            for occurrence, join in enumerate(step.joins, start=1)
+            for occurrence, join in enumerate(body.joins, start=1)
         )
         results = tuple(
             PySparkStepResultRecipe(
@@ -52,16 +58,16 @@ class PySparkStepMapper:
                 frame=result.frame,
                 output_alias=self._names.alias(result.schema.__name__),
                 projection=tuple(
-                    self._projection(assignment, capabilities=capabilities) for assignment in result.projection
+                    self._projection(assignment, capabilities=capabilities) for assignment in body_result.projection
                 ),
                 ordinal=result.ordinal,
                 after_hooks=tuple(self._hooks.map(hook) for hook in result.after_hooks),
                 validations=self._validations.result(result, last=last),
                 aggregate=(
-                    None if result.aggregate is None else self._aggregate(result.aggregate, capabilities=capabilities)
+                    None if body_result.aggregate is None else self._aggregate(body_result.aggregate, capabilities=capabilities)
                 ),
             )
-            for result in step.results
+            for result, body_result in zip(step.results, body.results, strict=True)
         )
         return PySparkStepRecipe(
             name=step.name,
@@ -73,12 +79,12 @@ class PySparkStepMapper:
             input_alias=input_alias,
             output_alias=output_alias,
             before_hooks=tuple(self._hooks.map(hook) for hook in step.before_hooks),
-            filters=tuple(self._expressions.map(filter, capabilities=capabilities) for filter in step.filters),
+            filters=tuple(self._expressions.map(filter, capabilities=capabilities) for filter in body.filters),
             joins=joins,
-            projection=tuple(self._projection(assignment, capabilities=capabilities) for assignment in step.projection),
+            projection=tuple(self._projection(assignment, capabilities=capabilities) for assignment in body.projection),
             after_hooks=tuple(self._hooks.map(hook) for hook in step.after_hooks),
             validations=self._validations.step(step, last=last),
-            aggregate=None if step.aggregate is None else self._aggregate(step.aggregate, capabilities=capabilities),
+            aggregate=None if body.aggregate is None else self._aggregate(body.aggregate, capabilities=capabilities),
             results=results,
             operations=operations,
             origin=step.origin,
@@ -86,82 +92,134 @@ class PySparkStepMapper:
 
     def _operations(
         self,
-        step: StepPlan,
+        body: PySparkStepBody,
         *,
         input_alias: str,
         capabilities: BackendCapabilities,
     ) -> tuple[PySparkOperationRecipe, ...]:
         recipes: list[PySparkOperationRecipe] = []
         occurrence = 0
-        for operation in step.operations:
+        for operation in body.operations:
             self._require_operation_capability(operation.capability, capabilities=capabilities)
             if operation.kind == "filter" and operation.filter is not None:
                 recipes.append(
-                    PySparkOperationRecipe.filter_operation(
-                        self._expressions.map(operation.filter, capabilities=capabilities)
+                    self._operation_modes(
+                        PySparkOperationRecipe.filter_operation(
+                            self._expressions.map(operation.filter, capabilities=capabilities)
+                        ),
+                        operation,
                     )
                 )
             if operation.kind == "join" and operation.join is not None:
                 occurrence += 1
                 recipes.append(
-                    PySparkOperationRecipe.join_operation(
-                        self._join(
-                            operation.join, occurrence=occurrence, left_alias=input_alias, capabilities=capabilities
-                        )
+                    self._operation_modes(
+                        PySparkOperationRecipe.join_operation(
+                            self._join(
+                                operation.join, occurrence=occurrence, left_alias=input_alias, capabilities=capabilities
+                            )
+                        ),
+                        operation,
                     )
                 )
             if operation.kind == "aggregate" and operation.aggregate is not None:
                 recipes.append(
-                    PySparkOperationRecipe.aggregate_operation(
-                        self._aggregate(operation.aggregate, capabilities=capabilities)
+                    self._operation_modes(
+                        PySparkOperationRecipe.aggregate_operation(
+                            self._aggregate(operation.aggregate, capabilities=capabilities)
+                        ),
+                        operation,
                     )
                 )
             if operation.kind == "selected_rows" and operation.selected_rows is not None:
                 recipes.append(
-                    PySparkOperationRecipe.selected_rows_operation(
-                        PySparkSelectedRowsRecipe(
-                            direction=operation.selected_rows.direction,
-                            order_by=self._expressions.map(operation.selected_rows.order_by, capabilities=capabilities),
-                            partition_by=tuple(
-                                self._expressions.map(expression, capabilities=capabilities)
-                                for expression in operation.selected_rows.partition_by
-                            ),
-                            ties=operation.selected_rows.ties,
-                        )
+                    self._operation_modes(
+                        PySparkOperationRecipe.selected_rows_operation(
+                            PySparkSelectedRowsRecipe(
+                                direction=operation.selected_rows.direction,
+                                order_by=self._expressions.map(operation.selected_rows.order_by, capabilities=capabilities),
+                                partition_by=tuple(
+                                    self._expressions.map(expression, capabilities=capabilities)
+                                    for expression in operation.selected_rows.partition_by
+                                ),
+                                ties=operation.selected_rows.ties,
+                            )
+                        ),
+                        operation,
                     )
                 )
             if operation.kind == "drop_duplicates":
                 duplicate_rows = operation.duplicate_rows
                 subset = () if duplicate_rows is None else duplicate_rows.subset
                 recipes.append(
-                    PySparkOperationRecipe.drop_duplicates_operation(
-                        PySparkDuplicateRowsRecipe(
-                            subset=tuple(
-                                self._expressions.map(expression, capabilities=capabilities) for expression in subset
-                            ),
-                            scope=None if duplicate_rows is None else duplicate_rows.scope,
-                            within_watermark=False if duplicate_rows is None else duplicate_rows.within_watermark,
-                        )
+                    self._operation_modes(
+                        PySparkOperationRecipe.drop_duplicates_operation(
+                            PySparkDuplicateRowsRecipe(
+                                subset=tuple(
+                                    self._expressions.map(expression, capabilities=capabilities) for expression in subset
+                                ),
+                                scope=None if duplicate_rows is None else duplicate_rows.scope,
+                                within_watermark=False if duplicate_rows is None else duplicate_rows.within_watermark,
+                            )
+                        ),
+                        operation,
                     )
                 )
             if operation.kind == "watermark" and operation.watermark is not None:
                 recipes.append(
-                    PySparkOperationRecipe.watermark_operation(
-                        PySparkWatermarkRecipe(
-                            expression=self._expressions.map(operation.watermark.expression, capabilities=capabilities),
-                            delay=operation.watermark.delay,
-                        )
+                    self._operation_modes(
+                        PySparkOperationRecipe.watermark_operation(
+                            PySparkWatermarkRecipe(
+                                expression=self._expressions.map(operation.watermark.expression, capabilities=capabilities),
+                                delay=operation.watermark.delay,
+                            )
+                        ),
+                        operation,
                     )
                 )
             if operation.kind == "cache":
                 recipes.append(
-                    PySparkOperationRecipe.cache_operation(
-                        PySparkCacheRecipe(
-                            storage_level=None if operation.cache is None else operation.cache.storage_level
-                        )
+                    self._operation_modes(
+                        PySparkOperationRecipe.cache_operation(
+                            PySparkCacheRecipe(
+                                storage_level=None if operation.cache is None else operation.cache.storage_level
+                            )
+                        ),
+                        operation,
                     )
                 )
         return tuple(recipes)
+
+    @staticmethod
+    def _operation_modes(recipe: PySparkOperationRecipe, operation) -> PySparkOperationRecipe:
+        return replace(recipe, streaming_output_modes=operation.streaming_output_modes)
+
+    def _body(self, step: StepPlan) -> PySparkStepBody:
+        body = step.platform_body
+        if body is None:
+            # Compatibility for the deprecated Core compile_transform() helper.
+            # Core compilation always supplies the opaque body.
+            legacy = cast(Any, step)
+            return PySparkStepBody(
+                value=None,
+                filters=legacy.filters,
+                joins=legacy.joins,
+                operations=legacy.operations,
+                projection=legacy.projection,
+                aggregate=legacy.aggregate,
+                results=tuple(
+                    PySparkResultBody(
+                        projection=cast(Any, result).projection,
+                        aggregate=cast(Any, result).aggregate,
+                    )
+                    for result in step.results
+                ),
+            )
+        if not isinstance(body, PySparkStepBody):
+            raise ValueError(f"PySpark step {step.name!r} has an invalid authoring body.")
+        if len(body.results) != len(step.results):
+            raise ValueError(f"PySpark step {step.name!r} body has mismatched result count.")
+        return body
 
     def _aggregate(
         self,

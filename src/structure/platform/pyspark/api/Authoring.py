@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.platform.api.v1 import StepAuthoringRequest
-from structure.platform.api.v1.model import SymbolicContext
+from structure.platform.api.v1 import StepAuthoringCapture, StepAuthoringRequest
 from structure.platform.pyspark.api.PySpark import PySpark
 from structure.platform.pyspark.dsl.InputScope import InputScope
 from structure.platform.pyspark.dsl.RowScope import RowScope
@@ -24,23 +23,35 @@ class PySparkStepSession:
             step=request.name,
             capture_special_exprs=request.capture_special_exprs,
         )
+        self._capture_pending = False
 
     def __enter__(self) -> PySparkStepSession:
         self._context.__enter__()
+        self._context.default_project_source = self._arguments[0]
+        self._context.register_current_scope(self._request.inputs[0].scope)
+        for binding, argument in zip(self._request.inputs[1:], self._arguments[1:], strict=True):
+            self._context.register_relation_scope(binding.scope, argument)
         return self
 
     def __exit__(self, exc_type, exc, traceback) -> None:
-        self._context.__exit__(exc_type, exc, traceback)
+        if exc_type is not None:
+            self._context.__exit__(exc_type, exc, traceback)
+            return None
+        self._capture_pending = True
         return None
 
     def arguments(self) -> tuple[object, ...]:
         return self._arguments
 
-    def context(self) -> SymbolicContext:
-        return self._context
-
-    def capture(self, value: object) -> object:
-        return PySparkStepBody(value)
+    def capture(self, value: object) -> StepAuthoringCapture:
+        try:
+            return StepAuthoringCapture(
+                body=PySpark.symbolic_execution.capture()(value, context=self._context, request=self._request)
+            )
+        finally:
+            if self._capture_pending:
+                self._context.__exit__(None, None, None)
+                self._capture_pending = False
 
     def _build_arguments(self) -> tuple[object, ...]:
         arguments: list[object] = []

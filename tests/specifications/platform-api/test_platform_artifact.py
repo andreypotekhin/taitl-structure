@@ -13,7 +13,11 @@ from structure.core.target.capabilities.model.BackendCapabilities import Backend
 from structure.platform.api import PlatformDescriptor
 from structure.platform.api.v1 import ExecutionRequest, GenerationRequest, PlatformAPI, PlatformCompilation
 from structure.platform.pyspark import *
-from structure.platform.pyspark.symbolic_execution.model import PySparkSymbolicContext, current_pyspark_context
+from structure.platform.pyspark.symbolic_execution.model import (
+    PySparkStepBody,
+    PySparkSymbolicContext,
+    current_pyspark_context,
+)
 
 
 @transform(target="fake")
@@ -122,9 +126,6 @@ class RecordingSession:
     def arguments(self):
         return self._delegate.arguments()
 
-    def context(self):
-        return self._delegate.context()
-
     def capture(self, value):
         self._capture_contexts.append(current_pyspark_context())
         return self._delegate.capture(value)
@@ -210,7 +211,24 @@ def test_core_frontend_compiles_analysis_before_calling_the_platform_facet() -> 
     assert compiler.request.analysis is compilation.analysis
     assert compilation.lowered is compiler.payload
     assert compilation.analysis.name == "CompiledTransform"
-    assert compilation.analysis.steps[0].platform_body is not None
+    step = compilation.analysis.steps[0]
+    assert isinstance(step.platform_body, PySparkStepBody)
+    assert not any(hasattr(step, field) for field in ("filters", "projection", "aggregate", "joins", "operations"))
+    assert not any(hasattr(step.results[0], field) for field in ("projection", "aggregate"))
+
+
+def test_pyspark_lowering_consumes_the_captured_body_not_core_target_fields() -> None:
+    compiler = CapturingCompiler()
+    registry = Platform.registry(lambda: [PySparkEntry(compiler, RecordingAuthoring())])
+    CoreCompiler.frontend.compile()(CompiledTransform, registry=registry, materialize_schemas=False)  # type: ignore[attr-defined]
+
+    assert compiler.request is not None
+    plan = compiler.request.analysis
+    step = plan.steps[0]
+    assert isinstance(step.platform_body, PySparkStepBody)
+    lowered = PySpark.compiler.lower()(plan)
+
+    assert [assignment.field.name for assignment in lowered.steps[0].projection] == ["id"]
 
 
 def test_core_validates_schemas_before_invoking_a_platform_authored_step(monkeypatch) -> None:

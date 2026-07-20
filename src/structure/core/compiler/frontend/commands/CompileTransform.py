@@ -6,13 +6,14 @@ from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar
 from dataclasses import replace
 from pathlib import Path
-from typing import cast, get_args, get_origin, get_type_hints
+from typing import Any, cast, get_args, get_origin, get_type_hints
 
 from structure.core.compiler.diagnostics.api import Diagnostics, StructureCompileError
 from structure.core.compiler.frontend.logic.CompilerInputCollector import CompilerInputCollector
 from structure.core.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
 from structure.core.compiler.frontend.logic.CompilerTransformMemberCollector import CompilerTransformMemberCollector
 from structure.core.compiler.frontend.logic.ComposeTransformPlans import ComposeTransformPlans
+from structure.core.compiler.frontend.logic.LegacyStepPlan import LegacyStepPlan, LegacyStepResultPlan
 from structure.core.compiler.ir.model.AggregateAssignment import AggregateAssignment
 from structure.core.compiler.ir.model.AggregateKey import AggregateKey
 from structure.core.compiler.ir.model.AggregatePlan import AggregatePlan
@@ -56,6 +57,7 @@ from structure.core.dsl.model.types.StructureType import StructureType
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 from structure.platform.api.v1 import (
     AuthoringAPI,
+    StepAuthoringCapture,
     StepAuthoringInput,
     StepAuthoringRequest,
     StepAuthoringResult,
@@ -177,23 +179,18 @@ class CompileTransform:
         diagnostics: list[Diagnostic] = []
         expressions = [
             expression
-            for step in steps
+            for step in (cast(LegacyStepPlan, item) for item in steps)
             for expression in (
                 *step.filters,
                 *(assignment.expression for assignment in step.projection),
                 *(operation.filter for operation in step.operations if operation.filter is not None),
-                *(result_assignment.expression for result in step.results for result_assignment in result.projection),
+                *(
+                    result_assignment.expression
+                    for result in step.results
+                    for result_assignment in cast(LegacyStepResultPlan, result).projection
+                ),
             )
         ]
-        expressions.extend(
-            expression
-            for output in outputs
-            for expression in (
-                *output.filters,
-                *(assignment.expression for assignment in output.projection),
-                *(operation.filter for operation in output.operations if operation.filter is not None),
-            )
-        )
         for expression in expressions:
             for udf in self._udf_expressions(expression):
                 data = udf.data or {}
@@ -531,7 +528,7 @@ class CompileTransform:
         *,
         plan_name: str | None = None,
         capture_special_exprs: bool = False,
-    ) -> tuple[StepResultPlan, ...] | None:
+    ) -> tuple[LegacyStepResultPlan, ...] | None:
         name = item.name
         member = item.member
         hints = get_type_hints(member)
@@ -578,18 +575,26 @@ class CompileTransform:
         options = self._step_options(item.owner, metadata)
         parent_call: dict[str, object] = {}
         authoring_body: object | None = None
-
-        fallback_context = SymbolicExecution().open()(step=plan_name or name, capture_special_exprs=capture_special_exprs)
-        fallback_arguments = [
-            (
-                RowScope(name=binding.scope, schema=cast(type[Schema], binding.schema))
-                if binding.driving
-                else InputScope(name=binding.scope, schema=cast(type[Schema], binding.schema), source=binding.source)
-            )
-            for binding in bindings
-        ]
         authoring, target, configuration = _authoring.get()
         authoring_api = cast(AuthoringAPI | None, authoring)
+
+        fallback_context = (
+            SymbolicExecution().open()(step=plan_name or name, capture_special_exprs=capture_special_exprs)
+            if authoring_api is None
+            else None
+        )
+        fallback_arguments = (
+            [
+                (
+                    RowScope(name=binding.scope, schema=cast(type[Schema], binding.schema))
+                    if binding.driving
+                    else InputScope(name=binding.scope, schema=cast(type[Schema], binding.schema), source=binding.source)
+                )
+                for binding in bindings
+            ]
+            if authoring_api is None
+            else []
+        )
         request = StepAuthoringRequest(
             target=target,
             configuration=configuration,
@@ -616,7 +621,7 @@ class CompileTransform:
         )
         authoring_session = authoring_api.open_step(request) if authoring_api is not None else None
         session = authoring_session if authoring_session is not None else nullcontext()
-        context = authoring_session.context() if authoring_session is not None else fallback_context
+        context = cast(Any, fallback_context)
         arguments = authoring_session.arguments() if authoring_session is not None else tuple(fallback_arguments)
         if len(arguments) != len(bindings):
             raise self._error(
@@ -626,10 +631,12 @@ class CompileTransform:
                 problem=f"Platform {target!r} supplied {len(arguments)} symbolic arguments for {len(bindings)} bindings.",
                 use="Update the platform authoring facet to return one argument per step input.",
             )
-        context.default_project_source = arguments[0]
-        context.register_current_scope(bindings[0].scope)
-        for binding, argument in zip(bindings[1:], arguments[1:], strict=True):
-            context.register_relation_scope(binding.scope, argument)
+        if authoring_session is None:
+            assert context is not None
+            context.default_project_source = arguments[0]
+            context.register_current_scope(bindings[0].scope)
+            for binding, argument in zip(bindings[1:], arguments[1:], strict=True):
+                context.register_relation_scope(binding.scope, argument)
 
         try:
             with self._step_method_call_guards(transform_class, members, active=item):
@@ -647,10 +654,8 @@ class CompileTransform:
                     capture_special_exprs=capture_special_exprs,
                 ):
                     with session:
-                        with (nullcontext() if authoring_session is not None else context):
+                        with (nullcontext() if authoring_session is not None else cast(Any, context)):
                             result = member(instance, *arguments)
-                        if authoring_session is not None:
-                            authoring_body = authoring_session.capture(result)
         except StructureCompileError:
             raise
         except Exception as error:
@@ -663,16 +668,10 @@ class CompileTransform:
                 context={"error": type(error).__name__},
             ) from error
 
-        if authoring_session is not None and authoring_body is None:
-            raise self._error(
-                "PLATFORM-E2708",
-                transform_class=transform_class,
-                member=name,
-                problem=f"Platform {target!r} did not capture symbolic step {name!r}.",
-                use="Return an opaque body from StepAuthoringSession.capture(...).",
-            )
-
-        context.operations.extend(self._reserved_operations(member, metadata))
+        if authoring_session is not None:
+            context = self._authoring_context(authoring_session)
+        else:
+            context.operations.extend(self._reserved_operations(member, metadata))
         diagnostics.extend(self._validate_joins(transform_class, name, context.joins))
         self._validate_comparison_problems(transform_class, name, context.filters)
         values = self._result_values(
@@ -697,7 +696,7 @@ class CompileTransform:
                 problem=f"{transform_class.__name__}.{name} uses having(...) outside grouped aggregation.",
                 use="Call group_by(...), rollup(...), cube(...), or grouping_sets(...) before having(...).",
             )
-        result_plans: list[StepResultPlan] = []
+        result_plans: list[LegacyStepResultPlan] = []
         for ordinal, (output_schema, output_lane, value) in enumerate(
             zip(output_schemas, output_lanes, values, strict=True)
         ):
@@ -718,7 +717,7 @@ class CompileTransform:
                 )
             )
             result_plans.append(
-                StepResultPlan(
+                LegacyStepResultPlan(
                     schema=output_schema,
                     lane=output_lane,
                     frame=frame,
@@ -750,8 +749,20 @@ class CompileTransform:
             context.operations,
             result_plans,
         )
+        # Transitional hand-off: the bundled authoring session owns this private
+        # symbolic context.  P072 moves these builders out of Core entirely.
+        authoring_context = cast(Any, context)
+        authoring_context.projection = first.projection
+        authoring_context.aggregate = first.aggregate
+        authoring_context.results = tuple(result_plans)
+        if authoring_session is not None:
+            capture = authoring_session.capture(result)
+            if not isinstance(capture, StepAuthoringCapture):
+                raise TypeError("Platform authoring capture must return StepAuthoringCapture")
+            authoring_body = capture.body
+            diagnostics.extend(cast(tuple[Diagnostic, ...], capture.diagnostics))
         steps.append(
-            StepPlan(
+            LegacyStepPlan(
                 name=plan_name or name,
                 input_schema=cast(type[Schema], driver.schema),
                 output_schema=first.schema,
@@ -805,6 +816,17 @@ class CompileTransform:
             *bindings[1:],
         ]
 
+    @staticmethod
+    def _authoring_context(session: object):
+        """Temporary transition access while target capture migrates out of Core."""
+        current = session
+        while current is not None:
+            context = getattr(current, "_context", None)
+            if context is not None:
+                return context
+            current = getattr(current, "_delegate", None)
+        raise TypeError("Platform authoring session does not provide active symbolic state")
+
     @contextmanager
     def _parent_call_patches(
         self,
@@ -822,7 +844,7 @@ class CompileTransform:
         capture_special_exprs: bool,
     ):
         originals: list[tuple[type[Transform], str, object]] = []
-        scheduled: dict[CompilerTransformMember, tuple[StepResultPlan, ...]] = {}
+        scheduled: dict[CompilerTransformMember, tuple[LegacyStepResultPlan, ...]] = {}
 
         def stub(candidate: CompilerTransformMember):
             def call(_self, *args, **kwargs):
@@ -989,7 +1011,7 @@ class CompileTransform:
         member: str,
         bindings: list[StepInputPlan],
         operations: list,
-        results: list[StepResultPlan],
+        results: list[LegacyStepResultPlan],
     ) -> None:
         joined: set[str] = set()
         relation_scopes = {binding.scope: binding.parameter for binding in bindings[1:]}
@@ -1704,8 +1726,6 @@ class CompileTransform:
             source=str(source["source"]),
             source_scope=str(source["scope"]),
             source_schema=actual_schema,
-            filters=(),
-            projection=(),
             ordinal=ordinal,
             aliases=aliases,
         )

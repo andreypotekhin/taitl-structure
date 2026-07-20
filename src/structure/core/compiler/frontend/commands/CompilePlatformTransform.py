@@ -5,7 +5,8 @@ from pathlib import Path
 from typing import Mapping, cast
 
 from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOptions
-from structure.core.compiler.frontend.commands.CompileTransform import CompileTransform
+from structure.core.compiler.frontend.commands.AnalyzeTransform import AnalyzeTransform
+from structure.core.compiler.frontend.commands.AuthorTransform import AuthorTransform
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
@@ -16,7 +17,8 @@ from structure.platform.api.v1 import CompileRequest, PlatformCompilation, Schem
 
 class CompilePlatformTransform:
     def __init__(self, registry=None) -> None:
-        self._analyze = CompileTransform()
+        self._analyze = AnalyzeTransform()
+        self._author = AuthorTransform()
         self._registry = registry
 
     def __call__(
@@ -54,12 +56,17 @@ class CompilePlatformTransform:
         }
         platform = (registry or self._registry or Platform.registry()).select(target)
         self._validate_declared_schemas(transform, platform, configuration)
-        plan = self._analyze(
+        analysis = self._analyze(
             transform,
             config=resolved,
-            _authoring=platform.api.authoring,
-            _authoring_target=target,
-            _authoring_configuration=configuration,
+        )
+        plan = self._author(
+            transform,
+            analysis,
+            config=resolved,
+            authoring=platform.api.authoring,
+            target=target,
+            configuration=configuration,
         )
         return self._compile(
             transform,
@@ -90,14 +97,24 @@ class CompilePlatformTransform:
         }
         platform = (registry or self._registry or Platform.registry()).select(target)
         self._validate_declared_schemas(transform, platform, configuration)
-        plan = self._analyze(
-            transform,
+        authoring_config = StructureConfig.resolve(
             project_root=options.project_root,
-            warn_on_udfs=options.warn_on_udfs,
-            generated_code_options=options.generated_code_options,
-            _authoring=platform.api.authoring,
-            _authoring_target=target,
-            _authoring_configuration=configuration,
+            overrides={
+                "warn_on_udfs": options.warn_on_udfs,
+                "generated_code_options": options.generated_code_options,
+            },
+        )
+        analysis = self._analyze(
+            transform,
+            config=authoring_config,
+        )
+        plan = self._author(
+            transform,
+            analysis,
+            config=authoring_config,
+            authoring=platform.api.authoring,
+            target=target,
+            configuration=configuration,
         )
         return self._compile(
             transform,

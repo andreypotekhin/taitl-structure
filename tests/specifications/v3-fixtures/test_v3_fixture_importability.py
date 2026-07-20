@@ -8,7 +8,10 @@ from typing import Any, cast
 import pytest
 
 from structure import *
+from structure.core.compiler.api import Compiler
+from structure.platform.api.v1.model.TransformPlan import TransformPlan
 from structure.platform.pyspark import *
+from structure.platform.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
 def test_v3_source_fixtures_import_without_live_spark(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -42,12 +45,21 @@ def test_v3_orders_fixture_highlights_the_completed_release_surface(monkeypatch:
     scalar = importlib.import_module("testing.model.v3.orders.transforms.v3")
     analytics = importlib.import_module("testing.model.v3.orders.transforms.adv_analytics")
 
-    scalar_plan = compile_transform(cast(Any, scalar).V3OrderFeatures)
-    analytics_plan = compile_transform(cast(Any, analytics).AdvancedOrderAnalytics)
+    scalar_plan = cast(
+        TransformPlan,
+        Compiler.frontend.compile()(
+            cast(Any, scalar).V3OrderFeatures, materialize_schemas=False, target_profile=">=4.0,<4.1"
+        ).analysis,
+    )
+    analytics_plan = cast(
+        TransformPlan,
+        Compiler.frontend.compile()(cast(Any, analytics).AdvancedOrderAnalytics, materialize_schemas=False).analysis,
+    )
 
     assert [step.name for step in scalar_plan.steps] == ["project"]
-    assert [operation.kind for operation in scalar_plan.steps[0].operations] == ["filter", "filter"]
-    assert [assignment.expression.kind for assignment in scalar_plan.steps[0].projection[1:10]] == [
+    scalar_body = cast(PySparkStepBody, scalar_plan.steps[0].platform_body)
+    assert [operation.kind for operation in scalar_body.operations] == ["filter", "filter"]
+    assert [assignment.expression.kind for assignment in scalar_body.projection[1:10]] == [
         "and",
         "contains",
         "like",
@@ -58,11 +70,11 @@ def test_v3_orders_fixture_highlights_the_completed_release_surface(monkeypatch:
         "try_cast",
         "call",
     ]
-    assert scalar_plan.steps[0].projection[-1].expression.data is not None
-    assert scalar_plan.steps[0].projection[-1].expression.data["function"] == "window_row_number"
-    assert scalar_plan.steps[0].projection[-1].expression.data["order_count"] == 2
+    assert scalar_body.projection[-1].expression.data is not None
+    assert scalar_body.projection[-1].expression.data["function"] == "window_row_number"
+    assert scalar_body.projection[-1].expression.data["order_count"] == 2
 
-    collection = analytics_plan.steps[-1]
+    collection = cast(PySparkStepBody, analytics_plan.steps[-1].platform_body)
     functions = [
         assignment.expression.data["function"]
         for assignment in collection.projection
