@@ -5,7 +5,7 @@ import pytest
 
 from structure import *
 from structure.core.dsl.model.types.StructType import StructType
-from structure.platform.pyspark import field, types
+from structure.platform.pyspark import *
 
 
 def test_v1_fixture_imports_without_pyspark() -> None:
@@ -92,16 +92,16 @@ def test_v1_symbolic_plan_records_expression_operators() -> None:
 
 def test_v1_symbolic_plan_records_nested_struct_construction() -> None:
     class Address(Schema):
-        city = field.string(nullable=False)
-        postal_code = field.string(nullable=False)
+        city = string(nullable=False)
+        postal_code = string(nullable=False)
 
     class Raw(Schema):
-        id = field.string(nullable=False)
-        shipping = field.struct(Address, nullable=True)
+        id = string(nullable=False)
+        shipping = struct(Address, nullable=True)
 
     class Published(Schema):
-        id = field.string(nullable=False)
-        shipping = field.struct(Address, nullable=False)
+        id = string(nullable=False)
+        shipping = struct(Address, nullable=False)
 
     @transform
     class Publish(Transform):
@@ -130,17 +130,17 @@ def test_v1_symbolic_plan_records_nested_struct_construction() -> None:
 
 def test_v1_symbolic_plan_rejects_incompatible_nested_struct_assignment() -> None:
     class Address(Schema):
-        city = field.string(nullable=False)
-        postal_code = field.string(nullable=False)
+        city = string(nullable=False)
+        postal_code = string(nullable=False)
 
     class TenantKey(Schema):
-        tenant_id = field.string(nullable=False)
+        tenant_id = string(nullable=False)
 
     class Raw(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     class Published(Schema):
-        tenant = field.struct(TenantKey, nullable=False)
+        tenant = struct(TenantKey, nullable=False)
 
     @transform
     class Publish(Transform):
@@ -158,7 +158,7 @@ def test_transform_class_options_default_step_method_options() -> None:
     """Class-level transform config options apply to every step method."""
 
     class Row(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     @transform(target_backend="pyspark", target_platform="spark")
     class NormalizeRows(Transform):

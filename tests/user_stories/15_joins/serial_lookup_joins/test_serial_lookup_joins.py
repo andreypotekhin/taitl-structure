@@ -1,4 +1,5 @@
 from structure import *
+from structure.platform.pyspark import *
 
 
 def test_serial_lookup_joins_record_explicit_sources_types_and_hints(orders_recipe) -> None:

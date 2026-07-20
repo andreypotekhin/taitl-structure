@@ -1,6 +1,6 @@
 # Structure
 
-**Structure** is a Python-to-PySpark runtime compiler which allows writing Spark data pipelines in Pythonic way, creating optimizer-friendly PySpark code behind the scenes. It can also be used as PySpark code generator: output Python-style schemas and transformations as PySpark code. 
+**Structure** is a Python-to-PySpark runtime compiler which allows writing Spark data pipelines in Pythonic way, creating optimizer-friendly PySpark code behind the scenes. It can also be used as PySpark code generator: output Python-style schemas and transformations as PySpark code.
 
 ## Why Structure?
 
@@ -52,12 +52,12 @@ class OrderWithCustomer(OrderNormalized):
     customer_name = string()
     customer_tier = string()
 
-    
+
 class Customer(Schema):
     id = string(nullable=False)
     name = string()
     tier = string()
-    
+
 
 class Product(Schema):
     id = string(nullable=False)
@@ -67,6 +67,10 @@ class Product(Schema):
 ### Example Transform
 
 ```python
+from structure import Transform, input, output, raw
+from structure.platform.pyspark import *
+
+
 class EnrichOrders(Transform):
 
     orders = input(OrderRaw)
@@ -123,7 +127,20 @@ class EnrichOrders(Transform):
 Run a transform with `.run(session)`:
 
 ```python
-from structure import *
+from structure import (
+    Schema,
+    StructureConfig,
+    StructureSession,
+    StructureTools,
+    Transform,
+    input,
+    lane,
+    output,
+    raw,
+    special,
+    step,
+    transform,
+)
 from orders.transforms.order import EnrichOrders
 
 session = StructureSession(spark=spark, ctx=ctx)
@@ -329,7 +346,20 @@ structure tools schemas generate --from-path data/orders.parquet --format parque
 `StructureTools` can generate starter Structure schema classes from existing Spark schemes/DataFrames.
 
 ```python
-from structure import *
+from structure import (
+    Schema,
+    StructureConfig,
+    StructureSession,
+    StructureTools,
+    Transform,
+    input,
+    lane,
+    output,
+    raw,
+    special,
+    step,
+    transform,
+)
 
 code = StructureTools.schemas.generate(schema=orders_df.schema, to="OrderRaw")
 code = StructureTools.schemas.generate(schema=orders_df, to="OrderRaw")

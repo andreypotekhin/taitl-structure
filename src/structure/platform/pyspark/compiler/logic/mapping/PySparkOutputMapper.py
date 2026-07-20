@@ -1,7 +1,5 @@
-from structure.core.compiler.ir.model.OutputPlan import OutputPlan
-from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
-from structure.core.target.capabilities.model.BackendCapabilities import BackendCapabilities
-from structure.core.target.capabilities.model.CapabilityRequirement import CapabilityRequirement
+from structure.dsl import SchemaMode
+from structure.platform.api.v1.model import BackendCapabilities, CapabilityRequirement, OutputPlan
 from structure.platform.pyspark.compiler.logic.mapping.PySparkExpressionMapper import PySparkExpressionMapper
 from structure.platform.pyspark.compiler.logic.mapping.PySparkNameMapper import PySparkNameMapper
 from structure.platform.pyspark.compiler.model.PySparkDuplicateRowsRecipe import PySparkDuplicateRowsRecipe

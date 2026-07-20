@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from structure.core.target.capabilities.model.BackendCapabilities import BackendCapabilities
+from structure.platform.api.v1.model import BackendCapabilities
 
 
 class CapabilitiesAPI(Protocol):

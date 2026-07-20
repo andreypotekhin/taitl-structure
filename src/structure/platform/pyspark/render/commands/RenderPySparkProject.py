@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import OrderedDict
 from collections.abc import Mapping, Sequence
 
-from structure.core.dsl.model.schemas.Schema import Schema
+from structure.dsl import Schema
 from structure.platform.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.platform.pyspark.render.commands.RenderPySparkRuntimeModule import render_pyspark_runtime_module
 from structure.platform.pyspark.render.commands.RenderPySparkTransformModule import render_pyspark_transform_module

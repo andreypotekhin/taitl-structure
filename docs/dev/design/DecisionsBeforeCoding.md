@@ -132,7 +132,7 @@ class OrderRaw(Schema):
 ```
 
 Dedicated PySpark schema modules import factories with `from structure.platform.pyspark import *`; mixed
-modules use the plugin's namespaced `field.string()` factory. Annotation-only, dataclass, Pydantic, and Spark-string
+modules use the plugin's namespaced `string()` factory. Annotation-only, dataclass, Pydantic, and Spark-string
 type syntax are outside v1.
 
 ### Spark-Free Compiler

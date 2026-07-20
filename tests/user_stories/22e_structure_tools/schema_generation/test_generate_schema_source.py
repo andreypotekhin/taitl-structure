@@ -8,6 +8,7 @@ from helpers.fake_pyspark_schema import (  # type: ignore[import-not-found]
 )
 
 from structure import *
+from structure.platform.pyspark import *
 
 
 def test_generate_structure_schema_from_pyspark_struct_type() -> None:
@@ -32,7 +33,7 @@ def test_generate_structure_schema_from_pyspark_struct_type() -> None:
 
     text = StructureTools.schemas.generate(schema=schema, to="OrderRaw")
 
-    assert "from structure import Schema" in text
+    assert "from structure import *" in text
     assert "from structure.platform.pyspark import *" in text
     assert "class OrderRawShipping(Schema):" in text
     assert "    street = string()" in text

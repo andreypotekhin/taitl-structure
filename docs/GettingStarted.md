@@ -100,7 +100,8 @@ class Customer(Schema):
 ```python
 # src/orders/transforms/order.py
 
-from structure import *
+from structure import Transform, input, lane, output, raw, special
+from structure.platform.pyspark import *
 from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
 from orders.schemas.customer import Customer
 
@@ -148,7 +149,20 @@ class EnrichOrders(Transform):
 ## 5. Run Transform
 
 ```python
-from structure import *
+from structure import (
+    Schema,
+    StructureConfig,
+    StructureSession,
+    StructureTools,
+    Transform,
+    input,
+    lane,
+    output,
+    raw,
+    special,
+    step,
+    transform,
+)
 from orders.transforms.order import EnrichOrders
 
 session = StructureSession(spark=spark)
@@ -162,7 +176,7 @@ enriched_df = result.enriched
 ```
 Results are available as DataFrames in transform's declared outputs.
 
-Use the next steps if you want generated PySpark code. 
+Use the next steps if you want generated PySpark code.
 
 ## 6. (Optional) Check and Compile
 
@@ -251,7 +265,20 @@ enriched_df = result.enriched
 We can run a Transform as part of Airflow or other orchestrator - no code generation needed.
 
 ```python
-from structure import *
+from structure import (
+    Schema,
+    StructureConfig,
+    StructureSession,
+    StructureTools,
+    Transform,
+    input,
+    lane,
+    output,
+    raw,
+    special,
+    step,
+    transform,
+)
 from orders.transforms.order import EnrichOrders
 
 

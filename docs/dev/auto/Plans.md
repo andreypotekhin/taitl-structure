@@ -210,7 +210,7 @@ need in isolation.
 
     ## Interfaces and Dependencies
 
-    Be prescriptive. Name the libraries, modules, and services to use and why. Specify the types, interfaces, and function signatures that must exist at the end of the milestone. 
+    Be prescriptive. Name the libraries, modules, and services to use and why. Specify the types, interfaces, and function signatures that must exist at the end of the milestone.
 
 If you follow the guidance above, a single, stateless agent -- or a human novice -- can read your ExecPlan from top to
 bottom and produce a working, observable result. That is the bar: SELF-CONTAINED, SELF-SUFFICIENT, NOVICE-GUIDING,

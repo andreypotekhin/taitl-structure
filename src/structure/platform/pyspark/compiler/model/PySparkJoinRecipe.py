@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.core.dsl.model.schemas.Schema import Schema
+from structure.dsl import Schema
 from structure.platform.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.platform.pyspark.compiler.model.PySparkJoinAsOfRecipe import PySparkJoinAsOfRecipe
 from structure.platform.pyspark.compiler.model.PySparkJoinDedupeRecipe import PySparkJoinDedupeRecipe

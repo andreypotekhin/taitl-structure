@@ -3,15 +3,15 @@ import sys
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 
 
 class StreamRaw(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 class StreamClean(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 @transform(streaming_compatible=True)

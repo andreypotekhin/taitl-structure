@@ -9,7 +9,7 @@ from structure import *
 from structure.core.compiler.ir.model.JoinMethod import JoinMethod
 from structure.core.runtime.session.model.TransformResult import TransformResult
 from structure.core.target.capabilities.model.BackendId import BackendId
-from structure.platform.pyspark import field, types
+from structure.platform.pyspark import *
 from structure.platform.pyspark.compiler.model.PySparkAggregateAssignment import PySparkAggregateAssignment
 from structure.platform.pyspark.compiler.model.PySparkAggregateKey import PySparkAggregateKey
 from structure.platform.pyspark.compiler.model.PySparkAggregateRecipe import PySparkAggregateRecipe
@@ -37,75 +37,75 @@ from structure.platform.pyspark.execution.logic.PySparkFrameValidator import PyS
 
 
 class RawOrder(Schema):
-    id = field.string(nullable=False)
-    status = field.string(nullable=True)
+    id = string(nullable=False)
+    status = string(nullable=True)
 
 
 class PublishedOrder(Schema):
-    id = field.string(nullable=False)
-    status = field.string(nullable=True)
+    id = string(nullable=False)
+    status = string(nullable=True)
 
 
 class Address(Schema):
-    city = field.string(nullable=False)
-    postal_code = field.string(nullable=False)
+    city = string(nullable=False)
+    postal_code = string(nullable=False)
 
 
 class RawShippedOrder(Schema):
-    id = field.string(nullable=False)
-    shipping = field.struct(Address, nullable=True)
+    id = string(nullable=False)
+    shipping = struct(Address, nullable=True)
 
 
 class PublishedShippedOrder(Schema):
-    id = field.string(nullable=False)
-    shipping = field.struct(Address, nullable=False)
+    id = string(nullable=False)
+    shipping = struct(Address, nullable=False)
 
 
 class Customer(Schema):
-    id = field.string(nullable=False)
-    segment = field.string(nullable=True)
-    valid_from = field.string(nullable=False)
-    valid_to = field.string(nullable=True)
+    id = string(nullable=False)
+    segment = string(nullable=True)
+    valid_from = string(nullable=False)
+    valid_to = string(nullable=True)
 
 
 class PublishedOrderId(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 class PublishedOrderStatus(Schema):
-    status = field.string(nullable=True)
+    status = string(nullable=True)
 
 
 class RawMetric(Schema):
-    customer_id = field.string(nullable=False)
-    quantity = field.long(nullable=False)
+    customer_id = string(nullable=False)
+    quantity = long(nullable=False)
 
 
 class RawTagBatch(Schema):
-    tags = field.array(field.string(), contains_null=False, nullable=True)
+    tags = array(string(), contains_null=False, nullable=True)
 
 
 class RawMapBatch(Schema):
-    attributes = field.map(field.string(), field.string(), value_contains_null=True, nullable=True)
+    attributes = map(string(), string(), value_contains_null=True, nullable=True)
 
 
 class CustomerMetric(Schema):
-    customer_id = field.string(nullable=False)
-    order_count = field.long(nullable=False)
-    distinct_customers = field.long(nullable=False)
-    quantity = field.long(nullable=False)
-    min_quantity = field.long(nullable=False)
-    max_quantity = field.long(nullable=False)
-    avg_quantity = field.double(nullable=False)
-    first_qualified_customer = field.string(nullable=True)
-    last_qualified_customer = field.string(nullable=True)
+    customer_id = string(nullable=False)
+    order_count = long(nullable=False)
+    distinct_customers = long(nullable=False)
+    quantity = long(nullable=False)
+    min_quantity = long(nullable=False)
+    max_quantity = long(nullable=False)
+    avg_quantity = double(nullable=False)
+    first_qualified_customer = string(nullable=True)
+    last_qualified_customer = string(nullable=True)
 
 
 class GroupingSetMetric(Schema):
-    customer_id = field.string(nullable=True)
-    order_count = field.long(nullable=False)
-    grouping_id = field.integer(nullable=False)
-    customer_grouped = field.boolean(nullable=False)
+    customer_id = string(nullable=True)
+    order_count = long(nullable=False)
+    grouping_id = integer(nullable=False)
+    customer_grouped = boolean(nullable=False)
 
 
 class PermissivePublishedOrder(PublishedOrder):
@@ -3064,7 +3064,7 @@ class FakeFrame:
     def persist(self, storage_level=None):
         if storage_level is None:
             return self.with_operation("persist")
-        return self.with_operation(f"persist:{','.join(map(str, storage_level.values))}")
+        return self.with_operation(f"persist:{','.join(str(value) for value in storage_level.values)}")
 
     def unionByName(self, right):
         return FakeFrame(self.name, self.schema, self.operations + right.operations + (f"unionByName:{right.name}",))

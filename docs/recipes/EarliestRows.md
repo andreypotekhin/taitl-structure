@@ -25,8 +25,8 @@ region.
 ## Define The Row Contracts
 
 ```python
-from structure import *
-from structure.platform.pyspark import decimal, long, string
+from structure import Schema, Transform, input, output, transform
+from structure.platform.pyspark import *
 
 
 class Purchase(Schema):
@@ -77,7 +77,20 @@ all the fields from that winning row; it is not an aggregation, so it does not n
 ## Run It
 
 ```python
-from structure import *
+from structure import (
+    Schema,
+    StructureConfig,
+    StructureSession,
+    StructureTools,
+    Transform,
+    input,
+    lane,
+    output,
+    raw,
+    special,
+    step,
+    transform,
+)
 
 
 session = StructureSession(spark=spark)

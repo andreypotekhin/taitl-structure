@@ -89,8 +89,10 @@ per-file-ignores = [
     'examples/stocks/**/*.py:F403,F405', # end-user examples intentionally use Structure's public wildcard import
     'examples/texts/**/*.py:F403,F405', # end-user examples intentionally use Structure's public wildcard import
     'examples/streams/schemas/*.py:F403,F405', # schema modules intentionally import concise field factories
+    'examples/streams/transforms/*.py:F403,F405', # transform modules intentionally import the complete PySpark DSL
     'examples/math/schemas/*.py:F403,F405', # schema modules intentionally import concise field factories
-    'tests/**/*.py:F403,F405', # DSL-facing tests intentionally use Structure's public wildcard import
+    'examples/math/transforms/*.py:F403,F405', # transform modules intentionally import the complete PySpark DSL
+    'tests/**/*.py:F403,F405,F406', # DSL-facing tests intentionally use Structure's public wildcard import
 ]
 max-line-length = 120
 count = true

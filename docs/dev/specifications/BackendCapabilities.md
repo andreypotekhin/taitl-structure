@@ -127,7 +127,7 @@ CapabilityDecision
 ```
 
 Supported decisions may leave diagnostic fields empty except for `docs`. Unsupported decisions must fill every
-diagnostic field.
+diagnostic
 
 ## PySpark Profile
 

@@ -1,17 +1,26 @@
-# PySpark Target App
+# PySpark Platform App
 
 ## Purpose
-The PySpark target app lowers Structure IR into PySpark-specific execution recipes and renders optional generated
-PySpark source. It is the only app that should understand PySpark schema syntax, DataFrame operation rendering,
+PySpark platform app lowers Structure IR into PySpark-specific execution recipes and renders optional generated
+PySpark sources. This app is responsible for understanding PySpark schema syntax, DataFrame operation rendering,
 generated runtime helpers, and generated file ownership.
 
 ## Dependency Exchanges
-The app consumes compiler `TransformPlan` IR, DSL schemas and expressions, target capabilities, and generated output
-paths. It returns `PySparkExecutionPlan` recipe graphs, schema objects, source strings, generated project file maps,
-`GeneratedFileSetResult` diffs or writes, and traceability files used by CLI and runtime apps.
+This app consumes 
+- compiler `TransformPlan` IR, 
+- DSL schemas and expressions, 
+- target capabilities, 
+- generated output paths. 
 
-The public `PySpark` endpoint groups the plugin apps by purpose:
+It returns 
+- `PySparkExecutionPlan` recipe graphs,
+- schema objects,
+- source strings,
+- generated project file maps,
+- `GeneratedFileSetResult` diffs or writes, 
+- traceability files used by CLI and runtime apps.
 
+The app's main `PySpark` endpoint exposes children apps and their subcommands:
 ```python
 PySpark.compiler.lower()
 PySpark.schema.materialize()
@@ -20,13 +29,11 @@ PySpark.execution.online()
 PySpark.files.write()
 ```
 
-Each subcommand returns a fresh action instance.
-
-Internally, compiler, schema, render, execution, files, and capabilities are peer apps. A peer app reaches another
+Internally, Compiler, Schema, Render, Execution, Files, and Capabilities are peer apps. They reach each other
 only through that app's endpoint; recipe and file-result types remain public contracts of their owning app.
 
 ## Inner Workings
-`LowerPySparkPlan` converts IR to recipe records such as `PySparkStepRecipe`, `PySparkJoinRecipe`, and
-`PySparkExpressionRecipe`; renderer actions turn those recipes into schema modules, transform classes, runtime support,
-and project file maps; `CompareGeneratedFiles` and `WriteGeneratedFiles` handle filesystem results without changing the
-lowering model.
+- PySpark.compiler.lower()'s `LowerPySparkPlan` converts IR to recipe records such as `PySparkStepRecipe`, `PySparkJoinRecipe`, and
+`PySparkExpressionRecipe`; 
+- Renderer actions turn those recipes into schema modules, transform classes, runtime support, and project file maps; 
+- `CompareGeneratedFiles` and `WriteGeneratedFiles` handle filesystem results without changing the lowering model.

@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from structure.core.compiler.ir.model.TransformPlan import TransformPlan
-from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
-from structure.core.dsl.model.transforms.Transform import Transform
-from structure.platform.api.v1.model import ExplainRequest
+from structure.dsl import StreamingMode, Transform
+from structure.platform.api.v1.model import ExplainRequest, TransformPlan
 from structure.platform.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.platform.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.platform.pyspark.dsl.joins import Join, JoinMethod

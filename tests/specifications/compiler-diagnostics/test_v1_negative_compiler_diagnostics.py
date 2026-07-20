@@ -3,55 +3,55 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.platform.pyspark import field, types
+from structure.platform.pyspark import *
 
 
 class Raw(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 class Clean(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 class Published(Schema):
-    id = field.string(nullable=False)
-    status = field.string(nullable=False)
+    id = string(nullable=False)
+    status = string(nullable=False)
 
 
 class NullableRaw(Schema):
-    id = field.string(nullable=False)
-    optional_id = field.string(nullable=True)
-    amount = field.string(nullable=True)
-    count = field.integer(nullable=False)
+    id = string(nullable=False)
+    optional_id = string(nullable=True)
+    amount = string(nullable=True)
+    count = integer(nullable=False)
 
 
 class Lookup(Schema):
-    id = field.string(nullable=False)
-    group = field.string(nullable=False)
-    label = field.string(nullable=False)
+    id = string(nullable=False)
+    group = string(nullable=False)
+    label = string(nullable=False)
 
 
 class Account(Schema):
-    id = field.string(nullable=False)
-    customer_id = field.string(nullable=False)
+    id = string(nullable=False)
+    customer_id = string(nullable=False)
 
 
 class OptionalClean(Schema):
-    optional_id = field.string(nullable=False)
+    optional_id = string(nullable=False)
 
 
 class MoneyClean(Schema):
-    amount = field.decimal(12, 2, nullable=False)
-    count = field.long(nullable=False)
+    amount = decimal(12, 2, nullable=False)
+    count = long(nullable=False)
 
 
 class FlagClean(Schema):
-    is_paid = field.boolean(nullable=False)
+    is_paid = boolean(nullable=False)
 
 
 class LabelClean(Schema):
-    label = field.string(nullable=False)
+    label = string(nullable=False)
 
 
 def test_v1_unsupported_python_boolean_expression_reports_dsl_diagnostic() -> None:
@@ -180,8 +180,8 @@ def test_v1_string_to_decimal_assignment_requires_explicit_conversion() -> None:
 
 def test_v1_non_nullable_string_to_decimal_assignment_reports_conversion_diagnostic() -> None:
     class NonNullAmount(Schema):
-        amount = field.string(nullable=False)
-        count = field.integer(nullable=False)
+        amount = string(nullable=False)
+        count = integer(nullable=False)
 
     @transform
     class BadConversion(Transform):

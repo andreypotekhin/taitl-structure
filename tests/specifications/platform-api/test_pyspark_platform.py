@@ -2,7 +2,7 @@ from structure import Schema, Transform, input, output, transform
 from structure.core.compiler.api import Compiler
 from structure.core.target.capabilities.model.CapabilityRequirement import CapabilityRequirement
 from structure.platform.api.v1 import ExplainRequest
-from structure.platform.pyspark import PySparkPlatform, field
+from structure.platform.pyspark import *
 
 
 def test_bundled_pyspark_platform_exposes_the_v1_facade() -> None:
@@ -19,11 +19,11 @@ def test_bundled_pyspark_platform_exposes_the_v1_facade() -> None:
 
 
 class Source(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 class Result(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 @transform

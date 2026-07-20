@@ -1,6 +1,7 @@
 from examples.texts.schemas.text import Document, Paragraph, Section, Sentence, Word
 from examples.texts.transforms.extraction import TextExtraction
 from structure import *
+from structure.platform.pyspark import *
 
 
 class ExtractText(Transform):

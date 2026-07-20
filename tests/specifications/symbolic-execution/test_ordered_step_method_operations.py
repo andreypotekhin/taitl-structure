@@ -5,35 +5,35 @@ import pytest
 from structure import *
 from structure.core.compiler.api import Compiler, OperationCardinality, StreamingSupport
 from structure.core.compiler.ir.model.JoinMethod import JoinMethod
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 
 
 class Order(Schema):
-    id = field.string(nullable=False)
-    product_id = field.string(nullable=False)
-    status = field.string(nullable=True)
+    id = string(nullable=False)
+    product_id = string(nullable=False)
+    status = string(nullable=True)
 
 
 class Product(Schema):
-    id = field.string(nullable=False)
-    name = field.string(nullable=False)
-    valid_from = field.string(nullable=False)
-    valid_to = field.string(nullable=True)
+    id = string(nullable=False)
+    name = string(nullable=False)
+    valid_from = string(nullable=False)
+    valid_to = string(nullable=True)
 
 
 class Published(Schema):
-    id = field.string(nullable=False)
-    status = field.string(nullable=True)
+    id = string(nullable=False)
+    status = string(nullable=True)
 
 
 class Enriched(Schema):
-    id = field.string(nullable=False)
-    product_name = field.string(nullable=True)
+    id = string(nullable=False)
+    product_name = string(nullable=True)
 
 
 class OuterEnriched(Schema):
-    id = field.string(nullable=True)
-    product_name = field.string(nullable=True)
+    id = string(nullable=True)
+    product_name = string(nullable=True)
 
 
 @pytest.mark.parametrize(
@@ -365,13 +365,13 @@ def test_inner_join_accepts_using_key(using: object) -> None:
 
 def test_inner_join_accepts_multiple_using_keys() -> None:
     class CompositeOrder(Schema):
-        tenant_id = field.string(nullable=False)
-        id = field.string(nullable=False)
+        tenant_id = string(nullable=False)
+        id = string(nullable=False)
 
     class CompositeProduct(Schema):
-        tenant_id = field.string(nullable=False)
-        id = field.string(nullable=False)
-        name = field.string(nullable=True)
+        tenant_id = string(nullable=False)
+        id = string(nullable=False)
+        name = string(nullable=True)
 
     @transform
     class AddProduct(Transform):

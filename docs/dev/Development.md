@@ -7,7 +7,7 @@
 See [UserStories.md](specifications/UserStories.md) for detailed description of library external behavior.
 
 ## Terminology
-See [Terminology.md](Terminology.md) for project language. 
+See [Terminology.md](Terminology.md) for project language.
 
 See [Concepts.md](Concepts.md) for the
 concept-test coverage map.

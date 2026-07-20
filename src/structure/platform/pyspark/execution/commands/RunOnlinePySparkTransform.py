@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from structure.core.dsl.model.transforms.Transform import Transform
-from structure.core.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
-from structure.core.runtime.session.model.StructureRuntimeError import StructureRuntimeError
-from structure.core.runtime.session.model.TransformResult import TransformResult
+from structure.dsl import Transform
+from structure.platform.api.v1.model import RuntimeDiagnostic, StructureRuntimeError, TransformResult
 from structure.platform.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.platform.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
 from structure.platform.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe

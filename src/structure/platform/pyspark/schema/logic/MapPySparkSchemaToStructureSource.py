@@ -3,11 +3,13 @@ from __future__ import annotations
 import keyword
 import re
 
-from structure.core.tools.logic.model.GeneratedSchemaClass import GeneratedSchemaClass
-from structure.core.tools.logic.model.GeneratedSchemaField import GeneratedSchemaField
-from structure.core.tools.logic.model.GeneratedSchemaSource import GeneratedSchemaSource
-from structure.core.tools.logic.rules.ValidateSchemaToolRequest import ValidateSchemaToolRequest
-from structure.core.tools.model import StructureToolError
+from structure.platform.api.v1.model import (
+    GeneratedSchemaClass,
+    GeneratedSchemaField,
+    GeneratedSchemaSource,
+    StructureToolError,
+    ValidateSchemaToolRequest,
+)
 
 
 class MapPySparkSchemaToStructureSource:

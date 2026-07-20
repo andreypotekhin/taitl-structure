@@ -346,7 +346,7 @@ Rules:
 - A filter may reference only scopes available at the point where it is recorded.
 - A filter recorded before a join cannot reference that joined scope.
 - A filter recorded after a join may reference the joined scope.
-- A filter with simple `field.is_not_null()` narrows that field for later expressions in the same step method.
+- A filter with simple `is_not_null()` narrows that field for later expressions in the same step method.
 - Narrowing facts do not cross hook boundaries unless a future spec adds explicit hook postconditions.
 
 Minimum filter operation metadata:

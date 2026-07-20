@@ -12,6 +12,7 @@ from click.testing import CliRunner
 
 from structure import *
 from structure.core.cli.api import cli
+from structure.platform.pyspark import *
 
 
 @contextmanager
@@ -77,7 +78,7 @@ def write_project(root: Path) -> None:
     (package / "schemas.py").write_text(
         "\n".join(
             [
-                "from structure import Schema",
+                "from structure import *",
                 "from structure.platform.pyspark import *",
                 "",
                 "class OrderRaw(Schema):",
@@ -95,7 +96,8 @@ def write_project(root: Path) -> None:
     (package / "transforms.py").write_text(
         "\n".join(
             [
-                "from structure import Transform, coalesce, input, output, to_decimal, transform, where",
+                "from structure import *",
+                "from structure.platform.pyspark import *",
                 "from orders.schemas import OrderNormalized, OrderRaw",
                 "",
                 "@transform",
@@ -148,7 +150,7 @@ def write_optional_transform_project(root: Path) -> None:
     (package / "schemas.py").write_text(
         "\n".join(
             [
-                "from structure import Schema",
+                "from structure import *",
                 "from structure.platform.pyspark import *",
                 "",
                 "class OrderRaw(Schema):",
@@ -166,7 +168,8 @@ def write_optional_transform_project(root: Path) -> None:
     (package / "transforms.py").write_text(
         "\n".join(
             [
-                "from structure import Transform, coalesce, input, lane, output, step, to_decimal, transform, where",
+                "from structure import *",
+                "from structure.platform.pyspark import *",
                 "from orders.schemas import OrderNormalized, OrderRaw",
                 "",
                 "class NormalizeBase(Transform):",

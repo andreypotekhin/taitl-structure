@@ -8,8 +8,7 @@ from math import isfinite
 from re import fullmatch
 from typing import TypeVar, overload
 
-from structure.core.dsl.model.schemas.FieldDeclaration import FieldDeclaration
-from structure.core.dsl.model.schemas.Schema import Schema
+from structure.dsl import FieldDeclaration, Schema
 from structure.platform.api.v1.model import SymbolicContext
 from structure.platform.api.v1.model import current_symbolic_context as current_context
 from structure.platform.pyspark.dsl.Expression import Expression
@@ -31,7 +30,10 @@ from structure.platform.pyspark.dsl.types import (
     StructureType,
     TimestampType,
 )
-from structure.platform.pyspark.dsl.windows import GroupedRows, WindowBound, WindowFrame, WindowSpec
+from structure.platform.pyspark.dsl.windows.GroupedRows import GroupedRows
+from structure.platform.pyspark.dsl.windows.WindowBound import WindowBound
+from structure.platform.pyspark.dsl.windows.WindowFrame import WindowFrame
+from structure.platform.pyspark.dsl.windows.WindowSpec import WindowSpec
 
 F = TypeVar("F", bound=Callable)
 
@@ -1431,7 +1433,25 @@ def map_contains_key(value: object, key: object) -> Expression:
     )
 
 
-def array(*values: object) -> Expression:
+@overload
+def array(
+    element: FieldDeclaration,
+    **options: object,
+) -> FieldDeclaration: ...
+
+
+@overload
+def array(*values: object) -> Expression: ...
+
+
+def array(*values: object, **options: object) -> FieldDeclaration | Expression:
+    if len(values) == 1 and isinstance(values[0], FieldDeclaration):
+        from structure.platform.pyspark.dsl.field import array as field_array
+
+        return field_array(values[0], **options)  # type: ignore[arg-type]
+    if options:
+        unexpected = ", ".join(sorted(options))
+        raise TypeError(f"array(...) got unexpected option(s): {unexpected}")
     if not values:
         raise TypeError("array(...) requires at least one typed value")
     arguments = tuple(literal(value) for value in values)

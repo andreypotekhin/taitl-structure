@@ -5,7 +5,7 @@ from datetime import date, datetime
 from decimal import Decimal
 from typing import Callable, Iterable, Mapping, cast
 
-from structure.core.dsl.model.schemas.Schema import Schema
+from structure.dsl import Schema
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 from structure.platform.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.platform.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe

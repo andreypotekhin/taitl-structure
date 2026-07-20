@@ -1,8 +1,11 @@
 from typing import Protocol
 
-from structure.core.compiler.compileability.streaming_compatibility.model.StreamingReport import StreamingReport
-from structure.core.compiler.traceability.model.CompilerTraceability import CompilerTraceability
-from structure.platform.api.v1.model import StreamingAnalysisRequest, TraceabilityRequest
+from structure.platform.api.v1.model import (
+    CompilerTraceability,
+    StreamingAnalysisRequest,
+    StreamingReport,
+    TraceabilityRequest,
+)
 
 
 class AnalysisAPI(Protocol):

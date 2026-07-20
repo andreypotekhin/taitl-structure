@@ -3,29 +3,29 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 
 
 class Raw(Schema):
-    id = field.string(nullable=False)
-    value = field.integer(nullable=True)
+    id = string(nullable=False)
+    value = integer(nullable=True)
 
 
 class Normalized(Schema):
-    id = field.string(nullable=False)
-    value = field.integer(nullable=True)
+    id = string(nullable=False)
+    value = integer(nullable=True)
 
 
 class Audited(Schema):
-    id = field.string(nullable=False)
-    value = field.integer(nullable=True)
-    audit = field.string(nullable=True)
+    id = string(nullable=False)
+    value = integer(nullable=True)
+    audit = string(nullable=True)
 
 
 class Published(Schema):
-    id = field.string(nullable=False)
-    value = field.integer(nullable=True)
-    audit = field.string(nullable=True)
+    id = string(nullable=False)
+    value = integer(nullable=True)
+    audit = string(nullable=True)
 
 
 class DirectNormalize(Transform):

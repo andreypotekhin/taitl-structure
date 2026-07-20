@@ -1,7 +1,7 @@
 import json
 from collections.abc import Mapping
 
-from structure.core.dsl.model.schemas.Schema import Schema
+from structure.dsl import Schema
 from structure.platform.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.platform.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
 

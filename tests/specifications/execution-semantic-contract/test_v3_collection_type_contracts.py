@@ -6,23 +6,23 @@ from structure.core.dsl.model.types.ArrayType import ArrayType
 from structure.core.dsl.model.types.MapType import MapType
 from structure.core.dsl.model.types.StructType import StructType
 from structure.core.dsl.model.types.StructureType import StructureType
-from structure.platform.pyspark import field, types
+from structure.platform.pyspark import *
 
 
 class MapEntry(Schema):
-    key = field.string(nullable=False)
-    value = field.long(nullable=True)
+    key = string(nullable=False)
+    value = long(nullable=True)
 
 
 class NullableMapEntry(Schema):
-    key = field.string(nullable=True)
-    value = field.long(nullable=True)
+    key = string(nullable=True)
+    value = long(nullable=True)
 
 
 class ExtendedMapEntry(Schema):
-    key = field.string(nullable=False)
-    value = field.long(nullable=True)
-    source = field.string(nullable=False)
+    key = string(nullable=False)
+    value = long(nullable=True)
+    source = string(nullable=False)
 
 
 def _map(key: StructureType, value: StructureType, *, value_contains_null: bool = False) -> Expression:

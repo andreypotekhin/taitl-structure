@@ -1,5 +1,6 @@
 from examples.streams.schemas.events import GateProgress, Passage
-from structure import StreamingMode, Transform, count, group_by, input, max, min, output, transform, watermark
+from structure import StreamingMode, Transform, input, output, transform
+from structure.platform.pyspark import *
 
 
 @transform(streaming_compatible=True)

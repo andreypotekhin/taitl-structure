@@ -345,7 +345,7 @@ Rules:
 - A filter may reference only scopes available at the point where it is recorded.
 - A filter recorded before a join cannot reference that joined scope.
 - A filter recorded after a join may reference the joined scope.
-- A filter with simple `field.is_not_null()` narrows that field for later expressions in the same step method.
+- A filter with simple `is_not_null()` narrows that field for later expressions in the same step method.
 - Narrowing facts do not cross hook boundaries unless a future spec adds explicit hook postconditions.
 
 Minimum filter operation metadata:
@@ -732,7 +732,7 @@ The implementation is complete when tests prove:
 - Repeated `lookup_join(...)` calls on the same input receive deterministic occurrence ids.
 - A filter recorded before a join cannot reference the joined scope.
 - A filter recorded after a join can reference the joined scope.
-- Schema constructors record projection assignments by target field.
+- Schema constructors record projection assignments by target
 - Projection output order follows schema field order, not keyword order.
 - `SchemaClass.base(source)(...)` expands to the same projection as the equivalent explicit constructor.
 - `SchemaClass.base(source_a, source_b)(...)` maps sources to multiple direct bases by declaration order and field

@@ -2,6 +2,7 @@ import sys
 
 from structure import *
 from structure.core.compiler.api import Compiler
+from structure.platform.pyspark import *
 from structure.platform.pyspark import PySpark
 
 

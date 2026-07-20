@@ -1,9 +1,7 @@
 from typing import cast
 
-from structure.core.compiler.ir.model.TransformPlan import TransformPlan
-from structure.core.dsl.model.schemas.Schema import Schema
-from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
-from structure.core.target.capabilities.model.BackendCapabilities import BackendCapabilities
+from structure.dsl import Schema, StreamingMode
+from structure.platform.api.v1.model import BackendCapabilities, TransformPlan
 from structure.platform.pyspark.compiler.logic.mapping.PySparkInputMapper import PySparkInputMapper
 from structure.platform.pyspark.compiler.logic.mapping.PySparkOutputMapper import PySparkOutputMapper
 from structure.platform.pyspark.compiler.logic.mapping.PySparkStepMapper import PySparkStepMapper

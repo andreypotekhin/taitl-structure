@@ -3,7 +3,7 @@ from __future__ import annotations
 from re import fullmatch
 from typing import Any, Iterable, TypeVar, cast, overload
 
-from structure.core.dsl.model.schemas.Schema import Schema
+from structure.dsl import Schema
 from structure.platform.api.v1.model import current_symbolic_context
 from structure.platform.pyspark.dsl.Expression import Expression
 from structure.platform.pyspark.dsl.expressions import literal

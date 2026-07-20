@@ -19,7 +19,7 @@ from structure.lib.testing import (
     assert_online_generated_parity,
     generated_files,
 )
-from structure.platform.pyspark import field, types
+from structure.platform.pyspark import *
 
 
 @contextmanager
@@ -102,7 +102,7 @@ def _write_project(root: Path) -> None:
     (package / "schemas.py").write_text(
         "\n".join(
             [
-                "from structure import Schema",
+                "from structure import *",
                 "from structure.platform.pyspark import *",
                 "",
                 "class OrderRaw(Schema):",
@@ -120,7 +120,8 @@ def _write_project(root: Path) -> None:
     (package / "transforms.py").write_text(
         "\n".join(
             [
-                "from structure import Transform, coalesce, input, output, to_decimal, transform, where",
+                "from structure import *",
+                "from structure.platform.pyspark import *",
                 "from orders.schemas import OrderNormalized, OrderRaw",
                 "",
                 "@transform",
@@ -142,13 +143,13 @@ def _write_project(root: Path) -> None:
 
 
 class Raw(Schema):
-    id = field.string(nullable=False)
-    total = field.string(nullable=True)
+    id = string(nullable=False)
+    total = string(nullable=True)
 
 
 class Published(Schema):
-    id = field.string(nullable=False)
-    total = field.decimal(12, 2, nullable=False)
+    id = string(nullable=False)
+    total = decimal(12, 2, nullable=False)
 
 
 @transform

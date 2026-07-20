@@ -1,6 +1,7 @@
 from examples.stocks.schemas.indicators import VolumeIndicator
 from examples.stocks.schemas.market import DailyReturn
 from structure import *
+from structure.platform.pyspark import *
 
 
 class Volume(Transform):

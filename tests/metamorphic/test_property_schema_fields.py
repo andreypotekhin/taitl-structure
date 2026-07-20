@@ -8,12 +8,12 @@ hypothesis = pytest.importorskip("hypothesis")
 strategies = pytest.importorskip("hypothesis.strategies")
 
 from structure import *
-from structure.platform.pyspark import field, types
+from structure.platform.pyspark import *
 
 
 @hypothesis.given(strategies.from_regex(r"[A-Za-z_][A-Za-z0-9_]{0,24}", fullmatch=True))
 def test_valid_python_field_names_become_stable_structure_fields(name: str) -> None:
-    schema = cast(type[Schema], type("GeneratedSchema", (Schema,), {name: field.string(nullable=False)}))
+    schema = cast(type[Schema], type("GeneratedSchema", (Schema,), {name: string(nullable=False)}))
 
     assert list(schema._structure_fields) == [name]
     assert schema._structure_fields[name].column == name
@@ -22,7 +22,7 @@ def test_valid_python_field_names_become_stable_structure_fields(name: str) -> N
 
 @hypothesis.given(strategies.text(min_size=1, max_size=24).filter(lambda text: text != "spark_column"))
 def test_aliases_preserve_python_field_name_and_define_spark_column(alias: str) -> None:
-    schema = cast(type[Schema], type("AliasedSchema", (Schema,), {"spark_column": field.string(alias=alias)}))
+    schema = cast(type[Schema], type("AliasedSchema", (Schema,), {"spark_column": string(alias=alias)}))
 
     definition = schema._structure_fields["spark_column"]
     assert definition.name == "spark_column"

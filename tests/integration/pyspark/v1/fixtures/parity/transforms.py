@@ -8,6 +8,7 @@ from integration.pyspark.v1.fixtures.parity.schemas import (
 )
 
 from structure import *
+from structure.platform.pyspark import *
 
 
 class NormalizeBase(Transform):

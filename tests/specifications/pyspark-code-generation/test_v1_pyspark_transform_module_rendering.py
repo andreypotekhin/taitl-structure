@@ -6,18 +6,18 @@ import pytest
 
 from structure import *
 from structure.core.cli.commands.RenderExplainReport import render_explain_report
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 from structure.platform.pyspark.render.logic.RenderEmbeddedHooks import EmbeddedHookError
 
 
 class CacheRaw(Schema):
-    id = field.string(nullable=False)
-    status = field.string(nullable=True)
+    id = string(nullable=False)
+    status = string(nullable=True)
 
 
 class CachePublished(Schema):
-    id = field.string(nullable=False)
-    status = field.string(nullable=True)
+    id = string(nullable=False)
+    status = string(nullable=True)
 
 
 class ExplicitStorageLevel:
@@ -29,7 +29,7 @@ class ExplicitStorageLevel:
 
 
 class UdfRaw(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 @transform

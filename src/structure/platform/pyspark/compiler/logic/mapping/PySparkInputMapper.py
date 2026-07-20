@@ -1,6 +1,4 @@
-from structure.core.dsl.model.schemas.Schema import Schema
-from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
-from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
+from structure.dsl import Schema, SchemaMode, StreamingMode
 from structure.platform.pyspark.compiler.model.PySparkInputRecipe import PySparkInputRecipe
 from structure.platform.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 

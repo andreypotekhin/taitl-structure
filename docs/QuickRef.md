@@ -26,7 +26,7 @@ class OrderWithCustomer(OrderRaw):
     customer_name = string(nullable=True)
 ```
 
-The schema classes are used for inputs and outputs of the Transforms (next). 
+The schema classes are used for inputs and outputs of the Transforms (next).
 
 Inheritance allows to reuse schemas and avoid repeat declarations of fields.
 
@@ -41,6 +41,10 @@ Reference: [schemas API](api/Schemas.api.md), [schema declaration syntax](refere
 A transform class is declared by inheriting `Transform`.
 
 ```python
+from structure import Transform, input, lane, output
+from structure.platform.pyspark import *
+
+
 class NormalizeOrders(Transform):
     orders = input(OrderRaw)
     normalized = output(OrderNormalized)
@@ -48,7 +52,7 @@ class NormalizeOrders(Transform):
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         where(order.id.is_not_null())
         return OrderNormalized.project(order)(
-          total=to_decimal(order.total, precision=12, scale=2))        
+          total=to_decimal(order.total, precision=12, scale=2))
 ```
 
 A 'step method' is transform method that receives and returns schema classes, like the `normalize` method above. A transform class may have multiple step methods, which are executed in the order of declaration.
@@ -65,7 +69,7 @@ result = NormalizeOrders(
 normalized_df = result.normalized
 ```
 
-The run() method compiles the transform and invokes its steps methods. 
+The run() method compiles the transform and invokes its steps methods.
 
 Transforms may subclass other Transforms. In such case, parent transforms execute first:
 
@@ -87,7 +91,7 @@ class PublishOrders(NormalizeBase):
 Parent transform step methods run before child transform step methods. Multiple parents are allowed: their step methods run in the declared order (left to right). A step method override in child transform can call parent implementation: `super().normalize(order)`, `Base.normalize(self, order)`, or
 `super(Base, self).normalize(order)`.
 
-Step methods do not call other step methods directly. Attempt to do so, except for the override as shown above, will result in error. 
+Step methods do not call other step methods directly. Attempt to do so, except for the override as shown above, will result in error.
 
 Reference: [transforms API](api/Transforms.api.md), [DSL](background/DSL.back.md),
 [execution](background/Execution.back.md), and
@@ -169,7 +173,7 @@ def add_product(
     return accepted_order, audited_order
 ```
 
-Here, the first relation parameter (`order`) is the driving lane. The second relation parameter (`product`) is an additional relation - it must be joined before use. 
+Here, the first relation parameter (`order`) is the driving lane. The second relation parameter (`product`) is an additional relation - it must be joined before use.
 
 The returned values are mapped to the transform's outputs and lanes by schema class. Use `@step(...)` with
 `input=`/`output=` to disambiguate.
@@ -201,7 +205,20 @@ partitioning, checkpoints, output modes, and storage options.
 Construct a transform object specifying applicable inputs. Running it triggers in-memory compilation and executes the compiled code.
 
 ```python
-from structure import *
+from structure import (
+    Schema,
+    StructureConfig,
+    StructureSession,
+    StructureTools,
+    Transform,
+    input,
+    lane,
+    output,
+    raw,
+    special,
+    step,
+    transform,
+)
 
 config = StructureConfig.resolve(project_root=".")
 session = StructureSession(spark=spark, ctx=ctx, config=config)
@@ -312,7 +329,7 @@ Use `SchemaClass.project(source)` to copy same-name compatible fields from a sou
 ```python
 def publish(self, order: OrderWithPromotion) -> OrderPublished:
     return OrderPublished.project(order)
-  
+
 # Same as above:
 def publish(self, order: OrderWithPromotion) -> OrderPublished:
     project(order, OrderPublished)
@@ -525,7 +542,7 @@ def latest_events(self, event: RawEvent) -> LatestEvent:
 
 The PySpark target lowers these helpers to `row_number()` over
 `Window.partitionBy(...).orderBy(...)`, keeps rank `1`, then drops the temporary rank column. `partition_by` is
-required so the selection is reviewable, and the current public tie policy is `TiePolicy.ERROR`. 
+required so the selection is reviewable, and the current public tie policy is `TiePolicy.ERROR`.
 
 Streaming: Selected-row helpers
 are batch-only in v2 streaming compatibility checks, because streaming-safe ranking needs explicit watermark and state
@@ -625,8 +642,8 @@ For a streaming frame, declare `watermark(event_time, delay=...)` first: ordinar
 bounded `dropDuplicatesWithinWatermark` rather than forever-global dedupe. Use
 `drop_duplicates_within_watermark(...)` when the streaming-only intent should be explicit.
 
-When the selected row must be deterministic, prefer `dedupe_latest_by(...)` or `dedupe_earliest_by(...)` 
-with an explicit ordering and tie policy. 
+When the selected row must be deterministic, prefer `dedupe_latest_by(...)` or `dedupe_earliest_by(...)`
+with an explicit ordering and tie policy.
 
 ```python
 def latest_events(self, event: RawEvent) -> RawEvent:
@@ -857,7 +874,7 @@ orders = orders.join(
 Schema classes can subclass other schema classes.
 This can help to avoid duplicate field declarations, allow for 'declare once' style and establishing schema hierarchies.
 
-When constructing a subclass schema object, use `.base(row)(...)` to copy inherited fields from a base class instance. 
+When constructing a subclass schema object, use `.base(row)(...)` to copy inherited fields from a base class instance.
 
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
@@ -867,7 +884,7 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
     )
 ```
 
-Multiple schema bases compose left to right. 
+Multiple schema bases compose left to right.
 The `.base()` method allows for multiple bases when constructing a derived class instance:
 
 ```python
@@ -898,10 +915,10 @@ Reference: [schemas API](api/Schemas.api.md), [schema inheritance](reference/Sch
 
 ### Transform Inheritance
 
-Transform classes can subclass other Transforms. They inherit inputs, lanes, outputs, hooks, helpers, and step methods 
+Transform classes can subclass other Transforms. They inherit inputs, lanes, outputs, hooks, helpers, and step methods
 from parent class. Parent transforms run before child transform; a child method with the same name overrides
 the inherited scheduled step. Multiple inheritance is allowed, in which case parents run left-to-right before
-children, and Python rules for resolving diamond inheritance shapes are observed.  
+children, and Python rules for resolving diamond inheritance shapes are observed.
 
 ```python
 class NormalizeBase(Transform):
@@ -922,11 +939,11 @@ class PublishOrders(NormalizeBase):
         return OrderPublished.project(order)
 ```
 
-## Transform Composition 
+## Transform Composition
 
 The transforms can also be composed into pipelines using `.to(...)` method.
 
-This is an alternative to inheritance, providing more encapsulation (transforms are opaque to each other, 
+This is an alternative to inheritance, providing more encapsulation (transforms are opaque to each other,
 only connected through inputs/outputs) and allowing to combine independent transforms.
 
 ```python
@@ -943,7 +960,7 @@ published_df = result.published
 Composition hooks the inputs of downstream (following) transform to outputs of upstream transform, and to constructor
 arguments.
 
-For instance, in the above example, `AddProduct` initializes its 'products' input from constructor argument, and 
+For instance, in the above example, `AddProduct` initializes its 'products' input from constructor argument, and
 other inputs, like 'orders' from the upstream `NormalizeOrders` transform outputs.
 
 Use output aliases when the upstream declaration name is implementation-oriented but downstream transforms should
@@ -964,7 +981,7 @@ NormalizeOrders(orders=orders_df).rename(normalized="orders").to(AddProduct(prod
 Boundary aliases and renames affect Structure input/output matching and result lookup. They do not rename Spark
 columns; use schema field `alias=...` for column names and Spark DataFrame `.alias(...)` for relation names.
 
-If an input is specified in constructor that already exists amongh upstream transform outputs, Structure 
+If an input is specified in constructor that already exists amongh upstream transform outputs, Structure
 interprets it as a conflict and fails with an error.
 
 The `.to(...)` method does not allow to bind to transform's lanes. Hook-bearing transforms are currently rejected.
@@ -1176,7 +1193,20 @@ Reference: [compatibility policy](background/CompatibilityPolicy.back.md) and
 Generate starter Structure schema classes from live Spark schema metadata:
 
 ```python
-from structure import *
+from structure import (
+    Schema,
+    StructureConfig,
+    StructureSession,
+    StructureTools,
+    Transform,
+    input,
+    lane,
+    output,
+    raw,
+    special,
+    step,
+    transform,
+)
 
 code = StructureTools.schemas.generate(schema=orders_df.schema, to="OrderRaw")
 code = StructureTools.schemas.generate(schema=orders_df, to="OrderRaw")

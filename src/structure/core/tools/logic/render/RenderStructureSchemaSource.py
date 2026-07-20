@@ -1,4 +1,5 @@
 import json
+import re
 
 from structure.core.tools.logic.model.GeneratedSchemaClass import GeneratedSchemaClass
 from structure.core.tools.logic.model.GeneratedSchemaField import GeneratedSchemaField
@@ -15,7 +16,7 @@ class RenderStructureSchemaSource:
         return "\n".join(lines) + "\n"
 
     def _imports(self) -> tuple[str, ...]:
-        return ("from structure import Schema", "from structure.platform.pyspark import *")
+        return ("from structure import *", "from structure.platform.pyspark import *")
 
     def _class(self, schema: GeneratedSchemaClass) -> tuple[str, ...]:
         lines = [f"class {schema.name}(Schema):"]
@@ -32,7 +33,11 @@ class RenderStructureSchemaSource:
             options.append("nullable=False")
         if field.alias is not None:
             options.append(f"alias={json.dumps(field.alias)}")
-        declaration = field.type
+        declaration = re.sub(
+            r"\b(array|boolean|date|decimal|double|float|integer|long|map|string|struct|timestamp)\(",
+            r"\1(",
+            field.type,
+        )
         if options:
             prefix = declaration[:-1]
             separator = "" if prefix.endswith("(") else ", "

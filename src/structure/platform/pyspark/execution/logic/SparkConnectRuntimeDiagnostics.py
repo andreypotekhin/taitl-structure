@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from structure.core.dsl.model.transforms.Transform import Transform
-from structure.core.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
-from structure.core.runtime.session.model.StructureRuntimeError import StructureRuntimeError
+from structure.dsl import Transform
+from structure.platform.api.v1.model import RuntimeDiagnostic, StructureRuntimeError
 
 
 def spark_connect_runtime_error(

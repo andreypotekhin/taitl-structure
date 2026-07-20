@@ -125,10 +125,10 @@ def test_structure_sources_snapshot_a_directory(tmp_path) -> None:
 def _schemas() -> str:
     return """
 from structure import Schema
-from structure.platform.pyspark import field
+from structure.platform.pyspark import *
 
 class Row(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 """
 
 

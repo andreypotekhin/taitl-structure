@@ -1,32 +1,3 @@
-from __future__ import annotations
+from structure.platform.api.v1.model.HookPlan import HookPlan
 
-from dataclasses import dataclass
-
-from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
-from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
-from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
-from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
-from structure.platform.api.v1.model import TransformMemberOrigin
-
-HookDeclaration = InputDeclaration | LaneDeclaration | OutputDeclaration
-
-
-@dataclass(frozen=True)
-class HookPlan:
-    name: str
-    phase: str
-    target: str
-    lanes: tuple[HookDeclaration, ...]
-    outputs: tuple[HookDeclaration, ...]
-    sources: tuple[str, ...] = ()
-    schema_mode: SchemaMode = SchemaMode.STRICT
-    project_output: bool = False
-    streaming_safe: bool = False
-    target_backend: tuple[str, ...] = ("pyspark",)
-    target_defaulted: bool = True
-    target_platform: str | None = None
-    origin: TransformMemberOrigin | None = None
-
-    @property
-    def lane(self) -> HookDeclaration:
-        return self.lanes[0]
+__all__ = ["HookPlan"]

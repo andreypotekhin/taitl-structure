@@ -7,6 +7,7 @@ from testing.model.v1.orders.schemas.order import (
 )
 
 from structure import *
+from structure.platform.pyspark import *
 
 
 def test_intermediate_schema_validation_is_placed_after_step_methods(orders_recipe) -> None:

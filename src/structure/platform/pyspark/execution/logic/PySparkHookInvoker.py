@@ -1,4 +1,4 @@
-from structure.core.dsl.model.transforms.Transform import Transform
+from structure.dsl import Transform
 from structure.platform.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.platform.pyspark.execution.logic.SparkConnectRuntimeDiagnostics import spark_connect_runtime_error
 

@@ -12,7 +12,7 @@ from structure.core.runtime.execution.commands import ExecutePlatformArtifact
 from structure.core.target.capabilities.model.BackendCapabilities import BackendCapabilities
 from structure.platform.api import PlatformDescriptor
 from structure.platform.api.v1 import ExecutionRequest, GenerationRequest, PlatformAPI, PlatformCompilation
-from structure.platform.pyspark import PySparkPlatform, string
+from structure.platform.pyspark import *
 from structure.platform.pyspark.symbolic_execution.model import PySparkSymbolicContext, current_pyspark_context
 
 

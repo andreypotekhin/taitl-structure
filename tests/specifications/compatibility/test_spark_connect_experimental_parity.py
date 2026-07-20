@@ -3,7 +3,7 @@ from typing import Any, cast
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.target.capabilities.api import Capabilities
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 from structure.platform.pyspark.render.commands.RenderPySparkRuntimeModule import render_pyspark_runtime_module
 from structure.platform.pyspark.render.commands.RenderPySparkTransformModule import render_pyspark_transform_module
 
@@ -23,159 +23,159 @@ CLASSIC_ONLY_TOKENS = (
 
 
 class RawBatch(Schema):
-    account_id = field.string(nullable=False)
-    event_id = field.string(nullable=False)
-    promo_code = field.string(nullable=True)
-    event_date = field.date(nullable=False)
-    sequence = field.long(nullable=False)
-    amount = field.long(nullable=False)
-    tags = field.array(field.string(), contains_null=True, nullable=True)
-    attributes = field.map(field.string(), field.string(), value_contains_null=True, nullable=True)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    promo_code = string(nullable=True)
+    event_date = date(nullable=False)
+    sequence = long(nullable=False)
+    amount = long(nullable=False)
+    tags = array(string(), contains_null=True, nullable=True)
+    attributes = map(string(), string(), value_contains_null=True, nullable=True)
 
 
 class RankedBatch(Schema):
-    account_id = field.string(nullable=False)
-    event_id = field.string(nullable=False)
-    promo_code = field.string(nullable=True)
-    event_date = field.date(nullable=False)
-    sequence = field.long(nullable=False)
-    amount = field.long(nullable=False)
-    tags = field.array(field.string(), contains_null=True, nullable=True)
-    attributes = field.map(field.string(), field.string(), value_contains_null=True, nullable=True)
-    row_number = field.long(nullable=False)
-    rank = field.long(nullable=False)
-    dense_rank = field.long(nullable=False)
-    previous_sequence = field.long(nullable=True)
-    next_sequence = field.long(nullable=True)
-    rolling_units = field.long(nullable=False)
-    rolling_avg_units = field.double(nullable=False)
-    rolling_min_units = field.long(nullable=False)
-    rolling_max_units = field.long(nullable=False)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    promo_code = string(nullable=True)
+    event_date = date(nullable=False)
+    sequence = long(nullable=False)
+    amount = long(nullable=False)
+    tags = array(string(), contains_null=True, nullable=True)
+    attributes = map(string(), string(), value_contains_null=True, nullable=True)
+    row_number = long(nullable=False)
+    rank = long(nullable=False)
+    dense_rank = long(nullable=False)
+    previous_sequence = long(nullable=True)
+    next_sequence = long(nullable=True)
+    rolling_units = long(nullable=False)
+    rolling_avg_units = double(nullable=False)
+    rolling_min_units = long(nullable=False)
+    rolling_max_units = long(nullable=False)
 
 
 class AccountSummary(Schema):
-    account_id = field.string(nullable=False)
-    event_count = field.long(nullable=False)
-    distinct_events = field.long(nullable=False)
-    total_amount = field.long(nullable=False)
-    min_amount = field.long(nullable=False)
-    max_amount = field.long(nullable=False)
-    avg_amount = field.double(nullable=False)
+    account_id = string(nullable=False)
+    event_count = long(nullable=False)
+    distinct_events = long(nullable=False)
+    total_amount = long(nullable=False)
+    min_amount = long(nullable=False)
+    max_amount = long(nullable=False)
+    avg_amount = double(nullable=False)
 
 
 class Customer(Schema):
-    id = field.string(nullable=False)
-    name = field.string(nullable=True)
+    id = string(nullable=False)
+    name = string(nullable=True)
 
 
 class Product(Schema):
-    id = field.string(nullable=False)
-    name = field.string(nullable=True)
-    ingested_at = field.long(nullable=False)
+    id = string(nullable=False)
+    name = string(nullable=True)
+    ingested_at = long(nullable=False)
 
 
 class BlockedProduct(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 class Promotion(Schema):
-    code = field.string(nullable=False)
-    name = field.string(nullable=True)
-    valid_from = field.date(nullable=False)
-    valid_to = field.date(nullable=True)
+    code = string(nullable=False)
+    name = string(nullable=True)
+    valid_from = date(nullable=False)
+    valid_to = date(nullable=True)
 
 
 class Shipment(Schema):
-    event_id = field.string(nullable=False)
-    line = field.long(nullable=False)
+    event_id = string(nullable=False)
+    line = long(nullable=False)
 
 
 class CustomerBatch(Schema):
-    account_id = field.string(nullable=False)
-    event_id = field.string(nullable=False)
-    promo_code = field.string(nullable=True)
-    event_date = field.date(nullable=False)
-    customer_name = field.string(nullable=True)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    promo_code = string(nullable=True)
+    event_date = date(nullable=False)
+    customer_name = string(nullable=True)
 
 
 class ProductBatch(Schema):
-    account_id = field.string(nullable=False)
-    event_id = field.string(nullable=False)
-    promo_code = field.string(nullable=True)
-    event_date = field.date(nullable=False)
-    customer_name = field.string(nullable=True)
-    product_name = field.string(nullable=True)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    promo_code = string(nullable=True)
+    event_date = date(nullable=False)
+    customer_name = string(nullable=True)
+    product_name = string(nullable=True)
 
 
 class PromotedBatch(Schema):
-    account_id = field.string(nullable=False)
-    event_id = field.string(nullable=False)
-    customer_name = field.string(nullable=True)
-    product_name = field.string(nullable=True)
-    promotion_name = field.string(nullable=True)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    customer_name = string(nullable=True)
+    product_name = string(nullable=True)
+    promotion_name = string(nullable=True)
 
 
 class JoinedBatch(Schema):
-    account_id = field.string(nullable=False)
-    event_id = field.string(nullable=False)
-    customer_name = field.string(nullable=True)
-    product_name = field.string(nullable=True)
-    promotion_name = field.string(nullable=True)
-    shipment_line = field.long(nullable=False)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    customer_name = string(nullable=True)
+    product_name = string(nullable=True)
+    promotion_name = string(nullable=True)
+    shipment_line = long(nullable=False)
 
 
 class RowsetMatchBatch(Schema):
-    account_id = field.string(nullable=True)
-    event_id = field.string(nullable=True)
-    customer_id = field.string(nullable=True)
-    customer_name = field.string(nullable=True)
+    account_id = string(nullable=True)
+    event_id = string(nullable=True)
+    customer_id = string(nullable=True)
+    customer_name = string(nullable=True)
 
 
 class RowsetBackfillBatch(Schema):
-    account_id = field.string(nullable=True)
-    event_id = field.string(nullable=True)
-    customer_id = field.string(nullable=False)
-    customer_name = field.string(nullable=True)
+    account_id = string(nullable=True)
+    event_id = string(nullable=True)
+    customer_id = string(nullable=False)
+    customer_name = string(nullable=True)
 
 
 class RowsetCandidateBatch(Schema):
-    account_id = field.string(nullable=False)
-    event_id = field.string(nullable=False)
-    product_id = field.string(nullable=False)
-    product_name = field.string(nullable=True)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    product_id = string(nullable=False)
+    product_name = string(nullable=True)
 
 
 class AdvancedSummaryBatch(Schema):
-    account_id = field.string(nullable=True)
-    grouping_id = field.long(nullable=False)
-    account_subtotal = field.boolean(nullable=False)
-    event_count = field.long(nullable=False)
-    paid_amount = field.long(nullable=True)
-    any_large = field.boolean(nullable=True)
-    amount_stddev = field.double(nullable=True)
-    estimated_events = field.long(nullable=False)
-    event_ids = field.array(field.string(), contains_null=False, nullable=True)
+    account_id = string(nullable=True)
+    grouping_id = long(nullable=False)
+    account_subtotal = boolean(nullable=False)
+    event_count = long(nullable=False)
+    paid_amount = long(nullable=True)
+    any_large = boolean(nullable=True)
+    amount_stddev = double(nullable=True)
+    estimated_events = long(nullable=False)
+    event_ids = array(string(), contains_null=False, nullable=True)
 
 
 class AdvancedWindowBatch(Schema):
-    account_id = field.string(nullable=False)
-    event_id = field.string(nullable=False)
-    percent_rank = field.double(nullable=False)
-    cume_dist = field.double(nullable=False)
-    tile = field.long(nullable=False)
-    first_event = field.string(nullable=True)
-    last_event = field.string(nullable=True)
-    second_event = field.string(nullable=True)
-    running_amount = field.long(nullable=False)
-    running_count = field.long(nullable=False)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    percent_rank = double(nullable=False)
+    cume_dist = double(nullable=False)
+    tile = long(nullable=False)
+    first_event = string(nullable=True)
+    last_event = string(nullable=True)
+    second_event = string(nullable=True)
+    running_amount = long(nullable=False)
+    running_count = long(nullable=False)
 
 
 class AdvancedCollectionBatch(Schema):
-    event_id = field.string(nullable=False)
-    has_priority = field.boolean(nullable=True)
-    tags = field.array(field.string(), contains_null=True, nullable=True)
-    tag_position = field.long(nullable=True)
-    attribute_keys = field.array(field.string(), contains_null=False, nullable=True)
+    event_id = string(nullable=False)
+    has_priority = boolean(nullable=True)
+    tags = array(string(), contains_null=True, nullable=True)
+    tag_position = long(nullable=True)
+    attribute_keys = array(string(), contains_null=False, nullable=True)
 
 
 @transform

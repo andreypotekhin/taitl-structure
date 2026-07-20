@@ -95,7 +95,7 @@ def test_renderer_annotates_a_source_span_without_changing_named_sections() -> N
         end_line=8,
         end_column=10,
         label="declared non-nullable here",
-        excerpt=SourceExcerpt(first_line=8, lines=("    total = field.decimal(nullable=False)",)),
+        excerpt=SourceExcerpt(first_line=8, lines=("    total = decimal(nullable=False)",)),
     )
 
     rendered = render_diagnostic(

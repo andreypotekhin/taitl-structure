@@ -4,72 +4,72 @@ import pytest
 
 from structure import *
 from structure.core.cli.commands.RenderExplainReport import render_explain_report
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 from structure.platform.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
 from structure.platform.pyspark.render.commands.RenderPySparkTransformModule import render_pyspark_transform_module
 
 
 class RawEvent(Schema):
-    account_id = field.string(nullable=False)
-    event_id = field.string(nullable=False)
-    sequence = field.long(nullable=False)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    sequence = long(nullable=False)
 
 
 class LatestEvent(Schema):
-    account_id = field.string(nullable=False)
-    event_id = field.string(nullable=False)
-    sequence = field.long(nullable=False)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    sequence = long(nullable=False)
 
 
 class Account(Schema):
-    account_id = field.string(nullable=False)
-    tier = field.string(nullable=False)
+    account_id = string(nullable=False)
+    tier = string(nullable=False)
 
 
 class AccountEvent(Schema):
-    account_id = field.string(nullable=False)
-    event_id = field.string(nullable=False)
-    tier = field.string(nullable=True)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    tier = string(nullable=True)
 
 
 class RankedEvent(Schema):
-    account_id = field.string(nullable=False)
-    event_id = field.string(nullable=False)
-    sequence = field.long(nullable=False)
-    row_number = field.long(nullable=False)
-    rank = field.long(nullable=False)
-    dense_rank = field.long(nullable=False)
-    previous_sequence = field.long(nullable=True)
-    next_sequence = field.long(nullable=True)
-    rolling_units = field.long(nullable=False)
-    rolling_avg_units = field.double(nullable=False)
-    rolling_min_units = field.long(nullable=False)
-    rolling_max_units = field.long(nullable=False)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    sequence = long(nullable=False)
+    row_number = long(nullable=False)
+    rank = long(nullable=False)
+    dense_rank = long(nullable=False)
+    previous_sequence = long(nullable=True)
+    next_sequence = long(nullable=True)
+    rolling_units = long(nullable=False)
+    rolling_avg_units = double(nullable=False)
+    rolling_min_units = long(nullable=False)
+    rolling_max_units = long(nullable=False)
 
 
 class AdvancedRankedEvent(Schema):
-    account_id = field.string(nullable=False)
-    percent_rank = field.double(nullable=False)
-    cume_dist = field.double(nullable=False)
-    bucket = field.long(nullable=False)
-    framed_total = field.long(nullable=False)
+    account_id = string(nullable=False)
+    percent_rank = double(nullable=False)
+    cume_dist = double(nullable=False)
+    bucket = long(nullable=False)
+    framed_total = long(nullable=False)
 
 
 class MultiOrderedEvent(Schema):
-    account_id = field.string(nullable=False)
-    event_id = field.string(nullable=False)
-    sequence = field.long(nullable=False)
-    rank = field.long(nullable=False)
-    running_total = field.long(nullable=False)
+    account_id = string(nullable=False)
+    event_id = string(nullable=False)
+    sequence = long(nullable=False)
+    rank = long(nullable=False)
+    running_total = long(nullable=False)
 
 
 class AggregateWindowEvent(Schema):
-    account_id = field.string(nullable=False)
-    accepted = field.boolean(nullable=True)
-    sequence_stddev = field.double(nullable=True)
-    sequence_variance = field.double(nullable=True)
-    sequences = field.array(field.long(), contains_null=False, nullable=True)
-    distinct_sequences = field.array(field.long(), contains_null=False, nullable=True)
+    account_id = string(nullable=False)
+    accepted = boolean(nullable=True)
+    sequence_stddev = double(nullable=True)
+    sequence_variance = double(nullable=True)
+    sequences = array(long(), contains_null=False, nullable=True)
+    distinct_sequences = array(long(), contains_null=False, nullable=True)
 
 
 @transform

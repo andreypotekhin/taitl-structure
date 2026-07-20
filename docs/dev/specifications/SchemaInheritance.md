@@ -107,7 +107,7 @@ Override rules:
 
 - Override replacement is whole-field replacement.
 - Override position is the inherited field position.
-- Type, nullability, primary key flag, metadata, and description all come from the overriding field.
+- Type, nullability, primary key flag, metadata, and description all come from the overriding
 - Metadata is not merged.
 - Description is not merged.
 - Overriding a field with a non-field value is rejected.

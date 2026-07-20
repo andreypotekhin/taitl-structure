@@ -1,8 +1,10 @@
-from structure.core.target.capabilities.model.BackendCapabilityError import BackendCapabilityError
-from structure.core.target.capabilities.model.BackendId import BackendId
-from structure.core.target.capabilities.model.CapabilityDecision import CapabilityDecision
-from structure.core.target.capabilities.model.CapabilityRequirement import CapabilityRequirement
-from structure.core.target.capabilities.model.GeneratedImports import GeneratedImports
+from structure.platform.api.v1.model import (
+    BackendCapabilityError,
+    BackendId,
+    CapabilityDecision,
+    CapabilityRequirement,
+    GeneratedImports,
+)
 
 DEFAULT_TARGET_PROFILE = ">=3.5,<4.1"
 DEFAULT_TARGET_VARIANT = "ordinary"

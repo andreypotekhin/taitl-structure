@@ -39,9 +39,8 @@ class, as described below.
 
 Structure retains its target-independent declarations:
 
-    from structure import Schema, Transform, transform
-    from structure.platform.pyspark import field
-    from structure.platform.pyspark import col, join, sum
+    from structure import *
+    from structure.platform.pyspark import *
 
 The second import is the target-owned platform DSL. It may be syntactically close to the native target and may differ
 substantially from another platform's DSL. An external wheel is responsible for documenting its own import path.

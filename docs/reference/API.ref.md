@@ -1,6 +1,6 @@
 # API Reference
 
-This describes Structure's public, compiler-visible API. 
+This describes Structure's public, compiler-visible API.
 
 If you are just starting using this library, see [QuickRef.md](../QuickRef.md) for an introduction.
 

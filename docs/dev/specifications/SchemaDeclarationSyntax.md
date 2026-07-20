@@ -32,7 +32,7 @@ The field declaration has two visible parts:
 1. A Python class attribute name, which becomes the Structure field name.
 2. A field factory such as `string()` or `decimal(12, 2)`.
 
-`from structure.platform.pyspark import *` is intentionally limited to PySpark schema modules. Transform
+`from structure.platform.pyspark import *` exposes the complete PySpark authoring DSL. Transform
 modules that need an expression `array(...)` helper should import the PySpark DSL explicitly rather than combining
 wildcard imports.
 
@@ -82,7 +82,7 @@ string(
 Rules:
 
 - `nullable` defaults to `True`.
-- `alias` is an optional Spark column name for the field.
+- `alias` is an optional Spark column name for the
 - `metadata` defaults to an empty immutable mapping.
 - `description` is optional end-user documentation for generated docs, diagnostics, and traceability.
 - Field declaration order is class body order.

@@ -215,3 +215,25 @@ def test_pyspark_dsl_does_not_import_core_concrete_target_models() -> None:
             if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith(forbidden):
                 violations.append(f"{source.relative_to(root)}: {node.module}")
     assert not violations, "PySpark target models must be imported from pyspark.dsl:\n" + "\n".join(violations)
+
+
+def test_pyspark_plugin_uses_only_public_structure_contracts() -> None:
+    root = Path("src/structure/platform/pyspark")
+    violations = []
+    for source in root.rglob("*.py"):
+        tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("structure.core"):
+                violations.append(f"{source.relative_to(root)}: {node.module}")
+    assert not violations, "PySpark must use structure.dsl or structure.platform.api.v1, never Core internals:\n" + "\n".join(violations)
+
+
+def test_platform_api_uses_only_public_structure_contracts() -> None:
+    root = Path("src/structure/platform")
+    violations = []
+    for source in root.rglob("*.py"):
+        tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
+        for node in ast.walk(tree):
+            if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("structure.core"):
+                violations.append(f"{source.relative_to(root)}: {node.module}")
+    assert not violations, "Platform contracts and plugins must never import Core internals:\n" + "\n".join(violations)

@@ -4,15 +4,15 @@ import pytest
 
 from structure import *
 from structure.core.compiler.api import Compiler
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 
 
 class Raw(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 class Published(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 def test_special_expr_helper_call_through_self_compiles_transparently() -> None:

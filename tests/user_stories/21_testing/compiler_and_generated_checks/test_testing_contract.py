@@ -3,7 +3,7 @@ import ast
 import pytest
 
 from structure import *
-from structure.platform.pyspark import field, types
+from structure.platform.pyspark import *
 
 
 def test_user_story_tests_compile_transforms_before_deployment(orders_plan) -> None:
@@ -31,11 +31,11 @@ def test_intentionally_broken_transform_tests_keep_diagnostics_actionable() -> N
     """I can run intentionally broken transform tests so compiler diagnostics stay actionable."""
 
     class Raw(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     class Published(Schema):
-        id = field.string(nullable=False)
-        status = field.string(nullable=False)
+        id = string(nullable=False)
+        status = string(nullable=False)
 
     @transform
     class MissingOutputField(Transform):

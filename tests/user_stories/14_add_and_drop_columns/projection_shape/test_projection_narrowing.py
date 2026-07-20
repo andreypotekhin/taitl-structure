@@ -3,37 +3,37 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 
 
 class Raw(Schema):
-    id = field.string(nullable=False)
-    status = field.string(nullable=True)
-    amount = field.string(nullable=False)
-    count = field.integer(nullable=False)
+    id = string(nullable=False)
+    status = string(nullable=True)
+    amount = string(nullable=False)
+    count = integer(nullable=False)
 
 
 class Published(Schema):
-    id = field.string(nullable=False)
-    status = field.string(nullable=True)
+    id = string(nullable=False)
+    status = string(nullable=True)
 
 
 class Identity(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 class Counted(Schema):
-    count = field.long(nullable=False)
+    count = long(nullable=False)
 
 
 class Money(Schema):
-    amount = field.decimal(12, 2, nullable=False)
-    count = field.long(nullable=False)
+    amount = decimal(12, 2, nullable=False)
+    count = long(nullable=False)
 
 
 class Customer(Schema):
-    id = field.string(nullable=False)
-    name = field.string(nullable=True)
+    id = string(nullable=False)
+    name = string(nullable=True)
 
 
 def test_return_project_to_schema_copies_same_name_fields() -> None:
@@ -102,7 +102,7 @@ def test_where_project_shortcut_records_filter_and_projection() -> None:
         published = output(Published)
 
         def publish(self, row: Raw) -> Published:
-            return where(cast(Any, row.status).is_not_null()).project(row, Published)
+            return cast(Published, where(cast(Any, row.status).is_not_null()).project(row, Published))
 
     plan = compile_transform(Publish)
 
@@ -119,7 +119,7 @@ def test_generated_projection_narrowing_uses_select_not_drop() -> None:
         published = output(Published)
 
         def publish(self, row: Raw) -> Published:
-            return where(cast(Any, row.status).is_not_null()).project(row, Published)
+            return cast(Published, where(cast(Any, row.status).is_not_null()).project(row, Published))
 
     recipe = PySpark.compiler.lower()(compile_transform(Publish))
     text = PySpark.render.transform()(

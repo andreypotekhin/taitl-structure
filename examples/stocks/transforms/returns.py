@@ -1,5 +1,6 @@
 from examples.stocks.schemas.market import DailyReturn, MarketBar
 from structure import *
+from structure.platform.pyspark import *
 
 
 class PrepareReturns(Transform):

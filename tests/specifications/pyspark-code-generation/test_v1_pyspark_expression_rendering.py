@@ -4,7 +4,7 @@ import pytest
 
 from structure import *
 from structure.core.target.capabilities.api import BackendCapabilityError
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 from structure.platform.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
 
 
@@ -44,12 +44,12 @@ def test_v1_expression_renderer_renders_arithmetic_and_comparison() -> None:
 
 def test_v4_expression_renderer_renders_division_modulo_and_negation() -> None:
     class Raw(Schema):
-        amount = field.integer(nullable=True)
+        amount = integer(nullable=True)
 
     class Published(Schema):
-        quotient = field.double(nullable=True)
-        remainder = field.integer(nullable=True)
-        negated = field.integer(nullable=True)
+        quotient = double(nullable=True)
+        remainder = integer(nullable=True)
+        negated = integer(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -70,14 +70,14 @@ def test_v4_expression_renderer_renders_division_modulo_and_negation() -> None:
 
 def test_v4_expression_renderer_renders_typed_bitwise_column_operations() -> None:
     class Raw(Schema):
-        flags = field.integer(nullable=False)
-        mask = field.long(nullable=False)
+        flags = integer(nullable=False)
+        mask = long(nullable=False)
 
     class Published(Schema):
-        intersected = field.integer(nullable=False)
-        combined = field.long(nullable=False)
-        changed = field.long(nullable=False)
-        inverted = field.integer(nullable=False)
+        intersected = integer(nullable=False)
+        combined = long(nullable=False)
+        changed = long(nullable=False)
+        inverted = integer(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -110,10 +110,10 @@ def test_v4_expression_renderer_renders_typed_bitwise_column_operations() -> Non
 
 def test_v4_expression_renderer_renders_nullif() -> None:
     class Raw(Schema):
-        label = field.string(nullable=False)
+        label = string(nullable=False)
 
     class Published(Schema):
-        label = field.string(nullable=True)
+        label = string(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -133,14 +133,14 @@ def test_v4_expression_renderer_renders_nullif() -> None:
 
 def test_v4_expression_renderer_renders_remaining_null_control_helpers() -> None:
     class Raw(Schema):
-        label = field.string(nullable=True)
-        amount = field.decimal(12, 2, nullable=True)
+        label = string(nullable=True)
+        amount = decimal(12, 2, nullable=True)
 
     class Published(Schema):
-        nvl_label = field.string(nullable=False)
-        ifnull_label = field.string(nullable=False)
-        branch_label = field.string(nullable=False)
-        amount = field.decimal(12, 2, nullable=False)
+        nvl_label = string(nullable=False)
+        ifnull_label = string(nullable=False)
+        branch_label = string(nullable=False)
+        amount = decimal(12, 2, nullable=False)
 
     @transform
     class Publish(Transform):
@@ -173,11 +173,11 @@ def test_v4_expression_renderer_renders_remaining_null_control_helpers() -> None
 
 def test_v4_expression_renderer_renders_nanvl() -> None:
     class Raw(Schema):
-        observed = field.double(nullable=True)
-        fallback = field.double(nullable=True)
+        observed = double(nullable=True)
+        fallback = double(nullable=True)
 
     class Published(Schema):
-        observed = field.double(nullable=True)
+        observed = double(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -197,11 +197,11 @@ def test_v4_expression_renderer_renders_nanvl() -> None:
 
 def test_v4_expression_renderer_renders_one_sided_trim() -> None:
     class Raw(Schema):
-        label = field.string(nullable=True)
+        label = string(nullable=True)
 
     class Published(Schema):
-        left = field.string(nullable=True)
-        right = field.string(nullable=True)
+        left = string(nullable=True)
+        right = string(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -221,16 +221,16 @@ def test_v4_expression_renderer_renders_one_sided_trim() -> None:
 
 def test_v4_expression_renderer_renders_deterministic_numeric_functions() -> None:
     class Raw(Schema):
-        amount = field.decimal(12, 2, nullable=True)
+        amount = decimal(12, 2, nullable=True)
 
     class Published(Schema):
-        rounded = field.decimal(12, 1, nullable=True)
-        square_root = field.double(nullable=True)
-        exponentiated = field.double(nullable=True)
-        natural_log = field.double(nullable=True)
-        base_ten_log = field.double(nullable=True)
-        exponent = field.double(nullable=True)
-        sign = field.double(nullable=True)
+        rounded = decimal(12, 1, nullable=True)
+        square_root = double(nullable=True)
+        exponentiated = double(nullable=True)
+        natural_log = double(nullable=True)
+        base_ten_log = double(nullable=True)
+        exponent = double(nullable=True)
+        sign = double(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -266,17 +266,17 @@ def test_v4_expression_renderer_renders_deterministic_numeric_functions() -> Non
 
 def test_v4_expression_renderer_renders_temporal_helpers() -> None:
     class Raw(Schema):
-        observed_on = field.date(nullable=True)
-        observed_at = field.timestamp(nullable=True)
-        raw_observed_at = field.string(nullable=False)
+        observed_on = date(nullable=True)
+        observed_at = timestamp(nullable=True)
+        raw_observed_at = string(nullable=False)
 
     class Published(Schema):
-        previous = field.date(nullable=True)
-        month_start = field.date(nullable=True)
-        year_part = field.integer(nullable=True)
-        hour_part = field.integer(nullable=True)
-        parsed_date = field.date(nullable=True)
-        parsed_timestamp = field.timestamp(nullable=True)
+        previous = date(nullable=True)
+        month_start = date(nullable=True)
+        year_part = integer(nullable=True)
+        hour_part = integer(nullable=True)
+        parsed_date = date(nullable=True)
+        parsed_timestamp = timestamp(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -316,15 +316,15 @@ def test_v4_expression_renderer_renders_temporal_helpers() -> None:
 
 def test_v4_expression_renderer_renders_hash_helpers() -> None:
     class Raw(Schema):
-        id = field.long(nullable=False)
-        label = field.string(nullable=True)
+        id = long(nullable=False)
+        label = string(nullable=True)
 
     class Published(Schema):
-        hash_code = field.integer(nullable=True)
-        long_hash = field.long(nullable=True)
-        md5_hash = field.string(nullable=True)
-        sha1_hash = field.string(nullable=True)
-        sha2_hash = field.string(nullable=True)
+        hash_code = integer(nullable=True)
+        long_hash = long(nullable=True)
+        md5_hash = string(nullable=True)
+        sha1_hash = string(nullable=True)
+        sha2_hash = string(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -380,10 +380,10 @@ def test_v1_expression_renderer_renders_join_predicates() -> None:
 
 def test_v1_expression_renderer_passes_field_aliases_to_spark() -> None:
     class Raw(Schema):
-        promotion_code = field.string(nullable=True, alias='promo-code')
+        promotion_code = string(nullable=True, alias='promo-code')
 
     class Published(Schema):
-        promotion_code = field.string(nullable=True)
+        promotion_code = string(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -401,16 +401,16 @@ def test_v1_expression_renderer_passes_field_aliases_to_spark() -> None:
 
 def test_v1_expression_renderer_renders_nested_struct_construction() -> None:
     class Address(Schema):
-        city = field.string(nullable=False)
-        postal_code = field.string(nullable=False)
+        city = string(nullable=False)
+        postal_code = string(nullable=False)
 
     class Raw(Schema):
-        id = field.string(nullable=False)
-        shipping = field.struct(Address, nullable=True)
+        id = string(nullable=False)
+        shipping = struct(Address, nullable=True)
 
     class Published(Schema):
-        id = field.string(nullable=False)
-        shipping = field.struct(Address, nullable=False)
+        id = string(nullable=False)
+        shipping = struct(Address, nullable=False)
 
     @transform
     class Publish(Transform):
@@ -438,13 +438,13 @@ def test_v1_expression_renderer_renders_nested_struct_construction() -> None:
 
 def test_v1_expression_renderer_escapes_dotted_nested_field_aliases() -> None:
     class Address(Schema):
-        postal_code = field.string(nullable=False, alias='postal.code')
+        postal_code = string(nullable=False, alias='postal.code')
 
     class Raw(Schema):
-        shipping = field.struct(Address, nullable=False)
+        shipping = struct(Address, nullable=False)
 
     class Published(Schema):
-        postal_code = field.string(nullable=False)
+        postal_code = string(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -464,22 +464,22 @@ def test_v1_expression_renderer_escapes_dotted_nested_field_aliases() -> None:
 
 def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> None:
     class Raw(Schema):
-        customer_id = field.string(nullable=False)
-        status = field.string(nullable=True)
-        total = field.integer(nullable=False)
-        tax = field.integer(nullable=False)
-        price = field.integer(nullable=False)
-        quantity = field.integer(nullable=False)
+        customer_id = string(nullable=False)
+        status = string(nullable=True)
+        total = integer(nullable=False)
+        tax = integer(nullable=False)
+        price = integer(nullable=False)
+        quantity = integer(nullable=False)
 
     class Published(Schema):
-        customer_id = field.string(nullable=False)
-        size_tier = field.string(nullable=False)
-        is_big = field.boolean(nullable=False)
-        is_open = field.boolean(nullable=True)
-        is_small = field.boolean(nullable=False)
-        is_at_most_sample = field.boolean(nullable=False)
-        total_with_tax = field.integer(nullable=False)
-        line_total = field.integer(nullable=False)
+        customer_id = string(nullable=False)
+        size_tier = string(nullable=False)
+        is_big = boolean(nullable=False)
+        is_open = boolean(nullable=True)
+        is_small = boolean(nullable=False)
+        is_at_most_sample = boolean(nullable=False)
+        total_with_tax = integer(nullable=False)
+        line_total = integer(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -528,15 +528,15 @@ def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> N
 
 def test_v3_expression_renderer_renders_string_predicates() -> None:
     class Raw(Schema):
-        status = field.string(nullable=True)
+        status = string(nullable=True)
 
     class Published(Schema):
-        contains_new = field.boolean(nullable=True)
-        starts_new = field.boolean(nullable=True)
-        ends_new = field.boolean(nullable=True)
-        matches_new = field.boolean(nullable=True)
-        matches_new_case_insensitive = field.boolean(nullable=True)
-        matches_release = field.boolean(nullable=True)
+        contains_new = boolean(nullable=True)
+        starts_new = boolean(nullable=True)
+        ends_new = boolean(nullable=True)
+        matches_new = boolean(nullable=True)
+        matches_new_case_insensitive = boolean(nullable=True)
+        matches_release = boolean(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -570,12 +570,12 @@ def test_v3_expression_renderer_renders_string_predicates() -> None:
 
 def test_v3_expression_renderer_renders_collection_indexing() -> None:
     class Raw(Schema):
-        tags = field.array(field.string(), contains_null=False, nullable=False)
-        attributes = field.map(field.string(), field.string(), value_contains_null=False, nullable=False)
+        tags = array(string(), contains_null=False, nullable=False)
+        attributes = map(string(), string(), value_contains_null=False, nullable=False)
 
     class Published(Schema):
-        first_tag = field.string(nullable=True)
-        region = field.string(nullable=True)
+        first_tag = string(nullable=True)
+        region = string(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -598,13 +598,13 @@ def test_v3_expression_renderer_renders_collection_indexing() -> None:
 
 def test_v3_expression_renderer_renders_scalar_casts() -> None:
     class Raw(Schema):
-        raw_count = field.string(nullable=True)
-        count = field.integer(nullable=False)
+        raw_count = string(nullable=True)
+        count = integer(nullable=False)
 
     class Published(Schema):
-        count = field.integer(nullable=True)
-        count_text = field.string(nullable=False)
-        try_count = field.integer(nullable=True)
+        count = integer(nullable=True)
+        count_text = string(nullable=False)
+        try_count = integer(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -636,20 +636,20 @@ def test_v3_expression_renderer_renders_scalar_casts() -> None:
 
 def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
     class Raw(Schema):
-        label = field.string(nullable=True)
+        label = string(nullable=True)
 
     class Published(Schema):
-        prefix = field.string(nullable=True)
-        parts = field.array(field.string(), contains_null=False, nullable=True)
-        normalized = field.string(nullable=True)
-        extracted = field.string(nullable=True)
-        character_count = field.integer(nullable=True)
-        title = field.string(nullable=True)
-        backward = field.string(nullable=True)
-        normalized_letters = field.string(nullable=True)
-        dash_position = field.integer(nullable=True)
-        distance = field.integer(nullable=True)
-        joined = field.string(nullable=False)
+        prefix = string(nullable=True)
+        parts = array(string(), contains_null=False, nullable=True)
+        normalized = string(nullable=True)
+        extracted = string(nullable=True)
+        character_count = integer(nullable=True)
+        title = string(nullable=True)
+        backward = string(nullable=True)
+        normalized_letters = string(nullable=True)
+        dash_position = integer(nullable=True)
+        distance = integer(nullable=True)
+        joined = string(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -692,14 +692,14 @@ def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
 
 def test_v3_expression_renderer_renders_temporal_sql_helpers() -> None:
     class Raw(Schema):
-        start_date = field.date(nullable=False)
-        end_date = field.date(nullable=True)
-        recorded_at = field.timestamp(nullable=True)
+        start_date = date(nullable=False)
+        end_date = date(nullable=True)
+        recorded_at = timestamp(nullable=True)
 
     class Published(Schema):
-        due_date = field.date(nullable=False)
-        elapsed_days = field.integer(nullable=True)
-        month = field.timestamp(nullable=True)
+        due_date = date(nullable=False)
+        elapsed_days = integer(nullable=True)
+        month = timestamp(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -726,13 +726,13 @@ def test_v3_expression_renderer_renders_temporal_sql_helpers() -> None:
 
 def test_v3_expression_renderer_renders_numeric_sql_helpers() -> None:
     class Raw(Schema):
-        amount = field.decimal(precision=12, scale=2, nullable=True)
+        amount = decimal(precision=12, scale=2, nullable=True)
 
     class Published(Schema):
-        absolute_amount = field.decimal(precision=12, scale=2, nullable=True)
-        rounded_amount = field.decimal(precision=12, scale=1, nullable=True)
-        ceiling = field.decimal(precision=11, scale=0, nullable=True)
-        floor = field.decimal(precision=11, scale=0, nullable=True)
+        absolute_amount = decimal(precision=12, scale=2, nullable=True)
+        rounded_amount = decimal(precision=12, scale=1, nullable=True)
+        ceiling = decimal(precision=11, scale=0, nullable=True)
+        floor = decimal(precision=11, scale=0, nullable=True)
 
     @transform
     class Publish(Transform):
@@ -761,13 +761,13 @@ def test_v3_expression_renderer_renders_numeric_sql_helpers() -> None:
 
 def test_v3_expression_renderer_renders_predicate_sql_helpers() -> None:
     class Raw(Schema):
-        label = field.string(nullable=True)
-        score = field.double(nullable=True)
+        label = string(nullable=True)
+        score = double(nullable=True)
 
     class Published(Schema):
-        missing_label = field.boolean(nullable=False)
-        present_label = field.boolean(nullable=False)
-        invalid_score = field.boolean(nullable=False)
+        missing_label = boolean(nullable=False)
+        present_label = boolean(nullable=False)
+        invalid_score = boolean(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -794,13 +794,13 @@ def test_v3_expression_renderer_renders_predicate_sql_helpers() -> None:
 
 def test_v3_expression_renderer_renders_struct_get_field() -> None:
     class Address(Schema):
-        city = field.string(nullable=False, alias='city-name')
+        city = string(nullable=False, alias='city-name')
 
     class Raw(Schema):
-        address = field.struct(Address, nullable=True)
+        address = struct(Address, nullable=True)
 
     class Published(Schema):
-        city = field.string(nullable=True)
+        city = string(nullable=True)
 
     @transform
     class Publish(Transform):

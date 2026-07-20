@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
-from datetime import date
+from datetime import date as calendar_date
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -22,7 +22,7 @@ from examples.streams.transforms.passages import PreparePassages
 from examples.streams.transforms.penalties import CorrelatePenalties
 from examples.streams.transforms.progress import BuildGateProgress
 from structure import Schema, StreamingMode, Transform, input, output, special, transform
-from structure.platform.pyspark import field, types
+from structure.platform.pyspark import *
 
 pytestmark = pytest.mark.integration
 
@@ -34,11 +34,11 @@ SCHEMA_MODULES = {
 
 
 class StreamUdfRaw(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 class StreamUdfClean(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 @transform(streaming_compatible=True)
@@ -90,7 +90,7 @@ def test_caller_owned_file_streams_run_online_and_generated_transforms(spark, tm
             _write_json(calls_path / "calls.json", [_call("c-1")])
 
             races = spark.createDataFrame(
-                [("r-1", "River Run", date(2026, 7, 12), "Truckee", "Boca", "Sierra", "USA")],
+                [("r-1", "River Run", calendar_date(2026, 7, 12), "Truckee", "Boca", "Sierra", "USA")],
                 race_schemas.RACE_SCHEMA,
             )
             paddlers = spark.createDataFrame(

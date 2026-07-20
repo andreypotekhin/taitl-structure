@@ -199,7 +199,7 @@ Rules:
   the frame named by its input lane rather than the immediately preceding step.
 - Input parameter order follows source input declaration order.
 - A source transform instance is created only when at least one hook exists.
-- Hook-free generated classes must omit the source transform import and `_impl` field.
+- Hook-free generated classes must omit the source transform import and `_impl`
 - The generated class must not inherit from the source transform class.
 - Generated classes are owned by the compiler. Users must not subclass or edit generated classes.
 

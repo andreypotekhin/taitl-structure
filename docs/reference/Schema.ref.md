@@ -605,7 +605,7 @@ Override rules:
 
 - Override replacement is whole-field replacement.
 - Override position is the inherited field position.
-- Type, nullability, alias, metadata, and description all come from the overriding field.
+- Type, nullability, alias, metadata, and description all come from the overriding
 - Metadata is not merged.
 - Description is not merged.
 - Overriding a field with a non-field value is rejected.
@@ -752,7 +752,7 @@ Rules:
 
 ### FieldDef Rules
 
-`FieldDef` represents one effective schema field.
+`FieldDef` represents one effective schema
 
 Rules:
 
@@ -762,10 +762,10 @@ Rules:
 - `alias` is an optional Spark column name. If absent, the Spark column name is `name`.
 - `metadata` is immutable and defaults to empty.
 - `description` is optional.
-- `declaring_schema` is the schema class that declared the effective field.
-- `owning_schema` is the schema whose effective field list contains this field.
+- `declaring_schema` is the schema class that declared the effective
+- `owning_schema` is the schema whose effective field list contains this
 - `inherited` is true when `declaring_schema != owning_schema`.
-- `overrides` points to the overridden field origin when the field replaces an inherited field.
+- `overrides` points to the overridden field origin when the field replaces an inherited
 
 Field order is part of the schema contract. Generated Spark schemas and projections must use `SchemaDef.fields` order.
 Python constructors, symbolic field access, diagnostics, and compiler checks use `name`; Spark schemas, validation,
@@ -1130,7 +1130,7 @@ Field:
   total
 
 Problem:
-  The output constructor does not provide a value for the target field.
+  The output constructor does not provide a value for the target
 
 Use:
   Add total=... to the constructor or copy it through OrderNormalized.base(source) when compatible.

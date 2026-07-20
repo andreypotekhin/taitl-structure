@@ -2,7 +2,7 @@ import pytest
 
 import structure
 from structure import *
-from structure.platform.pyspark import field, types
+from structure.platform.pyspark import *
 
 
 def test_hooks_attach_to_declared_step_method_boundaries(orders_recipe) -> None:
@@ -44,7 +44,7 @@ def test_hooks_record_target_backend_metadata() -> None:
     """Hooks carry v1 target_backend metadata through the PySpark recipe."""
 
     class Row(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     @transform
     class NormalizeRows(Transform):
@@ -74,7 +74,7 @@ def test_non_pyspark_only_hook_target_fails_before_runtime() -> None:
     """V1 accepts hook target syntax, but active execution is still PySpark only."""
 
     class Row(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     @transform
     class NormalizeRows(Transform):
@@ -109,7 +109,7 @@ def test_raw_methods_attach_in_declaration_order_after_the_preceding_step() -> N
     """I can place a raw native-frame method between normal transform steps."""
 
     class Row(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     @transform
     class NormalizeRows(Transform):
@@ -138,7 +138,7 @@ def test_raw_before_the_first_step_replaces_its_source_lane() -> None:
     """A leading raw method runs before the first source-ordered step."""
 
     class Row(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     @transform
     class NormalizeRows(Transform):
@@ -163,7 +163,7 @@ def test_raw_pipe_binds_original_input_and_materialized_output() -> None:
     """I can select an original input and a current output without an inputs namespace."""
 
     class Row(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     @transform
     class PublishRows(Transform):
@@ -189,7 +189,7 @@ def test_raw_pipe_rejects_an_unmaterialized_output_parameter() -> None:
     """I get a useful error when an output argument has not been produced yet."""
 
     class Row(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     @transform
     class PublishRows(Transform):

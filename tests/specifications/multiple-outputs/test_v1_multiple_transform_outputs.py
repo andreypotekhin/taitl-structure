@@ -4,31 +4,31 @@ import pytest
 
 from structure import *
 from structure.core.runtime.api import StructureSession, TransformResult
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 
 
 class Raw(Schema):
-    id = field.string(nullable=False)
-    customer_id = field.string(nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=True)
 
 
 class Normalized(Schema):
-    id = field.string(nullable=False)
-    customer_id = field.string(nullable=True)
+    id = string(nullable=False)
+    customer_id = string(nullable=True)
 
 
 class Accepted(Schema):
-    id = field.string(nullable=False)
-    status = field.string(nullable=False)
+    id = string(nullable=False)
+    status = string(nullable=False)
 
 
 class Rejected(Schema):
-    id = field.string(nullable=False)
-    reason = field.string(nullable=False)
+    id = string(nullable=False)
+    reason = string(nullable=False)
 
 
 class Published(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 def test_v1_multi_output_methods_write_source_order_lanes() -> None:
@@ -44,22 +44,16 @@ def test_v1_multi_output_methods_write_source_order_lanes() -> None:
 
         @step(output=accepted_lane)
         def accept(self, row: Normalized) -> Accepted:
-            from structure import where
-
             where(cast(Any, row.customer_id).is_not_null())
             return Accepted(id=row.id, status="accepted")
 
         @step(input=accepted_lane, output=accepted)
         def keep_accepted(self, row: Accepted) -> Accepted:
-            from structure import where
-
             where(cast(Any, row.status) == "accepted")
             return Accepted(id=row.id, status=row.status)
 
         @step(output=rejected)
         def reject(self, row: Normalized) -> Rejected:
-            from structure import where
-
             where(cast(Any, row.customer_id).is_null())
             return Rejected(id=row.id, reason="missing customer")
 

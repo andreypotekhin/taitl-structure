@@ -1,5 +1,9 @@
+from builtins import float as scalar_float
+from builtins import max as scalar_max
+
 from examples.math.schemas.matrices import LeftMatrixCell, MatrixCell, MatrixVectorCell, RightMatrixCell, VectorCell
-from structure import Transform, group_by, inner_join, input, lane, output, raw, step, sum
+from structure import Transform, input, lane, output, raw, step
+from structure.platform.pyspark import *
 
 
 class MultiplyMatrices(Transform):
@@ -92,7 +96,7 @@ def _matrix_rows(frame):
         if matrix["rows"] != rows or matrix["columns"] != columns:
             matrices[matrix_id] = None
             continue
-        matrix["values"][(int(row.i), int(row.j))] = float(row.x)
+        matrix["values"][(int(row.i), int(row.j))] = scalar_float(row.x)
     return matrices
 
 
@@ -106,9 +110,9 @@ def _inverse(matrix):
     if len(values) != rows * columns or any((i, j) not in values for i in range(rows) for j in range(columns)):
         return None, "matrix cells are incomplete"
     original = [[values[(i, j)] for j in range(columns)] for i in range(rows)]
-    work = [row[:] + [float(i == j) for j in range(rows)] for i, row in enumerate(original)]
+    work = [row[:] + [scalar_float(i == j) for j in range(rows)] for i, row in enumerate(original)]
     for pivot in range(rows):
-        selected = max(range(pivot, rows), key=lambda row: abs(work[row][pivot]))
+        selected = scalar_max(range(pivot, rows), key=lambda row: abs(work[row][pivot]))
         if work[selected][pivot] == 0:
             return None, "matrix is singular"
         work[pivot], work[selected] = work[selected], work[pivot]

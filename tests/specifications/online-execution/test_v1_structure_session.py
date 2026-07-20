@@ -9,6 +9,7 @@ from uuid import uuid4
 import pytest
 
 from structure import *
+from structure.platform.pyspark import *
 
 
 @contextmanager
@@ -342,19 +343,17 @@ def test_v1_compiled_artifact_does_not_capture_bound_inputs() -> None:
 
 
 def test_v1_pipeline_reuses_shared_compiled_artifact(monkeypatch) -> None:
-    from structure import Schema, Transform, input, output, transform
     from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
     from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
-    from structure.platform.pyspark import field
 
     class Raw(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     class Normalized(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     class Published(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     @transform
     class NormalizeOrders(Transform):

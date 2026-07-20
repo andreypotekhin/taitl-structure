@@ -1,3 +1,9 @@
-from structure.core.compiler.artifacts.model.GeneratedFileChange import GeneratedFileChange
+from __future__ import annotations
 
-__all__ = ["GeneratedFileChange"]
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class GeneratedFileChange:
+    path: str
+    status: str

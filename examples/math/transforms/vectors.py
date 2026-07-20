@@ -1,17 +1,6 @@
 from examples.math.schemas.vectors import VectorEvent, VectorResult
-from structure import (
-    StreamingMode,
-    Transform,
-    arr_aggregate,
-    arr_transform,
-    arr_zip_with,
-    input,
-    output,
-    size,
-    sqrt,
-    transform,
-    when,
-)
+from structure import StreamingMode, Transform, input, output, transform
+from structure.platform.pyspark import *
 
 
 @transform(streaming_compatible=True)

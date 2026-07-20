@@ -52,7 +52,7 @@ def _write_project(root: Path) -> None:
     (package / "schemas.py").write_text(
         "\n".join(
             [
-                "from structure import Schema",
+                "from structure import *",
                 "from structure.platform.pyspark import *",
                 "",
                 "class OrderRaw(Schema):",
@@ -70,7 +70,8 @@ def _write_project(root: Path) -> None:
     (package / "transforms.py").write_text(
         "\n".join(
             [
-                "from structure import Transform, coalesce, input, output, to_decimal, transform, where",
+                "from structure import *",
+                "from structure.platform.pyspark import *",
                 "from orders.schemas import OrderNormalized, OrderRaw",
                 "",
                 "@transform",

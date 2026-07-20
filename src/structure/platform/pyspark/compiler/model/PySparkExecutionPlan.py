@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.core.target.capabilities.model.BackendId import BackendId
+from structure.platform.api.v1.model import BackendId
 from structure.platform.pyspark.compiler.model.PySparkInputRecipe import PySparkInputRecipe
 from structure.platform.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.platform.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe

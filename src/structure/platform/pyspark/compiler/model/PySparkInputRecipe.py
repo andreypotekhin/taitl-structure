@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.core.dsl.model.schemas.Schema import Schema
-from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
+from structure.dsl import Schema, StreamingMode
 from structure.platform.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 

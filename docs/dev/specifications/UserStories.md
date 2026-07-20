@@ -125,7 +125,7 @@ narrower use cases and roadmap features.
   flow remains controlled by source order, lanes, and composition.
 - + As a developer, I can chain step methods by return type and next input type so that schema flow is validated.
 - + As a developer, I can construct an output schema from inherited base schema rows plus explicit overrides so that
-  enrichment transforms do not repeat every inherited field.
+  enrichment transforms do not repeat every inherited
 - + As a developer, I can receive a structured compiler error when source order does not match type flow.
 - + As a developer, I can make ordinary helper methods private with a leading underscore so that they are not treated as step methods.
 
@@ -201,7 +201,7 @@ narrower use cases and roadmap features.
 - + As a developer, I can rely on generated projection rather than Spark `drop(...)` so that output schema is deterministic.
 - + As a developer, I can remove temporary intermediate fields in a later step method so that final output remains clean.
 - + As a developer, I can return `project(source, TargetSchema)` so that same-name compatible fields are copied without
-  repeating every field.
+  repeating every
 - + As a developer, I can return `SchemaClass.project(source)` so that same-name compatible fields are copied while the
   source relation remains explicit.
 - + As a developer, I can still return `project(TargetSchema)` as a compatibility shorthand when the driving row is

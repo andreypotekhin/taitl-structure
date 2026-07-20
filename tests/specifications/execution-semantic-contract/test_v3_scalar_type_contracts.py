@@ -1,4 +1,5 @@
-from datetime import date, datetime
+import datetime
+from builtins import float as scalar_float
 from decimal import Decimal
 from typing import Any, cast
 
@@ -10,7 +11,7 @@ from structure.core.dsl.model.expr.Expression import Expression
 from structure.core.dsl.model.expr.expressions import literal
 from structure.core.dsl.model.types.DecimalType import DecimalType
 from structure.core.dsl.model.types.StructType import StructType
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 
 
 def _expression(type, *, nullable: bool) -> Expression:
@@ -18,90 +19,90 @@ def _expression(type, *, nullable: bool) -> Expression:
 
 
 class CoalesceSource(Schema):
-    amount = field.string(nullable=True)
+    amount = string(nullable=True)
 
 
 class CoalesceTarget(Schema):
-    amount = field.decimal(12, 2, nullable=False)
+    amount = decimal(12, 2, nullable=False)
 
 
 class NullablePredicateSource(Schema):
-    enabled = field.boolean(nullable=True)
-    label = field.string(nullable=True)
+    enabled = boolean(nullable=True)
+    label = string(nullable=True)
 
 
 class RequiredPredicateTarget(Schema):
-    accepted = field.boolean(nullable=False)
+    accepted = boolean(nullable=False)
 
 
 class RequiredDecimalSource(Schema):
-    raw_amount = field.string(nullable=False)
+    raw_amount = string(nullable=False)
 
 
 class RequiredDecimalTarget(Schema):
-    amount = field.decimal(12, 2, nullable=False)
+    amount = decimal(12, 2, nullable=False)
 
 
 class DecimalArithmeticSource(Schema):
-    amount = field.decimal(12, 2, nullable=False)
+    amount = decimal(12, 2, nullable=False)
 
 
 class DecimalArithmeticTarget(Schema):
-    amount = field.decimal(12, 2, nullable=False)
+    amount = decimal(12, 2, nullable=False)
 
 
 class DecimalLiteralTarget(Schema):
-    amount = field.decimal(5, 2, nullable=False)
+    amount = decimal(5, 2, nullable=False)
 
 
 class DecimalWindowSource(Schema):
-    tenant = field.string(nullable=False)
-    sequence = field.long(nullable=False)
-    amount = field.decimal(12, 2, nullable=False)
+    tenant = string(nullable=False)
+    sequence = long(nullable=False)
+    amount = decimal(12, 2, nullable=False)
 
 
 class DecimalWindowTarget(Schema):
-    amount = field.decimal(12, 2, nullable=False)
+    amount = decimal(12, 2, nullable=False)
 
 
 class RequiredWhenTarget(Schema):
-    label = field.string(nullable=False)
+    label = string(nullable=False)
 
 
 class RequiredLookupSource(Schema):
-    labels = field.array(field.string(), contains_null=False, nullable=False)
+    labels = array(string(), contains_null=False, nullable=False)
 
 
 class RequiredLookupTarget(Schema):
-    label = field.string(nullable=False)
+    label = string(nullable=False)
 
 
 class RequiredNestedDetails(Schema):
-    label = field.string(nullable=True)
+    label = string(nullable=True)
 
 
 class RequiredNestedSource(Schema):
-    details = field.struct(RequiredNestedDetails, nullable=False)
+    details = struct(RequiredNestedDetails, nullable=False)
 
 
 class RequiredUdfSource(Schema):
-    label = field.string(nullable=False)
+    label = string(nullable=False)
 
 
 class RequiredNestedOutputDetails(Schema):
-    label = field.string(nullable=False)
+    label = string(nullable=False)
 
 
 class RequiredNestedOutput(Schema):
-    details = field.struct(RequiredNestedOutputDetails, nullable=False)
+    details = struct(RequiredNestedOutputDetails, nullable=False)
 
 
 class RequiredNestedIntegerDetails(Schema):
-    amount = field.integer(nullable=False)
+    amount = integer(nullable=False)
 
 
 class RequiredNestedIntegerOutput(Schema):
-    details = field.struct(RequiredNestedIntegerDetails, nullable=False)
+    details = struct(RequiredNestedIntegerDetails, nullable=False)
 
 
 @transform
@@ -114,17 +115,17 @@ class DecimalFallback(Transform):
 
 
 class TemporalSource(Schema):
-    tenant = field.string(nullable=False)
-    sequence = field.long(nullable=False)
-    observed_on = field.date(nullable=True)
-    observed_at = field.timestamp(nullable=True)
+    tenant = string(nullable=False)
+    sequence = long(nullable=False)
+    observed_on = date(nullable=True)
+    observed_at = timestamp(nullable=True)
 
 
 class TemporalTarget(Schema):
-    observed_on = field.date(nullable=False)
-    observed_at = field.timestamp(nullable=False)
-    previous_observed_on = field.date(nullable=True)
-    next_observed_at = field.timestamp(nullable=True)
+    observed_on = date(nullable=False)
+    observed_at = timestamp(nullable=False)
+    previous_observed_on = date(nullable=True)
+    next_observed_at = timestamp(nullable=True)
 
 
 @transform
@@ -134,19 +135,19 @@ class TemporalFallback(Transform):
 
     def normalize(self, row: TemporalSource) -> TemporalTarget:
         return TemporalTarget(
-            observed_on=coalesce(row.observed_on, date(2026, 7, 13)),
-            observed_at=coalesce(row.observed_at, datetime(2026, 7, 13, 12, 30)),
+            observed_on=coalesce(row.observed_on, datetime.date(2026, 7, 13)),
+            observed_at=coalesce(row.observed_at, datetime.datetime(2026, 7, 13, 12, 30)),
             previous_observed_on=lag(
                 row.observed_on,
                 partition_by=row.tenant,
                 order_by=row.sequence,
-                default=date(2026, 7, 12),
+                default=datetime.date(2026, 7, 12),
             ),
             next_observed_at=lead(
                 row.observed_at,
                 partition_by=row.tenant,
                 order_by=row.sequence,
-                default=datetime(2026, 7, 13, 12, 31),
+                default=datetime.datetime(2026, 7, 13, 12, 31),
             ),
         )
 
@@ -402,7 +403,7 @@ def test_unary_deterministic_numeric_helpers_require_numeric_values(function) ->
         function("not numeric")
 
 
-@pytest.mark.parametrize("base", [True, 0, 1, -2, float("inf"), float("nan"), "ten"])
+@pytest.mark.parametrize("base", [True, 0, 1, -2, scalar_float("inf"), scalar_float("nan"), "ten"])
 def test_log_requires_a_valid_literal_base(base: object) -> None:
     with pytest.raises(TypeError, match=r"log\(\.\.\.\) base must be a positive numeric literal other than 1"):
         log(1.0, base=base)  # type: ignore[arg-type]
@@ -682,15 +683,15 @@ def test_division_modulo_and_negation_have_typed_null_propagating_results() -> N
 
 def test_declared_struct_mutation_requires_an_exact_result_schema() -> None:
     class Source(Schema):
-        label = field.string(nullable=True)
-        rank = field.integer(nullable=False)
+        label = string(nullable=True)
+        rank = integer(nullable=False)
 
     class Replaced(Schema):
-        label = field.string(nullable=False)
-        rank = field.integer(nullable=False)
+        label = string(nullable=False)
+        rank = integer(nullable=False)
 
     class Dropped(Schema):
-        label = field.string(nullable=True)
+        label = string(nullable=True)
 
     value = _expression(types.struct(Source), nullable=True)
 
@@ -830,7 +831,7 @@ def test_comparisons_require_compatible_and_orderable_operands() -> None:
 
     assert raised.value.diagnostic.code == "DSL-E0402"
 
-    assert (_expression(types.date(), nullable=False) < datetime(2026, 7, 15)).type is not None
+    assert (_expression(types.date(), nullable=False) < datetime.datetime(2026, 7, 15)).type is not None
 
 
 @pytest.mark.parametrize("helper", [lower, trim, upper])
@@ -905,7 +906,7 @@ def test_predicates_propagate_nullable_sql_three_valued_logic() -> None:
     assert (~nullable_boolean).nullable is True
     assert non_null_string.isin("active", "held").nullable is False
     assert non_null_string.isin("active", None).nullable is True
-    assert event_time_between(nullable_timestamp, datetime(2026, 7, 13), upper="1 hour").nullable is True
+    assert event_time_between(nullable_timestamp, datetime.datetime(2026, 7, 13), upper="1 hour").nullable is True
 
 
 @pytest.mark.parametrize(

@@ -8,7 +8,7 @@ class ArrayType(StructureType):
     element: StructureType
     contains_null: bool
 
-    def __init__(self, element: StructureType, *, contains_null: bool = True) -> None:
+    def __init__(self, element: StructureType, *, contains_null: object = True) -> None:
         if not isinstance(element, StructureType):
             raise TypeError("Array(...) requires an explicit Structure type object such as String()")
         if not isinstance(contains_null, bool):

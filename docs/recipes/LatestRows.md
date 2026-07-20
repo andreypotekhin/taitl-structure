@@ -26,8 +26,8 @@ Keep the input contract broad enough to represent the feed and make the output c
 consumers receive.
 
 ```python
-from structure import *
-from structure.platform.pyspark import long, string
+from structure import Schema, Transform, input, output, transform
+from structure.platform.pyspark import *
 
 
 class AccountEvent(Schema):
@@ -74,7 +74,20 @@ an unreviewable `dropDuplicates(...)` call.
 Pass a DataFrame matching `AccountEvent` to the transform and retrieve the named output.
 
 ```python
-from structure import *
+from structure import (
+    Schema,
+    StructureConfig,
+    StructureSession,
+    StructureTools,
+    Transform,
+    input,
+    lane,
+    output,
+    raw,
+    special,
+    step,
+    transform,
+)
 
 
 session = StructureSession(spark=spark)

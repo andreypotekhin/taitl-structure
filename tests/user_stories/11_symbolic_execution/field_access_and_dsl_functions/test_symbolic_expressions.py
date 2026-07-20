@@ -3,7 +3,7 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.platform.pyspark import field, types
+from structure.platform.pyspark import *
 
 
 def test_field_access_produces_symbolic_projection_expressions(orders_plan) -> None:
@@ -54,10 +54,10 @@ def test_alias_field_access_uses_spark_column_and_preserves_python_name() -> Non
     """Aliased fields keep Python names while referencing Spark columns."""
 
     class Raw(Schema):
-        promotion_code = field.string(nullable=True, alias='promo-code')
+        promotion_code = string(nullable=True, alias='promo-code')
 
     class Published(Schema):
-        promotion_code = field.string(nullable=True)
+        promotion_code = string(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -84,10 +84,10 @@ def test_unsupported_python_control_flow_is_rejected() -> None:
     """I can have unsupported Python operations rejected."""
 
     class Raw(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     class Published(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     @transform
     class BadBoolean(Transform):
@@ -110,22 +110,22 @@ def test_plain_python_expression_extensions_are_symbolic() -> None:
     """I can use common Python expression forms for compiler-visible derived fields."""
 
     class Raw(Schema):
-        customer_id = field.string(nullable=False)
-        status = field.string(nullable=True)
-        total = field.integer(nullable=False)
-        tax = field.integer(nullable=False)
-        price = field.integer(nullable=False)
-        quantity = field.integer(nullable=False)
+        customer_id = string(nullable=False)
+        status = string(nullable=True)
+        total = integer(nullable=False)
+        tax = integer(nullable=False)
+        price = integer(nullable=False)
+        quantity = integer(nullable=False)
 
     class Published(Schema):
-        customer_id = field.string(nullable=False)
-        size_tier = field.string(nullable=False)
-        is_big = field.boolean(nullable=False)
-        is_medium = field.boolean(nullable=False)
-        is_open = field.boolean(nullable=True)
-        is_small = field.boolean(nullable=False)
-        total_with_tax = field.integer(nullable=False)
-        line_total = field.integer(nullable=False)
+        customer_id = string(nullable=False)
+        size_tier = string(nullable=False)
+        is_big = boolean(nullable=False)
+        is_medium = boolean(nullable=False)
+        is_open = boolean(nullable=True)
+        is_small = boolean(nullable=False)
+        total_with_tax = integer(nullable=False)
+        line_total = integer(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -168,10 +168,10 @@ def test_where_requires_boolean_expression() -> None:
     """Filters reject non-boolean expressions before target lowering."""
 
     class Raw(Schema):
-        total = field.integer(nullable=False)
+        total = integer(nullable=False)
 
     class Published(Schema):
-        total = field.integer(nullable=False)
+        total = integer(nullable=False)
 
     @transform
     class BadFilter(Transform):
@@ -193,10 +193,10 @@ def test_variadic_where_records_the_same_order_as_serial_where_calls() -> None:
     """I can pass serial filter predicates to one where(...) call."""
 
     class Raw(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     class Published(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -215,10 +215,10 @@ def test_variadic_where_records_the_same_order_as_serial_where_calls() -> None:
 
 def test_relation_where_accepts_the_same_variadic_predicates_as_the_top_level_helper() -> None:
     class Raw(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     class Published(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -237,10 +237,10 @@ def test_relation_where_accepts_the_same_variadic_predicates_as_the_top_level_he
 
 def test_row_project_accepts_the_same_schema_target_as_the_top_level_helper() -> None:
     class Raw(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     class Published(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -260,10 +260,10 @@ def test_membership_predicates_require_values() -> None:
     """Membership predicates need at least one candidate value."""
 
     class Raw(Schema):
-        status = field.string(nullable=False)
+        status = string(nullable=False)
 
     class Published(Schema):
-        known = field.boolean(nullable=False)
+        known = boolean(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -284,13 +284,13 @@ def test_string_predicates_are_typed_symbolic_expressions() -> None:
     """I can express string matching without a raw SQL expression."""
 
     class Raw(Schema):
-        status = field.string(nullable=True)
+        status = string(nullable=True)
 
     class Published(Schema):
-        has_new = field.boolean(nullable=True)
-        is_new = field.boolean(nullable=True)
-        is_new_case_insensitive = field.boolean(nullable=True)
-        has_release_number = field.boolean(nullable=True)
+        has_new = boolean(nullable=True)
+        is_new = boolean(nullable=True)
+        is_new_case_insensitive = boolean(nullable=True)
+        has_release_number = boolean(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -322,10 +322,10 @@ def test_string_predicates_require_string_expressions() -> None:
     """I get a compile diagnostic instead of a Spark type error for invalid string matching."""
 
     class Raw(Schema):
-        count = field.integer(nullable=False)
+        count = integer(nullable=False)
 
     class Published(Schema):
-        matched = field.boolean(nullable=False)
+        matched = boolean(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -346,12 +346,12 @@ def test_collection_indexing_is_typed_and_symbolic() -> None:
     """I can read an array item or map value without dropping into a raw hook."""
 
     class Raw(Schema):
-        tags = field.array(field.string(), contains_null=False, nullable=False)
-        attributes = field.map(field.string(), field.string(), value_contains_null=False, nullable=False)
+        tags = array(string(), contains_null=False, nullable=False)
+        attributes = map(string(), string(), value_contains_null=False, nullable=False)
 
     class Published(Schema):
-        first_tag = field.string(nullable=True)
-        region = field.string(nullable=True)
+        first_tag = string(nullable=True)
+        region = string(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -377,10 +377,10 @@ def test_collection_indexing_requires_a_matching_collection_and_key_type() -> No
     """I get compile diagnostics for invalid collection indexing instead of a Spark runtime error."""
 
     class Raw(Schema):
-        status = field.string(nullable=False)
+        status = string(nullable=False)
 
     class Published(Schema):
-        value = field.string(nullable=True)
+        value = string(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -401,13 +401,13 @@ def test_scalar_casts_are_typed_symbolic_expressions() -> None:
     """I can cast a value without hiding its target type in a raw hook."""
 
     class Raw(Schema):
-        raw_count = field.string(nullable=True)
-        count = field.integer(nullable=False)
+        raw_count = string(nullable=True)
+        count = integer(nullable=False)
 
     class Published(Schema):
-        count = field.integer(nullable=True)
-        count_text = field.string(nullable=False)
-        try_count = field.integer(nullable=True)
+        count = integer(nullable=True)
+        count_text = string(nullable=False)
+        try_count = integer(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -447,10 +447,10 @@ def test_scalar_casts_require_structure_scalar_types() -> None:
     """I get a compile diagnostic for an opaque cast target."""
 
     class Raw(Schema):
-        raw_count = field.string(nullable=True)
+        raw_count = string(nullable=True)
 
     class Published(Schema):
-        count = field.integer(nullable=True)
+        count = integer(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -471,20 +471,20 @@ def test_string_sql_helpers_are_typed_symbolic_expressions() -> None:
     """I can keep common string shaping and parsing visible to the compiler."""
 
     class Raw(Schema):
-        label = field.string(nullable=True)
+        label = string(nullable=True)
 
     class Published(Schema):
-        prefix = field.string(nullable=True)
-        parts = field.array(field.string(), contains_null=False, nullable=True)
-        normalized = field.string(nullable=True)
-        extracted = field.string(nullable=True)
-        character_count = field.integer(nullable=True)
-        title = field.string(nullable=True)
-        backward = field.string(nullable=True)
-        normalized_letters = field.string(nullable=True)
-        dash_position = field.integer(nullable=True)
-        distance = field.integer(nullable=True)
-        label = field.string(nullable=False)
+        prefix = string(nullable=True)
+        parts = array(string(), contains_null=False, nullable=True)
+        normalized = string(nullable=True)
+        extracted = string(nullable=True)
+        character_count = integer(nullable=True)
+        title = string(nullable=True)
+        backward = string(nullable=True)
+        normalized_letters = string(nullable=True)
+        dash_position = integer(nullable=True)
+        distance = integer(nullable=True)
+        label = string(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -531,10 +531,10 @@ def test_string_sql_helpers_reject_opaque_patterns_and_non_string_inputs() -> No
     """I get compile diagnostics before an invalid SQL helper reaches Spark."""
 
     class Raw(Schema):
-        count = field.integer(nullable=False)
+        count = integer(nullable=False)
 
     class Published(Schema):
-        value = field.string(nullable=True)
+        value = string(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -555,10 +555,10 @@ def test_concat_ws_requires_string_values() -> None:
     """I get a compile diagnostic before invalid concatenation reaches Spark."""
 
     class Raw(Schema):
-        count = field.integer(nullable=False)
+        count = integer(nullable=False)
 
     class Published(Schema):
-        value = field.string(nullable=False)
+        value = string(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -579,10 +579,10 @@ def test_regexp_extract_requires_a_non_negative_group() -> None:
     """I get a compile diagnostic for an invalid capture-group index."""
 
     class Raw(Schema):
-        label = field.string(nullable=False)
+        label = string(nullable=False)
 
     class Published(Schema):
-        value = field.string(nullable=False)
+        value = string(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -603,14 +603,14 @@ def test_temporal_sql_helpers_are_typed_symbolic_expressions() -> None:
     """I can derive dates and time buckets without a raw PySpark hook."""
 
     class Raw(Schema):
-        start_date = field.date(nullable=False)
-        end_date = field.date(nullable=True)
-        recorded_at = field.timestamp(nullable=True)
+        start_date = date(nullable=False)
+        end_date = date(nullable=True)
+        recorded_at = timestamp(nullable=True)
 
     class Published(Schema):
-        due_date = field.date(nullable=False)
-        elapsed_days = field.integer(nullable=True)
-        month = field.timestamp(nullable=True)
+        due_date = date(nullable=False)
+        elapsed_days = integer(nullable=True)
+        month = timestamp(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -642,10 +642,10 @@ def test_temporal_sql_helpers_require_date_or_timestamp_inputs() -> None:
     """I get a compile diagnostic before an invalid temporal helper reaches Spark."""
 
     class Raw(Schema):
-        count = field.integer(nullable=False)
+        count = integer(nullable=False)
 
     class Published(Schema):
-        due_date = field.date(nullable=False)
+        due_date = date(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -666,13 +666,13 @@ def test_numeric_sql_helpers_are_typed_symbolic_expressions() -> None:
     """I can apply deterministic numeric rounding without a raw PySpark hook."""
 
     class Raw(Schema):
-        amount = field.decimal(precision=12, scale=2, nullable=True)
+        amount = decimal(precision=12, scale=2, nullable=True)
 
     class Published(Schema):
-        absolute_amount = field.decimal(precision=12, scale=2, nullable=True)
-        rounded_amount = field.decimal(precision=12, scale=1, nullable=True)
-        ceiling = field.decimal(precision=11, scale=0, nullable=True)
-        floor = field.decimal(precision=11, scale=0, nullable=True)
+        absolute_amount = decimal(precision=12, scale=2, nullable=True)
+        rounded_amount = decimal(precision=12, scale=1, nullable=True)
+        ceiling = decimal(precision=11, scale=0, nullable=True)
+        floor = decimal(precision=11, scale=0, nullable=True)
 
     @transform
     class Publish(Transform):
@@ -705,10 +705,10 @@ def test_numeric_sql_helpers_require_numeric_inputs() -> None:
     """I get a compile diagnostic instead of a Spark type error for an invalid numeric helper."""
 
     class Raw(Schema):
-        label = field.string(nullable=False)
+        label = string(nullable=False)
 
     class Published(Schema):
-        value = field.decimal(precision=11, scale=0, nullable=False)
+        value = decimal(precision=11, scale=0, nullable=False)
 
     @transform
     class Publish(Transform):
@@ -729,13 +729,13 @@ def test_predicate_sql_helpers_are_typed_symbolic_expressions() -> None:
     """I can use function-style null and NaN checks in compiler-visible predicates."""
 
     class Raw(Schema):
-        label = field.string(nullable=True)
-        score = field.double(nullable=True)
+        label = string(nullable=True)
+        score = double(nullable=True)
 
     class Published(Schema):
-        missing_label = field.boolean(nullable=False)
-        present_label = field.boolean(nullable=False)
-        invalid_score = field.boolean(nullable=False)
+        missing_label = boolean(nullable=False)
+        present_label = boolean(nullable=False)
+        invalid_score = boolean(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -764,10 +764,10 @@ def test_isnan_requires_a_floating_point_expression() -> None:
     """I get a compile diagnostic when NaN cannot exist in the source type."""
 
     class Raw(Schema):
-        count = field.integer(nullable=False)
+        count = integer(nullable=False)
 
     class Published(Schema):
-        invalid = field.boolean(nullable=False)
+        invalid = boolean(nullable=False)
 
     @transform
     class Publish(Transform):
@@ -788,13 +788,13 @@ def test_struct_get_field_is_a_typed_symbolic_expression() -> None:
     """I can read a Struct field by its declared name without a raw Column escape hatch."""
 
     class Address(Schema):
-        city = field.string(nullable=False, alias='city-name')
+        city = string(nullable=False, alias='city-name')
 
     class Raw(Schema):
-        address = field.struct(Address, nullable=True)
+        address = struct(Address, nullable=True)
 
     class Published(Schema):
-        city = field.string(nullable=True)
+        city = string(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -816,13 +816,13 @@ def test_struct_get_field_rejects_unknown_fields() -> None:
     """I get a compiler diagnostic when a declared Struct does not contain the requested field."""
 
     class Address(Schema):
-        city = field.string(nullable=False)
+        city = string(nullable=False)
 
     class Raw(Schema):
-        address = field.struct(Address, nullable=False)
+        address = struct(Address, nullable=False)
 
     class Published(Schema):
-        city = field.string(nullable=True)
+        city = string(nullable=True)
 
     @transform
     class Publish(Transform):
@@ -843,14 +843,14 @@ def test_lookup_join_requires_boolean_expression() -> None:
     """Join predicates reject non-boolean expressions before target lowering."""
 
     class Raw(Schema):
-        id = field.string(nullable=False)
-        total = field.integer(nullable=False)
+        id = string(nullable=False)
+        total = integer(nullable=False)
 
     class Lookup(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     class Published(Schema):
-        id = field.string(nullable=False)
+        id = string(nullable=False)
 
     @transform
     class BadJoin(Transform):
@@ -873,10 +873,10 @@ def test_bare_when_requires_otherwise() -> None:
     """A conditional expression is complete only after otherwise(...)."""
 
     class Raw(Schema):
-        total = field.integer(nullable=False)
+        total = integer(nullable=False)
 
     class Published(Schema):
-        size_tier = field.string(nullable=False)
+        size_tier = string(nullable=False)
 
     @transform
     class BadWhen(Transform):

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from structure.core.dsl.model.schemas.Schema import Schema
+from structure.dsl import Schema
 from structure.platform.pyspark.dsl.Expression import Expression
 
 

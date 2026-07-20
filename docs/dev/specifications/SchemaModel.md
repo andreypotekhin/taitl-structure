@@ -68,7 +68,7 @@ the same schema.
 
 ## FieldDef Rules
 
-`FieldDef` represents one effective schema field.
+`FieldDef` represents one effective schema
 
 Rules:
 
@@ -78,10 +78,10 @@ Rules:
 - `alias` is an optional Spark column name. If absent, the Spark column name is `name`.
 - `metadata` is immutable and defaults to empty.
 - `description` is optional.
-- `declaring_schema` is the schema class that declared the effective field.
-- `owning_schema` is the schema whose effective field list contains this field.
+- `declaring_schema` is the schema class that declared the effective
+- `owning_schema` is the schema whose effective field list contains this
 - `inherited` is true when `declaring_schema != owning_schema`.
-- `overrides` points to the overridden field origin when the field replaces an inherited field.
+- `overrides` points to the overridden field origin when the field replaces an inherited
 
 Field order is part of the schema contract. Generated Spark schemas and projections must use `SchemaDef.fields` order.
 Python constructors, symbolic field access, diagnostics, and compiler checks use `name`; Spark schemas, validation,
@@ -163,6 +163,10 @@ Rules:
 Example:
 
 ```python
+from structure import Schema
+from structure.platform.pyspark import *
+
+
 class EntityKeys(Schema):
     id = string(nullable=False)
 
@@ -181,6 +185,10 @@ total  declaring_schema=Order       inherited=False
 ## Schema Declaration Example
 
 ```python
+from structure import Schema
+from structure.platform.pyspark import *
+
+
 class Customer(Schema):
     id = string(nullable=False)
     name = string(nullable=True)

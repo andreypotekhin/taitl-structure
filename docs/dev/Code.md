@@ -3,10 +3,10 @@
 ## Coding Standards
 Coding guidelines: See the Coding section in [Style.md](Style.md).
 
-## Code structure 
+## Code structure
 Our code consist of apps and libraries. Apps are active chunks of the system,
-implementing business logic. Libraries are passive chunks, facilitating 
-reuse, sharing and preventing app code bloat. 
+implementing business logic. Libraries are passive chunks, facilitating
+reuse, sharing and preventing app code bloat.
 
 ### Code structure guidelines
 - Adhere to Logic Oriented Programming principles to keep classes short and focused
@@ -49,7 +49,7 @@ src/structure/
     target/
       capabilities/
       pyspark/
-  
+
   lib/
     app/ - Common App Framework vocabulary
     common/ - common classes, shared constants
@@ -81,10 +81,10 @@ structure/core/[component]/
       Usage: `Compiler.frontend.analyze()(TransformClass)` or `Compiler.frontend.compile()(TransformClass)`.
   - model/ - public app model exposed by endpoint parameters, return types, or API exports.
   - logic/ - app-private implementation classes used by commands and models.
-  
-API modules are main entry points into an app packages, constituting programmatic API for external and inter-app use. 
 
-Common execution flow within an app:  
+API modules are main entry points into an app packages, constituting programmatic API for external and inter-app use.
+
+Common execution flow within an app:
 - API endpoint classes instantiate commands which delegate to private logic classes.
 - Command classes provide an entry point - __call__ method - with specific (preferably, named) arguments.
 
@@ -92,10 +92,10 @@ Lifecycle: Endpoint classes are stateless and long-lived. Commands and other log
 immediately upon use, spanning maximum a single API request.
 
 ### Logic package structure
-Application packages, except, logic/ are flat. 
+Application packages, except, logic/ are flat.
 The logic/ package further splits into deeper package hierarchy:
 
-logic/  
+logic/
   - data/ - data-oriented classes, mostly method-less, for simple transfer of information
     Data classes are normally uses as method arguments to 'package' multiple parameters
   - model/ - app-private domain model. Public model types belong in app-level `model/`.
@@ -105,34 +105,34 @@ logic/
 Command classes are the public action entry points. `logic/` is implementation-only.
 
 ### Action-oriented naming
-You'll notice that we don't have many actor/-or/-er ending classes (AbcLoader, XyzManager). 
+You'll notice that we don't have many actor/-or/-er ending classes (AbcLoader, XyzManager).
 This is replaced by action classes that are typically named verb+noun (e.g. GetProfiles)
-Actor classes, if any, tend to be high-level orchestrating classes or the ones that correspond 
+Actor classes, if any, tend to be high-level orchestrating classes or the ones that correspond
 to project vocabulary (e.g. generator).
 
-### Recursivity of app/logic package structure 
+### Recursivity of app/logic package structure
 App and logic packages can consist of other (sub-) application and logic packages.
 For instance, we can have a `runtime/execution/online/` directory for the direct execution component app.
-In such case, the packages do not follow the above described structure: instead, they are 
-simply a set subpackages. In other words, app/logic hierarchy as a whole 
-definitely adheres to the above structure on leaf packages, and definitely does not 
+In such case, the packages do not follow the above described structure: instead, they are
+simply a set subpackages. In other words, app/logic hierarchy as a whole
+definitely adheres to the above structure on leaf packages, and definitely does not
 in the non-leaf packages.
 
 #### Logic classes instantiation
 Logic classes are typically stateless, receiving all data through their method parameters.
-More rarely, a logic class may have a state (context) initialized by its owning class, 
-with the goal of passing this state down to delegate logic classes, e.g. the ones owned by this 
+More rarely, a logic class may have a state (context) initialized by its owning class,
+with the goal of passing this state down to delegate logic classes, e.g. the ones owned by this
 logic class.
 
 Logic classes are typically instantiated as a static instance, user classes thus can sharing that instance.
-The logic classes provide an entry point - __call__ method - with specific (preferably, named) arguments. 
+The logic classes provide an entry point - __call__ method - with specific (preferably, named) arguments.
 
 #### Inter-app invocations
 Invocations between top-level apps should go through their api endpoints. We have a number of cases
 when apps call other apps' commands directly, but we want to eliminate that pattern.
 
 #### Helper Library
-Any and all code that is general/not pertaining to immediate business use case must be placed/relocated 
+Any and all code that is general/not pertaining to immediate business use case must be placed/relocated
 to Helper Library (`structure.lib.helper`)
 Rationale: we want to keep business classes code slim and focused, and in the same time facilitate reuse
 by creating helpers.

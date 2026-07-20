@@ -1,15 +1,15 @@
 import pytest
 
 from structure import *
-from structure.platform.pyspark import field, types
+from structure.platform.pyspark import *
 
 
 class Raw(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 class Published(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 def test_transform_declares_named_output_contract() -> None:

@@ -1,44 +1,44 @@
 from structure import *
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 from structure.platform.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
 
 
 class RawTags(Schema):
-    id = field.string(nullable=False)
-    tags = field.array(field.string(), contains_null=False, nullable=True)
+    id = string(nullable=False)
+    tags = array(string(), contains_null=False, nullable=True)
 
 
 class CleanTags(Schema):
-    id = field.string(nullable=False)
-    tags = field.array(field.string(), contains_null=False, nullable=True)
+    id = string(nullable=False)
+    tags = array(string(), contains_null=False, nullable=True)
 
 
 class TagSummary(Schema):
-    id = field.string(nullable=False)
-    has_priority = field.boolean(nullable=True)
-    tags = field.array(field.string(), contains_null=False, nullable=True)
-    position = field.long(nullable=True)
+    id = string(nullable=False)
+    has_priority = boolean(nullable=True)
+    tags = array(string(), contains_null=False, nullable=True)
+    position = long(nullable=True)
 
 
 class TagTextSummary(Schema):
-    id = field.string(nullable=False)
-    text = field.string(nullable=True)
+    id = string(nullable=False)
+    text = string(nullable=True)
 
 
 class SortedTags(Schema):
-    id = field.string(nullable=False)
-    tags = field.array(field.string(), contains_null=False, nullable=True)
+    id = string(nullable=False)
+    tags = array(string(), contains_null=False, nullable=True)
 
 
 class RawAttributes(Schema):
-    id = field.string(nullable=False)
-    attributes = field.map(field.string(), field.string(), value_contains_null=True, nullable=True)
+    id = string(nullable=False)
+    attributes = map(string(), string(), value_contains_null=True, nullable=True)
 
 
 class CleanAttributes(Schema):
-    id = field.string(nullable=False)
-    attributes = field.map(field.string(), field.string(), value_contains_null=False, nullable=True)
-    keys = field.array(field.string(), contains_null=False, nullable=True)
+    id = string(nullable=False)
+    attributes = map(string(), string(), value_contains_null=False, nullable=True)
+    keys = array(string(), contains_null=False, nullable=True)
 
 
 @transform

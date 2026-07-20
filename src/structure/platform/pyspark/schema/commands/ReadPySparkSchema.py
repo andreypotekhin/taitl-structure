@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import Any, cast
 
-from structure.core.tools.model import StructureToolError
-from structure.platform.api.v1.model import SchemaInspectionRequest
+from structure.platform.api.v1.model import SchemaInspectionRequest, StructureToolError
 
 
 class ReadPySparkSchema:

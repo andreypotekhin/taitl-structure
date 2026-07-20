@@ -8,6 +8,7 @@ from uuid import uuid4
 from structure import *
 from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOptions as CompilerArtifactOptions
 from structure.core.configuration.api import ConfigError, Configuration
+from structure.platform.pyspark import *
 
 
 @contextmanager

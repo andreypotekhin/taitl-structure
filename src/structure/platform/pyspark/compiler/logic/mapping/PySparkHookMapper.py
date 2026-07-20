@@ -1,4 +1,4 @@
-from structure.core.compiler.ir.model.HookPlan import HookPlan
+from structure.platform.api.v1.model import HookPlan
 from structure.platform.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
 
 

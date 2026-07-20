@@ -1,6 +1,7 @@
 from examples.streams.schemas.events import Passage, RawEvent
 from examples.streams.schemas.race import Gate, Paddler, Race
-from structure import StreamingMode, Transform, drop_duplicates, input, left_join, output, transform, watermark, where
+from structure import StreamingMode, Transform, input, output, transform
+from structure.platform.pyspark import *
 
 
 @transform(streaming_compatible=True)

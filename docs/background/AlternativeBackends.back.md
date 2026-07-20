@@ -256,7 +256,20 @@ docs
 StructureTools should expose the same compatibility engine without requiring shell commands:
 
 ```python
-from structure import *
+from structure import (
+    Schema,
+    StructureConfig,
+    StructureSession,
+    StructureTools,
+    Transform,
+    input,
+    lane,
+    output,
+    raw,
+    special,
+    step,
+    transform,
+)
 
 report = StructureTools.compatibility.check(
     source_roots=["src"],

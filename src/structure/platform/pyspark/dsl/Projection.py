@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.core.dsl.model.schemas.Schema import Schema
+from structure.dsl import Schema
 
 
 @dataclass(frozen=True)

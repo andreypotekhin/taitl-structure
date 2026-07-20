@@ -3,7 +3,7 @@ from typing import cast
 
 from structure import *
 from structure.core.dsl.api import DecimalType
-from structure.platform.pyspark import field, types
+from structure.platform.pyspark import *
 
 
 def test_v1_fixture_imports_without_pyspark() -> None:

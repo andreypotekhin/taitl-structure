@@ -4,66 +4,66 @@ from structure import *
 from structure.core.cli.api import CliApp
 from structure.core.compiler.api import Compiler
 from structure.core.dsl.model.expr.expressions import literal
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 from structure.platform.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
 
 
 class RawOrder(Schema):
-    customer_id = field.string(nullable=False)
-    quantity = field.long(nullable=False)
+    customer_id = string(nullable=False)
+    quantity = long(nullable=False)
 
 
 class CustomerTotal(Schema):
-    customer_id = field.string(nullable=False)
-    order_count = field.long(nullable=False)
-    distinct_customers = field.long(nullable=False)
-    quantity = field.long(nullable=False)
-    min_quantity = field.long(nullable=False)
-    max_quantity = field.long(nullable=False)
-    avg_quantity = field.double(nullable=False)
+    customer_id = string(nullable=False)
+    order_count = long(nullable=False)
+    distinct_customers = long(nullable=False)
+    quantity = long(nullable=False)
+    min_quantity = long(nullable=False)
+    max_quantity = long(nullable=False)
+    avg_quantity = double(nullable=False)
 
 
 class AdvancedCustomerTotal(Schema):
-    customer_id = field.string(nullable=True)
-    paid_quantity = field.long(nullable=True)
-    any_large = field.boolean(nullable=True)
-    quantity_stddev = field.double(nullable=True)
-    exact_quantity_percentile = field.double(nullable=True)
-    quantity_skewness = field.double(nullable=True)
-    quantity_kurtosis = field.double(nullable=True)
-    approximate_customers = field.long(nullable=False)
-    ordered_first_customer = field.string(nullable=True)
-    ordered_last_customer = field.string(nullable=True)
-    customers = field.array(field.string(), contains_null=False, nullable=True)
+    customer_id = string(nullable=True)
+    paid_quantity = long(nullable=True)
+    any_large = boolean(nullable=True)
+    quantity_stddev = double(nullable=True)
+    exact_quantity_percentile = double(nullable=True)
+    quantity_skewness = double(nullable=True)
+    quantity_kurtosis = double(nullable=True)
+    approximate_customers = long(nullable=False)
+    ordered_first_customer = string(nullable=True)
+    ordered_last_customer = string(nullable=True)
+    customers = array(string(), contains_null=False, nullable=True)
 
 
 class RawSale(Schema):
-    region = field.string(nullable=False)
-    customer_id = field.string(nullable=False)
-    quantity = field.long(nullable=False)
+    region = string(nullable=False)
+    customer_id = string(nullable=False)
+    quantity = long(nullable=False)
 
 
 class GroupingSetTotal(Schema):
-    region = field.string(nullable=True)
-    customer_id = field.string(nullable=True)
-    order_count = field.long(nullable=False)
-    grouping_id = field.integer(nullable=False)
-    region_grouped = field.boolean(nullable=False)
-    customer_grouped = field.boolean(nullable=False)
+    region = string(nullable=True)
+    customer_id = string(nullable=True)
+    order_count = long(nullable=False)
+    grouping_id = integer(nullable=False)
+    region_grouped = boolean(nullable=False)
+    customer_grouped = boolean(nullable=False)
 
 
 class GrandTotal(Schema):
-    order_count = field.long(nullable=False)
-    grouping_id = field.integer(nullable=False)
+    order_count = long(nullable=False)
+    grouping_id = integer(nullable=False)
 
 
 class GrandValueTotal(Schema):
-    total_quantity = field.long(nullable=False)
-    average_quantity = field.double(nullable=False)
-    minimum_quantity = field.long(nullable=False)
-    maximum_quantity = field.long(nullable=False)
-    first_customer = field.string(nullable=False)
-    last_customer = field.string(nullable=False)
+    total_quantity = long(nullable=False)
+    average_quantity = double(nullable=False)
+    minimum_quantity = long(nullable=False)
+    maximum_quantity = long(nullable=False)
+    first_customer = string(nullable=False)
+    last_customer = string(nullable=False)
 
 
 @transform
@@ -290,9 +290,9 @@ def test_grouping_sets_traceability_and_explain_name_levels() -> None:
 
 def test_grouping_sets_reject_non_nullable_omitted_key_fields() -> None:
     class BadTotal(Schema):
-        region = field.string(nullable=False)
-        customer_id = field.string(nullable=False)
-        order_count = field.long(nullable=False)
+        region = string(nullable=False)
+        customer_id = string(nullable=False)
+        order_count = long(nullable=False)
 
     @transform
     class BadGroupingSets(Transform):
@@ -313,8 +313,8 @@ def test_grouping_sets_reject_non_nullable_omitted_key_fields() -> None:
 
 def test_having_rejects_pre_aggregate_input_field_reads() -> None:
     class Total(Schema):
-        customer_id = field.string(nullable=False)
-        order_count = field.long(nullable=False)
+        customer_id = string(nullable=False)
+        order_count = long(nullable=False)
 
     @transform
     class BadHaving(Transform):
@@ -336,8 +336,8 @@ def test_having_rejects_pre_aggregate_input_field_reads() -> None:
 
 def test_having_rejects_incompatible_comparison_operands() -> None:
     class Total(Schema):
-        customer_id = field.string(nullable=False)
-        order_count = field.long(nullable=False)
+        customer_id = string(nullable=False)
+        order_count = long(nullable=False)
 
     @transform
     class BadHaving(Transform):
@@ -357,8 +357,8 @@ def test_having_rejects_incompatible_comparison_operands() -> None:
 
 def test_aggregate_filter_rejects_incompatible_comparison_operands() -> None:
     class Total(Schema):
-        customer_id = field.string(nullable=False)
-        order_count = field.long(nullable=True)
+        customer_id = string(nullable=False)
+        order_count = long(nullable=True)
 
     @transform
     class BadAggregateFilter(Transform):
@@ -378,8 +378,8 @@ def test_aggregate_filter_rejects_incompatible_comparison_operands() -> None:
 
 def test_statement_having_binds_to_aggregate_output_scope() -> None:
     class Total(Schema):
-        customer_id = field.string(nullable=False)
-        order_count = field.long(nullable=False)
+        customer_id = string(nullable=False)
+        order_count = long(nullable=False)
 
     @transform
     class StatementHaving(Transform):
@@ -400,8 +400,8 @@ def test_statement_having_binds_to_aggregate_output_scope() -> None:
 @pytest.mark.parametrize("grouping", ("group_by", "rollup", "cube", "grouping_sets"))
 def test_each_grouping_form_accepts_chained_having(grouping: str) -> None:
     class Total(Schema):
-        customer_id = field.string(nullable=True)
-        order_count = field.long(nullable=False)
+        customer_id = string(nullable=True)
+        order_count = long(nullable=False)
 
     @transform
     class ChainedHaving(Transform):
@@ -428,8 +428,8 @@ def test_each_grouping_form_accepts_chained_having(grouping: str) -> None:
 
 def test_bare_and_chained_having_lower_identically() -> None:
     class Total(Schema):
-        customer_id = field.string(nullable=False)
-        order_count = field.long(nullable=False)
+        customer_id = string(nullable=False)
+        order_count = long(nullable=False)
 
     @transform
     class BareHaving(Transform):

@@ -3,41 +3,25 @@ from typing import Any, cast
 import pytest
 from integration.pyspark.support.backend_matrix import session
 
-from structure import (
-    Join,
-    Schema,
-    StreamingMode,
-    TimeWindow,
-    Transform,
-    count,
-    event_time_between,
-    exists,
-    group_by,
-    input,
-    output,
-    rowset_join,
-    session_window,
-    transform,
-    watermark,
-)
-from structure.platform.pyspark import field
+from structure import *
+from structure.platform.pyspark import *
 
 pytestmark = pytest.mark.integration
 
 
 class Event(Schema):
-    id = field.string(nullable=False)
-    event_time = field.timestamp(nullable=False)
+    id = string(nullable=False)
+    event_time = timestamp(nullable=False)
 
 
 class SessionSummary(Schema):
-    bucket = field.struct(TimeWindow, nullable=False)
-    id = field.string(nullable=False)
-    rows = field.long(nullable=False)
+    bucket = struct(TimeWindow, nullable=False)
+    id = string(nullable=False)
+    rows = long(nullable=False)
 
 
 class OuterEvent(Schema):
-    id = field.string(nullable=True)
+    id = string(nullable=True)
 
 
 @transform(streaming_compatible=True)

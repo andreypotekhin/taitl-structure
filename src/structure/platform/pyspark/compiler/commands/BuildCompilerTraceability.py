@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-from structure.core.compiler.traceability.model.CompilerProvenance import CompilerProvenance
-from structure.core.compiler.traceability.model.CompilerTraceability import CompilerTraceability
-from structure.core.compiler.traceability.model.DataflowDependency import DataflowDependency
-from structure.core.compiler.traceability.model.OpaqueBoundary import OpaqueBoundary
+from structure.platform.api.v1.model import CompilerProvenance, CompilerTraceability, DataflowDependency, OpaqueBoundary
 from structure.platform.pyspark.compiler.logic.CompilerDataflowReads import CompilerDataflowReads
 from structure.platform.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.platform.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe

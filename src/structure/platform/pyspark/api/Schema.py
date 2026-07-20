@@ -1,12 +1,12 @@
 from typing import Any, cast
 
-from structure.core.runtime.schemas.model.TransformSchemas import TransformSchemas
 from structure.platform.api.v1 import (
     SchemaAPI,
     SchemaInspectionRequest,
     SchemaValidationRequest,
     TransformSchemaRequest,
 )
+from structure.platform.api.v1.model import TransformSchemas
 from structure.platform.pyspark.api.PySpark import PySpark
 from structure.platform.pyspark.dsl.ValidatePySparkSchemas import ValidatePySparkSchemas
 

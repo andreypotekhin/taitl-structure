@@ -1,5 +1,5 @@
-from structure.core.compiler.ir.model.TransformPlan import TransformPlan
 from structure.platform.api.v1 import CompilerAPI, CompileRequest, PlatformCompilation
+from structure.platform.api.v1.model import TransformPlan
 from structure.platform.pyspark.api.Authoring import PySparkStepBody
 from structure.platform.pyspark.api.PySpark import PySpark
 

@@ -10,7 +10,7 @@ class MapType(StructureType):
     value: StructureType
     value_contains_null: bool
 
-    def __init__(self, key: StructureType, value: StructureType, *, value_contains_null: bool = True) -> None:
+    def __init__(self, key: StructureType, value: StructureType, *, value_contains_null: object = True) -> None:
         if not isinstance(key, StructureType) or not isinstance(value, StructureType):
             raise TypeError("Map(...) requires explicit Structure type objects such as String()")
         if not isinstance(value_contains_null, bool):

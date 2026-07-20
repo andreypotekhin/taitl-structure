@@ -1,6 +1,4 @@
-from structure.core.compiler.ir.model.StepPlan import StepPlan
-from structure.core.target.capabilities.model.BackendCapabilities import BackendCapabilities
-from structure.core.target.capabilities.model.CapabilityRequirement import CapabilityRequirement
+from structure.platform.api.v1.model import BackendCapabilities, CapabilityRequirement, StepPlan
 from structure.platform.pyspark.compiler.logic.mapping.PySparkExpressionMapper import PySparkExpressionMapper
 from structure.platform.pyspark.compiler.logic.mapping.PySparkHookMapper import PySparkHookMapper
 from structure.platform.pyspark.compiler.logic.mapping.PySparkNameMapper import PySparkNameMapper

@@ -8,42 +8,42 @@ from structure.core.dsl.model.types.IntegerType import IntegerType
 from structure.core.dsl.model.types.LongType import LongType
 from structure.core.dsl.model.types.MapType import MapType
 from structure.core.dsl.model.types.StringType import StringType
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 from structure.platform.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
 
 
 class CollectionSource(Schema):
-    id = field.string(nullable=False)
-    tags = field.array(field.string(), contains_null=False, nullable=True)
-    extra_tags = field.array(field.string(), contains_null=False, nullable=True)
-    attributes = field.map(field.string(), field.string(), nullable=True)
-    extra_attributes = field.map(field.string(), field.string(), nullable=True)
+    id = string(nullable=False)
+    tags = array(string(), contains_null=False, nullable=True)
+    extra_tags = array(string(), contains_null=False, nullable=True)
+    attributes = map(string(), string(), nullable=True)
+    extra_attributes = map(string(), string(), nullable=True)
 
 
 class CollectionSummary(Schema):
-    id = field.string(nullable=False)
-    tag_count = field.integer(nullable=True)
-    has_priority = field.boolean(nullable=True)
-    has_region = field.boolean(nullable=True)
-    defaults = field.array(field.string(), contains_null=False, nullable=False)
-    repeated = field.array(field.string(), contains_null=False, nullable=False)
-    unioned = field.array(field.string(), contains_null=False, nullable=True)
-    excluded = field.array(field.string(), contains_null=False, nullable=True)
-    intersected = field.array(field.string(), contains_null=False, nullable=True)
-    first_two_tags = field.array(field.string(), contains_null=False, nullable=True)
-    tag_sequence = field.array(field.integer(), contains_null=False, nullable=False)
-    appended_tags = field.array(field.string(), contains_null=False, nullable=True)
-    prepended_tags = field.array(field.string(), contains_null=False, nullable=True)
-    inserted_tags = field.array(field.string(), contains_null=False, nullable=True)
-    removed_tags = field.array(field.string(), contains_null=False, nullable=True)
-    compacted_tags = field.array(field.string(), contains_null=False, nullable=True)
-    sorted_tags = field.array(field.string(), contains_null=False, nullable=True)
-    reversed_tags = field.array(field.string(), contains_null=False, nullable=True)
-    first_tag = field.string(nullable=True)
-    safe_tag = field.string(nullable=True)
-    region = field.string(nullable=True)
-    safe_region = field.string(nullable=True)
-    merged = field.map(field.string(), field.string(), nullable=True)
+    id = string(nullable=False)
+    tag_count = integer(nullable=True)
+    has_priority = boolean(nullable=True)
+    has_region = boolean(nullable=True)
+    defaults = array(string(), contains_null=False, nullable=False)
+    repeated = array(string(), contains_null=False, nullable=False)
+    unioned = array(string(), contains_null=False, nullable=True)
+    excluded = array(string(), contains_null=False, nullable=True)
+    intersected = array(string(), contains_null=False, nullable=True)
+    first_two_tags = array(string(), contains_null=False, nullable=True)
+    tag_sequence = array(integer(), contains_null=False, nullable=False)
+    appended_tags = array(string(), contains_null=False, nullable=True)
+    prepended_tags = array(string(), contains_null=False, nullable=True)
+    inserted_tags = array(string(), contains_null=False, nullable=True)
+    removed_tags = array(string(), contains_null=False, nullable=True)
+    compacted_tags = array(string(), contains_null=False, nullable=True)
+    sorted_tags = array(string(), contains_null=False, nullable=True)
+    reversed_tags = array(string(), contains_null=False, nullable=True)
+    first_tag = string(nullable=True)
+    safe_tag = string(nullable=True)
+    region = string(nullable=True)
+    safe_region = string(nullable=True)
+    merged = map(string(), string(), nullable=True)
 
 
 @transform

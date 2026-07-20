@@ -1,22 +1,22 @@
 from __future__ import annotations
 
 from structure import *
-from structure.platform.pyspark import field, types
+from structure.platform.pyspark import *
 
 
 class LookupOrder(Schema):
-    id = field.string(nullable=False)
-    product_id = field.string(nullable=False)
+    id = string(nullable=False)
+    product_id = string(nullable=False)
 
 
 class LookupProduct(Schema):
-    id = field.string(nullable=False)
-    name = field.string(nullable=False)
+    id = string(nullable=False)
+    name = string(nullable=False)
 
 
 class LookupEnriched(Schema):
-    id = field.string(nullable=False)
-    product_name = field.string(nullable=True)
+    id = string(nullable=False)
+    product_name = string(nullable=True)
 
 
 @transform

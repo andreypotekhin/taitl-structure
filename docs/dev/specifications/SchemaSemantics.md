@@ -33,6 +33,10 @@ artifacts.
 The canonical v1 declaration form is:
 
 ```python
+from structure import Schema
+from structure.platform.pyspark import *
+
+
 class OrderRaw(Schema):
     id = string(nullable=False)
     customer_id = string(nullable=False)
@@ -207,7 +211,7 @@ Field:
   total
 
 Problem:
-  The output constructor does not provide a value for the target field.
+  The output constructor does not provide a value for the target
 
 Use:
   Add total=... to the constructor or copy it through OrderNormalized.base(source) when compatible.

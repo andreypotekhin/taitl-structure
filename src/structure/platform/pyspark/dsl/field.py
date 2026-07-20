@@ -72,12 +72,12 @@ def _declare(type: StructureType, options: Mapping[str, object]) -> FieldDeclara
 
 def _nested_type(declaration: FieldDeclaration, context: str) -> StructureType:
     if not isinstance(declaration, FieldDeclaration):
-        raise TypeError(f"field.{context}(...) requires a nested field declaration such as field.string()")
+        raise TypeError(f"{context}(...) requires a nested field declaration such as string()")
     if declaration._options:
         if "nullable" in declaration._options:
             option = "contains_null=False" if context == "array" else "value_contains_null=False"
-            raise TypeError(f"field.{context}(...) controls nested nullability with {option}")
-        raise TypeError(f"field.{context}(...) nested declarations may only specify a type")
+            raise TypeError(f"{context}(...) controls nested nullability with {option}")
+        raise TypeError(f"{context}(...) nested declarations may only specify a type")
     return declaration.type
 
 

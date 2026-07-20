@@ -70,6 +70,10 @@ simple filter narrowing. It does not scan data and does not try to prove arbitra
 Field references inherit nullability from their declared schema field:
 
 ```python
+from structure import Schema
+from structure.platform.pyspark import *
+
+
 class OrderRaw(Schema):
     id = string(nullable=False)
     total = string(nullable=True)

@@ -4,6 +4,7 @@ from helpers.fake_pyspark_schema import StringType, StructField, StructType  # t
 from structure import *
 from structure.core.runtime.session.model.StructureSession import StructureSession
 from structure.core.tools.model import StructureToolError
+from structure.platform.pyspark import *
 
 
 def test_generate_requires_exactly_one_source() -> None:

@@ -5,6 +5,7 @@ import pytest
 
 from structure import *
 from structure.core.runtime.session.model.StructureRuntimeError import StructureRuntimeError
+from structure.platform.pyspark import *
 from structure.platform.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.platform.pyspark.execution.logic.PySparkHookInvoker import PySparkHookInvoker
 

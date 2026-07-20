@@ -1,5 +1,6 @@
 from examples.streams.schemas.events import JudgeCall, Passage, Penalty
-from structure import StreamingMode, Transform, event_time_between, inner_join, input, output, transform, watermark
+from structure import StreamingMode, Transform, input, output, transform
+from structure.platform.pyspark import *
 
 
 @transform(streaming_compatible=True)

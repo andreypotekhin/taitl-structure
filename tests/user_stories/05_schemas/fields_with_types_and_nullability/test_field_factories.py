@@ -2,14 +2,10 @@ import pytest
 
 import structure
 from structure import Schema
-from structure import array as expression_array
 from structure.core.dsl.model.types.Array import Array
 from structure.core.dsl.model.types.Decimal import Decimal
 from structure.core.dsl.model.types.Map import Map
 from structure.platform.pyspark import *
-from structure.platform.pyspark import array as field_array
-from structure.platform.pyspark import string as field_string
-from structure.platform.pyspark import types
 
 
 def test_schema_module_wildcard_factories_keep_type_and_nullability_contracts() -> None:
@@ -80,9 +76,9 @@ def test_collection_type_nullability_requires_a_boolean(value: object) -> None:
 
 def test_schema_array_factory_coexists_with_array_expression_helper() -> None:
     class Source(Schema):
-        tags = field_array(field_string(), contains_null=False)
+        tags = array(string(), contains_null=False)
 
-    expression = expression_array("priority", "standard")
+    expression = array("priority", "standard")
 
     assert isinstance(Source._structure_fields["tags"].type, Array)
     assert Source._structure_fields["tags"].type.contains_null is False

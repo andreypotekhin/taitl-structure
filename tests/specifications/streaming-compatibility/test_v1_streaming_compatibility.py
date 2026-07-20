@@ -7,49 +7,49 @@ from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
 from structure.core.dsl.model.types.StructType import StructType
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 
 
 class StreamRaw(Schema):
-    id = field.string(nullable=False)
-    event_time = field.timestamp(nullable=False)
+    id = string(nullable=False)
+    event_time = timestamp(nullable=False)
 
 
 class StreamClean(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 class StreamLookup(Schema):
-    id = field.string(nullable=False)
-    value = field.string(nullable=True)
-    valid_from = field.timestamp(nullable=False)
-    valid_to = field.timestamp(nullable=True)
+    id = string(nullable=False)
+    value = string(nullable=True)
+    valid_from = timestamp(nullable=False)
+    valid_to = timestamp(nullable=True)
 
 
 class StreamEnriched(Schema):
-    id = field.string(nullable=False)
-    value = field.string(nullable=True)
+    id = string(nullable=False)
+    value = string(nullable=True)
 
 
 class StreamOuter(Schema):
-    id = field.string(nullable=True)
-    value = field.string(nullable=True)
+    id = string(nullable=True)
+    value = string(nullable=True)
 
 
 class StreamSummary(Schema):
-    id = field.string(nullable=False)
-    row_count = field.long(nullable=False)
+    id = string(nullable=False)
+    row_count = long(nullable=False)
 
 
 class StreamWindowSummary(Schema):
-    bucket = field.struct(TimeWindow, nullable=False)
-    id = field.string(nullable=False)
-    row_count = field.long(nullable=False)
+    bucket = struct(TimeWindow, nullable=False)
+    id = string(nullable=False)
+    row_count = long(nullable=False)
 
 
 class StreamGlobalWindowSummary(Schema):
-    bucket = field.struct(TimeWindow, nullable=False)
-    row_count = field.long(nullable=False)
+    bucket = struct(TimeWindow, nullable=False)
+    row_count = long(nullable=False)
 
 
 @transform(streaming_compatible=True)

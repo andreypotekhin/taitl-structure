@@ -1,8 +1,7 @@
 from typing import Any, cast
 
-from structure.core.compiler.compileability.streaming_compatibility.model.StreamingReport import StreamingReport
-from structure.core.compiler.traceability.model.CompilerTraceability import CompilerTraceability
 from structure.platform.api.v1 import AnalysisAPI, StreamingAnalysisRequest, TraceabilityRequest
+from structure.platform.api.v1.model import CompilerTraceability, StreamingReport
 from structure.platform.pyspark.api.PySpark import PySpark
 
 

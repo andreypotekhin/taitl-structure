@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.dsl import SchemaMode
 from structure.platform.api.v1 import TransformMemberOrigin
 
 

@@ -43,7 +43,7 @@ dependencies.
 - As a developer, I can specify join type with enums.
 - As a developer, I can specify join hints with enums.
 - As a developer, I can use schema base overlays in enrichment joins so joined fields can be added without repeating
-  every inherited field.
+  every inherited
 - As a developer, I can inspect compiler provenance from source node to IR node to generated PySpark node.
 - As a developer, I can inspect static dataflow traceability for transform, table, and column dependencies inferred from IR.
 - As a developer, I can run `structure compile --fail-on-diff` in CI.

@@ -1,6 +1,7 @@
 from examples.stocks.schemas.indicators import AdvancedIndicator
 from examples.stocks.schemas.market import BenchmarkReturn, DailyReturn
 from structure import *
+from structure.platform.pyspark import *
 
 
 class Advanced(Transform):

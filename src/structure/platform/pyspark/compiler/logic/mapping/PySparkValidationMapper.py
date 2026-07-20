@@ -1,6 +1,5 @@
-from structure.core.compiler.ir.model.StepPlan import StepPlan
-from structure.core.compiler.ir.model.StepResultPlan import StepResultPlan
-from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.dsl import SchemaMode
+from structure.platform.api.v1.model import StepPlan, StepResultPlan
 from structure.platform.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 

@@ -2,22 +2,22 @@ import pytest
 
 from structure import *
 from structure.core.compiler.api import Compiler
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 
 
 class OrderRaw(Schema):
-    id = field.string(nullable=False)
-    product_id = field.string(nullable=False)
+    id = string(nullable=False)
+    product_id = string(nullable=False)
 
 
 class Product(Schema):
-    id = field.string(nullable=False)
-    name = field.string(nullable=False)
+    id = string(nullable=False)
+    name = string(nullable=False)
 
 
 class OrderWithProduct(Schema):
-    id = field.string(nullable=False)
-    product_name = field.string(nullable=True)
+    id = string(nullable=False)
+    product_name = string(nullable=True)
 
 
 def test_multiple_schema_parameters_and_results_compile_in_order() -> None:
@@ -218,14 +218,14 @@ def test_join_relation_can_be_inferred_from_class_input_scope() -> None:
 
 
 class ProductAlias(Schema):
-    id = field.string(nullable=False)
-    name = field.string(nullable=False)
+    id = string(nullable=False)
+    name = string(nullable=False)
 
 
 class OrderWithProductAlias(Schema):
-    id = field.string(nullable=False)
-    product_name = field.string(nullable=True)
-    alias_name = field.string(nullable=True)
+    id = string(nullable=False)
+    product_name = string(nullable=True)
+    alias_name = string(nullable=True)
 
 
 def test_serial_join_relation_can_be_inferred_from_earlier_joined_scope() -> None:

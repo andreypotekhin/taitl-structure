@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from types import MappingProxyType
 
-from structure.core.runtime.schemas.model.TransformSchemas import TransformSchemas
+from structure.platform.api.v1.model import TransformSchemas
 from structure.platform.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.platform.pyspark.schema.commands.MaterializePySparkSchema import MaterializePySparkSchema
 

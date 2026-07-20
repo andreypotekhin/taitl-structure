@@ -13,6 +13,7 @@ import pytest
 from structure import *
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.Transform import Transform
+from structure.platform.pyspark import *
 from structure.platform.pyspark import PySpark
 
 BACKENDS = ("pyspark35", "pyspark40", "spark-connect35", "spark-connect40")

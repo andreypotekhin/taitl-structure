@@ -51,10 +51,25 @@ document owns how those features appear and compose in the public DSL.
 
 ## Public Imports
 
-The public DSL is importable from `structure`:
+Structural declarations are importable from `structure`; a transform imports its PySpark field factories and symbolic
+operations from `structure.platform.pyspark`:
 
 ```python
-from structure import *
+from structure import (
+    Schema,
+    StructureConfig,
+    StructureSession,
+    StructureTools,
+    Transform,
+    input,
+    lane,
+    output,
+    raw,
+    special,
+    step,
+    transform,
+)
+from structure.platform.pyspark import *
 ```
 
 ## Canonical Source Shape
@@ -62,6 +77,10 @@ from structure import *
 The canonical source shape is:
 
 ```python
+from structure import Transform, input, output, special
+from structure.platform.pyspark import *
+
+
 class EnrichOrders(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)

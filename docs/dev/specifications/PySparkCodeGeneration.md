@@ -205,7 +205,7 @@ Rules:
   stable entrypoint and orchestrates those methods in compiler plan order.
 - Input parameter order follows source input declaration order.
 - A source transform instance is created only when at least one hook exists.
-- Hook-free generated classes must omit the source transform import and `_impl` field.
+- Hook-free generated classes must omit the source transform import and `_impl`
 - The generated class must not inherit from the source transform class.
 - Generated classes may inherit from other generated classes to preserve source transform ownership boundaries for
   inherited parent steps. Users must still treat every generated class as compiler-owned.

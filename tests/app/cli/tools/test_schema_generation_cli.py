@@ -17,7 +17,7 @@ def test_schema_generation_cli_prints_generated_source(mocker) -> None:
     )
 
     assert result.exit_code == 0, result.output
-    assert "from structure import Schema" in result.output
+    assert "from structure import *" in result.output
     assert "from structure.platform.pyspark import *" in result.output
     assert "class OrderRaw(Schema):" in result.output
     assert "    id = string(nullable=False)" in result.output

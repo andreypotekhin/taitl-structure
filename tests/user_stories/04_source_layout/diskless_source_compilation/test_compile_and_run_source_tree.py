@@ -27,10 +27,10 @@ def test_user_can_compile_memory_source_and_run_selected_transform() -> None:
         {
             "notebook_story/schema.py": """
 from structure import Schema
-from structure.platform.pyspark import field
+from structure.platform.pyspark import *
 
 class Row(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 """,
             "notebook_story/transform.py": """
 from structure import Transform, input, output

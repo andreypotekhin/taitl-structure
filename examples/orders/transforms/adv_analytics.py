@@ -7,6 +7,7 @@ from examples.orders.schemas.adv_analytics import (
 )
 from examples.orders.schemas.order import OrderFulfillment
 from structure import *
+from structure.platform.pyspark import *
 
 
 class AdvancedOrderAnalytics(Transform):

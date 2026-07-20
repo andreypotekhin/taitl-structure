@@ -2,6 +2,7 @@ import sys
 
 from structure import *
 from structure.core.tools.api import StructureTools as AppStructureTools
+from structure.platform.pyspark import *
 
 
 def test_structure_tools_is_public_and_import_safe() -> None:

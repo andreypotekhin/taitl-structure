@@ -176,7 +176,7 @@ Hook-bearing stage transforms are not supported in `.to(...)` composition yet. R
 until composition hook ownership is specified for both execution and generated-code execution.
 
 Composition also does not interleave wrapper-local step methods with a wrapper pipeline in the first slice. Keep a
-wrapper transform focused on the pipeline field.
+wrapper transform focused on the pipeline
 
 ## Choosing The Shape
 

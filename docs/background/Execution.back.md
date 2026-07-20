@@ -12,7 +12,20 @@ choose generated-code execution.
 The default runtime shape is:
 
 ```python
-from structure import *
+from structure import (
+    Schema,
+    StructureConfig,
+    StructureSession,
+    StructureTools,
+    Transform,
+    input,
+    lane,
+    output,
+    raw,
+    special,
+    step,
+    transform,
+)
 from orders.transforms.order import EnrichOrders
 
 session = StructureSession(spark=spark, ctx=ctx)
@@ -127,7 +140,20 @@ execution and generated-code execution share the same target capability decision
 Python users may pass a resolved config to the runtime session:
 
 ```python
-from structure import *
+from structure import (
+    Schema,
+    StructureConfig,
+    StructureSession,
+    StructureTools,
+    Transform,
+    input,
+    lane,
+    output,
+    raw,
+    special,
+    step,
+    transform,
+)
 
 config = StructureConfig.resolve(project_root=".", execution_mode="generated")
 session = StructureSession(spark=spark, config=config)

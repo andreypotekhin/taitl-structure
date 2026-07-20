@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from structure.core.compiler.compileability.streaming_compatibility.model.StreamingFinding import StreamingFinding
-from structure.core.compiler.compileability.streaming_compatibility.model.StreamingReport import StreamingReport
-from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
+from structure.dsl import StreamingMode
+from structure.platform.api.v1.model import StreamingFinding, StreamingReport
 from structure.platform.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.platform.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.platform.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe

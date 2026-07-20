@@ -1,3 +1,16 @@
-from structure.core.compiler.artifacts.model.GeneratedFileSetResult import GeneratedFileSetResult
+from __future__ import annotations
 
-__all__ = ["GeneratedFileSetResult"]
+from dataclasses import dataclass
+
+from structure.platform.pyspark.files.model.GeneratedFileChange import GeneratedFileChange
+
+
+@dataclass(frozen=True)
+class GeneratedFileSetResult:
+    changes: tuple[GeneratedFileChange, ...]
+
+    def count(self, status: str) -> int:
+        return sum(1 for change in self.changes if change.status == status)
+
+    def changed(self) -> bool:
+        return any(change.status != "unchanged" for change in self.changes)

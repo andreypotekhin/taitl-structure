@@ -60,6 +60,10 @@ Resolved by [SchemaDeclarationSyntax.md](../specifications/SchemaDeclarationSynt
 Deprecated examples used:
 
 ```python
+from structure import Schema
+from structure.platform.pyspark import *
+
+
 class OrderRaw(Schema):
     id = string(nullable=False)
 ```
@@ -69,6 +73,10 @@ Alternative styles considered included annotation-based or dataclass/Pydantic-in
 Recommended v1 canonical form:
 
 ```python
+from structure import Schema
+from structure.platform.pyspark import *
+
+
 class OrderRaw(Schema):
     id = string(nullable=False)
     customer_id = string(nullable=False)

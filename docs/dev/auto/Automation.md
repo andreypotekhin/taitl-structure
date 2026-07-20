@@ -53,7 +53,7 @@ See 'Simplification specialist role' section in 'Team roles' of Agents.md
 
 Automation instructions
 
-- Analyze the codebase for opportunity to simplify, such as areas of overdesign, 
+- Analyze the codebase for opportunity to simplify, such as areas of overdesign,
 convolution, or difficulty to understand.
 - If no opportunities found, wrap up.
 - Address the opportunity that can benefit from simplification the most.
@@ -87,7 +87,7 @@ See 'End-user advocate role' section in 'Team roles' of Agents.md
 
 Automation instructions
 
-- Find 2-3 opportunities to improve the library for end user 
+- Find 2-3 opportunities to improve the library for end user
 (e.g. better documentation, disambiguation, error messages, exceptions, logging,
 public code structure for readability and maintainability) and provide fixes.
 - Create suggestions for broader refactorings.
@@ -109,7 +109,7 @@ Automation instructions
   better code structure for readability and maintainability)
 - Provide changes
 - For more extensive refactorings, add todo items or suggestions
-- Keep Changelog.md updated with project changes since its last update 
+- Keep Changelog.md updated with project changes since its last update
 
 Limits
 
@@ -146,8 +146,8 @@ See 'Technical debt specialist roles' section in 'Team roles' of Agents.md
 Suggest steps to cut on the technical debt in a specific module, package or class.
 
 - Analyse codebase for technical debt issues
-- Identify 1–2 candidate code pieces for refactoring due to technical debt, provide fixes and tests 
-- For larger refactorings, add suggestions  
+- Identify 1–2 candidate code pieces for refactoring due to technical debt, provide fixes and tests
+- For larger refactorings, add suggestions
 
 Limits
 
@@ -168,7 +168,7 @@ Automation instructions
 - No public API changes
 
 Limits
-- Limit yourself to externalizing general purpose parts of code, that is, the ones not related to library subject.  
+- Limit yourself to externalizing general purpose parts of code, that is, the ones not related to library subject.
 - Do not place any code related to library business/use case into ex.common.helper - that package is only for general
   (not library-specific) helper code. You can still factor out, but to proximity (e.g. to same package, module).
 
@@ -218,7 +218,7 @@ See 'Consistency scrutinizer role' section in 'Team roles' of Agents.md
 
 Automation instructions
 
-- Find 3-4 opportunities to improve consistency in the codebase, documentation, 
+- Find 3-4 opportunities to improve consistency in the codebase, documentation,
 public API, error messages, logging or other aspects.
 - Provide fixes and tests
 - Suggests refactorings for bigger inconsistencies
@@ -297,7 +297,7 @@ Automation instructions
 - Prioritize public packages (com.taitl.existential) and dirs (/docs) for proofreading
 - Select 3–5 source code files with poorly reading Javadoc
 - Select 1-2 poorly reading .md documents
-- Add/repair Javadoc. Ensure to adhere to style guide ([Style.md](../Style.md)) 
+- Add/repair Javadoc. Ensure to adhere to style guide ([Style.md](../Style.md))
 - Add/repair .md
 - No logic changes
 

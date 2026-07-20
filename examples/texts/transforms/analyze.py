@@ -8,6 +8,7 @@ from examples.texts.schemas.analytics import (
 )
 from examples.texts.schemas.text import Paragraph, Section, Word
 from structure import *
+from structure.platform.pyspark import *
 
 
 class AnalyzeText(Transform):

@@ -10,6 +10,7 @@ import pytest
 
 import structure
 from structure import *
+from structure.platform.pyspark import *
 
 SNAPSHOT = Path("res/testing/snapshots/api/public_structure.v1.json")
 
@@ -34,15 +35,15 @@ def test_public_structure_star_import_compiles_end_user_source() -> None:
     exec(
         """
 from structure import *
-from structure.platform.pyspark import field
+from structure.platform.pyspark import *
 
 
 class Raw(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 class Published(Schema):
-    id = field.string(nullable=False)
+    id = string(nullable=False)
 
 
 @transform

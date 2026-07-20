@@ -1,31 +1,31 @@
 from structure import *
-from structure.platform.pyspark import field, types
+from structure.platform.pyspark import *
 
 
 class RawRow(Schema):
-    id = field.string(nullable=True)
+    id = string(nullable=True)
 
 
 class NormalizedRow(Schema):
-    id = field.string(nullable=True)
-    hook_owner = field.string(nullable=True)
+    id = string(nullable=True)
+    hook_owner = string(nullable=True)
 
 
 class PublishedRow(Schema):
-    id = field.string(nullable=True)
-    hook_owner = field.string(nullable=True)
+    id = string(nullable=True)
+    hook_owner = string(nullable=True)
 
 
 class StreamEvent(Schema):
-    id = field.string(nullable=True)
-    event_time = field.timestamp(nullable=True)
+    id = string(nullable=True)
+    event_time = timestamp(nullable=True)
 
 
 class StreamCustomer(Schema):
-    id = field.string(nullable=True)
-    value = field.string(nullable=True)
+    id = string(nullable=True)
+    value = string(nullable=True)
 
 
 class StreamEnriched(Schema):
-    id = field.string(nullable=True)
-    value = field.string(nullable=True)
+    id = string(nullable=True)
+    value = string(nullable=True)

@@ -4,37 +4,37 @@ import pytest
 
 from structure import *
 from structure.core.runtime.session.model.TransformResult import TransformResult
-from structure.platform.pyspark import PySpark, field, types
+from structure.platform.pyspark import *
 
 
 class Raw(Schema):
-    id = field.string(nullable=False)
-    product_id = field.string(nullable=True)
+    id = string(nullable=False)
+    product_id = string(nullable=True)
 
 
 class Normalized(Schema):
-    id = field.string(nullable=False)
-    product_id = field.string(nullable=True)
+    id = string(nullable=False)
+    product_id = string(nullable=True)
 
 
 class Product(Schema):
-    id = field.string(nullable=False)
-    name = field.string(nullable=True)
+    id = string(nullable=False)
+    name = string(nullable=True)
 
 
 class Enriched(Schema):
-    id = field.string(nullable=False)
-    product_name = field.string(nullable=True)
+    id = string(nullable=False)
+    product_name = string(nullable=True)
 
 
 class Published(Schema):
-    id = field.string(nullable=False)
-    product_name = field.string(nullable=True)
+    id = string(nullable=False)
+    product_name = string(nullable=True)
 
 
 class Metric(Schema):
-    id = field.string(nullable=False)
-    value = field.integer(nullable=True)
+    id = string(nullable=False)
+    value = integer(nullable=True)
 
 
 @transform

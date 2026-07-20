@@ -1,7 +1,6 @@
 from typing import cast
 
-from structure.core.target.capabilities.model.BackendCapabilities import BackendCapabilities
-from structure.core.target.capabilities.model.CapabilityRequirement import CapabilityRequirement
+from structure.platform.api.v1.model import BackendCapabilities, CapabilityRequirement
 from structure.platform.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
 from structure.platform.pyspark.dsl.Expression import Expression
 

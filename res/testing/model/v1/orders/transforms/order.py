@@ -1,5 +1,5 @@
 from structure import *
-from structure.platform.pyspark import types
+from structure.platform.pyspark import *
 from testing.model.v1.orders.schemas.customer import Customer
 from testing.model.v1.orders.schemas.order import (
     OrderNormalized,

@@ -24,7 +24,7 @@ No join API is added. The existing forms have these v4 meanings:
 A session-window aggregate on a streaming current input is compatible only when all of these hold:
 
 - `watermark(event_time, delay=...)` occurs before the aggregate in the same step flow.
-- The `session_window(...)` event time is that watermarked field.
+- The `session_window(...)` event time is that watermarked
 - `gap` is static and positive.
 - The aggregate groups by the session window and at least one additional non-session key.
 - The required output mode reported by the operation is exactly `StreamingOutputMode.APPEND`.

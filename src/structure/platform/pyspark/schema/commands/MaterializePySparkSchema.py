@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from structure.core.dsl.model.schemas.FieldDefinition import FieldDefinition
-from structure.core.dsl.model.schemas.Schema import Schema
+from structure.dsl import FieldDefinition, Schema
 from structure.platform.pyspark.dsl.types import (
     ArrayType,
     BooleanType,

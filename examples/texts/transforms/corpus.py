@@ -1,6 +1,7 @@
 from examples.texts.schemas.analytics import CorpusStatistics, CorpusVocabulary, DocumentStatistics
 from examples.texts.schemas.text import Word
 from structure import *
+from structure.platform.pyspark import *
 
 
 class CorpusText(Transform):

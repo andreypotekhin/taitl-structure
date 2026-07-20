@@ -23,6 +23,15 @@ from structure.platform.pyspark.dsl.types import (
     TimestampType,
 )
 
+__all__ = [
+    "abs", "bround", "ceil", "coalesce", "concat_ws", "date_add", "date_sub", "date_trunc", "datediff",
+    "dayofmonth", "event_time_between", "exp", "floor", "hash", "hour", "ifnull", "initcap", "instr",
+    "isnan", "isnotnull", "isnull", "length", "levenshtein", "literal", "log", "lower", "ltrim", "md5",
+    "minute", "month", "nanvl", "nullif", "nvl", "nvl2", "pow", "regexp_extract", "regexp_replace", "reverse",
+    "round", "rtrim", "sha1", "sha2", "second", "signum", "split", "sqrt", "substring", "to_date",
+    "to_decimal", "to_timestamp", "translate", "trim", "trunc", "upper", "when", "xxhash64", "year", "zeroifnull",
+]
+
 
 def literal(value: object) -> Expression:
     if isinstance(value, Expression):

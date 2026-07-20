@@ -1,6 +1,7 @@
 from examples.orders.schemas.analytics import CustomerDailyTotal, CustomerEventRank, ProductDailySummary
 from examples.orders.schemas.order import OrderFulfillment
 from structure import *
+from structure.platform.pyspark import *
 
 
 class OrderAnalytics(Transform):

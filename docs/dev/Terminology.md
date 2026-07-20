@@ -35,7 +35,7 @@ and generated-code runtime implementations; they are not the preferred explanato
 
 ## DSL
 
-The DSL is the public Python authoring surface exported from `structure`. It covers schemas, transforms, expression
+The DSL is the public Python authoring surface exported from `structure` and the selected platform package. It covers schemas, transforms, expression
 helpers, filters, joins, hooks, validation policy, and runtime invocation.
 
 The DSL is not a general wrapper around PySpark. A DSL feature is compiler-visible only when Structure can capture it,
@@ -62,13 +62,17 @@ class EnrichOrders(Transform):
 
 A schema is a `Schema` class that describes a row contract: field names, order, types, nullability, inheritance, and Structure metadata such as primary keys.
 
-Schemas are used for input rows, intermediate rows, and output rows. 
+Schemas are used for input rows, intermediate rows, and output rows.
 
 A schema is not a Spark DataFrame and does not contain data.
 
 Example:
 
 ```python
+from structure import Schema
+from structure.platform.pyspark import *
+
+
 class OrderRaw(Schema):
     id = string(nullable=False)
     customer_id = string(nullable=True)
@@ -77,7 +81,7 @@ class OrderRaw(Schema):
 
 ### Field
 
-A field is one named column in a schema. 
+A field is one named column in a schema.
 
 Field metadata is the source of type, nullability, field order, generated Spark schema shape, projection checks, and many diagnostics.
 
@@ -112,7 +116,7 @@ customers = input(Customer)
 An output is a class-level `output(Schema)` declaration. Outputs are the public result names returned from
 `TransformResult`, such as `result.enriched` or `result["enriched"]`.
 
-Output declarations are part of the transform contract. 
+Output declarations are part of the transform contract.
 
 Example:
 
@@ -237,7 +241,7 @@ def add_quality_columns(self, *, orders, spark, ctx):
 
 ### Validation Policy
 
-Validation policy decides where Structure checks DataFrame schema: inputs, intermediate outputs, hook outputs, and final outputs. 
+Validation policy decides where Structure checks DataFrame schema: inputs, intermediate outputs, hook outputs, and final outputs.
 
 Policy is affected by project configuration, transform-level settings and method-level overrides.
 
@@ -259,7 +263,7 @@ enriched_df = result.enriched
 
 Symbolic execution is the compiler phase that runs compiled step methods with symbolic row objects instead of real rows or DataFrames.
 
-Its job is to capture source semantics: field references, expressions, filters, joins, and output projection. 
+Its job is to capture source semantics: field references, expressions, filters, joins, and output projection.
 
 It is not a Python execution engine for data.
 

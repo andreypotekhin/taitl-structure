@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.core.dsl.model.schemas.Schema import Schema
+from structure.dsl import Schema
 from structure.platform.api.v1 import TransformMemberOrigin
 from structure.platform.pyspark.compiler.model.PySparkAggregateRecipe import PySparkAggregateRecipe
 from structure.platform.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
