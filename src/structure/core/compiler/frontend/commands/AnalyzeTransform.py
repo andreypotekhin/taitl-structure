@@ -56,6 +56,7 @@ class AnalyzeTransform(CompileTransform):
                 problem=f"{getattr(transform_class, '__name__', transform_class)} is not a Transform subclass.",
                 use="Compile a class that inherits from structure.Transform or compile a Transform.to(...) pipeline.",
             )
+        self._require_module_level_schemas(transform_class)
         pipeline = getattr(transform_class, "_structure_pipeline", None)
         if pipeline is not None:
             return self._compose_pipeline(pipeline, name=transform_class.__name__, config=config, wrapper_class=transform_class)

@@ -1,7 +1,10 @@
 import importlib
 import sys
+from typing import cast
 
-from structure import compile_transform
+from structure.core.compiler.api import Compiler
+from structure.plugin.api.v1.model.TransformPlan import TransformPlan
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
 def test_v4_fixture_skeleton_is_importable_without_pyspark() -> None:
@@ -22,8 +25,14 @@ def test_v4_fixture_skeleton_is_importable_without_pyspark() -> None:
 def test_v4_fixture_starts_with_typed_bitwise_projection() -> None:
     fixture = importlib.import_module("testing.model.v4.orders.transforms.scalar")
 
-    plan = compile_transform(fixture.BitwiseFeatures)
-    expressions = [assignment.expression for assignment in plan.steps[0].projection]
+    plan = cast(
+        TransformPlan,
+        Compiler.frontend.compile()(fixture.BitwiseFeatures, materialize_schemas=False).analysis,
+    )
+    expressions = [
+        assignment.expression
+        for assignment in cast(PySparkStepBody, plan.steps[0].plugin_body).projection
+    ]
 
     assert [expression.kind for expression in expressions[:6]] == [
         "bitwise_and",

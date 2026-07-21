@@ -277,11 +277,27 @@ def render_texts_example() -> dict[str, str]:
             SentenceStatistics,
             SimilarDocument,
         )
+        from examples.texts.schemas.search import (
+            DocumentBm25Score,
+            DocumentOverlapScore,
+            DocumentSearchTarget,
+            ParagraphBm25Score,
+            ParagraphOverlapScore,
+            ParagraphSearchTarget,
+            SearchQuery,
+            SectionBm25Score,
+            SectionOverlapScore,
+            SectionSearchTarget,
+            SentenceBm25Score,
+            SentenceOverlapScore,
+            SentenceSearchTarget,
+        )
         from examples.texts.schemas.text import Document, Paragraph, Section, Sentence, Word
         from examples.texts.transforms.analyze import AnalyzeText
         from examples.texts.transforms.corpus import CorpusText
         from examples.texts.transforms.extract import ExtractText
         from examples.texts.transforms.profile import ProfileDocuments
+        from examples.texts.transforms.search.ScoreCorpus import ScoreCorpus
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
             "examples.texts.schemas.analytics": [
@@ -295,12 +311,28 @@ def render_texts_example() -> dict[str, str]:
                 SimilarDocument,
             ],
             "examples.texts.schemas.text": [Document, Section, Paragraph, Sentence, Word],
+            "examples.texts.schemas.search": [
+                SearchQuery,
+                DocumentSearchTarget,
+                SectionSearchTarget,
+                ParagraphSearchTarget,
+                SentenceSearchTarget,
+                DocumentOverlapScore,
+                SectionOverlapScore,
+                ParagraphOverlapScore,
+                SentenceOverlapScore,
+                DocumentBm25Score,
+                SectionBm25Score,
+                ParagraphBm25Score,
+                SentenceBm25Score,
+            ],
         }
         transforms = (
             (ExtractText, "examples.texts.transforms.extract.ExtractText"),
             (ProfileDocuments, "examples.texts.transforms.profile.ProfileDocuments"),
             (AnalyzeText, "examples.texts.transforms.analyze.AnalyzeText"),
             (CorpusText, "examples.texts.transforms.corpus.CorpusText"),
+            (ScoreCorpus, "examples.texts.transforms.search.ScoreCorpus.ScoreCorpus"),
         )
         files = {}
         for transform_class, source_transform in transforms:

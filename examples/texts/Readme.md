@@ -25,8 +25,9 @@ analytics = AnalyzeText(
 corpus = CorpusText(documents=analytics.document_statistics, words=segments.words).run(session)
 ```
 
-`SearchOverlap` and `SearchBm25` independently accept caller-supplied `SearchQuery(id, content)` rows and create a
-score row for every matching document, section, paragraph, and sentence. They normalize query terms exactly as
+`ScoreCorpus` combines the independently usable `ScoreOverlap` and `ScoreBm25` transforms. It accepts caller-supplied
+`SearchQuery(id, content)` rows and creates a score row for every matching document, section, paragraph, and sentence.
+The algorithms normalize query terms exactly as
 `ExtractText` normalizes document words. `score_overlap` is the standard overlap coefficient: matching distinct terms
 divided by the smaller of the query and target vocabularies. `score_bm25` uses fixed `k1=1.2` and `b=0.75` constants.
 The scores remain separate: choosing an algorithm or combining parent and child targets is deliberately caller-owned.
@@ -38,8 +39,9 @@ remains an opaque boundary and needs Arrow batches. Use a UDF only for a tokeniz
 expressed through Spark's native relational functions.
 
 ```python
-overlap = SearchOverlap(queries=queries, words=segments.words).run(session)
-bm25 = SearchBm25(queries=queries, words=segments.words).run(session)
+scores = ScoreCorpus(queries=queries, words=segments.words).run(session)
+overlap = scores.document_overlap_scores
+bm25 = scores.document_bm25_scores
 ```
 
 The example deliberately remains batch-only: corpus distributions and

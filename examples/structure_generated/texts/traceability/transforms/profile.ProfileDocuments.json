@@ -231,9 +231,21 @@
       "constant": "DOCUMENT_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.text"
     },
+    "DocumentBm25Score": {
+      "constant": "DOCUMENT_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
     "DocumentFeatures": {
       "constant": "DOCUMENT_FEATURES_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.analytics"
+    },
+    "DocumentOverlapScore": {
+      "constant": "DOCUMENT_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "DocumentSearchTarget": {
+      "constant": "DOCUMENT_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
     },
     "DocumentStatistics": {
       "constant": "DOCUMENT_STATISTICS_SCHEMA",
@@ -243,13 +255,41 @@
       "constant": "PARAGRAPH_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.text"
     },
+    "ParagraphBm25Score": {
+      "constant": "PARAGRAPH_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "ParagraphOverlapScore": {
+      "constant": "PARAGRAPH_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "ParagraphSearchTarget": {
+      "constant": "PARAGRAPH_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
     "ParagraphStatistics": {
       "constant": "PARAGRAPH_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.analytics"
     },
+    "SearchQuery": {
+      "constant": "SEARCH_QUERY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
     "Section": {
       "constant": "SECTION_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.text"
+    },
+    "SectionBm25Score": {
+      "constant": "SECTION_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "SectionOverlapScore": {
+      "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "SectionSearchTarget": {
+      "constant": "SECTION_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
     },
     "SectionStatistics": {
       "constant": "SECTION_STATISTICS_SCHEMA",
@@ -258,6 +298,18 @@
     "Sentence": {
       "constant": "SENTENCE_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.text"
+    },
+    "SentenceBm25Score": {
+      "constant": "SENTENCE_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "SentenceOverlapScore": {
+      "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "SentenceSearchTarget": {
+      "constant": "SENTENCE_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
     },
     "SentenceStatistics": {
       "constant": "SENTENCE_STATISTICS_SCHEMA",

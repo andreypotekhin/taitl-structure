@@ -7,9 +7,10 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from structure import Schema, Transform, compile_transform, input, output
+from structure import Schema, Transform, input, output
 from structure.core.cli.api import cli
 from structure.core.cli.commands.DiscoverStructureProject import DiscoverStructureProject
+from structure.core.compiler.api import Compiler
 from structure.core.compiler.diagnostics.api import StructureCompileError
 from structure.core.compiler.frontend.commands.CompileTransform import CompileTransform
 from structure.core.configuration.model.StructureConfig import StructureConfig
@@ -109,7 +110,7 @@ def test_module_level_schema_assigned_to_transform_attribute_is_allowed() -> Non
 
 def _require_nested_schema_error(transform: type[Transform], name: str) -> None:
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(transform)
+        Compiler.frontend.compile()(transform, materialize_schemas=False)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0402"

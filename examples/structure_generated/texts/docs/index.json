@@ -167,6 +167,33 @@
       "name": "Document"
     },
     {
+      "bases": [
+        "DocumentSearchTarget"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "DocumentBm25Score"
+    },
+    {
       "bases": [],
       "fields": [
         {
@@ -396,6 +423,52 @@
       "name": "DocumentFeatures"
     },
     {
+      "bases": [
+        "DocumentSearchTarget"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "DocumentOverlapScore"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "DocumentSearchTarget"
+    },
+    {
       "bases": [],
       "fields": [
         {
@@ -482,6 +555,117 @@
       "name": "Paragraph"
     },
     {
+      "bases": [
+        "ParagraphSearchTarget"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "ParagraphBm25Score"
+    },
+    {
+      "bases": [
+        "ParagraphSearchTarget"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "ParagraphOverlapScore"
+    },
+    {
+      "bases": [
+        "SectionSearchTarget"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "ParagraphSearchTarget"
+    },
+    {
       "bases": [],
       "fields": [
         {
@@ -540,6 +724,25 @@
           "type": "string"
         },
         {
+          "column": "content",
+          "name": "content",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "SearchQuery"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
           "column": "document_id",
           "name": "document_id",
           "nullable": false,
@@ -560,6 +763,99 @@
       ],
       "module": "examples.texts.schemas.text",
       "name": "Section"
+    },
+    {
+      "bases": [
+        "SectionSearchTarget"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "SectionBm25Score"
+    },
+    {
+      "bases": [
+        "SectionSearchTarget"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "SectionOverlapScore"
+    },
+    {
+      "bases": [
+        "DocumentSearchTarget"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "SectionSearchTarget"
     },
     {
       "bases": [],
@@ -664,6 +960,135 @@
       ],
       "module": "examples.texts.schemas.text",
       "name": "Sentence"
+    },
+    {
+      "bases": [
+        "SentenceSearchTarget"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "sentence_id",
+          "name": "sentence_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "SentenceBm25Score"
+    },
+    {
+      "bases": [
+        "SentenceSearchTarget"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "sentence_id",
+          "name": "sentence_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "SentenceOverlapScore"
+    },
+    {
+      "bases": [
+        "ParagraphSearchTarget"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "sentence_id",
+          "name": "sentence_id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "SentenceSearchTarget"
     },
     {
       "bases": [],
@@ -1231,6 +1656,145 @@
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/profile.py",
         "traceability": "traceability/transforms/profile.ProfileDocuments.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "queries",
+          "ordinal": 0,
+          "schema": "SearchQuery"
+        },
+        {
+          "name": "words",
+          "ordinal": 1,
+          "schema": "Word"
+        }
+      ],
+      "name": "ScoreCorpus",
+      "outputs": [
+        {
+          "name": "document_overlap_scores",
+          "ordinal": 0,
+          "schema": "DocumentOverlapScore"
+        },
+        {
+          "name": "section_overlap_scores",
+          "ordinal": 1,
+          "schema": "SectionOverlapScore"
+        },
+        {
+          "name": "paragraph_overlap_scores",
+          "ordinal": 2,
+          "schema": "ParagraphOverlapScore"
+        },
+        {
+          "name": "sentence_overlap_scores",
+          "ordinal": 3,
+          "schema": "SentenceOverlapScore"
+        },
+        {
+          "name": "document_bm25_scores",
+          "ordinal": 4,
+          "schema": "DocumentBm25Score"
+        },
+        {
+          "name": "section_bm25_scores",
+          "ordinal": 5,
+          "schema": "SectionBm25Score"
+        },
+        {
+          "name": "paragraph_bm25_scores",
+          "ordinal": 6,
+          "schema": "ParagraphBm25Score"
+        },
+        {
+          "name": "sentence_bm25_scores",
+          "ordinal": 7,
+          "schema": "SentenceBm25Score"
+        }
+      ],
+      "source": "examples.texts.transforms.search.ScoreCorpus.ScoreCorpus",
+      "step_methods": [
+        {
+          "input_lane": "queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            }
+          ],
+          "name": "declare_overlap_scores",
+          "output_lane": "document_overlap_scores",
+          "output_schema": "DocumentOverlapScore",
+          "results": [
+            {
+              "frame": "document_overlap_scores",
+              "lane": "document_overlap_scores",
+              "schema": "DocumentOverlapScore"
+            },
+            {
+              "frame": "section_overlap_scores",
+              "lane": "section_overlap_scores",
+              "schema": "SectionOverlapScore"
+            },
+            {
+              "frame": "paragraph_overlap_scores",
+              "lane": "paragraph_overlap_scores",
+              "schema": "ParagraphOverlapScore"
+            },
+            {
+              "frame": "sentence_overlap_scores",
+              "lane": "sentence_overlap_scores",
+              "schema": "SentenceOverlapScore"
+            }
+          ]
+        },
+        {
+          "input_lane": "queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            }
+          ],
+          "name": "declare_bm25_scores",
+          "output_lane": "document_bm25_scores",
+          "output_schema": "DocumentBm25Score",
+          "results": [
+            {
+              "frame": "document_bm25_scores",
+              "lane": "document_bm25_scores",
+              "schema": "DocumentBm25Score"
+            },
+            {
+              "frame": "section_bm25_scores",
+              "lane": "section_bm25_scores",
+              "schema": "SectionBm25Score"
+            },
+            {
+              "frame": "paragraph_bm25_scores",
+              "lane": "paragraph_bm25_scores",
+              "schema": "ParagraphBm25Score"
+            },
+            {
+              "frame": "sentence_bm25_scores",
+              "lane": "sentence_bm25_scores",
+              "schema": "SentenceBm25Score"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/ScoreCorpus.py",
+        "traceability": "traceability/transforms/ScoreCorpus.ScoreCorpus.json"
       }
     }
   ]

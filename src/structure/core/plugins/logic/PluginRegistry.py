@@ -80,7 +80,9 @@ class PluginRegistry:
     def _installed_entries(self) -> Iterable[Any]:
         installed = tuple(entry_points(group=PLUGIN_ENTRY_POINT_GROUP))
         bundled = any(
-            item.name == "pyspark" and item.dist is not None and self._distribution(item.dist.name) == "structure"
+            item.name == "pyspark"
+            and item.dist is not None
+            and self._distribution(getattr(item.dist, "name", None)) == "structure"
             for item in installed
         )
         return installed if bundled else (*installed, BundledPySparkEntry())
@@ -88,7 +90,10 @@ class PluginRegistry:
     def _plugin(self, item: Any) -> DiscoveredPlugin:
         if self._name.fullmatch(item.name) is None:
             raise ValueError(f"PLUGIN-E2706: Plugin entry-point name {item.name!r} is not a lowercase identifier.")
-        return DiscoveredPlugin(name=item.name, distribution=item.dist.name if item.dist else "unknown", load=item.load)
+        distribution = getattr(item.dist, "name", None) if item.dist else None
+        return DiscoveredPlugin(name=item.name, distribution=distribution or "unknown", load=item.load)
 
-    def _distribution(self, name: str) -> str:
+    def _distribution(self, name: str | None) -> str:
+        if not name:
+            return "unknown"
         return re.sub(r"[-_.]+", "-", name).lower()

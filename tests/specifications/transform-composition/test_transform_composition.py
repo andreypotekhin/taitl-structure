@@ -3,8 +3,14 @@ from typing import Any, cast
 import pytest
 
 from structure import *
+from structure.core.compiler.api import Compiler
 from structure.core.runtime.session.model.TransformResult import TransformResult
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
+
+
+def _analysis(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False).analysis
 
 
 class Raw(Schema):
@@ -93,15 +99,15 @@ def test_multi_argument_to_matches_sequential_to() -> None:
     multi = NormalizeOrders(orders=object()).to(AddProduct(products=product), PublishOrders())
     sequential = NormalizeOrders(orders=object()).to(AddProduct(products=product)).to(PublishOrders())
 
-    assert [step.name for step in compile_transform(multi).steps] == [
-        step.name for step in compile_transform(sequential).steps
+    assert [step.name for step in _analysis(multi).steps] == [
+        step.name for step in _analysis(sequential).steps
     ]
 
 
 def test_static_transform_to_starts_pipeline() -> None:
     pipeline = Transform.to(NormalizeOrders(orders=object()), AddProduct(products=object()), PublishOrders())
 
-    assert [step.name for step in compile_transform(pipeline).steps] == [
+    assert [step.name for step in _analysis(pipeline).steps] == [
         "normalize_orders.normalize",
         "add_product.add_product",
         "publish_orders.publish",
@@ -109,7 +115,7 @@ def test_static_transform_to_starts_pipeline() -> None:
 
 
 def test_downstream_constructor_input_satisfies_missing_input() -> None:
-    plan = compile_transform(NormalizeOrders(orders=object()).to(AddProduct(products=object())))
+    plan = _analysis(NormalizeOrders(orders=object()).to(AddProduct(products=object())))
 
     assert [input.name for input in plan.inputs] == ["orders", "products"]
     assert [output.name for output in plan.outputs] == ["enriched"]
@@ -132,7 +138,7 @@ def test_output_alias_satisfies_downstream_input_name() -> None:
         def publish(self, order: Normalized) -> Published:
             return Published(id=order.id, product_name=order.product_id)
 
-    plan = compile_transform(NormalizeWithBoundaryAlias(orders=object()).to(PublishNormalized()))
+    plan = _analysis(NormalizeWithBoundaryAlias(orders=object()).to(PublishNormalized()))
 
     assert [input.name for input in plan.inputs] == ["orders"]
     assert [step.name for step in plan.steps] == [
@@ -150,7 +156,7 @@ def test_stage_rename_satisfies_downstream_input_name() -> None:
         def publish(self, order: Normalized) -> Published:
             return Published(id=order.id, product_name=order.product_id)
 
-    plan = compile_transform(NormalizeOrders(orders=object()).rename(normalized="orders").to(PublishNormalized()))
+    plan = _analysis(NormalizeOrders(orders=object()).rename(normalized="orders").to(PublishNormalized()))
 
     assert [input.name for input in plan.inputs] == ["orders"]
     assert [output.name for output in plan.outputs] == ["published"]
@@ -165,7 +171,7 @@ def test_input_alias_satisfies_upstream_output_name() -> None:
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, product_name=row.product_id)
 
-    plan = compile_transform(NormalizeOrders(orders=object()).to(PublishNormalized()))
+    plan = _analysis(NormalizeOrders(orders=object()).to(PublishNormalized()))
 
     assert [input.name for input in plan.inputs] == ["orders"]
 
@@ -226,14 +232,14 @@ def test_downstream_constructor_conflicts_with_matching_upstream_output() -> Non
     pipeline = NormalizeOrders(orders=object()).to(AddProduct(normalized=object(), products=object()))
 
     with pytest.raises(StructureCompileError, match="both explicitly bound and produced upstream"):
-        compile_transform(pipeline)
+        _analysis(pipeline)
 
 
 def test_missing_downstream_input_fails() -> None:
     pipeline = NormalizeOrders(orders=object()).to(AddProduct())
 
     with pytest.raises(StructureCompileError, match="products is not supplied"):
-        compile_transform(pipeline)
+        _analysis(pipeline)
 
 
 def test_ambiguous_upstream_output_match_fails() -> None:
@@ -261,7 +267,7 @@ def test_ambiguous_upstream_output_match_fails() -> None:
     pipeline = RouteMetrics(rows=object()).to(PublishMetric())
 
     with pytest.raises(StructureCompileError, match="matched outputs: accepted, rejected"):
-        compile_transform(pipeline)
+        _analysis(pipeline)
 
 
 def test_lane_declaration_cannot_be_constructor_binding() -> None:
@@ -271,7 +277,7 @@ def test_lane_declaration_cannot_be_constructor_binding() -> None:
     pipeline = Transform.to(NormalizeOrders(orders=LaneOwner.rows))
 
     with pytest.raises(StructureCompileError, match="bound to a lane"):
-        compile_transform(pipeline)
+        _analysis(pipeline)
 
 
 def test_class_field_pipeline_compiles_and_renders_generated_transform() -> None:
@@ -285,7 +291,7 @@ def test_class_field_pipeline_compiles_and_renders_generated_transform() -> None
             PublishOrders(),
         )
 
-    plan = compile_transform(OrderPipeline)
+    plan = _analysis(OrderPipeline)
     text = PySpark.render.transform()(
         PySpark.compiler.lower()(plan),
         source_transform=f"{__name__}.OrderPipeline",
@@ -316,7 +322,7 @@ def test_generated_transform_renders_output_alias_metadata() -> None:
         def normalize(self, order: Raw) -> Normalized:
             return Normalized(id=order.id, product_id=order.product_id)
 
-    plan = compile_transform(NormalizeWithBoundaryAlias)
+    plan = _analysis(NormalizeWithBoundaryAlias)
     text = PySpark.render.transform()(
         PySpark.compiler.lower()(plan),
         source_transform=f"{__name__}.NormalizeWithBoundaryAlias",
@@ -348,10 +354,10 @@ def test_inherited_lane_remains_available_to_override() -> None:
         def publish(self, row: Normalized) -> Normalized:
             return Normalized(id=row.id, product_id=row.product_id)
 
-    plan = compile_transform(Publish)
+    plan = _analysis(Publish)
 
     assert [step.name for step in plan.steps] == ["normalize", "publish"]
-    assert len(plan.steps[0].filters) == 1
+    assert len(cast(PySparkStepBody, plan.steps[0].plugin_body).filters) == 1
 
 
 class FakeTypes:

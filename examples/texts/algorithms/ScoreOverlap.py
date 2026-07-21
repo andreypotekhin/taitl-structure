@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from examples.texts.algorithms.text_search import ScoreFrames, Target, TextSearch
+from examples.texts.algorithms.TextSearch import ScoreFrames, Target, TextSearch
 
 if TYPE_CHECKING:
     from pyspark.sql import DataFrame

@@ -18,20 +18,24 @@ from examples.texts.schemas.analytics import (
 from examples.texts.schemas.search import (
     DocumentBm25Score,
     DocumentOverlapScore,
+    DocumentSearchTarget,
     ParagraphBm25Score,
     ParagraphOverlapScore,
+    ParagraphSearchTarget,
     SearchQuery,
     SectionBm25Score,
     SectionOverlapScore,
+    SectionSearchTarget,
     SentenceBm25Score,
     SentenceOverlapScore,
+    SentenceSearchTarget,
 )
 from examples.texts.schemas.text import Document, Paragraph, Section, Sentence, Word
 from examples.texts.transforms.analyze import AnalyzeText
 from examples.texts.transforms.corpus import CorpusText
 from examples.texts.transforms.extract import ExtractText
 from examples.texts.transforms.profile import ProfileDocuments
-from examples.texts.transforms.search import SearchBm25, SearchOverlap
+from examples.texts.transforms.search.ScoreCorpus import ScoreCorpus
 
 pytestmark = pytest.mark.integration
 
@@ -49,6 +53,10 @@ SCHEMA_MODULES = {
     ],
     "examples.texts.schemas.search": [
         SearchQuery,
+        DocumentSearchTarget,
+        SectionSearchTarget,
+        ParagraphSearchTarget,
+        SentenceSearchTarget,
         DocumentOverlapScore,
         SectionOverlapScore,
         ParagraphOverlapScore,
@@ -65,8 +73,7 @@ TRANSFORMS = (
     (ProfileDocuments, "examples.texts.transforms.profile.ProfileDocuments"),
     (AnalyzeText, "examples.texts.transforms.analyze.AnalyzeText"),
     (CorpusText, "examples.texts.transforms.corpus.CorpusText"),
-    (SearchOverlap, "examples.texts.transforms.search.SearchOverlap"),
-    (SearchBm25, "examples.texts.transforms.search.SearchBm25"),
+    (ScoreCorpus, "examples.texts.transforms.search.ScoreCorpus.ScoreCorpus"),
 )
 
 
@@ -180,46 +187,42 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path) -> None:
             __import__(f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA"]).SEARCH_QUERY_SCHEMA,
         )
         search_inputs = dict(queries=queries, words=generated_segments.words)
-        online_overlap = SearchOverlap(**search_inputs).run(session(spark, execution_mode="online"))
-        generated_overlap = SearchOverlap(**search_inputs).run(
+        online_scores = ScoreCorpus(**search_inputs).run(session(spark, execution_mode="online"))
+        generated_scores = ScoreCorpus(**search_inputs).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        assert rows(online_overlap.document_scores, "query_id", "document_id") == rows(
-            generated_overlap.document_scores, "query_id", "document_id"
+        assert rows(online_scores.document_overlap_scores, "query_id", "document_id") == rows(
+            generated_scores.document_overlap_scores, "query_id", "document_id"
         )
-        assert rows(online_overlap.section_scores, "query_id", "section_id") == rows(
-            generated_overlap.section_scores, "query_id", "section_id"
+        assert rows(online_scores.section_overlap_scores, "query_id", "section_id") == rows(
+            generated_scores.section_overlap_scores, "query_id", "section_id"
         )
-        assert rows(online_overlap.paragraph_scores, "query_id", "paragraph_id") == rows(
-            generated_overlap.paragraph_scores, "query_id", "paragraph_id"
+        assert rows(online_scores.paragraph_overlap_scores, "query_id", "paragraph_id") == rows(
+            generated_scores.paragraph_overlap_scores, "query_id", "paragraph_id"
         )
-        assert rows(online_overlap.sentence_scores, "query_id", "sentence_id") == rows(
-            generated_overlap.sentence_scores, "query_id", "sentence_id"
+        assert rows(online_scores.sentence_overlap_scores, "query_id", "sentence_id") == rows(
+            generated_scores.sentence_overlap_scores, "query_id", "sentence_id"
         )
         structure_document = single(
-            generated_overlap.document_scores,
+            generated_scores.document_overlap_scores,
             lambda row: row["query_id"] == "q-structure" and row["document_id"] == "d-1",
         )
         assert cast(float, structure_document["score_overlap"]) > 0
 
-        online_bm25 = SearchBm25(**search_inputs).run(session(spark, execution_mode="online"))
-        generated_bm25 = SearchBm25(**search_inputs).run(
-            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        assert rows(online_scores.document_bm25_scores, "query_id", "document_id") == rows(
+            generated_scores.document_bm25_scores, "query_id", "document_id"
         )
-        assert rows(online_bm25.document_scores, "query_id", "document_id") == rows(
-            generated_bm25.document_scores, "query_id", "document_id"
+        assert rows(online_scores.section_bm25_scores, "query_id", "section_id") == rows(
+            generated_scores.section_bm25_scores, "query_id", "section_id"
         )
-        assert rows(online_bm25.section_scores, "query_id", "section_id") == rows(
-            generated_bm25.section_scores, "query_id", "section_id"
+        assert rows(online_scores.paragraph_bm25_scores, "query_id", "paragraph_id") == rows(
+            generated_scores.paragraph_bm25_scores, "query_id", "paragraph_id"
         )
-        assert rows(online_bm25.paragraph_scores, "query_id", "paragraph_id") == rows(
-            generated_bm25.paragraph_scores, "query_id", "paragraph_id"
-        )
-        assert rows(online_bm25.sentence_scores, "query_id", "sentence_id") == rows(
-            generated_bm25.sentence_scores, "query_id", "sentence_id"
+        assert rows(online_scores.sentence_bm25_scores, "query_id", "sentence_id") == rows(
+            generated_scores.sentence_bm25_scores, "query_id", "sentence_id"
         )
         structure_document = single(
-            generated_bm25.document_scores,
+            generated_scores.document_bm25_scores,
             lambda row: row["query_id"] == "q-structure" and row["document_id"] == "d-1",
         )
         assert cast(float, structure_document["score_bm25"]) > 0

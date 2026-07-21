@@ -1,0 +1,34 @@
+{
+  "bases": [
+    "SectionSearchTarget"
+  ],
+  "fields": [
+    {
+      "column": "query_id",
+      "name": "query_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "document_id",
+      "name": "document_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "section_id",
+      "name": "section_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "score_overlap",
+      "name": "score_overlap",
+      "nullable": false,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.texts.schemas.search",
+  "name": "SectionOverlapScore"
+}
