@@ -1,5 +1,7 @@
 """Algorithm-specific search transforms for the texts example."""
 
+from examples.texts.algorithms.score_bm25 import ScoreBm25
+from examples.texts.algorithms.score_overlap import ScoreOverlap
 from examples.texts.schemas.search import (
     DocumentBm25Score,
     DocumentOverlapScore,
@@ -12,7 +14,6 @@ from examples.texts.schemas.search import (
     SentenceOverlapScore,
 )
 from examples.texts.schemas.text import Word
-from examples.texts.transforms.search_algorithms import ScoreBm25, ScoreOverlap
 from structure import *
 from structure.plugin.pyspark import *
 
@@ -60,7 +61,14 @@ class SearchOverlap(Transform):
         spark,
         ctx,
     ):
-        return ScoreOverlap.scores(queries, words)
+        return ScoreOverlap.scores(
+            queries,
+            words,
+            document_scores=document_scores,
+            section_scores=section_scores,
+            paragraph_scores=paragraph_scores,
+            sentence_scores=sentence_scores,
+        )
 
 
 class SearchBm25(Transform):
@@ -106,4 +114,11 @@ class SearchBm25(Transform):
         spark,
         ctx,
     ):
-        return ScoreBm25.scores(queries, words)
+        return ScoreBm25.scores(
+            queries,
+            words,
+            document_scores=document_scores,
+            section_scores=section_scores,
+            paragraph_scores=paragraph_scores,
+            sentence_scores=sentence_scores,
+        )
