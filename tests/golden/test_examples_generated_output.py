@@ -37,19 +37,18 @@ def test_example_generated_output_matches_golden_files(actual, expected) -> None
         assert actual[path] == expected[path], _text_diff(path, expected[path], actual[path])
 
 
-def test_texts_search_subpackage_transform_is_discovered_and_compiled() -> None:
+def test_texts_scoring_subpackage_transform_is_discovered_and_compiled() -> None:
     """A nested transform module is a normal source-discovery entrypoint."""
 
     config = StructureConfig.resolve(project_root=ROOT, source_roots=["examples/texts"])
     project = DiscoverStructureProject()(config)
-    score_corpus = next(
+    score_all = next(
         transform
         for transform in project.transforms
-        if transform.__module__ == "examples.texts.transforms.scoring.ScoreCorpus"
-        and transform.__name__ == "ScoreCorpus"
+        if transform.__module__ == "examples.texts.transforms.scoring.ScoreAll" and transform.__name__ == "ScoreAll"
     )
 
-    compile_transform(score_corpus, config=config)
+    compile_transform(score_all, config=config)
 
 
 def _paths_diff(actual: dict[str, str], expected: dict[str, str]) -> str:

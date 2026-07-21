@@ -26,6 +26,22 @@ SENTENCE_SEARCH_TARGET_SCHEMA = T.StructType(PARAGRAPH_SEARCH_TARGET_SCHEMA.fiel
     T.StructField("sentence_id", T.StringType(), False),
 ])
 
+DOCUMENT_INDEX_TARGET_SCHEMA = T.StructType([
+    T.StructField("document_id", T.StringType(), False),
+])
+
+SECTION_INDEX_TARGET_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("section_id", T.StringType(), False),
+])
+
+PARAGRAPH_INDEX_TARGET_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("paragraph_id", T.StringType(), False),
+])
+
+SENTENCE_INDEX_TARGET_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("sentence_id", T.StringType(), False),
+])
+
 DOCUMENT_INDEX_TERM_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
     T.StructField("token", T.StringType(), False),
     T.StructField("term_frequency", T.LongType(), False),

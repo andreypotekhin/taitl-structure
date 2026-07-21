@@ -12,7 +12,7 @@ from examples.texts.schemas.search import (
     SentenceIndexTerm,
 )
 from examples.texts.schemas.text import Word
-from examples.texts.transforms.scoring.Score import Score
+from examples.texts.transforms.scoring.AddScores import AddScores
 from structure import Transform, input, output, raw, step
 
 
@@ -140,5 +140,5 @@ class CreateIndex(Transform):
         )
 
 
-class AddScores(Score):
+class EnrichWithScores(AddScores):
     """Attach reusable-index search scores to matching hierarchy rows."""

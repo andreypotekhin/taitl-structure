@@ -18,22 +18,26 @@ from examples.texts.schemas.analytics import (
 from examples.texts.schemas.search import (
     DocumentBm25Score,
     DocumentIndexSummary,
+    DocumentIndexTarget,
     DocumentIndexTerm,
     DocumentOverlapScore,
     DocumentSearchTarget,
     ParagraphBm25Score,
     ParagraphIndexSummary,
+    ParagraphIndexTarget,
     ParagraphIndexTerm,
     ParagraphOverlapScore,
     ParagraphSearchTarget,
     SearchQuery,
     SectionBm25Score,
     SectionIndexSummary,
+    SectionIndexTarget,
     SectionIndexTerm,
     SectionOverlapScore,
     SectionSearchTarget,
     SentenceBm25Score,
     SentenceIndexSummary,
+    SentenceIndexTarget,
     SentenceIndexTerm,
     SentenceOverlapScore,
     SentenceSearchTarget,
@@ -43,7 +47,8 @@ from examples.texts.transforms.analyze import AnalyzeText
 from examples.texts.transforms.corpus import CorpusText
 from examples.texts.transforms.extract import ExtractText
 from examples.texts.transforms.profile import ProfileDocuments
-from examples.texts.transforms.search import AddScores, CreateIndex
+from examples.texts.transforms.scoring.AddScores import AddScores
+from examples.texts.transforms.search import CreateIndex
 
 pytestmark = pytest.mark.integration
 
@@ -65,6 +70,10 @@ SCHEMA_MODULES = {
         SectionSearchTarget,
         ParagraphSearchTarget,
         SentenceSearchTarget,
+        DocumentIndexTarget,
+        SectionIndexTarget,
+        ParagraphIndexTarget,
+        SentenceIndexTarget,
         DocumentIndexTerm,
         DocumentIndexSummary,
         SectionIndexTerm,
@@ -90,7 +99,7 @@ TRANSFORMS = (
     (AnalyzeText, "examples.texts.transforms.analyze.AnalyzeText"),
     (CorpusText, "examples.texts.transforms.corpus.CorpusText"),
     (CreateIndex, "examples.texts.transforms.search.CreateIndex"),
-    (AddScores, "examples.texts.transforms.search.AddScores"),
+    (AddScores, "examples.texts.transforms.scoring.AddScores.AddScores"),
 )
 
 

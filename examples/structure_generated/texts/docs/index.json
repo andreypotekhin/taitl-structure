@@ -460,6 +460,19 @@
       "name": "DocumentIndexSummary"
     },
     {
+      "bases": [],
+      "fields": [
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "DocumentIndexTarget"
+    },
+    {
       "bases": [
         "DocumentIndexTarget"
       ],
@@ -713,6 +726,33 @@
       ],
       "module": "examples.texts.schemas.search",
       "name": "ParagraphIndexSummary"
+    },
+    {
+      "bases": [
+        "SectionIndexTarget"
+      ],
+      "fields": [
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "ParagraphIndexTarget"
     },
     {
       "bases": [
@@ -1016,6 +1056,27 @@
     },
     {
       "bases": [
+        "DocumentIndexTarget"
+      ],
+      "fields": [
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "SectionIndexTarget"
+    },
+    {
+      "bases": [
         "SectionIndexTarget"
       ],
       "fields": [
@@ -1312,6 +1373,39 @@
       ],
       "module": "examples.texts.schemas.search",
       "name": "SentenceIndexSummary"
+    },
+    {
+      "bases": [
+        "ParagraphIndexTarget"
+      ],
+      "fields": [
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "sentence_id",
+          "name": "sentence_id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "SentenceIndexTarget"
     },
     {
       "bases": [
@@ -2171,7 +2265,7 @@
           "schema": "Sentence"
         }
       ],
-      "source": "examples.texts.transforms.search.AddScores",
+      "source": "examples.texts.transforms.scoring.AddScores.AddScores",
       "step_methods": [
         {
           "input_lane": "queries",
@@ -2425,8 +2519,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/search.py",
-        "traceability": "traceability/transforms/search.AddScores.json"
+        "pyspark_transform": "pyspark/transforms/AddScores.py",
+        "traceability": "traceability/transforms/AddScores.AddScores.json"
       }
     },
     {

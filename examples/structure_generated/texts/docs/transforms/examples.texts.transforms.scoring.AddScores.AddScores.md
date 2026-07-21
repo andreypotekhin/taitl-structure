@@ -2,7 +2,7 @@
 
 # AddScores
 
-Source: `examples.texts.transforms.search.AddScores`
+Source: `examples.texts.transforms.scoring.AddScores.AddScores`
 
 ## Inputs
 
@@ -59,5 +59,5 @@ Source: `examples.texts.transforms.search.AddScores`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/search.py`
-- `traceability`: `traceability/transforms/search.AddScores.json`
+- `pyspark_transform`: `pyspark/transforms/AddScores.py`
+- `traceability`: `traceability/transforms/AddScores.AddScores.json`

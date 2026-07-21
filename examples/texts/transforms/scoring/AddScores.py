@@ -11,12 +11,12 @@ from examples.texts.schemas.search import (
     SentenceOverlapScore,
 )
 from examples.texts.schemas.text import Document, Paragraph, Section, Sentence
-from examples.texts.transforms.scoring.ScoreCorpus import ScoreCorpus
+from examples.texts.transforms.scoring.ScoreAll import ScoreAll
 from structure import input, lane, output, step
 from structure.plugin.pyspark import inner_join
 
 
-class Score(ScoreCorpus):
+class AddScores(ScoreAll):
     """Run index-backed scoring and attach results to matching hierarchy rows."""
 
     documents = input(Document)
@@ -29,7 +29,7 @@ class Score(ScoreCorpus):
     scored_sentences = output(Sentence)
 
     @step(
-        input=[documents, lane(ScoreCorpus.document_overlap_scores), lane(ScoreCorpus.document_bm25_scores)],
+        input=[documents, lane(ScoreAll.document_overlap_scores), lane(ScoreAll.document_bm25_scores)],
         output=scored_documents,
     )
     def score_documents(self, document: Document, overlap: DocumentOverlapScore, bm25: DocumentBm25Score) -> Document:
@@ -40,7 +40,7 @@ class Score(ScoreCorpus):
         )
 
     @step(
-        input=[sections, lane(ScoreCorpus.section_overlap_scores), lane(ScoreCorpus.section_bm25_scores)],
+        input=[sections, lane(ScoreAll.section_overlap_scores), lane(ScoreAll.section_bm25_scores)],
         output=scored_sections,
     )
     def score_sections(self, section: Section, overlap: SectionOverlapScore, bm25: SectionBm25Score) -> Section:
@@ -51,7 +51,7 @@ class Score(ScoreCorpus):
         )
 
     @step(
-        input=[paragraphs, lane(ScoreCorpus.paragraph_overlap_scores), lane(ScoreCorpus.paragraph_bm25_scores)],
+        input=[paragraphs, lane(ScoreAll.paragraph_overlap_scores), lane(ScoreAll.paragraph_bm25_scores)],
         output=scored_paragraphs,
     )
     def score_paragraphs(
@@ -64,7 +64,7 @@ class Score(ScoreCorpus):
         )
 
     @step(
-        input=[sentences, lane(ScoreCorpus.sentence_overlap_scores), lane(ScoreCorpus.sentence_bm25_scores)],
+        input=[sentences, lane(ScoreAll.sentence_overlap_scores), lane(ScoreAll.sentence_bm25_scores)],
         output=scored_sentences,
     )
     def score_sentences(self, sentence: Sentence, overlap: SentenceOverlapScore, bm25: SentenceBm25Score) -> Sentence:

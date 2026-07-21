@@ -142,7 +142,7 @@
       "schema": "Sentence"
     }
   ],
-  "source": "examples.texts.transforms.search.AddScores",
+  "source": "examples.texts.transforms.scoring.AddScores.AddScores",
   "step_methods": [
     {
       "input_lane": "queries",
@@ -396,7 +396,7 @@
     }
   ],
   "target_artifacts": {
-    "pyspark_transform": "pyspark/transforms/search.py",
-    "traceability": "traceability/transforms/search.AddScores.json"
+    "pyspark_transform": "pyspark/transforms/AddScores.py",
+    "traceability": "traceability/transforms/AddScores.AddScores.json"
   }
 }
