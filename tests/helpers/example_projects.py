@@ -302,15 +302,45 @@ def render_texts_example() -> dict[str, str]:
             SentenceIndexTarget,
             SentenceIndexTerm,
             SentenceOverlapScore,
+            SentenceSearchResult,
             SentenceSearchTarget,
+        )
+        from examples.texts.schemas.similarity import (
+            DocumentSimilarity,
+            DocumentSimilarityQuery,
+            IndexedSimilarDocument,
+            IndexedSimilarParagraph,
+            IndexedSimilarSection,
+            IndexedSimilarSentence,
+            ParagraphSimilarity,
+            ParagraphSimilarityQuery,
+            SectionSimilarity,
+            SectionSimilarityQuery,
+            SentenceSimilarity,
+            SentenceSimilarityQuery,
+            SimilarityDocumentQuery,
+            SimilarityParagraphQuery,
+            SimilarityPolicy,
+            SimilaritySectionQuery,
+            SimilaritySentenceQuery,
         )
         from examples.texts.schemas.text import Document, Paragraph, Section, Sentence, Word
         from examples.texts.transforms.analyze import AnalyzeText
         from examples.texts.transforms.corpus import CorpusText
         from examples.texts.transforms.extract import ExtractText
+        from examples.texts.transforms.index import CreateIndex
         from examples.texts.transforms.profile import ProfileDocuments
         from examples.texts.transforms.scoring.AddScores import AddScores
-        from examples.texts.transforms.search import CreateIndex
+        from examples.texts.transforms.scoring.ScoreAll import ScoreAll
+        from examples.texts.transforms.search import Search
+        from examples.texts.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
+        from examples.texts.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
+        from examples.texts.transforms.similarity import (
+            Similarity,
+            SimilarParagraphs,
+            SimilarSections,
+            SimilarSentences,
+        )
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
             "examples.texts.schemas.analytics": [
@@ -326,6 +356,7 @@ def render_texts_example() -> dict[str, str]:
             "examples.texts.schemas.text": [Document, Section, Paragraph, Sentence, Word],
             "examples.texts.schemas.search": [
                 SearchQuery,
+                SentenceSearchResult,
                 DocumentSearchTarget,
                 SectionSearchTarget,
                 ParagraphSearchTarget,
@@ -351,14 +382,47 @@ def render_texts_example() -> dict[str, str]:
                 ParagraphBm25Score,
                 SentenceBm25Score,
             ],
+            "examples.texts.schemas.similarity": [
+                SimilarityPolicy,
+                SimilarityDocumentQuery,
+                SimilaritySectionQuery,
+                SimilarityParagraphQuery,
+                SimilaritySentenceQuery,
+                DocumentSimilarityQuery,
+                SectionSimilarityQuery,
+                ParagraphSimilarityQuery,
+                SentenceSimilarityQuery,
+                DocumentSimilarity,
+                IndexedSimilarDocument,
+                IndexedSimilarSection,
+                IndexedSimilarParagraph,
+                IndexedSimilarSentence,
+                SectionSimilarity,
+                ParagraphSimilarity,
+                SentenceSimilarity,
+            ],
         }
         transforms = (
             (ExtractText, "examples.texts.transforms.extract.ExtractText"),
             (ProfileDocuments, "examples.texts.transforms.profile.ProfileDocuments"),
             (AnalyzeText, "examples.texts.transforms.analyze.AnalyzeText"),
             (CorpusText, "examples.texts.transforms.corpus.CorpusText"),
-            (CreateIndex, "examples.texts.transforms.search.CreateIndex"),
+            (CreateIndex, "examples.texts.transforms.index.CreateIndex"),
+            (
+                CreateSimilarityQueries,
+                "examples.texts.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries",
+            ),
+            (ScoreAll, "examples.texts.transforms.scoring.ScoreAll.ScoreAll"),
+            (
+                ReduceSimilarityScores,
+                "examples.texts.transforms.similarities.ReduceSimilarityScores.ReduceSimilarityScores",
+            ),
+            (Similarity, "examples.texts.transforms.similarity.Similarity"),
+            (SimilarSections, "examples.texts.transforms.similarities.SimilarSections.SimilarSections"),
+            (SimilarParagraphs, "examples.texts.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
+            (SimilarSentences, "examples.texts.transforms.similarities.SimilarSentences.SimilarSentences"),
             (AddScores, "examples.texts.transforms.scoring.AddScores.AddScores"),
+            (Search, "examples.texts.transforms.search.Search"),
         )
         files = {}
         for transform_class, source_transform in transforms:

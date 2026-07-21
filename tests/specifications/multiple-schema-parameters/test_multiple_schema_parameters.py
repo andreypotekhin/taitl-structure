@@ -1,8 +1,15 @@
+from typing import cast
+
 import pytest
 
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
+
+
+def _analysis(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False).analysis
 
 
 class OrderRaw(Schema):
@@ -47,7 +54,7 @@ def test_multiple_schema_parameters_and_results_compile_in_order() -> None:
             audited_order = OrderWithProduct(id=order.id, product_name=product.name)
             return accepted_order, audited_order
 
-    plan = compile_transform(AddProduct)
+    plan = _analysis(AddProduct)
     compiled_step = plan.steps[0]
 
     assert [(item.parameter, item.source, item.driving) for item in compiled_step.inputs] == [
@@ -58,7 +65,7 @@ def test_multiple_schema_parameters_and_results_compile_in_order() -> None:
         ("accepted", "accepted"),
         ("audited", "audited"),
     ]
-    assert compiled_step.joins[0].source == "products"
+    assert cast(PySparkStepBody, compiled_step.plugin_body).joins[0].source == "products"
     assert [item.source for item in plan.outputs] == ["accepted", "audited"]
 
 
@@ -73,7 +80,7 @@ def test_unique_schema_parameters_are_inferred() -> None:
             product = lookup_join(product, on=product.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product.name)
 
-    compiled_step = compile_transform(AddProduct).steps[0]
+    compiled_step = _analysis(AddProduct).steps[0]
 
     assert [item.source for item in compiled_step.inputs] == ["orders", "products"]
 
@@ -89,7 +96,7 @@ def test_plural_parameter_name_disambiguates_same_schema_driving_inputs() -> Non
         def pick(self, order1: OrderRaw) -> OrderRaw:
             return OrderRaw(id=order1.id, product_id=order1.product_id)
 
-    compiled_step = compile_transform(PickOrders).steps[0]
+    compiled_step = _analysis(PickOrders).steps[0]
 
     assert [(item.parameter, item.source, item.lane) for item in compiled_step.inputs] == [
         ("order1", "orders1", "orders1"),
@@ -109,7 +116,7 @@ def test_plural_parameter_name_disambiguates_same_schema_relation_inputs() -> No
             product2 = lookup_join(product2, on=product2.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product2.name)
 
-    compiled_step = compile_transform(AddProduct).steps[0]
+    compiled_step = _analysis(AddProduct).steps[0]
 
     assert [(item.parameter, item.source, item.lane) for item in compiled_step.inputs] == [
         ("order", "orders", "orders"),
@@ -138,7 +145,7 @@ def test_plural_parameter_name_disambiguates_same_schema_lanes() -> None:
         def pick(self, order2: OrderRaw) -> OrderRaw:
             return OrderRaw(id=order2.id, product_id=order2.product_id)
 
-    compiled_step = compile_transform(PickOrders).steps[2]
+    compiled_step = _analysis(PickOrders).steps[2]
 
     assert [(item.parameter, item.source, item.lane) for item in compiled_step.inputs] == [
         ("order2", "orders2", "orders2"),
@@ -159,7 +166,7 @@ def test_partial_explicit_input_declaration_disables_plural_parameter_inference(
             return OrderWithProduct(id=order.id, product_name=product2.name)
 
     with pytest.raises(Exception, match="@transform\\(input=\\.\\.\\.\\) binds 1 source"):
-        compile_transform(AddProduct)
+        _analysis(AddProduct)
 
 
 def test_join_relation_can_be_inferred_from_on_clause() -> None:
@@ -173,12 +180,13 @@ def test_join_relation_can_be_inferred_from_on_clause() -> None:
             lookup_join(on=product.id == order.product_id, how=Join.LEFT)
             return OrderWithProduct(id=order.id, product_name=product.name)
 
-    compiled_step = compile_transform(AddProduct).steps[0]
+    compiled_step = _analysis(AddProduct).steps[0]
 
-    assert compiled_step.joins[0].input_name == "product"
-    assert compiled_step.joins[0].source == "products"
-    assert compiled_step.operations[0].kind == "join"
-    assert compiled_step.operations[0].join == compiled_step.joins[0]
+    body = cast(PySparkStepBody, compiled_step.plugin_body)
+    assert body.joins[0].input_name == "product"
+    assert body.joins[0].source == "products"
+    assert body.operations[0].kind == "join"
+    assert body.operations[0].join == body.joins[0]
 
 
 def test_join_relation_can_be_inferred_from_reversed_operands() -> None:

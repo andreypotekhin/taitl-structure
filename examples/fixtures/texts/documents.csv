@@ -41,3 +41,9 @@ Indexes preserve titles and publication dates.
 
 # Access
 Visitors locate related documents quickly.",text/plain,utf-8,en,2026-05-03 10:00:00,2026-05-04 10:00:00,2026-07-14 09:00:00
+d-11,docs,search,Aurora Navigation,https://search.test/aurora-navigation,"# Search
+Aurora beacon guides navigation.",text/plain,utf-8,en,2026-07-15 08:00:00,2026-07-15 09:00:00,2026-07-15 10:00:00
+d-12,docs,search,Aurora Research,https://search.test/aurora-research,"# Search
+Aurora beacon guides research.",text/plain,utf-8,en,2026-07-15 08:30:00,2026-07-15 09:30:00,2026-07-15 10:30:00
+d-13,docs,search,Aurora Observations,https://search.test/aurora-observations,"# Search
+Aurora observations continue.",text/plain,utf-8,en,2026-07-15 09:00:00,2026-07-15 10:00:00,2026-07-15 11:00:00

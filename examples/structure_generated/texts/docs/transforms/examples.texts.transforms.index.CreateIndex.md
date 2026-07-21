@@ -2,7 +2,7 @@
 
 # CreateIndex
 
-Source: `examples.texts.transforms.search.CreateIndex`
+Source: `examples.texts.transforms.index.CreateIndex`
 
 ## Inputs
 
@@ -29,5 +29,5 @@ Source: `examples.texts.transforms.search.CreateIndex`
 
 ## Target Artifacts
 
-- `pyspark_transform`: `pyspark/transforms/search.py`
-- `traceability`: `traceability/transforms/search.CreateIndex.json`
+- `pyspark_transform`: `pyspark/transforms/index.py`
+- `traceability`: `traceability/transforms/index.CreateIndex.json`

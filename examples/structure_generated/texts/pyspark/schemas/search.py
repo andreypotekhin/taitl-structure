@@ -9,6 +9,18 @@ SEARCH_QUERY_SCHEMA = T.StructType([
     T.StructField("content", T.StringType(), False),
 ])
 
+SENTENCE_SEARCH_RESULT_SCHEMA = T.StructType([
+    T.StructField("search_query_id", T.StringType(), False),
+    T.StructField("rank", T.LongType(), False),
+    T.StructField("document_id", T.StringType(), False),
+    T.StructField("section_id", T.StringType(), False),
+    T.StructField("paragraph_id", T.StringType(), False),
+    T.StructField("sentence_id", T.StringType(), False),
+    T.StructField("content", T.StringType(), False),
+    T.StructField("score_overlap", T.DoubleType(), False),
+    T.StructField("score_bm25", T.DoubleType(), False),
+])
+
 DOCUMENT_SEARCH_TARGET_SCHEMA = T.StructType([
     T.StructField("query_id", T.StringType(), False),
     T.StructField("document_id", T.StringType(), False),

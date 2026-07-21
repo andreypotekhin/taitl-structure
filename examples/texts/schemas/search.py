@@ -9,6 +9,20 @@ class SearchQuery(Schema):
     content = string(nullable=False)
 
 
+class SentenceSearchResult(Schema):
+    """One ranked sentence match for a caller-supplied query."""
+
+    search_query_id = string(nullable=False)
+    rank = long(nullable=False)
+    document_id = string(nullable=False)
+    section_id = string(nullable=False)
+    paragraph_id = string(nullable=False)
+    sentence_id = string(nullable=False)
+    content = string(nullable=False)
+    score_overlap = double(nullable=False)
+    score_bm25 = double(nullable=False)
+
+
 class DocumentSearchTarget(Schema):
     query_id = string(nullable=False)
     document_id = string(nullable=False)

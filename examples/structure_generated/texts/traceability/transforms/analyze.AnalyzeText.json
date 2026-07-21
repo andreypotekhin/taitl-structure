@@ -374,9 +374,33 @@
       "constant": "DOCUMENT_SEARCH_TARGET_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.search"
     },
+    "DocumentSimilarity": {
+      "constant": "DOCUMENT_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
+    },
+    "DocumentSimilarityQuery": {
+      "constant": "DOCUMENT_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
+    },
     "DocumentStatistics": {
       "constant": "DOCUMENT_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.analytics"
+    },
+    "IndexedSimilarDocument": {
+      "constant": "INDEXED_SIMILAR_DOCUMENT_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
+    },
+    "IndexedSimilarParagraph": {
+      "constant": "INDEXED_SIMILAR_PARAGRAPH_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
+    },
+    "IndexedSimilarSection": {
+      "constant": "INDEXED_SIMILAR_SECTION_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
+    },
+    "IndexedSimilarSentence": {
+      "constant": "INDEXED_SIMILAR_SENTENCE_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
     },
     "Paragraph": {
       "constant": "PARAGRAPH_SCHEMA",
@@ -405,6 +429,14 @@
     "ParagraphSearchTarget": {
       "constant": "PARAGRAPH_SEARCH_TARGET_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "ParagraphSimilarity": {
+      "constant": "PARAGRAPH_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
+    },
+    "ParagraphSimilarityQuery": {
+      "constant": "PARAGRAPH_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
     },
     "ParagraphStatistics": {
       "constant": "PARAGRAPH_STATISTICS_SCHEMA",
@@ -442,6 +474,14 @@
       "constant": "SECTION_SEARCH_TARGET_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.search"
     },
+    "SectionSimilarity": {
+      "constant": "SECTION_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
+    },
+    "SectionSimilarityQuery": {
+      "constant": "SECTION_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
+    },
     "SectionStatistics": {
       "constant": "SECTION_STATISTICS_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.analytics"
@@ -470,9 +510,21 @@
       "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.search"
     },
+    "SentenceSearchResult": {
+      "constant": "SENTENCE_SEARCH_RESULT_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
     "SentenceSearchTarget": {
       "constant": "SENTENCE_SEARCH_TARGET_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "SentenceSimilarity": {
+      "constant": "SENTENCE_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
+    },
+    "SentenceSimilarityQuery": {
+      "constant": "SENTENCE_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
     },
     "SentenceStatistics": {
       "constant": "SENTENCE_STATISTICS_SCHEMA",
@@ -481,6 +533,26 @@
     "SimilarDocument": {
       "constant": "SIMILAR_DOCUMENT_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.analytics"
+    },
+    "SimilarityDocumentQuery": {
+      "constant": "SIMILARITY_DOCUMENT_QUERY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
+    },
+    "SimilarityParagraphQuery": {
+      "constant": "SIMILARITY_PARAGRAPH_QUERY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
+    },
+    "SimilarityPolicy": {
+      "constant": "SIMILARITY_POLICY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
+    },
+    "SimilaritySectionQuery": {
+      "constant": "SIMILARITY_SECTION_QUERY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
+    },
+    "SimilaritySentenceQuery": {
+      "constant": "SIMILARITY_SENTENCE_QUERY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.similarity"
     },
     "Word": {
       "constant": "WORD_SCHEMA",

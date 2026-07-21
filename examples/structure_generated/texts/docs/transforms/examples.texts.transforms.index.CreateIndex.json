@@ -51,7 +51,7 @@
       "schema": "SentenceIndexSummary"
     }
   ],
-  "source": "examples.texts.transforms.search.CreateIndex",
+  "source": "examples.texts.transforms.index.CreateIndex",
   "step_methods": [
     {
       "input_lane": "words",
@@ -112,7 +112,7 @@
     }
   ],
   "target_artifacts": {
-    "pyspark_transform": "pyspark/transforms/search.py",
-    "traceability": "traceability/transforms/search.CreateIndex.json"
+    "pyspark_transform": "pyspark/transforms/index.py",
+    "traceability": "traceability/transforms/index.CreateIndex.json"
   }
 }

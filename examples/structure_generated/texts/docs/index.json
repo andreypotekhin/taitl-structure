@@ -567,6 +567,68 @@
       "bases": [],
       "fields": [
         {
+          "column": "left_document_id",
+          "name": "left_document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "right_document_id",
+          "name": "right_document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bm25_left_to_right",
+          "name": "bm25_left_to_right",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bm25_right_to_left",
+          "name": "bm25_right_to_left",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bm25_mean",
+          "name": "bm25_mean",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "DocumentSimilarity"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "DocumentSimilarityQuery"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
           "column": "document_id",
           "name": "document_id",
           "nullable": false,
@@ -611,6 +673,306 @@
       ],
       "module": "examples.texts.schemas.analytics",
       "name": "DocumentStatistics"
+    },
+    {
+      "bases": [
+        "Document"
+      ],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "collection_id",
+          "name": "collection_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "source",
+          "name": "source",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "title",
+          "name": "title",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "url",
+          "name": "url",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "content",
+          "name": "content",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "content_type",
+          "name": "content_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "encoding",
+          "name": "encoding",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "language",
+          "name": "language",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "created_at",
+          "name": "created_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "published_at",
+          "name": "published_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "harvested_at",
+          "name": "harvested_at",
+          "nullable": false,
+          "type": "timestamp"
+        },
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "IndexedSimilarDocument"
+    },
+    {
+      "bases": [
+        "Paragraph"
+      ],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "ordinal",
+          "name": "ordinal",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "content",
+          "name": "content",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "IndexedSimilarParagraph"
+    },
+    {
+      "bases": [
+        "Section"
+      ],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "ordinal",
+          "name": "ordinal",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "heading",
+          "name": "heading",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "IndexedSimilarSection"
+    },
+    {
+      "bases": [
+        "Sentence"
+      ],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_ordinal",
+          "name": "paragraph_ordinal",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "ordinal",
+          "name": "ordinal",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "content",
+          "name": "content",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "IndexedSimilarSentence"
     },
     {
       "bases": [],
@@ -882,6 +1244,106 @@
       ],
       "module": "examples.texts.schemas.search",
       "name": "ParagraphSearchTarget"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "left_document_id",
+          "name": "left_document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "left_section_id",
+          "name": "left_section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "left_paragraph_id",
+          "name": "left_paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "right_document_id",
+          "name": "right_document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "right_section_id",
+          "name": "right_section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "right_paragraph_id",
+          "name": "right_paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bm25_left_to_right",
+          "name": "bm25_left_to_right",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bm25_right_to_left",
+          "name": "bm25_right_to_left",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bm25_mean",
+          "name": "bm25_mean",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "ParagraphSimilarity"
+    },
+    {
+      "bases": [
+        "SectionSimilarityQuery"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "ParagraphSimilarityQuery"
     },
     {
       "bases": [],
@@ -1185,6 +1647,88 @@
       ],
       "module": "examples.texts.schemas.search",
       "name": "SectionSearchTarget"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "left_document_id",
+          "name": "left_document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "left_section_id",
+          "name": "left_section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "right_document_id",
+          "name": "right_document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "right_section_id",
+          "name": "right_section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bm25_left_to_right",
+          "name": "bm25_left_to_right",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bm25_right_to_left",
+          "name": "bm25_right_to_left",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bm25_mean",
+          "name": "bm25_mean",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "SectionSimilarity"
+    },
+    {
+      "bases": [
+        "DocumentSimilarityQuery"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "SectionSimilarityQuery"
     },
     {
       "bases": [],
@@ -1516,6 +2060,67 @@
       "name": "SentenceOverlapScore"
     },
     {
+      "bases": [],
+      "fields": [
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "sentence_id",
+          "name": "sentence_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "content",
+          "name": "content",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "SentenceSearchResult"
+    },
+    {
       "bases": [
         "ParagraphSearchTarget"
       ],
@@ -1553,6 +2158,124 @@
       ],
       "module": "examples.texts.schemas.search",
       "name": "SentenceSearchTarget"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "left_document_id",
+          "name": "left_document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "left_section_id",
+          "name": "left_section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "left_paragraph_id",
+          "name": "left_paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "left_sentence_id",
+          "name": "left_sentence_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "right_document_id",
+          "name": "right_document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "right_section_id",
+          "name": "right_section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "right_paragraph_id",
+          "name": "right_paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "right_sentence_id",
+          "name": "right_sentence_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bm25_left_to_right",
+          "name": "bm25_left_to_right",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bm25_right_to_left",
+          "name": "bm25_right_to_left",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bm25_mean",
+          "name": "bm25_mean",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "SentenceSimilarity"
+    },
+    {
+      "bases": [
+        "ParagraphSimilarityQuery"
+      ],
+      "fields": [
+        {
+          "column": "query_id",
+          "name": "query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "sentence_id",
+          "name": "sentence_id",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "SentenceSimilarityQuery"
     },
     {
       "bases": [],
@@ -1657,6 +2380,295 @@
       ],
       "module": "examples.texts.schemas.analytics",
       "name": "SimilarDocument"
+    },
+    {
+      "bases": [
+        "Document"
+      ],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "collection_id",
+          "name": "collection_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "source",
+          "name": "source",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "title",
+          "name": "title",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "url",
+          "name": "url",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "content",
+          "name": "content",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "content_type",
+          "name": "content_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "encoding",
+          "name": "encoding",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "language",
+          "name": "language",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "created_at",
+          "name": "created_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "published_at",
+          "name": "published_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "harvested_at",
+          "name": "harvested_at",
+          "nullable": false,
+          "type": "timestamp"
+        },
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "SimilarityDocumentQuery"
+    },
+    {
+      "bases": [
+        "Paragraph"
+      ],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "ordinal",
+          "name": "ordinal",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "content",
+          "name": "content",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "SimilarityParagraphQuery"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "max_document_frequency_ratio",
+          "name": "max_document_frequency_ratio",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "SimilarityPolicy"
+    },
+    {
+      "bases": [
+        "Section"
+      ],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "ordinal",
+          "name": "ordinal",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "heading",
+          "name": "heading",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "SimilaritySectionQuery"
+    },
+    {
+      "bases": [
+        "Sentence"
+      ],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_ordinal",
+          "name": "paragraph_ordinal",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "ordinal",
+          "name": "ordinal",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "content",
+          "name": "content",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.similarity",
+      "name": "SimilaritySentenceQuery"
     },
     {
       "bases": [],
@@ -2073,6 +3085,123 @@
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/extract.py",
         "traceability": "traceability/transforms/extract.ExtractText.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "words",
+          "ordinal": 0,
+          "schema": "Word"
+        }
+      ],
+      "name": "CreateIndex",
+      "outputs": [
+        {
+          "name": "document_terms",
+          "ordinal": 0,
+          "schema": "DocumentIndexTerm"
+        },
+        {
+          "name": "document_summary",
+          "ordinal": 1,
+          "schema": "DocumentIndexSummary"
+        },
+        {
+          "name": "section_terms",
+          "ordinal": 2,
+          "schema": "SectionIndexTerm"
+        },
+        {
+          "name": "section_summary",
+          "ordinal": 3,
+          "schema": "SectionIndexSummary"
+        },
+        {
+          "name": "paragraph_terms",
+          "ordinal": 4,
+          "schema": "ParagraphIndexTerm"
+        },
+        {
+          "name": "paragraph_summary",
+          "ordinal": 5,
+          "schema": "ParagraphIndexSummary"
+        },
+        {
+          "name": "sentence_terms",
+          "ordinal": 6,
+          "schema": "SentenceIndexTerm"
+        },
+        {
+          "name": "sentence_summary",
+          "ordinal": 7,
+          "schema": "SentenceIndexSummary"
+        }
+      ],
+      "source": "examples.texts.transforms.index.CreateIndex",
+      "step_methods": [
+        {
+          "input_lane": "words",
+          "input_schema": "Word",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "word",
+              "schema": "Word",
+              "source": "words"
+            }
+          ],
+          "name": "declare_index",
+          "output_lane": "document_terms",
+          "output_schema": "DocumentIndexTerm",
+          "results": [
+            {
+              "frame": "document_terms",
+              "lane": "document_terms",
+              "schema": "DocumentIndexTerm"
+            },
+            {
+              "frame": "document_summary",
+              "lane": "document_summary",
+              "schema": "DocumentIndexSummary"
+            },
+            {
+              "frame": "section_terms",
+              "lane": "section_terms",
+              "schema": "SectionIndexTerm"
+            },
+            {
+              "frame": "section_summary",
+              "lane": "section_summary",
+              "schema": "SectionIndexSummary"
+            },
+            {
+              "frame": "paragraph_terms",
+              "lane": "paragraph_terms",
+              "schema": "ParagraphIndexTerm"
+            },
+            {
+              "frame": "paragraph_summary",
+              "lane": "paragraph_summary",
+              "schema": "ParagraphIndexSummary"
+            },
+            {
+              "frame": "sentence_terms",
+              "lane": "sentence_terms",
+              "schema": "SentenceIndexTerm"
+            },
+            {
+              "frame": "sentence_summary",
+              "lane": "sentence_summary",
+              "schema": "SentenceIndexSummary"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/index.py",
+        "traceability": "traceability/transforms/index.CreateIndex.json"
       }
     },
     {
@@ -2527,22 +3656,14 @@
       "dependencies": [],
       "inputs": [
         {
-          "name": "words",
+          "name": "queries",
           "ordinal": 0,
-          "schema": "Word"
-        }
-      ],
-      "name": "CreateIndex",
-      "outputs": [
-        {
-          "name": "document_terms",
-          "ordinal": 0,
-          "schema": "DocumentIndexTerm"
+          "schema": "SearchQuery"
         },
         {
-          "name": "document_summary",
+          "name": "document_terms",
           "ordinal": 1,
-          "schema": "DocumentIndexSummary"
+          "schema": "DocumentIndexTerm"
         },
         {
           "name": "section_terms",
@@ -2550,94 +3671,908 @@
           "schema": "SectionIndexTerm"
         },
         {
-          "name": "section_summary",
-          "ordinal": 3,
-          "schema": "SectionIndexSummary"
-        },
-        {
           "name": "paragraph_terms",
-          "ordinal": 4,
+          "ordinal": 3,
           "schema": "ParagraphIndexTerm"
         },
         {
-          "name": "paragraph_summary",
-          "ordinal": 5,
-          "schema": "ParagraphIndexSummary"
-        },
-        {
           "name": "sentence_terms",
-          "ordinal": 6,
+          "ordinal": 4,
           "schema": "SentenceIndexTerm"
         },
         {
-          "name": "sentence_summary",
+          "name": "document_summary",
+          "ordinal": 5,
+          "schema": "DocumentIndexSummary"
+        },
+        {
+          "name": "section_summary",
+          "ordinal": 6,
+          "schema": "SectionIndexSummary"
+        },
+        {
+          "name": "paragraph_summary",
           "ordinal": 7,
+          "schema": "ParagraphIndexSummary"
+        },
+        {
+          "name": "sentence_summary",
+          "ordinal": 8,
           "schema": "SentenceIndexSummary"
         }
       ],
-      "source": "examples.texts.transforms.search.CreateIndex",
+      "name": "ScoreAll",
+      "outputs": [
+        {
+          "name": "document_overlap_scores",
+          "ordinal": 0,
+          "schema": "DocumentOverlapScore"
+        },
+        {
+          "name": "section_overlap_scores",
+          "ordinal": 1,
+          "schema": "SectionOverlapScore"
+        },
+        {
+          "name": "paragraph_overlap_scores",
+          "ordinal": 2,
+          "schema": "ParagraphOverlapScore"
+        },
+        {
+          "name": "sentence_overlap_scores",
+          "ordinal": 3,
+          "schema": "SentenceOverlapScore"
+        },
+        {
+          "name": "document_bm25_scores",
+          "ordinal": 4,
+          "schema": "DocumentBm25Score"
+        },
+        {
+          "name": "section_bm25_scores",
+          "ordinal": 5,
+          "schema": "SectionBm25Score"
+        },
+        {
+          "name": "paragraph_bm25_scores",
+          "ordinal": 6,
+          "schema": "ParagraphBm25Score"
+        },
+        {
+          "name": "sentence_bm25_scores",
+          "ordinal": 7,
+          "schema": "SentenceBm25Score"
+        }
+      ],
+      "source": "examples.texts.transforms.scoring.ScoreAll.ScoreAll",
       "step_methods": [
         {
-          "input_lane": "words",
-          "input_schema": "Word",
+          "input_lane": "queries",
+          "input_schema": "SearchQuery",
           "inputs": [
             {
               "driving": true,
-              "parameter": "word",
-              "schema": "Word",
-              "source": "words"
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
             }
           ],
-          "name": "declare_index",
-          "output_lane": "document_terms",
-          "output_schema": "DocumentIndexTerm",
+          "name": "declare_overlap_scores",
+          "output_lane": "document_overlap_scores",
+          "output_schema": "DocumentOverlapScore",
           "results": [
             {
-              "frame": "document_terms",
-              "lane": "document_terms",
-              "schema": "DocumentIndexTerm"
+              "frame": "document_overlap_scores",
+              "lane": "document_overlap_scores",
+              "schema": "DocumentOverlapScore"
             },
             {
-              "frame": "document_summary",
-              "lane": "document_summary",
-              "schema": "DocumentIndexSummary"
+              "frame": "section_overlap_scores",
+              "lane": "section_overlap_scores",
+              "schema": "SectionOverlapScore"
             },
             {
-              "frame": "section_terms",
-              "lane": "section_terms",
-              "schema": "SectionIndexTerm"
+              "frame": "paragraph_overlap_scores",
+              "lane": "paragraph_overlap_scores",
+              "schema": "ParagraphOverlapScore"
             },
             {
-              "frame": "section_summary",
-              "lane": "section_summary",
-              "schema": "SectionIndexSummary"
+              "frame": "sentence_overlap_scores",
+              "lane": "sentence_overlap_scores",
+              "schema": "SentenceOverlapScore"
+            }
+          ]
+        },
+        {
+          "input_lane": "queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            }
+          ],
+          "name": "declare_bm25_scores",
+          "output_lane": "document_bm25_scores",
+          "output_schema": "DocumentBm25Score",
+          "results": [
+            {
+              "frame": "document_bm25_scores",
+              "lane": "document_bm25_scores",
+              "schema": "DocumentBm25Score"
             },
             {
-              "frame": "paragraph_terms",
-              "lane": "paragraph_terms",
-              "schema": "ParagraphIndexTerm"
+              "frame": "section_bm25_scores",
+              "lane": "section_bm25_scores",
+              "schema": "SectionBm25Score"
             },
             {
-              "frame": "paragraph_summary",
-              "lane": "paragraph_summary",
-              "schema": "ParagraphIndexSummary"
+              "frame": "paragraph_bm25_scores",
+              "lane": "paragraph_bm25_scores",
+              "schema": "ParagraphBm25Score"
             },
             {
-              "frame": "sentence_terms",
-              "lane": "sentence_terms",
-              "schema": "SentenceIndexTerm"
+              "frame": "sentence_bm25_scores",
+              "lane": "sentence_bm25_scores",
+              "schema": "SentenceBm25Score"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/ScoreAll.py",
+        "traceability": "traceability/transforms/ScoreAll.ScoreAll.json"
+      }
+    },
+    {
+      "dependencies": [
+        "query"
+      ],
+      "inputs": [
+        {
+          "name": "query",
+          "ordinal": 0,
+          "schema": "SearchQuery"
+        },
+        {
+          "name": "scored_sentences",
+          "ordinal": 1,
+          "schema": "Sentence"
+        }
+      ],
+      "name": "Search",
+      "outputs": [
+        {
+          "name": "results",
+          "ordinal": 0,
+          "schema": "SentenceSearchResult"
+        }
+      ],
+      "source": "examples.texts.transforms.search.Search",
+      "step_methods": [
+        {
+          "input_lane": "scored_sentences",
+          "input_schema": "Sentence",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "sentence",
+              "schema": "Sentence",
+              "source": "scored_sentences"
             },
             {
-              "frame": "sentence_summary",
-              "lane": "sentence_summary",
-              "schema": "SentenceIndexSummary"
+              "driving": false,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "query"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "query"
+            }
+          ],
+          "name": "rank_sentences",
+          "output_lane": "scored_sentences",
+          "output_schema": "SentenceSearchResult",
+          "results": [
+            {
+              "frame": "scored_sentences",
+              "lane": "scored_sentences",
+              "schema": "SentenceSearchResult"
             }
           ]
         }
       ],
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/search.py",
-        "traceability": "traceability/transforms/search.CreateIndex.json"
+        "traceability": "traceability/transforms/search.Search.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "policy",
+          "ordinal": 0,
+          "schema": "SimilarityPolicy"
+        },
+        {
+          "name": "document_terms",
+          "ordinal": 1,
+          "schema": "DocumentIndexTerm"
+        },
+        {
+          "name": "document_summary",
+          "ordinal": 2,
+          "schema": "DocumentIndexSummary"
+        },
+        {
+          "name": "section_terms",
+          "ordinal": 3,
+          "schema": "SectionIndexTerm"
+        },
+        {
+          "name": "section_summary",
+          "ordinal": 4,
+          "schema": "SectionIndexSummary"
+        },
+        {
+          "name": "paragraph_terms",
+          "ordinal": 5,
+          "schema": "ParagraphIndexTerm"
+        },
+        {
+          "name": "paragraph_summary",
+          "ordinal": 6,
+          "schema": "ParagraphIndexSummary"
+        },
+        {
+          "name": "sentence_terms",
+          "ordinal": 7,
+          "schema": "SentenceIndexTerm"
+        },
+        {
+          "name": "sentence_summary",
+          "ordinal": 8,
+          "schema": "SentenceIndexSummary"
+        }
+      ],
+      "name": "CreateSimilarityQueries",
+      "outputs": [
+        {
+          "name": "queries",
+          "ordinal": 0,
+          "schema": "SearchQuery"
+        },
+        {
+          "name": "document_queries",
+          "ordinal": 1,
+          "schema": "DocumentSimilarityQuery"
+        },
+        {
+          "name": "section_queries",
+          "ordinal": 2,
+          "schema": "SectionSimilarityQuery"
+        },
+        {
+          "name": "paragraph_queries",
+          "ordinal": 3,
+          "schema": "ParagraphSimilarityQuery"
+        },
+        {
+          "name": "sentence_queries",
+          "ordinal": 4,
+          "schema": "SentenceSimilarityQuery"
+        }
+      ],
+      "source": "examples.texts.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries",
+      "step_methods": [
+        {
+          "input_lane": "document_terms",
+          "input_schema": "DocumentIndexTerm",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "term",
+              "schema": "DocumentIndexTerm",
+              "source": "document_terms"
+            }
+          ],
+          "name": "declare_queries",
+          "output_lane": "queries",
+          "output_schema": "SearchQuery",
+          "results": [
+            {
+              "frame": "queries",
+              "lane": "queries",
+              "schema": "SearchQuery"
+            },
+            {
+              "frame": "document_queries",
+              "lane": "document_queries",
+              "schema": "DocumentSimilarityQuery"
+            },
+            {
+              "frame": "section_queries",
+              "lane": "section_queries",
+              "schema": "SectionSimilarityQuery"
+            },
+            {
+              "frame": "paragraph_queries",
+              "lane": "paragraph_queries",
+              "schema": "ParagraphSimilarityQuery"
+            },
+            {
+              "frame": "sentence_queries",
+              "lane": "sentence_queries",
+              "schema": "SentenceSimilarityQuery"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/CreateSimilarityQueries.py",
+        "traceability": "traceability/transforms/CreateSimilarityQueries.CreateSimilarityQueries.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "document_queries",
+          "ordinal": 0,
+          "schema": "DocumentSimilarityQuery"
+        },
+        {
+          "name": "section_queries",
+          "ordinal": 1,
+          "schema": "SectionSimilarityQuery"
+        },
+        {
+          "name": "paragraph_queries",
+          "ordinal": 2,
+          "schema": "ParagraphSimilarityQuery"
+        },
+        {
+          "name": "sentence_queries",
+          "ordinal": 3,
+          "schema": "SentenceSimilarityQuery"
+        },
+        {
+          "name": "document_overlap_scores",
+          "ordinal": 4,
+          "schema": "DocumentOverlapScore"
+        },
+        {
+          "name": "section_overlap_scores",
+          "ordinal": 5,
+          "schema": "SectionOverlapScore"
+        },
+        {
+          "name": "paragraph_overlap_scores",
+          "ordinal": 6,
+          "schema": "ParagraphOverlapScore"
+        },
+        {
+          "name": "sentence_overlap_scores",
+          "ordinal": 7,
+          "schema": "SentenceOverlapScore"
+        },
+        {
+          "name": "document_bm25_scores",
+          "ordinal": 8,
+          "schema": "DocumentBm25Score"
+        },
+        {
+          "name": "section_bm25_scores",
+          "ordinal": 9,
+          "schema": "SectionBm25Score"
+        },
+        {
+          "name": "paragraph_bm25_scores",
+          "ordinal": 10,
+          "schema": "ParagraphBm25Score"
+        },
+        {
+          "name": "sentence_bm25_scores",
+          "ordinal": 11,
+          "schema": "SentenceBm25Score"
+        }
+      ],
+      "name": "ReduceSimilarityScores",
+      "outputs": [
+        {
+          "name": "document_similarities",
+          "ordinal": 0,
+          "schema": "DocumentSimilarity"
+        },
+        {
+          "name": "section_similarities",
+          "ordinal": 1,
+          "schema": "SectionSimilarity"
+        },
+        {
+          "name": "paragraph_similarities",
+          "ordinal": 2,
+          "schema": "ParagraphSimilarity"
+        },
+        {
+          "name": "sentence_similarities",
+          "ordinal": 3,
+          "schema": "SentenceSimilarity"
+        }
+      ],
+      "source": "examples.texts.transforms.similarities.ReduceSimilarityScores.ReduceSimilarityScores",
+      "step_methods": [
+        {
+          "input_lane": "document_queries",
+          "input_schema": "DocumentSimilarityQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "DocumentSimilarityQuery",
+              "source": "document_queries"
+            }
+          ],
+          "name": "declare_similarities",
+          "output_lane": "document_similarities",
+          "output_schema": "DocumentSimilarity",
+          "results": [
+            {
+              "frame": "document_similarities",
+              "lane": "document_similarities",
+              "schema": "DocumentSimilarity"
+            },
+            {
+              "frame": "section_similarities",
+              "lane": "section_similarities",
+              "schema": "SectionSimilarity"
+            },
+            {
+              "frame": "paragraph_similarities",
+              "lane": "paragraph_similarities",
+              "schema": "ParagraphSimilarity"
+            },
+            {
+              "frame": "sentence_similarities",
+              "lane": "sentence_similarities",
+              "schema": "SentenceSimilarity"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/ReduceSimilarityScores.py",
+        "traceability": "traceability/transforms/ReduceSimilarityScores.ReduceSimilarityScores.json"
+      }
+    },
+    {
+      "dependencies": [
+        "pair",
+        "paragraph",
+        "paragraph_similarities",
+        "paragraphs"
+      ],
+      "inputs": [
+        {
+          "name": "query",
+          "ordinal": 0,
+          "schema": "SimilarityParagraphQuery"
+        },
+        {
+          "name": "paragraphs",
+          "ordinal": 1,
+          "schema": "Paragraph"
+        },
+        {
+          "name": "paragraph_similarities",
+          "ordinal": 2,
+          "schema": "ParagraphSimilarity"
+        }
+      ],
+      "name": "SimilarParagraphs",
+      "outputs": [
+        {
+          "name": "similar_paragraphs",
+          "ordinal": 0,
+          "schema": "IndexedSimilarParagraph"
+        }
+      ],
+      "source": "examples.texts.transforms.similarities.SimilarParagraphs.SimilarParagraphs",
+      "step_methods": [
+        {
+          "input_lane": "query",
+          "input_schema": "SimilarityParagraphQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SimilarityParagraphQuery",
+              "source": "query"
+            },
+            {
+              "driving": false,
+              "parameter": "paragraph",
+              "schema": "Paragraph",
+              "source": "paragraphs"
+            },
+            {
+              "driving": false,
+              "parameter": "pair",
+              "schema": "ParagraphSimilarity",
+              "source": "paragraph_similarities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "pair"
+            },
+            {
+              "how": "inner",
+              "input": "paragraph"
+            }
+          ],
+          "name": "rank",
+          "output_lane": "ranked_paragraphs",
+          "output_schema": "IndexedSimilarParagraph",
+          "results": [
+            {
+              "frame": "ranked_paragraphs",
+              "lane": "ranked_paragraphs",
+              "schema": "IndexedSimilarParagraph"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked_paragraphs",
+          "input_schema": "IndexedSimilarParagraph",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "IndexedSimilarParagraph",
+              "source": "ranked_paragraphs"
+            }
+          ],
+          "name": "limit",
+          "output_lane": "similar_paragraphs",
+          "output_schema": "IndexedSimilarParagraph",
+          "results": [
+            {
+              "frame": "similar_paragraphs",
+              "lane": "similar_paragraphs",
+              "schema": "IndexedSimilarParagraph"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/SimilarParagraphs.py",
+        "traceability": "traceability/transforms/SimilarParagraphs.SimilarParagraphs.json"
+      }
+    },
+    {
+      "dependencies": [
+        "pair",
+        "section",
+        "section_similarities",
+        "sections"
+      ],
+      "inputs": [
+        {
+          "name": "query",
+          "ordinal": 0,
+          "schema": "SimilaritySectionQuery"
+        },
+        {
+          "name": "sections",
+          "ordinal": 1,
+          "schema": "Section"
+        },
+        {
+          "name": "section_similarities",
+          "ordinal": 2,
+          "schema": "SectionSimilarity"
+        }
+      ],
+      "name": "SimilarSections",
+      "outputs": [
+        {
+          "name": "similar_sections",
+          "ordinal": 0,
+          "schema": "IndexedSimilarSection"
+        }
+      ],
+      "source": "examples.texts.transforms.similarities.SimilarSections.SimilarSections",
+      "step_methods": [
+        {
+          "input_lane": "query",
+          "input_schema": "SimilaritySectionQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SimilaritySectionQuery",
+              "source": "query"
+            },
+            {
+              "driving": false,
+              "parameter": "section",
+              "schema": "Section",
+              "source": "sections"
+            },
+            {
+              "driving": false,
+              "parameter": "pair",
+              "schema": "SectionSimilarity",
+              "source": "section_similarities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "pair"
+            },
+            {
+              "how": "inner",
+              "input": "section"
+            }
+          ],
+          "name": "rank",
+          "output_lane": "ranked_sections",
+          "output_schema": "IndexedSimilarSection",
+          "results": [
+            {
+              "frame": "ranked_sections",
+              "lane": "ranked_sections",
+              "schema": "IndexedSimilarSection"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked_sections",
+          "input_schema": "IndexedSimilarSection",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "IndexedSimilarSection",
+              "source": "ranked_sections"
+            }
+          ],
+          "name": "limit",
+          "output_lane": "similar_sections",
+          "output_schema": "IndexedSimilarSection",
+          "results": [
+            {
+              "frame": "similar_sections",
+              "lane": "similar_sections",
+              "schema": "IndexedSimilarSection"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/SimilarSections.py",
+        "traceability": "traceability/transforms/SimilarSections.SimilarSections.json"
+      }
+    },
+    {
+      "dependencies": [
+        "pair",
+        "sentence",
+        "sentence_similarities",
+        "sentences"
+      ],
+      "inputs": [
+        {
+          "name": "query",
+          "ordinal": 0,
+          "schema": "SimilaritySentenceQuery"
+        },
+        {
+          "name": "sentences",
+          "ordinal": 1,
+          "schema": "Sentence"
+        },
+        {
+          "name": "sentence_similarities",
+          "ordinal": 2,
+          "schema": "SentenceSimilarity"
+        }
+      ],
+      "name": "SimilarSentences",
+      "outputs": [
+        {
+          "name": "similar_sentences",
+          "ordinal": 0,
+          "schema": "IndexedSimilarSentence"
+        }
+      ],
+      "source": "examples.texts.transforms.similarities.SimilarSentences.SimilarSentences",
+      "step_methods": [
+        {
+          "input_lane": "query",
+          "input_schema": "SimilaritySentenceQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SimilaritySentenceQuery",
+              "source": "query"
+            },
+            {
+              "driving": false,
+              "parameter": "sentence",
+              "schema": "Sentence",
+              "source": "sentences"
+            },
+            {
+              "driving": false,
+              "parameter": "pair",
+              "schema": "SentenceSimilarity",
+              "source": "sentence_similarities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "pair"
+            },
+            {
+              "how": "inner",
+              "input": "sentence"
+            }
+          ],
+          "name": "rank",
+          "output_lane": "ranked_sentences",
+          "output_schema": "IndexedSimilarSentence",
+          "results": [
+            {
+              "frame": "ranked_sentences",
+              "lane": "ranked_sentences",
+              "schema": "IndexedSimilarSentence"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked_sentences",
+          "input_schema": "IndexedSimilarSentence",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "IndexedSimilarSentence",
+              "source": "ranked_sentences"
+            }
+          ],
+          "name": "limit",
+          "output_lane": "similar_sentences",
+          "output_schema": "IndexedSimilarSentence",
+          "results": [
+            {
+              "frame": "similar_sentences",
+              "lane": "similar_sentences",
+              "schema": "IndexedSimilarSentence"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/SimilarSentences.py",
+        "traceability": "traceability/transforms/SimilarSentences.SimilarSentences.json"
+      }
+    },
+    {
+      "dependencies": [
+        "document",
+        "document_similarities",
+        "documents",
+        "pair"
+      ],
+      "inputs": [
+        {
+          "name": "query",
+          "ordinal": 0,
+          "schema": "SimilarityDocumentQuery"
+        },
+        {
+          "name": "documents",
+          "ordinal": 1,
+          "schema": "Document"
+        },
+        {
+          "name": "document_similarities",
+          "ordinal": 2,
+          "schema": "DocumentSimilarity"
+        }
+      ],
+      "name": "Similarity",
+      "outputs": [
+        {
+          "name": "similar_documents",
+          "ordinal": 0,
+          "schema": "IndexedSimilarDocument"
+        }
+      ],
+      "source": "examples.texts.transforms.similarity.Similarity",
+      "step_methods": [
+        {
+          "input_lane": "query",
+          "input_schema": "SimilarityDocumentQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SimilarityDocumentQuery",
+              "source": "query"
+            },
+            {
+              "driving": false,
+              "parameter": "document",
+              "schema": "Document",
+              "source": "documents"
+            },
+            {
+              "driving": false,
+              "parameter": "pair",
+              "schema": "DocumentSimilarity",
+              "source": "document_similarities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "pair"
+            },
+            {
+              "how": "inner",
+              "input": "document"
+            }
+          ],
+          "name": "rank",
+          "output_lane": "ranked_documents",
+          "output_schema": "IndexedSimilarDocument",
+          "results": [
+            {
+              "frame": "ranked_documents",
+              "lane": "ranked_documents",
+              "schema": "IndexedSimilarDocument"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked_documents",
+          "input_schema": "IndexedSimilarDocument",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "IndexedSimilarDocument",
+              "source": "ranked_documents"
+            }
+          ],
+          "name": "limit",
+          "output_lane": "similar_documents",
+          "output_schema": "IndexedSimilarDocument",
+          "results": [
+            {
+              "frame": "similar_documents",
+              "lane": "similar_documents",
+              "schema": "IndexedSimilarDocument"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/similarity.py",
+        "traceability": "traceability/transforms/similarity.Similarity.json"
       }
     }
   ]

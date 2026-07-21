@@ -1,0 +1,107 @@
+{
+  "dependencies": [
+    "document",
+    "document_similarities",
+    "documents",
+    "pair"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "query",
+      "ordinal": 0,
+      "schema": "SimilarityDocumentQuery"
+    },
+    {
+      "name": "documents",
+      "ordinal": 1,
+      "schema": "Document"
+    },
+    {
+      "name": "document_similarities",
+      "ordinal": 2,
+      "schema": "DocumentSimilarity"
+    }
+  ],
+  "name": "Similarity",
+  "outputs": [
+    {
+      "name": "similar_documents",
+      "ordinal": 0,
+      "schema": "IndexedSimilarDocument"
+    }
+  ],
+  "source": "examples.texts.transforms.similarity.Similarity",
+  "step_methods": [
+    {
+      "input_lane": "query",
+      "input_schema": "SimilarityDocumentQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SimilarityDocumentQuery",
+          "source": "query"
+        },
+        {
+          "driving": false,
+          "parameter": "document",
+          "schema": "Document",
+          "source": "documents"
+        },
+        {
+          "driving": false,
+          "parameter": "pair",
+          "schema": "DocumentSimilarity",
+          "source": "document_similarities"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "pair"
+        },
+        {
+          "how": "inner",
+          "input": "document"
+        }
+      ],
+      "name": "rank",
+      "output_lane": "ranked_documents",
+      "output_schema": "IndexedSimilarDocument",
+      "results": [
+        {
+          "frame": "ranked_documents",
+          "lane": "ranked_documents",
+          "schema": "IndexedSimilarDocument"
+        }
+      ]
+    },
+    {
+      "input_lane": "ranked_documents",
+      "input_schema": "IndexedSimilarDocument",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "IndexedSimilarDocument",
+          "source": "ranked_documents"
+        }
+      ],
+      "name": "limit",
+      "output_lane": "similar_documents",
+      "output_schema": "IndexedSimilarDocument",
+      "results": [
+        {
+          "frame": "similar_documents",
+          "lane": "similar_documents",
+          "schema": "IndexedSimilarDocument"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/similarity.py",
+    "traceability": "traceability/transforms/similarity.Similarity.json"
+  }
+}

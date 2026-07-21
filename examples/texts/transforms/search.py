@@ -1,144 +1,41 @@
-"""Reusable, batch-built text index artifacts."""
+"""Ranked text-search results."""
 
-from examples.texts.algorithms.scoring.TextIndex import TextIndex
-from examples.texts.schemas.search import (
-    DocumentIndexSummary,
-    DocumentIndexTerm,
-    ParagraphIndexSummary,
-    ParagraphIndexTerm,
-    SectionIndexSummary,
-    SectionIndexTerm,
-    SentenceIndexSummary,
-    SentenceIndexTerm,
-)
-from examples.texts.schemas.text import Word
-from examples.texts.transforms.scoring.AddScores import AddScores
-from structure import Transform, input, output, raw, step
+from examples.texts.schemas.search import SearchQuery, SentenceSearchResult
+from examples.texts.schemas.text import Sentence
+from structure import Transform, input, output
+from structure.plugin.pyspark import inner_join, row_number, where
 
 
-class CreateIndex(Transform):
-    """Build reusable document, section, paragraph, and sentence indexes."""
+class Search(Transform):
+    """Rank pre-scored sentence matches for one caller-supplied query."""
 
-    words = input(Word)
-    document_terms = output(DocumentIndexTerm)
-    document_summary = output(DocumentIndexSummary)
-    section_terms = output(SectionIndexTerm)
-    section_summary = output(SectionIndexSummary)
-    paragraph_terms = output(ParagraphIndexTerm)
-    paragraph_summary = output(ParagraphIndexSummary)
-    sentence_terms = output(SentenceIndexTerm)
-    sentence_summary = output(SentenceIndexSummary)
+    query = input(SearchQuery)
+    scored_sentences = input(Sentence)
+    results = output(SentenceSearchResult)
 
-    @step(
-        input=words,
-        output=[
-            document_terms,
-            document_summary,
-            section_terms,
-            section_summary,
-            paragraph_terms,
-            paragraph_summary,
-            sentence_terms,
-            sentence_summary,
-        ],
-    )
-    def declare_index(self, word: Word) -> tuple[
-        DocumentIndexTerm,
-        DocumentIndexSummary,
-        SectionIndexTerm,
-        SectionIndexSummary,
-        ParagraphIndexTerm,
-        ParagraphIndexSummary,
-        SentenceIndexTerm,
-        SentenceIndexSummary,
-    ]:
-        return (
-            DocumentIndexTerm(
-                document_id=word.document_id,
-                token=word.token,
-                term_frequency=0,
-                target_word_count=0,
-                target_distinct_terms=0,
-                document_frequency=0,
-            ),
-            DocumentIndexSummary(target_count=0, average_target_length=0.0),
-            SectionIndexTerm(
-                document_id=word.document_id,
-                section_id=word.section_id,
-                token=word.token,
-                term_frequency=0,
-                target_word_count=0,
-                target_distinct_terms=0,
-                document_frequency=0,
-            ),
-            SectionIndexSummary(target_count=0, average_target_length=0.0),
-            ParagraphIndexTerm(
-                document_id=word.document_id,
-                section_id=word.section_id,
-                paragraph_id=word.paragraph_id,
-                token=word.token,
-                term_frequency=0,
-                target_word_count=0,
-                target_distinct_terms=0,
-                document_frequency=0,
-            ),
-            ParagraphIndexSummary(target_count=0, average_target_length=0.0),
-            SentenceIndexTerm(
-                document_id=word.document_id,
-                section_id=word.section_id,
-                paragraph_id=word.paragraph_id,
-                sentence_id=word.sentence_id,
-                token=word.token,
-                term_frequency=0,
-                target_word_count=0,
-                target_distinct_terms=0,
-                document_frequency=0,
-            ),
-            SentenceIndexSummary(target_count=0, average_target_length=0.0),
+    def rank_sentences(self, sentence: Sentence, query: SearchQuery) -> SentenceSearchResult:
+        query = inner_join(query, on=query.id == sentence.search_query_id)
+        where(
+            sentence.search_query_id.is_not_null(),
+            sentence.score_overlap.is_not_null(),
+            sentence.score_bm25.is_not_null(),
         )
-
-    @raw(
-        input=input(words),
-        output=[
-            output(document_terms),
-            output(document_summary),
-            output(section_terms),
-            output(section_summary),
-            output(paragraph_terms),
-            output(paragraph_summary),
-            output(sentence_terms),
-            output(sentence_summary),
-        ],
-    )
-    def build(
-        self,
-        *,
-        words,
-        document_terms,
-        document_summary,
-        section_terms,
-        section_summary,
-        paragraph_terms,
-        paragraph_summary,
-        sentence_terms,
-        sentence_summary,
-        spark,
-        ctx,
-    ):
-        return TextIndex.build(
-            words,
-            (
-                document_terms,
-                document_summary,
-                section_terms,
-                section_summary,
-                paragraph_terms,
-                paragraph_summary,
-                sentence_terms,
-                sentence_summary,
+        return SentenceSearchResult(
+            search_query_id=sentence.search_query_id,
+            rank=row_number(
+                partition_by=sentence.search_query_id,
+                order_by=(
+                    sentence.score_bm25.desc_nulls_last(),
+                    sentence.score_overlap.desc_nulls_last(),
+                    sentence.document_id.asc_nulls_first(),
+                    sentence.id.asc_nulls_first(),
+                ),
             ),
+            document_id=sentence.document_id,
+            section_id=sentence.section_id,
+            paragraph_id=sentence.paragraph_id,
+            sentence_id=sentence.id,
+            content=sentence.content,
+            score_overlap=sentence.score_overlap,
+            score_bm25=sentence.score_bm25,
         )
-
-
-class EnrichWithScores(AddScores):
-    """Attach reusable-index search scores to matching hierarchy rows."""

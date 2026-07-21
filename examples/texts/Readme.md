@@ -37,6 +37,65 @@ The algorithms normalize query terms exactly as
 divided by the smaller of the query and target vocabularies. `score_bm25` uses fixed `k1=1.2` and `b=0.75` constants.
 The scores remain separate: choosing an algorithm or combining parent and child targets is deliberately caller-owned.
 
+`CreateSimilarityQueries` and `ReduceSimilarityScores` reuse those same artifacts for corpus self-similarity. The first
+turns each document, section, paragraph, and sentence vocabulary into a tagged query; pass the combined query rows to
+`ScoreAll`, then give its directed score rows to the reducer. The reducer emits each same-grain pair once, with the
+bounded symmetric overlap coefficient, both BM25 directions, and their arithmetic mean. BM25 remains directional and
+corpus-dependent, so `bm25_mean` is a convenience for ranking rather than a calibrated similarity probability.
+
+`SimilarityPolicy.max_document_frequency_ratio` is a one-row, caller-supplied optional candidate-pruning setting.
+`null` retains every normalized term; a value in `(0, 1]` excludes terms occurring in more than that fraction of targets
+at each grain. This controls common-token candidate growth without imposing a hidden threshold. The similarity family
+does not require title, source, language, or collection matches; callers apply those business filters after scoring.
+
+`Similarity` turns document-pair results into a query-document lookup. Supply a one-row `Document` DataFrame, the corpus
+`Document` rows, and `ReduceSimilarityScores.document_similarities`; it returns up to its fixed `maximum_results` (10 by
+default). Results rank by the query-to-candidate BM25 direction, then overlap and document id. Each `IndexedSimilarDocument`
+preserves corpus metadata and sets `search_query_id` to the query document id. `SimilarSections`, `SimilarParagraphs`, and
+`SimilarSentences` apply the same ranking rule to a one-row section, paragraph, or sentence and their corresponding
+same-grain similarity pairs.
+
+```python
+similarity_queries = CreateSimilarityQueries(
+    policy=similarity_policy,
+    document_terms=index.document_terms,
+    document_summary=index.document_summary,
+    section_terms=index.section_terms,
+    section_summary=index.section_summary,
+    paragraph_terms=index.paragraph_terms,
+    paragraph_summary=index.paragraph_summary,
+    sentence_terms=index.sentence_terms,
+    sentence_summary=index.sentence_summary,
+).run(session)
+
+directed = ScoreAll(
+    queries=similarity_queries.queries,
+    document_terms=index.document_terms,
+    document_summary=index.document_summary,
+    section_terms=index.section_terms,
+    section_summary=index.section_summary,
+    paragraph_terms=index.paragraph_terms,
+    paragraph_summary=index.paragraph_summary,
+    sentence_terms=index.sentence_terms,
+    sentence_summary=index.sentence_summary,
+).run(session)
+
+similarities = ReduceSimilarityScores(
+    document_queries=similarity_queries.document_queries,
+    section_queries=similarity_queries.section_queries,
+    paragraph_queries=similarity_queries.paragraph_queries,
+    sentence_queries=similarity_queries.sentence_queries,
+    document_overlap_scores=directed.document_overlap_scores,
+    section_overlap_scores=directed.section_overlap_scores,
+    paragraph_overlap_scores=directed.paragraph_overlap_scores,
+    sentence_overlap_scores=directed.sentence_overlap_scores,
+    document_bm25_scores=directed.document_bm25_scores,
+    section_bm25_scores=directed.section_bm25_scores,
+    paragraph_bm25_scores=directed.paragraph_bm25_scores,
+    sentence_bm25_scores=directed.sentence_bm25_scores,
+).run(session)
+```
+
 Search logic uses Spark SQL functions inside a narrow raw boundary for query-token row expansion. A Python UDF would
 serialize every scored row through Python and hide its logic from Spark's optimizer, preventing whole-stage code
 generation and limiting projection and predicate optimization. A vectorized Pandas UDF reduces that overhead but
@@ -58,6 +117,20 @@ scores = AddScores(
 ).run(session)
 overlap = scores.document_overlap_scores
 bm25 = scores.document_bm25_scores
+```
+
+`Search` is the final, query-scoped presentation boundary. It accepts one caller-supplied `SearchQuery` row and the
+pre-scored sentence output from `AddScores`, then returns every matching sentence as a `SentenceSearchResult`.
+`rank` is a one-based, deterministic ordering by BM25, overlap, document ID, and sentence ID; Spark DataFrames do not
+promise physical row order, so consumers sort or page by `rank`. The one-query input is a caller contract: `Search`
+remains lazy and does not count query rows.
+
+```python
+result = Search(
+    query=query,
+    scored_sentences=scores.scored_sentences,
+).run(session)
+ranked_sentences = result.results
 ```
 
 The example deliberately remains batch-only: corpus distributions and
