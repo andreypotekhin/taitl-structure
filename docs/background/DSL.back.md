@@ -52,7 +52,7 @@ document owns how those features appear and compose in the public DSL.
 ## Public Imports
 
 Structural declarations are importable from `structure`; a transform imports its PySpark field factories and symbolic
-operations from `structure.platform.pyspark`:
+operations from `structure.plugin.pyspark`:
 
 ```python
 from structure import (
@@ -69,7 +69,7 @@ from structure import (
     step,
     transform,
 )
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 ```
 
 ## Canonical Source Shape
@@ -78,7 +78,7 @@ The canonical source shape is:
 
 ```python
 from structure import Transform, input, output, special
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class EnrichOrders(Transform):

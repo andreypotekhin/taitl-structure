@@ -1,0 +1,599 @@
+from __future__ import annotations
+
+from structure.plugin.api.v1.model import CompilerProvenance, CompilerTraceability, DataflowDependency, OpaqueBoundary
+from structure.plugin.pyspark.compiler.logic.CompilerDataflowReads import CompilerDataflowReads
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
+from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe
+from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
+from structure.plugin.pyspark.dsl.joins import JoinMethod
+
+
+class BuildCompilerTraceability:
+
+    def __init__(self) -> None:
+        self._dataflow = CompilerDataflowReads()
+
+    def __call__(
+        self,
+        plan: PySparkExecutionPlan,
+        *,
+        source_transform: str,
+        transform_module: str,
+    ) -> CompilerTraceability:
+        provenance = [self._transform_provenance(plan, source_transform, transform_module)]
+        dependencies = [self._transform_dependency(plan)]
+        boundaries: list[OpaqueBoundary] = []
+
+        for item in plan.inputs:
+            provenance.append(
+                CompilerProvenance(
+                    source=f"source:{source_transform}.input.{item.name}",
+                    ir=f"ir:{plan.transform}.input.{item.ordinal}.{item.name}",
+                    generated=f"generated:{transform_module}.{plan.transform}Generated.run.input.{item.name}",
+                )
+            )
+
+        previous = plan.inputs[0].name if plan.inputs else "input"
+        for step in plan.steps:
+            provenance.append(self._step_provenance(plan, step, source_transform, transform_module))
+            dependencies.append(self._step_dependency(step, previous))
+            provenance.extend(self._filter_provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._filter_dependencies(step))
+            provenance.extend(self._join_provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._join_dependencies(step))
+            provenance.extend(self._aggregate_provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._aggregate_dependencies(step))
+            provenance.extend(self._aggregate_having_provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._aggregate_having_dependencies(step))
+            provenance.extend(self._selected_rows_provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._selected_rows_dependencies(step))
+            provenance.extend(self._drop_duplicates_provenance(plan, step, source_transform, transform_module))
+            dependencies.extend(self._drop_duplicates_dependencies(step))
+            if len(step.results) <= 1:
+                provenance.extend(self._projection_provenance(plan, step, source_transform, transform_module))
+                dependencies.extend(self._projection_dependencies(step))
+                boundaries.extend(
+                    self._udf_boundaries(
+                        step=step.name,
+                        schema=step.output_schema.__name__,
+                        expressions=(assignment.expression for assignment in step.projection),
+                    )
+                )
+            else:
+                for result in step.results:
+                    provenance.extend(
+                        CompilerProvenance(
+                            source=f"source:{source_transform}.{step.name}.result.{result.lane}.{assignment.field.name}",
+                            ir=(
+                                f"ir:{plan.transform}.step.{step.ordinal}.{step.name}."
+                                f"result.{result.ordinal}.{result.lane}.project.{assignment.field.name}"
+                            ),
+                            generated=(
+                                f"generated:{transform_module}.{plan.transform}Generated.run."
+                                f"step.{step.ordinal}.{step.name}.{result.lane}.select.{assignment.field.name}"
+                            ),
+                        )
+                        for assignment in result.projection
+                    )
+                    dependencies.extend(
+                        DataflowDependency(
+                            target=f"{result.lane}.{assignment.field.name}",
+                            sources=self._dataflow.reads(assignment.expression) or ("literal",),
+                            operation="project",
+                            step=step.name,
+                            detail={"field": assignment.field.name, "result": result.lane},
+                        )
+                        for assignment in result.projection
+                    )
+                    boundaries.extend(
+                        self._udf_boundaries(
+                            step=step.name,
+                            schema=result.schema.__name__,
+                            expressions=(assignment.expression for assignment in result.projection),
+                        )
+                    )
+                    for hook in result.after_hooks:
+                        provenance.append(self._hook_provenance(plan, step, hook, source_transform, transform_module))
+                        dependencies.append(self._hook_dependency(step, hook))
+                        boundaries.append(
+                            OpaqueBoundary(
+                                step=step.name,
+                                hook=hook.name,
+                                phase=hook.phase,
+                                target=hook.target,
+                                schema=result.schema.__name__,
+                                reason="arbitrary PySpark hook body",
+                            )
+                        )
+
+            for hook in (*step.before_hooks, *step.after_hooks):
+                provenance.append(self._hook_provenance(plan, step, hook, source_transform, transform_module))
+                dependencies.append(self._hook_dependency(step, hook))
+                boundaries.append(
+                    OpaqueBoundary(
+                        step=step.name,
+                        hook=hook.name,
+                        phase=hook.phase,
+                        target=hook.target,
+                        schema=step.output_schema.__name__,
+                        reason="arbitrary PySpark hook body",
+                    )
+                )
+
+            provenance.extend(self._validation_provenance(plan, step, source_transform, transform_module))
+            previous = step.output_schema.__name__
+
+        for output in plan.outputs:
+            provenance.append(
+                CompilerProvenance(
+                    source=f"source:{source_transform}.output.{output.name}",
+                    ir=f"ir:{plan.transform}.output.{output.ordinal}.{output.name}.validation.final",
+                    generated=(
+                        f"generated:{transform_module}.{plan.transform}Generated.run."
+                        f"output.{output.ordinal}.{output.name}.validation.final"
+                    ),
+                )
+            )
+            dependencies.append(self._final_validation_dependency(output.validation))
+            boundaries.extend(
+                self._udf_boundaries(
+                    step=f"output:{output.name}",
+                    schema=output.output_schema.__name__,
+                    expressions=(assignment.expression for assignment in output.projection),
+                )
+            )
+        return CompilerTraceability(
+            provenance=tuple(provenance),
+            static_dataflow=tuple(dependencies),
+            opaque_boundaries=tuple(boundaries),
+        )
+
+    def _udf_boundaries(self, *, step: str, schema: str, expressions) -> tuple[OpaqueBoundary, ...]:
+        boundaries: list[OpaqueBoundary] = []
+        seen: set[str] = set()
+        for expression in expressions:
+            for udf in self._udf_expressions(expression):
+                data = udf.data or {}
+                name = str(data.get("function_name", "python_udf"))
+                key = f"{step}:{name}"
+                if key in seen:
+                    continue
+                seen.add(key)
+                boundaries.append(
+                    OpaqueBoundary(
+                        step=step,
+                        hook=name,
+                        phase="expression",
+                        target="python_udf",
+                        schema=schema,
+                        reason="python UDF body",
+                    )
+                )
+        return tuple(boundaries)
+
+    def _udf_expressions(self, expression) -> tuple:
+        found = [expression] if expression.kind == "python_udf" else []
+        for argument in expression.args:
+            found.extend(self._udf_expressions(argument))
+        return tuple(found)
+
+    def _transform_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        source_transform: str,
+        transform_module: str,
+    ) -> CompilerProvenance:
+        return CompilerProvenance(
+            source=f"source:{source_transform}",
+            ir=f"ir:{plan.transform}",
+            generated=f"generated:{transform_module}.{plan.transform}Generated",
+        )
+
+    def _step_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        step: PySparkStepRecipe,
+        source_transform: str,
+        transform_module: str,
+    ) -> CompilerProvenance:
+        return CompilerProvenance(
+            source=f"source:{source_transform}.{step.name}",
+            ir=f"ir:{plan.transform}.step.{step.ordinal}.{step.name}",
+            generated=f"generated:{transform_module}.{plan.transform}Generated.run.step.{step.ordinal}.{step.name}",
+        )
+
+    def _filter_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        step: PySparkStepRecipe,
+        source_transform: str,
+        transform_module: str,
+    ) -> tuple[CompilerProvenance, ...]:
+        return tuple(
+            CompilerProvenance(
+                source=f"source:{source_transform}.{step.name}.filter.{index}",
+                ir=f"ir:{plan.transform}.step.{step.ordinal}.{step.name}.filter.{index}",
+                generated=(
+                    f"generated:{transform_module}.{plan.transform}Generated.run."
+                    f"step.{step.ordinal}.{step.name}.where.{index}"
+                ),
+            )
+            for index, _ in enumerate(step.filters)
+        )
+
+    def _join_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        step: PySparkStepRecipe,
+        source_transform: str,
+        transform_module: str,
+    ) -> tuple[CompilerProvenance, ...]:
+        return tuple(
+            CompilerProvenance(
+                source=f"source:{source_transform}.{step.name}.join.{join.occurrence}.{join.input_name}",
+                ir=f"ir:{plan.transform}.step.{step.ordinal}.{step.name}.join.{join.occurrence}.{join.input_name}",
+                generated=(
+                    f"generated:{transform_module}.{plan.transform}Generated.run."
+                    f"step.{step.ordinal}.{step.name}.join.{join.occurrence}.{join.input_name}"
+                ),
+            )
+            for join in step.joins
+        )
+
+    def _projection_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        step: PySparkStepRecipe,
+        source_transform: str,
+        transform_module: str,
+    ) -> tuple[CompilerProvenance, ...]:
+        return tuple(
+            CompilerProvenance(
+                source=f"source:{source_transform}.{step.name}.field.{assignment.field.name}",
+                ir=f"ir:{plan.transform}.step.{step.ordinal}.{step.name}.project.{assignment.field.name}",
+                generated=(
+                    f"generated:{transform_module}.{plan.transform}Generated.run."
+                    f"step.{step.ordinal}.{step.name}.select.{assignment.field.name}"
+                ),
+            )
+            for assignment in step.projection
+        )
+
+    def _aggregate_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        step: PySparkStepRecipe,
+        source_transform: str,
+        transform_module: str,
+    ) -> tuple[CompilerProvenance, ...]:
+        if step.aggregate is None:
+            return ()
+        return tuple(
+            CompilerProvenance(
+                source=f"source:{source_transform}.{step.name}.aggregate.{assignment.field.name}",
+                ir=f"ir:{plan.transform}.step.{step.ordinal}.{step.name}.aggregate.{assignment.field.name}",
+                generated=(
+                    f"generated:{transform_module}.{plan.transform}Generated.run."
+                    f"step.{step.ordinal}.{step.name}.aggregate.{assignment.field.name}"
+                ),
+            )
+            for assignment in step.aggregate.assignments
+        )
+
+    def _aggregate_having_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        step: PySparkStepRecipe,
+        source_transform: str,
+        transform_module: str,
+    ) -> tuple[CompilerProvenance, ...]:
+        if step.aggregate is None or step.aggregate.having is None:
+            return ()
+        return (
+            CompilerProvenance(
+                source=f"source:{source_transform}.{step.name}.aggregate.having",
+                ir=f"ir:{plan.transform}.step.{step.ordinal}.{step.name}.aggregate.having",
+                generated=(
+                    f"generated:{transform_module}.{plan.transform}Generated.run."
+                    f"step.{step.ordinal}.{step.name}.aggregate.having"
+                ),
+            ),
+        )
+
+    def _selected_rows_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        step: PySparkStepRecipe,
+        source_transform: str,
+        transform_module: str,
+    ) -> tuple[CompilerProvenance, ...]:
+        return tuple(
+            CompilerProvenance(
+                source=f"source:{source_transform}.{step.name}.{operation.selected_rows.direction}_by.{index}",
+                ir=(
+                    f"ir:{plan.transform}.step.{step.ordinal}.{step.name}."
+                    f"{operation.selected_rows.direction}_by.{index}"
+                ),
+                generated=(
+                    f"generated:{transform_module}.{plan.transform}Generated.run."
+                    f"step.{step.ordinal}.{step.name}.{operation.selected_rows.direction}_by.{index}"
+                ),
+            )
+            for index, operation in enumerate(step.operations)
+            if operation.selected_rows is not None
+        )
+
+    def _hook_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        step: PySparkStepRecipe,
+        hook: PySparkHookRecipe,
+        source_transform: str,
+        transform_module: str,
+    ) -> CompilerProvenance:
+        return CompilerProvenance(
+            source=f"source:{source_transform}.{hook.name}",
+            ir=f"ir:{plan.transform}.step.{step.ordinal}.{step.name}.hook.{hook.phase}.{hook.name}",
+            generated=(
+                f"generated:{transform_module}.{plan.transform}Generated.run."
+                f"step.{step.ordinal}.{step.name}.hook.{hook.phase}.{hook.name}"
+            ),
+        )
+
+    def _validation_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        step: PySparkStepRecipe,
+        source_transform: str,
+        transform_module: str,
+    ) -> tuple[CompilerProvenance, ...]:
+        return tuple(
+            CompilerProvenance(
+                source=f"source:{source_transform}.{step.name}.validation.{index}.{validation.reason}",
+                ir=f"ir:{plan.transform}.step.{step.ordinal}.{step.name}.validation.{index}.{validation.reason}",
+                generated=(
+                    f"generated:{transform_module}.{plan.transform}Generated.run."
+                    f"step.{step.ordinal}.{step.name}.validation.{index}.{validation.reason}"
+                ),
+            )
+            for index, validation in enumerate(step.validations)
+        )
+
+    def _final_validation_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        source_transform: str,
+        transform_module: str,
+    ) -> CompilerProvenance:
+        return CompilerProvenance(
+            source=f"source:{source_transform}.output",
+            ir=f"ir:{plan.transform}.validation.final",
+            generated=f"generated:{transform_module}.{plan.transform}Generated.run.validation.final",
+        )
+
+    def _transform_dependency(self, plan: PySparkExecutionPlan) -> DataflowDependency:
+        return DataflowDependency(
+            target=plan.transform,
+            sources=tuple(item.name for item in plan.inputs),
+            operation="transform",
+            step=None,
+            detail={"backend": plan.backend.name},
+        )
+
+    def _step_dependency(self, step: PySparkStepRecipe, previous: str) -> DataflowDependency:
+        return DataflowDependency(
+            target=step.name,
+            sources=(previous, *tuple(join.input_name for join in step.joins)),
+            operation="step",
+            step=step.name,
+            detail={"input_schema": step.input_schema.__name__, "output_schema": step.output_schema.__name__},
+        )
+
+    def _filter_dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
+        return tuple(
+            DataflowDependency(
+                target=f"{step.name}.filter[{index}]",
+                sources=self._dataflow.reads(filter),
+                operation="filter",
+                step=step.name,
+                detail={},
+            )
+            for index, filter in enumerate(step.filters)
+        )
+
+    def _join_dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
+        return tuple(
+            DataflowDependency(
+                target=f"{step.name}.join[{join.occurrence}].{join.input_name}",
+                sources=self._dataflow.reads(join.predicate),
+                operation=join.method.value,
+                step=step.name,
+                detail=self._join_detail(join),
+            )
+            for join in step.joins
+        )
+
+    def _join_detail(self, join) -> dict[str, str | None]:
+        detail = {
+            "cardinality": self._join_cardinality(join.method),
+            "hint": join.hint.value if join.hint is not None else None,
+            "how": join.how.value,
+            "right_alias": join.right_alias,
+        }
+        if join.strategy is not None:
+            detail["strategy"] = join.strategy.value
+        if join.dedupe is not None:
+            detail["dedupe"] = join.dedupe.direction
+            detail["ties"] = join.dedupe.ties.value
+        if join.temporal is not None:
+            detail["temporal"] = "closed_open"
+            detail["overlaps"] = join.temporal.overlaps.value
+        if join.as_of is not None:
+            detail["as_of"] = join.as_of.direction.value
+            detail["ties"] = join.as_of.ties.value
+        return detail
+
+    def _join_cardinality(self, method: JoinMethod) -> str:
+        if method in {JoinMethod.EXISTS, JoinMethod.NOT_EXISTS}:
+            return "row_filtering"
+        if method is JoinMethod.ROWSET:
+            return "row_multiplying"
+        return "select_one"
+
+    def _projection_dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
+        return tuple(
+            DataflowDependency(
+                target=f"{step.output_schema.__name__}.{assignment.field.name}",
+                sources=self._dataflow.reads(assignment.expression) or ("literal",),
+                operation="project",
+                step=step.name,
+                detail={"field": assignment.field.name},
+            )
+            for assignment in step.projection
+        )
+
+    def _aggregate_dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
+        if step.aggregate is None:
+            return ()
+        return tuple(
+            DataflowDependency(
+                target=f"{step.output_schema.__name__}.{assignment.field.name}",
+                sources=self._aggregate_sources(step, assignment),
+                operation="aggregate",
+                step=step.name,
+                detail={
+                    "field": assignment.field.name,
+                    "function": assignment.function,
+                    "key": assignment.key,
+                },
+            )
+            for assignment in step.aggregate.assignments
+        )
+
+    def _aggregate_having_dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
+        if step.aggregate is None or step.aggregate.having is None:
+            return ()
+        return (
+            DataflowDependency(
+                target=f"{step.output_schema.__name__}.having",
+                sources=self._dataflow.reads(step.aggregate.having),
+                operation="having",
+                step=step.name,
+                detail={"predicate": "post_aggregate"},
+            ),
+        )
+
+    def _aggregate_sources(self, step: PySparkStepRecipe, assignment) -> tuple[str, ...]:
+        sources: list[str] = []
+        expressions = (
+            assignment.expression,
+            *assignment.arguments,
+            assignment.filter,
+            assignment.order_by,
+        )
+        for expression in expressions:
+            if expression is None:
+                continue
+            sources.extend(source for source in self._dataflow.reads(expression) if source not in sources)
+        return tuple(sources) or (step.source,)
+
+    def _selected_rows_dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
+        return tuple(
+            DataflowDependency(
+                target=f"{step.name}.{operation.selected_rows.direction}_by[{index}]",
+                sources=self._selected_rows_sources(operation.selected_rows),
+                operation=f"{operation.selected_rows.direction}_by",
+                step=step.name,
+                detail={
+                    "direction": operation.selected_rows.direction,
+                    "partitions": str(len(operation.selected_rows.partition_by)),
+                    "ties": operation.selected_rows.ties.value,
+                },
+            )
+            for index, operation in enumerate(step.operations)
+            if operation.selected_rows is not None
+        )
+
+    def _drop_duplicates_provenance(
+        self,
+        plan: PySparkExecutionPlan,
+        step: PySparkStepRecipe,
+        source_transform: str,
+        transform_module: str,
+    ) -> tuple[CompilerProvenance, ...]:
+        return tuple(
+            CompilerProvenance(
+                source=f"source:{source_transform}.{step.name}.drop_duplicates.{index}",
+                ir=f"ir:{plan.transform}.step.{step.ordinal}.{step.name}.drop_duplicates.{index}",
+                generated=(
+                    f"generated:{transform_module}.{plan.transform}Generated.run."
+                    f"step.{step.ordinal}.{step.name}.drop_duplicates.{index}"
+                ),
+            )
+            for index, operation in enumerate(step.operations)
+            if operation.kind == "drop_duplicates"
+        )
+
+    def _drop_duplicates_dependencies(self, step: PySparkStepRecipe) -> tuple[DataflowDependency, ...]:
+        return tuple(
+            DataflowDependency(
+                target=f"{step.name}.drop_duplicates[{index}]",
+                sources=self._drop_duplicates_sources(operation),
+                operation="drop_duplicates",
+                step=step.name,
+                detail={
+                    "scope": self._drop_duplicates_scope(operation),
+                    "subset": str(self._drop_duplicates_subset_count(operation)),
+                },
+            )
+            for index, operation in enumerate(step.operations)
+            if operation.kind == "drop_duplicates"
+        )
+
+    def _drop_duplicates_sources(self, operation) -> tuple[str, ...]:
+        duplicate_rows = operation.duplicate_rows
+        if duplicate_rows is None or not duplicate_rows.subset:
+            return ("current_frame.*",)
+        return tuple(source for expression in duplicate_rows.subset for source in self._dataflow.reads(expression))
+
+    def _drop_duplicates_subset_count(self, operation) -> int:
+        duplicate_rows = operation.duplicate_rows
+        return 0 if duplicate_rows is None else len(duplicate_rows.subset)
+
+    def _drop_duplicates_scope(self, operation) -> str:
+        duplicate_rows = operation.duplicate_rows
+        if duplicate_rows is None or duplicate_rows.scope is None:
+            return "current_step_frame"
+        return str(duplicate_rows.scope)
+
+    def _selected_rows_sources(self, selected_rows) -> tuple[str, ...]:
+        reads = self._dataflow.reads(selected_rows.order_by)
+        for expression in selected_rows.partition_by:
+            reads = (*reads, *self._dataflow.reads(expression))
+        return reads
+
+    def _hook_dependency(self, step: PySparkStepRecipe, hook: PySparkHookRecipe) -> DataflowDependency:
+        return DataflowDependency(
+            target=f"{step.name}.hook.{hook.name}",
+            sources=(step.input_schema.__name__ if hook.phase == "before" else step.output_schema.__name__,),
+            operation="hook",
+            step=step.name,
+            detail={
+                "phase": hook.phase,
+                "project_output": hook.project_output,
+                "schema_mode": hook.schema_mode.value,
+            },
+        )
+
+    def _final_validation_dependency(self, validation: PySparkValidationRecipe) -> DataflowDependency:
+        return DataflowDependency(
+            target=f"{validation.schema.__name__}.validation.final",
+            sources=(validation.schema.__name__,),
+            operation="validate_schema",
+            step=None,
+            detail={"mode": validation.mode.value},
+        )
+
+
+build_compiler_traceability = BuildCompilerTraceability()

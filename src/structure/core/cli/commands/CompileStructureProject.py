@@ -5,7 +5,7 @@ from pathlib import Path
 import click
 
 from structure.core.cli.commands.DiscoverStructureProject import DiscoverStructureProject
-from structure.core.cli.commands.RenderConfiguredPlatformProject import RenderConfiguredPlatformProject
+from structure.core.cli.commands.RenderConfiguredPluginProject import RenderConfiguredPluginProject
 from structure.core.cli.model.DiscoveredStructureProject import DiscoveredStructureProject
 from structure.core.compiler.api.Compiler import Compiler
 from structure.core.compiler.artifacts.model.GeneratedFileSetResult import GeneratedFileSetResult
@@ -17,7 +17,7 @@ from structure.lib.cross.errors import Diagnostic, diagnostic_registry, render_d
 class CompileStructureProject:
 
     def __init__(self) -> None:
-        self._platform = RenderConfiguredPlatformProject()
+        self._platform = RenderConfiguredPluginProject()
 
     def __call__(self, config: StructureConfig) -> tuple[str, ...]:
         project = DiscoverStructureProject()(config)

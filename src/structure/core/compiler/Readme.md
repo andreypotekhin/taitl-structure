@@ -24,7 +24,7 @@ available from the `api/` packages as simplified imports.
 
 ## Inner Workings
 `frontend.analyze()` inspects source classes and returns backend-neutral `TransformPlan` IR. `frontend.compile()`
-selects the negotiated platform, supplies that plan to its compiler facet, and returns its opaque payload with the
+selects the negotiated plugin, supplies that plan to its compiler facet, and returns its opaque payload with the
 Core-owned analysis attached. Plugins lower supplied plans; they do not call Core compiler facades.
 
 Compiler apps divide the pipeline by responsibility: `frontend` inspects source classes, `symbolic_execution`

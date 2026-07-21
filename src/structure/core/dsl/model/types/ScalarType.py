@@ -1,3 +1,3 @@
-from structure.platform.pyspark.dsl.types import ScalarType
+from structure.plugin.pyspark.dsl.types import ScalarType
 
 __all__ = ["ScalarType"]

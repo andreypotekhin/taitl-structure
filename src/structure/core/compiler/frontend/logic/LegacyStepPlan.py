@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Any
 
-from structure.platform.api.v1.model.StepPlan import StepPlan
-from structure.platform.api.v1.model.StepResultPlan import StepResultPlan
+from structure.plugin.api.v1.model.StepPlan import StepPlan
+from structure.plugin.api.v1.model.StepResultPlan import StepResultPlan
 
 
 @dataclass(frozen=True)

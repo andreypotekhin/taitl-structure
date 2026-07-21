@@ -317,28 +317,28 @@ Exit Criteria:
 - The final v4 hardening sprint passes the release evidence, regression, parity, compatibility, generated-artifact,
   documentation, diagnostics, and performance-baseline checks without admitting new feature scope.
 
-## M10: v5 Platform Plugin Architecture
+## M10: v5 Plugin Plugin Architecture
 
-Status: scheduled after the final v4 hardening sprint. Sprints 19-22 deliver the public Platform API, migrate the
-bundled PySpark platform, prove external-wheel isolation, validate default-denied private target-local engine
+Status: scheduled after the final v4 hardening sprint. Sprints 19-22 deliver the public Plugin API, migrate the
+bundled PySpark plugin, prove external-wheel isolation, validate default-denied private target-local engine
 replacement, and close
 the breaking v5 migration.
 
 ### Exit Criteria
 
 - Core owns every public schema, compilation, execution, generation, serialization, capability, diagnostic, artifact,
-  and CLI workflow; plugin code is invoked only through documented Platform API service facets.
+  and CLI workflow; plugin code is invoked only through documented Plugin API service facets.
 - Discovery reads installed distribution metadata without importing plugin modules and reports duplicate short ids
   deterministically.
-- Core and the selected platform plugin negotiate the highest mutually supported Platform API version; artifacts
+- Core and the selected plugin negotiate the highest mutually supported Plugin API version; artifacts
   retain the negotiated version and reject incompatible consumers.
 - A transform and composed pipeline resolve exactly one target, while a project can compile transforms assigned to
   different installed targets.
-- Public PySpark platform DSL names and field definitions are absent from the `structure` root and PySpark code imports
+- Public PySpark plugin DSL names and field definitions are absent from the `structure` root and PySpark code imports
   them from
-  `structure.platform.pyspark`.
+  `structure.plugin.pyspark`.
 - PySpark schema handling, semantic checks, lowering, online execution, generated execution, rendering, capabilities,
-  and diagnostics use the public Platform API boundary without behavioral regression.
+  and diagnostics use the public Plugin API boundary without behavioral regression.
 - External vendors can implement the published contract from their own packages and verify it with the conformance
   suite.
 - The separately packaged finite-iterable plugin proves real entry-point discovery, API negotiation, target isolation,
@@ -354,7 +354,7 @@ Status: scheduled after M10. The execution plan is
 ### Exit Criteria
 
 - A normal transform consumes a caller-provided finite timeline DataFrame and produces one typed output row per
-  timeline row through a PySpark-platform `scan(...)` expression.
+  timeline row through a PySpark-plugin `scan(...)` expression.
 - Scan state has a declared Schema type, an initial state, an explicit partition/order contract, a deterministic
   duplicate-key failure, and a positive per-partition maximum.
 - The bounded batch PySpark lowering is optimizer-visible, has no UDF/RDD/Pandas/action/driver-loop fallback, and has

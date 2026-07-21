@@ -1,3 +1,3 @@
-from structure.platform.pyspark.dsl.joins import AsOf
+from structure.plugin.pyspark.dsl.joins import AsOf
 
 __all__ = ["AsOf"]

@@ -1,6 +1,6 @@
 from typing import cast
 
-from structure.core.platforms.api.Platform import Platform
+from structure.core.plugins.api.Plugin import Plugin
 from structure.core.target.capabilities.model.BackendCapabilities import BackendCapabilities
 from structure.core.target.capabilities.model.BackendCapabilityError import BackendCapabilityError
 from structure.core.target.capabilities.model.BackendId import BackendId
@@ -21,10 +21,10 @@ class ResolveBackendCapabilities:
         target_variant: str = DEFAULT_TARGET_VARIANT,
     ) -> BackendCapabilities:
         try:
-            platform = Platform.registry().select(target_backend)
+            plugin = Plugin.registry().select(target_backend)
         except ValueError:
             return self._unsupported(target_backend, target_profile, target_variant)
-        capabilities = cast(BackendCapabilities, platform.api.capabilities.resolve(profile=target_profile, variant=target_variant))
+        capabilities = cast(BackendCapabilities, plugin.api.capabilities.resolve(profile=target_profile, variant=target_variant))
         capabilities.require(
             CapabilityRequirement(
                 group="backend",

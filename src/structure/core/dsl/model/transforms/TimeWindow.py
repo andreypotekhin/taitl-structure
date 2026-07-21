@@ -1,3 +1,3 @@
-from structure.platform.pyspark.dsl.TimeWindow import TimeWindow
+from structure.plugin.pyspark.dsl.TimeWindow import TimeWindow
 
 __all__ = ["TimeWindow"]

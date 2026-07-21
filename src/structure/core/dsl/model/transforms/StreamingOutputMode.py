@@ -1,3 +1,3 @@
-from structure.platform.pyspark.dsl.operations import StreamingOutputMode
+from structure.plugin.pyspark.dsl.operations import StreamingOutputMode
 
 __all__ = ["StreamingOutputMode"]

@@ -1,6 +1,6 @@
 from examples.streams.schemas.events import JudgeCall, Passage, Penalty
 from structure import StreamingMode, Transform, input, output, transform
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 @transform(streaming_compatible=True)

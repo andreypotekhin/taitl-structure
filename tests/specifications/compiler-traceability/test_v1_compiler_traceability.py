@@ -2,8 +2,8 @@ import sys
 
 from structure import *
 from structure.core.compiler.api import Compiler
-from structure.platform.pyspark import *
-from structure.platform.pyspark import PySpark
+from structure.plugin.pyspark import *
+from structure.plugin.pyspark import PySpark
 
 
 def _traceability():

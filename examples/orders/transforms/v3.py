@@ -1,6 +1,6 @@
 from examples.orders.schemas.v3 import V3OrderProjection, V3OrderSource
 from structure import *
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class V3OrderFeatures(Transform):

@@ -1,7 +1,0 @@
-from typing import Protocol
-
-from structure.platform.api.v1.model import BackendCapabilities
-
-
-class CapabilitiesAPI(Protocol):
-    def resolve(self, *, profile: str, variant: str) -> BackendCapabilities: ...

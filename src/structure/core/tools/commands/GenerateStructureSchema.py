@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import Mapping, cast
 
-from structure.core.platforms.api.Platform import Platform
+from structure.core.plugins.api.Plugin import Plugin
 from structure.core.tools.logic.model.GeneratedSchemaSource import GeneratedSchemaSource
 from structure.core.tools.logic.render.RenderStructureSchemaSource import RenderStructureSchemaSource
 from structure.core.tools.logic.rules.ValidateSchemaToolRequest import ValidateSchemaToolRequest
-from structure.platform.api.v1.model import SchemaInspectionRequest
+from structure.plugin.api.v1.model import SchemaInspectionRequest
 
 
 class GenerateStructureSchema:
@@ -34,7 +34,7 @@ class GenerateStructureSchema:
             to=to,
         )
         target = getattr(session, "target_backend", "pyspark")
-        schema_api = Platform.registry().select(target).api.schema
+        schema_api = Plugin.registry().select(target).api.schema
         schema = schema_api.read(
             SchemaInspectionRequest(
                 schema=schema,

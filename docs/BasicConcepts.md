@@ -3,8 +3,8 @@
 ## DSL
 
 The DSL has a structural public surface in `structure`—schemas, transforms, declarations, decorators, and runtime
-invocation—and a platform surface for symbolic operations. PySpark fields, expressions, filters, joins, and
-aggregation helpers come from `structure.platform.pyspark`.
+invocation—and a plugin surface for symbolic operations. PySpark fields, expressions, filters, joins, and
+aggregation helpers come from `structure.plugin.pyspark`.
 
 The DSL is not a general wrapper around PySpark. A feature is compiler-visible only when Structure can capture
 it, represent it in IR, check it, and lower it to optimizer-visible target operations.
@@ -38,7 +38,7 @@ Example:
 
 ```python
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class OrderRaw(Schema):

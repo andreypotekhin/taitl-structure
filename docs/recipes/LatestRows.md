@@ -27,7 +27,7 @@ consumers receive.
 
 ```python
 from structure import Schema, Transform, input, output, transform
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class AccountEvent(Schema):

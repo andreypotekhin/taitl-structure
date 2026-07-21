@@ -1,3 +1,3 @@
-from structure.core.runtime.execution.commands.ExecutePlatformArtifact import ExecutePlatformArtifact
+from structure.core.runtime.execution.commands.ExecutePluginArtifact import ExecutePluginArtifact
 
-__all__ = ["ExecutePlatformArtifact"]
+__all__ = ["ExecutePluginArtifact"]

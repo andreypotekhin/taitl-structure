@@ -500,6 +500,6 @@ def _hook_outputs(phase: str, kwargs: dict[str, object], *, default: tuple) -> t
 
 # Transitional compatibility exports. The declaration API retains its historic names while
 # PySpark owns body construction and target validation.
-from structure.platform.pyspark.dsl.body import project as _pyspark_project  # noqa: E402
-from structure.platform.pyspark.dsl.body import watermark as _pyspark_watermark  # noqa: E402
-from structure.platform.pyspark.dsl.body import where as _pyspark_where  # noqa: E402
+from structure.plugin.pyspark.dsl.body import project as _pyspark_project  # noqa: E402
+from structure.plugin.pyspark.dsl.body import watermark as _pyspark_watermark  # noqa: E402
+from structure.plugin.pyspark.dsl.body import where as _pyspark_where  # noqa: E402

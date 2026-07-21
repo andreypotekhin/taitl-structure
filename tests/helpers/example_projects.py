@@ -11,9 +11,9 @@ from structure.core.compiler.api import Compiler
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.docs.api import Docs
 from structure.core.dsl.model.schemas.Schema import Schema
-from structure.platform.pyspark import *
-from structure.platform.pyspark import PySpark
-from structure.platform.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark import *
+from structure.plugin.pyspark import PySpark
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 
 ROOT = Path(".")
 EXAMPLES = ROOT / "examples"

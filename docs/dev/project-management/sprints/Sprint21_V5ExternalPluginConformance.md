@@ -2,41 +2,41 @@
 
 ## Sprint Goal
 
-Prove that an independently packaged platform can use only the public Platform API and publish the contract external
+Prove that an independently packaged plugin can use only the public Plugin API and publish the contract external
 plugin authors need.
 
 ## Product Outcome
 
-An external vendor can build, package, discover, configure, test, and diagnose a Structure platform without importing
+An external vendor can build, package, discover, configure, test, and diagnose a Structure plugin without importing
 Core implementation modules.
 
 ## Scope
 
 ### In Scope
 
-- Public platform author guide, API reference, compatibility policy, and reusable conformance kit.
+- Public plugin author guide, API reference, compatibility policy, and reusable conformance kit.
 - A separately built internal `iterable` wheel registered through real package entry points.
 - Finite iterable projection, inner/left joins, grouped sum/count, re-iterable results, and `collect()`.
 - Opaque-plan serialization service facets and Core-owned envelope round trips.
-- Installed-plugin eligibility, distribution disabling, duplicate-platform-name diagnostics, and vendor-owned platform
+- Installed-plugin eligibility, distribution disabling, duplicate-plugin-name diagnostics, and vendor-owned plugin
   DSL imports.
 - Default-denied class-injection and private engine-manifest compatibility evidence, without publicizing the private
   engine extension.
 
 ### Out of Scope
 
-- Public end-user documentation or production support for the iterable platform.
+- Public end-user documentation or production support for the iterable plugin.
 - Infinite streaming, generation service facets, or broad analytical coverage for iterable data.
 - Automatic compatibility between PySpark and iterable transform source.
 
 ## ExecPlan
 
-`docs/dev/planning/P07162601.V5-platform-callback-architecture.plan.md`
+`docs/dev/planning/P07162601.V5-plugin-architecture.plan.md`
 
 ## Acceptance Criteria
 
 - Tests build and install the fixture wheel in isolation and discover it through distribution metadata.
-- The fixture imports only public Core and Platform API packages.
+- The fixture imports only public Core and Plugin API packages.
 - API negotiation, execution, serialization, disablement, and conflict behavior pass through real entry points.
 - The fixture proves that injection is blocked without the global opt-in and that a rejected private engine manifest
   fails its selected target rather than falling back.

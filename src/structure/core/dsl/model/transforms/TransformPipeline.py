@@ -41,18 +41,18 @@ class TransformPipeline:
         config=None,
         schema_types=None,
         force: bool = False,
-        platform_configuration=None,
-        platform_registry=None,
+        plugin_configuration=None,
+        plugin_registry=None,
         target: str | None = None,
         **settings: object,
     ):
         from structure.core.compiler.api.Compiler import Compiler
         from structure.core.compiler.artifacts.model import CompilerOptions
 
-        if platform_configuration is not None or platform_registry is not None:
-            if platform_configuration is None or platform_registry is None:
-                raise ValueError("platform_configuration and platform_registry must be supplied together.")
-            return Compiler.artifacts.platform(platform_registry)(self, configuration=platform_configuration, target=target)
+        if plugin_configuration is not None or plugin_registry is not None:
+            if plugin_configuration is None or plugin_registry is None:
+                raise ValueError("plugin_configuration and plugin_registry must be supplied together.")
+            return Compiler.artifacts.plugin(plugin_registry)(self, configuration=plugin_configuration, target=target)
         resolved = CompilerOptions.resolve(
             options,
             project_root=project_root,

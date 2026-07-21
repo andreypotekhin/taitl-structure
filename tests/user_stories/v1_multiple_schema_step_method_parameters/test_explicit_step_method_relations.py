@@ -1,5 +1,5 @@
 from structure import *
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class Order(Schema):

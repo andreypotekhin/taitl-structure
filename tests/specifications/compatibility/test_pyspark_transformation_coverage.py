@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any
 
 import structure
-from structure.platform import pyspark
+from structure.plugin import pyspark
 
 ROOT = Path(__file__).resolve().parents[3]
 INVENTORY = ROOT / "docs/reference/pyspark-transformation-inventory.json"

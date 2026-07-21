@@ -1,3 +1,3 @@
-from structure.platform.pyspark.dsl.operations import CachePlan
+from structure.plugin.pyspark.dsl.operations import CachePlan
 
 __all__ = ["CachePlan"]

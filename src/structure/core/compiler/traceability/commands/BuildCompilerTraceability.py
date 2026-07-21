@@ -1,5 +1,5 @@
 from structure.core.compiler.traceability.model.CompilerTraceability import CompilerTraceability
-from structure.platform.api.v1.model import TraceabilityRequest
+from structure.plugin.api.v1.model import TraceabilityRequest
 
 
 class BuildCompilerTraceability:
@@ -9,12 +9,12 @@ class BuildCompilerTraceability:
         )
 
     def _analysis(self, payload: object):
-        from structure.core.platforms.api.Platform import Platform
+        from structure.core.plugins.api.Plugin import Plugin
 
         target = getattr(getattr(payload, "backend", None), "name", None)
         if not isinstance(target, str):
-            raise ValueError("PLATFORM-E2708: Traceability requires a platform-owned payload.")
-        analysis = Platform.registry().select(target).api.analysis
+            raise ValueError("PLUGIN-E2708: Traceability requires a plugin-owned payload.")
+        analysis = Plugin.registry().select(target).api.analysis
         if analysis is None:
-            raise ValueError(f"PLATFORM-E2709: Platform {target!r} does not provide compiler analysis.")
+            raise ValueError(f"PLUGIN-E2709: Plugin {target!r} does not provide compiler analysis.")
         return analysis

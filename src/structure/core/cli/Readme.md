@@ -23,6 +23,6 @@ CliApp.clean_generated_files()
 
 ## Inner Workings
 `api/cli.py` exposes the Click entry point and `StructureCliGroup`, then delegates through `CliApp` to focused commands.
-`DiscoverStructureProject` imports source roots into a `DiscoveredStructureProject`. `RenderConfiguredPlatformProject`
+`DiscoverStructureProject` imports source roots into a `DiscoveredStructureProject`. `RenderConfiguredPluginProject`
 compiles and lowers every discovered `Transform`, and `RenderExplainReport` assembles a concise compiler, target,
 streaming, and traceability view for one transform.

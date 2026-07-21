@@ -2,7 +2,7 @@ from structure import Schema, Transform, input, output, transform
 from structure.core.compiler.api import (
     BuildCompilerTraceability,
     ClassifyStreamingCompatibility,
-    CompilePlatformTransform,
+    CompilePluginTransform,
     Compiler,
     CompileTransform,
 )
@@ -17,7 +17,7 @@ def test_compiler_endpoint_groups_fresh_command_instances() -> None:
     assert isinstance(Compiler.artifacts, Artifacts)
     assert isinstance(Compiler.symbolic_execution, SymbolicExecution)
     assert isinstance(Compiler.frontend.analyze(), CompileTransform)
-    assert isinstance(Compiler.frontend.compile(), CompilePlatformTransform)
+    assert isinstance(Compiler.frontend.compile(), CompilePluginTransform)
     assert isinstance(Compiler.compileability.streaming(), ClassifyStreamingCompatibility)
     assert isinstance(Compiler.traceability.build(), BuildCompilerTraceability)
     assert isinstance(Compiler.symbolic_execution.open(), OpenCompileContext)
@@ -44,12 +44,12 @@ def test_frontend_analysis_collects_structure_without_invoking_a_step() -> None:
         published = output(Published)
 
         def publish(self, row: Raw) -> Published:
-            raise AssertionError("analysis must not invoke a platform step")
+            raise AssertionError("analysis must not invoke a plugin step")
 
     assert isinstance(Compiler.frontend.analyze(), AnalyzeTransform)
     plan = Compiler.frontend.analyze()(Publish)
 
     assert [step.name for step in plan.steps] == ["publish"]
-    assert plan.steps[0].platform_body is None
+    assert plan.steps[0].plugin_body is None
     assert not hasattr(plan.outputs[0], "projection")
     assert not hasattr(plan.outputs[0], "operations")

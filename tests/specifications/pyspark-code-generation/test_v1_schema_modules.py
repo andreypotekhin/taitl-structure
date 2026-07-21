@@ -1,6 +1,6 @@
 import sys
 
-from structure.platform.pyspark import PySpark
+from structure.plugin.pyspark import PySpark
 
 
 def test_v1_common_schema_module_renders_without_pyspark() -> None:

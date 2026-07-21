@@ -55,7 +55,7 @@ from structure.core.dsl.model.types.Struct import Struct
 from structure.core.dsl.model.types.StructType import StructType
 from structure.core.dsl.model.types.StructureType import StructureType
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
-from structure.platform.api.v1 import (
+from structure.plugin.api.v1 import (
     AuthoringAPI,
     StepAuthoringCapture,
     StepAuthoringInput,
@@ -92,7 +92,7 @@ class CompileTransform:
     ) -> TransformPlan:
         authoring = settings.pop("_authoring", None)
         target = str(settings.pop("_authoring_target", ""))
-        platform_configuration = settings.pop("_authoring_configuration", None)
+        plugin_configuration = settings.pop("_authoring_configuration", None)
         if config is not None and (project_root is not None or overrides or settings):
             raise ValueError(
                 "Pass either config=StructureConfig.resolve(...), or pass project_root/config override fields, not both."
@@ -105,7 +105,7 @@ class CompileTransform:
         merged.update(settings)
         resolved = config or StructureConfig.resolve(project_root=project_root, overrides=merged)
         token = _diagnostic_project_root.set(resolved.project_root)
-        authoring_token = _authoring.set((authoring, target, cast(Mapping[str, object], platform_configuration or {})))
+        authoring_token = _authoring.set((authoring, target, cast(Mapping[str, object], plugin_configuration or {})))
         try:
             return self._compile(transform_class, config=resolved)
         finally:
@@ -625,11 +625,11 @@ class CompileTransform:
         arguments = authoring_session.arguments() if authoring_session is not None else tuple(fallback_arguments)
         if len(arguments) != len(bindings):
             raise self._error(
-                "PLATFORM-E2708",
+                "PLUGIN-E2708",
                 transform_class=transform_class,
                 member=name,
-                problem=f"Platform {target!r} supplied {len(arguments)} symbolic arguments for {len(bindings)} bindings.",
-                use="Update the platform authoring facet to return one argument per step input.",
+                problem=f"Plugin {target!r} supplied {len(arguments)} symbolic arguments for {len(bindings)} bindings.",
+                use="Update the plugin authoring facet to return one argument per step input.",
             )
         if authoring_session is None:
             assert context is not None
@@ -758,7 +758,7 @@ class CompileTransform:
         if authoring_session is not None:
             capture = authoring_session.capture(result)
             if not isinstance(capture, StepAuthoringCapture):
-                raise TypeError("Platform authoring capture must return StepAuthoringCapture")
+                raise TypeError("Plugin authoring capture must return StepAuthoringCapture")
             authoring_body = capture.body
             diagnostics.extend(cast(tuple[Diagnostic, ...], capture.diagnostics))
         steps.append(
@@ -782,7 +782,7 @@ class CompileTransform:
                 results=tuple(result_plans),
                 options=options,
                 origin=TransformMemberOrigin.of(item.owner, name),
-                platform_body=authoring_body,
+                plugin_body=authoring_body,
             )
         )
         for result in result_plans:
@@ -825,7 +825,7 @@ class CompileTransform:
             if context is not None:
                 return context
             current = getattr(current, "_delegate", None)
-        raise TypeError("Platform authoring session does not provide active symbolic state")
+        raise TypeError("Plugin authoring session does not provide active symbolic state")
 
     @contextmanager
     def _parent_call_patches(

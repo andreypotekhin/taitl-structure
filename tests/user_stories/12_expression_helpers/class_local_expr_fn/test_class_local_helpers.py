@@ -3,7 +3,7 @@ def test_class_local_expression_helpers_lower_to_symbolic_calls(orders_plan) -> 
 
     projection = {
         assignment.field.name: assignment.expression
-        for assignment in cast(PySparkStepBody, orders_plan.steps[0].platform_body).projection
+        for assignment in cast(PySparkStepBody, orders_plan.steps[0].plugin_body).projection
     }
     customer_id = projection["customer_id"]
 
@@ -28,7 +28,7 @@ def test_money_helper_preserves_decimal_contract(orders_plan, orders_transform_t
 
     projection = {
         assignment.field.name: assignment.expression
-        for assignment in cast(PySparkStepBody, orders_plan.steps[0].platform_body).projection
+        for assignment in cast(PySparkStepBody, orders_plan.steps[0].plugin_body).projection
     }
 
     assert projection["total"].data == {"function": "coalesce"}
@@ -40,4 +40,4 @@ def test_money_helper_preserves_decimal_contract(orders_plan, orders_transform_t
     assert ").cast('decimal(12,2)').alias(\"net_total\")" in orders_transform_text
 from typing import cast
 
-from structure.platform.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody

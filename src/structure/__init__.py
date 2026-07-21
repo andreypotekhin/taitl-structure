@@ -1,7 +1,7 @@
-"""Structure's platform-neutral public API.
+"""Structure's target-neutral public API.
 
 Import PySpark expressions, joins, field factories, and concrete types from
-``structure.platform.pyspark``.  The root package deliberately contains only
+``structure.plugin.pyspark``.  The root package deliberately contains only
 Structure lifecycle and artifact concepts.
 """
 

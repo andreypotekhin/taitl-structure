@@ -1,3 +1,3 @@
-from structure.platform.pyspark.dsl.types import String
+from structure.plugin.pyspark.dsl.types import String
 
 __all__ = ["String"]

@@ -27,7 +27,7 @@ def test_user_can_compile_memory_source_and_run_selected_transform() -> None:
         {
             "notebook_story/schema.py": """
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 class Row(Schema):
     id = string(nullable=False)

@@ -1,4 +1,4 @@
-from structure.platform.api.v1.model import SymbolicContext, current_symbolic_context
+from structure.plugin.api.v1.model import SymbolicContext, current_symbolic_context
 
 
 class ReadCompileContext:

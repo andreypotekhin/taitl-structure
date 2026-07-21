@@ -1,7 +1,7 @@
 import pytest
 
 from structure import *
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 def test_transform_construction_binds_named_inputs_without_running() -> None:

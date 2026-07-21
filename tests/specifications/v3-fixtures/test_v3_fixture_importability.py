@@ -9,9 +9,9 @@ import pytest
 
 from structure import *
 from structure.core.compiler.api import Compiler
-from structure.platform.api.v1.model.TransformPlan import TransformPlan
-from structure.platform.pyspark import *
-from structure.platform.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
+from structure.plugin.api.v1.model.TransformPlan import TransformPlan
+from structure.plugin.pyspark import *
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
 def test_v3_source_fixtures_import_without_live_spark(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -57,7 +57,7 @@ def test_v3_orders_fixture_highlights_the_completed_release_surface(monkeypatch:
     )
 
     assert [step.name for step in scalar_plan.steps] == ["project"]
-    scalar_body = cast(PySparkStepBody, scalar_plan.steps[0].platform_body)
+    scalar_body = cast(PySparkStepBody, scalar_plan.steps[0].plugin_body)
     assert [operation.kind for operation in scalar_body.operations] == ["filter", "filter"]
     assert [assignment.expression.kind for assignment in scalar_body.projection[1:10]] == [
         "and",
@@ -74,7 +74,7 @@ def test_v3_orders_fixture_highlights_the_completed_release_surface(monkeypatch:
     assert scalar_body.projection[-1].expression.data["function"] == "window_row_number"
     assert scalar_body.projection[-1].expression.data["order_count"] == 2
 
-    collection = cast(PySparkStepBody, analytics_plan.steps[-1].platform_body)
+    collection = cast(PySparkStepBody, analytics_plan.steps[-1].plugin_body)
     functions = [
         assignment.expression.data["function"]
         for assignment in collection.projection

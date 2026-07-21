@@ -5,7 +5,7 @@ from structure import Schema
 from structure.core.dsl.model.types.Array import Array
 from structure.core.dsl.model.types.Decimal import Decimal
 from structure.core.dsl.model.types.Map import Map
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 def test_schema_module_wildcard_factories_keep_type_and_nullability_contracts() -> None:

@@ -6,7 +6,7 @@ from structure import *
 from structure.core.dsl.model.expr.Expression import Expression
 from structure.core.dsl.model.transforms.operations import WindowFrame
 from structure.core.dsl.model.types.DecimalType import DecimalType
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 @pytest.mark.parametrize(

@@ -61,7 +61,7 @@ Deprecated examples used:
 
 ```python
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class OrderRaw(Schema):
@@ -74,7 +74,7 @@ Recommended v1 canonical form:
 
 ```python
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class OrderRaw(Schema):

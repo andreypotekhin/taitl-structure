@@ -1,3 +1,3 @@
-from structure.platform.pyspark.dsl.aggregation import AggregateAssignment
+from structure.plugin.pyspark.dsl.aggregation import AggregateAssignment
 
 __all__ = ["AggregateAssignment"]

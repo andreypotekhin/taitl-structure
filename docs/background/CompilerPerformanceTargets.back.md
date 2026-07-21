@@ -130,7 +130,7 @@ Benchmark measurements should record:
 - Structure version or git commit;
 - project size;
 - cold or warm cache;
-- platform;
+- plugin;
 - Python version;
 - elapsed wall time;
 - cache hit rate when available;

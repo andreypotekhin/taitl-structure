@@ -8,7 +8,7 @@ from structure.core.compiler.artifacts.model import CompiledArtifactPool, Compil
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
-from structure.core.platforms.api.Platform import Platform
+from structure.core.plugins.api.Plugin import Plugin
 from structure.core.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.core.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.core.runtime.session.model.TransformResult import TransformResult
@@ -16,7 +16,7 @@ from structure.core.sources.api import Sources
 from structure.core.sources.model.CompiledSources import CompiledSources
 from structure.core.sources.model.SourceTransformAddress import SourceTransformAddress
 from structure.core.sources.model.StructureSources import StructureSources
-from structure.platform.api.v1.model import ExecutionRequest
+from structure.plugin.api.v1.model import ExecutionRequest
 
 
 class StructureSession:
@@ -87,10 +87,10 @@ class StructureSession:
         if schemas is None:
             raise RuntimeError("Runtime execution requires materialized transform schemas")
 
-        platform = Platform.registry().select(self.target_backend)
-        if platform.api.executor is None:
+        plugin = Plugin.registry().select(self.target_backend)
+        if plugin.api.executor is None:
             raise self._invalid_mode(invocation)
-        result = platform.api.executor.execute(
+        result = plugin.api.executor.execute(
             ExecutionRequest(
                 payload=artifact.payload,
                 runtime=self,
@@ -100,7 +100,7 @@ class StructureSession:
             )
         )
         if not isinstance(result, TransformResult):
-            raise TypeError(f"Platform {self.target_backend!r} returned an invalid execution result.")
+            raise TypeError(f"Plugin {self.target_backend!r} returned an invalid execution result.")
         return result._structure_with_schema(schemas.outputs, aliases=schemas.output_aliases)
 
     def _compiled(self, invocation: Transform) -> CompiledTransform:

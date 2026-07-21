@@ -74,11 +74,11 @@ structure/core/[component]/
     and `PySpark.render`.
     Endpoint methods are static factories returning fresh command instances.
       Usage: `Compiler.frontend.analyze()` returns a new structural-plan command; `Compiler.frontend.compile()` returns
-      a new Core-to-platform compilation command. `Compiler.frontend.author()` is the bundled-documentation endpoint
-      that attaches a selected platform body without lowering it.
+      a new Core-to-plugin compilation command. `Compiler.frontend.author()` is the bundled-documentation endpoint
+      that attaches a selected plugin body without lowering it.
   - commands/ - action-oriented command classes called from endpoint methods.
     Ex: `AnalyzeTransform` implements frontend analysis; `CompileTransform` is the transitional authoring runner;
-    `CompilePlatformTransform` dispatches platform compilation.
+    `CompilePluginTransform` dispatches plugin compilation.
     Commands are created/invoked only through api facade endpoints - not directly.
       Usage: `Compiler.frontend.analyze()(TransformClass)` or `Compiler.frontend.compile()(TransformClass)`.
   - model/ - public app model exposed by endpoint parameters, return types, or API exports.

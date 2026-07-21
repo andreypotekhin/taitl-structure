@@ -7,7 +7,7 @@ from examples.orders.schemas.order import (
 )
 from examples.orders.schemas.product import Product
 from structure import *
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class RowsetJoinExamples(Transform):

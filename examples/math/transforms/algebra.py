@@ -1,6 +1,6 @@
 from examples.math.schemas.algebra import FormulaParameters, FormulaResult, ScalarEvent
 from structure import StreamingMode, Transform, input, output, transform
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 @transform(streaming_compatible=True)

@@ -25,6 +25,23 @@ analytics = AnalyzeText(
 corpus = CorpusText(documents=analytics.document_statistics, words=segments.words).run(session)
 ```
 
+`SearchOverlap` and `SearchBm25` independently accept caller-supplied `SearchQuery(id, content)` rows and create a
+score row for every matching document, section, paragraph, and sentence. They normalize query terms exactly as
+`ExtractText` normalizes document words. `score_overlap` is the standard overlap coefficient: matching distinct terms
+divided by the smaller of the query and target vocabularies. `score_bm25` uses fixed `k1=1.2` and `b=0.75` constants.
+The scores remain separate: choosing an algorithm or combining parent and child targets is deliberately caller-owned.
+
+Search logic uses Spark SQL functions inside a narrow raw boundary for query-token row expansion. A Python UDF would
+serialize every scored row through Python and hide its logic from Spark's optimizer, preventing whole-stage code
+generation and limiting projection and predicate optimization. A vectorized Pandas UDF reduces that overhead but
+remains an opaque boundary and needs Arrow batches. Use a UDF only for a tokenizer or scoring rule that cannot be
+expressed through Spark's native relational functions.
+
+```python
+overlap = SearchOverlap(queries=queries, words=segments.words).run(session)
+bm25 = SearchBm25(queries=queries, words=segments.words).run(session)
+```
+
 The example deliberately remains batch-only: corpus distributions and
 near-duplicate comparisons need a bounded input corpus. The latter uses title
 prefix, source, and language as a candidate block before calculating

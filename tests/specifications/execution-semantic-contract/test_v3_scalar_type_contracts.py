@@ -11,7 +11,7 @@ from structure.core.dsl.model.expr.Expression import Expression
 from structure.core.dsl.model.expr.expressions import literal
 from structure.core.dsl.model.types.DecimalType import DecimalType
 from structure.core.dsl.model.types.StructType import StructType
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 def _expression(type, *, nullable: bool) -> Expression:

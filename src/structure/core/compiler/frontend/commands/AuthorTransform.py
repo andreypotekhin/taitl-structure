@@ -8,11 +8,11 @@ from structure.core.compiler.ir.model.TransformPlan import TransformPlan
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
-from structure.platform.api.v1 import AuthoringAPI
+from structure.plugin.api.v1 import AuthoringAPI
 
 
 class AuthorTransform:
-    """Run Core's step lifecycle and attach bodies captured by one selected platform.
+    """Run Core's step lifecycle and attach bodies captured by one selected plugin.
 
     ``CompileTransform`` remains the temporary implementation of the PySpark-shaped
     body construction while P072 moves those builders into the plugin.  This command
@@ -50,7 +50,7 @@ class AuthorTransform:
         return replace(
             plan,
             steps=tuple(
-                replace(structural, platform_body=captured.platform_body)
+                replace(structural, plugin_body=captured.plugin_body)
                 for structural, captured in zip(plan.steps, authored.steps, strict=True)
             ),
             diagnostics=(*plan.diagnostics, *authored.diagnostics),

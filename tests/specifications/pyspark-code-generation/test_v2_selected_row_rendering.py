@@ -4,9 +4,9 @@ import pytest
 
 from structure import *
 from structure.core.cli.commands.RenderExplainReport import render_explain_report
-from structure.platform.pyspark import *
-from structure.platform.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
-from structure.platform.pyspark.render.commands.RenderPySparkTransformModule import render_pyspark_transform_module
+from structure.plugin.pyspark import *
+from structure.plugin.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
+from structure.plugin.pyspark.render.commands.RenderPySparkTransformModule import render_pyspark_transform_module
 
 
 class RawEvent(Schema):

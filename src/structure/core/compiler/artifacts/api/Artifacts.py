@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from structure.core.compiler.artifacts.commands.BuildCompiledTransform import BuildCompiledTransform
-    from structure.core.compiler.artifacts.commands.BuildPlatformArtifact import BuildPlatformArtifact
+    from structure.core.compiler.artifacts.commands.BuildPluginArtifact import BuildPluginArtifact
     from structure.core.compiler.artifacts.commands.CompareGeneratedFiles import CompareGeneratedFiles
     from structure.core.compiler.artifacts.commands.CompileStructureSources import CompileStructureSources
-    from structure.core.compiler.artifacts.commands.GeneratePlatformArtifact import GeneratePlatformArtifact
-    from structure.core.compiler.artifacts.commands.SerializePlatformArtifact import SerializePlatformArtifact
+    from structure.core.compiler.artifacts.commands.GeneratePluginArtifact import GeneratePluginArtifact
+    from structure.core.compiler.artifacts.commands.SerializePluginArtifact import SerializePluginArtifact
     from structure.core.compiler.artifacts.commands.WriteGeneratedFiles import WriteGeneratedFiles
     from structure.core.compiler.artifacts.model.CompiledArtifactPool import CompiledArtifactPool
 
@@ -19,10 +19,10 @@ class Artifacts:
 
         return BuildCompiledTransform()
 
-    def platform(self, registry) -> BuildPlatformArtifact:
-        from structure.core.compiler.artifacts.commands.BuildPlatformArtifact import BuildPlatformArtifact
+    def plugin(self, registry) -> BuildPluginArtifact:
+        from structure.core.compiler.artifacts.commands.BuildPluginArtifact import BuildPluginArtifact
 
-        return BuildPlatformArtifact(registry)
+        return BuildPluginArtifact(registry)
 
     def sources(self) -> CompileStructureSources:
         from structure.core.compiler.artifacts.commands.CompileStructureSources import CompileStructureSources
@@ -34,15 +34,15 @@ class Artifacts:
 
         return CompiledArtifactPool()
 
-    def generate(self, registry) -> GeneratePlatformArtifact:
-        from structure.core.compiler.artifacts.commands.GeneratePlatformArtifact import GeneratePlatformArtifact
+    def generate(self, registry) -> GeneratePluginArtifact:
+        from structure.core.compiler.artifacts.commands.GeneratePluginArtifact import GeneratePluginArtifact
 
-        return GeneratePlatformArtifact(registry)
+        return GeneratePluginArtifact(registry)
 
-    def serialize(self, registry) -> SerializePlatformArtifact:
-        from structure.core.compiler.artifacts.commands.SerializePlatformArtifact import SerializePlatformArtifact
+    def serialize(self, registry) -> SerializePluginArtifact:
+        from structure.core.compiler.artifacts.commands.SerializePluginArtifact import SerializePluginArtifact
 
-        return SerializePlatformArtifact(registry)
+        return SerializePluginArtifact(registry)
 
     def compare(self) -> CompareGeneratedFiles:
         from structure.core.compiler.artifacts.commands.CompareGeneratedFiles import CompareGeneratedFiles

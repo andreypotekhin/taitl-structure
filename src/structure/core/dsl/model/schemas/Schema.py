@@ -85,8 +85,8 @@ class Schema:
         validators = {field.validator for field in fields.values() if field.validator is not None}
         if len(validators) > 1:
             raise TypeError(
-                f"{cls.__name__} combines field declarations from multiple platforms. "
-                "Use one platform's field DSL for each Schema."
+                f"{cls.__name__} combines field declarations from multiple plugins. "
+                "Use one plugin's field DSL for each Schema."
             )
         if validators:
             validators.pop()(cls, fields)

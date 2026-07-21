@@ -3,7 +3,7 @@
 ## v5 Status
 
 This document records the pre-v5 same-source portability direction. It is superseded for v5 by
-`PlatformCallbackArchitecture.md`. v5 makes platforms own their authoring APIs and supports exactly one target per
+`PluginArchitecture.md`. v5 makes plugins own their authoring APIs and supports exactly one target per
 transform or composed pipeline. It does not compile the same transform source to several backends or report portability
 across target APIs.
 

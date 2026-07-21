@@ -12,7 +12,7 @@ from click.testing import CliRunner
 
 from structure import *
 from structure.core.cli.api import cli
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 @contextmanager
@@ -79,7 +79,7 @@ def write_project(root: Path) -> None:
         "\n".join(
             [
                 "from structure import *",
-                "from structure.platform.pyspark import *",
+                "from structure.plugin.pyspark import *",
                 "",
                 "class OrderRaw(Schema):",
                 "    id = string(nullable=False)",
@@ -97,7 +97,7 @@ def write_project(root: Path) -> None:
         "\n".join(
             [
                 "from structure import *",
-                "from structure.platform.pyspark import *",
+                "from structure.plugin.pyspark import *",
                 "from orders.schemas import OrderNormalized, OrderRaw",
                 "",
                 "@transform",
@@ -151,7 +151,7 @@ def write_optional_transform_project(root: Path) -> None:
         "\n".join(
             [
                 "from structure import *",
-                "from structure.platform.pyspark import *",
+                "from structure.plugin.pyspark import *",
                 "",
                 "class OrderRaw(Schema):",
                 "    id = string(nullable=False)",
@@ -169,7 +169,7 @@ def write_optional_transform_project(root: Path) -> None:
         "\n".join(
             [
                 "from structure import *",
-                "from structure.platform.pyspark import *",
+                "from structure.plugin.pyspark import *",
                 "from orders.schemas import OrderNormalized, OrderRaw",
                 "",
                 "class NormalizeBase(Transform):",

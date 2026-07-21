@@ -1,6 +1,6 @@
-from structure.core.runtime.execution.commands.RunGeneratedPlatformTransform import RunGeneratedPlatformTransform
+from structure.core.runtime.execution.commands.RunGeneratedPluginTransform import RunGeneratedPluginTransform
 
 
 class GeneratedExecution:
-    def pyspark(self) -> RunGeneratedPlatformTransform:
-        return RunGeneratedPlatformTransform()
+    def pyspark(self) -> RunGeneratedPluginTransform:
+        return RunGeneratedPluginTransform()

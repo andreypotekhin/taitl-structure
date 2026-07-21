@@ -1,5 +1,5 @@
 from structure.core.compiler.frontend.commands.AnalyzeTransform import AnalyzeTransform
-from structure.core.compiler.frontend.commands.CompilePlatformTransform import CompilePlatformTransform
+from structure.core.compiler.frontend.commands.CompilePluginTransform import CompilePluginTransform
 from structure.core.compiler.frontend.commands.CompileTransform import CompileTransform
 
 
@@ -8,8 +8,8 @@ class Frontend:
         return AnalyzeTransform()
 
     def author(self) -> CompileTransform:
-        """Author target bodies for the integrated bundled-platform documentation workflow."""
+        """Author target bodies for the integrated bundled-plugin documentation workflow."""
         return CompileTransform()
 
-    def compile(self) -> CompilePlatformTransform:
-        return CompilePlatformTransform()
+    def compile(self) -> CompilePluginTransform:
+        return CompilePluginTransform()

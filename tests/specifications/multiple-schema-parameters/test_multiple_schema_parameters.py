@@ -2,7 +2,7 @@ import pytest
 
 from structure import *
 from structure.core.compiler.api import Compiler
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class OrderRaw(Schema):

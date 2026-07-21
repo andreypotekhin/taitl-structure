@@ -15,7 +15,7 @@ the final schema as an ordered structural contract and keeps inheritance details
 
 ```python
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class EntityKeys(Schema):

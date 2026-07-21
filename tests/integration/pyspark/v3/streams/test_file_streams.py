@@ -22,7 +22,7 @@ from examples.streams.transforms.passages import PreparePassages
 from examples.streams.transforms.penalties import CorrelatePenalties
 from examples.streams.transforms.progress import BuildGateProgress
 from structure import Schema, StreamingMode, Transform, input, output, special, transform
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 pytestmark = pytest.mark.integration
 

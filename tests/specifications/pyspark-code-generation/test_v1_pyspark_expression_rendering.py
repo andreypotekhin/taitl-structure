@@ -4,8 +4,8 @@ import pytest
 
 from structure import *
 from structure.core.target.capabilities.api import BackendCapabilityError
-from structure.platform.pyspark import *
-from structure.platform.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
+from structure.plugin.pyspark import *
+from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
 
 
 def test_v1_expression_renderer_renders_filter_helpers_and_literals() -> None:

@@ -1,7 +1,7 @@
 import sys
 
 from structure import *
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 def test_v1_schema_rendering_is_spark_free() -> None:

@@ -1,5 +1,5 @@
 from structure import *
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 from testing.model.v3.orders.schemas.analytics import CustomerDailyTotal, CustomerEventRank, ProductDailySummary
 from testing.model.v3.orders.schemas.order import OrderFulfillment

@@ -1,3 +1,3 @@
-from structure.platform.pyspark.dsl.aggregation import AggregateKey
+from structure.plugin.pyspark.dsl.aggregation import AggregateKey
 
 __all__ = ["AggregateKey"]

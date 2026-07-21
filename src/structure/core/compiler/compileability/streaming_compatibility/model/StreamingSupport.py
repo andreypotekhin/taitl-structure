@@ -1,3 +1,3 @@
-from structure.platform.pyspark.dsl.operations import StreamingSupport
+from structure.plugin.pyspark.dsl.operations import StreamingSupport
 
 __all__ = ["StreamingSupport"]

@@ -11,7 +11,7 @@ A schema class defines a contract and compiles into PySpark schema (`StructType`
 
 ```python
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class OrderRaw(Schema):
@@ -42,7 +42,7 @@ A transform class is declared by inheriting `Transform`.
 
 ```python
 from structure import Transform, input, lane, output
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class NormalizeOrders(Transform):

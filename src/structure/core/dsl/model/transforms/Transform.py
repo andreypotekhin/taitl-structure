@@ -90,8 +90,8 @@ class Transform:
         config=None,
         schema_types=None,
         force: bool = False,
-        platform_configuration=None,
-        platform_registry=None,
+        plugin_configuration=None,
+        plugin_registry=None,
         target: str | None = None,
         **settings: object,
     ):
@@ -99,10 +99,10 @@ class Transform:
         from structure.core.compiler.artifacts.model import CompilerOptions
         from structure.core.sources.model.StructureSources import StructureSources
 
-        if platform_configuration is not None or platform_registry is not None:
-            if platform_configuration is None or platform_registry is None:
-                raise ValueError("platform_configuration and platform_registry must be supplied together.")
-            return Compiler.artifacts.platform(platform_registry)(cls, configuration=platform_configuration, target=target)
+        if plugin_configuration is not None or plugin_registry is not None:
+            if plugin_configuration is None or plugin_registry is None:
+                raise ValueError("plugin_configuration and plugin_registry must be supplied together.")
+            return Compiler.artifacts.plugin(plugin_registry)(cls, configuration=plugin_configuration, target=target)
         resolved = CompilerOptions.resolve(
             options,
             project_root=project_root,
@@ -135,8 +135,8 @@ class Transform:
         from structure.core.compiler.artifacts.model import CompilerOptions, GeneratedTransform
         from structure.core.compiler.artifacts.storage import DiskStorage
         from structure.core.configuration.model.StructureConfig import StructureConfig
-        from structure.core.platforms.api.Platform import Platform
-        from structure.platform.api.v1.model import GenerationRequest
+        from structure.core.plugins.api.Plugin import Plugin
+        from structure.plugin.api.v1.model import GenerationRequest
 
         resolved = CompilerOptions.resolve(
             options,
@@ -165,10 +165,10 @@ class Transform:
             )
             plans[f"{transform.__module__}.{transform.__name__}"] = transform_artifact.payload
             fingerprints[f"{transform.__module__}.{transform.__name__}"] = transform_artifact.semantic_fingerprint
-        platform = Platform.registry().select(resolved.target_backend)
-        if platform.api.generator is None:
-            raise ValueError(f"PLATFORM-E2709: Platform {resolved.target_backend!r} does not provide generation.")
-        files = platform.api.generator.generate(
+        plugin = Plugin.registry().select(resolved.target_backend)
+        if plugin.api.generator is None:
+            raise ValueError(f"PLUGIN-E2709: Plugin {resolved.target_backend!r} does not provide generation.")
+        files = plugin.api.generator.generate(
             GenerationRequest(
                 payload=plans,
                 source_module=source_unit,

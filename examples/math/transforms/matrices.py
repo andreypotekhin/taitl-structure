@@ -3,7 +3,7 @@ from builtins import max as scalar_max
 
 from examples.math.schemas.matrices import LeftMatrixCell, MatrixCell, MatrixVectorCell, RightMatrixCell, VectorCell
 from structure import Transform, input, lane, output, raw, step
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class MultiplyMatrices(Transform):

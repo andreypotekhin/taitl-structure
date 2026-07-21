@@ -1,3 +1,3 @@
-from structure.platform.pyspark.dsl.types import Struct
+from structure.plugin.pyspark.dsl.types import Struct
 
 __all__ = ["Struct"]

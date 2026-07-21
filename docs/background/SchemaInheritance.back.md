@@ -5,7 +5,7 @@ arbitrary Python mixin behavior.
 
 ```python
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class EntityKeys(Schema):

@@ -164,7 +164,7 @@ Example:
 
 ```python
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class EntityKeys(Schema):
@@ -186,7 +186,7 @@ total  declaring_schema=Order       inherited=False
 
 ```python
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class Customer(Schema):

@@ -3,7 +3,7 @@ from structure.core.cli.commands.CleanGeneratedFiles import CleanGeneratedFiles
 from structure.core.cli.commands.CompileStructureProject import CompileStructureProject
 from structure.core.cli.commands.DiscoverStructureProject import DiscoverStructureProject
 from structure.core.cli.commands.ExplainStructureTransform import ExplainStructureTransform
-from structure.core.cli.commands.RenderConfiguredPlatformProject import RenderConfiguredPlatformProject
+from structure.core.cli.commands.RenderConfiguredPluginProject import RenderConfiguredPluginProject
 from structure.core.cli.commands.RenderExplainReport import RenderExplainReport
 from structure.core.cli.commands.ResolveCliConfig import ResolveCliConfig
 from structure.core.cli.commands.WriteStructureConfig import WriteStructureConfig
@@ -40,12 +40,12 @@ class CliApp:
         return DiscoverStructureProject()
 
     @staticmethod
-    def render_configured_platform_project() -> RenderConfiguredPlatformProject:
-        return RenderConfiguredPlatformProject()
+    def render_configured_platform_project() -> RenderConfiguredPluginProject:
+        return RenderConfiguredPluginProject()
 
     @staticmethod
-    def render_configured_pyspark_project() -> RenderConfiguredPlatformProject:
-        return RenderConfiguredPlatformProject()
+    def render_configured_pyspark_project() -> RenderConfiguredPluginProject:
+        return RenderConfiguredPluginProject()
 
     @staticmethod
     def render_explain_report() -> RenderExplainReport:

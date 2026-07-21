@@ -1,5 +1,5 @@
 from structure import *
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 from testing.model.v3.orders.schemas.adv_analytics import (
     OrderCollectionProfile,

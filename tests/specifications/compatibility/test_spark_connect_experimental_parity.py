@@ -3,9 +3,9 @@ from typing import Any, cast
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.target.capabilities.api import Capabilities
-from structure.platform.pyspark import *
-from structure.platform.pyspark.render.commands.RenderPySparkRuntimeModule import render_pyspark_runtime_module
-from structure.platform.pyspark.render.commands.RenderPySparkTransformModule import render_pyspark_transform_module
+from structure.plugin.pyspark import *
+from structure.plugin.pyspark.render.commands.RenderPySparkRuntimeModule import render_pyspark_runtime_module
+from structure.plugin.pyspark.render.commands.RenderPySparkTransformModule import render_pyspark_transform_module
 
 CLASSIC_ONLY_TOKENS = (
     "SparkContext",

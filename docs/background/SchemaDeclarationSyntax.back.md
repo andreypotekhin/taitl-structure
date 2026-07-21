@@ -10,7 +10,7 @@ the [Schema reference](../reference/Schema.ref.md).
 
 ```python
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class OrderRaw(Schema):
@@ -30,14 +30,14 @@ source; `alias=` supplies a different physical Spark column name when necessary.
 
 ## Imports And Grammar
 
-Use field factories from `structure.platform.pyspark` for PySpark schema declarations:
+Use field factories from `structure.plugin.pyspark` for PySpark schema declarations:
 
 ```python
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 ```
 
-Use `structure.platform.pyspark.types` only when an API needs a standalone PySpark type object, such as a cast or UDF
+Use `structure.plugin.pyspark.types` only when an API needs a standalone PySpark type object, such as a cast or UDF
 return contract.
 
 ```text

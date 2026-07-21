@@ -54,7 +54,7 @@ artifacts. Generated modules mirror source import paths under `structure_generat
 # src/orders/schemas/order.py
 
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class OrderRaw(Schema):
@@ -86,7 +86,7 @@ aliases are schema-local unless inherited.
 # src/orders/schemas/customer.py
 
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class Customer(Schema):
@@ -101,7 +101,7 @@ class Customer(Schema):
 # src/orders/transforms/order.py
 
 from structure import Transform, input, lane, output, raw, special
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 from orders.schemas.order import OrderRaw, OrderNormalized, OrderWithCustomer
 from orders.schemas.customer import Customer
 

@@ -1,6 +1,6 @@
 from examples.streams.schemas.race import Race
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class RawEvent(Schema):

@@ -1,3 +1,3 @@
-from structure.platform.api.v1.model import TransformMemberOrigin
+from structure.plugin.api.v1.model import TransformMemberOrigin
 
 __all__ = ["TransformMemberOrigin"]

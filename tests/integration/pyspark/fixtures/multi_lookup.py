@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from structure import *
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class LookupOrder(Schema):

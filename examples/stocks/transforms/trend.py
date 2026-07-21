@@ -1,7 +1,7 @@
 from examples.stocks.schemas.indicators import TrendIndicator
 from examples.stocks.schemas.market import MarketBar
 from structure import *
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class Trend(Transform):

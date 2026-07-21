@@ -19,7 +19,7 @@ from structure.lib.testing import (
     assert_online_generated_parity,
     generated_files,
 )
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 @contextmanager
@@ -103,7 +103,7 @@ def _write_project(root: Path) -> None:
         "\n".join(
             [
                 "from structure import *",
-                "from structure.platform.pyspark import *",
+                "from structure.plugin.pyspark import *",
                 "",
                 "class OrderRaw(Schema):",
                 "    id = string(nullable=False)",
@@ -121,7 +121,7 @@ def _write_project(root: Path) -> None:
         "\n".join(
             [
                 "from structure import *",
-                "from structure.platform.pyspark import *",
+                "from structure.plugin.pyspark import *",
                 "from orders.schemas import OrderNormalized, OrderRaw",
                 "",
                 "@transform",

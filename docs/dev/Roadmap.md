@@ -7,8 +7,8 @@ mainstream analytical pipelines, promotes Spark Connect for completed batch feat
 caller-owned Spark streaming compatibility diagnostics. v3 closes its scheduled PySpark parity work and hardens
 compiler-visible streaming transformations while callers retain lifecycle ownership. v4 expands predictable PySpark
 transformation API coverage while loading, storage, and orchestration remain caller-owned. v5 makes target ownership
-explicit through a public Platform API: Core continues to orchestrate every workflow, the bundled PySpark platform
-supplies target-specific service facets, and external wheels can supply equivalent platform integrations.
+explicit through a public Plugin API: Core continues to orchestrate every workflow, the bundled PySpark plugin
+supplies target-specific service facets, and external wheels can supply equivalent plugin integrations.
 
 ## v1
 
@@ -92,14 +92,14 @@ supplies target-specific service facets, and external wheels can supply equivale
 ## v5
 
 - Core-orchestrated schema, compilation, execution, generation, serialization, capability, and diagnostic workflows,
-  with private target-local replacement of a compatible individual engine when an advanced platform requires it.
-- Public, versioned `PlatformAPI` façades with symmetric Core/plugin API negotiation.
-- Metadata-only discovery of one plugin per platform name installed through Python package entry points.
+  with private target-local replacement of a compatible individual engine when an advanced plugin requires it.
+- Public, versioned `PluginAPI` façades with symmetric Core/plugin API negotiation.
+- Metadata-only discovery of one plugin per plugin name installed through Python package entry points.
 - Exactly one target per transform or composed pipeline, with different transforms in one project allowed to select
-  different installed platforms.
-- Target-owned platform DSLs: field definitions, expressions, joins, aggregations, and other target APIs.
-- Bundled PySpark behavior moved behind the same public Platform API available to external plugins.
-- Vendor-owned import packages for external platform DSLs.
+  different installed plugins.
+- Target-owned plugin DSLs: field definitions, expressions, joins, aggregations, and other target APIs.
+- Bundled PySpark behavior moved behind the same public Plugin API available to external plugins.
+- Vendor-owned import packages for external plugin DSLs.
 - An internal finite-iterable wheel proving discovery, isolation, execution, serialization, and conformance without
   receiving a public product-support claim.
 - Immediate removal of target-owned names from the `structure` package root.

@@ -1,8 +1,8 @@
 import sys
 from importlib.resources import files
 
-from structure.platform.pyspark import PySpark
-from structure.platform.pyspark.render.commands.RenderPySparkRuntimeModule import (
+from structure.plugin.pyspark import PySpark
+from structure.plugin.pyspark.render.commands.RenderPySparkRuntimeModule import (
     RESOURCE_PACKAGE,
     RUNTIME_MODULE_RESOURCE,
 )

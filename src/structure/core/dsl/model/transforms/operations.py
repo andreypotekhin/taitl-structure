@@ -2,9 +2,9 @@ import inspect
 from functools import wraps
 from importlib import import_module
 
-from structure.platform.pyspark.dsl.operations_api import *  # noqa: F403
+from structure.plugin.pyspark.dsl.operations_api import *  # noqa: F403
 
-_pyspark_operations = import_module("structure.platform.pyspark.dsl.operations_api")
+_pyspark_operations = import_module("structure.plugin.pyspark.dsl.operations_api")
 
 
 def _compatibility(function):

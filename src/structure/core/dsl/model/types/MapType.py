@@ -1,3 +1,3 @@
-from structure.platform.pyspark.dsl.types import MapType
+from structure.plugin.pyspark.dsl.types import MapType
 
 __all__ = ["MapType"]

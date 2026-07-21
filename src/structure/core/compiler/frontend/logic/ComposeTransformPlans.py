@@ -27,7 +27,7 @@ from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclarat
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline, TransformPipelineStage
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
-from structure.platform.api.v1 import InputPlan
+from structure.plugin.api.v1 import InputPlan
 
 CompileStage = Callable[[type[Transform]], TransformPlan]
 

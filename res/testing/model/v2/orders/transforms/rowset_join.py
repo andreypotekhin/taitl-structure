@@ -8,7 +8,7 @@ from testing.model.v2.orders.schemas.order import (
 from testing.model.v2.orders.schemas.product import Product
 
 from structure import *
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class RowsetJoinExamples(Transform):

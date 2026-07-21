@@ -29,7 +29,7 @@ Define schemas. Define transforms. Run transforms.
 
 ```python
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class OrderRaw(Schema):
@@ -68,7 +68,7 @@ class Product(Schema):
 
 ```python
 from structure import Transform, input, output, raw
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class EnrichOrders(Transform):

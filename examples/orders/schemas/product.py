@@ -1,6 +1,6 @@
 from examples.orders.schemas.common import AuditStamp, TenantKey
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class ProductBase(Schema):

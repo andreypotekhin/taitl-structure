@@ -12,11 +12,11 @@ from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.lib.cross.errors import Diagnostic
-from structure.platform.api.v1 import TransformMemberOrigin
+from structure.plugin.api.v1 import TransformMemberOrigin
 
 
 class AnalyzeTransform(CompileTransform):
-    """Collect Core-owned transform structure without evaluating a platform DSL."""
+    """Collect Core-owned transform structure without evaluating a plugin DSL."""
 
     def __call__(
         self,
@@ -187,5 +187,5 @@ class AnalyzeTransform(CompileTransform):
             results=results,
             options=self._step_options(item.owner, metadata),
             origin=TransformMemberOrigin.of(item.owner, item.name),
-            platform_body=None,
+            plugin_body=None,
         )

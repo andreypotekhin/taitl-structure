@@ -1,6 +1,6 @@
 from structure import *
-from structure.platform.pyspark import *
-from structure.platform.pyspark import PySpark
+from structure.plugin.pyspark import *
+from structure.plugin.pyspark import PySpark
 
 
 def test_v1_step_renderer_renders_before_hook_against_current_input() -> None:

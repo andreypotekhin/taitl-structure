@@ -99,15 +99,15 @@
 
 ## Phase 6: v5
 
-- Add the unversioned platform discovery bootstrap and versioned callback API contracts.
-- Negotiate the highest Platform API version supported by Core and every callback provider in the selected plugin.
+- Add the unversioned plugin discovery bootstrap and versioned callback API contracts.
+- Negotiate the highest Plugin API version supported by Core and every callback provider in the selected plugin.
 - Keep schema, compilation, execution, generation, serialization, capabilities, diagnostics, and file ownership
   orchestrated by Core while delegating target behavior through callbacks.
 - Resolve one target per transform, permit different targets across a project, and reject cross-target pipelines.
 - Discover installed providers without importing plugin code; load only the selected target or an explicit capability
   query.
 - Move PySpark field definitions, grammar, semantic checks, lowering, execution, generation, and schema behavior under
-  `structure.platform.pyspark` callbacks.
+  `structure.plugin.pyspark` callbacks.
 - Generalize compiled artifacts and `StructureSession(runtime=..., context=...)` without exposing target runtime types
   in Core.
 - Publish the external plugin contract, author guide, conformance suite, diagnostics, and migration guide.
@@ -115,7 +115,7 @@
 
 ## Phase 7: v6
 
-- Add the PySpark-platform bounded ordered timeline `scan(...)` capability.
+- Add the PySpark-plugin bounded ordered timeline `scan(...)` capability.
 - Carry typed Schema state through caller-supplied, explicitly partitioned and ordered batch timelines.
 - Lower scans through public PySpark DataFrame and Column APIs with declared per-partition bounds and deterministic
   duplicate-order diagnostics.

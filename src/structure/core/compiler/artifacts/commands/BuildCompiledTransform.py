@@ -13,7 +13,7 @@ from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOpti
 from structure.core.compiler.ir.model.TransformPlan import TransformPlan
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
-from structure.core.platforms.api.Platform import Platform
+from structure.core.plugins.api.Plugin import Plugin
 from structure.core.runtime.schemas.model.TransformSchemas import TransformSchemas
 from structure.version import VERSION
 
@@ -23,7 +23,7 @@ class BuildCompiledTransform:
     def __init__(self, registry=None) -> None:
         self._manifest = BuildArtifactManifest()
         self._fingerprint = BuildArtifactFingerprint()
-        self._registry = registry or Platform.registry()
+        self._registry = registry or Plugin.registry()
 
     def __call__(
         self,
@@ -42,7 +42,7 @@ class BuildCompiledTransform:
             registry=self._registry,
         )
         if not isinstance(compilation.analysis, TransformPlan):
-            raise ValueError(f"PLATFORM-E2708: Platform {options.target_backend!r} returned an invalid compilation.")
+            raise ValueError(f"PLUGIN-E2708: Plugin {options.target_backend!r} returned an invalid compilation.")
         schemas = self._schemas(compilation.schemas, materialize=materialize_schemas)
         artifact = CompiledTransform(
             key=self.key(subject, options=options, manifest=manifest.fingerprint),
@@ -83,7 +83,7 @@ class BuildCompiledTransform:
         if not materialize:
             return None
         if not isinstance(value, TransformSchemas):
-            raise ValueError("PLATFORM-E2708: Platform compilation did not provide transform schemas.")
+            raise ValueError("PLUGIN-E2708: Plugin compilation did not provide transform schemas.")
         return value
 
     def _classes(self, subject: type[Transform] | TransformPipeline) -> tuple[type[Transform], ...]:

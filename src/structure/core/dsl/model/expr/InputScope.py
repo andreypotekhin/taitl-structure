@@ -1,7 +1,7 @@
 from functools import wraps
 from importlib import import_module
 
-from structure.platform.pyspark.dsl.InputScope import (
+from structure.plugin.pyspark.dsl.InputScope import (
     InputScope,
     as_of_one,
     cross_join,
@@ -16,7 +16,7 @@ from structure.platform.pyspark.dsl.InputScope import (
     temporal_one,
 )
 
-_pyspark_input_scope = import_module("structure.platform.pyspark.dsl.InputScope")
+_pyspark_input_scope = import_module("structure.plugin.pyspark.dsl.InputScope")
 
 __all__ = [
     "InputScope",

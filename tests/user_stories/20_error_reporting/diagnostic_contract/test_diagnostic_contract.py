@@ -6,8 +6,8 @@ import pytest
 
 from structure import *
 from structure.lib.cross.errors import Diagnostic, DiagnosticEntry, DiagnosticRegistry, diagnostic_registry
-from structure.platform.pyspark import *
-from structure.platform.pyspark.execution.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
+from structure.plugin.pyspark import *
+from structure.plugin.pyspark.execution.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 
 ROOT = Path(__file__).resolve().parents[4]
 

@@ -4,8 +4,8 @@ from structure import *
 from structure.core.cli.api import CliApp
 from structure.core.compiler.api import Compiler
 from structure.core.dsl.model.expr.expressions import literal
-from structure.platform.pyspark import *
-from structure.platform.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
+from structure.plugin.pyspark import *
+from structure.plugin.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
 
 
 class RawOrder(Schema):

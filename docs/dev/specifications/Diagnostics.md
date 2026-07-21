@@ -76,7 +76,7 @@ JOIN    joins
 HOOK    hooks
 VAL     schema validation, validation placement, and data quality constraints
 BACKEND backend capabilities and compatibility
-PLATFORM platform discovery, target resolution, plugin negotiation, and facet compatibility
+PLUGIN plugin discovery, target resolution, plugin negotiation, and facet compatibility
 STREAM  streaming compatibility
 GEN     generated output, formatting, stale diffs, provenance, and traceability artifacts
 ONLINE  execution, sessions, transform invocation, and input binding
@@ -86,28 +86,28 @@ CLI     CLI command behavior, clean safety, profile output, and command usage
 New feature specifications must either use an existing component prefix or reserve a new prefix here before publishing
 examples with codes.
 
-## Platform Diagnostic Reservation
+## Plugin Diagnostic Reservation
 
-v5 reserves these platform diagnostics. They remain `draft` until their emitting behavior is implemented, so public
+v5 reserves these plugin diagnostics. They remain `draft` until their emitting behavior is implemented, so public
 end-user documentation must not present them as released behavior.
 
 ```text
-PLATFORM-E2701  invalid platform configuration shape
-PLATFORM-E2702  no target resolved for a transform
-PLATFORM-E2703  explicit target conflicts with decorator target
-PLATFORM-E2704  duplicate eligible platform providers
-PLATFORM-E2705  selected plugin could not be loaded
-PLATFORM-E2706  entry-point and descriptor identity disagree
-PLATFORM-E2707  no mutually supported Platform API version
-PLATFORM-E2708  plugin failed to provide its advertised complete API façade
-PLATFORM-E2709  lifecycle capability and service-facet availability disagree
-PLATFORM-E2710  artifact identity is incompatible with the selected plugin
-PLATFORM-E2711  composed transforms resolve to different platforms
+PLUGIN-E2701  invalid plugin configuration shape
+PLUGIN-E2702  no target resolved for a transform
+PLUGIN-E2703  explicit target conflicts with decorator target
+PLUGIN-E2704  duplicate eligible plugin providers
+PLUGIN-E2705  selected plugin could not be loaded
+PLUGIN-E2706  entry-point and descriptor identity disagree
+PLUGIN-E2707  no mutually supported Plugin API version
+PLUGIN-E2708  plugin failed to provide its advertised complete API façade
+PLUGIN-E2709  lifecycle capability and service-facet availability disagree
+PLUGIN-E2710  artifact identity is incompatible with the selected plugin
+PLUGIN-E2711  composed transforms resolve to different plugins
 ```
 
-`PLATFORM-E2704` must name every conflicting normalized distribution and show the
-`platform.disabled_distributions` remedy. `PLATFORM-E2705` must retain the safe original import failure summary but
-must not render a traceback by default. `PLATFORM-E2706` must name both claimed and discovered identities.
+`PLUGIN-E2704` must name every conflicting normalized distribution and show the
+`plugin.disabled_distributions` remedy. `PLUGIN-E2705` must retain the safe original import failure summary but
+must not render a traceback by default. `PLUGIN-E2706` must name both claimed and discovered identities.
 
 ## Diagnostic Model
 

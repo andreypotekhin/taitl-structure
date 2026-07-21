@@ -35,7 +35,7 @@ and generated-code runtime implementations; they are not the preferred explanato
 
 ## DSL
 
-The DSL is the public Python authoring surface exported from `structure` and the selected platform package. It covers schemas, transforms, expression
+The DSL is the public Python authoring surface exported from `structure` and the selected plugin package. It covers schemas, transforms, expression
 helpers, filters, joins, hooks, validation policy, and runtime invocation.
 
 The DSL is not a general wrapper around PySpark. A DSL feature is compiler-visible only when Structure can capture it,
@@ -70,7 +70,7 @@ Example:
 
 ```python
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class OrderRaw(Schema):

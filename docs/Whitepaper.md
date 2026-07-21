@@ -4,7 +4,7 @@
 
 Structure is an open-source Python DSL and runtime/compiler toolkit for building schema-enforced, IDE-friendly,
 Spark-optimized data pipelines. It lets developers describe data processing as typed schema-to-schema transformations
-while running or generating clean PySpark DataFrame code suitable for Airflow, Spark jobs, and batch data platforms.
+while running or generating clean PySpark DataFrame code suitable for Airflow, Spark jobs, and batch data plugins.
 
 Structure is designed for teams that want the maintainability of object-style schema transformations without giving up Spark's optimizer-friendly DataFrame execution model.
 

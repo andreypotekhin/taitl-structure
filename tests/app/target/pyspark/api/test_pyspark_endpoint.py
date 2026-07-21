@@ -33,7 +33,7 @@ from structure.core.dsl.model.transforms.TiePolicy import TiePolicy as LegacyTie
 from structure.core.dsl.model.types.ArrayType import ArrayType as LegacyArrayType
 from structure.core.dsl.model.types.DecimalType import DecimalType as LegacyDecimalType
 from structure.core.dsl.model.types.StructType import StructType as LegacyStructType
-from structure.platform.pyspark import (
+from structure.plugin.pyspark import (
     AsOf,
     Join,
     JoinDedupe,
@@ -45,16 +45,11 @@ from structure.platform.pyspark import (
     PySpark,
     TiePolicy,
 )
-from structure.platform.pyspark.compiler.api.Compiler import Compiler, LowerPySparkPlan
-from structure.platform.pyspark.dsl.aggregation import (
-    AggregateAssignment,
-    AggregateKey,
-    AggregatePlan,
-    ProjectAssignment,
-)
-from structure.platform.pyspark.dsl.Expression import Expression
-from structure.platform.pyspark.dsl.expressions import literal
-from structure.platform.pyspark.dsl.operations import (
+from structure.plugin.pyspark.compiler.api.Compiler import Compiler, LowerPySparkPlan
+from structure.plugin.pyspark.dsl.aggregation import AggregateAssignment, AggregateKey, AggregatePlan, ProjectAssignment
+from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.expressions import literal
+from structure.plugin.pyspark.dsl.operations import (
     CachePlan,
     DuplicateRowsPlan,
     OperationCapability,
@@ -65,14 +60,14 @@ from structure.platform.pyspark.dsl.operations import (
     StreamingSupport,
     WatermarkPlan,
 )
-from structure.platform.pyspark.dsl.operations_api import count
-from structure.platform.pyspark.dsl.Projection import Projection
-from structure.platform.pyspark.dsl.types import ArrayType, DecimalType, StructType
-from structure.platform.pyspark.files.api.Files import CompareGeneratedFiles
-from structure.platform.pyspark.render.api.Render import Render, RenderPySparkProject
-from structure.platform.pyspark.schema.api.Schema import MaterializePySparkSchema, Schema
-from structure.platform.pyspark.symbolic_execution.api.SymbolicExecution import SymbolicExecution
-from structure.platform.pyspark.symbolic_execution.model.PySparkSymbolicContext import (
+from structure.plugin.pyspark.dsl.operations_api import count
+from structure.plugin.pyspark.dsl.Projection import Projection
+from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, StructType
+from structure.plugin.pyspark.files.api.Files import CompareGeneratedFiles
+from structure.plugin.pyspark.render.api.Render import Render, RenderPySparkProject
+from structure.plugin.pyspark.schema.api.Schema import MaterializePySparkSchema, Schema
+from structure.plugin.pyspark.symbolic_execution.api.SymbolicExecution import SymbolicExecution
+from structure.plugin.pyspark.symbolic_execution.model.PySparkSymbolicContext import (
     PySparkSymbolicContext,
     current_pyspark_context,
 )
@@ -117,7 +112,7 @@ def test_pyspark_join_policies_are_owned_by_the_plugin_dsl() -> None:
     plugin_types = (AsOf, Join, JoinDedupe, JoinHint, JoinMethod, JoinPlan, JoinStrategy, OverlapPolicy, TiePolicy)
 
     assert legacy_types == plugin_types
-    assert all(type_.__module__.startswith("structure.platform.pyspark.dsl.joins.") for type_ in plugin_types)
+    assert all(type_.__module__.startswith("structure.plugin.pyspark.dsl.joins.") for type_ in plugin_types)
 
 
 def test_pyspark_operation_records_are_owned_by_the_plugin_dsl() -> None:
@@ -145,7 +140,7 @@ def test_pyspark_operation_records_are_owned_by_the_plugin_dsl() -> None:
     )
 
     assert legacy_types == plugin_types
-    assert all(type_.__module__.startswith("structure.platform.pyspark.dsl.operations.") for type_ in plugin_types)
+    assert all(type_.__module__.startswith("structure.plugin.pyspark.dsl.operations.") for type_ in plugin_types)
 
 
 def test_pyspark_projection_and_aggregation_records_are_owned_by_the_plugin_dsl() -> None:
@@ -153,36 +148,36 @@ def test_pyspark_projection_and_aggregation_records_are_owned_by_the_plugin_dsl(
     plugin_types = (AggregateAssignment, AggregateKey, AggregatePlan, ProjectAssignment)
 
     assert legacy_types == plugin_types
-    assert all(type_.__module__.startswith("structure.platform.pyspark.dsl.aggregation.") for type_ in plugin_types)
+    assert all(type_.__module__.startswith("structure.plugin.pyspark.dsl.aggregation.") for type_ in plugin_types)
 
 
 def test_pyspark_concrete_types_are_owned_by_the_plugin_dsl() -> None:
     assert (LegacyArrayType, LegacyDecimalType, LegacyStructType) == (ArrayType, DecimalType, StructType)
     assert all(
-        type_.__module__.startswith("structure.platform.pyspark.dsl.types.")
+        type_.__module__.startswith("structure.plugin.pyspark.dsl.types.")
         for type_ in (ArrayType, DecimalType, StructType)
     )
 
 
 def test_pyspark_expression_graph_is_owned_by_the_plugin_dsl() -> None:
     assert LegacyExpression is Expression
-    assert Expression.__module__ == "structure.platform.pyspark.dsl.Expression"
+    assert Expression.__module__ == "structure.plugin.pyspark.dsl.Expression"
     assert legacy_literal("value").kind == literal("value").kind == "literal"
-    assert literal.__module__ == "structure.platform.pyspark.dsl.expressions"
+    assert literal.__module__ == "structure.plugin.pyspark.dsl.expressions"
 
 
 def test_pyspark_operation_helpers_are_owned_by_the_plugin_dsl() -> None:
     assert legacy_count().kind == count().kind == "aggregate"
-    assert count.__module__ == "structure.platform.pyspark.dsl.operations_api"
+    assert count.__module__ == "structure.plugin.pyspark.dsl.operations_api"
 
 
 def test_pyspark_projection_body_is_owned_by_the_plugin_dsl() -> None:
     assert LegacyProjection is Projection
-    assert Projection.__module__ == "structure.platform.pyspark.dsl.Projection"
+    assert Projection.__module__ == "structure.plugin.pyspark.dsl.Projection"
 
 
 def test_pyspark_apps_do_not_import_another_apps_private_commands_or_logic() -> None:
-    root = Path("src/structure/platform/pyspark")
+    root = Path("src/structure/plugin/pyspark")
     violations: list[str] = []
     for source in root.rglob("*.py"):
         relative = source.relative_to(root)
@@ -192,7 +187,7 @@ def test_pyspark_apps_do_not_import_another_apps_private_commands_or_logic() -> 
             if not isinstance(node, ast.ImportFrom) or node.module is None:
                 continue
             parts = node.module.split(".")
-            prefix = ("structure", "platform", "pyspark")
+            prefix = ("structure", "plugin", "pyspark")
             if tuple(parts[:3]) != prefix or len(parts) < 5:
                 continue
             target, boundary = parts[3:5]
@@ -202,14 +197,14 @@ def test_pyspark_apps_do_not_import_another_apps_private_commands_or_logic() -> 
 
 
 def test_pyspark_app_readmes_follow_the_core_app_format() -> None:
-    for readme in Path("src/structure/platform/pyspark").rglob("Readme.md"):
+    for readme in Path("src/structure/plugin/pyspark").rglob("Readme.md"):
         content = readme.read_text(encoding="utf-8")
         for heading in ("## Purpose", "## Dependency Exchanges", "## Inner Workings"):
             assert heading in content, f"{readme} is missing {heading}"
 
 
 def test_pyspark_dsl_does_not_import_core_concrete_target_models() -> None:
-    root = Path("src/structure/platform/pyspark")
+    root = Path("src/structure/plugin/pyspark")
     forbidden = (
         "structure.core.dsl.model.expr",
         "structure.core.dsl.model.schemas.Projection",
@@ -225,22 +220,22 @@ def test_pyspark_dsl_does_not_import_core_concrete_target_models() -> None:
 
 
 def test_pyspark_plugin_uses_only_public_structure_contracts() -> None:
-    root = Path("src/structure/platform/pyspark")
+    root = Path("src/structure/plugin/pyspark")
     violations = []
     for source in root.rglob("*.py"):
         tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("structure.core"):
                 violations.append(f"{source.relative_to(root)}: {node.module}")
-    assert not violations, "PySpark must use structure.dsl or structure.platform.api.v1, never Core internals:\n" + "\n".join(violations)
+    assert not violations, "PySpark must use structure.dsl or structure.plugin.api.v1, never Core internals:\n" + "\n".join(violations)
 
 
-def test_platform_api_uses_only_public_structure_contracts() -> None:
-    root = Path("src/structure/platform")
+def test_plugin_api_uses_only_public_structure_contracts() -> None:
+    root = Path("src/structure/plugin")
     violations = []
     for source in root.rglob("*.py"):
         tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("structure.core"):
                 violations.append(f"{source.relative_to(root)}: {node.module}")
-    assert not violations, "Platform contracts and plugins must never import Core internals:\n" + "\n".join(violations)
+    assert not violations, "Plugin contracts and plugins must never import Core internals:\n" + "\n".join(violations)

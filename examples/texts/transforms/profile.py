@@ -1,7 +1,7 @@
 from examples.texts.schemas.analytics import DocumentFeatures
 from examples.texts.schemas.text import Document
 from structure import *
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class ProfileDocuments(Transform):

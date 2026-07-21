@@ -4,7 +4,7 @@ import pytest
 
 from structure import *
 from structure.core.runtime.api import StructureSession, TransformResult
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class Raw(Schema):

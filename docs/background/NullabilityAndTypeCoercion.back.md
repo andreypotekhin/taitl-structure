@@ -71,7 +71,7 @@ Field references inherit nullability from their declared schema field:
 
 ```python
 from structure import Schema
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 class OrderRaw(Schema):

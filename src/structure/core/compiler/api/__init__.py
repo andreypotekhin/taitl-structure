@@ -15,7 +15,7 @@ from structure.core.compiler.compileability.streaming_compatibility.api import (
 )
 from structure.core.compiler.diagnostics.api import StructureCompileError
 from structure.core.compiler.diagnostics.api import Diagnostics
-from structure.core.compiler.frontend.api import CompilePlatformTransform, CompileTransform
+from structure.core.compiler.frontend.api import CompilePluginTransform, CompileTransform
 from structure.core.compiler.ir.api import (
     HookPlan,
     InputPlan,
@@ -46,7 +46,7 @@ __all__ = [
     "ClassifyStreamingCompatibility",
     "CompileKey",
     "CompileContext",
-    "CompilePlatformTransform",
+    "CompilePluginTransform",
     "CompileTransform",
     "CompiledTransform",
     "CompilerOptions",

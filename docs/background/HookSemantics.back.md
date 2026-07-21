@@ -62,7 +62,7 @@ Rules:
 - `project_output=True` requires a schema mode and target schema that make projection meaningful.
 - `streaming_safe=True` is an author promise, not compiler inspection of the hook body.
 - `target_backend=None` means the hook inherits the configured `hook_target_default`.
-- `target_platform` narrows the hook to a platform variant of the backend when supported.
+- `target_platform` narrows the hook to a target variants? of the backend when supported.
 
 ## Signatures
 

@@ -4,7 +4,7 @@ import pytest
 from integration.pyspark.support.backend_matrix import session
 
 from structure import *
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 pytestmark = pytest.mark.integration
 

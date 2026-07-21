@@ -1,3 +1,3 @@
-from structure.platform.api.v1.model.StepPlan import StepPlan
+from structure.plugin.api.v1.model.StepPlan import StepPlan
 
 __all__ = ["StepPlan"]

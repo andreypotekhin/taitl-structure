@@ -12,10 +12,10 @@ from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.docs.logic.RenderStructureDocsMarkdown import RenderStructureDocsMarkdown
 from structure.core.docs.logic.StructureDocsData import StructureDocsData
 from structure.core.dsl.model.transforms.Transform import Transform
-from structure.platform.pyspark.api.PySpark import PySpark
+from structure.plugin.pyspark.api.PySpark import PySpark
 
 # The documentation product intentionally includes the bundled PySpark DSL.
-from structure.platform.pyspark.PySparkPlatform import PySparkPlatform
+from structure.plugin.pyspark.PySparkPlugin import PySparkPlugin
 
 
 class RenderStructureDocsProject:
@@ -34,7 +34,7 @@ class RenderStructureDocsProject:
         formats = set(config.generated_docs_formats)
         docs_root = self._docs_root(config)
         selected = transforms or project.transforms
-        authoring = PySparkPlatform.api(1).authoring
+        authoring = PySparkPlugin.api(1).authoring
         plans = {
             f"{transform.__module__}.{transform.__name__}": Compiler.frontend.author()(
                 transform,

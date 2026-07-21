@@ -1,3 +1,3 @@
-from structure.platform.pyspark.dsl.types import FloatType
+from structure.plugin.pyspark.dsl.types import FloatType
 
 __all__ = ["FloatType"]

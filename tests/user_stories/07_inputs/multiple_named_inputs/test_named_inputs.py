@@ -4,7 +4,7 @@ from testing.model.v1.orders.schemas.product import Product
 from testing.model.v1.orders.schemas.promotion import Promotion
 
 from structure import *
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 def test_declared_inputs_keep_names_schemas_and_order(orders_plan) -> None:

@@ -1,6 +1,6 @@
-from structure.core.runtime.execution.commands.RunOnlinePlatformTransform import RunOnlinePlatformTransform
+from structure.core.runtime.execution.commands.RunOnlinePluginTransform import RunOnlinePluginTransform
 
 
 class OnlineExecution:
-    def pyspark(self) -> RunOnlinePlatformTransform:
-        return RunOnlinePlatformTransform()
+    def pyspark(self) -> RunOnlinePluginTransform:
+        return RunOnlinePluginTransform()

@@ -3,15 +3,15 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.platform.pyspark import *
-from structure.platform.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
+from structure.plugin.pyspark import *
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
 def test_field_access_produces_symbolic_projection_expressions(orders_plan) -> None:
     """I can have field access produce symbolic expressions."""
 
     normalize = orders_plan.steps[0]
-    projection = {assignment.field.name: assignment.expression for assignment in cast(PySparkStepBody, normalize.platform_body).projection}
+    projection = {assignment.field.name: assignment.expression for assignment in cast(PySparkStepBody, normalize.plugin_body).projection}
 
     assert projection["tenant"].kind == "field"
     assert projection["tenant"].data == {
@@ -36,7 +36,7 @@ def test_dsl_functions_produce_nested_symbolic_expressions(orders_plan) -> None:
 
     projection = {
         assignment.field.name: assignment.expression
-        for assignment in cast(PySparkStepBody, orders_plan.steps[0].platform_body).projection
+        for assignment in cast(PySparkStepBody, orders_plan.steps[0].plugin_body).projection
     }
     total = projection["total"]
     decimal_cast = total.args[0]

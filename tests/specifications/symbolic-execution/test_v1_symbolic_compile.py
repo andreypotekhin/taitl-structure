@@ -5,7 +5,7 @@ import pytest
 
 from structure import *
 from structure.core.dsl.model.types.StructType import StructType
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 def test_v1_fixture_imports_without_pyspark() -> None:

@@ -1,9 +1,9 @@
 from functools import wraps
 from importlib import import_module
 
-from structure.platform.pyspark.dsl.expressions import *  # noqa: F403
+from structure.plugin.pyspark.dsl.expressions import *  # noqa: F403
 
-_pyspark_expressions = import_module("structure.platform.pyspark.dsl.expressions")
+_pyspark_expressions = import_module("structure.plugin.pyspark.dsl.expressions")
 
 
 def _compatibility(function):

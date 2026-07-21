@@ -13,7 +13,7 @@ from examples.orders.schemas.product import BlockedProduct, Product
 from examples.orders.schemas.promotion import Promotion
 from examples.orders.schemas.shipment import Shipment
 from structure import *
-from structure.platform.pyspark import *
+from structure.plugin.pyspark import *
 
 
 @transform(streaming_compatible=True)

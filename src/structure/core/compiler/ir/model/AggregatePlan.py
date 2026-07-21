@@ -1,3 +1,3 @@
-from structure.platform.pyspark.dsl.aggregation import AggregatePlan
+from structure.plugin.pyspark.dsl.aggregation import AggregatePlan
 
 __all__ = ["AggregatePlan"]
