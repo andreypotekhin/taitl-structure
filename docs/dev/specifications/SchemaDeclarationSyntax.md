@@ -27,10 +27,25 @@ class OrderNormalized(Schema):
     total = decimal(12, 2)
 ```
 
-The field declaration has two visible parts:
+The field declaration has a Python class attribute name and either a Python
+hint, a field factory, or both:
 
-1. A Python class attribute name, which becomes the Structure field name.
-2. A field factory such as `string()` or `decimal(12, 2)`.
+```python
+from datetime import date, datetime
+from decimal import Decimal
+
+
+class Order(Schema):
+    id: str
+    item_count: int
+    total: Decimal = decimal(12, 2, nullable=False)
+    tags: list[str] = array(string(), contains_null=False)
+    observed_at: datetime
+```
+
+A bare hint uses the matching default factory. A factory adds Spark-specific
+details such as nullability, aliases, decimal precision and scale, and
+collection member nullability.
 
 `from structure.plugin.pyspark import *` exposes the complete PySpark authoring DSL. Transform
 modules that need an expression `array(...)` helper should import the PySpark DSL explicitly rather than combining
@@ -54,7 +69,7 @@ This is the accepted v1 schema declaration grammar in descriptive form:
 
 ```text
 schema_class      := class NAME(Schema): field_decl+
-field_decl        := NAME = field_factory(field_kwarg*)
+field_decl        := NAME ':' hint | NAME ':' hint '=' field_factory(field_kwarg*) | NAME '=' field_factory(field_kwarg*)
 field_factory     := string() | integer() | long() | float() | double() | boolean() | date() | timestamp()
                    | decimal(PRECISION, SCALE) | array(field_factory, contains_null=BOOL?)
                    | struct(schema_ref) | map(field_factory, field_factory, value_contains_null=BOOL?)
@@ -100,6 +115,33 @@ Structure does not declare primary keys or uniqueness. A required field is expre
 ## Type Rules
 
 All schema type constructors return immutable value objects. Equality is structural.
+
+### Python Hints
+
+Bare hints infer these default PySpark factories:
+
+```text
+str             -> string()
+bool            -> boolean()
+int             -> integer()
+float           -> double()
+datetime.date   -> date()
+datetime.datetime -> timestamp()
+list[T]         -> array(T)
+dict[K, V]      -> map(K, V)
+Schema subclass -> struct(Schema subclass)
+```
+
+`decimal.Decimal` requires an explicit `decimal(precision, scale)` factory.
+When a factory is present, `int` also accepts `long()`, `float` accepts
+`float()` or `double()`, and decimal fields require `Decimal`. Collection and
+struct hints are checked recursively. Hints never determine nullability:
+`nullable=` and its factory default remain authoritative. `Optional`, unions,
+unparameterized collections, and unsupported hints are rejected.
+
+An annotation without an assigned value declares a field. An ordinary assigned
+value remains a class attribute, so annotated schema constants do not become
+field defaults.
 
 ### Scalar Types
 

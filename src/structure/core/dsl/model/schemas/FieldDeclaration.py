@@ -7,9 +7,12 @@ from types import MappingProxyType
 from typing import Mapping
 
 from structure.core.dsl.model.schemas.FieldDefinition import FieldDefinition
+from structure.core.dsl.model.types.StructureType import StructureType
+
+
 @dataclass(frozen=True)
 class FieldDeclaration:
-    type: object
+    type: StructureType
     nullable: bool = True
     alias: str | None = None
     metadata: Mapping[str, object] = field(default_factory=dict)

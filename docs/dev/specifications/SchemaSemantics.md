@@ -19,8 +19,8 @@ Detailed syntax remains owned by:
 
 Structure schema behavior has four layers:
 
-1. Source declarations: Python classes that inherit `Schema` and declare PySpark fields with
-   `structure.plugin.pyspark` factories.
+1. Source declarations: Python classes that inherit `Schema` and declare PySpark fields with Python hints,
+   `structure.plugin.pyspark` factories, or both.
 2. Compiler model: backend-neutral `SchemaDef`, `FieldDef`, and type values.
 3. Runtime shape: generated or materialized Spark `StructType` values.
 4. Value constraints: future explicit data-quality checks outside the base shape model.
@@ -38,15 +38,16 @@ from structure.plugin.pyspark import *
 
 
 class OrderRaw(Schema):
-    id = string(nullable=False)
-    customer_id = string(nullable=False)
-    total = string(nullable=True)
+    id: str = string(nullable=False)
+    customer_id: str = string(nullable=False)
+    total: str
 ```
 
 Rules:
 
-- Every field uses a lowercase factory such as `string()` or `decimal(12, 2)`.
-- Every factory produces an immutable Structure type value and its field declaration.
+- A supported bare Python hint infers the matching default PySpark factory; an explicit factory may add Spark detail.
+- Every factory produces an immutable Structure type value and its field declaration, and must be compatible with a
+  field hint when one is supplied.
 - Field order is class-body order after inheritance is resolved.
 - Field names are Python attribute names.
 - Public examples must use this form.

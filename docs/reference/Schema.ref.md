@@ -97,7 +97,7 @@ In descriptive form, the accepted schema declaration grammar is:
 
 ```text
 schema_class      := class NAME(Schema): field_decl*
-field_decl        := NAME = field_factory(field_kwarg*)
+field_decl        := NAME ':' hint | NAME ':' hint '=' field_factory(field_kwarg*) | NAME '=' field_factory(field_kwarg*)
 field_factory     := scalar_type | decimal_type | array_type | struct_type | map_type
 scalar_type       := string() | integer() | long() | float() | double() | boolean() | date() | timestamp()
 decimal_type      := decimal(precision, scale)
@@ -111,8 +111,17 @@ schema_ref        := Schema class object
 The compiler should implement this grammar by inspecting runtime schema objects when import-based discovery is used.
 Source text or AST inspection may still be used for diagnostics and source spans.
 
-Annotations and comments are documentation only; raw PySpark fields, implicit Spark type strings, and non-schema
-mixins are outside the canonical form.
+Python hints are schema declarations. A bare `str`, `bool`, `int`, `float`,
+`datetime.date`, `datetime.datetime`, `list[T]`, `dict[K, V]`, or Schema
+subclass infers the matching default PySpark field. `float` infers `double()`;
+`Decimal` requires an explicit `decimal(precision, scale)` factory. A factory
+may add Spark-specific detail and is validated against the hint. Hints do not
+control nullability: factory defaults and `nullable=` do. Optional/union and
+unparameterized collection hints are invalid. An annotated ordinary assignment
+is still a class attribute, not a field default.
+
+Raw PySpark fields, implicit Spark type strings, and non-schema mixins are
+outside the canonical form.
 
 ### Schema Classes
 

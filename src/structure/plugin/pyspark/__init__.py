@@ -1,5 +1,5 @@
 from importlib import import_module
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, Any, overload
 
 from structure.dsl import FieldDeclaration
 from structure.plugin.pyspark.PySparkPlugin import PySparkPlugin

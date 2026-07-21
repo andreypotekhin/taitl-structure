@@ -19,6 +19,7 @@ class Schema(SchemaAPI):
             self._validate(schema)
 
     def materialize(self, schema: object) -> object:
+        self._validate_structure_schema(schema)
         return PySpark.schema.materialize()(cast(Any, schema))
 
     def build(self, request: TransformSchemaRequest) -> TransformSchemas:
@@ -28,4 +29,11 @@ class Schema(SchemaAPI):
         return PySpark.schema.read()(request)
 
     def source(self, schema: object, *, to: str) -> object:
+        self._validate_structure_schema(schema)
         return PySpark.schema.source()(schema, to=to)
+
+    def _validate_structure_schema(self, schema: object) -> None:
+        from structure.dsl import Schema as StructureSchema
+
+        if isinstance(schema, type) and issubclass(schema, StructureSchema):
+            self._validate(schema)

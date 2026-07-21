@@ -1,3 +1,7 @@
+from datetime import datetime as DateTime
+from decimal import Decimal as DecimalValue
+from typing import Any, cast
+
 import pytest
 
 import structure
@@ -6,6 +10,7 @@ from structure.core.dsl.model.types.Array import Array
 from structure.core.dsl.model.types.Decimal import Decimal
 from structure.core.dsl.model.types.Map import Map
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.dsl.ValidatePySparkSchemas import ValidatePySparkSchemas
 
 
 def test_schema_module_wildcard_factories_keep_type_and_nullability_contracts() -> None:
@@ -16,7 +21,7 @@ def test_schema_module_wildcard_factories_keep_type_and_nullability_contracts() 
         tags = array(string(), contains_null=False)
         attributes = map(string(), string(), value_contains_null=False)
 
-    fields = Order._structure_fields
+    fields = cast(dict[str, Any], Order._structure_fields)
 
     assert fields["id"].type.name == "string"
     assert fields["id"].nullable is False
@@ -84,3 +89,71 @@ def test_schema_array_factory_coexists_with_array_expression_helper() -> None:
     assert Source._structure_fields["tags"].type.contains_null is False
     assert expression.type is not None
     assert expression.type.name == "array"
+
+
+def test_python_hints_infer_default_pyspark_fields() -> None:
+    class Address(Schema):
+        street: str
+
+    class Order(Schema):
+        name: str
+        count: int
+        ratio: float
+        active: bool
+        ordered_on: date
+        observed_at: DateTime
+        tags: list[str]
+        attributes: dict[str, int]
+        address: Address
+
+    ValidatePySparkSchemas().validate(Order, Order._structure_fields)
+
+    fields = cast(dict[str, Any], Order._structure_fields)
+    assert [fields[name].type.name for name in fields] == [
+        "string", "integer", "double", "boolean", "date", "timestamp", "array", "map", "struct"
+    ]
+    assert fields["tags"].type.element.name == "string"
+    assert fields["attributes"].type.key.name == "string"
+    assert fields["attributes"].type.value.name == "integer"
+    assert fields["address"].type.schema is Address
+    assert all(field.nullable for field in fields.values())
+
+
+def test_hints_accept_compatible_factory_detail() -> None:
+    class Price(Schema):
+        amount: DecimalValue = decimal(12, 2, nullable=False)
+        quantity: int = long(nullable=False)
+        ratio: float = float(nullable=False)
+        tags: list[str] = array(string(), contains_null=False, nullable=False)
+
+    fields = cast(dict[str, Any], Price._structure_fields)
+    assert fields["amount"].type.name == "decimal"
+    assert fields["quantity"].type.name == "long"
+    assert fields["ratio"].type.name == "float"
+    assert fields["tags"].type.contains_null is False
+
+
+def test_hints_reject_incompatible_factory_detail() -> None:
+    with pytest.raises(TypeError, match="Price.amount hint float is incompatible with decimal\\(12, 2\\)"):
+        class Price(Schema):
+            amount: float = decimal(12, 2)
+
+
+@pytest.mark.parametrize("hint", [DecimalValue, str | None, list, dict])
+def test_bare_hints_reject_unsupported_or_under_specified_shapes(hint: object) -> None:
+    class Invalid(Schema):
+        value: hint  # type: ignore[valid-type]
+
+    with pytest.raises(TypeError):
+        ValidatePySparkSchemas().validate(Invalid, Invalid._structure_fields)
+
+
+def test_annotated_ordinary_assignments_remain_schema_constants() -> None:
+    class Versioned(Schema):
+        version: str = "v1"
+        identifier: str
+
+    ValidatePySparkSchemas().validate(Versioned, Versioned._structure_fields)
+
+    assert Versioned.version == "v1"
+    assert tuple(Versioned._structure_fields) == ("identifier",)

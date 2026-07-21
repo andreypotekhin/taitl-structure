@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import ClassVar, get_origin, get_type_hints
 
 from structure.core.dsl.model.schemas.FieldDeclaration import FieldDeclaration
-from structure.core.dsl.model.schemas.FieldDefinition import FieldDefinition
+from structure.core.dsl.model.schemas.FieldDefinition import ANNOTATION_TYPE, FieldDefinition
 
 
 class Schema:
@@ -30,7 +30,7 @@ class Schema:
 
         for name, hint in hints.items():
             if name not in cls.__dict__:
-                definition = FieldDefinition(name=name, type=None, hint=hint)
+                definition = FieldDefinition(name=name, type=ANNOTATION_TYPE, hint=hint)
                 local_fields[name] = definition
                 fields[name] = definition
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import Any, Mapping, cast
+import builtins
+from datetime import date as python_date
+from typing import TYPE_CHECKING, Any, Mapping, cast
 
 from structure.dsl import FieldDeclaration, Schema
 from structure.plugin.pyspark.dsl.types import (
@@ -26,12 +28,21 @@ _validate = ValidatePySparkSchemas().validate
 def string(**options: object) -> Any: return _declare(String(), options)
 def integer(**options: object) -> Any: return _declare(Integer(), options)
 def long(**options: object) -> Any: return _declare(Long(), options)
-def float(**options: object) -> Any: return _declare(Float(), options)
 def double(**options: object) -> Any: return _declare(Double(), options)
 def boolean(**options: object) -> Any: return _declare(Boolean(), options)
-def date(**options: object) -> Any: return _declare(Date(), options)
 def timestamp(**options: object) -> Any: return _declare(Timestamp(), options)
 def decimal(precision: int, scale: int, **options: object) -> Any: return _declare(Decimal(precision, scale), options)
+
+
+if TYPE_CHECKING:
+    class float(builtins.float):
+        def __new__(cls, *args: object, **kwargs: object) -> Any: ...
+
+    class date(python_date):
+        def __new__(cls, *args: object, **kwargs: object) -> Any: ...
+else:
+    def float(**options: object) -> Any: return _declare(Float(), options)
+    def date(**options: object) -> Any: return _declare(Date(), options)
 
 
 def array(element: FieldDeclaration, *, contains_null: bool = True, **options: object) -> Any:
