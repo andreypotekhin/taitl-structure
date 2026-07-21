@@ -1,4 +1,8 @@
+from typing import cast
+
 from testing.model.v1.orders.schemas.order import OrderPublished, OrderWithPromotion
+
+from structure.platform.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
 def test_added_columns_are_declared_by_larger_output_schema(orders_plan) -> None:
@@ -6,7 +10,7 @@ def test_added_columns_are_declared_by_larger_output_schema(orders_plan) -> None
 
     add_customer = orders_plan.steps[1]
 
-    assert [assignment.field.name for assignment in add_customer.projection][-3:] == [
+    assert [assignment.field.name for assignment in cast(PySparkStepBody, add_customer.platform_body).projection][-3:] == [
         "customer_name",
         "customer_tier",
         "customer_region",
@@ -18,7 +22,7 @@ def test_dropped_columns_are_removed_by_output_projection(orders_plan) -> None:
     """I can drop columns by returning an output schema with fewer fields than the input schema."""
 
     publish = orders_plan.steps[-1]
-    published_fields = [assignment.field.name for assignment in publish.projection]
+    published_fields = [assignment.field.name for assignment in cast(PySparkStepBody, publish.platform_body).projection]
 
     assert publish.input_schema is OrderWithPromotion
     assert publish.output_schema is OrderPublished
