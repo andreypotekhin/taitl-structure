@@ -5,6 +5,7 @@ import pytest
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
@@ -200,10 +201,11 @@ def test_join_relation_can_be_inferred_from_reversed_operands() -> None:
             lookup_join(on=order.product_id == product.id, how=Join.LEFT)
             return OrderWithProduct(id=order.id, product_name=product.name)
 
-    compiled_step = compile_transform(AddProduct).steps[0]
+    compiled_step = _analysis(AddProduct).steps[0]
 
-    assert compiled_step.joins[0].input_name == "product"
-    assert compiled_step.joins[0].source == "products"
+    body = cast(PySparkStepBody, compiled_step.plugin_body)
+    assert body.joins[0].input_name == "product"
+    assert body.joins[0].source == "products"
 
 
 def test_join_relation_can_be_inferred_from_class_input_scope() -> None:
@@ -217,11 +219,12 @@ def test_join_relation_can_be_inferred_from_class_input_scope() -> None:
             lookup_join(on=self.products.id == order.product_id, how=Join.LEFT)
             return OrderWithProduct(id=order.id, product_name=self.products.name)
 
-    compiled_step = compile_transform(AddProduct).steps[0]
-    projection = {assignment.field.name: assignment.expression for assignment in compiled_step.projection}
+    compiled_step = _analysis(AddProduct).steps[0]
+    body = cast(PySparkStepBody, compiled_step.plugin_body)
+    projection = {assignment.field.name: assignment.expression for assignment in body.projection}
 
-    assert compiled_step.joins[0].input_name == "products"
-    assert compiled_step.joins[0].source == "products"
+    assert body.joins[0].input_name == "products"
+    assert body.joins[0].source == "products"
     assert projection["product_name"].nullable
 
 
@@ -258,10 +261,11 @@ def test_serial_join_relation_can_be_inferred_from_earlier_joined_scope() -> Non
                 alias_name=alias.name,
             )
 
-    compiled_step = compile_transform(AddProduct).steps[0]
+    compiled_step = _analysis(AddProduct).steps[0]
+    body = cast(PySparkStepBody, compiled_step.plugin_body)
 
-    assert [join.input_name for join in compiled_step.joins] == ["product", "alias"]
-    assert [operation.kind for operation in compiled_step.operations] == ["join", "join"]
+    assert [join.input_name for join in body.joins] == ["product", "alias"]
+    assert [operation.kind for operation in body.operations] == ["join", "join"]
 
 
 def test_array_input_binds_lane_parameters_in_order() -> None:
@@ -286,7 +290,7 @@ def test_array_input_binds_lane_parameters_in_order() -> None:
             product = lookup_join(product, on=product.id == order.product_id)
             return OrderWithProduct(id=order.id, product_name=product.name)
 
-    compiled_step = compile_transform(AddProduct).steps[2]
+    compiled_step = _analysis(AddProduct).steps[2]
 
     assert [(item.parameter, item.source, item.lane) for item in compiled_step.inputs] == [
         ("order", "order_lane", "order_lane"),
@@ -308,7 +312,7 @@ def test_repeated_schema_parameters_require_explicit_inputs() -> None:
             return OrderWithProduct(id=order.id, product_name=product.name)
 
     try:
-        compile_transform(AddProduct)
+        _analysis(AddProduct)
     except Exception as error:
         message = str(error)
     else:
@@ -340,7 +344,7 @@ def test_multi_result_after_hooks_select_their_dataframe() -> None:
         def audit(self, *, audited, spark, ctx):
             return audited
 
-    compiled_step = compile_transform(AddProduct).steps[0]
+    compiled_step = _analysis(AddProduct).steps[0]
 
     assert not compiled_step.results[0].after_hooks
     assert [hook.name for hook in compiled_step.results[1].after_hooks] == ["audit"]
@@ -369,7 +373,7 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
             return audited
 
     text = PySpark.render.transform()(
-        PySpark.compiler.lower()(compile_transform(AddProduct)),
+        cast(PySparkExecutionPlan, Compiler.frontend.compile()(AddProduct, materialize_schemas=False).lowered),
         source_transform="tests.specifications.multiple_schema_parameters.AddProduct",
         runtime_module="testing.runtime",
         schema_modules={
@@ -389,7 +393,7 @@ def test_generated_multi_result_step_uses_output_names_as_frames() -> None:
     )
 
     traceability = Compiler.traceability.build()(
-        PySpark.compiler.lower()(compile_transform(AddProduct)),
+        cast(PySparkExecutionPlan, Compiler.frontend.compile()(AddProduct, materialize_schemas=False).lowered),
         source_transform="tests.specifications.multiple_schema_parameters.AddProduct",
         transform_module="testing.generated.AddProductGenerated",
     )
@@ -421,7 +425,7 @@ def test_generated_plural_lane_hook_replaces_outputs_in_order() -> None:
             return accepted, audited
 
     text = PySpark.render.transform()(
-        PySpark.compiler.lower()(compile_transform(AddProduct)),
+        cast(PySparkExecutionPlan, Compiler.frontend.compile()(AddProduct, materialize_schemas=False).lowered),
         source_transform="tests.specifications.multiple_schema_parameters.AddProduct",
         runtime_module="testing.runtime",
         schema_modules={
@@ -460,7 +464,7 @@ def test_multi_result_raw_hook_rejects_unproduced_output_selection() -> None:
             return orders
 
     with pytest.raises(Exception, match="not available"):
-        compile_transform(AddProduct)
+        _analysis(AddProduct)
 
 
 def test_hook_signature_must_match_selected_lane() -> None:
@@ -478,7 +482,7 @@ def test_hook_signature_must_match_selected_lane() -> None:
             return df
 
     with pytest.raises(Exception, match="enriched, spark, ctx"):
-        compile_transform(AddProduct)
+        _analysis(AddProduct)
 
 
 def test_relation_parameter_must_be_joined_before_projection() -> None:
@@ -492,7 +496,7 @@ def test_relation_parameter_must_be_joined_before_projection() -> None:
             return OrderWithProduct(id=order.id, product_name=product.name)
 
     with pytest.raises(Exception, match="reads relation parameter product before it is joined"):
-        compile_transform(AddProduct)
+        _analysis(AddProduct)
 
 
 def test_multiple_results_require_fixed_schema_tuple_annotation() -> None:
@@ -505,4 +509,4 @@ def test_multiple_results_require_fixed_schema_tuple_annotation() -> None:
             return (OrderWithProduct(id=order.id, product_name=None),)
 
     with pytest.raises(Exception, match="invalid tuple return annotation"):
-        compile_transform(AddProduct)
+        _analysis(AddProduct)

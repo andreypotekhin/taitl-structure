@@ -1,0 +1,32 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "type",
+      "name": "type",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "description",
+      "name": "description",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "instructions",
+      "name": "instructions",
+      "nullable": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.security.schemas.risk",
+  "name": "VulnType"
+}

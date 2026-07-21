@@ -1,0 +1,1755 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "SecurityPostureGenerated",
+  "inputs": [
+    {
+      "name": "vulnerabilities",
+      "ordinal": 0,
+      "schema": "Vuln"
+    },
+    {
+      "name": "devices",
+      "ordinal": 1,
+      "schema": "Device"
+    },
+    {
+      "name": "device_types",
+      "ordinal": 2,
+      "schema": "DeviceType"
+    },
+    {
+      "name": "software",
+      "ordinal": 3,
+      "schema": "Software"
+    },
+    {
+      "name": "vuln_types",
+      "ordinal": 4,
+      "schema": "VulnType"
+    },
+    {
+      "name": "people",
+      "ordinal": 5,
+      "schema": "Person"
+    },
+    {
+      "name": "teams",
+      "ordinal": 6,
+      "schema": "Team"
+    },
+    {
+      "name": "departments",
+      "ordinal": 7,
+      "schema": "Department"
+    },
+    {
+      "name": "orgs",
+      "ordinal": 8,
+      "schema": "Org"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated",
+      "ir": "ir:SecurityPosture",
+      "source": "source:examples.security.transforms.posture.SecurityPosture"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.input.vulnerabilities",
+      "ir": "ir:SecurityPosture.input.0.vulnerabilities",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.input.vulnerabilities"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.input.devices",
+      "ir": "ir:SecurityPosture.input.1.devices",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.input.devices"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.input.device_types",
+      "ir": "ir:SecurityPosture.input.2.device_types",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.input.device_types"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.input.software",
+      "ir": "ir:SecurityPosture.input.3.software",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.input.software"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.input.vuln_types",
+      "ir": "ir:SecurityPosture.input.4.vuln_types",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.input.vuln_types"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.input.people",
+      "ir": "ir:SecurityPosture.input.5.people",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.input.people"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.input.teams",
+      "ir": "ir:SecurityPosture.input.6.teams",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.input.teams"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.input.departments",
+      "ir": "ir:SecurityPosture.input.7.departments",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.input.departments"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.input.orgs",
+      "ir": "ir:SecurityPosture.input.8.orgs",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.input.orgs"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.1.device",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.1.device",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.1.device"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.2.device_type",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.2.device_type",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.2.device_type"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.3.software",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.3.software",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.3.software"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.4.vuln_type",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.4.vuln_type",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.4.vuln_type"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.5.person",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.5.person",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.5.person"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.6.team",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.6.team",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.6.team"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.7.department",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.7.department",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.7.department"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.join.8.org",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.join.8.org",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.join.8.org"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.vuln_id",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.vuln_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.vuln_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.vuln_type",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.vuln_type",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.vuln_type"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.description",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.description",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.description"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.instructions",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.instructions",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.instructions"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.date_discovered",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.date_discovered",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.date_discovered"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.date_addressed",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.date_addressed",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.date_addressed"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.is_active",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.is_active",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.is_active"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.device_id",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.device_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.device_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.device_platform",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.device_platform",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.device_platform"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.device_model",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.device_model",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.device_model"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.software_id",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.software_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.software_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.software_name",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.software_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.software_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.software_version",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.software_version",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.software_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.person_id",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.person_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.person_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.person_name",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.person_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.person_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.team_id",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.team_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.team_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.team_name",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.team_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.team_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.department_id",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.department_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.department_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.department_name",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.department_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.department_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.org_id",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.org_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.org_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.org_name",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.org_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.org_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.device_owner_id",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.device_owner_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.device_owner_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.device_os_id",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.device_os_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.device_os_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.device_vuln_ids",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.device_vuln_ids",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.device_vuln_ids"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.select.device_apps",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.project.device_apps",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.field.device_apps"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.hook.raw.retain_reconciled_inventory",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.hook.raw.retain_reconciled_inventory",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.retain_reconciled_inventory"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.validation.0.hook",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.validation.0.hook",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.validation.0.hook"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.0.prepare_exposure.validation.1.intermediate",
+      "ir": "ir:SecurityPosture.step.0.prepare_exposure.validation.1.intermediate",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.prepare_exposure.validation.1.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose",
+      "ir": "ir:SecurityPosture.step.1.expose",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.vuln_id",
+      "ir": "ir:SecurityPosture.step.1.expose.project.vuln_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.vuln_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.vuln_type",
+      "ir": "ir:SecurityPosture.step.1.expose.project.vuln_type",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.vuln_type"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.description",
+      "ir": "ir:SecurityPosture.step.1.expose.project.description",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.description"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.instructions",
+      "ir": "ir:SecurityPosture.step.1.expose.project.instructions",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.instructions"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.date_discovered",
+      "ir": "ir:SecurityPosture.step.1.expose.project.date_discovered",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.date_discovered"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.date_addressed",
+      "ir": "ir:SecurityPosture.step.1.expose.project.date_addressed",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.date_addressed"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.is_active",
+      "ir": "ir:SecurityPosture.step.1.expose.project.is_active",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.is_active"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.device_id",
+      "ir": "ir:SecurityPosture.step.1.expose.project.device_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.device_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.device_platform",
+      "ir": "ir:SecurityPosture.step.1.expose.project.device_platform",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.device_platform"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.device_model",
+      "ir": "ir:SecurityPosture.step.1.expose.project.device_model",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.device_model"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.software_id",
+      "ir": "ir:SecurityPosture.step.1.expose.project.software_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.software_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.software_name",
+      "ir": "ir:SecurityPosture.step.1.expose.project.software_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.software_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.software_version",
+      "ir": "ir:SecurityPosture.step.1.expose.project.software_version",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.software_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.person_id",
+      "ir": "ir:SecurityPosture.step.1.expose.project.person_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.person_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.person_name",
+      "ir": "ir:SecurityPosture.step.1.expose.project.person_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.person_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.team_id",
+      "ir": "ir:SecurityPosture.step.1.expose.project.team_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.team_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.team_name",
+      "ir": "ir:SecurityPosture.step.1.expose.project.team_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.team_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.department_id",
+      "ir": "ir:SecurityPosture.step.1.expose.project.department_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.department_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.department_name",
+      "ir": "ir:SecurityPosture.step.1.expose.project.department_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.department_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.org_id",
+      "ir": "ir:SecurityPosture.step.1.expose.project.org_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.org_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.select.org_name",
+      "ir": "ir:SecurityPosture.step.1.expose.project.org_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.field.org_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.1.expose.validation.0.intermediate",
+      "ir": "ir:SecurityPosture.step.1.expose.validation.0.intermediate",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.expose.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish",
+      "ir": "ir:SecurityPosture.step.2.publish",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.vuln_id",
+      "ir": "ir:SecurityPosture.step.2.publish.project.vuln_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.vuln_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.vuln_type",
+      "ir": "ir:SecurityPosture.step.2.publish.project.vuln_type",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.vuln_type"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.description",
+      "ir": "ir:SecurityPosture.step.2.publish.project.description",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.description"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.instructions",
+      "ir": "ir:SecurityPosture.step.2.publish.project.instructions",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.instructions"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.date_discovered",
+      "ir": "ir:SecurityPosture.step.2.publish.project.date_discovered",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.date_discovered"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.date_addressed",
+      "ir": "ir:SecurityPosture.step.2.publish.project.date_addressed",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.date_addressed"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.is_active",
+      "ir": "ir:SecurityPosture.step.2.publish.project.is_active",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.is_active"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.device_id",
+      "ir": "ir:SecurityPosture.step.2.publish.project.device_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.device_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.device_platform",
+      "ir": "ir:SecurityPosture.step.2.publish.project.device_platform",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.device_platform"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.device_model",
+      "ir": "ir:SecurityPosture.step.2.publish.project.device_model",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.device_model"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.software_id",
+      "ir": "ir:SecurityPosture.step.2.publish.project.software_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.software_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.software_name",
+      "ir": "ir:SecurityPosture.step.2.publish.project.software_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.software_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.software_version",
+      "ir": "ir:SecurityPosture.step.2.publish.project.software_version",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.software_version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.person_id",
+      "ir": "ir:SecurityPosture.step.2.publish.project.person_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.person_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.person_name",
+      "ir": "ir:SecurityPosture.step.2.publish.project.person_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.person_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.team_id",
+      "ir": "ir:SecurityPosture.step.2.publish.project.team_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.team_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.team_name",
+      "ir": "ir:SecurityPosture.step.2.publish.project.team_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.team_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.department_id",
+      "ir": "ir:SecurityPosture.step.2.publish.project.department_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.department_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.department_name",
+      "ir": "ir:SecurityPosture.step.2.publish.project.department_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.department_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.org_id",
+      "ir": "ir:SecurityPosture.step.2.publish.project.org_id",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.org_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.step.2.publish.select.org_name",
+      "ir": "ir:SecurityPosture.step.2.publish.project.org_name",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.publish.field.org_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.posture.SecurityPostureGenerated.run.output.0.exposures.validation.final",
+      "ir": "ir:SecurityPosture.output.0.exposures.validation.final",
+      "source": "source:examples.security.transforms.posture.SecurityPosture.output.exposures"
+    }
+  ],
+  "schema_constants": {
+    "App": {
+      "constant": "APP_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "AppAuditEvent": {
+      "constant": "APP_AUDIT_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "AppEvent": {
+      "constant": "APP_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.events"
+    },
+    "Department": {
+      "constant": "DEPARTMENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.organization"
+    },
+    "DepartmentActiveVulnerability": {
+      "constant": "DEPARTMENT_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "DepartmentVulnerabilityStatistic": {
+      "constant": "DEPARTMENT_VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "Device": {
+      "constant": "DEVICE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "DeviceActiveVulnerability": {
+      "constant": "DEVICE_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "DeviceType": {
+      "constant": "DEVICE_TYPE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "OS": {
+      "constant": "O_S_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "Org": {
+      "constant": "ORG_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.organization"
+    },
+    "OrgActiveVulnerability": {
+      "constant": "ORG_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "OrgVulnerabilityStatistic": {
+      "constant": "ORG_VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "Person": {
+      "constant": "PERSON_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.organization"
+    },
+    "PersonActiveVulnerability": {
+      "constant": "PERSON_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "PersonVulnerabilityStatistic": {
+      "constant": "PERSON_VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "RawEvent": {
+      "constant": "RAW_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.events"
+    },
+    "ReportingPeriod": {
+      "constant": "REPORTING_PERIOD_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "Scanner": {
+      "constant": "SCANNER_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "Software": {
+      "constant": "SOFTWARE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "Team": {
+      "constant": "TEAM_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.organization"
+    },
+    "TeamActiveVulnerability": {
+      "constant": "TEAM_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "TeamVulnerabilityStatistic": {
+      "constant": "TEAM_VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "Vuln": {
+      "constant": "VULN_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.risk"
+    },
+    "VulnEvent": {
+      "constant": "VULN_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.events"
+    },
+    "VulnType": {
+      "constant": "VULN_TYPE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.risk"
+    },
+    "VulnerabilityAuditEvent": {
+      "constant": "VULNERABILITY_AUDIT_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityExposure": {
+      "constant": "VULNERABILITY_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityInventoryCandidate": {
+      "constant": "VULNERABILITY_INVENTORY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityInventoryCheck": {
+      "constant": "VULNERABILITY_INVENTORY_CHECK_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityInventoryIssue": {
+      "constant": "VULNERABILITY_INVENTORY_ISSUE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityLifecycle": {
+      "constant": "VULNERABILITY_LIFECYCLE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityPeriodActivity": {
+      "constant": "VULNERABILITY_PERIOD_ACTIVITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityPostureCandidate": {
+      "constant": "VULNERABILITY_POSTURE_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityQualityCheck": {
+      "constant": "VULNERABILITY_QUALITY_CHECK_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityQualityIssue": {
+      "constant": "VULNERABILITY_QUALITY_ISSUE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    }
+  },
+  "source_transform": "examples.security.transforms.posture.SecurityPosture",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "vulnerabilities",
+          "devices",
+          "device_types",
+          "software",
+          "vuln_types",
+          "people",
+          "teams",
+          "departments",
+          "orgs"
+        ],
+        "step": null,
+        "target": "SecurityPosture"
+      },
+      {
+        "detail": {
+          "input_schema": "Vuln",
+          "output_schema": "VulnerabilityPostureCandidate"
+        },
+        "operation": "step",
+        "sources": [
+          "vulnerabilities",
+          "device",
+          "device_type",
+          "software",
+          "vuln_type",
+          "person",
+          "team",
+          "department",
+          "org"
+        ],
+        "step": "prepare_exposure",
+        "target": "prepare_exposure"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "devices"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "device.id",
+          "vuln.device_id"
+        ],
+        "step": "prepare_exposure",
+        "target": "prepare_exposure.join[1].device"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "device_types_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "device_type.id",
+          "device.device_type_id"
+        ],
+        "step": "prepare_exposure",
+        "target": "prepare_exposure.join[2].device_type"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "software_3"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "software.id",
+          "vuln.software_id"
+        ],
+        "step": "prepare_exposure",
+        "target": "prepare_exposure.join[3].software"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "vuln_types_4"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "vuln_type.id",
+          "vuln.vuln_type_id"
+        ],
+        "step": "prepare_exposure",
+        "target": "prepare_exposure.join[4].vuln_type"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "people_5"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "person.id",
+          "vuln.owner_id"
+        ],
+        "step": "prepare_exposure",
+        "target": "prepare_exposure.join[5].person"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "teams_6"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "team.id",
+          "person.team_id"
+        ],
+        "step": "prepare_exposure",
+        "target": "prepare_exposure.join[6].team"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "departments_7"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "department.id",
+          "team.department_id"
+        ],
+        "step": "prepare_exposure",
+        "target": "prepare_exposure.join[7].department"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "orgs_8"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "org.id",
+          "department.org_id"
+        ],
+        "step": "prepare_exposure",
+        "target": "prepare_exposure.join[8].org"
+      },
+      {
+        "detail": {
+          "field": "vuln_id"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln.id"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.vuln_id"
+      },
+      {
+        "detail": {
+          "field": "vuln_type"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln_type.type"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.vuln_type"
+      },
+      {
+        "detail": {
+          "field": "description"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln_type.description"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.description"
+      },
+      {
+        "detail": {
+          "field": "instructions"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln_type.instructions"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.instructions"
+      },
+      {
+        "detail": {
+          "field": "date_discovered"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln.date_discovered"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.date_discovered"
+      },
+      {
+        "detail": {
+          "field": "date_addressed"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln.date_addressed"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.date_addressed"
+      },
+      {
+        "detail": {
+          "field": "is_active"
+        },
+        "operation": "project",
+        "sources": [
+          "vuln.date_addressed"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.is_active"
+      },
+      {
+        "detail": {
+          "field": "device_id"
+        },
+        "operation": "project",
+        "sources": [
+          "device.id"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.device_id"
+      },
+      {
+        "detail": {
+          "field": "device_platform"
+        },
+        "operation": "project",
+        "sources": [
+          "device_type.platform"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.device_platform"
+      },
+      {
+        "detail": {
+          "field": "device_model"
+        },
+        "operation": "project",
+        "sources": [
+          "device_type.model"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.device_model"
+      },
+      {
+        "detail": {
+          "field": "software_id"
+        },
+        "operation": "project",
+        "sources": [
+          "software.id"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.software_id"
+      },
+      {
+        "detail": {
+          "field": "software_name"
+        },
+        "operation": "project",
+        "sources": [
+          "software.name"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.software_name"
+      },
+      {
+        "detail": {
+          "field": "software_version"
+        },
+        "operation": "project",
+        "sources": [
+          "software.version"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.software_version"
+      },
+      {
+        "detail": {
+          "field": "person_id"
+        },
+        "operation": "project",
+        "sources": [
+          "person.id"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.person_id"
+      },
+      {
+        "detail": {
+          "field": "person_name"
+        },
+        "operation": "project",
+        "sources": [
+          "person.name"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.person_name"
+      },
+      {
+        "detail": {
+          "field": "team_id"
+        },
+        "operation": "project",
+        "sources": [
+          "team.id"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.team_id"
+      },
+      {
+        "detail": {
+          "field": "team_name"
+        },
+        "operation": "project",
+        "sources": [
+          "team.name"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.team_name"
+      },
+      {
+        "detail": {
+          "field": "department_id"
+        },
+        "operation": "project",
+        "sources": [
+          "department.id"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.department_id"
+      },
+      {
+        "detail": {
+          "field": "department_name"
+        },
+        "operation": "project",
+        "sources": [
+          "department.name"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.department_name"
+      },
+      {
+        "detail": {
+          "field": "org_id"
+        },
+        "operation": "project",
+        "sources": [
+          "org.id"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.org_id"
+      },
+      {
+        "detail": {
+          "field": "org_name"
+        },
+        "operation": "project",
+        "sources": [
+          "org.name"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.org_name"
+      },
+      {
+        "detail": {
+          "field": "device_owner_id"
+        },
+        "operation": "project",
+        "sources": [
+          "device.owner_id"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.device_owner_id"
+      },
+      {
+        "detail": {
+          "field": "device_os_id"
+        },
+        "operation": "project",
+        "sources": [
+          "device.os_id"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.device_os_id"
+      },
+      {
+        "detail": {
+          "field": "device_vuln_ids"
+        },
+        "operation": "project",
+        "sources": [
+          "device.vuln_ids"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.device_vuln_ids"
+      },
+      {
+        "detail": {
+          "field": "device_apps"
+        },
+        "operation": "project",
+        "sources": [
+          "device.apps"
+        ],
+        "step": "prepare_exposure",
+        "target": "VulnerabilityPostureCandidate.device_apps"
+      },
+      {
+        "detail": {
+          "phase": "raw",
+          "project_output": false,
+          "schema_mode": "strict"
+        },
+        "operation": "hook",
+        "sources": [
+          "VulnerabilityPostureCandidate"
+        ],
+        "step": "prepare_exposure",
+        "target": "prepare_exposure.hook.retain_reconciled_inventory"
+      },
+      {
+        "detail": {
+          "input_schema": "VulnerabilityPostureCandidate",
+          "output_schema": "VulnerabilityExposure"
+        },
+        "operation": "step",
+        "sources": [
+          "VulnerabilityPostureCandidate"
+        ],
+        "step": "expose",
+        "target": "expose"
+      },
+      {
+        "detail": {
+          "field": "vuln_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.vuln_id"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.vuln_id"
+      },
+      {
+        "detail": {
+          "field": "vuln_type"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.vuln_type"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.vuln_type"
+      },
+      {
+        "detail": {
+          "field": "description"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.description"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.description"
+      },
+      {
+        "detail": {
+          "field": "instructions"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.instructions"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.instructions"
+      },
+      {
+        "detail": {
+          "field": "date_discovered"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.date_discovered"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.date_discovered"
+      },
+      {
+        "detail": {
+          "field": "date_addressed"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.date_addressed"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.date_addressed"
+      },
+      {
+        "detail": {
+          "field": "is_active"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.is_active"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.is_active"
+      },
+      {
+        "detail": {
+          "field": "device_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.device_id"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.device_id"
+      },
+      {
+        "detail": {
+          "field": "device_platform"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.device_platform"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.device_platform"
+      },
+      {
+        "detail": {
+          "field": "device_model"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.device_model"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.device_model"
+      },
+      {
+        "detail": {
+          "field": "software_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.software_id"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.software_id"
+      },
+      {
+        "detail": {
+          "field": "software_name"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.software_name"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.software_name"
+      },
+      {
+        "detail": {
+          "field": "software_version"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.software_version"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.software_version"
+      },
+      {
+        "detail": {
+          "field": "person_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.person_id"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.person_id"
+      },
+      {
+        "detail": {
+          "field": "person_name"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.person_name"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.person_name"
+      },
+      {
+        "detail": {
+          "field": "team_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.team_id"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.team_id"
+      },
+      {
+        "detail": {
+          "field": "team_name"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.team_name"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.team_name"
+      },
+      {
+        "detail": {
+          "field": "department_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.department_id"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.department_id"
+      },
+      {
+        "detail": {
+          "field": "department_name"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.department_name"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.department_name"
+      },
+      {
+        "detail": {
+          "field": "org_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.org_id"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.org_id"
+      },
+      {
+        "detail": {
+          "field": "org_name"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityPostureCandidate.org_name"
+        ],
+        "step": "expose",
+        "target": "VulnerabilityExposure.org_name"
+      },
+      {
+        "detail": {
+          "input_schema": "VulnerabilityExposure",
+          "output_schema": "VulnerabilityExposure"
+        },
+        "operation": "step",
+        "sources": [
+          "VulnerabilityExposure"
+        ],
+        "step": "publish",
+        "target": "publish"
+      },
+      {
+        "detail": {
+          "field": "vuln_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.vuln_id"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.vuln_id"
+      },
+      {
+        "detail": {
+          "field": "vuln_type"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.vuln_type"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.vuln_type"
+      },
+      {
+        "detail": {
+          "field": "description"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.description"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.description"
+      },
+      {
+        "detail": {
+          "field": "instructions"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.instructions"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.instructions"
+      },
+      {
+        "detail": {
+          "field": "date_discovered"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.date_discovered"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.date_discovered"
+      },
+      {
+        "detail": {
+          "field": "date_addressed"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.date_addressed"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.date_addressed"
+      },
+      {
+        "detail": {
+          "field": "is_active"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.is_active"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.is_active"
+      },
+      {
+        "detail": {
+          "field": "device_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.device_id"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.device_id"
+      },
+      {
+        "detail": {
+          "field": "device_platform"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.device_platform"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.device_platform"
+      },
+      {
+        "detail": {
+          "field": "device_model"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.device_model"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.device_model"
+      },
+      {
+        "detail": {
+          "field": "software_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.software_id"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.software_id"
+      },
+      {
+        "detail": {
+          "field": "software_name"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.software_name"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.software_name"
+      },
+      {
+        "detail": {
+          "field": "software_version"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.software_version"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.software_version"
+      },
+      {
+        "detail": {
+          "field": "person_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.person_id"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.person_id"
+      },
+      {
+        "detail": {
+          "field": "person_name"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.person_name"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.person_name"
+      },
+      {
+        "detail": {
+          "field": "team_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.team_id"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.team_id"
+      },
+      {
+        "detail": {
+          "field": "team_name"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.team_name"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.team_name"
+      },
+      {
+        "detail": {
+          "field": "department_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.department_id"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.department_id"
+      },
+      {
+        "detail": {
+          "field": "department_name"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.department_name"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.department_name"
+      },
+      {
+        "detail": {
+          "field": "org_id"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.org_id"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.org_id"
+      },
+      {
+        "detail": {
+          "field": "org_name"
+        },
+        "operation": "project",
+        "sources": [
+          "VulnerabilityExposure.org_name"
+        ],
+        "step": "publish",
+        "target": "VulnerabilityExposure.org_name"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "VulnerabilityExposure"
+        ],
+        "step": null,
+        "target": "VulnerabilityExposure.validation.final"
+      }
+    ],
+    "opaque_boundaries": [
+      {
+        "hook": "retain_reconciled_inventory",
+        "phase": "raw",
+        "reason": "arbitrary PySpark hook body",
+        "schema": "VulnerabilityPostureCandidate",
+        "step": "prepare_exposure",
+        "target": "prepare_exposure"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "after_hooks": [
+        "retain_reconciled_inventory"
+      ],
+      "before_hooks": [],
+      "input_alias": "vuln",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "device",
+          "right_alias": "devices"
+        },
+        {
+          "how": "inner",
+          "input": "device_type",
+          "right_alias": "device_types_2"
+        },
+        {
+          "how": "inner",
+          "input": "software",
+          "right_alias": "software_3"
+        },
+        {
+          "how": "inner",
+          "input": "vuln_type",
+          "right_alias": "vuln_types_4"
+        },
+        {
+          "how": "inner",
+          "input": "person",
+          "right_alias": "people_5"
+        },
+        {
+          "how": "inner",
+          "input": "team",
+          "right_alias": "teams_6"
+        },
+        {
+          "how": "inner",
+          "input": "department",
+          "right_alias": "departments_7"
+        },
+        {
+          "how": "inner",
+          "input": "org",
+          "right_alias": "orgs_8"
+        }
+      ],
+      "name": "prepare_exposure",
+      "output_alias": "vulnerability_posture_candidate",
+      "output_schema": "VulnerabilityPostureCandidate",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "posture_candidates",
+          "lane": "posture_candidates",
+          "schema": "VulnerabilityPostureCandidate"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "hook",
+          "schema": "VulnerabilityPostureCandidate"
+        },
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "VulnerabilityPostureCandidate"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "vulnerability_posture_candidate",
+      "joins": [],
+      "name": "expose",
+      "output_alias": "vulnerability_exposure",
+      "output_schema": "VulnerabilityExposure",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "exposure_lane",
+          "lane": "exposure_lane",
+          "schema": "VulnerabilityExposure"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "VulnerabilityExposure"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "vulnerability_exposure",
+      "joins": [],
+      "name": "publish",
+      "output_alias": "vulnerability_exposure",
+      "output_schema": "VulnerabilityExposure",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "exposures",
+          "lane": "exposures",
+          "schema": "VulnerabilityExposure"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.security.pyspark.transforms.posture",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "exposures",
+        "schema": "VulnerabilityExposure"
+      }
+    ]
+  }
+}

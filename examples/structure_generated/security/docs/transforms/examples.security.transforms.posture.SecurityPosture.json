@@ -1,0 +1,233 @@
+{
+  "dependencies": [
+    "department",
+    "departments",
+    "device",
+    "device_type",
+    "device_types",
+    "devices",
+    "org",
+    "orgs",
+    "people",
+    "person",
+    "software",
+    "team",
+    "teams",
+    "vuln_type",
+    "vuln_types"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "vulnerabilities",
+      "ordinal": 0,
+      "schema": "Vuln"
+    },
+    {
+      "name": "devices",
+      "ordinal": 1,
+      "schema": "Device"
+    },
+    {
+      "name": "device_types",
+      "ordinal": 2,
+      "schema": "DeviceType"
+    },
+    {
+      "name": "software",
+      "ordinal": 3,
+      "schema": "Software"
+    },
+    {
+      "name": "vuln_types",
+      "ordinal": 4,
+      "schema": "VulnType"
+    },
+    {
+      "name": "people",
+      "ordinal": 5,
+      "schema": "Person"
+    },
+    {
+      "name": "teams",
+      "ordinal": 6,
+      "schema": "Team"
+    },
+    {
+      "name": "departments",
+      "ordinal": 7,
+      "schema": "Department"
+    },
+    {
+      "name": "orgs",
+      "ordinal": 8,
+      "schema": "Org"
+    }
+  ],
+  "name": "SecurityPosture",
+  "outputs": [
+    {
+      "name": "exposures",
+      "ordinal": 0,
+      "schema": "VulnerabilityExposure"
+    }
+  ],
+  "source": "examples.security.transforms.posture.SecurityPosture",
+  "step_methods": [
+    {
+      "after_hooks": [
+        "retain_reconciled_inventory"
+      ],
+      "input_lane": "vulnerabilities",
+      "input_schema": "Vuln",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "vuln",
+          "schema": "Vuln",
+          "source": "vulnerabilities"
+        },
+        {
+          "driving": false,
+          "parameter": "device",
+          "schema": "Device",
+          "source": "devices"
+        },
+        {
+          "driving": false,
+          "parameter": "device_type",
+          "schema": "DeviceType",
+          "source": "device_types"
+        },
+        {
+          "driving": false,
+          "parameter": "software",
+          "schema": "Software",
+          "source": "software"
+        },
+        {
+          "driving": false,
+          "parameter": "vuln_type",
+          "schema": "VulnType",
+          "source": "vuln_types"
+        },
+        {
+          "driving": false,
+          "parameter": "person",
+          "schema": "Person",
+          "source": "people"
+        },
+        {
+          "driving": false,
+          "parameter": "team",
+          "schema": "Team",
+          "source": "teams"
+        },
+        {
+          "driving": false,
+          "parameter": "department",
+          "schema": "Department",
+          "source": "departments"
+        },
+        {
+          "driving": false,
+          "parameter": "org",
+          "schema": "Org",
+          "source": "orgs"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "device"
+        },
+        {
+          "how": "inner",
+          "input": "device_type"
+        },
+        {
+          "how": "inner",
+          "input": "software"
+        },
+        {
+          "how": "inner",
+          "input": "vuln_type"
+        },
+        {
+          "how": "inner",
+          "input": "person"
+        },
+        {
+          "how": "inner",
+          "input": "team"
+        },
+        {
+          "how": "inner",
+          "input": "department"
+        },
+        {
+          "how": "inner",
+          "input": "org"
+        }
+      ],
+      "name": "prepare_exposure",
+      "output_lane": "posture_candidates",
+      "output_schema": "VulnerabilityPostureCandidate",
+      "results": [
+        {
+          "frame": "posture_candidates",
+          "lane": "posture_candidates",
+          "schema": "VulnerabilityPostureCandidate"
+        }
+      ]
+    },
+    {
+      "input_lane": "posture_candidates",
+      "input_schema": "VulnerabilityPostureCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "VulnerabilityPostureCandidate",
+          "source": "posture_candidates"
+        }
+      ],
+      "name": "expose",
+      "output_lane": "exposure_lane",
+      "output_schema": "VulnerabilityExposure",
+      "results": [
+        {
+          "frame": "exposure_lane",
+          "lane": "exposure_lane",
+          "schema": "VulnerabilityExposure"
+        }
+      ]
+    },
+    {
+      "input_lane": "exposure_lane",
+      "input_schema": "VulnerabilityExposure",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "finding",
+          "schema": "VulnerabilityExposure",
+          "source": "exposure_lane"
+        }
+      ],
+      "name": "publish",
+      "output_lane": "exposures",
+      "output_schema": "VulnerabilityExposure",
+      "results": [
+        {
+          "frame": "exposures",
+          "lane": "exposures",
+          "schema": "VulnerabilityExposure"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/posture.py",
+    "traceability": "traceability/transforms/posture.SecurityPosture.json"
+  }
+}

@@ -1,0 +1,3578 @@
+{
+  "generated_by": "Structure",
+  "schemas": [
+    {
+      "bases": [
+        "Software"
+      ],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "nature",
+          "name": "nature",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "name",
+          "name": "name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vendor",
+          "name": "vendor",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "version",
+          "name": "version",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.assets",
+      "name": "App"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "occurred_at",
+          "name": "occurred_at",
+          "nullable": false,
+          "type": "timestamp"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_platform",
+          "name": "device_platform",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "scanner_name",
+          "name": "scanner_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "app_id",
+          "name": "app_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "app_name",
+          "name": "app_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "action",
+          "name": "action",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "version",
+          "name": "version",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "AppAuditEvent"
+    },
+    {
+      "bases": [
+        "RawEvent"
+      ],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "scanner_id",
+          "name": "scanner_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "occurred_at",
+          "name": "occurred_at",
+          "nullable": false,
+          "type": "timestamp"
+        },
+        {
+          "column": "event_family",
+          "name": "event_family",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "app_id",
+          "name": "app_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "action",
+          "name": "action",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "version",
+          "name": "version",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.events",
+      "name": "AppEvent"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "name",
+          "name": "name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.organization",
+      "name": "Department"
+    },
+    {
+      "bases": [
+        "VulnerabilityExposure"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type",
+          "name": "vuln_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "date_discovered",
+          "name": "date_discovered",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "date_addressed",
+          "name": "date_addressed",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "is_active",
+          "name": "is_active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_platform",
+          "name": "device_platform",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_model",
+          "name": "device_model",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_name",
+          "name": "software_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_version",
+          "name": "software_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "DepartmentActiveVulnerability"
+    },
+    {
+      "bases": [
+        "VulnerabilityStatistic"
+      ],
+      "fields": [
+        {
+          "column": "period_kind",
+          "name": "period_kind",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "period_start",
+          "name": "period_start",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "period_end",
+          "name": "period_end",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "discovered_count",
+          "name": "discovered_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "addressed_count",
+          "name": "addressed_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "active_count",
+          "name": "active_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "DepartmentVulnerabilityStatistic"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_type_id",
+          "name": "device_type_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "owner_id",
+          "name": "owner_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "os_id",
+          "name": "os_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "apps",
+          "name": "apps",
+          "nullable": false,
+          "type": "array<App!>"
+        },
+        {
+          "column": "vuln_ids",
+          "name": "vuln_ids",
+          "nullable": false,
+          "type": "array<string!>"
+        }
+      ],
+      "module": "examples.security.schemas.assets",
+      "name": "Device"
+    },
+    {
+      "bases": [
+        "VulnerabilityExposure"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type",
+          "name": "vuln_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "date_discovered",
+          "name": "date_discovered",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "date_addressed",
+          "name": "date_addressed",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "is_active",
+          "name": "is_active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_platform",
+          "name": "device_platform",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_model",
+          "name": "device_model",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_name",
+          "name": "software_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_version",
+          "name": "software_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "DeviceActiveVulnerability"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "nature",
+          "name": "nature",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "type",
+          "name": "type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "make",
+          "name": "make",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "platform",
+          "name": "platform",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "model",
+          "name": "model",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "version",
+          "name": "version",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.assets",
+      "name": "DeviceType"
+    },
+    {
+      "bases": [
+        "Software"
+      ],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "nature",
+          "name": "nature",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "name",
+          "name": "name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vendor",
+          "name": "vendor",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "version",
+          "name": "version",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.assets",
+      "name": "OS"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "name",
+          "name": "name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.organization",
+      "name": "Org"
+    },
+    {
+      "bases": [
+        "VulnerabilityExposure"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type",
+          "name": "vuln_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "date_discovered",
+          "name": "date_discovered",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "date_addressed",
+          "name": "date_addressed",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "is_active",
+          "name": "is_active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_platform",
+          "name": "device_platform",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_model",
+          "name": "device_model",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_name",
+          "name": "software_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_version",
+          "name": "software_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "OrgActiveVulnerability"
+    },
+    {
+      "bases": [
+        "VulnerabilityStatistic"
+      ],
+      "fields": [
+        {
+          "column": "period_kind",
+          "name": "period_kind",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "period_start",
+          "name": "period_start",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "period_end",
+          "name": "period_end",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "discovered_count",
+          "name": "discovered_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "addressed_count",
+          "name": "addressed_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "active_count",
+          "name": "active_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "OrgVulnerabilityStatistic"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "name",
+          "name": "name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.organization",
+      "name": "Person"
+    },
+    {
+      "bases": [
+        "VulnerabilityExposure"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type",
+          "name": "vuln_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "date_discovered",
+          "name": "date_discovered",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "date_addressed",
+          "name": "date_addressed",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "is_active",
+          "name": "is_active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_platform",
+          "name": "device_platform",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_model",
+          "name": "device_model",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_name",
+          "name": "software_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_version",
+          "name": "software_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "PersonActiveVulnerability"
+    },
+    {
+      "bases": [
+        "VulnerabilityStatistic"
+      ],
+      "fields": [
+        {
+          "column": "period_kind",
+          "name": "period_kind",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "period_start",
+          "name": "period_start",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "period_end",
+          "name": "period_end",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "discovered_count",
+          "name": "discovered_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "addressed_count",
+          "name": "addressed_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "active_count",
+          "name": "active_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "PersonVulnerabilityStatistic"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "scanner_id",
+          "name": "scanner_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "occurred_at",
+          "name": "occurred_at",
+          "nullable": false,
+          "type": "timestamp"
+        },
+        {
+          "column": "event_family",
+          "name": "event_family",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.events",
+      "name": "RawEvent"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "kind",
+          "name": "kind",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "start",
+          "name": "start",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "end",
+          "name": "end",
+          "nullable": false,
+          "type": "date"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "ReportingPeriod"
+    },
+    {
+      "bases": [
+        "Software"
+      ],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "nature",
+          "name": "nature",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "name",
+          "name": "name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vendor",
+          "name": "vendor",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "version",
+          "name": "version",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.assets",
+      "name": "Scanner"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "nature",
+          "name": "nature",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "name",
+          "name": "name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vendor",
+          "name": "vendor",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "version",
+          "name": "version",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.assets",
+      "name": "Software"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "name",
+          "name": "name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.organization",
+      "name": "Team"
+    },
+    {
+      "bases": [
+        "VulnerabilityExposure"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type",
+          "name": "vuln_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "date_discovered",
+          "name": "date_discovered",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "date_addressed",
+          "name": "date_addressed",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "is_active",
+          "name": "is_active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_platform",
+          "name": "device_platform",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_model",
+          "name": "device_model",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_name",
+          "name": "software_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_version",
+          "name": "software_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "TeamActiveVulnerability"
+    },
+    {
+      "bases": [
+        "VulnerabilityStatistic"
+      ],
+      "fields": [
+        {
+          "column": "period_kind",
+          "name": "period_kind",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "period_start",
+          "name": "period_start",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "period_end",
+          "name": "period_end",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "discovered_count",
+          "name": "discovered_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "addressed_count",
+          "name": "addressed_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "active_count",
+          "name": "active_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "TeamVulnerabilityStatistic"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type_id",
+          "name": "vuln_type_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "owner_id",
+          "name": "owner_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "date_discovered",
+          "name": "date_discovered",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "date_addressed",
+          "name": "date_addressed",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "is_active",
+          "name": "is_active",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.security.schemas.risk",
+      "name": "Vuln"
+    },
+    {
+      "bases": [
+        "RawEvent"
+      ],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "scanner_id",
+          "name": "scanner_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "occurred_at",
+          "name": "occurred_at",
+          "nullable": false,
+          "type": "timestamp"
+        },
+        {
+          "column": "event_family",
+          "name": "event_family",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "action",
+          "name": "action",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.events",
+      "name": "VulnEvent"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "type",
+          "name": "type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.risk",
+      "name": "VulnType"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "occurred_at",
+          "name": "occurred_at",
+          "nullable": false,
+          "type": "timestamp"
+        },
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "scanner_name",
+          "name": "scanner_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "action",
+          "name": "action",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityAuditEvent"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type",
+          "name": "vuln_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "date_discovered",
+          "name": "date_discovered",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "date_addressed",
+          "name": "date_addressed",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "is_active",
+          "name": "is_active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_platform",
+          "name": "device_platform",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_model",
+          "name": "device_model",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_name",
+          "name": "software_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_version",
+          "name": "software_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityExposure"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_lists_vulnerability",
+          "name": "device_lists_vulnerability",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "os_id",
+          "name": "os_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "apps",
+          "name": "apps",
+          "nullable": false,
+          "type": "array<App!>"
+        },
+        {
+          "column": "device_has_software",
+          "name": "device_has_software",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "is_reconciled",
+          "name": "is_reconciled",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityInventoryCandidate"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_lists_vulnerability",
+          "name": "device_lists_vulnerability",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "device_has_software",
+          "name": "device_has_software",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "is_reconciled",
+          "name": "is_reconciled",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityInventoryCheck"
+    },
+    {
+      "bases": [
+        "VulnerabilityInventoryCheck"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_lists_vulnerability",
+          "name": "device_lists_vulnerability",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "device_has_software",
+          "name": "device_has_software",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "is_reconciled",
+          "name": "is_reconciled",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityInventoryIssue"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "detected_at",
+          "name": "detected_at",
+          "nullable": true,
+          "type": "timestamp"
+        },
+        {
+          "column": "addressed_at",
+          "name": "addressed_at",
+          "nullable": true,
+          "type": "timestamp"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityLifecycle"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "period_kind",
+          "name": "period_kind",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "period_start",
+          "name": "period_start",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "period_end",
+          "name": "period_end",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "discovered_count",
+          "name": "discovered_count",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "addressed_count",
+          "name": "addressed_count",
+          "nullable": false,
+          "type": "integer"
+        },
+        {
+          "column": "active_count",
+          "name": "active_count",
+          "nullable": false,
+          "type": "integer"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityPeriodActivity"
+    },
+    {
+      "bases": [
+        "VulnerabilityExposure"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type",
+          "name": "vuln_type",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "description",
+          "name": "description",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "instructions",
+          "name": "instructions",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "date_discovered",
+          "name": "date_discovered",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "date_addressed",
+          "name": "date_addressed",
+          "nullable": true,
+          "type": "date"
+        },
+        {
+          "column": "is_active",
+          "name": "is_active",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_platform",
+          "name": "device_platform",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_model",
+          "name": "device_model",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_name",
+          "name": "software_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_version",
+          "name": "software_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_id",
+          "name": "person_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "person_name",
+          "name": "person_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_id",
+          "name": "team_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "team_name",
+          "name": "team_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_id",
+          "name": "department_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "department_name",
+          "name": "department_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_id",
+          "name": "org_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "org_name",
+          "name": "org_name",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_owner_id",
+          "name": "device_owner_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_os_id",
+          "name": "device_os_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_vuln_ids",
+          "name": "device_vuln_ids",
+          "nullable": false,
+          "type": "array<string!>"
+        },
+        {
+          "column": "device_apps",
+          "name": "device_apps",
+          "nullable": false,
+          "type": "array<App!>"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityPostureCandidate"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "owner_id",
+          "name": "owner_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type_id",
+          "name": "vuln_type_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "issues",
+          "name": "issues",
+          "nullable": false,
+          "type": "array<string!>"
+        },
+        {
+          "column": "is_valid",
+          "name": "is_valid",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityQualityCheck"
+    },
+    {
+      "bases": [
+        "VulnerabilityQualityCheck"
+      ],
+      "fields": [
+        {
+          "column": "vuln_id",
+          "name": "vuln_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "device_id",
+          "name": "device_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "owner_id",
+          "name": "owner_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "software_id",
+          "name": "software_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "vuln_type_id",
+          "name": "vuln_type_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "issues",
+          "name": "issues",
+          "nullable": false,
+          "type": "array<string!>"
+        },
+        {
+          "column": "is_valid",
+          "name": "is_valid",
+          "nullable": false,
+          "type": "boolean"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityQualityIssue"
+    }
+  ],
+  "transforms": [
+    {
+      "dependencies": [
+        "app",
+        "apps",
+        "device",
+        "device_type",
+        "device_types",
+        "devices",
+        "scanner",
+        "scanners"
+      ],
+      "inputs": [
+        {
+          "name": "events",
+          "ordinal": 0,
+          "schema": "AppEvent"
+        },
+        {
+          "name": "devices",
+          "ordinal": 1,
+          "schema": "Device"
+        },
+        {
+          "name": "device_types",
+          "ordinal": 2,
+          "schema": "DeviceType"
+        },
+        {
+          "name": "apps",
+          "ordinal": 3,
+          "schema": "App"
+        },
+        {
+          "name": "scanners",
+          "ordinal": 4,
+          "schema": "Scanner"
+        }
+      ],
+      "name": "EnrichAppEvents",
+      "outputs": [
+        {
+          "name": "audits",
+          "ordinal": 0,
+          "schema": "AppAuditEvent"
+        }
+      ],
+      "source": "examples.security.transforms.events.EnrichAppEvents",
+      "step_methods": [
+        {
+          "input_lane": "events",
+          "input_schema": "AppEvent",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "event",
+              "schema": "AppEvent",
+              "source": "events"
+            },
+            {
+              "driving": false,
+              "parameter": "device",
+              "schema": "Device",
+              "source": "devices"
+            },
+            {
+              "driving": false,
+              "parameter": "device_type",
+              "schema": "DeviceType",
+              "source": "device_types"
+            },
+            {
+              "driving": false,
+              "parameter": "app",
+              "schema": "App",
+              "source": "apps"
+            },
+            {
+              "driving": false,
+              "parameter": "scanner",
+              "schema": "Scanner",
+              "source": "scanners"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "device"
+            },
+            {
+              "how": "inner",
+              "input": "device_type"
+            },
+            {
+              "how": "inner",
+              "input": "app"
+            },
+            {
+              "how": "inner",
+              "input": "scanner"
+            }
+          ],
+          "name": "enrich",
+          "output_lane": "events",
+          "output_schema": "AppAuditEvent",
+          "results": [
+            {
+              "frame": "events",
+              "lane": "events",
+              "schema": "AppAuditEvent"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/events.py",
+        "traceability": "traceability/transforms/events.EnrichAppEvents.json"
+      }
+    },
+    {
+      "dependencies": [
+        "device",
+        "devices",
+        "people",
+        "person",
+        "scanner",
+        "scanners",
+        "vuln",
+        "vulnerabilities"
+      ],
+      "inputs": [
+        {
+          "name": "events",
+          "ordinal": 0,
+          "schema": "VulnEvent"
+        },
+        {
+          "name": "vulnerabilities",
+          "ordinal": 1,
+          "schema": "Vuln"
+        },
+        {
+          "name": "devices",
+          "ordinal": 2,
+          "schema": "Device"
+        },
+        {
+          "name": "people",
+          "ordinal": 3,
+          "schema": "Person"
+        },
+        {
+          "name": "scanners",
+          "ordinal": 4,
+          "schema": "Scanner"
+        }
+      ],
+      "name": "EnrichVulnerabilityEvents",
+      "outputs": [
+        {
+          "name": "audits",
+          "ordinal": 0,
+          "schema": "VulnerabilityAuditEvent"
+        }
+      ],
+      "source": "examples.security.transforms.events.EnrichVulnerabilityEvents",
+      "step_methods": [
+        {
+          "input_lane": "events",
+          "input_schema": "VulnEvent",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "event",
+              "schema": "VulnEvent",
+              "source": "events"
+            },
+            {
+              "driving": false,
+              "parameter": "vuln",
+              "schema": "Vuln",
+              "source": "vulnerabilities"
+            },
+            {
+              "driving": false,
+              "parameter": "device",
+              "schema": "Device",
+              "source": "devices"
+            },
+            {
+              "driving": false,
+              "parameter": "person",
+              "schema": "Person",
+              "source": "people"
+            },
+            {
+              "driving": false,
+              "parameter": "scanner",
+              "schema": "Scanner",
+              "source": "scanners"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "vuln"
+            },
+            {
+              "how": "inner",
+              "input": "device"
+            },
+            {
+              "how": "inner",
+              "input": "person"
+            },
+            {
+              "how": "inner",
+              "input": "scanner"
+            }
+          ],
+          "name": "enrich",
+          "output_lane": "events",
+          "output_schema": "VulnerabilityAuditEvent",
+          "results": [
+            {
+              "frame": "events",
+              "lane": "events",
+              "schema": "VulnerabilityAuditEvent"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/events.py",
+        "traceability": "traceability/transforms/events.EnrichVulnerabilityEvents.json"
+      }
+    },
+    {
+      "dependencies": [
+        "department",
+        "departments",
+        "device",
+        "device_type",
+        "device_types",
+        "devices",
+        "org",
+        "orgs",
+        "people",
+        "person",
+        "software",
+        "team",
+        "teams",
+        "vuln_type",
+        "vuln_types"
+      ],
+      "inputs": [
+        {
+          "name": "vulnerabilities",
+          "ordinal": 0,
+          "schema": "Vuln"
+        },
+        {
+          "name": "devices",
+          "ordinal": 1,
+          "schema": "Device"
+        },
+        {
+          "name": "device_types",
+          "ordinal": 2,
+          "schema": "DeviceType"
+        },
+        {
+          "name": "software",
+          "ordinal": 3,
+          "schema": "Software"
+        },
+        {
+          "name": "vuln_types",
+          "ordinal": 4,
+          "schema": "VulnType"
+        },
+        {
+          "name": "people",
+          "ordinal": 5,
+          "schema": "Person"
+        },
+        {
+          "name": "teams",
+          "ordinal": 6,
+          "schema": "Team"
+        },
+        {
+          "name": "departments",
+          "ordinal": 7,
+          "schema": "Department"
+        },
+        {
+          "name": "orgs",
+          "ordinal": 8,
+          "schema": "Org"
+        }
+      ],
+      "name": "SecurityPosture",
+      "outputs": [
+        {
+          "name": "exposures",
+          "ordinal": 0,
+          "schema": "VulnerabilityExposure"
+        }
+      ],
+      "source": "examples.security.transforms.posture.SecurityPosture",
+      "step_methods": [
+        {
+          "after_hooks": [
+            "retain_reconciled_inventory"
+          ],
+          "input_lane": "vulnerabilities",
+          "input_schema": "Vuln",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "vuln",
+              "schema": "Vuln",
+              "source": "vulnerabilities"
+            },
+            {
+              "driving": false,
+              "parameter": "device",
+              "schema": "Device",
+              "source": "devices"
+            },
+            {
+              "driving": false,
+              "parameter": "device_type",
+              "schema": "DeviceType",
+              "source": "device_types"
+            },
+            {
+              "driving": false,
+              "parameter": "software",
+              "schema": "Software",
+              "source": "software"
+            },
+            {
+              "driving": false,
+              "parameter": "vuln_type",
+              "schema": "VulnType",
+              "source": "vuln_types"
+            },
+            {
+              "driving": false,
+              "parameter": "person",
+              "schema": "Person",
+              "source": "people"
+            },
+            {
+              "driving": false,
+              "parameter": "team",
+              "schema": "Team",
+              "source": "teams"
+            },
+            {
+              "driving": false,
+              "parameter": "department",
+              "schema": "Department",
+              "source": "departments"
+            },
+            {
+              "driving": false,
+              "parameter": "org",
+              "schema": "Org",
+              "source": "orgs"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "device"
+            },
+            {
+              "how": "inner",
+              "input": "device_type"
+            },
+            {
+              "how": "inner",
+              "input": "software"
+            },
+            {
+              "how": "inner",
+              "input": "vuln_type"
+            },
+            {
+              "how": "inner",
+              "input": "person"
+            },
+            {
+              "how": "inner",
+              "input": "team"
+            },
+            {
+              "how": "inner",
+              "input": "department"
+            },
+            {
+              "how": "inner",
+              "input": "org"
+            }
+          ],
+          "name": "prepare_exposure",
+          "output_lane": "posture_candidates",
+          "output_schema": "VulnerabilityPostureCandidate",
+          "results": [
+            {
+              "frame": "posture_candidates",
+              "lane": "posture_candidates",
+              "schema": "VulnerabilityPostureCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "posture_candidates",
+          "input_schema": "VulnerabilityPostureCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "VulnerabilityPostureCandidate",
+              "source": "posture_candidates"
+            }
+          ],
+          "name": "expose",
+          "output_lane": "exposure_lane",
+          "output_schema": "VulnerabilityExposure",
+          "results": [
+            {
+              "frame": "exposure_lane",
+              "lane": "exposure_lane",
+              "schema": "VulnerabilityExposure"
+            }
+          ]
+        },
+        {
+          "input_lane": "exposure_lane",
+          "input_schema": "VulnerabilityExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityExposure",
+              "source": "exposure_lane"
+            }
+          ],
+          "name": "publish",
+          "output_lane": "exposures",
+          "output_schema": "VulnerabilityExposure",
+          "results": [
+            {
+              "frame": "exposures",
+              "lane": "exposures",
+              "schema": "VulnerabilityExposure"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/posture.py",
+        "traceability": "traceability/transforms/posture.SecurityPosture.json"
+      }
+    },
+    {
+      "dependencies": [
+        "department",
+        "departments",
+        "device",
+        "device_type",
+        "device_types",
+        "devices",
+        "org",
+        "orgs",
+        "people",
+        "person",
+        "software",
+        "team",
+        "teams",
+        "vuln_type",
+        "vuln_types"
+      ],
+      "inputs": [
+        {
+          "name": "vulnerabilities",
+          "ordinal": 0,
+          "schema": "Vuln"
+        },
+        {
+          "name": "devices",
+          "ordinal": 1,
+          "schema": "Device"
+        },
+        {
+          "name": "device_types",
+          "ordinal": 2,
+          "schema": "DeviceType"
+        },
+        {
+          "name": "software",
+          "ordinal": 3,
+          "schema": "Software"
+        },
+        {
+          "name": "vuln_types",
+          "ordinal": 4,
+          "schema": "VulnType"
+        },
+        {
+          "name": "people",
+          "ordinal": 5,
+          "schema": "Person"
+        },
+        {
+          "name": "teams",
+          "ordinal": 6,
+          "schema": "Team"
+        },
+        {
+          "name": "departments",
+          "ordinal": 7,
+          "schema": "Department"
+        },
+        {
+          "name": "orgs",
+          "ordinal": 8,
+          "schema": "Org"
+        }
+      ],
+      "name": "SecurityInventoryQuality",
+      "outputs": [
+        {
+          "name": "reference_checks",
+          "ordinal": 0,
+          "schema": "VulnerabilityQualityCheck"
+        },
+        {
+          "name": "reference_issues",
+          "ordinal": 1,
+          "schema": "VulnerabilityQualityIssue"
+        },
+        {
+          "name": "reconciliation_checks",
+          "ordinal": 2,
+          "schema": "VulnerabilityInventoryCheck"
+        },
+        {
+          "name": "reconciliation_issues",
+          "ordinal": 3,
+          "schema": "VulnerabilityInventoryIssue"
+        }
+      ],
+      "source": "examples.security.transforms.quality.SecurityInventoryQuality",
+      "step_methods": [
+        {
+          "input_lane": "vulnerabilities",
+          "input_schema": "Vuln",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "vuln",
+              "schema": "Vuln",
+              "source": "vulnerabilities"
+            },
+            {
+              "driving": false,
+              "parameter": "device",
+              "schema": "Device",
+              "source": "devices"
+            },
+            {
+              "driving": false,
+              "parameter": "device_type",
+              "schema": "DeviceType",
+              "source": "device_types"
+            },
+            {
+              "driving": false,
+              "parameter": "software",
+              "schema": "Software",
+              "source": "software"
+            },
+            {
+              "driving": false,
+              "parameter": "vuln_type",
+              "schema": "VulnType",
+              "source": "vuln_types"
+            },
+            {
+              "driving": false,
+              "parameter": "person",
+              "schema": "Person",
+              "source": "people"
+            },
+            {
+              "driving": false,
+              "parameter": "team",
+              "schema": "Team",
+              "source": "teams"
+            },
+            {
+              "driving": false,
+              "parameter": "department",
+              "schema": "Department",
+              "source": "departments"
+            },
+            {
+              "driving": false,
+              "parameter": "org",
+              "schema": "Org",
+              "source": "orgs"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "device"
+            },
+            {
+              "how": "left",
+              "input": "device_type"
+            },
+            {
+              "how": "left",
+              "input": "software"
+            },
+            {
+              "how": "left",
+              "input": "vuln_type"
+            },
+            {
+              "how": "left",
+              "input": "person"
+            },
+            {
+              "how": "left",
+              "input": "team"
+            },
+            {
+              "how": "left",
+              "input": "department"
+            },
+            {
+              "how": "left",
+              "input": "org"
+            }
+          ],
+          "name": "check_references",
+          "output_lane": "quality_lane",
+          "output_schema": "VulnerabilityQualityCheck",
+          "results": [
+            {
+              "frame": "quality_lane",
+              "lane": "quality_lane",
+              "schema": "VulnerabilityQualityCheck"
+            }
+          ]
+        },
+        {
+          "input_lane": "quality_lane",
+          "input_schema": "VulnerabilityQualityCheck",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "check",
+              "schema": "VulnerabilityQualityCheck",
+              "source": "quality_lane"
+            }
+          ],
+          "name": "publish_reference_checks",
+          "output_lane": "reference_checks",
+          "output_schema": "VulnerabilityQualityCheck",
+          "results": [
+            {
+              "frame": "reference_checks",
+              "lane": "reference_checks",
+              "schema": "VulnerabilityQualityCheck"
+            }
+          ]
+        },
+        {
+          "input_lane": "quality_lane",
+          "input_schema": "VulnerabilityQualityCheck",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "check",
+              "schema": "VulnerabilityQualityCheck",
+              "source": "quality_lane"
+            }
+          ],
+          "name": "publish_reference_issues",
+          "output_lane": "reference_issues",
+          "output_schema": "VulnerabilityQualityIssue",
+          "results": [
+            {
+              "frame": "reference_issues",
+              "lane": "reference_issues",
+              "schema": "VulnerabilityQualityIssue"
+            }
+          ]
+        },
+        {
+          "after_hooks": [
+            "reconcile_device_inventory"
+          ],
+          "input_lane": "vulnerabilities",
+          "input_schema": "Vuln",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "vuln",
+              "schema": "Vuln",
+              "source": "vulnerabilities"
+            },
+            {
+              "driving": false,
+              "parameter": "device",
+              "schema": "Device",
+              "source": "devices"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "device"
+            }
+          ],
+          "name": "prepare_inventory_reconciliation",
+          "output_lane": "inventory_candidates",
+          "output_schema": "VulnerabilityInventoryCandidate",
+          "results": [
+            {
+              "frame": "inventory_candidates",
+              "lane": "inventory_candidates",
+              "schema": "VulnerabilityInventoryCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "inventory_candidates",
+          "input_schema": "VulnerabilityInventoryCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "VulnerabilityInventoryCandidate",
+              "source": "inventory_candidates"
+            }
+          ],
+          "name": "publish_reconciliation",
+          "output_lane": "reconciliation_lane",
+          "output_schema": "VulnerabilityInventoryCheck",
+          "results": [
+            {
+              "frame": "reconciliation_lane",
+              "lane": "reconciliation_lane",
+              "schema": "VulnerabilityInventoryCheck"
+            }
+          ]
+        },
+        {
+          "input_lane": "reconciliation_lane",
+          "input_schema": "VulnerabilityInventoryCheck",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "check",
+              "schema": "VulnerabilityInventoryCheck",
+              "source": "reconciliation_lane"
+            }
+          ],
+          "name": "publish_reconciliation_checks",
+          "output_lane": "reconciliation_checks",
+          "output_schema": "VulnerabilityInventoryCheck",
+          "results": [
+            {
+              "frame": "reconciliation_checks",
+              "lane": "reconciliation_checks",
+              "schema": "VulnerabilityInventoryCheck"
+            }
+          ]
+        },
+        {
+          "input_lane": "reconciliation_lane",
+          "input_schema": "VulnerabilityInventoryCheck",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "check",
+              "schema": "VulnerabilityInventoryCheck",
+              "source": "reconciliation_lane"
+            }
+          ],
+          "name": "publish_reconciliation_issues",
+          "output_lane": "reconciliation_issues",
+          "output_schema": "VulnerabilityInventoryIssue",
+          "results": [
+            {
+              "frame": "reconciliation_issues",
+              "lane": "reconciliation_issues",
+              "schema": "VulnerabilityInventoryIssue"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/quality.py",
+        "traceability": "traceability/transforms/quality.SecurityInventoryQuality.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "exposures",
+          "ordinal": 0,
+          "schema": "VulnerabilityExposure"
+        }
+      ],
+      "name": "ActiveVulnerabilityReports",
+      "outputs": [
+        {
+          "name": "device_active",
+          "ordinal": 0,
+          "schema": "DeviceActiveVulnerability"
+        },
+        {
+          "name": "person_active",
+          "ordinal": 1,
+          "schema": "PersonActiveVulnerability"
+        },
+        {
+          "name": "team_active",
+          "ordinal": 2,
+          "schema": "TeamActiveVulnerability"
+        },
+        {
+          "name": "department_active",
+          "ordinal": 3,
+          "schema": "DepartmentActiveVulnerability"
+        },
+        {
+          "name": "org_active",
+          "ordinal": 4,
+          "schema": "OrgActiveVulnerability"
+        }
+      ],
+      "source": "examples.security.transforms.reports.ActiveVulnerabilityReports",
+      "step_methods": [
+        {
+          "input_lane": "exposures",
+          "input_schema": "VulnerabilityExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityExposure",
+              "source": "exposures"
+            }
+          ],
+          "name": "device_findings",
+          "output_lane": "device_active",
+          "output_schema": "DeviceActiveVulnerability",
+          "results": [
+            {
+              "frame": "device_active",
+              "lane": "device_active",
+              "schema": "DeviceActiveVulnerability"
+            }
+          ]
+        },
+        {
+          "input_lane": "exposures",
+          "input_schema": "VulnerabilityExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityExposure",
+              "source": "exposures"
+            }
+          ],
+          "name": "person_findings",
+          "output_lane": "person_active",
+          "output_schema": "PersonActiveVulnerability",
+          "results": [
+            {
+              "frame": "person_active",
+              "lane": "person_active",
+              "schema": "PersonActiveVulnerability"
+            }
+          ]
+        },
+        {
+          "input_lane": "exposures",
+          "input_schema": "VulnerabilityExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityExposure",
+              "source": "exposures"
+            }
+          ],
+          "name": "team_findings",
+          "output_lane": "team_active",
+          "output_schema": "TeamActiveVulnerability",
+          "results": [
+            {
+              "frame": "team_active",
+              "lane": "team_active",
+              "schema": "TeamActiveVulnerability"
+            }
+          ]
+        },
+        {
+          "input_lane": "exposures",
+          "input_schema": "VulnerabilityExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityExposure",
+              "source": "exposures"
+            }
+          ],
+          "name": "department_findings",
+          "output_lane": "department_active",
+          "output_schema": "DepartmentActiveVulnerability",
+          "results": [
+            {
+              "frame": "department_active",
+              "lane": "department_active",
+              "schema": "DepartmentActiveVulnerability"
+            }
+          ]
+        },
+        {
+          "input_lane": "exposures",
+          "input_schema": "VulnerabilityExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityExposure",
+              "source": "exposures"
+            }
+          ],
+          "name": "org_findings",
+          "output_lane": "org_active",
+          "output_schema": "OrgActiveVulnerability",
+          "results": [
+            {
+              "frame": "org_active",
+              "lane": "org_active",
+              "schema": "OrgActiveVulnerability"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/reports.py",
+        "traceability": "traceability/transforms/reports.ActiveVulnerabilityReports.json"
+      }
+    },
+    {
+      "dependencies": [
+        "activities",
+        "activity",
+        "lifecycle",
+        "lifecycles",
+        "period",
+        "periods"
+      ],
+      "inputs": [
+        {
+          "name": "exposures",
+          "ordinal": 0,
+          "schema": "VulnerabilityExposure"
+        },
+        {
+          "name": "events",
+          "ordinal": 1,
+          "schema": "VulnEvent"
+        },
+        {
+          "name": "people",
+          "ordinal": 2,
+          "schema": "Person"
+        },
+        {
+          "name": "teams",
+          "ordinal": 3,
+          "schema": "Team"
+        },
+        {
+          "name": "departments",
+          "ordinal": 4,
+          "schema": "Department"
+        },
+        {
+          "name": "orgs",
+          "ordinal": 5,
+          "schema": "Org"
+        },
+        {
+          "name": "periods",
+          "ordinal": 6,
+          "schema": "ReportingPeriod"
+        }
+      ],
+      "name": "VulnerabilityStatistics",
+      "outputs": [
+        {
+          "name": "person_statistics",
+          "ordinal": 0,
+          "schema": "PersonVulnerabilityStatistic"
+        },
+        {
+          "name": "team_statistics",
+          "ordinal": 1,
+          "schema": "TeamVulnerabilityStatistic"
+        },
+        {
+          "name": "department_statistics",
+          "ordinal": 2,
+          "schema": "DepartmentVulnerabilityStatistic"
+        },
+        {
+          "name": "org_statistics",
+          "ordinal": 3,
+          "schema": "OrgVulnerabilityStatistic"
+        }
+      ],
+      "source": "examples.security.transforms.reports.VulnerabilityStatistics",
+      "step_methods": [
+        {
+          "input_lane": "events",
+          "input_schema": "VulnEvent",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "event",
+              "schema": "VulnEvent",
+              "source": "events"
+            }
+          ],
+          "name": "dedupe_delivery",
+          "output_lane": "deduped_events",
+          "output_schema": "VulnEvent",
+          "results": [
+            {
+              "frame": "deduped_events",
+              "lane": "deduped_events",
+              "schema": "VulnEvent"
+            }
+          ]
+        },
+        {
+          "input_lane": "deduped_events",
+          "input_schema": "VulnEvent",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "event",
+              "schema": "VulnEvent",
+              "source": "deduped_events"
+            }
+          ],
+          "name": "lifecycle",
+          "output_lane": "lifecycles",
+          "output_schema": "VulnerabilityLifecycle",
+          "results": [
+            {
+              "frame": "lifecycles",
+              "lane": "lifecycles",
+              "schema": "VulnerabilityLifecycle"
+            }
+          ]
+        },
+        {
+          "input_lane": "exposures",
+          "input_schema": "VulnerabilityExposure",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "finding",
+              "schema": "VulnerabilityExposure",
+              "source": "exposures"
+            },
+            {
+              "driving": false,
+              "parameter": "period",
+              "schema": "ReportingPeriod",
+              "source": "periods"
+            },
+            {
+              "driving": false,
+              "parameter": "lifecycle",
+              "schema": "VulnerabilityLifecycle",
+              "source": "lifecycles"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "period"
+            },
+            {
+              "how": "left",
+              "input": "lifecycle"
+            }
+          ],
+          "name": "activity",
+          "output_lane": "activities",
+          "output_schema": "VulnerabilityPeriodActivity",
+          "results": [
+            {
+              "frame": "activities",
+              "lane": "activities",
+              "schema": "VulnerabilityPeriodActivity"
+            }
+          ]
+        },
+        {
+          "input_lane": "people",
+          "input_schema": "Person",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "person",
+              "schema": "Person",
+              "source": "people"
+            },
+            {
+              "driving": false,
+              "parameter": "period",
+              "schema": "ReportingPeriod",
+              "source": "periods"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "VulnerabilityPeriodActivity",
+              "source": "activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "period"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "person_periods",
+          "output_lane": "person_statistics",
+          "output_schema": "PersonVulnerabilityStatistic",
+          "results": [
+            {
+              "frame": "person_statistics",
+              "lane": "person_statistics",
+              "schema": "PersonVulnerabilityStatistic"
+            }
+          ]
+        },
+        {
+          "input_lane": "teams",
+          "input_schema": "Team",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "team",
+              "schema": "Team",
+              "source": "teams"
+            },
+            {
+              "driving": false,
+              "parameter": "period",
+              "schema": "ReportingPeriod",
+              "source": "periods"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "VulnerabilityPeriodActivity",
+              "source": "activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "period"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "team_periods",
+          "output_lane": "team_statistics",
+          "output_schema": "TeamVulnerabilityStatistic",
+          "results": [
+            {
+              "frame": "team_statistics",
+              "lane": "team_statistics",
+              "schema": "TeamVulnerabilityStatistic"
+            }
+          ]
+        },
+        {
+          "input_lane": "departments",
+          "input_schema": "Department",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "department",
+              "schema": "Department",
+              "source": "departments"
+            },
+            {
+              "driving": false,
+              "parameter": "period",
+              "schema": "ReportingPeriod",
+              "source": "periods"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "VulnerabilityPeriodActivity",
+              "source": "activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "period"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "department_periods",
+          "output_lane": "department_statistics",
+          "output_schema": "DepartmentVulnerabilityStatistic",
+          "results": [
+            {
+              "frame": "department_statistics",
+              "lane": "department_statistics",
+              "schema": "DepartmentVulnerabilityStatistic"
+            }
+          ]
+        },
+        {
+          "input_lane": "orgs",
+          "input_schema": "Org",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "org",
+              "schema": "Org",
+              "source": "orgs"
+            },
+            {
+              "driving": false,
+              "parameter": "period",
+              "schema": "ReportingPeriod",
+              "source": "periods"
+            },
+            {
+              "driving": false,
+              "parameter": "activity",
+              "schema": "VulnerabilityPeriodActivity",
+              "source": "activities"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "period"
+            },
+            {
+              "how": "left",
+              "input": "activity"
+            }
+          ],
+          "name": "org_periods",
+          "output_lane": "org_statistics",
+          "output_schema": "OrgVulnerabilityStatistic",
+          "results": [
+            {
+              "frame": "org_statistics",
+              "lane": "org_statistics",
+              "schema": "OrgVulnerabilityStatistic"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/reports.py",
+        "traceability": "traceability/transforms/reports.VulnerabilityStatistics.json"
+      }
+    }
+  ]
+}

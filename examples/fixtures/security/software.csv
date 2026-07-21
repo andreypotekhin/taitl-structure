@@ -1,0 +1,5 @@
+id,nature,name,vendor,version
+macos,OS,macOS,Apple,14.5
+browser,App,Firefox,OSS,126.0
+scanner-1,Scanner,Inventory Scanner,OSS,1.3.12
+uninstalled,App,Uninstalled App,OSS,1.0

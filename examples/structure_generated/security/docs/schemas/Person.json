@@ -1,0 +1,26 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "team_id",
+      "name": "team_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "name",
+      "name": "name",
+      "nullable": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.security.schemas.organization",
+  "name": "Person"
+}

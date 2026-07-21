@@ -1,0 +1,12 @@
+[
+  {
+    "id": "device-ava",
+    "device_type_id": "macbook",
+    "owner_id": "person-ava",
+    "os_id": "macos",
+    "apps": [
+      {"id": "browser", "nature": "App", "name": "Firefox", "vendor": "OSS", "version": "126.0"}
+    ],
+    "vuln_ids": ["vuln-open", "vuln-fixed", "vuln-bad-state", "vuln-uninstalled"]
+  }
+]

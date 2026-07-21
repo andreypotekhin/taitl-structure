@@ -1,0 +1,38 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "device_id",
+      "name": "device_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "scanner_id",
+      "name": "scanner_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "occurred_at",
+      "name": "occurred_at",
+      "nullable": false,
+      "type": "timestamp"
+    },
+    {
+      "column": "event_family",
+      "name": "event_family",
+      "nullable": false,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.security.schemas.events",
+  "name": "RawEvent"
+}

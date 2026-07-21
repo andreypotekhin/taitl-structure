@@ -1,0 +1,348 @@
+{
+  "dependencies": [
+    "department",
+    "departments",
+    "device",
+    "device_type",
+    "device_types",
+    "devices",
+    "org",
+    "orgs",
+    "people",
+    "person",
+    "software",
+    "team",
+    "teams",
+    "vuln_type",
+    "vuln_types"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "vulnerabilities",
+      "ordinal": 0,
+      "schema": "Vuln"
+    },
+    {
+      "name": "devices",
+      "ordinal": 1,
+      "schema": "Device"
+    },
+    {
+      "name": "device_types",
+      "ordinal": 2,
+      "schema": "DeviceType"
+    },
+    {
+      "name": "software",
+      "ordinal": 3,
+      "schema": "Software"
+    },
+    {
+      "name": "vuln_types",
+      "ordinal": 4,
+      "schema": "VulnType"
+    },
+    {
+      "name": "people",
+      "ordinal": 5,
+      "schema": "Person"
+    },
+    {
+      "name": "teams",
+      "ordinal": 6,
+      "schema": "Team"
+    },
+    {
+      "name": "departments",
+      "ordinal": 7,
+      "schema": "Department"
+    },
+    {
+      "name": "orgs",
+      "ordinal": 8,
+      "schema": "Org"
+    }
+  ],
+  "name": "SecurityInventoryQuality",
+  "outputs": [
+    {
+      "name": "reference_checks",
+      "ordinal": 0,
+      "schema": "VulnerabilityQualityCheck"
+    },
+    {
+      "name": "reference_issues",
+      "ordinal": 1,
+      "schema": "VulnerabilityQualityIssue"
+    },
+    {
+      "name": "reconciliation_checks",
+      "ordinal": 2,
+      "schema": "VulnerabilityInventoryCheck"
+    },
+    {
+      "name": "reconciliation_issues",
+      "ordinal": 3,
+      "schema": "VulnerabilityInventoryIssue"
+    }
+  ],
+  "source": "examples.security.transforms.quality.SecurityInventoryQuality",
+  "step_methods": [
+    {
+      "input_lane": "vulnerabilities",
+      "input_schema": "Vuln",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "vuln",
+          "schema": "Vuln",
+          "source": "vulnerabilities"
+        },
+        {
+          "driving": false,
+          "parameter": "device",
+          "schema": "Device",
+          "source": "devices"
+        },
+        {
+          "driving": false,
+          "parameter": "device_type",
+          "schema": "DeviceType",
+          "source": "device_types"
+        },
+        {
+          "driving": false,
+          "parameter": "software",
+          "schema": "Software",
+          "source": "software"
+        },
+        {
+          "driving": false,
+          "parameter": "vuln_type",
+          "schema": "VulnType",
+          "source": "vuln_types"
+        },
+        {
+          "driving": false,
+          "parameter": "person",
+          "schema": "Person",
+          "source": "people"
+        },
+        {
+          "driving": false,
+          "parameter": "team",
+          "schema": "Team",
+          "source": "teams"
+        },
+        {
+          "driving": false,
+          "parameter": "department",
+          "schema": "Department",
+          "source": "departments"
+        },
+        {
+          "driving": false,
+          "parameter": "org",
+          "schema": "Org",
+          "source": "orgs"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "device"
+        },
+        {
+          "how": "left",
+          "input": "device_type"
+        },
+        {
+          "how": "left",
+          "input": "software"
+        },
+        {
+          "how": "left",
+          "input": "vuln_type"
+        },
+        {
+          "how": "left",
+          "input": "person"
+        },
+        {
+          "how": "left",
+          "input": "team"
+        },
+        {
+          "how": "left",
+          "input": "department"
+        },
+        {
+          "how": "left",
+          "input": "org"
+        }
+      ],
+      "name": "check_references",
+      "output_lane": "quality_lane",
+      "output_schema": "VulnerabilityQualityCheck",
+      "results": [
+        {
+          "frame": "quality_lane",
+          "lane": "quality_lane",
+          "schema": "VulnerabilityQualityCheck"
+        }
+      ]
+    },
+    {
+      "input_lane": "quality_lane",
+      "input_schema": "VulnerabilityQualityCheck",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "check",
+          "schema": "VulnerabilityQualityCheck",
+          "source": "quality_lane"
+        }
+      ],
+      "name": "publish_reference_checks",
+      "output_lane": "reference_checks",
+      "output_schema": "VulnerabilityQualityCheck",
+      "results": [
+        {
+          "frame": "reference_checks",
+          "lane": "reference_checks",
+          "schema": "VulnerabilityQualityCheck"
+        }
+      ]
+    },
+    {
+      "input_lane": "quality_lane",
+      "input_schema": "VulnerabilityQualityCheck",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "check",
+          "schema": "VulnerabilityQualityCheck",
+          "source": "quality_lane"
+        }
+      ],
+      "name": "publish_reference_issues",
+      "output_lane": "reference_issues",
+      "output_schema": "VulnerabilityQualityIssue",
+      "results": [
+        {
+          "frame": "reference_issues",
+          "lane": "reference_issues",
+          "schema": "VulnerabilityQualityIssue"
+        }
+      ]
+    },
+    {
+      "after_hooks": [
+        "reconcile_device_inventory"
+      ],
+      "input_lane": "vulnerabilities",
+      "input_schema": "Vuln",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "vuln",
+          "schema": "Vuln",
+          "source": "vulnerabilities"
+        },
+        {
+          "driving": false,
+          "parameter": "device",
+          "schema": "Device",
+          "source": "devices"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "device"
+        }
+      ],
+      "name": "prepare_inventory_reconciliation",
+      "output_lane": "inventory_candidates",
+      "output_schema": "VulnerabilityInventoryCandidate",
+      "results": [
+        {
+          "frame": "inventory_candidates",
+          "lane": "inventory_candidates",
+          "schema": "VulnerabilityInventoryCandidate"
+        }
+      ]
+    },
+    {
+      "input_lane": "inventory_candidates",
+      "input_schema": "VulnerabilityInventoryCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "VulnerabilityInventoryCandidate",
+          "source": "inventory_candidates"
+        }
+      ],
+      "name": "publish_reconciliation",
+      "output_lane": "reconciliation_lane",
+      "output_schema": "VulnerabilityInventoryCheck",
+      "results": [
+        {
+          "frame": "reconciliation_lane",
+          "lane": "reconciliation_lane",
+          "schema": "VulnerabilityInventoryCheck"
+        }
+      ]
+    },
+    {
+      "input_lane": "reconciliation_lane",
+      "input_schema": "VulnerabilityInventoryCheck",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "check",
+          "schema": "VulnerabilityInventoryCheck",
+          "source": "reconciliation_lane"
+        }
+      ],
+      "name": "publish_reconciliation_checks",
+      "output_lane": "reconciliation_checks",
+      "output_schema": "VulnerabilityInventoryCheck",
+      "results": [
+        {
+          "frame": "reconciliation_checks",
+          "lane": "reconciliation_checks",
+          "schema": "VulnerabilityInventoryCheck"
+        }
+      ]
+    },
+    {
+      "input_lane": "reconciliation_lane",
+      "input_schema": "VulnerabilityInventoryCheck",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "check",
+          "schema": "VulnerabilityInventoryCheck",
+          "source": "reconciliation_lane"
+        }
+      ],
+      "name": "publish_reconciliation_issues",
+      "output_lane": "reconciliation_issues",
+      "output_schema": "VulnerabilityInventoryIssue",
+      "results": [
+        {
+          "frame": "reconciliation_issues",
+          "lane": "reconciliation_issues",
+          "schema": "VulnerabilityInventoryIssue"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/quality.py",
+    "traceability": "traceability/transforms/quality.SecurityInventoryQuality.json"
+  }
+}

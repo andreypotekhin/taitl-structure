@@ -1,0 +1,119 @@
+{
+  "dependencies": [
+    "app",
+    "apps",
+    "device",
+    "device_type",
+    "device_types",
+    "devices",
+    "scanner",
+    "scanners"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "events",
+      "ordinal": 0,
+      "schema": "AppEvent"
+    },
+    {
+      "name": "devices",
+      "ordinal": 1,
+      "schema": "Device"
+    },
+    {
+      "name": "device_types",
+      "ordinal": 2,
+      "schema": "DeviceType"
+    },
+    {
+      "name": "apps",
+      "ordinal": 3,
+      "schema": "App"
+    },
+    {
+      "name": "scanners",
+      "ordinal": 4,
+      "schema": "Scanner"
+    }
+  ],
+  "name": "EnrichAppEvents",
+  "outputs": [
+    {
+      "name": "audits",
+      "ordinal": 0,
+      "schema": "AppAuditEvent"
+    }
+  ],
+  "source": "examples.security.transforms.events.EnrichAppEvents",
+  "step_methods": [
+    {
+      "input_lane": "events",
+      "input_schema": "AppEvent",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "event",
+          "schema": "AppEvent",
+          "source": "events"
+        },
+        {
+          "driving": false,
+          "parameter": "device",
+          "schema": "Device",
+          "source": "devices"
+        },
+        {
+          "driving": false,
+          "parameter": "device_type",
+          "schema": "DeviceType",
+          "source": "device_types"
+        },
+        {
+          "driving": false,
+          "parameter": "app",
+          "schema": "App",
+          "source": "apps"
+        },
+        {
+          "driving": false,
+          "parameter": "scanner",
+          "schema": "Scanner",
+          "source": "scanners"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "device"
+        },
+        {
+          "how": "inner",
+          "input": "device_type"
+        },
+        {
+          "how": "inner",
+          "input": "app"
+        },
+        {
+          "how": "inner",
+          "input": "scanner"
+        }
+      ],
+      "name": "enrich",
+      "output_lane": "events",
+      "output_schema": "AppAuditEvent",
+      "results": [
+        {
+          "frame": "events",
+          "lane": "events",
+          "schema": "AppAuditEvent"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/events.py",
+    "traceability": "traceability/transforms/events.EnrichAppEvents.json"
+  }
+}

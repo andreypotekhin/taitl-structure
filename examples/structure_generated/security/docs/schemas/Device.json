@@ -1,0 +1,44 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "device_type_id",
+      "name": "device_type_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "owner_id",
+      "name": "owner_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "os_id",
+      "name": "os_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "apps",
+      "name": "apps",
+      "nullable": false,
+      "type": "array<App!>"
+    },
+    {
+      "column": "vuln_ids",
+      "name": "vuln_ids",
+      "nullable": false,
+      "type": "array<string!>"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.security.schemas.assets",
+  "name": "Device"
+}

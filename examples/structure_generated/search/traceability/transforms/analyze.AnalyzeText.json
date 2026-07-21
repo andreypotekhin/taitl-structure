@@ -11,23 +11,28 @@
       "schema": "Word"
     },
     {
-      "name": "paragraphs",
+      "name": "sentences",
       "ordinal": 1,
+      "schema": "Sentence"
+    },
+    {
+      "name": "paragraphs",
+      "ordinal": 2,
       "schema": "Paragraph"
     },
     {
       "name": "sections",
-      "ordinal": 2,
+      "ordinal": 3,
       "schema": "Section"
     },
     {
       "name": "comparison_left",
-      "ordinal": 3,
+      "ordinal": 4,
       "schema": "DocumentFeatures"
     },
     {
       "name": "comparison_right",
-      "ordinal": 4,
+      "ordinal": 5,
       "schema": "DocumentFeatures"
     }
   ],
@@ -43,29 +48,39 @@
       "source": "source:examples.search.transforms.analyze.AnalyzeText.input.words"
     },
     {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.analyze.AnalyzeTextGenerated.run.input.sentences",
+      "ir": "ir:AnalyzeText.input.1.sentences",
+      "source": "source:examples.search.transforms.analyze.AnalyzeText.input.sentences"
+    },
+    {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.analyze.AnalyzeTextGenerated.run.input.paragraphs",
-      "ir": "ir:AnalyzeText.input.1.paragraphs",
+      "ir": "ir:AnalyzeText.input.2.paragraphs",
       "source": "source:examples.search.transforms.analyze.AnalyzeText.input.paragraphs"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.analyze.AnalyzeTextGenerated.run.input.sections",
-      "ir": "ir:AnalyzeText.input.2.sections",
+      "ir": "ir:AnalyzeText.input.3.sections",
       "source": "source:examples.search.transforms.analyze.AnalyzeText.input.sections"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.analyze.AnalyzeTextGenerated.run.input.comparison_left",
-      "ir": "ir:AnalyzeText.input.3.comparison_left",
+      "ir": "ir:AnalyzeText.input.4.comparison_left",
       "source": "source:examples.search.transforms.analyze.AnalyzeText.input.comparison_left"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.analyze.AnalyzeTextGenerated.run.input.comparison_right",
-      "ir": "ir:AnalyzeText.input.4.comparison_right",
+      "ir": "ir:AnalyzeText.input.5.comparison_right",
       "source": "source:examples.search.transforms.analyze.AnalyzeText.input.comparison_right"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.analyze.AnalyzeTextGenerated.run.step.0.sentence_stats",
       "ir": "ir:AnalyzeText.step.0.sentence_stats",
       "source": "source:examples.search.transforms.analyze.AnalyzeText.sentence_stats"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.analyze.AnalyzeTextGenerated.run.step.0.sentence_stats.join.1.sentence",
+      "ir": "ir:AnalyzeText.step.0.sentence_stats.join.1.sentence",
+      "source": "source:examples.search.transforms.analyze.AnalyzeText.sentence_stats.join.1.sentence"
     },
     {
       "generated": "generated:examples.structure_generated.search.pyspark.transforms.analyze.AnalyzeTextGenerated.run.step.0.sentence_stats.aggregate.sentence_id",
@@ -569,6 +584,7 @@
         "operation": "transform",
         "sources": [
           "words",
+          "sentences",
           "paragraphs",
           "sections",
           "comparison_left",
@@ -584,10 +600,26 @@
         },
         "operation": "step",
         "sources": [
-          "words"
+          "words",
+          "sentence"
         ],
         "step": "sentence_stats",
         "target": "sentence_stats"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "sentences"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "word.sentence_id",
+          "sentence.id"
+        ],
+        "step": "sentence_stats",
+        "target": "sentence_stats.join[1].sentence"
       },
       {
         "detail": {
@@ -597,7 +629,7 @@
         },
         "operation": "aggregate",
         "sources": [
-          "words.sentence_id"
+          "sentence.id"
         ],
         "step": "sentence_stats",
         "target": "SentenceStatistics.sentence_id"
@@ -610,7 +642,7 @@
         },
         "operation": "aggregate",
         "sources": [
-          "words.document_id"
+          "sentence.document_id"
         ],
         "step": "sentence_stats",
         "target": "SentenceStatistics.document_id"
@@ -623,7 +655,7 @@
         },
         "operation": "aggregate",
         "sources": [
-          "words.paragraph_id"
+          "sentence.paragraph_id"
         ],
         "step": "sentence_stats",
         "target": "SentenceStatistics.paragraph_id"
@@ -636,7 +668,7 @@
         },
         "operation": "aggregate",
         "sources": [
-          "words.section_id"
+          "sentence.section_id"
         ],
         "step": "sentence_stats",
         "target": "SentenceStatistics.section_id"
@@ -649,7 +681,7 @@
         },
         "operation": "aggregate",
         "sources": [
-          "words.ordinal"
+          "sentence.ordinal"
         ],
         "step": "sentence_stats",
         "target": "SentenceStatistics.ordinal"
@@ -675,7 +707,7 @@
         },
         "operation": "aggregate",
         "sources": [
-          "words.token"
+          "word.token"
         ],
         "step": "sentence_stats",
         "target": "SentenceStatistics.distinct_words"
@@ -688,7 +720,7 @@
         },
         "operation": "aggregate",
         "sources": [
-          "words.token"
+          "word.token"
         ],
         "step": "sentence_stats",
         "target": "SentenceStatistics.average_word_length"
@@ -1215,7 +1247,13 @@
       "after_hooks": [],
       "before_hooks": [],
       "input_alias": "word",
-      "joins": [],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "sentence",
+          "right_alias": "sentences"
+        }
+      ],
       "name": "sentence_stats",
       "output_alias": "sentence_statistics",
       "output_schema": "SentenceStatistics",

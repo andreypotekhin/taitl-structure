@@ -2732,7 +2732,9 @@
         "comparison_right",
         "right",
         "section",
-        "sections"
+        "sections",
+        "sentence",
+        "sentences"
       ],
       "inputs": [
         {
@@ -2741,23 +2743,28 @@
           "schema": "Word"
         },
         {
-          "name": "paragraphs",
+          "name": "sentences",
           "ordinal": 1,
+          "schema": "Sentence"
+        },
+        {
+          "name": "paragraphs",
+          "ordinal": 2,
           "schema": "Paragraph"
         },
         {
           "name": "sections",
-          "ordinal": 2,
+          "ordinal": 3,
           "schema": "Section"
         },
         {
           "name": "comparison_left",
-          "ordinal": 3,
+          "ordinal": 4,
           "schema": "DocumentFeatures"
         },
         {
           "name": "comparison_right",
-          "ordinal": 4,
+          "ordinal": 5,
           "schema": "DocumentFeatures"
         }
       ],
@@ -2800,6 +2807,18 @@
               "parameter": "word",
               "schema": "Word",
               "source": "words"
+            },
+            {
+              "driving": false,
+              "parameter": "sentence",
+              "schema": "Sentence",
+              "source": "sentences"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "sentence"
             }
           ],
           "name": "sentence_stats",

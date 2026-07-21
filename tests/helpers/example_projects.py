@@ -265,6 +265,116 @@ def expected_stocks_generated() -> dict[str, str]:
     return _expected_generated("stocks")
 
 
+def render_security_example() -> dict[str, str]:
+    with _example_imports():
+        from examples.security.schemas.assets import OS, App, Device, DeviceType, Scanner, Software
+        from examples.security.schemas.events import AppEvent, RawEvent, VulnEvent
+        from examples.security.schemas.organization import Department, Org, Person, Team
+        from examples.security.schemas.reporting import (
+            AppAuditEvent,
+            DepartmentActiveVulnerability,
+            DepartmentVulnerabilityStatistic,
+            DeviceActiveVulnerability,
+            OrgActiveVulnerability,
+            OrgVulnerabilityStatistic,
+            PersonActiveVulnerability,
+            PersonVulnerabilityStatistic,
+            ReportingPeriod,
+            TeamActiveVulnerability,
+            TeamVulnerabilityStatistic,
+            VulnerabilityAuditEvent,
+            VulnerabilityExposure,
+            VulnerabilityInventoryCandidate,
+            VulnerabilityInventoryCheck,
+            VulnerabilityInventoryIssue,
+            VulnerabilityLifecycle,
+            VulnerabilityPeriodActivity,
+            VulnerabilityPostureCandidate,
+            VulnerabilityQualityCheck,
+            VulnerabilityQualityIssue,
+        )
+        from examples.security.schemas.risk import Vuln, VulnType
+        from examples.security.transforms.events import EnrichAppEvents, EnrichVulnerabilityEvents
+        from examples.security.transforms.posture import SecurityPosture
+        from examples.security.transforms.quality import SecurityInventoryQuality
+        from examples.security.transforms.reports import ActiveVulnerabilityReports, VulnerabilityStatistics
+
+        schema_modules: dict[str, Sequence[type[Schema]]] = {
+            "examples.security.schemas.assets": [DeviceType, Software, App, OS, Scanner, Device],
+            "examples.security.schemas.events": [RawEvent, AppEvent, VulnEvent],
+            "examples.security.schemas.organization": [Org, Department, Team, Person],
+            "examples.security.schemas.reporting": [
+                ReportingPeriod,
+                VulnerabilityExposure,
+                DeviceActiveVulnerability,
+                PersonActiveVulnerability,
+                TeamActiveVulnerability,
+                DepartmentActiveVulnerability,
+                OrgActiveVulnerability,
+                PersonVulnerabilityStatistic,
+                TeamVulnerabilityStatistic,
+                DepartmentVulnerabilityStatistic,
+                OrgVulnerabilityStatistic,
+                VulnerabilityLifecycle,
+                VulnerabilityPeriodActivity,
+                VulnerabilityPostureCandidate,
+                VulnerabilityQualityCheck,
+                VulnerabilityQualityIssue,
+                VulnerabilityInventoryCandidate,
+                VulnerabilityInventoryCheck,
+                VulnerabilityInventoryIssue,
+                AppAuditEvent,
+                VulnerabilityAuditEvent,
+            ],
+            "examples.security.schemas.risk": [VulnType, Vuln],
+        }
+        transforms = (
+            (EnrichAppEvents, "examples.security.transforms.events.EnrichAppEvents"),
+            (EnrichVulnerabilityEvents, "examples.security.transforms.events.EnrichVulnerabilityEvents"),
+            (SecurityPosture, "examples.security.transforms.posture.SecurityPosture"),
+            (ActiveVulnerabilityReports, "examples.security.transforms.reports.ActiveVulnerabilityReports"),
+            (VulnerabilityStatistics, "examples.security.transforms.reports.VulnerabilityStatistics"),
+            (SecurityInventoryQuality, "examples.security.transforms.quality.SecurityInventoryQuality"),
+        )
+        files = {}
+        for transform_class, source_transform in transforms:
+            files.update(
+                PySpark.render.project()(
+                    cast(
+                        PySparkExecutionPlan,
+                        Compiler.frontend.compile()(transform_class, materialize_schemas=False).lowered,
+                    ),
+                    source_transform=source_transform,
+                    generated_package="examples.structure_generated.security",
+                    source_schema_modules=schema_modules,
+                )
+            )
+        docs = Docs.render.project()(
+            StructureConfig.resolve(
+                project_root=ROOT,
+                source_roots=["examples"],
+                generated_dir="examples/structure_generated/security",
+                generated_package="examples.structure_generated.security",
+            ),
+            DiscoveredStructureProject(
+                transforms=tuple(transform for transform, _ in transforms),
+                schema_modules={module: tuple(schemas) for module, schemas in schema_modules.items()},
+            ),
+        )
+        files.update({f"examples/structure_generated/security/{path}": text for path, text in docs.items()})
+        files["examples/structure_generated/security/traceability/__init__.py"] = (
+            "# Generated traceability package marker.\n"
+        )
+        files["examples/structure_generated/security/traceability/transforms/__init__.py"] = (
+            "# Generated transform traceability package marker.\n"
+        )
+        return {path: text.rstrip() + "\n" for path, text in files.items()}
+
+
+def expected_security_generated() -> dict[str, str]:
+    return _expected_generated("security")
+
+
 def render_search_example() -> dict[str, str]:
     with _example_imports():
         from examples.search.schemas.analytics import (

@@ -6,7 +6,7 @@ from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.search.pyspark.schemas.analytics import DOCUMENT_FEATURES_SCHEMA, DOCUMENT_STATISTICS_SCHEMA, PARAGRAPH_STATISTICS_SCHEMA, SECTION_STATISTICS_SCHEMA, SENTENCE_STATISTICS_SCHEMA, SIMILAR_DOCUMENT_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.text import PARAGRAPH_SCHEMA, SECTION_SCHEMA, WORD_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.text import PARAGRAPH_SCHEMA, SECTION_SCHEMA, SENTENCE_SCHEMA, WORD_SCHEMA
 
 
 class AnalyzeTextGenerated:
@@ -19,17 +19,20 @@ class AnalyzeTextGenerated:
         self,
         *,
         words: DataFrame,
+        sentences: DataFrame,
         paragraphs: DataFrame,
         sections: DataFrame,
         comparison_left: DataFrame,
         comparison_right: DataFrame,
     ) -> TransformResult:
         assert_schema(words, WORD_SCHEMA, name="Word", mode="strict")
+        assert_schema(sentences, SENTENCE_SCHEMA, name="Sentence", mode="strict")
         assert_schema(paragraphs, PARAGRAPH_SCHEMA, name="Paragraph", mode="strict")
         assert_schema(sections, SECTION_SCHEMA, name="Section", mode="strict")
         assert_schema(comparison_left, DOCUMENT_FEATURES_SCHEMA, name="DocumentFeatures", mode="strict")
         assert_schema(comparison_right, DOCUMENT_FEATURES_SCHEMA, name="DocumentFeatures", mode="strict")
         _input_words = words
+        _input_sentences = sentences
         _input_paragraphs = paragraphs
         _input_sections = sections
         _input_comparison_left = comparison_left
@@ -37,12 +40,18 @@ class AnalyzeTextGenerated:
 
         # Step method: sentence_stats
         sentence_statistics = words.alias("word")
+        sentences_joined = sentences.alias("sentences")
+        sentence_statistics = sentence_statistics.join(
+            sentences_joined,
+            (F.col("word.sentence_id") == F.col("sentences.id")),
+            "inner",
+        )
         sentence_statistics = sentence_statistics.groupBy(
-            F.col("word.sentence_id").alias("sentence_id"),
-            F.col("word.document_id").alias("document_id"),
-            F.col("word.paragraph_id").alias("paragraph_id"),
-            F.col("word.section_id").alias("section_id"),
-            F.col("word.ordinal").alias("ordinal"),
+            F.col("sentences.id").alias("sentence_id"),
+            F.col("sentences.document_id").alias("document_id"),
+            F.col("sentences.paragraph_id").alias("paragraph_id"),
+            F.col("sentences.section_id").alias("section_id"),
+            F.col("sentences.ordinal").alias("ordinal"),
         ).agg(
             F.count(F.lit(1)).cast(T.LongType()).alias("word_count"),
             F.countDistinct(F.col("word.token")).cast(T.LongType()).alias("distinct_words"),

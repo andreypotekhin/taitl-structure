@@ -17,6 +17,7 @@ segments = ExtractText(documents=documents).run(session)
 features = ProfileDocuments(documents=documents).run(session).features
 analytics = AnalyzeText(
     words=segments.words,
+    sentences=segments.sentences,
     paragraphs=segments.paragraphs,
     sections=segments.sections,
     comparison_left=features,

@@ -7,6 +7,7 @@ Source: `examples.search.transforms.analyze.AnalyzeText`
 ## Inputs
 
 - `words`: `Word`
+- `sentences`: `Sentence`
 - `paragraphs`: `Paragraph`
 - `sections`: `Section`
 - `comparison_left`: `DocumentFeatures`
@@ -34,6 +35,8 @@ Source: `examples.search.transforms.analyze.AnalyzeText`
 - `right`
 - `section`
 - `sections`
+- `sentence`
+- `sentences`
 
 ## Target Artifacts
 

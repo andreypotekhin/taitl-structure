@@ -6,17 +6,20 @@ import pytest
 from helpers.example_projects import (
     ROOT,
     expected_search_generated,
+    expected_security_generated,
     expected_stocks_generated,
     expected_store_generated,
     expected_streams_generated,
     render_search_example,
+    render_security_example,
     render_stocks_example,
     render_store_example,
     render_streams_example,
 )
 
-from structure import StructureConfig, compile_transform
+from structure import StructureConfig
 from structure.core.cli.commands.DiscoverStructureProject import DiscoverStructureProject
+from structure.core.compiler.api import Compiler
 
 
 @pytest.mark.parametrize(
@@ -25,6 +28,7 @@ from structure.core.cli.commands.DiscoverStructureProject import DiscoverStructu
         (render_store_example, expected_store_generated),
         (render_streams_example, expected_streams_generated),
         (render_stocks_example, expected_stocks_generated),
+        (render_security_example, expected_security_generated),
         (render_search_example, expected_search_generated),
     ],
 )
@@ -48,7 +52,7 @@ def test_search_scoring_subpackage_transform_is_discovered_and_compiled() -> Non
         if transform.__module__ == "examples.search.transforms.scoring.ScoreAll" and transform.__name__ == "ScoreAll"
     )
 
-    compile_transform(score_all, config=config)
+    Compiler.frontend.compile()(score_all, config=config, materialize_schemas=False)
 
 
 def _paths_diff(actual: dict[str, str], expected: dict[str, str]) -> str:

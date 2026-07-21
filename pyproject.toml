@@ -119,6 +119,7 @@ module = [
     "examples.streams.transforms.*",
     "examples.school.transforms.*",
     "examples.stocks.transforms.*",
+    "examples.security.transforms.*",
     "examples.search.transforms.*",
 ]
 disable_error_code = ["attr-defined", "operator", "var-annotated", "assignment"]

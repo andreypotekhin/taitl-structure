@@ -6,7 +6,7 @@ from examples.search.schemas.analytics import (
     SentenceStatistics,
     SimilarDocument,
 )
-from examples.search.schemas.text import Paragraph, Section, Word
+from examples.search.schemas.text import Paragraph, Section, Sentence, Word
 from structure import *
 from structure.plugin.pyspark import *
 
@@ -15,6 +15,7 @@ class AnalyzeText(Transform):
     """Typed local, corpus, and blocked near-duplicate text analytics."""
 
     words = input(Word)
+    sentences = input(Sentence)
     paragraphs = input(Paragraph)
     sections = input(Section)
     comparison_left = input(DocumentFeatures)
@@ -25,22 +26,23 @@ class AnalyzeText(Transform):
     document_statistics = output(DocumentStatistics)
     similar_documents = output(SimilarDocument)
 
-    @step(input=words, output=sentence_statistics)
-    def sentence_stats(self, word: Word) -> SentenceStatistics:
+    @step(input=[words, sentences], output=sentence_statistics)
+    def sentence_stats(self, word: Word, sentence: Sentence) -> SentenceStatistics:
+        inner_join(on=word.sentence_id == sentence.id)
         group_by(
-            sentence_id=word.sentence_id,
-            document_id=word.document_id,
-            paragraph_id=word.paragraph_id,
-            section_id=word.section_id,
-            ordinal=word.ordinal,
+            sentence_id=sentence.id,
+            document_id=sentence.document_id,
+            paragraph_id=sentence.paragraph_id,
+            section_id=sentence.section_id,
+            ordinal=sentence.ordinal,
         )
         words_in_sentence = count()
         return SentenceStatistics(
-            sentence_id=word.sentence_id,
-            document_id=word.document_id,
-            paragraph_id=word.paragraph_id,
-            section_id=word.section_id,
-            ordinal=word.ordinal,
+            sentence_id=sentence.id,
+            document_id=sentence.document_id,
+            paragraph_id=sentence.paragraph_id,
+            section_id=sentence.section_id,
+            ordinal=sentence.ordinal,
             word_count=words_in_sentence,
             distinct_words=count_distinct(word.token),
             average_word_length=avg(length(word.token)),

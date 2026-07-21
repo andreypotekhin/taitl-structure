@@ -1,0 +1,3 @@
+id,vuln_type_id,device_id,owner_id,software_id,date_discovered,date_addressed,is_active
+vuln-open,adv-1,device-ava,person-ava,browser,2026-01-01,,true
+vuln-fixed,known-1,device-ava,person-ava,browser,2026-01-03,2026-01-04,false

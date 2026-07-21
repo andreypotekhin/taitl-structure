@@ -257,6 +257,7 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path) -> None:
 
         inputs = dict(
             words=generated_segments.words,
+            sentences=generated_segments.sentences,
             paragraphs=generated_segments.paragraphs,
             sections=generated_segments.sections,
             comparison_left=generated_features,
@@ -269,6 +270,22 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path) -> None:
         assert rows(online_analytics.document_statistics, "document_id") == rows(
             generated_analytics.document_statistics, "document_id"
         )
+        assert rows(online_analytics.sentence_statistics, "sentence_id") == rows(
+            generated_analytics.sentence_statistics, "sentence_id"
+        )
+        assert {row["sentence_id"] for row in rows(generated_analytics.sentence_statistics)} == {
+            row["id"] for row in rows(generated_segments.sentences)
+        }
+        first_sentence = single(
+            generated_segments.sentences,
+            lambda row: row["content"] == "Structure makes typed Spark transforms readable.",
+        )
+        first_statistics = single(
+            generated_analytics.sentence_statistics,
+            lambda row: row["sentence_id"] == first_sentence["id"],
+        )
+        assert first_statistics["ordinal"] == first_sentence["ordinal"] == 1
+        assert first_statistics["word_count"] == 6
         assert len(rows(generated_analytics.similar_documents, "left_document_id", "right_document_id")) == 1
 
         corpus_inputs = dict(documents=generated_analytics.document_statistics, words=generated_segments.words)

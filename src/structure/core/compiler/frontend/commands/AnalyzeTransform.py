@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Mapping, cast, get_type_hints
+from typing import Mapping, cast, get_origin, get_type_hints
 
 from structure.core.compiler.frontend.commands.CompileTransform import CompileTransform
 from structure.core.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
@@ -147,6 +147,14 @@ class AnalyzeTransform(CompileTransform):
         hints = get_type_hints(member)
         output_schemas = self._return_schemas(hints.get("return"))
         if not output_schemas:
+            if get_origin(hints.get("return")) is tuple:
+                raise self._error(
+                    "DSL-E0402",
+                    transform_class=transform_class,
+                    member=item.name,
+                    problem=f"{transform_class.__name__}.{item.name} has an invalid tuple return annotation.",
+                    use="Use a fixed tuple of Schema classes, such as tuple[Accepted, Audited].",
+                )
             return None
         parameters = self._row_parameters(member, hints)
         metadata = getattr(member, "_structure_output_method", None)

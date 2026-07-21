@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from structure import Schema, Transform, compile_transform, input, output
+from structure import Schema, Transform, input, output
 from structure.core.cli.api import cli
 from structure.core.cli.commands.DiscoverStructureProject import DiscoverStructureProject
 from structure.core.compiler.api import Compiler
@@ -104,7 +104,7 @@ class ScoreCorpus(Transform):
 
     assert [transform.__module__ for transform in project.transforms] == ["app.texts.transforms.search"]
     assert list(project.schema_modules) == ["app.math.model"]
-    compile_transform(project.transforms[0], config=config)
+    Compiler.frontend.compile()(project.transforms[0], config=config, materialize_schemas=False)
     _drop_app_modules()
 
 

@@ -1,0 +1,5 @@
+id,vuln_type_id,device_id,owner_id,software_id,date_discovered,date_addressed,is_active
+vuln-bad-state,adv-1,device-ava,person-ava,browser,2026-01-05,,false
+vuln-unlisted,adv-1,device-ava,person-ava,browser,2026-01-05,,true
+vuln-uninstalled,adv-1,device-ava,person-ava,uninstalled,2026-01-05,,true
+vuln-missing-device,adv-1,device-missing,person-ava,browser,2026-01-05,,true

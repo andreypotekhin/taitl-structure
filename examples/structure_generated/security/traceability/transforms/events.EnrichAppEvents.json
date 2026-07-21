@@ -1,0 +1,562 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "EnrichAppEventsGenerated",
+  "inputs": [
+    {
+      "name": "events",
+      "ordinal": 0,
+      "schema": "AppEvent"
+    },
+    {
+      "name": "devices",
+      "ordinal": 1,
+      "schema": "Device"
+    },
+    {
+      "name": "device_types",
+      "ordinal": 2,
+      "schema": "DeviceType"
+    },
+    {
+      "name": "apps",
+      "ordinal": 3,
+      "schema": "App"
+    },
+    {
+      "name": "scanners",
+      "ordinal": 4,
+      "schema": "Scanner"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated",
+      "ir": "ir:EnrichAppEvents",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.input.events",
+      "ir": "ir:EnrichAppEvents.input.0.events",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.input.events"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.input.devices",
+      "ir": "ir:EnrichAppEvents.input.1.devices",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.input.devices"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.input.device_types",
+      "ir": "ir:EnrichAppEvents.input.2.device_types",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.input.device_types"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.input.apps",
+      "ir": "ir:EnrichAppEvents.input.3.apps",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.input.apps"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.input.scanners",
+      "ir": "ir:EnrichAppEvents.input.4.scanners",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.input.scanners"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich",
+      "ir": "ir:EnrichAppEvents.step.0.enrich",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich.join.1.device",
+      "ir": "ir:EnrichAppEvents.step.0.enrich.join.1.device",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich.join.1.device"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich.join.2.device_type",
+      "ir": "ir:EnrichAppEvents.step.0.enrich.join.2.device_type",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich.join.2.device_type"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich.join.3.app",
+      "ir": "ir:EnrichAppEvents.step.0.enrich.join.3.app",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich.join.3.app"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich.join.4.scanner",
+      "ir": "ir:EnrichAppEvents.step.0.enrich.join.4.scanner",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich.join.4.scanner"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich.drop_duplicates.1",
+      "ir": "ir:EnrichAppEvents.step.0.enrich.drop_duplicates.1",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich.drop_duplicates.1"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich.select.id",
+      "ir": "ir:EnrichAppEvents.step.0.enrich.project.id",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich.field.id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich.select.occurred_at",
+      "ir": "ir:EnrichAppEvents.step.0.enrich.project.occurred_at",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich.field.occurred_at"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich.select.device_id",
+      "ir": "ir:EnrichAppEvents.step.0.enrich.project.device_id",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich.field.device_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich.select.device_platform",
+      "ir": "ir:EnrichAppEvents.step.0.enrich.project.device_platform",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich.field.device_platform"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich.select.scanner_name",
+      "ir": "ir:EnrichAppEvents.step.0.enrich.project.scanner_name",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich.field.scanner_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich.select.app_id",
+      "ir": "ir:EnrichAppEvents.step.0.enrich.project.app_id",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich.field.app_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich.select.app_name",
+      "ir": "ir:EnrichAppEvents.step.0.enrich.project.app_name",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich.field.app_name"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich.select.action",
+      "ir": "ir:EnrichAppEvents.step.0.enrich.project.action",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich.field.action"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.step.0.enrich.select.version",
+      "ir": "ir:EnrichAppEvents.step.0.enrich.project.version",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.enrich.field.version"
+    },
+    {
+      "generated": "generated:examples.structure_generated.security.pyspark.transforms.events.EnrichAppEventsGenerated.run.output.0.audits.validation.final",
+      "ir": "ir:EnrichAppEvents.output.0.audits.validation.final",
+      "source": "source:examples.security.transforms.events.EnrichAppEvents.output.audits"
+    }
+  ],
+  "schema_constants": {
+    "App": {
+      "constant": "APP_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "AppAuditEvent": {
+      "constant": "APP_AUDIT_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "AppEvent": {
+      "constant": "APP_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.events"
+    },
+    "Department": {
+      "constant": "DEPARTMENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.organization"
+    },
+    "DepartmentActiveVulnerability": {
+      "constant": "DEPARTMENT_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "DepartmentVulnerabilityStatistic": {
+      "constant": "DEPARTMENT_VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "Device": {
+      "constant": "DEVICE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "DeviceActiveVulnerability": {
+      "constant": "DEVICE_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "DeviceType": {
+      "constant": "DEVICE_TYPE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "OS": {
+      "constant": "O_S_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "Org": {
+      "constant": "ORG_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.organization"
+    },
+    "OrgActiveVulnerability": {
+      "constant": "ORG_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "OrgVulnerabilityStatistic": {
+      "constant": "ORG_VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "Person": {
+      "constant": "PERSON_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.organization"
+    },
+    "PersonActiveVulnerability": {
+      "constant": "PERSON_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "PersonVulnerabilityStatistic": {
+      "constant": "PERSON_VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "RawEvent": {
+      "constant": "RAW_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.events"
+    },
+    "ReportingPeriod": {
+      "constant": "REPORTING_PERIOD_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "Scanner": {
+      "constant": "SCANNER_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "Software": {
+      "constant": "SOFTWARE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.assets"
+    },
+    "Team": {
+      "constant": "TEAM_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.organization"
+    },
+    "TeamActiveVulnerability": {
+      "constant": "TEAM_ACTIVE_VULNERABILITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "TeamVulnerabilityStatistic": {
+      "constant": "TEAM_VULNERABILITY_STATISTIC_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "Vuln": {
+      "constant": "VULN_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.risk"
+    },
+    "VulnEvent": {
+      "constant": "VULN_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.events"
+    },
+    "VulnType": {
+      "constant": "VULN_TYPE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.risk"
+    },
+    "VulnerabilityAuditEvent": {
+      "constant": "VULNERABILITY_AUDIT_EVENT_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityExposure": {
+      "constant": "VULNERABILITY_EXPOSURE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityInventoryCandidate": {
+      "constant": "VULNERABILITY_INVENTORY_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityInventoryCheck": {
+      "constant": "VULNERABILITY_INVENTORY_CHECK_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityInventoryIssue": {
+      "constant": "VULNERABILITY_INVENTORY_ISSUE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityLifecycle": {
+      "constant": "VULNERABILITY_LIFECYCLE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityPeriodActivity": {
+      "constant": "VULNERABILITY_PERIOD_ACTIVITY_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityPostureCandidate": {
+      "constant": "VULNERABILITY_POSTURE_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityQualityCheck": {
+      "constant": "VULNERABILITY_QUALITY_CHECK_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    },
+    "VulnerabilityQualityIssue": {
+      "constant": "VULNERABILITY_QUALITY_ISSUE_SCHEMA",
+      "module": "examples.structure_generated.security.pyspark.schemas.reporting"
+    }
+  },
+  "source_transform": "examples.security.transforms.events.EnrichAppEvents",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "events",
+          "devices",
+          "device_types",
+          "apps",
+          "scanners"
+        ],
+        "step": null,
+        "target": "EnrichAppEvents"
+      },
+      {
+        "detail": {
+          "input_schema": "AppEvent",
+          "output_schema": "AppAuditEvent"
+        },
+        "operation": "step",
+        "sources": [
+          "events",
+          "device",
+          "device_type",
+          "app",
+          "scanner"
+        ],
+        "step": "enrich",
+        "target": "enrich"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "devices"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "device.id",
+          "event.device_id"
+        ],
+        "step": "enrich",
+        "target": "enrich.join[1].device"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "device_types_2"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "device_type.id",
+          "device.device_type_id"
+        ],
+        "step": "enrich",
+        "target": "enrich.join[2].device_type"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "apps_3"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "app.id",
+          "event.app_id"
+        ],
+        "step": "enrich",
+        "target": "enrich.join[3].app"
+      },
+      {
+        "detail": {
+          "cardinality": "row_multiplying",
+          "hint": null,
+          "how": "inner",
+          "right_alias": "scanners_4"
+        },
+        "operation": "rowset_join",
+        "sources": [
+          "scanner.id",
+          "event.scanner_id"
+        ],
+        "step": "enrich",
+        "target": "enrich.join[4].scanner"
+      },
+      {
+        "detail": {
+          "scope": "event",
+          "subset": "1"
+        },
+        "operation": "drop_duplicates",
+        "sources": [
+          "event.id"
+        ],
+        "step": "enrich",
+        "target": "enrich.drop_duplicates[1]"
+      },
+      {
+        "detail": {
+          "field": "id"
+        },
+        "operation": "project",
+        "sources": [
+          "event.id"
+        ],
+        "step": "enrich",
+        "target": "AppAuditEvent.id"
+      },
+      {
+        "detail": {
+          "field": "occurred_at"
+        },
+        "operation": "project",
+        "sources": [
+          "event.occurred_at"
+        ],
+        "step": "enrich",
+        "target": "AppAuditEvent.occurred_at"
+      },
+      {
+        "detail": {
+          "field": "device_id"
+        },
+        "operation": "project",
+        "sources": [
+          "event.device_id"
+        ],
+        "step": "enrich",
+        "target": "AppAuditEvent.device_id"
+      },
+      {
+        "detail": {
+          "field": "device_platform"
+        },
+        "operation": "project",
+        "sources": [
+          "device_type.platform"
+        ],
+        "step": "enrich",
+        "target": "AppAuditEvent.device_platform"
+      },
+      {
+        "detail": {
+          "field": "scanner_name"
+        },
+        "operation": "project",
+        "sources": [
+          "scanner.name"
+        ],
+        "step": "enrich",
+        "target": "AppAuditEvent.scanner_name"
+      },
+      {
+        "detail": {
+          "field": "app_id"
+        },
+        "operation": "project",
+        "sources": [
+          "event.app_id"
+        ],
+        "step": "enrich",
+        "target": "AppAuditEvent.app_id"
+      },
+      {
+        "detail": {
+          "field": "app_name"
+        },
+        "operation": "project",
+        "sources": [
+          "app.name"
+        ],
+        "step": "enrich",
+        "target": "AppAuditEvent.app_name"
+      },
+      {
+        "detail": {
+          "field": "action"
+        },
+        "operation": "project",
+        "sources": [
+          "event.action"
+        ],
+        "step": "enrich",
+        "target": "AppAuditEvent.action"
+      },
+      {
+        "detail": {
+          "field": "version"
+        },
+        "operation": "project",
+        "sources": [
+          "event.version"
+        ],
+        "step": "enrich",
+        "target": "AppAuditEvent.version"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "AppAuditEvent"
+        ],
+        "step": null,
+        "target": "AppAuditEvent.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "app_event",
+      "joins": [
+        {
+          "how": "inner",
+          "input": "device",
+          "right_alias": "devices"
+        },
+        {
+          "how": "inner",
+          "input": "device_type",
+          "right_alias": "device_types_2"
+        },
+        {
+          "how": "inner",
+          "input": "app",
+          "right_alias": "apps_3"
+        },
+        {
+          "how": "inner",
+          "input": "scanner",
+          "right_alias": "scanners_4"
+        }
+      ],
+      "name": "enrich",
+      "output_alias": "app_audit_event",
+      "output_schema": "AppAuditEvent",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "events",
+          "lane": "events",
+          "schema": "AppAuditEvent"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.security.pyspark.transforms.events",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "audits",
+        "schema": "AppAuditEvent"
+      }
+    ]
+  }
+}

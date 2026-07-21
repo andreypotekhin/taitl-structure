@@ -6,12 +6,17 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.core.dsl.api import compile_transform
+from structure.core.compiler.api import Compiler
 from structure.core.dsl.model.expr.Expression import Expression
 from structure.core.dsl.model.expr.expressions import literal
 from structure.core.dsl.model.types.DecimalType import DecimalType
 from structure.core.dsl.model.types.StructType import StructType
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+
+
+def _compile(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False)
 
 
 def _expression(type, *, nullable: bool) -> Expression:
@@ -297,11 +302,11 @@ def test_coalesce_uses_the_common_decimal_type_regardless_of_argument_order() ->
 
 
 def test_coalesce_common_type_allows_a_reversed_decimal_fallback_in_a_projection() -> None:
-    compile_transform(DecimalFallback)
+    _compile(DecimalFallback)
 
 
 def test_generated_module_imports_datetime_for_temporal_literals() -> None:
-    recipe = PySpark.compiler.lower()(compile_transform(TemporalFallback))
+    recipe = cast(PySparkExecutionPlan, _compile(TemporalFallback).lowered)
 
     text = PySpark.render.transform()(
         recipe,
@@ -556,46 +561,46 @@ def test_to_decimal_is_nullable_for_required_input() -> None:
 
 def test_to_decimal_cannot_fill_a_required_output_without_a_fallback() -> None:
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(RequiredDecimalParse)
+        _compile(RequiredDecimalParse)
 
     assert raised.value.diagnostic.code == "SCHEMA-E0301"
 
 
 def test_when_with_required_branches_can_fill_a_required_output_despite_a_nullable_condition() -> None:
-    compile_transform(RequiredWhen)
+    _compile(RequiredWhen)
 
 
 def test_collection_lookup_cannot_fill_a_required_output() -> None:
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(RequiredLookup)
+        _compile(RequiredLookup)
 
     assert raised.value.diagnostic.code == "SCHEMA-E0301"
 
 
 def test_nullable_struct_field_lookup_cannot_fill_a_required_output() -> None:
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(RequiredNestedLookup)
+        _compile(RequiredNestedLookup)
 
     assert raised.value.diagnostic.code == "SCHEMA-E0301"
 
 
 def test_nullable_python_udf_cannot_fill_a_required_output() -> None:
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(RequiredUdf)
+        _compile(RequiredUdf)
 
     assert raised.value.diagnostic.code == "SCHEMA-E0301"
 
 
 def test_nullable_nested_struct_value_cannot_fill_a_required_nested_field() -> None:
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(RequiredNestedConstruction)
+        _compile(RequiredNestedConstruction)
 
     assert raised.value.diagnostic.code == "SCHEMA-E0301"
 
 
 def test_incompatible_nested_struct_value_cannot_fill_a_nested_field() -> None:
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(IncompatibleNestedConstruction)
+        _compile(IncompatibleNestedConstruction)
 
     assert raised.value.diagnostic.code == "SCHEMA-E0302"
 
@@ -750,17 +755,17 @@ def test_arithmetic_projects_spark_decimal_precision_and_scale() -> None:
 
 def test_decimal_arithmetic_requires_an_explicit_narrowing_cast() -> None:
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(NarrowingDecimalArithmetic)
+        _compile(NarrowingDecimalArithmetic)
 
     assert raised.value.diagnostic.code == "SCHEMA-E0303"
-    compile_transform(ExplicitDecimalArithmetic)
+    _compile(ExplicitDecimalArithmetic)
 
 
 def test_decimal_literals_are_typed_and_imported_by_generated_modules() -> None:
     literal_expression = literal(Decimal("0.0010"))
 
     assert _decimal_shape(literal_expression) == (4, 4)
-    recipe = PySpark.compiler.lower()(compile_transform(DecimalLiteralProjection))
+    recipe = cast(PySparkExecutionPlan, _compile(DecimalLiteralProjection).lowered)
     text = PySpark.render.transform()(
         recipe,
         source_transform="tests.DecimalLiteralProjection",
@@ -773,7 +778,7 @@ def test_decimal_literals_are_typed_and_imported_by_generated_modules() -> None:
 
 
 def test_lag_accepts_decimal_defaults_and_imports_them_in_generated_modules() -> None:
-    recipe = PySpark.compiler.lower()(compile_transform(DecimalWindowDefault))
+    recipe = cast(PySparkExecutionPlan, _compile(DecimalWindowDefault).lowered)
     text = PySpark.render.transform()(
         recipe,
         source_transform="tests.DecimalWindowDefault",
@@ -823,11 +828,11 @@ def test_comparisons_require_compatible_and_orderable_operands() -> None:
     }
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(IncompatibleComparison)
+        _compile(IncompatibleComparison)
 
     assert raised.value.diagnostic.code == "DSL-E0402"
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(IncompatibleComparisonFilter)
+        _compile(IncompatibleComparisonFilter)
 
     assert raised.value.diagnostic.code == "DSL-E0402"
 
@@ -924,6 +929,6 @@ def test_logical_operators_require_boolean_operands(expression) -> None:
 
 def test_nullable_negation_cannot_fill_a_non_nullable_output() -> None:
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(NullableNegation)
+        _compile(NullableNegation)
 
     assert raised.value.diagnostic.code == "SCHEMA-E0301"
