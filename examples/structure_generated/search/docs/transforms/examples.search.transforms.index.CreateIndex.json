@@ -1,0 +1,118 @@
+{
+  "dependencies": [],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "words",
+      "ordinal": 0,
+      "schema": "Word"
+    }
+  ],
+  "name": "CreateIndex",
+  "outputs": [
+    {
+      "name": "document_terms",
+      "ordinal": 0,
+      "schema": "DocumentIndexTerm"
+    },
+    {
+      "name": "document_summary",
+      "ordinal": 1,
+      "schema": "DocumentIndexSummary"
+    },
+    {
+      "name": "section_terms",
+      "ordinal": 2,
+      "schema": "SectionIndexTerm"
+    },
+    {
+      "name": "section_summary",
+      "ordinal": 3,
+      "schema": "SectionIndexSummary"
+    },
+    {
+      "name": "paragraph_terms",
+      "ordinal": 4,
+      "schema": "ParagraphIndexTerm"
+    },
+    {
+      "name": "paragraph_summary",
+      "ordinal": 5,
+      "schema": "ParagraphIndexSummary"
+    },
+    {
+      "name": "sentence_terms",
+      "ordinal": 6,
+      "schema": "SentenceIndexTerm"
+    },
+    {
+      "name": "sentence_summary",
+      "ordinal": 7,
+      "schema": "SentenceIndexSummary"
+    }
+  ],
+  "source": "examples.search.transforms.index.CreateIndex",
+  "step_methods": [
+    {
+      "input_lane": "words",
+      "input_schema": "Word",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "word",
+          "schema": "Word",
+          "source": "words"
+        }
+      ],
+      "name": "declare_index",
+      "output_lane": "document_terms",
+      "output_schema": "DocumentIndexTerm",
+      "results": [
+        {
+          "frame": "document_terms",
+          "lane": "document_terms",
+          "schema": "DocumentIndexTerm"
+        },
+        {
+          "frame": "document_summary",
+          "lane": "document_summary",
+          "schema": "DocumentIndexSummary"
+        },
+        {
+          "frame": "section_terms",
+          "lane": "section_terms",
+          "schema": "SectionIndexTerm"
+        },
+        {
+          "frame": "section_summary",
+          "lane": "section_summary",
+          "schema": "SectionIndexSummary"
+        },
+        {
+          "frame": "paragraph_terms",
+          "lane": "paragraph_terms",
+          "schema": "ParagraphIndexTerm"
+        },
+        {
+          "frame": "paragraph_summary",
+          "lane": "paragraph_summary",
+          "schema": "ParagraphIndexSummary"
+        },
+        {
+          "frame": "sentence_terms",
+          "lane": "sentence_terms",
+          "schema": "SentenceIndexTerm"
+        },
+        {
+          "frame": "sentence_summary",
+          "lane": "sentence_summary",
+          "schema": "SentenceIndexSummary"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/index.py",
+    "traceability": "traceability/transforms/index.CreateIndex.json"
+  }
+}

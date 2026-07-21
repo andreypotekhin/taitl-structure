@@ -1,0 +1,900 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "OrderAnalyticsGenerated",
+  "inputs": [
+    {
+      "name": "fulfilled",
+      "ordinal": 0,
+      "schema": "OrderFulfillment"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated",
+      "ir": "ir:OrderAnalytics",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.input.fulfilled",
+      "ir": "ir:OrderAnalytics.input.0.fulfilled",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.input.fulfilled"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_daily_totals"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.aggregate.tenant",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.aggregate.tenant",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_daily_totals.aggregate.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.aggregate.customer_id",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.aggregate.customer_id",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_daily_totals.aggregate.customer_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.aggregate.order_date",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.aggregate.order_date",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_daily_totals.aggregate.order_date"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.aggregate.order_count",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.aggregate.order_count",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_daily_totals.aggregate.order_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.aggregate.gross_total",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.aggregate.gross_total",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_daily_totals.aggregate.gross_total"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.aggregate.net_total",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.aggregate.net_total",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_daily_totals.aggregate.net_total"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.0.customer_daily_totals.validation.0.intermediate",
+      "ir": "ir:OrderAnalytics.step.0.customer_daily_totals.validation.0.intermediate",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_daily_totals.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.product_daily_summary"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.tenant",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.tenant",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.product_id",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.product_id",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.product_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.order_date",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.order_date",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.order_date"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.order_count",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.order_count",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.order_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.distinct_customers",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.distinct_customers",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.distinct_customers"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.units",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.units",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.units"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.min_units",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.min_units",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.min_units"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.max_units",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.max_units",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.max_units"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.avg_units",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.avg_units",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.avg_units"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.aggregate.gross_total",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.aggregate.gross_total",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.product_daily_summary.aggregate.gross_total"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.1.product_daily_summary.validation.0.intermediate",
+      "ir": "ir:OrderAnalytics.step.1.product_daily_summary.validation.0.intermediate",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.product_daily_summary.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks.latest_by.0",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks.latest_by.0",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks.latest_by.0"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks.select.tenant",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks.project.tenant",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks.field.tenant"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks.select.customer_id",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks.project.customer_id",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks.field.customer_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks.select.event_id",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks.project.event_id",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks.field.event_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks.select.sequence",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks.project.sequence",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks.field.sequence"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks.select.row_number",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks.project.row_number",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks.field.row_number"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks.select.rank",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks.project.rank",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks.field.rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks.select.dense_rank",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks.project.dense_rank",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks.field.dense_rank"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks.select.previous_sequence",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks.project.previous_sequence",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks.field.previous_sequence"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks.select.next_sequence",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks.project.next_sequence",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks.field.next_sequence"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks.select.rolling_units",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks.project.rolling_units",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks.field.rolling_units"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks.select.rolling_avg_units",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks.project.rolling_avg_units",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks.field.rolling_avg_units"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks.select.rolling_min_units",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks.project.rolling_min_units",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks.field.rolling_min_units"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.step.2.customer_event_ranks.select.rolling_max_units",
+      "ir": "ir:OrderAnalytics.step.2.customer_event_ranks.project.rolling_max_units",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.customer_event_ranks.field.rolling_max_units"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.output.0.customer_totals.validation.final",
+      "ir": "ir:OrderAnalytics.output.0.customer_totals.validation.final",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.output.customer_totals"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.output.1.product_summary.validation.final",
+      "ir": "ir:OrderAnalytics.output.1.product_summary.validation.final",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.output.product_summary"
+    },
+    {
+      "generated": "generated:examples.structure_generated.store.pyspark.transforms.analytics.OrderAnalyticsGenerated.run.output.2.customer_event_rank.validation.final",
+      "ir": "ir:OrderAnalytics.output.2.customer_event_rank.validation.final",
+      "source": "source:examples.store.transforms.analytics.OrderAnalytics.output.customer_event_rank"
+    }
+  ],
+  "schema_constants": {
+    "Address": {
+      "constant": "ADDRESS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "AuditStamp": {
+      "constant": "AUDIT_STAMP_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "BlockedProduct": {
+      "constant": "BLOCKED_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "BusinessDate": {
+      "constant": "BUSINESS_DATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "Customer": {
+      "constant": "CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.customer"
+    },
+    "CustomerDailyTotal": {
+      "constant": "CUSTOMER_DAILY_TOTAL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "CustomerEventRank": {
+      "constant": "CUSTOMER_EVENT_RANK_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "CustomerOrderBackfill": {
+      "constant": "CUSTOMER_ORDER_BACKFILL_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderCollectionProfile": {
+      "constant": "ORDER_COLLECTION_PROFILE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderCollectionSource": {
+      "constant": "ORDER_COLLECTION_SOURCE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderCustomerReconciliation": {
+      "constant": "ORDER_CUSTOMER_RECONCILIATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderCustomerWindow": {
+      "constant": "ORDER_CUSTOMER_WINDOW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderFulfillment": {
+      "constant": "ORDER_FULFILLMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderNormalized": {
+      "constant": "ORDER_NORMALIZED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderProductCandidate": {
+      "constant": "ORDER_PRODUCT_CANDIDATE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderProductCube": {
+      "constant": "ORDER_PRODUCT_CUBE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderPublication": {
+      "constant": "ORDER_PUBLICATION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderPublished": {
+      "constant": "ORDER_PUBLISHED_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderRaw": {
+      "constant": "ORDER_RAW_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderRevenueRollup": {
+      "constant": "ORDER_REVENUE_ROLLUP_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.adv_analytics"
+    },
+    "OrderWithCustomer": {
+      "constant": "ORDER_WITH_CUSTOMER_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderWithProduct": {
+      "constant": "ORDER_WITH_PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "OrderWithPromotion": {
+      "constant": "ORDER_WITH_PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "Product": {
+      "constant": "PRODUCT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "ProductBase": {
+      "constant": "PRODUCT_BASE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.product"
+    },
+    "ProductDailySummary": {
+      "constant": "PRODUCT_DAILY_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.analytics"
+    },
+    "Promotion": {
+      "constant": "PROMOTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.promotion"
+    },
+    "PublicationFlags": {
+      "constant": "PUBLICATION_FLAGS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.order"
+    },
+    "Shipment": {
+      "constant": "SHIPMENT_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.shipment"
+    },
+    "TenantKey": {
+      "constant": "TENANT_KEY_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.common"
+    },
+    "V3OrderDetails": {
+      "constant": "V3_ORDER_DETAILS_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.v3"
+    },
+    "V3OrderProjection": {
+      "constant": "V3_ORDER_PROJECTION_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.v3"
+    },
+    "V3OrderSource": {
+      "constant": "V3_ORDER_SOURCE_SCHEMA",
+      "module": "examples.structure_generated.store.pyspark.schemas.v3"
+    }
+  },
+  "source_transform": "examples.store.transforms.analytics.OrderAnalytics",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "fulfilled"
+        ],
+        "step": null,
+        "target": "OrderAnalytics"
+      },
+      {
+        "detail": {
+          "input_schema": "OrderFulfillment",
+          "output_schema": "CustomerDailyTotal"
+        },
+        "operation": "step",
+        "sources": [
+          "fulfilled"
+        ],
+        "step": "customer_daily_totals",
+        "target": "customer_daily_totals"
+      },
+      {
+        "detail": {
+          "field": "tenant",
+          "function": "first",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.tenant"
+        ],
+        "step": "customer_daily_totals",
+        "target": "CustomerDailyTotal.tenant"
+      },
+      {
+        "detail": {
+          "field": "customer_id",
+          "function": "key",
+          "key": "customer_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_daily_totals",
+        "target": "CustomerDailyTotal.customer_id"
+      },
+      {
+        "detail": {
+          "field": "order_date",
+          "function": "key",
+          "key": "order_date"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.business.order_date"
+        ],
+        "step": "customer_daily_totals",
+        "target": "CustomerDailyTotal.order_date"
+      },
+      {
+        "detail": {
+          "field": "order_count",
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled"
+        ],
+        "step": "customer_daily_totals",
+        "target": "CustomerDailyTotal.order_count"
+      },
+      {
+        "detail": {
+          "field": "gross_total",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.total"
+        ],
+        "step": "customer_daily_totals",
+        "target": "CustomerDailyTotal.gross_total"
+      },
+      {
+        "detail": {
+          "field": "net_total",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.net_total"
+        ],
+        "step": "customer_daily_totals",
+        "target": "CustomerDailyTotal.net_total"
+      },
+      {
+        "detail": {
+          "input_schema": "OrderFulfillment",
+          "output_schema": "ProductDailySummary"
+        },
+        "operation": "step",
+        "sources": [
+          "CustomerDailyTotal"
+        ],
+        "step": "product_daily_summary",
+        "target": "product_daily_summary"
+      },
+      {
+        "detail": {
+          "field": "tenant",
+          "function": "first",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.tenant"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.tenant"
+      },
+      {
+        "detail": {
+          "field": "product_id",
+          "function": "key",
+          "key": "product_id"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.product_id"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.product_id"
+      },
+      {
+        "detail": {
+          "field": "order_date",
+          "function": "key",
+          "key": "order_date"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.business.order_date"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.order_date"
+      },
+      {
+        "detail": {
+          "field": "order_count",
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.order_count"
+      },
+      {
+        "detail": {
+          "field": "distinct_customers",
+          "function": "count_distinct",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.customer_id"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.distinct_customers"
+      },
+      {
+        "detail": {
+          "field": "units",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.units"
+      },
+      {
+        "detail": {
+          "field": "min_units",
+          "function": "min",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.min_units"
+      },
+      {
+        "detail": {
+          "field": "max_units",
+          "function": "max",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.max_units"
+      },
+      {
+        "detail": {
+          "field": "avg_units",
+          "function": "avg",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.avg_units"
+      },
+      {
+        "detail": {
+          "field": "gross_total",
+          "function": "sum",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "fulfilled.total"
+        ],
+        "step": "product_daily_summary",
+        "target": "ProductDailySummary.gross_total"
+      },
+      {
+        "detail": {
+          "input_schema": "OrderFulfillment",
+          "output_schema": "CustomerEventRank"
+        },
+        "operation": "step",
+        "sources": [
+          "ProductDailySummary"
+        ],
+        "step": "customer_event_ranks",
+        "target": "customer_event_ranks"
+      },
+      {
+        "detail": {
+          "direction": "latest",
+          "partitions": "1",
+          "ties": "error"
+        },
+        "operation": "latest_by",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_event_ranks",
+        "target": "customer_event_ranks.latest_by[0]"
+      },
+      {
+        "detail": {
+          "field": "tenant"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.tenant"
+        ],
+        "step": "customer_event_ranks",
+        "target": "CustomerEventRank.tenant"
+      },
+      {
+        "detail": {
+          "field": "customer_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_event_ranks",
+        "target": "CustomerEventRank.customer_id"
+      },
+      {
+        "detail": {
+          "field": "event_id"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.id"
+        ],
+        "step": "customer_event_ranks",
+        "target": "CustomerEventRank.event_id"
+      },
+      {
+        "detail": {
+          "field": "sequence"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity"
+        ],
+        "step": "customer_event_ranks",
+        "target": "CustomerEventRank.sequence"
+      },
+      {
+        "detail": {
+          "field": "row_number"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_event_ranks",
+        "target": "CustomerEventRank.row_number"
+      },
+      {
+        "detail": {
+          "field": "rank"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_event_ranks",
+        "target": "CustomerEventRank.rank"
+      },
+      {
+        "detail": {
+          "field": "dense_rank"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_event_ranks",
+        "target": "CustomerEventRank.dense_rank"
+      },
+      {
+        "detail": {
+          "field": "previous_sequence"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_event_ranks",
+        "target": "CustomerEventRank.previous_sequence"
+      },
+      {
+        "detail": {
+          "field": "next_sequence"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_event_ranks",
+        "target": "CustomerEventRank.next_sequence"
+      },
+      {
+        "detail": {
+          "field": "rolling_units"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_event_ranks",
+        "target": "CustomerEventRank.rolling_units"
+      },
+      {
+        "detail": {
+          "field": "rolling_avg_units"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_event_ranks",
+        "target": "CustomerEventRank.rolling_avg_units"
+      },
+      {
+        "detail": {
+          "field": "rolling_min_units"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_event_ranks",
+        "target": "CustomerEventRank.rolling_min_units"
+      },
+      {
+        "detail": {
+          "field": "rolling_max_units"
+        },
+        "operation": "project",
+        "sources": [
+          "fulfilled.quantity",
+          "fulfilled.customer_id"
+        ],
+        "step": "customer_event_ranks",
+        "target": "CustomerEventRank.rolling_max_units"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "CustomerDailyTotal"
+        ],
+        "step": null,
+        "target": "CustomerDailyTotal.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "ProductDailySummary"
+        ],
+        "step": null,
+        "target": "ProductDailySummary.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "CustomerEventRank"
+        ],
+        "step": null,
+        "target": "CustomerEventRank.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "order_fulfillment",
+      "joins": [],
+      "name": "customer_daily_totals",
+      "output_alias": "customer_daily_total",
+      "output_schema": "CustomerDailyTotal",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "customer_totals",
+          "lane": "customer_totals",
+          "schema": "CustomerDailyTotal"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "CustomerDailyTotal"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "order_fulfillment",
+      "joins": [],
+      "name": "product_daily_summary",
+      "output_alias": "product_daily_summary",
+      "output_schema": "ProductDailySummary",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "product_summary",
+          "lane": "product_summary",
+          "schema": "ProductDailySummary"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "ProductDailySummary"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "order_fulfillment",
+      "joins": [],
+      "name": "customer_event_ranks",
+      "output_alias": "customer_event_rank",
+      "output_schema": "CustomerEventRank",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "customer_event_rank",
+          "lane": "customer_event_rank",
+          "schema": "CustomerEventRank"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.store.pyspark.transforms.analytics",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "customer_totals",
+        "schema": "CustomerDailyTotal"
+      },
+      {
+        "mode": "strict",
+        "name": "product_summary",
+        "schema": "ProductDailySummary"
+      },
+      {
+        "mode": "strict",
+        "name": "customer_event_rank",
+        "schema": "CustomerEventRank"
+      }
+    ]
+  }
+}

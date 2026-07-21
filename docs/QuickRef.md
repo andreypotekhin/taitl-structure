@@ -806,7 +806,7 @@ cross_join(calendar_day, allow_cartesian=True)
 `left_join(...)`, `inner_join(...)`, `right_join(...)`, `full_join(...)`, and `cross_join(...)` are shortcuts over
 `rowset_join(...)`. Predicate shortcuts can be bare when the right relation is unambiguous.
 
-See `examples/orders/transforms/rowset_join.py` for a generated example covering `full_join(...)`, `right_join(...)`,
+See `examples/store/transforms/rowset_join.py` for a generated example covering `full_join(...)`, `right_join(...)`,
 and `cross_join(...)`.
 
 Right and full joins can produce rows without a current left row. Build outputs with explicit projection or explicit
@@ -1140,7 +1140,7 @@ Default filesystem layout:
 
 ```text
 src/orders/...
-generated/structure_generated/orders/...
+generated/structure_generated/store/...
 ```
 
 Generated paths are used only when Structure is configured to emit PySpark code; execution is the

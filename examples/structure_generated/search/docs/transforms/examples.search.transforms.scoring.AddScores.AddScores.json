@@ -1,0 +1,402 @@
+{
+  "dependencies": [
+    "bm25",
+    "document_bm25_scores",
+    "document_overlap_scores",
+    "overlap",
+    "paragraph_bm25_scores",
+    "paragraph_overlap_scores",
+    "section_bm25_scores",
+    "section_overlap_scores",
+    "sentence_bm25_scores",
+    "sentence_overlap_scores"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "queries",
+      "ordinal": 0,
+      "schema": "SearchQuery"
+    },
+    {
+      "name": "document_terms",
+      "ordinal": 1,
+      "schema": "DocumentIndexTerm"
+    },
+    {
+      "name": "section_terms",
+      "ordinal": 2,
+      "schema": "SectionIndexTerm"
+    },
+    {
+      "name": "paragraph_terms",
+      "ordinal": 3,
+      "schema": "ParagraphIndexTerm"
+    },
+    {
+      "name": "sentence_terms",
+      "ordinal": 4,
+      "schema": "SentenceIndexTerm"
+    },
+    {
+      "name": "document_summary",
+      "ordinal": 5,
+      "schema": "DocumentIndexSummary"
+    },
+    {
+      "name": "section_summary",
+      "ordinal": 6,
+      "schema": "SectionIndexSummary"
+    },
+    {
+      "name": "paragraph_summary",
+      "ordinal": 7,
+      "schema": "ParagraphIndexSummary"
+    },
+    {
+      "name": "sentence_summary",
+      "ordinal": 8,
+      "schema": "SentenceIndexSummary"
+    },
+    {
+      "name": "documents",
+      "ordinal": 9,
+      "schema": "Document"
+    },
+    {
+      "name": "sections",
+      "ordinal": 10,
+      "schema": "Section"
+    },
+    {
+      "name": "paragraphs",
+      "ordinal": 11,
+      "schema": "Paragraph"
+    },
+    {
+      "name": "sentences",
+      "ordinal": 12,
+      "schema": "Sentence"
+    }
+  ],
+  "name": "AddScores",
+  "outputs": [
+    {
+      "name": "document_overlap_scores",
+      "ordinal": 0,
+      "schema": "DocumentOverlapScore"
+    },
+    {
+      "name": "section_overlap_scores",
+      "ordinal": 1,
+      "schema": "SectionOverlapScore"
+    },
+    {
+      "name": "paragraph_overlap_scores",
+      "ordinal": 2,
+      "schema": "ParagraphOverlapScore"
+    },
+    {
+      "name": "sentence_overlap_scores",
+      "ordinal": 3,
+      "schema": "SentenceOverlapScore"
+    },
+    {
+      "name": "document_bm25_scores",
+      "ordinal": 4,
+      "schema": "DocumentBm25Score"
+    },
+    {
+      "name": "section_bm25_scores",
+      "ordinal": 5,
+      "schema": "SectionBm25Score"
+    },
+    {
+      "name": "paragraph_bm25_scores",
+      "ordinal": 6,
+      "schema": "ParagraphBm25Score"
+    },
+    {
+      "name": "sentence_bm25_scores",
+      "ordinal": 7,
+      "schema": "SentenceBm25Score"
+    },
+    {
+      "name": "scored_documents",
+      "ordinal": 8,
+      "schema": "Document"
+    },
+    {
+      "name": "scored_sections",
+      "ordinal": 9,
+      "schema": "Section"
+    },
+    {
+      "name": "scored_paragraphs",
+      "ordinal": 10,
+      "schema": "Paragraph"
+    },
+    {
+      "name": "scored_sentences",
+      "ordinal": 11,
+      "schema": "Sentence"
+    }
+  ],
+  "source": "examples.search.transforms.scoring.AddScores.AddScores",
+  "step_methods": [
+    {
+      "input_lane": "queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "queries"
+        }
+      ],
+      "name": "declare_overlap_scores",
+      "output_lane": "document_overlap_scores",
+      "output_schema": "DocumentOverlapScore",
+      "results": [
+        {
+          "frame": "document_overlap_scores",
+          "lane": "document_overlap_scores",
+          "schema": "DocumentOverlapScore"
+        },
+        {
+          "frame": "section_overlap_scores",
+          "lane": "section_overlap_scores",
+          "schema": "SectionOverlapScore"
+        },
+        {
+          "frame": "paragraph_overlap_scores",
+          "lane": "paragraph_overlap_scores",
+          "schema": "ParagraphOverlapScore"
+        },
+        {
+          "frame": "sentence_overlap_scores",
+          "lane": "sentence_overlap_scores",
+          "schema": "SentenceOverlapScore"
+        }
+      ]
+    },
+    {
+      "input_lane": "queries",
+      "input_schema": "SearchQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "queries"
+        }
+      ],
+      "name": "declare_bm25_scores",
+      "output_lane": "document_bm25_scores",
+      "output_schema": "DocumentBm25Score",
+      "results": [
+        {
+          "frame": "document_bm25_scores",
+          "lane": "document_bm25_scores",
+          "schema": "DocumentBm25Score"
+        },
+        {
+          "frame": "section_bm25_scores",
+          "lane": "section_bm25_scores",
+          "schema": "SectionBm25Score"
+        },
+        {
+          "frame": "paragraph_bm25_scores",
+          "lane": "paragraph_bm25_scores",
+          "schema": "ParagraphBm25Score"
+        },
+        {
+          "frame": "sentence_bm25_scores",
+          "lane": "sentence_bm25_scores",
+          "schema": "SentenceBm25Score"
+        }
+      ]
+    },
+    {
+      "input_lane": "documents",
+      "input_schema": "Document",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "document",
+          "schema": "Document",
+          "source": "documents"
+        },
+        {
+          "driving": false,
+          "parameter": "overlap",
+          "schema": "DocumentOverlapScore",
+          "source": "document_overlap_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "bm25",
+          "schema": "DocumentBm25Score",
+          "source": "document_bm25_scores"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "overlap"
+        },
+        {
+          "how": "inner",
+          "input": "bm25"
+        }
+      ],
+      "name": "score_documents",
+      "output_lane": "scored_documents",
+      "output_schema": "Document",
+      "results": [
+        {
+          "frame": "scored_documents",
+          "lane": "scored_documents",
+          "schema": "Document"
+        }
+      ]
+    },
+    {
+      "input_lane": "sections",
+      "input_schema": "Section",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "section",
+          "schema": "Section",
+          "source": "sections"
+        },
+        {
+          "driving": false,
+          "parameter": "overlap",
+          "schema": "SectionOverlapScore",
+          "source": "section_overlap_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "bm25",
+          "schema": "SectionBm25Score",
+          "source": "section_bm25_scores"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "overlap"
+        },
+        {
+          "how": "inner",
+          "input": "bm25"
+        }
+      ],
+      "name": "score_sections",
+      "output_lane": "scored_sections",
+      "output_schema": "Section",
+      "results": [
+        {
+          "frame": "scored_sections",
+          "lane": "scored_sections",
+          "schema": "Section"
+        }
+      ]
+    },
+    {
+      "input_lane": "paragraphs",
+      "input_schema": "Paragraph",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "paragraph",
+          "schema": "Paragraph",
+          "source": "paragraphs"
+        },
+        {
+          "driving": false,
+          "parameter": "overlap",
+          "schema": "ParagraphOverlapScore",
+          "source": "paragraph_overlap_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "bm25",
+          "schema": "ParagraphBm25Score",
+          "source": "paragraph_bm25_scores"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "overlap"
+        },
+        {
+          "how": "inner",
+          "input": "bm25"
+        }
+      ],
+      "name": "score_paragraphs",
+      "output_lane": "scored_paragraphs",
+      "output_schema": "Paragraph",
+      "results": [
+        {
+          "frame": "scored_paragraphs",
+          "lane": "scored_paragraphs",
+          "schema": "Paragraph"
+        }
+      ]
+    },
+    {
+      "input_lane": "sentences",
+      "input_schema": "Sentence",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "sentence",
+          "schema": "Sentence",
+          "source": "sentences"
+        },
+        {
+          "driving": false,
+          "parameter": "overlap",
+          "schema": "SentenceOverlapScore",
+          "source": "sentence_overlap_scores"
+        },
+        {
+          "driving": false,
+          "parameter": "bm25",
+          "schema": "SentenceBm25Score",
+          "source": "sentence_bm25_scores"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "overlap"
+        },
+        {
+          "how": "inner",
+          "input": "bm25"
+        }
+      ],
+      "name": "score_sentences",
+      "output_lane": "scored_sentences",
+      "output_schema": "Sentence",
+      "results": [
+        {
+          "frame": "scored_sentences",
+          "lane": "scored_sentences",
+          "schema": "Sentence"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/AddScores.py",
+    "traceability": "traceability/transforms/AddScores.AddScores.json"
+  }
+}

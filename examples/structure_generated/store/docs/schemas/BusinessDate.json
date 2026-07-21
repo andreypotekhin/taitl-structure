@@ -1,0 +1,14 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "order_date",
+      "name": "order_date",
+      "nullable": true,
+      "type": "date"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.common",
+  "name": "BusinessDate"
+}

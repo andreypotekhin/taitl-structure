@@ -1,0 +1,20 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "external_id",
+      "name": "external_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "region",
+      "name": "region",
+      "nullable": true,
+      "type": "string"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.store.schemas.v3",
+  "name": "V3OrderDetails"
+}

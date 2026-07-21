@@ -38,6 +38,8 @@ def test_money_helper_preserves_decimal_contract(orders_plan, orders_transform_t
     assert 'F.col("order_raw.total").cast("decimal(12,2)")' in orders_transform_text
     assert 'F.col("order_raw.discount").cast("decimal(12,2)")' in orders_transform_text
     assert ").cast('decimal(12,2)').alias(\"net_total\")" in orders_transform_text
+
+
 from typing import cast
 
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody

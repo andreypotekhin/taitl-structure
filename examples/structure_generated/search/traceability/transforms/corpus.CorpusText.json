@@ -1,0 +1,627 @@
+{
+  "backend": {
+    "name": "pyspark",
+    "target": ">=3.5,<4.1"
+  },
+  "generated_transform_class": "CorpusTextGenerated",
+  "inputs": [
+    {
+      "name": "documents",
+      "ordinal": 0,
+      "schema": "DocumentStatistics"
+    },
+    {
+      "name": "words",
+      "ordinal": 1,
+      "schema": "Word"
+    }
+  ],
+  "provenance": [
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated",
+      "ir": "ir:CorpusText",
+      "source": "source:examples.search.transforms.corpus.CorpusText"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.input.documents",
+      "ir": "ir:CorpusText.input.0.documents",
+      "source": "source:examples.search.transforms.corpus.CorpusText.input.documents"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.input.words",
+      "ir": "ir:CorpusText.input.1.words",
+      "source": "source:examples.search.transforms.corpus.CorpusText.input.words"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.0.corpus_stats",
+      "ir": "ir:CorpusText.step.0.corpus_stats",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_stats"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.0.corpus_stats.aggregate.corpus",
+      "ir": "ir:CorpusText.step.0.corpus_stats.aggregate.corpus",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_stats.aggregate.corpus"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.0.corpus_stats.aggregate.document_count",
+      "ir": "ir:CorpusText.step.0.corpus_stats.aggregate.document_count",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_stats.aggregate.document_count"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.0.corpus_stats.aggregate.average_sections_per_document",
+      "ir": "ir:CorpusText.step.0.corpus_stats.aggregate.average_sections_per_document",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_stats.aggregate.average_sections_per_document"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.0.corpus_stats.aggregate.average_paragraphs_per_document",
+      "ir": "ir:CorpusText.step.0.corpus_stats.aggregate.average_paragraphs_per_document",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_stats.aggregate.average_paragraphs_per_document"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.0.corpus_stats.aggregate.average_sentences_per_document",
+      "ir": "ir:CorpusText.step.0.corpus_stats.aggregate.average_sentences_per_document",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_stats.aggregate.average_sentences_per_document"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.0.corpus_stats.aggregate.average_words_per_document",
+      "ir": "ir:CorpusText.step.0.corpus_stats.aggregate.average_words_per_document",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_stats.aggregate.average_words_per_document"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.0.corpus_stats.aggregate.average_distinct_words_per_document",
+      "ir": "ir:CorpusText.step.0.corpus_stats.aggregate.average_distinct_words_per_document",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_stats.aggregate.average_distinct_words_per_document"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.0.corpus_stats.aggregate.median_document_average_word_length",
+      "ir": "ir:CorpusText.step.0.corpus_stats.aggregate.median_document_average_word_length",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_stats.aggregate.median_document_average_word_length"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.0.corpus_stats.aggregate.document_average_word_length_skewness",
+      "ir": "ir:CorpusText.step.0.corpus_stats.aggregate.document_average_word_length_skewness",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_stats.aggregate.document_average_word_length_skewness"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.0.corpus_stats.aggregate.document_average_word_length_kurtosis",
+      "ir": "ir:CorpusText.step.0.corpus_stats.aggregate.document_average_word_length_kurtosis",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_stats.aggregate.document_average_word_length_kurtosis"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.0.corpus_stats.validation.0.intermediate",
+      "ir": "ir:CorpusText.step.0.corpus_stats.validation.0.intermediate",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_stats.validation.0.intermediate"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.1.corpus_vocabulary_stats",
+      "ir": "ir:CorpusText.step.1.corpus_vocabulary_stats",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_vocabulary_stats"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.1.corpus_vocabulary_stats.aggregate.corpus",
+      "ir": "ir:CorpusText.step.1.corpus_vocabulary_stats.aggregate.corpus",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_vocabulary_stats.aggregate.corpus"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.step.1.corpus_vocabulary_stats.aggregate.estimated_distinct_words",
+      "ir": "ir:CorpusText.step.1.corpus_vocabulary_stats.aggregate.estimated_distinct_words",
+      "source": "source:examples.search.transforms.corpus.CorpusText.corpus_vocabulary_stats.aggregate.estimated_distinct_words"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.output.0.corpus_statistics.validation.final",
+      "ir": "ir:CorpusText.output.0.corpus_statistics.validation.final",
+      "source": "source:examples.search.transforms.corpus.CorpusText.output.corpus_statistics"
+    },
+    {
+      "generated": "generated:examples.structure_generated.search.pyspark.transforms.corpus.CorpusTextGenerated.run.output.1.corpus_vocabulary.validation.final",
+      "ir": "ir:CorpusText.output.1.corpus_vocabulary.validation.final",
+      "source": "source:examples.search.transforms.corpus.CorpusText.output.corpus_vocabulary"
+    }
+  ],
+  "schema_constants": {
+    "CorpusStatistics": {
+      "constant": "CORPUS_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "CorpusVocabulary": {
+      "constant": "CORPUS_VOCABULARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "Document": {
+      "constant": "DOCUMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "DocumentBm25Score": {
+      "constant": "DOCUMENT_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentFeatures": {
+      "constant": "DOCUMENT_FEATURES_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "DocumentIndexSummary": {
+      "constant": "DOCUMENT_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentIndexTarget": {
+      "constant": "DOCUMENT_INDEX_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentIndexTerm": {
+      "constant": "DOCUMENT_INDEX_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentOverlapScore": {
+      "constant": "DOCUMENT_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentSearchTarget": {
+      "constant": "DOCUMENT_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "DocumentSimilarity": {
+      "constant": "DOCUMENT_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "DocumentSimilarityQuery": {
+      "constant": "DOCUMENT_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "DocumentStatistics": {
+      "constant": "DOCUMENT_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "IndexedSimilarDocument": {
+      "constant": "INDEXED_SIMILAR_DOCUMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "IndexedSimilarParagraph": {
+      "constant": "INDEXED_SIMILAR_PARAGRAPH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "IndexedSimilarSection": {
+      "constant": "INDEXED_SIMILAR_SECTION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "IndexedSimilarSentence": {
+      "constant": "INDEXED_SIMILAR_SENTENCE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "Paragraph": {
+      "constant": "PARAGRAPH_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "ParagraphBm25Score": {
+      "constant": "PARAGRAPH_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphIndexSummary": {
+      "constant": "PARAGRAPH_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphIndexTarget": {
+      "constant": "PARAGRAPH_INDEX_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphIndexTerm": {
+      "constant": "PARAGRAPH_INDEX_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphOverlapScore": {
+      "constant": "PARAGRAPH_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphSearchTarget": {
+      "constant": "PARAGRAPH_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "ParagraphSimilarity": {
+      "constant": "PARAGRAPH_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "ParagraphSimilarityQuery": {
+      "constant": "PARAGRAPH_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "ParagraphStatistics": {
+      "constant": "PARAGRAPH_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "SearchQuery": {
+      "constant": "SEARCH_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "Section": {
+      "constant": "SECTION_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "SectionBm25Score": {
+      "constant": "SECTION_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionIndexSummary": {
+      "constant": "SECTION_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionIndexTarget": {
+      "constant": "SECTION_INDEX_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionIndexTerm": {
+      "constant": "SECTION_INDEX_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionOverlapScore": {
+      "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionSearchTarget": {
+      "constant": "SECTION_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SectionSimilarity": {
+      "constant": "SECTION_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SectionSimilarityQuery": {
+      "constant": "SECTION_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SectionStatistics": {
+      "constant": "SECTION_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "Sentence": {
+      "constant": "SENTENCE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    },
+    "SentenceBm25Score": {
+      "constant": "SENTENCE_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceIndexSummary": {
+      "constant": "SENTENCE_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceIndexTarget": {
+      "constant": "SENTENCE_INDEX_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceIndexTerm": {
+      "constant": "SENTENCE_INDEX_TERM_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceOverlapScore": {
+      "constant": "SENTENCE_OVERLAP_SCORE_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceSearchResult": {
+      "constant": "SENTENCE_SEARCH_RESULT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceSearchTarget": {
+      "constant": "SENTENCE_SEARCH_TARGET_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.search"
+    },
+    "SentenceSimilarity": {
+      "constant": "SENTENCE_SIMILARITY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SentenceSimilarityQuery": {
+      "constant": "SENTENCE_SIMILARITY_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SentenceStatistics": {
+      "constant": "SENTENCE_STATISTICS_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "SimilarDocument": {
+      "constant": "SIMILAR_DOCUMENT_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.analytics"
+    },
+    "SimilarityDocumentQuery": {
+      "constant": "SIMILARITY_DOCUMENT_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SimilarityParagraphQuery": {
+      "constant": "SIMILARITY_PARAGRAPH_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SimilarityPolicy": {
+      "constant": "SIMILARITY_POLICY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SimilaritySectionQuery": {
+      "constant": "SIMILARITY_SECTION_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "SimilaritySentenceQuery": {
+      "constant": "SIMILARITY_SENTENCE_QUERY_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.similarity"
+    },
+    "Word": {
+      "constant": "WORD_SCHEMA",
+      "module": "examples.structure_generated.search.pyspark.schemas.text"
+    }
+  },
+  "source_transform": "examples.search.transforms.corpus.CorpusText",
+  "static_dataflow": {
+    "dependencies": [
+      {
+        "detail": {
+          "backend": "pyspark"
+        },
+        "operation": "transform",
+        "sources": [
+          "documents",
+          "words"
+        ],
+        "step": null,
+        "target": "CorpusText"
+      },
+      {
+        "detail": {
+          "input_schema": "DocumentStatistics",
+          "output_schema": "CorpusStatistics"
+        },
+        "operation": "step",
+        "sources": [
+          "documents"
+        ],
+        "step": "corpus_stats",
+        "target": "corpus_stats"
+      },
+      {
+        "detail": {
+          "field": "corpus",
+          "function": "key",
+          "key": "corpus"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "documents"
+        ],
+        "step": "corpus_stats",
+        "target": "CorpusStatistics.corpus"
+      },
+      {
+        "detail": {
+          "field": "document_count",
+          "function": "count",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "documents"
+        ],
+        "step": "corpus_stats",
+        "target": "CorpusStatistics.document_count"
+      },
+      {
+        "detail": {
+          "field": "average_sections_per_document",
+          "function": "avg",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "documents.section_count"
+        ],
+        "step": "corpus_stats",
+        "target": "CorpusStatistics.average_sections_per_document"
+      },
+      {
+        "detail": {
+          "field": "average_paragraphs_per_document",
+          "function": "avg",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "documents.paragraph_count"
+        ],
+        "step": "corpus_stats",
+        "target": "CorpusStatistics.average_paragraphs_per_document"
+      },
+      {
+        "detail": {
+          "field": "average_sentences_per_document",
+          "function": "avg",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "documents.sentence_count"
+        ],
+        "step": "corpus_stats",
+        "target": "CorpusStatistics.average_sentences_per_document"
+      },
+      {
+        "detail": {
+          "field": "average_words_per_document",
+          "function": "avg",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "documents.word_count"
+        ],
+        "step": "corpus_stats",
+        "target": "CorpusStatistics.average_words_per_document"
+      },
+      {
+        "detail": {
+          "field": "average_distinct_words_per_document",
+          "function": "avg",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "documents.distinct_words"
+        ],
+        "step": "corpus_stats",
+        "target": "CorpusStatistics.average_distinct_words_per_document"
+      },
+      {
+        "detail": {
+          "field": "median_document_average_word_length",
+          "function": "approx_percentile",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "documents.average_word_length"
+        ],
+        "step": "corpus_stats",
+        "target": "CorpusStatistics.median_document_average_word_length"
+      },
+      {
+        "detail": {
+          "field": "document_average_word_length_skewness",
+          "function": "skewness",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "documents.average_word_length"
+        ],
+        "step": "corpus_stats",
+        "target": "CorpusStatistics.document_average_word_length_skewness"
+      },
+      {
+        "detail": {
+          "field": "document_average_word_length_kurtosis",
+          "function": "kurtosis",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "documents.average_word_length"
+        ],
+        "step": "corpus_stats",
+        "target": "CorpusStatistics.document_average_word_length_kurtosis"
+      },
+      {
+        "detail": {
+          "input_schema": "Word",
+          "output_schema": "CorpusVocabulary"
+        },
+        "operation": "step",
+        "sources": [
+          "CorpusStatistics"
+        ],
+        "step": "corpus_vocabulary_stats",
+        "target": "corpus_vocabulary_stats"
+      },
+      {
+        "detail": {
+          "field": "corpus",
+          "function": "key",
+          "key": "corpus"
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words"
+        ],
+        "step": "corpus_vocabulary_stats",
+        "target": "CorpusVocabulary.corpus"
+      },
+      {
+        "detail": {
+          "field": "estimated_distinct_words",
+          "function": "approx_count_distinct",
+          "key": null
+        },
+        "operation": "aggregate",
+        "sources": [
+          "words.token"
+        ],
+        "step": "corpus_vocabulary_stats",
+        "target": "CorpusVocabulary.estimated_distinct_words"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "CorpusStatistics"
+        ],
+        "step": null,
+        "target": "CorpusStatistics.validation.final"
+      },
+      {
+        "detail": {
+          "mode": "strict"
+        },
+        "operation": "validate_schema",
+        "sources": [
+          "CorpusVocabulary"
+        ],
+        "step": null,
+        "target": "CorpusVocabulary.validation.final"
+      }
+    ],
+    "opaque_boundaries": []
+  },
+  "steps": [
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "document_statistics",
+      "joins": [],
+      "name": "corpus_stats",
+      "output_alias": "corpus_statistics",
+      "output_schema": "CorpusStatistics",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "corpus_statistics",
+          "lane": "corpus_statistics",
+          "schema": "CorpusStatistics"
+        }
+      ],
+      "validation": [
+        {
+          "mode": "strict",
+          "project": false,
+          "reason": "intermediate",
+          "schema": "CorpusStatistics"
+        }
+      ]
+    },
+    {
+      "after_hooks": [],
+      "before_hooks": [],
+      "input_alias": "word",
+      "joins": [],
+      "name": "corpus_vocabulary_stats",
+      "output_alias": "corpus_vocabulary",
+      "output_schema": "CorpusVocabulary",
+      "results": [
+        {
+          "after_hooks": [],
+          "frame": "corpus_vocabulary",
+          "lane": "corpus_vocabulary",
+          "schema": "CorpusVocabulary"
+        }
+      ],
+      "validation": []
+    }
+  ],
+  "target_module": "examples.structure_generated.search.pyspark.transforms.corpus",
+  "validation": {
+    "outputs": [
+      {
+        "mode": "strict",
+        "name": "corpus_statistics",
+        "schema": "CorpusStatistics"
+      },
+      {
+        "mode": "strict",
+        "name": "corpus_vocabulary",
+        "schema": "CorpusVocabulary"
+      }
+    ]
+  }
+}

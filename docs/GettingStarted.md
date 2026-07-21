@@ -250,7 +250,7 @@ class EnrichOrdersGenerated:
 ## 8. (Optional) Use Generated Code
 
 ```python
-from structure_generated.orders.pyspark.transforms.order import EnrichOrdersGenerated
+from structure_generated.store.pyspark.transforms.order import EnrichOrdersGenerated
 
 result = EnrichOrdersGenerated(spark=spark).run(
     orders=orders_df,

@@ -109,11 +109,11 @@ Recommended layout:
 
 ```text
 src/orders/...
-generated/structure_generated/orders/...
+generated/structure_generated/store/...
 ```
 
 Generated modules mirror source import paths below `generated_package`. For example, source module
-`src/orders/transforms/order.py` generates below `generated/structure_generated/orders/...`.
+`src/orders/transforms/order.py` generates below `generated/structure_generated/store/...`.
 
 If no configuration is present, Structure resolves source roots by convention:
 

@@ -1,0 +1,46 @@
+{
+  "bases": [
+    "DocumentIndexTarget"
+  ],
+  "fields": [
+    {
+      "column": "document_id",
+      "name": "document_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "token",
+      "name": "token",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "term_frequency",
+      "name": "term_frequency",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "target_word_count",
+      "name": "target_word_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "target_distinct_terms",
+      "name": "target_distinct_terms",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "document_frequency",
+      "name": "document_frequency",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.search",
+  "name": "DocumentIndexTerm"
+}

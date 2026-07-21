@@ -1,0 +1,107 @@
+{
+  "dependencies": [
+    "pair",
+    "paragraph",
+    "paragraph_similarities",
+    "paragraphs"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "query",
+      "ordinal": 0,
+      "schema": "SimilarityParagraphQuery"
+    },
+    {
+      "name": "paragraphs",
+      "ordinal": 1,
+      "schema": "Paragraph"
+    },
+    {
+      "name": "paragraph_similarities",
+      "ordinal": 2,
+      "schema": "ParagraphSimilarity"
+    }
+  ],
+  "name": "SimilarParagraphs",
+  "outputs": [
+    {
+      "name": "similar_paragraphs",
+      "ordinal": 0,
+      "schema": "IndexedSimilarParagraph"
+    }
+  ],
+  "source": "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs",
+  "step_methods": [
+    {
+      "input_lane": "query",
+      "input_schema": "SimilarityParagraphQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SimilarityParagraphQuery",
+          "source": "query"
+        },
+        {
+          "driving": false,
+          "parameter": "paragraph",
+          "schema": "Paragraph",
+          "source": "paragraphs"
+        },
+        {
+          "driving": false,
+          "parameter": "pair",
+          "schema": "ParagraphSimilarity",
+          "source": "paragraph_similarities"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "pair"
+        },
+        {
+          "how": "inner",
+          "input": "paragraph"
+        }
+      ],
+      "name": "rank",
+      "output_lane": "ranked_paragraphs",
+      "output_schema": "IndexedSimilarParagraph",
+      "results": [
+        {
+          "frame": "ranked_paragraphs",
+          "lane": "ranked_paragraphs",
+          "schema": "IndexedSimilarParagraph"
+        }
+      ]
+    },
+    {
+      "input_lane": "ranked_paragraphs",
+      "input_schema": "IndexedSimilarParagraph",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "IndexedSimilarParagraph",
+          "source": "ranked_paragraphs"
+        }
+      ],
+      "name": "limit",
+      "output_lane": "similar_paragraphs",
+      "output_schema": "IndexedSimilarParagraph",
+      "results": [
+        {
+          "frame": "similar_paragraphs",
+          "lane": "similar_paragraphs",
+          "schema": "IndexedSimilarParagraph"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/SimilarParagraphs.py",
+    "traceability": "traceability/transforms/SimilarParagraphs.SimilarParagraphs.json"
+  }
+}

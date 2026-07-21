@@ -53,10 +53,10 @@ Generated path mapping:
 
 ```text
 src/orders/transforms/order.py
-  -> generated/structure_generated/orders/pyspark/transforms/order.py
+  -> generated/structure_generated/store/pyspark/transforms/order.py
 
 orders/transforms/order.py
-  -> generated/structure_generated/orders/pyspark/transforms/order.py
+  -> generated/structure_generated/store/pyspark/transforms/order.py
 ```
 
 The default generated package is `structure_generated`.

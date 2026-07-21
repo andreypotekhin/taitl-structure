@@ -132,7 +132,7 @@ runtime objects, not generated files.
 Caller-owned read example:
 
 ```python
-from structure_generated.orders.pyspark.schemas.order import ORDER_RAW_SCHEMA
+from structure_generated.store.pyspark.schemas.order import ORDER_RAW_SCHEMA
 
 orders = spark.read.schema(ORDER_RAW_SCHEMA).parquet(source_path)
 ```
@@ -140,7 +140,7 @@ orders = spark.read.schema(ORDER_RAW_SCHEMA).parquet(source_path)
 Caller-owned write preparation example:
 
 ```python
-from structure_generated.orders.pyspark.schemas.order import ORDER_ENRICHED_SCHEMA
+from structure_generated.store.pyspark.schemas.order import ORDER_ENRICHED_SCHEMA
 from structure_generated.runtime.schema_assert import assert_schema, project_schema
 
 assert_schema(df, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="strict")

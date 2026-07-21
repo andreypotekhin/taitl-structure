@@ -1,0 +1,62 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "search_query_id",
+      "name": "search_query_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "rank",
+      "name": "rank",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "document_id",
+      "name": "document_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "section_id",
+      "name": "section_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "paragraph_id",
+      "name": "paragraph_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "sentence_id",
+      "name": "sentence_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "content",
+      "name": "content",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "score_overlap",
+      "name": "score_overlap",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "score_bm25",
+      "name": "score_bm25",
+      "nullable": false,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.search",
+  "name": "SentenceSearchResult"
+}

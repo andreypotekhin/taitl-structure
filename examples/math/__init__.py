@@ -1,1 +1,0 @@
-"""Structure math example."""

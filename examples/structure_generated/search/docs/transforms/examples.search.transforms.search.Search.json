@@ -1,0 +1,67 @@
+{
+  "dependencies": [
+    "query"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "query",
+      "ordinal": 0,
+      "schema": "SearchQuery"
+    },
+    {
+      "name": "scored_sentences",
+      "ordinal": 1,
+      "schema": "Sentence"
+    }
+  ],
+  "name": "Search",
+  "outputs": [
+    {
+      "name": "results",
+      "ordinal": 0,
+      "schema": "SentenceSearchResult"
+    }
+  ],
+  "source": "examples.search.transforms.search.Search",
+  "step_methods": [
+    {
+      "input_lane": "scored_sentences",
+      "input_schema": "Sentence",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "sentence",
+          "schema": "Sentence",
+          "source": "scored_sentences"
+        },
+        {
+          "driving": false,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "query"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "query"
+        }
+      ],
+      "name": "rank_sentences",
+      "output_lane": "scored_sentences",
+      "output_schema": "SentenceSearchResult",
+      "results": [
+        {
+          "frame": "scored_sentences",
+          "lane": "scored_sentences",
+          "schema": "SentenceSearchResult"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/search.py",
+    "traceability": "traceability/transforms/search.Search.json"
+  }
+}

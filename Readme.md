@@ -140,14 +140,14 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 
 from orders.transforms.order import EnrichOrders
-from structure_generated.orders.pyspark.schemas.order import (
+from structure_generated.store.pyspark.schemas.order import (
     ORDER_RAW_SCHEMA,
     ORDER_NORMALIZED_SCHEMA,
     ORDER_WITH_CUSTOMER_SCHEMA,
     ORDER_ENRICHED_SCHEMA,
 )
-from structure_generated.orders.pyspark.schemas.customer import CUSTOMER_SCHEMA
-from structure_generated.orders.pyspark.schemas.product import PRODUCT_SCHEMA
+from structure_generated.store.pyspark.schemas.customer import CUSTOMER_SCHEMA
+from structure_generated.store.pyspark.schemas.product import PRODUCT_SCHEMA
 from structure_generated.runtime.schema_assert import assert_schema, project_schema
 
 

@@ -37,7 +37,9 @@ def test_core_apps_do_not_import_peer_private_commands_or_logic() -> None:
             if parts[:2] != prefix:
                 continue
             remainder = parts[2:]
-            private_boundary = next((index for index, part in enumerate(remainder) if part in {"commands", "logic"}), None)
+            private_boundary = next(
+                (index for index, part in enumerate(remainder) if part in {"commands", "logic"}), None
+            )
             if private_boundary is None:
                 continue
             target = _app(remainder[:private_boundary])

@@ -86,7 +86,9 @@ def test_pyspark_endpoint_groups_commands_and_creates_fresh_actions() -> None:
 
 
 def test_pyspark_symbolic_execution_scopes_its_authoring_context() -> None:
-    symbolic = cast(PySparkSymbolicContext, PySpark.symbolic_execution.open()(step="publish", capture_special_exprs=True))
+    symbolic = cast(
+        PySparkSymbolicContext, PySpark.symbolic_execution.open()(step="publish", capture_special_exprs=True)
+    )
 
     assert current_pyspark_context() is None
     with symbolic:
@@ -227,7 +229,9 @@ def test_pyspark_plugin_uses_only_public_structure_contracts() -> None:
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("structure.core"):
                 violations.append(f"{source.relative_to(root)}: {node.module}")
-    assert not violations, "PySpark must use structure.dsl or structure.plugin.api.v1, never Core internals:\n" + "\n".join(violations)
+    assert (
+        not violations
+    ), "PySpark must use structure.dsl or structure.plugin.api.v1, never Core internals:\n" + "\n".join(violations)
 
 
 def test_plugin_api_uses_only_public_structure_contracts() -> None:

@@ -1,0 +1,230 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "document_id",
+      "name": "document_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "collection_id",
+      "name": "collection_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "source",
+      "name": "source",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "language",
+      "name": "language",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "title",
+      "name": "title",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "url",
+      "name": "url",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "normalized_title",
+      "name": "normalized_title",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "normalized_content",
+      "name": "normalized_content",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "title_starts_with_the",
+      "name": "title_starts_with_the",
+      "nullable": true,
+      "type": "boolean"
+    },
+    {
+      "column": "title_ends_with_guide",
+      "name": "title_ends_with_guide",
+      "nullable": true,
+      "type": "boolean"
+    },
+    {
+      "column": "url_is_https",
+      "name": "url_is_https",
+      "nullable": true,
+      "type": "boolean"
+    },
+    {
+      "column": "content_contains_structure",
+      "name": "content_contains_structure",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "content_like_guide",
+      "name": "content_like_guide",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "content_ilike_structure",
+      "name": "content_ilike_structure",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "content_matches_sentence",
+      "name": "content_matches_sentence",
+      "nullable": false,
+      "type": "boolean"
+    },
+    {
+      "column": "title_prefix",
+      "name": "title_prefix",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "title_words",
+      "name": "title_words",
+      "nullable": false,
+      "type": "array<string!>"
+    },
+    {
+      "column": "leading_title_words",
+      "name": "leading_title_words",
+      "nullable": false,
+      "type": "array<string!>"
+    },
+    {
+      "column": "sorted_title_words",
+      "name": "sorted_title_words",
+      "nullable": false,
+      "type": "array<string!>"
+    },
+    {
+      "column": "title_slug",
+      "name": "title_slug",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "first_number",
+      "name": "first_number",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "content_length",
+      "name": "content_length",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "title_case",
+      "name": "title_case",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "reversed_title",
+      "name": "reversed_title",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "translated_title",
+      "name": "translated_title",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "structure_position",
+      "name": "structure_position",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "title_distance_to_guide",
+      "name": "title_distance_to_guide",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "display_name",
+      "name": "display_name",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "title_hash",
+      "name": "title_hash",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "content_sha2",
+      "name": "content_sha2",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "harvest_year",
+      "name": "harvest_year",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "age_days",
+      "name": "age_days",
+      "nullable": true,
+      "type": "integer"
+    },
+    {
+      "column": "content_length_sqrt",
+      "name": "content_length_sqrt",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "content_length_log",
+      "name": "content_length_log",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "rounded_content_length",
+      "name": "rounded_content_length",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "content_length_sign",
+      "name": "content_length_sign",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "source_recency_rank",
+      "name": "source_recency_rank",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.analytics",
+  "name": "DocumentFeatures"
+}

@@ -1,0 +1,78 @@
+{
+  "dependencies": [],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "documents",
+      "ordinal": 0,
+      "schema": "Document"
+    }
+  ],
+  "name": "ExtractText",
+  "outputs": [
+    {
+      "name": "sections",
+      "ordinal": 0,
+      "schema": "Section"
+    },
+    {
+      "name": "paragraphs",
+      "ordinal": 1,
+      "schema": "Paragraph"
+    },
+    {
+      "name": "sentences",
+      "ordinal": 2,
+      "schema": "Sentence"
+    },
+    {
+      "name": "words",
+      "ordinal": 3,
+      "schema": "Word"
+    }
+  ],
+  "source": "examples.search.transforms.extract.ExtractText",
+  "step_methods": [
+    {
+      "input_lane": "documents",
+      "input_schema": "Document",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "row",
+          "schema": "Document",
+          "source": "documents"
+        }
+      ],
+      "name": "declare_hierarchy",
+      "output_lane": "sections",
+      "output_schema": "Section",
+      "results": [
+        {
+          "frame": "sections",
+          "lane": "sections",
+          "schema": "Section"
+        },
+        {
+          "frame": "paragraphs",
+          "lane": "paragraphs",
+          "schema": "Paragraph"
+        },
+        {
+          "frame": "sentences",
+          "lane": "sentences",
+          "schema": "Sentence"
+        },
+        {
+          "frame": "words",
+          "lane": "words",
+          "schema": "Word"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/extract.py",
+    "traceability": "traceability/transforms/extract.ExtractText.json"
+  }
+}

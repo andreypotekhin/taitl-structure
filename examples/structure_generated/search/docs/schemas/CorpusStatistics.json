@@ -1,0 +1,68 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "corpus",
+      "name": "corpus",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "document_count",
+      "name": "document_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "average_sections_per_document",
+      "name": "average_sections_per_document",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "average_paragraphs_per_document",
+      "name": "average_paragraphs_per_document",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "average_sentences_per_document",
+      "name": "average_sentences_per_document",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "average_words_per_document",
+      "name": "average_words_per_document",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "average_distinct_words_per_document",
+      "name": "average_distinct_words_per_document",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "median_document_average_word_length",
+      "name": "median_document_average_word_length",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "document_average_word_length_skewness",
+      "name": "document_average_word_length_skewness",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "document_average_word_length_kurtosis",
+      "name": "document_average_word_length_kurtosis",
+      "nullable": true,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.analytics",
+  "name": "CorpusStatistics"
+}

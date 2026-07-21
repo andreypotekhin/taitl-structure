@@ -18,5 +18,5 @@ The fixture is intentionally Spark-free to import and compile. Generated output 
 `res/testing/model/v3/structure_generated/orders/` is the corresponding golden compiler output. It uses the PySpark
 `>=4.0,<4.1` profile because the scalar showcase includes the profile-gated `try_cast(...)` helper.
 
-The public `examples/orders` package mirrors this model's release-level surface, including `V3OrderFeatures`; its
+The public `examples/store` package mirrors this model's release-level surface, including `V3OrderFeatures`; its
 checked-in generated code and documentation provide the end-user counterpart to this compiler fixture.

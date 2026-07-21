@@ -10,7 +10,9 @@ def test_added_columns_are_declared_by_larger_output_schema(orders_plan) -> None
 
     add_customer = orders_plan.steps[1]
 
-    assert [assignment.field.name for assignment in cast(PySparkStepBody, add_customer.plugin_body).projection][-3:] == [
+    assert [assignment.field.name for assignment in cast(PySparkStepBody, add_customer.plugin_body).projection][
+        -3:
+    ] == [
         "customer_name",
         "customer_tier",
         "customer_region",

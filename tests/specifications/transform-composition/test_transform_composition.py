@@ -99,9 +99,7 @@ def test_multi_argument_to_matches_sequential_to() -> None:
     multi = NormalizeOrders(orders=object()).to(AddProduct(products=product), PublishOrders())
     sequential = NormalizeOrders(orders=object()).to(AddProduct(products=product)).to(PublishOrders())
 
-    assert [step.name for step in _analysis(multi).steps] == [
-        step.name for step in _analysis(sequential).steps
-    ]
+    assert [step.name for step in _analysis(multi).steps] == [step.name for step in _analysis(sequential).steps]
 
 
 def test_static_transform_to_starts_pipeline() -> None:

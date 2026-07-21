@@ -1,56 +1,56 @@
 from __future__ import annotations
 
-from helpers.example_projects import render_orders_example
+from helpers.example_projects import render_store_example
 
 
-def test_orders_example_generation_is_byte_identical_across_repeated_runs() -> None:
-    assert render_orders_example() == render_orders_example()
+def test_store_example_generation_is_byte_identical_across_repeated_runs() -> None:
+    assert render_store_example() == render_store_example()
 
 
-def test_orders_example_generated_file_order_is_deterministic() -> None:
-    paths = list(render_orders_example())
+def test_store_example_generated_file_order_is_deterministic() -> None:
+    paths = list(render_store_example())
     non_docs = [path for path in paths if "/docs/" not in path]
     docs = [path for path in paths if "/docs/" in path]
     markdown_docs = sorted(path for path in docs if path.endswith(".md"))
     json_docs = sorted(path for path in docs if path.endswith(".json"))
 
     assert non_docs == [
-        "examples/structure_generated/orders/__init__.py",
-        "examples/structure_generated/orders/pyspark/__init__.py",
-        "examples/structure_generated/orders/pyspark/schemas/__init__.py",
-        "examples/structure_generated/orders/pyspark/transforms/__init__.py",
-        "examples/structure_generated/orders/runtime/__init__.py",
-        "examples/structure_generated/orders/runtime/schema_assert.py",
-        "examples/structure_generated/orders/pyspark/schemas/adv_analytics.py",
-        "examples/structure_generated/orders/pyspark/schemas/analytics.py",
-        "examples/structure_generated/orders/pyspark/schemas/common.py",
-        "examples/structure_generated/orders/pyspark/schemas/customer.py",
-        "examples/structure_generated/orders/pyspark/schemas/order.py",
-        "examples/structure_generated/orders/pyspark/schemas/product.py",
-        "examples/structure_generated/orders/pyspark/schemas/promotion.py",
-        "examples/structure_generated/orders/pyspark/schemas/shipment.py",
-        "examples/structure_generated/orders/pyspark/schemas/v3.py",
-        "examples/structure_generated/orders/pyspark/transforms/order.py",
-        "examples/structure_generated/orders/traceability/transforms/order.EnrichOrders.json",
-        "examples/structure_generated/orders/pyspark/transforms/rowset_join.py",
-        "examples/structure_generated/orders/traceability/transforms/rowset_join.RowsetJoinExamples.json",
-        "examples/structure_generated/orders/pyspark/transforms/analytics.py",
-        "examples/structure_generated/orders/traceability/transforms/analytics.OrderAnalytics.json",
-        "examples/structure_generated/orders/pyspark/transforms/adv_analytics.py",
-        "examples/structure_generated/orders/traceability/transforms/adv_analytics.AdvancedOrderAnalytics.json",
-        "examples/structure_generated/orders/pyspark/transforms/v3.py",
-        "examples/structure_generated/orders/traceability/transforms/v3.V3OrderFeatures.json",
-        "examples/structure_generated/orders/traceability/__init__.py",
-        "examples/structure_generated/orders/traceability/transforms/__init__.py",
+        "examples/structure_generated/store/__init__.py",
+        "examples/structure_generated/store/pyspark/__init__.py",
+        "examples/structure_generated/store/pyspark/schemas/__init__.py",
+        "examples/structure_generated/store/pyspark/transforms/__init__.py",
+        "examples/structure_generated/store/runtime/__init__.py",
+        "examples/structure_generated/store/runtime/schema_assert.py",
+        "examples/structure_generated/store/pyspark/schemas/adv_analytics.py",
+        "examples/structure_generated/store/pyspark/schemas/analytics.py",
+        "examples/structure_generated/store/pyspark/schemas/common.py",
+        "examples/structure_generated/store/pyspark/schemas/customer.py",
+        "examples/structure_generated/store/pyspark/schemas/order.py",
+        "examples/structure_generated/store/pyspark/schemas/product.py",
+        "examples/structure_generated/store/pyspark/schemas/promotion.py",
+        "examples/structure_generated/store/pyspark/schemas/shipment.py",
+        "examples/structure_generated/store/pyspark/schemas/v3.py",
+        "examples/structure_generated/store/pyspark/transforms/order.py",
+        "examples/structure_generated/store/traceability/transforms/order.EnrichOrders.json",
+        "examples/structure_generated/store/pyspark/transforms/rowset_join.py",
+        "examples/structure_generated/store/traceability/transforms/rowset_join.RowsetJoinExamples.json",
+        "examples/structure_generated/store/pyspark/transforms/analytics.py",
+        "examples/structure_generated/store/traceability/transforms/analytics.OrderAnalytics.json",
+        "examples/structure_generated/store/pyspark/transforms/adv_analytics.py",
+        "examples/structure_generated/store/traceability/transforms/adv_analytics.AdvancedOrderAnalytics.json",
+        "examples/structure_generated/store/pyspark/transforms/v3.py",
+        "examples/structure_generated/store/traceability/transforms/v3.V3OrderFeatures.json",
+        "examples/structure_generated/store/traceability/__init__.py",
+        "examples/structure_generated/store/traceability/transforms/__init__.py",
     ]
     assert docs == markdown_docs + json_docs
 
 
-def test_orders_example_generation_keeps_public_behavior_fragments_stable() -> None:
-    transform = render_orders_example()["examples/structure_generated/orders/pyspark/transforms/order.py"]
+def test_store_example_generation_keeps_public_behavior_fragments_stable() -> None:
+    transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/order.py"]
 
     assert "class EnrichOrdersGenerated:" in transform
-    assert "from examples.orders.transforms.order import EnrichOrders" in transform
+    assert "from examples.store.transforms.order import EnrichOrders" in transform
     assert "orders = self._impl.use_current_orders(orders=_input_orders, spark=self.spark, ctx=self.ctx)" in transform
     assert 'customers_joined = F.broadcast(customers.alias("customers"))' in transform
     assert 'promotions_joined = promotions.alias("promotions")' in transform
@@ -73,20 +73,20 @@ def test_orders_example_generation_keeps_public_behavior_fragments_stable() -> N
         'lambda key, value: F.lower(F.trim(value)))' in transform
     )
 
-    rowset = render_orders_example()["examples/structure_generated/orders/pyspark/transforms/rowset_join.py"]
+    rowset = render_store_example()["examples/structure_generated/store/pyspark/transforms/rowset_join.py"]
 
     assert "class RowsetJoinExamplesGenerated:" in rowset
     assert '"full"' in rowset
     assert '"right"' in rowset
     assert ".crossJoin(" in rowset
 
-    analytics = render_orders_example()["examples/structure_generated/orders/pyspark/transforms/analytics.py"]
+    analytics = render_store_example()["examples/structure_generated/store/pyspark/transforms/analytics.py"]
 
     assert "class OrderAnalyticsGenerated:" in analytics
     assert 'product_summary = product_summary.groupBy(' in analytics
     assert 'F.avg(F.col("order_fulfillment.quantity")).cast(T.DoubleType()).alias("avg_units")' in analytics
 
-    advanced = render_orders_example()["examples/structure_generated/orders/pyspark/transforms/adv_analytics.py"]
+    advanced = render_store_example()["examples/structure_generated/store/pyspark/transforms/adv_analytics.py"]
 
     assert "class AdvancedOrderAnalyticsGenerated:" in advanced
     assert "revenue_rollups = revenue_rollups.rollup(" in advanced
@@ -95,7 +95,7 @@ def test_orders_example_generation_keeps_public_behavior_fragments_stable() -> N
     assert "F.exists(" in advanced
     assert "F.map_from_entries(F.map_entries(" in advanced
 
-    v3 = render_orders_example()["examples/structure_generated/orders/pyspark/transforms/v3.py"]
+    v3 = render_store_example()["examples/structure_generated/store/pyspark/transforms/v3.py"]
 
     assert "class V3OrderFeaturesGenerated:" in v3
     assert ".try_cast('int')" in v3

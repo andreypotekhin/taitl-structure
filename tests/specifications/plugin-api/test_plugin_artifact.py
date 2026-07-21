@@ -62,13 +62,26 @@ class Compiler:
 
 
 class Facet:
-    def validate(self, request): return None
-    def materialize(self, schema): return schema
-    def build(self, request): return request.payload
-    def read(self, request): return request.schema
-    def source(self, schema, *, to): return schema
-    def resolve(self, *, profile, variant): return cast(BackendCapabilities, object())
-    def open_step(self, request): raise AssertionError("Fake plugin does not author transform steps.")
+    def validate(self, request):
+        return None
+
+    def materialize(self, schema):
+        return schema
+
+    def build(self, request):
+        return request.payload
+
+    def read(self, request):
+        return request.schema
+
+    def source(self, schema, *, to):
+        return schema
+
+    def resolve(self, *, profile, variant):
+        return cast(BackendCapabilities, object())
+
+    def open_step(self, request):
+        raise AssertionError("Fake plugin does not author transform steps.")
 
 
 class Executor:
@@ -77,17 +90,25 @@ class Executor:
 
 
 class Serializer:
-    def encode(self, payload): return b"payload"
-    def decode(self, payload): return object()
+    def encode(self, payload):
+        return b"payload"
+
+    def decode(self, payload):
+        return object()
 
 
 class Generator:
-    def generate(self, request: GenerationRequest): return {"generated/module.py": "content"}
+    def generate(self, request: GenerationRequest):
+        return {"generated/module.py": "content"}
 
 
 class FakePlugin:
     descriptor = PluginDescriptor("fake", "Fake", "fake-wheel", "1.0", 1, 1)
-    def api(self, version): return PluginAPI(Facet(), Compiler(), Facet(), Facet(), executor=Executor(), generator=Generator(), serializer=Serializer())
+
+    def api(self, version):
+        return PluginAPI(
+            Facet(), Compiler(), Facet(), Facet(), executor=Executor(), generator=Generator(), serializer=Serializer()
+        )
 
 
 class CapturingCompiler:
@@ -173,7 +194,10 @@ def test_core_execution_routes_the_opaque_payload_only_after_identity_validation
     registry = Plugin.registry(lambda: [Entry()])
     artifact = FakeTransform.compile(plugin_registry=registry, plugin_configuration=configuration)
 
-    assert ExecutePluginArtifact(registry)(artifact, configuration=configuration, runtime={artifact.payload: "done"}) == "done"
+    assert (
+        ExecutePluginArtifact(registry)(artifact, configuration=configuration, runtime={artifact.payload: "done"})
+        == "done"
+    )
 
 
 def test_core_serialization_preserves_the_artifact_envelope() -> None:

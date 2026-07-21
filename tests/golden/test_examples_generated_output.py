@@ -5,14 +5,14 @@ import difflib
 import pytest
 from helpers.example_projects import (
     ROOT,
-    expected_orders_generated,
+    expected_search_generated,
     expected_stocks_generated,
+    expected_store_generated,
     expected_streams_generated,
-    expected_texts_generated,
-    render_orders_example,
+    render_search_example,
     render_stocks_example,
+    render_store_example,
     render_streams_example,
-    render_texts_example,
 )
 
 from structure import StructureConfig, compile_transform
@@ -22,10 +22,10 @@ from structure.core.cli.commands.DiscoverStructureProject import DiscoverStructu
 @pytest.mark.parametrize(
     ("actual", "expected"),
     [
-        (render_orders_example, expected_orders_generated),
+        (render_store_example, expected_store_generated),
         (render_streams_example, expected_streams_generated),
         (render_stocks_example, expected_stocks_generated),
-        (render_texts_example, expected_texts_generated),
+        (render_search_example, expected_search_generated),
     ],
 )
 def test_example_generated_output_matches_golden_files(actual, expected) -> None:
@@ -37,15 +37,15 @@ def test_example_generated_output_matches_golden_files(actual, expected) -> None
         assert actual[path] == expected[path], _text_diff(path, expected[path], actual[path])
 
 
-def test_texts_scoring_subpackage_transform_is_discovered_and_compiled() -> None:
+def test_search_scoring_subpackage_transform_is_discovered_and_compiled() -> None:
     """A nested transform module is a normal source-discovery entrypoint."""
 
-    config = StructureConfig.resolve(project_root=ROOT, source_roots=["examples/texts"])
+    config = StructureConfig.resolve(project_root=ROOT, source_roots=["examples/search"])
     project = DiscoverStructureProject()(config)
     score_all = next(
         transform
         for transform in project.transforms
-        if transform.__module__ == "examples.texts.transforms.scoring.ScoreAll" and transform.__name__ == "ScoreAll"
+        if transform.__module__ == "examples.search.transforms.scoring.ScoreAll" and transform.__name__ == "ScoreAll"
     )
 
     compile_transform(score_all, config=config)

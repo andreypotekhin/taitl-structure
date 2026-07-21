@@ -89,7 +89,7 @@ materialized Spark schemas without requiring generated files. Both surfaces are 
 internals.
 
 ```python
-from structure_generated.orders.pyspark.schemas.order import ORDER_ENRICHED_SCHEMA
+from structure_generated.store.pyspark.schemas.order import ORDER_ENRICHED_SCHEMA
 from structure_generated.runtime.schema_assert import assert_schema, project_schema
 
 assert_schema(df, ORDER_ENRICHED_SCHEMA, name="OrderEnriched", mode="strict")

@@ -1,0 +1,107 @@
+{
+  "dependencies": [
+    "pair",
+    "section",
+    "section_similarities",
+    "sections"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "query",
+      "ordinal": 0,
+      "schema": "SimilaritySectionQuery"
+    },
+    {
+      "name": "sections",
+      "ordinal": 1,
+      "schema": "Section"
+    },
+    {
+      "name": "section_similarities",
+      "ordinal": 2,
+      "schema": "SectionSimilarity"
+    }
+  ],
+  "name": "SimilarSections",
+  "outputs": [
+    {
+      "name": "similar_sections",
+      "ordinal": 0,
+      "schema": "IndexedSimilarSection"
+    }
+  ],
+  "source": "examples.search.transforms.similarities.SimilarSections.SimilarSections",
+  "step_methods": [
+    {
+      "input_lane": "query",
+      "input_schema": "SimilaritySectionQuery",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "query",
+          "schema": "SimilaritySectionQuery",
+          "source": "query"
+        },
+        {
+          "driving": false,
+          "parameter": "section",
+          "schema": "Section",
+          "source": "sections"
+        },
+        {
+          "driving": false,
+          "parameter": "pair",
+          "schema": "SectionSimilarity",
+          "source": "section_similarities"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "pair"
+        },
+        {
+          "how": "inner",
+          "input": "section"
+        }
+      ],
+      "name": "rank",
+      "output_lane": "ranked_sections",
+      "output_schema": "IndexedSimilarSection",
+      "results": [
+        {
+          "frame": "ranked_sections",
+          "lane": "ranked_sections",
+          "schema": "IndexedSimilarSection"
+        }
+      ]
+    },
+    {
+      "input_lane": "ranked_sections",
+      "input_schema": "IndexedSimilarSection",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "IndexedSimilarSection",
+          "source": "ranked_sections"
+        }
+      ],
+      "name": "limit",
+      "output_lane": "similar_sections",
+      "output_schema": "IndexedSimilarSection",
+      "results": [
+        {
+          "frame": "similar_sections",
+          "lane": "similar_sections",
+          "schema": "IndexedSimilarSection"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/SimilarSections.py",
+    "traceability": "traceability/transforms/SimilarSections.SimilarSections.json"
+  }
+}

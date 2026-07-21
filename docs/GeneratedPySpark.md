@@ -112,7 +112,7 @@ Generated schema constants such as `ORDER_ENRICHED_SCHEMA` are ordinary PySpark 
 supported caller-facing artifacts, not only generated transform internals.
 
 ```python
-from structure_generated.orders.pyspark.schemas.order import ORDER_ENRICHED_SCHEMA
+from structure_generated.store.pyspark.schemas.order import ORDER_ENRICHED_SCHEMA
 from structure_generated.runtime.schema_assert import assert_schema, project_schema
 
 result = EnrichOrdersGenerated(spark=spark).run(orders=orders, customers=customers)

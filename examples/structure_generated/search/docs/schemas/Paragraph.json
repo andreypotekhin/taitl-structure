@@ -1,0 +1,56 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "document_id",
+      "name": "document_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "section_id",
+      "name": "section_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "ordinal",
+      "name": "ordinal",
+      "nullable": false,
+      "type": "integer"
+    },
+    {
+      "column": "content",
+      "name": "content",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "search_query_id",
+      "name": "search_query_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "score_overlap",
+      "name": "score_overlap",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "score_bm25",
+      "name": "score_bm25",
+      "nullable": true,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.text",
+  "name": "Paragraph"
+}

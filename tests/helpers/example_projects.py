@@ -19,19 +19,19 @@ ROOT = Path(".")
 EXAMPLES = ROOT / "examples"
 
 
-def render_orders_example() -> dict[str, str]:
+def render_store_example() -> dict[str, str]:
     with _example_imports():
-        from examples.orders.schemas.adv_analytics import (
+        from examples.store.schemas.adv_analytics import (
             OrderCollectionProfile,
             OrderCollectionSource,
             OrderCustomerWindow,
             OrderProductCube,
             OrderRevenueRollup,
         )
-        from examples.orders.schemas.analytics import CustomerDailyTotal, CustomerEventRank, ProductDailySummary
-        from examples.orders.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
-        from examples.orders.schemas.customer import Customer
-        from examples.orders.schemas.order import (
+        from examples.store.schemas.analytics import CustomerDailyTotal, CustomerEventRank, ProductDailySummary
+        from examples.store.schemas.common import Address, AuditStamp, BusinessDate, TenantKey
+        from examples.store.schemas.customer import Customer
+        from examples.store.schemas.order import (
             CustomerOrderBackfill,
             OrderCustomerReconciliation,
             OrderFulfillment,
@@ -45,28 +45,28 @@ def render_orders_example() -> dict[str, str]:
             OrderWithPromotion,
             PublicationFlags,
         )
-        from examples.orders.schemas.product import BlockedProduct, Product, ProductBase
-        from examples.orders.schemas.promotion import Promotion
-        from examples.orders.schemas.shipment import Shipment
-        from examples.orders.schemas.v3 import V3OrderDetails, V3OrderProjection, V3OrderSource
-        from examples.orders.transforms.adv_analytics import AdvancedOrderAnalytics
-        from examples.orders.transforms.analytics import OrderAnalytics
-        from examples.orders.transforms.order import EnrichOrders
-        from examples.orders.transforms.rowset_join import RowsetJoinExamples
-        from examples.orders.transforms.v3 import V3OrderFeatures
+        from examples.store.schemas.product import BlockedProduct, Product, ProductBase
+        from examples.store.schemas.promotion import Promotion
+        from examples.store.schemas.shipment import Shipment
+        from examples.store.schemas.v3 import V3OrderDetails, V3OrderProjection, V3OrderSource
+        from examples.store.transforms.adv_analytics import AdvancedOrderAnalytics
+        from examples.store.transforms.analytics import OrderAnalytics
+        from examples.store.transforms.order import EnrichOrders
+        from examples.store.transforms.rowset_join import RowsetJoinExamples
+        from examples.store.transforms.v3 import V3OrderFeatures
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
-            "examples.orders.schemas.adv_analytics": [
+            "examples.store.schemas.adv_analytics": [
                 OrderRevenueRollup,
                 OrderProductCube,
                 OrderCustomerWindow,
                 OrderCollectionSource,
                 OrderCollectionProfile,
             ],
-            "examples.orders.schemas.analytics": [CustomerDailyTotal, ProductDailySummary, CustomerEventRank],
-            "examples.orders.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
-            "examples.orders.schemas.customer": [Customer],
-            "examples.orders.schemas.order": [
+            "examples.store.schemas.analytics": [CustomerDailyTotal, ProductDailySummary, CustomerEventRank],
+            "examples.store.schemas.common": [TenantKey, AuditStamp, Address, BusinessDate],
+            "examples.store.schemas.customer": [Customer],
+            "examples.store.schemas.order": [
                 OrderRaw,
                 OrderNormalized,
                 OrderWithCustomer,
@@ -80,18 +80,18 @@ def render_orders_example() -> dict[str, str]:
                 CustomerOrderBackfill,
                 OrderProductCandidate,
             ],
-            "examples.orders.schemas.product": [ProductBase, Product, BlockedProduct],
-            "examples.orders.schemas.promotion": [Promotion],
-            "examples.orders.schemas.shipment": [Shipment],
-            "examples.orders.schemas.v3": [V3OrderDetails, V3OrderSource, V3OrderProjection],
+            "examples.store.schemas.product": [ProductBase, Product, BlockedProduct],
+            "examples.store.schemas.promotion": [Promotion],
+            "examples.store.schemas.shipment": [Shipment],
+            "examples.store.schemas.v3": [V3OrderDetails, V3OrderSource, V3OrderProjection],
         }
         files = {}
         transforms = (
-            (EnrichOrders, "examples.orders.transforms.order.EnrichOrders"),
-            (RowsetJoinExamples, "examples.orders.transforms.rowset_join.RowsetJoinExamples"),
-            (OrderAnalytics, "examples.orders.transforms.analytics.OrderAnalytics"),
-            (AdvancedOrderAnalytics, "examples.orders.transforms.adv_analytics.AdvancedOrderAnalytics"),
-            (V3OrderFeatures, "examples.orders.transforms.v3.V3OrderFeatures"),
+            (EnrichOrders, "examples.store.transforms.order.EnrichOrders"),
+            (RowsetJoinExamples, "examples.store.transforms.rowset_join.RowsetJoinExamples"),
+            (OrderAnalytics, "examples.store.transforms.analytics.OrderAnalytics"),
+            (AdvancedOrderAnalytics, "examples.store.transforms.adv_analytics.AdvancedOrderAnalytics"),
+            (V3OrderFeatures, "examples.store.transforms.v3.V3OrderFeatures"),
         )
         for transform_class, source_transform in transforms:
             files.update(
@@ -105,7 +105,7 @@ def render_orders_example() -> dict[str, str]:
                         ).lowered,
                     ),
                     source_transform=source_transform,
-                    generated_package="examples.structure_generated.orders",
+                    generated_package="examples.structure_generated.store",
                     source_schema_modules=schema_modules,
                 )
             )
@@ -113,26 +113,26 @@ def render_orders_example() -> dict[str, str]:
             StructureConfig.resolve(
                 project_root=ROOT,
                 source_roots=["examples"],
-                generated_dir="examples/structure_generated/orders",
-                generated_package="examples.structure_generated.orders",
+                generated_dir="examples/structure_generated/store",
+                generated_package="examples.structure_generated.store",
             ),
             DiscoveredStructureProject(
                 transforms=tuple(transform for transform, _ in transforms),
                 schema_modules={module: tuple(schemas) for module, schemas in schema_modules.items()},
             ),
         )
-        files.update({f"examples/structure_generated/orders/{path}": text for path, text in docs.items()})
-        files["examples/structure_generated/orders/traceability/__init__.py"] = (
+        files.update({f"examples/structure_generated/store/{path}": text for path, text in docs.items()})
+        files["examples/structure_generated/store/traceability/__init__.py"] = (
             "# Generated traceability package marker.\n"
         )
-        files["examples/structure_generated/orders/traceability/transforms/__init__.py"] = (
+        files["examples/structure_generated/store/traceability/transforms/__init__.py"] = (
             "# Generated transform traceability package marker.\n"
         )
         return files
 
 
-def expected_orders_generated() -> dict[str, str]:
-    return _expected_generated("orders")
+def expected_store_generated() -> dict[str, str]:
+    return _expected_generated("store")
 
 
 def render_streams_example() -> dict[str, str]:
@@ -265,9 +265,9 @@ def expected_stocks_generated() -> dict[str, str]:
     return _expected_generated("stocks")
 
 
-def render_texts_example() -> dict[str, str]:
+def render_search_example() -> dict[str, str]:
     with _example_imports():
-        from examples.texts.schemas.analytics import (
+        from examples.search.schemas.analytics import (
             CorpusStatistics,
             CorpusVocabulary,
             DocumentFeatures,
@@ -277,7 +277,7 @@ def render_texts_example() -> dict[str, str]:
             SentenceStatistics,
             SimilarDocument,
         )
-        from examples.texts.schemas.search import (
+        from examples.search.schemas.search import (
             DocumentBm25Score,
             DocumentIndexSummary,
             DocumentIndexTarget,
@@ -305,7 +305,7 @@ def render_texts_example() -> dict[str, str]:
             SentenceSearchResult,
             SentenceSearchTarget,
         )
-        from examples.texts.schemas.similarity import (
+        from examples.search.schemas.similarity import (
             DocumentSimilarity,
             DocumentSimilarityQuery,
             IndexedSimilarDocument,
@@ -324,18 +324,18 @@ def render_texts_example() -> dict[str, str]:
             SimilaritySectionQuery,
             SimilaritySentenceQuery,
         )
-        from examples.texts.schemas.text import Document, Paragraph, Section, Sentence, Word
-        from examples.texts.transforms.analyze import AnalyzeText
-        from examples.texts.transforms.corpus import CorpusText
-        from examples.texts.transforms.extract import ExtractText
-        from examples.texts.transforms.index import CreateIndex
-        from examples.texts.transforms.profile import ProfileDocuments
-        from examples.texts.transforms.scoring.AddScores import AddScores
-        from examples.texts.transforms.scoring.ScoreAll import ScoreAll
-        from examples.texts.transforms.search import Search
-        from examples.texts.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
-        from examples.texts.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
-        from examples.texts.transforms.similarity import (
+        from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
+        from examples.search.transforms.analyze import AnalyzeText
+        from examples.search.transforms.corpus import CorpusText
+        from examples.search.transforms.extract import ExtractText
+        from examples.search.transforms.index import CreateIndex
+        from examples.search.transforms.profile import ProfileDocuments
+        from examples.search.transforms.scoring.AddScores import AddScores
+        from examples.search.transforms.scoring.ScoreAll import ScoreAll
+        from examples.search.transforms.search import Search
+        from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
+        from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
+        from examples.search.transforms.similarity import (
             Similarity,
             SimilarParagraphs,
             SimilarSections,
@@ -343,7 +343,7 @@ def render_texts_example() -> dict[str, str]:
         )
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
-            "examples.texts.schemas.analytics": [
+            "examples.search.schemas.analytics": [
                 DocumentFeatures,
                 SentenceStatistics,
                 ParagraphStatistics,
@@ -353,8 +353,8 @@ def render_texts_example() -> dict[str, str]:
                 CorpusVocabulary,
                 SimilarDocument,
             ],
-            "examples.texts.schemas.text": [Document, Section, Paragraph, Sentence, Word],
-            "examples.texts.schemas.search": [
+            "examples.search.schemas.text": [Document, Section, Paragraph, Sentence, Word],
+            "examples.search.schemas.search": [
                 SearchQuery,
                 SentenceSearchResult,
                 DocumentSearchTarget,
@@ -382,7 +382,7 @@ def render_texts_example() -> dict[str, str]:
                 ParagraphBm25Score,
                 SentenceBm25Score,
             ],
-            "examples.texts.schemas.similarity": [
+            "examples.search.schemas.similarity": [
                 SimilarityPolicy,
                 SimilarityDocumentQuery,
                 SimilaritySectionQuery,
@@ -403,26 +403,26 @@ def render_texts_example() -> dict[str, str]:
             ],
         }
         transforms = (
-            (ExtractText, "examples.texts.transforms.extract.ExtractText"),
-            (ProfileDocuments, "examples.texts.transforms.profile.ProfileDocuments"),
-            (AnalyzeText, "examples.texts.transforms.analyze.AnalyzeText"),
-            (CorpusText, "examples.texts.transforms.corpus.CorpusText"),
-            (CreateIndex, "examples.texts.transforms.index.CreateIndex"),
+            (ExtractText, "examples.search.transforms.extract.ExtractText"),
+            (ProfileDocuments, "examples.search.transforms.profile.ProfileDocuments"),
+            (AnalyzeText, "examples.search.transforms.analyze.AnalyzeText"),
+            (CorpusText, "examples.search.transforms.corpus.CorpusText"),
+            (CreateIndex, "examples.search.transforms.index.CreateIndex"),
             (
                 CreateSimilarityQueries,
-                "examples.texts.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries",
+                "examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries",
             ),
-            (ScoreAll, "examples.texts.transforms.scoring.ScoreAll.ScoreAll"),
+            (ScoreAll, "examples.search.transforms.scoring.ScoreAll.ScoreAll"),
             (
                 ReduceSimilarityScores,
-                "examples.texts.transforms.similarities.ReduceSimilarityScores.ReduceSimilarityScores",
+                "examples.search.transforms.similarities.ReduceSimilarityScores.ReduceSimilarityScores",
             ),
-            (Similarity, "examples.texts.transforms.similarity.Similarity"),
-            (SimilarSections, "examples.texts.transforms.similarities.SimilarSections.SimilarSections"),
-            (SimilarParagraphs, "examples.texts.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
-            (SimilarSentences, "examples.texts.transforms.similarities.SimilarSentences.SimilarSentences"),
-            (AddScores, "examples.texts.transforms.scoring.AddScores.AddScores"),
-            (Search, "examples.texts.transforms.search.Search"),
+            (Similarity, "examples.search.transforms.similarity.Similarity"),
+            (SimilarSections, "examples.search.transforms.similarities.SimilarSections.SimilarSections"),
+            (SimilarParagraphs, "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
+            (SimilarSentences, "examples.search.transforms.similarities.SimilarSentences.SimilarSentences"),
+            (AddScores, "examples.search.transforms.scoring.AddScores.AddScores"),
+            (Search, "examples.search.transforms.search.Search"),
         )
         files = {}
         for transform_class, source_transform in transforms:
@@ -433,7 +433,7 @@ def render_texts_example() -> dict[str, str]:
                         Compiler.frontend.compile()(transform_class, materialize_schemas=False).lowered,
                     ),
                     source_transform=source_transform,
-                    generated_package="examples.structure_generated.texts",
+                    generated_package="examples.structure_generated.search",
                     source_schema_modules=schema_modules,
                 )
             )
@@ -441,26 +441,26 @@ def render_texts_example() -> dict[str, str]:
             StructureConfig.resolve(
                 project_root=ROOT,
                 source_roots=["examples"],
-                generated_dir="examples/structure_generated/texts",
-                generated_package="examples.structure_generated.texts",
+                generated_dir="examples/structure_generated/search",
+                generated_package="examples.structure_generated.search",
             ),
             DiscoveredStructureProject(
                 transforms=tuple(transform for transform, _ in transforms),
                 schema_modules={module: tuple(schemas) for module, schemas in schema_modules.items()},
             ),
         )
-        files.update({f"examples/structure_generated/texts/{path}": text for path, text in docs.items()})
-        files["examples/structure_generated/texts/traceability/__init__.py"] = (
+        files.update({f"examples/structure_generated/search/{path}": text for path, text in docs.items()})
+        files["examples/structure_generated/search/traceability/__init__.py"] = (
             "# Generated traceability package marker.\n"
         )
-        files["examples/structure_generated/texts/traceability/transforms/__init__.py"] = (
+        files["examples/structure_generated/search/traceability/transforms/__init__.py"] = (
             "# Generated transform traceability package marker.\n"
         )
         return {path: text.rstrip() + "\n" for path, text in files.items()}
 
 
-def expected_texts_generated() -> dict[str, str]:
-    return _expected_generated("texts")
+def expected_search_generated() -> dict[str, str]:
+    return _expected_generated("search")
 
 
 def _expected_generated(example: str) -> dict[str, str]:
@@ -480,10 +480,10 @@ def _example_imports() -> Iterator[None]:
         yield
     finally:
         sys.path.remove(path)
-        _drop("examples.orders")
+        _drop("examples.store")
         _drop("examples.streams")
         _drop("examples.stocks")
-        _drop("examples.texts")
+        _drop("examples.search")
         _drop("examples.structure_generated")
 
 

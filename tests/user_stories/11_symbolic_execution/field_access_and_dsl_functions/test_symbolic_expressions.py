@@ -11,7 +11,10 @@ def test_field_access_produces_symbolic_projection_expressions(orders_plan) -> N
     """I can have field access produce symbolic expressions."""
 
     normalize = orders_plan.steps[0]
-    projection = {assignment.field.name: assignment.expression for assignment in cast(PySparkStepBody, normalize.plugin_body).projection}
+    projection = {
+        assignment.field.name: assignment.expression
+        for assignment in cast(PySparkStepBody, normalize.plugin_body).projection
+    }
 
     assert projection["tenant"].kind == "field"
     assert projection["tenant"].data == {

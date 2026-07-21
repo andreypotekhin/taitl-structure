@@ -85,10 +85,10 @@ Example mapping:
 
 ```text
 src/orders/schemas/order.py
-  -> generated/structure_generated/orders/pyspark/schemas/order.py
+  -> generated/structure_generated/store/pyspark/schemas/order.py
 
 src/orders/transforms/order.py
-  -> generated/structure_generated/orders/pyspark/transforms/order.py
+  -> generated/structure_generated/store/pyspark/transforms/order.py
 ```
 
 ## Configuration
@@ -822,7 +822,7 @@ Formatting failure example:
 CompileError GEN-E0903: Generated formatter failed
 
 Generated path:
-  generated/structure_generated/orders/pyspark/transforms/order.py
+  generated/structure_generated/store/pyspark/transforms/order.py
 
 Problem:
   The formatter could not parse the generated Python module.

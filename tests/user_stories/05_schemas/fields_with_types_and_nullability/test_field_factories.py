@@ -110,7 +110,15 @@ def test_python_hints_infer_default_pyspark_fields() -> None:
 
     fields = cast(dict[str, Any], Order._structure_fields)
     assert [fields[name].type.name for name in fields] == [
-        "string", "integer", "double", "boolean", "date", "timestamp", "array", "map", "struct"
+        "string",
+        "integer",
+        "double",
+        "boolean",
+        "date",
+        "timestamp",
+        "array",
+        "map",
+        "struct",
     ]
     assert fields["tags"].type.element.name == "string"
     assert fields["attributes"].type.key.name == "string"
@@ -135,6 +143,7 @@ def test_hints_accept_compatible_factory_detail() -> None:
 
 def test_hints_reject_incompatible_factory_detail() -> None:
     with pytest.raises(TypeError, match="Price.amount hint float is incompatible with decimal\\(12, 2\\)"):
+
         class Price(Schema):
             amount: float = decimal(12, 2)
 

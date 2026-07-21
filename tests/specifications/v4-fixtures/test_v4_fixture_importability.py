@@ -29,10 +29,7 @@ def test_v4_fixture_starts_with_typed_bitwise_projection() -> None:
         TransformPlan,
         Compiler.frontend.compile()(fixture.BitwiseFeatures, materialize_schemas=False).analysis,
     )
-    expressions = [
-        assignment.expression
-        for assignment in cast(PySparkStepBody, plan.steps[0].plugin_body).projection
-    ]
+    expressions = [assignment.expression for assignment in cast(PySparkStepBody, plan.steps[0].plugin_body).projection]
 
     assert [expression.kind for expression in expressions[:6]] == [
         "bitwise_and",

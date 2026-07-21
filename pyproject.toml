@@ -104,7 +104,7 @@ exclude = ["^res/testing/model/", "^examples/(fixtures|structure_generated)/"]
 
 [[tool.mypy.overrides]]
 module = [
-    "examples.orders.*",
+    "examples.store.*",
     "examples.structure_generated.*",
     "testing.model.v1.orders.*",
     "testing.model.v1.structure_generated.*",
@@ -115,11 +115,11 @@ follow_imports = "skip"
 
 [[tool.mypy.overrides]]
 module = [
-    "examples.orders.transforms.*",
+    "examples.store.transforms.*",
     "examples.streams.transforms.*",
-    "examples.math.transforms.*",
+    "examples.school.transforms.*",
     "examples.stocks.transforms.*",
-    "examples.texts.transforms.*",
+    "examples.search.transforms.*",
 ]
 disable_error_code = ["attr-defined", "operator", "var-annotated", "assignment"]
 

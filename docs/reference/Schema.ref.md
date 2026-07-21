@@ -1030,7 +1030,7 @@ CUSTOMER_SCHEMA = T.StructType([
 The generated constant is an ordinary PySpark `StructType`, so callers may use it at a storage boundary:
 
 ```python
-from structure_generated.orders.pyspark.schemas.customer import CUSTOMER_SCHEMA
+from structure_generated.store.pyspark.schemas.customer import CUSTOMER_SCHEMA
 
 customers = spark.read.schema(CUSTOMER_SCHEMA).parquet(customer_source_path)
 ```
