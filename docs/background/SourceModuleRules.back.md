@@ -94,8 +94,9 @@ rule explicit.
 
 ## Discovery
 
-Discovery finds concrete `Transform` entrypoint classes and schema classes that are reachable from those transforms or
-imported directly from source modules.
+Discovery finds concrete `Transform` entrypoint classes and module-level schema classes that are reachable from those
+transforms or imported directly from source modules. Dedicated model schema modules remain the recommended layout, but
+a source module may also declare a transform-local intermediate schema beside its transform.
 
 Rules:
 
@@ -103,7 +104,9 @@ Rules:
 - `@transform` is optional for class discovery and remains the way to record class-level transform options.
 - Reusable lane-only base classes are not compiled as transform entrypoints.
 - Schema classes may be discovered from transform inputs, step method annotations, nested schema types, and direct
-  source scans when supported.
+  source scans when supported. A directly discovered schema class is declared at module scope; a schema nested inside a
+  `Transform` is invalid. Here, a nested schema type means a field such as `field.struct(Address)`, not a Python class
+  nested inside another class.
 - Private modules are not automatically excluded. A later config option may add include and exclude patterns.
 - Discovery order is deterministic by source root order, path sort order, then module import path.
 - Source location metadata should include project-relative path and line number when available.

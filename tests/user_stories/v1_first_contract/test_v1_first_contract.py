@@ -2,8 +2,14 @@ import sys
 from typing import cast
 
 from structure import *
+from structure.core.compiler.api import Compiler
 from structure.core.dsl.api import DecimalType
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
+
+
+def _analysis(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False).analysis
 
 
 def test_v1_fixture_imports_without_pyspark() -> None:
@@ -25,7 +31,7 @@ def test_v1_first_slice_compiles_to_normalization_plan() -> None:
     from testing.model.v1.orders.schemas.promotion import Promotion
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    plan = compile_transform(EnrichOrders)
+    plan = _analysis(EnrichOrders)
 
     assert plan.name == "EnrichOrders"
     assert [(item.name, item.schema, item.ordinal) for item in plan.inputs] == [
@@ -41,13 +47,14 @@ def test_v1_first_slice_compiles_to_normalization_plan() -> None:
     assert step.output_schema is OrderNormalized
     assert step.ordinal == 0
 
-    assert [predicate.kind for predicate in step.filters] == ["is_not_null", "is_not_null", "is_not_null"]
-    assert [_field(predicate.args[0].data) for predicate in step.filters] == [
+    body = cast(PySparkStepBody, step.plugin_body)
+    assert [predicate.kind for predicate in body.filters] == ["is_not_null", "is_not_null", "is_not_null"]
+    assert [_field(predicate.args[0].data) for predicate in body.filters] == [
         {"scope": "orders", "field": "id"},
         {"scope": "orders", "field": "customer_id"},
         {"scope": "orders", "field": "product_id"},
     ]
-    assert [assignment.field.name for assignment in step.projection][:8] == [
+    assert [assignment.field.name for assignment in body.projection][:8] == [
         "tenant",
         "audit",
         "business",
@@ -62,8 +69,11 @@ def test_v1_first_slice_compiles_to_normalization_plan() -> None:
 def test_v1_first_slice_total_projection_captures_decimal_coalesce() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    plan = compile_transform(EnrichOrders)
-    projection = {assignment.field.name: assignment.expression for assignment in plan.steps[0].projection}
+    plan = _analysis(EnrichOrders)
+    projection = {
+        assignment.field.name: assignment.expression
+        for assignment in cast(PySparkStepBody, plan.steps[0].plugin_body).projection
+    }
     total = projection["total"]
 
     assert total.kind == "call"

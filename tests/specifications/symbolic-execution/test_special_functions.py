@@ -5,6 +5,16 @@ import pytest
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
+
+
+def _compile(transform, *, warn_on_udfs: bool = True):
+    return Compiler.frontend.compile()(
+        transform,
+        materialize_schemas=False,
+        warn_on_udfs=warn_on_udfs,
+    )
 
 
 class Raw(Schema):
@@ -27,7 +37,7 @@ def test_special_expr_helper_call_through_self_compiles_transparently() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(id=self.clean(row.id))
 
-    expression = compile_transform(Publish).steps[0].projection[0].expression
+    expression = cast(PySparkStepBody, _compile(Publish).analysis.steps[0].plugin_body).projection[0].expression
 
     assert expression.kind == "field"
 
@@ -44,9 +54,9 @@ def test_special_udf_records_optimizer_warning_by_default() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(id=self.clean(row.id))
 
-    plan = compile_transform(Publish)
+    plan = _compile(Publish).analysis
 
-    assert plan.steps[0].projection[0].expression.kind == "python_udf"
+    assert cast(PySparkStepBody, plan.steps[0].plugin_body).projection[0].expression.kind == "python_udf"
     assert [diagnostic.code for diagnostic in plan.diagnostics] == ["DSL-W0403"]
 
 
@@ -62,7 +72,7 @@ def test_special_udf_warning_can_be_disabled_by_compiler_config() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(id=self.clean(row.id))
 
-    plan = compile_transform(Publish, warn_on_udfs=False)
+    plan = _compile(Publish, warn_on_udfs=False).analysis
 
     assert plan.diagnostics == ()
 
@@ -80,7 +90,7 @@ def test_special_udf_requires_return_type_or_supported_annotation() -> None:
             return Published(id=self.clean(row.id))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Publish)
+        _compile(Publish)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "return_type" in raised.value.diagnostic.problem_text()
@@ -123,7 +133,7 @@ def test_special_udf_renders_generated_pyspark_udf_call() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(id=self.clean(row.id))
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = cast(PySparkExecutionPlan, _compile(Publish).lowered)
     expression = recipe.steps[0].projection[0].expression
     text = PySpark.render.expression()(expression, scope_aliases={"rows": "rows"})
 
@@ -143,7 +153,7 @@ def test_special_udf_traceability_marks_python_body_opaque() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(id=self.clean(row.id))
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = cast(PySparkExecutionPlan, _compile(Publish).lowered)
     traceability = Compiler.traceability.build()(
         recipe,
         source_transform=f"{Publish.__module__}.{Publish.__name__}",

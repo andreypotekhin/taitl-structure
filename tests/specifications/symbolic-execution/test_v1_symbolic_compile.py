@@ -4,8 +4,14 @@ from typing import cast
 import pytest
 
 from structure import *
+from structure.core.compiler.api import Compiler
 from structure.core.dsl.model.types.StructType import StructType
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
+
+
+def _analysis(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False).analysis
 
 
 def test_v1_fixture_imports_without_pyspark() -> None:
@@ -25,7 +31,7 @@ def test_v1_transform_compiles_to_ordered_symbolic_plan() -> None:
     from testing.model.v1.orders.schemas.promotion import Promotion
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    plan = compile_transform(EnrichOrders)
+    plan = _analysis(EnrichOrders)
 
     assert plan.name == "EnrichOrders"
     assert plan.output_schema is OrderPublished
@@ -48,10 +54,11 @@ def test_v1_transform_compiles_to_ordered_symbolic_plan() -> None:
 def test_v1_symbolic_plan_records_joins_and_hooks() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    plan = compile_transform(EnrichOrders)
+    plan = _analysis(EnrichOrders)
 
-    assert [len(step.joins) for step in plan.steps] == [0, 1, 1, 1, 0]
-    customer_join = plan.steps[1].joins[0]
+    bodies = tuple(cast(PySparkStepBody, step.plugin_body) for step in plan.steps)
+    assert [len(body.joins) for body in bodies] == [0, 1, 1, 1, 0]
+    customer_join = bodies[1].joins[0]
     assert customer_join.input_name == "customer"
     assert customer_join.how is Join.LEFT
     assert customer_join.hint is JoinHint.BROADCAST
@@ -75,9 +82,12 @@ def test_v1_symbolic_plan_records_joins_and_hooks() -> None:
 def test_v1_symbolic_plan_records_expression_operators() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    plan = compile_transform(EnrichOrders)
+    plan = _analysis(EnrichOrders)
     normalize = plan.steps[0]
-    projection = {assignment.field.name: assignment.expression for assignment in normalize.projection}
+    projection = {
+        assignment.field.name: assignment.expression
+        for assignment in cast(PySparkStepBody, normalize.plugin_body).projection
+    }
 
     assert projection["net_total"].kind == "cast"
     assert [argument.kind for argument in projection["net_total"].args[0].args] == ["call", "call"]
@@ -85,7 +95,7 @@ def test_v1_symbolic_plan_records_expression_operators() -> None:
     assert projection["is_large"].args[1].kind == "literal"
     assert projection["is_large"].args[1].data == {"value": 1000}
 
-    promotion_join = plan.steps[3].joins[0]
+    promotion_join = cast(PySparkStepBody, plan.steps[3].plugin_body).joins[0]
     assert promotion_join.predicate.kind == "and"
     assert promotion_join.predicate.args[1].kind == "null_safe_eq"
 
@@ -118,8 +128,11 @@ def test_v1_symbolic_plan_records_nested_struct_construction() -> None:
                 ),
             )
 
-    plan = compile_transform(Publish)
-    projection = {assignment.field.name: assignment.expression for assignment in plan.steps[0].projection}
+    plan = _analysis(Publish)
+    projection = {
+        assignment.field.name: assignment.expression
+        for assignment in cast(PySparkStepBody, plan.steps[0].plugin_body).projection
+    }
     shipping = projection["shipping"]
 
     assert shipping.kind == "struct"
@@ -151,7 +164,7 @@ def test_v1_symbolic_plan_rejects_incompatible_nested_struct_assignment() -> Non
             return Published(tenant=Address(city=row.id, postal_code=row.id))
 
     with pytest.raises(Exception, match=r"expects Struct\(TenantKey\).*Struct\(Address\)"):
-        compile_transform(Publish)
+        _analysis(Publish)
 
 
 def test_transform_class_options_default_step_method_options() -> None:
@@ -172,7 +185,7 @@ def test_transform_class_options_default_step_method_options() -> None:
         def publish(self, row: Row) -> Row:
             return Row(id=row.id)
 
-    plan = compile_transform(NormalizeRows)
+    plan = _analysis(NormalizeRows)
 
     assert plan.steps[0].options == {"target_backend": "pyspark", "target_platform": "spark"}
     assert plan.steps[1].options == {"target_backend": "pyspark", "target_platform": "polars"}

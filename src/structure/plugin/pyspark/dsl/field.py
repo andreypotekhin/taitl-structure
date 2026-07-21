@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Mapping, cast
+from typing import Any, Mapping, cast
 
 from structure.dsl import FieldDeclaration, Schema
 from structure.plugin.pyspark.dsl.types import (
@@ -23,26 +23,26 @@ from structure.plugin.pyspark.dsl.ValidatePySparkSchemas import ValidatePySparkS
 _validate = ValidatePySparkSchemas().validate
 
 
-def string(**options: object) -> FieldDeclaration: return _declare(String(), options)
-def integer(**options: object) -> FieldDeclaration: return _declare(Integer(), options)
-def long(**options: object) -> FieldDeclaration: return _declare(Long(), options)
-def float(**options: object) -> FieldDeclaration: return _declare(Float(), options)
-def double(**options: object) -> FieldDeclaration: return _declare(Double(), options)
-def boolean(**options: object) -> FieldDeclaration: return _declare(Boolean(), options)
-def date(**options: object) -> FieldDeclaration: return _declare(Date(), options)
-def timestamp(**options: object) -> FieldDeclaration: return _declare(Timestamp(), options)
-def decimal(precision: int, scale: int, **options: object) -> FieldDeclaration: return _declare(Decimal(precision, scale), options)
+def string(**options: object) -> Any: return _declare(String(), options)
+def integer(**options: object) -> Any: return _declare(Integer(), options)
+def long(**options: object) -> Any: return _declare(Long(), options)
+def float(**options: object) -> Any: return _declare(Float(), options)
+def double(**options: object) -> Any: return _declare(Double(), options)
+def boolean(**options: object) -> Any: return _declare(Boolean(), options)
+def date(**options: object) -> Any: return _declare(Date(), options)
+def timestamp(**options: object) -> Any: return _declare(Timestamp(), options)
+def decimal(precision: int, scale: int, **options: object) -> Any: return _declare(Decimal(precision, scale), options)
 
 
-def array(element: FieldDeclaration, *, contains_null: bool = True, **options: object) -> FieldDeclaration:
+def array(element: FieldDeclaration, *, contains_null: bool = True, **options: object) -> Any:
     return _declare(Array(_nested_type(element, "array"), contains_null=contains_null), options)
 
 
-def map(key: FieldDeclaration, value: FieldDeclaration, *, value_contains_null: bool = True, **options: object) -> FieldDeclaration:
+def map(key: FieldDeclaration, value: FieldDeclaration, *, value_contains_null: bool = True, **options: object) -> Any:
     return _declare(Map(_nested_type(key, "map key"), _nested_type(value, "map value"), value_contains_null=value_contains_null), options)
 
 
-def struct(schema: type[Schema], **options: object) -> FieldDeclaration: return _declare(Struct(schema), options)
+def struct(schema: type[Schema], **options: object) -> Any: return _declare(Struct(schema), options)
 
 
 def _declare(type: StructureType, options: Mapping[str, object]) -> FieldDeclaration:

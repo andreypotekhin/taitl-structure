@@ -3,6 +3,7 @@ import ast
 import pytest
 
 from structure import *
+from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
 
 
@@ -46,7 +47,7 @@ def test_intentionally_broken_transform_tests_keep_diagnostics_actionable() -> N
             return Published(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(MissingOutputField)
+        Compiler.frontend.compile()(MissingOutputField, materialize_schemas=False)
 
     assert raised.value.diagnostic.code == "DSL-E0402"
     assert raised.value.diagnostic.context == {"field": "status", "schema": "Published"}

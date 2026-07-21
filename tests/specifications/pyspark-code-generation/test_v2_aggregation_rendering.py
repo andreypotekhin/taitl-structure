@@ -1,3 +1,5 @@
+from typing import cast
+
 import pytest
 
 from structure import *
@@ -5,7 +7,16 @@ from structure.core.cli.api import CliApp
 from structure.core.compiler.api import Compiler
 from structure.core.dsl.model.expr.expressions import literal
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
+
+
+def _compile(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False)
+
+
+def _recipe(transform) -> PySparkExecutionPlan:
+    return cast(PySparkExecutionPlan, _compile(transform).lowered)
 
 
 class RawOrder(Schema):
@@ -151,7 +162,7 @@ class SaleGrandValueTotal(Transform):
 
 
 def test_grouped_aggregate_step_renders_spark_visible_group_by() -> None:
-    plan = PySpark.compiler.lower()(compile_transform(CustomerTotals))
+    plan = _recipe(CustomerTotals)
 
     text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
 
@@ -167,7 +178,7 @@ def test_grouped_aggregate_step_renders_spark_visible_group_by() -> None:
 
 
 def test_grouped_aggregate_traceability_records_static_dataflow() -> None:
-    recipe = PySpark.compiler.lower()(compile_transform(CustomerTotals))
+    recipe = _recipe(CustomerTotals)
     traceability = Compiler.traceability.build()(
         recipe,
         source_transform="tests.CustomerTotals",
@@ -195,7 +206,7 @@ def test_grouped_aggregate_explain_names_keys_and_metrics() -> None:
 
 
 def test_advanced_aggregate_helpers_render_spark_visible_rollup_and_metrics() -> None:
-    plan = PySpark.compiler.lower()(compile_transform(AdvancedCustomerTotals))
+    plan = _recipe(AdvancedCustomerTotals)
 
     text = render_pyspark_step(plan.steps[0], current="rows", sources={"rows": "rows"})
 
@@ -222,7 +233,7 @@ def test_advanced_aggregate_helpers_render_spark_visible_rollup_and_metrics() ->
 
 
 def test_grouping_sets_lower_to_explicit_levels_and_render_union_branches() -> None:
-    plan = PySpark.compiler.lower()(compile_transform(SaleGroupingSets))
+    plan = _recipe(SaleGroupingSets)
 
     aggregate = plan.steps[0].aggregate
     assert aggregate is not None
@@ -247,7 +258,7 @@ def test_grouping_sets_lower_to_explicit_levels_and_render_union_branches() -> N
 
 
 def test_grouping_sets_supports_a_global_aggregate_level() -> None:
-    plan = PySpark.compiler.lower()(compile_transform(SaleGrandTotal))
+    plan = _recipe(SaleGrandTotal)
 
     aggregate = plan.steps[0].aggregate
     assert aggregate is not None
@@ -262,14 +273,14 @@ def test_grouping_sets_supports_a_global_aggregate_level() -> None:
 
 def test_global_grouping_set_marks_value_aggregates_nullable_for_empty_input() -> None:
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(SaleGrandValueTotal)
+        _compile(SaleGrandValueTotal)
 
     assert raised.value.diagnostic.code == "SCHEMA-E0301"
     assert "GrandValueTotal.total_quantity" in raised.value.diagnostic.problem
 
 
 def test_grouping_sets_traceability_and_explain_name_levels() -> None:
-    recipe = PySpark.compiler.lower()(compile_transform(SaleGroupingSets))
+    recipe = _recipe(SaleGroupingSets)
     traceability = Compiler.traceability.build()(
         recipe,
         source_transform="tests.SaleGroupingSets",
@@ -304,7 +315,7 @@ def test_grouping_sets_reject_non_nullable_omitted_key_fields() -> None:
             return BadTotal(region=row.region, customer_id=row.customer_id, order_count=count())
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadGroupingSets)
+        _compile(BadGroupingSets)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "SCHEMA-E0301"
@@ -326,7 +337,7 @@ def test_having_rejects_pre_aggregate_input_field_reads() -> None:
             return Total(customer_id=row.customer_id, order_count=count())
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadHaving)
+        _compile(BadHaving)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0402"
@@ -349,7 +360,7 @@ def test_having_rejects_incompatible_comparison_operands() -> None:
             return Total(customer_id=row.customer_id, order_count=count())
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadHaving)
+        _compile(BadHaving)
 
     assert raised.value.diagnostic.code == "DSL-E0402"
     assert "compatible Structure expression types" in raised.value.diagnostic.problem
@@ -370,7 +381,7 @@ def test_aggregate_filter_rejects_incompatible_comparison_operands() -> None:
             return Total(customer_id=row.customer_id, order_count=count(where=row.quantity == "one"))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadAggregateFilter)
+        _compile(BadAggregateFilter)
 
     assert raised.value.diagnostic.code == "DSL-E0402"
     assert "compatible Structure expression types" in raised.value.diagnostic.problem
@@ -391,7 +402,7 @@ def test_statement_having_binds_to_aggregate_output_scope() -> None:
             having(lambda total: total.order_count > 0)
             return Total(customer_id=row.customer_id, order_count=count())
 
-    plan = PySpark.compiler.lower()(compile_transform(StatementHaving))
+    plan = _recipe(StatementHaving)
 
     assert plan.steps[0].aggregate is not None
     assert plan.steps[0].aggregate.having is not None
@@ -419,7 +430,7 @@ def test_each_grouping_form_accepts_chained_having(grouping: str) -> None:
                 grouping_sets((row.customer_id,), ()).having(lambda total: total.order_count > 0)
             return Total(customer_id=row.customer_id, order_count=count())
 
-    plan = PySpark.compiler.lower()(compile_transform(ChainedHaving))
+    plan = _recipe(ChainedHaving)
 
     assert plan.steps[0].aggregate is not None
     assert plan.steps[0].aggregate.grouping == grouping
@@ -450,7 +461,7 @@ def test_bare_and_chained_having_lower_identically() -> None:
             group_by(customer_id=row.customer_id).having(lambda total: total.order_count > 0)
             return Total(customer_id=row.customer_id, order_count=count())
 
-    bare = PySpark.compiler.lower()(compile_transform(BareHaving)).steps[0].aggregate
-    chained = PySpark.compiler.lower()(compile_transform(ChainedHaving)).steps[0].aggregate
+    bare = _recipe(BareHaving).steps[0].aggregate
+    chained = _recipe(ChainedHaving).steps[0].aggregate
 
     assert bare == chained

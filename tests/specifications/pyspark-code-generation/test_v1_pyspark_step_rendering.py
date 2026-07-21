@@ -1,12 +1,17 @@
 from structure import *
+from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark import PySpark
+
+
+def _recipe(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False).lowered
 
 
 def test_v1_step_renderer_renders_before_hook_against_current_input() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = PySpark.compiler.lower()(compile_transform(EnrichOrders))
+    recipe = _recipe(EnrichOrders)
     text = PySpark.render.step()(recipe.steps[0], current="orders")
 
     assert "        orders = self._impl.use_current_orders(orders=orders, spark=self.spark, ctx=self.ctx)" in text
@@ -17,7 +22,7 @@ def test_v1_step_renderer_renders_before_hook_against_current_input() -> None:
 def test_v1_step_renderer_renders_join_projection_and_validation() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = PySpark.compiler.lower()(compile_transform(EnrichOrders))
+    recipe = _recipe(EnrichOrders)
     text = PySpark.render.step()(recipe.steps[1], current="orders")
 
     assert '        # Step method: add_customer' in text
@@ -32,7 +37,7 @@ def test_v1_step_renderer_renders_join_projection_and_validation() -> None:
 def test_v1_step_renderer_renders_hooks_and_project_output_validation() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = PySpark.compiler.lower()(compile_transform(EnrichOrders))
+    recipe = _recipe(EnrichOrders)
     text = PySpark.render.step()(recipe.steps[4], current="orders")
 
     assert '        # Step method: publish' in text

@@ -10,7 +10,7 @@ def _traceability():
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
     return Compiler.traceability.build()(
-        PySpark.compiler.lower()(compile_transform(EnrichOrders)),
+        Compiler.frontend.compile()(EnrichOrders, materialize_schemas=False).lowered,
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         transform_module="testing.model.v1.structure_generated.orders.pyspark.transforms.order",
     )

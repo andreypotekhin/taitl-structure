@@ -3,7 +3,13 @@ from typing import Any, cast
 import pytest
 
 from structure import *
+from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
+
+
+def _compile(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False)
 
 
 class Raw(Schema):
@@ -66,7 +72,7 @@ def test_v1_unsupported_python_boolean_expression_reports_dsl_diagnostic() -> No
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadBoolean)
+        _compile(BadBoolean)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0401"
@@ -89,7 +95,7 @@ def test_v1_schema_flow_mismatch_reports_transform_structure_diagnostic() -> Non
             return Published(id=row.id, status="ready")
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadFlow)
+        _compile(BadFlow)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0402"
@@ -108,7 +114,7 @@ def test_v1_missing_output_field_reports_transform_structure_diagnostic() -> Non
             return Published(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(MissingOutput)
+        _compile(MissingOutput)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0402"
@@ -127,7 +133,7 @@ def test_v1_nullable_assignment_to_non_nullable_field_reports_schema_diagnostic(
             return OptionalClean(optional_id=row.optional_id)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadNullability)
+        _compile(BadNullability)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "SCHEMA-E0301"
@@ -156,9 +162,9 @@ def test_v1_where_is_not_null_guard_allows_non_nullable_assignment() -> None:
             where(cast(Any, row.optional_id).is_not_null())
             return OptionalClean(optional_id=row.optional_id)
 
-    plan = compile_transform(GuardedNullability)
+    plan = _compile(GuardedNullability).analysis
 
-    assert plan.steps[0].projection[0].field.name == "optional_id"
+    assert cast(PySparkStepBody, plan.steps[0].plugin_body).projection[0].field.name == "optional_id"
 
 
 def test_v1_string_to_decimal_assignment_requires_explicit_conversion() -> None:
@@ -171,7 +177,7 @@ def test_v1_string_to_decimal_assignment_requires_explicit_conversion() -> None:
             return MoneyClean(amount=row.amount, count=row.count)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadConversion)
+        _compile(BadConversion)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "SCHEMA-E0301"
@@ -192,7 +198,7 @@ def test_v1_non_nullable_string_to_decimal_assignment_reports_conversion_diagnos
             return MoneyClean(amount=row.amount, count=row.count)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadConversion)
+        _compile(BadConversion)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "SCHEMA-E0302"
@@ -211,9 +217,12 @@ def test_v1_accepted_coercions_compile_without_schema_diagnostics() -> None:
             amount = coalesce(to_decimal(row.amount, precision=12, scale=2), 0)
             return MoneyClean(amount=amount, count=row.count)
 
-    plan = compile_transform(GoodCoercions)
+    plan = _compile(GoodCoercions).analysis
 
-    projection = {assignment.field.name: assignment.expression for assignment in plan.steps[0].projection}
+    projection = {
+        assignment.field.name: assignment.expression
+        for assignment in cast(PySparkStepBody, plan.steps[0].plugin_body).projection
+    }
     amount_type = cast(Any, projection["amount"].type)
     count_type = cast(Any, projection["count"].type)
     assert amount_type.name == "decimal"
@@ -232,7 +241,7 @@ def test_v1_incompatible_assignment_reports_schema_diagnostic() -> None:
             return FlagClean(is_paid=row.count)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadBooleanAssignment)
+        _compile(BadBooleanAssignment)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "SCHEMA-E0303"
@@ -253,7 +262,7 @@ def test_v1_left_joined_non_nullable_field_is_nullable_until_guarded() -> None:
             return LabelClean(label=item.label)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadLeftJoinNullability)
+        _compile(BadLeftJoinNullability)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "SCHEMA-E0301"
@@ -271,7 +280,7 @@ def test_v1_lookup_join_without_deduplication_reports_uniqueness_warning() -> No
             lookup_join(self.lookup, on=self.lookup.id == row.id, how=Join.LEFT)
             return Clean(id=row.id)
 
-    plan = compile_transform(UniqueJoin)
+    plan = _compile(UniqueJoin).analysis
 
     assert [diagnostic.code for diagnostic in plan.diagnostics] == ["JOIN-W0601"]
 
@@ -287,7 +296,7 @@ def test_v1_lookup_join_warns_regardless_of_key_operand_order() -> None:
             lookup_join(self.lookup, on=row.id == self.lookup.id, how=Join.LEFT)
             return Clean(id=row.id)
 
-    plan = compile_transform(UniqueJoin)
+    plan = _compile(UniqueJoin).analysis
 
     assert [diagnostic.code for diagnostic in plan.diagnostics] == ["JOIN-W0601"]
 
@@ -303,7 +312,7 @@ def test_v1_unproven_lookup_join_key_emits_uniqueness_warning() -> None:
             lookup_join(self.lookup, on=self.lookup.group == row.id, how=Join.LEFT)
             return Clean(id=row.id)
 
-    plan = compile_transform(UnprovenJoin)
+    plan = _compile(UnprovenJoin).analysis
 
     assert [diagnostic.code for diagnostic in plan.diagnostics] == ["JOIN-W0601"]
     assert plan.diagnostics[0].docs == "docs/Diagnostics.md#join-w0601"
@@ -322,7 +331,7 @@ def test_v1_or_join_condition_reports_join_diagnostic() -> None:
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadJoinCondition)
+        _compile(BadJoinCondition)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "JOIN-E0601"
@@ -343,7 +352,7 @@ def test_v1_same_side_join_condition_reports_join_diagnostic() -> None:
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(SameSideJoin)
+        _compile(SameSideJoin)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
     assert "joined input with the current row" in raised.value.diagnostic.problem_text()
@@ -361,7 +370,7 @@ def test_v1_incompatible_join_key_types_report_join_diagnostic() -> None:
             return MoneyClean(amount=coalesce(to_decimal(row.amount, precision=12, scale=2), 0), count=row.count)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(IncompatibleJoin)
+        _compile(IncompatibleJoin)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "JOIN-E0601"
@@ -379,7 +388,7 @@ def test_v1_inferred_join_without_relation_candidate_reports_diagnostic() -> Non
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(MissingRelation)
+        _compile(MissingRelation)
 
     diagnostic = raised.value.diagnostic
     assert "Cannot infer joined relation for lookup_join(...)" in diagnostic.problem_text()
@@ -399,7 +408,7 @@ def test_v1_inferred_join_with_multiple_relation_candidates_reports_diagnostic()
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(MultipleRelations)
+        _compile(MultipleRelations)
 
     diagnostic = raised.value.diagnostic
     assert "Cannot infer joined relation for lookup_join(...)" in diagnostic.problem_text()
@@ -424,7 +433,7 @@ def test_v1_inferred_join_with_mixed_composite_candidates_reports_diagnostic() -
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(MixedCompositeRelations)
+        _compile(MixedCompositeRelations)
 
     diagnostic = raised.value.diagnostic
     assert "Cannot infer joined relation for lookup_join(...)" in diagnostic.problem_text()
@@ -444,7 +453,7 @@ def test_v1_inferred_join_self_only_relation_reports_diagnostic() -> None:
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(SelfOnlyRelation)
+        _compile(SelfOnlyRelation)
 
     diagnostic = raised.value.diagnostic
     assert "Each join key pair must compare the inferred joined relation" in diagnostic.problem_text()
@@ -462,7 +471,7 @@ def test_v1_member_lookup_join_reports_migration_diagnostic() -> None:
             return Clean(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(MemberJoin)
+        _compile(MemberJoin)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0401"

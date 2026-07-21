@@ -1,13 +1,22 @@
 import ast
 import sys
-from typing import Any
+from typing import Any, cast
 
 import pytest
 
 from structure import *
 from structure.core.cli.commands.RenderExplainReport import render_explain_report
+from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.render.logic.RenderEmbeddedHooks import EmbeddedHookError
+
+
+def _recipe(transform) -> PySparkExecutionPlan:
+    return cast(
+        PySparkExecutionPlan,
+        Compiler.frontend.compile()(transform, materialize_schemas=False).lowered,
+    )
 
 
 class CacheRaw(Schema):
@@ -114,7 +123,7 @@ def test_v1_transform_module_renderer_is_spark_free() -> None:
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
     text = PySpark.render.transform()(
-        PySpark.compiler.lower()(compile_transform(EnrichOrders)),
+        _recipe(EnrichOrders),
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
@@ -129,7 +138,7 @@ def test_v1_transform_module_renderer_renders_class_runtime_shape() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
     text = PySpark.render.transform()(
-        PySpark.compiler.lower()(compile_transform(EnrichOrders)),
+        _recipe(EnrichOrders),
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
@@ -151,7 +160,7 @@ def test_v1_transform_module_renderer_composes_steps_and_final_return() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
     text = PySpark.render.transform()(
-        PySpark.compiler.lower()(compile_transform(EnrichOrders)),
+        _recipe(EnrichOrders),
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
@@ -181,7 +190,7 @@ def test_mirror_methods_render_source_named_steps_and_constructor_inputs() -> No
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
     text = PySpark.render.transform()(
-        PySpark.compiler.lower()(compile_transform(EnrichOrders)),
+        _recipe(EnrichOrders),
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
@@ -202,7 +211,14 @@ def test_embed_exprs_render_static_helpers() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
     text = PySpark.render.transform()(
-        PySpark.compiler.lower()(compile_transform(EnrichOrders, generated_code_options=("embed_exprs",))),
+        cast(
+            PySparkExecutionPlan,
+            Compiler.frontend.compile()(
+                EnrichOrders,
+                materialize_schemas=False,
+                generated_code_options=("embed_exprs",),
+            ).lowered,
+        ),
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
@@ -220,7 +236,7 @@ def test_embed_hooks_copies_raw_hook_source() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
     text = PySpark.render.transform()(
-        PySpark.compiler.lower()(compile_transform(EnrichOrders)),
+        _recipe(EnrichOrders),
         source_transform="testing.model.v1.orders.transforms.order.EnrichOrders",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules=_schema_modules(),
@@ -286,7 +302,7 @@ def test_embed_hooks_rejects_closure_dependencies() -> None:
 
 def test_embed_udfs_copies_udf_source() -> None:
     text = PySpark.render.transform()(
-        PySpark.compiler.lower()(compile_transform(UdfPublished)),
+        _recipe(UdfPublished),
         source_transform="tests.UdfPublished",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules={UdfRaw: "testing.model.v1.structure_generated.cache.pyspark.schemas.order"},
@@ -303,7 +319,7 @@ def test_embed_udfs_copies_udf_source() -> None:
 
 def test_v2_cache_directive_renders_as_post_projection_persist() -> None:
     text = PySpark.render.transform()(
-        PySpark.compiler.lower()(compile_transform(CachePublishedOrders)),
+        _recipe(CachePublishedOrders),
         source_transform="tests.CachePublishedOrders",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules={
@@ -325,7 +341,7 @@ def test_v2_cache_directive_is_visible_in_explain_output() -> None:
 
 
 def test_v2_cache_directive_preserves_an_explicit_storage_level() -> None:
-    recipe = PySpark.compiler.lower()(compile_transform(ExplicitlyCachedPublishedOrders))
+    recipe = _recipe(ExplicitlyCachedPublishedOrders)
     operation = recipe.steps[0].operations[0]
     text = PySpark.render.transform()(
         recipe,
@@ -372,7 +388,7 @@ def _schema_modules() -> dict[type, str]:
 
 def _render(transform: type[Transform], *, generated_code_options: tuple[str, ...]) -> str:
     return PySpark.render.transform()(
-        PySpark.compiler.lower()(compile_transform(transform)),
+        _recipe(transform),
         source_transform=f"{transform.__module__}.{transform.__name__}",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules={CacheRaw: "testing.cache", CachePublished: "testing.cache", UdfRaw: "testing.cache"},

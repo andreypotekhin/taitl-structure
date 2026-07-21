@@ -1,4 +1,8 @@
+from typing import cast
+
 from structure import *
+from structure.core.compiler.api import Compiler
+from structure.plugin.api.v1.model.TransformPlan import TransformPlan
 from structure.plugin.pyspark import *
 
 
@@ -41,7 +45,7 @@ def test_multiple_schema_parameters_and_results_are_explicit() -> None:
             row = Enriched(id=order.id, product_name=product.name)
             return row, row
 
-    plan = compile_transform(AddProduct)
+    plan = cast(TransformPlan, Compiler.frontend.compile()(AddProduct, materialize_schemas=False).analysis)
 
     assert [item.parameter for item in plan.steps[0].inputs] == ["order", "product"]
     assert [item.lane for item in plan.steps[0].results] == ["accepted", "audited"]

@@ -1,6 +1,10 @@
+from typing import cast
+
 import pytest
 
 from structure import *
+from structure.core.compiler.api import Compiler
+from structure.plugin.api.v1.model.TransformPlan import TransformPlan
 from structure.plugin.pyspark import *
 
 
@@ -23,7 +27,7 @@ def test_transform_declares_named_output_contract() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(id=row.id)
 
-    plan = compile_transform(Publish)
+    plan = cast(TransformPlan, Compiler.frontend.compile()(Publish, materialize_schemas=False).analysis)
 
     assert [item.name for item in plan.outputs] == ["published"]
     assert plan.output_schema is Published
@@ -40,4 +44,4 @@ def test_transform_without_output_contract_fails_early() -> None:
             raise AssertionError("symbolic execution must not start")
 
     with pytest.raises(Exception, match="Publish declares no outputs"):
-        compile_transform(Publish)
+        Compiler.frontend.compile()(Publish, materialize_schemas=False)

@@ -10,6 +10,7 @@ from uuid import uuid4
 import pytest
 
 from structure import *
+from structure.core.compiler.api import Compiler
 from structure.lib.testing import (
     assert_check_success,
     assert_compile_success,
@@ -61,7 +62,7 @@ def test_pytest_helpers_cover_expected_diagnostics() -> None:
     """As a developer, I can use pytest helpers for expected diagnostics."""
 
     diagnostic = assert_expected_diagnostic(
-        lambda: compile_transform(BadTotal),
+        lambda: Compiler.frontend.compile()(BadTotal, materialize_schemas=False),
         "SCHEMA-E0301",
         problem_contains="may produce null",
         use_contains="coalesce",

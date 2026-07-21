@@ -128,6 +128,7 @@ class CompileTransform:
                 problem=f"{getattr(transform_class, '__name__', transform_class)} is not a Transform subclass.",
                 use="Compile a class that inherits from structure.Transform or compile a Transform.to(...) pipeline.",
             )
+        self._require_module_level_schemas(transform_class)
         pipeline = getattr(transform_class, "_structure_pipeline", None)
         if pipeline is not None:
             return self._compose_pipeline(
@@ -163,6 +164,36 @@ class CompileTransform:
             outputs=tuple(outputs),
             options=dict(transform_class.__dict__.get("_structure_transform_options", {})),
             diagnostics=tuple(diagnostics),
+        )
+
+    def _require_module_level_schemas(self, transform_class: type[Transform]) -> None:
+        for owner in transform_class.__mro__:
+            if owner is Transform:
+                return
+            if not isinstance(owner, type) or not issubclass(owner, Transform):
+                continue
+            for name, value in owner.__dict__.items():
+                if self._nested_schema(value, owner):
+                    nested = f"{owner.__name__}.{name}"
+                    raise self._error(
+                        "DSL-E0402",
+                        transform_class=owner,
+                        member=name,
+                        problem=f"{nested} is a Schema declared inside a Transform.",
+                        use=(
+                            f"Move {name} to module scope, preferably to a model schema file, "
+                            "or keep it beside this Transform when it is used only here."
+                        ),
+                    )
+
+    @staticmethod
+    def _nested_schema(value: object, owner: type[Transform]) -> bool:
+        return (
+            isinstance(value, type)
+            and issubclass(value, Schema)
+            and value is not Schema
+            and value.__module__ == owner.__module__
+            and value.__qualname__.startswith(f"{owner.__qualname__}.")
         )
 
     def _udf_diagnostics(
@@ -981,7 +1012,11 @@ class CompileTransform:
         return tuple(classes)
 
     def _compiled(self, member) -> bool:
-        return bool(self._return_schemas(get_type_hints(member).get("return")))
+        try:
+            annotation = get_type_hints(member).get("return")
+        except NameError:
+            return False
+        return bool(self._return_schemas(annotation))
 
     def _parent_call_result(self, results: tuple[StepResultPlan, ...]) -> RowScope | tuple[RowScope, ...]:
         scopes = tuple(RowScope(name=result.schema.__name__, schema=result.schema) for result in results)

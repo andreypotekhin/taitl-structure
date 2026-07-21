@@ -9,10 +9,22 @@ from structure import *
 from structure.core.compiler.api import Compiler, OperationCardinality
 from structure.core.compiler.ir.model.JoinMethod import JoinMethod
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
 def _compilation(transform):
     return Compiler.frontend.compile()(transform, materialize_schemas=False)
+
+
+def _body(transform, step_name: str) -> PySparkStepBody:
+    analysis = _compilation(transform).analysis
+    step = next(step for step in analysis.steps if step.name == step_name)
+    return cast(PySparkStepBody, step.plugin_body)
+
+
+def _recipe(transform) -> PySparkExecutionPlan:
+    return cast(PySparkExecutionPlan, _compilation(transform).lowered)
 
 
 def test_v2_source_fixtures_import_without_live_spark(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -44,8 +56,7 @@ def test_v2_order_fixture_records_supported_existence_joins(monkeypatch: pytest.
     module = importlib.import_module("testing.model.v2.orders.transforms.order")
     transform = cast(Any, module).EnrichOrders
 
-    plan = compile_transform(transform)
-    add_product = next(step for step in plan.steps if step.name == "add_product")
+    add_product = _body(transform, "add_product")
 
     assert [join.method for join in add_product.joins[:2]] == [JoinMethod.EXISTS, JoinMethod.NOT_EXISTS]
     assert [operation.capability.name for operation in add_product.operations[:2] if operation.capability] == [
@@ -63,8 +74,7 @@ def test_v2_order_fixture_records_temporal_promotion_lookup(monkeypatch: pytest.
     module = importlib.import_module("testing.model.v2.orders.transforms.order")
     transform = cast(Any, module).EnrichOrders
 
-    plan = compile_transform(transform)
-    add_promotion = next(step for step in plan.steps if step.name == "add_promotion")
+    add_promotion = _body(transform, "add_promotion")
     lookup = add_promotion.joins[0]
 
     assert lookup.method is JoinMethod.TEMPORAL_ONE
@@ -84,8 +94,7 @@ def test_v2_order_fixture_records_cache_as_transform_option(monkeypatch: pytest.
     module = importlib.import_module("testing.model.v2.orders.transforms.order")
     transform = cast(Any, module).EnrichOrders
 
-    plan = compile_transform(transform)
-    add_customer = next(step for step in plan.steps if step.name == "add_customer")
+    add_customer = _body(transform, "add_customer")
     operation = next(operation for operation in add_customer.operations if operation.kind == "cache")
 
     assert operation.capability is not None
@@ -99,8 +108,7 @@ def test_v2_order_fixture_records_inner_join_shipments(monkeypatch: pytest.Monke
     module = importlib.import_module("testing.model.v2.orders.transforms.order")
     transform = cast(Any, module).EnrichOrders
 
-    plan = compile_transform(transform)
-    add_shipments = next(step for step in plan.steps if step.name == "add_shipments")
+    add_shipments = _body(transform, "add_shipments")
 
     assert len(add_shipments.joins) == 1
     assert add_shipments.joins[0].method is JoinMethod.ROWSET
@@ -116,8 +124,7 @@ def test_v2_order_fixture_records_deduped_product_lookup(monkeypatch: pytest.Mon
     module = importlib.import_module("testing.model.v2.orders.transforms.order")
     transform = cast(Any, module).EnrichOrders
 
-    plan = compile_transform(transform)
-    add_product = next(step for step in plan.steps if step.name == "add_product")
+    add_product = _body(transform, "add_product")
     lookup = add_product.joins[2]
 
     assert lookup.method is JoinMethod.LOOKUP
@@ -137,30 +144,32 @@ def test_v2_rowset_join_fixture_records_full_right_and_cross_joins(
     customer_schema = importlib.import_module("testing.model.v2.orders.schemas.customer")
     product_schema = importlib.import_module("testing.model.v2.orders.schemas.product")
 
-    plan = compile_transform(module.RowsetJoinExamples)
-    recipe = PySpark.compiler.lower()(plan)
+    compilation = _compilation(module.RowsetJoinExamples)
+    analysis = compilation.analysis
+    recipe = cast(PySparkExecutionPlan, compilation.lowered)
+    bodies = tuple(cast(PySparkStepBody, step.plugin_body) for step in analysis.steps)
 
-    assert [step.name for step in plan.steps] == [
+    assert [step.name for step in analysis.steps] == [
         "reconcile_orders",
         "keep_customers",
         "expand_product_candidates",
     ]
-    assert [step.joins[0].method for step in plan.steps[:3]] == [
+    assert [body.joins[0].method for body in bodies[:3]] == [
         JoinMethod.ROWSET,
         JoinMethod.ROWSET,
         JoinMethod.ROWSET,
     ]
-    assert [step.joins[0].how for step in plan.steps[:3]] == [
+    assert [body.joins[0].how for body in bodies[:3]] == [
         Join.FULL,
         Join.RIGHT,
         Join.CROSS,
     ]
-    assert [step.operations[0].capability.name for step in plan.steps[:3] if step.operations[0].capability] == [
+    assert [body.operations[0].capability.name for body in bodies[:3] if body.operations[0].capability] == [
         "rowset_join",
         "rowset_join",
         "rowset_join",
     ]
-    assert [step.operations[0].cardinality for step in plan.steps[:3]] == [
+    assert [body.operations[0].cardinality for body in bodies[:3]] == [
         OperationCardinality.ROW_MULTIPLYING,
         OperationCardinality.ROW_MULTIPLYING,
         OperationCardinality.ROW_MULTIPLYING,
@@ -205,7 +214,7 @@ def test_group_by_lowers_to_aggregate_recipe() -> None:
             group_by(customer_id=row.customer_id)
             return Total(customer_id=row.customer_id, quantity=count())
 
-    plan = _compilation(Totals).lowered
+    plan = _recipe(Totals)
 
     operation = plan.steps[0].operations[0]
     assert operation.kind == "aggregate"
@@ -234,7 +243,7 @@ def test_aggregate_expression_without_group_by_fails_in_frontend() -> None:
             return Total(customer_id=row.customer_id, quantity=count())
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Totals)
+        _compilation(Totals)
 
     assert raised.value.diagnostic.code == "DSL-E0402"
     assert "outside group_by" in raised.value.diagnostic.problem
@@ -259,7 +268,7 @@ def test_numeric_aggregate_rejects_non_numeric_input_type() -> None:
             return Total(customer_id=row.customer_id, label_total=sum(row.label))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Totals)
+        _compilation(Totals)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0402"
@@ -286,7 +295,7 @@ def test_nullable_aggregate_input_cannot_feed_non_nullable_output() -> None:
             return Total(customer_id=row.customer_id, quantity=sum(row.quantity))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Totals)
+        _compilation(Totals)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "SCHEMA-E0301"
@@ -297,7 +306,7 @@ def test_v2_order_analytics_fixture_lowers_grouped_aggregates(monkeypatch: pytes
     _stub_pyspark(monkeypatch)
     module = importlib.import_module("testing.model.v2.orders.transforms.analytics")
 
-    plan = _compilation(module.OrderAnalytics).lowered
+    plan = _recipe(module.OrderAnalytics)
 
     assert [step.name for step in plan.steps] == [
         "customer_daily_totals",
@@ -356,7 +365,7 @@ def test_v2_advanced_analytics_fixture_lowers_admitted_feature_families(monkeypa
     _stub_pyspark(monkeypatch)
     module = importlib.import_module("testing.model.v2.orders.transforms.adv_analytics")
 
-    plan = _compilation(module.AdvancedOrderAnalytics).lowered
+    plan = _recipe(module.AdvancedOrderAnalytics)
 
     assert [step.name for step in plan.steps] == [
         "revenue_rollup",

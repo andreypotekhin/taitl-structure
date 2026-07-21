@@ -54,6 +54,8 @@ narrower use cases and roadmap features.
 - + As a developer, I can rely on source file order inside transform classes so that step method execution order matches code reading order.
 - + As a developer, I can avoid external configuration files for ordinary transform discovery so that project setup remains simple.
 - + As a developer, I can use Python imports for schema and helper references so that IDE jump-to-declaration works.
+- + As a developer, I can declare a transform-only intermediate schema beside its transform when that layout better fits
+  the project.
 - + As a developer, I can compile a trusted in-memory source tree and run a selected transform by module and class name
   so that notebooks and paste-and-run environments do not require source files on disk.
 

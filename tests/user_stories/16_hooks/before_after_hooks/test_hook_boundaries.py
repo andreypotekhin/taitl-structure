@@ -2,7 +2,12 @@ import pytest
 
 import structure
 from structure import *
+from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
+
+
+def _analysis(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False).analysis
 
 
 def test_hooks_attach_to_declared_step_method_boundaries(orders_recipe) -> None:
@@ -62,7 +67,7 @@ def test_hooks_record_target_backend_metadata() -> None:
         def clean(self, *, rows, spark, ctx):
             return rows
 
-    plan = compile_transform(NormalizeRows)
+    plan = _analysis(NormalizeRows)
 
     assert plan.steps[0].before_hooks[0].target_backend == ("pyspark",)
     assert not plan.steps[0].before_hooks[0].target_defaulted
@@ -89,7 +94,7 @@ def test_non_pyspark_only_hook_target_fails_before_runtime() -> None:
             return rows
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(NormalizeRows)
+        _analysis(NormalizeRows)
 
     assert "targets polars" in str(raised.value)
     assert "PySpark only" in str(raised.value)
@@ -124,7 +129,7 @@ def test_raw_methods_attach_in_declaration_order_after_the_preceding_step() -> N
         def clean(self, *, normalized, spark, ctx):
             return normalized
 
-    plan = compile_transform(NormalizeRows)
+    plan = _analysis(NormalizeRows)
 
     hook = plan.steps[0].after_hooks[0]
     assert hook.name == "clean"
@@ -153,7 +158,7 @@ def test_raw_before_the_first_step_replaces_its_source_lane() -> None:
         def normalize(self, row: Row) -> Row:
             return Row(id=row.id)
 
-    plan = compile_transform(NormalizeRows)
+    plan = _analysis(NormalizeRows)
 
     hook = plan.steps[0].before_hooks[0]
     assert (hook.name, hook.phase, hook.lanes[0].name, hook.outputs[0].name) == ("prepare", "raw", "rows", "rows")
@@ -178,7 +183,7 @@ def test_raw_pipe_binds_original_input_and_materialized_output() -> None:
         def restore(self, *, rows, published, spark, ctx):
             return published
 
-    hook = compile_transform(PublishRows).steps[0].after_hooks[0]
+    hook = _analysis(PublishRows).steps[0].after_hooks[0]
 
     assert tuple(lane.name for lane in hook.lanes) == ("rows", "published")
     assert hook.sources == ("input:rows", "published")
@@ -204,7 +209,7 @@ def test_raw_pipe_rejects_an_unmaterialized_output_parameter() -> None:
             return published
 
     with pytest.raises(StructureCompileError, match="published is not available"):
-        compile_transform(PublishRows)
+        _analysis(PublishRows)
 
 
 def test_before_and_after_are_retired_from_public_namespaces() -> None:

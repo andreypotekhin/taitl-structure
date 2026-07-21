@@ -1,9 +1,12 @@
 import sys
+from typing import cast
 
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
+from structure.plugin.api.v1.model.TransformPlan import TransformPlan
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 
 
 class StreamRaw(Schema):
@@ -42,9 +45,10 @@ def test_streaming_projection_filter_and_validation_are_compatible_without_spark
 
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
-    plan = compile_transform(StreamingProjection)
+    compilation = Compiler.frontend.compile()(StreamingProjection, materialize_schemas=False)
+    plan = cast(TransformPlan, compilation.analysis)
     report = Compiler.compileability.streaming()(
-        PySpark.compiler.lower()(plan),
+        compilation.lowered,
         required=bool((plan.options or {})["streaming_compatible"]),
     )
 
@@ -57,9 +61,10 @@ def test_streaming_projection_filter_and_validation_are_compatible_without_spark
 def test_streaming_unknown_hook_reports_a_registered_warning() -> None:
     """Streaming-unknown hooks report registered warnings."""
 
-    plan = compile_transform(StreamingUnknownHook)
+    compilation = Compiler.frontend.compile()(StreamingUnknownHook, materialize_schemas=False)
+    plan = cast(TransformPlan, compilation.analysis)
     report = Compiler.compileability.streaming()(
-        PySpark.compiler.lower()(plan),
+        compilation.lowered,
         required=bool((plan.options or {})["streaming_compatible"]),
     )
 
@@ -72,7 +77,10 @@ def test_streaming_unknown_hook_reports_a_registered_warning() -> None:
 def test_generated_streaming_compatible_code_avoids_lifecycle_and_actions() -> None:
     """I can keep streaming orchestration outside Structure in v1 and v2."""
 
-    plan = PySpark.compiler.lower()(compile_transform(StreamingProjection))
+    plan = cast(
+        PySparkExecutionPlan,
+        Compiler.frontend.compile()(StreamingProjection, materialize_schemas=False).lowered,
+    )
     files = PySpark.render.project()(
         plan,
         source_transform="tests.fixtures.streaming.transforms.StreamingProjection",

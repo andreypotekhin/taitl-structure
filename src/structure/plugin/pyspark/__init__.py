@@ -120,7 +120,7 @@ def array(
     alias: str | None = None,
     metadata: object | None = None,
     description: str | None = None,
-) -> FieldDeclaration: ...
+) -> Any: ...
 
 
 @overload

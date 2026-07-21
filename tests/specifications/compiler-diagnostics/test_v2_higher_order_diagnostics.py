@@ -1,7 +1,12 @@
 import pytest
 
 from structure import *
+from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
+
+
+def _compile(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False)
 
 
 class RawTags(Schema):
@@ -32,7 +37,7 @@ def test_v2_array_transform_non_array_input_reports_actionable_diagnostic() -> N
             return CleanTags(tags=arr_transform(row.id, lambda tag: lower(tag)))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadTransform)
+        _compile(BadTransform)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0401"
@@ -50,7 +55,7 @@ def test_v2_array_filter_non_boolean_callback_reports_actionable_diagnostic() ->
             return CleanTags(tags=arr_filter(row.tags, lambda tag: lower(trim(tag))))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadFilter)
+        _compile(BadFilter)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0401"
@@ -69,7 +74,7 @@ def test_v2_array_filter_python_boolean_callback_reports_helper_context() -> Non
             return CleanTags(tags=arr_filter(row.tags, lambda tag: tag and tag.is_not_null()))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadCallback)
+        _compile(BadCallback)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0401"
@@ -88,7 +93,7 @@ def test_v2_array_transform_untyped_callback_return_reports_actionable_diagnosti
             return CleanTags(tags=arr_transform(row.tags, lambda tag: object()))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadReturn)
+        _compile(BadReturn)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0401"
@@ -108,7 +113,7 @@ def test_v2_map_transform_non_map_input_reports_actionable_diagnostic() -> None:
             return CleanAttributes(attributes=map_transform_values(row.id, lambda key, value: lower(value)))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadTransform)
+        _compile(BadTransform)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0401"
@@ -126,7 +131,7 @@ def test_v2_map_filter_non_boolean_callback_reports_actionable_diagnostic() -> N
             return CleanAttributes(attributes=map_filter(row.attributes, lambda key, value: lower(trim(value))))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadFilter)
+        _compile(BadFilter)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0401"
@@ -144,7 +149,7 @@ def test_v2_map_filter_python_boolean_callback_reports_helper_context() -> None:
             return CleanAttributes(attributes=map_filter(row.attributes, lambda key, value: value and key))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadCallback)
+        _compile(BadCallback)
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "DSL-E0401"
