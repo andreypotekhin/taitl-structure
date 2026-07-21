@@ -25,8 +25,13 @@ analytics = AnalyzeText(
 corpus = CorpusText(documents=analytics.document_statistics, words=segments.words).run(session)
 ```
 
-`ScoreCorpus` combines the independently usable `ScoreOverlap` and `ScoreBm25` transforms. It accepts caller-supplied
-`SearchQuery(id, content)` rows and creates a score row for every matching document, section, paragraph, and sentence.
+`CreateIndex` builds reusable document, section, paragraph, and sentence index artifacts from the extracted words. Each
+term row holds its target-local frequency and vocabulary/length facts plus the token's target-grain document frequency;
+each summary holds target count and average target length. Persisting those batch artifacts is caller-owned.
+
+`AddScores` combines the independently usable `ScoreOverlap` and `ScoreBm25` transforms. It accepts caller-supplied
+`SearchQuery(id, content)` rows plus matching index artifacts and creates a score row for every matching document,
+section, paragraph, and sentence.
 The algorithms normalize query terms exactly as
 `ExtractText` normalizes document words. `score_overlap` is the standard overlap coefficient: matching distinct terms
 divided by the smaller of the query and target vocabularies. `score_bm25` uses fixed `k1=1.2` and `b=0.75` constants.
@@ -39,7 +44,18 @@ remains an opaque boundary and needs Arrow batches. Use a UDF only for a tokeniz
 expressed through Spark's native relational functions.
 
 ```python
-scores = ScoreCorpus(queries=queries, words=segments.words).run(session)
+index = CreateIndex(words=segments.words).run(session)
+scores = AddScores(
+    queries=queries,
+    document_terms=index.document_terms,
+    document_summary=index.document_summary,
+    section_terms=index.section_terms,
+    section_summary=index.section_summary,
+    paragraph_terms=index.paragraph_terms,
+    paragraph_summary=index.paragraph_summary,
+    sentence_terms=index.sentence_terms,
+    sentence_summary=index.sentence_summary,
+).run(session)
 overlap = scores.document_overlap_scores
 bm25 = scores.document_bm25_scores
 ```

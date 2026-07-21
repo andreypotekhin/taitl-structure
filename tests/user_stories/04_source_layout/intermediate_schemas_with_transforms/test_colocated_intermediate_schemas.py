@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 
-from structure import Schema, Transform, input, output
+from structure import Schema, Transform, compile_transform, input, output
 from structure.core.cli.api import cli
 from structure.core.cli.commands.DiscoverStructureProject import DiscoverStructureProject
 from structure.core.compiler.api import Compiler
@@ -62,6 +62,50 @@ def test_colocated_intermediate_schema_compiles_and_generates(tmp_path: Path, mo
     assert Path("generated/docs/transforms/orders.transforms.publish.PublishOrders.json").exists()
     generated = Path("generated/structure_generated/pyspark/transforms/publish.py").read_text(encoding="utf-8")
     assert "from structure_generated.pyspark.schemas.publish import ORDER_NORMALIZED_SCHEMA" in generated
+
+
+def test_package_source_root_discovers_nested_transforms_without_stdlib_name_collisions(tmp_path: Path) -> None:
+    package = tmp_path / "app"
+    (package / "math").mkdir(parents=True)
+    (package / "texts" / "transforms").mkdir(parents=True)
+    for directory in (package, package / "math", package / "texts", package / "texts" / "transforms"):
+        (directory / "__init__.py").write_text("", encoding="utf-8")
+    (package / "math" / "model.py").write_text(
+        """
+from structure import Schema
+from structure.plugin.pyspark import field
+
+
+class Metric(Schema):
+    id = field.string(nullable=False)
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+    (package / "texts" / "transforms" / "search.py").write_text(
+        """
+from app.math.model import Metric
+from structure import Transform, input, output
+
+
+class ScoreCorpus(Transform):
+    metrics = input(Metric)
+    scores = output(Metric)
+
+    def score(self, metric: Metric) -> Metric:
+        return Metric(id=metric.id)
+""".strip()
+        + "\n",
+        encoding="utf-8",
+    )
+
+    config = StructureConfig.resolve(project_root=tmp_path, source_roots=["app"])
+    project = DiscoverStructureProject()(config)
+
+    assert [transform.__module__ for transform in project.transforms] == ["app.texts.transforms.search"]
+    assert list(project.schema_modules) == ["app.math.model"]
+    compile_transform(project.transforms[0], config=config)
+    _drop_app_modules()
 
 
 def test_nested_schema_fails_before_annotation_resolution() -> None:
@@ -172,4 +216,10 @@ class PublishOrders(Transform):
 def _drop_orders_modules() -> None:
     for name in tuple(sys.modules):
         if name == "orders" or name.startswith("orders."):
+            sys.modules.pop(name)
+
+
+def _drop_app_modules() -> None:
+    for name in tuple(sys.modules):
+        if name == "app" or name.startswith("app."):
             sys.modules.pop(name)

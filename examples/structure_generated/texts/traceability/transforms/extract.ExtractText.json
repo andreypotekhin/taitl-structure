@@ -48,6 +48,21 @@
       "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sections.heading"
     },
     {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sections.select.search_query_id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.0.sections.project.search_query_id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sections.search_query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sections.select.score_overlap",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.0.sections.project.score_overlap",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sections.score_overlap"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sections.select.score_bm25",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.0.sections.project.score_bm25",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sections.score_bm25"
+    },
+    {
       "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.hook.raw.extract",
       "ir": "ir:ExtractText.step.0.declare_hierarchy.hook.raw.extract",
       "source": "source:examples.texts.transforms.extract.ExtractText.extract"
@@ -76,6 +91,21 @@
       "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.paragraphs.select.content",
       "ir": "ir:ExtractText.step.0.declare_hierarchy.result.1.paragraphs.project.content",
       "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.paragraphs.content"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.paragraphs.select.search_query_id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.1.paragraphs.project.search_query_id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.paragraphs.search_query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.paragraphs.select.score_overlap",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.1.paragraphs.project.score_overlap",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.paragraphs.score_overlap"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.paragraphs.select.score_bm25",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.1.paragraphs.project.score_bm25",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.paragraphs.score_bm25"
     },
     {
       "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sentences.select.id",
@@ -111,6 +141,21 @@
       "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sentences.select.content",
       "ir": "ir:ExtractText.step.0.declare_hierarchy.result.2.sentences.project.content",
       "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sentences.content"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sentences.select.search_query_id",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.2.sentences.project.search_query_id",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sentences.search_query_id"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sentences.select.score_overlap",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.2.sentences.project.score_overlap",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sentences.score_overlap"
+    },
+    {
+      "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.sentences.select.score_bm25",
+      "ir": "ir:ExtractText.step.0.declare_hierarchy.result.2.sentences.project.score_bm25",
+      "source": "source:examples.texts.transforms.extract.ExtractText.declare_hierarchy.result.sentences.score_bm25"
     },
     {
       "generated": "generated:examples.structure_generated.texts.pyspark.transforms.extract.ExtractTextGenerated.run.step.0.declare_hierarchy.words.select.id",
@@ -194,6 +239,14 @@
       "constant": "DOCUMENT_FEATURES_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.analytics"
     },
+    "DocumentIndexSummary": {
+      "constant": "DOCUMENT_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "DocumentIndexTerm": {
+      "constant": "DOCUMENT_INDEX_TERM_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
     "DocumentOverlapScore": {
       "constant": "DOCUMENT_OVERLAP_SCORE_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.search"
@@ -212,6 +265,14 @@
     },
     "ParagraphBm25Score": {
       "constant": "PARAGRAPH_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "ParagraphIndexSummary": {
+      "constant": "PARAGRAPH_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "ParagraphIndexTerm": {
+      "constant": "PARAGRAPH_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.search"
     },
     "ParagraphOverlapScore": {
@@ -238,6 +299,14 @@
       "constant": "SECTION_BM25_SCORE_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.search"
     },
+    "SectionIndexSummary": {
+      "constant": "SECTION_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "SectionIndexTerm": {
+      "constant": "SECTION_INDEX_TERM_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
     "SectionOverlapScore": {
       "constant": "SECTION_OVERLAP_SCORE_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.search"
@@ -256,6 +325,14 @@
     },
     "SentenceBm25Score": {
       "constant": "SENTENCE_BM25_SCORE_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "SentenceIndexSummary": {
+      "constant": "SENTENCE_INDEX_SUMMARY_SCHEMA",
+      "module": "examples.structure_generated.texts.pyspark.schemas.search"
+    },
+    "SentenceIndexTerm": {
+      "constant": "SENTENCE_INDEX_TERM_SCHEMA",
       "module": "examples.structure_generated.texts.pyspark.schemas.search"
     },
     "SentenceOverlapScore": {
@@ -355,6 +432,42 @@
       },
       {
         "detail": {
+          "field": "search_query_id",
+          "result": "sections"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sections.search_query_id"
+      },
+      {
+        "detail": {
+          "field": "score_overlap",
+          "result": "sections"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sections.score_overlap"
+      },
+      {
+        "detail": {
+          "field": "score_bm25",
+          "result": "sections"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sections.score_bm25"
+      },
+      {
+        "detail": {
           "phase": "raw",
           "project_output": false,
           "schema_mode": "strict"
@@ -425,6 +538,42 @@
         ],
         "step": "declare_hierarchy",
         "target": "paragraphs.content"
+      },
+      {
+        "detail": {
+          "field": "search_query_id",
+          "result": "paragraphs"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "paragraphs.search_query_id"
+      },
+      {
+        "detail": {
+          "field": "score_overlap",
+          "result": "paragraphs"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "paragraphs.score_overlap"
+      },
+      {
+        "detail": {
+          "field": "score_bm25",
+          "result": "paragraphs"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "paragraphs.score_bm25"
       },
       {
         "detail": {
@@ -509,6 +658,42 @@
         ],
         "step": "declare_hierarchy",
         "target": "sentences.content"
+      },
+      {
+        "detail": {
+          "field": "search_query_id",
+          "result": "sentences"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sentences.search_query_id"
+      },
+      {
+        "detail": {
+          "field": "score_overlap",
+          "result": "sentences"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sentences.score_overlap"
+      },
+      {
+        "detail": {
+          "field": "score_bm25",
+          "result": "sentences"
+        },
+        "operation": "project",
+        "sources": [
+          "literal"
+        ],
+        "step": "declare_hierarchy",
+        "target": "sentences.score_bm25"
       },
       {
         "detail": {

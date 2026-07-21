@@ -1,27 +1,35 @@
-"""Overlap-coefficient search transform."""
+"""Overlap scoring from reusable text-index artifacts."""
 
-from examples.texts.algorithms.ScoreOverlap import ScoreOverlap as OverlapAlgorithm
+from examples.texts.algorithms.scoring.ScoreOverlap import ScoreOverlap as OverlapAlgorithm
 from examples.texts.schemas.search import (
+    DocumentIndexTerm,
     DocumentOverlapScore,
+    ParagraphIndexTerm,
     ParagraphOverlapScore,
     SearchQuery,
+    SectionIndexTerm,
     SectionOverlapScore,
+    SentenceIndexTerm,
     SentenceOverlapScore,
 )
-from examples.texts.transforms.search.ScoreTargets import ScoreTargets
-from structure import input, output, raw, step
+from structure import Transform, input, output, raw, step
 
 
-class ScoreOverlap(ScoreTargets):
-    """Create overlap scores for independent document-hierarchy targets."""
+class ScoreOverlap(Transform):
+    """Score each query against reusable indexes at four target grains."""
 
+    queries = input(SearchQuery)
+    document_terms = input(DocumentIndexTerm)
+    section_terms = input(SectionIndexTerm)
+    paragraph_terms = input(ParagraphIndexTerm)
+    sentence_terms = input(SentenceIndexTerm)
     document_overlap_scores = output(DocumentOverlapScore)
     section_overlap_scores = output(SectionOverlapScore)
     paragraph_overlap_scores = output(ParagraphOverlapScore)
     sentence_overlap_scores = output(SentenceOverlapScore)
 
     @step(
-        input=ScoreTargets.queries,
+        input=queries,
         output=[document_overlap_scores, section_overlap_scores, paragraph_overlap_scores, sentence_overlap_scores],
     )
     def declare_overlap_scores(
@@ -32,17 +40,18 @@ class ScoreOverlap(ScoreTargets):
             SectionOverlapScore(query_id=query.id, document_id="", section_id="", score_overlap=0.0),
             ParagraphOverlapScore(query_id=query.id, document_id="", section_id="", paragraph_id="", score_overlap=0.0),
             SentenceOverlapScore(
-                query_id=query.id,
-                document_id="",
-                section_id="",
-                paragraph_id="",
-                sentence_id="",
-                score_overlap=0.0,
+                query_id=query.id, document_id="", section_id="", paragraph_id="", sentence_id="", score_overlap=0.0
             ),
         )
 
     @raw(
-        input=[input(ScoreTargets.queries), input(ScoreTargets.words)],
+        input=[
+            input(queries),
+            input(document_terms),
+            input(section_terms),
+            input(paragraph_terms),
+            input(sentence_terms),
+        ],
         output=[
             output(document_overlap_scores),
             output(section_overlap_scores),
@@ -54,7 +63,10 @@ class ScoreOverlap(ScoreTargets):
         self,
         *,
         queries,
-        words,
+        document_terms,
+        section_terms,
+        paragraph_terms,
+        sentence_terms,
         document_overlap_scores,
         section_overlap_scores,
         paragraph_overlap_scores,
@@ -64,9 +76,6 @@ class ScoreOverlap(ScoreTargets):
     ):
         return OverlapAlgorithm.scores(
             queries,
-            words,
-            document_scores=document_overlap_scores,
-            section_scores=section_overlap_scores,
-            paragraph_scores=paragraph_overlap_scores,
-            sentence_scores=sentence_overlap_scores,
+            (document_terms, section_terms, paragraph_terms, sentence_terms),
+            (document_overlap_scores, section_overlap_scores, paragraph_overlap_scores, sentence_overlap_scores),
         )

@@ -279,16 +279,24 @@ def render_texts_example() -> dict[str, str]:
         )
         from examples.texts.schemas.search import (
             DocumentBm25Score,
+            DocumentIndexSummary,
+            DocumentIndexTerm,
             DocumentOverlapScore,
             DocumentSearchTarget,
             ParagraphBm25Score,
+            ParagraphIndexSummary,
+            ParagraphIndexTerm,
             ParagraphOverlapScore,
             ParagraphSearchTarget,
             SearchQuery,
             SectionBm25Score,
+            SectionIndexSummary,
+            SectionIndexTerm,
             SectionOverlapScore,
             SectionSearchTarget,
             SentenceBm25Score,
+            SentenceIndexSummary,
+            SentenceIndexTerm,
             SentenceOverlapScore,
             SentenceSearchTarget,
         )
@@ -297,7 +305,7 @@ def render_texts_example() -> dict[str, str]:
         from examples.texts.transforms.corpus import CorpusText
         from examples.texts.transforms.extract import ExtractText
         from examples.texts.transforms.profile import ProfileDocuments
-        from examples.texts.transforms.search.ScoreCorpus import ScoreCorpus
+        from examples.texts.transforms.search import AddScores, CreateIndex
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
             "examples.texts.schemas.analytics": [
@@ -317,6 +325,14 @@ def render_texts_example() -> dict[str, str]:
                 SectionSearchTarget,
                 ParagraphSearchTarget,
                 SentenceSearchTarget,
+                DocumentIndexTerm,
+                DocumentIndexSummary,
+                SectionIndexTerm,
+                SectionIndexSummary,
+                ParagraphIndexTerm,
+                ParagraphIndexSummary,
+                SentenceIndexTerm,
+                SentenceIndexSummary,
                 DocumentOverlapScore,
                 SectionOverlapScore,
                 ParagraphOverlapScore,
@@ -332,7 +348,8 @@ def render_texts_example() -> dict[str, str]:
             (ProfileDocuments, "examples.texts.transforms.profile.ProfileDocuments"),
             (AnalyzeText, "examples.texts.transforms.analyze.AnalyzeText"),
             (CorpusText, "examples.texts.transforms.corpus.CorpusText"),
-            (ScoreCorpus, "examples.texts.transforms.search.ScoreCorpus.ScoreCorpus"),
+            (CreateIndex, "examples.texts.transforms.search.CreateIndex"),
+            (AddScores, "examples.texts.transforms.search.AddScores"),
         )
         files = {}
         for transform_class, source_transform in transforms:

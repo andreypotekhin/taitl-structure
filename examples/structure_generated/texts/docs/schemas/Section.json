@@ -24,6 +24,24 @@
       "name": "heading",
       "nullable": false,
       "type": "string"
+    },
+    {
+      "column": "search_query_id",
+      "name": "search_query_id",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "score_overlap",
+      "name": "score_overlap",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "score_bm25",
+      "name": "score_bm25",
+      "nullable": true,
+      "type": "double"
     }
   ],
   "generated_by": "Structure",

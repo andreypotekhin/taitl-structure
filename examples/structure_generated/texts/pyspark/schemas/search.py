@@ -26,6 +26,49 @@ SENTENCE_SEARCH_TARGET_SCHEMA = T.StructType(PARAGRAPH_SEARCH_TARGET_SCHEMA.fiel
     T.StructField("sentence_id", T.StringType(), False),
 ])
 
+DOCUMENT_INDEX_TERM_SCHEMA = T.StructType(DOCUMENT_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("token", T.StringType(), False),
+    T.StructField("term_frequency", T.LongType(), False),
+    T.StructField("target_word_count", T.LongType(), False),
+    T.StructField("target_distinct_terms", T.LongType(), False),
+    T.StructField("document_frequency", T.LongType(), False),
+])
+
+DOCUMENT_INDEX_SUMMARY_SCHEMA = T.StructType([
+    T.StructField("target_count", T.LongType(), False),
+    T.StructField("average_target_length", T.DoubleType(), False),
+])
+
+SECTION_INDEX_TERM_SCHEMA = T.StructType(SECTION_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("token", T.StringType(), False),
+    T.StructField("term_frequency", T.LongType(), False),
+    T.StructField("target_word_count", T.LongType(), False),
+    T.StructField("target_distinct_terms", T.LongType(), False),
+    T.StructField("document_frequency", T.LongType(), False),
+])
+
+SECTION_INDEX_SUMMARY_SCHEMA = T.StructType(DOCUMENT_INDEX_SUMMARY_SCHEMA.fields)
+
+PARAGRAPH_INDEX_TERM_SCHEMA = T.StructType(PARAGRAPH_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("token", T.StringType(), False),
+    T.StructField("term_frequency", T.LongType(), False),
+    T.StructField("target_word_count", T.LongType(), False),
+    T.StructField("target_distinct_terms", T.LongType(), False),
+    T.StructField("document_frequency", T.LongType(), False),
+])
+
+PARAGRAPH_INDEX_SUMMARY_SCHEMA = T.StructType(DOCUMENT_INDEX_SUMMARY_SCHEMA.fields)
+
+SENTENCE_INDEX_TERM_SCHEMA = T.StructType(SENTENCE_INDEX_TARGET_SCHEMA.fields + [
+    T.StructField("token", T.StringType(), False),
+    T.StructField("term_frequency", T.LongType(), False),
+    T.StructField("target_word_count", T.LongType(), False),
+    T.StructField("target_distinct_terms", T.LongType(), False),
+    T.StructField("document_frequency", T.LongType(), False),
+])
+
+SENTENCE_INDEX_SUMMARY_SCHEMA = T.StructType(DOCUMENT_INDEX_SUMMARY_SCHEMA.fields)
+
 DOCUMENT_OVERLAP_SCORE_SCHEMA = T.StructType(DOCUMENT_SEARCH_TARGET_SCHEMA.fields + [
     T.StructField("score_overlap", T.DoubleType(), False),
 ])

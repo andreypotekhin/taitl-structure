@@ -161,6 +161,24 @@
           "name": "harvested_at",
           "nullable": false,
           "type": "timestamp"
+        },
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": true,
+          "type": "double"
         }
       ],
       "module": "examples.texts.schemas.text",
@@ -423,6 +441,70 @@
       "name": "DocumentFeatures"
     },
     {
+      "bases": [],
+      "fields": [
+        {
+          "column": "target_count",
+          "name": "target_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "average_target_length",
+          "name": "average_target_length",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "DocumentIndexSummary"
+    },
+    {
+      "bases": [
+        "DocumentIndexTarget"
+      ],
+      "fields": [
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "token",
+          "name": "token",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "term_frequency",
+          "name": "term_frequency",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "target_word_count",
+          "name": "target_word_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "target_distinct_terms",
+          "name": "target_distinct_terms",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "document_frequency",
+          "name": "document_frequency",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "DocumentIndexTerm"
+    },
+    {
       "bases": [
         "DocumentSearchTarget"
       ],
@@ -549,6 +631,24 @@
           "name": "content",
           "nullable": false,
           "type": "string"
+        },
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": true,
+          "type": "double"
         }
       ],
       "module": "examples.texts.schemas.text",
@@ -592,6 +692,84 @@
       ],
       "module": "examples.texts.schemas.search",
       "name": "ParagraphBm25Score"
+    },
+    {
+      "bases": [
+        "DocumentIndexSummary"
+      ],
+      "fields": [
+        {
+          "column": "target_count",
+          "name": "target_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "average_target_length",
+          "name": "average_target_length",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "ParagraphIndexSummary"
+    },
+    {
+      "bases": [
+        "ParagraphIndexTarget"
+      ],
+      "fields": [
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "token",
+          "name": "token",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "term_frequency",
+          "name": "term_frequency",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "target_word_count",
+          "name": "target_word_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "target_distinct_terms",
+          "name": "target_distinct_terms",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "document_frequency",
+          "name": "document_frequency",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "ParagraphIndexTerm"
     },
     {
       "bases": [
@@ -759,6 +937,24 @@
           "name": "heading",
           "nullable": false,
           "type": "string"
+        },
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": true,
+          "type": "double"
         }
       ],
       "module": "examples.texts.schemas.text",
@@ -796,6 +992,78 @@
       ],
       "module": "examples.texts.schemas.search",
       "name": "SectionBm25Score"
+    },
+    {
+      "bases": [
+        "DocumentIndexSummary"
+      ],
+      "fields": [
+        {
+          "column": "target_count",
+          "name": "target_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "average_target_length",
+          "name": "average_target_length",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "SectionIndexSummary"
+    },
+    {
+      "bases": [
+        "SectionIndexTarget"
+      ],
+      "fields": [
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "token",
+          "name": "token",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "term_frequency",
+          "name": "term_frequency",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "target_word_count",
+          "name": "target_word_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "target_distinct_terms",
+          "name": "target_distinct_terms",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "document_frequency",
+          "name": "document_frequency",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "SectionIndexTerm"
     },
     {
       "bases": [
@@ -956,6 +1224,24 @@
           "name": "content",
           "nullable": false,
           "type": "string"
+        },
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "score_overlap",
+          "name": "score_overlap",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": true,
+          "type": "double"
         }
       ],
       "module": "examples.texts.schemas.text",
@@ -1005,6 +1291,90 @@
       ],
       "module": "examples.texts.schemas.search",
       "name": "SentenceBm25Score"
+    },
+    {
+      "bases": [
+        "DocumentIndexSummary"
+      ],
+      "fields": [
+        {
+          "column": "target_count",
+          "name": "target_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "average_target_length",
+          "name": "average_target_length",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "SentenceIndexSummary"
+    },
+    {
+      "bases": [
+        "SentenceIndexTarget"
+      ],
+      "fields": [
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "section_id",
+          "name": "section_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "paragraph_id",
+          "name": "paragraph_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "sentence_id",
+          "name": "sentence_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "token",
+          "name": "token",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "term_frequency",
+          "name": "term_frequency",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "target_word_count",
+          "name": "target_word_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "target_distinct_terms",
+          "name": "target_distinct_terms",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "document_frequency",
+          "name": "document_frequency",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.texts.schemas.search",
+      "name": "SentenceIndexTerm"
     },
     {
       "bases": [
@@ -1659,7 +2029,18 @@
       }
     },
     {
-      "dependencies": [],
+      "dependencies": [
+        "bm25",
+        "document_bm25_scores",
+        "document_overlap_scores",
+        "overlap",
+        "paragraph_bm25_scores",
+        "paragraph_overlap_scores",
+        "section_bm25_scores",
+        "section_overlap_scores",
+        "sentence_bm25_scores",
+        "sentence_overlap_scores"
+      ],
       "inputs": [
         {
           "name": "queries",
@@ -1667,12 +2048,67 @@
           "schema": "SearchQuery"
         },
         {
-          "name": "words",
+          "name": "document_terms",
           "ordinal": 1,
-          "schema": "Word"
+          "schema": "DocumentIndexTerm"
+        },
+        {
+          "name": "section_terms",
+          "ordinal": 2,
+          "schema": "SectionIndexTerm"
+        },
+        {
+          "name": "paragraph_terms",
+          "ordinal": 3,
+          "schema": "ParagraphIndexTerm"
+        },
+        {
+          "name": "sentence_terms",
+          "ordinal": 4,
+          "schema": "SentenceIndexTerm"
+        },
+        {
+          "name": "document_summary",
+          "ordinal": 5,
+          "schema": "DocumentIndexSummary"
+        },
+        {
+          "name": "section_summary",
+          "ordinal": 6,
+          "schema": "SectionIndexSummary"
+        },
+        {
+          "name": "paragraph_summary",
+          "ordinal": 7,
+          "schema": "ParagraphIndexSummary"
+        },
+        {
+          "name": "sentence_summary",
+          "ordinal": 8,
+          "schema": "SentenceIndexSummary"
+        },
+        {
+          "name": "documents",
+          "ordinal": 9,
+          "schema": "Document"
+        },
+        {
+          "name": "sections",
+          "ordinal": 10,
+          "schema": "Section"
+        },
+        {
+          "name": "paragraphs",
+          "ordinal": 11,
+          "schema": "Paragraph"
+        },
+        {
+          "name": "sentences",
+          "ordinal": 12,
+          "schema": "Sentence"
         }
       ],
-      "name": "ScoreCorpus",
+      "name": "AddScores",
       "outputs": [
         {
           "name": "document_overlap_scores",
@@ -1713,9 +2149,29 @@
           "name": "sentence_bm25_scores",
           "ordinal": 7,
           "schema": "SentenceBm25Score"
+        },
+        {
+          "name": "scored_documents",
+          "ordinal": 8,
+          "schema": "Document"
+        },
+        {
+          "name": "scored_sections",
+          "ordinal": 9,
+          "schema": "Section"
+        },
+        {
+          "name": "scored_paragraphs",
+          "ordinal": 10,
+          "schema": "Paragraph"
+        },
+        {
+          "name": "scored_sentences",
+          "ordinal": 11,
+          "schema": "Sentence"
         }
       ],
-      "source": "examples.texts.transforms.search.ScoreCorpus.ScoreCorpus",
+      "source": "examples.texts.transforms.search.AddScores",
       "step_methods": [
         {
           "input_lane": "queries",
@@ -1790,11 +2246,304 @@
               "schema": "SentenceBm25Score"
             }
           ]
+        },
+        {
+          "input_lane": "documents",
+          "input_schema": "Document",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "document",
+              "schema": "Document",
+              "source": "documents"
+            },
+            {
+              "driving": false,
+              "parameter": "overlap",
+              "schema": "DocumentOverlapScore",
+              "source": "document_overlap_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "bm25",
+              "schema": "DocumentBm25Score",
+              "source": "document_bm25_scores"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "overlap"
+            },
+            {
+              "how": "inner",
+              "input": "bm25"
+            }
+          ],
+          "name": "score_documents",
+          "output_lane": "scored_documents",
+          "output_schema": "Document",
+          "results": [
+            {
+              "frame": "scored_documents",
+              "lane": "scored_documents",
+              "schema": "Document"
+            }
+          ]
+        },
+        {
+          "input_lane": "sections",
+          "input_schema": "Section",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "section",
+              "schema": "Section",
+              "source": "sections"
+            },
+            {
+              "driving": false,
+              "parameter": "overlap",
+              "schema": "SectionOverlapScore",
+              "source": "section_overlap_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "bm25",
+              "schema": "SectionBm25Score",
+              "source": "section_bm25_scores"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "overlap"
+            },
+            {
+              "how": "inner",
+              "input": "bm25"
+            }
+          ],
+          "name": "score_sections",
+          "output_lane": "scored_sections",
+          "output_schema": "Section",
+          "results": [
+            {
+              "frame": "scored_sections",
+              "lane": "scored_sections",
+              "schema": "Section"
+            }
+          ]
+        },
+        {
+          "input_lane": "paragraphs",
+          "input_schema": "Paragraph",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "paragraph",
+              "schema": "Paragraph",
+              "source": "paragraphs"
+            },
+            {
+              "driving": false,
+              "parameter": "overlap",
+              "schema": "ParagraphOverlapScore",
+              "source": "paragraph_overlap_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "bm25",
+              "schema": "ParagraphBm25Score",
+              "source": "paragraph_bm25_scores"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "overlap"
+            },
+            {
+              "how": "inner",
+              "input": "bm25"
+            }
+          ],
+          "name": "score_paragraphs",
+          "output_lane": "scored_paragraphs",
+          "output_schema": "Paragraph",
+          "results": [
+            {
+              "frame": "scored_paragraphs",
+              "lane": "scored_paragraphs",
+              "schema": "Paragraph"
+            }
+          ]
+        },
+        {
+          "input_lane": "sentences",
+          "input_schema": "Sentence",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "sentence",
+              "schema": "Sentence",
+              "source": "sentences"
+            },
+            {
+              "driving": false,
+              "parameter": "overlap",
+              "schema": "SentenceOverlapScore",
+              "source": "sentence_overlap_scores"
+            },
+            {
+              "driving": false,
+              "parameter": "bm25",
+              "schema": "SentenceBm25Score",
+              "source": "sentence_bm25_scores"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "overlap"
+            },
+            {
+              "how": "inner",
+              "input": "bm25"
+            }
+          ],
+          "name": "score_sentences",
+          "output_lane": "scored_sentences",
+          "output_schema": "Sentence",
+          "results": [
+            {
+              "frame": "scored_sentences",
+              "lane": "scored_sentences",
+              "schema": "Sentence"
+            }
+          ]
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/ScoreCorpus.py",
-        "traceability": "traceability/transforms/ScoreCorpus.ScoreCorpus.json"
+        "pyspark_transform": "pyspark/transforms/search.py",
+        "traceability": "traceability/transforms/search.AddScores.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "words",
+          "ordinal": 0,
+          "schema": "Word"
+        }
+      ],
+      "name": "CreateIndex",
+      "outputs": [
+        {
+          "name": "document_terms",
+          "ordinal": 0,
+          "schema": "DocumentIndexTerm"
+        },
+        {
+          "name": "document_summary",
+          "ordinal": 1,
+          "schema": "DocumentIndexSummary"
+        },
+        {
+          "name": "section_terms",
+          "ordinal": 2,
+          "schema": "SectionIndexTerm"
+        },
+        {
+          "name": "section_summary",
+          "ordinal": 3,
+          "schema": "SectionIndexSummary"
+        },
+        {
+          "name": "paragraph_terms",
+          "ordinal": 4,
+          "schema": "ParagraphIndexTerm"
+        },
+        {
+          "name": "paragraph_summary",
+          "ordinal": 5,
+          "schema": "ParagraphIndexSummary"
+        },
+        {
+          "name": "sentence_terms",
+          "ordinal": 6,
+          "schema": "SentenceIndexTerm"
+        },
+        {
+          "name": "sentence_summary",
+          "ordinal": 7,
+          "schema": "SentenceIndexSummary"
+        }
+      ],
+      "source": "examples.texts.transforms.search.CreateIndex",
+      "step_methods": [
+        {
+          "input_lane": "words",
+          "input_schema": "Word",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "word",
+              "schema": "Word",
+              "source": "words"
+            }
+          ],
+          "name": "declare_index",
+          "output_lane": "document_terms",
+          "output_schema": "DocumentIndexTerm",
+          "results": [
+            {
+              "frame": "document_terms",
+              "lane": "document_terms",
+              "schema": "DocumentIndexTerm"
+            },
+            {
+              "frame": "document_summary",
+              "lane": "document_summary",
+              "schema": "DocumentIndexSummary"
+            },
+            {
+              "frame": "section_terms",
+              "lane": "section_terms",
+              "schema": "SectionIndexTerm"
+            },
+            {
+              "frame": "section_summary",
+              "lane": "section_summary",
+              "schema": "SectionIndexSummary"
+            },
+            {
+              "frame": "paragraph_terms",
+              "lane": "paragraph_terms",
+              "schema": "ParagraphIndexTerm"
+            },
+            {
+              "frame": "paragraph_summary",
+              "lane": "paragraph_summary",
+              "schema": "ParagraphIndexSummary"
+            },
+            {
+              "frame": "sentence_terms",
+              "lane": "sentence_terms",
+              "schema": "SentenceIndexTerm"
+            },
+            {
+              "frame": "sentence_summary",
+              "lane": "sentence_summary",
+              "schema": "SentenceIndexSummary"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/search.py",
+        "traceability": "traceability/transforms/search.CreateIndex.json"
       }
     }
   ]

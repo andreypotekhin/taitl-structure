@@ -17,16 +17,24 @@ from examples.texts.schemas.analytics import (
 )
 from examples.texts.schemas.search import (
     DocumentBm25Score,
+    DocumentIndexSummary,
+    DocumentIndexTerm,
     DocumentOverlapScore,
     DocumentSearchTarget,
     ParagraphBm25Score,
+    ParagraphIndexSummary,
+    ParagraphIndexTerm,
     ParagraphOverlapScore,
     ParagraphSearchTarget,
     SearchQuery,
     SectionBm25Score,
+    SectionIndexSummary,
+    SectionIndexTerm,
     SectionOverlapScore,
     SectionSearchTarget,
     SentenceBm25Score,
+    SentenceIndexSummary,
+    SentenceIndexTerm,
     SentenceOverlapScore,
     SentenceSearchTarget,
 )
@@ -35,7 +43,7 @@ from examples.texts.transforms.analyze import AnalyzeText
 from examples.texts.transforms.corpus import CorpusText
 from examples.texts.transforms.extract import ExtractText
 from examples.texts.transforms.profile import ProfileDocuments
-from examples.texts.transforms.search.ScoreCorpus import ScoreCorpus
+from examples.texts.transforms.search import AddScores, CreateIndex
 
 pytestmark = pytest.mark.integration
 
@@ -57,6 +65,14 @@ SCHEMA_MODULES = {
         SectionSearchTarget,
         ParagraphSearchTarget,
         SentenceSearchTarget,
+        DocumentIndexTerm,
+        DocumentIndexSummary,
+        SectionIndexTerm,
+        SectionIndexSummary,
+        ParagraphIndexTerm,
+        ParagraphIndexSummary,
+        SentenceIndexTerm,
+        SentenceIndexSummary,
         DocumentOverlapScore,
         SectionOverlapScore,
         ParagraphOverlapScore,
@@ -73,7 +89,8 @@ TRANSFORMS = (
     (ProfileDocuments, "examples.texts.transforms.profile.ProfileDocuments"),
     (AnalyzeText, "examples.texts.transforms.analyze.AnalyzeText"),
     (CorpusText, "examples.texts.transforms.corpus.CorpusText"),
-    (ScoreCorpus, "examples.texts.transforms.search.ScoreCorpus.ScoreCorpus"),
+    (CreateIndex, "examples.texts.transforms.search.CreateIndex"),
+    (AddScores, "examples.texts.transforms.search.AddScores"),
 )
 
 
@@ -106,6 +123,9 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path) -> None:
                     datetime(2026, 7, 1, 8),
                     datetime(2026, 7, 2, 8),
                     datetime(2026, 7, 10, 9),
+                    None,
+                    None,
+                    None,
                 ),
                 (
                     "d-2",
@@ -120,6 +140,9 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path) -> None:
                     datetime(2026, 7, 3, 8),
                     datetime(2026, 7, 4, 8),
                     datetime(2026, 7, 10, 10),
+                    None,
+                    None,
+                    None,
                 ),
                 (
                     "d-3",
@@ -134,6 +157,9 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path) -> None:
                     None,
                     None,
                     datetime(2026, 7, 11, 11),
+                    None,
+                    None,
+                    None,
                 ),
             ],
             schemas.DOCUMENT_SCHEMA,
@@ -186,43 +212,55 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path) -> None:
             [("q-structure", "Structure transformations"), ("q-reference", "reference text")],
             __import__(f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA"]).SEARCH_QUERY_SCHEMA,
         )
-        search_inputs = dict(queries=queries, words=generated_segments.words)
-        online_scores = ScoreCorpus(**search_inputs).run(session(spark, execution_mode="online"))
-        generated_scores = ScoreCorpus(**search_inputs).run(
+        online_index = CreateIndex(words=generated_segments.words).run(session(spark, execution_mode="online"))
+        generated_index = CreateIndex(words=generated_segments.words).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
-        assert rows(online_scores.document_overlap_scores, "query_id", "document_id") == rows(
-            generated_scores.document_overlap_scores, "query_id", "document_id"
+        assert rows(online_index.document_terms, "document_id", "token") == rows(
+            generated_index.document_terms, "document_id", "token"
         )
-        assert rows(online_scores.section_overlap_scores, "query_id", "section_id") == rows(
-            generated_scores.section_overlap_scores, "query_id", "section_id"
+        document_structure = single(
+            generated_index.document_terms,
+            lambda row: row["document_id"] == "d-1" and row["token"] == "structure",
         )
-        assert rows(online_scores.paragraph_overlap_scores, "query_id", "paragraph_id") == rows(
-            generated_scores.paragraph_overlap_scores, "query_id", "paragraph_id"
+        assert document_structure["term_frequency"] == 1
+        assert document_structure["document_frequency"] == 2
+        assert cast(int, document_structure["target_word_count"]) > cast(
+            int, document_structure["target_distinct_terms"]
         )
-        assert rows(online_scores.sentence_overlap_scores, "query_id", "sentence_id") == rows(
-            generated_scores.sentence_overlap_scores, "query_id", "sentence_id"
+        assert single(generated_index.document_summary, lambda row: True)["target_count"] == 3
+        assert single(generated_index.sentence_summary, lambda row: True)["target_count"] == len(
+            rows(generated_segments.sentences, "id")
+        )
+
+        search_inputs = dict(
+            queries=queries,
+            document_terms=generated_index.document_terms,
+            document_summary=generated_index.document_summary,
+            section_terms=generated_index.section_terms,
+            section_summary=generated_index.section_summary,
+            paragraph_terms=generated_index.paragraph_terms,
+            paragraph_summary=generated_index.paragraph_summary,
+            sentence_terms=generated_index.sentence_terms,
+            sentence_summary=generated_index.sentence_summary,
+            documents=documents,
+            sections=generated_segments.sections,
+            paragraphs=generated_segments.paragraphs,
+            sentences=generated_segments.sentences,
+        )
+        online_scores = AddScores(**search_inputs).run(session(spark, execution_mode="online"))
+        generated_scores = AddScores(**search_inputs).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        )
+        assert rows(online_scores.scored_documents, "search_query_id", "id") == rows(
+            generated_scores.scored_documents, "search_query_id", "id"
+        )
+        assert rows(online_scores.scored_sections, "search_query_id", "id") == rows(
+            generated_scores.scored_sections, "search_query_id", "id"
         )
         structure_document = single(
-            generated_scores.document_overlap_scores,
-            lambda row: row["query_id"] == "q-structure" and row["document_id"] == "d-1",
+            generated_scores.scored_documents,
+            lambda row: row["search_query_id"] == "q-structure" and row["id"] == "d-1",
         )
         assert cast(float, structure_document["score_overlap"]) > 0
-
-        assert rows(online_scores.document_bm25_scores, "query_id", "document_id") == rows(
-            generated_scores.document_bm25_scores, "query_id", "document_id"
-        )
-        assert rows(online_scores.section_bm25_scores, "query_id", "section_id") == rows(
-            generated_scores.section_bm25_scores, "query_id", "section_id"
-        )
-        assert rows(online_scores.paragraph_bm25_scores, "query_id", "paragraph_id") == rows(
-            generated_scores.paragraph_bm25_scores, "query_id", "paragraph_id"
-        )
-        assert rows(online_scores.sentence_bm25_scores, "query_id", "sentence_id") == rows(
-            generated_scores.sentence_bm25_scores, "query_id", "sentence_id"
-        )
-        structure_document = single(
-            generated_scores.document_bm25_scores,
-            lambda row: row["query_id"] == "q-structure" and row["document_id"] == "d-1",
-        )
         assert cast(float, structure_document["score_bm25"]) > 0

@@ -1,4 +1,4 @@
-"""Shared query normalization and target-level index construction."""
+"""Shared query normalization and index-backed scoring helpers."""
 
 from __future__ import annotations
 
@@ -12,8 +12,8 @@ Target: TypeAlias = tuple[str, ...]
 ScoreFrames: TypeAlias = tuple["DataFrame", ...]
 
 
-class TextSearch:
-    """Build normalized query terms and independent hierarchy indexes."""
+class ScoreAlgorithm:
+    """Normalize queries and project Spark results through declared schemas."""
 
     _TARGETS: tuple[Target, ...] = (
         ("document_id",),
@@ -24,7 +24,7 @@ class TextSearch:
 
     @staticmethod
     def query_terms(queries: DataFrame) -> DataFrame:
-        """Normalize each query into its distinct non-empty terms."""
+        """Normalize each query into distinct, non-empty terms."""
 
         from pyspark.sql import functions as F
 
@@ -38,20 +38,5 @@ class TextSearch:
         )
 
     @staticmethod
-    def index(words: DataFrame, target: Target) -> tuple[DataFrame, DataFrame]:
-        """Return token frequencies and length facts for one target grain."""
-
-        from pyspark.sql import functions as F
-
-        terms = words.groupBy(*target, "token").agg(F.count("*").alias("_term_frequency"))
-        targets = words.groupBy(*target).agg(
-            F.count("*").alias("_word_count"),
-            F.countDistinct("token").alias("_distinct_terms"),
-        )
-        return terms, targets
-
-    @staticmethod
     def project_scores(scores: ScoreFrames, declared: ScoreFrames) -> ScoreFrames:
-        """Project replacement scores through the hook's declared output shapes."""
-
         return tuple(score.select(*output.columns) for score, output in zip(scores, declared, strict=True))

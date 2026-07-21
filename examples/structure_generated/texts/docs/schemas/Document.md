@@ -18,3 +18,6 @@ Module: `examples.texts.schemas.text`
 | `created_at` | `created_at` | `timestamp` | yes |
 | `published_at` | `published_at` | `timestamp` | yes |
 | `harvested_at` | `harvested_at` | `timestamp` | no |
+| `search_query_id` | `search_query_id` | `string` | yes |
+| `score_overlap` | `score_overlap` | `double` | yes |
+| `score_bm25` | `score_bm25` | `double` | yes |

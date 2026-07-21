@@ -1,7 +1,8 @@
+from examples.texts.algorithms.extraction.TextExtraction import TextExtraction
 from examples.texts.schemas.text import Document, Paragraph, Section, Sentence, Word
-from examples.texts.transforms.extraction import TextExtraction
 from structure import *
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.dsl.expressions import literal
 
 
 class ExtractText(Transform):
@@ -20,8 +21,25 @@ class ExtractText(Transform):
         paragraph_id = concat_ws("#p", row.id, "0")
         sentence_id = concat_ws("#s", paragraph_id, "0")
         return (
-            Section(id=section_id, document_id=row.id, ordinal=0, heading=row.title),
-            Paragraph(id=paragraph_id, document_id=row.id, section_id=section_id, ordinal=0, content=row.content),
+            Section(
+                id=section_id,
+                document_id=row.id,
+                ordinal=0,
+                heading=row.title,
+                search_query_id=literal(None),
+                score_overlap=literal(None),
+                score_bm25=literal(None),
+            ),
+            Paragraph(
+                id=paragraph_id,
+                document_id=row.id,
+                section_id=section_id,
+                ordinal=0,
+                content=row.content,
+                search_query_id=literal(None),
+                score_overlap=literal(None),
+                score_bm25=literal(None),
+            ),
             Sentence(
                 id=sentence_id,
                 document_id=row.id,
@@ -30,6 +48,9 @@ class ExtractText(Transform):
                 paragraph_ordinal=0,
                 ordinal=0,
                 content=row.content,
+                search_query_id=literal(None),
+                score_overlap=literal(None),
+                score_bm25=literal(None),
             ),
             Word(
                 id=concat_ws("#w", sentence_id, "0"),

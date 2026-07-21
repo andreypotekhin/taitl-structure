@@ -17,6 +17,9 @@ class Document(Schema):
     created_at = timestamp(nullable=True)
     published_at = timestamp(nullable=True)
     harvested_at = timestamp(nullable=False)
+    search_query_id = string(nullable=True)
+    score_overlap = double(nullable=True)
+    score_bm25 = double(nullable=True)
 
 
 class Section(Schema):
@@ -24,6 +27,9 @@ class Section(Schema):
     document_id = string(nullable=False)
     ordinal = integer(nullable=False)
     heading = string(nullable=False)
+    search_query_id = string(nullable=True)
+    score_overlap = double(nullable=True)
+    score_bm25 = double(nullable=True)
 
 
 class Paragraph(Schema):
@@ -32,6 +38,9 @@ class Paragraph(Schema):
     section_id = string(nullable=False)
     ordinal = integer(nullable=False)
     content = string(nullable=False)
+    search_query_id = string(nullable=True)
+    score_overlap = double(nullable=True)
+    score_bm25 = double(nullable=True)
 
 
 class Sentence(Schema):
@@ -42,6 +51,9 @@ class Sentence(Schema):
     paragraph_ordinal = integer(nullable=False)
     ordinal = integer(nullable=False)
     content = string(nullable=False)
+    search_query_id = string(nullable=True)
+    score_overlap = double(nullable=True)
+    score_bm25 = double(nullable=True)
 
 
 class Word(Schema):

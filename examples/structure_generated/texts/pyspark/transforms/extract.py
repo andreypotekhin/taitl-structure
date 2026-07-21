@@ -31,6 +31,9 @@ class ExtractTextGenerated:
             F.col("document.id").alias("document_id"),
             F.lit(0).alias("ordinal"),
             F.col("document.title").alias("heading"),
+            F.lit(None).cast(T.StringType()).alias("search_query_id"),
+            F.lit(None).cast(T.DoubleType()).alias("score_overlap"),
+            F.lit(None).cast(T.DoubleType()).alias("score_bm25"),
         )
         paragraphs = declare_hierarchy_base.select(
             F.concat_ws('#p', F.col("document.id"), F.lit('0')).alias("id"),
@@ -38,6 +41,9 @@ class ExtractTextGenerated:
             F.concat_ws('#s', F.col("document.id"), F.lit('0')).alias("section_id"),
             F.lit(0).alias("ordinal"),
             F.col("document.content"),
+            F.lit(None).cast(T.StringType()).alias("search_query_id"),
+            F.lit(None).cast(T.DoubleType()).alias("score_overlap"),
+            F.lit(None).cast(T.DoubleType()).alias("score_bm25"),
         )
         sentences = declare_hierarchy_base.select(
             F.concat_ws('#s', F.concat_ws('#p', F.col("document.id"), F.lit('0')), F.lit('0')).alias("id"),
@@ -47,6 +53,9 @@ class ExtractTextGenerated:
             F.lit(0).alias("paragraph_ordinal"),
             F.lit(0).alias("ordinal"),
             F.col("document.content"),
+            F.lit(None).cast(T.StringType()).alias("search_query_id"),
+            F.lit(None).cast(T.DoubleType()).alias("score_overlap"),
+            F.lit(None).cast(T.DoubleType()).alias("score_bm25"),
         )
         words = declare_hierarchy_base.select(
             F.concat_ws('#w', F.concat_ws('#s', F.concat_ws('#p', F.col("document.id"), F.lit('0')), F.lit('0')), F.lit('0')).alias("id"),

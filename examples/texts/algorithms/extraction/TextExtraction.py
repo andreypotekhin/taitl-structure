@@ -51,6 +51,9 @@ class TextExtraction:
             .over(Window.partitionBy("id", "section_ordinal").orderBy("paragraph_group"))
             .alias("ordinal"),
             F.concat_ws(" ", F.transform("ordered_lines", lambda row: row["line"])).alias("content"),
+            F.lit(None).cast("string").alias("search_query_id"),
+            F.lit(None).cast("double").alias("score_overlap"),
+            F.lit(None).cast("double").alias("score_bm25"),
         )
         headings = (
             marked.where(F.col("heading").isNotNull())
@@ -71,6 +74,9 @@ class TextExtraction:
             F.col("section_keys.document_id").alias("document_id"),
             F.regexp_extract(F.col("section_keys.section_id"), r"#s([0-9]+)$", 1).cast("int").alias("ordinal"),
             F.coalesce(F.col("headings.heading"), F.lit("Document")).alias("heading"),
+            F.lit(None).cast("string").alias("search_query_id"),
+            F.lit(None).cast("double").alias("score_overlap"),
+            F.lit(None).cast("double").alias("score_bm25"),
         )
         return sections, paragraphs
 
@@ -95,6 +101,9 @@ class TextExtraction:
                 "paragraph_ordinal",
                 (F.col("position") + 1).cast("int").alias("ordinal"),
                 F.trim("content").alias("content"),
+                F.lit(None).cast("string").alias("search_query_id"),
+                F.lit(None).cast("double").alias("score_overlap"),
+                F.lit(None).cast("double").alias("score_bm25"),
             )
         )
         words = (

@@ -45,7 +45,8 @@ def test_texts_search_subpackage_transform_is_discovered_and_compiled() -> None:
     score_corpus = next(
         transform
         for transform in project.transforms
-        if transform.__module__ == "transforms.search.ScoreCorpus" and transform.__name__ == "ScoreCorpus"
+        if transform.__module__ == "examples.texts.transforms.scoring.ScoreCorpus"
+        and transform.__name__ == "ScoreCorpus"
     )
 
     compile_transform(score_corpus, config=config)

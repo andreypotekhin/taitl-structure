@@ -17,6 +17,9 @@ DOCUMENT_SCHEMA = T.StructType([
     T.StructField("created_at", T.TimestampType(), True),
     T.StructField("published_at", T.TimestampType(), True),
     T.StructField("harvested_at", T.TimestampType(), False),
+    T.StructField("search_query_id", T.StringType(), True),
+    T.StructField("score_overlap", T.DoubleType(), True),
+    T.StructField("score_bm25", T.DoubleType(), True),
 ])
 
 SECTION_SCHEMA = T.StructType([
@@ -24,6 +27,9 @@ SECTION_SCHEMA = T.StructType([
     T.StructField("document_id", T.StringType(), False),
     T.StructField("ordinal", T.IntegerType(), False),
     T.StructField("heading", T.StringType(), False),
+    T.StructField("search_query_id", T.StringType(), True),
+    T.StructField("score_overlap", T.DoubleType(), True),
+    T.StructField("score_bm25", T.DoubleType(), True),
 ])
 
 PARAGRAPH_SCHEMA = T.StructType([
@@ -32,6 +38,9 @@ PARAGRAPH_SCHEMA = T.StructType([
     T.StructField("section_id", T.StringType(), False),
     T.StructField("ordinal", T.IntegerType(), False),
     T.StructField("content", T.StringType(), False),
+    T.StructField("search_query_id", T.StringType(), True),
+    T.StructField("score_overlap", T.DoubleType(), True),
+    T.StructField("score_bm25", T.DoubleType(), True),
 ])
 
 SENTENCE_SCHEMA = T.StructType([
@@ -42,6 +51,9 @@ SENTENCE_SCHEMA = T.StructType([
     T.StructField("paragraph_ordinal", T.IntegerType(), False),
     T.StructField("ordinal", T.IntegerType(), False),
     T.StructField("content", T.StringType(), False),
+    T.StructField("search_query_id", T.StringType(), True),
+    T.StructField("score_overlap", T.DoubleType(), True),
+    T.StructField("score_bm25", T.DoubleType(), True),
 ])
 
 WORD_SCHEMA = T.StructType([

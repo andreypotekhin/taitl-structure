@@ -13,3 +13,6 @@ Module: `examples.texts.schemas.text`
 | `paragraph_ordinal` | `paragraph_ordinal` | `integer` | no |
 | `ordinal` | `ordinal` | `integer` | no |
 | `content` | `content` | `string` | no |
+| `search_query_id` | `search_query_id` | `string` | yes |
+| `score_overlap` | `score_overlap` | `double` | yes |
+| `score_bm25` | `score_bm25` | `double` | yes |

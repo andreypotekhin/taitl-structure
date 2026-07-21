@@ -17,8 +17,9 @@ class DiscoverStructureProject:
         transforms: list[type[Transform]] = []
         schemas: dict[str, list[type[Schema]]] = {}
         for root in config.source_roots:
-            self._add_import_root(root)
-            for module_name in self._modules(root):
+            import_root, package = self._import_root(root)
+            self._add_import_root(import_root)
+            for module_name in self._modules(root, package):
                 module = importlib.import_module(module_name)
                 for value in module.__dict__.values():
                     if self._transform(value, module_name):
@@ -35,12 +36,20 @@ class DiscoverStructureProject:
         if text not in sys.path:
             sys.path.insert(0, text)
 
-    def _modules(self, root: Path) -> tuple[str, ...]:
+    def _import_root(self, root: Path) -> tuple[Path, tuple[str, ...]]:
+        package: list[str] = []
+        import_root = root
+        while (import_root / "__init__.py").is_file():
+            package.append(import_root.name)
+            import_root = import_root.parent
+        return import_root, tuple(reversed(package))
+
+    def _modules(self, root: Path, package: tuple[str, ...]) -> tuple[str, ...]:
         modules: list[str] = []
         for path in sorted(root.rglob("*.py")):
             if path.name == "__init__.py":
                 continue
-            modules.append(".".join(path.relative_to(root).with_suffix("").parts))
+            modules.append(".".join((*package, *path.relative_to(root).with_suffix("").parts)))
         return tuple(modules)
 
     def _transform(self, value: object, module_name: str) -> bool:
