@@ -1,4 +1,4 @@
-"""Reduce directed reusable-index scores into reciprocal canonical pairs."""
+"""Reduce directed reusable-index scores into bounded query-neighbour pairs."""
 
 from __future__ import annotations
 
@@ -16,15 +16,16 @@ class SimilarityScores:
     )
 
     @classmethod
-    def reduce(cls, mappings, overlaps, bm25_scores, declared):
+    def reduce(cls, mappings, overlaps, bm25_scores, declared, *, maximum_results: int):
         pairs = tuple(
-            cls._pairs(mapping, overlap, bm25, target)
+            cls._pairs(mapping, overlap, bm25, target, maximum_results=maximum_results)
             for mapping, overlap, bm25, target in zip(mappings, overlaps, bm25_scores, cls._TARGETS, strict=True)
         )
         return tuple(frame.select(*output.columns) for frame, output in zip(pairs, declared, strict=True))
 
     @staticmethod
-    def _pairs(mapping, overlap, bm25, target: tuple[str, ...]):
+    def _pairs(mapping, overlap, bm25, target: tuple[str, ...], *, maximum_results: int):
+        from pyspark.sql import Window
         from pyspark.sql import functions as F
 
         score = overlap.join(bm25, ["query_id", *target])
@@ -45,7 +46,7 @@ class SimilarityScores:
         condition = conditions[0]
         for item in conditions[1:]:
             condition = condition & item
-        return forward.join(reverse, condition).select(
+        canonical = forward.join(reverse, condition).select(
             *(F.col(f"forward.source_{field}").alias(f"left_{field}") for field in target),
             *(F.col(f"forward.target_{field}").alias(f"right_{field}") for field in target),
             F.least(F.col("forward.score_overlap"), F.col("reverse.score_overlap")).alias("score_overlap"),
@@ -53,3 +54,20 @@ class SimilarityScores:
             F.col("reverse.score_bm25").alias("bm25_right_to_left"),
             ((F.col("forward.score_bm25") + F.col("reverse.score_bm25")) / F.lit(2.0)).alias("bm25_mean"),
         )
+        reversed_pairs = canonical.select(
+            *(F.col(f"right_{field}").alias(f"left_{field}") for field in target),
+            *(F.col(f"left_{field}").alias(f"right_{field}") for field in target),
+            "score_overlap",
+            F.col("bm25_right_to_left").alias("bm25_left_to_right"),
+            F.col("bm25_left_to_right").alias("bm25_right_to_left"),
+            "bm25_mean",
+        )
+        directed = canonical.unionByName(reversed_pairs)
+        rank = F.row_number().over(
+            Window.partitionBy(*(f"left_{field}" for field in target)).orderBy(
+                F.col("bm25_left_to_right").desc_nulls_last(),
+                F.col("score_overlap").desc_nulls_last(),
+                *(F.col(f"right_{field}").asc_nulls_first() for field in target),
+            )
+        )
+        return directed.withColumn("rank", rank).where(F.col("rank") <= F.lit(maximum_results))

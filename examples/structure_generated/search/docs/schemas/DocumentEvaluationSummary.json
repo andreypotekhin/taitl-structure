@@ -1,0 +1,134 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "window",
+      "name": "window",
+      "nullable": false,
+      "type": "TimeWindow"
+    },
+    {
+      "column": "query_count",
+      "name": "query_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "binary_relevant_query_count",
+      "name": "binary_relevant_query_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "no_binary_relevant_query_count",
+      "name": "no_binary_relevant_query_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "eligible_at_5_count",
+      "name": "eligible_at_5_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "eligible_at_10_count",
+      "name": "eligible_at_10_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "eligible_at_15_count",
+      "name": "eligible_at_15_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "reciprocal_rank_eligible_count",
+      "name": "reciprocal_rank_eligible_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "precision_at_5",
+      "name": "precision_at_5",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "precision_at_10",
+      "name": "precision_at_10",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "precision_at_15",
+      "name": "precision_at_15",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "judged_recall_at_5",
+      "name": "judged_recall_at_5",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "judged_recall_at_10",
+      "name": "judged_recall_at_10",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "judged_recall_at_15",
+      "name": "judged_recall_at_15",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "success_at_5",
+      "name": "success_at_5",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "success_at_10",
+      "name": "success_at_10",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "success_at_15",
+      "name": "success_at_15",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "ndcg_at_5",
+      "name": "ndcg_at_5",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "ndcg_at_10",
+      "name": "ndcg_at_10",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "ndcg_at_15",
+      "name": "ndcg_at_15",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "mean_reciprocal_rank",
+      "name": "mean_reciprocal_rank",
+      "nullable": true,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.evaluation",
+  "name": "DocumentEvaluationSummary"
+}

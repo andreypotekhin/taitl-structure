@@ -1,0 +1,98 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "document_id",
+      "name": "document_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "impression_count",
+      "name": "impression_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "click_count",
+      "name": "click_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "clicked_impression_count",
+      "name": "clicked_impression_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "dwell_seconds",
+      "name": "dwell_seconds",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "long_click_count",
+      "name": "long_click_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "click_through_rate",
+      "name": "click_through_rate",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "ips_clicks",
+      "name": "ips_clicks",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "ips_dwell_credit",
+      "name": "ips_dwell_credit",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "ips_click_through_rate",
+      "name": "ips_click_through_rate",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "ips_impression_weight",
+      "name": "ips_impression_weight",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "ips_clicked_impression_weight",
+      "name": "ips_clicked_impression_weight",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "normalized_dwell_score",
+      "name": "normalized_dwell_score",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "normalized_ctr_score",
+      "name": "normalized_ctr_score",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "normalized_score",
+      "name": "normalized_score",
+      "nullable": false,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.relevance",
+  "name": "DocumentPopularity"
+}

@@ -12,11 +12,11 @@ from examples.search.schemas.search import (
     SentenceBm25Score,
     SentenceIndexSummary,
 )
-from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
+from examples.search.transforms.scoring.ScoreBase import ScoreBase
 from structure import input, output, raw, step
 
 
-class ScoreBm25(ScoreOverlap):
+class ScoreBm25(ScoreBase):
     """Score each query with BM25 over four reusable target indexes."""
 
     document_summary = input(DocumentIndexSummary)
@@ -29,7 +29,7 @@ class ScoreBm25(ScoreOverlap):
     sentence_bm25_scores = output(SentenceBm25Score)
 
     @step(
-        input=ScoreOverlap.queries,
+        input=ScoreBase.queries,
         output=[document_bm25_scores, section_bm25_scores, paragraph_bm25_scores, sentence_bm25_scores],
     )
     def declare_bm25_scores(
@@ -46,14 +46,14 @@ class ScoreBm25(ScoreOverlap):
 
     @raw(
         input=[
-            input(ScoreOverlap.queries),
-            input(ScoreOverlap.document_terms),
+            input(ScoreBase.queries),
+            input(ScoreBase.document_terms),
             input(document_summary),
-            input(ScoreOverlap.section_terms),
+            input(ScoreBase.section_terms),
             input(section_summary),
-            input(ScoreOverlap.paragraph_terms),
+            input(ScoreBase.paragraph_terms),
             input(paragraph_summary),
-            input(ScoreOverlap.sentence_terms),
+            input(ScoreBase.sentence_terms),
             input(sentence_summary),
         ],
         output=[

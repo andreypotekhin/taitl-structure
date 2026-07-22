@@ -14,6 +14,7 @@ Module: `examples.search.schemas.similarity`
 | `right_section_id` | `right_section_id` | `string` | no |
 | `right_paragraph_id` | `right_paragraph_id` | `string` | no |
 | `right_sentence_id` | `right_sentence_id` | `string` | no |
+| `rank` | `rank` | `long` | no |
 | `score_overlap` | `score_overlap` | `double` | no |
 | `bm25_left_to_right` | `bm25_left_to_right` | `double` | no |
 | `bm25_right_to_left` | `bm25_right_to_left` | `double` | no |

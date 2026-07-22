@@ -1,0 +1,186 @@
+{
+  "dependencies": [
+    "document_popularity",
+    "policy",
+    "popularity",
+    "queries",
+    "query",
+    "query_document_signals",
+    "query_signal"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "queries",
+      "ordinal": 0,
+      "schema": "SearchQuery"
+    },
+    {
+      "name": "scored_documents",
+      "ordinal": 1,
+      "schema": "Document"
+    },
+    {
+      "name": "query_document_signals",
+      "ordinal": 2,
+      "schema": "QueryDocumentSignals"
+    },
+    {
+      "name": "document_popularity",
+      "ordinal": 3,
+      "schema": "DocumentPopularity"
+    },
+    {
+      "name": "policy",
+      "ordinal": 4,
+      "schema": "RelevancePolicy"
+    }
+  ],
+  "name": "SearchDocuments",
+  "outputs": [
+    {
+      "name": "results",
+      "ordinal": 0,
+      "schema": "DocumentSearchResult"
+    }
+  ],
+  "source": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+  "step_methods": [
+    {
+      "input_lane": "scored_documents",
+      "input_schema": "Document",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "document",
+          "schema": "Document",
+          "source": "scored_documents"
+        },
+        {
+          "driving": false,
+          "parameter": "query",
+          "schema": "SearchQuery",
+          "source": "queries"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "query"
+        }
+      ],
+      "name": "select_candidates",
+      "output_lane": "candidates",
+      "output_schema": "DocumentSearchCandidate",
+      "results": [
+        {
+          "frame": "candidates",
+          "lane": "candidates",
+          "schema": "DocumentSearchCandidate"
+        }
+      ]
+    },
+    {
+      "input_lane": "candidates",
+      "input_schema": "DocumentSearchCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "DocumentSearchCandidate",
+          "source": "candidates"
+        },
+        {
+          "driving": false,
+          "parameter": "query_signal",
+          "schema": "QueryDocumentSignals",
+          "source": "query_document_signals"
+        },
+        {
+          "driving": false,
+          "parameter": "popularity",
+          "schema": "DocumentPopularity",
+          "source": "document_popularity"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "RelevancePolicy",
+          "source": "policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "query_signal"
+        },
+        {
+          "how": "left",
+          "input": "popularity"
+        },
+        {
+          "how": "cross",
+          "input": "policy"
+        }
+      ],
+      "name": "score_candidates",
+      "output_lane": "scored_candidates",
+      "output_schema": "DocumentSearchCandidate",
+      "results": [
+        {
+          "frame": "scored_candidates",
+          "lane": "scored_candidates",
+          "schema": "DocumentSearchCandidate"
+        }
+      ]
+    },
+    {
+      "input_lane": "scored_candidates",
+      "input_schema": "DocumentSearchCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "DocumentSearchCandidate",
+          "source": "scored_candidates"
+        }
+      ],
+      "name": "normalize_bm25",
+      "output_lane": "normalized_candidates",
+      "output_schema": "DocumentSearchCandidate",
+      "results": [
+        {
+          "frame": "normalized_candidates",
+          "lane": "normalized_candidates",
+          "schema": "DocumentSearchCandidate"
+        }
+      ]
+    },
+    {
+      "input_lane": "normalized_candidates",
+      "input_schema": "DocumentSearchCandidate",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "candidate",
+          "schema": "DocumentSearchCandidate",
+          "source": "normalized_candidates"
+        }
+      ],
+      "name": "rank_results",
+      "output_lane": "results",
+      "output_schema": "DocumentSearchResult",
+      "results": [
+        {
+          "frame": "results",
+          "lane": "results",
+          "schema": "DocumentSearchResult"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/SearchDocuments.py",
+    "traceability": "traceability/transforms/SearchDocuments.SearchDocuments.json"
+  }
+}

@@ -67,34 +67,34 @@
         }
       ],
       "name": "rank",
-      "output_lane": "ranked_sections",
+      "output_lane": "query",
       "output_schema": "IndexedSimilarSection",
       "results": [
         {
-          "frame": "ranked_sections",
-          "lane": "ranked_sections",
+          "frame": "query",
+          "lane": "query",
           "schema": "IndexedSimilarSection"
         }
       ]
     },
     {
-      "input_lane": "ranked_sections",
+      "input_lane": "query",
       "input_schema": "IndexedSimilarSection",
       "inputs": [
         {
           "driving": true,
           "parameter": "candidate",
           "schema": "IndexedSimilarSection",
-          "source": "ranked_sections"
+          "source": "query"
         }
       ],
       "name": "limit",
-      "output_lane": "similar_sections",
+      "output_lane": "query",
       "output_schema": "IndexedSimilarSection",
       "results": [
         {
-          "frame": "similar_sections",
-          "lane": "similar_sections",
+          "frame": "query",
+          "lane": "query",
           "schema": "IndexedSimilarSection"
         }
       ]

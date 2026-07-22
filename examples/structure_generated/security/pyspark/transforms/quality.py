@@ -113,8 +113,8 @@ class SecurityInventoryQualityGenerated:
         assert_schema(quality_lane, VULNERABILITY_QUALITY_CHECK_SCHEMA, name="VulnerabilityQualityCheck", mode="strict")
 
         # Step method: publish_reference_checks
-        reference_checks = quality_lane.alias("vulnerability_quality_check")
-        reference_checks = reference_checks.select(
+        quality_lane = quality_lane.alias("vulnerability_quality_check")
+        quality_lane = quality_lane.select(
             F.col("vulnerability_quality_check.vuln_id"),
             F.col("vulnerability_quality_check.device_id"),
             F.col("vulnerability_quality_check.owner_id"),
@@ -123,7 +123,7 @@ class SecurityInventoryQualityGenerated:
             F.col("vulnerability_quality_check.issues"),
             F.col("vulnerability_quality_check.is_valid"),
         )
-        assert_schema(reference_checks, VULNERABILITY_QUALITY_CHECK_SCHEMA, name="VulnerabilityQualityCheck", mode="strict")
+        assert_schema(quality_lane, VULNERABILITY_QUALITY_CHECK_SCHEMA, name="VulnerabilityQualityCheck", mode="strict")
 
         # Step method: publish_reference_issues
         reference_issues = quality_lane.alias("vulnerability_quality_check")
@@ -174,8 +174,8 @@ class SecurityInventoryQualityGenerated:
         assert_schema(reconciliation_lane, VULNERABILITY_INVENTORY_CHECK_SCHEMA, name="VulnerabilityInventoryCheck", mode="strict")
 
         # Step method: publish_reconciliation_checks
-        reconciliation_checks = reconciliation_lane.alias("vulnerability_inventory_check")
-        reconciliation_checks = reconciliation_checks.select(
+        reconciliation_lane = reconciliation_lane.alias("vulnerability_inventory_check")
+        reconciliation_lane = reconciliation_lane.select(
             F.col("vulnerability_inventory_check.vuln_id"),
             F.col("vulnerability_inventory_check.device_id"),
             F.col("vulnerability_inventory_check.software_id"),
@@ -183,7 +183,7 @@ class SecurityInventoryQualityGenerated:
             F.col("vulnerability_inventory_check.device_has_software"),
             F.col("vulnerability_inventory_check.is_reconciled"),
         )
-        assert_schema(reconciliation_checks, VULNERABILITY_INVENTORY_CHECK_SCHEMA, name="VulnerabilityInventoryCheck", mode="strict")
+        assert_schema(reconciliation_lane, VULNERABILITY_INVENTORY_CHECK_SCHEMA, name="VulnerabilityInventoryCheck", mode="strict")
 
         # Step method: publish_reconciliation_issues
         reconciliation_issues = reconciliation_lane.alias("vulnerability_inventory_check")
@@ -198,7 +198,7 @@ class SecurityInventoryQualityGenerated:
         )
 
         # Step method: reference_checks
-        reference_checks = reference_checks.alias("vulnerability_quality_check")
+        reference_checks = quality_lane.alias("vulnerability_quality_check")
         assert_schema(reference_checks, VULNERABILITY_QUALITY_CHECK_SCHEMA, name="VulnerabilityQualityCheck", mode="strict")
 
         # Step method: reference_issues
@@ -206,7 +206,7 @@ class SecurityInventoryQualityGenerated:
         assert_schema(reference_issues, VULNERABILITY_QUALITY_ISSUE_SCHEMA, name="VulnerabilityQualityIssue", mode="strict")
 
         # Step method: reconciliation_checks
-        reconciliation_checks = reconciliation_checks.alias("vulnerability_inventory_check")
+        reconciliation_checks = reconciliation_lane.alias("vulnerability_inventory_check")
         assert_schema(reconciliation_checks, VULNERABILITY_INVENTORY_CHECK_SCHEMA, name="VulnerabilityInventoryCheck", mode="strict")
 
         # Step method: reconciliation_issues

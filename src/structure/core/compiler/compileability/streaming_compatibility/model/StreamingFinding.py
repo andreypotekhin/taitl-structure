@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
-from structure.plugin.pyspark.dsl.operations import StreamingSupport
+from structure.plugin.api.v1.model import StreamingSupport
 
 
 @dataclass(frozen=True)

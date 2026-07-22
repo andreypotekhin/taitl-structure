@@ -26,6 +26,12 @@
       "type": "string"
     },
     {
+      "column": "rank",
+      "name": "rank",
+      "nullable": false,
+      "type": "long"
+    },
+    {
       "column": "score_overlap",
       "name": "score_overlap",
       "nullable": false,

@@ -67,34 +67,34 @@
         }
       ],
       "name": "rank",
-      "output_lane": "ranked_sentences",
+      "output_lane": "query",
       "output_schema": "IndexedSimilarSentence",
       "results": [
         {
-          "frame": "ranked_sentences",
-          "lane": "ranked_sentences",
+          "frame": "query",
+          "lane": "query",
           "schema": "IndexedSimilarSentence"
         }
       ]
     },
     {
-      "input_lane": "ranked_sentences",
+      "input_lane": "query",
       "input_schema": "IndexedSimilarSentence",
       "inputs": [
         {
           "driving": true,
           "parameter": "candidate",
           "schema": "IndexedSimilarSentence",
-          "source": "ranked_sentences"
+          "source": "query"
         }
       ],
       "name": "limit",
-      "output_lane": "similar_sentences",
+      "output_lane": "query",
       "output_schema": "IndexedSimilarSentence",
       "results": [
         {
-          "frame": "similar_sentences",
-          "lane": "similar_sentences",
+          "frame": "query",
+          "lane": "query",
           "schema": "IndexedSimilarSentence"
         }
       ]

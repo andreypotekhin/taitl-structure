@@ -160,8 +160,8 @@ class SecurityPostureGenerated:
         assert_schema(exposure_lane, VULNERABILITY_EXPOSURE_SCHEMA, name="VulnerabilityExposure", mode="strict")
 
         # Step method: publish
-        exposures = exposure_lane.alias("vulnerability_exposure")
-        exposures = exposures.select(
+        exposure_lane = exposure_lane.alias("vulnerability_exposure")
+        exposure_lane = exposure_lane.select(
             F.col("vulnerability_exposure.vuln_id"),
             F.col("vulnerability_exposure.vuln_type"),
             F.col("vulnerability_exposure.description"),
@@ -186,6 +186,6 @@ class SecurityPostureGenerated:
         )
 
         # Step method: exposures
-        exposures = exposures.alias("vulnerability_exposure")
+        exposures = exposure_lane.alias("vulnerability_exposure")
         assert_schema(exposures, VULNERABILITY_EXPOSURE_SCHEMA, name="VulnerabilityExposure", mode="strict")
         return TransformResult({"exposures": exposures}, single=True, schema={"exposures": VULNERABILITY_EXPOSURE_SCHEMA})

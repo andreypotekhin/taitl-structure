@@ -29,7 +29,8 @@ These declarations and operations define compiler-visible transform methods. Exa
 | `@step(cache=True)` | `persist()` | `@step(cache=True)` |
 | `@step(cache=StorageLevel.MEMORY_AND_DISK)` | `persist(StorageLevel.MEMORY_AND_DISK)` | `@step(cache=StorageLevel.MEMORY_AND_DISK)` |
 | `@special(type="expr")` | Reusable `Column` expression | `@special(type="expr")\ndef clean(v): return trim(v)` |
-| `compile_transform(...)` | Compiled DataFrame plan | `compiled = compile_transform(Publish)` |
+| `Compiler.frontend.analyze()` | Structural transform plan | `plan = Compiler.frontend.analyze()(Publish)` |
+| `Compiler.frontend.compile()` | Selected-platform compilation | `compiled = Compiler.frontend.compile()(Publish)` |
 
 **Details And Differences**
 
@@ -39,7 +40,8 @@ These declarations and operations define compiler-visible transform methods. Exa
   explicit level; Structure preserves its disk, memory, off-heap, deserialization, and replication settings in both
   generated and online execution.
 - Expression specials compile without PySpark. Raw SQL and arbitrary Python UDF helpers remain outside the symbolic API.
-- `compile_transform(...)` does not start a Spark job.
+- `Compiler.frontend.analyze()` does not invoke step methods or start a Spark job.
+- `Compiler.frontend.compile()` authors and compiles for the selected platform but does not start a Spark job.
 
 ## Hooks And Diagnostics
 

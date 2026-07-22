@@ -1,0 +1,5 @@
+id,search_request_id,shown_at,query,document_id,position,examination_propensity
+i-aurora-1,r-aurora,2026-07-20 09:00:00,aurora,d-1,1,0.5
+i-aurora-2,r-aurora,2026-07-20 09:00:00,aurora,d-2,2,0.25
+i-navigation-1,r-navigation,2026-07-20 10:00:00,structure guide,d-2,1,0.5
+i-navigation-2,r-navigation,2026-07-20 10:00:00,structure guide,d-1,2,0.25

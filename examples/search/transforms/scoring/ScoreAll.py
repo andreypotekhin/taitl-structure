@@ -1,7 +1,8 @@
 """Combined reusable-index scoring transform."""
 
 from examples.search.transforms.scoring.ScoreBm25 import ScoreBm25
+from examples.search.transforms.scoring.ScoreOverlap import ScoreOverlap
 
 
-class ScoreAll(ScoreBm25):
+class ScoreAll(ScoreOverlap, ScoreBm25):
     """Calculate overlap and BM25 scores against a prebuilt corpus index."""

@@ -1,0 +1,68 @@
+{
+  "dependencies": [
+    "click",
+    "clicks"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "impressions",
+      "ordinal": 0,
+      "schema": "Impression"
+    },
+    {
+      "name": "clicks",
+      "ordinal": 1,
+      "schema": "Click"
+    }
+  ],
+  "name": "Clicks",
+  "outputs": [
+    {
+      "name": "daily_clicks",
+      "ordinal": 0,
+      "schema": "DailyClicks"
+    }
+  ],
+  "source": "examples.search.transforms.clicks.Clicks.Clicks",
+  "step_methods": [
+    {
+      "input_lane": "impressions",
+      "input_schema": "Impression",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "impression",
+          "schema": "Impression",
+          "source": "impressions"
+        },
+        {
+          "driving": false,
+          "parameter": "click",
+          "schema": "Click",
+          "source": "clicks"
+        }
+      ],
+      "joins": [
+        {
+          "how": "inner",
+          "input": "click"
+        }
+      ],
+      "name": "summarize",
+      "output_lane": "impressions",
+      "output_schema": "DailyClicks",
+      "results": [
+        {
+          "frame": "impressions",
+          "lane": "impressions",
+          "schema": "DailyClicks"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/Clicks.py",
+    "traceability": "traceability/transforms/Clicks.Clicks.json"
+  }
+}

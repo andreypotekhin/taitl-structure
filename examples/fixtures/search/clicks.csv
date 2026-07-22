@@ -1,0 +1,5 @@
+id,occurred_at,impression_id,dwell_seconds
+c-aurora-short,2026-07-20 09:00:10,i-aurora-1,3.0
+c-aurora-long,2026-07-20 09:01:00,i-aurora-2,20.0
+c-navigation-long,2026-07-20 10:00:20,i-navigation-1,45.0
+c-navigation-late,2026-07-21 11:00:00,i-navigation-2,60.0

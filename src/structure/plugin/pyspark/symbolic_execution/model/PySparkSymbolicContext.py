@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextvars import Token
 from types import TracebackType
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, cast
 
 from structure.plugin.api.v1.model.SymbolicContext import (
     SymbolicContext,
@@ -61,6 +61,21 @@ class PySparkSymbolicContext:
             return existing
         self.relation_scopes[scope] = relation
         return relation
+
+    def input_scope(self, *, name: str, schema: object) -> object:
+        from structure.plugin.pyspark.dsl.InputScope import InputScope
+
+        return InputScope(name=name, schema=cast(type, schema))
+
+    def project(self, source: object, *, target: object) -> object:
+        from structure.plugin.pyspark.dsl.body import project
+
+        return project(source, cast(Any, target))
+
+    def special(self, function, *, type: str, return_type: object | None, nullable: bool, args, kwargs):
+        from structure.plugin.pyspark.dsl.SpecialFunction import SpecialFunction
+
+        return SpecialFunction(function, type=type, return_type=return_type, nullable=nullable)(*args, **kwargs)
 
 
 def current_pyspark_context() -> PySparkSymbolicContext | None:

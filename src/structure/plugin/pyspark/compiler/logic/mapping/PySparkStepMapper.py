@@ -197,7 +197,7 @@ class PySparkStepMapper:
     def _body(self, step: StepPlan) -> PySparkStepBody:
         body = step.plugin_body
         if body is None:
-            # Compatibility for the deprecated Core compile_transform() helper.
+            # Compatibility for the transitional Core authorer.
             # Core compilation always supplies the opaque body.
             legacy = cast(Any, step)
             return PySparkStepBody(

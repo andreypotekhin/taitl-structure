@@ -3,6 +3,7 @@ from structure.plugin.pyspark.schema.commands.MaterializePySparkSchema import Ma
 from structure.plugin.pyspark.schema.commands.ReadPySparkSchema import ReadPySparkSchema
 from structure.plugin.pyspark.schema.commands.RenderPySparkSchema import RenderPySparkSchema
 from structure.plugin.pyspark.schema.commands.RenderPySparkSchemaModule import RenderPySparkSchemaModule
+from structure.plugin.pyspark.schema.commands.RenderPySparkStructureSource import RenderPySparkStructureSource
 from structure.plugin.pyspark.schema.logic.MapPySparkSchemaToStructureSource import MapPySparkSchemaToStructureSource
 
 
@@ -25,3 +26,6 @@ class Schema:
 
     def source(self) -> MapPySparkSchemaToStructureSource:
         return MapPySparkSchemaToStructureSource()
+
+    def structure_source(self) -> RenderPySparkStructureSource:
+        return RenderPySparkStructureSource()

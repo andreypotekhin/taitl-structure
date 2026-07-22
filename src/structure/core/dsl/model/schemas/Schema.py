@@ -66,9 +66,13 @@ class Schema:
 
     @classmethod
     def project(cls, source: object):
-        from structure.plugin.pyspark.dsl.Projection import Projection
+        from structure.plugin.api.v1.model import current_symbolic_context
 
-        return Projection(source=source, target=cls)
+        context = current_symbolic_context()
+        project = None if context is None else getattr(context, "project", None)
+        if not callable(project):
+            raise RuntimeError(f"{cls.__name__}.project(...) can only be used while a plugin authors a Structure step")
+        return project(source, target=cls)
 
     @classmethod
     def _base_values(cls, sources: tuple[object, ...]) -> dict[str, object]:

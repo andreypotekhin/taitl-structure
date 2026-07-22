@@ -5,8 +5,26 @@ import pytest
 from structure import *
 from structure.core.compiler.api import Compiler, StreamingSupport
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.dsl.joins import JoinMethod
 from structure.plugin.pyspark.dsl.operations import OperationCardinality
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
+
+
+def _compile(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False)
+
+
+def _analysis(transform):
+    return _compile(transform).analysis
+
+
+def _body(transform, step: int = 0) -> PySparkStepBody:
+    return cast(PySparkStepBody, _analysis(transform).steps[step].plugin_body)
+
+
+def _recipe(transform) -> PySparkExecutionPlan:
+    return cast(PySparkExecutionPlan, _compile(transform).lowered)
 
 
 class Order(Schema):
@@ -57,7 +75,7 @@ def test_lookup_join_rejects_invalid_options_at_the_dsl_boundary(argument: str, 
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(StructureCompileError, match=message):
-        compile_transform(AddProduct)
+        _compile(AddProduct)
 
 
 @pytest.mark.parametrize("ties", ["error", None])
@@ -77,7 +95,7 @@ def test_join_dedupe_factory_rejects_invalid_tie_policy(ties: object) -> None:
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(TypeError, match=r"JoinDedupe.latest_by\(ties=\.\.\.\) requires a TiePolicy value"):
-        compile_transform(AddProduct)
+        _compile(AddProduct)
 
 
 @pytest.mark.parametrize(
@@ -103,7 +121,7 @@ def test_join_dedupe_factory_rejects_invalid_ordering(order_by, message: str) ->
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(StructureCompileError, match=message):
-        compile_transform(AddProduct)
+        _compile(AddProduct)
 
 
 def test_join_dedupe_compiler_validation_rejects_manual_order_descriptor() -> None:
@@ -122,7 +140,7 @@ def test_join_dedupe_compiler_validation_rejects_manual_order_descriptor() -> No
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(StructureCompileError, match="must be an unordered expression"):
-        compile_transform(AddProduct)
+        _compile(AddProduct)
 
 
 def test_selected_row_helpers_reject_order_descriptors() -> None:
@@ -136,7 +154,7 @@ def test_selected_row_helpers_reject_order_descriptors() -> None:
             return Enriched(id=order.id, product_name=order.product_id)
 
     with pytest.raises(StructureCompileError, match="unordered expression"):
-        compile_transform(KeepLatest)
+        _compile(KeepLatest)
 
 
 def test_where_before_join_renders_before_join() -> None:
@@ -151,7 +169,7 @@ def test_where_before_join_renders_before_join() -> None:
             lookup_join(product, on=product.id == order.product_id, how=Join.LEFT)
             return Enriched(id=order.id, product_name=product.name)
 
-    compiled_step = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
+    compiled_step = _recipe(AddProduct).steps[0]
     text = PySpark.render.step()(compiled_step, current="orders", sources={"products": "products"})
 
     assert text.index("orders = orders.where(") < text.index("orders = orders.join(")
@@ -169,7 +187,7 @@ def test_where_after_join_renders_after_join() -> None:
             where(cast(Any, product).name.is_not_null())
             return Enriched(id=order.id, product_name=product.name)
 
-    compiled_step = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
+    compiled_step = _recipe(AddProduct).steps[0]
     text = PySpark.render.step()(compiled_step, current="orders", sources={"products": "products"})
 
     assert text.index("orders = orders.join(") < text.index("orders = orders.where(")
@@ -186,12 +204,11 @@ def test_bare_lookup_join_makes_later_relation_reads_joined() -> None:
             lookup_join(product, on=product.id == order.product_id, how=Join.LEFT)
             return Enriched(id=order.id, product_name=product.name)
 
-    plan = compile_transform(AddProduct)
-    projection = {assignment.field.name: assignment.expression for assignment in plan.steps[0].projection}
+    projection = {assignment.field.name: assignment.expression for assignment in _body(AddProduct).projection}
     product_name = projection["product_name"]
     product_name_data = cast(dict[str, object], product_name.data)
 
-    assert plan.steps[0].joins[0].source == "products"
+    assert _body(AddProduct).joins[0].source == "products"
     assert product_name_data["scope"] == "product"
     assert product_name.nullable
 
@@ -207,7 +224,7 @@ def test_bare_inferred_lookup_join_makes_later_relation_reads_joined() -> None:
             lookup_join(on=product.id == order.product_id, how=Join.LEFT)
             return Enriched(id=order.id, product_name=product.name)
 
-    compiled_step = compile_transform(AddProduct).steps[0]
+    compiled_step = _body(AddProduct)
     projection = {assignment.field.name: assignment.expression for assignment in compiled_step.projection}
     product_name = projection["product_name"]
     product_name_data = cast(dict[str, object], product_name.data)
@@ -236,7 +253,7 @@ def test_inferred_lookup_join_preserves_filter_join_order() -> None:
             where(cast(Any, product).name.is_not_null())
             return Enriched(id=order.id, product_name=product.name)
 
-    compiled_step = compile_transform(AddProduct).steps[0]
+    compiled_step = _body(AddProduct)
 
     assert [operation.kind for operation in compiled_step.operations] == ["filter", "join", "filter"]
     assert [operation.cardinality for operation in compiled_step.operations] == [
@@ -250,7 +267,7 @@ def test_inferred_lookup_join_preserves_filter_join_order() -> None:
         StreamingSupport.COMPATIBLE,
     ]
 
-    recipe = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
+    recipe = _recipe(AddProduct).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert text.index("orders = orders.where(") < text.index("orders = orders.join(")
@@ -268,7 +285,7 @@ def test_exists_join_records_row_filtering_operation() -> None:
             where(exists(on=product.id == order.product_id))
             return Published(id=order.id, status=order.status)
 
-    compiled_step = compile_transform(PublishKnownProducts).steps[0]
+    compiled_step = _body(PublishKnownProducts)
 
     assert len(compiled_step.joins) == 1
     assert compiled_step.joins[0].method is JoinMethod.EXISTS
@@ -277,7 +294,7 @@ def test_exists_join_records_row_filtering_operation() -> None:
     assert compiled_step.operations[0].capability.name == "exists"
     assert compiled_step.operations[0].cardinality is OperationCardinality.ROW_FILTERING
 
-    recipe = PySpark.compiler.lower()(compile_transform(PublishKnownProducts)).steps[0]
+    recipe = _recipe(PublishKnownProducts).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert '"left_semi"' in text
@@ -295,8 +312,8 @@ def test_not_exists_join_records_row_filtering_operation() -> None:
             where(not_exists(on=product.id == order.product_id))
             return Published(id=order.id, status=order.status)
 
-    compiled_step = compile_transform(PublishUnknownProducts).steps[0]
-    recipe = PySpark.compiler.lower()(compile_transform(PublishUnknownProducts)).steps[0]
+    compiled_step = _body(PublishUnknownProducts)
+    recipe = _recipe(PublishUnknownProducts).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert compiled_step.joins[0].method is JoinMethod.NOT_EXISTS
@@ -320,8 +337,8 @@ def test_inner_join_records_row_multiplying_operation() -> None:
             )
             return Enriched(id=order.id, product_name=product.name)
 
-    plan = compile_transform(AddProduct)
-    compiled_step = plan.steps[0]
+    plan = _analysis(AddProduct)
+    compiled_step = _body(AddProduct)
     recipe_plan = PySpark.compiler.lower()(plan)
     recipe = recipe_plan.steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
@@ -358,7 +375,7 @@ def test_inner_join_accepts_using_key(using: object) -> None:
             inner_join(on=using)
             return Enriched(id=order.id, product_name=product.name)
 
-    recipe = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
+    recipe = _recipe(AddProduct).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert 'F.col("order.id") == F.col("products.id")' in text
@@ -384,7 +401,7 @@ def test_inner_join_accepts_multiple_using_keys() -> None:
             inner_join(product, on=["tenant_id", "id"])
             return Enriched(id=order.id, product_name=product.name)
 
-    recipe = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
+    recipe = _recipe(AddProduct).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert 'F.col("composite_order.tenant_id") == F.col("products.tenant_id")' in text
@@ -403,7 +420,7 @@ def test_right_join_explains_nullable_left_output() -> None:
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(AddProduct)
+        _compile(AddProduct)
 
     assert raised.value.diagnostic.code == "SCHEMA-E0301"
     assert "current left row may be absent after this right join" in raised.value.diagnostic.problem_text()
@@ -428,7 +445,7 @@ def test_join_strategy_renders_supported_pyspark_hint(strategy: JoinStrategy, hi
             inner_join(on=product.id == order.product_id, strategy=strategy)
             return Enriched(id=order.id, product_name=product.name)
 
-    recipe = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
+    recipe = _recipe(AddProduct).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert f'.hint("{hint}")' in text
@@ -445,8 +462,8 @@ def test_bare_right_join_records_rowset_operation() -> None:
             right_join(on=product.id == order.product_id)
             return OuterEnriched(id=order.id, product_name=product.name)
 
-    plan = compile_transform(AddProduct)
-    compiled_step = plan.steps[0]
+    plan = _analysis(AddProduct)
+    compiled_step = _body(AddProduct)
     recipe_plan = PySpark.compiler.lower()(plan)
     recipe = recipe_plan.steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
@@ -483,12 +500,12 @@ def test_explicit_full_rowset_join_accepts_disjunctive_predicate() -> None:
             )
             return OuterEnriched(id=order.id, product_name=product.name)
 
-    plan = compile_transform(AddProduct)
+    plan = _analysis(AddProduct)
     recipe = PySpark.compiler.lower()(plan).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
-    assert plan.steps[0].joins[0].method is JoinMethod.ROWSET
-    assert plan.steps[0].joins[0].how is Join.FULL
+    assert _body(AddProduct).joins[0].method is JoinMethod.ROWSET
+    assert _body(AddProduct).joins[0].how is Join.FULL
     assert '"full"' in text
     assert "|" in text
 
@@ -504,7 +521,7 @@ def test_full_join_shortcut_accepts_non_equi_predicate() -> None:
             full_join(on=cast(Any, product).valid_from <= cast(Any, order).status)
             return OuterEnriched(id=order.id, product_name=product.name)
 
-    recipe = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
+    recipe = _recipe(AddProduct).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert recipe.joins[0].method is JoinMethod.ROWSET
@@ -524,7 +541,7 @@ def test_cross_join_requires_cartesian_acknowledgement() -> None:
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(TypeError, match="allow_cartesian=True"):
-        compile_transform(AddProduct)
+        _compile(AddProduct)
 
 
 def test_cross_join_renders_cross_join_call() -> None:
@@ -538,7 +555,7 @@ def test_cross_join_renders_cross_join_call() -> None:
             cross_join(product, allow_cartesian=True)
             return Enriched(id=order.id, product_name=product.name)
 
-    recipe = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
+    recipe = _recipe(AddProduct).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert recipe.joins[0].method is JoinMethod.ROWSET
@@ -563,8 +580,8 @@ def test_deduped_lookup_join_records_policy_and_renders_deterministic_lookup() -
             )
             return Enriched(id=order.id, product_name=product.name)
 
-    plan = compile_transform(AddProduct)
-    compiled_step = plan.steps[0]
+    plan = _analysis(AddProduct)
+    compiled_step = _body(AddProduct)
     recipe = PySpark.compiler.lower()(plan).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
@@ -598,7 +615,7 @@ def test_deduped_lookup_join_rejects_left_side_ordering() -> None:
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(AddProduct)
+        _compile(AddProduct)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
     assert "order_by must read only the joined input" in raised.value.diagnostic.problem_text()
@@ -621,8 +638,8 @@ def test_temporal_one_records_closed_open_validity_lookup() -> None:
             )
             return Enriched(id=order.id, product_name=product.name)
 
-    plan = compile_transform(AddProduct)
-    compiled_step = plan.steps[0]
+    plan = _analysis(AddProduct)
+    compiled_step = _body(AddProduct)
     recipe_plan = PySpark.compiler.lower()(plan)
     recipe = recipe_plan.steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
@@ -664,7 +681,7 @@ def test_temporal_one_rejects_left_side_validity_bound() -> None:
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(AddProduct)
+        _compile(AddProduct)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
     assert "valid_from=...) must read only the joined temporal input" in raised.value.diagnostic.problem_text()
@@ -690,7 +707,7 @@ def test_temporal_one_rejects_non_lookup_join_modes(how: Join) -> None:
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(AddProduct)
+        _compile(AddProduct)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
     assert "temporal_one(...) supports Join.LEFT and Join.INNER" in raised.value.diagnostic.problem_text()
@@ -713,8 +730,8 @@ def test_as_of_one_records_backward_lookup_and_renders_ranked_selection() -> Non
             )
             return Enriched(id=order.id, product_name=product.name)
 
-    plan = compile_transform(AddProduct)
-    compiled_step = plan.steps[0]
+    plan = _analysis(AddProduct)
+    compiled_step = _body(AddProduct)
     recipe_plan = PySpark.compiler.lower()(plan)
     recipe = recipe_plan.steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
@@ -757,7 +774,7 @@ def test_as_of_one_records_forward_lookup_and_renders_earliest_selection() -> No
             )
             return Enriched(id=order.id, product_name=product.name)
 
-    recipe = PySpark.compiler.lower()(compile_transform(AddProduct)).steps[0]
+    recipe = _recipe(AddProduct).steps[0]
     text = PySpark.render.step()(recipe, current="orders", sources={"products": "products"})
 
     assert '(F.col("products.valid_from") >= F.col("order.status"))' in text
@@ -781,7 +798,7 @@ def test_as_of_one_rejects_left_side_right_time() -> None:
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(AddProduct)
+        _compile(AddProduct)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
     assert "right_time=...) must read only the joined as-of input" in raised.value.diagnostic.problem_text()
@@ -806,7 +823,7 @@ def test_as_of_one_rejects_non_lookup_join_modes(how: Join) -> None:
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(AddProduct)
+        _compile(AddProduct)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
     assert "as_of_one(...) supports Join.LEFT and Join.INNER" in raised.value.diagnostic.problem_text()
@@ -824,7 +841,7 @@ def test_exists_join_does_not_make_relation_fields_readable() -> None:
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(PublishKnownProducts)
+        _compile(PublishKnownProducts)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
     assert "reads relation parameter product before it is joined" in raised.value.diagnostic.problem_text()
@@ -843,7 +860,7 @@ def test_pre_join_relation_filter_still_fails() -> None:
             return Enriched(id=order.id, product_name=product.name)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(AddProduct)
+        _compile(AddProduct)
 
     assert raised.value.diagnostic.code == "JOIN-E0601"
     assert "reads relation parameter product before it is joined" in raised.value.diagnostic.problem_text()
@@ -858,9 +875,7 @@ def test_source_less_project_uses_driving_row() -> None:
         def publish(self, order: Order) -> Published:
             return project(Published)
 
-    plan = compile_transform(Publish)
-
-    assert [assignment.field.name for assignment in plan.steps[0].projection] == ["id", "status"]
+    assert [assignment.field.name for assignment in _body(Publish).projection] == ["id", "status"]
 
 
 def test_return_chain_join_where_project_uses_ordered_operations() -> None:
@@ -877,7 +892,7 @@ def test_return_chain_join_where_project_uses_ordered_operations() -> None:
                 .project(Published)
             )
 
-    compiled_step = compile_transform(Publish).steps[0]
+    compiled_step = _body(Publish)
 
     assert [operation.kind for operation in compiled_step.operations] == ["join", "filter"]
     assert [assignment.field.name for assignment in compiled_step.projection] == ["id", "status"]
@@ -893,7 +908,7 @@ def test_method_cache_option_records_optimization_operation() -> None:
         def publish(self, order: Order) -> Published:
             return Published(id=order.id, status=order.status)
 
-    compiled_step = compile_transform(Publish).steps[0]
+    compiled_step = _body(Publish)
 
     assert [operation.kind for operation in compiled_step.operations] == ["cache"]
     assert compiled_step.operations[0].capability is not None

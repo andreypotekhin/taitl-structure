@@ -8,6 +8,7 @@ Module: `examples.search.schemas.similarity`
 | --- | --- | --- | --- |
 | `left_document_id` | `left_document_id` | `string` | no |
 | `right_document_id` | `right_document_id` | `string` | no |
+| `rank` | `rank` | `long` | no |
 | `score_overlap` | `score_overlap` | `double` | no |
 | `bm25_left_to_right` | `bm25_left_to_right` | `double` | no |
 | `bm25_right_to_left` | `bm25_right_to_left` | `double` | no |

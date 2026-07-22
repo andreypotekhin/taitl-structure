@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from structure.core.compiler.compileability.streaming_compatibility.model.StreamingFinding import StreamingFinding
-from structure.plugin.pyspark.dsl.operations import StreamingSupport
+from structure.plugin.api.v1.model import StreamingSupport
 
 
 @dataclass(frozen=True)

@@ -7,7 +7,7 @@ from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
 
 
-def test_user_story_tests_compile_transforms_before_deployment(orders_plan) -> None:
+def test_user_story_tests_compile_before_deployment(orders_plan) -> None:
     """I can compile transforms during tests."""
 
     assert orders_plan.name == "EnrichOrders"

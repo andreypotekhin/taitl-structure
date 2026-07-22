@@ -55,6 +55,15 @@ def test_search_scoring_subpackage_transform_is_discovered_and_compiled() -> Non
     Compiler.frontend.compile()(score_all, config=config, materialize_schemas=False)
 
 
+def test_similarity_public_transform_inherits_its_searching_implementation() -> None:
+    """The public transform stays import-stable while its implementation is grouped with search transforms."""
+
+    from examples.search.transforms.searching.search_similarity import Similarity as SearchSimilarity
+    from examples.search.transforms.similarity import Similarity
+
+    assert Similarity.__bases__ == (SearchSimilarity,)
+
+
 def _paths_diff(actual: dict[str, str], expected: dict[str, str]) -> str:
     missing = sorted(set(expected) - set(actual))
     extra = sorted(set(actual) - set(expected))

@@ -2,34 +2,26 @@
 
 from examples.search.algorithms.scoring.ScoreOverlap import ScoreOverlap as OverlapAlgorithm
 from examples.search.schemas.search import (
-    DocumentIndexTerm,
     DocumentOverlapScore,
-    ParagraphIndexTerm,
     ParagraphOverlapScore,
     SearchQuery,
-    SectionIndexTerm,
     SectionOverlapScore,
-    SentenceIndexTerm,
     SentenceOverlapScore,
 )
-from structure import Transform, input, output, raw, step
+from examples.search.transforms.scoring.ScoreBase import ScoreBase
+from structure import input, output, raw, step
 
 
-class ScoreOverlap(Transform):
+class ScoreOverlap(ScoreBase):
     """Score each query against reusable indexes at four target grains."""
 
-    queries = input(SearchQuery)
-    document_terms = input(DocumentIndexTerm)
-    section_terms = input(SectionIndexTerm)
-    paragraph_terms = input(ParagraphIndexTerm)
-    sentence_terms = input(SentenceIndexTerm)
     document_overlap_scores = output(DocumentOverlapScore)
     section_overlap_scores = output(SectionOverlapScore)
     paragraph_overlap_scores = output(ParagraphOverlapScore)
     sentence_overlap_scores = output(SentenceOverlapScore)
 
     @step(
-        input=queries,
+        input=ScoreBase.queries,
         output=[document_overlap_scores, section_overlap_scores, paragraph_overlap_scores, sentence_overlap_scores],
     )
     def declare_overlap_scores(
@@ -46,11 +38,11 @@ class ScoreOverlap(Transform):
 
     @raw(
         input=[
-            input(queries),
-            input(document_terms),
-            input(section_terms),
-            input(paragraph_terms),
-            input(sentence_terms),
+            input(ScoreBase.queries),
+            input(ScoreBase.document_terms),
+            input(ScoreBase.section_terms),
+            input(ScoreBase.paragraph_terms),
+            input(ScoreBase.sentence_terms),
         ],
         output=[
             output(document_overlap_scores),

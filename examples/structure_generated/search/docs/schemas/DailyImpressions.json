@@ -1,0 +1,44 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "window",
+      "name": "window",
+      "nullable": false,
+      "type": "TimeWindow"
+    },
+    {
+      "column": "query",
+      "name": "query",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "document_id",
+      "name": "document_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "position",
+      "name": "position",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "examination_propensity",
+      "name": "examination_propensity",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "impression_count",
+      "name": "impression_count",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.clicks",
+  "name": "DailyImpressions"
+}

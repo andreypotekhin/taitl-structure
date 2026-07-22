@@ -1,0 +1,32 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "id",
+      "name": "id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "occurred_at",
+      "name": "occurred_at",
+      "nullable": false,
+      "type": "timestamp"
+    },
+    {
+      "column": "impression_id",
+      "name": "impression_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "dwell_seconds",
+      "name": "dwell_seconds",
+      "nullable": false,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.clicks",
+  "name": "Click"
+}

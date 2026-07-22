@@ -389,12 +389,36 @@ def render_search_example() -> dict[str, str]:
             SentenceStatistics,
             SimilarDocument,
         )
+        from examples.search.schemas.clicks import Click, DailyClicks, DailyImpressions, Impression, SearchRequest
+        from examples.search.schemas.evaluation import (
+            BehaviorDailyCounts,
+            BehaviorExposure,
+            BehaviorImpression,
+            BehaviorRequest,
+            BehaviorRequestMetrics,
+            BehaviorRequestTotals,
+            DailyDocumentSearchBehavior,
+            DocumentEvaluationSummary,
+            DocumentQueryEvaluation,
+            DocumentRelevanceJudgment,
+            DocumentSearchRequestBehavior,
+            EvaluationBatch,
+            EvaluationIdealDcg,
+            EvaluationJudgment,
+            EvaluationJudgmentTotals,
+            EvaluationQuery,
+            EvaluationResult,
+            EvaluationResultTotals,
+        )
+        from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
         from examples.search.schemas.search import (
             DocumentBm25Score,
             DocumentIndexSummary,
             DocumentIndexTarget,
             DocumentIndexTerm,
             DocumentOverlapScore,
+            DocumentSearchCandidate,
+            DocumentSearchResult,
             DocumentSearchTarget,
             ParagraphBm25Score,
             ParagraphIndexSummary,
@@ -438,21 +462,23 @@ def render_search_example() -> dict[str, str]:
         )
         from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
         from examples.search.transforms.analyze import AnalyzeText
+        from examples.search.transforms.clicks.Clicks import Clicks
+        from examples.search.transforms.clicks.Impressions import Impressions
         from examples.search.transforms.corpus import CorpusText
+        from examples.search.transforms.evaluate import EvaluateDocuments, EvaluateDocumentSearchBehavior
         from examples.search.transforms.extract import ExtractText
         from examples.search.transforms.index import CreateIndex
         from examples.search.transforms.profile import ProfileDocuments
-        from examples.search.transforms.scoring.AddScores import AddScores
+        from examples.search.transforms.relevance.Signals import BuildRelevanceSignals
+        from examples.search.transforms.score import AddScores
         from examples.search.transforms.scoring.ScoreAll import ScoreAll
-        from examples.search.transforms.search import Search
+        from examples.search.transforms.search import SearchDocuments, SearchSentences
         from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
         from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
-        from examples.search.transforms.similarity import (
-            Similarity,
-            SimilarParagraphs,
-            SimilarSections,
-            SimilarSentences,
-        )
+        from examples.search.transforms.similarities.SimilarParagraphs import SimilarParagraphs
+        from examples.search.transforms.similarities.SimilarSections import SimilarSections
+        from examples.search.transforms.similarities.SimilarSentences import SimilarSentences
+        from examples.search.transforms.similarity import Similarity
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
             "examples.search.schemas.analytics": [
@@ -493,6 +519,40 @@ def render_search_example() -> dict[str, str]:
                 SectionBm25Score,
                 ParagraphBm25Score,
                 SentenceBm25Score,
+                DocumentSearchCandidate,
+                DocumentSearchResult,
+            ],
+            "examples.search.schemas.clicks": [
+                SearchRequest,
+                Impression,
+                Click,
+                DailyImpressions,
+                DailyClicks,
+            ],
+            "examples.search.schemas.evaluation": [
+                EvaluationBatch,
+                DocumentRelevanceJudgment,
+                DocumentQueryEvaluation,
+                DocumentEvaluationSummary,
+                DocumentSearchRequestBehavior,
+                DailyDocumentSearchBehavior,
+                BehaviorRequest,
+                BehaviorImpression,
+                BehaviorExposure,
+                BehaviorRequestMetrics,
+                BehaviorRequestTotals,
+                BehaviorDailyCounts,
+                EvaluationQuery,
+                EvaluationResult,
+                EvaluationJudgment,
+                EvaluationJudgmentTotals,
+                EvaluationIdealDcg,
+                EvaluationResultTotals,
+            ],
+            "examples.search.schemas.relevance": [
+                RelevancePolicy,
+                QueryDocumentSignals,
+                DocumentPopularity,
             ],
             "examples.search.schemas.similarity": [
                 SimilarityPolicy,
@@ -533,8 +593,20 @@ def render_search_example() -> dict[str, str]:
             (SimilarSections, "examples.search.transforms.similarities.SimilarSections.SimilarSections"),
             (SimilarParagraphs, "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
             (SimilarSentences, "examples.search.transforms.similarities.SimilarSentences.SimilarSentences"),
-            (AddScores, "examples.search.transforms.scoring.AddScores.AddScores"),
-            (Search, "examples.search.transforms.search.Search"),
+            (AddScores, "examples.search.transforms.score.AddScores"),
+            (SearchSentences, "examples.search.transforms.search.SearchSentences"),
+            (Impressions, "examples.search.transforms.clicks.Impressions.Impressions"),
+            (Clicks, "examples.search.transforms.clicks.Clicks.Clicks"),
+            (BuildRelevanceSignals, "examples.search.transforms.relevance.Signals.BuildRelevanceSignals"),
+            (SearchDocuments, "examples.search.transforms.search.SearchDocuments"),
+            (
+                EvaluateDocuments,
+                "examples.search.transforms.evaluation.search_docs.EvaluateDocuments.EvaluateDocuments",
+            ),
+            (
+                EvaluateDocumentSearchBehavior,
+                "examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior",
+            ),
         )
         files = {}
         for transform_class, source_transform in transforms:
@@ -549,6 +621,28 @@ def render_search_example() -> dict[str, str]:
                     source_schema_modules=schema_modules,
                 )
             )
+        documented_schema_modules = {
+            module: tuple(
+                schema
+                for schema in schemas
+                if schema
+                not in {
+                    BehaviorDailyCounts,
+                    BehaviorExposure,
+                    BehaviorImpression,
+                    BehaviorRequest,
+                    BehaviorRequestMetrics,
+                    BehaviorRequestTotals,
+                    EvaluationIdealDcg,
+                    EvaluationJudgment,
+                    EvaluationJudgmentTotals,
+                    EvaluationQuery,
+                    EvaluationResult,
+                    EvaluationResultTotals,
+                }
+            )
+            for module, schemas in schema_modules.items()
+        }
         docs = Docs.render.project()(
             StructureConfig.resolve(
                 project_root=ROOT,
@@ -558,7 +652,7 @@ def render_search_example() -> dict[str, str]:
             ),
             DiscoveredStructureProject(
                 transforms=tuple(transform for transform, _ in transforms),
-                schema_modules={module: tuple(schemas) for module, schemas in schema_modules.items()},
+                schema_modules=documented_schema_modules,
             ),
         )
         files.update({f"examples/structure_generated/search/{path}": text for path, text in docs.items()})

@@ -2,7 +2,6 @@
 # Source: examples.search.transforms.similarities.SimilarSections.SimilarSections
 
 from pyspark.sql import DataFrame, SparkSession
-from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
@@ -31,35 +30,35 @@ class SimilarSectionsGenerated:
         _input_section_similarities = section_similarities
 
         # Step method: rank
-        ranked_sections = query.alias("similarity_section_query")
+        query = query.alias("similarity_section_query")
         section_similarities_joined = section_similarities.alias("section_similarities")
-        ranked_sections = ranked_sections.join(
+        query = query.join(
             section_similarities_joined,
-            ((F.col("similarity_section_query.id") == F.col("section_similarities.left_section_id")) | (F.col("similarity_section_query.id") == F.col("section_similarities.right_section_id"))),
+            (F.col("similarity_section_query.id") == F.col("section_similarities.left_section_id")),
             "inner",
         )
         sections_2_joined = sections.alias("sections_2")
-        ranked_sections = ranked_sections.join(
+        query = query.join(
             sections_2_joined,
-            (F.col("sections_2.id") == F.when((F.col("similarity_section_query.id") == F.col("section_similarities.left_section_id")), F.col("section_similarities.right_section_id")).otherwise(F.col("section_similarities.left_section_id"))),
+            (F.col("sections_2.id") == F.col("section_similarities.right_section_id")),
             "inner",
         )
-        ranked_sections = ranked_sections.select(
+        query = query.select(
             F.col("sections_2.id"),
             F.col("sections_2.document_id"),
             F.col("sections_2.ordinal"),
             F.col("sections_2.heading"),
             F.col("similarity_section_query.id").alias("search_query_id"),
             F.col("section_similarities.score_overlap"),
-            F.when((F.col("similarity_section_query.id") == F.col("section_similarities.left_section_id")), F.col("section_similarities.bm25_left_to_right")).otherwise(F.col("section_similarities.bm25_right_to_left")).alias("score_bm25"),
-            F.row_number().over(Window.partitionBy(F.col("similarity_section_query.id")).orderBy(F.when((F.col("similarity_section_query.id") == F.col("section_similarities.left_section_id")), F.col("section_similarities.bm25_left_to_right")).otherwise(F.col("section_similarities.bm25_right_to_left")).desc(), F.col("section_similarities.score_overlap").desc(), F.col("sections_2.id").asc())).cast(T.LongType()).alias("rank"),
+            F.col("section_similarities.bm25_left_to_right").alias("score_bm25"),
+            F.col("section_similarities.rank"),
         )
-        assert_schema(ranked_sections, INDEXED_SIMILAR_SECTION_SCHEMA, name="IndexedSimilarSection", mode="strict")
+        assert_schema(query, INDEXED_SIMILAR_SECTION_SCHEMA, name="IndexedSimilarSection", mode="strict")
 
         # Step method: limit
-        similar_sections = ranked_sections.alias("indexed_similar_section")
-        similar_sections = similar_sections.where(((F.col("indexed_similar_section.rank") <= F.lit(10))))
-        similar_sections = similar_sections.select(
+        query = query.alias("indexed_similar_section")
+        query = query.where(((F.col("indexed_similar_section.rank") <= F.lit(10))))
+        query = query.select(
             F.col("indexed_similar_section.id"),
             F.col("indexed_similar_section.document_id"),
             F.col("indexed_similar_section.ordinal"),
@@ -71,6 +70,6 @@ class SimilarSectionsGenerated:
         )
 
         # Step method: similar_sections
-        similar_sections = similar_sections.alias("indexed_similar_section")
+        similar_sections = query.alias("indexed_similar_section")
         assert_schema(similar_sections, INDEXED_SIMILAR_SECTION_SCHEMA, name="IndexedSimilarSection", mode="strict")
         return TransformResult({"similar_sections": similar_sections}, single=True, schema={"similar_sections": INDEXED_SIMILAR_SECTION_SCHEMA})

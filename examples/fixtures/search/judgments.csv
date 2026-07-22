@@ -1,0 +1,5 @@
+search_query_id,document_id,relevance_grade
+q-aurora,d-1,1
+q-aurora,d-2,3
+q-navigation,d-1,2
+q-navigation,d-2,3

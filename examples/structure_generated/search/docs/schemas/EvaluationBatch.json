@@ -1,0 +1,14 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "window",
+      "name": "window",
+      "nullable": false,
+      "type": "TimeWindow"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.evaluation",
+  "name": "EvaluationBatch"
+}

@@ -15,3 +15,6 @@ class Analysis(AnalysisAPI):
             source_transform=request.source_transform,
             transform_module=request.transform_module,
         )
+
+    def describe_documentation(self, payload: object) -> dict[str, object]:
+        return PySpark.render.documentation()(cast(Any, payload))

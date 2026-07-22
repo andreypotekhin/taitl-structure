@@ -1,0 +1,50 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "evaluated_at",
+      "name": "evaluated_at",
+      "nullable": false,
+      "type": "timestamp"
+    },
+    {
+      "column": "half_life_days",
+      "name": "half_life_days",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "bm25_weight",
+      "name": "bm25_weight",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "feedback_weight",
+      "name": "feedback_weight",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "dwell_feedback_weight",
+      "name": "dwell_feedback_weight",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "ctr_feedback_weight",
+      "name": "ctr_feedback_weight",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "minimum_ctr_impressions",
+      "name": "minimum_ctr_impressions",
+      "nullable": false,
+      "type": "long"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.relevance",
+  "name": "RelevancePolicy"
+}

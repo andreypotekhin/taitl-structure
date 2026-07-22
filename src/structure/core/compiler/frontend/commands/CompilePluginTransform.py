@@ -12,7 +12,7 @@ from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.core.plugins.api.Plugin import Plugin
 from structure.core.plugins.model.PluginConfiguration import PluginConfiguration
-from structure.plugin.api.v1 import CompileRequest, PluginCompilation, SchemaValidationRequest
+from structure.plugin.api.v1 import CompilationPurpose, CompileRequest, PluginCompilation, SchemaValidationRequest
 
 
 class CompilePluginTransform:
@@ -31,6 +31,7 @@ class CompilePluginTransform:
         overrides: Mapping[str, object] | None = None,
         schema_types=None,
         materialize_schemas: bool = True,
+        purpose: CompilationPurpose = CompilationPurpose.RUNTIME,
         registry=None,
         **settings: object,
     ) -> PluginCompilation:
@@ -42,6 +43,7 @@ class CompilePluginTransform:
                 options=options,
                 schema_types=schema_types,
                 materialize_schemas=materialize_schemas,
+                purpose=purpose,
                 registry=registry,
             )
         resolved = self._config(config=config, project_root=project_root, overrides=overrides, settings=settings)
@@ -75,6 +77,7 @@ class CompilePluginTransform:
             configuration=configuration,
             registry=registry,
             plugin=plugin,
+            purpose=purpose,
         )
 
     def _compile_options(
@@ -84,6 +87,7 @@ class CompilePluginTransform:
         options: CompilerOptions,
         schema_types,
         materialize_schemas: bool,
+        purpose: CompilationPurpose,
         registry,
     ) -> PluginCompilation:
         target = self._target(transform, default=options.target_backend)
@@ -123,6 +127,7 @@ class CompilePluginTransform:
             configuration=configuration,
             registry=registry,
             plugin=plugin,
+            purpose=purpose,
         )
 
     def _compile(
@@ -134,10 +139,11 @@ class CompilePluginTransform:
         configuration: Mapping[str, object],
         registry,
         plugin=None,
+        purpose: CompilationPurpose = CompilationPurpose.RUNTIME,
     ) -> PluginCompilation:
         plugin = plugin or (registry or self._registry or Plugin.registry()).select(target)
         compilation = plugin.api.compiler.compile(
-            CompileRequest(transform=transform, target=target, configuration=configuration, analysis=plan)
+            CompileRequest(transform=transform, target=target, configuration=configuration, analysis=plan, purpose=purpose)
         )
         if not isinstance(compilation, PluginCompilation):
             raise ValueError(f"PLUGIN-E2708: Plugin {target!r} returned an invalid compilation result.")

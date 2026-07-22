@@ -7,7 +7,6 @@ from structure.core.compiler.ir.model.StepPlan import StepPlan
 from structure.core.compiler.ir.model.TransformPlan import TransformPlan
 from structure.core.dsl.model.schemas.FieldDefinition import FieldDefinition
 from structure.core.dsl.model.schemas.Schema import Schema
-from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, MapType, StructType, StructureType
 
 
 class StructureDocsData:
@@ -96,18 +95,19 @@ class StructureDocsData:
             data["after_hooks"] = [hook.name for hook in step.after_hooks]
         return data
 
-    def type(self, item: StructureType) -> str:
-        if isinstance(item, DecimalType):
-            return f"decimal({item.precision},{item.scale})"
-        if isinstance(item, ArrayType):
-            nulls = "?" if item.contains_null else "!"
-            return f"array<{self.type(item.element)}{nulls}>"
-        if isinstance(item, MapType):
-            nulls = "?" if item.value_contains_null else "!"
-            return f"map<{self.type(item.key)},{self.type(item.value)}{nulls}>"
-        if isinstance(item, StructType):
-            return item.schema.__name__
-        return item.name
+    def type(self, item: object) -> str:
+        name = getattr(item, "name", None)
+        if name == "decimal":
+            return f"decimal({getattr(item, 'precision')},{getattr(item, 'scale')})"
+        if name == "array":
+            nulls = "?" if bool(getattr(item, "contains_null")) else "!"
+            return f"array<{self.type(getattr(item, 'element'))}{nulls}>"
+        if name == "map":
+            nulls = "?" if bool(getattr(item, "value_contains_null")) else "!"
+            return f"map<{self.type(getattr(item, 'key'))},{self.type(getattr(item, 'value'))}{nulls}>"
+        if name == "struct":
+            return getattr(item, "schema").__name__
+        return str(name)
 
     def _dependencies(self, plan: TransformPlan, platform_details: Mapping[str, object]) -> set[str]:
         dependencies: set[str] = set()

@@ -23,6 +23,65 @@ class SentenceSearchResult(Schema):
     score_bm25 = double(nullable=False)
 
 
+class PassageSearchResult(Schema):
+    """One ranked paragraph match with same-section answer context."""
+
+    search_query_id = string(nullable=False)
+    rank = long(nullable=False)
+    document_id = string(nullable=False)
+    title = string(nullable=False)
+    url = string(nullable=True)
+    section_id = string(nullable=False)
+    section_heading = string(nullable=False)
+    paragraph_id = string(nullable=False)
+    preceding_content = string(nullable=True)
+    content = string(nullable=False)
+    following_content = string(nullable=True)
+    score_overlap = double(nullable=False)
+    score_bm25 = double(nullable=False)
+
+
+class ParagraphContext(Schema):
+    """One paragraph and its immediate same-section neighbors."""
+
+    paragraph_id = string(nullable=False)
+    document_id = string(nullable=False)
+    section_id = string(nullable=False)
+    content = string(nullable=False)
+    preceding_content = string(nullable=True)
+    following_content = string(nullable=True)
+
+
+class DocumentSearchResult(Schema):
+    """One two-stage ranked document result."""
+
+    search_query_id = string(nullable=False)
+    rank = long(nullable=False)
+    candidate_rank = long(nullable=False)
+    document_id = string(nullable=False)
+    title = string(nullable=False)
+    url = string(nullable=True)
+    score_bm25 = double(nullable=False)
+    score_feedback = double(nullable=False)
+    score_rank = double(nullable=False)
+
+
+class DocumentSearchCandidate(Schema):
+    """One document candidate while two-stage search ranks it."""
+
+    search_query_id = string(nullable=False)
+    query = string(nullable=False)
+    candidate_rank = long(nullable=False)
+    document_id = string(nullable=False)
+    title = string(nullable=False)
+    url = string(nullable=True)
+    score_bm25 = double(nullable=False)
+    score_feedback = double(nullable=False)
+    score_rank = double(nullable=False)
+    bm25_weight = double(nullable=False)
+    feedback_weight = double(nullable=False)
+
+
 class DocumentSearchTarget(Schema):
     query_id = string(nullable=False)
     document_id = string(nullable=False)

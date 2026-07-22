@@ -7,7 +7,7 @@ from structure.plugin.api.v1.model.StepResultPlan import StepResultPlan
 
 @dataclass(frozen=True)
 class LegacyStepResultPlan(StepResultPlan):
-    """Temporary PySpark payload retained only by deprecated ``compile_transform``."""
+    """Temporary PySpark payload retained only by the transitional Core authorer."""
 
     projection: tuple[Any, ...] = ()
     aggregate: Any = None

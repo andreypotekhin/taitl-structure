@@ -2,7 +2,6 @@
 # Source: examples.search.transforms.similarities.SimilarSentences.SimilarSentences
 
 from pyspark.sql import DataFrame, SparkSession
-from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
@@ -31,20 +30,20 @@ class SimilarSentencesGenerated:
         _input_sentence_similarities = sentence_similarities
 
         # Step method: rank
-        ranked_sentences = query.alias("similarity_sentence_query")
+        query = query.alias("similarity_sentence_query")
         sentence_similarities_joined = sentence_similarities.alias("sentence_similarities")
-        ranked_sentences = ranked_sentences.join(
+        query = query.join(
             sentence_similarities_joined,
-            ((F.col("similarity_sentence_query.id") == F.col("sentence_similarities.left_sentence_id")) | (F.col("similarity_sentence_query.id") == F.col("sentence_similarities.right_sentence_id"))),
+            (F.col("similarity_sentence_query.id") == F.col("sentence_similarities.left_sentence_id")),
             "inner",
         )
         sentences_2_joined = sentences.alias("sentences_2")
-        ranked_sentences = ranked_sentences.join(
+        query = query.join(
             sentences_2_joined,
-            (F.col("sentences_2.id") == F.when((F.col("similarity_sentence_query.id") == F.col("sentence_similarities.left_sentence_id")), F.col("sentence_similarities.right_sentence_id")).otherwise(F.col("sentence_similarities.left_sentence_id"))),
+            (F.col("sentences_2.id") == F.col("sentence_similarities.right_sentence_id")),
             "inner",
         )
-        ranked_sentences = ranked_sentences.select(
+        query = query.select(
             F.col("sentences_2.id"),
             F.col("sentences_2.document_id"),
             F.col("sentences_2.section_id"),
@@ -54,15 +53,15 @@ class SimilarSentencesGenerated:
             F.col("sentences_2.content"),
             F.col("similarity_sentence_query.id").alias("search_query_id"),
             F.col("sentence_similarities.score_overlap"),
-            F.when((F.col("similarity_sentence_query.id") == F.col("sentence_similarities.left_sentence_id")), F.col("sentence_similarities.bm25_left_to_right")).otherwise(F.col("sentence_similarities.bm25_right_to_left")).alias("score_bm25"),
-            F.row_number().over(Window.partitionBy(F.col("similarity_sentence_query.id")).orderBy(F.when((F.col("similarity_sentence_query.id") == F.col("sentence_similarities.left_sentence_id")), F.col("sentence_similarities.bm25_left_to_right")).otherwise(F.col("sentence_similarities.bm25_right_to_left")).desc(), F.col("sentence_similarities.score_overlap").desc(), F.col("sentences_2.id").asc())).cast(T.LongType()).alias("rank"),
+            F.col("sentence_similarities.bm25_left_to_right").alias("score_bm25"),
+            F.col("sentence_similarities.rank"),
         )
-        assert_schema(ranked_sentences, INDEXED_SIMILAR_SENTENCE_SCHEMA, name="IndexedSimilarSentence", mode="strict")
+        assert_schema(query, INDEXED_SIMILAR_SENTENCE_SCHEMA, name="IndexedSimilarSentence", mode="strict")
 
         # Step method: limit
-        similar_sentences = ranked_sentences.alias("indexed_similar_sentence")
-        similar_sentences = similar_sentences.where(((F.col("indexed_similar_sentence.rank") <= F.lit(10))))
-        similar_sentences = similar_sentences.select(
+        query = query.alias("indexed_similar_sentence")
+        query = query.where(((F.col("indexed_similar_sentence.rank") <= F.lit(10))))
+        query = query.select(
             F.col("indexed_similar_sentence.id"),
             F.col("indexed_similar_sentence.document_id"),
             F.col("indexed_similar_sentence.section_id"),
@@ -77,6 +76,6 @@ class SimilarSentencesGenerated:
         )
 
         # Step method: similar_sentences
-        similar_sentences = similar_sentences.alias("indexed_similar_sentence")
+        similar_sentences = query.alias("indexed_similar_sentence")
         assert_schema(similar_sentences, INDEXED_SIMILAR_SENTENCE_SCHEMA, name="IndexedSimilarSentence", mode="strict")
         return TransformResult({"similar_sentences": similar_sentences}, single=True, schema={"similar_sentences": INDEXED_SIMILAR_SENTENCE_SCHEMA})

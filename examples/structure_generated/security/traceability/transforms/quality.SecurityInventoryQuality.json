@@ -1593,8 +1593,8 @@
       "results": [
         {
           "after_hooks": [],
-          "frame": "reference_checks",
-          "lane": "reference_checks",
+          "frame": "quality_lane",
+          "lane": "quality_lane",
           "schema": "VulnerabilityQualityCheck"
         }
       ],
@@ -1707,8 +1707,8 @@
       "results": [
         {
           "after_hooks": [],
-          "frame": "reconciliation_checks",
-          "lane": "reconciliation_checks",
+          "frame": "reconciliation_lane",
+          "lane": "reconciliation_lane",
           "schema": "VulnerabilityInventoryCheck"
         }
       ],

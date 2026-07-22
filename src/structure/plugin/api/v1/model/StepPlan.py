@@ -28,7 +28,7 @@ class StepPlan:
     plugin_body: object | None = None
 
     if TYPE_CHECKING:
-        # Deprecated compile_transform(...) returns Core-private subclasses
+        # The transitional Core authorer returns Core-private subclasses.
         # carrying these payloads. They are intentionally absent from normal
         # plugin plans at runtime.
         @property

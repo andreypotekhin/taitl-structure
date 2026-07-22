@@ -86,6 +86,5 @@ class SecurityPosture(Transform):
     def expose(self, candidate: VulnerabilityPostureCandidate) -> VulnerabilityExposure:
         return VulnerabilityExposure.base(candidate)
 
-    @step(input=exposure_lane, output=exposures)
     def publish(self, finding: VulnerabilityExposure) -> VulnerabilityExposure:
         return VulnerabilityExposure.base(finding)

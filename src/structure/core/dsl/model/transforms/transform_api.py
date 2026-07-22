@@ -10,10 +10,9 @@ from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaratio
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
+from structure.core.dsl.model.transforms.SpecialFunction import SpecialFunction
 from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.core.dsl.model.transforms.Transform import Transform
-from structure.plugin.pyspark.dsl.operations_api import cache_operation
-from structure.plugin.pyspark.dsl.SpecialFunction import SpecialFunction
 
 _CLASS_OPTIONS = {"target", "validate_intermediate", "streaming_compatible"}
 _STEP_METHOD_OPTIONS = {"target_backend", "target_platform", "target_profile"}
@@ -240,7 +239,7 @@ def _step_method_options(kwargs: dict[str, object]) -> dict[str, object]:
 def _reserved_operations(kwargs: dict[str, object]) -> tuple[object, ...]:
     if "cache" not in kwargs:
         return ()
-    return (cache_operation(kwargs["cache"]),)
+    return (("cache", kwargs["cache"]),)
 
 
 def _step_method_option(name: str, value: object) -> object:

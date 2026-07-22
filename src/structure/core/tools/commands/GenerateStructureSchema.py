@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from typing import Mapping, cast
+from typing import Mapping
 
 from structure.core.plugins.api.Plugin import Plugin
-from structure.core.tools.logic.model.GeneratedSchemaSource import GeneratedSchemaSource
-from structure.core.tools.logic.render.RenderStructureSchemaSource import RenderStructureSchemaSource
 from structure.core.tools.logic.rules.ValidateSchemaToolRequest import ValidateSchemaToolRequest
 from structure.plugin.api.v1.model import SchemaInspectionRequest
 
@@ -47,4 +45,7 @@ class GenerateStructureSchema:
             )
         )
         source = schema_api.source(schema, to=to)
-        return RenderStructureSchemaSource()(cast(GeneratedSchemaSource, source))
+        render = getattr(schema_api, "render_source", None)
+        if not callable(render):
+            raise ValueError(f"PLUGIN-E2709: Plugin {target!r} does not render generated schema source.")
+        return render(source)

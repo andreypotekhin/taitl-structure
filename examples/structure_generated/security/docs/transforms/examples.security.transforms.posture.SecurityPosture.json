@@ -215,12 +215,12 @@
         }
       ],
       "name": "publish",
-      "output_lane": "exposures",
+      "output_lane": "exposure_lane",
       "output_schema": "VulnerabilityExposure",
       "results": [
         {
-          "frame": "exposures",
-          "lane": "exposures",
+          "frame": "exposure_lane",
+          "lane": "exposure_lane",
           "schema": "VulnerabilityExposure"
         }
       ]

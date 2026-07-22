@@ -3,8 +3,29 @@ from typing import Any, cast
 import pytest
 
 from structure import *
+from structure.core.compiler.api import Compiler
+from structure.plugin.api.v1.model.TransformPlan import TransformPlan
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
+
+
+def _compile(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False)
+
+
+def _body(transform) -> PySparkStepBody:
+    analysis = cast(TransformPlan, _compile(transform).analysis)
+    return cast(PySparkStepBody, analysis.steps[0].plugin_body)
+
+
+def _body_pyspark4(transform) -> PySparkStepBody:
+    compilation = Compiler.frontend.compile()(
+        transform,
+        materialize_schemas=False,
+        target_profile=">=4.0,<4.1",
+    )
+    analysis = cast(TransformPlan, compilation.analysis)
+    return cast(PySparkStepBody, analysis.steps[0].plugin_body)
 
 
 def test_field_access_produces_symbolic_projection_expressions(orders_plan) -> None:
@@ -74,10 +95,11 @@ def test_alias_field_access_uses_spark_column_and_preserves_python_name() -> Non
         def publish(self, row: Raw) -> Published:
             return Published(promotion_code=row.promotion_code)
 
-    plan = compile_transform(Publish)
-    expression = plan.steps[0].projection[0].expression
+    plan = _compile(Publish).analysis
+    assignment = cast(PySparkStepBody, plan.steps[0].plugin_body).projection[0]
+    expression = assignment.expression
 
-    assert plan.steps[0].projection[0].field.column == "promotion_code"
+    assert assignment.field.column == "promotion_code"
     assert expression.data == {
         "scope": "rows",
         "field": "promo-code",
@@ -107,7 +129,7 @@ def test_unsupported_python_control_flow_is_rejected() -> None:
             return Published(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadBoolean)
+        _compile(BadBoolean)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "unsupported symbolic code" in raised.value.diagnostic.problem_text()
@@ -153,7 +175,8 @@ def test_plain_python_expression_extensions_are_symbolic() -> None:
             )
 
     projection = {
-        assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
+        assignment.field.name: assignment.expression
+        for assignment in _body_pyspark4(Publish).projection
     }
 
     assert projection["customer_id"].data == {"function": "upper"}
@@ -190,7 +213,7 @@ def test_where_requires_boolean_expression() -> None:
             return Published(total=row.total)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadFilter)
+        _compile(BadFilter)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "where(...) requires a boolean Structure expression" in raised.value.diagnostic.problem_text()
@@ -214,7 +237,7 @@ def test_variadic_where_records_the_same_order_as_serial_where_calls() -> None:
             where(row.id.is_not_null(), row.id == "accepted")  # type: ignore[attr-defined]
             return Published(id=row.id)
 
-    operations = compile_transform(Publish).steps[0].operations
+    operations = _body(Publish).operations
 
     assert [operation.kind for operation in operations] == ["filter", "filter"]
     assert [operation.filter.kind for operation in operations if operation.filter is not None] == ["is_not_null", "eq"]
@@ -236,7 +259,7 @@ def test_relation_where_accepts_the_same_variadic_predicates_as_the_top_level_he
             row.where(row.id.is_not_null(), row.id == "accepted")  # type: ignore[attr-defined]
             return Published(id=row.id)
 
-    operations = compile_transform(Publish).steps[0].operations
+    operations = _body(Publish).operations
 
     assert [operation.kind for operation in operations] == ["filter", "filter"]
     assert [operation.filter.kind for operation in operations if operation.filter is not None] == ["is_not_null", "eq"]
@@ -257,7 +280,7 @@ def test_row_project_accepts_the_same_schema_target_as_the_top_level_helper() ->
         def publish(self, row: Raw) -> Published:
             return row.project(Published)  # type: ignore[attr-defined]
 
-    assignment = compile_transform(Publish).steps[0].projection[0]
+    assignment = _body(Publish).projection[0]
 
     assert assignment.field.name == "id"
     assert assignment.expression.kind == "field"
@@ -281,7 +304,7 @@ def test_membership_predicates_require_values() -> None:
             return Published(known=cast(Any, row).status.isin())
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Publish)
+        _compile(Publish)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "isin(...) requires at least one value" in raised.value.diagnostic.problem_text()
@@ -314,7 +337,8 @@ def test_string_predicates_are_typed_symbolic_expressions() -> None:
             )
 
     projection = {
-        assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
+        assignment.field.name: assignment.expression
+        for assignment in _body_pyspark4(Publish).projection
     }
 
     assert [(expression.kind, expression.data, expression.nullable) for expression in projection.values()] == [
@@ -343,7 +367,7 @@ def test_string_predicates_require_string_expressions() -> None:
             return Published(matched=cast(Any, row).count.contains("1"))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Publish)
+        _compile(Publish)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "contains(...) requires a String Structure expression" in raised.value.diagnostic.problem_text()
@@ -370,7 +394,8 @@ def test_collection_indexing_is_typed_and_symbolic() -> None:
             return Published(first_tag=source.tags[0], region=source.attributes["region"])
 
     projection = {
-        assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
+        assignment.field.name: assignment.expression
+        for assignment in _body_pyspark4(Publish).projection
     }
 
     assert [(expression.kind, expression.type, expression.nullable) for expression in projection.values()] == [
@@ -398,7 +423,7 @@ def test_collection_indexing_requires_a_matching_collection_and_key_type() -> No
             return Published(value=cast(Any, row).status[0])
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Publish)
+        _compile(Publish)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "Indexing requires an Array or Map Structure expression" in raised.value.diagnostic.problem_text()
@@ -430,7 +455,8 @@ def test_scalar_casts_are_typed_symbolic_expressions() -> None:
             )
 
     projection = {
-        assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
+        assignment.field.name: assignment.expression
+        for assignment in _body_pyspark4(Publish).projection
     }
 
     actual = [
@@ -468,7 +494,7 @@ def test_scalar_casts_require_structure_scalar_types() -> None:
             return Published(count=cast(Any, row).raw_count.cast("int"))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Publish)
+        _compile(Publish)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "cast(...) requires a scalar Structure type" in raised.value.diagnostic.problem_text()
@@ -514,7 +540,7 @@ def test_string_sql_helpers_are_typed_symbolic_expressions() -> None:
             )
 
     projection = {
-        assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
+        assignment.field.name: assignment.expression for assignment in _body(Publish).projection
     }
 
     assert [
@@ -552,7 +578,7 @@ def test_string_sql_helpers_reject_opaque_patterns_and_non_string_inputs() -> No
             return Published(value=substring(row.count, start=1, length=3))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Publish)
+        _compile(Publish)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "substring(...) requires a String Structure expression" in raised.value.diagnostic.problem_text()
@@ -576,7 +602,7 @@ def test_concat_ws_requires_string_values() -> None:
             return Published(value=concat_ws("-", row.count))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Publish)
+        _compile(Publish)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "concat_ws(...) requires a String Structure expression" in raised.value.diagnostic.problem_text()
@@ -600,7 +626,7 @@ def test_regexp_extract_requires_a_non_negative_group() -> None:
             return Published(value=regexp_extract(row.label, pattern=r"(.*)", group=-1))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Publish)
+        _compile(Publish)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "regexp_extract(...) group must be a non-negative integer" in raised.value.diagnostic.problem_text()
@@ -632,7 +658,7 @@ def test_temporal_sql_helpers_are_typed_symbolic_expressions() -> None:
             )
 
     projection = {
-        assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
+        assignment.field.name: assignment.expression for assignment in _body(Publish).projection
     }
 
     assert [
@@ -663,7 +689,7 @@ def test_temporal_sql_helpers_require_date_or_timestamp_inputs() -> None:
             return Published(due_date=date_add(row.count, days=1))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Publish)
+        _compile(Publish)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "date_add(...) requires a Date or Timestamp Structure expression" in raised.value.diagnostic.problem_text()
@@ -695,7 +721,7 @@ def test_numeric_sql_helpers_are_typed_symbolic_expressions() -> None:
             )
 
     projection = {
-        assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
+        assignment.field.name: assignment.expression for assignment in _body(Publish).projection
     }
 
     assert [
@@ -726,7 +752,7 @@ def test_numeric_sql_helpers_require_numeric_inputs() -> None:
             return Published(value=ceil(row.label))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Publish)
+        _compile(Publish)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "ceil(...) requires a numeric Structure expression" in raised.value.diagnostic.problem_text()
@@ -757,7 +783,7 @@ def test_predicate_sql_helpers_are_typed_symbolic_expressions() -> None:
             )
 
     projection = {
-        assignment.field.name: assignment.expression for assignment in compile_transform(Publish).steps[0].projection
+        assignment.field.name: assignment.expression for assignment in _body(Publish).projection
     }
 
     assert [(expression.kind, expression.nullable) for expression in projection.values()] == [
@@ -785,7 +811,7 @@ def test_isnan_requires_a_floating_point_expression() -> None:
             return Published(invalid=isnan(row.count))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Publish)
+        _compile(Publish)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "isnan(...) requires a Float or Double Structure expression" in raised.value.diagnostic.problem_text()
@@ -811,7 +837,7 @@ def test_struct_get_field_is_a_typed_symbolic_expression() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(city=cast(Any, row).address.get_field("city"))
 
-    expression = compile_transform(Publish).steps[0].projection[0].expression
+    expression = _body(Publish).projection[0].expression
 
     assert expression.kind == "get_field"
     assert expression.type == types.string()
@@ -840,7 +866,7 @@ def test_struct_get_field_rejects_unknown_fields() -> None:
             return Published(city=cast(Any, row).address.get_field("postal_code"))
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(Publish)
+        _compile(Publish)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "get_field(...) cannot find 'postal_code' in Address" in raised.value.diagnostic.problem_text()
@@ -870,7 +896,7 @@ def test_lookup_join_requires_boolean_expression() -> None:
             return Published(id=row.id)
 
     with pytest.raises(StructureCompileError) as raised:
-        compile_transform(BadJoin)
+        _compile(BadJoin)
 
     assert raised.value.diagnostic.code == "DSL-E0401"
     assert "lookup_join(on=...) requires a boolean Structure expression" in raised.value.diagnostic.problem_text()
@@ -895,4 +921,4 @@ def test_bare_when_requires_otherwise() -> None:
             return Published(size_tier=when(order.total >= 1000, "large"))
 
     with pytest.raises(TypeError, match=r"when\(\.\.\.\) must end with \.otherwise\(\.\.\.\)"):
-        compile_transform(BadWhen)
+        _compile(BadWhen)

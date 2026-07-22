@@ -7,7 +7,6 @@ from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.aliases import alias as declaration_alias
 from structure.core.dsl.model.transforms.InOutBinding import bind_inout
 from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
-from structure.plugin.pyspark.dsl.InputScope import InputScope
 
 if TYPE_CHECKING:
     from structure.core.dsl.model.transforms.Transform import Transform
@@ -29,10 +28,12 @@ class InputDeclaration:
         from structure.core.compiler.symbolic_execution.api import SymbolicExecution
 
         context = SymbolicExecution().current()()
-        scope = InputScope(name=self.name, schema=self.schema)
         if context is None:
-            return scope
-        return context.register_relation_scope(self.name, scope)
+            raise RuntimeError(f"{self.name} can only be read while a plugin is authoring a Structure step")
+        scope = getattr(context, "input_scope", None)
+        if not callable(scope):
+            raise TypeError("The selected plugin does not provide relation scopes")
+        return context.register_relation_scope(self.name, scope(name=self.name, schema=self.schema))
 
     def __or__(self, outputs: object):
         return bind_inout(self, outputs)

@@ -1,0 +1,87 @@
+"""Implicit-feedback document reranking."""
+
+from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
+from examples.search.schemas.search import DocumentSearchCandidate, DocumentSearchResult
+from examples.search.transforms.searching.search_docs.RetrieveDocuments import RetrieveDocuments
+from structure import Transform, input, lane, output, step
+from structure.plugin.pyspark import (
+    coalesce,
+    cross_join,
+    left_join,
+    row_number,
+    rows_between,
+    unbounded_following,
+    unbounded_preceding,
+    where,
+    window,
+    window_max,
+)
+
+
+class RerankDocuments(Transform):
+    """Enrich lexical candidates with feedback and determine final rank."""
+
+    query_document_signals = input(QueryDocumentSignals)
+    document_popularity = input(DocumentPopularity)
+    policy = input(RelevancePolicy)
+    scored_candidates = lane(DocumentSearchCandidate)
+    normalized_candidates = lane(DocumentSearchCandidate)
+    results = output(DocumentSearchResult)
+
+    @step(
+        input=[lane(RetrieveDocuments.candidates), query_document_signals, document_popularity, policy],
+        output=scored_candidates,
+    )
+    def score_candidates(
+        self,
+        candidate: DocumentSearchCandidate,
+        query_signal: QueryDocumentSignals,
+        popularity: DocumentPopularity,
+        policy: RelevancePolicy,
+    ) -> DocumentSearchCandidate:
+        where(candidate.candidate_rank <= RetrieveDocuments.maximum_candidates)
+        query_signal = left_join(
+            query_signal,
+            on=(query_signal.query == candidate.query) & (query_signal.document_id == candidate.document_id),
+        )
+        popularity = left_join(popularity, on=popularity.document_id == candidate.document_id)
+        policy = cross_join(policy, allow_cartesian=True)
+        feedback = 0.8 * coalesce(query_signal.normalized_score, 0.0) + 0.2 * coalesce(popularity.normalized_score, 0.0)
+        return DocumentSearchCandidate.project(candidate)(
+            score_feedback=feedback,
+            score_rank=0.0,
+            bm25_weight=policy.bm25_weight,
+            feedback_weight=policy.feedback_weight,
+        )
+
+    @step(input=scored_candidates, output=normalized_candidates)
+    def normalize_bm25(self, candidate: DocumentSearchCandidate) -> DocumentSearchCandidate:
+        maximum = window_max(
+            candidate.score_bm25,
+            over=window(
+                partition_by=candidate.search_query_id,
+                order_by=candidate.document_id,
+                frame=rows_between(unbounded_preceding(), unbounded_following()),
+            ),
+        )
+        return DocumentSearchCandidate.project(candidate)(
+            score_rank=candidate.bm25_weight * candidate.score_bm25 / maximum
+            + candidate.feedback_weight * candidate.score_feedback,
+        )
+
+    @step(input=normalized_candidates, output=results)
+    def rank_results(self, candidate: DocumentSearchCandidate) -> DocumentSearchResult:
+        return DocumentSearchResult(
+            search_query_id=candidate.search_query_id,
+            rank=row_number(
+                partition_by=candidate.search_query_id,
+                order_by=(candidate.score_rank.desc_nulls_last(), candidate.document_id.asc_nulls_first()),
+            ),
+            candidate_rank=candidate.candidate_rank,
+            document_id=candidate.document_id,
+            title=candidate.title,
+            url=candidate.url,
+            score_bm25=candidate.score_bm25,
+            score_feedback=candidate.score_feedback,
+            score_rank=candidate.score_rank,
+        )

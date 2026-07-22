@@ -1,0 +1,62 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "search_query_id",
+      "name": "search_query_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "rank",
+      "name": "rank",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "candidate_rank",
+      "name": "candidate_rank",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "document_id",
+      "name": "document_id",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "title",
+      "name": "title",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "url",
+      "name": "url",
+      "nullable": true,
+      "type": "string"
+    },
+    {
+      "column": "score_bm25",
+      "name": "score_bm25",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "score_feedback",
+      "name": "score_feedback",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "score_rank",
+      "name": "score_rank",
+      "nullable": false,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.search",
+  "name": "DocumentSearchResult"
+}

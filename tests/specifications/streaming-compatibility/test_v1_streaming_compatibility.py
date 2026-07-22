@@ -7,7 +7,25 @@ from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.dsl.types import StructType
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
+
+
+def _compile(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False)
+
+
+def _analysis(transform):
+    return _compile(transform).analysis
+
+
+def _recipe(transform) -> PySparkExecutionPlan:
+    return cast(PySparkExecutionPlan, _compile(transform).lowered)
+
+
+def _body(transform) -> PySparkStepBody:
+    return cast(PySparkStepBody, _analysis(transform).steps[0].plugin_body)
 
 
 class StreamRaw(Schema):
@@ -90,7 +108,7 @@ def test_watermark_rejects_non_timestamp_fields() -> None:
             return StreamClean(id=row.id)
 
     with pytest.raises(StructureCompileError, match="requires a Timestamp Structure field expression"):
-        compile_transform(InvalidWatermark)
+        _compile(InvalidWatermark)
 
 
 @pytest.mark.parametrize("delay", ["", "soon", "-1 second", "1 minute; SELECT 1"])
@@ -105,7 +123,7 @@ def test_watermark_rejects_invalid_delay_text(delay: str) -> None:
             return StreamClean(id=row.id)
 
     with pytest.raises(StructureCompileError, match="requires a non-negative fixed Spark interval"):
-        compile_transform(InvalidWatermark)
+        _compile(InvalidWatermark)
 
 
 @transform(streaming_compatible=True)
@@ -424,7 +442,7 @@ class StreamingOneSidedStreamJoin(Transform):
 def test_v1_streaming_projection_filter_and_schema_validation_are_compatible_without_spark() -> None:
     before = {name for name in sys.modules if name.startswith("pyspark")}
 
-    plan = compile_transform(StreamingProjection)
+    plan = _analysis(StreamingProjection)
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
         required=bool((plan.options or {})["streaming_compatible"]),
@@ -439,7 +457,7 @@ def test_v1_streaming_projection_filter_and_schema_validation_are_compatible_wit
 
 def test_v2_stream_static_analytical_joins_are_compatible_without_spark() -> None:
     for transform_type in (StreamingExists, StreamingJoinMany):
-        plan = compile_transform(transform_type)
+        plan = _analysis(transform_type)
         report = Compiler.compileability.streaming()(
             PySpark.compiler.lower()(plan),
             required=bool((plan.options or {})["streaming_compatible"]),
@@ -457,7 +475,7 @@ def test_v2_windowed_lookup_joins_are_batch_only_without_spark() -> None:
     }
 
     for transform_type, operation in expected.items():
-        plan = compile_transform(transform_type)
+        plan = _analysis(transform_type)
         report = Compiler.compileability.streaming()(
             PySpark.compiler.lower()(plan),
             required=bool((plan.options or {})["streaming_compatible"]),
@@ -470,7 +488,7 @@ def test_v2_windowed_lookup_joins_are_batch_only_without_spark() -> None:
 
 
 def test_v2_grouped_aggregates_are_batch_only_without_spark() -> None:
-    plan = compile_transform(StreamingAggregate)
+    plan = _analysis(StreamingAggregate)
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
@@ -485,7 +503,7 @@ def test_v2_grouped_aggregates_are_batch_only_without_spark() -> None:
 
 
 def test_v4_watermarked_business_key_aggregate_reports_unbounded_state() -> None:
-    unbounded = compile_transform(StreamingWatermarkedBusinessKeyAggregate)
+    unbounded = _analysis(StreamingWatermarkedBusinessKeyAggregate)
     report = Compiler.compileability.streaming()(PySpark.compiler.lower()(unbounded), required=True)
 
     assert report.support is StreamingSupport.BATCH_ONLY
@@ -493,8 +511,7 @@ def test_v4_watermarked_business_key_aggregate_reports_unbounded_state() -> None
 
 
 def test_v4_event_time_window_has_time_window_schema_and_rejects_mixed_signature() -> None:
-    plan = compile_transform(StreamingWatermarkedAggregate)
-    aggregate = next(operation.aggregate for operation in plan.steps[0].operations if operation.aggregate is not None)
+    aggregate = next(operation.aggregate for operation in _body(StreamingWatermarkedAggregate).operations if operation.aggregate is not None)
 
     assert aggregate is not None
     assert isinstance(aggregate.keys[0].expression.type, StructType)
@@ -504,14 +521,13 @@ def test_v4_event_time_window_has_time_window_schema_and_rejects_mixed_signature
 
 
 def test_v4_session_window_aggregate_requires_a_business_key_and_reports_append_only() -> None:
-    compatible = compile_transform(StreamingSessionAggregate)
-    report = Compiler.compileability.streaming()(PySpark.compiler.lower()(compatible), required=True)
-    operation = next(operation for operation in compatible.steps[0].operations if operation.aggregate is not None)
+    report = Compiler.compileability.streaming()(_recipe(StreamingSessionAggregate), required=True)
+    operation = next(operation for operation in _body(StreamingSessionAggregate).operations if operation.aggregate is not None)
 
     assert report.support is StreamingSupport.COMPATIBLE
     assert operation.streaming_output_modes == (StreamingOutputMode.APPEND,)
 
-    global_session = compile_transform(StreamingGlobalSessionAggregate)
+    global_session = _analysis(StreamingGlobalSessionAggregate)
     report = Compiler.compileability.streaming()(PySpark.compiler.lower()(global_session), required=True)
 
     assert report.support is StreamingSupport.BATCH_ONLY
@@ -520,7 +536,7 @@ def test_v4_session_window_aggregate_requires_a_business_key_and_reports_append_
 
 
 def test_v4_sliding_window_renders_with_positional_slide() -> None:
-    plan = PySpark.compiler.lower()(compile_transform(StreamingSlidingAggregate))
+    plan = _recipe(StreamingSlidingAggregate)
     rendered = "\n".join(
         PySpark.render.project()(
             plan,
@@ -534,7 +550,7 @@ def test_v4_sliding_window_renders_with_positional_slide() -> None:
 
 
 def test_v4_scalar_udf_is_a_compatible_row_local_streaming_expression() -> None:
-    plan = compile_transform(StreamingScalarUdf)
+    plan = _analysis(StreamingScalarUdf)
     report = Compiler.compileability.streaming()(PySpark.compiler.lower()(plan), required=True)
 
     assert report.support is StreamingSupport.COMPATIBLE
@@ -542,7 +558,7 @@ def test_v4_scalar_udf_is_a_compatible_row_local_streaming_expression() -> None:
 
 
 def test_v2_windowed_watermarked_aggregate_is_streaming_compatible_without_spark() -> None:
-    plan = compile_transform(StreamingWatermarkedAggregate)
+    plan = _analysis(StreamingWatermarkedAggregate)
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
@@ -554,7 +570,7 @@ def test_v2_windowed_watermarked_aggregate_is_streaming_compatible_without_spark
 
 
 def test_v2_watermarked_dedupe_is_streaming_compatible_without_spark() -> None:
-    plan = compile_transform(StreamingWatermarkedDedupe)
+    plan = _analysis(StreamingWatermarkedDedupe)
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
@@ -566,7 +582,7 @@ def test_v2_watermarked_dedupe_is_streaming_compatible_without_spark() -> None:
 
 
 def test_v4_explicit_watermarked_dedupe_is_streaming_compatible_without_spark() -> None:
-    plan = compile_transform(StreamingExplicitWatermarkedDedupe)
+    plan = _analysis(StreamingExplicitWatermarkedDedupe)
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
@@ -578,7 +594,7 @@ def test_v4_explicit_watermarked_dedupe_is_streaming_compatible_without_spark() 
 
 
 def test_v2_inner_stream_stream_join_is_compatible_with_watermarks_and_time_bounds() -> None:
-    plan = compile_transform(StreamingInnerStreamJoin)
+    plan = _analysis(StreamingInnerStreamJoin)
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
@@ -599,7 +615,7 @@ def test_v2_inner_stream_stream_join_is_compatible_with_watermarks_and_time_boun
     ],
 )
 def test_v4_bounded_outer_and_semi_stream_stream_joins_are_compatible(transform_type: type[Transform]) -> None:
-    plan = compile_transform(transform_type)
+    plan = _analysis(transform_type)
     report = Compiler.compileability.streaming()(PySpark.compiler.lower()(plan), required=True)
 
     assert report.support is StreamingSupport.COMPATIBLE
@@ -607,7 +623,7 @@ def test_v4_bounded_outer_and_semi_stream_stream_joins_are_compatible(transform_
 
 
 def test_v4_stream_static_anti_join_is_batch_only() -> None:
-    plan = compile_transform(StreamingStaticAntiJoin)
+    plan = _analysis(StreamingStaticAntiJoin)
     report = Compiler.compileability.streaming()(PySpark.compiler.lower()(plan), required=True)
 
     assert report.support is StreamingSupport.BATCH_ONLY
@@ -625,7 +641,7 @@ def test_v4_outer_and_semi_join_explain_output_names_append_requirement() -> Non
 
 
 def test_v2_unmarked_joined_input_keeps_stream_static_semantics() -> None:
-    plan = compile_transform(StreamingUnmarkedSideJoin)
+    plan = _analysis(StreamingUnmarkedSideJoin)
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
@@ -637,7 +653,7 @@ def test_v2_unmarked_joined_input_keeps_stream_static_semantics() -> None:
 
 
 def test_v2_stream_stream_join_requires_both_inputs_declared_streaming() -> None:
-    plan = compile_transform(StreamingOneSidedStreamJoin)
+    plan = _analysis(StreamingOneSidedStreamJoin)
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
@@ -652,7 +668,7 @@ def test_v2_stream_stream_join_requires_both_inputs_declared_streaming() -> None
 
 
 def test_v1_streaming_unsafe_hook_is_unknown_with_registered_finding() -> None:
-    plan = compile_transform(StreamingUnknownHook)
+    plan = _analysis(StreamingUnknownHook)
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
@@ -729,7 +745,7 @@ def test_v2_analytical_join_explain_output_names_join_shapes() -> None:
 
 
 def test_v1_generated_streaming_compatible_code_avoids_streaming_lifecycle_and_actions() -> None:
-    plan = PySpark.compiler.lower()(compile_transform(StreamingProjection))
+    plan = _recipe(StreamingProjection)
     files = PySpark.render.project()(
         plan,
         source_transform="tests.fixtures.streaming.transforms.StreamingProjection",
@@ -744,7 +760,7 @@ def test_v1_generated_streaming_compatible_code_avoids_streaming_lifecycle_and_a
 
 
 def test_v2_generated_watermark_code_avoids_streaming_lifecycle_and_actions() -> None:
-    plan = PySpark.compiler.lower()(compile_transform(StreamingWatermarkedAggregate))
+    plan = _recipe(StreamingWatermarkedAggregate)
     files = PySpark.render.project()(
         plan,
         source_transform="tests.fixtures.streaming.transforms.StreamingWatermarkedAggregate",
@@ -771,7 +787,7 @@ def test_v2_generated_watermark_code_avoids_streaming_lifecycle_and_actions() ->
 
 def test_v4_generated_dedupe_uses_only_the_permitted_streaming_branch() -> None:
     files = PySpark.render.project()(
-        PySpark.compiler.lower()(compile_transform(StreamingWatermarkedDedupe)),
+        _recipe(StreamingWatermarkedDedupe),
         source_transform="tests.fixtures.streaming.transforms.StreamingWatermarkedDedupe",
         generated_package="streaming_generated",
         source_schema_modules={"tests.fixtures.streaming.schemas": [StreamRaw, StreamClean]},
@@ -789,7 +805,7 @@ def test_v4_generated_dedupe_uses_only_the_permitted_streaming_branch() -> None:
 
 def test_v4_generated_explicit_dedupe_has_no_adaptive_branch() -> None:
     files = PySpark.render.project()(
-        PySpark.compiler.lower()(compile_transform(StreamingExplicitWatermarkedDedupe)),
+        _recipe(StreamingExplicitWatermarkedDedupe),
         source_transform="tests.fixtures.streaming.transforms.StreamingExplicitWatermarkedDedupe",
         generated_package="streaming_generated",
         source_schema_modules={"tests.fixtures.streaming.schemas": [StreamRaw, StreamClean]},

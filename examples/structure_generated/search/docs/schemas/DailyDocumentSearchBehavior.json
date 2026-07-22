@@ -1,0 +1,98 @@
+{
+  "bases": [],
+  "fields": [
+    {
+      "column": "window",
+      "name": "window",
+      "nullable": false,
+      "type": "TimeWindow"
+    },
+    {
+      "column": "ranking_version",
+      "name": "ranking_version",
+      "nullable": false,
+      "type": "string"
+    },
+    {
+      "column": "request_count",
+      "name": "request_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "zero_result_request_count",
+      "name": "zero_result_request_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "clicked_request_count",
+      "name": "clicked_request_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "long_clicked_request_count",
+      "name": "long_clicked_request_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "no_click_request_count",
+      "name": "no_click_request_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "no_long_click_request_count",
+      "name": "no_long_click_request_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "raw_click_count",
+      "name": "raw_click_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "raw_long_click_count",
+      "name": "raw_long_click_count",
+      "nullable": false,
+      "type": "long"
+    },
+    {
+      "column": "mean_first_click_rank",
+      "name": "mean_first_click_rank",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "mean_first_long_click_rank",
+      "name": "mean_first_long_click_rank",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "mean_reciprocal_first_long_click_rank",
+      "name": "mean_reciprocal_first_long_click_rank",
+      "nullable": false,
+      "type": "double"
+    },
+    {
+      "column": "ips_long_click_rate",
+      "name": "ips_long_click_rate",
+      "nullable": true,
+      "type": "double"
+    },
+    {
+      "column": "ips_dwell_credit_per_impression",
+      "name": "ips_dwell_credit_per_impression",
+      "nullable": true,
+      "type": "double"
+    }
+  ],
+  "generated_by": "Structure",
+  "module": "examples.search.schemas.evaluation",
+  "name": "DailyDocumentSearchBehavior"
+}

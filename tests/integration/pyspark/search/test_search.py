@@ -17,19 +17,45 @@ from examples.search.schemas.analytics import (
     SentenceStatistics,
     SimilarDocument,
 )
+from examples.search.schemas.clicks import Click, DailyClicks, DailyImpressions, Impression, SearchRequest
+from examples.search.schemas.evaluation import (
+    BehaviorDailyCounts,
+    BehaviorExposure,
+    BehaviorImpression,
+    BehaviorRequest,
+    BehaviorRequestMetrics,
+    BehaviorRequestTotals,
+    DailyDocumentSearchBehavior,
+    DocumentEvaluationSummary,
+    DocumentQueryEvaluation,
+    DocumentRelevanceJudgment,
+    DocumentSearchRequestBehavior,
+    EvaluationBatch,
+    EvaluationIdealDcg,
+    EvaluationJudgment,
+    EvaluationJudgmentTotals,
+    EvaluationQuery,
+    EvaluationResult,
+    EvaluationResultTotals,
+)
+from examples.search.schemas.relevance import DocumentPopularity, QueryDocumentSignals, RelevancePolicy
 from examples.search.schemas.search import (
     DocumentBm25Score,
     DocumentIndexSummary,
     DocumentIndexTarget,
     DocumentIndexTerm,
     DocumentOverlapScore,
+    DocumentSearchCandidate,
+    DocumentSearchResult,
     DocumentSearchTarget,
     ParagraphBm25Score,
+    ParagraphContext,
     ParagraphIndexSummary,
     ParagraphIndexTarget,
     ParagraphIndexTerm,
     ParagraphOverlapScore,
     ParagraphSearchTarget,
+    PassageSearchResult,
     SearchQuery,
     SectionBm25Score,
     SectionIndexSummary,
@@ -66,16 +92,23 @@ from examples.search.schemas.similarity import (
 )
 from examples.search.schemas.text import Document, Paragraph, Section, Sentence, Word
 from examples.search.transforms.analyze import AnalyzeText
+from examples.search.transforms.clicks.Clicks import Clicks
+from examples.search.transforms.clicks.Impressions import Impressions
 from examples.search.transforms.corpus import CorpusText
+from examples.search.transforms.evaluate import EvaluateDocuments, EvaluateDocumentSearchBehavior
 from examples.search.transforms.extract import ExtractText
 from examples.search.transforms.index import CreateIndex
 from examples.search.transforms.profile import ProfileDocuments
-from examples.search.transforms.scoring.AddScores import AddScores
+from examples.search.transforms.relevance.Signals import BuildRelevanceSignals
+from examples.search.transforms.score import AddScores
 from examples.search.transforms.scoring.ScoreAll import ScoreAll
-from examples.search.transforms.search import Search
+from examples.search.transforms.search import SearchDocuments, SearchPassages, SearchSentences
 from examples.search.transforms.similarities.CreateSimilarityQueries import CreateSimilarityQueries
 from examples.search.transforms.similarities.ReduceSimilarityScores import ReduceSimilarityScores
-from examples.search.transforms.similarity import Similarity, SimilarParagraphs, SimilarSections, SimilarSentences
+from examples.search.transforms.similarities.SimilarParagraphs import SimilarParagraphs
+from examples.search.transforms.similarities.SimilarSections import SimilarSections
+from examples.search.transforms.similarities.SimilarSentences import SimilarSentences
+from examples.search.transforms.similarity import Similarity
 
 pytestmark = pytest.mark.integration
 
@@ -111,6 +144,8 @@ SCHEMA_MODULES = {
         SentenceIndexTerm,
         SentenceIndexSummary,
         SentenceSearchResult,
+        PassageSearchResult,
+        ParagraphContext,
         DocumentOverlapScore,
         SectionOverlapScore,
         ParagraphOverlapScore,
@@ -119,6 +154,40 @@ SCHEMA_MODULES = {
         SectionBm25Score,
         ParagraphBm25Score,
         SentenceBm25Score,
+        DocumentSearchResult,
+        DocumentSearchCandidate,
+    ],
+    "examples.search.schemas.clicks": [
+        SearchRequest,
+        Impression,
+        Click,
+        DailyImpressions,
+        DailyClicks,
+    ],
+    "examples.search.schemas.evaluation": [
+        EvaluationBatch,
+        DocumentRelevanceJudgment,
+        DocumentQueryEvaluation,
+        DocumentEvaluationSummary,
+        DocumentSearchRequestBehavior,
+        DailyDocumentSearchBehavior,
+        BehaviorRequest,
+        BehaviorImpression,
+        BehaviorExposure,
+        BehaviorRequestMetrics,
+        BehaviorRequestTotals,
+        BehaviorDailyCounts,
+        EvaluationQuery,
+        EvaluationResult,
+        EvaluationJudgment,
+        EvaluationJudgmentTotals,
+        EvaluationIdealDcg,
+        EvaluationResultTotals,
+    ],
+    "examples.search.schemas.relevance": [
+        RelevancePolicy,
+        QueryDocumentSignals,
+        DocumentPopularity,
     ],
     "examples.search.schemas.similarity": [
         SimilarityPolicy,
@@ -147,7 +216,17 @@ TRANSFORMS = (
     (AnalyzeText, "examples.search.transforms.analyze.AnalyzeText"),
     (CorpusText, "examples.search.transforms.corpus.CorpusText"),
     (CreateIndex, "examples.search.transforms.index.CreateIndex"),
-    (Search, "examples.search.transforms.search.Search"),
+    (SearchSentences, "examples.search.transforms.searching.search_sentences.SearchSentences.SearchSentences"),
+    (SearchPassages, "examples.search.transforms.searching.search_passages.SearchPassages.SearchPassages"),
+    (Impressions, "examples.search.transforms.clicks.Impressions.Impressions"),
+    (Clicks, "examples.search.transforms.clicks.Clicks.Clicks"),
+    (BuildRelevanceSignals, "examples.search.transforms.relevance.Signals.BuildRelevanceSignals"),
+    (SearchDocuments, "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments"),
+    (EvaluateDocuments, "examples.search.transforms.evaluation.search_docs.EvaluateDocuments.EvaluateDocuments"),
+    (
+        EvaluateDocumentSearchBehavior,
+        "examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior",
+    ),
     (
         CreateSimilarityQueries,
         "examples.search.transforms.similarities.CreateSimilarityQueries.CreateSimilarityQueries",
@@ -161,7 +240,7 @@ TRANSFORMS = (
     (SimilarSections, "examples.search.transforms.similarities.SimilarSections.SimilarSections"),
     (SimilarParagraphs, "examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs"),
     (SimilarSentences, "examples.search.transforms.similarities.SimilarSentences.SimilarSentences"),
-    (AddScores, "examples.search.transforms.scoring.AddScores.AddScores"),
+    (AddScores, "examples.search.transforms.score.AddScores"),
 )
 
 
@@ -420,9 +499,20 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path) -> None:
             generated_similarities.document_similarities,
             lambda row: row["left_document_id"] == "d-1" and row["right_document_id"] == "d-2",
         )
+        reverse_similar_guides = single(
+            generated_similarities.document_similarities,
+            lambda row: row["left_document_id"] == "d-2" and row["right_document_id"] == "d-1",
+        )
         assert cast(float, similar_guides["score_overlap"]) > 0
         assert cast(float, similar_guides["bm25_left_to_right"]) > 0
         assert cast(float, similar_guides["bm25_right_to_left"]) > 0
+        assert similar_guides["rank"] == 1
+        assert reverse_similar_guides["rank"] == 1
+        document_neighbor_rows = rows(generated_similarities.document_similarities, "left_document_id", "rank")
+        for source_id in {row["left_document_id"] for row in document_neighbor_rows}:
+            ranks = [row["rank"] for row in document_neighbor_rows if row["left_document_id"] == source_id]
+            assert len(ranks) <= ReduceSimilarityScores.maximum_results
+            assert ranks == list(range(1, len(ranks) + 1))
 
         similar_document_inputs = dict(
             query=documents.where("id = 'd-1'"),
@@ -532,7 +622,13 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
         text_schemas = __import__(f"{PACKAGE}.pyspark.schemas.text", fromlist=["DOCUMENT_SCHEMA"])
         search_schemas = __import__(f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA"])
         documents = spark.createDataFrame(_search_documents(), text_schemas.DOCUMENT_SCHEMA)
-        query = spark.createDataFrame([("q-aurora", "aurora beacon navigation")], search_schemas.SEARCH_QUERY_SCHEMA)
+        queries = spark.createDataFrame(
+            [
+                ("q-aurora", "aurora beacon navigation"),
+                ("q-free-form", "  AURORA,   beacon! navigation?  "),
+            ],
+            search_schemas.SEARCH_QUERY_SCHEMA,
+        )
         segments = ExtractText(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
@@ -540,7 +636,7 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
             session(spark, execution_mode="generated", generated_package=PACKAGE)
         )
         scores = AddScores(
-            queries=query,
+            queries=queries,
             document_terms=index.document_terms,
             document_summary=index.document_summary,
             section_terms=index.section_terms,
@@ -555,9 +651,11 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
             sentences=segments.sentences,
         ).run(session(spark, execution_mode="generated", generated_package=PACKAGE))
 
-        inputs = dict(query=query, scored_sentences=scores.scored_sentences)
-        online = Search(**inputs).run(session(spark, execution_mode="online")).results
-        generated = Search(**inputs).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).results
+        inputs = dict(queries=queries, scored_sentences=scores.scored_sentences)
+        online = SearchSentences(**inputs).run(session(spark, execution_mode="online")).results
+        generated = (
+            SearchSentences(**inputs).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).results
+        )
 
         assert generated.columns == [
             "search_query_id",
@@ -570,20 +668,268 @@ def test_search_ranks_fixture_sentences_online_and_generated(spark, tmp_path) ->
             "score_overlap",
             "score_bm25",
         ]
-        assert rows(online, "rank") == rows(generated, "rank")
+        assert rows(online, "search_query_id", "rank") == rows(generated, "search_query_id", "rank")
         results = rows(generated, "rank")
-        assert [row["rank"] for row in results] == [1, 2, 3]
-        assert [row["sentence_id"] for row in results] == ["d-11#p0#s0", "d-12#p0#s0", "d-13#p0#s0"]
-        assert all(row["score_overlap"] is not None and row["score_bm25"] is not None for row in results)
+        for query_id in ("q-aurora", "q-free-form"):
+            matches = [row for row in results if row["search_query_id"] == query_id]
+            assert [row["rank"] for row in matches] == [1, 2, 3]
+            assert [row["sentence_id"] for row in matches] == ["d-11#p0#s0", "d-12#p0#s0", "d-13#p0#s0"]
+            assert all(row["score_overlap"] is not None and row["score_bm25"] is not None for row in matches)
+
+        exact = [row for row in results if row["search_query_id"] == "q-aurora"]
+        free_form = [row for row in results if row["search_query_id"] == "q-free-form"]
+        assert [row["score_overlap"] for row in free_form] == [row["score_overlap"] for row in exact]
+        assert [row["score_bm25"] for row in free_form] == [row["score_bm25"] for row in exact]
         assert (
-            cast(float, results[0]["score_overlap"])
-            > cast(float, results[1]["score_overlap"])
-            > cast(float, results[2]["score_overlap"])
+            cast(float, exact[0]["score_overlap"])
+            > cast(float, exact[1]["score_overlap"])
+            > cast(float, exact[2]["score_overlap"])
         )
         assert (
-            cast(float, results[0]["score_bm25"])
-            > cast(float, results[1]["score_bm25"])
-            > cast(float, results[2]["score_bm25"])
+            cast(float, exact[0]["score_bm25"])
+            > cast(float, exact[1]["score_bm25"])
+            > cast(float, exact[2]["score_bm25"])
+        )
+
+
+def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_path) -> None:
+    files = {}
+    for transform, source in TRANSFORMS:
+        files.update(
+            render_generated_project(
+                transform,
+                source_transform=source,
+                generated_package=PACKAGE,
+                source_schema_modules=SCHEMA_MODULES,
+            )
+        )
+
+    with generated_project(tmp_path, PACKAGE, files):
+        text_schemas = __import__(f"{PACKAGE}.pyspark.schemas.text", fromlist=["DOCUMENT_SCHEMA"])
+        search_schemas = __import__(f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA"])
+        documents = spark.createDataFrame(
+            [
+                (
+                    "d-passage",
+                    "docs",
+                    "structure",
+                    "Passage Guide",
+                    "https://example.test/passage-guide",
+                    "# Guide\nSignal starts the guide.\n\nSignal continues the guide.\n\n"
+                    "Signal closes the guide.\n\n# Boundary\nSignal starts the next section.",
+                    "text/plain",
+                    "utf-8",
+                    "en",
+                    None,
+                    None,
+                    datetime(2026, 7, 22, 9),
+                    None,
+                    None,
+                    None,
+                )
+            ],
+            text_schemas.DOCUMENT_SCHEMA,
+        )
+        queries = spark.createDataFrame(
+            [("q-free-form", "  SIGNAL!  "), ("q-boundary", "boundary")], search_schemas.SEARCH_QUERY_SCHEMA
+        )
+        segments = ExtractText(documents=documents).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        )
+        index = CreateIndex(words=segments.words).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        )
+        scores = AddScores(
+            queries=queries,
+            document_terms=index.document_terms,
+            document_summary=index.document_summary,
+            section_terms=index.section_terms,
+            section_summary=index.section_summary,
+            paragraph_terms=index.paragraph_terms,
+            paragraph_summary=index.paragraph_summary,
+            sentence_terms=index.sentence_terms,
+            sentence_summary=index.sentence_summary,
+            documents=documents,
+            sections=segments.sections,
+            paragraphs=segments.paragraphs,
+            sentences=segments.sentences,
+        ).run(session(spark, execution_mode="generated", generated_package=PACKAGE))
+
+        inputs = dict(
+            queries=queries,
+            scored_paragraphs=scores.scored_paragraphs,
+            paragraphs=segments.paragraphs,
+            sections=segments.sections,
+            documents=documents,
+        )
+        online = SearchPassages(**inputs).run(session(spark, execution_mode="online")).results
+        generated = (
+            SearchPassages(**inputs).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).results
+        )
+
+        assert generated.columns == [
+            "search_query_id",
+            "rank",
+            "document_id",
+            "title",
+            "url",
+            "section_id",
+            "section_heading",
+            "paragraph_id",
+            "preceding_content",
+            "content",
+            "following_content",
+            "score_overlap",
+            "score_bm25",
+        ]
+        assert rows(online, "search_query_id", "rank") == rows(generated, "search_query_id", "rank")
+        signal_results = [
+            row for row in rows(generated, "search_query_id", "rank") if row["search_query_id"] == "q-free-form"
+        ]
+        assert [row["rank"] for row in signal_results] == [1, 2, 3, 4]
+        guide = {row["content"]: row for row in signal_results if row["section_heading"] == "Guide"}
+        assert len(guide) == 3
+        assert guide["Signal starts the guide."]["preceding_content"] is None
+        assert guide["Signal starts the guide."]["following_content"] == "Signal continues the guide."
+        assert guide["Signal continues the guide."]["preceding_content"] == "Signal starts the guide."
+        assert guide["Signal continues the guide."]["following_content"] == "Signal closes the guide."
+        assert guide["Signal closes the guide."]["preceding_content"] == "Signal continues the guide."
+        assert guide["Signal closes the guide."]["following_content"] is None
+        boundary = single(generated, lambda row: row["search_query_id"] == "q-boundary")
+        assert boundary["preceding_content"] is None
+        assert boundary["following_content"] is None
+        assert boundary["title"] == "Passage Guide"
+        assert boundary["url"] == "https://example.test/passage-guide"
+        assert boundary["section_heading"] == "Boundary"
+
+
+def test_relevance_signals_keep_binary_ctr_separate_from_engagement(spark, tmp_path) -> None:
+    files = {}
+    for transform, source in TRANSFORMS:
+        files.update(
+            render_generated_project(
+                transform,
+                source_transform=source,
+                generated_package=PACKAGE,
+                source_schema_modules=SCHEMA_MODULES,
+            )
+        )
+
+    with generated_project(tmp_path, PACKAGE, files):
+        click_schemas = __import__(f"{PACKAGE}.pyspark.schemas.clicks", fromlist=["DAILY_IMPRESSIONS_SCHEMA"])
+        relevance_schemas = __import__(f"{PACKAGE}.pyspark.schemas.relevance", fromlist=["RELEVANCE_POLICY_SCHEMA"])
+        start = datetime(2026, 7, 20)
+        end = datetime(2026, 7, 21)
+        daily_impressions = spark.createDataFrame(
+            [
+                ((start, end), "aurora", "d-active", 1, 0.25, 10),
+                ((start, end), "aurora", "d-active", 2, 0.5, 10),
+                ((start, end), "aurora", "d-low", 1, 0.5, 19),
+            ],
+            click_schemas.DAILY_IMPRESSIONS_SCHEMA,
+        )
+        daily_clicks = spark.createDataFrame(
+            [
+                ((start, end), "aurora", "d-active", 1, 0.25, 6, 5, 120.0, 2.0, 2),
+                ((start, end), "aurora", "d-active", 2, 0.5, 0, 0, 0.0, 0.0, 0),
+                ((start, end), "aurora", "d-low", 1, 0.5, 2, 1, 60.0, 1.0, 1),
+            ],
+            click_schemas.DAILY_CLICKS_SCHEMA,
+        )
+        policy = spark.createDataFrame(
+            [(datetime(2026, 7, 21), 30.0, 0.7, 0.3, 0.7, 0.3, 20)],
+            relevance_schemas.RELEVANCE_POLICY_SCHEMA,
+        )
+        inputs = dict(daily_impressions=daily_impressions, daily_clicks=daily_clicks, policy=policy)
+        online = BuildRelevanceSignals(**inputs).run(session(spark, execution_mode="online"))
+        generated = BuildRelevanceSignals(**inputs).run(
+            session(spark, execution_mode="generated", generated_package=PACKAGE)
+        )
+
+        assert rows(online.query_document_signals, "query", "document_id") == rows(
+            generated.query_document_signals, "query", "document_id"
+        )
+        active = single(generated.query_document_signals, lambda row: row["document_id"] == "d-active")
+        low = single(generated.query_document_signals, lambda row: row["document_id"] == "d-low")
+        assert active["click_count"] == 6
+        assert active["clicked_impression_count"] == 5
+        assert active["click_through_rate"] == pytest.approx(0.25)
+        assert active["ips_click_through_rate"] == pytest.approx(1.0 / 3.0)
+        assert active["normalized_ctr_score"] == pytest.approx(1.0 / 3.0)
+        assert low["click_count"] == 2
+        assert low["clicked_impression_count"] == 1
+        assert low["normalized_ctr_score"] == 0.0
+
+
+def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp_path) -> None:
+    files = {}
+    for transform, source in TRANSFORMS:
+        files.update(
+            render_generated_project(
+                transform,
+                source_transform=source,
+                generated_package=PACKAGE,
+                source_schema_modules=SCHEMA_MODULES,
+            )
+        )
+
+    with generated_project(tmp_path, PACKAGE, files):
+        text_schemas = __import__(f"{PACKAGE}.pyspark.schemas.text", fromlist=["DOCUMENT_SCHEMA"])
+        search_schemas = __import__(f"{PACKAGE}.pyspark.schemas.search", fromlist=["SEARCH_QUERY_SCHEMA"])
+        relevance_schemas = __import__(f"{PACKAGE}.pyspark.schemas.relevance", fromlist=["RELEVANCE_POLICY_SCHEMA"])
+        queries = spark.createDataFrame(
+            [("q-free-form", "  AURORA,   beacon!  "), ("q-navigation", "navigation")],
+            search_schemas.SEARCH_QUERY_SCHEMA,
+        )
+        scores = {"d-11": 10.0, "d-12": 9.0, "d-13": 8.0}
+        scored_rows = [
+            (*row[:13], query_id, None, scores[cast(str, row[0])])
+            for query_id in ("q-free-form", "q-navigation")
+            for row in _search_documents()
+        ]
+        scored_documents = spark.createDataFrame(scored_rows, text_schemas.DOCUMENT_SCHEMA)
+        query_signals = spark.createDataFrame(
+            [
+                ("aurora, beacon!", "d-12", 1, 1, 1, 60.0, 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),
+                ("navigation", "d-13", 1, 1, 1, 60.0, 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0),
+            ],
+            relevance_schemas.QUERY_DOCUMENT_SIGNALS_SCHEMA,
+        )
+        popularity = spark.createDataFrame(
+            [("d-12", 1, 1, 1, 60.0, 1, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0)],
+            relevance_schemas.DOCUMENT_POPULARITY_SCHEMA,
+        )
+        policy = spark.createDataFrame(
+            [(datetime(2026, 7, 21), 30.0, 0.7, 0.3, 0.7, 0.3, 20)],
+            relevance_schemas.RELEVANCE_POLICY_SCHEMA,
+        )
+        inputs = dict(
+            queries=queries,
+            scored_documents=scored_documents,
+            query_document_signals=query_signals,
+            document_popularity=popularity,
+            policy=policy,
+        )
+        online = SearchDocuments(**inputs).run(session(spark, execution_mode="online")).results
+        generated = (
+            SearchDocuments(**inputs).run(session(spark, execution_mode="generated", generated_package=PACKAGE)).results
+        )
+
+        assert rows(online, "search_query_id", "rank") == rows(generated, "search_query_id", "rank")
+        assert [
+            row["rank"] for row in rows(generated, "search_query_id", "rank") if row["search_query_id"] == "q-free-form"
+        ] == [
+            1,
+            2,
+            3,
+        ]
+        assert (
+            single(generated, lambda row: row["search_query_id"] == "q-free-form" and row["rank"] == 1)["document_id"]
+            == "d-12"
+        )
+        assert (
+            single(generated, lambda row: row["search_query_id"] == "q-navigation" and row["rank"] == 1)["document_id"]
+            == "d-13"
         )
 
 

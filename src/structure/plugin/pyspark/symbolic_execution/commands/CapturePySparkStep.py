@@ -3,7 +3,7 @@ from typing import Any, cast
 from structure.plugin.api.v1.model.StepAuthoringRequest import StepAuthoringRequest
 from structure.plugin.api.v1.model.StepResultPlan import StepResultPlan
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
-from structure.plugin.pyspark.dsl.operations_api import reserved_operations
+from structure.plugin.pyspark.dsl.operations_api import cache_operation, reserved_operations
 from structure.plugin.pyspark.symbolic_execution.model.PySparkResultBody import PySparkResultBody
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 from structure.plugin.pyspark.symbolic_execution.model.PySparkSymbolicContext import PySparkSymbolicContext
@@ -49,4 +49,5 @@ class CapturePySparkStep:
             return ()
         metadata = getattr(member, "_structure_output_method", None)
         declared = () if not isinstance(metadata, dict) else tuple(metadata.get("reserved_operations", ()))
+        declared = tuple(cache_operation(value) for kind, value in declared if kind == "cache")
         return (*reserved_operations(member), *declared)

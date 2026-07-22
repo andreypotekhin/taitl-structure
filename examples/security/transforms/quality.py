@@ -83,7 +83,6 @@ class SecurityInventoryQuality(Transform):
             is_valid=size(issues) == 0,
         )
 
-    @step(input=quality_lane, output=reference_checks)
     def publish_reference_checks(self, check: VulnerabilityQualityCheck) -> VulnerabilityQualityCheck:
         return VulnerabilityQualityCheck.base(check)
 
@@ -135,7 +134,6 @@ class SecurityInventoryQuality(Transform):
             is_reconciled=candidate.is_reconciled,
         )
 
-    @step(input=reconciliation_lane, output=reconciliation_checks)
     def publish_reconciliation_checks(self, check: VulnerabilityInventoryCheck) -> VulnerabilityInventoryCheck:
         return VulnerabilityInventoryCheck.base(check)
 

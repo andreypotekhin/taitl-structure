@@ -2,7 +2,6 @@
 # Source: examples.search.transforms.similarity.Similarity
 
 from pyspark.sql import DataFrame, SparkSession
-from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
@@ -31,20 +30,20 @@ class SimilarityGenerated:
         _input_document_similarities = document_similarities
 
         # Step method: rank
-        ranked_documents = query.alias("similarity_document_query")
+        query = query.alias("similarity_document_query")
         document_similarities_joined = document_similarities.alias("document_similarities")
-        ranked_documents = ranked_documents.join(
+        query = query.join(
             document_similarities_joined,
-            ((F.col("similarity_document_query.id") == F.col("document_similarities.left_document_id")) | (F.col("similarity_document_query.id") == F.col("document_similarities.right_document_id"))),
+            (F.col("similarity_document_query.id") == F.col("document_similarities.left_document_id")),
             "inner",
         )
         documents_2_joined = documents.alias("documents_2")
-        ranked_documents = ranked_documents.join(
+        query = query.join(
             documents_2_joined,
-            (F.col("documents_2.id") == F.when((F.col("similarity_document_query.id") == F.col("document_similarities.left_document_id")), F.col("document_similarities.right_document_id")).otherwise(F.col("document_similarities.left_document_id"))),
+            (F.col("documents_2.id") == F.col("document_similarities.right_document_id")),
             "inner",
         )
-        ranked_documents = ranked_documents.select(
+        query = query.select(
             F.col("documents_2.id"),
             F.col("documents_2.collection_id"),
             F.col("documents_2.source"),
@@ -59,15 +58,15 @@ class SimilarityGenerated:
             F.col("documents_2.harvested_at"),
             F.col("similarity_document_query.id").alias("search_query_id"),
             F.col("document_similarities.score_overlap"),
-            F.when((F.col("similarity_document_query.id") == F.col("document_similarities.left_document_id")), F.col("document_similarities.bm25_left_to_right")).otherwise(F.col("document_similarities.bm25_right_to_left")).alias("score_bm25"),
-            F.row_number().over(Window.partitionBy(F.col("similarity_document_query.id")).orderBy(F.when((F.col("similarity_document_query.id") == F.col("document_similarities.left_document_id")), F.col("document_similarities.bm25_left_to_right")).otherwise(F.col("document_similarities.bm25_right_to_left")).desc(), F.col("document_similarities.score_overlap").desc(), F.col("documents_2.id").asc())).cast(T.LongType()).alias("rank"),
+            F.col("document_similarities.bm25_left_to_right").alias("score_bm25"),
+            F.col("document_similarities.rank"),
         )
-        assert_schema(ranked_documents, INDEXED_SIMILAR_DOCUMENT_SCHEMA, name="IndexedSimilarDocument", mode="strict")
+        assert_schema(query, INDEXED_SIMILAR_DOCUMENT_SCHEMA, name="IndexedSimilarDocument", mode="strict")
 
         # Step method: limit
-        similar_documents = ranked_documents.alias("indexed_similar_document")
-        similar_documents = similar_documents.where(((F.col("indexed_similar_document.rank") <= F.lit(10))))
-        similar_documents = similar_documents.select(
+        query = query.alias("indexed_similar_document")
+        query = query.where(((F.col("indexed_similar_document.rank") <= F.lit(10))))
+        query = query.select(
             F.col("indexed_similar_document.id"),
             F.col("indexed_similar_document.collection_id"),
             F.col("indexed_similar_document.source"),
@@ -87,6 +86,6 @@ class SimilarityGenerated:
         )
 
         # Step method: similar_documents
-        similar_documents = similar_documents.alias("indexed_similar_document")
+        similar_documents = query.alias("indexed_similar_document")
         assert_schema(similar_documents, INDEXED_SIMILAR_DOCUMENT_SCHEMA, name="IndexedSimilarDocument", mode="strict")
         return TransformResult({"similar_documents": similar_documents}, single=True, schema={"similar_documents": INDEXED_SIMILAR_DOCUMENT_SCHEMA})

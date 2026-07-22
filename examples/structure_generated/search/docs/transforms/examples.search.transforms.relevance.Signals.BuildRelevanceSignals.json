@@ -1,0 +1,201 @@
+{
+  "dependencies": [
+    "click",
+    "daily_clicks",
+    "policy"
+  ],
+  "generated_by": "Structure",
+  "inputs": [
+    {
+      "name": "daily_impressions",
+      "ordinal": 0,
+      "schema": "DailyImpressions"
+    },
+    {
+      "name": "daily_clicks",
+      "ordinal": 1,
+      "schema": "DailyClicks"
+    },
+    {
+      "name": "policy",
+      "ordinal": 2,
+      "schema": "RelevancePolicy"
+    }
+  ],
+  "name": "BuildRelevanceSignals",
+  "outputs": [
+    {
+      "name": "query_document_signals",
+      "ordinal": 0,
+      "schema": "QueryDocumentSignals"
+    },
+    {
+      "name": "document_popularity",
+      "ordinal": 1,
+      "schema": "DocumentPopularity"
+    }
+  ],
+  "source": "examples.search.transforms.relevance.Signals.BuildRelevanceSignals",
+  "step_methods": [
+    {
+      "input_lane": "daily_impressions",
+      "input_schema": "DailyImpressions",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "impression",
+          "schema": "DailyImpressions",
+          "source": "daily_impressions"
+        },
+        {
+          "driving": false,
+          "parameter": "click",
+          "schema": "DailyClicks",
+          "source": "daily_clicks"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "RelevancePolicy",
+          "source": "policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "click"
+        },
+        {
+          "how": "cross",
+          "input": "policy"
+        }
+      ],
+      "name": "summarize_query",
+      "output_lane": "query_signal_totals",
+      "output_schema": "QueryDocumentSignals",
+      "results": [
+        {
+          "frame": "query_signal_totals",
+          "lane": "query_signal_totals",
+          "schema": "QueryDocumentSignals"
+        }
+      ]
+    },
+    {
+      "input_lane": "daily_impressions",
+      "input_schema": "DailyImpressions",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "impression",
+          "schema": "DailyImpressions",
+          "source": "daily_impressions"
+        },
+        {
+          "driving": false,
+          "parameter": "click",
+          "schema": "DailyClicks",
+          "source": "daily_clicks"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "RelevancePolicy",
+          "source": "policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "left",
+          "input": "click"
+        },
+        {
+          "how": "cross",
+          "input": "policy"
+        }
+      ],
+      "name": "summarize_popularity",
+      "output_lane": "popularity_totals",
+      "output_schema": "DocumentPopularity",
+      "results": [
+        {
+          "frame": "popularity_totals",
+          "lane": "popularity_totals",
+          "schema": "DocumentPopularity"
+        }
+      ]
+    },
+    {
+      "input_lane": "query_signal_totals",
+      "input_schema": "QueryDocumentSignals",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "signal",
+          "schema": "QueryDocumentSignals",
+          "source": "query_signal_totals"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "RelevancePolicy",
+          "source": "policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
+        }
+      ],
+      "name": "normalize_query",
+      "output_lane": "query_document_signals",
+      "output_schema": "QueryDocumentSignals",
+      "results": [
+        {
+          "frame": "query_document_signals",
+          "lane": "query_document_signals",
+          "schema": "QueryDocumentSignals"
+        }
+      ]
+    },
+    {
+      "input_lane": "popularity_totals",
+      "input_schema": "DocumentPopularity",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "popularity",
+          "schema": "DocumentPopularity",
+          "source": "popularity_totals"
+        },
+        {
+          "driving": false,
+          "parameter": "policy",
+          "schema": "RelevancePolicy",
+          "source": "policy"
+        }
+      ],
+      "joins": [
+        {
+          "how": "cross",
+          "input": "policy"
+        }
+      ],
+      "name": "normalize_popularity",
+      "output_lane": "document_popularity",
+      "output_schema": "DocumentPopularity",
+      "results": [
+        {
+          "frame": "document_popularity",
+          "lane": "document_popularity",
+          "schema": "DocumentPopularity"
+        }
+      ]
+    }
+  ],
+  "target_artifacts": {
+    "pyspark_transform": "pyspark/transforms/Signals.py",
+    "traceability": "traceability/transforms/Signals.BuildRelevanceSignals.json"
+  }
+}

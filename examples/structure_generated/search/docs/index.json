@@ -5,6 +5,37 @@
       "bases": [],
       "fields": [
         {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "occurred_at",
+          "name": "occurred_at",
+          "nullable": false,
+          "type": "timestamp"
+        },
+        {
+          "column": "impression_id",
+          "name": "impression_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "dwell_seconds",
+          "name": "dwell_seconds",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.search.schemas.clicks",
+      "name": "Click"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
           "column": "corpus",
           "name": "corpus",
           "nullable": false,
@@ -86,6 +117,213 @@
       ],
       "module": "examples.search.schemas.analytics",
       "name": "CorpusVocabulary"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "query",
+          "name": "query",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "position",
+          "name": "position",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "examination_propensity",
+          "name": "examination_propensity",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "click_count",
+          "name": "click_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "clicked_impression_count",
+          "name": "clicked_impression_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "dwell_seconds",
+          "name": "dwell_seconds",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "dwell_credit",
+          "name": "dwell_credit",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "long_click_count",
+          "name": "long_click_count",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.search.schemas.clicks",
+      "name": "DailyClicks"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "ranking_version",
+          "name": "ranking_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "request_count",
+          "name": "request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "zero_result_request_count",
+          "name": "zero_result_request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "clicked_request_count",
+          "name": "clicked_request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "long_clicked_request_count",
+          "name": "long_clicked_request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "no_click_request_count",
+          "name": "no_click_request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "no_long_click_request_count",
+          "name": "no_long_click_request_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "raw_click_count",
+          "name": "raw_click_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "raw_long_click_count",
+          "name": "raw_long_click_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "mean_first_click_rank",
+          "name": "mean_first_click_rank",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "mean_first_long_click_rank",
+          "name": "mean_first_long_click_rank",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "mean_reciprocal_first_long_click_rank",
+          "name": "mean_reciprocal_first_long_click_rank",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "ips_long_click_rate",
+          "name": "ips_long_click_rate",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "ips_dwell_credit_per_impression",
+          "name": "ips_dwell_credit_per_impression",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.search.schemas.evaluation",
+      "name": "DailyDocumentSearchBehavior"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "query",
+          "name": "query",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "position",
+          "name": "position",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "examination_propensity",
+          "name": "examination_propensity",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "impression_count",
+          "name": "impression_count",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.search.schemas.clicks",
+      "name": "DailyImpressions"
     },
     {
       "bases": [],
@@ -210,6 +448,139 @@
       ],
       "module": "examples.search.schemas.search",
       "name": "DocumentBm25Score"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "query_count",
+          "name": "query_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "binary_relevant_query_count",
+          "name": "binary_relevant_query_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "no_binary_relevant_query_count",
+          "name": "no_binary_relevant_query_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "eligible_at_5_count",
+          "name": "eligible_at_5_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "eligible_at_10_count",
+          "name": "eligible_at_10_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "eligible_at_15_count",
+          "name": "eligible_at_15_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "reciprocal_rank_eligible_count",
+          "name": "reciprocal_rank_eligible_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "precision_at_5",
+          "name": "precision_at_5",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "precision_at_10",
+          "name": "precision_at_10",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "precision_at_15",
+          "name": "precision_at_15",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "judged_recall_at_5",
+          "name": "judged_recall_at_5",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "judged_recall_at_10",
+          "name": "judged_recall_at_10",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "judged_recall_at_15",
+          "name": "judged_recall_at_15",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "success_at_5",
+          "name": "success_at_5",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "success_at_10",
+          "name": "success_at_10",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "success_at_15",
+          "name": "success_at_15",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "ndcg_at_5",
+          "name": "ndcg_at_5",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "ndcg_at_10",
+          "name": "ndcg_at_10",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "ndcg_at_15",
+          "name": "ndcg_at_15",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "mean_reciprocal_rank",
+          "name": "mean_reciprocal_rank",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.search.schemas.evaluation",
+      "name": "DocumentEvaluationSummary"
     },
     {
       "bases": [],
@@ -548,6 +919,480 @@
       "bases": [],
       "fields": [
         {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "impression_count",
+          "name": "impression_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "click_count",
+          "name": "click_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "clicked_impression_count",
+          "name": "clicked_impression_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "dwell_seconds",
+          "name": "dwell_seconds",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "long_click_count",
+          "name": "long_click_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "click_through_rate",
+          "name": "click_through_rate",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "ips_clicks",
+          "name": "ips_clicks",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "ips_dwell_credit",
+          "name": "ips_dwell_credit",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "ips_click_through_rate",
+          "name": "ips_click_through_rate",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "ips_impression_weight",
+          "name": "ips_impression_weight",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "ips_clicked_impression_weight",
+          "name": "ips_clicked_impression_weight",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "normalized_dwell_score",
+          "name": "normalized_dwell_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "normalized_ctr_score",
+          "name": "normalized_ctr_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "normalized_score",
+          "name": "normalized_score",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.search.schemas.relevance",
+      "name": "DocumentPopularity"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "returned_result_count",
+          "name": "returned_result_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "judged_result_count",
+          "name": "judged_result_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "binary_relevant_judgment_count",
+          "name": "binary_relevant_judgment_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "covered_at_5",
+          "name": "covered_at_5",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "covered_at_10",
+          "name": "covered_at_10",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "covered_at_15",
+          "name": "covered_at_15",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "reciprocal_rank_covered",
+          "name": "reciprocal_rank_covered",
+          "nullable": false,
+          "type": "boolean"
+        },
+        {
+          "column": "precision_at_5",
+          "name": "precision_at_5",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "precision_at_10",
+          "name": "precision_at_10",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "precision_at_15",
+          "name": "precision_at_15",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "judged_recall_at_5",
+          "name": "judged_recall_at_5",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "judged_recall_at_10",
+          "name": "judged_recall_at_10",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "judged_recall_at_15",
+          "name": "judged_recall_at_15",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "success_at_5",
+          "name": "success_at_5",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "success_at_10",
+          "name": "success_at_10",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "success_at_15",
+          "name": "success_at_15",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "ndcg_at_5",
+          "name": "ndcg_at_5",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "ndcg_at_10",
+          "name": "ndcg_at_10",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "ndcg_at_15",
+          "name": "ndcg_at_15",
+          "nullable": true,
+          "type": "double"
+        },
+        {
+          "column": "reciprocal_rank",
+          "name": "reciprocal_rank",
+          "nullable": true,
+          "type": "double"
+        }
+      ],
+      "module": "examples.search.schemas.evaluation",
+      "name": "DocumentQueryEvaluation"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "relevance_grade",
+          "name": "relevance_grade",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.search.schemas.evaluation",
+      "name": "DocumentRelevanceJudgment"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "query",
+          "name": "query",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "candidate_rank",
+          "name": "candidate_rank",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "title",
+          "name": "title",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "url",
+          "name": "url",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "score_feedback",
+          "name": "score_feedback",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "score_rank",
+          "name": "score_rank",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bm25_weight",
+          "name": "bm25_weight",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "feedback_weight",
+          "name": "feedback_weight",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.search.schemas.search",
+      "name": "DocumentSearchCandidate"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        },
+        {
+          "column": "search_request_id",
+          "name": "search_request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "ranking_version",
+          "name": "ranking_version",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "query",
+          "name": "query",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "result_count",
+          "name": "result_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "clicked_result_count",
+          "name": "clicked_result_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "long_clicked_result_count",
+          "name": "long_clicked_result_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "has_click",
+          "name": "has_click",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "column": "has_long_click",
+          "name": "has_long_click",
+          "nullable": true,
+          "type": "boolean"
+        },
+        {
+          "column": "first_click_rank",
+          "name": "first_click_rank",
+          "nullable": true,
+          "type": "long"
+        },
+        {
+          "column": "first_long_click_rank",
+          "name": "first_long_click_rank",
+          "nullable": true,
+          "type": "long"
+        },
+        {
+          "column": "reciprocal_first_long_click_rank",
+          "name": "reciprocal_first_long_click_rank",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.search.schemas.evaluation",
+      "name": "DocumentSearchRequestBehavior"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "search_query_id",
+          "name": "search_query_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "candidate_rank",
+          "name": "candidate_rank",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "title",
+          "name": "title",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "url",
+          "name": "url",
+          "nullable": true,
+          "type": "string"
+        },
+        {
+          "column": "score_bm25",
+          "name": "score_bm25",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "score_feedback",
+          "name": "score_feedback",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "score_rank",
+          "name": "score_rank",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.search.schemas.search",
+      "name": "DocumentSearchResult"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
           "column": "query_id",
           "name": "query_id",
           "nullable": false,
@@ -577,6 +1422,12 @@
           "name": "right_document_id",
           "nullable": false,
           "type": "string"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
         },
         {
           "column": "score_overlap",
@@ -673,6 +1524,68 @@
       ],
       "module": "examples.search.schemas.analytics",
       "name": "DocumentStatistics"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "window",
+          "name": "window",
+          "nullable": false,
+          "type": "TimeWindow"
+        }
+      ],
+      "module": "examples.search.schemas.evaluation",
+      "name": "EvaluationBatch"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "search_request_id",
+          "name": "search_request_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "shown_at",
+          "name": "shown_at",
+          "nullable": false,
+          "type": "timestamp"
+        },
+        {
+          "column": "query",
+          "name": "query",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "position",
+          "name": "position",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "examination_propensity",
+          "name": "examination_propensity",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.search.schemas.clicks",
+      "name": "Impression"
     },
     {
       "bases": [
@@ -1285,6 +2198,12 @@
           "type": "string"
         },
         {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
+        },
+        {
           "column": "score_overlap",
           "name": "score_overlap",
           "nullable": false,
@@ -1398,6 +2317,158 @@
       "bases": [],
       "fields": [
         {
+          "column": "query",
+          "name": "query",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "document_id",
+          "name": "document_id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "impression_count",
+          "name": "impression_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "click_count",
+          "name": "click_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "clicked_impression_count",
+          "name": "clicked_impression_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "dwell_seconds",
+          "name": "dwell_seconds",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "long_click_count",
+          "name": "long_click_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "click_through_rate",
+          "name": "click_through_rate",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "ips_clicks",
+          "name": "ips_clicks",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "ips_dwell_credit",
+          "name": "ips_dwell_credit",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "ips_click_through_rate",
+          "name": "ips_click_through_rate",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "ips_impression_weight",
+          "name": "ips_impression_weight",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "ips_clicked_impression_weight",
+          "name": "ips_clicked_impression_weight",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "normalized_dwell_score",
+          "name": "normalized_dwell_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "normalized_ctr_score",
+          "name": "normalized_ctr_score",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "normalized_score",
+          "name": "normalized_score",
+          "nullable": false,
+          "type": "double"
+        }
+      ],
+      "module": "examples.search.schemas.relevance",
+      "name": "QueryDocumentSignals"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "evaluated_at",
+          "name": "evaluated_at",
+          "nullable": false,
+          "type": "timestamp"
+        },
+        {
+          "column": "half_life_days",
+          "name": "half_life_days",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "bm25_weight",
+          "name": "bm25_weight",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "feedback_weight",
+          "name": "feedback_weight",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "dwell_feedback_weight",
+          "name": "dwell_feedback_weight",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "ctr_feedback_weight",
+          "name": "ctr_feedback_weight",
+          "nullable": false,
+          "type": "double"
+        },
+        {
+          "column": "minimum_ctr_impressions",
+          "name": "minimum_ctr_impressions",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.search.schemas.relevance",
+      "name": "RelevancePolicy"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
           "column": "id",
           "name": "id",
           "nullable": false,
@@ -1412,6 +2483,37 @@
       ],
       "module": "examples.search.schemas.search",
       "name": "SearchQuery"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "id",
+          "name": "id",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "requested_at",
+          "name": "requested_at",
+          "nullable": false,
+          "type": "timestamp"
+        },
+        {
+          "column": "query",
+          "name": "query",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "ranking_version",
+          "name": "ranking_version",
+          "nullable": false,
+          "type": "string"
+        }
+      ],
+      "module": "examples.search.schemas.clicks",
+      "name": "SearchRequest"
     },
     {
       "bases": [],
@@ -1674,6 +2776,12 @@
           "name": "right_section_id",
           "nullable": false,
           "type": "string"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
         },
         {
           "column": "score_overlap",
@@ -2209,6 +3317,12 @@
           "name": "right_sentence_id",
           "nullable": false,
           "type": "string"
+        },
+        {
+          "column": "rank",
+          "name": "rank",
+          "nullable": false,
+          "type": "long"
         },
         {
           "column": "score_overlap",
@@ -2951,6 +4065,120 @@
       }
     },
     {
+      "dependencies": [
+        "click",
+        "clicks"
+      ],
+      "inputs": [
+        {
+          "name": "impressions",
+          "ordinal": 0,
+          "schema": "Impression"
+        },
+        {
+          "name": "clicks",
+          "ordinal": 1,
+          "schema": "Click"
+        }
+      ],
+      "name": "Clicks",
+      "outputs": [
+        {
+          "name": "daily_clicks",
+          "ordinal": 0,
+          "schema": "DailyClicks"
+        }
+      ],
+      "source": "examples.search.transforms.clicks.Clicks.Clicks",
+      "step_methods": [
+        {
+          "input_lane": "impressions",
+          "input_schema": "Impression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "Impression",
+              "source": "impressions"
+            },
+            {
+              "driving": false,
+              "parameter": "click",
+              "schema": "Click",
+              "source": "clicks"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "click"
+            }
+          ],
+          "name": "summarize",
+          "output_lane": "impressions",
+          "output_schema": "DailyClicks",
+          "results": [
+            {
+              "frame": "impressions",
+              "lane": "impressions",
+              "schema": "DailyClicks"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/Clicks.py",
+        "traceability": "traceability/transforms/Clicks.Clicks.json"
+      }
+    },
+    {
+      "dependencies": [],
+      "inputs": [
+        {
+          "name": "impressions",
+          "ordinal": 0,
+          "schema": "Impression"
+        }
+      ],
+      "name": "Impressions",
+      "outputs": [
+        {
+          "name": "daily_impressions",
+          "ordinal": 0,
+          "schema": "DailyImpressions"
+        }
+      ],
+      "source": "examples.search.transforms.clicks.Impressions.Impressions",
+      "step_methods": [
+        {
+          "input_lane": "impressions",
+          "input_schema": "Impression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "Impression",
+              "source": "impressions"
+            }
+          ],
+          "name": "summarize",
+          "output_lane": "impressions",
+          "output_schema": "DailyImpressions",
+          "results": [
+            {
+              "frame": "impressions",
+              "lane": "impressions",
+              "schema": "DailyImpressions"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/Impressions.py",
+        "traceability": "traceability/transforms/Impressions.Impressions.json"
+      }
+    },
+    {
       "dependencies": [],
       "inputs": [
         {
@@ -3027,6 +4255,683 @@
       "target_artifacts": {
         "pyspark_transform": "pyspark/transforms/corpus.py",
         "traceability": "traceability/transforms/corpus.CorpusText.json"
+      }
+    },
+    {
+      "dependencies": [
+        "batch",
+        "ideal",
+        "ideal_dcgs",
+        "judgment",
+        "judgment_totals",
+        "judgments",
+        "result",
+        "result_totals",
+        "results"
+      ],
+      "inputs": [
+        {
+          "name": "batch",
+          "ordinal": 0,
+          "schema": "EvaluationBatch"
+        },
+        {
+          "name": "queries",
+          "ordinal": 1,
+          "schema": "SearchQuery"
+        },
+        {
+          "name": "results",
+          "ordinal": 2,
+          "schema": "DocumentSearchResult"
+        },
+        {
+          "name": "judgments",
+          "ordinal": 3,
+          "schema": "DocumentRelevanceJudgment"
+        }
+      ],
+      "name": "EvaluateDocuments",
+      "outputs": [
+        {
+          "name": "query_evaluations",
+          "ordinal": 0,
+          "schema": "DocumentQueryEvaluation"
+        },
+        {
+          "name": "summary",
+          "ordinal": 1,
+          "schema": "DocumentEvaluationSummary"
+        }
+      ],
+      "source": "examples.search.transforms.evaluation.search_docs.EvaluateDocuments.EvaluateDocuments",
+      "step_methods": [
+        {
+          "input_lane": "queries",
+          "input_schema": "SearchQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            },
+            {
+              "driving": false,
+              "parameter": "batch",
+              "schema": "EvaluationBatch",
+              "source": "batch"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "batch"
+            }
+          ],
+          "name": "select_queries",
+          "output_lane": "evaluated_queries",
+          "output_schema": "EvaluationQuery",
+          "results": [
+            {
+              "frame": "evaluated_queries",
+              "lane": "evaluated_queries",
+              "schema": "EvaluationQuery"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_queries",
+          "input_schema": "EvaluationQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "EvaluationQuery",
+              "source": "evaluated_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "result",
+              "schema": "DocumentSearchResult",
+              "source": "results"
+            },
+            {
+              "driving": false,
+              "parameter": "judgment",
+              "schema": "DocumentRelevanceJudgment",
+              "source": "judgments"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "result"
+            },
+            {
+              "how": "left",
+              "input": "judgment"
+            }
+          ],
+          "name": "select_results",
+          "output_lane": "evaluated_results",
+          "output_schema": "EvaluationResult",
+          "results": [
+            {
+              "frame": "evaluated_results",
+              "lane": "evaluated_results",
+              "schema": "EvaluationResult"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_queries",
+          "input_schema": "EvaluationQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "EvaluationQuery",
+              "source": "evaluated_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "judgment",
+              "schema": "DocumentRelevanceJudgment",
+              "source": "judgments"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "judgment"
+            }
+          ],
+          "name": "rank_judgments",
+          "output_lane": "ranked_judgments",
+          "output_schema": "EvaluationJudgment",
+          "results": [
+            {
+              "frame": "ranked_judgments",
+              "lane": "ranked_judgments",
+              "schema": "EvaluationJudgment"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked_judgments",
+          "input_schema": "EvaluationJudgment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "judgment",
+              "schema": "EvaluationJudgment",
+              "source": "ranked_judgments"
+            }
+          ],
+          "name": "count_judgments",
+          "output_lane": "judgment_totals",
+          "output_schema": "EvaluationJudgmentTotals",
+          "results": [
+            {
+              "frame": "judgment_totals",
+              "lane": "judgment_totals",
+              "schema": "EvaluationJudgmentTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "ranked_judgments",
+          "input_schema": "EvaluationJudgment",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "judgment",
+              "schema": "EvaluationJudgment",
+              "source": "ranked_judgments"
+            }
+          ],
+          "name": "calculate_ideal_dcg",
+          "output_lane": "ideal_dcgs",
+          "output_schema": "EvaluationIdealDcg",
+          "results": [
+            {
+              "frame": "ideal_dcgs",
+              "lane": "ideal_dcgs",
+              "schema": "EvaluationIdealDcg"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_results",
+          "input_schema": "EvaluationResult",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "result",
+              "schema": "EvaluationResult",
+              "source": "evaluated_results"
+            }
+          ],
+          "name": "total_results",
+          "output_lane": "result_totals",
+          "output_schema": "EvaluationResultTotals",
+          "results": [
+            {
+              "frame": "result_totals",
+              "lane": "result_totals",
+              "schema": "EvaluationResultTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "evaluated_queries",
+          "input_schema": "EvaluationQuery",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "query",
+              "schema": "EvaluationQuery",
+              "source": "evaluated_queries"
+            },
+            {
+              "driving": false,
+              "parameter": "results",
+              "schema": "EvaluationResultTotals",
+              "source": "result_totals"
+            },
+            {
+              "driving": false,
+              "parameter": "judgments",
+              "schema": "EvaluationJudgmentTotals",
+              "source": "judgment_totals"
+            },
+            {
+              "driving": false,
+              "parameter": "ideal",
+              "schema": "EvaluationIdealDcg",
+              "source": "ideal_dcgs"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "results"
+            },
+            {
+              "how": "left",
+              "input": "judgments"
+            },
+            {
+              "how": "left",
+              "input": "ideal"
+            }
+          ],
+          "name": "calculate_metrics",
+          "output_lane": "metrics",
+          "output_schema": "DocumentQueryEvaluation",
+          "results": [
+            {
+              "frame": "metrics",
+              "lane": "metrics",
+              "schema": "DocumentQueryEvaluation"
+            }
+          ]
+        },
+        {
+          "input_lane": "metrics",
+          "input_schema": "DocumentQueryEvaluation",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "metric",
+              "schema": "DocumentQueryEvaluation",
+              "source": "metrics"
+            }
+          ],
+          "name": "publish_metrics",
+          "output_lane": "query_evaluations",
+          "output_schema": "DocumentQueryEvaluation",
+          "results": [
+            {
+              "frame": "query_evaluations",
+              "lane": "query_evaluations",
+              "schema": "DocumentQueryEvaluation"
+            }
+          ]
+        },
+        {
+          "input_lane": "metrics",
+          "input_schema": "DocumentQueryEvaluation",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "metric",
+              "schema": "DocumentQueryEvaluation",
+              "source": "metrics"
+            }
+          ],
+          "name": "summarize",
+          "output_lane": "summary",
+          "output_schema": "DocumentEvaluationSummary",
+          "results": [
+            {
+              "frame": "summary",
+              "lane": "summary",
+              "schema": "DocumentEvaluationSummary"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/EvaluateDocuments.py",
+        "traceability": "traceability/transforms/EvaluateDocuments.EvaluateDocuments.json"
+      }
+    },
+    {
+      "dependencies": [
+        "batch",
+        "click",
+        "clicked",
+        "clicks",
+        "exposure",
+        "impression",
+        "impressions",
+        "measured"
+      ],
+      "inputs": [
+        {
+          "name": "batch",
+          "ordinal": 0,
+          "schema": "EvaluationBatch"
+        },
+        {
+          "name": "requests",
+          "ordinal": 1,
+          "schema": "SearchRequest"
+        },
+        {
+          "name": "impressions",
+          "ordinal": 2,
+          "schema": "Impression"
+        },
+        {
+          "name": "clicks",
+          "ordinal": 3,
+          "schema": "Click"
+        }
+      ],
+      "name": "EvaluateDocumentSearchBehavior",
+      "outputs": [
+        {
+          "name": "request_behaviors",
+          "ordinal": 0,
+          "schema": "DocumentSearchRequestBehavior"
+        },
+        {
+          "name": "daily_behavior",
+          "ordinal": 1,
+          "schema": "DailyDocumentSearchBehavior"
+        }
+      ],
+      "source": "examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior",
+      "step_methods": [
+        {
+          "input_lane": "requests",
+          "input_schema": "SearchRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "SearchRequest",
+              "source": "requests"
+            },
+            {
+              "driving": false,
+              "parameter": "batch",
+              "schema": "EvaluationBatch",
+              "source": "batch"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "batch"
+            }
+          ],
+          "name": "select_requests",
+          "output_lane": "daily_requests",
+          "output_schema": "BehaviorRequest",
+          "results": [
+            {
+              "frame": "daily_requests",
+              "lane": "daily_requests",
+              "schema": "BehaviorRequest"
+            }
+          ]
+        },
+        {
+          "input_lane": "daily_requests",
+          "input_schema": "BehaviorRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "BehaviorRequest",
+              "source": "daily_requests"
+            },
+            {
+              "driving": false,
+              "parameter": "impression",
+              "schema": "Impression",
+              "source": "impressions"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "impression"
+            }
+          ],
+          "name": "select_impressions",
+          "output_lane": "displayed",
+          "output_schema": "BehaviorImpression",
+          "results": [
+            {
+              "frame": "displayed",
+              "lane": "displayed",
+              "schema": "BehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "displayed",
+          "input_schema": "BehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "BehaviorImpression",
+              "source": "displayed"
+            },
+            {
+              "driving": false,
+              "parameter": "click",
+              "schema": "Click",
+              "source": "clicks"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "click"
+            }
+          ],
+          "name": "attribute_clicks",
+          "output_lane": "clicked",
+          "output_schema": "BehaviorImpression",
+          "results": [
+            {
+              "frame": "clicked",
+              "lane": "clicked",
+              "schema": "BehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "displayed",
+          "input_schema": "BehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "BehaviorImpression",
+              "source": "displayed"
+            },
+            {
+              "driving": false,
+              "parameter": "clicks",
+              "schema": "BehaviorImpression",
+              "source": "clicked"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "clicks"
+            }
+          ],
+          "name": "measure_impressions",
+          "output_lane": "measured",
+          "output_schema": "BehaviorImpression",
+          "results": [
+            {
+              "frame": "measured",
+              "lane": "measured",
+              "schema": "BehaviorImpression"
+            }
+          ]
+        },
+        {
+          "input_lane": "daily_requests",
+          "input_schema": "BehaviorRequest",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "BehaviorRequest",
+              "source": "daily_requests"
+            },
+            {
+              "driving": false,
+              "parameter": "impression",
+              "schema": "BehaviorImpression",
+              "source": "measured"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "impression"
+            }
+          ],
+          "name": "measure_requests",
+          "output_lane": "request_totals",
+          "output_schema": "BehaviorRequestTotals",
+          "results": [
+            {
+              "frame": "request_totals",
+              "lane": "request_totals",
+              "schema": "BehaviorRequestTotals"
+            }
+          ]
+        },
+        {
+          "input_lane": "request_totals",
+          "input_schema": "BehaviorRequestTotals",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "BehaviorRequestTotals",
+              "source": "request_totals"
+            }
+          ],
+          "name": "calculate_reciprocal_rank",
+          "output_lane": "request_metrics",
+          "output_schema": "BehaviorRequestMetrics",
+          "results": [
+            {
+              "frame": "request_metrics",
+              "lane": "request_metrics",
+              "schema": "BehaviorRequestMetrics"
+            }
+          ]
+        },
+        {
+          "input_lane": "measured",
+          "input_schema": "BehaviorImpression",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "BehaviorImpression",
+              "source": "measured"
+            }
+          ],
+          "name": "summarize_exposure",
+          "output_lane": "exposure",
+          "output_schema": "BehaviorExposure",
+          "results": [
+            {
+              "frame": "exposure",
+              "lane": "exposure",
+              "schema": "BehaviorExposure"
+            }
+          ]
+        },
+        {
+          "input_lane": "request_metrics",
+          "input_schema": "BehaviorRequestMetrics",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "BehaviorRequestMetrics",
+              "source": "request_metrics"
+            }
+          ],
+          "name": "summarize_requests",
+          "output_lane": "daily_counts",
+          "output_schema": "BehaviorDailyCounts",
+          "results": [
+            {
+              "frame": "daily_counts",
+              "lane": "daily_counts",
+              "schema": "BehaviorDailyCounts"
+            }
+          ]
+        },
+        {
+          "input_lane": "daily_counts",
+          "input_schema": "BehaviorDailyCounts",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "daily",
+              "schema": "BehaviorDailyCounts",
+              "source": "daily_counts"
+            },
+            {
+              "driving": false,
+              "parameter": "exposure",
+              "schema": "BehaviorExposure",
+              "source": "exposure"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "exposure"
+            }
+          ],
+          "name": "publish_daily",
+          "output_lane": "daily_behavior",
+          "output_schema": "DailyDocumentSearchBehavior",
+          "results": [
+            {
+              "frame": "daily_behavior",
+              "lane": "daily_behavior",
+              "schema": "DailyDocumentSearchBehavior"
+            }
+          ]
+        },
+        {
+          "input_lane": "request_metrics",
+          "input_schema": "BehaviorRequestMetrics",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "request",
+              "schema": "BehaviorRequestMetrics",
+              "source": "request_metrics"
+            }
+          ],
+          "name": "publish_requests",
+          "output_lane": "request_behaviors",
+          "output_schema": "DocumentSearchRequestBehavior",
+          "results": [
+            {
+              "frame": "request_behaviors",
+              "lane": "request_behaviors",
+              "schema": "DocumentSearchRequestBehavior"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/EvaluateDocumentSearchBehavior.py",
+        "traceability": "traceability/transforms/EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior.json"
       }
     },
     {
@@ -3272,6 +5177,206 @@
     },
     {
       "dependencies": [
+        "click",
+        "daily_clicks",
+        "policy"
+      ],
+      "inputs": [
+        {
+          "name": "daily_impressions",
+          "ordinal": 0,
+          "schema": "DailyImpressions"
+        },
+        {
+          "name": "daily_clicks",
+          "ordinal": 1,
+          "schema": "DailyClicks"
+        },
+        {
+          "name": "policy",
+          "ordinal": 2,
+          "schema": "RelevancePolicy"
+        }
+      ],
+      "name": "BuildRelevanceSignals",
+      "outputs": [
+        {
+          "name": "query_document_signals",
+          "ordinal": 0,
+          "schema": "QueryDocumentSignals"
+        },
+        {
+          "name": "document_popularity",
+          "ordinal": 1,
+          "schema": "DocumentPopularity"
+        }
+      ],
+      "source": "examples.search.transforms.relevance.Signals.BuildRelevanceSignals",
+      "step_methods": [
+        {
+          "input_lane": "daily_impressions",
+          "input_schema": "DailyImpressions",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "DailyImpressions",
+              "source": "daily_impressions"
+            },
+            {
+              "driving": false,
+              "parameter": "click",
+              "schema": "DailyClicks",
+              "source": "daily_clicks"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "RelevancePolicy",
+              "source": "policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "click"
+            },
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "summarize_query",
+          "output_lane": "query_signal_totals",
+          "output_schema": "QueryDocumentSignals",
+          "results": [
+            {
+              "frame": "query_signal_totals",
+              "lane": "query_signal_totals",
+              "schema": "QueryDocumentSignals"
+            }
+          ]
+        },
+        {
+          "input_lane": "daily_impressions",
+          "input_schema": "DailyImpressions",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "impression",
+              "schema": "DailyImpressions",
+              "source": "daily_impressions"
+            },
+            {
+              "driving": false,
+              "parameter": "click",
+              "schema": "DailyClicks",
+              "source": "daily_clicks"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "RelevancePolicy",
+              "source": "policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "click"
+            },
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "summarize_popularity",
+          "output_lane": "popularity_totals",
+          "output_schema": "DocumentPopularity",
+          "results": [
+            {
+              "frame": "popularity_totals",
+              "lane": "popularity_totals",
+              "schema": "DocumentPopularity"
+            }
+          ]
+        },
+        {
+          "input_lane": "query_signal_totals",
+          "input_schema": "QueryDocumentSignals",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "signal",
+              "schema": "QueryDocumentSignals",
+              "source": "query_signal_totals"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "RelevancePolicy",
+              "source": "policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "normalize_query",
+          "output_lane": "query_document_signals",
+          "output_schema": "QueryDocumentSignals",
+          "results": [
+            {
+              "frame": "query_document_signals",
+              "lane": "query_document_signals",
+              "schema": "QueryDocumentSignals"
+            }
+          ]
+        },
+        {
+          "input_lane": "popularity_totals",
+          "input_schema": "DocumentPopularity",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "popularity",
+              "schema": "DocumentPopularity",
+              "source": "popularity_totals"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "RelevancePolicy",
+              "source": "policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "normalize_popularity",
+          "output_lane": "document_popularity",
+          "output_schema": "DocumentPopularity",
+          "results": [
+            {
+              "frame": "document_popularity",
+              "lane": "document_popularity",
+              "schema": "DocumentPopularity"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/Signals.py",
+        "traceability": "traceability/transforms/Signals.BuildRelevanceSignals.json"
+      }
+    },
+    {
+      "dependencies": [
         "bm25",
         "document_bm25_scores",
         "document_overlap_scores",
@@ -3413,7 +5518,7 @@
           "schema": "Sentence"
         }
       ],
-      "source": "examples.search.transforms.scoring.AddScores.AddScores",
+      "source": "examples.search.transforms.score.AddScores",
       "step_methods": [
         {
           "input_lane": "queries",
@@ -3667,8 +5772,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/AddScores.py",
-        "traceability": "traceability/transforms/AddScores.AddScores.json"
+        "pyspark_transform": "pyspark/transforms/score.py",
+        "traceability": "traceability/transforms/score.AddScores.json"
       }
     },
     {
@@ -3847,11 +5952,197 @@
     },
     {
       "dependencies": [
+        "document_popularity",
+        "policy",
+        "popularity",
+        "queries",
+        "query",
+        "query_document_signals",
+        "query_signal"
+      ],
+      "inputs": [
+        {
+          "name": "queries",
+          "ordinal": 0,
+          "schema": "SearchQuery"
+        },
+        {
+          "name": "scored_documents",
+          "ordinal": 1,
+          "schema": "Document"
+        },
+        {
+          "name": "query_document_signals",
+          "ordinal": 2,
+          "schema": "QueryDocumentSignals"
+        },
+        {
+          "name": "document_popularity",
+          "ordinal": 3,
+          "schema": "DocumentPopularity"
+        },
+        {
+          "name": "policy",
+          "ordinal": 4,
+          "schema": "RelevancePolicy"
+        }
+      ],
+      "name": "SearchDocuments",
+      "outputs": [
+        {
+          "name": "results",
+          "ordinal": 0,
+          "schema": "DocumentSearchResult"
+        }
+      ],
+      "source": "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments",
+      "step_methods": [
+        {
+          "input_lane": "scored_documents",
+          "input_schema": "Document",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "document",
+              "schema": "Document",
+              "source": "scored_documents"
+            },
+            {
+              "driving": false,
+              "parameter": "query",
+              "schema": "SearchQuery",
+              "source": "queries"
+            }
+          ],
+          "joins": [
+            {
+              "how": "inner",
+              "input": "query"
+            }
+          ],
+          "name": "select_candidates",
+          "output_lane": "candidates",
+          "output_schema": "DocumentSearchCandidate",
+          "results": [
+            {
+              "frame": "candidates",
+              "lane": "candidates",
+              "schema": "DocumentSearchCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "candidates",
+          "input_schema": "DocumentSearchCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "DocumentSearchCandidate",
+              "source": "candidates"
+            },
+            {
+              "driving": false,
+              "parameter": "query_signal",
+              "schema": "QueryDocumentSignals",
+              "source": "query_document_signals"
+            },
+            {
+              "driving": false,
+              "parameter": "popularity",
+              "schema": "DocumentPopularity",
+              "source": "document_popularity"
+            },
+            {
+              "driving": false,
+              "parameter": "policy",
+              "schema": "RelevancePolicy",
+              "source": "policy"
+            }
+          ],
+          "joins": [
+            {
+              "how": "left",
+              "input": "query_signal"
+            },
+            {
+              "how": "left",
+              "input": "popularity"
+            },
+            {
+              "how": "cross",
+              "input": "policy"
+            }
+          ],
+          "name": "score_candidates",
+          "output_lane": "scored_candidates",
+          "output_schema": "DocumentSearchCandidate",
+          "results": [
+            {
+              "frame": "scored_candidates",
+              "lane": "scored_candidates",
+              "schema": "DocumentSearchCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "scored_candidates",
+          "input_schema": "DocumentSearchCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "DocumentSearchCandidate",
+              "source": "scored_candidates"
+            }
+          ],
+          "name": "normalize_bm25",
+          "output_lane": "normalized_candidates",
+          "output_schema": "DocumentSearchCandidate",
+          "results": [
+            {
+              "frame": "normalized_candidates",
+              "lane": "normalized_candidates",
+              "schema": "DocumentSearchCandidate"
+            }
+          ]
+        },
+        {
+          "input_lane": "normalized_candidates",
+          "input_schema": "DocumentSearchCandidate",
+          "inputs": [
+            {
+              "driving": true,
+              "parameter": "candidate",
+              "schema": "DocumentSearchCandidate",
+              "source": "normalized_candidates"
+            }
+          ],
+          "name": "rank_results",
+          "output_lane": "results",
+          "output_schema": "DocumentSearchResult",
+          "results": [
+            {
+              "frame": "results",
+              "lane": "results",
+              "schema": "DocumentSearchResult"
+            }
+          ]
+        }
+      ],
+      "target_artifacts": {
+        "pyspark_transform": "pyspark/transforms/SearchDocuments.py",
+        "traceability": "traceability/transforms/SearchDocuments.SearchDocuments.json"
+      }
+    },
+    {
+      "dependencies": [
+        "queries",
         "query"
       ],
       "inputs": [
         {
-          "name": "query",
+          "name": "queries",
           "ordinal": 0,
           "schema": "SearchQuery"
         },
@@ -3861,7 +6152,7 @@
           "schema": "Sentence"
         }
       ],
-      "name": "Search",
+      "name": "SearchSentences",
       "outputs": [
         {
           "name": "results",
@@ -3869,7 +6160,7 @@
           "schema": "SentenceSearchResult"
         }
       ],
-      "source": "examples.search.transforms.search.Search",
+      "source": "examples.search.transforms.searching.search_sentences.SearchSentences.SearchSentences",
       "step_methods": [
         {
           "input_lane": "scored_sentences",
@@ -3885,7 +6176,7 @@
               "driving": false,
               "parameter": "query",
               "schema": "SearchQuery",
-              "source": "query"
+              "source": "queries"
             }
           ],
           "joins": [
@@ -3907,8 +6198,8 @@
         }
       ],
       "target_artifacts": {
-        "pyspark_transform": "pyspark/transforms/search.py",
-        "traceability": "traceability/transforms/search.Search.json"
+        "pyspark_transform": "pyspark/transforms/SearchSentences.py",
+        "traceability": "traceability/transforms/SearchSentences.SearchSentences.json"
       }
     },
     {
@@ -4238,34 +6529,34 @@
             }
           ],
           "name": "rank",
-          "output_lane": "ranked_paragraphs",
+          "output_lane": "query",
           "output_schema": "IndexedSimilarParagraph",
           "results": [
             {
-              "frame": "ranked_paragraphs",
-              "lane": "ranked_paragraphs",
+              "frame": "query",
+              "lane": "query",
               "schema": "IndexedSimilarParagraph"
             }
           ]
         },
         {
-          "input_lane": "ranked_paragraphs",
+          "input_lane": "query",
           "input_schema": "IndexedSimilarParagraph",
           "inputs": [
             {
               "driving": true,
               "parameter": "candidate",
               "schema": "IndexedSimilarParagraph",
-              "source": "ranked_paragraphs"
+              "source": "query"
             }
           ],
           "name": "limit",
-          "output_lane": "similar_paragraphs",
+          "output_lane": "query",
           "output_schema": "IndexedSimilarParagraph",
           "results": [
             {
-              "frame": "similar_paragraphs",
-              "lane": "similar_paragraphs",
+              "frame": "query",
+              "lane": "query",
               "schema": "IndexedSimilarParagraph"
             }
           ]
@@ -4344,34 +6635,34 @@
             }
           ],
           "name": "rank",
-          "output_lane": "ranked_sections",
+          "output_lane": "query",
           "output_schema": "IndexedSimilarSection",
           "results": [
             {
-              "frame": "ranked_sections",
-              "lane": "ranked_sections",
+              "frame": "query",
+              "lane": "query",
               "schema": "IndexedSimilarSection"
             }
           ]
         },
         {
-          "input_lane": "ranked_sections",
+          "input_lane": "query",
           "input_schema": "IndexedSimilarSection",
           "inputs": [
             {
               "driving": true,
               "parameter": "candidate",
               "schema": "IndexedSimilarSection",
-              "source": "ranked_sections"
+              "source": "query"
             }
           ],
           "name": "limit",
-          "output_lane": "similar_sections",
+          "output_lane": "query",
           "output_schema": "IndexedSimilarSection",
           "results": [
             {
-              "frame": "similar_sections",
-              "lane": "similar_sections",
+              "frame": "query",
+              "lane": "query",
               "schema": "IndexedSimilarSection"
             }
           ]
@@ -4450,34 +6741,34 @@
             }
           ],
           "name": "rank",
-          "output_lane": "ranked_sentences",
+          "output_lane": "query",
           "output_schema": "IndexedSimilarSentence",
           "results": [
             {
-              "frame": "ranked_sentences",
-              "lane": "ranked_sentences",
+              "frame": "query",
+              "lane": "query",
               "schema": "IndexedSimilarSentence"
             }
           ]
         },
         {
-          "input_lane": "ranked_sentences",
+          "input_lane": "query",
           "input_schema": "IndexedSimilarSentence",
           "inputs": [
             {
               "driving": true,
               "parameter": "candidate",
               "schema": "IndexedSimilarSentence",
-              "source": "ranked_sentences"
+              "source": "query"
             }
           ],
           "name": "limit",
-          "output_lane": "similar_sentences",
+          "output_lane": "query",
           "output_schema": "IndexedSimilarSentence",
           "results": [
             {
-              "frame": "similar_sentences",
-              "lane": "similar_sentences",
+              "frame": "query",
+              "lane": "query",
               "schema": "IndexedSimilarSentence"
             }
           ]
@@ -4556,34 +6847,34 @@
             }
           ],
           "name": "rank",
-          "output_lane": "ranked_documents",
+          "output_lane": "query",
           "output_schema": "IndexedSimilarDocument",
           "results": [
             {
-              "frame": "ranked_documents",
-              "lane": "ranked_documents",
+              "frame": "query",
+              "lane": "query",
               "schema": "IndexedSimilarDocument"
             }
           ]
         },
         {
-          "input_lane": "ranked_documents",
+          "input_lane": "query",
           "input_schema": "IndexedSimilarDocument",
           "inputs": [
             {
               "driving": true,
               "parameter": "candidate",
               "schema": "IndexedSimilarDocument",
-              "source": "ranked_documents"
+              "source": "query"
             }
           ],
           "name": "limit",
-          "output_lane": "similar_documents",
+          "output_lane": "query",
           "output_schema": "IndexedSimilarDocument",
           "results": [
             {
-              "frame": "similar_documents",
-              "lane": "similar_documents",
+              "frame": "query",
+              "lane": "query",
               "schema": "IndexedSimilarDocument"
             }
           ]

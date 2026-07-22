@@ -2,7 +2,6 @@
 # Source: examples.search.transforms.similarities.SimilarParagraphs.SimilarParagraphs
 
 from pyspark.sql import DataFrame, SparkSession
-from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
@@ -31,20 +30,20 @@ class SimilarParagraphsGenerated:
         _input_paragraph_similarities = paragraph_similarities
 
         # Step method: rank
-        ranked_paragraphs = query.alias("similarity_paragraph_query")
+        query = query.alias("similarity_paragraph_query")
         paragraph_similarities_joined = paragraph_similarities.alias("paragraph_similarities")
-        ranked_paragraphs = ranked_paragraphs.join(
+        query = query.join(
             paragraph_similarities_joined,
-            ((F.col("similarity_paragraph_query.id") == F.col("paragraph_similarities.left_paragraph_id")) | (F.col("similarity_paragraph_query.id") == F.col("paragraph_similarities.right_paragraph_id"))),
+            (F.col("similarity_paragraph_query.id") == F.col("paragraph_similarities.left_paragraph_id")),
             "inner",
         )
         paragraphs_2_joined = paragraphs.alias("paragraphs_2")
-        ranked_paragraphs = ranked_paragraphs.join(
+        query = query.join(
             paragraphs_2_joined,
-            (F.col("paragraphs_2.id") == F.when((F.col("similarity_paragraph_query.id") == F.col("paragraph_similarities.left_paragraph_id")), F.col("paragraph_similarities.right_paragraph_id")).otherwise(F.col("paragraph_similarities.left_paragraph_id"))),
+            (F.col("paragraphs_2.id") == F.col("paragraph_similarities.right_paragraph_id")),
             "inner",
         )
-        ranked_paragraphs = ranked_paragraphs.select(
+        query = query.select(
             F.col("paragraphs_2.id"),
             F.col("paragraphs_2.document_id"),
             F.col("paragraphs_2.section_id"),
@@ -52,15 +51,15 @@ class SimilarParagraphsGenerated:
             F.col("paragraphs_2.content"),
             F.col("similarity_paragraph_query.id").alias("search_query_id"),
             F.col("paragraph_similarities.score_overlap"),
-            F.when((F.col("similarity_paragraph_query.id") == F.col("paragraph_similarities.left_paragraph_id")), F.col("paragraph_similarities.bm25_left_to_right")).otherwise(F.col("paragraph_similarities.bm25_right_to_left")).alias("score_bm25"),
-            F.row_number().over(Window.partitionBy(F.col("similarity_paragraph_query.id")).orderBy(F.when((F.col("similarity_paragraph_query.id") == F.col("paragraph_similarities.left_paragraph_id")), F.col("paragraph_similarities.bm25_left_to_right")).otherwise(F.col("paragraph_similarities.bm25_right_to_left")).desc(), F.col("paragraph_similarities.score_overlap").desc(), F.col("paragraphs_2.id").asc())).cast(T.LongType()).alias("rank"),
+            F.col("paragraph_similarities.bm25_left_to_right").alias("score_bm25"),
+            F.col("paragraph_similarities.rank"),
         )
-        assert_schema(ranked_paragraphs, INDEXED_SIMILAR_PARAGRAPH_SCHEMA, name="IndexedSimilarParagraph", mode="strict")
+        assert_schema(query, INDEXED_SIMILAR_PARAGRAPH_SCHEMA, name="IndexedSimilarParagraph", mode="strict")
 
         # Step method: limit
-        similar_paragraphs = ranked_paragraphs.alias("indexed_similar_paragraph")
-        similar_paragraphs = similar_paragraphs.where(((F.col("indexed_similar_paragraph.rank") <= F.lit(10))))
-        similar_paragraphs = similar_paragraphs.select(
+        query = query.alias("indexed_similar_paragraph")
+        query = query.where(((F.col("indexed_similar_paragraph.rank") <= F.lit(10))))
+        query = query.select(
             F.col("indexed_similar_paragraph.id"),
             F.col("indexed_similar_paragraph.document_id"),
             F.col("indexed_similar_paragraph.section_id"),
@@ -73,6 +72,6 @@ class SimilarParagraphsGenerated:
         )
 
         # Step method: similar_paragraphs
-        similar_paragraphs = similar_paragraphs.alias("indexed_similar_paragraph")
+        similar_paragraphs = query.alias("indexed_similar_paragraph")
         assert_schema(similar_paragraphs, INDEXED_SIMILAR_PARAGRAPH_SCHEMA, name="IndexedSimilarParagraph", mode="strict")
         return TransformResult({"similar_paragraphs": similar_paragraphs}, single=True, schema={"similar_paragraphs": INDEXED_SIMILAR_PARAGRAPH_SCHEMA})

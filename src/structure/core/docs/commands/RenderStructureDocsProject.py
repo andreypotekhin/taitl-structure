@@ -12,10 +12,8 @@ from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.docs.logic.RenderStructureDocsMarkdown import RenderStructureDocsMarkdown
 from structure.core.docs.logic.StructureDocsData import StructureDocsData
 from structure.core.dsl.model.transforms.Transform import Transform
-from structure.plugin.pyspark.api.PySpark import PySpark
-
-# The documentation product intentionally includes the bundled PySpark DSL.
-from structure.plugin.pyspark.PySparkPlugin import PySparkPlugin
+from structure.core.plugins.api.Plugin import Plugin
+from structure.plugin.api.v1 import CompilationPurpose
 
 
 class RenderStructureDocsProject:
@@ -34,18 +32,24 @@ class RenderStructureDocsProject:
         formats = set(config.generated_docs_formats)
         docs_root = self._docs_root(config)
         selected = transforms or project.transforms
-        authoring = PySparkPlugin.api(1).authoring
+        plugin = Plugin.registry().select(config.target_backend)
         plans = {
-            f"{transform.__module__}.{transform.__name__}": Compiler.frontend.author()(
-                transform,
-                config=config,
-                _authoring=authoring,
-                _authoring_target="pyspark",
-                _authoring_configuration={"generated_code_options": config.generated_code_options},
+            f"{transform.__module__}.{transform.__name__}": cast(
+                TransformPlan,
+                Compiler.frontend.compile()(
+                    transform,
+                    config=config,
+                    materialize_schemas=False,
+                    purpose=CompilationPurpose.DOCUMENTATION,
+                ).analysis,
             )
             for transform in selected
         }
-        platform_details = {source: PySpark.render.documentation()(plan) for source, plan in plans.items()}
+        analysis = plugin.api.analysis
+        describe = None if analysis is None else getattr(analysis, "describe_documentation", None)
+        if not callable(describe):
+            raise ValueError(f"PLUGIN-E2709: Plugin {config.target_backend!r} does not provide documentation analysis.")
+        platform_details = {source: describe(plan) for source, plan in plans.items()}
         data = self._data.project(project, plans, platform_details=platform_details)
 
         files: OrderedDict[str, str] = OrderedDict()

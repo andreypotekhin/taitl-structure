@@ -1738,8 +1738,8 @@
       "results": [
         {
           "after_hooks": [],
-          "frame": "exposures",
-          "lane": "exposures",
+          "frame": "exposure_lane",
+          "lane": "exposure_lane",
           "schema": "VulnerabilityExposure"
         }
       ],

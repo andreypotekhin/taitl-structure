@@ -32,6 +32,9 @@ class Schema(SchemaAPI):
         self._validate_structure_schema(schema)
         return PySpark.schema.source()(schema, to=to)
 
+    def render_source(self, source: object) -> str:
+        return PySpark.schema.structure_source()(cast(Any, source))
+
     def _validate_structure_schema(self, schema: object) -> None:
         from structure.dsl import Schema as StructureSchema
 

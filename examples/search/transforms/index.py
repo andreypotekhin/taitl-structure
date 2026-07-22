@@ -1,7 +1,7 @@
 """Public reusable-index transform entry point."""
 
 from examples.search.transforms.indexing.Index import Index
-from examples.search.transforms.scoring.AddScores import AddScores
+from examples.search.transforms.score import AddScores
 
 
 class CreateIndex(Index):

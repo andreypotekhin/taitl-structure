@@ -3,7 +3,7 @@ from structure.plugin.api.v1.api import (
     SchemaAPI, SerializationAPI,
 )
 from structure.plugin.api.v1.model import (
-    CompileRequest, ExecutionRequest, ExplainRequest, GenerationRequest, InputPlan, PluginCompilation,
+    CompilationPurpose, CompileRequest, ExecutionRequest, ExplainRequest, GenerationRequest, InputPlan, PluginCompilation,
     SchemaInspectionRequest, SchemaValidationRequest, StepAuthoringCapture, StepAuthoringInput, StepAuthoringRequest, StepAuthoringResult,
     StepAuthoringSession, StepInputPlan, StreamingAnalysisRequest, SymbolicContext, TraceabilityRequest,
     TransformMemberOrigin, TransformSchemaRequest, current_symbolic_context,
@@ -15,6 +15,7 @@ __all__ = [
     "CapabilitiesAPI",
     "AnalysisAPI",
     "AuthoringAPI",
+    "CompilationPurpose",
     "CompileRequest",
     "CompilerAPI",
     "ExecutionAPI",

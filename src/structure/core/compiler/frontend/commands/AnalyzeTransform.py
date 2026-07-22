@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Mapping, cast, get_origin, get_type_hints
 
+from structure.core.compiler.diagnostics.api import StructureCompileError
 from structure.core.compiler.frontend.commands.CompileTransform import CompileTransform
 from structure.core.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
 from structure.core.compiler.ir.model.StepPlan import StepPlan
@@ -158,9 +159,23 @@ class AnalyzeTransform(CompileTransform):
             return None
         parameters = self._row_parameters(member, hints)
         metadata = getattr(member, "_structure_output_method", None)
-        bindings = self._input_bindings(
-            transform_class, metadata, lanes, inputs, parameters, member=item.name
-        )
+        try:
+            bindings = self._input_bindings(
+                transform_class, metadata, lanes, inputs, parameters, member=item.name
+            )
+        except StructureCompileError:
+            # A schema-returning method after an explicit terminal output may
+            # be a direct helper call. Its legality depends on Core's
+            # invocation guard, not neutral lane analysis; defer it to the
+            # selected authoring pass so that guard can issue its diagnostic.
+            declared_schemas = tuple(output.schema for output in transform_class._structure_outputs.values())
+            if (
+                metadata is None
+                and all(schema not in declared_schemas for schema in output_schemas)
+                and any(hints.get(parameter.name) is input.schema for parameter in parameters for input in inputs)
+            ):
+                return None
+            raise
         output_lanes = self._output_lanes(
             transform_class,
             metadata,

@@ -3,7 +3,17 @@ from typing import Any, cast
 import pytest
 
 from structure import *
+from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+
+
+def _analysis(transform):
+    return Compiler.frontend.compile()(transform, materialize_schemas=False).analysis
+
+
+def _recipe(transform) -> PySparkExecutionPlan:
+    return cast(PySparkExecutionPlan, Compiler.frontend.compile()(transform, materialize_schemas=False).lowered)
 
 
 class Raw(Schema):
@@ -45,7 +55,7 @@ def test_plain_transform_subclass_compiles_without_class_decorator() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(id=row.id, value=row.value, audit="plain")
 
-    plan = compile_transform(Publish)
+    plan = _analysis(Publish)
 
     assert plan.name == "Publish"
     assert [item.name for item in plan.inputs] == ["rows"]
@@ -70,7 +80,7 @@ def test_class_level_decorator_options_do_not_leak_to_undecorated_children() -> 
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="plain")
 
-    assert compile_transform(Publish).options == {}
+    assert _analysis(Publish).options == {}
 
 
 def test_undecorated_direct_parent_contributes_steps() -> None:
@@ -81,7 +91,7 @@ def test_undecorated_direct_parent_contributes_steps() -> None:
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="published")
 
-    assert [compiled_step.name for compiled_step in compile_transform(Publish).steps] == ["normalize", "publish"]
+    assert [compiled_step.name for compiled_step in _analysis(Publish).steps] == ["normalize", "publish"]
 
 
 def test_undecorated_indirect_parent_contributes_steps() -> None:
@@ -99,7 +109,7 @@ def test_undecorated_indirect_parent_contributes_steps() -> None:
         def publish(self, row: Audited) -> Published:
             return Published(id=row.id, value=row.value, audit=row.audit)
 
-    assert [compiled_step.name for compiled_step in compile_transform(Publish).steps] == [
+    assert [compiled_step.name for compiled_step in _analysis(Publish).steps] == [
         "normalize",
         "audit",
         "publish",
@@ -121,7 +131,7 @@ def test_multiple_inheritance_runs_parents_in_declared_order() -> None:
         def publish(self, row: Audited) -> Published:
             return Published(id=row.id, value=row.value, audit=row.audit)
 
-    assert [compiled_step.name for compiled_step in compile_transform(Publish).steps] == [
+    assert [compiled_step.name for compiled_step in _analysis(Publish).steps] == [
         "normalize",
         "audit",
         "publish",
@@ -142,7 +152,7 @@ def test_diamond_ancestor_contributes_once() -> None:
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="published")
 
-    assert [compiled_step.name for compiled_step in compile_transform(Publish).steps] == ["normalize", "publish"]
+    assert [compiled_step.name for compiled_step in _analysis(Publish).steps] == ["normalize", "publish"]
 
 
 def test_parent_hooks_attach_to_parent_steps() -> None:
@@ -158,7 +168,7 @@ def test_parent_hooks_attach_to_parent_steps() -> None:
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="published")
 
-    compiled_step = compile_transform(Publish).steps[0]
+    compiled_step = _analysis(Publish).steps[0]
 
     assert compiled_step.name == "normalize"
     assert [hook.name for hook in compiled_step.after_hooks] == ["after_normalize"]
@@ -180,7 +190,7 @@ def test_child_hooks_can_target_inherited_parent_steps() -> None:
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="published")
 
-    compiled_step = compile_transform(Publish).steps[0]
+    compiled_step = _analysis(Publish).steps[0]
 
     assert compiled_step.name == "normalize"
     assert [hook.name for hook in compiled_step.after_hooks] == ["after_normalize"]
@@ -199,7 +209,7 @@ def test_override_without_parent_call_replaces_inherited_step_position() -> None
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="published")
 
-    plan = compile_transform(Publish)
+    plan = _recipe(Publish)
 
     assert [compiled_step.name for compiled_step in plan.steps] == ["normalize", "publish"]
     assert len(plan.steps[0].filters) == 1
@@ -219,7 +229,7 @@ def test_override_with_zero_arg_super_schedules_parent_before_child() -> None:
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="published")
 
-    plan = compile_transform(Publish)
+    plan = _analysis(Publish)
 
     assert [compiled_step.name for compiled_step in plan.steps] == ["DirectNormalize.normalize", "normalize", "publish"]
     assert not plan.steps[0].filters
@@ -244,7 +254,7 @@ def test_override_with_explicit_base_method_schedules_that_parent() -> None:
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="published")
 
-    assert [compiled_step.name for compiled_step in compile_transform(Publish).steps] == [
+    assert [compiled_step.name for compiled_step in _analysis(Publish).steps] == [
         "DirectNormalize.normalize",
         "normalize",
         "publish",
@@ -272,7 +282,7 @@ def test_override_with_two_arg_super_schedules_next_mro_parent() -> None:
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="published")
 
-    plan = compile_transform(Publish)
+    plan = _analysis(Publish)
 
     assert [compiled_step.name for compiled_step in plan.steps] == ["AuditNormalize.normalize", "normalize", "publish"]
     assert len(plan.steps[0].filters) == 1
@@ -294,7 +304,7 @@ def test_calling_previous_step_method_directly_fails() -> None:
             return Published(id=normalized.id, value=normalized.value, audit="published")
 
     with pytest.raises(StructureCompileError, match="Step methods are pipeline steps"):
-        compile_transform(Publish)
+        _recipe(Publish)
 
 
 def test_recursive_step_method_call_fails() -> None:
@@ -307,7 +317,7 @@ def test_recursive_step_method_call_fails() -> None:
             return self.publish(row)
 
     with pytest.raises(StructureCompileError, match="Publish.publish"):
-        compile_transform(Publish)
+        _recipe(Publish)
 
 
 def test_direct_base_method_call_fails_when_it_is_not_an_override_parent_call() -> None:
@@ -320,7 +330,7 @@ def test_direct_base_method_call_fails_when_it_is_not_an_override_parent_call() 
             return Published(id=normalized.id, value=normalized.value, audit="published")
 
     with pytest.raises(StructureCompileError, match="DirectNormalize.normalize"):
-        compile_transform(Publish)
+        _analysis(Publish)
 
 
 def test_direct_unrelated_transform_method_call_fails() -> None:
@@ -341,7 +351,7 @@ def test_direct_unrelated_transform_method_call_fails() -> None:
             return Published(id=normalized.id, value=normalized.value, audit="published")
 
     with pytest.raises(StructureCompileError, match="NormalizeElsewhere.normalize"):
-        compile_transform(Publish)
+        _analysis(Publish)
 
 
 def test_public_schema_returning_helper_call_fails() -> None:
@@ -358,7 +368,7 @@ def test_public_schema_returning_helper_call_fails() -> None:
             return Normalized(id=row.id, value=row.value)
 
     with pytest.raises(StructureCompileError, match="Use source order"):
-        compile_transform(Publish)
+        Compiler.frontend.compile()(Publish, materialize_schemas=False)
 
 
 def test_private_helper_method_remains_allowed() -> None:
@@ -373,7 +383,7 @@ def test_private_helper_method_remains_allowed() -> None:
         def _publish(self, row: Raw, audit: str) -> Published:
             return Published(id=row.id, value=row.value, audit=audit)
 
-    assert [compiled_step.name for compiled_step in compile_transform(Publish).steps] == ["publish"]
+    assert [compiled_step.name for compiled_step in _analysis(Publish).steps] == ["publish"]
 
 
 def test_special_expr_helper_call_through_self_remains_allowed() -> None:
@@ -389,7 +399,7 @@ def test_special_expr_helper_call_through_self_remains_allowed() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(id=self.clean(row.id), value=row.value, audit="published")
 
-    assert [compiled_step.name for compiled_step in compile_transform(Publish).steps] == ["publish"]
+    assert [compiled_step.name for compiled_step in _analysis(Publish).steps] == ["publish"]
 
 
 def test_sibling_duplicate_names_fail_unless_resolved_by_override() -> None:
@@ -408,7 +418,7 @@ def test_sibling_duplicate_names_fail_unless_resolved_by_override() -> None:
             return Published(id=row.id, value=row.value, audit="published")
 
     with pytest.raises(StructureCompileError, match="normalize"):
-        compile_transform(Publish)
+        _analysis(Publish)
 
 
 def test_generated_pyspark_renders_inherited_and_override_steps_in_order() -> None:
@@ -425,7 +435,7 @@ def test_generated_pyspark_renders_inherited_and_override_steps_in_order() -> No
             return Published(id=row.id, value=row.value, audit="published")
 
     text = PySpark.render.transform()(
-        PySpark.compiler.lower()(compile_transform(Publish)),
+        _recipe(Publish),
         source_transform=f"{__name__}.Publish",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules={Raw: __name__, Normalized: __name__, Published: __name__},
@@ -459,7 +469,7 @@ def test_child_method_with_same_name_overrides_inherited_raw_hook() -> None:
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="published")
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
 
     assert not recipe.steps[0].after_hooks
     assert not recipe.steps[1].after_hooks
@@ -478,7 +488,7 @@ def test_lowered_recipes_record_step_and_hook_owners() -> None:
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="published")
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     normalize = recipe.steps[0]
 
     assert normalize.origin is not None
@@ -501,7 +511,7 @@ def test_embed_hooks_dispatches_an_inherited_hook_to_its_declaring_generated_cla
             return Published(id=row.id, value=row.value, audit="published")
 
     text = PySpark.render.transform()(
-        PySpark.compiler.lower()(compile_transform(Publish)),
+        _recipe(Publish),
         source_transform=f"{__name__}.Publish",
         runtime_module="testing.model.v1.structure_generated.runtime.schema_assert",
         schema_modules={Raw: __name__, Normalized: __name__, Published: __name__},
@@ -535,7 +545,7 @@ def test_explicit_parent_step_does_not_run_raw_hook_overridden_by_child_method()
         def publish(self, row: Normalized) -> Published:
             return Published(id=row.id, value=row.value, audit="published")
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
 
     assert not recipe.steps[0].after_hooks
     assert not recipe.steps[1].after_hooks

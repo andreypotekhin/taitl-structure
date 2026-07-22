@@ -10,9 +10,6 @@ from structure.plugin.api.v1.model.SymbolicContext import (
     install_symbolic_context,
     reset_symbolic_context,
 )
-from structure.plugin.pyspark.dsl.Expression import Expression
-from structure.plugin.pyspark.dsl.joins import JoinPlan
-from structure.plugin.pyspark.dsl.operations import OperationPlan
 
 
 class CompileContext:
@@ -20,10 +17,10 @@ class CompileContext:
     def __init__(self, *, step: str, capture_special_exprs: bool = False) -> None:
         self.step = step
         self.capture_special_exprs = capture_special_exprs
-        self.filters: list[Expression] = []
-        self.joins: list[JoinPlan] = []
-        self.operations: list[OperationPlan] = []
-        self.aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
+        self.filters: list[Any] = []
+        self.joins: list[Any] = []
+        self.operations: list[Any] = []
+        self.aggregate_keys: tuple[tuple[str, Any], ...] | None = None
         self.aggregate_levels: tuple[tuple[str, ...], ...] = ()
         self.aggregate_grouping: str = "group_by"
         self.aggregate_having: Any | None = None

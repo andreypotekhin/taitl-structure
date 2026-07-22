@@ -1,0 +1,4 @@
+id,requested_at,query,ranking_version
+r-aurora,2026-07-20 09:00:00,aurora,v1
+r-empty,2026-07-20 09:05:00,no matching corpus,v1
+r-navigation,2026-07-20 10:00:00,structure guide,v2

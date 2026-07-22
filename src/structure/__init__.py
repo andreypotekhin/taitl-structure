@@ -13,7 +13,6 @@ from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOpti
 from structure.core.compiler.artifacts.model.GeneratedTransform import GeneratedTransform
 from structure.core.compiler.artifacts.storage import DiskStorage, MemoryStorage, PackageImportStorage
 from structure.core.compiler.diagnostics.api import StructureCompileError
-from structure.core.compiler.frontend.api import compile_transform
 from structure.core.configuration.api import StructureConfig
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
@@ -55,7 +54,6 @@ __all__ = [
     "Transform",
     "TransformResult",
     "TransformSchemas",
-    "compile_transform",
     "input",
     "lane",
     "output",

@@ -13,7 +13,9 @@ from structure.core.compiler.frontend.logic.CompilerInputCollector import Compil
 from structure.core.compiler.frontend.logic.CompilerTransformMember import CompilerTransformMember
 from structure.core.compiler.frontend.logic.CompilerTransformMemberCollector import CompilerTransformMemberCollector
 from structure.core.compiler.frontend.logic.ComposeTransformPlans import ComposeTransformPlans
+from structure.core.compiler.frontend.logic.GuardTransformStepCalls import GuardTransformStepCalls
 from structure.core.compiler.frontend.logic.LegacyStepPlan import LegacyStepPlan, LegacyStepResultPlan
+from structure.core.compiler.frontend.logic.PatchParentStepCalls import ParentStepInvocation, PatchParentStepCalls
 from structure.core.compiler.ir.model.HookPlan import HookPlan
 from structure.core.compiler.ir.model.InputPlan import InputPlan
 from structure.core.compiler.ir.model.OutputPlan import OutputPlan
@@ -75,6 +77,8 @@ class CompileTransform:
         self._diagnostic_source = Diagnostics().source()
         self._input_collector = CompilerInputCollector()
         self._member_collector = CompilerTransformMemberCollector()
+        self._step_call_guards = GuardTransformStepCalls(error=self._error, is_step=self._compiled)
+        self._parent_step_calls = PatchParentStepCalls()
 
     def __call__(
         self,
@@ -665,19 +669,22 @@ class CompileTransform:
                 context.register_relation_scope(binding.scope, argument)
 
         try:
-            with self._step_method_call_guards(transform_class, members, active=item):
-                with self._parent_call_patches(
-                    transform_class,
+            with self._step_call_guards(transform_class, members, active=item):
+                with self._parent_step_calls(
                     item,
-                    members,
-                    instance,
-                    steps,
-                    lanes,
-                    inputs,
-                    explicit_outputs,
-                    diagnostics,
-                    parent_call,
-                    capture_special_exprs=capture_special_exprs,
+                    invoke=lambda candidate: self._invoke_parent_step(
+                        transform_class,
+                        candidate,
+                        members,
+                        instance,
+                        steps,
+                        lanes,
+                        inputs,
+                        explicit_outputs,
+                        diagnostics,
+                        capture_special_exprs=capture_special_exprs,
+                    ),
+                    record_source=lambda source: parent_call.update(source=source),
                 ):
                     with session:
                         with (nullcontext() if authoring_session is not None else cast(Any, context)):
@@ -841,6 +848,46 @@ class CompileTransform:
             ),
             *bindings[1:],
         ]
+
+    def _invoke_parent_step(
+        self,
+        transform_class,
+        candidate,
+        members,
+        instance,
+        steps,
+        lanes,
+        inputs,
+        explicit_outputs,
+        diagnostics,
+        *,
+        capture_special_exprs: bool,
+    ) -> ParentStepInvocation:
+        result = self._compile_step(
+            transform_class,
+            candidate,
+            members,
+            instance,
+            steps,
+            lanes,
+            inputs,
+            explicit_outputs,
+            diagnostics,
+            plan_name=f"{candidate.owner.__name__}.{candidate.name}",
+            capture_special_exprs=capture_special_exprs,
+        )
+        if result is None:
+            raise TypeError(f"{candidate.source} is not a compiled step method")
+        first = result[0]
+        return ParentStepInvocation(
+            value=self._parent_call_result(result),
+            source={
+                "lane": first.lane,
+                "schema": first.schema,
+                "source": first.frame,
+                "scope": first.schema.__name__,
+            },
+        )
 
     @staticmethod
     def _authoring_context(session: object):
@@ -3335,6 +3382,3 @@ class CompileTransform:
                 ),
             )
         )
-
-
-compile_transform = CompileTransform()

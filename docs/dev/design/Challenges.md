@@ -1,4 +1,4 @@
-# Challenges Before Coding Starts
+# Challenges
 
 This document captures the pre-implementation challenges identified for the **Structure** project. They are labeled **C1–C20** for reference in planning, backlog, risk tracking, and sprint discussions.
 
@@ -752,6 +752,27 @@ Recommended direction:
   hooks with a class-field pipeline.
 - Keep `lane(...)` internal to a transform implementation and unavailable for composition matching unless a later design
   explicitly changes that boundary.
+
+## C34. DSL deficit resulting in raw hooks necessity 
+
+Example app: Security
+P: use of raw hooks, impossibility to replace with step methods.
+Hooks: retain_reconciled_inventory, reconcile_device_inventory
+Agent: 
+The DSL supports higher-order array functions, but generated-code rendering cannot currently render a field accessed from a lambda-bound struct (app.id): lambda arguments have no relation scope, while the renderer’s field path expects one. That is why the raw hook uses Spark’s F.exists(...) directly.
+Recommendation: retain both hooks for now. They are narrow, typed at their boundaries, optimizer-visible to Spark, and perform no actions or driver collection.
+The best improvement is a small DSL/codegen enhancement: support struct-field access on lambda arguments, with online/generated parity tests. Then both hooks collapse into ordinary steps, and VulnerabilityInventoryCandidate can drop its placeholder boolean fields.
+
+Example app: Search
+P: use of raw hooks, impossibility to replace with step methods.
+Cause: the current DSL has row_number but no partitioned analytic max, which the normalized-BM25 formula needs.
+
+Existing raw methods in Search app that can't be refactored: 
+- ExtractText requires row expansion (posexplode) and multi-stage hierarchical parsing, which the typed DSL does not yet model. [extract.py (line 67)](/Users/chaos/Files/Dev/Code/taitl-structure/examples/search/transforms/extract.py:67)
+- ScoreOverlap and ScoreBm25 need query-token row expansion. Their scoring algebra could become steps only after extracting a reusable typed query-term relation; that expansion still needs raw support. [ScoreOverlap.py (line 39)](/Users/chaos/Files/Dev/Code/taitl-structure/examples/search/transforms/scoring/ScoreOverlap.py:39)
+- Index is a worthwhile larger refactor, but preserving its global zero-row summaries needs a typed global-aggregate capability first. [Index.py (line 86)](/Users/chaos/Files/Dev/Code/taitl-structure/examples/search/transforms/indexing/Index.py:86)
+- CreateSimilarityQueries needs sorted aggregate token collection and exact-one policy validation, both currently outside typed DSL coverage. [CreateSimilarityQueries.py (line 62)](/Users/chaos/Files/Dev/Code/taitl-structure/examples/search/transforms/similarities/CreateSimilarityQueries.py:62)
+- ReduceSimilarityScores needs self-alias joins plus canonical/reversed union construction; keep raw until the DSL supports those relation operations. [ReduceSimilarityScores.py (line 109)](/Users/chaos/Files/Dev/Code/taitl-structure/examples/search/transforms/similarities/ReduceSimilarityScores.py:109)
 
 # Appendix
 

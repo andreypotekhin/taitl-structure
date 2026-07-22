@@ -2758,12 +2758,12 @@
             }
           ],
           "name": "publish",
-          "output_lane": "exposures",
+          "output_lane": "exposure_lane",
           "output_schema": "VulnerabilityExposure",
           "results": [
             {
-              "frame": "exposures",
-              "lane": "exposures",
+              "frame": "exposure_lane",
+              "lane": "exposure_lane",
               "schema": "VulnerabilityExposure"
             }
           ]
@@ -2980,12 +2980,12 @@
             }
           ],
           "name": "publish_reference_checks",
-          "output_lane": "reference_checks",
+          "output_lane": "quality_lane",
           "output_schema": "VulnerabilityQualityCheck",
           "results": [
             {
-              "frame": "reference_checks",
-              "lane": "reference_checks",
+              "frame": "quality_lane",
+              "lane": "quality_lane",
               "schema": "VulnerabilityQualityCheck"
             }
           ]
@@ -3083,12 +3083,12 @@
             }
           ],
           "name": "publish_reconciliation_checks",
-          "output_lane": "reconciliation_checks",
+          "output_lane": "reconciliation_lane",
           "output_schema": "VulnerabilityInventoryCheck",
           "results": [
             {
-              "frame": "reconciliation_checks",
-              "lane": "reconciliation_checks",
+              "frame": "reconciliation_lane",
+              "lane": "reconciliation_lane",
               "schema": "VulnerabilityInventoryCheck"
             }
           ]

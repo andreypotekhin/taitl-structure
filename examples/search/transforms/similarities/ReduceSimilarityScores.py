@@ -1,5 +1,7 @@
 """Reduce directed index scores into reciprocal canonical similarity pairs."""
 
+from typing import Final
+
 from examples.search.algorithms.similarity.SimilarityScores import SimilarityScores
 from examples.search.schemas.search import (
     DocumentBm25Score,
@@ -25,7 +27,9 @@ from structure import Transform, input, output, raw, step
 
 
 class ReduceSimilarityScores(Transform):
-    """Emit same-grain candidates with overlap and reciprocal BM25 evidence."""
+    """Emit the top same-grain candidates for every source target."""
+
+    maximum_results: Final = 10
 
     document_queries = input(DocumentSimilarityQuery)
     section_queries = input(SectionSimilarityQuery)
@@ -55,6 +59,7 @@ class ReduceSimilarityScores(Transform):
             DocumentSimilarity(
                 left_document_id=query.document_id,
                 right_document_id="",
+                rank=0,
                 score_overlap=0.0,
                 bm25_left_to_right=0.0,
                 bm25_right_to_left=0.0,
@@ -65,6 +70,7 @@ class ReduceSimilarityScores(Transform):
                 left_section_id="",
                 right_document_id="",
                 right_section_id="",
+                rank=0,
                 score_overlap=0.0,
                 bm25_left_to_right=0.0,
                 bm25_right_to_left=0.0,
@@ -77,6 +83,7 @@ class ReduceSimilarityScores(Transform):
                 right_document_id="",
                 right_section_id="",
                 right_paragraph_id="",
+                rank=0,
                 score_overlap=0.0,
                 bm25_left_to_right=0.0,
                 bm25_right_to_left=0.0,
@@ -91,6 +98,7 @@ class ReduceSimilarityScores(Transform):
                 right_section_id="",
                 right_paragraph_id="",
                 right_sentence_id="",
+                rank=0,
                 score_overlap=0.0,
                 bm25_left_to_right=0.0,
                 bm25_right_to_left=0.0,
@@ -147,4 +155,5 @@ class ReduceSimilarityScores(Transform):
             (document_overlap_scores, section_overlap_scores, paragraph_overlap_scores, sentence_overlap_scores),
             (document_bm25_scores, section_bm25_scores, paragraph_bm25_scores, sentence_bm25_scores),
             (document_similarities, section_similarities, paragraph_similarities, sentence_similarities),
+            maximum_results=self.maximum_results,
         )

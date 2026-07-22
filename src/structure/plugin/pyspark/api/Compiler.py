@@ -1,4 +1,4 @@
-from structure.plugin.api.v1 import CompilerAPI, CompileRequest, PluginCompilation
+from structure.plugin.api.v1 import CompilationPurpose, CompilerAPI, CompileRequest, PluginCompilation
 from structure.plugin.api.v1.model import TransformPlan
 from structure.plugin.pyspark.api.Authoring import PySparkStepBody
 from structure.plugin.pyspark.api.PySpark import PySpark
@@ -12,6 +12,8 @@ class Compiler(CompilerAPI):
             raise ValueError("PLUGIN-E2708: PySpark compilation requires a Core TransformPlan analysis.")
         if any(not isinstance(step.plugin_body, PySparkStepBody) for step in plan.steps):
             raise ValueError("PLUGIN-E2708: PySpark compilation requires a PySpark-owned body for every step.")
+        if request.purpose is CompilationPurpose.DOCUMENTATION:
+            return PluginCompilation(lowered=None, fingerprint=plan.name)
         capabilities = PySpark.capabilities.resolve()(
             profile=str(options.get("profile", "")), variant=str(options.get("variant", ""))
         )
