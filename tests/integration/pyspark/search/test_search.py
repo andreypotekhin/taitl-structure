@@ -1,11 +1,12 @@
 import csv
 from datetime import datetime
 from pathlib import Path
-from typing import cast
+from typing import Mapping, Sequence, cast
 
 import pytest
 from integration.pyspark.support.backend_matrix import generated_project, render_generated_project, session
 from integration.pyspark.support.rows import rows, single
+from structure import Schema
 
 from examples.search.schemas.analytics import (
     CorpusStatistics,
@@ -95,7 +96,7 @@ from examples.search.transforms.analyze import AnalyzeText
 from examples.search.transforms.clicks.Clicks import Clicks
 from examples.search.transforms.clicks.Impressions import Impressions
 from examples.search.transforms.corpus import CorpusText
-from examples.search.transforms.evaluate import EvaluateDocuments, EvaluateDocumentSearchBehavior
+from examples.search.transforms.evaluate import EvaluateDocumentRankingQuality, EvaluateDocumentSearchBehavior
 from examples.search.transforms.extract import ExtractText
 from examples.search.transforms.index import CreateIndex
 from examples.search.transforms.profile import ProfileDocuments
@@ -114,7 +115,7 @@ pytestmark = pytest.mark.integration
 
 PACKAGE = "integration_search_generated"
 FIXTURES = Path(__file__).resolve().parents[4] / "examples" / "fixtures" / "search"
-SCHEMA_MODULES = {
+SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
     "examples.search.schemas.analytics": [
         DocumentFeatures,
         SentenceStatistics,
@@ -164,11 +165,19 @@ SCHEMA_MODULES = {
         DailyImpressions,
         DailyClicks,
     ],
-    "examples.search.schemas.evaluation": [
-        EvaluationBatch,
+    "examples.search.schemas.evaluation.batch": [EvaluationBatch],
+    "examples.search.schemas.evaluation.judged_quality": [
         DocumentRelevanceJudgment,
         DocumentQueryEvaluation,
         DocumentEvaluationSummary,
+        EvaluationQuery,
+        EvaluationResult,
+        EvaluationJudgment,
+        EvaluationJudgmentTotals,
+        EvaluationIdealDcg,
+        EvaluationResultTotals,
+    ],
+    "examples.search.schemas.evaluation.behavior": [
         DocumentSearchRequestBehavior,
         DailyDocumentSearchBehavior,
         BehaviorRequest,
@@ -177,12 +186,6 @@ SCHEMA_MODULES = {
         BehaviorRequestMetrics,
         BehaviorRequestTotals,
         BehaviorDailyCounts,
-        EvaluationQuery,
-        EvaluationResult,
-        EvaluationJudgment,
-        EvaluationJudgmentTotals,
-        EvaluationIdealDcg,
-        EvaluationResultTotals,
     ],
     "examples.search.schemas.relevance": [
         RelevancePolicy,
@@ -222,7 +225,10 @@ TRANSFORMS = (
     (Clicks, "examples.search.transforms.clicks.Clicks.Clicks"),
     (BuildRelevanceSignals, "examples.search.transforms.relevance.Signals.BuildRelevanceSignals"),
     (SearchDocuments, "examples.search.transforms.searching.search_docs.SearchDocuments.SearchDocuments"),
-    (EvaluateDocuments, "examples.search.transforms.evaluation.search_docs.EvaluateDocuments.EvaluateDocuments"),
+    (
+        EvaluateDocumentRankingQuality,
+        "examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality",
+    ),
     (
         EvaluateDocumentSearchBehavior,
         "examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocumentSearchBehavior.EvaluateDocumentSearchBehavior",

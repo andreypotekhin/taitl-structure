@@ -1,7 +1,8 @@
 """Daily request-aware document-search behavior evaluation."""
 
 from examples.search.schemas.clicks import Click, Impression, SearchRequest
-from examples.search.schemas.evaluation import (
+from examples.search.schemas.evaluation.batch import EvaluationBatch
+from examples.search.schemas.evaluation.behavior import (
     BehaviorDailyCounts,
     BehaviorExposure,
     BehaviorImpression,
@@ -10,7 +11,6 @@ from examples.search.schemas.evaluation import (
     BehaviorRequestTotals,
     DailyDocumentSearchBehavior,
     DocumentSearchRequestBehavior,
-    EvaluationBatch,
 )
 from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import (

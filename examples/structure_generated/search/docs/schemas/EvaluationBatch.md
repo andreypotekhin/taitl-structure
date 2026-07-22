@@ -2,7 +2,7 @@
 
 # EvaluationBatch
 
-Module: `examples.search.schemas.evaluation`
+Module: `examples.search.schemas.evaluation.batch`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

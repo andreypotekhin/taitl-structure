@@ -381,7 +381,7 @@ explain movement without reconstructing the scoring path.
 
 ## Evaluation
 
-`EvaluateDocuments` is the offline quality anchor. It compares one daily result batch with caller-supplied
+`EvaluateDocumentRankingQuality` is the offline quality anchor. It compares one daily result batch with caller-supplied
 four-grade query-document judgments (`0` not relevant, `1` related, `2` relevant, `3` ideal). It reports
 nDCG, precision, judged recall, success, and reciprocal-rank metrics at 5, 10, and 15. Clicks are not used as
 judgments. Returned documents without a judgment make the affected metric unavailable rather than silently wrong.
@@ -406,9 +406,9 @@ Run the transform once per candidate or baseline against the same `batch`, `quer
 caller-owned run identifier beside the summary.
 
 ```python
-from examples.search.transforms.evaluate import EvaluateDocuments
+from examples.search.transforms.evaluate import EvaluateDocumentRankingQuality
 
-quality = EvaluateDocuments(
+quality = EvaluateDocumentRankingQuality(
     batch=evaluation_batch,          # One EvaluationBatch row.
     queries=queries,                 # Every query evaluated that day.
     results=ranked_documents,        # One ranking run.

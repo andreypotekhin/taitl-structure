@@ -1,5 +1,5 @@
 """Document-search evaluation transforms."""
 
-from examples.search.transforms.evaluation.search_docs.EvaluateDocuments import EvaluateDocuments
+from examples.search.transforms.evaluation.search_docs.judged_quality import EvaluateDocumentRankingQuality
 
-__all__ = ["EvaluateDocuments"]
+__all__ = ["EvaluateDocumentRankingQuality"]

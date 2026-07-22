@@ -128,7 +128,7 @@ behavior.
 
 Search quality has two complementary, non-interchangeable facets.
 
-`EvaluateDocuments` measures a document ranking against caller-provided four-grade relevance judgments: 0 (not
+`EvaluateDocumentRankingQuality` measures a document ranking against caller-provided four-grade relevance judgments: 0 (not
 relevant), 1 (related), 2 (relevant), and 3 (ideal). Grades 2 and 3 count as binary relevant, while all grades affect
 nDCG. Per-query and daily outputs include Precision, judged Recall, Success, nDCG, and reciprocal-rank measures at
 the supported cutoffs. An unjudged returned document makes the affected judgment-based metric unavailable rather than

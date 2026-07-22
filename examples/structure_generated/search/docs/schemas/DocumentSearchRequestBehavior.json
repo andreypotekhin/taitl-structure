@@ -75,6 +75,6 @@
     }
   ],
   "generated_by": "Structure",
-  "module": "examples.search.schemas.evaluation",
+  "module": "examples.search.schemas.evaluation.behavior",
   "name": "DocumentSearchRequestBehavior"
 }

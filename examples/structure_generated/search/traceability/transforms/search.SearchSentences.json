@@ -111,27 +111,27 @@
   "schema_constants": {
     "BehaviorDailyCounts": {
       "constant": "BEHAVIOR_DAILY_COUNTS_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
     },
     "BehaviorExposure": {
       "constant": "BEHAVIOR_EXPOSURE_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
     },
     "BehaviorImpression": {
       "constant": "BEHAVIOR_IMPRESSION_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
     },
     "BehaviorRequest": {
       "constant": "BEHAVIOR_REQUEST_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
     },
     "BehaviorRequestMetrics": {
       "constant": "BEHAVIOR_REQUEST_METRICS_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
     },
     "BehaviorRequestTotals": {
       "constant": "BEHAVIOR_REQUEST_TOTALS_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
     },
     "Click": {
       "constant": "CLICK_SCHEMA",
@@ -151,7 +151,7 @@
     },
     "DailyDocumentSearchBehavior": {
       "constant": "DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
     },
     "DailyImpressions": {
       "constant": "DAILY_IMPRESSIONS_SCHEMA",
@@ -167,7 +167,7 @@
     },
     "DocumentEvaluationSummary": {
       "constant": "DOCUMENT_EVALUATION_SUMMARY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
     "DocumentFeatures": {
       "constant": "DOCUMENT_FEATURES_SCHEMA",
@@ -195,11 +195,11 @@
     },
     "DocumentQueryEvaluation": {
       "constant": "DOCUMENT_QUERY_EVALUATION_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
     "DocumentRelevanceJudgment": {
       "constant": "DOCUMENT_RELEVANCE_JUDGMENT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
     "DocumentSearchCandidate": {
       "constant": "DOCUMENT_SEARCH_CANDIDATE_SCHEMA",
@@ -207,7 +207,7 @@
     },
     "DocumentSearchRequestBehavior": {
       "constant": "DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.behavior"
     },
     "DocumentSearchResult": {
       "constant": "DOCUMENT_SEARCH_RESULT_SCHEMA",
@@ -231,31 +231,31 @@
     },
     "EvaluationBatch": {
       "constant": "EVALUATION_BATCH_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.batch"
     },
     "EvaluationIdealDcg": {
       "constant": "EVALUATION_IDEAL_DCG_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
     "EvaluationJudgment": {
       "constant": "EVALUATION_JUDGMENT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
     "EvaluationJudgmentTotals": {
       "constant": "EVALUATION_JUDGMENT_TOTALS_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
     "EvaluationQuery": {
       "constant": "EVALUATION_QUERY_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
     "EvaluationResult": {
       "constant": "EVALUATION_RESULT_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
     "EvaluationResultTotals": {
       "constant": "EVALUATION_RESULT_TOTALS_SCHEMA",
-      "module": "examples.structure_generated.search.pyspark.schemas.evaluation"
+      "module": "examples.structure_generated.search.pyspark.schemas.judged_quality"
     },
     "Impression": {
       "constant": "IMPRESSION_SCHEMA",

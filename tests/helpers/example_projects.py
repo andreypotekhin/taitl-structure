@@ -465,7 +465,7 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.clicks.Clicks import Clicks
         from examples.search.transforms.clicks.Impressions import Impressions
         from examples.search.transforms.corpus import CorpusText
-        from examples.search.transforms.evaluate import EvaluateDocuments, EvaluateDocumentSearchBehavior
+        from examples.search.transforms.evaluate import EvaluateDocumentRankingQuality, EvaluateDocumentSearchBehavior
         from examples.search.transforms.extract import ExtractText
         from examples.search.transforms.index import CreateIndex
         from examples.search.transforms.profile import ProfileDocuments
@@ -529,11 +529,19 @@ def render_search_example() -> dict[str, str]:
                 DailyImpressions,
                 DailyClicks,
             ],
-            "examples.search.schemas.evaluation": [
-                EvaluationBatch,
+            "examples.search.schemas.evaluation.batch": [EvaluationBatch],
+            "examples.search.schemas.evaluation.judged_quality": [
                 DocumentRelevanceJudgment,
                 DocumentQueryEvaluation,
                 DocumentEvaluationSummary,
+                EvaluationQuery,
+                EvaluationResult,
+                EvaluationJudgment,
+                EvaluationJudgmentTotals,
+                EvaluationIdealDcg,
+                EvaluationResultTotals,
+            ],
+            "examples.search.schemas.evaluation.behavior": [
                 DocumentSearchRequestBehavior,
                 DailyDocumentSearchBehavior,
                 BehaviorRequest,
@@ -542,12 +550,6 @@ def render_search_example() -> dict[str, str]:
                 BehaviorRequestMetrics,
                 BehaviorRequestTotals,
                 BehaviorDailyCounts,
-                EvaluationQuery,
-                EvaluationResult,
-                EvaluationJudgment,
-                EvaluationJudgmentTotals,
-                EvaluationIdealDcg,
-                EvaluationResultTotals,
             ],
             "examples.search.schemas.relevance": [
                 RelevancePolicy,
@@ -600,8 +602,8 @@ def render_search_example() -> dict[str, str]:
             (BuildRelevanceSignals, "examples.search.transforms.relevance.Signals.BuildRelevanceSignals"),
             (SearchDocuments, "examples.search.transforms.search.SearchDocuments"),
             (
-                EvaluateDocuments,
-                "examples.search.transforms.evaluation.search_docs.EvaluateDocuments.EvaluateDocuments",
+                EvaluateDocumentRankingQuality,
+                "examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality",
             ),
             (
                 EvaluateDocumentSearchBehavior,

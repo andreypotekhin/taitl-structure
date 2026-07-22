@@ -2,7 +2,7 @@
 
 # DocumentQueryEvaluation
 
-Module: `examples.search.schemas.evaluation`
+Module: `examples.search.schemas.evaluation.judged_quality`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

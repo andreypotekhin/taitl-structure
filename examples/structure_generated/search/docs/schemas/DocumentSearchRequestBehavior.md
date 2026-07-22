@@ -2,7 +2,7 @@
 
 # DocumentSearchRequestBehavior
 
-Module: `examples.search.schemas.evaluation`
+Module: `examples.search.schemas.evaluation.behavior`
 
 | Field | Column | Type | Nullable |
 | --- | --- | --- | --- |

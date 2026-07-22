@@ -1,10 +1,10 @@
 """Judged offline document-ranking evaluation."""
 
-from examples.search.schemas.evaluation import (
+from examples.search.schemas.evaluation.batch import EvaluationBatch
+from examples.search.schemas.evaluation.judged_quality import (
     DocumentEvaluationSummary,
     DocumentQueryEvaluation,
     DocumentRelevanceJudgment,
-    EvaluationBatch,
     EvaluationIdealDcg,
     EvaluationJudgment,
     EvaluationJudgmentTotals,
@@ -31,7 +31,7 @@ from structure.plugin.pyspark import (
 )
 
 
-class EvaluateDocuments(Transform):
+class EvaluateDocumentRankingQuality(Transform):
     """Evaluate one document ranking run against caller-supplied four-grade judgments."""
 
     batch = input(EvaluationBatch)

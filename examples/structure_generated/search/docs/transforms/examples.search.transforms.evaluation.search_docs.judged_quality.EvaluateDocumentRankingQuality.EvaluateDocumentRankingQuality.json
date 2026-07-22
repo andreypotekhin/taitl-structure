@@ -33,7 +33,7 @@
       "schema": "DocumentRelevanceJudgment"
     }
   ],
-  "name": "EvaluateDocuments",
+  "name": "EvaluateDocumentRankingQuality",
   "outputs": [
     {
       "name": "query_evaluations",
@@ -46,7 +46,7 @@
       "schema": "DocumentEvaluationSummary"
     }
   ],
-  "source": "examples.search.transforms.evaluation.search_docs.EvaluateDocuments.EvaluateDocuments",
+  "source": "examples.search.transforms.evaluation.search_docs.judged_quality.EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality",
   "step_methods": [
     {
       "input_lane": "queries",
@@ -326,7 +326,7 @@
     }
   ],
   "target_artifacts": {
-    "pyspark_transform": "pyspark/transforms/EvaluateDocuments.py",
-    "traceability": "traceability/transforms/EvaluateDocuments.EvaluateDocuments.json"
+    "pyspark_transform": "pyspark/transforms/EvaluateDocumentRankingQuality.py",
+    "traceability": "traceability/transforms/EvaluateDocumentRankingQuality.EvaluateDocumentRankingQuality.json"
   }
 }

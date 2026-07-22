@@ -145,7 +145,7 @@ Search evaluation has two separate facets that share a caller-selected UTC-align
 
 ### Judged document quality
 
-`EvaluateDocuments` evaluates one document-ranking run against caller-supplied `DocumentRelevanceJudgment` rows. Grades
+`EvaluateDocumentRankingQuality` evaluates one document-ranking run against caller-supplied `DocumentRelevanceJudgment` rows. Grades
 are 0 (not relevant), 1 (related), 2 (relevant), and 3 (ideal). Grades 2 and 3 are binary relevant; every grade affects
 nDCG. The evaluator publishes per-query and daily Precision, judged Recall, Success, nDCG, and reciprocal-rank metrics
 at cutoffs 5, 10, and 15 where applicable.

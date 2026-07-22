@@ -21,6 +21,6 @@
     }
   ],
   "generated_by": "Structure",
-  "module": "examples.search.schemas.evaluation",
+  "module": "examples.search.schemas.evaluation.judged_quality",
   "name": "DocumentRelevanceJudgment"
 }

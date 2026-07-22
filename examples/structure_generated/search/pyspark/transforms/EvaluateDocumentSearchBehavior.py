@@ -5,8 +5,9 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
 from examples.structure_generated.search.runtime.schema_assert import TransformResult, assert_schema, project_schema
+from examples.structure_generated.search.pyspark.schemas.batch import EVALUATION_BATCH_SCHEMA
+from examples.structure_generated.search.pyspark.schemas.behavior import BEHAVIOR_DAILY_COUNTS_SCHEMA, BEHAVIOR_EXPOSURE_SCHEMA, BEHAVIOR_IMPRESSION_SCHEMA, BEHAVIOR_REQUEST_METRICS_SCHEMA, BEHAVIOR_REQUEST_SCHEMA, BEHAVIOR_REQUEST_TOTALS_SCHEMA, DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA, DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA
 from examples.structure_generated.search.pyspark.schemas.clicks import CLICK_SCHEMA, IMPRESSION_SCHEMA, SEARCH_REQUEST_SCHEMA
-from examples.structure_generated.search.pyspark.schemas.evaluation import BEHAVIOR_DAILY_COUNTS_SCHEMA, BEHAVIOR_EXPOSURE_SCHEMA, BEHAVIOR_IMPRESSION_SCHEMA, BEHAVIOR_REQUEST_METRICS_SCHEMA, BEHAVIOR_REQUEST_SCHEMA, BEHAVIOR_REQUEST_TOTALS_SCHEMA, DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA, DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA, EVALUATION_BATCH_SCHEMA
 
 
 class EvaluateDocumentSearchBehaviorGenerated:
