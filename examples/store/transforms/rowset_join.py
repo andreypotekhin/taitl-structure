@@ -31,10 +31,8 @@ class RowsetJoinExamples(Transform):
     def keep_customers(self, row: OrderCustomerReconciliation, customer: Customer) -> CustomerOrderBackfill:
         right_join(on=(customer.tenant.tenant_id == row.tenant_id) & (customer.id == row.customer_id))
 
-        return CustomerOrderBackfill(
+        return CustomerOrderBackfill.base(customer, row)(
             tenant_id=coalesce(row.tenant_id, customer.tenant.tenant_id),
-            order_id=row.order_id,
-            order_customer_id=row.order_customer_id,
             customer_id=customer.id,
             customer_name=customer.name,
             customer_region=customer.region,
@@ -44,11 +42,7 @@ class RowsetJoinExamples(Transform):
     def expand_product_candidates(self, row: CustomerOrderBackfill, product: Product) -> OrderProductCandidate:
         cross_join(product, allow_cartesian=True)
 
-        return OrderProductCandidate(
-            tenant_id=row.tenant_id,
-            order_id=row.order_id,
-            customer_id=row.customer_id,
-            customer_name=row.customer_name,
+        return OrderProductCandidate.base(row, product)(
             product_id=product.id,
             product_name=product.name,
         )

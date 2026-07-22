@@ -19,9 +19,7 @@ class Volatility(Transform):
         )
         middle = rolling_avg(row.close, partition_by=row.symbol, order_by=row.trade_date, preceding=19)
         deviation = window_stddev(row.close, over=window_20)
-        return VolatilityIndicator(
-            symbol=row.symbol,
-            trade_date=row.trade_date,
+        return VolatilityIndicator.base(row)(
             range_14=when(
                 bar_number >= 14,
                 rolling_avg(row.high - row.low, partition_by=row.symbol, order_by=row.trade_date, preceding=13),

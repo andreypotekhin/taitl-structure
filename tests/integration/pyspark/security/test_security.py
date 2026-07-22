@@ -5,7 +5,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 import pytest
-from integration.pyspark.support.backend_matrix import generated_project, render_generated_project, session
+from integration.pyspark.support.backend_matrix import generated_project, render_generated_projects, session
 from integration.pyspark.support.rows import rows
 
 from examples.security.schemas.assets import OS, App, Device, DeviceType, Scanner, Software
@@ -80,16 +80,11 @@ TRANSFORMS = (
 
 
 def test_security_fixtures_run_online_and_generated(spark, tmp_path) -> None:
-    files = {}
-    for transform, source in TRANSFORMS:
-        files.update(
-            render_generated_project(
-                transform,
-                source_transform=source,
-                generated_package=PACKAGE,
-                source_schema_modules=SCHEMA_MODULES,
-            )
-        )
+    files = render_generated_projects(
+        TRANSFORMS,
+        generated_package=PACKAGE,
+        source_schema_modules=SCHEMA_MODULES,
+    )
 
     with generated_project(tmp_path, PACKAGE, files):
         from importlib import import_module

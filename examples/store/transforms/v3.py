@@ -11,8 +11,7 @@ class V3OrderFeatures(Transform):
     def project(self, row: V3OrderSource) -> V3OrderProjection:
         where(row.name.is_not_null(), row.raw_quantity.is_not_null())
 
-        return V3OrderProjection(
-            id=row.id,
+        return V3OrderProjection.base(row)(
             is_candidate=row.raw_quantity.between("1", "999"),
             name_contains_order=row.name.contains("order"),
             name_like_order=row.name.like("order%"),

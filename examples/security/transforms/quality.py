@@ -73,12 +73,8 @@ class SecurityInventoryQuality(Transform):
                 ).otherwise(None),
             )
         )
-        return VulnerabilityQualityCheck(
+        return VulnerabilityQualityCheck.base(vuln)(
             vuln_id=vuln.id,
-            device_id=vuln.device_id,
-            owner_id=vuln.owner_id,
-            software_id=vuln.software_id,
-            vuln_type_id=vuln.vuln_type_id,
             issues=issues,
             is_valid=size(issues) == 0,
         )
@@ -94,10 +90,8 @@ class SecurityInventoryQuality(Transform):
     @step(input=[vulnerabilities, devices], output=inventory_candidates)
     def prepare_inventory_reconciliation(self, vuln: Vuln, device: Device) -> VulnerabilityInventoryCandidate:
         inner_join(device, on=device.id == vuln.device_id)
-        return VulnerabilityInventoryCandidate(
+        return VulnerabilityInventoryCandidate.base(vuln, device)(
             vuln_id=vuln.id,
-            device_id=vuln.device_id,
-            software_id=vuln.software_id,
             device_lists_vulnerability=array_contains(device.vuln_ids, vuln.id),
             os_id=device.os_id,
             apps=device.apps,
@@ -125,14 +119,7 @@ class SecurityInventoryQuality(Transform):
 
     @step(input=inventory_candidates, output=reconciliation_lane)
     def publish_reconciliation(self, candidate: VulnerabilityInventoryCandidate) -> VulnerabilityInventoryCheck:
-        return VulnerabilityInventoryCheck(
-            vuln_id=candidate.vuln_id,
-            device_id=candidate.device_id,
-            software_id=candidate.software_id,
-            device_lists_vulnerability=candidate.device_lists_vulnerability,
-            device_has_software=candidate.device_has_software,
-            is_reconciled=candidate.is_reconciled,
-        )
+        return VulnerabilityInventoryCheck.base(candidate)
 
     def publish_reconciliation_checks(self, check: VulnerabilityInventoryCheck) -> VulnerabilityInventoryCheck:
         return VulnerabilityInventoryCheck.base(check)

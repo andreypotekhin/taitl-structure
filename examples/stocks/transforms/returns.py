@@ -12,14 +12,7 @@ class PrepareReturns(Transform):
     def calculate(self, bar: MarketBar) -> DailyReturn:
         previous_close = lag(bar.close, partition_by=bar.symbol, order_by=bar.trade_date)
         price_change = bar.close - previous_close
-        return DailyReturn(
-            symbol=bar.symbol,
-            trade_date=bar.trade_date,
-            open=bar.open,
-            high=bar.high,
-            low=bar.low,
-            close=bar.close,
-            volume=bar.volume,
+        return DailyReturn.project(bar)(
             previous_close=previous_close,
             price_change=price_change,
             return_1d=when(previous_close > 0, price_change / previous_close).otherwise(None),

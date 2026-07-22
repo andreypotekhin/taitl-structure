@@ -15,6 +15,7 @@ from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark import PySpark
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 
 BACKENDS = ("pyspark35", "pyspark40", "spark-connect35", "spark-connect40")
 CLASSIC_ONLY_TOKENS = (
@@ -123,6 +124,41 @@ def render_generated_project(
         semantic_fingerprint=artifact.semantic_fingerprint,
         generated_code_options=generated_code_options,
     )
+
+
+def render_generated_projects(
+    transforms: Sequence[tuple[type[Transform], str]],
+    *,
+    generated_package: str,
+    source_schema_modules: Mapping[str, Sequence[type[Schema]]],
+    generated_code_options: tuple[str, ...] = (),
+) -> dict[str, str]:
+    plans_by_module: dict[str, dict[str, PySparkExecutionPlan]] = {}
+    fingerprints_by_module: dict[str, dict[str, str]] = {}
+    for transform_type, source_transform in transforms:
+        artifact = transform_type.compile(
+            generated_package=generated_package,
+            generated_code_options=generated_code_options,
+            target_profile=_target_profile(),
+            target_variant=target_variant(),
+        )
+        source_module = source_transform.rsplit(".", 1)[0]
+        plans_by_module.setdefault(source_module, {})[source_transform] = artifact.pyspark_plan
+        fingerprints_by_module.setdefault(source_module, {})[source_transform] = artifact.semantic_fingerprint
+
+    files: dict[str, str] = {}
+    for source_module, plans in plans_by_module.items():
+        files.update(
+            PySpark.render.project().source_unit(
+                plans,
+                source_module=source_module,
+                source_schema_modules=source_schema_modules,
+                generated_package=generated_package,
+                semantic_fingerprints=fingerprints_by_module[source_module],
+                generated_code_options=generated_code_options,
+            )
+        )
+    return files
 
 
 @contextmanager

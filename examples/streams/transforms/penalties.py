@@ -20,15 +20,9 @@ class CorrelatePenalties(Transform):
             & (call.gate_number == passage.gate_number)
             & event_time_between(passage.at, call.at, upper="5 minutes"),
         )
-        return Penalty(
+        return Penalty.base(passage, call)(
             event_id=passage.id,
             call_id=call.id,
-            race_id=passage.race_id,
-            run_id=passage.run_id,
-            paddler_id=passage.paddler_id,
-            gate_number=passage.gate_number,
-            elapsed_millis=passage.elapsed_millis,
             penalty_code=call.code,
-            penalty_seconds=call.penalty_seconds,
             adjusted_millis=passage.elapsed_millis + call.penalty_seconds * 1000,  # type: ignore[operator]
         )

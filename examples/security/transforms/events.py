@@ -25,16 +25,10 @@ class EnrichAppEvents(Transform):
         inner_join(device_type, on=device_type.id == device.device_type_id)
         inner_join(app, on=app.id == event.app_id)
         inner_join(scanner, on=scanner.id == event.scanner_id)
-        return AppAuditEvent(
-            id=event.id,
-            occurred_at=event.occurred_at,
-            device_id=event.device_id,
+        return AppAuditEvent.base(event)(
             device_platform=device_type.platform,
             scanner_name=scanner.name,
-            app_id=event.app_id,
             app_name=app.name,
-            action=event.action,
-            version=event.version,
         )
 
 
@@ -56,14 +50,8 @@ class EnrichVulnerabilityEvents(Transform):
         inner_join(device, on=device.id == vuln.device_id)
         inner_join(person, on=person.id == vuln.owner_id)
         inner_join(scanner, on=scanner.id == event.scanner_id)
-        return VulnerabilityAuditEvent(
-            id=event.id,
-            occurred_at=event.occurred_at,
-            vuln_id=event.vuln_id,
+        return VulnerabilityAuditEvent.base(event)(
             device_id=device.id,
             person_id=person.id,
             scanner_name=scanner.name,
-            action=event.action,
-            description=event.description,
-            instructions=event.instructions,
         )

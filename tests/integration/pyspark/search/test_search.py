@@ -739,7 +739,7 @@ def test_passage_search_ranks_paragraphs_with_same_section_context(spark, tmp_pa
             text_schemas.DOCUMENT_SCHEMA,
         )
         queries = spark.createDataFrame(
-            [("q-free-form", "  SIGNAL!  "), ("q-boundary", "boundary")], search_schemas.SEARCH_QUERY_SCHEMA
+            [("q-free-form", "  SIGNAL!  "), ("q-boundary", "next section")], search_schemas.SEARCH_QUERY_SCHEMA
         )
         segments = ExtractText(documents=documents).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)

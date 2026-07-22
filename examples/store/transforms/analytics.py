@@ -51,9 +51,8 @@ class OrderAnalytics(Transform):
     @step(input=fulfilled, output=customer_event_rank)
     def customer_event_ranks(self, order: OrderFulfillment) -> CustomerEventRank:
         dedupe_latest_by(order.quantity, partition_by=order.customer_id)
-        return CustomerEventRank(
+        return CustomerEventRank.base(order)(
             tenant=order.tenant,
-            customer_id=order.customer_id,
             event_id=order.id,
             sequence=order.quantity,
             row_number=row_number(partition_by=order.customer_id, order_by=order.quantity),

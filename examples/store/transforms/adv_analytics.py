@@ -76,11 +76,9 @@ class AdvancedOrderAnalytics(Transform):
             frame=rows_between(preceding(2), current_row()),
         )
 
-        return OrderCustomerWindow(
+        return OrderCustomerWindow.base(order)(
             tenant_id=order.tenant.tenant_id,
-            customer_id=order.customer_id,
             order_id=order.id,
-            quantity=order.quantity,
             percent_rank=percent_rank(over=customer_window),
             cume_dist=cume_dist(over=customer_window),
             quantity_tile=ntile(2, over=customer_window),
@@ -104,8 +102,7 @@ class AdvancedOrderAnalytics(Transform):
             lambda key, value: value.is_not_null(),
         )
 
-        return OrderCollectionProfile(
-            id=row.id,
+        return OrderCollectionProfile.base(row)(
             tag_count=size(row.tags),
             contains_priority=array_contains(row.tags, "priority"),
             contains_region=map_contains_key(row.extra_attributes, "Region"),
