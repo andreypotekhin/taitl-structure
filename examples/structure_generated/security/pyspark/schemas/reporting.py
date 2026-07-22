@@ -45,6 +45,15 @@ DEPARTMENT_ACTIVE_VULNERABILITY_SCHEMA = T.StructType(VULNERABILITY_EXPOSURE_SCH
 
 ORG_ACTIVE_VULNERABILITY_SCHEMA = T.StructType(VULNERABILITY_EXPOSURE_SCHEMA.fields)
 
+VULNERABILITY_STATISTIC_SCHEMA = T.StructType([
+    T.StructField("period_kind", T.StringType(), False),
+    T.StructField("period_start", T.DateType(), False),
+    T.StructField("period_end", T.DateType(), False),
+    T.StructField("discovered_count", T.LongType(), False),
+    T.StructField("addressed_count", T.LongType(), False),
+    T.StructField("active_count", T.LongType(), False),
+])
+
 PERSON_VULNERABILITY_STATISTIC_SCHEMA = T.StructType(VULNERABILITY_STATISTIC_SCHEMA.fields + [
     T.StructField("person_id", T.StringType(), False),
     T.StructField("person_name", T.StringType(), False),

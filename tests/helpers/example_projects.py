@@ -292,6 +292,7 @@ def render_security_example() -> dict[str, str]:
             VulnerabilityPostureCandidate,
             VulnerabilityQualityCheck,
             VulnerabilityQualityIssue,
+            VulnerabilityStatistic,
         )
         from examples.security.schemas.risk import Vuln, VulnType
         from examples.security.transforms.events import EnrichAppEvents, EnrichVulnerabilityEvents
@@ -311,6 +312,7 @@ def render_security_example() -> dict[str, str]:
                 TeamActiveVulnerability,
                 DepartmentActiveVulnerability,
                 OrgActiveVulnerability,
+                VulnerabilityStatistic,
                 PersonVulnerabilityStatistic,
                 TeamVulnerabilityStatistic,
                 DepartmentVulnerabilityStatistic,

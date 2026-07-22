@@ -2260,6 +2260,49 @@
       ],
       "module": "examples.security.schemas.reporting",
       "name": "VulnerabilityQualityIssue"
+    },
+    {
+      "bases": [],
+      "fields": [
+        {
+          "column": "period_kind",
+          "name": "period_kind",
+          "nullable": false,
+          "type": "string"
+        },
+        {
+          "column": "period_start",
+          "name": "period_start",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "period_end",
+          "name": "period_end",
+          "nullable": false,
+          "type": "date"
+        },
+        {
+          "column": "discovered_count",
+          "name": "discovered_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "addressed_count",
+          "name": "addressed_count",
+          "nullable": false,
+          "type": "long"
+        },
+        {
+          "column": "active_count",
+          "name": "active_count",
+          "nullable": false,
+          "type": "long"
+        }
+      ],
+      "module": "examples.security.schemas.reporting",
+      "name": "VulnerabilityStatistic"
     }
   ],
   "transforms": [

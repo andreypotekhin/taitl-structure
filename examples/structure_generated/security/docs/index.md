@@ -40,6 +40,7 @@
 - [VulnerabilityPostureCandidate](schemas/VulnerabilityPostureCandidate.md)
 - [VulnerabilityQualityCheck](schemas/VulnerabilityQualityCheck.md)
 - [VulnerabilityQualityIssue](schemas/VulnerabilityQualityIssue.md)
+- [VulnerabilityStatistic](schemas/VulnerabilityStatistic.md)
 
 ## Transforms
 

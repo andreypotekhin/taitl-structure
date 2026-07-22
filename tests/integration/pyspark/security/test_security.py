@@ -31,6 +31,7 @@ from examples.security.schemas.reporting import (
     VulnerabilityPostureCandidate,
     VulnerabilityQualityCheck,
     VulnerabilityQualityIssue,
+    VulnerabilityStatistic,
 )
 from examples.security.schemas.risk import Vuln, VulnType
 from examples.security.transforms.posture import SecurityPosture
@@ -54,6 +55,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         TeamActiveVulnerability,
         DepartmentActiveVulnerability,
         OrgActiveVulnerability,
+        VulnerabilityStatistic,
         PersonVulnerabilityStatistic,
         TeamVulnerabilityStatistic,
         DepartmentVulnerabilityStatistic,
