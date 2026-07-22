@@ -70,4 +70,4 @@ class SimilarityScores:
                 *(F.col(f"right_{field}").asc_nulls_first() for field in target),
             )
         )
-        return directed.withColumn("rank", rank).where(F.col("rank") <= F.lit(maximum_results))
+        return directed.withColumn("rank", rank.cast("long")).where(F.col("rank") <= F.lit(maximum_results))

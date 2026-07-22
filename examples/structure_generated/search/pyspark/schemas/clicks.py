@@ -2,6 +2,7 @@
 # Source: examples.search.schemas.clicks
 
 from pyspark.sql import types as T
+from examples.structure_generated.search.pyspark.schemas.TimeWindow import TIME_WINDOW_SCHEMA
 
 
 SEARCH_REQUEST_SCHEMA = T.StructType([

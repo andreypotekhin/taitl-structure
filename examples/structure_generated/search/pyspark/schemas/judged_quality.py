@@ -2,6 +2,7 @@
 # Source: examples.search.schemas.evaluation.judged_quality
 
 from pyspark.sql import types as T
+from examples.structure_generated.search.pyspark.schemas.TimeWindow import TIME_WINDOW_SCHEMA
 
 
 DOCUMENT_RELEVANCE_JUDGMENT_SCHEMA = T.StructType([

@@ -140,7 +140,17 @@ _ORDERS = {
 
 def _run(posture_type, quality_type, spark, execution_mode, generated_package, inputs):
     execution = session(spark, execution_mode=execution_mode, generated_package=generated_package)
-    exposures = posture_type(**inputs).run(execution).exposures
+    exposures = posture_type(
+        vulnerabilities=inputs["vulnerabilities"],
+        devices=inputs["devices"],
+        device_types=inputs["device_types"],
+        software=inputs["software"],
+        vuln_types=inputs["vuln_types"],
+        people=inputs["people"],
+        teams=inputs["teams"],
+        departments=inputs["departments"],
+        orgs=inputs["orgs"],
+    ).run(execution).exposures
     active = ActiveVulnerabilityReports(exposures=exposures).run(execution)
     statistics = VulnerabilityStatistics(
         exposures=exposures,

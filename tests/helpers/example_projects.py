@@ -479,6 +479,7 @@ def render_search_example() -> dict[str, str]:
         from examples.search.transforms.similarities.SimilarSections import SimilarSections
         from examples.search.transforms.similarities.SimilarSentences import SimilarSentences
         from examples.search.transforms.similarity import Similarity
+        from structure.plugin.pyspark import TimeWindow
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
             "examples.search.schemas.analytics": [
@@ -529,6 +530,7 @@ def render_search_example() -> dict[str, str]:
                 DailyImpressions,
                 DailyClicks,
             ],
+            "structure.plugin.pyspark.dsl.TimeWindow": [TimeWindow],
             "examples.search.schemas.evaluation.batch": [EvaluationBatch],
             "examples.search.schemas.evaluation.judged_quality": [
                 DocumentRelevanceJudgment,
@@ -641,6 +643,7 @@ def render_search_example() -> dict[str, str]:
                     EvaluationQuery,
                     EvaluationResult,
                     EvaluationResultTotals,
+                    TimeWindow,
                 }
             )
             for module, schemas in schema_modules.items()

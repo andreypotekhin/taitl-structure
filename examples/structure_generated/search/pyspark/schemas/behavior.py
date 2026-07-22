@@ -2,6 +2,7 @@
 # Source: examples.search.schemas.evaluation.behavior
 
 from pyspark.sql import types as T
+from examples.structure_generated.search.pyspark.schemas.TimeWindow import TIME_WINDOW_SCHEMA
 
 
 DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA = T.StructType([

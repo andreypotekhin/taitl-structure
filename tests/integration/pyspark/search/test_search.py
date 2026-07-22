@@ -6,7 +6,6 @@ from typing import Mapping, Sequence, cast
 import pytest
 from integration.pyspark.support.backend_matrix import generated_project, render_generated_project, session
 from integration.pyspark.support.rows import rows, single
-from structure import Schema
 
 from examples.search.schemas.analytics import (
     CorpusStatistics,
@@ -110,6 +109,8 @@ from examples.search.transforms.similarities.SimilarParagraphs import SimilarPar
 from examples.search.transforms.similarities.SimilarSections import SimilarSections
 from examples.search.transforms.similarities.SimilarSentences import SimilarSentences
 from examples.search.transforms.similarity import Similarity
+from structure import Schema
+from structure.plugin.pyspark import TimeWindow
 
 pytestmark = pytest.mark.integration
 
@@ -165,6 +166,7 @@ SCHEMA_MODULES: Mapping[str, Sequence[type[Schema]]] = {
         DailyImpressions,
         DailyClicks,
     ],
+    "structure.plugin.pyspark.dsl.TimeWindow": [TimeWindow],
     "examples.search.schemas.evaluation.batch": [EvaluationBatch],
     "examples.search.schemas.evaluation.judged_quality": [
         DocumentRelevanceJudgment,
@@ -889,7 +891,7 @@ def test_document_search_reranks_bm25_candidates_for_multiple_queries(spark, tmp
         )
         scores = {"d-11": 10.0, "d-12": 9.0, "d-13": 8.0}
         scored_rows = [
-            (*row[:13], query_id, None, scores[cast(str, row[0])])
+            (*row[:12], query_id, None, scores[cast(str, row[0])])
             for query_id in ("q-free-form", "q-navigation")
             for row in _search_documents()
         ]
