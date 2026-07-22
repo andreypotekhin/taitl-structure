@@ -70,9 +70,9 @@ class StreamGlobalWindowSummary(Schema):
     row_count = long(nullable=False)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingSessionAggregate(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
     summary = output(StreamWindowSummary)
 
     def summarize(self, row: StreamRaw) -> StreamWindowSummary:
@@ -81,9 +81,9 @@ class StreamingSessionAggregate(Transform):
         return StreamWindowSummary(bucket=session_window(row.event_time, "5 minutes"), id=row.id, row_count=count())
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingGlobalSessionAggregate(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
     summary = output(StreamGlobalWindowSummary)
 
     def summarize(self, row: StreamRaw) -> StreamGlobalWindowSummary:
@@ -100,7 +100,7 @@ def test_event_time_between_rejects_non_timestamp_expressions() -> None:
 def test_watermark_rejects_non_timestamp_fields() -> None:
     @transform
     class InvalidWatermark(Transform):
-        rows = input(StreamRaw, streaming=StreamingMode.YES)
+        rows = input(StreamRaw, streaming=True)
         clean = output(StreamClean)
 
         def normalize(self, row: StreamRaw) -> StreamClean:
@@ -115,7 +115,7 @@ def test_watermark_rejects_non_timestamp_fields() -> None:
 def test_watermark_rejects_invalid_delay_text(delay: str) -> None:
     @transform
     class InvalidWatermark(Transform):
-        rows = input(StreamRaw, streaming=StreamingMode.YES)
+        rows = input(StreamRaw, streaming=True)
         clean = output(StreamClean)
 
         def normalize(self, row: StreamRaw) -> StreamClean:
@@ -126,7 +126,7 @@ def test_watermark_rejects_invalid_delay_text(delay: str) -> None:
         _compile(InvalidWatermark)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingProjection(Transform):
     rows = input(StreamRaw)
     clean = output(StreamClean)
@@ -136,7 +136,7 @@ class StreamingProjection(Transform):
         return StreamClean(id=row.id)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingUnknownHook(Transform):
     rows = input(StreamRaw)
     clean = output(StreamClean)
@@ -149,7 +149,7 @@ class StreamingUnknownHook(Transform):
         return rows
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingExists(Transform):
     rows = input(StreamRaw)
     lookups = input(StreamLookup)
@@ -161,7 +161,7 @@ class StreamingExists(Transform):
         return StreamClean(id=row.id)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingJoinMany(Transform):
     rows = input(StreamRaw)
     lookups = input(StreamLookup)
@@ -172,7 +172,7 @@ class StreamingJoinMany(Transform):
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingDedupedLookup(Transform):
     rows = input(StreamRaw)
     lookups = input(StreamLookup)
@@ -188,7 +188,7 @@ class StreamingDedupedLookup(Transform):
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingTemporalLookup(Transform):
     rows = input(StreamRaw)
     lookups = input(StreamLookup)
@@ -205,7 +205,7 @@ class StreamingTemporalLookup(Transform):
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingAsOfLookup(Transform):
     rows = input(StreamRaw)
     lookups = input(StreamLookup)
@@ -222,7 +222,7 @@ class StreamingAsOfLookup(Transform):
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingAggregate(Transform):
     rows = input(StreamRaw)
     summary = output(StreamSummary)
@@ -232,9 +232,9 @@ class StreamingAggregate(Transform):
         return StreamSummary(id=row.id, row_count=count())
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingWatermarkedAggregate(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
     summary = output(StreamWindowSummary)
 
     def summarize(self, row: StreamRaw) -> StreamWindowSummary:
@@ -243,9 +243,9 @@ class StreamingWatermarkedAggregate(Transform):
         return StreamWindowSummary(bucket=window(row.event_time, "10 minutes"), id=row.id, row_count=count())
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingWatermarkedBusinessKeyAggregate(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
     summary = output(StreamSummary)
 
     def summarize(self, row: StreamRaw) -> StreamSummary:
@@ -254,9 +254,9 @@ class StreamingWatermarkedBusinessKeyAggregate(Transform):
         return StreamSummary(id=row.id, row_count=count())
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingSlidingAggregate(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
     summary = output(StreamWindowSummary)
 
     def summarize(self, row: StreamRaw) -> StreamWindowSummary:
@@ -269,9 +269,9 @@ class StreamingSlidingAggregate(Transform):
         )
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingScalarUdf(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
     clean = output(StreamClean)
 
     @special(type="udf", return_type=types.string(), nullable=False)
@@ -282,9 +282,9 @@ class StreamingScalarUdf(Transform):
         return StreamClean(id=self.normalize(row.id))
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingWatermarkedDedupe(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
     clean = output(StreamClean)
 
     def unique_rows(self, row: StreamRaw) -> StreamClean:
@@ -293,9 +293,9 @@ class StreamingWatermarkedDedupe(Transform):
         return StreamClean(id=row.id)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingExplicitWatermarkedDedupe(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
     clean = output(StreamClean)
 
     def unique_rows(self, row: StreamRaw) -> StreamClean:
@@ -304,10 +304,10 @@ class StreamingExplicitWatermarkedDedupe(Transform):
         return StreamClean(id=row.id)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingInnerStreamJoin(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
-    lookups = input(StreamLookup, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
+    lookups = input(StreamLookup, streaming=True)
     enriched = output(StreamEnriched)
 
     def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
@@ -321,10 +321,10 @@ class StreamingInnerStreamJoin(Transform):
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingLeftOuterStreamJoin(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
-    lookups = input(StreamLookup, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
+    lookups = input(StreamLookup, streaming=True)
     enriched = output(StreamOuter)
 
     def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamOuter:
@@ -339,10 +339,10 @@ class StreamingLeftOuterStreamJoin(Transform):
         return StreamOuter(id=row.id, value=lookup.value)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingRightOuterStreamJoin(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
-    lookups = input(StreamLookup, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
+    lookups = input(StreamLookup, streaming=True)
     enriched = output(StreamOuter)
 
     def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamOuter:
@@ -357,10 +357,10 @@ class StreamingRightOuterStreamJoin(Transform):
         return StreamOuter(id=row.id, value=lookup.value)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingFullOuterStreamJoin(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
-    lookups = input(StreamLookup, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
+    lookups = input(StreamLookup, streaming=True)
     enriched = output(StreamOuter)
 
     def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamOuter:
@@ -375,10 +375,10 @@ class StreamingFullOuterStreamJoin(Transform):
         return StreamOuter(id=row.id, value=lookup.value)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingSemiStreamJoin(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
-    lookups = input(StreamLookup, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
+    lookups = input(StreamLookup, streaming=True)
     clean = output(StreamClean)
 
     def keep_known(self, row: StreamRaw, lookup: StreamLookup) -> StreamClean:
@@ -394,9 +394,9 @@ class StreamingSemiStreamJoin(Transform):
         return StreamClean(id=row.id)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingStaticAntiJoin(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
     lookups = input(StreamLookup)
     clean = output(StreamClean)
 
@@ -405,9 +405,9 @@ class StreamingStaticAntiJoin(Transform):
         return StreamClean(id=row.id)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingUnmarkedSideJoin(Transform):
-    rows = input(StreamRaw, streaming=StreamingMode.YES)
+    rows = input(StreamRaw, streaming=True)
     lookups = input(StreamLookup)
     enriched = output(StreamEnriched)
 
@@ -422,10 +422,10 @@ class StreamingUnmarkedSideJoin(Transform):
         return StreamEnriched(id=row.id, value=lookup.value)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingOneSidedStreamJoin(Transform):
     rows = input(StreamRaw)
-    lookups = input(StreamLookup, streaming=StreamingMode.YES)
+    lookups = input(StreamLookup, streaming=True)
     enriched = output(StreamEnriched)
 
     def enrich(self, row: StreamRaw, lookup: StreamLookup) -> StreamEnriched:
@@ -445,7 +445,7 @@ def test_v1_streaming_projection_filter_and_schema_validation_are_compatible_wit
     plan = _analysis(StreamingProjection)
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
-        required=bool((plan.options or {})["streaming_compatible"]),
+        required=bool((plan.options or {})["streaming"]),
     )
 
     after = {name for name in sys.modules if name.startswith("pyspark")}
@@ -460,7 +460,7 @@ def test_v2_stream_static_analytical_joins_are_compatible_without_spark() -> Non
         plan = _analysis(transform_type)
         report = Compiler.compileability.streaming()(
             PySpark.compiler.lower()(plan),
-            required=bool((plan.options or {})["streaming_compatible"]),
+            required=bool((plan.options or {})["streaming"]),
         )
 
         assert report.support is StreamingSupport.COMPATIBLE
@@ -478,7 +478,7 @@ def test_v2_windowed_lookup_joins_are_batch_only_without_spark() -> None:
         plan = _analysis(transform_type)
         report = Compiler.compileability.streaming()(
             PySpark.compiler.lower()(plan),
-            required=bool((plan.options or {})["streaming_compatible"]),
+            required=bool((plan.options or {})["streaming"]),
         )
 
         assert report.support is StreamingSupport.BATCH_ONLY
@@ -492,7 +492,7 @@ def test_v2_grouped_aggregates_are_batch_only_without_spark() -> None:
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
-        required=bool((plan.options or {})["streaming_compatible"]),
+        required=bool((plan.options or {})["streaming"]),
     )
 
     assert report.support is StreamingSupport.BATCH_ONLY
@@ -557,36 +557,36 @@ def test_v4_scalar_udf_is_a_compatible_row_local_streaming_expression() -> None:
     assert report.findings == ()
 
 
-def test_v2_windowed_watermarked_aggregate_is_streaming_compatible_without_spark() -> None:
+def test_v2_windowed_watermarked_aggregate_is_streaming_without_spark() -> None:
     plan = _analysis(StreamingWatermarkedAggregate)
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
-        required=bool((plan.options or {})["streaming_compatible"]),
+        required=bool((plan.options or {})["streaming"]),
     )
 
     assert report.support is StreamingSupport.COMPATIBLE
     assert report.findings == ()
 
 
-def test_v2_watermarked_dedupe_is_streaming_compatible_without_spark() -> None:
+def test_v2_watermarked_dedupe_is_streaming_without_spark() -> None:
     plan = _analysis(StreamingWatermarkedDedupe)
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
-        required=bool((plan.options or {})["streaming_compatible"]),
+        required=bool((plan.options or {})["streaming"]),
     )
 
     assert report.support is StreamingSupport.COMPATIBLE
     assert report.findings == ()
 
 
-def test_v4_explicit_watermarked_dedupe_is_streaming_compatible_without_spark() -> None:
+def test_v4_explicit_watermarked_dedupe_is_streaming_without_spark() -> None:
     plan = _analysis(StreamingExplicitWatermarkedDedupe)
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
-        required=bool((plan.options or {})["streaming_compatible"]),
+        required=bool((plan.options or {})["streaming"]),
     )
 
     assert report.support is StreamingSupport.COMPATIBLE
@@ -598,7 +598,7 @@ def test_v2_inner_stream_stream_join_is_compatible_with_watermarks_and_time_boun
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
-        required=bool((plan.options or {})["streaming_compatible"]),
+        required=bool((plan.options or {})["streaming"]),
     )
 
     assert report.support is StreamingSupport.COMPATIBLE
@@ -645,7 +645,7 @@ def test_v2_unmarked_joined_input_keeps_stream_static_semantics() -> None:
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
-        required=bool((plan.options or {})["streaming_compatible"]),
+        required=bool((plan.options or {})["streaming"]),
     )
 
     assert report.support is StreamingSupport.COMPATIBLE
@@ -657,14 +657,14 @@ def test_v2_stream_stream_join_requires_both_inputs_declared_streaming() -> None
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
-        required=bool((plan.options or {})["streaming_compatible"]),
+        required=bool((plan.options or {})["streaming"]),
     )
 
     assert report.support is StreamingSupport.BATCH_ONLY
     assert len(report.findings) == 1
     assert report.findings[0].operation == "stream-stream join lookup"
-    assert "StreamingMode.YES" in report.findings[0].problem
-    assert "StreamingMode.YES" in report.findings[0].use
+    assert "streaming=True" in report.findings[0].problem
+    assert "streaming=True" in report.findings[0].use
 
 
 def test_v1_streaming_unsafe_hook_is_unknown_with_registered_finding() -> None:
@@ -672,7 +672,7 @@ def test_v1_streaming_unsafe_hook_is_unknown_with_registered_finding() -> None:
 
     report = Compiler.compileability.streaming()(
         PySpark.compiler.lower()(plan),
-        required=bool((plan.options or {})["streaming_compatible"]),
+        required=bool((plan.options or {})["streaming"]),
     )
 
     assert report.support is StreamingSupport.UNKNOWN
@@ -744,7 +744,7 @@ def test_v2_analytical_join_explain_output_names_join_shapes() -> None:
     assert "as_of=backward/error" in as_of_report
 
 
-def test_v1_generated_streaming_compatible_code_avoids_streaming_lifecycle_and_actions() -> None:
+def test_v1_generated_streaming_code_avoids_streaming_lifecycle_and_actions() -> None:
     plan = _recipe(StreamingProjection)
     files = PySpark.render.project()(
         plan,

@@ -1,7 +1,7 @@
 """Streaming daily impression facts."""
 
 from examples.search.schemas.clicks import DailyImpressions, Impression
-from structure import StreamingMode, Transform, input, output, transform
+from structure import Transform, input, output, transform
 from structure.plugin.pyspark import (
     count,
     drop_duplicates_within_watermark,
@@ -14,11 +14,11 @@ from structure.plugin.pyspark import (
 )
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class Impressions(Transform):
     """Summarize deduplicated document impressions into daily facts."""
 
-    impressions = input(Impression, streaming=StreamingMode.YES)
+    impressions = input(Impression, streaming=True)
     daily_impressions = output(DailyImpressions)
 
     def summarize(self, impression: Impression) -> DailyImpressions:

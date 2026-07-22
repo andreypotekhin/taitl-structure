@@ -14,7 +14,7 @@ from testing.model.v1.orders.schemas.product import Product
 from testing.model.v1.orders.schemas.promotion import Promotion
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class EnrichOrders(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)

@@ -1,11 +1,11 @@
 from examples.school.schemas.vectors import VectorEvent, VectorResult
-from structure import StreamingMode, Transform, input, output, transform
+from structure import Transform, input, output, transform
 from structure.plugin.pyspark import *
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class EvaluateVectors(Transform):
-    events = input(VectorEvent, streaming=StreamingMode.YES)
+    events = input(VectorEvent, streaming=True)
     results = output(VectorResult)
 
     def evaluate(self, x: VectorEvent) -> VectorResult:

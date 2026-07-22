@@ -35,7 +35,7 @@ def test_v1_transform_compiles_to_ordered_symbolic_plan() -> None:
 
     assert plan.name == "EnrichOrders"
     assert plan.output_schema is OrderPublished
-    assert plan.options == {"streaming_compatible": True}
+    assert plan.options == {"streaming": True}
     assert [(item.name, item.schema, item.ordinal) for item in plan.inputs] == [
         ("orders", OrderRaw, 0),
         ("customers", Customer, 1),

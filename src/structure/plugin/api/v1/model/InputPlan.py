@@ -8,5 +8,5 @@ class InputPlan:
     name: str
     schema: object
     ordinal: int
-    streaming: object = "no"
+    streaming: bool = False
     aliases: tuple[str, ...] = ()

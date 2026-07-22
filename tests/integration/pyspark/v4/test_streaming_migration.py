@@ -24,9 +24,9 @@ class OuterEvent(Schema):
     id = string(nullable=True)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class Sessionize(Transform):
-    events = input(Event, streaming=StreamingMode.YES)
+    events = input(Event, streaming=True)
     summaries = output(SessionSummary)
 
     def summarize(self, event: Event) -> SessionSummary:
@@ -35,10 +35,10 @@ class Sessionize(Transform):
         return SessionSummary(bucket=session_window(event.event_time, "30 seconds"), id=event.id, rows=count())
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class Correlate(Transform):
-    left = input(Event, streaming=StreamingMode.YES)
-    right = input(Event, streaming=StreamingMode.YES)
+    left = input(Event, streaming=True)
+    right = input(Event, streaming=True)
     correlated = output(OuterEvent)
 
     def correlate(self, left: Event, right: Event) -> OuterEvent:

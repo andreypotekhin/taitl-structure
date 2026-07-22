@@ -67,7 +67,7 @@ accident simply because ordinary batch execution works.
 The transform-level marker stays the user-facing commitment:
 
 ```python
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class EnrichOrders(Transform):
     ...
 ```
@@ -109,7 +109,7 @@ reason, then point to the public streaming reference.
 
 Examples:
 
-- "Transform `EnrichOrders` is marked `streaming_compatible=True`, but `group_by(...)` requires streaming state.
+- "Transform `EnrichOrders` is marked `streaming=True`, but `group_by(...)` requires streaming state.
   Structure's first streaming slice supports row-local projection/filtering, schema-only validation, and stream-static
   left/inner joins only."
 - "Joined input `customers` is treated as static for streaming compatibility. Passing a streaming DataFrame for this

@@ -20,7 +20,7 @@ Streaming compatibility means all of these are true:
 - Generated code accepts ordinary PySpark `DataFrame` objects and does not require a batch-only DataFrame.
 - The current pipeline DataFrame may be streaming.
 - Side input DataFrames used for joins are treated as static batch DataFrames unless declared
-  `StreamingMode.YES`.
+  `streaming=True`.
 - Generated operations are supported by Spark Structured Streaming for that runtime shape.
 - Generated code does not call Spark actions such as `collect()`, `count()`, `toPandas()`, or `show()`.
 - Generated code does not create `readStream`, call `writeStream`, set triggers, set checkpoints, or start queries.
@@ -54,8 +54,8 @@ query = result.writeStream \
 Rules:
 
 - The current pipeline DataFrame is the DataFrame flowing through the source-ordered step-method chain.
-- Additional named inputs referenced through joins are static side inputs unless declared `StreamingMode.YES`.
-- Passing a streaming DataFrame as a joined side input requires explicit `StreamingMode.YES`, watermarks on both
+- Additional named inputs referenced through joins are static side inputs unless declared `streaming=True`.
+- Passing a streaming DataFrame as a joined side input requires explicit `streaming=True`, watermarks on both
   sides, and an event-time bound for the admitted inner stream-stream join shape.
 - Generated code does not branch on `df.isStreaming` except for ordinary `drop_duplicates(...)`: that narrowly scoped
   branch selects batch `dropDuplicates` or streaming `dropDuplicatesWithinWatermark`. It owns no lifecycle behavior.
@@ -74,7 +74,7 @@ pass over the TransformPlan IR.
 Transform-level opt-in uses:
 
 ```python
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class EnrichOrders(Transform):
     enriched = output(OrderEnriched)
     ...
@@ -83,11 +83,11 @@ class EnrichOrders(Transform):
 Severity rules:
 
 - If `streaming_compatibility_checks = false`, Structure emits no streaming compatibility diagnostics.
-- If checks are enabled and a transform does not opt in with `streaming_compatible=True`, incompatible operations emit
+- If checks are enabled and a transform does not opt in with `streaming=True`, incompatible operations emit
   warnings.
-- If checks are enabled and a transform opts in with `streaming_compatible=True`, incompatible or unknown operations
+- If checks are enabled and a transform opts in with `streaming=True`, incompatible or unknown operations
   emit errors.
-- If checks are disabled and a transform opts in with `streaming_compatible=True`, the transform-level marker wins and
+- If checks are disabled and a transform opts in with `streaming=True`, the transform-level marker wins and
   Structure still runs the compatibility pass for that transform.
 
 This gives ordinary batch projects useful visibility without making every future batch-only operation fail, while still
@@ -135,7 +135,7 @@ frames. `drop_duplicates_within_watermark(...)` is the explicit streaming-only s
 streaming input plus a prior compiler-visible watermark. Both spellings have watermark-bounded, rather than forever-global,
 deduplication semantics.
 
-Inner stream-stream rowset joins are compatible when both inputs are declared `StreamingMode.YES`, both joined
+Inner stream-stream rowset joins are compatible when both inputs are declared `streaming=True`, both joined
 frames have watermarks, and the predicate includes `event_time_between(left_time, right_time, upper=...)`.
 
 ## Deferred or Rejected Operations

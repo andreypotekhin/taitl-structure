@@ -31,7 +31,7 @@ streaming_compatibility_checks = true
 Transform-level opt-in remains:
 
 ```python
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class EnrichOrders(Transform):
     ...
 ```
@@ -90,8 +90,8 @@ the joined side is static. Static-side broadcast hints are allowed when already 
 Hooks are compatible only when the hook is marked `streaming_safe=True`. The checker treats this as a trusted boundary,
 not as proof from body analysis.
 
-`input(..., streaming=StreamingMode.YES | NO)` records whether a transform input is explicitly streaming. The default
-`NO` treats joined side inputs as static unless the author declares them streaming.
+`input(..., streaming=True | False)` records whether a transform input is explicitly streaming. The default
+`False` treats joined side inputs as static unless the author declares them streaming.
 
 `watermark(field, delay="10 minutes")` records a compiler-visible event-time watermark and lowers to PySpark
 `DataFrame.withWatermark(...)`. Watermarks are transformation metadata, not lifecycle ownership.
@@ -105,7 +105,7 @@ Grouped aggregations and exact/subset dedupe are streaming-compatible when a wat
 step method on the current streaming frame. Explain output reports the Spark output modes the caller must use, but
 Structure never calls `writeStream.outputMode(...)`.
 
-An inner `rowset_join(...)` between two inputs declared `StreamingMode.YES` is compatible when both sides have
+An inner `rowset_join(...)` between two inputs declared `streaming=True` is compatible when both sides have
 watermarks and the predicate includes `event_time_between(...)`.
 
 ## Rejected Operations
@@ -172,5 +172,5 @@ The first slice is complete when:
 - the generated class for the same transform returns an equivalent streaming DataFrame plan;
 - stream-static left and inner lookup joins are accepted with static side inputs;
 - the same fixture rejects a streaming side input or stream-stream join before runtime;
-- batch-only analytical operations fail as errors when `streaming_compatible=True`;
+- batch-only analytical operations fail as errors when `streaming=True`;
 - public docs explain both the supported first slice and the deferred features.

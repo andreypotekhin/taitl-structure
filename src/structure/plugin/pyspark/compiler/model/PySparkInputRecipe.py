@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.dsl import Schema, StreamingMode
+from structure.dsl import Schema
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 
@@ -12,5 +12,5 @@ class PySparkInputRecipe:
     schema: type[Schema]
     ordinal: int
     validation: PySparkValidationRecipe
-    streaming: StreamingMode = StreamingMode.NO
+    streaming: bool = False
     aliases: tuple[str, ...] = ()

@@ -192,7 +192,7 @@ Gaps:
 | Watermarks | implemented | `withWatermark` | Compiler-visible transform operation. |
 | Event-time tumbling and sliding aggregations | implemented | `groupBy(window(...))` | Requires a prior watermark on the direct event-time grouping key or `window(event_time, ...)`; caller uses `append` or `update`. |
 | Cross-mode dedupe | implemented | `dropDuplicates` / `dropDuplicatesWithinWatermark` | `drop_duplicates(...)` uses batch `dropDuplicates` and streaming bounded dedupe after a watermark. |
-| Explicit bounded dedupe | implemented | `dropDuplicatesWithinWatermark` | `drop_duplicates_within_watermark(...)` requires `StreamingMode.YES` and a preceding watermark. |
+| Explicit bounded dedupe | implemented | `dropDuplicatesWithinWatermark` | `drop_duplicates_within_watermark(...)` requires `streaming=True` and a preceding watermark. |
 | Session-window aggregation | implemented | `session_window` | Requires a preceding watermark on the event-time field, a static positive gap, at least one ordinary grouping key, and caller-owned `append` mode. Dynamic gaps and session merge tuning remain caller configuration. |
 | Chained window aggregation | deferred | `window_time`, `window(window(...))` | Needs a multi-stage state contract; do not admit merely because the individual windows are legal. |
 | Bounded stream-stream outer and semi joins | implemented | left/right/full outer and left-semi stream-stream joins | Requires declared streaming inputs, watermarks on both bound event-time fields, a compiler-visible event-time bound, and caller-owned `append` mode; unmatched outer output can be delayed until watermark progress. |

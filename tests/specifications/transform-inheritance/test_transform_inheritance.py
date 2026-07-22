@@ -65,7 +65,7 @@ def test_plain_transform_subclass_compiles_without_class_decorator() -> None:
 
 
 def test_class_level_decorator_options_do_not_leak_to_undecorated_children() -> None:
-    @transform(streaming_compatible=True)
+    @transform(streaming=True)
     class StreamingBase(Transform):
         rows = input(Raw)
         normalized = lane(Normalized)

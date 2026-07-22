@@ -102,11 +102,22 @@ def test_special_udf_requires_a_boolean_nullable_declaration(nullable: object) -
         special(type="udf", nullable=nullable)(lambda value: value)
 
 
-@pytest.mark.parametrize("option", ["streaming_compatible", "validate_intermediate"])
+@pytest.mark.parametrize("option", ["streaming", "validate_intermediate"])
 @pytest.mark.parametrize("value", [1, "true", None])
 def test_transform_requires_boolean_class_options(option: str, value: object) -> None:
     with pytest.raises(TypeError, match=rf"{option} must be a Boolean"):
         transform(**{option: value})(type("InvalidOptions", (Transform,), {}))
+
+
+def test_transform_rejects_the_replaced_streaming_option() -> None:
+    with pytest.raises(TypeError, match="unknown class option.*streaming_compatible"):
+        transform(streaming_compatible=True)(type("InvalidOptions", (Transform,), {}))
+
+
+@pytest.mark.parametrize("value", [1, "true", None])
+def test_input_requires_a_boolean_streaming_declaration(value: object) -> None:
+    with pytest.raises(TypeError, match=r"input\(streaming=\.\.\.\) must be a Boolean"):
+        input(Raw, streaming=cast(Any, value))
 
 
 @pytest.mark.parametrize("option", ["project_output", "streaming_safe"])

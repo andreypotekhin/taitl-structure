@@ -34,7 +34,7 @@ The first slice supports:
 - stream-static left and inner lookup joins;
 - `watermark(...)` as a DataFrame transformation;
 - watermarked grouped aggregations and dedupe;
-- inner stream-stream joins when both inputs are declared `StreamingMode.YES`, both sides have watermarks, and the
+- inner stream-stream joins when both inputs are declared `streaming=True`, both sides have watermarks, and the
   predicate includes `event_time_between(...)`;
 - static-side broadcast hints when supported by the PySpark target;
 - hooks marked `streaming_safe=True`;
@@ -43,7 +43,7 @@ The first slice supports:
 A transform can opt into strict enforcement:
 
 ```python
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class EnrichOrders(Transform):
     ...
 ```
@@ -93,6 +93,6 @@ Streaming diagnostics should name the operation and explain the fix. Typical fix
 - make a side input static;
 - replace an opaque hook with compiler-visible Structure DSL;
 - mark a hook `streaming_safe=True` only after checking its body;
-- add explicit `StreamingMode.YES`, `watermark(...)`, or `event_time_between(...)` metadata where the transformation
+- add explicit `streaming=True`, `watermark(...)`, or `event_time_between(...)` metadata where the transformation
   requires state;
 - keep lifecycle, sinks, checkpoints, and query starts in caller-owned Spark code.

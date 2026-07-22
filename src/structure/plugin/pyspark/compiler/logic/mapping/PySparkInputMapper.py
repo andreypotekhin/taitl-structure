@@ -1,4 +1,4 @@
-from structure.dsl import Schema, SchemaMode, StreamingMode
+from structure.dsl import Schema, SchemaMode
 from structure.plugin.pyspark.compiler.model.PySparkInputRecipe import PySparkInputRecipe
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 
@@ -10,7 +10,7 @@ class PySparkInputMapper:
         name: str,
         schema: type[Schema],
         ordinal: int,
-        streaming: StreamingMode,
+        streaming: bool,
         aliases: tuple[str, ...] = (),
     ) -> PySparkInputRecipe:
         return PySparkInputRecipe(

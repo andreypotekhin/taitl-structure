@@ -16,7 +16,6 @@ from structure.core.compiler.diagnostics.api import StructureCompileError
 from structure.core.configuration.api import StructureConfig
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
-from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.transform_api import input, lane, output, raw, special, step, transform
 from structure.core.runtime.api import (
@@ -44,7 +43,6 @@ __all__ = [
     "Schema",
     "SchemaMode",
     "SourceTransformAddress",
-    "StreamingMode",
     "StructureCompileError",
     "StructureConfig",
     "StructureRuntimeError",

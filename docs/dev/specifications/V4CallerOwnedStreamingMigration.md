@@ -33,11 +33,11 @@ The compiler classifies a global session window, an unwatermarked session window
 
 ## Stream-Stream Join Rules
 
-For `Join.LEFT`, `Join.RIGHT`, `Join.FULL`, and `exists(...)`, both relations must be declared `StreamingMode.YES`. The join predicate must include an `event_time_between(left_time, right_time, upper=..., lower=...)` term and equality join keys as required by the normal join contract.
+For `Join.LEFT`, `Join.RIGHT`, `Join.FULL`, and `exists(...)`, both relations must be declared `streaming=True`. The join predicate must include an `event_time_between(left_time, right_time, upper=..., lower=...)` term and equality join keys as required by the normal join contract.
 
 The compiler requires watermarks on both input event-time fields used by the bound. This conservative v4 rule gives one cross-target contract even where Spark can execute with fewer watermarks. All these shapes report and require `StreamingOutputMode.APPEND`.
 
-An outer-join diagnostic must explain that unmatched rows can be delayed until watermark progress proves no future match is possible. A semi-join diagnostic must explain that its right-side watermark and time bound let Spark evict unmatched left rows. Missing input declaration, watermark, or bound is an error for a `@transform(streaming_compatible=True)` transform and a warning otherwise when checks are enabled.
+An outer-join diagnostic must explain that unmatched rows can be delayed until watermark progress proves no future match is possible. A semi-join diagnostic must explain that its right-side watermark and time bound let Spark evict unmatched left rows. Missing input declaration, watermark, or bound is an error for a `@transform(streaming=True)` transform and a warning otherwise when checks are enabled.
 
 ## Stream-Static Semi Rules
 

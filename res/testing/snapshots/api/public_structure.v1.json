@@ -164,17 +164,6 @@
       "qualname": "SourceTransformAddress",
       "signature": "(module: 'str', qualname: 'str') -> None"
     },
-    "StreamingMode": {
-      "dataclass_fields": [],
-      "enum_members": [
-        "YES",
-        "NO"
-      ],
-      "kind": "class",
-      "module": "structure.core.dsl.model.transforms.StreamingMode",
-      "qualname": "StreamingMode",
-      "signature": "(*values)"
-    },
     "StructureCompileError": {
       "dataclass_fields": [],
       "enum_members": [],
@@ -289,7 +278,7 @@
       "kind": "function",
       "module": "structure.core.dsl.model.transforms.transform_api",
       "qualname": "input",
-      "signature": "(value: 'type[Schema] | InputDeclaration', *, streaming: 'StreamingMode' = <StreamingMode.NO: 'no'>) -> 'InputDeclaration | BindingSelector'"
+      "signature": "(value: 'type[Schema] | InputDeclaration', *, streaming: 'bool' = False) -> 'InputDeclaration | BindingSelector'"
     },
     "lane": {
       "dataclass_fields": [],

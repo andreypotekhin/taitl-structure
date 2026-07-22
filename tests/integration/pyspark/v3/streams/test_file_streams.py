@@ -21,7 +21,7 @@ from examples.streams.schemas.race import Gate, Paddler, Race
 from examples.streams.transforms.passages import PreparePassages
 from examples.streams.transforms.penalties import CorrelatePenalties
 from examples.streams.transforms.progress import BuildGateProgress
-from structure import Schema, StreamingMode, Transform, input, output, special, transform
+from structure import Schema, Transform, input, output, special, transform
 from structure.plugin.pyspark import *
 
 pytestmark = pytest.mark.integration
@@ -41,9 +41,9 @@ class StreamUdfClean(Schema):
     id = string(nullable=False)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingScalarUdf(Transform):
-    rows = input(StreamUdfRaw, streaming=StreamingMode.YES)
+    rows = input(StreamUdfRaw, streaming=True)
     clean = output(StreamUdfClean)
 
     @special(type="udf", return_type=types.string(), nullable=False)

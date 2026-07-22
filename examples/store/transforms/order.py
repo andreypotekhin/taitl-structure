@@ -16,7 +16,7 @@ from structure import *
 from structure.plugin.pyspark import *
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class EnrichOrders(Transform):
     orders = input(OrderRaw)
     customers = input(Customer)

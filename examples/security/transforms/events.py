@@ -3,13 +3,13 @@ from examples.security.schemas.events import AppEvent, VulnEvent
 from examples.security.schemas.organization import Person
 from examples.security.schemas.reporting import AppAuditEvent, VulnerabilityAuditEvent
 from examples.security.schemas.risk import Vuln
-from structure import StreamingMode, Transform, input, output, transform
+from structure import Transform, input, output, transform
 from structure.plugin.pyspark import *
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class EnrichAppEvents(Transform):
-    events = input(AppEvent, streaming=StreamingMode.YES)
+    events = input(AppEvent, streaming=True)
     devices = input(Device)
     device_types = input(DeviceType)
     apps = input(App)
@@ -38,9 +38,9 @@ class EnrichAppEvents(Transform):
         )
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class EnrichVulnerabilityEvents(Transform):
-    events = input(VulnEvent, streaming=StreamingMode.YES)
+    events = input(VulnEvent, streaming=True)
     vulnerabilities = input(Vuln)
     devices = input(Device)
     people = input(Person)

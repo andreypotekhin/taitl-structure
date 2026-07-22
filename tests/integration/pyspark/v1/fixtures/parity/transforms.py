@@ -34,9 +34,9 @@ class ParentHookPublished(NormalizeBase):
         return PublishedRow(id=row.id, hook_owner=row.hook_owner)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class WatermarkedLookup(Transform):
-    events = input(StreamEvent, streaming=StreamingMode.YES)
+    events = input(StreamEvent, streaming=True)
     customers = input(StreamCustomer)
     enriched = output(StreamEnriched)
 

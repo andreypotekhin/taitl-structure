@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.aliases import alias as declaration_alias
 from structure.core.dsl.model.transforms.InOutBinding import bind_inout
-from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
 
 if TYPE_CHECKING:
     from structure.core.dsl.model.transforms.Transform import Transform
@@ -16,7 +15,7 @@ if TYPE_CHECKING:
 class InputDeclaration:
     schema: type[Schema]
     name: str = ""
-    streaming: StreamingMode = StreamingMode.NO
+    streaming: bool = False
     aliases: tuple[str, ...] = ()
 
     def __set_name__(self, owner: type[Transform], name: str) -> None:

@@ -17,7 +17,7 @@ class StreamClean(Schema):
     id = string(nullable=False)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingProjection(Transform):
     rows = input(StreamRaw)
     clean = output(StreamClean)
@@ -27,7 +27,7 @@ class StreamingProjection(Transform):
         return StreamClean(id=row.id)
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class StreamingUnknownHook(Transform):
     rows = input(StreamRaw)
     clean = output(StreamClean)
@@ -49,7 +49,7 @@ def test_streaming_projection_filter_and_validation_are_compatible_without_spark
     plan = cast(TransformPlan, compilation.analysis)
     report = Compiler.compileability.streaming()(
         compilation.lowered,
-        required=bool((plan.options or {})["streaming_compatible"]),
+        required=bool((plan.options or {})["streaming"]),
     )
 
     assert report.support is StreamingSupport.COMPATIBLE
@@ -65,7 +65,7 @@ def test_streaming_unknown_hook_reports_a_registered_warning() -> None:
     plan = cast(TransformPlan, compilation.analysis)
     report = Compiler.compileability.streaming()(
         compilation.lowered,
-        required=bool((plan.options or {})["streaming_compatible"]),
+        required=bool((plan.options or {})["streaming"]),
     )
 
     assert report.support is StreamingSupport.UNKNOWN
@@ -74,7 +74,7 @@ def test_streaming_unknown_hook_reports_a_registered_warning() -> None:
     assert report.findings[0].to_diagnostic().docs == "docs/Diagnostics.md#stream-w0801"
 
 
-def test_generated_streaming_compatible_code_avoids_lifecycle_and_actions() -> None:
+def test_generated_streaming_code_avoids_lifecycle_and_actions() -> None:
     """I can keep streaming orchestration outside Structure in v1 and v2."""
 
     plan = cast(

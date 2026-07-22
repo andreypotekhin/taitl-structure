@@ -1,11 +1,11 @@
 from examples.school.schemas.algebra import FormulaParameters, FormulaResult, ScalarEvent
-from structure import StreamingMode, Transform, input, output, transform
+from structure import Transform, input, output, transform
 from structure.plugin.pyspark import *
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class EvaluateAlgebra(Transform):
-    events = input(ScalarEvent, streaming=StreamingMode.YES)
+    events = input(ScalarEvent, streaming=True)
     parameters = input(FormulaParameters)
     results = output(FormulaResult)
 

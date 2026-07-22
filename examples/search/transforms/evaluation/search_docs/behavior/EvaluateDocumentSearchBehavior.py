@@ -57,10 +57,8 @@ class EvaluateDocumentSearchBehavior(Transform):
     @step(input=[daily_requests, impressions], output=displayed)
     def select_impressions(self, request: BehaviorRequest, impression: Impression) -> BehaviorImpression:
         impression = inner_join(impression, on=impression.search_request_id == request.search_request_id)
-        return BehaviorImpression(
-            window=request.window, search_request_id=request.search_request_id, ranking_version=request.ranking_version, query=request.query,
-            impression_id=impression.id, shown_at=impression.shown_at, document_id=impression.document_id,
-            position=impression.position, examination_propensity=impression.examination_propensity,
+        return BehaviorImpression.base(request, impression)(
+            impression_id=impression.id,
             click_count=0, long_click_count=0, dwell_credit=0.0,
         )
 
@@ -94,8 +92,7 @@ class EvaluateDocumentSearchBehavior(Transform):
         clicked_count = sum(when(impression.click_count > 0, 1).otherwise(0))
         long_count = sum(when(impression.long_click_count > 0, 1).otherwise(0))
         first_long = min(impression.position, where=impression.long_click_count > 0)
-        return BehaviorRequestTotals(
-            window=request.window, search_request_id=request.search_request_id, ranking_version=request.ranking_version, query=request.query,
+        return BehaviorRequestTotals.base(request)(
             result_count=result_count, clicked_result_count=clicked_count, long_clicked_result_count=long_count,
             has_click=bool_or(impression.click_count > 0), has_long_click=bool_or(impression.long_click_count > 0),
             first_click_rank=min(impression.position, where=impression.click_count > 0), first_long_click_rank=first_long,
@@ -124,8 +121,8 @@ class EvaluateDocumentSearchBehavior(Transform):
     @step(input=request_metrics, output=daily_counts)
     def summarize_requests(self, request: BehaviorRequestMetrics) -> BehaviorDailyCounts:
         group_by(window=request.window, ranking_version=request.ranking_version)
-        return BehaviorDailyCounts(
-            window=request.window, ranking_version=request.ranking_version, request_count=sum(1),
+        return BehaviorDailyCounts.base(request)(
+            request_count=sum(1),
             zero_result_request_count=sum(when(request.result_count == 0, 1).otherwise(0)),
             clicked_request_count=sum(when(request.has_click, 1).otherwise(0)), long_clicked_request_count=sum(when(request.has_long_click, 1).otherwise(0)),
             no_click_request_count=sum(when(~request.has_click, 1).otherwise(0)), no_long_click_request_count=sum(when(~request.has_long_click, 1).otherwise(0)),

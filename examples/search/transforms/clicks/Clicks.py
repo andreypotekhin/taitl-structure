@@ -1,7 +1,7 @@
 """Streaming attributed click facts."""
 
 from examples.search.schemas.clicks import Click, DailyClicks, Impression
-from structure import StreamingMode, Transform, input, output, transform
+from structure import Transform, input, output, transform
 from structure.plugin.pyspark import (
     count,
     count_distinct,
@@ -19,12 +19,12 @@ from structure.plugin.pyspark import (
 )
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class Clicks(Transform):
     """Attribute deduplicated clicks to their impressions before aggregation."""
 
-    impressions = input(Impression, streaming=StreamingMode.YES)
-    clicks = input(Click, streaming=StreamingMode.YES)
+    impressions = input(Impression, streaming=True)
+    clicks = input(Click, streaming=True)
     daily_clicks = output(DailyClicks)
 
     def summarize(self, impression: Impression, click: Click) -> DailyClicks:

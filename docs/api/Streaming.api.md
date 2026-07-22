@@ -8,14 +8,13 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 
 | Structure API | PySpark parity | Example |
 | --- | --- | --- |
-| `input(..., streaming=StreamingMode.YES)` | Streaming input | `input(OrderRaw, streaming=StreamingMode.YES)` |
-| `StreamingMode` | Streaming input mode | `input(OrderRaw, streaming=StreamingMode.YES)` |
-| `@transform(streaming_compatible=True)` | Compatibility enforcement | `@transform(streaming_compatible=True)` |
+| `input(..., streaming=True)` | Streaming input | `input(OrderRaw, streaming=True)` |
+| `@transform(streaming=True)` | Compatibility enforcement | `@transform(streaming=True)` |
 | `StreamingOutputMode` | Structured Streaming output mode | `mode = StreamingOutputMode.APPEND` |
 
 **Details And Differences**
 
-- `StreamingMode` declares the nature of an input; strict transform compatibility rejects unknown or invalid shapes.
+- `streaming=True` declares a streaming input; omitting it (or setting `False`) declares a static input.
 - `StreamingOutputMode` is the typed vocabulary used when explain output reports a caller-required output mode.
 
 ## Streaming Operations
@@ -42,7 +41,7 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
   ordinary grouping key in addition to the session key, and caller-owned `append` mode. Dynamic gaps remain deferred.
 - `drop_duplicates(...)` remains cross-mode: batch lowers to `dropDuplicates`, while a streaming frame lowers to
   watermark-bounded `dropDuplicatesWithinWatermark`. `drop_duplicates_within_watermark(...)` makes that streaming-only
-  choice explicit and requires `StreamingMode.YES` plus a preceding watermark.
+  choice explicit and requires `streaming=True` plus a preceding watermark.
 - Scalar `@special(type="udf")` expressions are admitted as row-local ordinary-PySpark streaming transformations.
   They retain the existing `warn_on_udfs` warning policy and remain unavailable on Spark Connect.
 - `event_time_between(...)` supplies the bounded event-time relation required by supported stream-stream joins.

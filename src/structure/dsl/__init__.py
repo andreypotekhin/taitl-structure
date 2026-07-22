@@ -8,7 +8,6 @@ _EXPORTS = {
     "OutputDeclaration": "structure.core.dsl.model.transforms.OutputDeclaration",
     "Schema": "structure.core.dsl.model.schemas.Schema",
     "SchemaMode": "structure.core.dsl.model.transforms.SchemaMode",
-    "StreamingMode": "structure.core.dsl.model.transforms.StreamingMode",
     "Transform": "structure.core.dsl.model.transforms.Transform",
 }
 

@@ -144,7 +144,7 @@ class NormalizeOrders(Transform):
 ```
 
 ```python
-@transform(validate_intermediate=False, streaming_compatible=True)
+@transform(validate_intermediate=False, streaming=True)
 class NormalizeOrders(Transform):
     normalized = output(OrderNormalized)
     ...
@@ -153,7 +153,7 @@ class NormalizeOrders(Transform):
 `@transform(...)` keyword arguments:
 
 - `validate_intermediate`: optional class-level override for intermediate output validation.
-- `streaming_compatible`: optional author promise that the transform must satisfy the streaming compatibility
+- `streaming`: optional author promise that the transform must satisfy the streaming compatibility
   reference.
 
 Rules:

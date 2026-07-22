@@ -1,6 +1,6 @@
 from typing import cast
 
-from structure.dsl import Schema, StreamingMode
+from structure.dsl import Schema
 from structure.plugin.api.v1.model import BackendCapabilities, TransformPlan
 from structure.plugin.pyspark.compiler.logic.mapping.PySparkInputMapper import PySparkInputMapper
 from structure.plugin.pyspark.compiler.logic.mapping.PySparkOutputMapper import PySparkOutputMapper
@@ -30,7 +30,7 @@ class LowerPySparkPlan:
                 input.name,
                 cast(type[Schema], input.schema),
                 input.ordinal,
-                cast(StreamingMode, input.streaming),
+                cast(bool, input.streaming),
                 input.aliases,
             )
             for input in plan.inputs

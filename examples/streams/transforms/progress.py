@@ -1,11 +1,11 @@
 from examples.streams.schemas.events import GateProgress, Passage
-from structure import StreamingMode, Transform, input, output, transform
+from structure import Transform, input, output, transform
 from structure.plugin.pyspark import *
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class BuildGateProgress(Transform):
-    passages = input(Passage, streaming=StreamingMode.YES)
+    passages = input(Passage, streaming=True)
     progress = output(GateProgress)
 
     def summarize(self, passage: Passage) -> GateProgress:

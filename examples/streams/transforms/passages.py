@@ -1,12 +1,12 @@
 from examples.streams.schemas.events import Passage, RawEvent
 from examples.streams.schemas.race import Gate, Paddler, Race
-from structure import StreamingMode, Transform, input, output, transform
+from structure import Transform, input, output, transform
 from structure.plugin.pyspark import *
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class PreparePassages(Transform):
-    events = input(RawEvent, streaming=StreamingMode.YES)
+    events = input(RawEvent, streaming=True)
     races = input(Race)
     paddlers = input(Paddler)
     gates = input(Gate)

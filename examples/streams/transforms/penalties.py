@@ -1,12 +1,12 @@
 from examples.streams.schemas.events import JudgeCall, Passage, Penalty
-from structure import StreamingMode, Transform, input, output, transform
+from structure import Transform, input, output, transform
 from structure.plugin.pyspark import *
 
 
-@transform(streaming_compatible=True)
+@transform(streaming=True)
 class CorrelatePenalties(Transform):
-    passages = input(Passage, streaming=StreamingMode.YES)
-    calls = input(JudgeCall, streaming=StreamingMode.YES)
+    passages = input(Passage, streaming=True)
+    calls = input(JudgeCall, streaming=True)
     penalties = output(Penalty)
 
     def correlate(self, passage: Passage, call: JudgeCall) -> Penalty:

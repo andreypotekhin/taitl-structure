@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from structure.dsl import StreamingMode
 from structure.plugin.api.v1.model import StreamingFinding, StreamingReport
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySparkExpressionRecipe
@@ -45,7 +44,7 @@ class ClassifyStreamingCompatibility:
                             subset=subset,
                             watermarked=bool(watermarks.get(step.source_scope)),
                             explicit=bool(operation.duplicate_rows and operation.duplicate_rows.within_watermark),
-                            streaming_input=input_modes.get(step.source) is StreamingMode.YES,
+                            streaming_input=bool(input_modes.get(step.source)),
                         )
                     )
                 if operation.join is not None:
@@ -216,8 +215,8 @@ class ClassifyStreamingCompatibility:
                     support=StreamingSupport.BATCH_ONLY,
                     step=step,
                     operation="watermark-bounded duplicate removal",
-                    problem="drop_duplicates_within_watermark(...) requires an input declared with StreamingMode.YES.",
-                    use="Declare the current input with streaming=StreamingMode.YES or use drop_duplicates(...) for cross-mode transforms.",
+                    problem="drop_duplicates_within_watermark(...) requires an input declared with streaming=True.",
+                    use="Declare the current input with streaming=True or use drop_duplicates(...) for cross-mode transforms.",
                 ),
             )
         if watermarked:
@@ -265,7 +264,7 @@ class ClassifyStreamingCompatibility:
         step: str,
         join: PySparkJoinRecipe,
         *,
-        input_modes: dict[str, StreamingMode],
+        input_modes: dict[str, bool],
         current_input: str,
         current_scope: str,
         watermarks: dict[str, set[str]],
@@ -284,7 +283,7 @@ class ClassifyStreamingCompatibility:
                     use="Keep this transform batch-only or move the deterministic lookup reduction outside Structure.",
                 ),
             )
-        if input_modes.get(join.source) is StreamingMode.YES:
+        if input_modes.get(join.source):
             return self._stream_stream_join(
                 step,
                 join,
@@ -293,7 +292,7 @@ class ClassifyStreamingCompatibility:
                 current_scope=current_scope,
                 watermarks=watermarks,
             )
-        if join.method is JoinMethod.NOT_EXISTS and input_modes.get(current_input) is StreamingMode.YES:
+        if join.method is JoinMethod.NOT_EXISTS and input_modes.get(current_input):
             return (
                 StreamingFinding(
                     code="STREAM-E0801",
@@ -371,7 +370,7 @@ class ClassifyStreamingCompatibility:
         step: str,
         join: PySparkJoinRecipe,
         *,
-        input_modes: dict[str, StreamingMode],
+        input_modes: dict[str, bool],
         current_input: str,
         current_scope: str,
         watermarks: dict[str, set[str]],
@@ -381,7 +380,7 @@ class ClassifyStreamingCompatibility:
         ) or join.method is JoinMethod.EXISTS
         if (
             admitted
-            and input_modes.get(current_input) is StreamingMode.YES
+            and input_modes.get(current_input)
             and self._watermarked_time_bound(join.predicate, current_scope, join.input_name, watermarks)
         ):
             return ()
@@ -393,11 +392,11 @@ class ClassifyStreamingCompatibility:
                 step=step,
                 operation=f"stream-stream join {join.input_name}",
                 problem=(
-                    f"Stream-stream {shape} joins require both inputs declared with StreamingMode.YES, watermarks "
+                    f"Stream-stream {shape} joins require both inputs declared with streaming=True, watermarks "
                     "on both bound event-time fields, and an event_time_between(...) constraint."
                 ),
                 use=(
-                    "Declare both inputs with StreamingMode.YES, call watermark(...) for both bound event-time fields, "
+                    "Declare both inputs with streaming=True, call watermark(...) for both bound event-time fields, "
                     "and include event_time_between(left_time, right_time, upper=...) in the join predicate."
                 ),
             ),

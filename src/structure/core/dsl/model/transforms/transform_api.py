@@ -11,17 +11,16 @@ from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
 from structure.core.dsl.model.transforms.SpecialFunction import SpecialFunction
-from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.core.dsl.model.transforms.Transform import Transform
 
-_CLASS_OPTIONS = {"target", "validate_intermediate", "streaming_compatible"}
+_CLASS_OPTIONS = {"target", "validate_intermediate", "streaming"}
 _STEP_METHOD_OPTIONS = {"target_backend", "target_platform", "target_profile"}
 _METHOD_BINDING_OPTIONS = {"input", "output", "inout"}
 _METHOD_OPTIMIZATION_OPTIONS = {"cache"}
 
 
 @overload
-def input(value: type[Schema], *, streaming: StreamingMode = StreamingMode.NO) -> InputDeclaration: ...
+def input(value: type[Schema], *, streaming: bool = False) -> InputDeclaration: ...
 
 
 @overload
@@ -31,16 +30,16 @@ def input(value: InputDeclaration) -> BindingSelector: ...
 def input(
     value: type[Schema] | InputDeclaration,
     *,
-    streaming: StreamingMode = StreamingMode.NO,
+    streaming: bool = False,
 ) -> InputDeclaration | BindingSelector:
+    if not isinstance(streaming, bool):
+        raise TypeError("input(streaming=...) must be a Boolean")
     if isinstance(value, InputDeclaration):
-        if streaming is not StreamingMode.NO:
+        if streaming:
             raise TypeError("input(existing_input, streaming=...) is invalid; set streaming on the declaration")
         return BindingSelector("input", value)
     if not isinstance(value, type) or not issubclass(value, Schema):
         raise TypeError("input(...) requires a Schema class")
-    if not isinstance(streaming, StreamingMode):
-        raise TypeError("input(streaming=...) requires a StreamingMode value")
     return InputDeclaration(schema=value, streaming=streaming)
 
 

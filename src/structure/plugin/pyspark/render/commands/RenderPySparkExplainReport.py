@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from structure.dsl import StreamingMode, Transform
+from structure.dsl import Transform
 from structure.plugin.api.v1.model import ExplainRequest, TransformPlan
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.compiler.model.PySparkJoinRecipe import PySparkJoinRecipe
@@ -32,7 +32,7 @@ class RenderPySparkExplainReport:
             raise ValueError("PLUGIN-E2708: PySpark explain rendering requires compiled analysis and payload.")
         streaming = self._streaming(
             recipe,
-            required=bool((plan.options or {}).get("streaming_compatible", False)),
+            required=bool((plan.options or {}).get("streaming", False)),
         )
         source_transform = f"{transform.__module__}.{transform.__name__}"
         transform_module = f"{transform.__module__}.{recipe.transform}Generated"
@@ -212,7 +212,7 @@ class RenderPySparkExplainReport:
         join: PySparkJoinRecipe,
         *,
         current: str,
-        input_modes: dict[str, StreamingMode],
+        input_modes: dict[str, bool],
     ) -> str:
         parts = [f"{join.input_name} {join.method.value} {self._cardinality(join)}"]
         if join.dedupe is not None:
@@ -234,9 +234,9 @@ class RenderPySparkExplainReport:
         join: PySparkJoinRecipe,
         *,
         current: str,
-        input_modes: dict[str, StreamingMode],
+        input_modes: dict[str, bool],
     ) -> bool:
-        if input_modes.get(current) is not StreamingMode.YES or input_modes.get(join.source) is not StreamingMode.YES:
+        if not input_modes.get(current) or not input_modes.get(join.source):
             return False
         return join.method is JoinMethod.EXISTS or (
             join.method is JoinMethod.ROWSET and join.how in {Join.LEFT, Join.RIGHT, Join.FULL}
