@@ -7,12 +7,11 @@ import pytest
 
 from structure import *
 from structure.core.compiler.api import Compiler
-from structure.core.dsl.model.expr.Expression import Expression
-from structure.core.dsl.model.expr.expressions import literal
-from structure.core.dsl.model.types.DecimalType import DecimalType
-from structure.core.dsl.model.types.StructType import StructType
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.expressions import literal
+from structure.plugin.pyspark.dsl.types import DecimalType, StructType
 
 
 def _compile(transform):

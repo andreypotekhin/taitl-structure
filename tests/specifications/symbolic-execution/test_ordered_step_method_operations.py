@@ -3,9 +3,10 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.core.compiler.api import Compiler, OperationCardinality, StreamingSupport
-from structure.core.compiler.ir.model.JoinMethod import JoinMethod
+from structure.core.compiler.api import Compiler, StreamingSupport
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.dsl.joins import JoinMethod
+from structure.plugin.pyspark.dsl.operations import OperationCardinality
 
 
 class Order(Schema):

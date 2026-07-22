@@ -14,46 +14,22 @@ from structure.core.compiler.frontend.logic.CompilerTransformMember import Compi
 from structure.core.compiler.frontend.logic.CompilerTransformMemberCollector import CompilerTransformMemberCollector
 from structure.core.compiler.frontend.logic.ComposeTransformPlans import ComposeTransformPlans
 from structure.core.compiler.frontend.logic.LegacyStepPlan import LegacyStepPlan, LegacyStepResultPlan
-from structure.core.compiler.ir.model.AggregateAssignment import AggregateAssignment
-from structure.core.compiler.ir.model.AggregateKey import AggregateKey
-from structure.core.compiler.ir.model.AggregatePlan import AggregatePlan
 from structure.core.compiler.ir.model.HookPlan import HookPlan
 from structure.core.compiler.ir.model.InputPlan import InputPlan
-from structure.core.compiler.ir.model.JoinMethod import JoinMethod
-from structure.core.compiler.ir.model.OperationPlan import OperationPlan
 from structure.core.compiler.ir.model.OutputPlan import OutputPlan
-from structure.core.compiler.ir.model.ProjectAssignment import ProjectAssignment
 from structure.core.compiler.ir.model.StepPlan import StepPlan
 from structure.core.compiler.ir.model.StepResultPlan import StepResultPlan
 from structure.core.compiler.ir.model.TransformPlan import TransformPlan
 from structure.core.compiler.symbolic_execution.api import SymbolicExecution
 from structure.core.configuration.model.StructureConfig import StructureConfig
-from structure.core.dsl.model.expr.Expression import Expression
-from structure.core.dsl.model.expr.expressions import literal
-from structure.core.dsl.model.expr.InputScope import InputScope
-from structure.core.dsl.model.expr.RowScope import RowScope
-from structure.core.dsl.model.schemas.Projection import Projection
 from structure.core.dsl.model.schemas.Schema import Schema
-from structure.core.dsl.model.transforms.AsOf import AsOf
 from structure.core.dsl.model.transforms.BindingSelector import BindingSelector
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
-from structure.core.dsl.model.transforms.Join import Join
-from structure.core.dsl.model.transforms.JoinDedupe import JoinDedupe
-from structure.core.dsl.model.transforms.JoinHint import JoinHint
-from structure.core.dsl.model.transforms.JoinStrategy import JoinStrategy
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
-from structure.core.dsl.model.transforms.operations import reserved_operations
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
-from structure.core.dsl.model.transforms.OverlapPolicy import OverlapPolicy
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
-from structure.core.dsl.model.transforms.TiePolicy import TiePolicy
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
-from structure.core.dsl.model.types.BooleanType import BooleanType
-from structure.core.dsl.model.types.DecimalType import DecimalType
-from structure.core.dsl.model.types.Struct import Struct
-from structure.core.dsl.model.types.StructType import StructType
-from structure.core.dsl.model.types.StructureType import StructureType
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 from structure.plugin.api.v1 import (
     AuthoringAPI,
@@ -64,6 +40,25 @@ from structure.plugin.api.v1 import (
     StepInputPlan,
     TransformMemberOrigin,
 )
+from structure.plugin.pyspark.dsl.aggregation import AggregateAssignment, AggregateKey, AggregatePlan, ProjectAssignment
+from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.expressions import literal
+from structure.plugin.pyspark.dsl.InputScope import InputScope
+from structure.plugin.pyspark.dsl.joins import (
+    AsOf,
+    Join,
+    JoinDedupe,
+    JoinHint,
+    JoinMethod,
+    JoinStrategy,
+    OverlapPolicy,
+    TiePolicy,
+)
+from structure.plugin.pyspark.dsl.operations import OperationPlan
+from structure.plugin.pyspark.dsl.operations_api import reserved_operations
+from structure.plugin.pyspark.dsl.Projection import Projection
+from structure.plugin.pyspark.dsl.RowScope import RowScope
+from structure.plugin.pyspark.dsl.types import BooleanType, DecimalType, Struct, StructType, StructureType
 
 SourceDeclaration = InputDeclaration | LaneDeclaration | BindingSelector
 WriteDeclaration = LaneDeclaration | OutputDeclaration | BindingSelector

@@ -5,9 +5,9 @@ import pytest
 from structure import *
 from structure.core.cli.api import CliApp
 from structure.core.compiler.api import Compiler
-from structure.core.dsl.model.expr.expressions import literal
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.dsl.expressions import literal
 from structure.plugin.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
 
 

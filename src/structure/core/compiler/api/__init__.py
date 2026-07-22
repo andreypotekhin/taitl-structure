@@ -16,20 +16,6 @@ from structure.core.compiler.compileability.streaming_compatibility.api import (
 from structure.core.compiler.diagnostics.api import StructureCompileError
 from structure.core.compiler.diagnostics.api import Diagnostics
 from structure.core.compiler.frontend.api import CompilePluginTransform, CompileTransform
-from structure.core.compiler.ir.api import (
-    HookPlan,
-    InputPlan,
-    JoinPlan,
-    OperationCapability,
-    OperationCardinality,
-    OperationPlan,
-    OutputPlan,
-    ProjectAssignment,
-    StepInputPlan,
-    StepPlan,
-    StepResultPlan,
-    TransformPlan,
-)
 from structure.core.compiler.symbolic_execution.api import CompileContext, SymbolicExecution, current_context
 from structure.core.compiler.traceability.api import (
     BuildCompilerTraceability,
@@ -38,6 +24,7 @@ from structure.core.compiler.traceability.api import (
     DataflowDependency,
     OpaqueBoundary,
 )
+from structure.plugin.api.v1.model import HookPlan, InputPlan, OutputPlan, StepInputPlan, StepPlan, StepResultPlan, TransformPlan
 
 __all__ = [
     "ArtifactCacheReport",
@@ -57,13 +44,8 @@ __all__ = [
     "GeneratedTransform",
     "HookPlan",
     "InputPlan",
-    "JoinPlan",
     "OpaqueBoundary",
-    "OperationCapability",
-    "OperationCardinality",
-    "OperationPlan",
     "OutputPlan",
-    "ProjectAssignment",
     "StepInputPlan",
     "StepPlan",
     "StepResultPlan",

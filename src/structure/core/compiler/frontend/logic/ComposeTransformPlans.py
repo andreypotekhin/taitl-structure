@@ -6,20 +6,11 @@ from dataclasses import replace
 
 from structure.core.compiler.diagnostics.api import StructureCompileError
 from structure.core.compiler.frontend.logic.LegacyStepPlan import LegacyStepPlan, LegacyStepResultPlan
-from structure.core.compiler.ir.model.AggregateAssignment import AggregateAssignment
-from structure.core.compiler.ir.model.AggregateKey import AggregateKey
-from structure.core.compiler.ir.model.AggregatePlan import AggregatePlan
-from structure.core.compiler.ir.model.DuplicateRowsPlan import DuplicateRowsPlan
-from structure.core.compiler.ir.model.JoinPlan import JoinPlan
-from structure.core.compiler.ir.model.OperationPlan import OperationPlan
 from structure.core.compiler.ir.model.OutputPlan import OutputPlan
-from structure.core.compiler.ir.model.ProjectAssignment import ProjectAssignment
-from structure.core.compiler.ir.model.SelectedRowsPlan import SelectedRowsPlan
 from structure.core.compiler.ir.model.StepInputPlan import StepInputPlan
 from structure.core.compiler.ir.model.StepPlan import StepPlan
 from structure.core.compiler.ir.model.StepResultPlan import StepResultPlan
 from structure.core.compiler.ir.model.TransformPlan import TransformPlan
-from structure.core.dsl.model.expr.Expression import Expression
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
@@ -28,6 +19,10 @@ from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline, TransformPipelineStage
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 from structure.plugin.api.v1 import InputPlan
+from structure.plugin.pyspark.dsl.aggregation import AggregateAssignment, AggregateKey, AggregatePlan, ProjectAssignment
+from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.joins import JoinPlan
+from structure.plugin.pyspark.dsl.operations import DuplicateRowsPlan, OperationPlan, SelectedRowsPlan
 
 CompileStage = Callable[[type[Transform]], TransformPlan]
 

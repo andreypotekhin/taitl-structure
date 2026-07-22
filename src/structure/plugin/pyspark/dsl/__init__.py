@@ -9,6 +9,7 @@ _MODULES = (
     "InputScope",
     "body",
     "Projection",
+    "SpecialFunction",
     "TimeWindow",
     "types",
     "field",

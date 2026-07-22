@@ -7,11 +7,7 @@ from structure.core.compiler.ir.model.StepPlan import StepPlan
 from structure.core.compiler.ir.model.TransformPlan import TransformPlan
 from structure.core.dsl.model.schemas.FieldDefinition import FieldDefinition
 from structure.core.dsl.model.schemas.Schema import Schema
-from structure.core.dsl.model.types.ArrayType import ArrayType
-from structure.core.dsl.model.types.DecimalType import DecimalType
-from structure.core.dsl.model.types.MapType import MapType
-from structure.core.dsl.model.types.StructType import StructType
-from structure.core.dsl.model.types.StructureType import StructureType
+from structure.plugin.pyspark.dsl.types import ArrayType, DecimalType, MapType, StructType, StructureType
 
 
 class StructureDocsData:

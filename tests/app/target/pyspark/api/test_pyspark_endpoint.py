@@ -2,37 +2,6 @@ import ast
 from pathlib import Path
 from typing import cast
 
-from structure.core.compiler.compileability.streaming_compatibility.model.StreamingSupport import (
-    StreamingSupport as LegacyStreamingSupport,
-)
-from structure.core.compiler.ir.model.AggregateAssignment import AggregateAssignment as LegacyAggregateAssignment
-from structure.core.compiler.ir.model.AggregateKey import AggregateKey as LegacyAggregateKey
-from structure.core.compiler.ir.model.AggregatePlan import AggregatePlan as LegacyAggregatePlan
-from structure.core.compiler.ir.model.CachePlan import CachePlan as LegacyCachePlan
-from structure.core.compiler.ir.model.DuplicateRowsPlan import DuplicateRowsPlan as LegacyDuplicateRowsPlan
-from structure.core.compiler.ir.model.JoinMethod import JoinMethod as LegacyJoinMethod
-from structure.core.compiler.ir.model.JoinPlan import JoinPlan as LegacyJoinPlan
-from structure.core.compiler.ir.model.OperationCapability import OperationCapability as LegacyOperationCapability
-from structure.core.compiler.ir.model.OperationCardinality import OperationCardinality as LegacyOperationCardinality
-from structure.core.compiler.ir.model.OperationPlan import OperationPlan as LegacyOperationPlan
-from structure.core.compiler.ir.model.ProjectAssignment import ProjectAssignment as LegacyProjectAssignment
-from structure.core.compiler.ir.model.SelectedRowsPlan import SelectedRowsPlan as LegacySelectedRowsPlan
-from structure.core.compiler.ir.model.WatermarkPlan import WatermarkPlan as LegacyWatermarkPlan
-from structure.core.dsl.model.expr.Expression import Expression as LegacyExpression
-from structure.core.dsl.model.expr.expressions import literal as legacy_literal
-from structure.core.dsl.model.schemas.Projection import Projection as LegacyProjection
-from structure.core.dsl.model.transforms.AsOf import AsOf as LegacyAsOf
-from structure.core.dsl.model.transforms.Join import Join as LegacyJoin
-from structure.core.dsl.model.transforms.JoinDedupe import JoinDedupe as LegacyJoinDedupe
-from structure.core.dsl.model.transforms.JoinHint import JoinHint as LegacyJoinHint
-from structure.core.dsl.model.transforms.JoinStrategy import JoinStrategy as LegacyJoinStrategy
-from structure.core.dsl.model.transforms.operations import count as legacy_count
-from structure.core.dsl.model.transforms.OverlapPolicy import OverlapPolicy as LegacyOverlapPolicy
-from structure.core.dsl.model.transforms.StreamingOutputMode import StreamingOutputMode as LegacyStreamingOutputMode
-from structure.core.dsl.model.transforms.TiePolicy import TiePolicy as LegacyTiePolicy
-from structure.core.dsl.model.types.ArrayType import ArrayType as LegacyArrayType
-from structure.core.dsl.model.types.DecimalType import DecimalType as LegacyDecimalType
-from structure.core.dsl.model.types.StructType import StructType as LegacyStructType
 from structure.plugin.pyspark import (
     AsOf,
     Join,
@@ -99,83 +68,37 @@ def test_pyspark_symbolic_execution_scopes_its_authoring_context() -> None:
     assert current_pyspark_context() is None
 
 
-def test_pyspark_join_policies_are_owned_by_the_plugin_dsl() -> None:
-    legacy_types = (
-        LegacyAsOf,
-        LegacyJoin,
-        LegacyJoinDedupe,
-        LegacyJoinHint,
-        LegacyJoinMethod,
-        LegacyJoinPlan,
-        LegacyJoinStrategy,
-        LegacyOverlapPolicy,
-        LegacyTiePolicy,
+def test_pyspark_target_models_have_plugin_owned_import_paths() -> None:
+    assert all(
+        type_.__module__.startswith("structure.plugin.pyspark.dsl.joins.")
+        for type_ in (AsOf, Join, JoinDedupe, JoinHint, JoinMethod, JoinPlan, JoinStrategy, OverlapPolicy, TiePolicy)
     )
-    plugin_types = (AsOf, Join, JoinDedupe, JoinHint, JoinMethod, JoinPlan, JoinStrategy, OverlapPolicy, TiePolicy)
-
-    assert legacy_types == plugin_types
-    assert all(type_.__module__.startswith("structure.plugin.pyspark.dsl.joins.") for type_ in plugin_types)
-
-
-def test_pyspark_operation_records_are_owned_by_the_plugin_dsl() -> None:
-    legacy_types = (
-        LegacyCachePlan,
-        LegacyDuplicateRowsPlan,
-        LegacyOperationCapability,
-        LegacyOperationCardinality,
-        LegacyOperationPlan,
-        LegacySelectedRowsPlan,
-        LegacyStreamingOutputMode,
-        LegacyStreamingSupport,
-        LegacyWatermarkPlan,
+    assert all(
+        type_.__module__.startswith("structure.plugin.pyspark.dsl.operations.")
+        for type_ in (
+            CachePlan,
+            DuplicateRowsPlan,
+            OperationCapability,
+            OperationCardinality,
+            OperationPlan,
+            SelectedRowsPlan,
+            StreamingOutputMode,
+            StreamingSupport,
+            WatermarkPlan,
+        )
     )
-    plugin_types = (
-        CachePlan,
-        DuplicateRowsPlan,
-        OperationCapability,
-        OperationCardinality,
-        OperationPlan,
-        SelectedRowsPlan,
-        StreamingOutputMode,
-        StreamingSupport,
-        WatermarkPlan,
+    assert all(
+        type_.__module__.startswith("structure.plugin.pyspark.dsl.aggregation.")
+        for type_ in (AggregateAssignment, AggregateKey, AggregatePlan, ProjectAssignment)
     )
-
-    assert legacy_types == plugin_types
-    assert all(type_.__module__.startswith("structure.plugin.pyspark.dsl.operations.") for type_ in plugin_types)
-
-
-def test_pyspark_projection_and_aggregation_records_are_owned_by_the_plugin_dsl() -> None:
-    legacy_types = (LegacyAggregateAssignment, LegacyAggregateKey, LegacyAggregatePlan, LegacyProjectAssignment)
-    plugin_types = (AggregateAssignment, AggregateKey, AggregatePlan, ProjectAssignment)
-
-    assert legacy_types == plugin_types
-    assert all(type_.__module__.startswith("structure.plugin.pyspark.dsl.aggregation.") for type_ in plugin_types)
-
-
-def test_pyspark_concrete_types_are_owned_by_the_plugin_dsl() -> None:
-    assert (LegacyArrayType, LegacyDecimalType, LegacyStructType) == (ArrayType, DecimalType, StructType)
     assert all(
         type_.__module__.startswith("structure.plugin.pyspark.dsl.types.")
         for type_ in (ArrayType, DecimalType, StructType)
     )
-
-
-def test_pyspark_expression_graph_is_owned_by_the_plugin_dsl() -> None:
-    assert LegacyExpression is Expression
     assert Expression.__module__ == "structure.plugin.pyspark.dsl.Expression"
-    assert legacy_literal("value").kind == literal("value").kind == "literal"
-    assert literal.__module__ == "structure.plugin.pyspark.dsl.expressions"
-
-
-def test_pyspark_operation_helpers_are_owned_by_the_plugin_dsl() -> None:
-    assert legacy_count().kind == count().kind == "aggregate"
-    assert count.__module__ == "structure.plugin.pyspark.dsl.operations_api"
-
-
-def test_pyspark_projection_body_is_owned_by_the_plugin_dsl() -> None:
-    assert LegacyProjection is Projection
     assert Projection.__module__ == "structure.plugin.pyspark.dsl.Projection"
+    assert literal("value").kind == "literal"
+    assert count().kind == "aggregate"
 
 
 def test_pyspark_apps_do_not_import_another_apps_private_commands_or_logic() -> None:

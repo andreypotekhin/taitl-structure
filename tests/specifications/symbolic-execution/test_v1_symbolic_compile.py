@@ -5,8 +5,8 @@ import pytest
 
 from structure import *
 from structure.core.compiler.api import Compiler
-from structure.core.dsl.model.types.StructType import StructType
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.dsl.types import StructType
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 

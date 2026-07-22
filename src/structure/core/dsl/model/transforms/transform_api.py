@@ -1,22 +1,19 @@
 from __future__ import annotations
 
 import inspect
-from typing import Any, Callable, Iterable, TypeVar, cast, overload
+from typing import Callable, Iterable, cast, overload
 
-from structure.core.dsl.model.expr.InputScope import InputScope, lookup_join
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.BindingSelector import BindingSelector, SelectedDeclaration
 from structure.core.dsl.model.transforms.InOutBinding import InOutBinding
 from structure.core.dsl.model.transforms.InputDeclaration import InputDeclaration
 from structure.core.dsl.model.transforms.LaneDeclaration import LaneDeclaration
-from structure.core.dsl.model.transforms.operations import cache_operation
 from structure.core.dsl.model.transforms.OutputDeclaration import OutputDeclaration
 from structure.core.dsl.model.transforms.SchemaMode import SchemaMode
-from structure.core.dsl.model.transforms.SpecialFunction import SpecialFunction
 from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
 from structure.core.dsl.model.transforms.Transform import Transform
-
-Projected = TypeVar("Projected", bound=Schema)
+from structure.plugin.pyspark.dsl.operations_api import cache_operation
+from structure.plugin.pyspark.dsl.SpecialFunction import SpecialFunction
 
 _CLASS_OPTIONS = {"target", "validate_intermediate", "streaming_compatible"}
 _STEP_METHOD_OPTIONS = {"target_backend", "target_platform", "target_profile"}
@@ -399,57 +396,6 @@ def raw(
     return decorate(function)
 
 
-def where(*predicates: object) -> "WhereChain":
-    return cast(WhereChain, _pyspark_where(*predicates))
-
-
-def watermark(field: object, *, delay: str = "10 minutes") -> None:
-    _pyspark_watermark(field, delay=delay)
-
-
-@overload
-def project(source: object, target: type[Projected]) -> Projected: ...
-
-
-@overload
-def project(source: object, target: Iterable[str]) -> Any: ...
-
-
-@overload
-def project(source: object) -> Any: ...
-
-
-def project(source: object | None = None, target: type[Schema] | Iterable[str] | None = None) -> object:
-    return cast(object, _pyspark_project(source, cast(Any, target)))
-
-
-class WhereChain:
-
-    def where(self, *predicates: object) -> "WhereChain":
-        return where(*predicates)
-
-    @overload
-    def project(self, source: type[Projected]) -> Projected: ...
-
-    @overload
-    def project(self, source: Iterable[str]) -> Any: ...
-
-    @overload
-    def project(self, source: object, target: type[Projected]) -> Projected: ...
-
-    @overload
-    def project(self, source: object, target: Iterable[str]) -> Any: ...
-
-    def project(
-        self,
-        source: object | None = None,
-        target: type[Schema] | Iterable[str] | None = None,
-    ) -> object:
-        if target is None:
-            return project(source)
-        return project(source, target)
-
-
 def _hook_target_backend(value: str | Iterable[str] | None) -> tuple[tuple[str, ...], bool]:
     if value is None:
         return ("pyspark",), True
@@ -496,10 +442,3 @@ def _hook_outputs(phase: str, kwargs: dict[str, object], *, default: tuple) -> t
     return _declarations(
         kwargs, singular="output", plural="outputs", allowed=(InputDeclaration, LaneDeclaration, OutputDeclaration)
     )
-
-
-# Transitional compatibility exports. The declaration API retains its historic names while
-# PySpark owns body construction and target validation.
-from structure.plugin.pyspark.dsl.body import project as _pyspark_project  # noqa: E402
-from structure.plugin.pyspark.dsl.body import watermark as _pyspark_watermark  # noqa: E402
-from structure.plugin.pyspark.dsl.body import where as _pyspark_where  # noqa: E402

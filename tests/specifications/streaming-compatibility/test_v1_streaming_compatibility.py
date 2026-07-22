@@ -6,8 +6,8 @@ import pytest
 from structure import *
 from structure.core.compiler.api import Compiler
 from structure.core.compiler.compileability.streaming_compatibility.api import StreamingSupport
-from structure.core.dsl.model.types.StructType import StructType
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.dsl.types import StructType
 
 
 class StreamRaw(Schema):

@@ -3,10 +3,10 @@ from typing import cast
 import pytest
 
 from structure import *
-from structure.core.dsl.model.expr.Expression import Expression
-from structure.core.dsl.model.transforms.operations import WindowFrame
-from structure.core.dsl.model.types.DecimalType import DecimalType
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.types import DecimalType
+from structure.plugin.pyspark.dsl.windows import WindowFrame
 
 
 @pytest.mark.parametrize(

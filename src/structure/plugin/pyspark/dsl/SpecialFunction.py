@@ -4,19 +4,21 @@ from datetime import date, datetime
 from inspect import signature
 from typing import Any, Callable, cast, get_type_hints
 
-from structure.core.dsl.model.expr.Expression import Expression
-from structure.core.dsl.model.expr.expressions import literal
-from structure.core.dsl.model.types.BooleanType import BooleanType
-from structure.core.dsl.model.types.DateType import DateType
-from structure.core.dsl.model.types.DoubleType import DoubleType
-from structure.core.dsl.model.types.IntegerType import IntegerType
-from structure.core.dsl.model.types.StringType import StringType
-from structure.core.dsl.model.types.StructureType import StructureType
-from structure.core.dsl.model.types.TimestampType import TimestampType
+from structure.plugin.api.v1.model import current_symbolic_context
+from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.expressions import literal
+from structure.plugin.pyspark.dsl.types import (
+    BooleanType,
+    DateType,
+    DoubleType,
+    IntegerType,
+    StringType,
+    StructureType,
+    TimestampType,
+)
 
 
 class SpecialFunction:
-
     def __init__(
         self,
         function: Callable,
@@ -34,7 +36,7 @@ class SpecialFunction:
         self.__module__ = function.__module__
 
     def __call__(self, *args, **kwargs):
-        context = self._context()
+        context = current_symbolic_context()
         if self.type == "expr":
             return self._expr(args, kwargs, context=context)
         if self.type == "udf":
@@ -77,16 +79,8 @@ class SpecialFunction:
             args=tuple(literal(argument) for argument in args),
         )
 
-    @staticmethod
-    def _context():
-        from structure.core.compiler.symbolic_execution.api import SymbolicExecution
-
-        return SymbolicExecution().current()()
-
     def __get__(self, instance: object, owner: type | None = None):
-        if instance is None:
-            return self
-        return self.__call__
+        return self if instance is None else self.__call__
 
     def _udf(self, args: tuple[object, ...]) -> Expression:
         return_type = self._return_type()
@@ -138,13 +132,10 @@ class SpecialFunction:
             return TimestampType()
         raise TypeError(f"{self.function.__qualname__} has unsupported UDF return type {value!r}")
 
-    def _is_pyspark_type(self, value: object) -> bool:
-        module = type(value).__module__
-        return module.startswith("pyspark.sql.types") and type(value).__name__.endswith("Type")
+    @staticmethod
+    def _is_pyspark_type(value: object) -> bool:
+        return type(value).__module__.startswith("pyspark.sql.types") and type(value).__name__.endswith("Type")
 
     def _udf_name(self) -> str:
-        parts = [
-            character.lower() if character.isalnum() else "_"
-            for character in f"{self.function.__module__}_{self.function.__qualname__}"
-        ]
+        parts = [character.lower() if character.isalnum() else "_" for character in f"{self.function.__module__}_{self.function.__qualname__}"]
         return f"_structure_udf_{''.join(parts).strip('_')}"

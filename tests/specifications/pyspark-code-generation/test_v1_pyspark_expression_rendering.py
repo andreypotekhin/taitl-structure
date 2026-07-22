@@ -3,15 +3,20 @@ from typing import Any, cast
 import pytest
 
 from structure import *
+from structure.core.compiler.api import Compiler
 from structure.core.target.capabilities.api import BackendCapabilityError
 from structure.plugin.pyspark import *
-from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import PySparkCapabilities
+from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+
+
+def _recipe(transform) -> PySparkExecutionPlan:
+    return cast(PySparkExecutionPlan, Compiler.frontend.compile()(transform, materialize_schemas=False).lowered)
 
 
 def test_v1_expression_renderer_renders_filter_helpers_and_literals() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = PySpark.compiler.lower()(compile_transform(EnrichOrders))
+    recipe = _recipe(EnrichOrders)
     normalize = recipe.steps[0]
 
     assert PySpark.render.expression()(normalize.filters[0], scope_aliases={"orders": "orders"}) == (
@@ -30,7 +35,7 @@ def test_v1_expression_renderer_renders_filter_helpers_and_literals() -> None:
 def test_v1_expression_renderer_renders_arithmetic_and_comparison() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = PySpark.compiler.lower()(compile_transform(EnrichOrders))
+    recipe = _recipe(EnrichOrders)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
 
     assert PySpark.render.expression()(projection["net_total"], scope_aliases={"orders": "orders"}) == (
@@ -59,7 +64,7 @@ def test_v4_expression_renderer_renders_division_modulo_and_negation() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(quotient=row.amount / 2, remainder=row.amount % 2, negated=-row.amount)
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -92,7 +97,7 @@ def test_v4_expression_renderer_renders_typed_bitwise_column_operations() -> Non
                 inverted=row.flags.bitwise_not(),
             )
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -123,7 +128,7 @@ def test_v4_expression_renderer_renders_nullif() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(label=nullif(row.label, "unknown"))
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     expression = recipe.steps[0].projection[0].expression
 
     assert PySpark.render.expression()(expression, scope_aliases={"rows": "orders"}) == (
@@ -155,7 +160,7 @@ def test_v4_expression_renderer_renders_remaining_null_control_helpers() -> None
                 amount=zeroifnull(row.amount),
             )
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -187,7 +192,7 @@ def test_v4_expression_renderer_renders_nanvl() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(observed=nanvl(row.observed, row.fallback))
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     expression = recipe.steps[0].projection[0].expression
 
     assert PySpark.render.expression()(expression, scope_aliases={"rows": "orders"}) == (
@@ -211,7 +216,7 @@ def test_v4_expression_renderer_renders_one_sided_trim() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(left=ltrim(row.label), right=rtrim(row.label))
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -248,7 +253,7 @@ def test_v4_expression_renderer_renders_deterministic_numeric_functions() -> Non
                 sign=signum(row.amount),
             )
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -293,7 +298,7 @@ def test_v4_expression_renderer_renders_temporal_helpers() -> None:
                 parsed_timestamp=to_timestamp(row.raw_observed_at, format="yyyy-MM-dd HH:mm:ss"),
             )
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -340,7 +345,7 @@ def test_v4_expression_renderer_renders_hash_helpers() -> None:
                 sha2_hash=sha2(row.label, bits=512),
             )
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -358,7 +363,7 @@ def test_v4_expression_renderer_renders_hash_helpers() -> None:
 def test_v1_expression_renderer_renders_join_predicates() -> None:
     from testing.model.v1.orders.transforms.order import EnrichOrders
 
-    recipe = PySpark.compiler.lower()(compile_transform(EnrichOrders))
+    recipe = _recipe(EnrichOrders)
     customer_join = recipe.steps[1].joins[0]
     promotion_join = recipe.steps[3].joins[0]
 
@@ -393,7 +398,7 @@ def test_v1_expression_renderer_passes_field_aliases_to_spark() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(promotion_code=row.promotion_code)
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     expression = recipe.steps[0].projection[0].expression
 
     assert PySpark.render.expression()(expression, scope_aliases={"rows": "rows"}) == 'F.col("rows.promo-code")'
@@ -427,7 +432,7 @@ def test_v1_expression_renderer_renders_nested_struct_construction() -> None:
                 ),
             )
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
 
     assert PySpark.render.expression()(projection["shipping"], scope_aliases={"rows": "rows"}) == (
@@ -454,7 +459,7 @@ def test_v1_expression_renderer_escapes_dotted_nested_field_aliases() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(postal_code=row.shipping.postal_code)  # type: ignore[attr-defined]
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     expression = recipe.steps[0].projection[0].expression
 
     assert PySpark.render.expression()(expression, scope_aliases={"rows": "rows"}) == (
@@ -499,7 +504,7 @@ def test_v1_expression_renderer_renders_extended_plain_python_expressions() -> N
                 line_total=order.price * order.quantity,
             )
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -554,7 +559,7 @@ def test_v3_expression_renderer_renders_string_predicates() -> None:
                 matches_release=status.rlike(r"release-[0-9]+"),
             )
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -586,7 +591,7 @@ def test_v3_expression_renderer_renders_collection_indexing() -> None:
             source = cast(Any, row)
             return Published(first_tag=source.tags[0], region=source.attributes["region"])
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -619,11 +624,17 @@ def test_v3_expression_renderer_renders_scalar_casts() -> None:
                 try_count=source.raw_count.try_cast(types.integer()),
             )
 
-    plan = compile_transform(Publish)
     with pytest.raises(BackendCapabilityError):
-        PySpark.compiler.lower()(plan)
+        Compiler.frontend.compile()(Publish, materialize_schemas=False)
 
-    recipe = PySpark.compiler.lower()(plan, capabilities=PySparkCapabilities(target_profile=">=4.0,<4.1"))
+    recipe = cast(
+        PySparkExecutionPlan,
+        Compiler.frontend.compile()(
+            Publish,
+            materialize_schemas=False,
+            target_profile=">=4.0,<4.1",
+        ).lowered,
+    )
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -671,7 +682,7 @@ def test_v3_expression_renderer_renders_string_sql_helpers() -> None:
                 joined=concat_ws(" / ", row.label, "release"),
             )
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -713,7 +724,7 @@ def test_v3_expression_renderer_renders_temporal_sql_helpers() -> None:
                 month=date_trunc(row.recorded_at, unit="month"),
             )
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -747,7 +758,7 @@ def test_v3_expression_renderer_renders_numeric_sql_helpers() -> None:
                 floor=floor(row.amount),
             )
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -781,7 +792,7 @@ def test_v3_expression_renderer_renders_predicate_sql_helpers() -> None:
                 invalid_score=isnan(row.score),
             )
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}
     render = PySpark.render.expression()
 
@@ -810,7 +821,7 @@ def test_v3_expression_renderer_renders_struct_get_field() -> None:
         def publish(self, row: Raw) -> Published:
             return Published(city=cast(Any, row).address.get_field("city"))
 
-    recipe = PySpark.compiler.lower()(compile_transform(Publish))
+    recipe = _recipe(Publish)
     expression = recipe.steps[0].projection[0].expression
 
     assert PySpark.render.expression()(expression, scope_aliases={"rows": "orders"}) == (

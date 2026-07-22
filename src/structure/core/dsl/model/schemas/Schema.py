@@ -66,7 +66,7 @@ class Schema:
 
     @classmethod
     def project(cls, source: object):
-        from structure.core.dsl.model.schemas.Projection import Projection
+        from structure.plugin.pyspark.dsl.Projection import Projection
 
         return Projection(source=source, target=cls)
 

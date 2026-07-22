@@ -3,8 +3,8 @@ from typing import cast
 
 from structure import *
 from structure.core.compiler.api import Compiler
-from structure.core.dsl.api import DecimalType
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.dsl.types import DecimalType
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 

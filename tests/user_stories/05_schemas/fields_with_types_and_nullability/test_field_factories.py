@@ -6,10 +6,8 @@ import pytest
 
 import structure
 from structure import Schema
-from structure.core.dsl.model.types.Array import Array
-from structure.core.dsl.model.types.Decimal import Decimal
-from structure.core.dsl.model.types.Map import Map
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.dsl.types import Array, Decimal, Map
 from structure.plugin.pyspark.dsl.ValidatePySparkSchemas import ValidatePySparkSchemas
 
 

@@ -4,15 +4,14 @@ from builtins import type as class_type
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Mapping
+from typing import Any, Mapping
 
 from structure.core.dsl.model.schemas.FieldDefinition import FieldDefinition
-from structure.core.dsl.model.types.StructureType import StructureType
 
 
 @dataclass(frozen=True)
 class FieldDeclaration:
-    type: StructureType
+    type: Any
     nullable: bool = True
     alias: str | None = None
     metadata: Mapping[str, object] = field(default_factory=dict)

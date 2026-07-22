@@ -5,14 +5,10 @@ import pytest
 from structure import *
 from structure.core.cli.commands.RenderExplainReport import render_explain_report
 from structure.core.compiler.api import Compiler
-from structure.core.dsl.model.expr.Expression import Expression
-from structure.core.dsl.model.types.ArrayType import ArrayType
-from structure.core.dsl.model.types.IntegerType import IntegerType
-from structure.core.dsl.model.types.LongType import LongType
-from structure.core.dsl.model.types.MapType import MapType
-from structure.core.dsl.model.types.StringType import StringType
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.types import ArrayType, IntegerType, LongType, MapType, StringType
 from structure.plugin.pyspark.render.commands.RenderPySparkStep import render_pyspark_step
 
 

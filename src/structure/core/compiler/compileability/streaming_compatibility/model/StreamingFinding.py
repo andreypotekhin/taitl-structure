@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from structure.core.compiler.compileability.streaming_compatibility.model.StreamingSupport import StreamingSupport
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
+from structure.plugin.pyspark.dsl.operations import StreamingSupport
 
 
 @dataclass(frozen=True)

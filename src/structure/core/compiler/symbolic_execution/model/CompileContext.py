@@ -4,15 +4,15 @@ from contextvars import Token
 from types import TracebackType
 from typing import Any
 
-from structure.core.compiler.ir.model.JoinPlan import JoinPlan
-from structure.core.compiler.ir.model.OperationPlan import OperationPlan
-from structure.core.dsl.model.expr.Expression import Expression
 from structure.plugin.api.v1.model.SymbolicContext import (
     SymbolicContext,
     current_symbolic_context,
     install_symbolic_context,
     reset_symbolic_context,
 )
+from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.joins import JoinPlan
+from structure.plugin.pyspark.dsl.operations import OperationPlan
 
 
 class CompileContext:

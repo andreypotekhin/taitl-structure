@@ -6,7 +6,6 @@ from typing import Any, cast
 import pytest
 
 from structure import *
-from structure.core.compiler.ir.model.JoinMethod import JoinMethod
 from structure.core.runtime.session.model.TransformResult import TransformResult
 from structure.core.target.capabilities.model.BackendId import BackendId
 from structure.plugin.pyspark import *
@@ -31,6 +30,7 @@ from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkSte
 from structure.plugin.pyspark.compiler.model.PySparkStepResultRecipe import PySparkStepResultRecipe
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
+from structure.plugin.pyspark.dsl.joins import JoinMethod
 from structure.plugin.pyspark.execution.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
 from structure.plugin.pyspark.execution.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
 from structure.plugin.pyspark.execution.logic.PySparkFrameValidator import PySparkFrameValidator

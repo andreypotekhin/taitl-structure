@@ -4,17 +4,21 @@ from builtins import type as class_type
 from collections.abc import Callable
 from dataclasses import dataclass
 from dataclasses import field as dataclass_field
-from typing import Mapping
+from typing import Any, Mapping
 
-from structure.core.dsl.model.types.StructureType import StructureType
 
-ANNOTATION_TYPE = StructureType("__annotation__")
+@dataclass(frozen=True)
+class AnnotationType:
+    name: str = "__annotation__"
+
+
+ANNOTATION_TYPE = AnnotationType()
 
 
 @dataclass(frozen=True)
 class FieldDefinition:
     name: str
-    type: StructureType
+    type: Any
     hint: object | None = None
     nullable: bool = True
     alias: str | None = None

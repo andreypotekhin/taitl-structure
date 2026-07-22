@@ -1,12 +1,9 @@
 import pytest
 
 from structure import *
-from structure.core.dsl.model.expr.Expression import Expression
-from structure.core.dsl.model.types.ArrayType import ArrayType
-from structure.core.dsl.model.types.MapType import MapType
-from structure.core.dsl.model.types.StructType import StructType
-from structure.core.dsl.model.types.StructureType import StructureType
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.dsl.Expression import Expression
+from structure.plugin.pyspark.dsl.types import ArrayType, MapType, StructType, StructureType
 
 
 class MapEntry(Schema):

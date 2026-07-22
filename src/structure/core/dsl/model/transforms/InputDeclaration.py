@@ -3,11 +3,11 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from structure.core.dsl.model.expr.InputScope import InputScope
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.aliases import alias as declaration_alias
 from structure.core.dsl.model.transforms.InOutBinding import bind_inout
 from structure.core.dsl.model.transforms.StreamingMode import StreamingMode
+from structure.plugin.pyspark.dsl.InputScope import InputScope
 
 if TYPE_CHECKING:
     from structure.core.dsl.model.transforms.Transform import Transform

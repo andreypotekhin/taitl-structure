@@ -4,11 +4,11 @@ import ast
 import inspect
 from pathlib import Path
 
-from structure.core.dsl.model.expr import expressions
-from structure.core.dsl.model.transforms import operations
 from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import COMMON_CAPABILITIES
 from structure.plugin.pyspark.compiler.commands.ClassifyStreamingCompatibility import ClassifyStreamingCompatibility
 from structure.plugin.pyspark.compiler.logic.mapping.PySparkExpressionMapper import PySparkExpressionMapper
+from structure.plugin.pyspark.dsl import expressions
+from structure.plugin.pyspark.dsl import operations_api as operations
 from structure.plugin.pyspark.execution.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
 from structure.plugin.pyspark.render.commands.RenderPySparkExpression import RenderPySparkExpression
 from structure.plugin.pyspark.render.commands.RenderPySparkTransformModule import RenderPySparkTransformModule
