@@ -33,8 +33,8 @@ class AddScores(ScoreAll):
         output=scored_documents,
     )
     def score_documents(self, document: Document, overlap: DocumentOverlapScore, bm25: DocumentBm25Score) -> Document:
-        overlap = inner_join(overlap, on=overlap.document_id == document.id)
-        bm25 = inner_join(bm25, on=(bm25.document_id == document.id) & (bm25.query_id == overlap.query_id))
+        inner_join(on=overlap.document_id == document.id)
+        inner_join(on=(bm25.document_id == document.id) & (bm25.query_id == overlap.query_id))
         return Document.project(document)(
             search_query_id=overlap.query_id, score_overlap=overlap.score_overlap, score_bm25=bm25.score_bm25
         )
@@ -44,8 +44,8 @@ class AddScores(ScoreAll):
         output=scored_sections,
     )
     def score_sections(self, section: Section, overlap: SectionOverlapScore, bm25: SectionBm25Score) -> Section:
-        overlap = inner_join(overlap, on=overlap.section_id == section.id)
-        bm25 = inner_join(bm25, on=(bm25.section_id == section.id) & (bm25.query_id == overlap.query_id))
+        inner_join(on=overlap.section_id == section.id)
+        inner_join(on=(bm25.section_id == section.id) & (bm25.query_id == overlap.query_id))
         return Section.project(section)(
             search_query_id=overlap.query_id, score_overlap=overlap.score_overlap, score_bm25=bm25.score_bm25
         )
@@ -57,8 +57,8 @@ class AddScores(ScoreAll):
     def score_paragraphs(
         self, paragraph: Paragraph, overlap: ParagraphOverlapScore, bm25: ParagraphBm25Score
     ) -> Paragraph:
-        overlap = inner_join(overlap, on=overlap.paragraph_id == paragraph.id)
-        bm25 = inner_join(bm25, on=(bm25.paragraph_id == paragraph.id) & (bm25.query_id == overlap.query_id))
+        inner_join(on=overlap.paragraph_id == paragraph.id)
+        inner_join(on=(bm25.paragraph_id == paragraph.id) & (bm25.query_id == overlap.query_id))
         return Paragraph.project(paragraph)(
             search_query_id=overlap.query_id, score_overlap=overlap.score_overlap, score_bm25=bm25.score_bm25
         )
@@ -68,8 +68,8 @@ class AddScores(ScoreAll):
         output=scored_sentences,
     )
     def score_sentences(self, sentence: Sentence, overlap: SentenceOverlapScore, bm25: SentenceBm25Score) -> Sentence:
-        overlap = inner_join(overlap, on=overlap.sentence_id == sentence.id)
-        bm25 = inner_join(bm25, on=(bm25.sentence_id == sentence.id) & (bm25.query_id == overlap.query_id))
+        inner_join(on=overlap.sentence_id == sentence.id)
+        inner_join(on=(bm25.sentence_id == sentence.id) & (bm25.query_id == overlap.query_id))
         return Sentence.project(sentence)(
             search_query_id=overlap.query_id, score_overlap=overlap.score_overlap, score_bm25=bm25.score_bm25
         )

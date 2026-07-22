@@ -56,7 +56,7 @@ class EvaluateDocumentSearchBehavior(Transform):
 
     @step(input=[daily_requests, impressions], output=displayed)
     def select_impressions(self, request: BehaviorRequest, impression: Impression) -> BehaviorImpression:
-        impression = inner_join(impression, on=impression.search_request_id == request.search_request_id)
+        inner_join(on=impression.search_request_id == request.search_request_id)
         return BehaviorImpression.base(request, impression)(
             impression_id=impression.id,
             click_count=0, long_click_count=0, dwell_credit=0.0,
@@ -64,7 +64,7 @@ class EvaluateDocumentSearchBehavior(Transform):
 
     @step(input=[displayed, clicks], output=clicked)
     def attribute_clicks(self, impression: BehaviorImpression, click: Click) -> BehaviorImpression:
-        click = inner_join(click, on=(click.impression_id == impression.impression_id) & event_time_between(impression.shown_at, click.occurred_at, upper="24 hours"))
+        inner_join(on=(click.impression_id == impression.impression_id) & event_time_between(impression.shown_at, click.occurred_at, upper="24 hours"))
         dwell = when(click.dwell_seconds > 0.0, click.dwell_seconds).otherwise(0.0)
         group_by(
             window=impression.window, search_request_id=impression.search_request_id, ranking_version=impression.ranking_version,
@@ -78,7 +78,7 @@ class EvaluateDocumentSearchBehavior(Transform):
 
     @step(input=[displayed, clicked], output=measured)
     def measure_impressions(self, impression: BehaviorImpression, clicks: BehaviorImpression) -> BehaviorImpression:
-        clicks = left_join(clicks, on=clicks.impression_id == impression.impression_id)
+        left_join(on=clicks.impression_id == impression.impression_id)
         return BehaviorImpression.project(impression)(
             click_count=coalesce(clicks.click_count, 0), long_click_count=coalesce(clicks.long_click_count, 0),
             dwell_credit=coalesce(clicks.dwell_credit, 0.0),
@@ -86,7 +86,7 @@ class EvaluateDocumentSearchBehavior(Transform):
 
     @step(input=[daily_requests, measured], output=request_totals)
     def measure_requests(self, request: BehaviorRequest, impression: BehaviorImpression) -> BehaviorRequestTotals:
-        impression = left_join(impression, on=impression.search_request_id == request.search_request_id)
+        left_join(on=impression.search_request_id == request.search_request_id)
         group_by(window=request.window, search_request_id=request.search_request_id, ranking_version=request.ranking_version, query=request.query)
         result_count = sum(when(impression.impression_id.is_not_null(), 1).otherwise(0))
         clicked_count = sum(when(impression.click_count > 0, 1).otherwise(0))
@@ -134,7 +134,7 @@ class EvaluateDocumentSearchBehavior(Transform):
 
     @step(input=[daily_counts, exposure], output=daily_behavior)
     def publish_daily(self, daily: BehaviorDailyCounts, exposure: BehaviorExposure) -> DailyDocumentSearchBehavior:
-        exposure = left_join(exposure, on=(exposure.window == daily.window) & (exposure.ranking_version == daily.ranking_version))
+        left_join(on=(exposure.window == daily.window) & (exposure.ranking_version == daily.ranking_version))
         return DailyDocumentSearchBehavior.project(daily)(
             ips_long_click_rate=when(exposure.ips_impression_weight > 0.0, exposure.ips_long_click_weight / exposure.ips_impression_weight).otherwise(None),
             ips_dwell_credit_per_impression=when(exposure.ips_impression_weight > 0.0, exposure.ips_dwell_credit / exposure.ips_impression_weight).otherwise(None),

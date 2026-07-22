@@ -44,7 +44,7 @@ class RerankDocuments(Transform):
             query_signal,
             on=(query_signal.query == candidate.query) & (query_signal.document_id == candidate.document_id),
         )
-        popularity = left_join(popularity, on=popularity.document_id == candidate.document_id)
+        left_join(on=popularity.document_id == candidate.document_id)
         policy = cross_join(policy, allow_cartesian=True)
         feedback = 0.8 * coalesce(query_signal.normalized_score, 0.0) + 0.2 * coalesce(popularity.normalized_score, 0.0)
         return DocumentSearchCandidate.project(candidate)(

@@ -42,10 +42,10 @@ class SearchPassages(Transform):
         section: Section,
         document: Document,
     ) -> PassageSearchResult:
-        query = inner_join(query, on=query.id == paragraph.search_query_id)
-        context = inner_join(context, on=context.paragraph_id == paragraph.id)
-        section = inner_join(section, on=section.id == paragraph.section_id)
-        document = inner_join(document, on=document.id == paragraph.document_id)
+        inner_join(on=query.id == paragraph.search_query_id)
+        inner_join(on=context.paragraph_id == paragraph.id)
+        inner_join(on=section.id == paragraph.section_id)
+        inner_join(on=document.id == paragraph.document_id)
         where(
             paragraph.search_query_id.is_not_null(),
             paragraph.score_overlap.is_not_null(),

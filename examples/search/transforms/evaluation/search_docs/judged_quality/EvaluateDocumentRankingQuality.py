@@ -60,16 +60,15 @@ class EvaluateDocumentRankingQuality(Transform):
         result: DocumentSearchResult,
         judgment: DocumentRelevanceJudgment,
     ) -> EvaluationResult:
-        result = left_join(result, on=result.search_query_id == query.search_query_id)
-        judgment = left_join(
-            judgment,
+        left_join(on=result.search_query_id == query.search_query_id)
+        left_join(
             on=(judgment.search_query_id == query.search_query_id) & (judgment.document_id == result.document_id),
         )
         return EvaluationResult.base(query, result, judgment)
 
     @step(input=[evaluated_queries, judgments], output=ranked_judgments)
     def rank_judgments(self, query: EvaluationQuery, judgment: DocumentRelevanceJudgment) -> EvaluationJudgment:
-        judgment = inner_join(judgment, on=judgment.search_query_id == query.search_query_id)
+        inner_join(on=judgment.search_query_id == query.search_query_id)
         return EvaluationJudgment.base(query, judgment)(
             ideal_rank=row_number(
                 partition_by=query.search_query_id,
@@ -126,9 +125,9 @@ class EvaluateDocumentRankingQuality(Transform):
         judgments: EvaluationJudgmentTotals,
         ideal: EvaluationIdealDcg,
     ) -> DocumentQueryEvaluation:
-        results = left_join(results, on=results.search_query_id == query.search_query_id)
-        judgments = left_join(judgments, on=judgments.search_query_id == query.search_query_id)
-        ideal = left_join(ideal, on=ideal.search_query_id == query.search_query_id)
+        left_join(on=results.search_query_id == query.search_query_id)
+        left_join(on=judgments.search_query_id == query.search_query_id)
+        left_join(on=ideal.search_query_id == query.search_query_id)
         relevant_count = coalesce(judgments.binary_relevant_judgment_count, 0)
         reciprocal_rank_covered = coalesce(results.unjudged_result_count, 0) == 0
         return DocumentQueryEvaluation.base(query)(

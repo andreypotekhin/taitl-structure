@@ -17,7 +17,7 @@ class RetrieveDocuments(Transform):
 
     @step(input=[scored_documents, queries], output=candidates)
     def select_candidates(self, document: Document, query: SearchQuery) -> DocumentSearchCandidate:
-        query = inner_join(query, on=query.id == document.search_query_id)
+        inner_join(on=query.id == document.search_query_id)
         where(document.score_bm25.is_not_null())
         return DocumentSearchCandidate.base(document)(
             search_query_id=query.id,
