@@ -71,17 +71,9 @@ class RerankDocuments(Transform):
 
     @step(input=normalized_candidates, output=results)
     def rank_results(self, candidate: DocumentSearchCandidate) -> DocumentSearchResult:
-        return DocumentSearchResult(
-            search_query_id=candidate.search_query_id,
+        return DocumentSearchResult.base(candidate)(
             rank=row_number(
                 partition_by=candidate.search_query_id,
                 order_by=(candidate.score_rank.desc_nulls_last(), candidate.document_id.asc_nulls_first()),
             ),
-            candidate_rank=candidate.candidate_rank,
-            document_id=candidate.document_id,
-            title=candidate.title,
-            url=candidate.url,
-            score_bm25=candidate.score_bm25,
-            score_feedback=candidate.score_feedback,
-            score_rank=candidate.score_rank,
         )

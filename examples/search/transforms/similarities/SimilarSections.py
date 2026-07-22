@@ -28,11 +28,7 @@ class SimilarSections(Transform):
         candidate_id = pair.right_section_id
         score_bm25 = pair.bm25_left_to_right
         inner_join(on=section.id == candidate_id)
-        return IndexedSimilarSection(
-            id=section.id,
-            document_id=section.document_id,
-            ordinal=section.ordinal,
-            heading=section.heading,
+        return IndexedSimilarSection.base(section)(
             search_query_id=query.id,
             score_overlap=pair.score_overlap,
             score_bm25=score_bm25,

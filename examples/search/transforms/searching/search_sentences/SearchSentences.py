@@ -20,7 +20,7 @@ class SearchSentences(Transform):
             sentence.score_overlap.is_not_null(),
             sentence.score_bm25.is_not_null(),
         )
-        return SentenceSearchResult(
+        return SentenceSearchResult.base(sentence)(
             search_query_id=sentence.search_query_id,
             rank=row_number(
                 partition_by=sentence.search_query_id,
@@ -31,11 +31,5 @@ class SearchSentences(Transform):
                     sentence.id.asc_nulls_first(),
                 ),
             ),
-            document_id=sentence.document_id,
-            section_id=sentence.section_id,
-            paragraph_id=sentence.paragraph_id,
             sentence_id=sentence.id,
-            content=sentence.content,
-            score_overlap=sentence.score_overlap,
-            score_bm25=sentence.score_bm25,
         )

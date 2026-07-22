@@ -15,13 +15,8 @@ class ProfileDocuments(Transform):
         normalized_content = lower(regexp_replace(trim(row.content), pattern=r"\s+", replacement=" "))
         title_words = split(row.title, pattern=r"\s+")
         content_length = length(row.content)
-        return DocumentFeatures(
+        return DocumentFeatures.base(row)(
             document_id=row.id,
-            collection_id=row.collection_id,
-            source=row.source,
-            language=row.language,
-            title=row.title,
-            url=row.url,
             normalized_title=normalized_title,
             normalized_content=normalized_content,
             title_starts_with_the=row.title.startswith("The "),

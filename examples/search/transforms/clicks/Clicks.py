@@ -48,12 +48,9 @@ class Clicks(Transform):
             position=impression.position,
             examination_propensity=impression.examination_propensity,
         )
-        return DailyClicks(
+        return DailyClicks.base(impression)(
             window=day,
             query=query,
-            document_id=impression.document_id,
-            position=impression.position,
-            examination_propensity=impression.examination_propensity,
             click_count=count(),
             clicked_impression_count=count_distinct(click.impression_id),
             dwell_seconds=sum(dwell),

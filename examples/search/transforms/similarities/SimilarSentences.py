@@ -28,14 +28,7 @@ class SimilarSentences(Transform):
         candidate_id = pair.right_sentence_id
         score_bm25 = pair.bm25_left_to_right
         inner_join(on=sentence.id == candidate_id)
-        return IndexedSimilarSentence(
-            id=sentence.id,
-            document_id=sentence.document_id,
-            section_id=sentence.section_id,
-            paragraph_id=sentence.paragraph_id,
-            paragraph_ordinal=sentence.paragraph_ordinal,
-            ordinal=sentence.ordinal,
-            content=sentence.content,
+        return IndexedSimilarSentence.base(sentence)(
             search_query_id=query.id,
             score_overlap=pair.score_overlap,
             score_bm25=score_bm25,

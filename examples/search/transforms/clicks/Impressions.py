@@ -33,11 +33,8 @@ class Impressions(Transform):
             position=impression.position,
             examination_propensity=impression.examination_propensity,
         )
-        return DailyImpressions(
+        return DailyImpressions.base(impression)(
             window=day,
             query=query,
-            document_id=impression.document_id,
-            position=impression.position,
-            examination_propensity=impression.examination_propensity,
             impression_count=count(),
         )

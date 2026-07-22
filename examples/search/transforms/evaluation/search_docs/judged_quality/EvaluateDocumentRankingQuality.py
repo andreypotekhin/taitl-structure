@@ -65,21 +65,12 @@ class EvaluateDocumentRankingQuality(Transform):
             judgment,
             on=(judgment.search_query_id == query.search_query_id) & (judgment.document_id == result.document_id),
         )
-        return EvaluationResult(
-            window=query.window,
-            search_query_id=query.search_query_id,
-            document_id=result.document_id,
-            rank=result.rank,
-            relevance_grade=judgment.relevance_grade,
-        )
+        return EvaluationResult.base(query, result, judgment)
 
     @step(input=[evaluated_queries, judgments], output=ranked_judgments)
     def rank_judgments(self, query: EvaluationQuery, judgment: DocumentRelevanceJudgment) -> EvaluationJudgment:
         judgment = inner_join(judgment, on=judgment.search_query_id == query.search_query_id)
-        return EvaluationJudgment(
-            window=query.window,
-            search_query_id=query.search_query_id,
-            relevance_grade=judgment.relevance_grade,
+        return EvaluationJudgment.base(query, judgment)(
             ideal_rank=row_number(
                 partition_by=query.search_query_id,
                 order_by=judgment.relevance_grade,
@@ -90,9 +81,7 @@ class EvaluateDocumentRankingQuality(Transform):
     @step(input=ranked_judgments, output=judgment_totals)
     def count_judgments(self, judgment: EvaluationJudgment) -> EvaluationJudgmentTotals:
         group_by(window=judgment.window, search_query_id=judgment.search_query_id)
-        return EvaluationJudgmentTotals(
-            window=judgment.window,
-            search_query_id=judgment.search_query_id,
+        return EvaluationJudgmentTotals.base(judgment)(
             binary_relevant_judgment_count=sum(when(judgment.relevance_grade >= 2, 1).otherwise(0)),
         )
 
@@ -100,9 +89,7 @@ class EvaluateDocumentRankingQuality(Transform):
     def calculate_ideal_dcg(self, judgment: EvaluationJudgment) -> EvaluationIdealDcg:
         group_by(window=judgment.window, search_query_id=judgment.search_query_id)
         gain = (pow(2.0, judgment.relevance_grade) - 1.0) / log(judgment.ideal_rank + 1.0, base=2)
-        return EvaluationIdealDcg(
-            window=judgment.window,
-            search_query_id=judgment.search_query_id,
+        return EvaluationIdealDcg.base(judgment)(
             ideal_dcg_at_5=sum(when(judgment.ideal_rank <= 5, gain).otherwise(0.0)),
             ideal_dcg_at_10=sum(when(judgment.ideal_rank <= 10, gain).otherwise(0.0)),
             ideal_dcg_at_15=sum(when(judgment.ideal_rank <= 15, gain).otherwise(0.0)),
@@ -115,9 +102,7 @@ class EvaluateDocumentRankingQuality(Transform):
         judged = result.relevance_grade.is_not_null()
         relevant = result.relevance_grade >= 2
         gain = (pow(2.0, coalesce(result.relevance_grade, 0)) - 1.0) / log(result.rank + 1.0, base=2)
-        return EvaluationResultTotals(
-            window=result.window,
-            search_query_id=result.search_query_id,
+        return EvaluationResultTotals.base(result)(
             returned_result_count=sum(when(returned, 1).otherwise(0)),
             judged_result_count=sum(when(judged, 1).otherwise(0)),
             unjudged_result_count=sum(when(returned & ~judged, 1).otherwise(0)),
@@ -146,9 +131,7 @@ class EvaluateDocumentRankingQuality(Transform):
         ideal = left_join(ideal, on=ideal.search_query_id == query.search_query_id)
         relevant_count = coalesce(judgments.binary_relevant_judgment_count, 0)
         reciprocal_rank_covered = coalesce(results.unjudged_result_count, 0) == 0
-        return DocumentQueryEvaluation(
-            window=query.window,
-            search_query_id=query.search_query_id,
+        return DocumentQueryEvaluation.base(query)(
             returned_result_count=coalesce(results.returned_result_count, 0),
             judged_result_count=coalesce(results.judged_result_count, 0),
             binary_relevant_judgment_count=relevant_count,

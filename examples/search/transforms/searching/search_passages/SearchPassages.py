@@ -19,11 +19,8 @@ class SearchPassages(Transform):
 
     @step(input=paragraphs, output=contexts)
     def add_context(self, paragraph: Paragraph) -> ParagraphContext:
-        return ParagraphContext(
+        return ParagraphContext.base(paragraph)(
             paragraph_id=paragraph.id,
-            document_id=paragraph.document_id,
-            section_id=paragraph.section_id,
-            content=paragraph.content,
             preceding_content=lag(
                 paragraph.content,
                 partition_by=(paragraph.document_id, paragraph.section_id),
@@ -54,7 +51,7 @@ class SearchPassages(Transform):
             paragraph.score_overlap.is_not_null(),
             paragraph.score_bm25.is_not_null(),
         )
-        return PassageSearchResult(
+        return PassageSearchResult.base(paragraph, document, section, context)(
             search_query_id=query.id,
             rank=row_number(
                 partition_by=query.id,
@@ -65,15 +62,6 @@ class SearchPassages(Transform):
                     paragraph.id.asc_nulls_first(),
                 ),
             ),
-            document_id=paragraph.document_id,
-            title=document.title,
-            url=document.url,
-            section_id=paragraph.section_id,
             section_heading=section.heading,
             paragraph_id=paragraph.id,
-            preceding_content=context.preceding_content,
-            content=context.content,
-            following_content=context.following_content,
-            score_overlap=paragraph.score_overlap,
-            score_bm25=paragraph.score_bm25,
         )

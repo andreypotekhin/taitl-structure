@@ -28,12 +28,7 @@ class SimilarParagraphs(Transform):
         candidate_id = pair.right_paragraph_id
         score_bm25 = pair.bm25_left_to_right
         inner_join(on=paragraph.id == candidate_id)
-        return IndexedSimilarParagraph(
-            id=paragraph.id,
-            document_id=paragraph.document_id,
-            section_id=paragraph.section_id,
-            ordinal=paragraph.ordinal,
-            content=paragraph.content,
+        return IndexedSimilarParagraph.base(paragraph)(
             search_query_id=query.id,
             score_overlap=pair.score_overlap,
             score_bm25=score_bm25,

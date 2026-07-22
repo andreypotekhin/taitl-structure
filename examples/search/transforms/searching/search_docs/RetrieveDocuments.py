@@ -19,7 +19,7 @@ class RetrieveDocuments(Transform):
     def select_candidates(self, document: Document, query: SearchQuery) -> DocumentSearchCandidate:
         query = inner_join(query, on=query.id == document.search_query_id)
         where(document.score_bm25.is_not_null())
-        return DocumentSearchCandidate(
+        return DocumentSearchCandidate.base(document)(
             search_query_id=query.id,
             query=lower(regexp_replace(trim(query.content), pattern=r"\s+", replacement=" ")),
             candidate_rank=row_number(
@@ -27,9 +27,6 @@ class RetrieveDocuments(Transform):
                 order_by=(document.score_bm25.desc_nulls_last(), document.id.asc_nulls_first()),
             ),
             document_id=document.id,
-            title=document.title,
-            url=document.url,
-            score_bm25=document.score_bm25,
             score_feedback=0.0,
             score_rank=0.0,
             bm25_weight=0.0,

@@ -56,9 +56,7 @@ class BuildRelevanceSignals(Transform):
         ).otherwise(0)
         decay = exp(-log(2.0) * age_days / policy.half_life_days)
         group_by(query=impression.query, document_id=impression.document_id)
-        return QueryDocumentSignals(
-            query=impression.query,
-            document_id=impression.document_id,
+        return QueryDocumentSignals.base(impression)(
             impression_count=sum(impression.impression_count),
             click_count=sum(clicks),
             clicked_impression_count=sum(clicked_impressions),
@@ -99,8 +97,7 @@ class BuildRelevanceSignals(Transform):
         ).otherwise(0)
         decay = exp(-log(2.0) * age_days / policy.half_life_days)
         group_by(document_id=impression.document_id)
-        return DocumentPopularity(
-            document_id=impression.document_id,
+        return DocumentPopularity.base(impression)(
             impression_count=sum(impression.impression_count),
             click_count=sum(clicks),
             clicked_impression_count=sum(clicked_impressions),
