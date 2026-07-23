@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import cast
 
-from structure.plugin.api.v1 import StepAuthoringCapture, StepAuthoringRequest
+from structure.plugin.api.v1 import StepAuthoringCapture, StepAuthoringRequest, StepAuthoringResult
 from structure.plugin.pyspark.api.PySpark import PySpark
 from structure.plugin.pyspark.dsl.InputScope import InputScope
 from structure.plugin.pyspark.dsl.RowScope import RowScope
@@ -13,6 +14,11 @@ from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import Py
 class Authoring:
     def open_step(self, request: StepAuthoringRequest) -> PySparkStepSession:
         return PySparkStepSession(request)
+
+    def result_arguments(self, results: tuple[StepAuthoringResult, ...]) -> tuple[object, ...]:
+        return tuple(
+            RowScope(name=cast(type, result.schema).__name__, schema=cast(type, result.schema)) for result in results
+        )
 
 
 class PySparkStepSession:

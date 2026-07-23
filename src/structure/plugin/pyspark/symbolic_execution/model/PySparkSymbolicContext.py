@@ -62,6 +62,11 @@ class PySparkSymbolicContext:
         self.relation_scopes[scope] = relation
         return relation
 
+    def record_aggregate(self, aggregate: object) -> None:
+        from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
+
+        self.operations.append(OperationPlan.aggregate_operation(cast(Any, aggregate)))
+
     def input_scope(self, *, name: str, schema: object) -> object:
         from structure.plugin.pyspark.dsl.InputScope import InputScope
 

@@ -1,28 +1,68 @@
 # Streams Example
 
-The streams example app models white-water kayaking competition. 
-It demonstrates using Structure with Spark Structured Streaming.
+This example models a white-water kayaking competition with Spark Structured Streaming. Timing messages become
+enriched gate passages; the passages support live gate progress and correlation with independently streamed judge
+calls. Structure owns the transformations, while callers own stream sources, sinks, checkpoints, triggers, output
+modes, and query lifecycle.
 
-## passages.py
-`PreparePassages` normalizes timing messages, enriches them from static race, paddler, and gate reference data, applies
-an event-time watermark, and removes duplicate event identifiers. 
+## Pipeline map
 
-## progress.py
-`BuildGateProgress` produces a watermarked aggregate; the caller must write that result in `update` or `complete` mode. 
+| Concern | Transform | Result | Streaming contract |
+| --- | --- | --- | --- |
+| Passage preparation | `PreparePassages` | Enriched `Passage` rows | Watermarked and event-ID deduplicated. |
+| Live progress | `BuildGateProgress` | `GateProgress` aggregates | Requires `update` or `complete` output mode. |
+| Judge correlation | `CorrelatePenalties` | `Penalty` rows | Two watermarked streams, bounded to five minutes. |
 
-## penalties.py
-`CorrelatePenalties` joins timing passages with independently streamed judge calls, bounded to calls reported within
-five minutes of a matching passage.
+## Prepare passages
 
-Structure owns none of the streaming query lifecycle. The caller creates sources and sinks, owns checkpoint locations, chooses
-triggers and output mode, and starts and stops queries. A caller-owned file-stream seam looks like this:
+`PreparePassages` accepts streaming raw timing events and static `Race`, `Paddler`, and `Gate` reference data. It
+rejects negative elapsed times, applies a ten-minute event-time watermark, removes duplicate event IDs, and enriches
+each accepted timing message with race, paddler, and gate context. Reference joins are left joins, so a timing event
+remains visible when static context is unavailable.
 
 ```python
 events = spark.readStream.schema(raw_event_schema).json(events_path)
-passages = PreparePassages(events=events, races=races, paddlers=paddlers, gates=gates).run(session).passages
-progress = BuildGateProgress(passages=passages).run(session).progress
-query = progress.writeStream.outputMode("complete").option("checkpointLocation", checkpoint).format("memory").start()
+passages = PreparePassages(
+    events=events,
+    races=races,
+    paddlers=paddlers,
+    gates=gates,
+).run(session).passages
 ```
 
-`RaceWinner` is intentionally not produced here. Computing winners requires complete-race ranking and belongs to the
-future batch-only telemetry example.
+Events older than the watermark may be discarded by Spark. Deduplication relies on the source event ID, so producers
+should assign one immutable ID per timing message and preserve it across delivery retries.
+
+## Build live gate progress
+
+`BuildGateProgress` groups watermarked passages by race, run, and gate. For every group it publishes the passage count
+and the fastest and slowest elapsed millisecond values observed so far.
+
+```python
+progress = BuildGateProgress(passages=passages).run(session).progress
+query = (
+    progress.writeStream.outputMode("complete")
+    .option("checkpointLocation", checkpoint)
+    .format("memory")
+    .start()
+)
+```
+
+Because this output is a streaming aggregate, write it in `update` or `complete` mode. The caller chooses how results
+are materialized and must use a stable checkpoint location when the query needs recovery.
+
+## Correlate judge penalties
+
+`CorrelatePenalties` joins prepared passages to independently streamed `JudgeCall` rows. Both sides use a ten-minute
+watermark. A call matches only when race, run, paddler, and gate agree and the call arrives from the passage time
+through five minutes later. The resulting `Penalty` preserves both source identifiers, carries the judge penalty code,
+and adds the judge penalty seconds to the passage elapsed time.
+
+```python
+calls = spark.readStream.schema(judge_call_schema).json(calls_path)
+penalties = CorrelatePenalties(passages=passages, calls=calls).run(session).penalties
+```
+
+The bounded time condition keeps the stream-stream join state finite. Late, unmatched, or out-of-window calls do not
+produce a penalty. A full race winner calculation is intentionally absent: it requires complete-race ranking and
+belongs to a future batch telemetry example.

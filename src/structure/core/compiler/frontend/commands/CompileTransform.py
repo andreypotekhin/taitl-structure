@@ -53,7 +53,6 @@ from structure.plugin.pyspark.dsl.joins import (
     OverlapPolicy,
     TiePolicy,
 )
-from structure.plugin.pyspark.dsl.operations import OperationPlan
 from structure.plugin.pyspark.dsl.Projection import Projection
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import BooleanType, DecimalType, Struct, StructType, StructureType
@@ -681,7 +680,7 @@ class CompileTransform:
             )
         first = result_plans[0]
         if first.aggregate is not None:
-            context.operations.append(OperationPlan.aggregate_operation(first.aggregate))
+            context.record_aggregate(first.aggregate)
         bindings = self._parent_call_bindings(bindings, parent_call)
         driver = bindings[0]
         self._validate_relation_reads(
@@ -788,8 +787,17 @@ class CompileTransform:
         if result is None:
             raise TypeError(f"{candidate.source} is not a compiled step method")
         first = result[0]
+        authoring_api = cast(AuthoringAPI | None, _authoring.get()[0])
+        if authoring_api is None:
+            raise RuntimeError("Core authoring requires a selected platform authoring facet.")
+        values = authoring_api.result_arguments(
+            tuple(
+                StepAuthoringResult(schema=item.schema, lane=item.lane, frame=item.frame, ordinal=item.ordinal)
+                for item in result
+            )
+        )
         return ParentStepInvocation(
-            value=self._parent_call_result(result),
+            value=values[0] if len(values) == 1 else values,
             source={
                 "lane": first.lane,
                 "schema": first.schema,
@@ -815,12 +823,6 @@ class CompileTransform:
         except NameError:
             return False
         return bool(self._return_schemas(annotation))
-
-    def _parent_call_result(self, results: tuple[StepResultPlan, ...]) -> RowScope | tuple[RowScope, ...]:
-        scopes = tuple(RowScope(name=result.schema.__name__, schema=result.schema) for result in results)
-        if len(scopes) == 1:
-            return scopes[0]
-        return scopes
 
     def _step_options(
         self,
