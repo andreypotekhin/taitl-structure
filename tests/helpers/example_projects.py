@@ -48,12 +48,10 @@ def render_store_example() -> dict[str, str]:
         from examples.store.schemas.product import BlockedProduct, Product, ProductBase
         from examples.store.schemas.promotion import Promotion
         from examples.store.schemas.shipment import Shipment
-        from examples.store.schemas.v3 import V3OrderDetails, V3OrderProjection, V3OrderSource
         from examples.store.transforms.adv_analytics import AdvancedOrderAnalytics
         from examples.store.transforms.analytics import OrderAnalytics
         from examples.store.transforms.order import EnrichOrders
         from examples.store.transforms.rowset_join import RowsetJoinExamples
-        from examples.store.transforms.v3 import V3OrderFeatures
 
         schema_modules: dict[str, Sequence[type[Schema]]] = {
             "examples.store.schemas.adv_analytics": [
@@ -83,7 +81,6 @@ def render_store_example() -> dict[str, str]:
             "examples.store.schemas.product": [ProductBase, Product, BlockedProduct],
             "examples.store.schemas.promotion": [Promotion],
             "examples.store.schemas.shipment": [Shipment],
-            "examples.store.schemas.v3": [V3OrderDetails, V3OrderSource, V3OrderProjection],
         }
         files = {}
         transforms = (
@@ -91,7 +88,6 @@ def render_store_example() -> dict[str, str]:
             (RowsetJoinExamples, "examples.store.transforms.rowset_join.RowsetJoinExamples"),
             (OrderAnalytics, "examples.store.transforms.analytics.OrderAnalytics"),
             (AdvancedOrderAnalytics, "examples.store.transforms.adv_analytics.AdvancedOrderAnalytics"),
-            (V3OrderFeatures, "examples.store.transforms.v3.V3OrderFeatures"),
         )
         for transform_class, source_transform in transforms:
             files.update(
@@ -101,7 +97,7 @@ def render_store_example() -> dict[str, str]:
                         Compiler.frontend.compile()(
                             transform_class,
                             materialize_schemas=False,
-                            target_profile=">=4.0,<4.1" if transform_class is V3OrderFeatures else None,
+                            target_profile=None,
                         ).lowered,
                     ),
                     source_transform=source_transform,

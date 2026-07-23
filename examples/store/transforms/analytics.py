@@ -17,7 +17,6 @@ class OrderAnalytics(Transform):
             customer_id=order.customer_id,
             order_date=order.business.order_date,
         )
-
         return CustomerDailyTotal(
             tenant=order.tenant,
             customer_id=order.customer_id,
@@ -34,7 +33,6 @@ class OrderAnalytics(Transform):
             product_id=order.product_id,
             order_date=order.business.order_date,
         )
-
         return ProductDailySummary(
             tenant=order.tenant,
             product_id=order.product_id,

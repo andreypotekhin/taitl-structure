@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import cast
 
@@ -19,6 +20,9 @@ class Authoring:
         return tuple(
             RowScope(name=cast(type, result.schema).__name__, schema=cast(type, result.schema)) for result in results
         )
+
+    def rewrite_body(self, body: object, *, frames: Mapping[str, str]) -> object:
+        return PySpark.symbolic_execution.rewrite()(body, frames=frames)
 
 
 class PySparkStepSession:

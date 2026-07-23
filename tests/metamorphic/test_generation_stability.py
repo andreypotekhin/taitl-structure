@@ -29,7 +29,6 @@ def test_store_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/store/pyspark/schemas/product.py",
         "examples/structure_generated/store/pyspark/schemas/promotion.py",
         "examples/structure_generated/store/pyspark/schemas/shipment.py",
-        "examples/structure_generated/store/pyspark/schemas/v3.py",
         "examples/structure_generated/store/pyspark/transforms/order.py",
         "examples/structure_generated/store/traceability/transforms/order.EnrichOrders.json",
         "examples/structure_generated/store/pyspark/transforms/rowset_join.py",
@@ -38,8 +37,6 @@ def test_store_example_generated_file_order_is_deterministic() -> None:
         "examples/structure_generated/store/traceability/transforms/analytics.OrderAnalytics.json",
         "examples/structure_generated/store/pyspark/transforms/adv_analytics.py",
         "examples/structure_generated/store/traceability/transforms/adv_analytics.AdvancedOrderAnalytics.json",
-        "examples/structure_generated/store/pyspark/transforms/v3.py",
-        "examples/structure_generated/store/traceability/transforms/v3.V3OrderFeatures.json",
         "examples/structure_generated/store/traceability/__init__.py",
         "examples/structure_generated/store/traceability/transforms/__init__.py",
     ]
@@ -50,23 +47,12 @@ def test_store_example_generation_keeps_public_behavior_fragments_stable() -> No
     transform = render_store_example()["examples/structure_generated/store/pyspark/transforms/order.py"]
 
     assert "class EnrichOrdersGenerated:" in transform
-    assert "from examples.store.transforms.order import EnrichOrders" in transform
-    assert "orders = self._impl.use_current_orders(orders=_input_orders, spark=self.spark, ctx=self.ctx)" in transform
+    assert "from examples.store.transforms.order import EnrichOrders" not in transform
+    assert "self._impl." not in transform
     assert 'customers_joined = F.broadcast(customers.alias("customers"))' in transform
     assert 'promotions_joined = promotions.alias("promotions")' in transform
-    assert (
-        'published = self._impl.add_quality_columns(published=published, spark=self.spark, ctx=self.ctx)' in transform
-    )
-    assert (
-        'assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="allow_extra_columns")'
-        in transform
-    )
-    assert (
-        transform.count(
-            'assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="allow_extra_columns")'
-        )
-        == 2
-    )
+    assert '# Step method: discard_negative_totals' in transform
+    assert 'assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")' in transform
     assert 'F.filter(F.transform(F.col("order_raw.tags"), lambda item: F.lower(F.trim(item)))' in transform
     assert (
         'F.map_filter(F.transform_values(F.col("order_raw.attributes"), '
@@ -94,9 +80,3 @@ def test_store_example_generation_keeps_public_behavior_fragments_stable() -> No
     assert "Window.partitionBy" in advanced
     assert "F.exists(" in advanced
     assert "F.map_from_entries(F.map_entries(" in advanced
-
-    v3 = render_store_example()["examples/structure_generated/store/pyspark/transforms/v3.py"]
-
-    assert "class V3OrderFeaturesGenerated:" in v3
-    assert ".try_cast('int')" in v3
-    assert "desc_nulls_last()" in v3

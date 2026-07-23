@@ -25,7 +25,6 @@ class AdvancedOrderAnalytics(Transform):
             product_category=order.product_category,
             order_date=order.business.order_date,
         )
-
         return OrderRevenueRollup(
             tenant_id=order.tenant.tenant_id,
             product_category=order.product_category,
@@ -57,7 +56,6 @@ class AdvancedOrderAnalytics(Transform):
             product_category=order.product_category,
             customer_tier=order.customer_tier,
         )
-
         return OrderProductCube(
             tenant_id=order.tenant.tenant_id,
             product_category=order.product_category,
@@ -75,7 +73,6 @@ class AdvancedOrderAnalytics(Transform):
             order_by=order.quantity,
             frame=rows_between(preceding(2), current_row()),
         )
-
         return OrderCustomerWindow.base(order)(
             tenant_id=order.tenant.tenant_id,
             order_id=order.id,
@@ -101,7 +98,6 @@ class AdvancedOrderAnalytics(Transform):
             ),
             lambda key, value: value.is_not_null(),
         )
-
         return OrderCollectionProfile.base(row)(
             tag_count=size(row.tags),
             contains_priority=array_contains(row.tags, "priority"),

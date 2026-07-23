@@ -160,7 +160,11 @@ class SearchDocumentsGenerated(RetrieveDocumentsGenerated, RerankDocumentsGenera
         frames.update(self._step_normalize_bm25_2(frames))
         frames.update(self._step_rank_results_3(frames))
 
+        # Step method: candidates
+        candidates = frames["candidates"].alias("document_search_candidate")
+        assert_schema(candidates, DOCUMENT_SEARCH_CANDIDATE_SCHEMA, name="DocumentSearchCandidate", mode="strict")
+
         # Step method: results
         results = frames["results"].alias("document_search_result")
         assert_schema(results, DOCUMENT_SEARCH_RESULT_SCHEMA, name="DocumentSearchResult", mode="strict")
-        return TransformResult({"results": results}, single=True, schema={"results": DOCUMENT_SEARCH_RESULT_SCHEMA})
+        return TransformResult({"candidates": candidates, "results": results}, single=False, schema={"candidates": DOCUMENT_SEARCH_CANDIDATE_SCHEMA, "results": DOCUMENT_SEARCH_RESULT_SCHEMA})

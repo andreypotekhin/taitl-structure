@@ -55,6 +55,9 @@ class Facet:
     def result_arguments(self, results):
         return ()
 
+    def rewrite_body(self, body, *, frames):
+        return body
+
 
 class FakePlugin:
     def __init__(self, minimum=1, maximum=1, *, name="fake", distribution="fake-wheel"):

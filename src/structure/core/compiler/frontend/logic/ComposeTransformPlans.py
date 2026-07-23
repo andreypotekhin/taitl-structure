@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import replace
 
 from structure.core.compiler.diagnostics.api import StructureCompileError
-from structure.core.compiler.frontend.logic.LegacyStepPlan import LegacyStepPlan, LegacyStepResultPlan
 from structure.core.compiler.ir.model.OutputPlan import OutputPlan
 from structure.core.compiler.ir.model.StepInputPlan import StepInputPlan
 from structure.core.compiler.ir.model.StepPlan import StepPlan
@@ -19,12 +18,9 @@ from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline, TransformPipelineStage
 from structure.lib.cross.errors import Diagnostic, diagnostic_registry
 from structure.plugin.api.v1 import InputPlan
-from structure.plugin.pyspark.dsl.aggregation import AggregateAssignment, AggregateKey, AggregatePlan, ProjectAssignment
-from structure.plugin.pyspark.dsl.Expression import Expression
-from structure.plugin.pyspark.dsl.joins import JoinPlan
-from structure.plugin.pyspark.dsl.operations import DuplicateRowsPlan, OperationPlan, SelectedRowsPlan
 
 CompileStage = Callable[[type[Transform]], TransformPlan]
+RewriteBody = Callable[[object, Mapping[str, str]], object]
 
 
 class ComposeTransformPlans:
@@ -35,8 +31,10 @@ class ComposeTransformPlans:
         *,
         name: str,
         compile_stage: CompileStage,
+        rewrite_body: RewriteBody | None = None,
         wrapper_class: type[Transform] | None = None,
     ) -> TransformPlan:
+        rewrite = rewrite_body or (lambda body, _: body)
         stages = pipeline.stages
         if not stages:
             raise self._error(
@@ -53,6 +51,7 @@ class ComposeTransformPlans:
             stage_plans,
             labels=labels,
             external=external,
+            rewrite_body=rewrite,
         )
         return TransformPlan(
             name=name,
@@ -206,6 +205,7 @@ class ComposeTransformPlans:
         *,
         labels: tuple[str, ...],
         external: dict[tuple[int, str], str],
+        rewrite_body: RewriteBody,
     ) -> tuple[list[StepPlan], list[OutputPlan]]:
         steps: list[StepPlan] = []
         current_outputs: dict[str, OutputPlan] = {}
@@ -219,7 +219,13 @@ class ComposeTransformPlans:
             final_names = {output.name for output in plan.outputs} if final else set()
 
             for step in plan.steps:
-                rewritten = self._step(step, label=label, frame_map=frame_map, final_names=final_names)
+                rewritten = self._step(
+                    step,
+                    label=label,
+                    frame_map=frame_map,
+                    final_names=final_names,
+                    rewrite_body=rewrite_body,
+                )
                 rewritten = replace(rewritten, name=f"{label}.{step.name}", ordinal=len(steps))
                 rewritten_steps.append(rewritten)
                 steps.append(rewritten)
@@ -273,24 +279,10 @@ class ComposeTransformPlans:
         label: str,
         frame_map: dict[str, str],
         final_names: set[str],
+        rewrite_body: RewriteBody,
     ) -> StepPlan:
         results = tuple(self._result(result, label=label, final_names=final_names) for result in step.results)
         primary = results[0]
-        if isinstance(step, LegacyStepPlan):
-            return replace(
-                step,
-                source=frame_map.get(step.source, self._frame(label, step.source)),
-                input_lane=frame_map.get(step.input_lane, self._frame(label, step.input_lane)),
-                output_lane=primary.frame,
-                projection=tuple(self._projection(assignment) for assignment in step.projection),
-                joins=tuple(self._join(join, frame_map=frame_map) for join in step.joins),
-                operations=tuple(self._operation(operation, frame_map=frame_map) for operation in step.operations),
-                aggregate=None if step.aggregate is None else self._aggregate(step.aggregate),
-                before_hooks=(),
-                after_hooks=(),
-                inputs=tuple(self._input(input, label=label, frame_map=frame_map) for input in step.inputs),
-                results=results,
-            )
         return replace(
             step,
             source=frame_map.get(step.source, self._frame(label, step.source)),
@@ -300,6 +292,7 @@ class ComposeTransformPlans:
             after_hooks=(),
             inputs=tuple(self._input(input, label=label, frame_map=frame_map) for input in step.inputs),
             results=results,
+            plugin_body=None if step.plugin_body is None else rewrite_body(step.plugin_body, frame_map),
         )
 
     def _input(self, input: StepInputPlan, *, label: str, frame_map: dict[str, str]) -> StepInputPlan:
@@ -311,15 +304,6 @@ class ComposeTransformPlans:
 
     def _result(self, result: StepResultPlan, *, label: str, final_names: set[str]) -> StepResultPlan:
         frame = result.frame if result.frame in final_names else self._frame(label, result.frame)
-        if isinstance(result, LegacyStepResultPlan):
-            return replace(
-                result,
-                lane=frame,
-                frame=frame,
-                projection=tuple(self._projection(assignment) for assignment in result.projection),
-                aggregate=None if result.aggregate is None else self._aggregate(result.aggregate),
-                after_hooks=(),
-            )
         return replace(
             result,
             lane=frame,
@@ -367,87 +351,6 @@ class ComposeTransformPlans:
         if not output.aliases:
             return output.name
         return f"{output.name} alias {', '.join(output.aliases)}"
-
-    def _operation(self, operation: OperationPlan, *, frame_map: dict[str, str]) -> OperationPlan:
-        return replace(
-            operation,
-            filter=None if operation.filter is None else self._expression(operation.filter),
-            join=None if operation.join is None else self._join(operation.join, frame_map=frame_map),
-            aggregate=None if operation.aggregate is None else self._aggregate(operation.aggregate),
-            selected_rows=None if operation.selected_rows is None else self._selected_rows(operation.selected_rows),
-            duplicate_rows=None if operation.duplicate_rows is None else self._duplicate_rows(operation.duplicate_rows),
-        )
-
-    def _join(self, join: JoinPlan, *, frame_map: dict[str, str]) -> JoinPlan:
-        temporal = join.temporal
-        as_of = join.as_of
-        dedupe = join.dedupe
-        if temporal is not None:
-            temporal = replace(
-                temporal,
-                at=self._expression(temporal.at),
-                valid_from=self._expression(temporal.valid_from),
-                valid_to=self._expression(temporal.valid_to),
-            )
-        if as_of is not None:
-            as_of = replace(
-                as_of,
-                left_time=self._expression(as_of.left_time),
-                right_time=self._expression(as_of.right_time),
-                tolerance=None if as_of.tolerance is None else self._expression(as_of.tolerance),
-            )
-        if dedupe is not None:
-            dedupe = replace(dedupe, order_by=self._expression(dedupe.order_by))
-        return replace(
-            join,
-            source=frame_map.get(join.source, join.source),
-            predicate=self._expression(join.predicate),
-            dedupe=dedupe,
-            temporal=temporal,
-            as_of=as_of,
-        )
-
-    def _aggregate(self, aggregate: AggregatePlan) -> AggregatePlan:
-        return AggregatePlan(
-            keys=tuple(
-                AggregateKey(name=key.name, expression=self._expression(key.expression)) for key in aggregate.keys
-            ),
-            assignments=tuple(
-                AggregateAssignment(
-                    field=assignment.field,
-                    function=assignment.function,
-                    expression=None if assignment.expression is None else self._expression(assignment.expression),
-                    key=assignment.key,
-                    arguments=tuple(self._expression(argument) for argument in assignment.arguments),
-                    filter=None if assignment.filter is None else self._expression(assignment.filter),
-                    order_by=None if assignment.order_by is None else self._expression(assignment.order_by),
-                    options=assignment.options,
-                )
-                for assignment in aggregate.assignments
-            ),
-            grouping=aggregate.grouping,
-            levels=aggregate.levels,
-            having=None if aggregate.having is None else self._expression(aggregate.having),
-        )
-
-    def _selected_rows(self, selected_rows: SelectedRowsPlan) -> SelectedRowsPlan:
-        return replace(
-            selected_rows,
-            order_by=self._expression(selected_rows.order_by),
-            partition_by=tuple(self._expression(expression) for expression in selected_rows.partition_by),
-        )
-
-    def _duplicate_rows(self, duplicate_rows: DuplicateRowsPlan) -> DuplicateRowsPlan:
-        return DuplicateRowsPlan(
-            subset=tuple(self._expression(expression) for expression in duplicate_rows.subset),
-            scope=duplicate_rows.scope,
-        )
-
-    def _projection(self, assignment: ProjectAssignment) -> ProjectAssignment:
-        return ProjectAssignment(field=assignment.field, expression=self._expression(assignment.expression))
-
-    def _expression(self, expression: Expression) -> Expression:
-        return replace(expression, args=tuple(self._expression(argument) for argument in expression.args))
 
     def _reject_hooks(self, pipeline_name: str, plans: tuple[TransformPlan, ...]) -> None:
         for plan in plans:

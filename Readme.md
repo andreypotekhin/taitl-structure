@@ -388,6 +388,21 @@ Python-first approach allows for such IDE conveniences, as:
 - Navigating to the code where a schema or a transform class or method is used.
 - Displaying inheritance hierarchies of schemas/transforms.
 
+## Code Examples
+
+These example applications demonstrate Structure in various domains.
+
+| Example                                 | Focus                                       | Details                                               |
+| --------------------------------------- | ------------------------------------------- | ----------------------------------------------------- |
+| [School](examples/school/Readme.md)     | Algebra, vectors and matrices               | Streaming scalars, batch matrices.                    |
+| [Search](examples/search/Readme.md)     | Scoring, ranking, searching, evaluation     | Batch corpus, streaming feedback.                     |
+| [Security](examples/security/Readme.md) | Vulnerabilities per device, user, team, org | Streaming audit, batch reports.                       |
+| [Store](examples/store/Readme.md)       | Retail order enrichment and analytics       | Streaming fulfillment, batch analytics.               |
+| [Stocks](examples/stocks/Readme.md)     | Daily-bar technical-analysis                | Trend, momentum, volatility, daily return indicators. |
+| [Streams](examples/streams/Readme.md)   | White-water kayaking                        | Streaming timing, progress and penalties.             |
+
+The examples are designed for capability demonstration, not immediate production use.
+
 ## Out of scope
 
 Structure focuses on data transformation. Loading, writing, orchestrating and other activities outside of data transformations are the responsibility of end-user.
@@ -405,6 +420,8 @@ See [Compatibility.md](docs/Compatibility.md) for the versioning and compatibili
 
 Read QuickRef: [QuickRef.md](docs/QuickRef.md)
 
+Browse code examples: [Examples](examples/Readme.md)
+
 ## Development
 
 Development overview: [Development.md](docs/dev/Development.md)
@@ -415,10 +432,7 @@ Structure is built for engineers. For a code-related support request, open an is
 and the complete output it produces, including the error and traceback where applicable. Explain the expected result
 as well. Descriptions without a reproducible example cannot be diagnosed reliably.
 
-Code-related issues also need an accompanying pull request that contains the proposed fix and a regression test. The
-example gives maintainers a shared starting point; the pull request turns that knowledge into a reviewable,
-verifiable improvement. See [developer support](docs/dev/Development.md#support-and-contributions) for the full
-submission contract.
+Code-related issues also need an accompanying pull request that contains the proposed fix and a regression test. See [developer support](docs/dev/Development.md#support-and-contributions) for submission instructions.
 
 ## License
 
@@ -426,17 +440,3 @@ LGPL-2.1 + Ethical Use Policy
 
 See [License.md](License.md)
 
-## Roadmap
-
-- **v1:** online PySpark execution by default, optional generated PySpark classes, projection, filtering,
-  joins, typed intermediate schemas, hooks, validation, compiler provenance, static dataflow traceability,
-  streaming-compatible transforms, diagnostic links, and setup checks.
-- **v2:** mainstream analytical features: existence joins, `inner_join(...)`, broad rowset joins, deterministic lookup
-  dedupe, temporal validity joins, windowing, aggregations, advanced grouping, Spark higher-order functions,
-  cache/persist first-slice directives, Spark Connect support for completed batch features, and static streaming
-  compatibility diagnostics for caller-owned streaming DataFrames.
-- **v3:** PySpark parity gap closure and compiler-visible streaming transformation hardening. Sources, sinks,
-  triggers, checkpoints, output modes, and query lifecycle remain caller-owned. See [v3 highlights](docs/V3.md).
-- **v4:** broader, predictable PySpark transformation API coverage across expressions, nested values, relational
-  transforms, joins, aggregations, windows, and collections. Loading, storage, and orchestration remain caller-owned.
-  See [v4 highlights](docs/V4.md).

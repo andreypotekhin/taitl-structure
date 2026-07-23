@@ -50,7 +50,6 @@ def test_orders_generated_code_matches_independent_reference_operations() -> Non
         'customers_joined = F.broadcast(customers.alias("customers"))',
         'products_joined = products.alias("products")',
         'promotions_joined = promotions.alias("promotions")',
-        'published = self._impl.add_quality_columns(published=published, spark=self.spark, ctx=self.ctx)',
         'assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")',
     ]
 

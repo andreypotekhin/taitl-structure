@@ -14,6 +14,7 @@ Source: `examples.search.transforms.searching.search_docs.SearchDocuments.Search
 
 ## Outputs
 
+- `candidates`: `DocumentSearchCandidate`
 - `results`: `DocumentSearchResult`
 
 ## Step methods

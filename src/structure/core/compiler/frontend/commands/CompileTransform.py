@@ -54,7 +54,6 @@ from structure.plugin.pyspark.dsl.joins import (
     TiePolicy,
 )
 from structure.plugin.pyspark.dsl.Projection import Projection
-from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import BooleanType, DecimalType, Struct, StructType, StructureType
 
 SourceDeclaration = InputDeclaration | LaneDeclaration | BindingSelector
@@ -197,10 +196,14 @@ class CompileTransform:
         config: StructureConfig,
         wrapper_class: type[Transform] | None = None,
     ) -> TransformPlan:
+        authoring_api = cast(AuthoringAPI | None, _authoring.get()[0])
+        if authoring_api is None:
+            raise RuntimeError("Core authoring requires a selected platform authoring facet.")
         return self._composer(
             pipeline,
             name=name,
             compile_stage=lambda transform_class: self._compile(transform_class, config=config),
+            rewrite_body=lambda body, frames: authoring_api.rewrite_body(body, frames=frames),
             wrapper_class=wrapper_class,
         )
 
@@ -2049,7 +2052,15 @@ class CompileTransform:
     ) -> Expression | None:
         if predicate is None:
             return None
-        scope = RowScope(name=output_schema.__name__, schema=output_schema)
+        authoring_api = cast(AuthoringAPI | None, _authoring.get()[0])
+        if authoring_api is None:
+            raise RuntimeError("Core authoring requires a selected platform authoring facet.")
+        arguments = authoring_api.result_arguments(
+            (StepAuthoringResult(schema=output_schema, lane="", frame="", ordinal=0),)
+        )
+        if len(arguments) != 1:
+            raise RuntimeError("Plugin authoring must provide one symbolic result argument for having(...).")
+        scope = arguments[0]
         value = predicate(scope) if callable(predicate) else predicate
         expression = literal(value)
         if not isinstance(expression.type, BooleanType):

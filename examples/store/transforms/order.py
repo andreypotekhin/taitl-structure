@@ -34,18 +34,12 @@ class EnrichOrders(Transform):
     def money(value):
         return coalesce(to_decimal(value, precision=12, scale=2), 0)
 
-    @raw(inout=input(orders) | lane(orders), streaming=True)
-    def use_current_orders(self, *, orders, spark, ctx):
-        return orders
-
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         where(order.id.is_not_null())
         where(order.customer_id.is_not_null())
         where(order.product_id.is_not_null())
-
         total = self.money(order.total)
         discount = self.money(order.discount)
-
         return OrderNormalized.project(order)(
             id=self.clean_id(order.id),
             customer_id=self.clean_id(order.customer_id),
@@ -67,20 +61,16 @@ class EnrichOrders(Transform):
             is_large=total > 1000,
         )
 
-    @raw(streaming=True)
-    def remove_negative_totals(self, *, orders, spark, ctx):
-        from pyspark.sql import functions as F
-
-        return orders.where(F.col("net_total") >= 0)
+    def discard_negative_totals(self, order: OrderNormalized) -> OrderNormalized:
+        where(order.net_total >= 0)
+        return OrderNormalized.project(order)
 
     def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
-        customer = left_join(
-            customer,
+        left_join(
             on=(customer.tenant.tenant_id == order.tenant.tenant_id)
             & (self.clean_id(customer.id) == order.customer_id),
             hint=JoinHint.BROADCAST,
         )
-
         return OrderWithCustomer.base(order)(
             customer_name=customer.name,
             customer_tier=customer.tier,
@@ -102,9 +92,7 @@ class EnrichOrders(Transform):
             how=Join.LEFT,
             dedupe=JoinDedupe.latest_by(product.audit.ingested_at, ties=TiePolicy.ERROR),
         )
-
         where(product.id.is_not_null())
-
         return OrderWithProduct.base(order)(
             product_name=product.name,
             product_category=product.category,
@@ -114,7 +102,6 @@ class EnrichOrders(Transform):
 
     def add_promotion(self, order: OrderWithProduct, promotion: Promotion) -> OrderWithPromotion:
         temporal_one(
-            promotion,
             on=(promotion.tenant.tenant_id == order.tenant.tenant_id)
             & self.clean_id(promotion.code).null_safe_eq(order.promotion_code),
             at=order.business.order_date,
@@ -122,7 +109,6 @@ class EnrichOrders(Transform):
             valid_to=promotion.valid_to,
             how=Join.LEFT,
         )
-
         return OrderWithPromotion.base(order)(
             promotion_name=promotion.name,
             promotion_discount=promotion.discount,
@@ -130,11 +116,9 @@ class EnrichOrders(Transform):
 
     def add_shipments(self, order: OrderWithPromotion, shipment: Shipment) -> OrderFulfillment:
         inner_join(
-            shipment,
             on=(shipment.tenant.tenant_id == order.tenant.tenant_id) & (shipment.order_id == order.id),
             strategy=JoinStrategy.SHUFFLE_HASH,
         )
-
         return OrderFulfillment.base(order)(
             shipment_line=shipment.line_number,
             carrier=shipment.carrier,
@@ -142,33 +126,9 @@ class EnrichOrders(Transform):
             shipped_at=shipment.shipped_at,
         )
 
-    @raw(
-        inout=[lane(orders), input(customers), input(products)] | lane(orders),
-        schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS,
-        streaming=True,
-    )
-    def note_lookup_inputs(self, *, orders, customers, products, spark, ctx):
-        from pyspark.sql import functions as F
-
-        return orders.withColumn("_lookup_inputs_seen", F.lit(customers is not None and products is not None))
-
     @step(output=published)
     def publish(self, order: OrderFulfillment) -> OrderPublished:
         flags = PublicationFlags(
             has_promotion=order.promotion_name.is_not_null(),
         )
-
         return OrderPublished.base(order, flags)
-
-    @raw(
-        inout=lane(published) | output(published),
-        schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS,
-        project_output=True,
-        streaming=True,
-    )
-    def add_quality_columns(self, *, published, spark, ctx):
-        from pyspark.sql import functions as F
-
-        return published.withColumn("_has_customer", F.col("customer_name").isNotNull()).withColumn(
-            "_has_tracking", F.col("tracking_number").isNotNull()
-        )

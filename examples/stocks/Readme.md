@@ -1,21 +1,19 @@
-# Stocks Example
+# Stocks Example App 
 
-This batch-only example uses Structure as a compact language for technical analysis over daily adjusted OHLCV bars.
-Each transform returns a named analytical dataset that callers may materialize, test, reuse, or execute as ordinary
+Stocks example app uses Structure as a compact language for technical analysis over daily OHLCV bars.
+Each transform returns an analytical dataset that callers may materialize, test, reuse, or execute as ordinary
 optimizer-visible PySpark. Source bars remain immutable.
 
-## Pipeline map
-
-| Concern | Transform | Result | Lookback boundary |
+| Concern | Transform | Result | Lookback |
 | --- | --- | --- | --- |
-| Shared preparation | `PrepareReturns` | `DailyReturn` rows | Previous close and one-day measures. |
+| Preparation | `PrepareReturns` | `DailyReturn` rows | Previous close and one-day measures. |
 | Trend | `Trend` | Moving averages and channels | 20- and 50-bar windows. |
 | Momentum | `Momentum` | ROC, Cutler RSI, stochastic %K | 10- and 14-bar windows. |
 | Volatility | `Volatility` | Range, realized volatility, Bollinger bands | 14- and 20-bar windows. |
 | Volume | `Volume` | Relative volume, OBV, VWAP | 20-bar relative-volume window. |
 | Advanced | `Advanced` | Benchmark, rank, drawdown, volatility | Daily and 20-bar measures. |
 
-## Prepare returns once
+## Preparation
 
 `PrepareReturns` partitions bars by symbol, orders them by `trade_date`, and calculates previous close, price change,
 one-day return, gain, loss, and signed volume. A row without a positive previous close has a null return; a first row
@@ -24,12 +22,12 @@ has null gain and loss and contributes zero signed volume. Flat-price bars also 
 ```python
 returns = PrepareReturns(bars=bars).run(session).returns
 
-# Reuse the common preparation across several independent indicator families.
+# Reuse results downstream
 returns.cache()
 ```
 
-All downstream families consume either the immutable bars or this shared result. Feed each transform a complete batch
-with one correctly ordered daily series per symbol. The example deliberately does not use Structured Streaming:
+All downstream transforms consume either the immutable bars or this shared result. Feed each transform a complete batch
+with one ordered daily series per symbol. The example deliberately does not use Structured Streaming:
 adjusted prices and late corrections commonly require recalculating historical indicators.
 
 ## Calculate indicator families

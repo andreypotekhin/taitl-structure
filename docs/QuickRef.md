@@ -135,7 +135,7 @@ published = output(OrderEnriched)
 ```
 
 The compiler infers input and lane sources from step method parameter types. If that cannot be done (as with
-`orders_raw`/`orders_rejected` above), disambiguate with `@step(...)` decorator:
+`orders_raw`/`orders_rejected` above), disambiguate with `@step(...)` decorator:
 
 ```python
 @step(output=orders_rejected)
@@ -1248,6 +1248,8 @@ Reference: [schemas API](api/Schemas.api.md), [CLI](background/CLI.back.md), and
 [schema declaration syntax](reference/Schema.ref.md).
 
 ## Next Steps
+
+Code examples: [Examples](../examples/Readme.md)
 
 Get started: [GettingStarted.md](GettingStarted.md)
 

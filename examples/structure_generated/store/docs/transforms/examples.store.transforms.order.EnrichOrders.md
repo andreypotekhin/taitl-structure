@@ -20,6 +20,7 @@ Source: `examples.store.transforms.order.EnrichOrders`
 ## Step methods
 
 - `normalize`: `OrderRaw` -> `OrderNormalized`
+- `discard_negative_totals`: `OrderNormalized` -> `OrderNormalized`
 - `add_customer`: `OrderNormalized` -> `OrderWithCustomer`
 - `add_product`: `OrderWithCustomer` -> `OrderWithProduct`
 - `add_promotion`: `OrderWithProduct` -> `OrderWithPromotion`

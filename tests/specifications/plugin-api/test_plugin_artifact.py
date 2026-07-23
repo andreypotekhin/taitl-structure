@@ -86,6 +86,9 @@ class Facet:
     def result_arguments(self, results):
         return ()
 
+    def rewrite_body(self, body, *, frames):
+        return body
+
 
 class Executor:
     def execute(self, request: ExecutionRequest):
@@ -136,6 +139,9 @@ class RecordingAuthoring:
 
     def result_arguments(self, results):
         return self._delegate.result_arguments(results)
+
+    def rewrite_body(self, body, *, frames):
+        return self._delegate.rewrite_body(body, frames=frames)
 
 
 class RecordingSession:

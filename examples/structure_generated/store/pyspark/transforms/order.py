@@ -5,7 +5,6 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import Window
 from pyspark.sql import functions as F
 from pyspark.sql import types as T
-from examples.store.transforms.order import EnrichOrders
 from examples.structure_generated.store.runtime.schema_assert import TransformResult, assert_schema, project_schema
 from examples.structure_generated.store.pyspark.schemas.customer import CUSTOMER_SCHEMA
 from examples.structure_generated.store.pyspark.schemas.order import ORDER_FULFILLMENT_SCHEMA, ORDER_NORMALIZED_SCHEMA, ORDER_PUBLISHED_SCHEMA, ORDER_RAW_SCHEMA, ORDER_WITH_CUSTOMER_SCHEMA, ORDER_WITH_PRODUCT_SCHEMA, ORDER_WITH_PROMOTION_SCHEMA
@@ -19,7 +18,6 @@ class EnrichOrdersGenerated:
     def __init__(self, *, spark: SparkSession, ctx=None):
         self.spark = spark
         self.ctx = ctx
-        self._impl = EnrichOrders()
 
     def run(
         self,
@@ -45,7 +43,6 @@ class EnrichOrdersGenerated:
         _input_shipments = shipments
 
         # Step method: normalize
-        orders = self._impl.use_current_orders(orders=_input_orders, spark=self.spark, ctx=self.ctx)
         orders = orders.alias("order_raw")
         orders = orders.where((F.col("order_raw.id").isNotNull()) & (F.col("order_raw.customer_id").isNotNull()) & (F.col("order_raw.product_id").isNotNull()))
         orders = orders.select(
@@ -65,8 +62,28 @@ class EnrichOrdersGenerated:
             F.col("order_raw.shipping"),
             (F.coalesce(F.col("order_raw.total").cast("decimal(12,2)"), F.lit(0)) > F.lit(1000)).alias("is_large"),
         )
-        orders = self._impl.remove_negative_totals(orders=orders, spark=self.spark, ctx=self.ctx)
         assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
+
+        # Step method: discard_negative_totals
+        orders = orders.alias("order_normalized")
+        orders = orders.where(((F.col("order_normalized.net_total") >= F.lit(0))))
+        orders = orders.select(
+            F.col("order_normalized.tenant"),
+            F.col("order_normalized.audit"),
+            F.col("order_normalized.business"),
+            F.col("order_normalized.id"),
+            F.col("order_normalized.customer_id"),
+            F.col("order_normalized.product_id"),
+            F.col("order_normalized.promotion_code"),
+            F.col("order_normalized.total"),
+            F.col("order_normalized.discount"),
+            F.col("order_normalized.net_total"),
+            F.col("order_normalized.quantity"),
+            F.col("order_normalized.tags"),
+            F.col("order_normalized.attributes"),
+            F.col("order_normalized.shipping"),
+            F.col("order_normalized.is_large"),
+        )
         assert_schema(orders, ORDER_NORMALIZED_SCHEMA, name="OrderNormalized", mode="strict")
 
         # Step method: add_customer
@@ -220,9 +237,7 @@ class EnrichOrdersGenerated:
             F.col("shipments.tracking_number"),
             F.col("shipments.shipped_at"),
         )
-        orders = self._impl.note_lookup_inputs(orders=orders, customers=_input_customers, products=_input_products, spark=self.spark, ctx=self.ctx)
-        assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="allow_extra_columns")
-        assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="allow_extra_columns")
+        assert_schema(orders, ORDER_FULFILLMENT_SCHEMA, name="OrderFulfillment", mode="strict")
 
         # Step method: publish
         published = orders.alias("order_fulfillment")
@@ -246,10 +261,6 @@ class EnrichOrdersGenerated:
             F.col("order_fulfillment.is_large"),
             F.col("order_fulfillment.promotion_name").isNotNull().alias("has_promotion"),
         )
-        published = self._impl.add_quality_columns(published=published, spark=self.spark, ctx=self.ctx)
-        assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="allow_extra_columns")
-        published = project_schema(published, ORDER_PUBLISHED_SCHEMA)
-        assert_schema(published, ORDER_PUBLISHED_SCHEMA, name="OrderPublished", mode="strict")
 
         # Step method: published
         published = published.alias("order_published")

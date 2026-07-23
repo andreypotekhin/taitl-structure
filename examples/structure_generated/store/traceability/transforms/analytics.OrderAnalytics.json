@@ -333,18 +333,6 @@
     "TenantKey": {
       "constant": "TENANT_KEY_SCHEMA",
       "module": "examples.structure_generated.store.pyspark.schemas.common"
-    },
-    "V3OrderDetails": {
-      "constant": "V3_ORDER_DETAILS_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.v3"
-    },
-    "V3OrderProjection": {
-      "constant": "V3_ORDER_PROJECTION_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.v3"
-    },
-    "V3OrderSource": {
-      "constant": "V3_ORDER_SOURCE_SCHEMA",
-      "module": "examples.structure_generated.store.pyspark.schemas.v3"
     }
   },
   "source_transform": "examples.store.transforms.analytics.OrderAnalytics",

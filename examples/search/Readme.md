@@ -1,4 +1,4 @@
-# Search Example
+# Search Example App
 
 This example models a harvested document corpus as typed Structure schemas,
 turns caller-extracted text into sections, paragraphs, sentences, and words. The example computes lexical search, corpus similarity, and impression-backed
@@ -10,7 +10,7 @@ For the architecture, evidence boundaries, and ownership model, see the
 
 ## Pipeline map
 
-| Concern | Typed boundary | Durable artifact or result | Design point |
+| Concern | Typed boundary | Result | Design point |
 | --- | --- | --- | --- |
 | Extraction | `ExtractText` | sections, paragraphs, sentences, words | Plain-text hierarchy and shared token normalization. |
 | Indexing | `CreateIndex` | target-grain terms and summaries | Build once; score many query batches. |
@@ -41,7 +41,7 @@ analytics = AnalyzeText(
 ).run(session)
 corpus = CorpusText(documents=analytics.document_statistics, words=segments.words).run(session)
 
-# Feed extracted relations into later transforms or persist them as corpus artifacts.
+# Feed extracted relations into later transforms or persist as corpus artifacts.
 words = segments.words
 sentences = segments.sentences
 document_statistics = corpus.corpus_statistics
@@ -72,7 +72,7 @@ paragraph_terms = index.paragraph_terms
 section_terms = index.section_terms
 ```
 
-### Why four index grains
+### Index grains
 
 Document, section, paragraph, and sentence rows deliberately have independent term frequencies, document frequencies,
 and length statistics. A document score is not silently reused as a sentence score. This permits corpus search and

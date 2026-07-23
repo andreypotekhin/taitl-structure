@@ -1,4 +1,4 @@
-# Streams Example
+# Streams Example App
 
 This example models a white-water kayaking competition with Spark Structured Streaming. Timing messages become
 enriched gate passages; the passages support live gate progress and correlation with independently streamed judge

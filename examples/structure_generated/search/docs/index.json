@@ -6054,8 +6054,13 @@
       "name": "SearchDocuments",
       "outputs": [
         {
-          "name": "results",
+          "name": "candidates",
           "ordinal": 0,
+          "schema": "DocumentSearchCandidate"
+        },
+        {
+          "name": "results",
+          "ordinal": 1,
           "schema": "DocumentSearchResult"
         }
       ],

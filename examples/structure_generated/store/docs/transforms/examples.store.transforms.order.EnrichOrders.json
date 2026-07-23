@@ -55,12 +55,6 @@
   "source": "examples.store.transforms.order.EnrichOrders",
   "step_methods": [
     {
-      "after_hooks": [
-        "remove_negative_totals"
-      ],
-      "before_hooks": [
-        "use_current_orders"
-      ],
       "input_lane": "orders",
       "input_schema": "OrderRaw",
       "inputs": [
@@ -72,6 +66,28 @@
         }
       ],
       "name": "normalize",
+      "output_lane": "orders",
+      "output_schema": "OrderNormalized",
+      "results": [
+        {
+          "frame": "orders",
+          "lane": "orders",
+          "schema": "OrderNormalized"
+        }
+      ]
+    },
+    {
+      "input_lane": "orders",
+      "input_schema": "OrderNormalized",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "order",
+          "schema": "OrderNormalized",
+          "source": "orders"
+        }
+      ],
+      "name": "discard_negative_totals",
       "output_lane": "orders",
       "output_schema": "OrderNormalized",
       "results": [
@@ -199,9 +215,6 @@
       ]
     },
     {
-      "after_hooks": [
-        "note_lookup_inputs"
-      ],
       "input_lane": "orders",
       "input_schema": "OrderWithPromotion",
       "inputs": [
@@ -236,9 +249,6 @@
       ]
     },
     {
-      "after_hooks": [
-        "add_quality_columns"
-      ],
       "input_lane": "orders",
       "input_schema": "OrderFulfillment",
       "inputs": [
