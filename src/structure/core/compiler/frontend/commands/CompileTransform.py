@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Mapping
-from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar
 from dataclasses import replace
 from pathlib import Path
@@ -22,7 +21,6 @@ from structure.core.compiler.ir.model.OutputPlan import OutputPlan
 from structure.core.compiler.ir.model.StepPlan import StepPlan
 from structure.core.compiler.ir.model.StepResultPlan import StepResultPlan
 from structure.core.compiler.ir.model.TransformPlan import TransformPlan
-from structure.core.compiler.symbolic_execution.api import SymbolicExecution
 from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.dsl.model.schemas.Schema import Schema
 from structure.core.dsl.model.transforms.BindingSelector import BindingSelector
@@ -45,7 +43,6 @@ from structure.plugin.api.v1 import (
 from structure.plugin.pyspark.dsl.aggregation import AggregateAssignment, AggregateKey, AggregatePlan, ProjectAssignment
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.expressions import literal
-from structure.plugin.pyspark.dsl.InputScope import InputScope
 from structure.plugin.pyspark.dsl.joins import (
     AsOf,
     Join,
@@ -57,7 +54,6 @@ from structure.plugin.pyspark.dsl.joins import (
     TiePolicy,
 )
 from structure.plugin.pyspark.dsl.operations import OperationPlan
-from structure.plugin.pyspark.dsl.operations_api import reserved_operations
 from structure.plugin.pyspark.dsl.Projection import Projection
 from structure.plugin.pyspark.dsl.RowScope import RowScope
 from structure.plugin.pyspark.dsl.types import BooleanType, DecimalType, Struct, StructType, StructureType
@@ -155,7 +151,6 @@ class CompileTransform:
             capture_special_exprs="embed_exprs" in config.generated_code_options,
         )
         outputs = self._outputs(transform_class, lanes, explicit_outputs)
-        diagnostics.extend(self._udf_diagnostics(transform_class, steps, outputs, config=config))
         return TransformPlan(
             name=transform_class.__name__,
             inputs=tuple(inputs),
@@ -194,63 +189,6 @@ class CompileTransform:
             and value.__module__ == owner.__module__
             and value.__qualname__.startswith(f"{owner.__qualname__}.")
         )
-
-    def _udf_diagnostics(
-        self,
-        transform_class: type[Transform],
-        steps: list[StepPlan],
-        outputs: list[OutputPlan],
-        *,
-        config: StructureConfig,
-    ) -> tuple[Diagnostic, ...]:
-        if not config.warn_on_udfs:
-            return ()
-        seen: set[str] = set()
-        diagnostics: list[Diagnostic] = []
-        expressions = [
-            expression
-            for step in (cast(LegacyStepPlan, item) for item in steps)
-            for expression in (
-                *step.filters,
-                *(assignment.expression for assignment in step.projection),
-                *(operation.filter for operation in step.operations if operation.filter is not None),
-                *(
-                    result_assignment.expression
-                    for result in step.results
-                    for result_assignment in cast(LegacyStepResultPlan, result).projection
-                ),
-            )
-        ]
-        for expression in expressions:
-            for udf in self._udf_expressions(expression):
-                data = udf.data or {}
-                qualname = str(data.get("qualname", data.get("function_name", "python_udf")))
-                if qualname in seen:
-                    continue
-                seen.add(qualname)
-                diagnostics.append(
-                    Diagnostic(
-                        entry=diagnostic_registry.get("DSL-W0403"),
-                        problem=(
-                            f"{transform_class.__name__} uses Python UDF {qualname}; "
-                            "Spark cannot inspect or optimize the UDF body."
-                        ),
-                        use="Prefer Structure expression helpers when logic can stay compiler-visible, or set warn_on_udfs = false.",
-                        context={"udf": qualname},
-                        source=f"{transform_class.__module__}.{transform_class.__name__}",
-                        primary_span=self._diagnostic_source(
-                            transform_class,
-                            project_root=_diagnostic_project_root.get(),
-                        ),
-                    )
-                )
-        return tuple(diagnostics)
-
-    def _udf_expressions(self, expression: Expression) -> tuple[Expression, ...]:
-        found = [expression] if expression.kind == "python_udf" else []
-        for argument in expression.args:
-            found.extend(self._udf_expressions(argument))
-        return tuple(found)
 
     def _compose_pipeline(
         self,
@@ -607,24 +545,8 @@ class CompileTransform:
         authoring_body: object | None = None
         authoring, target, configuration = _authoring.get()
         authoring_api = cast(AuthoringAPI | None, authoring)
-
-        fallback_context = (
-            SymbolicExecution().open()(step=plan_name or name, capture_special_exprs=capture_special_exprs)
-            if authoring_api is None
-            else None
-        )
-        fallback_arguments = (
-            [
-                (
-                    RowScope(name=binding.scope, schema=cast(type[Schema], binding.schema))
-                    if binding.driving
-                    else InputScope(name=binding.scope, schema=cast(type[Schema], binding.schema), source=binding.source)
-                )
-                for binding in bindings
-            ]
-            if authoring_api is None
-            else []
-        )
+        if authoring_api is None:
+            raise RuntimeError("Core authoring requires a selected platform authoring facet.")
         request = StepAuthoringRequest(
             target=target,
             configuration=configuration,
@@ -649,10 +571,8 @@ class CompileTransform:
             options=options,
             capture_special_exprs=capture_special_exprs,
         )
-        authoring_session = authoring_api.open_step(request) if authoring_api is not None else None
-        session = authoring_session if authoring_session is not None else nullcontext()
-        context = cast(Any, fallback_context)
-        arguments = authoring_session.arguments() if authoring_session is not None else tuple(fallback_arguments)
+        authoring_session = authoring_api.open_step(request)
+        arguments = authoring_session.arguments()
         if len(arguments) != len(bindings):
             raise self._error(
                 "PLUGIN-E2708",
@@ -661,13 +581,6 @@ class CompileTransform:
                 problem=f"Plugin {target!r} supplied {len(arguments)} symbolic arguments for {len(bindings)} bindings.",
                 use="Update the plugin authoring facet to return one argument per step input.",
             )
-        if authoring_session is None:
-            assert context is not None
-            context.default_project_source = arguments[0]
-            context.register_current_scope(bindings[0].scope)
-            for binding, argument in zip(bindings[1:], arguments[1:], strict=True):
-                context.register_relation_scope(binding.scope, argument)
-
         try:
             with self._step_call_guards(transform_class, members, active=item):
                 with self._parent_step_calls(
@@ -686,9 +599,8 @@ class CompileTransform:
                     ),
                     record_source=lambda source: parent_call.update(source=source),
                 ):
-                    with session:
-                        with (nullcontext() if authoring_session is not None else cast(Any, context)):
-                            result = member(instance, *arguments)
+                    with authoring_session:
+                        result = member(instance, *arguments)
         except StructureCompileError:
             raise
         except Exception as error:
@@ -701,10 +613,7 @@ class CompileTransform:
                 context={"error": type(error).__name__},
             ) from error
 
-        if authoring_session is not None:
-            context = self._authoring_context(authoring_session)
-        else:
-            context.operations.extend(self._reserved_operations(member, metadata))
+        context = self._authoring_context(authoring_session)
         diagnostics.extend(self._validate_joins(transform_class, name, context.joins))
         self._validate_comparison_problems(transform_class, name, context.filters)
         values = self._result_values(
@@ -900,159 +809,6 @@ class CompileTransform:
             current = getattr(current, "_delegate", None)
         raise TypeError("Plugin authoring session does not provide active symbolic state")
 
-    @contextmanager
-    def _parent_call_patches(
-        self,
-        transform_class: type[Transform],
-        item: CompilerTransformMember,
-        members: tuple[CompilerTransformMember, ...],
-        instance: Transform,
-        steps: list[StepPlan],
-        lanes: dict[str, dict[str, object]],
-        inputs: list[InputPlan],
-        explicit_outputs: set[str],
-        diagnostics: list[Diagnostic],
-        parent_call: dict[str, object],
-        *,
-        capture_special_exprs: bool,
-    ):
-        originals: list[tuple[type[Transform], str, object]] = []
-        scheduled: dict[CompilerTransformMember, tuple[LegacyStepResultPlan, ...]] = {}
-
-        def stub(candidate: CompilerTransformMember):
-            def call(_self, *args, **kwargs):
-                if kwargs:
-                    raise TypeError("Parent step method calls must use positional schema arguments")
-                result = scheduled.get(candidate)
-                if result is None:
-                    result = self._compile_step(
-                        transform_class,
-                        candidate,
-                        members,
-                        instance,
-                        steps,
-                        lanes,
-                        inputs,
-                        explicit_outputs,
-                        diagnostics,
-                        plan_name=f"{candidate.owner.__name__}.{candidate.name}",
-                        capture_special_exprs=capture_special_exprs,
-                    )
-                    if result is None:
-                        raise TypeError(f"{candidate.source} is not a compiled step method")
-                    scheduled[candidate] = result
-                value = self._parent_call_result(result)
-                first = result[0]
-                parent_call["source"] = {
-                    "lane": first.lane,
-                    "schema": first.schema,
-                    "source": first.frame,
-                    "scope": first.schema.__name__,
-                }
-                return value
-
-            return call
-
-        try:
-            for candidate in item.overridden:
-                originals.append((candidate.owner, candidate.name, candidate.owner.__dict__[candidate.name]))
-                setattr(candidate.owner, candidate.name, stub(candidate))
-            yield
-        finally:
-            for owner, name, original in reversed(originals):
-                setattr(owner, name, original)
-
-    @contextmanager
-    def _step_method_call_guards(
-        self,
-        transform_class: type[Transform],
-        members: tuple[CompilerTransformMember, ...],
-        *,
-        active: CompilerTransformMember,
-    ):
-        originals: list[tuple[type[Transform], str, object]] = []
-        guarded: set[tuple[type[Transform], str]] = set()
-
-        def guard(owner: type[Transform], name: str):
-            def call(_self, *args, **kwargs):
-                raise self._error(
-                    "DSL-E0402",
-                    transform_class=transform_class,
-                    member=active.name,
-                    problem=(
-                        f"{transform_class.__name__}.{active.name} calls compiled step method "
-                        f"{owner.__name__}.{name} directly."
-                    ),
-                    use=(
-                        "Step methods are pipeline steps. Use source order, lane bindings, Transform.to(...), "
-                        "a private helper, or @special(type=\"expr\") instead. Only an override may call its overridden "
-                        "parent step method."
-                    ),
-                    context={"called_step_method": f"{owner.__name__}.{name}"},
-                )
-
-            return call
-
-        try:
-            for candidate in self._guarded_step_methods(transform_class, members):
-                key = (candidate.owner, candidate.name)
-                if key in guarded:
-                    continue
-                originals.append((candidate.owner, candidate.name, candidate.owner.__dict__[candidate.name]))
-                setattr(candidate.owner, candidate.name, guard(candidate.owner, candidate.name))
-                guarded.add(key)
-            yield
-        finally:
-            for owner, name, original in reversed(originals):
-                setattr(owner, name, original)
-
-    def _guarded_step_methods(
-        self,
-        transform_class: type[Transform],
-        members: tuple[CompilerTransformMember, ...],
-    ) -> tuple[CompilerTransformMember, ...]:
-        guarded: list[CompilerTransformMember] = []
-        seen: set[tuple[type[Transform], str]] = set()
-
-        def add(candidate: CompilerTransformMember) -> None:
-            key = (candidate.owner, candidate.name)
-            if key not in seen and self._compiled(candidate.member):
-                guarded.append(candidate)
-                seen.add(key)
-
-        for member in members:
-            add(member)
-            for candidate in member.overridden:
-                add(candidate)
-
-        for cls in transform_class.__mro__:
-            if cls is Transform:
-                break
-            if not isinstance(cls, type) or not issubclass(cls, Transform):
-                continue
-            for name, member in cls.__dict__.items():
-                if name.startswith("_") or name == "run" or not inspect.isfunction(member):
-                    continue
-                add(CompilerTransformMember(owner=cls, name=name, member=member, position=0))
-        for cls in self._loaded_transform_classes():
-            for name, member in cls.__dict__.items():
-                if name.startswith("_") or name == "run" or not inspect.isfunction(member):
-                    continue
-                add(CompilerTransformMember(owner=cls, name=name, member=member, position=0))
-
-        return tuple(guarded)
-
-    def _loaded_transform_classes(self) -> tuple[type[Transform], ...]:
-        classes: list[type[Transform]] = []
-
-        def visit(cls: type[Transform]) -> None:
-            for subclass in cls.__subclasses__():
-                classes.append(subclass)
-                visit(subclass)
-
-        visit(Transform)
-        return tuple(classes)
-
     def _compiled(self, member) -> bool:
         try:
             annotation = get_type_hints(member).get("return")
@@ -1075,12 +831,6 @@ class CompileTransform:
         if metadata:
             options.update(cast(dict[str, object], metadata.get("options", {})))
         return options or None
-
-    def _reserved_operations(self, member, metadata: dict[str, object] | None) -> tuple[OperationPlan, ...]:
-        operations = tuple(reserved_operations(member))
-        if metadata:
-            operations += cast(tuple[OperationPlan, ...], metadata.get("reserved_operations", ()))
-        return operations
 
     def _validate_relation_reads(
         self,

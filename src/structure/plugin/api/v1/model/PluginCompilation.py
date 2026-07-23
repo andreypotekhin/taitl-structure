@@ -7,3 +7,4 @@ class PluginCompilation:
     fingerprint: str
     analysis: object | None = None
     schemas: object | None = None
+    diagnostics: tuple[object, ...] = ()

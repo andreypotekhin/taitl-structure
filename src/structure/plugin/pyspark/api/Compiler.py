@@ -2,9 +2,13 @@ from structure.plugin.api.v1 import CompilationPurpose, CompilerAPI, CompileRequ
 from structure.plugin.api.v1.model import TransformPlan
 from structure.plugin.pyspark.api.Authoring import PySparkStepBody
 from structure.plugin.pyspark.api.PySpark import PySpark
+from structure.plugin.pyspark.compiler.commands.BuildPySparkUdfDiagnostics import BuildPySparkUdfDiagnostics
 
 
 class Compiler(CompilerAPI):
+    def __init__(self) -> None:
+        self._udf_diagnostics = BuildPySparkUdfDiagnostics()
+
     def compile(self, request: CompileRequest) -> PluginCompilation:
         options = request.configuration
         plan = request.analysis
@@ -13,7 +17,11 @@ class Compiler(CompilerAPI):
         if any(not isinstance(step.plugin_body, PySparkStepBody) for step in plan.steps):
             raise ValueError("PLUGIN-E2708: PySpark compilation requires a PySpark-owned body for every step.")
         if request.purpose is CompilationPurpose.DOCUMENTATION:
-            return PluginCompilation(lowered=None, fingerprint=plan.name)
+            return PluginCompilation(
+                lowered=None,
+                fingerprint=plan.name,
+                diagnostics=self._udf_diagnostics(plan, enabled=bool(options.get("warn_on_udfs", True))),
+            )
         capabilities = PySpark.capabilities.resolve()(
             profile=str(options.get("profile", "")), variant=str(options.get("variant", ""))
         )
@@ -23,4 +31,9 @@ class Compiler(CompilerAPI):
             if options.get("materialize_schemas", True)
             else None
         )
-        return PluginCompilation(lowered=lowered, fingerprint=plan.name, schemas=schemas)
+        return PluginCompilation(
+            lowered=lowered,
+            fingerprint=plan.name,
+            schemas=schemas,
+            diagnostics=self._udf_diagnostics(plan, enabled=bool(options.get("warn_on_udfs", True))),
+        )

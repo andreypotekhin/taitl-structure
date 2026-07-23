@@ -147,7 +147,11 @@ class CompilePluginTransform:
         )
         if not isinstance(compilation, PluginCompilation):
             raise ValueError(f"PLUGIN-E2708: Plugin {target!r} returned an invalid compilation result.")
-        return replace(compilation, analysis=plan)
+        analysis = plan if not compilation.diagnostics else replace(
+            plan,
+            diagnostics=(*plan.diagnostics, *compilation.diagnostics),
+        )
+        return replace(compilation, analysis=analysis)
 
     @staticmethod
     def _validate_declared_schemas(

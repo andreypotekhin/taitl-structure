@@ -477,7 +477,7 @@ answer_evidence = passages.where("rank <= 5").orderBy("search_query_id", "rank")
 `SearchPassages` returns every matching paragraph: adjacent matches remain distinct rows. Callers own refreshing the corpus and index, selecting a current snapshot, and turning
 these evidence outputs into an answer; this example neither invokes an answer model nor creates a cross-document prompt.
 
-## Design constraints worth preserving
+## Design constraints
 
 - The corpus and relevance snapshots are batch inputs, because similarity distributions and decayed normalization need bounded
   input sets.
