@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Mapping
 
+from structure.lib.cross.errors import SourceSpan
 from structure.plugin.api.v1.model.StepAuthoringInput import StepAuthoringInput
 from structure.plugin.api.v1.model.StepAuthoringResult import StepAuthoringResult
 
@@ -15,3 +16,4 @@ class StepAuthoringRequest:
     results: tuple[StepAuthoringResult, ...]
     options: Mapping[str, object] | None = None
     capture_special_exprs: bool = False
+    primary_span: SourceSpan | None = None

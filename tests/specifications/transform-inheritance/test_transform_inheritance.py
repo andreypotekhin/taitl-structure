@@ -6,6 +6,7 @@ from structure import *
 from structure.core.compiler.api import Compiler
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
+from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
 def _analysis(transform):
@@ -232,8 +233,8 @@ def test_override_with_zero_arg_super_schedules_parent_before_child() -> None:
     plan = _analysis(Publish)
 
     assert [compiled_step.name for compiled_step in plan.steps] == ["DirectNormalize.normalize", "normalize", "publish"]
-    assert not plan.steps[0].filters
-    assert len(plan.steps[1].filters) == 1
+    assert not cast(PySparkStepBody, plan.steps[0].plugin_body).filters
+    assert len(cast(PySparkStepBody, plan.steps[1].plugin_body).filters) == 1
     assert [compiled_step.origin.class_name if compiled_step.origin else None for compiled_step in plan.steps] == [
         "DirectNormalize",
         "Publish",
@@ -285,7 +286,7 @@ def test_override_with_two_arg_super_schedules_next_mro_parent() -> None:
     plan = _analysis(Publish)
 
     assert [compiled_step.name for compiled_step in plan.steps] == ["AuditNormalize.normalize", "normalize", "publish"]
-    assert len(plan.steps[0].filters) == 1
+    assert len(cast(PySparkStepBody, plan.steps[0].plugin_body).filters) == 1
 
 
 def test_calling_previous_step_method_directly_fails() -> None:

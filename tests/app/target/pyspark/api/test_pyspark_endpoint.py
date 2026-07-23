@@ -144,6 +144,22 @@ def test_pyspark_dsl_does_not_import_core_concrete_target_models() -> None:
     assert not violations, "PySpark target models must be imported from pyspark.dsl:\n" + "\n".join(violations)
 
 
+def test_core_compiler_ir_and_dsl_do_not_import_pyspark() -> None:
+    roots = (
+        Path("src/structure/core/compiler"),
+        Path("src/structure/core/ir"),
+        Path("src/structure/core/dsl"),
+    )
+    violations = []
+    for root in roots:
+        for source in root.rglob("*.py"):
+            tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
+            for node in ast.walk(tree):
+                if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("structure.plugin.pyspark"):
+                    violations.append(str(source.relative_to(root)))
+    assert not violations, "PySpark semantics belong exclusively to the PySpark plugin:\n" + "\n".join(violations)
+
+
 def test_pyspark_plugin_uses_only_public_structure_contracts() -> None:
     root = Path("src/structure/plugin/pyspark")
     violations = []

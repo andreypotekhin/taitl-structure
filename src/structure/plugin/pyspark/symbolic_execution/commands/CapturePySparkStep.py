@@ -5,6 +5,7 @@ from structure.plugin.api.v1.model.StepResultPlan import StepResultPlan
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
 from structure.plugin.pyspark.dsl.operations_api import cache_operation, reserved_operations
+from structure.plugin.pyspark.symbolic_execution.commands.BuildPySparkResultBodies import BuildPySparkResultBodies
 from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkAggregates import ValidatePySparkAggregates
 from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkAggregationUse import (
     ValidatePySparkAggregationUse,
@@ -29,6 +30,10 @@ class CapturePySparkStep:
         request: StepAuthoringRequest,
     ) -> PySparkStepBody:
         context.operations.extend(self._reserved_operations(request))
+        results = BuildPySparkResultBodies(request)(value, context=context)
+        first = results[0]
+        if first.aggregate is not None:
+            context.record_aggregate(first.aggregate)
         body = PySparkStepBody(
             value=value,
             filters=tuple(context.filters),
@@ -38,15 +43,9 @@ class CapturePySparkStep:
             aggregate_levels=context.aggregate_levels,
             aggregate_grouping=context.aggregate_grouping,
             aggregate_having=context.aggregate_having,
-            projection=context.projection,
-            aggregate=context.aggregate,
-            results=tuple(
-                PySparkResultBody(
-                    projection=tuple(cast(Any, result).projection),
-                    aggregate=cast(Any, result).aggregate,
-                )
-                for result in cast(tuple[StepResultPlan, ...], context.results)
-            ),
+            projection=first.projection,
+            aggregate=first.aggregate,
+            results=results,
         )
         ValidatePySparkAggregationUse()(body, request=request)
         ValidatePySparkAggregates()(body, request=request)
