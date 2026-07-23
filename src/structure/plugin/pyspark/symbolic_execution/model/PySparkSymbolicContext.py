@@ -28,6 +28,7 @@ class PySparkSymbolicContext:
         self.joins: list[JoinPlan] = []
         self.operations: list[OperationPlan] = []
         self.aggregate_keys: tuple[tuple[str, Expression], ...] | None = None
+        self.aggregate_requested = False
         self.aggregate_levels: tuple[tuple[str, ...], ...] = ()
         self.aggregate_grouping = "group_by"
         self.aggregate_having: Expression | None = None

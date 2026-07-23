@@ -177,6 +177,30 @@ def test_grouped_aggregate_step_renders_spark_visible_group_by() -> None:
     assert 'F.col("customer_id")' in text
 
 
+def test_global_aggregate_without_group_by_is_lowered() -> None:
+    @transform
+    class GlobalTotals(Transform):
+        rows = input(RawSale)
+        totals = output(GrandValueTotal)
+
+        def summarize(self, row: RawSale) -> GrandValueTotal:
+            return GrandValueTotal(
+                total_quantity=sum(row.quantity),
+                average_quantity=avg(row.quantity),
+                minimum_quantity=min(row.quantity),
+                maximum_quantity=max(row.quantity),
+                first_customer=first_value(row.customer_id, order_by=row.quantity),
+                last_customer=last_value(row.customer_id, order_by=row.quantity),
+            )
+
+    recipe = _recipe(GlobalTotals)
+    text = render_pyspark_step(recipe.steps[0], current="rows", sources={"rows": "rows"})
+
+    assert recipe.steps[0].aggregate is not None
+    assert ".groupBy(" not in text
+    assert 'F.sum(F.col("raw_sale.quantity"))' in text
+
+
 def test_grouped_aggregate_traceability_records_static_dataflow() -> None:
     recipe = _recipe(CustomerTotals)
     traceability = Compiler.traceability.build()(

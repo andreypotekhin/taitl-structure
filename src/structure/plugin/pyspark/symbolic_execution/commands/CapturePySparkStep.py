@@ -2,8 +2,17 @@ from typing import Any, cast
 
 from structure.plugin.api.v1.model.StepAuthoringRequest import StepAuthoringRequest
 from structure.plugin.api.v1.model.StepResultPlan import StepResultPlan
+from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
 from structure.plugin.pyspark.dsl.operations_api import cache_operation, reserved_operations
+from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkAggregates import ValidatePySparkAggregates
+from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkAggregationUse import (
+    ValidatePySparkAggregationUse,
+)
+from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkComparisons import ValidatePySparkComparisons
+from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkRelationReads import (
+    ValidatePySparkRelationReads,
+)
 from structure.plugin.pyspark.symbolic_execution.model.PySparkResultBody import PySparkResultBody
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 from structure.plugin.pyspark.symbolic_execution.model.PySparkSymbolicContext import PySparkSymbolicContext
@@ -20,7 +29,7 @@ class CapturePySparkStep:
         request: StepAuthoringRequest,
     ) -> PySparkStepBody:
         context.operations.extend(self._reserved_operations(request))
-        return PySparkStepBody(
+        body = PySparkStepBody(
             value=value,
             filters=tuple(context.filters),
             joins=tuple(context.joins),
@@ -39,6 +48,28 @@ class CapturePySparkStep:
                 for result in cast(tuple[StepResultPlan, ...], context.results)
             ),
         )
+        ValidatePySparkAggregationUse()(body, request=request)
+        ValidatePySparkAggregates()(body, request=request)
+        ValidatePySparkComparisons()(self._expressions(body), request=request)
+        ValidatePySparkRelationReads()(body, request=request)
+        return body
+
+    def _expressions(self, body: PySparkStepBody) -> tuple[Expression, ...]:
+        expressions: list[Expression] = [*body.filters, *(assignment.expression for assignment in body.projection)]
+        for result in body.results:
+            expressions.extend(assignment.expression for assignment in result.projection)
+            if result.aggregate is None:
+                continue
+            expressions.extend(key.expression for key in result.aggregate.keys)
+            expressions.extend(
+                expression
+                for assignment in result.aggregate.assignments
+                for expression in (*assignment.arguments, assignment.filter, assignment.order_by)
+                if expression is not None
+            )
+            if result.aggregate.having is not None:
+                expressions.append(result.aggregate.having)
+        return tuple(expressions)
 
     def _reserved_operations(self, request: StepAuthoringRequest) -> tuple[OperationPlan, ...]:
         origin = request.origin

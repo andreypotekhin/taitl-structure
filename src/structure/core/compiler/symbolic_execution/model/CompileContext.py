@@ -21,6 +21,7 @@ class CompileContext:
         self.joins: list[Any] = []
         self.operations: list[Any] = []
         self.aggregate_keys: tuple[tuple[str, Any], ...] | None = None
+        self.aggregate_requested = False
         self.aggregate_levels: tuple[tuple[str, ...], ...] = ()
         self.aggregate_grouping: str = "group_by"
         self.aggregate_having: Any | None = None

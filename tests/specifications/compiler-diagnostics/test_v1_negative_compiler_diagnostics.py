@@ -4,6 +4,7 @@ import pytest
 
 from structure import *
 from structure.core.compiler.api import Compiler
+from structure.plugin.api.v1 import CompilationPurpose
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
@@ -375,6 +376,53 @@ def test_v1_incompatible_join_key_types_report_join_diagnostic() -> None:
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "JOIN-E0601"
     assert "Join key types are incompatible" in diagnostic.problem_text()
+
+
+def test_v1_incompatible_decimal_join_key_types_report_join_diagnostic() -> None:
+    class DecimalRow(Schema):
+        id = decimal(10, 4, nullable=False)
+
+    class DecimalLookup(Schema):
+        id = decimal(12, 2, nullable=False)
+
+    @transform
+    class IncompatibleDecimalJoin(Transform):
+        rows = input(DecimalRow)
+        lookup = input(DecimalLookup)
+        clean = output(Clean)
+
+        def normalize(self, row: DecimalRow, lookup: DecimalLookup) -> Clean:
+            lookup_join(lookup, on=lookup.id == row.id, how=Join.LEFT)
+            return Clean(id="ok")
+
+    with pytest.raises(StructureCompileError) as raised:
+        _compile(IncompatibleDecimalJoin)
+
+    assert raised.value.diagnostic.code == "JOIN-E0601"
+    assert "Join key types are incompatible" in raised.value.diagnostic.problem_text()
+
+
+def test_documentation_compilation_validates_pyspark_hook_runtime_signature() -> None:
+    @transform
+    class InvalidHook(Transform):
+        rows = input(Raw)
+        clean = output(Clean)
+
+        def normalize(self, row: Raw) -> Clean:
+            return Clean(id=row.id)
+
+        @raw(inout=lane(rows) | lane(rows))
+        def normalize_hook(self, rows):
+            return rows
+
+    with pytest.raises(StructureCompileError) as raised:
+        Compiler.frontend.compile()(
+            InvalidHook,
+            materialize_schemas=False,
+            purpose=CompilationPurpose.DOCUMENTATION,
+        )
+
+    assert "hook parameters must be keyword-only" in raised.value.diagnostic.problem_text()
 
 
 def test_v1_inferred_join_without_relation_candidate_reports_diagnostic() -> None:

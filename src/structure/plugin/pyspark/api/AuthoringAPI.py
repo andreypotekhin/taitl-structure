@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import cast
 
+from structure.plugin.api.v1 import AuthoringAPI as AuthoringAPIV1
 from structure.plugin.api.v1 import StepAuthoringCapture, StepAuthoringRequest, StepAuthoringResult
 from structure.plugin.pyspark.api.PySpark import PySpark
 from structure.plugin.pyspark.dsl.InputScope import InputScope
@@ -12,7 +13,7 @@ from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import Py
 
 
 @dataclass
-class Authoring:
+class AuthoringAPI(AuthoringAPIV1):
     def open_step(self, request: StepAuthoringRequest) -> PySparkStepSession:
         return PySparkStepSession(request)
 
@@ -53,10 +54,17 @@ class PySparkStepSession:
     def arguments(self) -> tuple[object, ...]:
         return self._arguments
 
+    def validate(self) -> tuple[object, ...]:
+        PySpark.symbolic_execution.validate_comparisons()(self._context.filters, request=self._request)
+        body = PySparkStepBody(value=None, joins=tuple(self._context.joins))
+        return PySpark.symbolic_execution.validate_joins()(body, request=self._request)
+
     def capture(self, value: object) -> StepAuthoringCapture:
         try:
+            body = PySpark.symbolic_execution.capture()(value, context=self._context, request=self._request)
             return StepAuthoringCapture(
-                body=PySpark.symbolic_execution.capture()(value, context=self._context, request=self._request)
+                body=body,
+                diagnostics=(),
             )
         finally:
             if self._capture_pending:

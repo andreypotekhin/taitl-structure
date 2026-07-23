@@ -12,7 +12,7 @@ from structure.plugin.api.v1.api.SerializationAPI import SerializationAPI
 
 
 @dataclass(frozen=True)
-class PluginAPIV1:
+class PluginAPI:
     schema: SchemaAPI
     compiler: CompilerAPI
     capabilities: CapabilitiesAPI

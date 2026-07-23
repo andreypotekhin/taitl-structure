@@ -12,6 +12,7 @@ class SymbolicContext(Protocol):
     joins: list[Any]
     operations: list[Any]
     aggregate_keys: tuple[tuple[str, Any], ...] | None
+    aggregate_requested: bool
     aggregate_levels: tuple[tuple[str, ...], ...]
     aggregate_grouping: str
     aggregate_having: Any | None

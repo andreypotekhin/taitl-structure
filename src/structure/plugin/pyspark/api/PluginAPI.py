@@ -1,23 +1,23 @@
-from structure.plugin.api.v1 import PluginAPIV1
-from structure.plugin.pyspark.api.Analysis import Analysis
-from structure.plugin.pyspark.api.Authoring import Authoring
-from structure.plugin.pyspark.api.Capabilities import Capabilities
-from structure.plugin.pyspark.api.Compiler import Compiler
-from structure.plugin.pyspark.api.Execution import Execution
-from structure.plugin.pyspark.api.Explain import Explain
-from structure.plugin.pyspark.api.Generation import Generation
-from structure.plugin.pyspark.api.Schema import Schema
+from structure.plugin.api.v1 import PluginAPI as PluginAPIV1
+from structure.plugin.pyspark.api.AnalysisAPI import AnalysisAPI
+from structure.plugin.pyspark.api.AuthoringAPI import AuthoringAPI
+from structure.plugin.pyspark.api.CapabilitiesAPI import CapabilitiesAPI
+from structure.plugin.pyspark.api.CompilerAPI import CompilerAPI
+from structure.plugin.pyspark.api.ExecutionAPI import ExecutionAPI
+from structure.plugin.pyspark.api.ExplainAPI import ExplainAPI
+from structure.plugin.pyspark.api.GenerationAPI import GenerationAPI
+from structure.plugin.pyspark.api.SchemaAPI import SchemaAPI
 
 
 class PluginAPI:
     def create(self) -> PluginAPIV1:
         return PluginAPIV1(
-            schema=Schema(),
-            compiler=Compiler(),
-            capabilities=Capabilities(),
-            authoring=Authoring(),
-            executor=Execution(),
-            generator=Generation(),
-            explainer=Explain(),
-            analysis=Analysis(),
+            schema=SchemaAPI(),
+            compiler=CompilerAPI(),
+            capabilities=CapabilitiesAPI(),
+            authoring=AuthoringAPI(),
+            executor=ExecutionAPI(),
+            generator=GenerationAPI(),
+            explainer=ExplainAPI(),
+            analysis=AnalysisAPI(),
         )

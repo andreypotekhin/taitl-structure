@@ -2,7 +2,17 @@ from structure import Schema, Transform, input, output, transform
 from structure.core.compiler.api import Compiler
 from structure.core.target.capabilities.model.CapabilityRequirement import CapabilityRequirement
 from structure.plugin.api.v1 import ExplainRequest
+from structure.plugin.api.v1 import PluginAPI as PluginAPIV1
 from structure.plugin.pyspark import *
+from structure.plugin.pyspark.api.AnalysisAPI import AnalysisAPI
+from structure.plugin.pyspark.api.AuthoringAPI import AuthoringAPI
+from structure.plugin.pyspark.api.CapabilitiesAPI import CapabilitiesAPI
+from structure.plugin.pyspark.api.CompilerAPI import CompilerAPI
+from structure.plugin.pyspark.api.ExecutionAPI import ExecutionAPI
+from structure.plugin.pyspark.api.ExplainAPI import ExplainAPI
+from structure.plugin.pyspark.api.GenerationAPI import GenerationAPI
+from structure.plugin.pyspark.api.PluginAPI import PluginAPI as PySparkPluginAPI
+from structure.plugin.pyspark.api.SchemaAPI import SchemaAPI
 
 
 def test_bundled_pyspark_platform_exposes_the_v1_facade() -> None:
@@ -18,6 +28,20 @@ def test_bundled_pyspark_platform_exposes_the_v1_facade() -> None:
         .supported
     )
     assert api.explainer is not None
+
+
+def test_pyspark_plugin_api_composes_named_v1_facet_adapters() -> None:
+    api = PySparkPluginAPI().create()
+
+    assert isinstance(api, PluginAPIV1)
+    assert isinstance(api.schema, SchemaAPI)
+    assert isinstance(api.compiler, CompilerAPI)
+    assert isinstance(api.capabilities, CapabilitiesAPI)
+    assert isinstance(api.authoring, AuthoringAPI)
+    assert isinstance(api.executor, ExecutionAPI)
+    assert isinstance(api.generator, GenerationAPI)
+    assert isinstance(api.explainer, ExplainAPI)
+    assert isinstance(api.analysis, AnalysisAPI)
 
 
 class Source(Schema):

@@ -353,18 +353,22 @@ class RunOnlinePySparkTransform:
                     ),
                 )
             group = df.rollup if aggregate.grouping == "rollup" else df.cube
-        grouped = group(
-            *(
-                (
-                    self._aggregate_key_column(key, key_columns)
-                    if aggregate.grouping in {"rollup", "cube"}
-                    else self._expressions.evaluate(
-                        key.expression,
-                        functions=functions,
-                        aliases=self._scope_aliases(step),
-                    ).alias(key.name)
+        grouped = (
+            df
+            if aggregate.grouping == "group_by" and not aggregate.keys
+            else group(
+                *(
+                    (
+                        self._aggregate_key_column(key, key_columns)
+                        if aggregate.grouping in {"rollup", "cube"}
+                        else self._expressions.evaluate(
+                            key.expression,
+                            functions=functions,
+                            aliases=self._scope_aliases(step),
+                        ).alias(key.name)
+                    )
+                    for key in aggregate.keys
                 )
-                for key in aggregate.keys
             )
         )
         aggregated = grouped.agg(

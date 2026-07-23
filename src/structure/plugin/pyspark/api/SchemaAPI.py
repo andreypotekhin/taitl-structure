@@ -1,12 +1,13 @@
 from typing import Any, cast
 
-from structure.plugin.api.v1 import SchemaAPI, SchemaInspectionRequest, SchemaValidationRequest, TransformSchemaRequest
+from structure.plugin.api.v1 import SchemaAPI as SchemaAPIV1
+from structure.plugin.api.v1 import SchemaInspectionRequest, SchemaValidationRequest, TransformSchemaRequest
 from structure.plugin.api.v1.model import TransformSchemas
 from structure.plugin.pyspark.api.PySpark import PySpark
 from structure.plugin.pyspark.dsl.ValidatePySparkSchemas import ValidatePySparkSchemas
 
 
-class Schema(SchemaAPI):
+class SchemaAPI(SchemaAPIV1):
     def __init__(self) -> None:
         self._validate = ValidatePySparkSchemas()
 

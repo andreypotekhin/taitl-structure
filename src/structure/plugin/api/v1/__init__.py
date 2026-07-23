@@ -1,5 +1,5 @@
 from structure.plugin.api.v1.api import (
-    AnalysisAPI, AuthoringAPI, CapabilitiesAPI, CompilerAPI, ExecutionAPI, ExplainAPI, GenerationAPI, PluginAPIV1,
+    AnalysisAPI, AuthoringAPI, CapabilitiesAPI, CompilerAPI, ExecutionAPI, ExplainAPI, GenerationAPI, PluginAPI,
     SchemaAPI, SerializationAPI,
 )
 from structure.plugin.api.v1.model import (
@@ -8,8 +8,6 @@ from structure.plugin.api.v1.model import (
     StepAuthoringSession, StepInputPlan, StreamingAnalysisRequest, SymbolicContext, TraceabilityRequest,
     TransformMemberOrigin, TransformSchemaRequest, current_symbolic_context,
 )
-
-PluginAPI = PluginAPIV1
 
 __all__ = [
     "CapabilitiesAPI",
@@ -26,7 +24,6 @@ __all__ = [
     "GenerationRequest",
     "InputPlan",
     "PluginAPI",
-    "PluginAPIV1",
     "PluginCompilation",
     "SchemaAPI",
     "SchemaInspectionRequest",

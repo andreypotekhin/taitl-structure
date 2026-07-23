@@ -159,6 +159,9 @@ class RecordingSession:
     def arguments(self):
         return self._delegate.arguments()
 
+    def validate(self):
+        return self._delegate.validate()
+
     def capture(self, value):
         self._capture_contexts.append(current_pyspark_context())
         return self._delegate.capture(value)

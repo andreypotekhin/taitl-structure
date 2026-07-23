@@ -1,10 +1,11 @@
 from typing import Any, cast
 
-from structure.plugin.api.v1 import ExecutionAPI, ExecutionRequest
+from structure.plugin.api.v1 import ExecutionAPI as ExecutionAPIV1
+from structure.plugin.api.v1 import ExecutionRequest
 from structure.plugin.pyspark.api.PySpark import PySpark
 
 
-class Execution(ExecutionAPI):
+class ExecutionAPI(ExecutionAPIV1):
     def execute(self, request: ExecutionRequest) -> object:
         if request.invocation is None or request.mode is None:
             raise ValueError("PySpark execution requires an invocation and execution mode.")

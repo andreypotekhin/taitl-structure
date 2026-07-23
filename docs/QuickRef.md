@@ -13,7 +13,6 @@ A schema class defines a contract and compiles into PySpark schema (`StructType`
 from structure import Schema
 from structure.plugin.pyspark import *
 
-
 class OrderRaw(Schema):
     id = string(nullable=False)
     customer_id = string(nullable=False)
@@ -44,7 +43,6 @@ A transform class is declared by inheriting `Transform`.
 from structure import Transform, input, lane, output
 from structure.plugin.pyspark import *
 
-
 class NormalizeOrders(Transform):
     orders = input(OrderRaw)
     normalized = output(OrderNormalized)
@@ -74,14 +72,14 @@ The run() method compiles the transform and invokes its steps methods.
 Transforms may subclass other Transforms. In such case, parent transforms execute first:
 
 ```python
-class NormalizeBase(Transform):
+class Normalize(Transform):
     orders = input(OrderRaw)
     normalized = lane(OrderNormalized)
 
     def normalize(self, order: OrderRaw) -> OrderNormalized:
         ...
 
-class PublishOrders(NormalizeBase):
+class Publish(Normalize):
     published = output(OrderPublished)
 
     def publish(self, order: OrderNormalized) -> OrderPublished:
@@ -97,7 +95,7 @@ Reference: [transforms API](api/Transforms.api.md), [DSL](background/DSL.back.md
 [execution](background/Execution.back.md), and
 [transform inheritance and composition](background/DSL.back.md).
 
-## Inputs/Outputs
+## Input/Output
 
 Inputs are Transform fields that correspond to input (consumed) DataFrames.
 
@@ -205,21 +203,6 @@ partitioning, checkpoints, output modes, and storage options.
 Construct a transform object specifying applicable inputs. Running it triggers in-memory compilation and executes the compiled code.
 
 ```python
-from structure import (
-    Schema,
-    StructureConfig,
-    StructureSession,
-    StructureTools,
-    Transform,
-    input,
-    lane,
-    output,
-    raw,
-    special,
-    step,
-    transform,
-)
-
 config = StructureConfig.resolve(project_root=".")
 session = StructureSession(spark=spark, ctx=ctx, config=config)
 
@@ -234,29 +217,6 @@ enriched_df = result.enriched
 
 The session owns the caller-supplied Spark reference, Structure configuration,
 execution mode and compiled artifacts. It preserves the compiled code between transform and invocations. For instance, the subsequent construction of new insances `EnrichOrders` and repeat invocations of its .run() (on same session) do not trigger recompiling.
-
-### Disk-less sources
-
-In notebooks and other paste-and-run environments, compile trusted source text without writing it to a project tree:
-
-```python
-sources = StructureSources.files(
-    {
-        "orders/schemas.py": schema_text,
-        "orders/transforms.py": transform_text,
-    }
-)
-session = StructureSession(spark=spark, config=StructureConfig.create())
-session.compile(sources)
-
-result = session.run(transform="orders.transforms:EnrichOrders", orders=orders_df)
-```
-
-The session compiles every concrete transform in `sources` and retains those results. Select a compiled transform with
-its Python module and class name. See [disk-less source compilation](dev/specifications/DisklessSourceCompilation.md).
-
-Reference: [transforms API](api/Transforms.api.md), [execution](background/Execution.back.md), and
-[execution semantic contract](background/ExecutionSemanticContract.back.md).
 
 ## Generated PySpark Code
 
@@ -405,7 +365,7 @@ customer_id=self.clean_id(order.customer_id)
 
 Reference: [expressions API](api/Expressions.api.md) and [DSL expression helpers](background/DSL.back.md).
 
-## Aggregations
+## Aggregation
 
 Use `group_by(...)` to return an aggregate schema. Aggregate
 assignments stay compiler-visible and lower to Spark grouping operations.
@@ -524,7 +484,7 @@ Reference: [aggregations API](api/Aggregations.api.md),
 [IR](background/PySparkCodeGeneration.back.md), [PySpark code generation](background/PySparkCodeGeneration.back.md), and
 [streaming compatibility](background/StreamingCompatibility.back.md).
 
-## Latest and Earliest Rows
+## Latest/Earliest Rows
 
 Use `latest_by(...)` or `earliest_by(...)` when a grouped set of rows must keep one row per partition by an explicit
 ordering expression. Use `dedupe_latest_by(...)` or `dedupe_earliest_by(...)` when the same deterministic selection is
@@ -615,9 +575,9 @@ Reference: [windows API](api/Windows.api.md),
 [IR](background/PySparkCodeGeneration.back.md), [PySpark code generation](background/PySparkCodeGeneration.back.md), and
 [streaming compatibility](background/StreamingCompatibility.back.md).
 
-## Removing Duplicate Rows
+## Duplicate Rows
 
-Use `distinct(relation)` for exact duplicate removal over a relation. It is a synonym for
+Use `distinct(relation)` for exact duplicate row removal over a relation. It is a synonym for
 `drop_duplicates(relation)`.
 
 ```python
@@ -736,10 +696,6 @@ Reference: [collections API](api/Collections.api.md),
 [backend capabilities](background/BackendCapabilities.back.md).
 
 ## Joins
-
-Use symbolic joins. Ref: [joins API](api/Joins.api.md), [Join semantics](background/DSL.back.md),
-[analytical join coverage](background/DSL.back.md), and
-[full PySpark join support](background/DSL.back.md).
 
 Implemented join forms in the default PySpark profile:
 
@@ -867,14 +823,18 @@ orders = orders.join(
 )
 ```
 
+Ref: [joins API](api/Joins.api.md), [Join semantics](background/DSL.back.md),
+[analytical join coverage](background/DSL.back.md), and
+[full PySpark join support](background/DSL.back.md).
+
 ## Inheritance
 
 ### Schema Inheritance
 
 Schema classes can subclass other schema classes.
-This can help to avoid duplicate field declarations, allow for 'declare once' style and establishing schema hierarchies.
+This helps to avoid duplication and allows establishing schema hierarchies.
 
-When constructing a subclass schema object, use `.base(row)(...)` to copy inherited fields from a base class instance.
+When constructing a subclass schema object, use `.base(row)(...)` to copy inherited fields from a base class instance:
 
 ```python
 def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithCustomer:
@@ -884,18 +844,14 @@ def add_customer(self, order: OrderNormalized, customer: Customer) -> OrderWithC
     )
 ```
 
-Multiple schema bases compose left to right.
-The `.base()` method allows for multiple bases when constructing a derived class instance:
+Multiple-inherited schema classes compose left to right.
+The `.base()` method allows for multiple bases:
 
 ```python
-class OrderPublished(OrderPublication, PublicationFlags):
-    pass
-
 flags = PublicationFlags(
     has_customer=order.customer_name.is_not_null(),
     has_product=order.product_name.is_not_null(),
 )
-
 return OrderPublished.base(order, flags)
 ```
 
@@ -918,10 +874,10 @@ Reference: [schemas API](api/Schemas.api.md), [schema inheritance](reference/Sch
 Transform classes can subclass other Transforms. They inherit inputs, lanes, outputs, hooks, helpers, and step methods
 from parent class. Parent transforms run before child transform; a child method with the same name overrides
 the inherited scheduled step. Multiple inheritance is allowed, in which case parents run left-to-right before
-children, and Python rules for resolving diamond inheritance shapes are observed.
+children. Python rules for resolving diamond inheritance shapes are observed.
 
 ```python
-class NormalizeBase(Transform):
+class Normalize(Transform):
     orders = input(OrderRaw)
     normalized = lane(OrderNormalized)
 
@@ -932,7 +888,7 @@ class NormalizeBase(Transform):
             customer_id=lower(trim(order.customer_id)),
         )
 
-class PublishOrders(NormalizeBase):
+class Publish(Normalize):
     published = output(OrderPublished)
 
     def publish(self, order: OrderNormalized) -> OrderPublished:
@@ -1134,6 +1090,16 @@ def normalize(self, order: OrderRaw) -> OrderNormalized:
 Reference: [schemas API](api/Schemas.api.md), [validation semantics](reference/Schema.ref.md), and
 [data quality constraints](reference/Schema.ref.md).
 
+## Streaming
+
+Structure transforms operate on DataFrames. If the input DataFrame is streaming and every compiled operation
+is supported by Spark Structured Streaming, the transform can run in a streaming pipeline.
+
+Structure does not generate `readStream` or `writeStream`; the caller owns streaming orchestration.
+
+Reference: [streaming API](api/Streaming.api.md) and
+[streaming compatibility](background/StreamingCompatibility.back.md).
+
 ## Source and Generated Paths
 
 Default filesystem layout:
@@ -1150,15 +1116,28 @@ Reference: [source module rules](background/PySparkCodeGeneration.back.md),
 [configuration schema](background/CLI.back.md), and
 [PySpark code generation](background/PySparkCodeGeneration.back.md).
 
-## Streaming Compatibility
+### Disk-less sources
 
-Structure transforms operate on DataFrames. If the input DataFrame is streaming and every compiled operation
-is supported by Spark Structured Streaming, the transform can run in a streaming pipeline.
+In notebooks and other paste-and-run environments, compile trusted source text without writing it to a project tree:
 
-Structure does not generate `readStream` or `writeStream`; the caller owns streaming orchestration.
+```python
+sources = StructureSources.files(
+    {
+        "orders/schemas.py": schema_text,
+        "orders/transforms.py": transform_text,
+    }
+)
+session = StructureSession(spark=spark, config=StructureConfig.create())
+session.compile(sources)
 
-Reference: [streaming API](api/Streaming.api.md) and
-[streaming compatibility](background/StreamingCompatibility.back.md).
+result = session.run(transform="orders.transforms:EnrichOrders", orders=orders_df)
+```
+
+The session compiles every concrete transform in `sources` and retains those results. Select a compiled transform with
+its Python module and class name. See [disk-less source compilation](dev/specifications/DisklessSourceCompilation.md).
+
+Reference: [transforms API](api/Transforms.api.md), [execution](background/Execution.back.md), and
+[execution semantic contract](background/ExecutionSemanticContract.back.md).
 
 ## Compatibility
 

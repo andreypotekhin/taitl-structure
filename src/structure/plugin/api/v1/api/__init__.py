@@ -5,11 +5,11 @@ from structure.plugin.api.v1.api.CompilerAPI import CompilerAPI
 from structure.plugin.api.v1.api.ExecutionAPI import ExecutionAPI
 from structure.plugin.api.v1.api.ExplainAPI import ExplainAPI
 from structure.plugin.api.v1.api.GenerationAPI import GenerationAPI
-from structure.plugin.api.v1.api.PluginAPIV1 import PluginAPIV1
+from structure.plugin.api.v1.api.PluginAPI import PluginAPI
 from structure.plugin.api.v1.api.SchemaAPI import SchemaAPI
 from structure.plugin.api.v1.api.SerializationAPI import SerializationAPI
 
 __all__ = [
     "AnalysisAPI", "AuthoringAPI", "CapabilitiesAPI", "CompilerAPI", "ExecutionAPI", "ExplainAPI", "GenerationAPI",
-    "PluginAPIV1", "SchemaAPI", "SerializationAPI",
+    "PluginAPI", "SchemaAPI", "SerializationAPI",
 ]

@@ -78,7 +78,6 @@ class EnrichOrders(Transform):
         where(order.id.is_not_null())
         where(order.customer_id.is_not_null())
         where(order.product_id.is_not_null())
-
         return OrderNormalized.project(order)(
             id=order.id,
             customer_id=self.clean_id(order.customer_id),
@@ -228,7 +227,7 @@ class EnrichOrdersGenerated:
         return orders
 ```
 
-## API Coverage
+## API
 
 Structure tries to cover most of PySpark APIs related to data transformation: filtering, joins, aggregation, deduplication, windowing, higher order functions. Example of a less-trivial analytical transform:
 
@@ -248,7 +247,6 @@ class OrderAnalytics(Transform):
           product_id=order.product_id,
           order_date=order.business.order_date,
       )
-
       return ProductDailySummary(
           tenant=order.tenant,
           product_id=order.product_id,
@@ -268,7 +266,6 @@ class OrderAnalytics(Transform):
             product_category=order.product_category,
             order_date=order.business.order_date,
         )
-
         return OrderRevenueRollup(
             tenant_id=order.tenant.tenant_id,
             product_category=order.product_category,
@@ -299,7 +296,6 @@ class OrderAnalytics(Transform):
             product_category=order.product_category,
             customer_tier=order.customer_tier,
         )
-
         return OrderProductCube(
             tenant_id=order.tenant.tenant_id,
             product_category=order.product_category,
@@ -316,7 +312,6 @@ class OrderAnalytics(Transform):
             order_by=order.quantity,
             frame=rows_between(preceding(2), current_row()),
         )
-
         return OrderCustomerWindow(
             tenant_id=order.tenant.tenant_id,
             customer_id=order.customer_id,
@@ -334,43 +329,6 @@ class OrderAnalytics(Transform):
             running_max_units=window_max(order.quantity, over=customer_window),
             running_order_count=window_count(over=customer_window),
         )
-
-    def collection_profile(self, row: OrderCollectionSource) -> OrderCollectionProfile:
-        normalized_attributes = map_filter(
-            map_transform_keys(
-                map_transform_values(row.attributes, lambda key, value: lower(trim(value))),
-                lambda key, value: lower(trim(key)),
-            ),
-            lambda key, value: value.is_not_null(),
-        )
-
-return OrderCollectionProfile(
-    tag_count=size(row.tags),
-    contains_priority=array_contains(row.tags, "priority"),
-    contains_region=map_contains_key(row.extra_attributes, "Region"),
-    default_tags=array("priority", "standard"),
-    repeated_tags=array_repeat("priority", 2),
-    all_tags=array_union(row.tags, row.extra_tags),
-    tags_without_extra=array_except(row.tags, row.extra_tags),
-    first_tag=element_at(row.tags, 1),
-    safe_tag=try_element_at(row.tags, 2),
-            id=row.id,
-            normalized_tags=arr_distinct(
-              arr_zip_with(row.tags, row.tags, lambda left, right: lower(trim(left)))),
-            sorted_tags=arr_sort_by(row.tags, lambda tag: lower(trim(tag))),
-            flat_tags=arr_flatten(row.nested_tags),
-            score_total=arr_aggregate(row.scores, 0, lambda acc, item: acc + item),
-            tag_position=arr_position(row.tags, "priority"),
-            has_priority=arr_exists(row.tags, lambda tag: lower(trim(tag)) == "priority"),
-            all_tags_present=arr_forall(row.tags, lambda tag: tag.is_not_null()),
-            normalized_attributes=normalized_attributes,
-            zipped_attributes=map_zip_with(
-              row.attributes, row.attributes, lambda key, left, right: lower(trim(left))),
-            attribute_keys=map_keys(row.attributes),
-            attribute_values=map_values(row.attributes),
-    roundtrip_attributes=map_from_entries(map_entries(row.attributes)),
-    merged_attributes=map_concat(row.attributes, row.extra_attributes),
-)
 ```
 
 ## Performance Focus
@@ -390,7 +348,7 @@ Python-first approach allows for such IDE conveniences, as:
 
 ## Code Examples
 
-These example applications demonstrate Structure in various domains.
+I include these example applications to demonstrate Structure in various domains:
 
 | Example                                 | Focus                                       | Details                                               |
 | --------------------------------------- | ------------------------------------------- | ----------------------------------------------------- |
@@ -400,8 +358,6 @@ These example applications demonstrate Structure in various domains.
 | [Store](examples/store/Readme.md)       | Retail order enrichment and analytics       | Streaming fulfillment, batch analytics.               |
 | [Stocks](examples/stocks/Readme.md)     | Daily-bar technical-analysis                | Trend, momentum, volatility, daily return indicators. |
 | [Streams](examples/streams/Readme.md)   | White-water kayaking                        | Streaming timing, progress and penalties.             |
-
-The examples are designed for capability demonstration, not immediate production use.
 
 ## Out of scope
 
@@ -419,8 +375,6 @@ See [Compatibility.md](docs/Compatibility.md) for the versioning and compatibili
 ## Next Steps
 
 Read QuickRef: [QuickRef.md](docs/QuickRef.md)
-
-Browse code examples: [Examples](examples/Readme.md)
 
 ## Development
 

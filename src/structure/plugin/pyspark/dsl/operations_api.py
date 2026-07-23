@@ -770,6 +770,11 @@ def _aggregate(
     order_by: Expression | None = None,
     options: tuple[tuple[str, object], ...] = (),
 ) -> Expression:
+    # Aggregate expressions are also valid standalone DSL values (for example,
+    # during API introspection).  Only a live authoring context records that a
+    # step needs aggregate lowering.
+    if context := current_context():
+        context.aggregate_requested = True
     if (
         function in {"avg", "bool_and", "bool_or", "first_value", "last_value", "max", "min", "sum"}
         and _global_aggregate_may_be_empty()

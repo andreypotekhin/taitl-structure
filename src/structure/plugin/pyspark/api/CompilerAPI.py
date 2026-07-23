@@ -1,10 +1,12 @@
-from structure.plugin.api.v1 import CompilationPurpose, CompilerAPI, CompileRequest, PluginCompilation
+from structure.plugin.api.v1 import CompilationPurpose
+from structure.plugin.api.v1 import CompilerAPI as CompilerAPIV1
+from structure.plugin.api.v1 import CompileRequest, PluginCompilation
 from structure.plugin.api.v1.model import TransformPlan
-from structure.plugin.pyspark.api.Authoring import PySparkStepBody
+from structure.plugin.pyspark.api.AuthoringAPI import PySparkStepBody
 from structure.plugin.pyspark.api.PySpark import PySpark
 
 
-class Compiler(CompilerAPI):
+class CompilerAPI(CompilerAPIV1):
     def __init__(self) -> None:
         self._udf_diagnostics = PySpark.compiler.udf_diagnostics()
 
@@ -15,6 +17,7 @@ class Compiler(CompilerAPI):
             raise ValueError("PLUGIN-E2708: PySpark compilation requires a Core TransformPlan analysis.")
         if any(not isinstance(step.plugin_body, PySparkStepBody) for step in plan.steps):
             raise ValueError("PLUGIN-E2708: PySpark compilation requires a PySpark-owned body for every step.")
+        PySpark.compiler.hooks()(plan)
         if request.purpose is CompilationPurpose.DOCUMENTATION:
             return PluginCompilation(
                 lowered=None,

@@ -54,7 +54,7 @@ from structure.plugin.pyspark.dsl.joins import (
     TiePolicy,
 )
 from structure.plugin.pyspark.dsl.Projection import Projection
-from structure.plugin.pyspark.dsl.types import BooleanType, DecimalType, Struct, StructType, StructureType
+from structure.plugin.pyspark.dsl.types import DecimalType, Struct, StructType, StructureType
 
 SourceDeclaration = InputDeclaration | LaneDeclaration | BindingSelector
 WriteDeclaration = LaneDeclaration | OutputDeclaration | BindingSelector
@@ -309,7 +309,6 @@ class CompileTransform:
             target_platform=cast(str | None, metadata["target_platform"]),
             origin=TransformMemberOrigin.of(item.owner, item.name),
         )
-        self._validate_hook_signature(transform_class, hook)
         self._attach_after_hook(steps, hook)
 
     def _attach_raw_before(
@@ -350,7 +349,6 @@ class CompileTransform:
             target_platform=cast(str | None, metadata["target_platform"]),
             origin=TransformMemberOrigin.of(item.owner, item.name),
         )
-        self._validate_hook_signature(transform_class, hook)
         return replace(target, before_hooks=(*target.before_hooks, hook))
 
     def _raw_bindings(self, transform_class, target: StepPlan, metadata: dict[str, object], *, member: str):
@@ -615,31 +613,14 @@ class CompileTransform:
                 context={"error": type(error).__name__},
             ) from error
 
+        diagnostics.extend(cast(tuple[Diagnostic, ...], authoring_session.validate()))
         context = self._authoring_context(authoring_session)
-        diagnostics.extend(self._validate_joins(transform_class, name, context.joins))
-        self._validate_comparison_problems(transform_class, name, context.filters)
         values = self._result_values(
             transform_class,
             name,
             output_schemas,
             result,
         )
-        if context.aggregate_keys is not None and len(values) > 1:
-            raise self._error(
-                "DSL-E0402",
-                transform_class=transform_class,
-                member=name,
-                problem=f"{transform_class.__name__}.{name} uses group_by(...) with multiple returned schemas.",
-                use="Return one aggregate schema per grouped step method.",
-            )
-        if context.aggregate_having is not None and context.aggregate_keys is None:
-            raise self._error(
-                "DSL-E0402",
-                transform_class=transform_class,
-                member=name,
-                problem=f"{transform_class.__name__}.{name} uses having(...) outside grouped aggregation.",
-                use="Call group_by(...), rollup(...), cube(...), or grouping_sets(...) before having(...).",
-            )
         result_plans: list[LegacyStepResultPlan] = []
         for ordinal, (output_schema, output_lane, value) in enumerate(
             zip(output_schemas, output_lanes, values, strict=True)
@@ -647,13 +628,13 @@ class CompileTransform:
             frame = output_lane
             aggregate = (
                 None
-                if context.aggregate_keys is None
+                if not context.aggregate_requested
                 else self._aggregate_plan(
                     transform_class,
                     name,
                     output_schema,
                     value,
-                    keys=context.aggregate_keys,
+                    keys=() if context.aggregate_keys is None else context.aggregate_keys,
                     grouping=context.aggregate_grouping,
                     levels=context.aggregate_levels,
                     having=context.aggregate_having,
@@ -686,13 +667,6 @@ class CompileTransform:
             context.record_aggregate(first.aggregate)
         bindings = self._parent_call_bindings(bindings, parent_call)
         driver = bindings[0]
-        self._validate_relation_reads(
-            transform_class,
-            name,
-            bindings,
-            context.operations,
-            result_plans,
-        )
         # Transitional hand-off: the bundled authoring session owns this private
         # symbolic context.  P072 moves these builders out of Core entirely.
         authoring_context = cast(Any, context)
@@ -836,103 +810,6 @@ class CompileTransform:
         if metadata:
             options.update(cast(dict[str, object], metadata.get("options", {})))
         return options or None
-
-    def _validate_relation_reads(
-        self,
-        transform_class: type[Transform],
-        member: str,
-        bindings: list[StepInputPlan],
-        operations: list,
-        results: list[LegacyStepResultPlan],
-    ) -> None:
-        joined: set[str] = set()
-        relation_scopes = {binding.scope: binding.parameter for binding in bindings[1:]}
-        for operation in operations:
-            if operation.kind == "filter" and operation.filter is not None:
-                self._validate_joined_relation_reads(
-                    transform_class,
-                    member,
-                    relation_scopes,
-                    joined,
-                    self._scopes(operation.filter),
-                )
-            if operation.kind == "join" and operation.join is not None:
-                if operation.join.temporal is not None:
-                    self._validate_joined_relation_reads(
-                        transform_class,
-                        member,
-                        relation_scopes,
-                        joined,
-                        self._scopes(operation.join.temporal.at),
-                    )
-                if operation.join.as_of is not None:
-                    self._validate_joined_relation_reads(
-                        transform_class,
-                        member,
-                        relation_scopes,
-                        joined,
-                        self._scopes(operation.join.as_of.left_time),
-                    )
-                    if operation.join.as_of.tolerance is not None:
-                        self._validate_joined_relation_reads(
-                            transform_class,
-                            member,
-                            relation_scopes,
-                            joined,
-                            self._scopes(operation.join.as_of.tolerance),
-                        )
-                if operation.join.method.exposes_fields():
-                    joined.add(operation.join.input_name)
-            if operation.kind == "aggregate" and operation.aggregate is not None:
-                reads = set().union(*(self._scopes(key.expression) for key in operation.aggregate.keys))
-                reads.update(
-                    *(
-                        self._scopes(assignment.expression)
-                        for assignment in operation.aggregate.assignments
-                        if assignment.expression is not None
-                    )
-                )
-                self._validate_joined_relation_reads(transform_class, member, relation_scopes, joined, reads)
-            if operation.kind == "selected_rows" and operation.selected_rows is not None:
-                reads = set().union(
-                    self._scopes(operation.selected_rows.order_by),
-                    *(self._scopes(expression) for expression in operation.selected_rows.partition_by),
-                )
-                self._validate_joined_relation_reads(transform_class, member, relation_scopes, joined, reads)
-            if operation.kind == "drop_duplicates" and operation.duplicate_rows is not None:
-                reads = set().union(*(self._scopes(expression) for expression in operation.duplicate_rows.subset))
-                scope = operation.duplicate_rows.scope
-                if not (scope is not None and reads <= {scope}):
-                    self._validate_joined_relation_reads(transform_class, member, relation_scopes, joined, reads)
-
-        reads = set().union(
-            *(self._scopes(assignment.expression) for result in results for assignment in result.projection)
-        )
-        self._validate_joined_relation_reads(transform_class, member, relation_scopes, joined, reads)
-
-    def _validate_joined_relation_reads(
-        self,
-        transform_class: type[Transform],
-        member: str,
-        relation_scopes: dict[str, str],
-        joined: set[str],
-        reads: set[str],
-    ) -> None:
-        for scope, parameter in relation_scopes.items():
-            if scope in reads and scope not in joined:
-                raise self._error(
-                    "JOIN-E0601",
-                    transform_class=transform_class,
-                    member=member,
-                    problem=(
-                        f"{transform_class.__name__}.{member} reads relation parameter "
-                        f"{parameter} before it is joined."
-                    ),
-                    use=(
-                        f"Use left_join({parameter}, on=...) or lookup_join({parameter}, on=...) before reading its fields."
-                    ),
-                    context={"input": parameter},
-                )
 
     def _input_bindings(
         self,
@@ -1723,68 +1600,6 @@ class CompileTransform:
             self._declared_output(transform_class, declaration, member=member, role=role)
             return
 
-    def _validate_hook_signature(self, transform_class: type[Transform], hook: HookPlan) -> None:
-        self._validate_hook_target_backend(transform_class, hook)
-        method = getattr(transform_class, hook.name)
-        parameters = list(inspect.signature(method).parameters.values())
-        if not parameters or parameters[0].name != "self":
-            raise self._hook_signature_error(
-                transform_class,
-                hook,
-                problem=f"{transform_class.__name__}.{hook.name} must declare self.",
-            )
-        runtime = parameters[1:]
-        if any(parameter.kind is not inspect.Parameter.KEYWORD_ONLY for parameter in runtime):
-            raise self._hook_signature_error(
-                transform_class,
-                hook,
-                problem=f"{transform_class.__name__}.{hook.name} hook parameters must be keyword-only.",
-            )
-        expected = [lane.name for lane in hook.lanes] + ["spark", "ctx"]
-        names = [parameter.name for parameter in runtime]
-        if names != expected:
-            raise self._hook_signature_error(
-                transform_class,
-                hook,
-                problem=(
-                    f"{transform_class.__name__}.{hook.name} must declare keyword-only parameters "
-                    f"{', '.join(expected)}; got {', '.join(names) or 'none'}."
-                ),
-            )
-
-    def _validate_hook_target_backend(self, transform_class: type[Transform], hook: HookPlan) -> None:
-        if "all" in hook.target_backend or "pyspark" in hook.target_backend:
-            return
-        targets = ", ".join(hook.target_backend)
-        raise self._error(
-            "DSL-E0402",
-            transform_class=transform_class,
-            member=hook.name,
-            problem=(
-                f"{transform_class.__name__}.{hook.name} targets {targets}, "
-                "but v1 active hook execution is PySpark only."
-            ),
-            use='Use target_backend="pyspark" for v1, or keep non-PySpark hook declarations for a future backend.',
-            context={"hook": hook.name, "target_backend": targets},
-        )
-
-    def _hook_signature_error(
-        self,
-        transform_class: type[Transform],
-        hook: HookPlan,
-        *,
-        problem: str,
-    ) -> StructureCompileError:
-        lane_names = ", ".join(lane.name for lane in hook.lanes)
-        return self._error(
-            "DSL-E0402",
-            transform_class=transform_class,
-            member=hook.name,
-            problem=problem,
-            use=f"Use def {hook.name}(self, *, {lane_names}, spark, ctx): ...",
-            context={"hook": hook.name, "lane": lane_names},
-        )
-
     def _row_parameters(self, method, hints: dict[str, object]) -> tuple[inspect.Parameter, ...]:
         parameters = list(inspect.signature(method).parameters.values())
         row_parameters = [parameter for parameter in parameters if parameter.name != "self"]
@@ -1964,22 +1779,11 @@ class CompileTransform:
             key = self._aggregate_key_for(field.name, expression, aggregate_keys)
             if key is not None:
                 self._assignment(transform_class, member, output_schema, field, expression, filters=filters)
-                self._validate_grouping_set_key_field(
-                    transform_class,
-                    member,
-                    output_schema,
-                    field.name,
-                    field.nullable,
-                    key.name,
-                    grouping=grouping,
-                    levels=levels,
-                )
                 assignments.append(
                     AggregateAssignment(field=field, function="key", expression=expression, key=key.name)
                 )
                 continue
             if expression.kind == "aggregate":
-                self._validate_aggregate_expression(transform_class, member, output_schema, field.name, expression)
                 self._assignment(
                     transform_class,
                     member,
@@ -1987,7 +1791,6 @@ class CompileTransform:
                     field,
                     expression,
                     filters=(),
-                    allow_aggregate=True,
                 )
                 data = expression.data or {}
                 function = str(data.get("function"))
@@ -2030,7 +1833,10 @@ class CompileTransform:
                 "DSL-E0402",
                 transform_class=transform_class,
                 member=member,
-                problem=f"{output_schema.__name__}.{field.name} is neither a grouped key nor an aggregate expression.",
+                problem=(
+                    f"{output_schema.__name__}.{field.name} is neither a grouped key nor an aggregate expression "
+                    "outside group_by(...)."
+                ),
                 use="Assign a group_by(...) key, count(), sum(...), or a grouped parent field.",
                 context={"field": field.name, "schema": output_schema.__name__},
             )
@@ -2062,125 +1868,7 @@ class CompileTransform:
             raise RuntimeError("Plugin authoring must provide one symbolic result argument for having(...).")
         scope = arguments[0]
         value = predicate(scope) if callable(predicate) else predicate
-        expression = literal(value)
-        if not isinstance(expression.type, BooleanType):
-            raise self._error(
-                "DSL-E0402",
-                transform_class=transform_class,
-                member=member,
-                problem=f"{output_schema.__name__} having(...) predicate is not Boolean.",
-                use="Pass a predicate such as lambda out: out.order_count > 0.",
-                context={"schema": output_schema.__name__},
-            )
-        self._validate_comparison_problems(transform_class, member, (expression,))
-        scopes = self._scopes(expression)
-        allowed = {output_schema.__name__}
-        if not scopes <= allowed:
-            names = ", ".join(sorted(scopes - allowed))
-            raise self._error(
-                "DSL-E0402",
-                transform_class=transform_class,
-                member=member,
-                problem=(
-                    f"{output_schema.__name__} having(...) reads pre-aggregate or unrelated field scope(s): {names}."
-                ),
-                use=(
-                    "having(...) is evaluated after aggregation; reference aggregate output fields "
-                    "through the callback argument, for example lambda out: out.order_count > 0."
-                ),
-                context={"schema": output_schema.__name__, "scopes": ", ".join(sorted(scopes))},
-            )
-        return expression
-
-    def _validate_grouping_set_key_field(
-        self,
-        transform_class: type[Transform],
-        member: str,
-        output_schema: type[Schema],
-        field: str,
-        nullable: bool,
-        key: str,
-        *,
-        grouping: str,
-        levels: tuple[tuple[str, ...], ...],
-    ) -> None:
-        if grouping != "grouping_sets" or nullable:
-            return
-        if any(key not in level for level in levels):
-            raise self._error(
-                "SCHEMA-E0301",
-                transform_class=transform_class,
-                member=member,
-                problem=(
-                    f"{output_schema.__name__}.{field} is non-nullable, but grouping_sets(...) "
-                    f"omits {key} in at least one level."
-                ),
-                use="Make subtotal grouping-key fields nullable, or remove grouping levels that omit the key.",
-                context={"field": field, "schema": output_schema.__name__, "grouping_key": key},
-            )
-
-    def _validate_aggregate_expression(
-        self,
-        transform_class: type[Transform],
-        member: str,
-        output_schema: type[Schema],
-        field: str,
-        expression: Expression,
-    ) -> None:
-        data = expression.data or {}
-        function = str(data.get("function"))
-        arg_count = self._int_data(data, "arg_count", len(expression.args))
-        where_index = self._optional_int_data(data, "where_index")
-        if where_index is not None and where_index < len(expression.args):
-            self._validate_comparison_problems(transform_class, member, (expression.args[where_index],))
-        arguments = expression.args[:arg_count]
-        argument = arguments[0] if arguments else None
-        if function in {"count", "grouping_id"}:
-            return
-        if function == "is_grouped" and argument is not None:
-            return
-        if argument is None:
-            raise self._aggregate_error(transform_class, member, output_schema, field, function, "an input expression")
-        numeric_functions = {
-            "avg",
-            "sum",
-            "stddev",
-            "variance",
-            "corr",
-            "covar",
-            "approx_percentile",
-            "percentile",
-            "skewness",
-            "kurtosis",
-        }
-        if function in numeric_functions and not all(self._numeric_type(item.type) for item in arguments):
-            raise self._aggregate_error(transform_class, member, output_schema, field, function, "a numeric expression")
-        if function in {"max", "min", "first_value", "last_value"} and not self._orderable_type(argument.type):
-            raise self._aggregate_error(
-                transform_class, member, output_schema, field, function, "an orderable scalar expression"
-            )
-        if function in {"count_distinct", "approx_count_distinct"} and not self._scalar_type(argument.type):
-            raise self._aggregate_error(transform_class, member, output_schema, field, function, "a scalar expression")
-        if function in {"bool_and", "bool_or"} and not isinstance(argument.type, BooleanType):
-            raise self._aggregate_error(transform_class, member, output_schema, field, function, "a Boolean expression")
-
-    def _aggregate_error(
-        self,
-        transform_class: type[Transform],
-        member: str,
-        output_schema: type[Schema],
-        field: str,
-        function: str,
-        expected: str,
-    ) -> StructureCompileError:
-        return self._error(
-            "DSL-E0402",
-            transform_class=transform_class,
-            member=member,
-            problem=f"{output_schema.__name__}.{field} uses {function}(...) with unsupported input type.",
-            use=f"Pass {expected} to {function}(...), or move custom aggregation logic into an explicit hook.",
-            context={"field": field, "schema": output_schema.__name__, "function": function},
-        )
+        return literal(value)
 
     def _int_data(self, data, key: str, default: int) -> int:
         value = data.get(key, default)
@@ -2302,7 +1990,6 @@ class CompileTransform:
         expression: Expression,
         *,
         filters: tuple[Expression, ...] | list[Expression],
-        allow_aggregate: bool = False,
     ) -> ProjectAssignment:
         if problem := self._comparison_problem(expression):
             raise self._error(
@@ -2311,15 +1998,6 @@ class CompileTransform:
                 member=member,
                 problem=problem,
                 use="Compare compatible Structure values, or use an explicit cast before comparing them.",
-            )
-        if expression.kind == "aggregate" and not allow_aggregate:
-            raise self._error(
-                "DSL-E0402",
-                transform_class=transform_class,
-                member=member,
-                problem=f"{output_schema.__name__}.{field.name} uses an aggregate expression outside group_by(...).",
-                use="Call group_by(...) in the step method before returning count(), sum(...), or another aggregate.",
-                context={"field": field.name, "schema": output_schema.__name__},
             )
         nullable = self._nullable(expression, filters)
         if not field.nullable and nullable:

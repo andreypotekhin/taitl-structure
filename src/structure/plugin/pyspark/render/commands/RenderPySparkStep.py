@@ -346,6 +346,19 @@ class RenderPySparkStep:
             raise TypeError(f"Unsupported aggregate grouping: {aggregate.grouping}")
         key_columns = self._aggregate_key_columns(aggregate) if aggregate.grouping in {"rollup", "cube"} else ()
         lines = []
+        if aggregate.grouping == "group_by" and not aggregate.keys:
+            lines.append(f"        {target} = {target}.agg(")
+            for assignment in aggregate.assignments:
+                if assignment.function != "key":
+                    lines.append(
+                        f"            {self._aggregate_assignment(assignment, step=step, aggregate=aggregate, key_columns=key_columns)},"
+                    )
+            lines.append("        ).select(")
+            for assignment in aggregate.assignments:
+                lines.append(f"            {self._aggregate_select(assignment, key_columns=key_columns)},")
+            lines.append("        )")
+            lines.extend(self._aggregate_having(step, aggregate, target=target))
+            return lines
         if aggregate.grouping in {"rollup", "cube"}:
             for key, column in key_columns:
                 expression = render_pyspark_expression(key.expression, scope_aliases=self._scope_aliases(step))

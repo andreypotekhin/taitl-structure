@@ -3,6 +3,7 @@ from structure.plugin.pyspark.compiler.commands.BuildCompilerTraceability import
 from structure.plugin.pyspark.compiler.commands.BuildPySparkUdfDiagnostics import BuildPySparkUdfDiagnostics
 from structure.plugin.pyspark.compiler.commands.ClassifyStreamingCompatibility import ClassifyStreamingCompatibility
 from structure.plugin.pyspark.compiler.commands.LowerPySparkPlan import LowerPySparkPlan
+from structure.plugin.pyspark.compiler.commands.ValidatePySparkHooks import ValidatePySparkHooks
 
 
 class Compiler:
@@ -18,3 +19,6 @@ class Compiler:
 
     def udf_diagnostics(self) -> BuildPySparkUdfDiagnostics:
         return BuildPySparkUdfDiagnostics()
+
+    def hooks(self) -> ValidatePySparkHooks:
+        return ValidatePySparkHooks()
