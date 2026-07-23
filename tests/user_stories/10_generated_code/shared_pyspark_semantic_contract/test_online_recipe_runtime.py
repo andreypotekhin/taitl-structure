@@ -2458,7 +2458,7 @@ def _hook(
         sources=lanes,
         schema_mode=SchemaMode.STRICT,
         project_output=False,
-        streaming_safe=True,
+        streaming=True,
     )
 
 

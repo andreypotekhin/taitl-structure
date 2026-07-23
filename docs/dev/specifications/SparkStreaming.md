@@ -12,7 +12,7 @@ Structure supports a transform with a streaming input when all of these are true
 - the transform has one current pipeline input that may be streaming;
 - joined side inputs are static DataFrames;
 - every compiler-visible operation is classified as streaming-compatible;
-- opaque hooks are absent or explicitly marked `streaming_safe=True`;
+- opaque hooks are absent or explicitly marked `streaming=True`;
 - generated-code execution and execution do not emit or call streaming lifecycle APIs, Spark actions, RDD conversion, Pandas
   conversion, Python UDFs, or local collection.
 
@@ -75,7 +75,7 @@ streaming.schema_only_validation
 streaming.watermark
 streaming.stream_static_left_join
 streaming.stream_static_inner_join
-streaming.streaming_safe_hook_boundary
+streaming.streaming_hook_boundary
 ```
 
 Projection and filtering are compatible only when every expression lowers to Spark Column operations that do not need
@@ -87,7 +87,7 @@ It must not trigger a Spark job.
 Stream-static joins are compatible only for left and inner joins where the current pipeline side may be streaming and
 the joined side is static. Static-side broadcast hints are allowed when already supported by the PySpark target.
 
-Hooks are compatible only when the hook is marked `streaming_safe=True`. The checker treats this as a trusted boundary,
+Hooks are compatible only when the hook is marked `streaming=True`. The checker treats this as a trusted boundary,
 not as proof from body analysis.
 
 `input(..., streaming=True | False)` records whether a transform input is explicitly streaming. The default
@@ -142,7 +142,7 @@ Diagnostics must include:
 
 Required diagnostic cases:
 
-- unknown hook without `streaming_safe=True` in a transform that opts into streaming compatibility;
+- unknown hook without `streaming=True` in a transform that opts into streaming compatibility;
 - stream-stream join missing required input modes, watermarks, or event-time bounds;
 - stateful operation in a streaming-compatible transform;
 - Spark action, RDD conversion, Pandas conversion, Python UDF, or local collection in a compiler-visible path;

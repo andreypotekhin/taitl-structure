@@ -37,7 +37,7 @@ The first slice supports:
 - inner stream-stream joins when both inputs are declared `streaming=True`, both sides have watermarks, and the
   predicate includes `event_time_between(...)`;
 - static-side broadcast hints when supported by the PySpark target;
-- hooks marked `streaming_safe=True`;
+- hooks marked `streaming=True`;
 - compatibility and explain reports that classify transforms as `compatible`, `batch_only`, or `unknown`.
 
 A transform can opt into strict enforcement:
@@ -73,11 +73,11 @@ See [Spark streaming deferred features](SparkStreamingDeferredFeatures.back.md))
 
 ## Hooks
 
-Hooks are opaque. Mark a hook `streaming_safe=True` only when it returns a DataFrame and avoids Spark actions,
+Hooks are opaque. Mark a hook `streaming=True` only when it returns a DataFrame and avoids Spark actions,
 RDD/Pandas conversion, streaming lifecycle APIs, external side effects, and stateful streaming operations.
 
 ```python
-@raw(inout=lane(orders) | lane(orders), streaming_safe=True)
+@raw(inout=lane(orders) | lane(orders), streaming=True)
 def keep_valid(self, *, orders, spark, ctx):
     return orders.where(F.col("id").isNotNull())
 ```
@@ -92,7 +92,7 @@ Streaming diagnostics should name the operation and explain the fix. Typical fix
 - keep the operation in a batch transform;
 - make a side input static;
 - replace an opaque hook with compiler-visible Structure DSL;
-- mark a hook `streaming_safe=True` only after checking its body;
+- mark a hook `streaming=True` only after checking its body;
 - add explicit `streaming=True`, `watermark(...)`, or `event_time_between(...)` metadata where the transformation
   requires state;
 - keep lifecycle, sinks, checkpoints, and query starts in caller-owned Spark code.

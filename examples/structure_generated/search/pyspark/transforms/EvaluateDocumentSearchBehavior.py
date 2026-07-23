@@ -10,45 +10,30 @@ from examples.structure_generated.search.pyspark.schemas.behavior import BEHAVIO
 from examples.structure_generated.search.pyspark.schemas.clicks import CLICK_SCHEMA, IMPRESSION_SCHEMA, SEARCH_REQUEST_SCHEMA
 
 
-class EvaluateDocumentSearchBehaviorGenerated:
-
-    def __init__(self, *, spark: SparkSession, ctx=None):
-        self.spark = spark
-        self.ctx = ctx
-
-    def run(
-        self,
-        *,
-        batch: DataFrame,
-        requests: DataFrame,
-        impressions: DataFrame,
-        clicks: DataFrame,
-    ) -> TransformResult:
-        assert_schema(batch, EVALUATION_BATCH_SCHEMA, name="EvaluationBatch", mode="strict")
-        assert_schema(requests, SEARCH_REQUEST_SCHEMA, name="SearchRequest", mode="strict")
-        assert_schema(impressions, IMPRESSION_SCHEMA, name="Impression", mode="strict")
-        assert_schema(clicks, CLICK_SCHEMA, name="Click", mode="strict")
-        _input_batch = batch
-        _input_requests = requests
-        _input_impressions = impressions
-        _input_clicks = clicks
-
+class SelectDocumentSearchRequestsGenerated:
+    def _step_select_requests_0(self, frames):
         # Step method: select_requests
-        daily_requests = requests.alias("search_request")
-        batch_joined = batch.alias("batch")
-        daily_requests = daily_requests.crossJoin(batch_joined)
-        daily_requests = daily_requests.where((((F.col("search_request.requested_at") >= F.col("batch.window.start")) & (F.col("search_request.requested_at") < F.col("batch.window.end")))))
-        daily_requests = daily_requests.select(
+        selected = frames["requests"].alias("search_request")
+        batch_joined = frames["batch"].alias("batch")
+        selected = selected.crossJoin(batch_joined)
+        selected = selected.where((((F.col("search_request.requested_at") >= F.col("batch.window.start")) & (F.col("search_request.requested_at") < F.col("batch.window.end")))))
+        selected = selected.select(
             F.col("batch.window"),
             F.col("search_request.id").alias("search_request_id"),
             F.col("search_request.ranking_version"),
             F.col("search_request.query"),
         )
-        assert_schema(daily_requests, BEHAVIOR_REQUEST_SCHEMA, name="BehaviorRequest", mode="strict")
+        assert_schema(selected, BEHAVIOR_REQUEST_SCHEMA, name="BehaviorRequest", mode="strict")
+        return {
+            "selected": selected,
+        }
 
+
+class MeasureDocumentSearchImpressionsGenerated:
+    def _step_select_impressions_1(self, frames):
         # Step method: select_impressions
-        displayed = daily_requests.alias("behavior_request")
-        impressions_joined = impressions.alias("impressions")
+        displayed = frames["selected"].alias("behavior_request")
+        impressions_joined = frames["impressions"].alias("impressions")
         displayed = displayed.join(
             impressions_joined,
             (F.col("impressions.search_request_id") == F.col("behavior_request.search_request_id")),
@@ -69,10 +54,14 @@ class EvaluateDocumentSearchBehaviorGenerated:
             F.lit(0.0).alias("dwell_credit"),
         )
         assert_schema(displayed, BEHAVIOR_IMPRESSION_SCHEMA, name="BehaviorImpression", mode="strict")
+        return {
+            "displayed": displayed,
+        }
 
+    def _step_attribute_clicks_2(self, frames):
         # Step method: attribute_clicks
-        clicked = displayed.alias("behavior_impression")
-        clicks_joined = clicks.alias("clicks")
+        clicked = frames["displayed"].alias("behavior_impression")
+        clicks_joined = frames["clicks"].alias("clicks")
         clicked = clicked.join(
             clicks_joined,
             ((F.col("clicks.impression_id") == F.col("behavior_impression.impression_id")) & ((F.col("clicks.occurred_at") >= (F.col("behavior_impression.shown_at") - F.expr("INTERVAL 0 seconds"))) & (F.col("clicks.occurred_at") <= (F.col("behavior_impression.shown_at") + F.expr("INTERVAL 24 hours"))))),
@@ -107,10 +96,14 @@ class EvaluateDocumentSearchBehaviorGenerated:
             F.col("dwell_credit"),
         )
         assert_schema(clicked, BEHAVIOR_IMPRESSION_SCHEMA, name="BehaviorImpression", mode="strict")
+        return {
+            "clicked": clicked,
+        }
 
+    def _step_measure_impressions_3(self, frames):
         # Step method: measure_impressions
-        measured = displayed.alias("behavior_impression")
-        clicked_joined = clicked.alias("clicked")
+        measured = frames["displayed"].alias("behavior_impression")
+        clicked_joined = frames["clicked"].alias("clicked")
         measured = measured.join(
             clicked_joined,
             (F.col("clicked.impression_id") == F.col("behavior_impression.impression_id")),
@@ -131,10 +124,16 @@ class EvaluateDocumentSearchBehaviorGenerated:
             F.coalesce(F.col("clicked.dwell_credit"), F.lit(0.0)).alias("dwell_credit"),
         )
         assert_schema(measured, BEHAVIOR_IMPRESSION_SCHEMA, name="BehaviorImpression", mode="strict")
+        return {
+            "measured": measured,
+        }
 
+
+class MeasureDocumentSearchRequestsGenerated:
+    def _step_measure_requests_4(self, frames):
         # Step method: measure_requests
-        request_totals = daily_requests.alias("behavior_request")
-        measured_joined = measured.alias("measured")
+        request_totals = frames["selected"].alias("behavior_request")
+        measured_joined = frames["measured"].alias("measured")
         request_totals = request_totals.join(
             measured_joined,
             (F.col("measured.search_request_id") == F.col("behavior_request.search_request_id")),
@@ -173,9 +172,13 @@ class EvaluateDocumentSearchBehaviorGenerated:
             F.col("raw_long_click_count"),
         )
         assert_schema(request_totals, BEHAVIOR_REQUEST_TOTALS_SCHEMA, name="BehaviorRequestTotals", mode="strict")
+        return {
+            "request_totals": request_totals,
+        }
 
+    def _step_calculate_reciprocal_rank_5(self, frames):
         # Step method: calculate_reciprocal_rank
-        request_metrics = request_totals.alias("behavior_request_totals")
+        request_metrics = frames["request_totals"].alias("behavior_request_totals")
         request_metrics = request_metrics.select(
             F.col("behavior_request_totals.window"),
             F.col("behavior_request_totals.search_request_id"),
@@ -193,9 +196,37 @@ class EvaluateDocumentSearchBehaviorGenerated:
             F.col("behavior_request_totals.raw_long_click_count"),
         )
         assert_schema(request_metrics, BEHAVIOR_REQUEST_METRICS_SCHEMA, name="BehaviorRequestMetrics", mode="strict")
+        return {
+            "request_metrics": request_metrics,
+        }
 
+    def _step_publish_requests_6(self, frames):
+        # Step method: publish_requests
+        measured_requests = frames["request_metrics"].alias("behavior_request_metrics")
+        measured_requests = measured_requests.select(
+            F.col("behavior_request_metrics.window"),
+            F.col("behavior_request_metrics.search_request_id"),
+            F.col("behavior_request_metrics.ranking_version"),
+            F.col("behavior_request_metrics.query"),
+            F.col("behavior_request_metrics.result_count"),
+            F.col("behavior_request_metrics.clicked_result_count"),
+            F.col("behavior_request_metrics.long_clicked_result_count"),
+            F.col("behavior_request_metrics.has_click"),
+            F.col("behavior_request_metrics.has_long_click"),
+            F.col("behavior_request_metrics.first_click_rank"),
+            F.col("behavior_request_metrics.first_long_click_rank"),
+            F.col("behavior_request_metrics.reciprocal_first_long_click_rank"),
+        )
+        assert_schema(measured_requests, DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA, name="DocumentSearchRequestBehavior", mode="strict")
+        return {
+            "measured_requests": measured_requests,
+        }
+
+
+class SummarizeDocumentSearchBehaviorGenerated:
+    def _step_summarize_exposure_7(self, frames):
         # Step method: summarize_exposure
-        exposure = measured.alias("behavior_impression")
+        exposure = frames["measured"].alias("behavior_impression")
         exposure = exposure.groupBy(
             F.col("behavior_impression.window").alias("window"),
             F.col("behavior_impression.ranking_version").alias("ranking_version"),
@@ -211,9 +242,13 @@ class EvaluateDocumentSearchBehaviorGenerated:
             F.col("ips_dwell_credit"),
         )
         assert_schema(exposure, BEHAVIOR_EXPOSURE_SCHEMA, name="BehaviorExposure", mode="strict")
+        return {
+            "exposure": exposure,
+        }
 
+    def _step_summarize_requests_8(self, frames):
         # Step method: summarize_requests
-        daily_counts = request_metrics.alias("behavior_request_metrics")
+        daily_counts = frames["request_metrics"].alias("behavior_request_metrics")
         daily_counts = daily_counts.groupBy(
             F.col("behavior_request_metrics.window").alias("window"),
             F.col("behavior_request_metrics.ranking_version").alias("ranking_version"),
@@ -249,16 +284,20 @@ class EvaluateDocumentSearchBehaviorGenerated:
             F.col("ips_dwell_credit_per_impression"),
         )
         assert_schema(daily_counts, BEHAVIOR_DAILY_COUNTS_SCHEMA, name="BehaviorDailyCounts", mode="strict")
+        return {
+            "daily_counts": daily_counts,
+        }
 
+    def _step_publish_daily_9(self, frames):
         # Step method: publish_daily
-        daily_behavior = daily_counts.alias("behavior_daily_counts")
-        exposure_joined = exposure.alias("exposure")
-        daily_behavior = daily_behavior.join(
+        summarized_daily = frames["daily_counts"].alias("behavior_daily_counts")
+        exposure_joined = frames["exposure"].alias("exposure")
+        summarized_daily = summarized_daily.join(
             exposure_joined,
             ((F.col("exposure.window") == F.col("behavior_daily_counts.window")) & (F.col("exposure.ranking_version") == F.col("behavior_daily_counts.ranking_version"))),
             "left",
         )
-        daily_behavior = daily_behavior.select(
+        summarized_daily = summarized_daily.select(
             F.col("behavior_daily_counts.window"),
             F.col("behavior_daily_counts.ranking_version"),
             F.col("behavior_daily_counts.request_count"),
@@ -275,30 +314,123 @@ class EvaluateDocumentSearchBehaviorGenerated:
             F.when((F.col("exposure.ips_impression_weight") > F.lit(0.0)), (F.col("exposure.ips_long_click_weight") / F.col("exposure.ips_impression_weight"))).otherwise(F.lit(None)).alias("ips_long_click_rate"),
             F.when((F.col("exposure.ips_impression_weight") > F.lit(0.0)), (F.col("exposure.ips_dwell_credit") / F.col("exposure.ips_impression_weight"))).otherwise(F.lit(None)).alias("ips_dwell_credit_per_impression"),
         )
-        assert_schema(daily_behavior, DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA, name="DailyDocumentSearchBehavior", mode="strict")
+        assert_schema(summarized_daily, DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA, name="DailyDocumentSearchBehavior", mode="strict")
+        return {
+            "summarized_daily": summarized_daily,
+        }
 
-        # Step method: publish_requests
-        request_behaviors = request_metrics.alias("behavior_request_metrics")
+
+class EvaluateDocumentSearchBehaviorGenerated(SelectDocumentSearchRequestsGenerated, MeasureDocumentSearchImpressionsGenerated, MeasureDocumentSearchRequestsGenerated, SummarizeDocumentSearchBehaviorGenerated):
+    def _step_publish_request_behaviors_10(self, frames):
+        # Step method: publish_request_behaviors
+        request_behaviors = frames["measured_requests"].alias("document_search_request_behavior")
         request_behaviors = request_behaviors.select(
-            F.col("behavior_request_metrics.window"),
-            F.col("behavior_request_metrics.search_request_id"),
-            F.col("behavior_request_metrics.ranking_version"),
-            F.col("behavior_request_metrics.query"),
-            F.col("behavior_request_metrics.result_count"),
-            F.col("behavior_request_metrics.clicked_result_count"),
-            F.col("behavior_request_metrics.long_clicked_result_count"),
-            F.col("behavior_request_metrics.has_click"),
-            F.col("behavior_request_metrics.has_long_click"),
-            F.col("behavior_request_metrics.first_click_rank"),
-            F.col("behavior_request_metrics.first_long_click_rank"),
-            F.col("behavior_request_metrics.reciprocal_first_long_click_rank"),
+            F.col("document_search_request_behavior.window"),
+            F.col("document_search_request_behavior.search_request_id"),
+            F.col("document_search_request_behavior.ranking_version"),
+            F.col("document_search_request_behavior.query"),
+            F.col("document_search_request_behavior.result_count"),
+            F.col("document_search_request_behavior.clicked_result_count"),
+            F.col("document_search_request_behavior.long_clicked_result_count"),
+            F.col("document_search_request_behavior.has_click"),
+            F.col("document_search_request_behavior.has_long_click"),
+            F.col("document_search_request_behavior.first_click_rank"),
+            F.col("document_search_request_behavior.first_long_click_rank"),
+            F.col("document_search_request_behavior.reciprocal_first_long_click_rank"),
         )
+        assert_schema(request_behaviors, DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA, name="DocumentSearchRequestBehavior", mode="strict")
+        return {
+            "request_behaviors": request_behaviors,
+        }
+
+    def _step_publish_daily_behavior_11(self, frames):
+        # Step method: publish_daily_behavior
+        daily_behavior = frames["summarized_daily"].alias("daily_document_search_behavior")
+        daily_behavior = daily_behavior.select(
+            F.col("daily_document_search_behavior.window"),
+            F.col("daily_document_search_behavior.ranking_version"),
+            F.col("daily_document_search_behavior.request_count"),
+            F.col("daily_document_search_behavior.zero_result_request_count"),
+            F.col("daily_document_search_behavior.clicked_request_count"),
+            F.col("daily_document_search_behavior.long_clicked_request_count"),
+            F.col("daily_document_search_behavior.no_click_request_count"),
+            F.col("daily_document_search_behavior.no_long_click_request_count"),
+            F.col("daily_document_search_behavior.raw_click_count"),
+            F.col("daily_document_search_behavior.raw_long_click_count"),
+            F.col("daily_document_search_behavior.mean_first_click_rank"),
+            F.col("daily_document_search_behavior.mean_first_long_click_rank"),
+            F.col("daily_document_search_behavior.mean_reciprocal_first_long_click_rank"),
+            F.col("daily_document_search_behavior.ips_long_click_rate"),
+            F.col("daily_document_search_behavior.ips_dwell_credit_per_impression"),
+        )
+        return {
+            "daily_behavior": daily_behavior,
+        }
+
+    def __init__(self, *, spark: SparkSession, ctx=None):
+        self.spark = spark
+        self.ctx = ctx
+
+    def run(
+        self,
+        *,
+        batch: DataFrame,
+        requests: DataFrame,
+        impressions: DataFrame,
+        clicks: DataFrame,
+    ) -> TransformResult:
+        assert_schema(batch, EVALUATION_BATCH_SCHEMA, name="EvaluationBatch", mode="strict")
+        assert_schema(requests, SEARCH_REQUEST_SCHEMA, name="SearchRequest", mode="strict")
+        assert_schema(impressions, IMPRESSION_SCHEMA, name="Impression", mode="strict")
+        assert_schema(clicks, CLICK_SCHEMA, name="Click", mode="strict")
+        _input_batch = batch
+        _input_requests = requests
+        _input_impressions = impressions
+        _input_clicks = clicks
+        frames = {
+            "batch": batch,
+            "requests": requests,
+            "impressions": impressions,
+            "clicks": clicks,
+            "input:batch": _input_batch,
+            "input:requests": _input_requests,
+            "input:impressions": _input_impressions,
+            "input:clicks": _input_clicks,
+        }
+        frames.update(self._step_select_requests_0(frames))
+        frames.update(self._step_select_impressions_1(frames))
+        frames.update(self._step_attribute_clicks_2(frames))
+        frames.update(self._step_measure_impressions_3(frames))
+        frames.update(self._step_measure_requests_4(frames))
+        frames.update(self._step_calculate_reciprocal_rank_5(frames))
+        frames.update(self._step_publish_requests_6(frames))
+        frames.update(self._step_summarize_exposure_7(frames))
+        frames.update(self._step_summarize_requests_8(frames))
+        frames.update(self._step_publish_daily_9(frames))
+        frames.update(self._step_publish_request_behaviors_10(frames))
+        frames.update(self._step_publish_daily_behavior_11(frames))
+
+        # Step method: selected
+        selected = frames["selected"].alias("behavior_request")
+        assert_schema(selected, BEHAVIOR_REQUEST_SCHEMA, name="BehaviorRequest", mode="strict")
+
+        # Step method: measured
+        measured = frames["measured"].alias("behavior_impression")
+        assert_schema(measured, BEHAVIOR_IMPRESSION_SCHEMA, name="BehaviorImpression", mode="strict")
+
+        # Step method: measured_requests
+        measured_requests = frames["measured_requests"].alias("document_search_request_behavior")
+        assert_schema(measured_requests, DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA, name="DocumentSearchRequestBehavior", mode="strict")
+
+        # Step method: summarized_daily
+        summarized_daily = frames["summarized_daily"].alias("daily_document_search_behavior")
+        assert_schema(summarized_daily, DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA, name="DailyDocumentSearchBehavior", mode="strict")
 
         # Step method: request_behaviors
-        request_behaviors = request_behaviors.alias("document_search_request_behavior")
+        request_behaviors = frames["request_behaviors"].alias("document_search_request_behavior")
         assert_schema(request_behaviors, DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA, name="DocumentSearchRequestBehavior", mode="strict")
 
         # Step method: daily_behavior
-        daily_behavior = daily_behavior.alias("daily_document_search_behavior")
+        daily_behavior = frames["daily_behavior"].alias("daily_document_search_behavior")
         assert_schema(daily_behavior, DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA, name="DailyDocumentSearchBehavior", mode="strict")
-        return TransformResult({"request_behaviors": request_behaviors, "daily_behavior": daily_behavior}, single=False, schema={"request_behaviors": DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA, "daily_behavior": DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA})
+        return TransformResult({"selected": selected, "measured": measured, "measured_requests": measured_requests, "summarized_daily": summarized_daily, "request_behaviors": request_behaviors, "daily_behavior": daily_behavior}, single=False, schema={"selected": BEHAVIOR_REQUEST_SCHEMA, "measured": BEHAVIOR_IMPRESSION_SCHEMA, "measured_requests": DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA, "summarized_daily": DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA, "request_behaviors": DOCUMENT_SEARCH_REQUEST_BEHAVIOR_SCHEMA, "daily_behavior": DAILY_DOCUMENT_SEARCH_BEHAVIOR_SCHEMA})

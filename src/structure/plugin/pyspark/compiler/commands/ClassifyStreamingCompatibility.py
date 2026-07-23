@@ -452,7 +452,7 @@ class ClassifyStreamingCompatibility:
         return any(self._has_non_equi_condition(argument) for argument in expression.args)
 
     def _hook(self, step: str, hook: PySparkHookRecipe) -> tuple[StreamingFinding, ...]:
-        if hook.streaming_safe:
+        if hook.streaming:
             return ()
         return (
             StreamingFinding(
@@ -462,7 +462,7 @@ class ClassifyStreamingCompatibility:
                 operation=f"{hook.phase} hook {hook.name}",
                 problem="Hooks are arbitrary PySpark code. Structure cannot prove this hook is streaming-compatible.",
                 use=(
-                    f"Mark {hook.name} with streaming_safe=True only if it avoids Spark actions, "
+                    f"Mark {hook.name} with streaming=True only if it avoids Spark actions, "
                     "RDD/Pandas conversion, streaming lifecycle APIs, and stateful streaming operations."
                 ),
             ),

@@ -48,7 +48,7 @@ outputs=[declaration, ...]
 pass_inputs=False
 schema_mode=SchemaMode.STRICT
 project_output=False
-streaming_safe=False
+streaming=False
 target_backend=None
 target_platform=None
 ```
@@ -63,7 +63,7 @@ Rules:
 - `output(s)=...` routes the returned frame or tuple to declared lanes or outputs.
 - `schema_mode=SchemaMode.STRICT` is the default validation mode.
 - `project_output=True` requires a schema mode and target schema that make projection meaningful.
-- `streaming_safe=True` is an author promise, not compiler inspection of the hook body.
+- `streaming=True` is an author promise, not compiler inspection of the hook body.
 - `target_backend=None` means the hook inherits the configured `hook_target_default`.
 - `target_platform` narrows the hook to a target variants? of the backend when supported.
 
@@ -220,8 +220,8 @@ Hooks are batch-only by default for streaming compatibility checks.
 
 Rules:
 
-- A hook in a streaming-compatible transform must declare `streaming_safe=True`.
-- `streaming_safe=True` means the author promises the hook uses only backend operations valid for the runtime streaming
+- A hook in a streaming-compatible transform must declare `streaming=True`.
+- `streaming=True` means the author promises the hook uses only backend operations valid for the runtime streaming
   shape.
 - Structure may still reject a streaming-safe hook when its declared schema mode or input access is incompatible with
   the configured backend.
@@ -240,7 +240,7 @@ HookDef
   pass_inputs
   schema_mode
   project_output
-  streaming_safe
+  streaming
   target_backend
   target_platform
   target_defaulted
@@ -312,5 +312,5 @@ See docs/dev/specifications/HookSemantics.md
 - Execution and generated-code execution call hooks in the same order.
 - Default hook output schema checking is strict.
 - `ALLOW_EXTRA_COLUMNS` and `project_output=True` behave the same for execution and generated-code execution.
-- Streaming-compatible transforms reject hooks without `streaming_safe=True`.
+- Streaming-compatible transforms reject hooks without `streaming=True`.
 - Hook diagnostics include source-order context, selectors, signature, fix, and docs link.

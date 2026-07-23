@@ -28,7 +28,7 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 | `drop_duplicates_within_watermark(...)` | `dropDuplicatesWithinWatermark` | `drop_duplicates_within_watermark(o.id)` |
 | `@special(type="udf")` | scalar PySpark `udf` | `self.normalize(o.id)` |
 | `event_time_between(...)` | Stream-stream time-range predicate | `event_time_between(o.at, c.at, upper="1 hour")` |
-| `@raw(..., streaming_safe=True)` | Streaming-safe hook | `@raw(streaming_safe=True)` |
+| `@raw(..., streaming=True)` | Streaming-safe hook | `@raw(streaming=True)` |
 
 **Details And Differences**
 
@@ -45,7 +45,7 @@ Examples abbreviate `order` as `o` and a second streaming relation as `c`.
 - Scalar `@special(type="udf")` expressions are admitted as row-local ordinary-PySpark streaming transformations.
   They retain the existing `warn_on_udfs` warning policy and remain unavailable on Spark Connect.
 - `event_time_between(...)` supplies the bounded event-time relation required by supported stream-stream joins.
-- `streaming_safe=True` declares the hook safe for its stated streaming shape; Structure does not inspect hook code.
+- `streaming=True` declares the hook safe for its stated streaming shape; Structure does not inspect hook code.
 
 ## Lifecycle Boundaries
 

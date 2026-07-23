@@ -582,7 +582,7 @@ HookCall
   inputs
   schema_mode
   project_output
-  streaming_safe
+  streaming
   source
 ```
 
@@ -599,7 +599,7 @@ Rules:
 - Hook calls must not contain the runtime DataFrame returned by the hook.
 - Hook calls must not contain generated PySpark source text.
 - `schema_mode` and `project_output` must be present for hook validation and projection decisions.
-- `streaming_safe` records the author promise used by streaming compatibility checks.
+- `streaming` records the author promise used by streaming compatibility checks.
 
 If hooks are stored outside `operations`, the compiler must still expose them as IR nodes with stable ids and
 provenance.
@@ -863,7 +863,7 @@ StreamingSupport
 Rules:
 
 - The base IR should expose enough metadata for the checker to classify each operation.
-- Hooks default to `unknown` unless `streaming_safe=True`.
+- Hooks default to `unknown` unless `streaming=True`.
 - Operations not admitted by `StreamingCompatibility.md` are `batch_only` or `unknown`.
 - Transform-level streaming compatibility is derived from operation classifications and policy.
 - Streaming metadata should be included in compile reports and traceability when configured.

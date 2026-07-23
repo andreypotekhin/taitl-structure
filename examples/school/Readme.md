@@ -48,33 +48,42 @@ with `"zero vector"`. Scaling and magnitude remain meaningful for a zero or unma
 ```python
 vectors = spark.readStream.schema(VECTOR_EVENT_SCHEMA).json(vector_events_path)
 results = EvaluateVectors(events=vectors).run(session).results
+
+query = (
+    results.writeStream.outputMode("append")
+    .option("checkpointLocation", vector_checkpoint)
+    .format("memory")
+    .start()
+)
 ```
 
 ## Matrix Operations
 
-Matrix cells identify a matrix by `matrix_id` and describe its shape with `rows` and `columns`. Each cell has zero-based
-coordinates `i` and `j` and a value `x`. `MultiplyMatrices` joins compatible left and right cells on the shared inner
+`MultiplyMatrices` joins compatible left and right cells on the shared inner
 dimension, then groups and sums products. `MultiplyMatrixVector` follows the same pattern for a matrix and vector.
 
 ```python
 product = MultiplyMatrices(left=left_cells, right=right_cells).run(session).product
 vector = MultiplyMatrixVector(matrix=left_cells, vector=vector_cells).run(session).product
+
+# Consume cells in a deterministic display or persistence order.
+product_cells = product.orderBy("matrix_id", "i", "j")
+vector_cells = vector.orderBy("matrix_id", "i")
 ```
 
-These are batch transforms. Matrix multiplication stays optimizer-visible as a join and aggregate; it is not routed
-through an RDD API or a Python UDF.
+Matrix multiplication stays optimizer-visible as a join and aggregate - it is not routed
+through less-optimal alternatives such as RDD API or a Python UDF.
 
-### Matrix inversion boundary
+### Matrix inversion
 
-`InvertMatrices` is an intentionally explicit raw batch hook. It collects each matrix on the driver and uses pivoted
-Gauss-Jordan elimination. It emits cells only for complete, square, non-singular matrices; inconsistent metadata,
-incomplete matrices, non-square matrices, and singular matrices produce no inverse rows.
+`InvertMatrices` is an raw hook. It collects each matrix on the driver and uses pivoted
+Gauss-Jordan elimination. It works only with complete, square, non-singular matrices. Inconsistent metadata,
+incomplete matrices, non-square matrices, and singular matrices produce no rows.
 
 ```python
 inverse = InvertMatrices(matrices=left_cells).run(session).inverse
+inverse_cells = inverse.orderBy("matrix_id", "i", "j")
 ```
 
 Use this only for small demonstration datasets. A distributed arbitrary-size inverse or determinant needs a dedicated
-distributed pivot algorithm and is deliberately outside this example's claim. Spark's `RowMatrix` API is not an
-alternative inverse path: it supports decompositions and selected multiplications, but not determinant or inverse
-operations. Consult the Spark `RowMatrix` API reference for its supported operations.
+distributed pivot algorithm, which is outside this example's claim.

@@ -327,13 +327,13 @@ def raw(
     inout: object | None = None,
     schema_mode: SchemaMode = SchemaMode.STRICT,
     project_output: bool = False,
-    streaming_safe: bool = False,
+    streaming: bool = False,
     target_backend: str | Iterable[str] | None = None,
     target_platform: str | None = None,
 ):
     if not isinstance(schema_mode, SchemaMode):
         raise TypeError("@raw(schema_mode=...) requires a SchemaMode value")
-    for name, value in (("project_output", project_output), ("streaming_safe", streaming_safe)):
+    for name, value in (("project_output", project_output), ("streaming", streaming)):
         if not isinstance(value, bool):
             raise TypeError(f"@raw({name}=...) requires a Boolean")
     if inout is not None and (input is not None or output is not None):
@@ -382,7 +382,7 @@ def raw(
                 "outputs": outputs or None,
                 "schema_mode": schema_mode,
                 "project_output": project_output,
-                "streaming_safe": streaming_safe,
+                "streaming": streaming,
                 "target_backend": _hook_target_backend(target_backend),
                 "target_platform": target_platform,
             },

@@ -75,7 +75,7 @@ live streaming tests. Until then, the operation remains `batch_only` for streami
 
 ## Hooks And Foreach
 
-`streaming_safe=True` only admits ordinary DataFrame-returning hooks inside the first slice. Future `foreachBatch`,
+`streaming=True` only admits ordinary DataFrame-returning hooks inside the first slice. Future `foreachBatch`,
 `foreach`, external side effects, and custom sink hooks need a separate lifecycle and idempotence contract. They must
 make retry behavior, side effects, and failure handling explicit.
 

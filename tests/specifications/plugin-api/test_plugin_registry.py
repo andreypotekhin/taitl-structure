@@ -52,6 +52,9 @@ class Facet:
     def open_step(self, request):
         raise AssertionError("This registry fixture does not author transform steps.")
 
+    def result_arguments(self, results):
+        return ()
+
 
 class FakePlugin:
     def __init__(self, minimum=1, maximum=1, *, name="fake", distribution="fake-wheel"):

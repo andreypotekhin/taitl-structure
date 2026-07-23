@@ -37,7 +37,7 @@ class EnrichOrders(Transform):
     def money(value):
         return coalesce(to_decimal(value, precision=12, scale=2), 0)
 
-    @raw(inout=input(orders) | lane(orders), streaming_safe=True)
+    @raw(inout=input(orders) | lane(orders), streaming=True)
     def use_current_orders(self, *, orders, spark, ctx):
         return orders
 
@@ -72,7 +72,7 @@ class EnrichOrders(Transform):
             is_large=total > 1000,
         )
 
-    @raw(streaming_safe=True)
+    @raw(streaming=True)
     def remove_negative_totals(self, *, orders, spark, ctx):
         return orders.where(F.col("net_total") >= 0)
 
@@ -151,7 +151,7 @@ class EnrichOrders(Transform):
     @raw(
         inout=[lane(orders), input(customers), input(products)] | lane(orders),
         schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS,
-        streaming_safe=True,
+        streaming=True,
     )
     def note_lookup_inputs(self, *, orders, customers, products, spark, ctx):
         return orders.withColumn(
@@ -170,7 +170,7 @@ class EnrichOrders(Transform):
         inout=lane(published) | output(published),
         schema_mode=SchemaMode.ALLOW_EXTRA_COLUMNS,
         project_output=True,
-        streaming_safe=True,
+        streaming=True,
     )
     def add_quality_columns(self, *, published, spark, ctx):
         return published.withColumn("_has_customer", F.col("customer_name").isNotNull()).withColumn(

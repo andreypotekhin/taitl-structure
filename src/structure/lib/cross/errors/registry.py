@@ -249,7 +249,7 @@ diagnostic_registry = DiagnosticRegistry(
             docs="docs/Diagnostics.md#stream-w0801",
             introduced="1.0.0",
             problem_template="A hook contains arbitrary PySpark code Structure cannot prove streaming-compatible.",
-            use_template="Mark the hook streaming_safe=True only after verifying it satisfies the streaming contract.",
+            use_template="Mark the hook streaming=True only after verifying it satisfies the streaming contract.",
         ),
     ]
 )

@@ -51,7 +51,7 @@ The first slice supports:
 - static-side broadcast hints when the existing join hint model supports them;
 - compiler-visible expressions that lower to Spark Column operations without actions, UDFs, local collection, or RDD
   conversion;
-- hooks only when the author explicitly marks them `streaming_safe=True`;
+- hooks only when the author explicitly marks them `streaming=True`;
 - `structure explain` and compatibility reports showing `compatible`, `batch_only`, or `unknown`.
 
 The slice admits generated-code execution and execution equally. A feature is not first-slice streaming-supported until both
@@ -86,7 +86,7 @@ streaming.row_local_filter
 streaming.schema_only_validation
 streaming.stream_static_left_join
 streaming.stream_static_inner_join
-streaming.streaming_safe_hook_boundary
+streaming.streaming_hook_boundary
 ```
 
 Deferred streaming capabilities remain explicitly unsupported:
@@ -114,7 +114,7 @@ Examples:
   left/inner joins only."
 - "Joined input `customers` is treated as static for streaming compatibility. Passing a streaming DataFrame for this
   input would create a stream-stream join, which is outside the first slice."
-- "Hook `drop_bad_rows` is opaque. Mark it `streaming_safe=True` only if it returns a DataFrame and avoids Spark
+- "Hook `drop_bad_rows` is opaque. Mark it `streaming=True` only if it returns a DataFrame and avoids Spark
   actions, RDD/Pandas conversion, streaming lifecycle APIs, and stateful operations."
 
 Diagnostics should link to `docs/background/Execution.back.md` for the support boundary and to

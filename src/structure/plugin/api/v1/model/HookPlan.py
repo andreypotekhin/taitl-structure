@@ -16,7 +16,7 @@ class HookPlan:
     sources: tuple[str, ...] = ()
     schema_mode: Any = "strict"
     project_output: bool = False
-    streaming_safe: bool = False
+    streaming: bool = False
     target_backend: tuple[str, ...] = ("pyspark",)
     target_defaulted: bool = True
     target_platform: str | None = None

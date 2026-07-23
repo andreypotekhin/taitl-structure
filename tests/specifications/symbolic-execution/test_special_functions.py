@@ -120,11 +120,16 @@ def test_input_requires_a_boolean_streaming_declaration(value: object) -> None:
         input(Raw, streaming=cast(Any, value))
 
 
-@pytest.mark.parametrize("option", ["project_output", "streaming_safe"])
+@pytest.mark.parametrize("option", ["project_output", "streaming"])
 @pytest.mark.parametrize("value", [1, "true", None])
 def test_raw_requires_boolean_options(option: str, value: object) -> None:
     with pytest.raises(TypeError, match=rf"@raw\({option}=\.\.\.\) requires a Boolean"):
         raw(**cast(Any, {option: value}))(lambda: None)
+
+
+def test_raw_rejects_the_replaced_streaming_option() -> None:
+    with pytest.raises(TypeError, match="unexpected keyword argument 'streaming_safe'"):
+        raw(**cast(Any, {"streaming_safe": True}))
 
 
 def test_raw_requires_a_schema_mode() -> None:

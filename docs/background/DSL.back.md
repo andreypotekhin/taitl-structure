@@ -772,7 +772,7 @@ Hook decorator keyword arguments:
 - `input=...`, `output=...`, and `inout=sources | targets`: hook DataFrame bindings.
 - `schema_mode`: output schema validation mode after the hook.
 - `project_output`: whether extra hook-produced columns should be projected away after validation.
-- `streaming_safe`: author promise used by streaming compatibility checks.
+- `streaming`: author promise used by streaming compatibility checks.
 
 Rules:
 
@@ -781,7 +781,7 @@ Rules:
 - A raw method before a step can explicitly select and replace that step's source lane.
 - A raw method after a step can implicitly consume and replace the current lane, or explicitly select lanes.
 - `input=...`, `output=...`, `inout=...`, `schema_mode`, `project_output`,
-  `streaming_safe`, `target_backend`, and `target_platform` define the hook boundary.
+  `streaming`, `target_backend`, and `target_platform` define the hook boundary.
 - Hooks are not symbolically executed and are opaque to the compiler except for metadata, signature, declared options,
   provenance, and streaming compatibility classification.
 - Every hook DataFrame binding, `spark`, and `ctx` must be keyword-only parameters. `input(name)` selects an original

@@ -106,7 +106,7 @@ def _hook(
         sources=sources or lanes,
         schema_mode=SchemaMode.STRICT,
         project_output=False,
-        streaming_safe=True,
+        streaming=True,
     )
 
 

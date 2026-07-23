@@ -644,7 +644,7 @@ Hook decorator keyword arguments:
 - `pass_inputs`: whether the hook receives a read-only namespace of original named input DataFrames.
 - `schema_mode`: output schema validation mode after the hook.
 - `project_output`: whether extra hook-produced columns should be projected away after validation.
-- `streaming_safe`: author promise used by streaming compatibility checks.
+- `streaming`: author promise used by streaming compatibility checks.
 
 Rules:
 
@@ -653,7 +653,7 @@ Rules:
 - A raw method before a step can explicitly select and replace that step's source lane.
 - A raw method after a step can implicitly consume and replace the current lane, or explicitly select lanes.
 - `lane(s)=...`, `input(s)=...`, `output(s)=...`, `pass_inputs`, `schema_mode`, `project_output`,
-  `streaming_safe`, `target_backend`, and `target_platform` define the hook boundary.
+  `streaming`, `target_backend`, and `target_platform` define the hook boundary.
 - Hooks are not symbolically executed and are opaque to the compiler except for metadata, signature, declared options,
   provenance, and streaming compatibility classification.
 - A hook without `pass_inputs=True` must have signature `def hook(self, *, selected_lane_name, spark, ctx)`.
@@ -1011,7 +1011,7 @@ The implementation is complete when tests prove:
 - `@raw` hooks run at their Transform class declaration position.
 - Adjacent hooks preserve source order.
 - Hook signatures are validated for both `pass_inputs=False` and `pass_inputs=True`.
-- Hook metadata records `schema_mode`, `project_output`, `pass_inputs`, and `streaming_safe`.
+- Hook metadata records `schema_mode`, `project_output`, `pass_inputs`, and `streaming`.
 - `@validate_output(False)` overrides validation for one step method.
 - DSL diagnostics include transform, step method, source expression or decorator, suggested fix, and documentation
   link.

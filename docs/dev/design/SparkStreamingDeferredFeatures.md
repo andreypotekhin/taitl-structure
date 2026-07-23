@@ -50,7 +50,7 @@ require Structure to synchronize two streaming inputs.
 
 Opaque hooks remain user-owned. Certifying arbitrary hook bodies, `foreachBatch`, `foreach`, external side effects,
 and custom sink code would require a different safety model. A later design may add target-scoped lifecycle hooks, but
-the first slice should keep hook participation limited to an explicit `streaming_safe=True` promise.
+the first slice should keep hook participation limited to an explicit `streaming=True` promise.
 
 ## Future Design Shape
 

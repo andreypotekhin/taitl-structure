@@ -314,7 +314,7 @@ HookDef
   pass_inputs
   schema_mode
   project_output
-  streaming_safe
+  streaming
   target_backend
   target_platform
   target_defaulted

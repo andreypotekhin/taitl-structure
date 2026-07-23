@@ -2,12 +2,11 @@ from structure.plugin.api.v1 import CompilationPurpose, CompilerAPI, CompileRequ
 from structure.plugin.api.v1.model import TransformPlan
 from structure.plugin.pyspark.api.Authoring import PySparkStepBody
 from structure.plugin.pyspark.api.PySpark import PySpark
-from structure.plugin.pyspark.compiler.commands.BuildPySparkUdfDiagnostics import BuildPySparkUdfDiagnostics
 
 
 class Compiler(CompilerAPI):
     def __init__(self) -> None:
-        self._udf_diagnostics = BuildPySparkUdfDiagnostics()
+        self._udf_diagnostics = PySpark.compiler.udf_diagnostics()
 
     def compile(self, request: CompileRequest) -> PluginCompilation:
         options = request.configuration

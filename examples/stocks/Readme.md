@@ -23,6 +23,9 @@ has null gain and loss and contributes zero signed volume. Flat-price bars also 
 
 ```python
 returns = PrepareReturns(bars=bars).run(session).returns
+
+# Reuse the common preparation across several independent indicator families.
+returns.cache()
 ```
 
 All downstream families consume either the immutable bars or this shared result. Feed each transform a complete batch
@@ -37,6 +40,9 @@ momentum = Momentum(returns=returns).run(session).indicators
 volatility = Volatility(returns=returns).run(session).indicators
 volume = Volume(returns=returns).run(session).indicators
 advanced = Advanced(returns=returns, benchmarks=benchmark_returns).run(session).indicators
+
+# Feed a chosen indicator relation to a chart, table, or caller-owned persistence layer.
+latest_trend = trend.orderBy("symbol", "trade_date")
 ```
 
 ### Trend and momentum

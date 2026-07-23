@@ -83,6 +83,9 @@ class Facet:
     def open_step(self, request):
         raise AssertionError("Fake plugin does not author transform steps.")
 
+    def result_arguments(self, results):
+        return ()
+
 
 class Executor:
     def execute(self, request: ExecutionRequest):
@@ -130,6 +133,9 @@ class RecordingAuthoring:
     def open_step(self, request):
         self.requests.append(request)
         return RecordingSession(self._delegate.open_step(request), self.capture_contexts)
+
+    def result_arguments(self, results):
+        return self._delegate.result_arguments(results)
 
 
 class RecordingSession:

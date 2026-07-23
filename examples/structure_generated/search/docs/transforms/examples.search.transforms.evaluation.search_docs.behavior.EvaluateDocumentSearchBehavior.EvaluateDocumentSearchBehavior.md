@@ -13,6 +13,10 @@ Source: `examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocu
 
 ## Outputs
 
+- `selected`: `BehaviorRequest`
+- `measured`: `BehaviorImpression`
+- `measured_requests`: `DocumentSearchRequestBehavior`
+- `summarized_daily`: `DailyDocumentSearchBehavior`
 - `request_behaviors`: `DocumentSearchRequestBehavior`
 - `daily_behavior`: `DailyDocumentSearchBehavior`
 
@@ -24,10 +28,12 @@ Source: `examples.search.transforms.evaluation.search_docs.behavior.EvaluateDocu
 - `measure_impressions`: `BehaviorImpression` -> `BehaviorImpression`
 - `measure_requests`: `BehaviorRequest` -> `BehaviorRequestTotals`
 - `calculate_reciprocal_rank`: `BehaviorRequestTotals` -> `BehaviorRequestMetrics`
+- `publish_requests`: `BehaviorRequestMetrics` -> `DocumentSearchRequestBehavior`
 - `summarize_exposure`: `BehaviorImpression` -> `BehaviorExposure`
 - `summarize_requests`: `BehaviorRequestMetrics` -> `BehaviorDailyCounts`
 - `publish_daily`: `BehaviorDailyCounts` -> `DailyDocumentSearchBehavior`
-- `publish_requests`: `BehaviorRequestMetrics` -> `DocumentSearchRequestBehavior`
+- `publish_request_behaviors`: `DocumentSearchRequestBehavior` -> `DocumentSearchRequestBehavior`
+- `publish_daily_behavior`: `DailyDocumentSearchBehavior` -> `DailyDocumentSearchBehavior`
 
 ## Dependencies
 

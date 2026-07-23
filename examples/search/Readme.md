@@ -241,6 +241,7 @@ result = SearchSentences(
     scored_sentences=scores.scored_sentences,
 ).run(session)
 ranked_sentences = result.results
+first_sentences = ranked_sentences.where("rank <= 20").orderBy("search_query_id", "rank")
 ```
 
 ## Document Search
@@ -417,6 +418,7 @@ quality = EvaluateDocumentRankingQuality(
 
 per_query_quality = quality.query_evaluations
 daily_quality = quality.summary
+latest_quality = daily_quality.orderBy("window.end")
 ```
 
 The per-query output has Precision, judged Recall, Success, and nDCG at 5, 10, and 15 plus reciprocal rank. Missing
@@ -444,6 +446,7 @@ behavior = EvaluateDocumentSearchBehavior(
 
 per_request_behavior = behavior.request_behaviors
 daily_behavior_by_version = behavior.daily_behavior
+latest_behavior = daily_behavior_by_version.orderBy("window.end", "ranking_version")
 ```
 
 The request output makes a zero-result request, a no-click request, and a long-clicked request explicit. For each

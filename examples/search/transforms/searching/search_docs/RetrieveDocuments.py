@@ -2,7 +2,7 @@
 
 from examples.search.schemas.search import DocumentSearchCandidate, SearchQuery
 from examples.search.schemas.text import Document
-from structure import Transform, input, lane, step
+from structure import Transform, input, lane, output, step
 from structure.plugin.pyspark import inner_join, lower, regexp_replace, row_number, trim, where
 
 
@@ -13,7 +13,7 @@ class RetrieveDocuments(Transform):
 
     queries = input(SearchQuery)
     scored_documents = input(Document)
-    candidates = lane(DocumentSearchCandidate)
+    candidates = output(DocumentSearchCandidate)
 
     @step(input=[scored_documents, queries], output=candidates)
     def select_candidates(self, document: Document, query: SearchQuery) -> DocumentSearchCandidate:

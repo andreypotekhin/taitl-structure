@@ -35,13 +35,33 @@
   "name": "EvaluateDocumentSearchBehavior",
   "outputs": [
     {
-      "name": "request_behaviors",
+      "name": "selected",
       "ordinal": 0,
+      "schema": "BehaviorRequest"
+    },
+    {
+      "name": "measured",
+      "ordinal": 1,
+      "schema": "BehaviorImpression"
+    },
+    {
+      "name": "measured_requests",
+      "ordinal": 2,
+      "schema": "DocumentSearchRequestBehavior"
+    },
+    {
+      "name": "summarized_daily",
+      "ordinal": 3,
+      "schema": "DailyDocumentSearchBehavior"
+    },
+    {
+      "name": "request_behaviors",
+      "ordinal": 4,
       "schema": "DocumentSearchRequestBehavior"
     },
     {
       "name": "daily_behavior",
-      "ordinal": 1,
+      "ordinal": 5,
       "schema": "DailyDocumentSearchBehavior"
     }
   ],
@@ -71,25 +91,25 @@
         }
       ],
       "name": "select_requests",
-      "output_lane": "daily_requests",
+      "output_lane": "selected",
       "output_schema": "BehaviorRequest",
       "results": [
         {
-          "frame": "daily_requests",
-          "lane": "daily_requests",
+          "frame": "selected",
+          "lane": "selected",
           "schema": "BehaviorRequest"
         }
       ]
     },
     {
-      "input_lane": "daily_requests",
+      "input_lane": "selected",
       "input_schema": "BehaviorRequest",
       "inputs": [
         {
           "driving": true,
           "parameter": "request",
           "schema": "BehaviorRequest",
-          "source": "daily_requests"
+          "source": "selected"
         },
         {
           "driving": false,
@@ -155,13 +175,13 @@
       "inputs": [
         {
           "driving": true,
-          "parameter": "impression",
+          "parameter": "displayed",
           "schema": "BehaviorImpression",
           "source": "displayed"
         },
         {
           "driving": false,
-          "parameter": "clicks",
+          "parameter": "clicked",
           "schema": "BehaviorImpression",
           "source": "clicked"
         }
@@ -169,7 +189,7 @@
       "joins": [
         {
           "how": "left",
-          "input": "clicks"
+          "input": "clicked"
         }
       ],
       "name": "measure_impressions",
@@ -184,18 +204,18 @@
       ]
     },
     {
-      "input_lane": "daily_requests",
+      "input_lane": "selected",
       "input_schema": "BehaviorRequest",
       "inputs": [
         {
           "driving": true,
-          "parameter": "request",
+          "parameter": "selected",
           "schema": "BehaviorRequest",
-          "source": "daily_requests"
+          "source": "selected"
         },
         {
           "driving": false,
-          "parameter": "impression",
+          "parameter": "measured",
           "schema": "BehaviorImpression",
           "source": "measured"
         }
@@ -203,7 +223,7 @@
       "joins": [
         {
           "how": "left",
-          "input": "impression"
+          "input": "measured"
         }
       ],
       "name": "measure_requests",
@@ -240,12 +260,34 @@
       ]
     },
     {
+      "input_lane": "request_metrics",
+      "input_schema": "BehaviorRequestMetrics",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "request",
+          "schema": "BehaviorRequestMetrics",
+          "source": "request_metrics"
+        }
+      ],
+      "name": "publish_requests",
+      "output_lane": "measured_requests",
+      "output_schema": "DocumentSearchRequestBehavior",
+      "results": [
+        {
+          "frame": "measured_requests",
+          "lane": "measured_requests",
+          "schema": "DocumentSearchRequestBehavior"
+        }
+      ]
+    },
+    {
       "input_lane": "measured",
       "input_schema": "BehaviorImpression",
       "inputs": [
         {
           "driving": true,
-          "parameter": "impression",
+          "parameter": "measured",
           "schema": "BehaviorImpression",
           "source": "measured"
         }
@@ -307,28 +349,28 @@
         }
       ],
       "name": "publish_daily",
-      "output_lane": "daily_behavior",
+      "output_lane": "summarized_daily",
       "output_schema": "DailyDocumentSearchBehavior",
       "results": [
         {
-          "frame": "daily_behavior",
-          "lane": "daily_behavior",
+          "frame": "summarized_daily",
+          "lane": "summarized_daily",
           "schema": "DailyDocumentSearchBehavior"
         }
       ]
     },
     {
-      "input_lane": "request_metrics",
-      "input_schema": "BehaviorRequestMetrics",
+      "input_lane": "measured_requests",
+      "input_schema": "DocumentSearchRequestBehavior",
       "inputs": [
         {
           "driving": true,
           "parameter": "request",
-          "schema": "BehaviorRequestMetrics",
-          "source": "request_metrics"
+          "schema": "DocumentSearchRequestBehavior",
+          "source": "measured_requests"
         }
       ],
-      "name": "publish_requests",
+      "name": "publish_request_behaviors",
       "output_lane": "request_behaviors",
       "output_schema": "DocumentSearchRequestBehavior",
       "results": [
@@ -336,6 +378,28 @@
           "frame": "request_behaviors",
           "lane": "request_behaviors",
           "schema": "DocumentSearchRequestBehavior"
+        }
+      ]
+    },
+    {
+      "input_lane": "summarized_daily",
+      "input_schema": "DailyDocumentSearchBehavior",
+      "inputs": [
+        {
+          "driving": true,
+          "parameter": "daily",
+          "schema": "DailyDocumentSearchBehavior",
+          "source": "summarized_daily"
+        }
+      ],
+      "name": "publish_daily_behavior",
+      "output_lane": "daily_behavior",
+      "output_schema": "DailyDocumentSearchBehavior",
+      "results": [
+        {
+          "frame": "daily_behavior",
+          "lane": "daily_behavior",
+          "schema": "DailyDocumentSearchBehavior"
         }
       ]
     }

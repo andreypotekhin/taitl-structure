@@ -28,7 +28,7 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | CONNECT-E2601 | error | Spark Connect boundary is unsupported | Use Spark Connect DataFrame APIs or `target_variant = "ordinary"`. |
 | CLI-X1101 | internal | Unexpected internal failure | Rerun with debug output and report the code with a reproduction. |
 | STREAM-E0801 | error | Transform is not streaming-compatible | Keep the transform batch-only or rewrite the unsupported shape. |
-| STREAM-W0801 | warning | Hook streaming compatibility is unknown | Mark the hook `streaming_safe=True` only after verifying it. |
+| STREAM-W0801 | warning | Hook streaming compatibility is unknown | Mark the hook `streaming=True` only after verifying it. |
 
 ## Reading Source Annotations
 

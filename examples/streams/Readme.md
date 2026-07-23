@@ -28,6 +28,9 @@ passages = PreparePassages(
     paddlers=paddlers,
     gates=gates,
 ).run(session).passages
+
+# This relation can feed a sink or another streaming transform.
+passage_events = passages.select("race_id", "run_id", "paddler_id", "gate_number", "elapsed_millis")
 ```
 
 Events older than the watermark may be discarded by Spark. Deduplication relies on the source event ID, so producers
@@ -61,6 +64,7 @@ and adds the judge penalty seconds to the passage elapsed time.
 ```python
 calls = spark.readStream.schema(judge_call_schema).json(calls_path)
 penalties = CorrelatePenalties(passages=passages, calls=calls).run(session).penalties
+penalty_events = penalties.select("event_id", "call_id", "penalty_code", "adjusted_millis")
 ```
 
 The bounded time condition keeps the stream-stream join state finite. Late, unmatched, or out-of-window calls do not

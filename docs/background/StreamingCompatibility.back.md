@@ -200,12 +200,12 @@ Default rule:
 Opt-in rule:
 
 ```python
-@raw(inout=lane(orders) | lane(orders), streaming_safe=True)
+@raw(inout=lane(orders) | lane(orders), streaming=True)
 def remove_negative_totals(self, *, orders, spark, ctx):
     return orders.where(F.col("total") >= 0)
 ```
 
-`streaming_safe=True` is an author promise with this meaning:
+`streaming=True` is an author promise with this meaning:
 
 - The hook returns a DataFrame.
 - The hook does not call Spark actions.
@@ -261,7 +261,7 @@ Minimum metadata:
 - whether an input is the current pipeline input or a joined side input;
 - join type and hint for joins;
 - validation mode for validation operations;
-- `streaming_safe` for hooks.
+- `streaming` for hooks.
 
 The checker folds operation classifications into a transform-level result:
 
@@ -280,8 +280,8 @@ Required checks:
 1. Reject or warn on operations not listed as supported in this reference.
 2. Reject stream-stream join shapes for explicit streaming-compatible transforms.
 3. Reject global sorts, aggregations, deduplication, limits, and actions in compiled DSL operations.
-4. Reject or warn on hooks without `streaming_safe=True`.
-5. Reject `streaming_safe=True` hooks with invalid hook signatures.
+4. Reject or warn on hooks without `streaming=True`.
+5. Reject `streaming=True` hooks with invalid hook signatures.
 6. Reject schema-and-constraints validation when constraints are not schema-only.
 7. Preserve streaming compatibility status in compile reports and compiler traceability metadata.
 8. Link diagnostics to this reference.
@@ -330,7 +330,7 @@ Problem:
   Hooks are arbitrary PySpark code. Structure cannot prove this hook is streaming-compatible.
 
 Use:
-  mark the hook as @raw(streaming_safe=True) only if it avoids actions, RDD/Pandas conversion,
+  mark the hook as @raw(streaming=True) only if it avoids actions, RDD/Pandas conversion,
   readStream/writeStream, and stateful streaming operations.
 
 See docs/background/Execution.back.md

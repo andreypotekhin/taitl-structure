@@ -1,27 +1,28 @@
-# Security Example
+# Security Example App
 
-This example models a corporate security inventory. Static snapshots describe devices, software, people, and the
-current organization hierarchy; application and vulnerability events arrive as streams. The model keeps canonical
-security posture separate from active-finding reports, historical statistics, and remediation queues for broken or
-stale inventory.
+This example models a corporate security inventory. Model describes devices, software, people, and  organization hierarchy; application and vulnerability events arrive as streams. The application aggregates
+security posture per device/user/team/org, as well as active vulnerability reports, historical statistics, and remediation queues.
 
-## Pipeline map
-
-| Concern | Transform | Result | Boundary |
+| Concern | Transform | Result | Details |
 | --- | --- | --- | --- |
-| Application audit | `EnrichAppEvents` | `AppAuditEvent` rows | Streaming, ten-minute watermark, ID deduplication. |
+| Software audit | `EnrichAppEvents` | `AppAuditEvent` | Streaming, ten-minute watermark, ID deduplication. |
 | Vulnerability audit | `EnrichVulnerabilityEvents` | Audit rows | Streaming, watermark, ID deduplication. |
-| Current posture | `SecurityPosture` | Reconciled exposures | Batch-only canonical dataset. |
-| Active reports | `ActiveVulnerabilityReports` | Scope-specific finding views | Batch views of active exposures. |
-| Historical reporting | `VulnerabilityStatistics` | Scope metrics | Caller-supplied batch periods. |
-| Inventory quality | `SecurityInventoryQuality` | Checks and remediation queues | Original-snapshot validation. |
+| Security posture | `SecurityPosture` | Reconciled exposures | Batch-only canonical dataset. |
+| Active findings reports | `ActiveVulnerabilityReports` | Scope-specific finding views | Active exposures. |
+| Historical reporting | `VulnerabilityStatistics` | Scope metrics | Aggregated reports. |
+| Inventory quality | `SecurityInventoryQuality` | Checks and remediation queues | Checks and issues. |
 
-## Enrich event streams
+## Event streams
 
-`EnrichAppEvents` receives streamed application events and static device, device-type, application, and scanner
-references. `EnrichVulnerabilityEvents` receives streamed vulnerability events and static vulnerability, device,
-person, and scanner references. Both transforms apply a ten-minute event-time watermark, deduplicate immutable event
+`EnrichAppEvents` receives streamed application events like installing/uninstalling/upgrading of a mobile app, and static device, device-type, application, and scanner
+references. `EnrichVulnerabilityEvents` receives streamed per-device vulnerability events from security scanners, and static vulnerability, device,
+person, and scanner references.
+
+Both transforms apply a ten-minute event-time watermark, deduplicate immutable event
 IDs, and publish enriched audit rows.
+
+Structure does not create sources or sinks. Callers choose the source, checkpoint, trigger, durable destination, and
+start/stop lifecycle. 
 
 ```python
 app_audits = EnrichAppEvents(
@@ -40,15 +41,12 @@ query = (
 )
 ```
 
-Structure does not create sources or sinks. Callers choose the source, checkpoint, trigger, durable destination, and
-start/stop lifecycle. Events outside Spark's watermark horizon may be discarded; retry-safe producers preserve IDs.
+Events outside Spark's watermark horizon may be discarded; retry-safe producers preserve IDs.
 
-## Build the current security posture
+## Security posture
 
-`SecurityPosture` is batch-only. It joins vulnerability inventory to current device, software, person, team,
-department, and organization context, then retains only reconciled `VulnerabilityExposure` rows. A retained row must
-have a resolvable reference chain, the device owner must agree with the vulnerability owner, the device must list the
-vulnerability ID, and the affected software must be its OS or an installed application. `is_active` is derived from
+`SecurityPosture` joins vulnerability inventory to current device, software, person, team,
+department, and organization context, then outputs reconciled `VulnerabilityExposure` rows. `is_active` is derived from
 `date_addressed is null`; the source lifecycle flag is a quality check, not the posture truth.
 
 ```python
@@ -63,20 +61,22 @@ exposures = SecurityPosture(
     departments=departments,
     orgs=orgs,
 ).run(session).exposures
+
+# Use as input for an operational remediation view.
+active_exposures = exposures.where("is_active")
 ```
 
-Rows failing reconciliation are intentionally excluded from posture rather than being treated as trustworthy findings.
-Run inventory quality alongside it to obtain actionable explanations.
+Rows failing reconciliation are excluded from posture rather than being treated as trustworthy findings.
+Run inventory quality transform to obtain actionable explanations.
 
-## Report active findings and history
+## Active findings and history reports
 
 `ActiveVulnerabilityReports` publishes the active exposure set at device, person, team, department, and organization
-grains. The views retain the current context already captured in the posture rows.
+levels. The views reflect the current context already captured in the posture rows.
 
-`VulnerabilityStatistics` combines posture with vulnerability-event history and caller-provided weekly or monthly
-`ReportingPeriod` rows. Period boundaries are inclusive. It deduplicates delivery by event ID, then uses the earliest
+`VulnerabilityStatistics` combines posture with vulnerability-event history and `ReportingPeriod` rows. It deduplicates by event ID, then uses the earliest
 event timestamp for each `(vuln_id, action)` contribution, so repeat scanner observations do not inflate discovery or
-address counts. It emits scope × period rows even when discovered and addressed counts are zero.
+counts. It emits scope × period rows even when discovered and addressed counts are zero.
 
 ```python
 active = ActiveVulnerabilityReports(exposures=exposures).run(session).org_active
@@ -90,14 +90,17 @@ monthly = VulnerabilityStatistics(
     orgs=orgs,
     periods=periods,
 ).run(session).org_statistics
+
+active_by_discovery = active.orderBy("date_discovered", "vuln_id")
+monthly_history = monthly.orderBy("period_end", "org_id")
 ```
 
-A vulnerability is active at a period end when it was discovered on or before that date and has no addressed date (or
-was addressed later). This is a historical status calculation, distinct from the current posture's `is_active` field.
+A vulnerability is active at a period end if it was discovered on or before that date and has no addressed date, or
+was addressed later. This historical status calculation is distinct from the current posture's `is_active` field.
 
-## Inspect inventory quality
+## Inventory quality
 
-`SecurityInventoryQuality` works on the original snapshots, not only rows eligible for posture. It publishes complete
+`SecurityInventoryQuality` works on the original snapshots, not only rows eligible for posture. It publishes
 `reference_checks` and `reconciliation_checks` tables plus the filtered `reference_issues` and `reconciliation_issues`
 remediation queues.
 

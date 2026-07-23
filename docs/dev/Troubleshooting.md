@@ -73,6 +73,19 @@ Fix: Rerun `make integration`. For repeated failures, inspect the matching servi
 `docker compose --env-file infra/compose/.env -f infra/compose/docker-compose.yaml logs spark35-master spark35-worker`
 or the `spark40-*` services for the PySpark 4.0 lane.
 
+### Problem (integration): Spark Connect reports `Java heap space`
+
+When: A Spark Connect integration test fails while collecting a generated DataFrame, often after a large search or
+similarity query.
+Error: The client raises a Spark Connect gRPC exception whose server detail is `Java heap space`; the server trace can
+include `TextFormat$TextGenerator`.
+Cause: Spark Connect serializes a large logical plan while handling the request. The default Spark driver heap is too
+small for some bundled generated-query integration cases.
+Fix: The supported runner starts Connect with a 2 GiB driver heap. Rebuild once after updating the runner:
+`make integration-rebuild BACKEND=spark-connect35`. If the host has capacity and a larger plan still fails, override
+it for that run, for example:
+`STRUCTURE_SPARK_CONNECT_DRIVER_MEMORY=3g make integration BACKEND=spark-connect35`.
+
 ### Problem (integration): Spark Connect logs `INVALID_HANDLE.SESSION_CLOSED` during `releaseExecute`
 
 When: A Spark Connect 3.5 integration lane finishes a test or the full pytest run.

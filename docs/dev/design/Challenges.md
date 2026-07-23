@@ -326,7 +326,7 @@ Included in v1:
 - expression-based derived columns;
 - schema-only validation;
 - stream-static `Join.LEFT` and `Join.INNER` lookup joins;
-- hooks explicitly marked `streaming_safe=True`.
+- hooks explicitly marked `streaming=True`.
 
 Deferred or rejected in v1:
 
@@ -753,7 +753,7 @@ Recommended direction:
 - Keep `lane(...)` internal to a transform implementation and unavailable for composition matching unless a later design
   explicitly changes that boundary.
 
-## C34. DSL deficit resulting in raw hooks necessity 
+## C34. Insufficient DSL coverage necessitates raw hooks 
 
 Example app: Security
 P: use of raw hooks, impossibility to replace with step methods.
@@ -773,6 +773,8 @@ Existing raw methods in Search app that can't be refactored:
 - Index is a worthwhile larger refactor, but preserving its global zero-row summaries needs a typed global-aggregate capability first. [Index.py (line 86)](/Users/chaos/Files/Dev/Code/taitl-structure/examples/search/transforms/indexing/Index.py:86)
 - CreateSimilarityQueries needs sorted aggregate token collection and exact-one policy validation, both currently outside typed DSL coverage. [CreateSimilarityQueries.py (line 62)](/Users/chaos/Files/Dev/Code/taitl-structure/examples/search/transforms/similarities/CreateSimilarityQueries.py:62)
 - ReduceSimilarityScores needs self-alias joins plus canonical/reversed union construction; keep raw until the DSL supports those relation operations. [ReduceSimilarityScores.py (line 109)](/Users/chaos/Files/Dev/Code/taitl-structure/examples/search/transforms/similarities/ReduceSimilarityScores.py:109)
+
+
 
 # Appendix
 
