@@ -131,6 +131,16 @@ def test_v1_config_merges_opaque_plugin_tables_and_keeps_them_immutable() -> Non
         config.plugin_options["new"] = {}  # type: ignore[index]
 
 
+def test_v5_plugin_default_and_pyspark_table_select_the_configured_target() -> None:
+    config = StructureConfig.create(
+        plugin={"default": "pyspark", "pyspark": {"profile": ">=4.0,<4.1", "variant": "spark-connect"}}
+    )
+
+    assert config.target_backend == "pyspark"
+    assert config.target_profile == ">=4.0,<4.1"
+    assert config.target_variant == "spark-connect"
+
+
 @pytest.mark.parametrize("plugin", ("wrong", {"pyspark": "wrong"}))
 def test_v1_config_rejects_non_table_plugin_options(plugin) -> None:
     with workspace_tmp() as root:

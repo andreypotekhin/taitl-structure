@@ -23,7 +23,7 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | ONLINE-E1201 | error | Transform input is missing | Pass every declared input DataFrame before `run(session)`. |
 | ONLINE-E1202 | error | Direct PySpark runner is not configured | Pass a SparkSession or custom `online_executor`, or switch to generated-code execution with `execution_mode = "generated"`. |
 | ONLINE-E1203 | error | Execution mode is unsupported | Use `execution_mode = "online"` or `execution_mode = "generated"`. |
-| BACKEND-E2401 | error | Unsupported backend target | Set `target_backend = "pyspark"`. |
+| BACKEND-E2401 | error | Unsupported backend target | Set `plugin.default` to an installed plugin target. |
 | BACKEND-E2402 | error | Unsupported backend capability | Choose a supported operation or use a hook. |
 | CONNECT-E2601 | error | Spark Connect boundary is unsupported | Use Spark Connect DataFrame APIs or `target_variant = "ordinary"`. |
 | CLI-X1101 | internal | Unexpected internal failure | Rerun with debug output and report the code with a reproduction. |

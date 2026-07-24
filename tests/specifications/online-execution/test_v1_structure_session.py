@@ -121,6 +121,12 @@ def test_v1_session_convenience_overrides_win_over_project_config() -> None:
         assert session.config.source_map["generated_package"] == "programmatic"
 
 
+def test_v5_session_target_override_selects_a_plugin() -> None:
+    session = StructureSession(target="pyspark", schema_types=FakeTypes)
+
+    assert session.target_backend == "pyspark"
+
+
 def test_v1_session_uses_supplied_config() -> None:
     with workspace_tmp() as root:
         (root / "src").mkdir()

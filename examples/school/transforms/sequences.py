@@ -12,6 +12,7 @@ class Fibonacci(Transform):
 
     rows = input(SequenceRow)
     result = output(FibonacciRow)
+
     operation = recurrence(
         initial=(0, 1),
         output=state[0],

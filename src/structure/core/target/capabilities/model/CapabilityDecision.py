@@ -35,8 +35,9 @@ class CapabilityDecision:
         *,
         backend: BackendId,
         requirement: CapabilityRequirement,
-        supported_backend: str,
+        available_targets: tuple[str, ...],
     ) -> "CapabilityDecision":
+        choices = ", ".join(repr(name) for name in available_targets) or "an installed plugin target"
         return CapabilityDecision(
             backend=backend,
             requirement=requirement,
@@ -45,9 +46,9 @@ class CapabilityDecision:
             title="Unsupported backend target",
             problem=f"Structure has no backend capability profile for target_backend = {backend.name!r}.",
             why="Compiler, online runtime, and generated output need a known static capability profile.",
-            use=f"Set target_backend = {supported_backend!r}.",
+            use=f"Set plugin.default to one of: {choices}.",
             docs=requirement.docs,
-            required_target=supported_backend,
+            required_target=available_targets[0] if available_targets else "",
         )
 
     @staticmethod

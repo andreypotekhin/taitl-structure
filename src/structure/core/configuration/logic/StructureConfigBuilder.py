@@ -1,9 +1,9 @@
 from collections.abc import Mapping
 from pathlib import Path
-from types import MappingProxyType
 from typing import cast
 
 from structure.core.configuration.model.StructureConfig import StructureConfig
+from structure.core.plugins.model.PluginConfiguration import PluginConfiguration
 
 
 class StructureConfigBuilder:
@@ -15,10 +15,11 @@ class StructureConfigBuilder:
         generated_docs_formats = cast(list[str], values["generated_docs_formats"])
         generated_code_options = cast(list[str], values["generated_code_options"])
         hook_target_default = values["hook_target_default"]
-        plugin_options = {
-            name: MappingProxyType(dict(options))
-            for name, options in cast(Mapping[str, Mapping[str, object]], values["plugin"]).items()
-        }
+        plugin_configuration = PluginConfiguration.resolve({"plugin": cast(Mapping[str, object], values["plugin"])})
+        plugins = plugin_configuration.plugins
+        target_backend = plugin_configuration.default
+        target_backend = target_backend or str(values["target_backend"])
+        target_options = plugins.get(target_backend, {})
         hook_targets = (
             str(hook_target_default)
             if isinstance(hook_target_default, str)
@@ -34,9 +35,9 @@ class StructureConfigBuilder:
             generated_docs_formats=tuple(generated_docs_formats),
             generated_code_options=tuple(sorted(generated_code_options)),
             execution_mode=str(values["execution_mode"]),
-            target_backend=str(values["target_backend"]),
-            target_profile=str(values["target_profile"]),
-            target_variant=str(values["target_variant"]),
+            target_backend=target_backend,
+            target_profile=str(target_options.get("profile", values["target_profile"])),
+            target_variant=str(target_options.get("variant", values["target_variant"])),
             compat_targets=tuple(compat_targets),
             hook_target_default=hook_targets,
             traceability=str(values["traceability"]),
@@ -53,6 +54,6 @@ class StructureConfigBuilder:
                 "spark.sql.ansi.enabled": values["spark.sql.ansi.enabled"],
                 "spark.sql.storeAssignmentPolicy": values["spark.sql.storeAssignmentPolicy"],
             },
-            plugin_options=MappingProxyType(plugin_options),
+            plugin_options=plugins,
             source_map=dict(sources),
         )

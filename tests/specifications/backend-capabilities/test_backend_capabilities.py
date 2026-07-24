@@ -31,6 +31,12 @@ def test_default_pyspark_capabilities_do_not_import_pyspark() -> None:
     assert after == before
 
 
+def test_v5_capabilities_accept_a_generic_target_name() -> None:
+    resolved = Capabilities.resolve()(target="pyspark")
+
+    assert resolved.id.name == "pyspark"
+
+
 def test_supported_v1_requirement_passes() -> None:
     resolved = Capabilities.resolve()()
 
@@ -414,6 +420,7 @@ def test_spark_connect_is_not_a_separate_backend_id() -> None:
     assert diagnostic.feature_group == "backend"
     assert diagnostic.feature_name == "spark_connect"
     assert diagnostic.context()["target_backend"] == "spark_connect"
+    assert "plugin.default" in diagnostic.use
     assert "pyspark" in diagnostic.use
 
 

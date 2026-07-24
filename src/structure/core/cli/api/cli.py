@@ -20,6 +20,7 @@ def _config_options(function):
         click.option("--generated-docs-dir"),
         click.option("--generated-docs-formats"),
         click.option("--execution-mode", type=click.Choice(["online", "generated"])),
+        click.option("--target"),
         click.option("--target-backend"),
         click.option("--target-profile"),
         click.option("--target-variant", type=click.Choice(["ordinary", "spark-connect"])),

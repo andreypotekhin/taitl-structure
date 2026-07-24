@@ -208,6 +208,7 @@ def test_v1_cli_help_lists_commands() -> None:
     assert "check" in result.output
     assert "compile" in result.output
     assert "explain" in result.output
+    assert "--target TEXT" in CliRunner().invoke(cli, ["check", "--help"]).output
 
 
 def test_v1_cli_init_writes_seed_config() -> None:
@@ -221,8 +222,11 @@ def test_v1_cli_init_writes_seed_config() -> None:
         assert "generated_docs = true" in text
         assert 'generated_docs_dir = "docs"' in text
         assert 'generated_docs_formats = ["markdown", "json"]' in text
-        assert 'target_profile = ">=3.5,<4.1"' in text
-        assert 'target_variant = "ordinary"' in text
+        assert '[tool.structure.plugin]' in text
+        assert 'default = "pyspark"' in text
+        assert '[tool.structure.plugin.pyspark]' in text
+        assert 'profile = ">=3.5,<4.1"' in text
+        assert 'variant = "ordinary"' in text
 
 
 def test_v1_cli_check_is_spark_free_and_does_not_write_generated_files() -> None:

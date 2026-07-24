@@ -16,14 +16,18 @@ class ResolveBackendCapabilities:
     def __call__(
         self,
         *,
-        target_backend: str = "pyspark",
+        target: str | None = None,
+        target_backend: str | None = None,
         target_profile: str = DEFAULT_TARGET_PROFILE,
         target_variant: str = DEFAULT_TARGET_VARIANT,
     ) -> BackendCapabilities:
+        if target is not None and target_backend is not None:
+            raise ValueError("Pass either target= or the legacy target_backend= argument, not both.")
+        target_backend = target or target_backend or "pyspark"
         try:
             plugin = Plugin.registry().select(target_backend)
         except ValueError:
-            return self._unsupported(target_backend, target_profile, target_variant)
+            return self._unsupported(target_backend, target_profile, target_variant, self._available_targets())
         capabilities = cast(BackendCapabilities, plugin.api.capabilities.resolve(profile=target_profile, variant=target_variant))
         capabilities.require(
             CapabilityRequirement(
@@ -34,7 +38,9 @@ class ResolveBackendCapabilities:
         )
         return capabilities
 
-    def _unsupported(self, target_backend: str, target_profile: str, target_variant: str) -> BackendCapabilities:
+    def _unsupported(
+        self, target_backend: str, target_profile: str, target_variant: str, available_targets: tuple[str, ...]
+    ) -> BackendCapabilities:
         backend = BackendId(name=target_backend, target=target_profile, family="unknown", variant=target_variant)
         requirement = CapabilityRequirement(
             group="backend",
@@ -44,6 +50,9 @@ class ResolveBackendCapabilities:
         decision = CapabilityDecision.unsupported_backend(
             backend=backend,
             requirement=requirement,
-            supported_backend="pyspark",
+            available_targets=available_targets,
         )
         raise BackendCapabilityError(decision)
+
+    def _available_targets(self) -> tuple[str, ...]:
+        return tuple(plugin.name for plugin in Plugin.registry().discover())

@@ -39,6 +39,6 @@ class StructureConfigDefaults:
             "fail_on_diff": False,
             "spark.sql.ansi.enabled": True,
             "spark.sql.storeAssignmentPolicy": "ANSI",
-            "plugin": {},
+            "plugin": {"default": "pyspark"},
         }
         return values, {key: "default" for key in values}

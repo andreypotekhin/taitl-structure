@@ -11,6 +11,9 @@ class ResolveCliConfig:
 
     def __call__(self, overrides: dict[str, object]) -> StructureConfig:
         values = {key: value for key, value in overrides.items() if value not in (None, ())}
+        target = values.pop("target", None)
+        if target is not None:
+            values["plugin"] = {**cast(dict[str, object], values.get("plugin", {})), "default": target}
         if "source_roots" in values:
             values["source_roots"] = list(cast(tuple[str, ...], values["source_roots"]))
         if "compat_targets" in values:

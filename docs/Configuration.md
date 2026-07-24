@@ -74,9 +74,30 @@ Python identifiers such as `execution_mode`; use `overrides={...}` for dotted ke
 
 ## Plugin Options
 
-Plugins may define their own project options. Structure treats these tables as opaque: it merges and freezes them,
+Plugins may define their own project options. `plugin.default` selects the default target, while the selected plugin
+owns the meaning of its own table. For example, PySpark owns `profile` and `variant`:
+
+```toml
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.1"
+variant = "ordinary"
+```
+
+Structure treats plugin tables as opaque: it merges and freezes them,
 then sends only the selected plugin's table to that plugin's authoring, schema, and compiler facets. Structure neither
 recognizes nor validates the option names or values.
+
+For a one-command selection override, use `structure check --target pyspark` (or another installed plugin name).
+It selects the command's target without changing project configuration.
+
+Python callers can make the equivalent session-local choice with
+`StructureSession(target="pyspark", runtime=...)`.
+
+Core capability checks use the same target name: `Capabilities.resolve()(target="pyspark")`. The selected plugin
+then supplies the profile-specific capability report.
 
 ```toml
 [tool.structure.plugin.pyspark]

@@ -31,6 +31,7 @@ class StructureSession:
         config: StructureConfig | None = None,
         project_root: Path | str | None = None,
         execution_mode: str | None = None,
+        target: str | None = None,
         target_backend: str | None = None,
         target_profile: str | None = None,
         target_variant: str | None = None,
@@ -42,13 +43,17 @@ class StructureSession:
     ) -> None:
         if spark is not None and runtime is not None:
             raise ValueError("Pass either runtime= or the legacy spark= argument, not both.")
-        overrides = {
+        if target is not None and target_backend is not None:
+            raise ValueError("Pass either target= or the legacy target_backend= argument, not both.")
+        overrides: dict[str, object] = {
             "execution_mode": execution_mode,
             "target_backend": target_backend,
             "target_profile": target_profile,
             "target_variant": target_variant,
             "generated_package": generated_package,
         }
+        if target is not None:
+            overrides["plugin"] = {"default": target}
         supplied_overrides = {key: value for key, value in overrides.items() if value is not None}
         if config is not None and (project_root is not None or supplied_overrides):
             raise ValueError(

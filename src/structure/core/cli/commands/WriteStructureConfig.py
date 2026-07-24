@@ -31,11 +31,15 @@ class WriteStructureConfig:
             'generated_docs_dir = "docs"',
             'generated_docs_formats = ["markdown", "json"]',
             'execution_mode = "online"',
-            'target_backend = "pyspark"',
-            'target_profile = ">=3.5,<4.1"',
-            'target_variant = "ordinary"',
             'hook_target_default = ["pyspark"]',
             'traceability = "compiler"',
+            "",
+            "[tool.structure.plugin]",
+            'default = "pyspark"',
+            "",
+            "[tool.structure.plugin.pyspark]",
+            'profile = ">=3.5,<4.1"',
+            'variant = "ordinary"',
         ]
         if seed:
             lines.extend(

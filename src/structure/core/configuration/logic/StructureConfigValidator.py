@@ -4,6 +4,7 @@ from typing import cast
 
 from structure.core.configuration.model.ConfigDiagnostic import ConfigDiagnostic
 from structure.core.configuration.model.ConfigError import ConfigError
+from structure.core.plugins.model.PluginConfiguration import PluginConfiguration
 
 
 class StructureConfigValidator:
@@ -160,9 +161,10 @@ class StructureConfigValidator:
     def _validate_plugin_options(self, value: object) -> None:
         if not isinstance(value, Mapping):
             self._fail_invalid("plugin", "plugin must be a table", 'Use [plugin.pyspark].')
-        options_by_plugin = cast(Mapping[object, object], value)
-        if not all(isinstance(options, Mapping) for options in options_by_plugin.values()):
-            self._fail_invalid("plugin", "plugin settings must be tables", 'Use [plugin.pyspark].')
+        try:
+            PluginConfiguration.resolve({"plugin": cast(Mapping[str, object], value)})
+        except ValueError as error:
+            self._fail_invalid("plugin", str(error), 'Use [plugin] and [plugin.pyspark].')
 
     def _fail_invalid(self, setting: str, problem: str, use: str) -> None:
         raise ConfigError(ConfigDiagnostic(code="CONF-E0102", setting=setting, problem=problem, use=use))
