@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from types import MappingProxyType
 from typing import Mapping
 
 from structure.core.configuration.model.StructureConfig import StructureConfig
@@ -26,6 +27,7 @@ class CompilerOptions:
     strict_performance: bool
     warn_on_udfs: bool
     schema_types_key: str | None = None
+    plugin_options: Mapping[str, Mapping[str, object]] = field(default_factory=lambda: MappingProxyType({}))
 
     @classmethod
     def resolve(
@@ -66,6 +68,7 @@ class CompilerOptions:
             output_validation_mode=config.output_validation_mode,
             strict_performance=config.strict_performance,
             warn_on_udfs=config.warn_on_udfs,
+            plugin_options=config.plugin_options,
             schema_types_key=cls._schema_types_key(schema_types),
         )
 
@@ -84,8 +87,27 @@ class CompilerOptions:
             self.output_validation_mode,
             self.strict_performance,
             self.warn_on_udfs,
+            self._plugin_options_key(),
             self.schema_types_key,
         )
+
+    def selected_plugin_options(self) -> Mapping[str, object]:
+        return self.plugin_options.get(self.target_backend, {})
+
+    def _plugin_options_key(self) -> tuple[tuple[str, object], ...]:
+        return tuple(sorted((name, self._freeze(value)) for name, value in self.selected_plugin_options().items()))
+
+    @classmethod
+    def _freeze(cls, value: object) -> object:
+        if isinstance(value, Mapping):
+            return tuple(sorted((str(name), cls._freeze(item)) for name, item in value.items()))
+        if isinstance(value, (list, tuple)):
+            return tuple(cls._freeze(item) for item in value)
+        try:
+            hash(value)
+        except TypeError:
+            return (type(value).__qualname__, id(value))
+        return value
 
     @staticmethod
     def _schema_types_key(schema_types) -> str | None:

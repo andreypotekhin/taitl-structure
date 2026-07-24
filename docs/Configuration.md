@@ -72,6 +72,30 @@ session = StructureSession(spark=spark, config=config)
 Python identifiers such as `execution_mode`; use `overrides={...}` for dotted keys such as
 `"spark.sql.ansi.enabled"`.
 
+## Plugin Options
+
+Plugins may define their own project options. Structure treats these tables as opaque: it merges and freezes them,
+then sends only the selected plugin's table to that plugin's authoring, schema, and compiler facets. Structure neither
+recognizes nor validates the option names or values.
+
+```toml
+[tool.structure.plugin.pyspark]
+vendor_mode = "fast"
+retry_policy = { attempts = 3, backoff = "linear" }
+```
+
+Use the same nested shape from Python:
+
+```python
+config = StructureConfig.resolve(
+    project_root=".",
+    overrides={"plugin": {"pyspark": {"vendor_mode": "fast"}}},
+)
+```
+
+Higher-precedence configuration layers merge keys only within the same plugin table. Plugin tables are immutable in the
+resolved `StructureConfig`; options for unselected plugins are never passed to the active plugin.
+
 For one-off runtime settings, pass the common config keys directly to `StructureSession`:
 
 ```python

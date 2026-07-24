@@ -1,5 +1,6 @@
 import difflib
 from collections.abc import Mapping
+from typing import cast
 
 from structure.core.configuration.model.ConfigDiagnostic import ConfigDiagnostic
 from structure.core.configuration.model.ConfigError import ConfigError
@@ -20,8 +21,21 @@ class StructureConfigMerger:
         for key, value in incoming.items():
             if key not in self._keys:
                 self._fail_unknown(key)
-            values[key] = value
+            if key == "plugin" and isinstance(values.get(key), Mapping) and isinstance(value, Mapping):
+                values[key] = self._merge_plugins(
+                    cast(Mapping[str, object], values[key]), cast(Mapping[str, object], value)
+                )
+            else:
+                values[key] = value
             sources[key] = source
+
+    @staticmethod
+    def _merge_plugins(current: Mapping[str, object], incoming: Mapping[str, object]) -> dict[str, object]:
+        merged = dict(current)
+        for name, value in incoming.items():
+            previous = merged.get(name)
+            merged[name] = {**previous, **value} if isinstance(previous, Mapping) and isinstance(value, Mapping) else value
+        return merged
 
     def _fail_unknown(self, key: str) -> None:
         if key in self._retired:

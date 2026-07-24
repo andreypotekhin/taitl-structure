@@ -156,6 +156,19 @@ def test_selection_reports_plugin_load_failure_without_a_traceback() -> None:
         registry.select("fake")
 
 
+def test_selection_rejects_a_missing_required_authoring_facet() -> None:
+    class IncompletePlugin(FakePlugin):
+        def api(self, version):
+            api = super().api(version)
+            object.__setattr__(api, "authoring", None)
+            return api
+
+    registry = Plugin.registry(lambda: [Entry("fake", "fake-wheel", IncompletePlugin)])
+
+    with pytest.raises(ValueError, match="PLUGIN-E2708.*missing authoring"):
+        registry.select("fake")
+
+
 @pytest.mark.parametrize(
     ("plugin", "message"),
     [

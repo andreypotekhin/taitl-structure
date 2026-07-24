@@ -46,6 +46,7 @@ class StructureConfigValidator:
         )
         self._validate_generated_code_options(values["generated_code_options"])
         self._validate_hook_target_default(values["hook_target_default"])
+        self._validate_plugin_options(values["plugin"])
         for key in self._bools:
             self._validate_type(values[key], key, bool)
         for key, allowed in self._enums.items():
@@ -155,6 +156,13 @@ class StructureConfigValidator:
                 f"Unsupported generated code option(s): {', '.join(unknown)}",
                 'Use mirror_methods, embed_exprs, embed_hooks, or embed_udfs.',
             )
+
+    def _validate_plugin_options(self, value: object) -> None:
+        if not isinstance(value, Mapping):
+            self._fail_invalid("plugin", "plugin must be a table", 'Use [plugin.pyspark].')
+        options_by_plugin = cast(Mapping[object, object], value)
+        if not all(isinstance(options, Mapping) for options in options_by_plugin.values()):
+            self._fail_invalid("plugin", "plugin settings must be tables", 'Use [plugin.pyspark].')
 
     def _fail_invalid(self, setting: str, problem: str, use: str) -> None:
         raise ConfigError(ConfigDiagnostic(code="CONF-E0102", setting=setting, problem=problem, use=use))

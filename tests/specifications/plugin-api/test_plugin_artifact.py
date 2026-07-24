@@ -3,7 +3,7 @@ from typing import Any, cast
 
 import pytest
 
-from structure import Schema, Transform, input, output, transform
+from structure import Schema, StructureConfig, Transform, input, output, transform
 from structure.core.compiler.api import Compiler as CoreCompiler
 from structure.core.compiler.artifacts.commands import GeneratePluginArtifact, SerializePluginArtifact
 from structure.core.plugins.api import Plugin
@@ -11,7 +11,13 @@ from structure.core.plugins.model.PluginConfiguration import PluginConfiguration
 from structure.core.runtime.execution.commands import ExecutePluginArtifact
 from structure.core.target.capabilities.model.BackendCapabilities import BackendCapabilities
 from structure.plugin.api import PluginDescriptor
-from structure.plugin.api.v1 import ExecutionRequest, GenerationRequest, PluginAPI, PluginCompilation
+from structure.plugin.api.v1 import (
+    ExecutionRequest,
+    GenerationRequest,
+    PluginAPI,
+    PluginCompilation,
+    StepAuthoringRequest,
+)
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.symbolic_execution.model import (
     PySparkStepBody,
@@ -254,6 +260,28 @@ def test_core_frontend_compiles_analysis_before_calling_the_platform_facet() -> 
     assert isinstance(step.plugin_body, PySparkStepBody)
     assert not any(hasattr(step, field) for field in ("filters", "projection", "aggregate", "joins", "operations"))
     assert not any(hasattr(step.results[0], field) for field in ("projection", "aggregate"))
+
+
+def test_core_passes_only_selected_opaque_plugin_options_to_plugin_facets() -> None:
+    compiler = CapturingCompiler()
+    authoring = RecordingAuthoring()
+    registry = Plugin.registry(lambda: [PySparkEntry(compiler, authoring)])
+    config = StructureConfig.create(
+        plugin={"pyspark": {"vendor_mode": "fast"}, "other": {"must_not_reach_pyspark": True}}
+    )
+
+    CoreCompiler.frontend.compile()(  # type: ignore[attr-defined]
+        CompiledTransform, config=config, registry=registry, materialize_schemas=False
+    )
+
+    request = compiler.request
+    authoring_request = authoring.requests[0]
+    assert request is not None
+    assert isinstance(authoring_request, StepAuthoringRequest)
+    assert request.plugin_options == {"vendor_mode": "fast"}
+    assert authoring_request.plugin_options == {"vendor_mode": "fast"}
+    with pytest.raises(TypeError):
+        request.plugin_options["vendor_mode"] = "safe"
 
 
 def test_pyspark_lowering_consumes_the_captured_body_not_core_target_fields() -> None:

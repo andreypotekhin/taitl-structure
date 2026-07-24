@@ -40,6 +40,7 @@ class ResolveStructureConfig:
         "fail_on_diff",
         "spark.sql.ansi.enabled",
         "spark.sql.storeAssignmentPolicy",
+        "plugin",
     }
 
     def __init__(self) -> None:

@@ -5,6 +5,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from uuid import uuid4
 
+import pytest
+
 from structure import *
 from structure.core.compiler.artifacts.model.CompilerOptions import CompilerOptions as CompilerArtifactOptions
 from structure.core.configuration.api import ConfigError, Configuration
@@ -100,7 +102,60 @@ def test_v1_programmatic_config_accepts_mapping_overrides_for_dotted_keys() -> N
         )
 
         assert config.spark_sql["spark.sql.ansi.enabled"] is False
-        assert config.source_map["spark.sql.ansi.enabled"] == "programmatic"
+    assert config.source_map["spark.sql.ansi.enabled"] == "programmatic"
+
+
+def test_v1_config_merges_opaque_plugin_tables_and_keeps_them_immutable() -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+        (root / "structure.toml").write_text(
+            "[tool.structure.plugin.pyspark]\nvendor_mode = \"safe\"\nretries = 2\n",
+            encoding="utf-8",
+        )
+        (root / "pyproject.toml").write_text(
+            "[tool.structure.plugin.pyspark]\nvendor_mode = \"fast\"\n"
+            "[tool.structure.plugin.iterable]\nbatch_size = 100\n",
+            encoding="utf-8",
+        )
+
+        config = StructureConfig.resolve(
+            project_root=root,
+            overrides={"plugin": {"pyspark": {"retries": 3, "feature": ["x"]}}},
+        )
+
+    assert dict(config.plugin_options["pyspark"]) == {"vendor_mode": "fast", "retries": 3, "feature": ["x"]}
+    assert dict(config.plugin_options["iterable"]) == {"batch_size": 100}
+    with pytest.raises(TypeError):
+        config.plugin_options["pyspark"]["vendor_mode"] = "unsafe"  # type: ignore[index]
+    with pytest.raises(TypeError):
+        config.plugin_options["new"] = {}  # type: ignore[index]
+
+
+@pytest.mark.parametrize("plugin", ("wrong", {"pyspark": "wrong"}))
+def test_v1_config_rejects_non_table_plugin_options(plugin) -> None:
+    with workspace_tmp() as root:
+        (root / "src").mkdir()
+
+        with pytest.raises(ConfigError) as error:
+            StructureConfig.resolve(project_root=root, overrides={"plugin": plugin})
+
+    assert error.value.diagnostic.code == "CONF-E0102"
+    assert error.value.diagnostic.setting == "plugin"
+
+
+def test_v1_plugin_options_change_only_selected_plugin_compiler_identity() -> None:
+    fast = CompilerArtifactOptions.from_config(
+        StructureConfig.create(plugin={"pyspark": {"vendor_mode": "fast"}, "other": {"value": 1}})
+    )
+    safe = CompilerArtifactOptions.from_config(
+        StructureConfig.create(plugin={"pyspark": {"vendor_mode": "safe"}, "other": {"value": 1}})
+    )
+    unrelated = CompilerArtifactOptions.from_config(
+        StructureConfig.create(plugin={"pyspark": {"vendor_mode": "fast"}, "other": {"value": 2}})
+    )
+
+    assert fast.fingerprint() != safe.fingerprint()
+    assert fast.fingerprint() == unrelated.fingerprint()
 
 
 def test_v1_programmatic_config_rejects_duplicate_override_sources() -> None:

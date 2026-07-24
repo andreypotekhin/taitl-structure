@@ -45,4 +45,12 @@ Core implementation modules.
 
 ## Progress
 
-- [ ] Start after Sprint 20 closes.
+- [x] (2026-07-23) Started after Sprint 20 closes.
+- [x] (2026-07-23) Added the public `PluginConformance` helper and vendor author guide. The helper centralizes
+  descriptor identity, symmetric API negotiation, and required-facet validation for both Core and external packages;
+  it now rejects a missing authoring facet before a workflow starts.
+- [x] (2026-07-23) Added an independently built `structure-iterable-fixture` wheel. The required specification test
+  builds it into a temporary wheelhouse, installs it only into a temporary site directory, discovers its real entry
+  point, verifies that its source imports no `structure.core` package, executes a one-shot iterable with repeatable
+  collection, and round-trips its opaque JSON payload.
+- [ ] Implement iterable target DSL semantics for projection, joins, and grouped aggregation.

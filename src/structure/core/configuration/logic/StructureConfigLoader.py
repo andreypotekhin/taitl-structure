@@ -21,7 +21,7 @@ class StructureConfigLoader:
         if not isinstance(tool, dict):
             return {}
         structure = tool.get("structure", {})
-        return self._flatten(structure) if isinstance(structure, dict) else {}
+        return self._section(structure) if isinstance(structure, dict) else {}
 
     def _section(self, data: Mapping[str, object]) -> dict[str, object]:
         tool = data.get("tool")
@@ -33,6 +33,9 @@ class StructureConfigLoader:
         flat: dict[str, object] = {}
         for key, value in data.items():
             name = f"{prefix}.{key}" if prefix else str(key)
+            if not prefix and key == "plugin":
+                flat[name] = value
+                continue
             if isinstance(value, dict):
                 flat.update(self._flatten(value, name))
             else:

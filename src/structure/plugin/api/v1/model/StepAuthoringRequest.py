@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from types import MappingProxyType
 from typing import Mapping
 
 from structure.lib.cross.errors import SourceSpan
@@ -17,3 +18,4 @@ class StepAuthoringRequest:
     options: Mapping[str, object] | None = None
     capture_special_exprs: bool = False
     primary_span: SourceSpan | None = None
+    plugin_options: Mapping[str, object] = field(default_factory=lambda: MappingProxyType({}))

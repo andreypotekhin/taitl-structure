@@ -87,9 +87,10 @@ The compiler facet has one public workflow-shaped entry point:
         def compile(self, request: CompileRequest) -> PluginCompilation: ...
 
 `CompileRequest` is immutable and contains only facts Core already owns: the discovered transform declaration, its
-backend-neutral `TransformPlan` analysis, selected target and target constraints, opaque plugin configuration, and
-source locations for diagnostics. Core does not add a method per expression, join, aggregation, validation rule, or
-compilation phase.
+backend-neutral `TransformPlan` analysis, selected target and target constraints, Core transport configuration, the
+selected plugin's opaque `plugin_options`, and source locations for diagnostics. Core does not add a method per
+expression, join, aggregation, validation rule, or compilation phase. Core does not validate vendor option names or
+values, and never exposes one plugin's option table to another plugin.
 
 `PluginCompilation` contains an opaque lowered payload, optional Core analysis payload, deterministic fingerprint
 material, and Core diagnostic records. Core owns structural inspection and invokes step methods in declaration order.
@@ -171,3 +172,7 @@ missing required facet or lifecycle capability/facet mismatch. Fake PySpark-like
 that Core invokes `compiler.compile(request)` without inspecting their opaque plans.
 
 Tests must prove that no service facet is separately registered or independently negotiated.
+
+Plugin authors can use the public `PluginConformance.negotiate(...)` helper described in
+[PluginAuthoring.md](../PluginAuthoring.md) to check descriptor identity, API-version negotiation, and required
+facets without importing a Core implementation module.

@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from types import MappingProxyType
 from typing import Mapping
 
 
@@ -6,3 +7,4 @@ from typing import Mapping
 class SchemaValidationRequest:
     schemas: tuple[object, ...]
     configuration: Mapping[str, object]
+    plugin_options: Mapping[str, object] = field(default_factory=lambda: MappingProxyType({}))

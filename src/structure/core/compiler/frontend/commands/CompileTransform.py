@@ -43,8 +43,8 @@ from structure.plugin.api.v1 import (
 SourceDeclaration = InputDeclaration | LaneDeclaration | BindingSelector
 WriteDeclaration = LaneDeclaration | OutputDeclaration | BindingSelector
 _diagnostic_project_root: ContextVar[Path | None] = ContextVar("diagnostic_project_root", default=None)
-_authoring: ContextVar[tuple[object | None, str, Mapping[str, object]]] = ContextVar(
-    "structure_platform_authoring", default=(None, "", {})
+_authoring: ContextVar[tuple[object | None, str, Mapping[str, object], Mapping[str, object]]] = ContextVar(
+    "structure_platform_authoring", default=(None, "", {}, {})
 )
 
 
@@ -70,6 +70,7 @@ class CompileTransform:
         authoring = settings.pop("_authoring", None)
         target = str(settings.pop("_authoring_target", ""))
         plugin_configuration = settings.pop("_authoring_configuration", None)
+        plugin_options = settings.pop("_authoring_plugin_options", None)
         if config is not None and (project_root is not None or overrides or settings):
             raise ValueError(
                 "Pass either config=StructureConfig.resolve(...), or pass project_root/config override fields, not both."
@@ -82,7 +83,14 @@ class CompileTransform:
         merged.update(settings)
         resolved = config or StructureConfig.resolve(project_root=project_root, overrides=merged)
         token = _diagnostic_project_root.set(resolved.project_root)
-        authoring_token = _authoring.set((authoring, target, cast(Mapping[str, object], plugin_configuration or {})))
+        authoring_token = _authoring.set(
+            (
+                authoring,
+                target,
+                cast(Mapping[str, object], plugin_configuration or {}),
+                cast(Mapping[str, object], plugin_options or {}),
+            )
+        )
         try:
             return self._compile(transform_class, config=resolved)
         finally:
@@ -527,7 +535,7 @@ class CompileTransform:
         options = self._step_options(item.owner, metadata)
         parent_call: dict[str, object] = {}
         authoring_body: object | None = None
-        authoring, target, configuration = _authoring.get()
+        authoring, target, configuration, plugin_options = _authoring.get()
         authoring_api = cast(AuthoringAPI | None, authoring)
         if authoring_api is None:
             raise RuntimeError("Core authoring requires a selected platform authoring facet.")
@@ -559,6 +567,7 @@ class CompileTransform:
                 name,
                 project_root=_diagnostic_project_root.get(),
             ),
+            plugin_options=plugin_options,
         )
         authoring_session = authoring_api.open_step(request)
         arguments = authoring_session.arguments()

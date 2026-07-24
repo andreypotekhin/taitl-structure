@@ -5,8 +5,8 @@ from typing import Any, Callable, Iterable
 from structure.core.plugins.model.DiscoveredPlugin import DiscoveredPlugin
 from structure.core.plugins.model.SelectedPlugin import SelectedPlugin
 from structure.plugin.api import CORE_API_MAX_VERSION, CORE_API_MIN_VERSION, PLUGIN_ENTRY_POINT_GROUP
-from structure.plugin.api.v1 import PluginAPI
 from structure.plugin.BundledPySparkEntry import BundledPySparkEntry
+from structure.plugin.conformance import PluginConformance
 
 
 class PluginRegistry:
@@ -53,29 +53,18 @@ class PluginRegistry:
                 f"PLUGIN-E2705: Could not load plugin {name!r} from distribution "
                 f"{discovered.distribution!r}: {type(error).__name__}: {error}"
             ) from error
-        descriptor = plugin.descriptor
-        if descriptor.name != name:
-            raise ValueError(
-                f"PLUGIN-E2706: Plugin entry point {name!r} loaded a plugin named {descriptor.name!r}."
-            )
-        if self._distribution(descriptor.distribution) != self._distribution(discovered.distribution):
-            raise ValueError(
-                f"PLUGIN-E2706: Plugin {name!r} declares distribution {descriptor.distribution!r}, "
-                f"but was discovered from {discovered.distribution!r}."
-            )
-        version = min(self._maximum_api_version, descriptor.maximum_api_version)
-        if version < max(self._minimum_api_version, descriptor.minimum_api_version):
-            raise ValueError(f"PLUGIN-E2707: Plugin {name!r} has no compatible Plugin API version.")
-        try:
-            api = plugin.api(version)
-        except Exception as error:
-            raise ValueError(
-                f"PLUGIN-E2708: Plugin {name!r} could not provide its advertised Plugin API v{version}: "
-                f"{type(error).__name__}: {error}"
-            ) from error
-        if not isinstance(api, PluginAPI) or api.schema is None or api.compiler is None or api.capabilities is None:
-            raise ValueError(f"PLUGIN-E2708: Plugin {name!r} did not supply a complete Plugin API v{version} façade.")
-        return SelectedPlugin(descriptor=descriptor, api_version=version, api=api)
+        conformance = PluginConformance.negotiate(
+            plugin,
+            entry_name=name,
+            distribution=discovered.distribution,
+            minimum_api_version=self._minimum_api_version,
+            maximum_api_version=self._maximum_api_version,
+        )
+        return SelectedPlugin(
+            descriptor=conformance.descriptor,
+            api_version=conformance.api_version,
+            api=conformance.api,
+        )
 
     def _installed_entries(self) -> Iterable[Any]:
         installed = tuple(entry_points(group=PLUGIN_ENTRY_POINT_GROUP))

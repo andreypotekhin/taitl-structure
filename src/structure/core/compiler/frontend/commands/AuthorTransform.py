@@ -32,6 +32,7 @@ class AuthorTransform:
         authoring: AuthoringAPI,
         target: str,
         configuration: Mapping[str, object],
+        plugin_options: Mapping[str, object],
     ) -> TransformPlan:
         authored = self._legacy(
             transform,
@@ -39,6 +40,7 @@ class AuthorTransform:
             _authoring=authoring,
             _authoring_target=target,
             _authoring_configuration=configuration,
+            _authoring_plugin_options=plugin_options,
         )
         if len(plan.steps) != len(authored.steps) or tuple(step.name for step in plan.steps) != tuple(
             step.name for step in authored.steps

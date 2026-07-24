@@ -1,5 +1,6 @@
 from collections.abc import Mapping
 from pathlib import Path
+from types import MappingProxyType
 from typing import cast
 
 from structure.core.configuration.model.StructureConfig import StructureConfig
@@ -14,6 +15,10 @@ class StructureConfigBuilder:
         generated_docs_formats = cast(list[str], values["generated_docs_formats"])
         generated_code_options = cast(list[str], values["generated_code_options"])
         hook_target_default = values["hook_target_default"]
+        plugin_options = {
+            name: MappingProxyType(dict(options))
+            for name, options in cast(Mapping[str, Mapping[str, object]], values["plugin"]).items()
+        }
         hook_targets = (
             str(hook_target_default)
             if isinstance(hook_target_default, str)
@@ -48,5 +53,6 @@ class StructureConfigBuilder:
                 "spark.sql.ansi.enabled": values["spark.sql.ansi.enabled"],
                 "spark.sql.storeAssignmentPolicy": values["spark.sql.storeAssignmentPolicy"],
             },
+            plugin_options=MappingProxyType(plugin_options),
             source_map=dict(sources),
         )

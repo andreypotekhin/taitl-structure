@@ -32,6 +32,7 @@ class StructureConfig:
     warn_on_udfs: bool
     fail_on_diff: bool
     spark_sql: Mapping[str, object]
+    plugin_options: Mapping[str, Mapping[str, object]]
     source_map: Mapping[str, str]
 
     @classmethod

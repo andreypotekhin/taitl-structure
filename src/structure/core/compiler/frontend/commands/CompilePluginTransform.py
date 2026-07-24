@@ -56,8 +56,9 @@ class CompilePluginTransform:
             "schema_types": schema_types,
             "materialize_schemas": materialize_schemas,
         }
+        plugin_options = resolved.plugin_options.get(target, {})
         plugin = (registry or self._registry or Plugin.registry()).select(target)
-        self._validate_declared_schemas(transform, plugin, configuration)
+        self._validate_declared_schemas(transform, plugin, configuration, plugin_options)
         analysis = self._analyze(
             transform,
             config=resolved,
@@ -69,12 +70,14 @@ class CompilePluginTransform:
             authoring=plugin.api.authoring,
             target=target,
             configuration=configuration,
+            plugin_options=plugin_options,
         )
         return self._compile(
             transform,
             plan,
             target=target,
             configuration=configuration,
+            plugin_options=plugin_options,
             registry=registry,
             plugin=plugin,
             purpose=purpose,
@@ -99,8 +102,9 @@ class CompilePluginTransform:
             "schema_types": schema_types,
             "materialize_schemas": materialize_schemas,
         }
+        plugin_options = options.selected_plugin_options()
         plugin = (registry or self._registry or Plugin.registry()).select(target)
-        self._validate_declared_schemas(transform, plugin, configuration)
+        self._validate_declared_schemas(transform, plugin, configuration, plugin_options)
         authoring_config = StructureConfig.resolve(
             project_root=options.project_root,
             overrides={
@@ -119,12 +123,14 @@ class CompilePluginTransform:
             authoring=plugin.api.authoring,
             target=target,
             configuration=configuration,
+            plugin_options=plugin_options,
         )
         return self._compile(
             transform,
             plan,
             target=target,
             configuration=configuration,
+            plugin_options=plugin_options,
             registry=registry,
             plugin=plugin,
             purpose=purpose,
@@ -137,13 +143,21 @@ class CompilePluginTransform:
         *,
         target: str,
         configuration: Mapping[str, object],
+        plugin_options: Mapping[str, object],
         registry,
         plugin=None,
         purpose: CompilationPurpose = CompilationPurpose.RUNTIME,
     ) -> PluginCompilation:
         plugin = plugin or (registry or self._registry or Plugin.registry()).select(target)
         compilation = plugin.api.compiler.compile(
-            CompileRequest(transform=transform, target=target, configuration=configuration, analysis=plan, purpose=purpose)
+            CompileRequest(
+                transform=transform,
+                target=target,
+                configuration=configuration,
+                plugin_options=plugin_options,
+                analysis=plan,
+                purpose=purpose,
+            )
         )
         if not isinstance(compilation, PluginCompilation):
             raise ValueError(f"PLUGIN-E2708: Plugin {target!r} returned an invalid compilation result.")
@@ -155,7 +169,10 @@ class CompilePluginTransform:
 
     @staticmethod
     def _validate_declared_schemas(
-        transform: type[Transform] | TransformPipeline, plugin, configuration: Mapping[str, object]
+        transform: type[Transform] | TransformPipeline,
+        plugin,
+        configuration: Mapping[str, object],
+        plugin_options: Mapping[str, object],
     ) -> None:
         validate = getattr(plugin.api.schema, "validate", None)
         if not callable(validate):
@@ -169,7 +186,11 @@ class CompilePluginTransform:
             )
             for declaration in declarations:
                 schemas[cast(object, getattr(declaration, "schema"))] = None
-        validate(SchemaValidationRequest(schemas=tuple(schemas), configuration=configuration))
+        validate(
+            SchemaValidationRequest(
+                schemas=tuple(schemas), configuration=configuration, plugin_options=plugin_options
+            )
+        )
 
     @staticmethod
     def _transform_classes(transform: type[Transform] | TransformPipeline) -> tuple[type[Transform], ...]:
