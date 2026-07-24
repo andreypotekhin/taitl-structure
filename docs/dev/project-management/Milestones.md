@@ -319,7 +319,7 @@ Exit Criteria:
 
 ## M10: v5 Plugin Plugin Architecture
 
-Status: scheduled after the final v4 hardening sprint. Sprints 19-22 deliver the public Plugin API, migrate the
+Status: in progress. Sprints 19-22 deliver the public Plugin API, migrate the
 bundled PySpark plugin, prove external-wheel isolation, validate default-denied private target-local engine
 replacement, and close
 the breaking v5 migration.

@@ -87,3 +87,41 @@ inverse_cells = inverse.orderBy("matrix_id", "i", "j")
 
 Use this only for small demonstration datasets. A distributed arbitrary-size inverse or determinant needs a dedicated
 distributed pivot algorithm, which is outside this example's claim.
+
+## External Iterable Plugin
+
+The school package also includes `ProjectIterableScores`, a deliberately separate finite-row transform owned by the
+external Iterable example plugin. Install that plugin before importing the transform:
+
+```shell
+poetry run pip install -e examples/plugins/iterable
+```
+
+It has a different target and runtime from the PySpark transforms, but can live in the same project. Do not compose it
+with a PySpark transform. `ProjectIterableScores` declares its `Student` input model and receives finite row mappings
+as its `students=` constructor argument:
+
+```python
+from examples.school.transforms.iterable import ProjectIterableScores
+from structure import StructureSession
+
+scores = [{"student": "Ada", "score": 100, "ignored": True}]
+result = ProjectIterableScores(students=scores).run(StructureSession())
+assert result.result.collect() == [{"student": "Ada", "score": 100}]
+```
+
+`Fibonacci` is a second Iterable-only transform in `examples.school.transforms.sequences`. It defines a generic
+Iterable recurrence with prior-state references; future sequences can use the same operation. Its input must contain
+contiguous `index` values beginning at zero.
+
+```python
+from examples.school.transforms.sequences import Fibonacci
+
+terms = Fibonacci(rows=({"index": index} for index in range(4))).run(StructureSession())
+assert terms.result.collect() == [
+    {"index": 0, "fibonacci": 0},
+    {"index": 1, "fibonacci": 1},
+    {"index": 2, "fibonacci": 1},
+    {"index": 3, "fibonacci": 2},
+]
+```

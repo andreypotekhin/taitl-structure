@@ -9,6 +9,7 @@ from structure.core.configuration.model.StructureConfig import StructureConfig
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
 from structure.core.plugins.api.Plugin import Plugin
+from structure.core.plugins.model.PluginConfiguration import PluginConfiguration
 from structure.core.runtime.session.model.RuntimeDiagnostic import RuntimeDiagnostic
 from structure.core.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.core.runtime.session.model.TransformResult import TransformResult
@@ -81,6 +82,8 @@ class StructureSession:
             raise TypeError(
                 "StructureSession.run(...) requires a transform invocation or transform=python.module:Class."
             )
+        if self._target(invocation) != self.target_backend:
+            return self._run_plugin(invocation)
         artifact = self._compiled(invocation)
         self._validate_inputs(invocation, artifact)
         schemas = artifact.schemas
@@ -102,6 +105,48 @@ class StructureSession:
         if not isinstance(result, TransformResult):
             raise TypeError(f"Plugin {self.target_backend!r} returned an invalid execution result.")
         return result._structure_with_schema(schemas.outputs, aliases=schemas.output_aliases)
+
+    def _run_plugin(self, invocation: Transform) -> TransformResult:
+        configuration = self._plugin_configuration()
+        artifact = Artifacts().plugin(Plugin.registry())(type(invocation), configuration=configuration)
+        plugin = Plugin.registry().select(artifact.plugin, disabled_distributions=configuration.disabled_distributions)
+        if plugin.api.executor is None:
+            raise self._invalid_mode(invocation)
+        value = plugin.api.executor.execute(
+            ExecutionRequest(
+                payload=artifact.payload,
+                runtime=self._plugin_runtime(invocation),
+                invocation=invocation,
+                mode=self.execution_mode,
+                semantic_fingerprint=artifact.fingerprint,
+            )
+        )
+        if isinstance(value, TransformResult):
+            return value
+        outputs = tuple(type(invocation)._structure_outputs)
+        if len(outputs) > 1:
+            raise TypeError(
+                f"Plugin {artifact.plugin!r} returned one value for {len(outputs)} transform outputs. "
+                "Return TransformResult for a multi-output transform."
+            )
+        return TransformResult({outputs[0] if outputs else "result": value}, single=True)
+
+    def _target(self, invocation: Transform | TransformPipeline) -> str:
+        return Plugin.resolve_target()(invocation, configuration=self._plugin_configuration())
+
+    def _plugin_configuration(self) -> PluginConfiguration:
+        return PluginConfiguration(
+            default=self.target_backend,
+            disabled_distributions=frozenset(),
+            plugin_options=None,
+            plugins=self.config.plugin_options,
+        )
+
+    def _plugin_runtime(self, invocation: Transform) -> object:
+        inputs = invocation._structure_bound_inputs
+        if not inputs:
+            return self.runtime
+        return inputs
 
     def _compiled(self, invocation: Transform) -> CompiledTransform:
         return self.compile(invocation if isinstance(invocation, TransformPipeline) else type(invocation))

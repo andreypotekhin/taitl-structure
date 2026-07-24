@@ -40,4 +40,5 @@ shim obscures which package owns target APIs.
 
 ## Progress
 
-- [ ] Start after Sprint 21 closes.
+- [x] (2026-07-23) Started after Sprint 21 completion. Confirmed that `structure` root exports are target-neutral;
+  began the legacy configuration and Core-dispatch migration audit.

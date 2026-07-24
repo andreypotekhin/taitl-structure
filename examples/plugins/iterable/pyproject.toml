@@ -3,15 +3,15 @@ requires = ["poetry-core>=1.9.1"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "structure-iterable-fixture"
+name = "structure-iterable-example"
 version = "0.1.0"
-description = "Finite external plugin fixture"
+description = "Finite external Structure plugin starter"
 authors = ["Structure tests"]
-packages = [{ include = "structure_iterable_fixture", from = "src" }]
+packages = [{ include = "structure_iterable", from = "src" }]
 
 [tool.poetry.dependencies]
 python = ">=3.11,<4.0"
 structure = "*"
 
 [tool.poetry.plugins."structure.plugin"]
-iterable = "structure_iterable_fixture:IterablePlugin"
+iterable = "structure_iterable:IterablePlugin"
