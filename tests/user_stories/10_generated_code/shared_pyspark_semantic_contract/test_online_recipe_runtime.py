@@ -32,8 +32,8 @@ from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySp
 from structure.plugin.pyspark.compiler.model.PySparkWatermarkRecipe import PySparkWatermarkRecipe
 from structure.plugin.pyspark.dsl.joins import JoinMethod
 from structure.plugin.pyspark.execution.commands.RunOnlinePySparkTransform import RunOnlinePySparkTransform
-from structure.plugin.pyspark.execution.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
-from structure.plugin.pyspark.execution.logic.PySparkFrameValidator import PySparkFrameValidator
+from structure.plugin.pyspark.execution.logic.expressions.EvaluatePySparkExpression import EvaluatePySparkExpression
+from structure.plugin.pyspark.execution.logic.ValidatePySparkFrame import ValidatePySparkFrame
 
 
 class RawOrder(Schema):
@@ -115,7 +115,7 @@ class PermissivePublishedOrder(PublishedOrder):
 def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> None:
     """I can rely on execution and generated-code execution to consume the same PySpark semantic contract."""
 
-    evaluator = PySparkExpressionEvaluator()
+    evaluator = EvaluatePySparkExpression()
     functions = FakeFunctions("functions")
     aliases = {RawOrder.__name__: "orders"}
 
@@ -288,7 +288,7 @@ def test_online_expression_evaluator_preserves_pyspark_column_semantics() -> Non
 
 
 def test_online_expression_evaluator_builds_nested_struct_columns() -> None:
-    evaluator = PySparkExpressionEvaluator()
+    evaluator = EvaluatePySparkExpression()
     functions = FakeFunctions("functions")
     expression = PySparkExpressionRecipe(
         kind="struct",
@@ -307,7 +307,7 @@ def test_online_expression_evaluator_builds_nested_struct_columns() -> None:
 
 
 def test_online_expression_evaluator_applies_array_aggregate_finish_to_the_accumulator() -> None:
-    evaluator = PySparkExpressionEvaluator()
+    evaluator = EvaluatePySparkExpression()
     functions = FakeFunctions("functions")
 
     column = evaluator.evaluate(
@@ -322,7 +322,7 @@ def test_online_expression_evaluator_applies_array_aggregate_finish_to_the_accum
 
 
 def test_online_expression_evaluator_sorts_arrays_by_the_symbolic_key() -> None:
-    evaluator = PySparkExpressionEvaluator()
+    evaluator = EvaluatePySparkExpression()
     functions = FakeFunctions("functions")
 
     column = evaluator.evaluate(
@@ -341,7 +341,7 @@ def test_online_expression_evaluator_sorts_arrays_by_the_symbolic_key() -> None:
 
 
 def test_online_expression_evaluator_preserves_window_projection_semantics() -> None:
-    evaluator = PySparkExpressionEvaluator()
+    evaluator = EvaluatePySparkExpression()
     functions = FakeFunctions("functions")
     aliases = {RawMetric.__name__: "metrics"}
     quantity = _field(RawMetric, "quantity")
@@ -1009,7 +1009,7 @@ def test_online_runner_materializes_multiple_step_results(monkeypatch) -> None:
 def test_online_schema_validation_projects_equivalent_spark_shapes() -> None:
     """Execution exposes equivalent Spark schemas."""
 
-    validator = PySparkFrameValidator()
+    validator = ValidatePySparkFrame()
     frame = FakeFrame(
         "published",
         FakeSchema(
@@ -1058,7 +1058,7 @@ def test_online_schema_validation_accepts_spark_collection_nullability_metadata(
         ),
     )
 
-    PySparkFrameValidator().validate(frame, validation, types=FakeTypes)
+    ValidatePySparkFrame().validate(frame, validation, types=FakeTypes)
 
 
 def test_online_schema_validation_rejects_nested_struct_shape_drift() -> None:
@@ -1084,7 +1084,7 @@ def test_online_schema_validation_rejects_nested_struct_shape_drift() -> None:
     )
 
     with pytest.raises(ValueError, match="PublishedShippedOrder.shipping expected"):
-        PySparkFrameValidator().validate(frame, validation, types=FakeTypes)
+        ValidatePySparkFrame().validate(frame, validation, types=FakeTypes)
 
 
 def test_online_schema_validation_rejects_strict_shape_drift() -> None:
@@ -1109,7 +1109,7 @@ def test_online_schema_validation_rejects_strict_shape_drift() -> None:
     )
 
     with pytest.raises(ValueError, match="unexpected column\\(s\\): debug"):
-        PySparkFrameValidator().validate(frame, validation, types=FakeTypes)
+        ValidatePySparkFrame().validate(frame, validation, types=FakeTypes)
 
 
 def _online_plan() -> PySparkExecutionPlan:

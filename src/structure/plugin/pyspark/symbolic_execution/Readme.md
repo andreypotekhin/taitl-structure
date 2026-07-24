@@ -9,5 +9,6 @@ The authoring facet opens a context through `PySpark.symbolic_execution.open()`.
 the installed public symbolic-context contract; compiler receives the captured body through the authoring session.
 
 ## Inner Workings
-`OpenPySparkStep` creates an isolated context backed by the shared context variable. The context accumulates filters,
-joins, operations, relation scopes, and aggregate state until the authoring session exits.
+`OpenPySparkStep` creates an isolated context backed by the shared context variable. Result construction belongs in
+`logic/results/`; as the symbolic body grows, projection construction, aggregate construction, and validation rules
+live beside it under their respective domain packages.

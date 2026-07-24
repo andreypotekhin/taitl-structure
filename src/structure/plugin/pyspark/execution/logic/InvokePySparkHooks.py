@@ -3,7 +3,7 @@ from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHoo
 from structure.plugin.pyspark.execution.logic.SparkConnectRuntimeDiagnostics import spark_connect_runtime_error
 
 
-class PySparkHookInvoker:
+class InvokePySparkHooks:
 
     def apply(
         self,

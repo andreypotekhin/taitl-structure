@@ -1,5 +1,5 @@
-from structure.plugin.pyspark.execution.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
-from structure.plugin.pyspark.execution.logic.PySparkFrameValidator import PySparkFrameValidator
-from structure.plugin.pyspark.execution.logic.PySparkHookInvoker import PySparkHookInvoker
+from structure.plugin.pyspark.execution.logic.expressions.EvaluatePySparkExpression import EvaluatePySparkExpression
+from structure.plugin.pyspark.execution.logic.InvokePySparkHooks import InvokePySparkHooks
+from structure.plugin.pyspark.execution.logic.ValidatePySparkFrame import ValidatePySparkFrame
 
-__all__ = ["PySparkExpressionEvaluator", "PySparkFrameValidator", "PySparkHookInvoker"]
+__all__ = ["EvaluatePySparkExpression", "InvokePySparkHooks", "ValidatePySparkFrame"]

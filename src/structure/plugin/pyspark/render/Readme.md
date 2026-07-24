@@ -10,4 +10,5 @@ maps through `PySpark.render`; the files app receives those maps through its end
 
 ## Inner Workings
 Focused render commands cover expressions, steps, schemas, transform modules, runtime modules, projects, and explain
-reports. They delegate cross-app schema rendering through `PySpark.schema`.
+reports. Their implementation is grouped beneath `logic/` by expressions, steps, hooks, joins, aggregates, and
+modules; they delegate cross-app schema rendering through `PySpark.schema`.

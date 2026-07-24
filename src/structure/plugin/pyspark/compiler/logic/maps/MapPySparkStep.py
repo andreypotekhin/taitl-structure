@@ -2,10 +2,10 @@ from dataclasses import replace
 from typing import Any, cast
 
 from structure.plugin.api.v1.model import BackendCapabilities, CapabilityRequirement, StepPlan
-from structure.plugin.pyspark.compiler.logic.mapping.PySparkExpressionMapper import PySparkExpressionMapper
-from structure.plugin.pyspark.compiler.logic.mapping.PySparkHookMapper import PySparkHookMapper
-from structure.plugin.pyspark.compiler.logic.mapping.PySparkNameMapper import PySparkNameMapper
-from structure.plugin.pyspark.compiler.logic.mapping.PySparkValidationMapper import PySparkValidationMapper
+from structure.plugin.pyspark.compiler.logic.maps.MapPySparkExpression import MapPySparkExpression
+from structure.plugin.pyspark.compiler.logic.maps.MapPySparkHook import MapPySparkHook
+from structure.plugin.pyspark.compiler.logic.maps.MapPySparkName import MapPySparkName
+from structure.plugin.pyspark.compiler.logic.maps.MapPySparkValidation import MapPySparkValidation
 from structure.plugin.pyspark.compiler.model.PySparkAggregateAssignment import PySparkAggregateAssignment
 from structure.plugin.pyspark.compiler.model.PySparkAggregateKey import PySparkAggregateKey
 from structure.plugin.pyspark.compiler.model.PySparkAggregateRecipe import PySparkAggregateRecipe
@@ -28,13 +28,13 @@ from structure.plugin.pyspark.symbolic_execution.model.PySparkResultBody import 
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 
 
-class PySparkStepMapper:
+class MapPySparkStep:
 
     def __init__(self) -> None:
-        self._names = PySparkNameMapper()
-        self._expressions = PySparkExpressionMapper()
-        self._hooks = PySparkHookMapper()
-        self._validations = PySparkValidationMapper()
+        self._names = MapPySparkName()
+        self._expressions = MapPySparkExpression()
+        self._hooks = MapPySparkHook()
+        self._validations = MapPySparkValidation()
 
     def map(
         self,

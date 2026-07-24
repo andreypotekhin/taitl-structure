@@ -5,7 +5,6 @@ from structure.plugin.api.v1.model.StepResultPlan import StepResultPlan
 from structure.plugin.pyspark.dsl.Expression import Expression
 from structure.plugin.pyspark.dsl.operations.OperationPlan import OperationPlan
 from structure.plugin.pyspark.dsl.operations_api import cache_operation, reserved_operations
-from structure.plugin.pyspark.symbolic_execution.commands.BuildPySparkResultBodies import BuildPySparkResultBodies
 from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkAggregates import ValidatePySparkAggregates
 from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkAggregationUse import (
     ValidatePySparkAggregationUse,
@@ -14,6 +13,7 @@ from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkCompari
 from structure.plugin.pyspark.symbolic_execution.commands.ValidatePySparkRelationReads import (
     ValidatePySparkRelationReads,
 )
+from structure.plugin.pyspark.symbolic_execution.logic.results.BuildPySparkResultBodies import BuildPySparkResultBodies
 from structure.plugin.pyspark.symbolic_execution.model.PySparkResultBody import PySparkResultBody
 from structure.plugin.pyspark.symbolic_execution.model.PySparkStepBody import PySparkStepBody
 from structure.plugin.pyspark.symbolic_execution.model.PySparkSymbolicContext import PySparkSymbolicContext

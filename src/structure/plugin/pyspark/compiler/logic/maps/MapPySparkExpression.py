@@ -5,7 +5,7 @@ from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySp
 from structure.plugin.pyspark.dsl.Expression import Expression
 
 
-class PySparkExpressionMapper:
+class MapPySparkExpression:
 
     def map(self, expression: Expression, *, capabilities: BackendCapabilities) -> PySparkExpressionRecipe:
         group, name = self._requirement(expression)

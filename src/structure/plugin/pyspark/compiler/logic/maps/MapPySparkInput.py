@@ -3,7 +3,7 @@ from structure.plugin.pyspark.compiler.model.PySparkInputRecipe import PySparkIn
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 
-class PySparkInputMapper:
+class MapPySparkInput:
 
     def map(
         self,

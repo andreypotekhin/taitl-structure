@@ -10,9 +10,10 @@ The app consumes a source `Transform`, Spark session, optional context, input Da
 and validations, then returns a DataFrame or `TransformResult`.
 
 ## Inner Workings
-`RunOnlinePySparkTransform` walks `PySparkInputRecipe`, `PySparkStepRecipe`, and `PySparkOutputRecipe` objects in order.
-It renders recipe intent as live PySpark `Column` and `DataFrame` operations, uses `HookInputs` when hooks request
-original inputs, and enforces schema checks at the same recipe points generated code would render them.
+`RunOnlinePySparkTransform` orchestrates `PySparkInputRecipe`, `PySparkStepRecipe`, and `PySparkOutputRecipe` objects
+in order. Its implementation is grouped beneath `logic/` by expressions, steps, hooks, joins, aggregates, and outputs;
+those actions render recipe intent as live PySpark `Column` and `DataFrame` operations, preserve `HookInputs` for
+original-input hooks, and enforce schema checks at the same recipe points generated code would render them.
 
 ## Generated execution
 `RunGeneratedPySparkTransform` imports the generated transform module, checks its semantic fingerprint, invokes its

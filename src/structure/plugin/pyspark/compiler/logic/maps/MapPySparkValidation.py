@@ -3,7 +3,7 @@ from structure.plugin.api.v1.model import StepPlan, StepResultPlan
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 
-class PySparkValidationMapper:
+class MapPySparkValidation:
 
     def step(self, step: StepPlan, *, last: bool) -> tuple[PySparkValidationRecipe, ...]:
         recipes = self._hooks(step.after_hooks, schema=step.output_schema)

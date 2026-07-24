@@ -4,7 +4,7 @@ from structure.plugin.pyspark.compiler.model.PySparkExpressionRecipe import PySp
 from structure.plugin.pyspark.dsl.types import StructureType
 
 
-class PySparkExpressionEvaluator:
+class EvaluatePySparkExpression:
 
     @property
     def _schema(self):

@@ -2,7 +2,7 @@ from structure.plugin.api.v1.model import HookPlan
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
 
 
-class PySparkHookMapper:
+class MapPySparkHook:
 
     def map(self, hook: HookPlan) -> PySparkHookRecipe:
         return PySparkHookRecipe(

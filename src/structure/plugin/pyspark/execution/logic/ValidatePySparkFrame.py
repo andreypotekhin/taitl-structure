@@ -2,7 +2,7 @@ from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySp
 from structure.plugin.pyspark.dsl.types import DecimalType, StructType, StructureType
 
 
-class PySparkFrameValidator:
+class ValidatePySparkFrame:
 
     @property
     def _schema(self):

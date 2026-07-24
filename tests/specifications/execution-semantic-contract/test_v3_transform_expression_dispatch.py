@@ -6,17 +6,17 @@ from pathlib import Path
 
 from structure.plugin.pyspark.capabilities.model.PySparkCapabilities import COMMON_CAPABILITIES
 from structure.plugin.pyspark.compiler.commands.ClassifyStreamingCompatibility import ClassifyStreamingCompatibility
-from structure.plugin.pyspark.compiler.logic.mapping.PySparkExpressionMapper import PySparkExpressionMapper
+from structure.plugin.pyspark.compiler.logic.maps.MapPySparkExpression import MapPySparkExpression
 from structure.plugin.pyspark.dsl import expressions
 from structure.plugin.pyspark.dsl import operations_api as operations
-from structure.plugin.pyspark.execution.logic.PySparkExpressionEvaluator import PySparkExpressionEvaluator
+from structure.plugin.pyspark.execution.logic.expressions.EvaluatePySparkExpression import EvaluatePySparkExpression
 from structure.plugin.pyspark.render.commands.RenderPySparkExpression import RenderPySparkExpression
 from structure.plugin.pyspark.render.commands.RenderPySparkTransformModule import RenderPySparkTransformModule
 
 
 def test_generated_and_online_transform_expression_dispatch_are_identical() -> None:
     renderer_functions = _dispatched_functions(RenderPySparkExpression)
-    evaluator_functions = _dispatched_functions(PySparkExpressionEvaluator)
+    evaluator_functions = _dispatched_functions(EvaluatePySparkExpression)
 
     assert renderer_functions == evaluator_functions
 
@@ -39,14 +39,14 @@ def test_declared_scalar_helpers_have_generated_and_online_dispatch() -> None:
     helpers = _declared_scalar_helpers()
 
     assert helpers <= _dispatched_functions(RenderPySparkExpression)
-    assert helpers <= _dispatched_functions(PySparkExpressionEvaluator)
+    assert helpers <= _dispatched_functions(EvaluatePySparkExpression)
 
 
 def test_transform_expression_consumer_catalog_covers_every_phase() -> None:
     consumers = {
-        "mapper": PySparkExpressionMapper,
+        "mapper": MapPySparkExpression,
         "renderer": RenderPySparkExpression,
-        "online evaluator": PySparkExpressionEvaluator,
+        "online evaluator": EvaluatePySparkExpression,
         "generated-module discovery": RenderPySparkTransformModule,
         "stream classifier": ClassifyStreamingCompatibility,
     }

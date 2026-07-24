@@ -7,7 +7,7 @@ from structure import *
 from structure.core.runtime.session.model.StructureRuntimeError import StructureRuntimeError
 from structure.plugin.pyspark import *
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
-from structure.plugin.pyspark.execution.logic.PySparkHookInvoker import PySparkHookInvoker
+from structure.plugin.pyspark.execution.logic.InvokePySparkHooks import InvokePySparkHooks
 
 
 def test_online_hooks_receive_selected_lane_spark_and_context() -> None:
@@ -16,7 +16,7 @@ def test_online_hooks_receive_selected_lane_spark_and_context() -> None:
     invocation = RecordingHook()
     frames: dict[str, object] = {"orders": "orders-frame"}
 
-    PySparkHookInvoker().apply(
+    InvokePySparkHooks().apply(
         (_hook("decorate_orders", lanes=("orders",), outputs=("orders",)),),
         frames=frames,
         invocation=cast(Any, invocation),
@@ -38,7 +38,7 @@ def test_online_hooks_receive_explicit_original_input_sources() -> None:
 
     invocation = RecordingHook()
 
-    PySparkHookInvoker().apply(
+    InvokePySparkHooks().apply(
         (_hook("validate_lookup", lanes=("orders",), sources=("input:orders",), outputs=("orders",)),),
         frames={"orders": "orders-frame", "input:orders": "raw-orders"},
         invocation=cast(Any, invocation),
@@ -53,7 +53,7 @@ def test_online_hooks_can_return_multiple_output_lanes() -> None:
 
     frames: dict[str, object] = {"orders": "orders-frame"}
 
-    PySparkHookInvoker().apply(
+    InvokePySparkHooks().apply(
         (_hook("split_orders", lanes=("orders",), outputs=("valid", "invalid")),),
         frames=frames,
         invocation=cast(Any, RecordingHook()),
@@ -68,7 +68,7 @@ def test_spark_connect_hook_classic_only_failure_reports_boundary_diagnostic() -
     """Spark Connect hook failures explain the unsupported API boundary."""
 
     with pytest.raises(StructureRuntimeError) as raised:
-        PySparkHookInvoker().apply(
+        InvokePySparkHooks().apply(
             (_hook("inspect_spark_context", lanes=("orders",), outputs=("orders",)),),
             frames={"orders": "orders-frame"},
             invocation=cast(Any, ClassicOnlyHook()),

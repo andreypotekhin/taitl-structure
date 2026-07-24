@@ -1,15 +1,15 @@
 from structure.dsl import SchemaMode
 from structure.plugin.api.v1.model import BackendCapabilities, OutputPlan
-from structure.plugin.pyspark.compiler.logic.mapping.PySparkNameMapper import PySparkNameMapper
+from structure.plugin.pyspark.compiler.logic.maps.MapPySparkName import MapPySparkName
 from structure.plugin.pyspark.compiler.model.PySparkOutputRecipe import PySparkOutputRecipe
 from structure.plugin.pyspark.compiler.model.PySparkValidationRecipe import PySparkValidationRecipe
 
 
-class PySparkOutputMapper:
+class MapPySparkOutput:
     """Map Core-owned final routing; PySpark bodies belong to step recipes."""
 
     def __init__(self) -> None:
-        self._names = PySparkNameMapper()
+        self._names = MapPySparkName()
 
     def map(
         self,

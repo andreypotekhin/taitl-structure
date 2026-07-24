@@ -3,9 +3,9 @@ from typing import cast
 from structure.dsl import Schema
 from structure.plugin.api.v1.model import BackendCapabilities, TransformPlan
 from structure.plugin.pyspark.compiler.commands.ValidatePySparkHooks import ValidatePySparkHooks
-from structure.plugin.pyspark.compiler.logic.mapping.PySparkInputMapper import PySparkInputMapper
-from structure.plugin.pyspark.compiler.logic.mapping.PySparkOutputMapper import PySparkOutputMapper
-from structure.plugin.pyspark.compiler.logic.mapping.PySparkStepMapper import PySparkStepMapper
+from structure.plugin.pyspark.compiler.logic.maps.MapPySparkInput import MapPySparkInput
+from structure.plugin.pyspark.compiler.logic.maps.MapPySparkOutput import MapPySparkOutput
+from structure.plugin.pyspark.compiler.logic.maps.MapPySparkStep import MapPySparkStep
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 
 
@@ -13,9 +13,9 @@ class LowerPySparkPlan:
 
     def __init__(self, capabilities: BackendCapabilities | None = None) -> None:
         self._capabilities = capabilities
-        self._inputs = PySparkInputMapper()
-        self._steps = PySparkStepMapper()
-        self._outputs = PySparkOutputMapper()
+        self._inputs = MapPySparkInput()
+        self._steps = MapPySparkStep()
+        self._outputs = MapPySparkOutput()
         self._hooks = ValidatePySparkHooks()
 
     def __call__(

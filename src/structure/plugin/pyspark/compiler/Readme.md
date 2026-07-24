@@ -10,5 +10,6 @@ streaming reports, and traceability through `PySpark.compiler`; renderer and exe
 through their own endpoints.
 
 ## Inner Workings
-`lower()` maps analysis and body records to recipe records. `streaming()` checks recipe compatibility, and
-`traceability()` records the relation between source, analysis, recipes, and generated artifacts.
+`lower()` delegates recipe conversion to `logic/maps/`, organized by steps and their operation, join, and aggregate
+records. `streaming()` delegates compatibility checks to `logic/streaming/`; `traceability()` delegates provenance,
+dataflow, and opaque-boundary construction to `logic/traceability/`.

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from structure.plugin.api.v1.model import CompilerProvenance, CompilerTraceability, DataflowDependency, OpaqueBoundary
-from structure.plugin.pyspark.compiler.logic.CompilerDataflowReads import CompilerDataflowReads
+from structure.plugin.pyspark.compiler.logic.traceability.CompilerDataflowReads import CompilerDataflowReads
 from structure.plugin.pyspark.compiler.model.PySparkExecutionPlan import PySparkExecutionPlan
 from structure.plugin.pyspark.compiler.model.PySparkHookRecipe import PySparkHookRecipe
 from structure.plugin.pyspark.compiler.model.PySparkStepRecipe import PySparkStepRecipe

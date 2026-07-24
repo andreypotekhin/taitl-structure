@@ -1,7 +1,7 @@
 import re
 
 
-class PySparkNameMapper:
+class MapPySparkName:
 
     def alias(self, name: str) -> str:
         return re.sub(r"(?<!^)(?=[A-Z])", "_", name).lower()
