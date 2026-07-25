@@ -5,11 +5,13 @@ import difflib
 import pytest
 from helpers.example_projects import (
     ROOT,
+    expected_school_iterable_generated,
     expected_search_generated,
     expected_security_generated,
     expected_stocks_generated,
     expected_store_generated,
     expected_streams_generated,
+    render_school_iterable_example,
     render_search_example,
     render_security_example,
     render_stocks_example,
@@ -31,6 +33,7 @@ from structure.plugin.api.v1.model import TransformPlan
         (render_stocks_example, expected_stocks_generated),
         (render_security_example, expected_security_generated),
         (render_search_example, expected_search_generated),
+        (render_school_iterable_example, expected_school_iterable_generated),
     ],
 )
 def test_example_generated_output_matches_golden_files(actual, expected) -> None:

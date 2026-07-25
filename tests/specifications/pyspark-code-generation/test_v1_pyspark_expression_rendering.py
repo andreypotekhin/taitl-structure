@@ -632,7 +632,7 @@ def test_v3_expression_renderer_renders_scalar_casts() -> None:
         Compiler.frontend.compile()(
             Publish,
             materialize_schemas=False,
-            target_profile=">=4.0,<4.1",
+            plugin={"pyspark": {"profile": ">=4.0,<4.1"}},
         ).lowered,
     )
     projection = {assignment.field.name: assignment.expression for assignment in recipe.steps[0].projection}

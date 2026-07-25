@@ -865,9 +865,11 @@ class RenderPySparkTransformModule:
     def _validation(self, validation: PySparkValidationRecipe, *, target: str | None = None) -> list[str]:
         schema = self._schema.render().constant_name(validation.schema)
         frame = target or (validation.target if validation.reason == "input" else "df")
-        lines = [
-            f'        assert_schema({frame}, {schema}, name="{validation.schema.__name__}", mode="{validation.mode.value}")'
-        ]
+        lines = []
+        if validation.check:
+            lines.append(
+                f'        assert_schema({frame}, {schema}, name="{validation.schema.__name__}", mode="{validation.mode.value}")'
+            )
         if validation.project:
             lines.append(f"        {frame} = project_schema({frame}, {schema})")
         return lines

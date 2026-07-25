@@ -1,7 +1,9 @@
 import json
 
+from structure.plugin.api.v1 import SerializationAPI as SerializationAPIV1
 
-class Serialization:
+
+class Serialization(SerializationAPIV1):
     """Encodes only the plugin-owned payload; Core owns the artifact envelope."""
 
     def encode(self, payload: object) -> bytes:

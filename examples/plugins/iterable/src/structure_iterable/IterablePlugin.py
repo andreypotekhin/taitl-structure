@@ -12,4 +12,4 @@ class IterablePlugin:
     def api(cls, version: int):
         if version != 1:
             raise ValueError(f"Iterable does not support Plugin API v{version}.")
-        return PluginAPI().create()
+        return PluginAPI()

@@ -2,8 +2,8 @@
 
 Structure works by convention and supports a small TOML configuration for project-wide settings.
 
-Use configuration for paths, package names, execution mode, validation defaults, Spark SQL assumptions, target
-backend profile, compiler traceability settings, performance policy, compatibility behavior, and build behavior.
+Use configuration for paths, package names, execution mode, validation defaults, Spark SQL assumptions, compiler
+traceability settings, performance policy, build behavior, and selected-plugin options.
 
 ## Defaults
 
@@ -96,8 +96,11 @@ It selects the command's target without changing project configuration.
 Python callers can make the equivalent session-local choice with
 `StructureSession(target="pyspark", runtime=...)`.
 
-Core capability checks use the same target name: `Capabilities.resolve()(target="pyspark")`. The selected plugin
-then supplies the profile-specific capability report.
+Core capability checks use the same target name: `Capabilities.resolve()(target="pyspark", options={...})`. The
+selected plugin owns the option names and supplies the corresponding capability report.
+
+Schema tooling follows the same convention: `StructureTools.schemas.generate(..., target="pyspark")` selects the
+plugin that reads and renders the schema source.
 
 ```toml
 [tool.structure.plugin.pyspark]
@@ -227,13 +230,17 @@ session.
 
 Structure does not create or reconfigure Spark sessions.
 
-## Compatibility Settings
+## Execution and Target Settings
 
 ```toml
 execution_mode = "online"
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
-target_variant = "ordinary"
+
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.1"
+variant = "ordinary"
 ```
 
 `execution_mode` selects the runtime implementation. The stable default value, `online`, selects execution through
@@ -247,15 +254,14 @@ online
 generated
 ```
 
-`target_backend` selects the runtime backend. The initial release supports `pyspark`.
-
-`target_profile` constrains which PySpark APIs execution and generated-code execution may use. The default targets
+`plugin.default` selects the installed target plugin. `plugin.pyspark.profile` constrains which PySpark APIs execution
+and generated-code execution may use. The default targets
 PySpark 3.5.x and 4.0.x. If a DSL feature cannot be generated for the configured profile, `structure check` and
 `structure compile` should fail with `BACKEND-E2402` and name the unsupported capability. Unknown backend
 targets fail with `BACKEND-E2401`. Backend capability behavior is specified in
 [BackendCapabilities.md](background/BackendCapabilities.back.md).
 
-`target_variant` selects the runtime variant inside the PySpark target. `ordinary` is the default in-process PySpark
+`plugin.pyspark.variant` selects the runtime variant inside the PySpark target. `ordinary` is the default in-process PySpark
 contract. `spark-connect` supports completed compiler-visible batch features; streaming remains caller-owned ordinary
 PySpark work. The variant does not change DSL syntax, generated class APIs, or `run(...)` signatures. See
 [Compatibility.md](Compatibility.md).

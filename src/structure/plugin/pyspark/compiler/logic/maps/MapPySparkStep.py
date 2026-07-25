@@ -42,6 +42,7 @@ class MapPySparkStep:
         *,
         last: bool,
         capabilities: BackendCapabilities,
+        check_intermediate: bool = True,
     ) -> PySparkStepRecipe:
         body = self._body(step)
         input_alias = self._names.alias(step.input_schema.__name__)
@@ -62,7 +63,7 @@ class MapPySparkStep:
                 ),
                 ordinal=result.ordinal,
                 after_hooks=tuple(self._hooks.map(hook) for hook in result.after_hooks),
-                validations=self._validations.result(result, last=last),
+                validations=self._validations.result(result, last=last, check_intermediate=check_intermediate),
                 aggregate=(
                     None if body_result.aggregate is None else self._aggregate(body_result.aggregate, capabilities=capabilities)
                 ),
@@ -83,7 +84,7 @@ class MapPySparkStep:
             joins=joins,
             projection=tuple(self._projection(assignment, capabilities=capabilities) for assignment in body.projection),
             after_hooks=tuple(self._hooks.map(hook) for hook in step.after_hooks),
-            validations=self._validations.step(step, last=last),
+            validations=self._validations.step(step, last=last, check_intermediate=check_intermediate),
             aggregate=None if body.aggregate is None else self._aggregate(body.aggregate, capabilities=capabilities),
             results=results,
             operations=operations,

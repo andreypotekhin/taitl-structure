@@ -18,6 +18,7 @@ class GenerateStructureSchema:
         format: str | None = None,
         spark=None,
         session=None,
+        target: str | None = None,
         options: Mapping[str, str] | None = None,
         to: str,
     ) -> str:
@@ -31,8 +32,11 @@ class GenerateStructureSchema:
             options=options,
             to=to,
         )
-        target = getattr(session, "target_backend", "pyspark")
-        schema_api = Plugin.registry().select(target).api.schema
+        selected_target = target if target is not None else getattr(session, "target", "pyspark")
+        if not isinstance(selected_target, str):
+            selected_target = "pyspark"
+        plugin_options = getattr(session, "plugin_options", {})
+        schema_api = Plugin.registry().select(selected_target).api.schema
         schema = schema_api.read(
             SchemaInspectionRequest(
                 schema=schema,
@@ -40,12 +44,12 @@ class GenerateStructureSchema:
                 from_table=from_table,
                 format=format,
                 runtime=spark if spark is not None else getattr(session, "runtime", None),
-                target_variant=getattr(session, "target_variant", None),
+                plugin_options=plugin_options if isinstance(plugin_options, Mapping) else {},
                 options=options,
             )
         )
         source = schema_api.source(schema, to=to)
         render = getattr(schema_api, "render_source", None)
         if not callable(render):
-            raise ValueError(f"PLUGIN-E2709: Plugin {target!r} does not render generated schema source.")
+            raise ValueError(f"PLUGIN-E2709: Plugin {selected_target!r} does not render generated schema source.")
         return render(source)

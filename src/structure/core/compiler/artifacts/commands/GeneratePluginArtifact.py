@@ -18,4 +18,4 @@ class GeneratePluginArtifact:
             raise ValueError("PLUGIN-E2710: Artifact identity is incompatible with the selected plugin.")
         if plugin.api.generator is None:
             raise ValueError(f"PLUGIN-E2709: Plugin {artifact.plugin!r} does not provide generation.")
-        return dict(plugin.api.generator.generate(GenerationRequest(payload=artifact.payload)))
+        return dict(plugin.api.generator.generate(GenerationRequest(payload=artifact.payload)).files)

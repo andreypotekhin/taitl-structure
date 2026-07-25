@@ -5,9 +5,7 @@ enriched gate passages; the passages support live gate progress and correlation 
 calls. Structure owns the transformations, while callers own stream sources, sinks, checkpoints, triggers, output
 modes, and query lifecycle.
 
-## Pipeline map
-
-| Concern | Transform | Result | Streaming contract |
+| Concern | Transform | Result | Streaming |
 | --- | --- | --- | --- |
 | Passage preparation | `PreparePassages` | Enriched `Passage` rows | Watermarked and event-ID deduplicated. |
 | Live progress | `BuildGateProgress` | `GateProgress` aggregates | Requires `update` or `complete` output mode. |

@@ -256,26 +256,11 @@ def test_v1_cli_check_discovers_plain_concrete_transforms_only() -> None:
         assert not Path("generated").exists()
 
 
-def test_v1_cli_check_accepts_reserved_compat_targets() -> None:
-    with workspace_tmp() as root:
-        write_project(root)
+def test_v5_cli_rejects_removed_backend_compatibility_options() -> None:
+    result = CliRunner().invoke(cli, ["check", "--target-profile", ">=3.5,<4.1"])
 
-        result = CliRunner().invoke(
-            cli,
-            [
-                "check",
-                "--target-profile",
-                ">=3.5,<4.1",
-                "--target-variant",
-                "spark-connect",
-                "--compat-targets",
-                "polars,duckdb",
-            ],
-        )
-
-        assert result.exit_code == 0, result.output
-        assert "compatibility targets: polars, duckdb" in result.output
-        assert "non-PySpark target checks are deferred" in result.output
+    assert result.exit_code == 2
+    assert "No such option '--target-profile'" in result.output
 
 
 def test_v1_cli_compile_writes_generated_files_and_fail_on_diff_passes() -> None:
@@ -439,19 +424,11 @@ def test_v1_cli_explain_renders_transform_plan() -> None:
         assert "NormalizeOrders <- orders" in result.output
 
 
-def test_v1_cli_explain_accepts_reserved_compat_targets() -> None:
-    with workspace_tmp() as root:
-        write_project(root)
+def test_v5_cli_rejects_removed_compatibility_target_option() -> None:
+    result = CliRunner().invoke(cli, ["explain", "--compat-targets", "polars,duckdb", "orders.transforms.NormalizeOrders"])
 
-        result = CliRunner().invoke(
-            cli,
-            ["explain", "--compat-targets", "polars,duckdb", "orders.transforms.NormalizeOrders"],
-        )
-
-        assert result.exit_code == 0, result.output
-        assert "NormalizeOrders" in result.output
-        assert "compatibility targets: polars, duckdb" in result.output
-        assert "non-PySpark target checks are deferred" in result.output
+    assert result.exit_code == 2
+    assert "No such option '--compat-targets'" in result.output
 
 
 def test_v1_cli_clean_removes_owned_generated_files_only() -> None:

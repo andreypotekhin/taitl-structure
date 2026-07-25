@@ -48,7 +48,7 @@ def test_supported_v1_requirement_passes() -> None:
 
 @pytest.mark.parametrize("target_variant", ["ordinary", "spark-connect"])
 def test_bitwise_expression_capability_is_available_on_each_batch_target(target_variant: str) -> None:
-    resolved = Capabilities.resolve()(target_backend="pyspark", target_variant=target_variant)
+    resolved = Capabilities.resolve()(target="pyspark", options={"variant": target_variant})
 
     assert resolved.require(CapabilityRequirement(group="expression", name="bitwise")).supported
 
@@ -136,7 +136,7 @@ def test_supported_session_window_requirement_passes() -> None:
 )
 def test_v4_streaming_requirements_are_ordinary_pyspark_only(name: str) -> None:
     ordinary = Capabilities.resolve()().require(CapabilityRequirement(group="streaming", name=name))
-    connect = Capabilities.resolve()(target_variant="spark-connect").supports(
+    connect = Capabilities.resolve()(options={"variant": "spark-connect"}).supports(
         CapabilityRequirement(group="streaming", name=name)
     )
 
@@ -240,7 +240,7 @@ def test_supported_v2_higher_order_requirement_passes(name: str) -> None:
     ],
 )
 def test_v3_collection_capabilities_are_explicit_for_each_supported_variant(target_variant: str, name: str) -> None:
-    resolved = Capabilities.resolve()(target_backend="pyspark", target_variant=target_variant)
+    resolved = Capabilities.resolve()(target="pyspark", options={"variant": target_variant})
 
     assert resolved.require(CapabilityRequirement(group="higher_order", name=name)).supported
 
@@ -325,7 +325,7 @@ def test_v2_operation_capabilities_are_explicitly_unsupported(group: str, name: 
 
 
 def test_spark_connect_resolves_as_pyspark_variant() -> None:
-    resolved = Capabilities.resolve()(target_backend="pyspark", target_variant="spark-connect")
+    resolved = Capabilities.resolve()(target="pyspark", options={"variant": "spark-connect"})
 
     assert resolved.id.name == "pyspark"
     assert resolved.id.target == ">=3.5,<4.1"
@@ -349,7 +349,7 @@ def test_spark_connect_resolves_as_pyspark_variant() -> None:
     ],
 )
 def test_spark_connect_accepts_completed_aggregate_batch_capabilities(name: str) -> None:
-    resolved = Capabilities.resolve()(target_backend="pyspark", target_variant="spark-connect")
+    resolved = Capabilities.resolve()(target="pyspark", options={"variant": "spark-connect"})
 
     assert resolved.require(CapabilityRequirement(group="aggregate", name=name)).supported
 
@@ -381,14 +381,14 @@ def test_spark_connect_accepts_completed_aggregate_batch_capabilities(name: str)
     ],
 )
 def test_spark_connect_accepts_completed_compiler_visible_batch_capabilities(group: str, name: str) -> None:
-    resolved = Capabilities.resolve()(target_backend="pyspark", target_variant="spark-connect")
+    resolved = Capabilities.resolve()(target="pyspark", options={"variant": "spark-connect"})
 
     assert resolved.require(CapabilityRequirement(group=group, name=name)).supported
 
 
 @pytest.mark.parametrize("name", ["spark_context", "rdd_access", "jvm_access", "private_classic_fields"])
 def test_spark_connect_rejects_classic_only_backend_internals(name: str) -> None:
-    resolved = Capabilities.resolve()(target_backend="pyspark", target_variant="spark-connect")
+    resolved = Capabilities.resolve()(target="pyspark", options={"variant": "spark-connect"})
 
     with pytest.raises(BackendCapabilityError) as raised:
         resolved.require(CapabilityRequirement(group="backend", name=name))
@@ -402,14 +402,14 @@ def test_spark_connect_rejects_classic_only_backend_internals(name: str) -> None
 
 @pytest.mark.parametrize("name", ["spark_context", "rdd_access", "jvm_access", "private_classic_fields"])
 def test_ordinary_pyspark_accepts_classic_backend_internals(name: str) -> None:
-    resolved = Capabilities.resolve()(target_backend="pyspark", target_variant="ordinary")
+    resolved = Capabilities.resolve()(target="pyspark", options={"variant": "ordinary"})
 
     assert resolved.require(CapabilityRequirement(group="backend", name=name)).supported
 
 
 def test_spark_connect_is_not_a_separate_backend_id() -> None:
     try:
-        Capabilities.resolve()(target_backend="spark_connect", target_variant="spark-connect")
+        Capabilities.resolve()(target="spark_connect", options={"variant": "spark-connect"})
     except BackendCapabilityError as error:
         diagnostic = error.diagnostic
     else:
@@ -426,7 +426,7 @@ def test_spark_connect_is_not_a_separate_backend_id() -> None:
 
 def test_unknown_pyspark_variant_uses_capability_diagnostic() -> None:
     with pytest.raises(BackendCapabilityError) as raised:
-        Capabilities.resolve()(target_backend="pyspark", target_variant="classic")
+        Capabilities.resolve()(target="pyspark", options={"variant": "classic"})
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == BACKEND_E2402

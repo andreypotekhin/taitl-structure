@@ -1146,13 +1146,17 @@ PySpark 3.5.x and 4.0.x by default:
 
 ```toml
 execution_mode = "online"
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
-target_variant = "ordinary"
+
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.1"
+variant = "ordinary"
 ```
 
-Spark Connect uses `target_backend = "pyspark"` with `target_variant = "spark-connect"`. It is the supported PySpark
-variant for completed compiler-visible batch features once Sprint 09 runtime and CI evidence is in place.
+Spark Connect uses `plugin.pyspark.variant = "spark-connect"`. It is the supported PySpark variant for completed
+compiler-visible batch features.
 See [Compatibility.md](Compatibility.md).
 
 Local integration lanes cover ordinary PySpark and Spark Connect:

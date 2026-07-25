@@ -37,12 +37,10 @@ def test_v1_config_uses_defaults_and_tracks_sources() -> None:
         assert config.generated_code_options == ()
         assert config.warn_on_udfs is True
         assert config.execution_mode == "online"
-        assert config.target_profile == ">=3.5,<4.1"
-        assert config.target_variant == "ordinary"
-        assert config.compat_targets == ()
+        assert dict(config.plugin_options["pyspark"])["profile"] == ">=3.5,<4.1"
+        assert dict(config.plugin_options["pyspark"])["variant"] == "ordinary"
         assert config.hook_target_default == ("pyspark",)
-        assert config.source_map["target_profile"] == "default"
-        assert config.source_map["target_variant"] == "default"
+        assert config.source_map["plugin"] == "default"
         assert config.source_map["generated_package"] == "default"
         assert config.source_map["generated_docs"] == "default"
         assert config.source_map["generated_docs_dir"] == "default"
@@ -123,7 +121,13 @@ def test_v1_config_merges_opaque_plugin_tables_and_keeps_them_immutable() -> Non
             overrides={"plugin": {"pyspark": {"retries": 3, "feature": ["x"]}}},
         )
 
-    assert dict(config.plugin_options["pyspark"]) == {"vendor_mode": "fast", "retries": 3, "feature": ["x"]}
+    assert dict(config.plugin_options["pyspark"]) == {
+        "profile": ">=3.5,<4.1",
+        "variant": "ordinary",
+        "vendor_mode": "fast",
+        "retries": 3,
+        "feature": ["x"],
+    }
     assert dict(config.plugin_options["iterable"]) == {"batch_size": 100}
     with pytest.raises(TypeError):
         config.plugin_options["pyspark"]["vendor_mode"] = "unsafe"  # type: ignore[index]
@@ -136,9 +140,9 @@ def test_v5_plugin_default_and_pyspark_table_select_the_configured_target() -> N
         plugin={"default": "pyspark", "pyspark": {"profile": ">=4.0,<4.1", "variant": "spark-connect"}}
     )
 
-    assert config.target_backend == "pyspark"
-    assert config.target_profile == ">=4.0,<4.1"
-    assert config.target_variant == "spark-connect"
+    assert config.target == "pyspark"
+    assert dict(config.plugin_options["pyspark"])["profile"] == ">=4.0,<4.1"
+    assert dict(config.plugin_options["pyspark"])["variant"] == "spark-connect"
 
 
 @pytest.mark.parametrize("plugin", ("wrong", {"pyspark": "wrong"}))
@@ -204,30 +208,25 @@ def test_v1_config_unknown_key_suggests_known_key() -> None:
         assert "generated_dir" in diagnostic.use
 
 
-def test_v1_config_accepts_target_profile_and_future_backend_fields() -> None:
+def test_v5_config_rejects_core_compatibility_target_matrix() -> None:
     with workspace_tmp() as root:
         (root / "src").mkdir()
         (root / "structure.toml").write_text(
             "\n".join(
                 [
                     "[tool.structure]",
-                    'target_profile = ">=3.5,<4.1"',
-                    'target_variant = "spark-connect"',
                     'compat_targets = ["polars", "duckdb"]',
-                    'hook_target_default = ["pyspark"]',
                     "",
                 ]
             ),
             encoding="utf-8",
         )
 
-        config = Configuration.resolve()(project_root=root)
+        with pytest.raises(ConfigError) as error:
+            Configuration.resolve()(project_root=root)
 
-        assert config.target_backend == "pyspark"
-        assert config.target_profile == ">=3.5,<4.1"
-        assert config.target_variant == "spark-connect"
-        assert config.compat_targets == ("polars", "duckdb")
-        assert config.hook_target_default == ("pyspark",)
+    assert error.value.diagnostic.setting == "compat_targets"
+    assert "plugin.default" in error.value.diagnostic.use
 
 
 def test_v1_config_accepts_generated_docs_settings() -> None:
@@ -364,7 +363,7 @@ def test_v1_config_rejects_unknown_generated_docs_format() -> None:
         assert "markdown, json" in diagnostic.use
 
 
-def test_v1_config_rejects_unknown_target_variant() -> None:
+def test_v5_config_rejects_legacy_target_variant() -> None:
     with workspace_tmp() as root:
         (root / "src").mkdir()
         (root / "structure.toml").write_text(
@@ -379,9 +378,9 @@ def test_v1_config_rejects_unknown_target_variant() -> None:
         else:
             raise AssertionError("unknown target_variant should fail")
 
-        assert diagnostic.code == "CONF-E0102"
+        assert diagnostic.code == "CONF-E0101"
         assert diagnostic.setting == "target_variant"
-        assert "ordinary, spark-connect" in diagnostic.use
+        assert "plugin.pyspark" in diagnostic.use
 
 
 def test_v1_config_rejects_legacy_target_pyspark_key() -> None:
@@ -401,7 +400,7 @@ def test_v1_config_rejects_legacy_target_pyspark_key() -> None:
 
         assert diagnostic.code == "CONF-E0101"
         assert diagnostic.setting == "target_pyspark"
-        assert "target_profile" in diagnostic.use
+        assert "plugin.pyspark" in diagnostic.use
 
 
 def test_v1_config_invalid_values_fail_before_discovery() -> None:

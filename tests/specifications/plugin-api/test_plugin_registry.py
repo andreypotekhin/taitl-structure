@@ -46,7 +46,7 @@ class Facet:
     def compile(self, request):
         return request
 
-    def resolve(self, *, profile, variant):
+    def resolve(self, *, options):
         return cast(BackendCapabilities, object())
 
     def open_step(self, request):

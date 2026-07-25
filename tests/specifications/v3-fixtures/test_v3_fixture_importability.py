@@ -48,7 +48,9 @@ def test_v3_orders_fixture_highlights_the_completed_release_surface(monkeypatch:
     scalar_plan = cast(
         TransformPlan,
         Compiler.frontend.compile()(
-            cast(Any, scalar).V3OrderFeatures, materialize_schemas=False, target_profile=">=4.0,<4.1"
+            cast(Any, scalar).V3OrderFeatures,
+            materialize_schemas=False,
+            plugin={"pyspark": {"profile": ">=4.0,<4.1"}},
         ).analysis,
     )
     analytics_plan = cast(

@@ -26,6 +26,12 @@ def test_live_sources_accept_spark_or_structure_session() -> None:
     assert by_session == by_spark
 
 
+def test_schema_generation_accepts_a_generic_target_name() -> None:
+    text = StructureTools.schemas.generate(schema=StructType((StructField("id", StringType(), False),)), target="pyspark", to="OrderRaw")
+
+    assert "id = string(nullable=False)" in text
+
+
 def test_live_sources_reject_ambiguous_or_missing_spark_source() -> None:
     spark = FakeSpark(StructType(()))
 
@@ -58,7 +64,9 @@ def test_path_sources_require_format_and_support_reader_options() -> None:
 
 def test_spark_connect_table_metadata_failure_suggests_explicit_schema() -> None:
     spark = FailingSpark(RuntimeError("SparkContext is not supported in Spark Connect"))
-    session = StructureSession(spark=spark, target_variant="spark-connect")
+    session = StructureSession(
+        spark=spark, config=StructureConfig.create(plugin={"pyspark": {"variant": "spark-connect"}})
+    )
 
     with pytest.raises(StructureToolError, match="schema=.*explicit StructType"):
         StructureTools.schemas.generate(from_table="orders", session=session, to="OrderRaw")
@@ -66,7 +74,9 @@ def test_spark_connect_table_metadata_failure_suggests_explicit_schema() -> None
 
 def test_spark_connect_path_reader_failure_suggests_explicit_schema() -> None:
     spark = FailingSpark(RuntimeError("reader format uses _jvm"))
-    session = StructureSession(spark=spark, target_variant="spark-connect")
+    session = StructureSession(
+        spark=spark, config=StructureConfig.create(plugin={"pyspark": {"variant": "spark-connect"}})
+    )
 
     with pytest.raises(StructureToolError, match="Spark Connect metadata access"):
         StructureTools.schemas.generate(from_path="orders.parquet", format="parquet", session=session, to="OrderRaw")

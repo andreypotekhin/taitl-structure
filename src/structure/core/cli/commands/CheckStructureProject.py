@@ -19,7 +19,6 @@ class CheckStructureProject:
             f"  transforms: {len(project.transforms)}",
             f"  schemas: {len(project.schemas())}",
         ]
-        lines.extend(self._compatibility(config))
         return tuple(lines)
 
     def _relative(self, config: StructureConfig, path: Path) -> str:
@@ -27,12 +26,3 @@ class CheckStructureProject:
             return path.relative_to(config.project_root).as_posix()
         except ValueError:
             return path.as_posix()
-
-    def _compatibility(self, config: StructureConfig) -> tuple[str, ...]:
-        targets = tuple(target for target in config.compat_targets if target != "pyspark")
-        if not targets:
-            return ()
-        return (
-            f"  compatibility targets: {', '.join(targets)}",
-            "  compatibility status: non-PySpark target checks are deferred; active PySpark checks passed",
-        )

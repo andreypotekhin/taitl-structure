@@ -32,9 +32,6 @@ class StructureSession:
         project_root: Path | str | None = None,
         execution_mode: str | None = None,
         target: str | None = None,
-        target_backend: str | None = None,
-        target_profile: str | None = None,
-        target_variant: str | None = None,
         generated_package: str | None = None,
         schema_types=None,
         online_executor: Callable[..., object] | None = None,
@@ -43,13 +40,8 @@ class StructureSession:
     ) -> None:
         if spark is not None and runtime is not None:
             raise ValueError("Pass either runtime= or the legacy spark= argument, not both.")
-        if target is not None and target_backend is not None:
-            raise ValueError("Pass either target= or the legacy target_backend= argument, not both.")
         overrides: dict[str, object] = {
             "execution_mode": execution_mode,
-            "target_backend": target_backend,
-            "target_profile": target_profile,
-            "target_variant": target_variant,
             "generated_package": generated_package,
         }
         if target is not None:
@@ -67,9 +59,8 @@ class StructureSession:
         self.ctx = ctx
         self.config = resolved
         self.execution_mode = resolved.execution_mode
-        self.target_backend = resolved.target_backend
-        self.target_profile = resolved.target_profile
-        self.target_variant = resolved.target_variant
+        self.target = resolved.target
+        self.plugin_options = resolved.plugin_options.get(self.target, {})
         self.generated_package = resolved.generated_package
         self.schema_types = schema_types
         self.online_executor = online_executor
@@ -87,7 +78,7 @@ class StructureSession:
             raise TypeError(
                 "StructureSession.run(...) requires a transform invocation or transform=python.module:Class."
             )
-        if self._target(invocation) != self.target_backend:
+        if self._target(invocation) != self.target:
             return self._run_plugin(invocation)
         artifact = self._compiled(invocation)
         self._validate_inputs(invocation, artifact)
@@ -95,7 +86,7 @@ class StructureSession:
         if schemas is None:
             raise RuntimeError("Runtime execution requires materialized transform schemas")
 
-        plugin = Plugin.registry().select(self.target_backend)
+        plugin = Plugin.registry().select(self.target)
         if plugin.api.executor is None:
             raise self._invalid_mode(invocation)
         result = plugin.api.executor.execute(
@@ -108,7 +99,7 @@ class StructureSession:
             )
         )
         if not isinstance(result, TransformResult):
-            raise TypeError(f"Plugin {self.target_backend!r} returned an invalid execution result.")
+            raise TypeError(f"Plugin {self.target!r} returned an invalid execution result.")
         return result._structure_with_schema(schemas.outputs, aliases=schemas.output_aliases)
 
     def _run_plugin(self, invocation: Transform) -> TransformResult:
@@ -141,7 +132,7 @@ class StructureSession:
 
     def _plugin_configuration(self) -> PluginConfiguration:
         return PluginConfiguration(
-            default=self.target_backend,
+            default=self.target,
             disabled_distributions=frozenset(),
             plugin_options=None,
             plugins=self.config.plugin_options,
@@ -252,9 +243,7 @@ class StructureSession:
             title=title,
             transform=transform,
             execution_mode=self.execution_mode,
-            target_backend=self.target_backend,
-            target_profile=self.target_profile,
-            target_variant=self.target_variant,
+            target=self.target,
             problem=problem,
             use=use,
             docs="docs/background/Execution.back.md",

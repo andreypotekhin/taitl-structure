@@ -22,10 +22,6 @@ class StructureConfigDefaults:
             "generated_docs_formats": ["markdown", "json"],
             "generated_code_options": [],
             "execution_mode": "online",
-            "target_backend": "pyspark",
-            "target_profile": ">=3.5,<4.1",
-            "target_variant": "ordinary",
-            "compat_targets": [],
             "hook_target_default": ["pyspark"],
             "traceability": "compiler",
             "validate_inputs": True,
@@ -39,6 +35,6 @@ class StructureConfigDefaults:
             "fail_on_diff": False,
             "spark.sql.ansi.enabled": True,
             "spark.sql.storeAssignmentPolicy": "ANSI",
-            "plugin": {"default": "pyspark"},
+            "plugin": {"default": "pyspark", "pyspark": {"profile": ">=3.5,<4.1", "variant": "ordinary"}},
         }
         return values, {key: "default" for key in values}

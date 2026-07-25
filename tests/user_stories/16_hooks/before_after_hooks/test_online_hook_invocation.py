@@ -76,15 +76,14 @@ def test_spark_connect_hook_classic_only_failure_reports_boundary_diagnostic() -
                 spark="spark",
                 ctx=None,
                 execution_mode="online",
-                target_backend="pyspark",
-                target_profile=">=3.5,<4.1",
-                target_variant="spark-connect",
+                target="pyspark",
+                plugin_options={"profile": ">=3.5,<4.1", "variant": "spark-connect"},
             ),
         )
 
     diagnostic = raised.value.diagnostic
     assert diagnostic.code == "CONNECT-E2601"
-    assert diagnostic.target_variant == "spark-connect"
+    assert diagnostic.context["target_variant"] == "spark-connect"
     assert diagnostic.context["surface"] == "hook inspect_spark_context"
     assert "Spark Connect cannot access SparkContext" in diagnostic.problem
     assert 'target_variant = "ordinary"' in diagnostic.use

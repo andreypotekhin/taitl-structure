@@ -4,19 +4,21 @@ from ..authoring import Authoring
 from ..capabilities import Capabilities
 from ..compiler import Compiler
 from ..execution import Execution
+from ..generation import Generation
 from ..schema import Schema
 from ..serialization import Serialization
 
 
-class PluginAPI:
-    """Assembles the v1 façade from the plugin's focused applications."""
+class PluginAPI(PluginAPIV1):
+    """The concrete v1 façade assembled from the plugin's focused applications."""
 
-    def create(self) -> PluginAPIV1:
-        return PluginAPIV1(
+    def __init__(self) -> None:
+        super().__init__(
             schema=Schema(),
             authoring=Authoring(),
             compiler=Compiler(),
             capabilities=Capabilities(),
             executor=Execution(),
+            generator=Generation(),
             serializer=Serialization(),
         )

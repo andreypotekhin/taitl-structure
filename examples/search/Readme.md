@@ -1,6 +1,6 @@
 # Search Example App
 
-This example models a harvested document corpus as typed Structure schemas,
+This example demonstrates searching a harvested document corpus as typed Structure schemas,
 turns caller-extracted text into sections, paragraphs, sentences, and words. The example computes lexical search, corpus similarity, and impression-backed
 document reranking. Structure owns data transformations; callers own data
 sources, persistence, query serving, stream lifecycles, and checkpoints.
@@ -8,9 +8,9 @@ sources, persistence, query serving, stream lifecycles, and checkpoints.
 For the architecture, evidence boundaries, and ownership model, see the
 [Search background](../../docs/background/Search.back.md).
 
-## Pipeline map
+## Pipeline
 
-| Concern | Typed boundary | Result | Design point |
+| Concern | Typed boundary | Result | Details |
 | --- | --- | --- | --- |
 | Extraction | `ExtractText` | sections, paragraphs, sentences, words | Plain-text hierarchy and shared token normalization. |
 | Indexing | `CreateIndex` | target-grain terms and summaries | Build once; score many query batches. |

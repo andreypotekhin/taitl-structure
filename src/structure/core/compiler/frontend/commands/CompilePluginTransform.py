@@ -47,11 +47,10 @@ class CompilePluginTransform:
                 registry=registry,
             )
         resolved = self._config(config=config, project_root=project_root, overrides=overrides, settings=settings)
-        target = self._target(transform, default=resolved.target_backend)
+        target = self._target(transform, default=resolved.target)
         configuration = {
-            "profile": resolved.target_profile,
-            "variant": resolved.target_variant,
             "warn_on_udfs": resolved.warn_on_udfs,
+            "validate_intermediate": resolved.validate_intermediate,
             "generated_code_options": resolved.generated_code_options,
             "schema_types": schema_types,
             "materialize_schemas": materialize_schemas,
@@ -93,11 +92,10 @@ class CompilePluginTransform:
         purpose: CompilationPurpose,
         registry,
     ) -> PluginCompilation:
-        target = self._target(transform, default=options.target_backend)
+        target = self._target(transform, default=options.target)
         configuration = {
-            "profile": options.target_profile,
-            "variant": options.target_variant,
             "warn_on_udfs": options.warn_on_udfs,
+            "validate_intermediate": options.validate_intermediate,
             "generated_code_options": options.generated_code_options,
             "schema_types": schema_types,
             "materialize_schemas": materialize_schemas,

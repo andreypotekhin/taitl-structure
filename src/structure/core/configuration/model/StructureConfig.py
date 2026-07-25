@@ -16,10 +16,7 @@ class StructureConfig:
     generated_docs_formats: tuple[str, ...]
     generated_code_options: tuple[str, ...]
     execution_mode: str
-    target_backend: str
-    target_profile: str
-    target_variant: str
-    compat_targets: tuple[str, ...]
+    target: str
     hook_target_default: tuple[str, ...] | str
     traceability: str
     validate_inputs: bool
@@ -61,7 +58,6 @@ class StructureConfig:
         from structure.core.configuration.logic.StructureConfigDefaults import StructureConfigDefaults
         from structure.core.configuration.logic.StructureConfigMerger import StructureConfigMerger
         from structure.core.configuration.logic.StructureConfigValidator import StructureConfigValidator
-        from structure.core.target.capabilities.api import Capabilities
 
         root = Path.cwd()
         defaults = StructureConfigDefaults()
@@ -69,9 +65,4 @@ class StructureConfig:
         resolver = ResolveStructureConfig()
         StructureConfigMerger(resolver._keys).merge(values, sources, settings, "programmatic")
         StructureConfigValidator().validate(values, root, allow_empty_source_roots=True)
-        Capabilities.resolve()(
-            target_backend=str(values["target_backend"]),
-            target_profile=str(values["target_profile"]),
-            target_variant=str(values["target_variant"]),
-        )
         return StructureConfigBuilder().build(root, values, sources)

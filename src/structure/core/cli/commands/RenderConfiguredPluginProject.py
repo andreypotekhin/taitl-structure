@@ -26,9 +26,9 @@ class RenderConfiguredPluginProject:
         files: dict[str, str] = {}
         options = CompilerOptions.from_config(config)
         builder = Compiler.artifacts.build()
-        plugin = self._registry.select(config.target_backend)
+        plugin = self._registry.select(config.target)
         if plugin.api.generator is None:
-            raise ValueError(f"PLUGIN-E2709: Plugin {config.target_backend!r} does not provide generation.")
+            raise ValueError(f"PLUGIN-E2709: Plugin {config.target!r} does not provide generation.")
         for source_module, group in self._source_units(transforms or project.transforms).items():
             plans = {}
             fingerprints = {}
@@ -47,7 +47,7 @@ class RenderConfiguredPluginProject:
                         semantic_fingerprints=fingerprints,
                         generated_code_options=config.generated_code_options,
                     )
-                )
+                ).files
             )
         return files
 

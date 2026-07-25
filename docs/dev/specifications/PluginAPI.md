@@ -99,7 +99,7 @@ applicability, target-specific semantic validation, and lowering. Core stores an
 inspect them to infer target semantics.
 
 The schema facet validates plugin field ownership and materializes target schema representations. The capabilities
-facet resolves the target-defined capability model for an explicit profile and variant. Execution validates a duck-typed
+facet resolves the target-defined capability model from opaque selected-plugin options. Execution validates a duck-typed
 runtime and evaluates an opaque payload. Generation returns content only; Core owns file writes. Serialization encodes
 and decodes only opaque payloads; Core owns the outer artifact envelope and persistence.
 
@@ -119,7 +119,7 @@ Core resolves inheritance, bindings, source order, decorators, and hooks, then e
 step. The session returns one symbolic argument per input binding and captures the returned DSL value as an opaque
 plugin body. It must not call Core compiler, frontend, capability, traceability, schema, or registry facades.
 
-The required schema facet accepts a schema declaration and selected-plugin context, validates field ownership, and
+The required schema facet accepts a schema declaration and opaque selected-plugin options, validates field ownership, and
 returns a normalized Core schema plus an opaque materialization payload. It must reject a foreign plugin field before
 the compiler facet starts.
 
@@ -128,10 +128,10 @@ the backend-neutral `TransformPlan` produced by Core before the call. The plugin
 Core attaches the plan to the compilation for its artifact workflow. Fingerprint material
 must be deterministic for equal semantic source and configuration and must not contain runtime object identities.
 
-The required capabilities facet resolves a semantic capability model from a target profile and variant:
+The required capabilities facet resolves a semantic capability model from the selected plugin's opaque options:
 
     class CapabilitiesAPI(Protocol):
-        def resolve(self, *, profile: str, variant: str) -> BackendCapabilities: ...
+        def resolve(self, *, options: Mapping[str, object]) -> BackendCapabilities: ...
 
 The returned model answers typed `CapabilityRequirement` queries. It must not inspect a live runtime or compile a
 transform merely to answer a capability query.

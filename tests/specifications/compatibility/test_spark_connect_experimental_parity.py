@@ -495,7 +495,7 @@ def _lower(transform_class: type[Transform], *, target_variant: str) -> Any:
     return Compiler.frontend.compile()(
         transform_class,
         materialize_schemas=False,
-        target_variant=target_variant,
+        plugin={"pyspark": {"variant": target_variant}},
     ).lowered
 
 

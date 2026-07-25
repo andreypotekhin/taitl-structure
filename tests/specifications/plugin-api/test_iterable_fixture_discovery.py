@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import importlib
 import importlib.metadata
 import shutil
@@ -7,17 +5,17 @@ import site
 import subprocess
 import sys
 from pathlib import Path
-from typing import Protocol, cast
+from typing import Any, Protocol, cast
 
 import pytest
 
-from structure import StructureSession, Transform, transform
+from structure import Schema, StructureSession, Transform, input, output, step, transform
 from structure.core.plugins.api import Plugin
 from structure.core.plugins.logic.PluginRegistry import PluginRegistry
 from structure.core.plugins.model.EngineManifest import EngineManifest
 from structure.core.plugins.model.PluginConfiguration import PluginConfiguration
 from structure.core.runtime.execution.commands.ExecutePluginArtifact import ExecutePluginArtifact
-from structure.plugin.api.v1 import ExecutionRequest
+from structure.plugin.api.v1 import GenerationRequest
 from structure.plugin.conformance import PluginConformance
 from structure.version import VERSION
 
@@ -90,138 +88,117 @@ def test_isolated_fixture_wheel_discovers_executes_and_serializes(tmp_path, monk
             manifest=manifest,
             configuration=PluginConfiguration.resolve({"plugin": {"plugin_options": "allow_injection"}}),
         )
-    assert selected.api.executor is not None
-    relation = cast(
-        Collectable,
-        selected.api.executor.execute(ExecutionRequest(payload={"operation": "identity"}, runtime=iter(({"id": 1},)))),
-    )
-    assert relation.collect() == [{"id": 1}]
-    assert relation.collect() == [{"id": 1}]
-    projection = cast(
-        Collectable,
-        selected.api.executor.execute(
-            ExecutionRequest(
-                payload={"operation": "project", "fields": {"order": "id"}}, runtime=iter(({"id": 1, "skip": True},))
-            )
-        ),
-    )
-    assert projection.collect() == [{"order": 1}]
-    joined = cast(
-        Collectable,
-        selected.api.executor.execute(
-            ExecutionRequest(
-                payload={"operation": "inner_join", "left": "orders", "right": "customers", "left_on": "customer", "right_on": "id"},
-                runtime={"orders": [{"order": 1, "customer": 7}], "customers": [{"id": 7, "name": "Ada"}]},
-            )
-        ),
-    )
-    assert joined.collect() == [{"id": 7, "name": "Ada", "order": 1, "customer": 7}]
-    left_joined = cast(
-        Collectable,
-        selected.api.executor.execute(
-            ExecutionRequest(
-                payload={"operation": "left_join", "left": "orders", "right": "customers", "left_on": "customer", "right_on": "id"},
-                runtime={"orders": [{"order": 2, "customer": 8}], "customers": [{"id": 7, "name": "Ada"}]},
-            )
-        ),
-    )
-    assert left_joined.collect() == [{"order": 2, "customer": 8, "id": None, "name": None}]
-    aggregated = cast(
-        Collectable,
-        selected.api.executor.execute(
-            ExecutionRequest(
-                payload={
-                    "operation": "aggregate",
-                    "group_by": ["customer"],
-                    "aggregates": {"total": {"sum": "amount"}, "orders": {"count": None}},
-                },
-                runtime=[{"customer": 7, "amount": 4}, {"customer": 7, "amount": 6}, {"customer": 8, "amount": 3}],
-            )
-        ),
-    )
-    assert aggregated.collect() == [{"customer": 7, "total": 10, "orders": 2}, {"customer": 8, "total": 3, "orders": 1}]
-    recurrence = cast(
-        Collectable,
-        selected.api.executor.execute(
-            ExecutionRequest(
-                payload={
-                    "operation": "recurrence",
-                    "index": "index",
-                    "value": "sequence",
-                    "initial": [1],
-                    "output": {"state": 0},
-                    "next": [{"add": [{"state": 0}, {"literal": 2}]}],
-                },
-                runtime=[{"index": 0}, {"index": 1}, {"index": 2}],
-            )
-        ),
-    )
-    assert recurrence.collect() == [
-        {"index": 0, "sequence": 1},
-        {"index": 1, "sequence": 3},
-        {"index": 2, "sequence": 5},
-    ]
     operations = importlib.import_module("structure_iterable")
+
+    class Order(Schema):
+        id: int = operations.field(nullable=False)
+        customer_id: int = operations.field(nullable=False)
+
+    class Customer(Schema):
+        id: int = operations.field(nullable=False)
+        name: str = operations.field(nullable=False)
+
+    class Enriched(Schema):
+        id: int = operations.field(nullable=False, alias="order_id")
+        customer_name: str = operations.field(alias="customer")
+
+    class Metadata(Schema):
+        value: str = operations.field(description="A documented value", metadata={"source": "test"})
+
+    class Base(Schema):
+        value: str = operations.field(alias="result")
+
+    with pytest.raises(TypeError, match="needs a Python type hint"):
+
+        class MissingHint(Schema):
+            value = operations.field()
+
+    with pytest.raises(ValueError, match="duplicate Iterable output key"):
+
+        class DuplicateAlias(Base):
+            other: str = operations.field(alias="result")
+
+    with pytest.raises(TypeError, match="nullable must be a bool"):
+        operations.field(nullable="yes")
+    with pytest.raises(ValueError, match="alias must be a non-empty string"):
+        operations.field(alias="")
+    with pytest.raises(TypeError, match="description must be a string"):
+        operations.field(description=1)
+    with pytest.raises(TypeError, match="metadata must be a mapping"):
+        operations.field(metadata=["source"])
+    assert Metadata._structure_fields["value"].metadata == {"source": "test"}
+    with pytest.raises(TypeError):
+        Metadata._structure_fields["value"].metadata["changed"] = True
 
     @transform(target="iterable")
     class Projected(Transform):
-        operation = operations.projection(fields={"order": "id"})
+        orders = input(Order)
+        customers = input(Customer)
+        result = output(Enriched)
 
-    @transform(target="iterable")
-    class Joined(Transform):
-        operation = operations.inner_join(left="orders", right="customers", left_on="customer", right_on="id")
-
-    @transform(target="iterable")
-    class Aggregated(Transform):
-        operation = operations.grouped(
-            group_by=("customer",), aggregates={"total": {"sum": "amount"}, "orders": {"count": None}}
-        )
+        @step(input=[orders, customers], output=result)
+        def enrich(self, order: Order, customer: Customer) -> Enriched:
+            operations.left_join(customer, on=customer.id == order.customer_id)
+            return Enriched(id=order.id, customer_name=customer.name)
 
     registry = PluginRegistry()
     configuration = PluginConfiguration.resolve({"plugin": {"iterable": {}}})
     projected = Projected.compile(plugin_registry=registry, plugin_configuration=configuration)
-    joined = Joined.compile(plugin_registry=registry, plugin_configuration=configuration)
-    aggregated = Aggregated.compile(plugin_registry=registry, plugin_configuration=configuration)
     executor = ExecutePluginArtifact(registry)
-    assert cast(Collectable, executor(projected, configuration=configuration, runtime=[{"id": 1, "skip": True}])).collect() == [
-        {"order": 1}
-    ]
-    assert cast(
+    relation = cast(
         Collectable,
         executor(
-            joined,
+            projected,
             configuration=configuration,
-            runtime={"orders": [{"order": 1, "customer": 7}], "customers": [{"id": 7, "name": "Ada"}]},
+            runtime={"orders": [{"id": 1, "customer_id": 7}], "customers": [{"id": 7, "name": "Ada"}]},
         ),
-    ).collect() == [{"id": 7, "name": "Ada", "order": 1, "customer": 7}]
-    assert cast(
-        Collectable,
-        executor(
-            aggregated,
-            configuration=configuration,
-            runtime=[{"customer": 7, "amount": 4}, {"customer": 7, "amount": 6}],
-        ),
-    ).collect() == [{"customer": 7, "total": 10, "orders": 2}]
-    assert cast(Collectable, Projected().run(StructureSession(runtime=[{"id": 1, "skip": True}])).result).collect() == [
-        {"order": 1}
+    )
+    assert relation.collect() == [{"order_id": 1, "customer": "Ada"}]
+    assert selected.api.generator is not None
+    generated = selected.api.generator.generate(
+        GenerationRequest(
+            payload={"sample.transforms.Projected": projected.payload},
+            source_module="sample.transforms",
+            generated_package="generated",
+        )
+    )
+    source = generated.files["generated/iterable/transforms/transforms.py"]
+    assert "for row in orders:" in source
+    namespace: dict[str, object] = {}
+    exec(source, namespace)
+    generated_class = cast(Any, namespace["ProjectedGenerated"])
+    assert generated_class.run(orders=[{"id": 1, "customer_id": 7}], customers=[{"id": 7, "name": "Ada"}]) == [
+        {"order_id": 1, "customer": "Ada"}
     ]
-    school = importlib.import_module("examples.school.transforms.iterable")
-    assert cast(
-        Collectable,
-        school.ProjectIterableScores(students=[{"student": "Ada", "score": 100, "ignored": True}])
-        .run(StructureSession())
-        .result,
-    ).collect() == [{"student": "Ada", "score": 100}]
-    sequences = importlib.import_module("examples.school.transforms.sequences")
-    assert cast(
-        Collectable,
-        sequences.Fibonacci(rows=({"index": index} for index in range(4))).run(StructureSession()).result,
-    ).collect() == [
-        {"index": 0, "fibonacci": 0},
-        {"index": 1, "fibonacci": 1},
-        {"index": 2, "fibonacci": 1},
-        {"index": 3, "fibonacci": 2},
-    ]
+
+    class RequiredCustomer(Schema):
+        id: int = operations.field(nullable=False)
+        customer_name: str = operations.field(nullable=False)
+
+    @transform(target="iterable")
+    class UnsafeLeftJoin(Transform):
+        orders = input(Order)
+        customers = input(Customer)
+        result = output(RequiredCustomer)
+
+        @step(input=[orders, customers], output=result)
+        def enrich(self, order: Order, customer: Customer) -> RequiredCustomer:
+            operations.left_join(customer, on=customer.id == order.customer_id)
+            return RequiredCustomer(id=order.id, customer_name=customer.name)
+
+    @transform(target="iterable")
+    class UnsafeNone(Transform):
+        orders = input(Order)
+        result = output(RequiredCustomer)
+
+        @step(input=orders, output=result)
+        def enrich(self, order: Order) -> RequiredCustomer:
+            return RequiredCustomer(id=order.id, customer_name=None)
+
+    with pytest.raises(TypeError, match="RequiredCustomer.customer_name is non-nullable"):
+        UnsafeLeftJoin.compile(plugin_registry=registry, plugin_configuration=configuration)
+    with pytest.raises(TypeError, match="RequiredCustomer.customer_name is non-nullable"):
+        UnsafeNone.compile(plugin_registry=registry, plugin_configuration=configuration)
     assert selected.api.serializer is not None
     assert selected.api.serializer.decode(selected.api.serializer.encode({"operation": "identity"})) == {"operation": "identity"}
     assert fixture.__module__ == "structure_iterable.IterablePlugin"

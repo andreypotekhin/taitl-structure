@@ -252,7 +252,7 @@ TRANSFORMS = (
 )
 
 
-def test_text_fixture_runs_online_and_generated(spark, tmp_path) -> None:
+def test_text_fixture_runs_online_and_generated(spark, tmp_path, cache_frames) -> None:
     files = {}
     for transform, source in TRANSFORMS:
         files.update(
@@ -336,6 +336,13 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path) -> None:
             .run(session(spark, execution_mode="generated", generated_package=PACKAGE))
             .features
         )
+        cache_frames(
+            generated_segments.words,
+            generated_segments.sentences,
+            generated_segments.paragraphs,
+            generated_segments.sections,
+            generated_features,
+        )
         assert rows(online_features, "document_id") == rows(generated_features, "document_id")
         guide = single(generated_features, lambda row: row["document_id"] == "d-1")
         assert guide["url_is_https"] is True
@@ -390,6 +397,16 @@ def test_text_fixture_runs_online_and_generated(spark, tmp_path) -> None:
         online_index = CreateIndex(words=generated_segments.words).run(session(spark, execution_mode="online"))
         generated_index = CreateIndex(words=generated_segments.words).run(
             session(spark, execution_mode="generated", generated_package=PACKAGE)
+        )
+        cache_frames(
+            generated_index.document_terms,
+            generated_index.document_summary,
+            generated_index.section_terms,
+            generated_index.section_summary,
+            generated_index.paragraph_terms,
+            generated_index.paragraph_summary,
+            generated_index.sentence_terms,
+            generated_index.sentence_summary,
         )
         assert rows(online_index.document_terms, "document_id", "token") == rows(
             generated_index.document_terms, "document_id", "token"

@@ -16,17 +16,12 @@ class ResolveCliConfig:
             values["plugin"] = {**cast(dict[str, object], values.get("plugin", {})), "default": target}
         if "source_roots" in values:
             values["source_roots"] = list(cast(tuple[str, ...], values["source_roots"]))
-        if "compat_targets" in values:
-            values["compat_targets"] = self._compat_targets(str(values["compat_targets"]))
         if "generated_docs_formats" in values:
             values["generated_docs_formats"] = self._comma_list(str(values["generated_docs_formats"]))
         try:
             return Configuration.resolve()(overrides=values)
         except ConfigError as error:
             raise click.ClickException(error.diagnostic.render()) from error
-
-    def _compat_targets(self, value: str) -> list[str]:
-        return self._comma_list(value)
 
     def _comma_list(self, value: str) -> list[str]:
         return [item.strip() for item in value.split(",") if item.strip()]

@@ -850,10 +850,11 @@ class RenderPySparkStep:
         lines: list[str] = []
         for validation in validations:
             schema = self._schema.render().constant_name(validation.schema)
-            lines.append(
-                f'        assert_schema({target}, {schema}, '
-                f'name="{validation.schema.__name__}", mode="{validation.mode.value}")'
-            )
+            if validation.check:
+                lines.append(
+                    f'        assert_schema({target}, {schema}, '
+                    f'name="{validation.schema.__name__}", mode="{validation.mode.value}")'
+                )
             if validation.project:
                 lines.append(f"        {target} = project_schema({target}, {schema})")
         return lines

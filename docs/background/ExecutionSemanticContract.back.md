@@ -9,6 +9,14 @@ and generated PySpark emission. The contract exists to prevent two independent l
 projection order, filter order, join aliasing, hook order, validation placement, schema projection, literal typing, or
 performance guardrails.
 
+## Ownership Boundary
+
+The target-neutral Core structural plan and the PySpark-owned lowered plan are now separated by the selected Plugin
+API. Core establishes transform routing, bindings, source order, outputs, and hook placement; the PySpark authoring
+and compiler facets validate and lower PySpark bodies. The PySpark executor and generator consume that lowered
+contract. References below to a Core-owned `TransformPlan` should therefore be read as the structural Core portion plus
+an opaque PySpark body, never as permission for Core to inspect PySpark expressions or recipes.
+
 ## Scope
 
 This reference covers:

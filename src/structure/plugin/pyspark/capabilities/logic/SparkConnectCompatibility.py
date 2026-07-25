@@ -8,7 +8,8 @@ _CLASSIC_ONLY_ERROR = re.compile(
 
 
 def is_spark_connect_session(*, session=None, spark=None) -> bool:
-    if getattr(session, "target_variant", None) == "spark-connect":
+    options = getattr(session, "plugin_options", {})
+    if options.get("variant") == "spark-connect" or getattr(session, "target_variant", None) == "spark-connect":
         return True
 
     spark = spark if spark is not None else getattr(session, "spark", None)

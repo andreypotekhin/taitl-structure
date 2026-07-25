@@ -49,7 +49,7 @@ def test_online_runner_reports_configuration_workaround_without_live_runtime() -
         online_executor=None,
         spark=None,
         execution_mode="online",
-        target_backend="pyspark",
+        target="pyspark",
     )
 
     with pytest.raises(StructureRuntimeError) as raised:

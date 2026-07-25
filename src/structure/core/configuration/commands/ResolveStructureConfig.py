@@ -9,7 +9,6 @@ from structure.core.configuration.logic.StructureConfigLoader import StructureCo
 from structure.core.configuration.logic.StructureConfigMerger import StructureConfigMerger
 from structure.core.configuration.logic.StructureConfigValidator import StructureConfigValidator
 from structure.core.configuration.model.StructureConfig import StructureConfig
-from structure.core.target.capabilities.api import Capabilities
 
 
 class ResolveStructureConfig:
@@ -23,10 +22,6 @@ class ResolveStructureConfig:
         "generated_docs_formats",
         "generated_code_options",
         "execution_mode",
-        "target_backend",
-        "target_profile",
-        "target_variant",
-        "compat_targets",
         "hook_target_default",
         "traceability",
         "validate_inputs",
@@ -68,11 +63,6 @@ class ResolveStructureConfig:
             override_source,
         )
         self._validator.validate(values, root)
-        Capabilities.resolve()(
-            target_backend=str(values["target_backend"]),
-            target_profile=str(values["target_profile"]),
-            target_variant=str(values["target_variant"]),
-        )
         return self._builder.build(root, values, sources)
 
 

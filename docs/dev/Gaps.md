@@ -55,6 +55,23 @@ The delivery design and first ExecPlan are [V4 Transformation API Coverage](desi
 define the dedicated bounded-streaming transformation slice. Loading, storage, catalog/table management, actions, and
 streaming lifecycle ownership are excluded from this program.
 
+## V6 Deferral Discipline
+
+v6 uses the coverage catalog and its API ledger to schedule small typed PySpark additions, but this page remains the
+durable register of postponed and deferred work. The design is [V6 PySpark API Closure](design/V6PySparkApiClosure.md)
+and the release ledger is [V6 PySpark API Ledger](specifications/V6PySparkApiLedger.md). When v6 admits, postpones, or
+rejects an API, update this page, the coverage JSON/reference, and the ledger in the same change. Keep the reason, the
+user-facing boundary (`step`, explicit scalar UDF, `@raw`, or caller-owned PySpark), and the owning plan together so
+an omitted API never becomes an implicit promise.
+
+The following v6 candidates remain deferred until their contracts are complete: binary/encoding values, JSON/CSV
+inline-schema parsing, row generators, relation set composition, relation ordering/selection, deterministic `mode`,
+sampling, and physical-plan directives. Their relation-operation design/specification is
+[Typed Relation Operations](design/TypedRelationOperations.md). Scalar `@special(type="udf")` is already implemented
+for ordinary PySpark; its user contract is [Explicit Scalar Python UDFs](specifications/ExplicitScalarUdfs.md). It is
+opt-in, type/nullability declared, warning-governed, and excluded from Spark Connect. It is not a substitute for an
+unsupported symbolic operation.
+
 ## DSL
 
 ### Column API

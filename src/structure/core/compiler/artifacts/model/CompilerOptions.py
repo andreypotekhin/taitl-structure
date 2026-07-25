@@ -15,9 +15,7 @@ class CompilerOptions:
     generated_dir: Path
     generated_package: str
     generated_code_options: tuple[str, ...]
-    target_backend: str
-    target_profile: str
-    target_variant: str
+    target: str
     validate_inputs: bool
     input_validation_mode: str
     validate_intermediate: bool
@@ -57,9 +55,7 @@ class CompilerOptions:
             generated_dir=config.generated_dir,
             generated_package=config.generated_package,
             generated_code_options=config.generated_code_options,
-            target_backend=config.target_backend,
-            target_profile=config.target_profile,
-            target_variant=config.target_variant,
+            target=config.target,
             validate_inputs=config.validate_inputs,
             input_validation_mode=config.input_validation_mode,
             validate_intermediate=config.validate_intermediate,
@@ -76,9 +72,7 @@ class CompilerOptions:
         return (
             self.generated_package,
             self.generated_code_options,
-            self.target_backend,
-            self.target_profile,
-            self.target_variant,
+            self.target,
             self.validate_inputs,
             self.input_validation_mode,
             self.validate_intermediate,
@@ -92,7 +86,7 @@ class CompilerOptions:
         )
 
     def selected_plugin_options(self) -> Mapping[str, object]:
-        return self.plugin_options.get(self.target_backend, {})
+        return self.plugin_options.get(self.target, {})
 
     def _plugin_options_key(self) -> tuple[tuple[str, object], ...]:
         return tuple(sorted((name, self._freeze(value)) for name, value in self.selected_plugin_options().items()))

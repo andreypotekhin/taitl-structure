@@ -7,6 +7,30 @@ existing Spark session, constructs a transform invocation with input DataFrames,
 Generated PySpark remains available for provenance, review, debugging, CI diff checks, and projects that deliberately
 choose generated-code execution.
 
+## Plugin-Dispatched Execution
+
+Core owns invocation lifecycle and the standard result boundary, but it no longer owns PySpark runners or target
+recipes. A transform resolves exactly one plugin target from `@transform(target=...)`, an explicit `target=`, or
+`plugin.default`. Core discovers and negotiates that plugin, creates or retrieves an artifact containing its opaque
+payload, and invokes the selected plugin executor.
+
+```text
+caller-owned runtime -> StructureSession -> Core artifact workflow -> selected Plugin API executor -> TransformResult
+```
+
+`StructureSession` is target-neutral. A PySpark caller supplies a `SparkSession` as its runtime; the PySpark plugin
+validates it and performs online execution. Generated output follows the same division: the selected plugin returns
+relative source content, while Core validates paths and owns the file write. Plugin-specific runtime values, plans,
+schema representations, profile, and variant remain opaque to Core.
+
+Core retains structural ordering, bindings, lanes, hook placement, artifact identity, result wrapping, and diagnostic
+presentation. PySpark retains expression semantics, target validation, lowering, schema materialization, online
+execution, generated rendering, and Spark Connect behavior. The caller retains Spark lifecycle, reads, writes,
+streaming queries, triggers, checkpoints, sinks, and orchestration.
+
+The detailed execution semantics below apply through this boundary. Target selection and target behavior follow the
+plugin model above and [Plugin API](../dev/specifications/PluginAPI.md).
+
 ## Public API
 
 The default runtime shape is:

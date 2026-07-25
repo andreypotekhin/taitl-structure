@@ -23,6 +23,11 @@ This matrix maps early sprints to specification sections and major deliverables.
 | Sprint 16 v3 Streaming Transformation Hardening | Spark Structured Streaming, Generated Code, Integration Testing | watermarked enrichment, dedupe, aggregation, bounded stream-stream joins, caller-owned output-mode guidance, and file-stream evidence |
 | Sprint 17 v4 Transformation Coverage | API coverage, DSL, capabilities, testing | checked PySpark transformation inventory, public catalog, status tests, and v4 fixture skeleton |
 | Final v4 Hardening Sprint | Release readiness, compatibility, generated code, documentation, testing | release-blocker resolution or deferral, regression and parity evidence, target compatibility, artifact freshness, documentation, diagnostics, and performance baselines |
+| Sprint 23 v6 API Ledger and Plugin Decomposition | PySpark Transformation Coverage, Plugin Architecture, Traceability, Testing | one API/hook ledger, raw-hook inventory, characterization tests, and focused behavior-preserving PySpark delegates |
+| Sprint 24 v6 Security Reconciliation | Expression Helpers, Windows, Aggregations, Hooks, Testing | lambda-bound struct fields, analytic maximum, ordered collection/exact-one/global aggregate contracts, and retired Security hooks |
+| Sprint 25 v6 Relation Operations and Search Migration | Relation Operations, Cardinality, Generated Code, Testing | typed generators, union, self aliases, ordering/selection, and evidence-backed Search hook retirement |
+| Sprint 26 v6 Ordered Timeline Recurrence | Ordered Timeline Scan, Backend Capabilities, Traceability, Testing | bounded batch `scan(...)`, typed state, deterministic ordering, Fibonacci parity, and memory-bound guidance |
+| Sprint 27 v6 Release and Challenge Closure | Compatibility, Operational Integration, Diagnostics, Testing, Governance | live target evidence, C27--C34 disposition, adoption/troubleshooting recipes, and v6 release handoff |
 
 ## Relevant Specification Items by Sprint
 

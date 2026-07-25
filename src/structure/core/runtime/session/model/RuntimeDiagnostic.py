@@ -12,21 +12,17 @@ class RuntimeDiagnostic:
     title: str
     transform: str
     execution_mode: str
-    target_backend: str
+    target: str
     problem: str
     use: str
     docs: str
-    target_profile: str = ">=3.5,<4.1"
-    target_variant: str = "ordinary"
     context: Mapping[str, str] = field(default_factory=dict)
 
     def to_diagnostic(self) -> Diagnostic:
         context = {
             "transform": self.transform,
             "execution_mode": self.execution_mode,
-            "target_backend": self.target_backend,
-            "target_profile": self.target_profile,
-            "target_variant": self.target_variant,
+            "target": self.target,
         }
         context.update(self.context)
         return Diagnostic(

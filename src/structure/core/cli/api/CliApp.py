@@ -44,9 +44,5 @@ class CliApp:
         return RenderConfiguredPluginProject()
 
     @staticmethod
-    def render_configured_pyspark_project() -> RenderConfiguredPluginProject:
-        return RenderConfiguredPluginProject()
-
-    @staticmethod
     def render_explain_report() -> RenderExplainReport:
         return RenderExplainReport()

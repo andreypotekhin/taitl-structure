@@ -16,6 +16,18 @@ Hand-written PySpark is powerful, but large pipelines often become difficult to 
 Structure makes schemas and transformations explicit Python classes while keeping the emitted PySpark visible
 to Spark's optimizer.
 
+## Targets and Plugins
+
+Structure's public `structure` package contains target-neutral schema, transform, configuration, and session APIs.
+Target DSLs are owned by plugins. The supported PySpark DSL is imported from `structure.plugin.pyspark`; its profile
+and runtime variant are configured under `[tool.structure.plugin.pyspark]`. Core selects one plugin target for each
+transform, then orchestrates compilation, execution, generation, artifacts, and diagnostics through its versioned
+Plugin API. Use `@transform(target="...")`, a session or command `target=`, or `plugin.default` to select it.
+
+An external plugin may use its own import package and DSL. Different transforms in one project can select different
+installed plugins, but one composed pipeline always uses one target. See [Configuration.md](Configuration.md) and
+[Plugin Authoring](dev/PluginAuthoring.md).
+
 
 
 ## Less Code, More Spark!
@@ -306,13 +318,17 @@ source_roots = ["src"]
 generated_dir = "generated"
 generated_package = "structure_generated"
 execution_mode = "online"
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
-target_variant = "ordinary"
 traceability = "compiler"
 validate_intermediate = true
 intermediate_validation_mode = "schema_only"
 strict_performance = true
+
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.1"
+variant = "ordinary"
 ```
 
 See `pyproject.seed.toml` for defaults.

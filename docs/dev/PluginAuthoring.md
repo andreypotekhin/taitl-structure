@@ -85,9 +85,10 @@ To integrate, install the wheel in a clean test environment and discover it thro
 This proves that no source checkout import or hidden Structure dependency masks a packaging error. Sprint 21's finite
 iterable fixture supplies this end-to-end evidence, including repeatable result collection and opaque-payload serialization.
 
-The repository's [finite iterable starter plugin](../../examples/plugins/iterable/Readme.md)
-shows the recommended focused package layout: entry point, API façade, target DSL, compiler, execution, schema,
-authoring, capability, and serialization applications. It is a test fixture rather than a supported target.
+The repository's [finite Iterable plugin example](../../examples/plugins/iterable/Readme.md)
+shows the recommended focused package layout: entry point, API façade, target DSL, symbolic step authoring, compiler,
+execution, schema, generation, capability, and serialization applications. It is a finite in-memory teaching target,
+not a supported production backend.
 
 ## Compatibility policy
 

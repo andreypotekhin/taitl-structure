@@ -2,6 +2,11 @@
 
 **Structure** is a Python-to-PySpark runtime compiler which allows writing Spark data pipelines in Pythonic way, resulting in optimizer-friendly PySpark code creation at runtime. It can also be used as PySpark code generator: output the schemas and transformations as PySpark code. 
 
+Structure's core API is target-neutral. Import PySpark fields, expressions, joins, and helpers from
+`structure.plugin.pyspark`; configure its supported profile and variant under `[tool.structure.plugin.pyspark]`.
+Core selects one plugin target per transform and owns compilation, execution, generated-file lifecycle, and
+diagnostics. See [Configuration](docs/Configuration.md) and [Basic Concepts](docs/BasicConcepts.md).
+
 ## Less Code, More Spark
 
 Structure can help replace hand-maintained PySpark boilerplate. 
@@ -110,7 +115,7 @@ class EnrichOrders(Transform):
 
 ### Running a Transform
 
-Create transform object, specify input data frames and call `.run(session)`:
+To run transform object, specify input data frames and call `.run(session)`:
 
 ```python
 from structure import *
@@ -128,11 +133,11 @@ result = EnrichOrders(
 enriched_df = result.enriched
 ```
 
-On invocation of run(), Structure compiles Transform and all its dependencies into an in-memory artifact for execution - the execution plan. It executes the plan by translating ('lowering') into PySpark statements. PySpark code can also be saved to disk, if your project requires so. Execution order follows the declared order of transform's 'step' methods - the methods that take schema object(s) and return schema object(s).
+On invocation of run(), Structure compiles Transform and its dependencies into an in-memory artifact - the execution plan. Structure then executes the plan by translating ('lowering') it into PySpark statements. PySpark code can also be saved to disk, if your project requires so. Execution order follows the declared order of transform's 'step' methods - the methods that take and return schema objects.
 
 ### Generated PySpark Code
 
-The generated  PySpark code looks similar to this:
+Generated  PySpark code looks similar to this:
 
 ```python
 from pyspark.sql import DataFrame, SparkSession
@@ -229,7 +234,7 @@ class EnrichOrdersGenerated:
 
 ## API
 
-Structure tries to cover most of PySpark APIs related to data transformation: filtering, joins, aggregation, deduplication, windowing, higher order functions. Example of a less-trivial analytical transform:
+Structure tries to cover most of PySpark APIs related to data transformation: filtering, joins, aggregation, deduplication, windowing, higher order functions. Here is an example of a less-trivial analytical transform:
 
 ```python
 class OrderAnalytics(Transform):
@@ -335,33 +340,33 @@ class OrderAnalytics(Transform):
 
 Structure is intentionally strict: compiled methods must lower to Spark Optimizer-visible expressions.
 
-Unsupported Python operations are rejected. This is a performance feature: Spark can optimize transformations only when work remains visible in the DataFrame logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, and whole-stage code generation all depend on expressing work through Spark's relational expression model.
+Only a subset of Python operations - assignments, expressions - is allowed in transform body. Unsupported Python operations/constructs like `if`, `for` statements are rejected. This is a performance feature: Spark can optimize transformations only when work remains visible in the DataFrame logical plan. Projection, filtering, joins, predicate pushdown, column pruning, aggregation planning, and whole-stage code generation all depend on expressing work through Spark's relational model.
 
-Arbitrary Python and ad-hoc PySpark is still supported, but only through explicit @raw hook methods. Hooks receive the underlying DataFrame(s) for arbitrary manipulation. Hooks are escape hatches: Structure calls them, records them as opaque boundaries, but does not treat their body as compiler-visible logic.
+Arbitrary Python and ad-hoc PySpark are still supported through @raw hook methods. Hooks receive the underlying DataFrames for manipulation. Hooks are escape hatches: Structure calls them but does not treat their body as compiler-visible logic.
 
 ## IDE Friendliness
 
-Python-first approach allows for such IDE conveniences, as:
-- Jumping to schema definitions from arbitrary location in code.
-- Navigating to the code where a schema or a transform class or method is used.
+Python-first approach allows for IDE conveniences:
+- Jumping to schema definition from an arbitrary location in code.
+- Navigating to code locations where a schema or a transform class or method is used.
 - Displaying inheritance hierarchies of schemas/transforms.
 
 ## Code Examples
 
-I include these example applications to demonstrate Structure in various domains:
+I include example apps to demonstrate how Structure applies to various domains.
 
-| Example                                 | Focus                                       | Details                                               |
-| --------------------------------------- | ------------------------------------------- | ----------------------------------------------------- |
-| [School](examples/school/Readme.md)     | Algebra, vectors and matrices               | Streaming scalars, batch matrices.                    |
-| [Search](examples/search/Readme.md)     | Scoring, ranking, searching, evaluation     | Batch corpus, streaming feedback.                     |
-| [Security](examples/security/Readme.md) | Vulnerabilities per device, user, team, org | Streaming audit, batch reports.                       |
-| [Store](examples/store/Readme.md)       | Retail order enrichment and analytics       | Streaming fulfillment, batch analytics.               |
-| [Stocks](examples/stocks/Readme.md)     | Daily-bar technical-analysis                | Trend, momentum, volatility, daily return indicators. |
-| [Streams](examples/streams/Readme.md)   | White-water kayaking                        | Streaming timing, progress and penalties.             |
+| Example                                 | Focus                                          | Details                                         |
+| --------------------------------------- | ---------------------------------------------- | ----------------------------------------------- |
+| [School](examples/school/Readme.md)     | Algebra, vectors, matrices                     | Streaming scalars, batch matrices.              |
+| [Search](examples/search/Readme.md)     | Scoring, ranking, searching, evaluation        | Batch corpus, streaming clicks.                 |
+| [Security](examples/security/Readme.md) | Vulnerabilities per device, user, team, or org | Streaming discovery, batch reports.             |
+| [Store](examples/store/Readme.md)       | Retail order enrichment and analytics          | Streaming fulfillment, batch analytics.         |
+| [Stocks](examples/stocks/Readme.md)     | Daily-bar technical analysis                   | Trend, momentum, volatility, return indicators. |
+| [Streams](examples/streams/Readme.md)   | White-water kayaking                           | Streaming timing, progress and penalties.       |
 
 ## Out of scope
 
-Structure focuses on data transformation. Loading, writing, orchestrating and other activities outside of data transformations are the responsibility of end-user.
+Structure focuses on data transformation. Loading, writing, orchestrating and other activities are the responsibility of end-user.
 
 ## Compatibility
 
@@ -393,4 +398,3 @@ Code-related issues also need an accompanying pull request that contains the pro
 LGPL-2.1 + Ethical Use Policy
 
 See [License.md](License.md)
-

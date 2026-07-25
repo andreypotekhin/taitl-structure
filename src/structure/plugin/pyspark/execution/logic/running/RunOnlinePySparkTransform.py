@@ -143,7 +143,8 @@ class RunOnlinePySparkTransform:
                     produced.update({name: hook_frames[name] for hook in result.after_hooks for name in hook.outputs})
                 projected = produced[result.frame]
                 for validation in result.validations:
-                    self._validator.validate(projected, validation, types=types)
+                    if validation.check:
+                        self._validator.validate(projected, validation, types=types)
                     if validation.project:
                         projected = self._validator.project(projected, validation, types=types, functions=functions)
                 projected = self._post_operations(step, projected)
@@ -168,7 +169,8 @@ class RunOnlinePySparkTransform:
             )
             df = step_frames[step.results[0].frame]
         for validation in step.validations:
-            self._validator.validate(df, validation, types=types)
+            if validation.check:
+                self._validator.validate(df, validation, types=types)
             if validation.project:
                 df = self._validator.project(df, validation, types=types, functions=functions)
         df = self._post_operations(step, df)
@@ -827,20 +829,23 @@ class RunOnlinePySparkTransform:
 
     def _missing_executor(self, invocation: Transform, *, session) -> StructureRuntimeError:
         transform = f"{type(invocation).__module__}.{type(invocation).__name__}"
+        options = getattr(session, "plugin_options", {})
         diagnostic = RuntimeDiagnostic(
             code="ONLINE-E1202",
             title="Direct PySpark runner is not configured",
             transform=transform,
             execution_mode=session.execution_mode,
-            target_backend=session.target_backend,
-            target_profile=getattr(session, "target_profile", ">=3.5,<4.1"),
-            target_variant=getattr(session, "target_variant", "ordinary"),
+            target=getattr(session, "target", "pyspark"),
             problem="Structure has no live SparkSession or injected direct executor for this session.",
             use=(
                 "Pass spark or online_executor to StructureSession, or switch to generated-code execution "
                 'with execution_mode = "generated".'
             ),
             docs="docs/background/Execution.back.md",
+            context={
+                "target_profile": str(options.get("profile", ">=3.5,<4.1")),
+                "target_variant": str(options.get("variant", "ordinary")),
+            },
         )
         return StructureRuntimeError(diagnostic)
 

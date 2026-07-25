@@ -3,10 +3,10 @@ from structure.plugin.api.v1.api import (
     SchemaAPI, SerializationAPI,
 )
 from structure.plugin.api.v1.model import (
-    CompilationPurpose, CompileRequest, ExecutionRequest, ExplainRequest, GenerationRequest, InputPlan, PluginCompilation,
+    CompilationPurpose, CompileRequest, ExecutionRequest, ExplainRequest, GenerationRequest, GenerationResult, InputPlan, PluginCompilation,
     SchemaInspectionRequest, SchemaValidationRequest, StepAuthoringCapture, StepAuthoringInput, StepAuthoringRequest, StepAuthoringResult,
     StepAuthoringSession, StepInputPlan, StreamingAnalysisRequest, SymbolicContext, TraceabilityRequest,
-    TransformMemberOrigin, TransformSchemaRequest, current_symbolic_context,
+    TransformMemberOrigin, TransformPlan, TransformResult, TransformSchemaRequest, current_symbolic_context,
 )
 
 __all__ = [
@@ -22,6 +22,7 @@ __all__ = [
     "ExplainRequest",
     "GenerationAPI",
     "GenerationRequest",
+    "GenerationResult",
     "InputPlan",
     "PluginAPI",
     "PluginCompilation",
@@ -40,5 +41,7 @@ __all__ = [
     "StepInputPlan",
     "SymbolicContext",
     "TransformMemberOrigin",
+    "TransformPlan",
+    "TransformResult",
     "current_symbolic_context",
 ]

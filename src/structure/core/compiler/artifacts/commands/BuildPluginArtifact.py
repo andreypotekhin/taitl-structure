@@ -1,3 +1,4 @@
+from structure.core.compiler.api.Compiler import Compiler
 from structure.core.compiler.artifacts.model.PluginArtifact import PluginArtifact
 from structure.core.dsl.model.transforms.Transform import Transform
 from structure.core.dsl.model.transforms.TransformPipeline import TransformPipeline
@@ -20,8 +21,17 @@ class BuildPluginArtifact:
     ) -> PluginArtifact:
         name = self._target(transform, configuration=configuration, target=target)
         plugin = self._registry.select(name, disabled_distributions=configuration.disabled_distributions)
-        compilation = plugin.api.compiler.compile(
-            CompileRequest(transform=transform, target=name, configuration=configuration.plugins.get(name, {}))
+        compilation = (
+            Compiler.frontend.compile()(
+                transform,
+                overrides={"plugin": {"default": name, name: dict(configuration.plugins.get(name, {}))}},
+                registry=self._registry,
+                materialize_schemas=False,
+            )
+            if isinstance(transform, type) and transform._structure_outputs
+            else plugin.api.compiler.compile(
+                CompileRequest(transform=transform, target=name, configuration=configuration.plugins.get(name, {}))
+            )
         )
         if not isinstance(compilation, PluginCompilation):
             raise ValueError(f"PLUGIN-E2708: Plugin {name!r} returned an invalid compilation result.")

@@ -22,7 +22,7 @@ def _body_pyspark4(transform) -> PySparkStepBody:
     compilation = Compiler.frontend.compile()(
         transform,
         materialize_schemas=False,
-        target_profile=">=4.0,<4.1",
+        plugin={"pyspark": {"profile": ">=4.0,<4.1"}},
     )
     analysis = cast(TransformPlan, compilation.analysis)
     return cast(PySparkStepBody, analysis.steps[0].plugin_body)

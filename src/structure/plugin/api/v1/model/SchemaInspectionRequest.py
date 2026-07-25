@@ -9,5 +9,5 @@ class SchemaInspectionRequest:
     from_table: str | None
     format: str | None
     runtime: object | None
-    target_variant: str | None
+    plugin_options: Mapping[str, object]
     options: Mapping[str, str] | None

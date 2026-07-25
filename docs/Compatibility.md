@@ -15,8 +15,8 @@ first stable release.
 Structure targets:
 
 - Python 3.11 and newer;
-- PySpark 3.5.x and 4.0.x, expressed as `target_profile = ">=3.5,<4.1"` by default;
-- ordinary PySpark, expressed as `target_variant = "ordinary"` by default;
+- PySpark 3.5.x and 4.0.x, expressed as `plugin.pyspark.profile = ">=3.5,<4.1"` by default;
+- ordinary PySpark, expressed as `plugin.pyspark.variant = "ordinary"` by default;
 - Linux runtime environments for execution and generated-code execution;
 - Linux and macOS development environments;
 - Airflow and other schedulers without a hard runtime dependency on them.
@@ -30,23 +30,27 @@ Set the runtime target in project configuration:
 ```toml
 [tool.structure]
 execution_mode = "online"
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
-target_variant = "ordinary"
+
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.1"
+variant = "ordinary"
 ```
 
 `execution_mode` is `online` by default. Projects may set it to `generated` when runtime execution should go
 through checked-in generated classes.
 
-The `target_profile` value constrains which PySpark APIs execution and generated-code execution may use. Structure should avoid
+The `plugin.pyspark.profile` value constrains which PySpark APIs execution and generated-code execution may use. Structure should avoid
 APIs outside that range unless the user explicitly changes the target.
 
-`target_variant` selects the PySpark runtime variant. `ordinary` is the default in-process PySpark contract.
+`plugin.pyspark.variant` selects the PySpark runtime variant. `ordinary` is the default in-process PySpark contract.
 `spark-connect` uses Spark Connect through the PySpark DataFrame and Column API.
 
 When a transform uses a feature that cannot run for the configured target, Structure should fail during
 `structure check`, `structure compile`, or direct runtime compilation with a backend capability diagnostic.
-Unknown backend targets use `BACKEND-E2401`; unsupported backend features use `BACKEND-E2402`.
+Unknown plugin targets use `BACKEND-E2401`; unsupported target features use `BACKEND-E2402`.
 
 ## Spark Connect
 
@@ -54,9 +58,13 @@ Spark Connect is a PySpark target variant, not a separate backend id:
 
 ```toml
 [tool.structure]
-target_backend = "pyspark"
-target_profile = ">=3.5,<4.1"
-target_variant = "spark-connect"
+
+[tool.structure.plugin]
+default = "pyspark"
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.1"
+variant = "spark-connect"
 ```
 
 Ordinary PySpark is the default target. Spark Connect supports completed compiler-visible batch features; streaming

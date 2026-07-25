@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from typing import cast
 
 from structure.core.plugins.api.Plugin import Plugin
@@ -7,9 +8,6 @@ from structure.core.target.capabilities.model.BackendId import BackendId
 from structure.core.target.capabilities.model.CapabilityDecision import CapabilityDecision
 from structure.core.target.capabilities.model.CapabilityRequirement import CapabilityRequirement
 
-DEFAULT_TARGET_PROFILE = ">=3.5,<4.1"
-DEFAULT_TARGET_VARIANT = "ordinary"
-
 
 class ResolveBackendCapabilities:
 
@@ -17,34 +15,38 @@ class ResolveBackendCapabilities:
         self,
         *,
         target: str | None = None,
-        target_backend: str | None = None,
-        target_profile: str = DEFAULT_TARGET_PROFILE,
-        target_variant: str = DEFAULT_TARGET_VARIANT,
+        options: Mapping[str, object] | None = None,
     ) -> BackendCapabilities:
-        if target is not None and target_backend is not None:
-            raise ValueError("Pass either target= or the legacy target_backend= argument, not both.")
-        target_backend = target or target_backend or "pyspark"
+        target_name = target or "pyspark"
         try:
-            plugin = Plugin.registry().select(target_backend)
+            plugin = Plugin.registry().select(target_name)
         except ValueError:
-            return self._unsupported(target_backend, target_profile, target_variant, self._available_targets())
-        capabilities = cast(BackendCapabilities, plugin.api.capabilities.resolve(profile=target_profile, variant=target_variant))
-        capabilities.require(
-            CapabilityRequirement(
-                group="backend",
-                name=capabilities.id.family,
-                docs="docs/reference/BackendCapabilities.md#pyspark-target-variants",
+            return self._unsupported(target_name, options or {}, self._available_targets())
+        capabilities = cast(BackendCapabilities, plugin.api.capabilities.resolve(options=options or {}))
+        require = getattr(capabilities, "require", None)
+        identifier = getattr(capabilities, "id", None)
+        if callable(require) and identifier is not None:
+            require(
+                CapabilityRequirement(
+                    group="backend",
+                    name=identifier.family,
+                    docs="docs/reference/BackendCapabilities.md#pyspark-target-variants",
+                )
             )
-        )
         return capabilities
 
     def _unsupported(
-        self, target_backend: str, target_profile: str, target_variant: str, available_targets: tuple[str, ...]
+        self, target_name: str, options: Mapping[str, object], available_targets: tuple[str, ...]
     ) -> BackendCapabilities:
-        backend = BackendId(name=target_backend, target=target_profile, family="unknown", variant=target_variant)
+        backend = BackendId(
+            name=target_name,
+            target=str(options.get("profile", "")),
+            family="unknown",
+            variant=str(options.get("variant", "")),
+        )
         requirement = CapabilityRequirement(
             group="backend",
-            name=target_backend,
+            name=target_name,
             docs="docs/reference/BackendCapabilities.md#unsupported-backend-targets",
         )
         decision = CapabilityDecision.unsupported_backend(

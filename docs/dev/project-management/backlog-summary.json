@@ -112,6 +112,63 @@
         "Explain",
         "Testing"
       ]
+    },
+    {
+      "id": "S23",
+      "name": "v6 API Ledger and PySpark Plugin Decomposition",
+      "milestone": "M11",
+      "spec_sections": [
+        "PySpark Transformation Coverage",
+        "Plugin Architecture",
+        "Traceability",
+        "Testing"
+      ]
+    },
+    {
+      "id": "S24",
+      "name": "v6 Compiler-Visible Security Reconciliation",
+      "milestone": "M11",
+      "spec_sections": [
+        "Expression Helpers",
+        "Windows",
+        "Aggregations",
+        "Hooks",
+        "Testing"
+      ]
+    },
+    {
+      "id": "S25",
+      "name": "v6 Typed Relation Operations and Search Migration",
+      "milestone": "M11",
+      "spec_sections": [
+        "Relation Operations",
+        "Cardinality",
+        "Generated Code",
+        "Testing"
+      ]
+    },
+    {
+      "id": "S26",
+      "name": "v6 Ordered Timeline Recurrence",
+      "milestone": "M11",
+      "spec_sections": [
+        "Ordered Timeline Scan",
+        "Backend Capabilities",
+        "Traceability",
+        "Testing"
+      ]
+    },
+    {
+      "id": "S27",
+      "name": "v6 Release Evidence and Challenge Closure",
+      "milestone": "M11",
+      "spec_sections": [
+        "Compatibility",
+        "Operational Integration",
+        "Diagnostics",
+        "Testing",
+        "Governance"
+      ]
     }
   ]
 }

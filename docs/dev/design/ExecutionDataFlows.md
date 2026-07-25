@@ -1,76 +1,51 @@
-﻿# Design: Execution and Data Flows
+# Design: Execution and Data Flows
 
 ## Compile Flow
 
 ```text
-1. Load config.
-2. Discover source modules.
-3. Inspect schemas and transforms.
-4. Symbolically execute step methods in source order.
-5. Build TransformPlan IR.
-6. Run compileability checks.
-7. Lower checked IR to shared PySpark execution recipes.
-8. Emit PySpark schema modules.
-9. Emit PySpark transform classes from the shared recipes.
-10. Emit runtime support.
-11. Build compiler provenance.
-12. Infer static dataflow traceability.
-13. Format changed files.
-14. Report compile metrics.
+1. Resolve Core configuration and transform target.
+2. Discover eligible plugin metadata, then load and negotiate the selected Plugin API.
+3. Discover schemas and transforms.
+4. Core analyzes inheritance, bindings, lanes, source order, outputs, hooks, and routing.
+5. Core invokes the plugin authoring facet for each step and stores its opaque body.
+6. The plugin schema and compiler facets validate target semantics and lower the completed plan.
+7. Core wraps the opaque payload in a versioned artifact envelope.
+8. Core optionally asks the plugin generator for source, validates every relative path, and writes files.
 ```
 
-## Execution Runtime Flow
+The compiler never imports a target implementation merely to inspect configuration. For PySpark, ordinary compiler
+commands need neither PySpark nor a Spark session.
+
+## Runtime Flow
 
 ```text
-1. Caller creates SparkSession.
-2. Caller creates StructureSession with spark, optional ctx, and optional config.
-3. Caller constructs a transform invocation with named input DataFrames.
-4. Transform.run(session) delegates to StructureSession.run(transform).
-5. Session resolves execution_mode, target_backend, and target_profile.
-6. Session selects OnlinePySparkRunner.
-7. Runner compiles or retrieves TransformPlan IR.
-8. Runner lowers checked IR to shared PySpark execution recipes.
-9. Runner validates inputs according to recipes.
-10. Runner executes DataFrame operations and hooks in recipe order.
-11. Runner validates intermediates and final output according to recipes.
-12. Caller writes or further composes the returned DataFrame.
+1. Caller creates and owns the target runtime (a SparkSession for PySpark).
+2. Caller creates StructureSession(runtime=..., target=..., context=..., config=...).
+3. Caller creates a transform invocation with named declared inputs.
+4. Transform.run(session) asks Core to resolve the transform's one target.
+5. Core retrieves or builds a compatible artifact and calls the selected plugin executor.
+6. The executor evaluates the opaque target payload and returns target output values.
+7. Core exposes those values through the standard TransformResult boundary.
 ```
 
-## Runtime Batch Flow
+The explicit `target=` is session- or invocation-local. It does not mutate project configuration or create a process-wide
+active plugin. A transform decorator target and an explicit target must agree.
+
+## PySpark Runtime Flow
 
 ```text
-1. Airflow or job creates SparkSession.
-2. Caller reads input DataFrames.
-3. Caller runs a transform online through StructureSession, or imports a generated transform class when configured for
-   generated mode.
-4. Runtime validates inputs.
-5. Runtime executes DataFrame operations.
-6. Runtime validates intermediates by default.
-7. Runtime calls hooks where explicit.
-8. Runtime validates final output.
-9. Caller writes result.
+caller-owned SparkSession + DataFrames
+        |
+        v
+StructureSession(runtime=spark)
+        |
+        v
+selected PySpark executor
+        |
+        v
+PySpark-owned recipes -> DataFrame operations and hooks -> TransformResult
 ```
 
-## Runtime Streaming-Compatible Flow
-
-```text
-1. Caller creates streaming DataFrame using Spark readStream.
-2. Caller passes streaming DataFrame to an execution or generated-code execution transform.
-3. Runtime applies streaming-compatible DataFrame operations.
-4. Caller owns writeStream, trigger, output mode, checkpoint, and lifecycle.
-```
-
-## Serial N-Join Flow
-
-```text
-Input A
-  -> normalize
-  -> join B
-  -> join C
-  -> join D
-  -> ...
-  -> final schema
-```
-
-The architecture does not special-case three inputs. Any number of named inputs can be declared, and source-ordered
-step methods can use them.
+The PySpark executor validates inputs and outputs and applies the configured intermediate-validation policy. The
+generated PySpark module renders the same lowered recipes. The caller continues to own reads, writes, Spark
+configuration, streaming query construction, triggers, checkpoints, sinks, and session lifecycle.

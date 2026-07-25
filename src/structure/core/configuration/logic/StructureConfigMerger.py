@@ -9,7 +9,11 @@ from structure.core.configuration.model.ConfigError import ConfigError
 class StructureConfigMerger:
 
     _retired = {
-        "target_pyspark": 'Use target_profile = ">=3.5,<4.1".',
+        "compat_targets": "Select a plugin with plugin.default; a multi-target compatibility matrix is not configured by Core.",
+        "target_backend": 'Use [tool.structure.plugin] default = "pyspark".',
+        "target_pyspark": 'Use [tool.structure.plugin.pyspark] profile = ">=3.5,<4.1".',
+        "target_profile": 'Use [tool.structure.plugin.pyspark] profile = ">=3.5,<4.1".',
+        "target_variant": 'Use [tool.structure.plugin.pyspark] variant = "ordinary".',
     }
 
     def __init__(self, keys: set[str]) -> None:

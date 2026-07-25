@@ -24,10 +24,15 @@ class CompilerAPI(CompilerAPIV1):
                 fingerprint=plan.name,
                 diagnostics=self._udf_diagnostics(plan, enabled=bool(options.get("warn_on_udfs", True))),
             )
+        plugin_options = request.plugin_options
         capabilities = PySpark.capabilities.resolve()(
-            profile=str(options.get("profile", "")), variant=str(options.get("variant", ""))
+            profile=str(plugin_options.get("profile", "")), variant=str(plugin_options.get("variant", ""))
         )
-        lowered = PySpark.compiler.lower()(plan, capabilities=capabilities)
+        lowered = PySpark.compiler.lower()(
+            plan,
+            capabilities=capabilities,
+            check_intermediate=bool(options.get("validate_intermediate", True)),
+        )
         schemas = (
             PySpark.schema.build()(lowered, types=options.get("schema_types"))
             if options.get("materialize_schemas", True)

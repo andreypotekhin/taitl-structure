@@ -3,6 +3,7 @@ from structure.plugin.api.v1.model.CompilationPurpose import CompilationPurpose
 from structure.plugin.api.v1.model.ExecutionRequest import ExecutionRequest
 from structure.plugin.api.v1.model.ExplainRequest import ExplainRequest
 from structure.plugin.api.v1.model.GenerationRequest import GenerationRequest
+from structure.plugin.api.v1.model.GenerationResult import GenerationResult
 from structure.plugin.api.v1.model.InputPlan import InputPlan
 from structure.plugin.api.v1.model.HookPlan import HookPlan
 from structure.plugin.api.v1.model.OutputPlan import OutputPlan
@@ -54,7 +55,7 @@ _CORE_CONTRACTS = {
 }
 
 __all__ = [
-    "CompilationPurpose", "CompileRequest", "ExecutionRequest", "ExplainRequest", "GenerationRequest", "InputPlan", "PluginCompilation",
+    "CompilationPurpose", "CompileRequest", "ExecutionRequest", "ExplainRequest", "GenerationRequest", "GenerationResult", "InputPlan", "PluginCompilation",
     "SchemaInspectionRequest", "SchemaValidationRequest", "StepAuthoringCapture", "StepAuthoringInput", "StepAuthoringRequest", "HookPlan",
     "StepAuthoringResult", "StepAuthoringSession", "StepInputPlan", "StepPlan", "StepResultPlan", "StreamingAnalysisRequest", "StreamingSupport",
     "SymbolicContext", "OutputPlan", "TraceabilityRequest", "TransformMemberOrigin", "TransformPlan", "TransformSchemaRequest", "current_symbolic_context",

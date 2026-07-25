@@ -67,9 +67,7 @@
         "generated_dir",
         "generated_package",
         "generated_code_options",
-        "target_backend",
-        "target_profile",
-        "target_variant",
+        "target",
         "validate_inputs",
         "input_validation_mode",
         "validate_intermediate",
@@ -85,7 +83,7 @@
       "kind": "class",
       "module": "structure.core.compiler.artifacts.model.CompilerOptions",
       "qualname": "CompilerOptions",
-      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_code_options: 'tuple[str, ...]', target_backend: 'str', target_profile: 'str', target_variant: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', schema_types_key: 'str | None' = None, plugin_options: 'Mapping[str, Mapping[str, object]]' = <factory>) -> None"
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_code_options: 'tuple[str, ...]', target: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', schema_types_key: 'str | None' = None, plugin_options: 'Mapping[str, Mapping[str, object]]' = <factory>) -> None"
     },
     "DiskStorage": {
       "dataclass_fields": [],
@@ -184,10 +182,7 @@
         "generated_docs_formats",
         "generated_code_options",
         "execution_mode",
-        "target_backend",
-        "target_profile",
-        "target_variant",
-        "compat_targets",
+        "target",
         "hook_target_default",
         "traceability",
         "validate_inputs",
@@ -207,7 +202,7 @@
       "kind": "class",
       "module": "structure.core.configuration.model.StructureConfig",
       "qualname": "StructureConfig",
-      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_docs: 'bool', generated_docs_dir: 'Path', generated_docs_formats: 'tuple[str, ...]', generated_code_options: 'tuple[str, ...]', execution_mode: 'str', target_backend: 'str', target_profile: 'str', target_variant: 'str', compat_targets: 'tuple[str, ...]', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', plugin_options: 'Mapping[str, Mapping[str, object]]', source_map: 'Mapping[str, str]') -> None"
+      "signature": "(project_root: 'Path', source_roots: 'tuple[Path, ...]', generated_dir: 'Path', generated_package: 'str', generated_docs: 'bool', generated_docs_dir: 'Path', generated_docs_formats: 'tuple[str, ...]', generated_code_options: 'tuple[str, ...]', execution_mode: 'str', target: 'str', hook_target_default: 'tuple[str, ...] | str', traceability: 'str', validate_inputs: 'bool', input_validation_mode: 'str', validate_intermediate: 'bool', intermediate_validation_mode: 'str', validate_outputs: 'bool', output_validation_mode: 'str', strict_performance: 'bool', warn_on_udfs: 'bool', fail_on_diff: 'bool', spark_sql: 'Mapping[str, object]', plugin_options: 'Mapping[str, Mapping[str, object]]', source_map: 'Mapping[str, str]') -> None"
     },
     "StructureRuntimeError": {
       "dataclass_fields": [],
@@ -223,7 +218,7 @@
       "kind": "class",
       "module": "structure.core.runtime.session.model.StructureSession",
       "qualname": "StructureSession",
-      "signature": "(*, spark=None, runtime=None, ctx=None, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, execution_mode: 'str | None' = None, target: 'str | None' = None, target_backend: 'str | None' = None, target_profile: 'str | None' = None, target_variant: 'str | None' = None, generated_package: 'str | None' = None, schema_types=None, online_executor: 'Callable[..., object] | None' = None, storage=None, artifacts: 'CompiledArtifactPool | None' = None) -> 'None'"
+      "signature": "(*, spark=None, runtime=None, ctx=None, config: 'StructureConfig | None' = None, project_root: 'Path | str | None' = None, execution_mode: 'str | None' = None, target: 'str | None' = None, generated_package: 'str | None' = None, schema_types=None, online_executor: 'Callable[..., object] | None' = None, storage=None, artifacts: 'CompiledArtifactPool | None' = None) -> 'None'"
     },
     "StructureSources": {
       "dataclass_fields": [

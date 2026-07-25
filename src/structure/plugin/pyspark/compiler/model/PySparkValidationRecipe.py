@@ -12,3 +12,4 @@ class PySparkValidationRecipe:
     mode: SchemaMode
     project: bool
     reason: str
+    check: bool = True

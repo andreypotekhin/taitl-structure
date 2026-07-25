@@ -1,126 +1,90 @@
-﻿# Architecture
+# Architecture
 
-Structure is an IR-first runtime/compiler toolkit for schema-driven data pipelines. PySpark is the runtime and
-generation target, but the compiler core is designed to remain backend-neutral.
-
-It is not intended to be a heavy runtime framework. Source DSL files compile to backend-neutral IR. That IR can
-be consumed by the online PySpark runner at runtime or by the PySpark code generator to emit optional generated classes.
+Structure is a schema-driven compiler and runtime toolkit. Core owns the public workflow: it discovers source,
+resolves configuration and a plugin target, analyzes transform structure, manages artifacts, and presents diagnostics.
+A selected plugin owns the target language and runtime semantics. The bundled PySpark plugin is the supported target;
+the public Plugin API also permits independently packaged plugins.
 
 ## Goals
 
-- Schema-first authoring.
-- IDE-friendly source code.
-- Spark optimizer-visible execution and generated-code execution.
-- Explicit arbitrary target-scoped hooks.
-- Clean hook-free generated code.
-- Lightweight runtime session.
-- Fast compiler feedback.
-- Version-aware PySpark target boundary.
+- Schema-first, IDE-friendly transform authoring.
+- Optimizer-visible target execution and optional generated code.
+- One explicit target per transform and composed pipeline.
+- Plugin-owned target DSLs without target imports in Core workflows.
+- Spark-free compiler-only commands for the bundled PySpark plugin.
+- Caller-owned Spark, streaming, input/output, and orchestration lifecycle.
 
 ## High-Level Data Flow
 
 ```text
-src/orders/
-  schemas/
-  transforms/
-
-        -> compiler frontend
-
-compiler
-  config
-  discovery
-  symbolic execution
-  compileability checks
-  IR generation
-  compiler provenance
-  static dataflow traceability
-
-        -> execution
-
-StructureSession
-  OnlinePySparkRunner
-  PySpark DataFrame operations
-
-        -> optional structure compile
-
-generated/structure_generated/
-  orders/pyspark/
-    schemas/
-    transforms/
-  runtime/
-  traceability/  # compiler metadata, not runtime telemetry
-
-        -> generated-code execution
-
-Airflow / Spark job imports generated code when configured
+source schemas and transforms
+        |
+        v
+Core: configuration, discovery, structural analysis, target resolution
+        |
+        v
+selected Plugin API: schema + authoring + compiler + capabilities
+        |
+        v
+Core artifact envelope (opaque plugin payload)
+        |                         |
+        v                         v
+Plugin executor              Plugin generator
+        |                         |
+        v                         v
+target runtime               Core-owned generated-file write
 ```
 
-## Major Components
+Core creates no globally active target. It discovers package entry-point metadata before importing an implementation,
+selects one plugin by name, negotiates the highest mutually supported Plugin API version, and invokes the resulting
+facade. An artifact records its plugin identity, negotiated API version, selected plugin options, and opaque payload
+version so it cannot silently run under a different plugin contract.
 
-- DSL
-- Schema model
-- Discovery and inspection
-- Symbolic execution engine
-- Intermediate representation
-- Compileability checker
-- Execution runtime
-- PySpark code generator
-- Runtime support library
-- CLI
+## Ownership Boundary
 
-Each component has a detailed design document under `docs/dev/design/`.
+`structure` exports target-neutral declarations such as `Schema`, `Transform`, `input`, `output`, and
+`StructureSession`. Target DSL names belong to a plugin package. A PySpark project therefore imports its field
+definitions, expressions, joins, and hooks from `structure.plugin.pyspark`.
 
-## Backend Boundary
+Core owns structural transform semantics: inheritance, input and lane bindings, source order, output routing, artifact
+envelopes, cache identity, file lifecycle, and diagnostic presentation. The plugin authoring facet provides symbolic
+arguments and captures a step body. The plugin compiler validates and lowers that opaque body. Core transports opaque
+plugin values but does not inspect them to infer target semantics.
 
-The compiler produces backend-neutral IR. The online PySpark runner lowers IR to live PySpark DataFrame and Column
-objects. The PySpark code generator lowers IR to concrete PySpark source code.
+The required Plugin API facets are schema, authoring, compiler, and capabilities. Execution, generation, and
+serialization are optional only when the plugin capability report declares the corresponding lifecycle unavailable.
+Core owns the workflow around every facet: for example, it owns generated-file validation and atomic writes while a
+plugin generator supplies relative paths and content.
 
-Execution and generated-code execution share a target semantic contract. Checked `TransformPlan` IR plus
-`PySparkCapabilities` lowers to deterministic PySpark execution recipes before either runtime path consumes it. The
-online runner interprets those recipes with live PySpark objects. The generated emitter renders those same recipes as
-source text. The contract is specified in [ExecutionSemanticContract.md](specifications/ExecutionSemanticContract.md) and designed in
-[ExecutionSemanticContract.md](design/ExecutionSemanticContract.md).
+## Selection and Configuration
 
-This boundary is important for keeping up with PySpark evolution. PySpark API compatibility should be isolated in the
-PySpark target layer rather than scattered across discovery, symbolic execution, or checks. The exact boundary is the
-backend capability interface specified in [BackendCapabilities.md](specifications/BackendCapabilities.md) and designed in
-[BackendCapabilities.md](design/BackendCapabilities.md).
+Each transform resolves exactly one target in this order: `@transform(target=...)`, an explicit caller `target=`, then
+`plugin.default`. A composed pipeline must resolve to one identical target before any target service runs. A project may
+contain independent transforms for different installed plugins, but Structure does not translate or compose data across
+plugin boundaries.
 
-Compiler phases must not depend on a live Spark installation. Discovery, schema extraction, symbolic execution,
-compileability checks, IR construction, code generation, compiler provenance, static dataflow traceability, and
-generated-file diff checks run without PySpark imports, Java, a SparkSession, or a Spark cluster. Execution and generated-code execution
-PySpark execution may depend on PySpark at runtime; the compiler itself must not.
+Plugin selection is configured under `[tool.structure.plugin]`; target-specific options live in
+`[tool.structure.plugin.<name>]`. The PySpark plugin owns its `profile` and `variant` options. CLI commands use
+`--target`; Python sessions use `StructureSession(target=...)`; capability and schema-tool workflows accept the same
+generic target name. See [PluginConfiguration.md](specifications/PluginConfiguration.md).
 
-Spark-free compilation does not mean Structure reimplements the whole PySpark API. The compiler owns a curated
-semantic surface: schema projections, predicates, joins, validations, and later feature families such as aggregations,
-windows, arrays, maps, and higher-order expressions. Each compiler-visible feature is represented as Structure DSL and
-IR first, then lowered to PySpark target recipes. Rare, highly backend-specific, or arbitrary DataFrame logic remains
-an explicit hook boundary instead of becoming a thin Structure wrapper around every Spark function.
+## PySpark Plugin
 
-The v1 default target is `target_profile = ">=3.5,<4.1"`, covering PySpark 3.5.x and 4.0.x. The PySpark target layer
-should prefer the oldest clear optimizer-visible API inside the configured range. Unsupported backend targets and
-unsupported feature requirements fail through `BACKEND-E2401` and `BACKEND-E2402`.
+The bundled `pyspark` plugin supplies the supported PySpark 3.5.x and 4.0.x target behavior, including schema
+materialization, DSL authoring, capability rules, lowering, execution, rendering, and target diagnostics. Its
+`ordinary` and `spark-connect` variants are plugin options, not Core concepts. Compiler-only workflows remain free of
+PySpark, Java, SparkSession, and cluster startup; runtime execution receives a caller-owned Spark session.
 
-Alternative backend support must follow the same boundary. The compiler-visible Structure source should lower to
-backend-neutral IR, then the selected target adapter checks capabilities and lowers that IR to a target execution plan
-or generated artifact. Candidate future targets are Python-hosted: Spark SQL and typed PySpark DataFrame patterns first,
-then post-v4 Polars LazyFrame, DuckDB, and Ibis. Other targets should come through Ibis when practical. They must be
-admitted by capability profile, target adapter, diagnostics, and tests rather than by ad hoc source rewrites. The design
-is described in [AlternativeBackends.md](design/AlternativeBackends.md) and specified in
-[AlternativeBackends.md](specifications/AlternativeBackends.md).
+Online and generated execution consume one PySpark-owned lowered semantic contract, preserving parity in expression
+lowering, validation placement, hooks, aliases, and projection shape. Structure never takes ownership of Spark session
+creation or termination, reads, writes, streaming queries, checkpoints, triggers, or orchestration.
 
-Hooks are the exception to the same-source goal. Hook bodies are opaque runtime code and may rely on one backend's
-DataFrame API. Future hook metadata must make that scope explicit through `target_backend` or an inherited
-`hook_target_default`, and runtime execution must never invoke a hook against a backend outside its effective target
-set.
+## Extension Boundary
 
-Spark Connect belongs inside this PySpark target boundary as `target_variant = "spark-connect"`. End-of-v2
-experimental parity is acceptable for completed batch features only if it does not change public DSL syntax, online
-invocation construction, generated class construction, `run(...)` signatures, or streaming orchestration semantics.
+External plugins are normal Python distributions with a `structure.plugin` entry point and a vendor-owned import
+package. They implement the public Plugin API only and can verify their descriptor, negotiation, and required facets
+with `PluginConformance`. The repository's finite Iterable example is conformance evidence and a teaching example, not
+a supported production target.
 
-## Compile-Time Performance
-
-Compile-time performance is a product metric.
-
-The compiler should avoid Spark dependencies during normal `check` and `compile`. It should preserve deterministic
-outputs and source fingerprints so a later incremental-compile feature can arrive without reshaping the compiler.
+Private Core engine replacement is deliberately outside the public Plugin API and disabled by default. It is
+target-local, exact-revision-gated, and documented only in [PluginArchitecture.md](design/PluginArchitecture.md).

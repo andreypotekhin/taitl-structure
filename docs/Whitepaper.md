@@ -306,7 +306,8 @@ and live streaming evidence.
 ## Compatibility Policy
 
 Structure targets Python 3.11+ and execution/generated-code execution for PySpark 3.5.x and 4.0.x. The default project
-settings are `execution_mode = "online"`, `target_profile = ">=3.5,<4.1"`, and `target_variant = "ordinary"`.
+settings are `execution_mode = "online"` and the PySpark plugin options `profile = ">=3.5,<4.1"` and
+`variant = "ordinary"` under `[tool.structure.plugin.pyspark]`.
 
 Execution and generated-code execution target ordinary PySpark `SparkSession`, `DataFrame`, and `Column` APIs by default.
 Spark Connect supports completed compiler-visible batch features; streaming remains caller-owned ordinary PySpark work.

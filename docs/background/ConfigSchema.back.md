@@ -6,6 +6,41 @@ allowed values.
 
 This reference covers configuration files, resolution order, keys, defaults, validation rules, diagnostics, and tests.
 
+## Plugin Configuration
+
+Plugin selection replaces the root-level `target_backend`, `target_profile`, `target_variant`, and `compat_targets` configuration
+with plugin selection and plugin-owned option tables. Core validates selection syntax and passes the selected plugin
+only its own immutable option mapping; a plugin owns the meaning of its option keys.
+
+```toml
+[tool.structure]
+execution_mode = "online"
+
+[tool.structure.plugin]
+default = "pyspark"
+disabled_distributions = []
+
+[tool.structure.plugin.pyspark]
+profile = ">=3.5,<4.1"
+variant = "ordinary"
+```
+
+`plugin.default` is the configured fallback target. A transform resolves one target from its decorator, an explicit
+workflow `target=`, then this default. `plugin.disabled_distributions` prevents matching normalized Python
+distribution identities from becoming eligible during metadata discovery. `plugin.plugin_options = "allow_injection"`
+is the sole private-engine opt-in; it is absent by default and is not public plugin behavior.
+
+A higher-precedence `plugin.<name>` table merges by key with the same lower-precedence table; lists replace rather
+than append. Core does not require a configured plugin to be installed until a workflow selects it. The selected plugin
+then receives only that table. PySpark owns `plugin.pyspark.profile` and `plugin.pyspark.variant`; Core treats both as
+opaque plugin options.
+
+CLI `--target`, `StructureSession(target=...)`, capability resolution, and schema tooling use the same generic target
+name. A target selection never changes configuration files or creates process-wide active-plugin state. A composed
+pipeline must resolve one identical target before a plugin service facet runs.
+
+The normative selection contract is [PluginConfiguration.md](../dev/specifications/PluginConfiguration.md).
+
 ## Configuration Sources
 
 Supported sources, lowest to highest precedence:

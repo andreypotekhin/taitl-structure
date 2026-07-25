@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib
 import sys
 from contextlib import contextmanager
 from pathlib import Path
@@ -668,6 +669,102 @@ def render_search_example() -> dict[str, str]:
 
 def expected_search_generated() -> dict[str, str]:
     return _expected_generated("search")
+
+
+def render_school_iterable_example() -> dict[str, str]:
+    plugin = str(ROOT / "examples/plugins/iterable/src")
+    sys.path.insert(0, plugin)
+    try:
+        from structure.plugin.api.v1 import GenerationRequest
+
+        authoring = importlib.import_module("structure_iterable.authoring.Authoring")
+        compiler = importlib.import_module("structure_iterable.compiler.Compiler")
+        generation = importlib.import_module("structure_iterable.generation.Generation")
+        schemas = importlib.import_module("examples.school.schemas.sequences")
+
+        scores = compiler.IterableRecipe(
+            name="ProjectIterableScores",
+            inputs=("students", "profiles", "awards"),
+            outputs=("reports", "audits"),
+            steps=(
+                compiler.IterableStep(
+                    name="project_scores",
+                    inputs=("students", "profiles", "awards"),
+                    results=("reports", "audits"),
+                    body=authoring.IterableStepBody(
+                        joins=(
+                            authoring.Join("left", "profiles", authoring.Field("students", "student"), authoring.Field("profiles", "student")),
+                            authoring.Join("left", "awards", authoring.Field("students", "student"), authoring.Field("awards", "student")),
+                        ),
+                        projections=(
+                            authoring.Projection(
+                                schemas.StudentReport,
+                                {
+                                    "student": authoring.Field("students", "student"),
+                                    "score": authoring.Field("students", "score"),
+                                    "cohort": authoring.Field("profiles", "cohort"),
+                                    "award": authoring.Field("awards", "award"),
+                                },
+                            ),
+                            authoring.Projection(
+                                schemas.StudentAudit,
+                                {"student": authoring.Field("students", "student"), "score": authoring.Field("students", "score")},
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+        sequences = compiler.IterableRecipe(
+            name="Fibonacci",
+            inputs=("rows",),
+            outputs=("result",),
+            steps=(
+                compiler.IterableStep(
+                    name="generate",
+                    inputs=("rows",),
+                    results=("result",),
+                    body=authoring.IterableStepBody(
+                        joins=(),
+                        projections=(
+                            authoring.Projection(
+                                schemas.FibonacciRow,
+                                {"index": authoring.Field("rows", "index"), "fibonacci": authoring.StateValue(0)},
+                            ),
+                        ),
+                        scan=authoring.Scan(
+                            initial=(0, 1),
+                            next=(authoring.StateValue(1), authoring.BinaryStateExpression("add", authoring.StateValue(0), authoring.StateValue(1))),
+                        ),
+                    ),
+                ),
+            ),
+        )
+        files = generation.Generation().generate(
+            GenerationRequest(
+                payload={"examples.school.transforms.iterable.ProjectIterableScores": scores},
+                source_module="examples.school.transforms.iterable",
+                generated_package="structure_generated.school",
+            )
+        ).files
+        files = {
+            **files,
+            **generation.Generation().generate(
+                GenerationRequest(
+                    payload={"examples.school.transforms.sequences.Fibonacci": sequences},
+                    source_module="examples.school.transforms.sequences",
+                    generated_package="structure_generated.school",
+                )
+            ).files,
+        }
+        return {f"examples/{path}": text for path, text in files.items()}
+    finally:
+        sys.path.remove(plugin)
+        _drop("structure_iterable")
+
+
+def expected_school_iterable_generated() -> dict[str, str]:
+    return _expected_generated("school")
 
 
 def _expected_generated(example: str) -> dict[str, str]:

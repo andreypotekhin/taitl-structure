@@ -92,13 +92,18 @@ def _target_profile() -> str:
     return ">=3.5,<4.1"
 
 
+def _plugin() -> dict[str, dict[str, str]]:
+    return {"pyspark": {"profile": _target_profile(), "variant": target_variant()}}
+
+
 def session(spark, *, execution_mode: str, generated_package: str | None = None) -> StructureSession:
     return StructureSession(
         spark=spark,
-        execution_mode=execution_mode,
-        generated_package=generated_package,
-        target_profile=_target_profile(),
-        target_variant=target_variant(),
+        config=StructureConfig.create(
+            execution_mode=execution_mode,
+            generated_package=generated_package or "structure_generated",
+            plugin=_plugin(),
+        ),
     )
 
 
@@ -113,8 +118,7 @@ def render_generated_project(
     artifact = transform_type.compile(
         generated_package=generated_package,
         generated_code_options=generated_code_options,
-        target_profile=_target_profile(),
-        target_variant=target_variant(),
+        plugin=_plugin(),
     )
     return PySpark.render.project()(
         artifact.pyspark_plan,
@@ -139,8 +143,7 @@ def render_generated_projects(
         artifact = transform_type.compile(
             generated_package=generated_package,
             generated_code_options=generated_code_options,
-            target_profile=_target_profile(),
-            target_variant=target_variant(),
+            plugin=_plugin(),
         )
         source_module = source_transform.rsplit(".", 1)[0]
         plans_by_module.setdefault(source_module, {})[source_transform] = artifact.pyspark_plan

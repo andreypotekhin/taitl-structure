@@ -346,19 +346,34 @@ the breaking v5 migration.
 - The full build and supported PySpark integration matrix pass, and v5 migration, extension, troubleshooting, and
   release documentation are complete.
 
-## M11: v6 Ordered Timeline Scans and Typed Recurrence Transforms
+## M11: v6 Typed PySpark API Closure, Example-Hook Retirement, and Bounded Recurrence
 
-Status: scheduled after M10. The execution plan is
-`docs/dev/planning/P07182601.V6-timeline-scan-recurrence.plan.md`.
+Status: scheduled after M10. The release program is governed by
+`docs/dev/planning/P07242604.V6-pyspark-api-and-example-hook-retirement.plan.md`; bounded recurrence remains governed
+by `docs/dev/planning/P07182601.V6-timeline-scan-recurrence.plan.md`.
 
 ### Exit Criteria
 
-- A normal transform consumes a caller-provided finite timeline DataFrame and produces one typed output row per
-  timeline row through a PySpark-plugin `scan(...)` expression.
-- Scan state has a declared Schema type, an initial state, an explicit partition/order contract, a deterministic
-  duplicate-key failure, and a positive per-partition maximum.
-- The bounded batch PySpark lowering is optimizer-visible, has no UDF/RDD/Pandas/action/driver-loop fallback, and has
-  online/generated parity and generated-source evidence.
-- Fibonacci fixtures prove correct recurrence values and independent state reset for separate timeline partitions.
-- Streaming, global/unbounded scans, input-less transforms, persistent invocation state, and generic row generators
-  remain explicitly unsupported.
+- The PySpark API ledger classifies every remaining v4 catalog gap and every shipped-example raw hook as implemented,
+  scheduled, deferred with a reason, or intentionally raw.
+- The public PySpark façade is stable while the former fat modules are divided into focused operation, expression,
+  symbolic-result, traceability, online-execution, step-rendering, and module-rendering delegates.
+- Security's reconciliation hooks are replaced by ordinary typed step methods using lambda-bound struct fields; their
+  generated code, execution plan, and traceability no longer expose opaque hook boundaries.
+- Partitioned analytic maximum, deterministic ordered collection, exactly-one validation, and global aggregation have
+  documented type/cardinality/empty-input semantics and online/generated/live evidence; aggregate-only methods retain
+  global aggregation without requiring a preceding `group_by(...)` call.
+- At least one shipped ordinary-PySpark `@special(type="udf")` example demonstrates its explicit return/nullability
+  contract and warning behavior. It is not a fallback and remains excluded from Spark Connect.
+- Typed generator, set composition, self-alias, ordering, limit, and offset operations retire the corresponding
+  Search hooks only where a same-fixture output comparison proves equivalence. Hooks that remain have an explicit P2
+  rationale.
+- A normal transform consumes a caller-provided finite timeline and produces one typed output row per timeline row
+  through `scan(...)`; the scan has declared state, partition/order keys, duplicate-key failure, and a positive bound.
+- Generated and online PySpark use public DataFrame/Column APIs only: no implicit UDF, RDD, Pandas, action, driver
+  loop, or raw-hook fallback claims typed feature support. Explicit user-authored scalar UDFs remain separately
+  capability-checked and warning-governed.
+- Challenges C27--C34 are resolved, deferred with a named follow-up, or escalated to an owner decision; C28/C30
+  documentation and test obligations are fulfilled and C31 is clearly marked as awaiting project-owner authority if
+  it remains undecided.
+- `make build`, generated artifacts, capability/AST boundary checks, and required live PySpark 3.5/4.0 evidence pass.

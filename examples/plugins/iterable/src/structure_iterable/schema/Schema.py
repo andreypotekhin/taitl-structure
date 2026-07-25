@@ -1,7 +1,8 @@
+from structure.plugin.api.v1 import SchemaAPI as SchemaAPIV1
 from structure.plugin.api.v1 import SchemaInspectionRequest, SchemaValidationRequest, TransformSchemaRequest
 
 
-class Schema:
+class Schema(SchemaAPIV1):
     """Pass-through schema facet for mapping rows in the starter plugin."""
 
     def validate(self, request: SchemaValidationRequest) -> None:

@@ -17,7 +17,9 @@ class ReadPySparkSchema:
             try:
                 return spark.table(request.from_table).schema
             except Exception as error:
-                if PySpark.capabilities.spark_connect().session(session=request, spark=spark):
+                if request.plugin_options.get("variant") == "spark-connect" or PySpark.capabilities.spark_connect().session(
+                    session=request, spark=spark
+                ):
                     raise self._spark_connect_error("table", request.from_table, error) from error
                 raise
 
@@ -27,7 +29,9 @@ class ReadPySparkSchema:
         try:
             return reader.format(request.format).load(request.from_path).schema
         except Exception as error:
-            if PySpark.capabilities.spark_connect().session(session=request, spark=spark):
+            if request.plugin_options.get("variant") == "spark-connect" or PySpark.capabilities.spark_connect().session(
+                session=request, spark=spark
+            ):
                 raise self._spark_connect_error("path", request.from_path, error) from error
             raise
 

@@ -25,7 +25,7 @@ Below is an index for published diagnostic codes. For the full diagnostic contra
 | ONLINE-E1203 | error | Execution mode is unsupported | Use `execution_mode = "online"` or `execution_mode = "generated"`. |
 | BACKEND-E2401 | error | Unsupported backend target | Set `plugin.default` to an installed plugin target. |
 | BACKEND-E2402 | error | Unsupported backend capability | Choose a supported operation or use a hook. |
-| CONNECT-E2601 | error | Spark Connect boundary is unsupported | Use Spark Connect DataFrame APIs or `target_variant = "ordinary"`. |
+| CONNECT-E2601 | error | Spark Connect boundary is unsupported | Use Spark Connect DataFrame APIs or set `plugin.pyspark.variant = "ordinary"`. |
 | CLI-X1101 | internal | Unexpected internal failure | Rerun with debug output and report the code with a reproduction. |
 | STREAM-E0801 | error | Transform is not streaming-compatible | Keep the transform batch-only or rewrite the unsupported shape. |
 | STREAM-W0801 | warning | Hook streaming compatibility is unknown | Mark the hook `streaming=True` only after verifying it. |

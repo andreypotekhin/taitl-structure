@@ -124,7 +124,7 @@ def test_v1_session_convenience_overrides_win_over_project_config() -> None:
 def test_v5_session_target_override_selects_a_plugin() -> None:
     session = StructureSession(target="pyspark", schema_types=FakeTypes)
 
-    assert session.target_backend == "pyspark"
+    assert session.target == "pyspark"
 
 
 def test_v1_session_uses_supplied_config() -> None:
@@ -142,7 +142,8 @@ def test_v1_session_compiler_options_match_project_config() -> None:
     with workspace_tmp() as root:
         (root / "src").mkdir()
         (root / "structure.toml").write_text(
-            '[tool.structure]\ntarget_profile = ">=3.5,<4.1"\ngenerated_package = "project_generated"\n',
+            '[tool.structure]\ngenerated_package = "project_generated"\n'
+            '[tool.structure.plugin.pyspark]\nprofile = ">=3.5,<4.1"\n',
             encoding="utf-8",
         )
 
@@ -587,7 +588,7 @@ def test_v1_generated_spark_connect_classic_only_failure_reports_boundary() -> N
         fingerprint=_fingerprint(
             EnrichOrders,
             generated_package="testing.model.v1.structure_generated.orders",
-            target_variant="spark-connect",
+            plugin={"pyspark": {"variant": "spark-connect"}},
         ),
     )
     try:
@@ -599,10 +600,12 @@ def test_v1_generated_spark_connect_classic_only_failure_reports_boundary() -> N
         )
         session = StructureSession(
             spark="spark",
-            execution_mode="generated",
-            generated_package="testing.model.v1.structure_generated.orders",
             schema_types=FakeTypes,
-            target_variant="spark-connect",
+            config=StructureConfig.create(
+                execution_mode="generated",
+                generated_package="testing.model.v1.structure_generated.orders",
+                plugin={"pyspark": {"variant": "spark-connect"}},
+            ),
         )
 
         with pytest.raises(StructureRuntimeError) as raised:

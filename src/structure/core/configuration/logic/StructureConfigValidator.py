@@ -13,8 +13,6 @@ class StructureConfigValidator:
 
     _enums = {
         "execution_mode": ("online", "generated"),
-        "target_backend": ("pyspark",),
-        "target_variant": ("ordinary", "spark-connect"),
         "traceability": ("none", "compiler", "columns", "debug"),
         "input_validation_mode": ("off", "schema_only", "schema_and_constraints"),
         "intermediate_validation_mode": ("off", "schema_only", "schema_and_constraints"),
@@ -37,9 +35,8 @@ class StructureConfigValidator:
         if not values["source_roots"] and not allow_empty_source_roots:
             self._fail_invalid("source_roots", "source_roots cannot be empty", 'Set source_roots = ["src"].')
 
-        for key in ("generated_dir", "generated_package", "generated_docs_dir", "target_profile"):
+        for key in ("generated_dir", "generated_package", "generated_docs_dir"):
             self._validate_type(values[key], key, str)
-        self._validate_string_list(values["compat_targets"], "compat_targets", "Use compat_targets = [\"polars\"].")
         self._validate_string_list(
             values["generated_docs_formats"],
             "generated_docs_formats",

@@ -42,7 +42,7 @@ class BuildCompiledTransform:
             registry=self._registry,
         )
         if not isinstance(compilation.analysis, TransformPlan):
-            raise ValueError(f"PLUGIN-E2708: Plugin {options.target_backend!r} returned an invalid compilation.")
+            raise ValueError(f"PLUGIN-E2708: Plugin {options.target!r} returned an invalid compilation.")
         schemas = self._schemas(compilation.schemas, materialize=materialize_schemas)
         artifact = CompiledTransform(
             key=self.key(subject, options=options, manifest=manifest.fingerprint),
@@ -77,7 +77,7 @@ class BuildCompiledTransform:
         )
 
     def _capability(self, options: CompilerOptions) -> str:
-        return f"{options.target_backend}:{options.target_profile}:{options.target_variant}"
+        return f"{options.target}:{tuple(sorted(options.selected_plugin_options().items()))}"
 
     def _schemas(self, value: object | None, *, materialize: bool) -> TransformSchemas | None:
         if not materialize:

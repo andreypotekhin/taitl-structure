@@ -149,10 +149,11 @@ class Transform:
         structure_config = config or StructureConfig.resolve(
             project_root=resolved.project_root,
             generated_package=resolved.generated_package,
-            target_backend=resolved.target_backend,
-            target_profile=resolved.target_profile,
-            target_variant=resolved.target_variant,
             generated_code_options=resolved.generated_code_options,
+            plugin={
+                "default": resolved.target,
+                resolved.target: dict(resolved.selected_plugin_options()),
+            },
         )
         project = CliApp.discover_project()(structure_config)
         source_unit = cls.__module__
@@ -165,10 +166,10 @@ class Transform:
             )
             plans[f"{transform.__module__}.{transform.__name__}"] = transform_artifact.payload
             fingerprints[f"{transform.__module__}.{transform.__name__}"] = transform_artifact.semantic_fingerprint
-        plugin = Plugin.registry().select(resolved.target_backend)
+        plugin = Plugin.registry().select(resolved.target)
         if plugin.api.generator is None:
-            raise ValueError(f"PLUGIN-E2709: Plugin {resolved.target_backend!r} does not provide generation.")
-        files = plugin.api.generator.generate(
+            raise ValueError(f"PLUGIN-E2709: Plugin {resolved.target!r} does not provide generation.")
+        generated = plugin.api.generator.generate(
             GenerationRequest(
                 payload=plans,
                 source_module=source_unit,
@@ -179,13 +180,13 @@ class Transform:
             )
         )
         target = storage or DiskStorage(resolved.generated_dir)
-        result = target.write(files)
+        result = target.write(generated.files)
         return GeneratedTransform(
             source_unit=source_unit,
-            module_name=f"{resolved.generated_package}.pyspark.transforms.{source_unit.rsplit('.', 1)[1]}",
-            classes=tuple(f"{plan.transform}Generated" for plan in plans.values()),
+            module_name=generated.module_name,
+            classes=generated.classes,
             generated_package=resolved.generated_package,
-            files=files,
+            files=generated.files,
             storage=target,
             result=result,
         )

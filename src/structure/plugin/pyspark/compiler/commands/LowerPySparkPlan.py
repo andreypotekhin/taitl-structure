@@ -23,6 +23,7 @@ class LowerPySparkPlan:
         plan: TransformPlan,
         *,
         capabilities: BackendCapabilities | None = None,
+        check_intermediate: bool = True,
     ) -> PySparkExecutionPlan:
         target = capabilities or self._capabilities
         if target is None:
@@ -39,7 +40,12 @@ class LowerPySparkPlan:
             for input in plan.inputs
         )
         steps = tuple(
-            self._steps.map(step, last=index == len(plan.steps) - 1, capabilities=target)
+            self._steps.map(
+                step,
+                last=index == len(plan.steps) - 1,
+                capabilities=target,
+                check_intermediate=check_intermediate,
+            )
             for index, step in enumerate(plan.steps)
         )
         outputs = tuple(self._outputs.map(output, capabilities=target) for output in plan.outputs)

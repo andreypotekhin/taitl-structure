@@ -370,3 +370,55 @@ boundary; unimplemented parity work is now marked `planned` in `docs/dev/Gaps.md
 ## Nice To Have Beyond v4
 
 - Runtime LDJSON traceability emitter. See [NiceToHave.md](NiceToHave.md).
+
+## v6 Backlog
+
+### Epic: API Ledger and Plugin Decomposition
+
+- Publish a single v6 PySpark API ledger linking catalog status, contract, capability, diagnostics, examples, and test
+  evidence; update `docs/dev/Gaps.md` with every postponed/deferred disposition.
+- Add a raw-hook inventory test for all shipped examples and require an explicit retirement/defer/intentional status.
+- Extract focused delegates from `operations_api`, expression construction, `InputScope`, result-body building,
+  expression evaluation, online execution, step rendering, transform-module rendering, and compiler traceability.
+- Preserve wildcard public imports, rendered output, recipes, online behavior, and app-boundary rules during each
+  behavior-preserving extraction.
+
+### Epic: Compiler-Visible Security Reconciliation
+
+- Implement typed lambda-bound struct field access for collection callbacks.
+- Implement explicit partitioned analytic maximum helpers.
+- Implement deterministic ordered collection and exactly-one validation contracts.
+- Preserve aggregate-only methods without a preceding `group_by(...)` call and document their global aggregate
+  empty-input result rule.
+- Add a shipped, documented opt-in scalar `@special(type="udf")` example with return type, nullability, and
+  `warn_on_udfs` guidance; keep it separate from unsupported-operation fallback.
+- Replace Security reconciliation raw hooks with steps and remove placeholder output fields.
+- Add symbolic, recipe, generated-source, online/generated parity, live PySpark, traceability, and hook-inventory
+  evidence for each operation.
+
+### Epic: Typed Relation Operations and Search Migration
+
+- Design schema/cardinality contracts for `posexplode` first, then the remaining admitted generator forms.
+- Implement typed `union_all`/`union_by_name` before set operations with distinct duplicate semantics.
+- Implement self-alias relation scopes for explicit self joins.
+- Implement typed relation `order_by`, literal `limit`, and literal `offset`; defer `sample` pending a reproducibility
+  contract.
+- Migrate `ExtractText`, overlap/BM25 scoring, index summaries, similarity queries, and score reduction only after
+  their prerequisite operations are proven.
+- Compare normalized, deterministic rows from the raw and typed implementations before removing every hook.
+
+### Epic: Bounded Timeline Recurrence
+
+- Implement the separately planned typed, ordered, bounded `scan(...)` feature and Fibonacci evidence.
+- Keep global/unbounded/streaming scans and synthetic source frames explicitly unsupported.
+
+### Epic: Challenge and Release Closure
+
+- Audit C27 analytical-join status against the current implementation and correct stale challenge wording.
+- Add C28 operational recipes and troubleshooting links for local, CI, generated-artifact review, packaged-wheel, and
+  one managed-Spark deployment path.
+- Add C30 executable-specification coverage for every v6 feature.
+- Prepare the C31 licensing/governance decision record and publication checklist for project-owner approval.
+- Verify or schedule C32 field-alias correctness for Python keywords/nonidentifiers.
+- Specify C33 hook ownership for composed transforms before enabling hook-bearing composition.
+- Replace C34's prose hook list with the maintained API ledger and raw-hook inventory.

@@ -21,10 +21,6 @@ def _config_options(function):
         click.option("--generated-docs-formats"),
         click.option("--execution-mode", type=click.Choice(["online", "generated"])),
         click.option("--target"),
-        click.option("--target-backend"),
-        click.option("--target-profile"),
-        click.option("--target-variant", type=click.Choice(["ordinary", "spark-connect"])),
-        click.option("--compat-targets"),
         click.option("--traceability", type=click.Choice(["none", "compiler", "columns", "debug"])),
         click.option("--fail-on-diff", is_flag=True, default=None),
     ]
@@ -89,7 +85,7 @@ def check(profile: bool, **kwargs) -> None:
 @click.option("--profile", is_flag=True)
 @_config_options
 def compile(profile: bool, **kwargs) -> None:
-    """Generate PySpark artifacts."""
+    """Generate artifacts through the selected plugin."""
     started = time.perf_counter()
     config = CliApp.resolve_config()(kwargs)
     _echo(CliApp.compile_project()(config))

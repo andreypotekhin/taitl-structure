@@ -10,7 +10,7 @@ class RenderExplainReport:
     def __call__(self, transform: type[Transform], *, config: StructureConfig | None = None) -> str:
         resolved = config or StructureConfig.resolve()
         compilation = Compiler.frontend.compile()(transform, config=resolved, materialize_schemas=False)
-        configuration = PluginConfiguration.resolve({"plugin": {"default": resolved.target_backend}})
+        configuration = PluginConfiguration.resolve({"plugin": {"default": resolved.target}})
         target = Plugin.resolve_target()(transform, configuration=configuration)
         plugin = Plugin.registry().select(target)
         if plugin.api.explainer is None:

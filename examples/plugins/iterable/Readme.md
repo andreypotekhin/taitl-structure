@@ -1,68 +1,52 @@
-# Finite Iterable Starter Plugin
+# Structure Plugin Example: Iterable
 
-This example is a small, separately packaged Structure plugin that demonstrates the public Plugin API without
-importing `structure.core`. It is a plugin-author starter, not a supported end-user target.
-
-The package mirrors the bundled PySpark plugin's focused application layout on a deliberately smaller scale:
-
-- `IterablePlugin.py` is the entry-point object and owns plugin identity.
-- `api/` assembles one negotiated `PluginAPI` façade.
-- `dsl/` owns the target-specific authoring plans.
-- `compiler/` lowers a declared iterable operation into an opaque payload.
-- `execution/` interprets that payload for finite mappings.
-- `schema/`, `authoring/`, `capabilities/`, and `serialization/` supply the remaining v1 facets.
+This minimal Structure plugin example can serve the starting point for plugin authors. It owns a small
+row-processing target: authoring, lowering, execution, serialization, and code (Python) generation.
+It imports only the public Structure Plugin API to do the job.
 
 ## Authoring a transform
 
-An author imports target-neutral declarations from Structure and the operation vocabulary from this package:
+Declare normal Structure fields and use `@step`. The plugin supplies symbolic schema rows while Structure compiles the
+method. Return a target schema instance; the Iterable plugin captures its field reads and literals as a projection.
 
-    from structure import Schema, Transform, input, output, transform
-    from structure_iterable import projection
+    from structure import Schema, Transform, input, output, step, transform
+    from structure_iterable import left_join
 
-    @transform(target="iterable")
-    class ProjectOrders(Transform):
-        operation = projection(fields={"order": "id"})
+    class Order(Schema):
+        id: int
+        customer_id: int
 
-The compiler lowers the class-owned plan to an opaque payload. Declare an `input(...)` field when the plan consumes
-rows, then provide its list, tuple, or one-shot generator as a named transform constructor argument. The iterable
-executor materializes the finite input before evaluation so `collect()` is repeatable.
+    class Customer(Schema):
+        id: int
+        name: str
 
-## Supported starter operations
-
-- `projection(fields={output_name: source_name})`
-- `inner_join(left=..., right=..., left_on=..., right_on=...)`
-- `left_join(left=..., right=..., left_on=..., right_on=...)`
-- `grouped(group_by=(...), aggregates={"total": {"sum": "amount"}, "count": {"count": None}})`
-- `recurrence(initial=(...), output=..., next=(...))` for finite ordered state recurrences
-
-The fixture intentionally has no generated-code, streaming, broad schema, or step-body DSL support. A production
-plugin should replace its minimal schema and capability facets with target-specific implementations and publish its
-own user documentation.
-
-For example, a transform can express Fibonacci without baking it into the plugin:
-
-    from structure import Transform, transform
-    from structure_iterable import recurrence, state
-
-    class SequenceRow(Schema):
-        index: int
-
-    class FibonacciRow(SequenceRow):
-        fibonacci: int
+    class EnrichedOrder(Schema):
+        id: int
+        customer_name: str
 
     @transform(target="iterable")
-    class Fibonacci(Transform):
-        rows = input(SequenceRow)
-        result = output(FibonacciRow)
-        operation = recurrence(
-            initial=(0, 1),
-            output=state[0],
-            next=lambda previous, current: (current, previous + current),
-        )
+    class EnrichOrders(Transform):
+        orders = input(Order)
+        customers = input(Customer)
+        enriched = output(EnrichedOrder)
 
-With one declared input and output, `recurrence(...)` infers the input name and the one output field absent from the
-input schema—`rows` and `fibonacci` above. Supply `input=` or `value=` only when that inference is ambiguous.
-`next=` may be a tuple of `state[...]` expressions or a declaration-time lambda whose positional arguments are those
-state values; it must return the next-state tuple.
-It is intentionally an Iterable-only, finite ordered demonstration: its input `index` values must be exactly
-`0, 1, 2, ...`; it is not Structure's future portable scan API.
+        @step(input=[orders, customers], output=enriched)
+        def enrich(self, order: Order, customer: Customer) -> EnrichedOrder:
+            left_join(customer, on=customer.id == order.customer_id)
+            return EnrichedOrder(id=order.id, customer_name=customer.name)
+
+The first input drives order. Secondary inputs are usable through explicit keyed `inner_join(...)` or
+`left_join(...)`. Inner join drops unmatched driving rows; left join supplies `None` for absent right fields.
+Step methods can accept and return multiple schemas.
+
+## Generated Python
+
+`EnrichOrders.generate(...)` asks the plugin to emit a target-owned module such as
+`structure_generated.iterable.transforms.orders`. Its `EnrichOrdersGenerated.run(orders=..., customers=...)` method
+returns a list of mapping rows for one final output, or a mapping from output name to lists for multiple outputs.
+Generated source uses only the standard library and exposes the algorithm as ordinary loops and indexes; it never calls
+back into the plugin executor.
+
+The example intentionally does not allow ordinary Python in transform methods. A plugin author instead defines a compact
+symbolic vocabulary - joins, captures that vocabulary during a step invocation, and lowers it to an opaque,
+serializable recipe.

@@ -23,7 +23,7 @@ def test_bundled_pyspark_platform_exposes_the_v1_facade() -> None:
     assert api.compiler is not None
     assert api.authoring is not None
     assert (
-        api.capabilities.resolve(profile=">=3.5,<4.1", variant="ordinary")
+        api.capabilities.resolve(options={"profile": ">=3.5,<4.1", "variant": "ordinary"})
         .require(CapabilityRequirement(group="join", name="inner_join"))
         .supported
     )

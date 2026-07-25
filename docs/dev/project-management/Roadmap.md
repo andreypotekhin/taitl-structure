@@ -280,34 +280,57 @@ management, and CLI orchestration. Plugin plugins participate through one discov
 
 ## v6 Scope
 
-v6 admits one bounded, batch-only recurrence shape over caller-supplied timeline DataFrames. A PySpark-plugin
-`scan(...)` expression carries a typed `Schema` state through an explicitly partitioned and ordered timeline, producing
-one normal transform output row for each input timeline row. It is not a reinterpretation of `lag(...)`, an input-less
-transform, a persistent Transform instance state, or a streaming state-store API.
+v6 turns the remaining high-value PySpark transformation gaps into a small, explicit, compiler-visible API program.
+It first decomposes the oversized PySpark plugin modules, then adds only the typed operations that remove raw hooks in
+the shipped Security and Search examples. Every admitted operation has a schema/cardinality contract, diagnostics,
+capability classification, traceability, readable generated PySpark, and online/generated parity. Hooks remain the
+honest boundary for actions, driver algorithms, arbitrary Python, sources/sinks, and APIs without a settled contract.
 
 ### v6 sequence
 
-- Specify ordered timeline scan semantics, schema/cardinality rules, diagnostics, and capability requirements.
-- Add typed scan-state symbolic execution and immutable plugin planning records.
-- Lower bounded scans through public PySpark DataFrame and Column APIs; prove online/generated parity and generated
-  source readability.
-- Add live PySpark evidence, performance guidance, generated documentation, and release hardening.
+- Sprint 23: publish the v6 API ledger, characterize current behavior, and extract focused PySpark delegates without
+  feature changes.
+- Sprint 24: admit lambda-bound struct field access, explicit analytic maxima, deterministic ordered collections,
+  exact-one validation, and global aggregates; replace both Security raw hooks with ordinary steps.
+- Sprint 25: admit typed relation operations—generators, set composition, self aliases, ordering, limit, and offset—
+  and retire Search hooks in independently verifiable slices.
+- Sprint 26: deliver the separately specified bounded ordered timeline `scan(...)` recurrence feature once the shared
+  relation/recipe boundaries are stable.
+- Sprint 27: close release evidence and the unaddressed Challenges.md inventory, with no new feature family admitted.
 
 ### v6 must include
 
-- A caller-supplied finite timeline input with explicit partition and deterministic ordering keys.
-- A typed initial state and typed transition callback that returns the same state schema.
-- One state-before-transition result per timeline row, with a declared maximum rows per partition.
-- Duplicate-order-key and over-bound failures, batch-only capability diagnostics, explain/traceability facts, and
-  online/generated PySpark parity.
-- A two-partition Fibonacci example demonstrating reset state at partition boundaries.
+- A checked API ledger classifying every remaining catalog entry as implemented, scheduled, deferred, or intentionally
+  unsupported, with one source of truth for documentation, capability reporting, and example hooks.
+- Behavior-preserving extraction of the large PySpark DSL, symbolic-execution, compiler-traceability, online-runner,
+  and generated-rendering classes into focused delegates.
+- Lambda-bound struct field access and explicit window aggregate helpers sufficient to make Security reconciliation
+  compiler-visible and remove both of its raw hooks.
+- Deterministic ordered aggregate collection, exactly-one validation, and global aggregate semantics including empty
+  input behavior while preserving aggregate-only methods without a preceding `group_by(...)` call.
+- A documented, shipped opt-in scalar `@special(type="udf")` example for ordinary PySpark, including declared
+  return/nullability contracts and warning guidance; this is not automatic UDF fallback and remains excluded from
+  Spark Connect.
+- Typed relation operations with declared schemas and cardinality for the Search migrations: row generators, union
+  composition, self aliases, ordering, limit, and offset.
+- The bounded batch-only `scan(...)` recurrence feature from
+  `docs/dev/planning/P07182601.V6-timeline-scan-recurrence.plan.md`, including partitioned Fibonacci evidence.
+- A maintained disposition for Challenges C27--C34, executable specification coverage for each new feature, and
+  runnable operational/adoption recipes where the challenge calls for documentation.
 
 ### v6 non-goals
 
-- Input-less transforms, generated source frames, generic row generators, and constructor parameter declarations.
-- Persistent state between transform invocations, global scans, arbitrary unbounded scans, and all streaming scans.
-- UDF-, Pandas-, RDD-, driver-loop-, or raw-hook-based recurrence execution.
-- Alternative-plugin scan portability before each plugin supplies its own explicit capability and lowering.
+- A general PySpark wrapper; raw `Column`, `DataFrame`, `WindowSpec`, SQL strings, UDTF, RDD, Pandas, and action APIs
+  remain outside the typed DSL. Explicit scalar `@special(type="udf")` remains the existing opt-in exception, never a
+  compiler fallback.
+- Binary/encoding helpers without a public Binary field type; JSON/CSV parsing without inline-schema/option contracts;
+  and deterministic `mode` before the PySpark 3.5 baseline can express its tie policy.
+- Relation sampling, repartition/coalesce/checkpoint, and broader physical-plan directives without their own
+  performance and reproducibility contracts.
+- Input-less transforms, generated source frames, persistent recurrence state, global/unbounded scans, and all
+  streaming scans.
+- Replacing the School matrix-inversion hook, which deliberately materializes rows and runs a Python numerical
+  algorithm rather than a DataFrame transformation.
 
 ## Release Milestones
 
@@ -324,4 +347,4 @@ transform, a persistent Transform instance state, or a streaming state-store API
 | M8 | v3 PySpark gap closure and streaming transformation hardening | Sprints 11-16 |
 | M9 | v4 PySpark transformation API coverage | Sprint 17, later v4 feature sprints including Sprint 18 streaming migration, then the final v4 hardening sprint |
 | M10 | v5 Core-orchestrated plugin architecture | Sprints 19-22 |
-| M11 | v6 bounded ordered timeline scans and typed recurrence transforms | post-v5 v6 sprints |
+| M11 | v6 typed PySpark API closure, example-hook retirement, and bounded recurrence | Sprints 23-27 |

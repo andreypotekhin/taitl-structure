@@ -137,15 +137,17 @@ class RunGeneratedPySparkTransform:
             title=title,
             transform=transform,
             execution_mode=session.execution_mode,
-            target_backend=session.target_backend,
-            target_profile=getattr(session, "target_profile", ">=3.5,<4.1"),
-            target_variant=getattr(session, "target_variant", "ordinary"),
+            target=session.target,
             problem=problem,
             use=(
                 "Run `structure compile`, ensure the generated source root is importable, "
                 "or switch to direct execution with execution_mode = \"online\"."
             ),
             docs="docs/background/Execution.back.md",
+            context={
+                "target_profile": str(getattr(session, "plugin_options", {}).get("profile", ">=3.5,<4.1")),
+                "target_variant": str(getattr(session, "plugin_options", {}).get("variant", "ordinary")),
+            },
         )
         return StructureRuntimeError(diagnostic)
 

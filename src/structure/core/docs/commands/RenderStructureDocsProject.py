@@ -32,7 +32,7 @@ class RenderStructureDocsProject:
         formats = set(config.generated_docs_formats)
         docs_root = self._docs_root(config)
         selected = transforms or project.transforms
-        plugin = Plugin.registry().select(config.target_backend)
+        plugin = Plugin.registry().select(config.target)
         plans = {
             f"{transform.__module__}.{transform.__name__}": cast(
                 TransformPlan,
@@ -48,7 +48,7 @@ class RenderStructureDocsProject:
         analysis = plugin.api.analysis
         describe = None if analysis is None else getattr(analysis, "describe_documentation", None)
         if not callable(describe):
-            raise ValueError(f"PLUGIN-E2709: Plugin {config.target_backend!r} does not provide documentation analysis.")
+            raise ValueError(f"PLUGIN-E2709: Plugin {config.target!r} does not provide documentation analysis.")
         platform_details = {source: describe(plan) for source, plan in plans.items()}
         data = self._data.project(project, plans, platform_details=platform_details)
 

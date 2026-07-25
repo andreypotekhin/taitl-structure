@@ -150,8 +150,9 @@ def add_product(self, order: OrderNormalized) -> OrderEnriched:
 An expression is a compiler-visible symbolic value: a field reference, literal, comparison, boolean
 expression, cast, conditional, or helper call.
 
-Expressions carry Structure type, nullability, referenced scopes, and source context. They do not contain
-PySpark `Column` objects.
+For PySpark, expressions carry type, nullability, referenced scopes, and source context without containing live
+PySpark `Column` objects. Their target-specific representation belongs to the PySpark plugin and remains opaque to
+Core.
 
 Example:
 
@@ -254,8 +255,9 @@ Project configuration, transform-level settings, and method-level overrides shap
 
 ### Session
 
-`StructureSession` is the runtime session. It owns the caller-supplied Spark session reference, optional hook
-context, library configuration, execution mode, target backend, runner selection, and optional plan cache.
+`StructureSession` is the target-neutral runtime session. It owns the caller-supplied runtime, optional hook context,
+library configuration, selected plugin target, execution mode, and optional artifact cache. PySpark users supply a
+Spark session as that runtime.
 
 The session does not own Spark lifecycle, orchestration lifecycle, reads, writes, or streaming query
 management.
@@ -263,7 +265,7 @@ management.
 Example:
 
 ```python
-session = StructureSession(spark=spark, ctx=ctx)
+session = StructureSession(spark=spark, ctx=ctx, target="pyspark")
 result = session.run(EnrichOrders(orders=orders_df))
 enriched_df = result.enriched
 ```
@@ -272,10 +274,9 @@ enriched_df = result.enriched
 
 Lowering turns a higher-level semantic representation into a lower-level target representation.
 
-In Structure, there are two important lowering steps:
-
-- backend-neutral IR lowers to shared PySpark execution recipes;
-- those recipes are either interpreted during execution or rendered as generated PySpark source.
+In Structure, Core first establishes a structural transform plan. The selected plugin then lowers its opaque target
+body to target recipes. For PySpark, those recipes are either interpreted during execution or rendered as generated
+PySpark source.
 
 Lowering must implement checked IR, not invent semantics.
 
@@ -287,9 +288,16 @@ FieldRef("orders.customer_id")
   -> F.col("orders.customer_id")
 ```
 
-### Target Boundary
+### Plugin Target Boundary
 
-The target boundary is where backend-neutral Structure semantics become backend-specific execution choices.
+The plugin target boundary is where Core's structural transform facts become target-specific authoring, validation,
+lowering, execution, and generation. A transform has exactly one target: from `@transform(target=...)`, an explicit
+`target=`, or the configured `plugin.default`. Core routes the workflow through that plugin's versioned Plugin API;
+it does not inspect target expressions or plans.
+
+The `structure` package contains target-neutral declarations. Import target DSL names from the selected plugin, for
+example `structure.plugin.pyspark`. Different transforms in one project may select different installed plugins, but a
+single composed pipeline cannot cross plugin targets.
 PySpark API spelling, aliases, type strings, join hints, and version-specific choices belong here.
 
 DSL objects and generic IR should not contain PySpark implementation details.

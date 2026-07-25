@@ -21,10 +21,10 @@ belongs in `StructureSession(ctx=...)`.
 ### Problem (compatibility): configured PySpark target does not support a generated feature
 
 When: Running `structure check` or `structure compile`.
-Error: "Feature requires PySpark [version], but target_profile is [range]."
+Error: "Feature requires PySpark [version], but plugin.pyspark.profile is [range]."
 Cause: The transform uses a DSL feature whose generated PySpark requires an API outside the configured target
        range.
-Fix: Either raise `target_profile` in project configuration or rewrite the transform using APIs supported by
+Fix: Either raise `plugin.pyspark.profile` in project configuration or rewrite the transform using APIs supported by
      the
 configured runtime. See [Compatibility.md](Compatibility.md).
 

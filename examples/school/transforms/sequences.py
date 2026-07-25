@@ -1,9 +1,9 @@
-"""Iterable-only stateful sequence demonstrations."""
+"""Example of a non-PySpark transform. Powered by Iterable plugin."""
 
-from structure_iterable import recurrence, state
+from structure_iterable import scan, state
 
 from examples.school.schemas.sequences import FibonacciRow, SequenceRow
-from structure import Transform, input, output, transform
+from structure import Transform, input, output, step, transform
 
 
 @transform(target="iterable")
@@ -13,8 +13,10 @@ class Fibonacci(Transform):
     rows = input(SequenceRow)
     result = output(FibonacciRow)
 
-    operation = recurrence(
-        initial=(0, 1),
-        output=state[0],
-        next=lambda previous, current: (current, previous + current),
-    )
+    @step(output=result)
+    def generate(self, row: SequenceRow) -> FibonacciRow:
+        return scan(
+            initial=(0, 1),
+            output=FibonacciRow(index=row.index, fibonacci=state[0]),
+            next=lambda previous, current: (current, previous + current),
+        )
